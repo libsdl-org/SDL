@@ -1048,6 +1048,91 @@ log_regularCases(void *args)
     return helper_dtod("Log", SDL_log, regular_cases, SDL_arraysize(regular_cases));
 }
 
+/* SDL_log10 tests functions */
+
+/**
+ * \brief Checks limits (zeros and positive infinity).
+ */
+static int
+log10_limitCases(void *args)
+{
+    double result;
+
+    result = SDL_log10(INFINITY);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Log10(%f), expected %f, got %f",
+                        INFINITY, INFINITY, result);
+
+    result = SDL_log10(0.0);
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Log10(%f), expected %f, got %f",
+                        0.0, -INFINITY, result);
+
+    result = SDL_log10(-0.0);
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Log10(%f), expected %f, got %f",
+                        -0.0, -INFINITY, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks some base cases.
+ */
+static int
+log10_baseCases(void *args)
+{
+    const d_to_d base_cases[] = {
+        { 1.0, 0.0 },
+        { 10.0, 1.0 },
+        { 100.0, 2.0 },
+        { 1000.0, 3.0 },
+        { 10000.0, 4.0 },
+        { 100000.0, 5.0 },
+        { 1000000.0, 6.0 },
+        { 10000000.0, 7.0 },
+        { 100000000.0, 8.0 },
+        { 1000000000.0, 9.0 },
+    };
+    return helper_dtod("Log10", SDL_log10, base_cases, SDL_arraysize(base_cases));
+}
+
+/**
+ * \brief Checks the nan cases.
+ */
+static int
+log10_nanCases(void *args)
+{
+    double result;
+
+    result = SDL_log10(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Log10(%f), expected %f, got %f",
+                        NAN, NAN, result);
+
+    result = SDL_log10(-1234.5678);
+    SDLTest_AssertCheck(isnan(result),
+                        "Log10(%f), expected %f, got %f",
+                        -1234.5678, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of regular cases.
+ */
+static int
+log10_regularCases(void *args)
+{
+    const d_to_d regular_cases[] = {
+        { 5.0, 0.698970004336018857493684208748163655400276184082031250 },
+        { 12.5, 1.09691001300805646145875016372883692383766174316406250 },
+        { 56.32, 1.750662646134055755453573510749265551567077636718750 },
+        { 789.123, 2.8971447016351858927407647570362314581871032714843750 },
+        { 2734.876324, 3.436937691540090433761633903486654162406921386718750 }
+    };
+    return helper_dtod("Log10", SDL_log10, regular_cases, SDL_arraysize(regular_cases));
+}
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -1269,6 +1354,25 @@ static const SDLTest_TestCaseReference logTestRegular = {
     "Check a set of regular values", TEST_ENABLED
 };
 
+/* SDL_log10 test cases */
+
+static const SDLTest_TestCaseReference log10TestLimit = {
+    (SDLTest_TestCaseFp) log10_limitCases, "log10_limitCases",
+    "Check for limits", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference log10TestNan = {
+    (SDLTest_TestCaseFp) log10_nanCases, "log10_nanCases",
+    "Check for the nan cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference log10TestBase = {
+    (SDLTest_TestCaseFp) log10_baseCases, "log10_baseCases",
+    "Check for base cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference log10TestRegular = {
+    (SDLTest_TestCaseFp) log10_regularCases, "log10_regularCases",
+    "Check a set of regular values", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -1294,6 +1398,9 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &logTestLimit, &logTestNan,
     &logTestBase, &logTestRegular,
+
+    &log10TestLimit, &log10TestNan,
+    &log10TestBase, &log10TestRegular,
 
     NULL
 };
