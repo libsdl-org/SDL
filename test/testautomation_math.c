@@ -1133,6 +1133,415 @@ log10_regularCases(void *args)
     };
     return helper_dtod("Log10", SDL_log10, regular_cases, SDL_arraysize(regular_cases));
 }
+
+/* SDL_pow tests functions */
+
+/* Tests with positive and negative infinities as exponents */
+
+/**
+ * \brief Checks the cases where the base is negative one and the exponent is infinity.
+ */
+static int
+pow_baseNOneExpInfCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(-1.0, INFINITY);
+    SDLTest_AssertCheck(1.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -1.0, INFINITY, 1.0, result);
+
+    result = SDL_pow(-1.0, -INFINITY);
+    SDLTest_AssertCheck(1.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -1.0, -INFINITY, 1.0, result);
+
+    return TEST_COMPLETED;
+}
+/**
+ * \brief Checks the case where the base is zero and the exponent is negative infinity.
+ */
+static int
+pow_baseZeroExpNInfCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(0.0, -INFINITY);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.0, -INFINITY, INFINITY, result);
+
+    result = SDL_pow(-0.0, -INFINITY);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -0.0, -INFINITY, INFINITY, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the remaining cases where the exponent is infinity.
+ */
+static int
+pow_expInfCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(0.5, INFINITY);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.5, INFINITY, 0.0, result);
+
+    result = SDL_pow(1.5, INFINITY);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        1.5, INFINITY, INFINITY, result);
+
+    result = SDL_pow(0.5, -INFINITY);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.5, INFINITY, INFINITY, result);
+
+    result = SDL_pow(1.5, -INFINITY);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        1.5, -INFINITY, 0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/* Tests with positive and negative infinities as base */
+
+/**
+ * \brief Checks the cases with positive infinity as base.
+ */
+static int
+pow_basePInfCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(INFINITY, -3.0);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        INFINITY, -3.0, 0.0, result);
+
+    result = SDL_pow(INFINITY, 2.0);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        INFINITY, 2.0, INFINITY, result);
+
+    result = SDL_pow(INFINITY, -2.12345);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        INFINITY, -2.12345, 0.0, result);
+
+    result = SDL_pow(INFINITY, 3.1345);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        INFINITY, 3.12345, INFINITY, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the cases with negative infinity as base.
+ */
+static int
+pow_baseNInfCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(-INFINITY, -3.0);
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -INFINITY, -3.0, -0.0, result);
+
+    result = SDL_pow(-INFINITY, -2.0);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -INFINITY, -2.0, 0.0, result);
+
+    result = SDL_pow(-INFINITY, -5.5);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -INFINITY, -5.5, 0.0, result);
+
+    result = SDL_pow(-INFINITY, 3.0);
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -INFINITY, 3.0, -INFINITY, result);
+
+    result = SDL_pow(-INFINITY, 2.0);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -INFINITY, 2.0, INFINITY, result);
+
+    result = SDL_pow(-INFINITY, 5.5);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -INFINITY, 5.5, INFINITY, result);
+
+    return TEST_COMPLETED;
+}
+
+/* Tests related to nan */
+
+/**
+ * \brief Checks the case where the base is finite and negative and exponent is finite and non-integer.
+ */
+static int
+pow_badOperationCase(void *args)
+{
+    const double result = SDL_pow(-2.0, 4.2);
+    SDLTest_AssertCheck(isnan(result),
+                        "Pow(%f,%f), expected %f, got %f",
+                        -2.0, 4.2, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the case where the exponent is nan but the base is 1.
+ */
+static int
+pow_base1ExpNanCase(void *args)
+{
+    const double result = SDL_pow(1.0, NAN);
+    SDLTest_AssertCheck(1.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        1.0, NAN, 1.0, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the cases where the base is nan but the exponent is 0.
+ */
+static int
+pow_baseNanExp0Cases(void *args)
+{
+    double result;
+
+    result = SDL_pow(NAN, 0.0);
+    SDLTest_AssertCheck(1.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        NAN, 0.0, 1.0, result);
+    return TEST_COMPLETED;
+
+    result = SDL_pow(NAN, -0.0);
+    SDLTest_AssertCheck(1.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        NAN, -0.0, 1.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks the cases where either argument is nan.
+ */
+static int
+pow_nanArgsCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(7.8, NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Pow(%f,%f), expected %f, got %f",
+                        7.8, NAN, NAN, result);
+
+    result = SDL_pow(NAN, 10.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Pow(%f,%f), expected %f, got %f",
+                        NAN, 10.0, NAN, result);
+
+    result = SDL_pow(NAN, NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Pow(%f,%f), expected %f, got %f",
+                        NAN, NAN, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/* Tests with positive and negative zeros as base */
+
+/**
+ * \brief Checks cases with negative zero as base and an odd exponent.
+ */
+static int
+pow_baseNZeroExpOddCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(-0.0, -3.0);
+    SDLTest_AssertCheck(-INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -0.0, -3.0, -INFINITY, result);
+
+    result = SDL_pow(-0.0, 3.0);
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -0.0, 3.0, -0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks cases with positive zero as base and an odd exponent.
+ */
+static int
+pow_basePZeroExpOddCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(0.0, -5.0);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.0, -5.0, INFINITY, result);
+
+    result = SDL_pow(0.0, 5.0);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.0, 5.0, 0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks cases with negative zero as base and the exponent is finite and even or non-integer.
+ */
+static int
+pow_baseNZeroCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(-0.0, -3.5);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -0.0, -3.5, INFINITY, result);
+
+    result = SDL_pow(-0.0, -4.0);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -0.0, -4.0, INFINITY, result);
+
+    result = SDL_pow(-0.0, 3.5);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -0.0, 3.5, 0.0, result);
+
+    result = SDL_pow(-0.0, 4.0);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        -0.0, 4.0, 0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks cases with positive zero as base and the exponent is finite and even or non-integer.
+ */
+static int
+pow_basePZeroCases(void *args)
+{
+    double result;
+
+    result = SDL_pow(0.0, -3.5);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.0, -3.5, INFINITY, result);
+
+    result = SDL_pow(0.0, -4.0);
+    SDLTest_AssertCheck(INFINITY == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.0, -4.0, INFINITY, result);
+
+    result = SDL_pow(0.0, 3.5);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.0, 3.5, 0.0, result);
+
+    result = SDL_pow(0.0, 4.0);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Pow(%f,%f), expected %f, got %f",
+                        0.0, 4.0, 0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/* Remaining tests */
+
+/**
+ * \brief Checks a set of regular values.
+ */
+static int
+pow_regularCases(void *args)
+{
+    const dd_to_d regular_cases[] = {
+        { -391.25, -2.0, 0.00000653267870448815438463212659780943170062528224661946296691894531250 },
+        { -72.3, 12.0, 20401381050275984310272.0 },
+        { -5.0, 3.0, -125.0 },
+        { 3.0, 2.5, 15.58845726811989607085706666111946105957031250 },
+        { 39.23, -1.5, 0.0040697950366865498147972424192175822099670767784118652343750 },
+        { 478.972, 12.125, 315326359630449587856007411793920.0 }
+    };
+    return helper_ddtod("Pow", SDL_pow, regular_cases, SDL_arraysize(regular_cases));
+}
+
+/**
+ * \brief Checks the powers of two from 1 to 8.
+ */
+static int
+pow_powerOfTwo(void *args)
+{
+    const dd_to_d power_of_two_cases[] = {
+        { 2.0, 1, 2.0 },
+        { 2.0, 2, 4.0 },
+        { 2.0, 3, 8.0 },
+        { 2.0, 4, 16.0 },
+        { 2.0, 5, 32.0 },
+        { 2.0, 6, 64.0 },
+        { 2.0, 7, 128.0 },
+        { 2.0, 8, 256.0 },
+    };
+    return helper_ddtod("Pow", SDL_pow, power_of_two_cases, SDL_arraysize(power_of_two_cases));
+}
+
+/**
+ * \brief Checks a range of values between 0 and UINT32_MAX to the power of 0.
+ */
+static int
+pow_rangeTest(void *args)
+{
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("Pow: Testing a range of %u values with steps of %u",
+                       RANGE_TEST_ITERATIONS,
+                       RANGE_TEST_STEP);
+
+    for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        /* Only log failures to save performances */
+        result = SDL_pow(test_value, 0.0);
+        if (result != 1.0) {
+            SDLTest_AssertPass("Pow(%.1f,%.1f), expected %.1f, got %.1f",
+                               test_value, 1.0, 1.0, result);
+            return TEST_ABORTED;
+        }
+
+        result = SDL_pow(test_value, -0.0);
+        if (result != 1.0) {
+            SDLTest_AssertPass("Pow(%.1f,%.1f), expected %.1f, got %.1f",
+                               test_value, -0.0, 1.0, result);
+            return TEST_ABORTED;
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -1373,6 +1782,73 @@ static const SDLTest_TestCaseReference log10TestRegular = {
     "Check a set of regular values", TEST_ENABLED
 };
 
+/* SDL_pow test cases */
+
+static const SDLTest_TestCaseReference powTestExpInf1 = {
+    (SDLTest_TestCaseFp) pow_baseNOneExpInfCases, "pow_baseNOneExpInfCases",
+    "Check for pow(-1, +/-inf)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestExpInf2 = {
+    (SDLTest_TestCaseFp) pow_baseZeroExpNInfCases, "pow_baseZeroExpNInfCases",
+    "Check for pow(+/-0, -inf)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestExpInf3 = {
+    (SDLTest_TestCaseFp) pow_expInfCases, "pow_expInfCases",
+    "Check for pow(x, +/-inf)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestBaseInf1 = {
+    (SDLTest_TestCaseFp) pow_basePInfCases, "pow_basePInfCases",
+    "Check for pow(inf, x)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestBaseInf2 = {
+    (SDLTest_TestCaseFp) pow_baseNInfCases, "pow_baseNInfCases",
+    "Check for pow(-inf, x)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestNan1 = {
+    (SDLTest_TestCaseFp) pow_badOperationCase, "pow_badOperationCase",
+    "Check for negative finite base and non-integer finite exponent", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestNan2 = {
+    (SDLTest_TestCaseFp) pow_base1ExpNanCase, "pow_base1ExpNanCase",
+    "Check for pow(1.0, nan)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestNan3 = {
+    (SDLTest_TestCaseFp) pow_baseNanExp0Cases, "pow_baseNanExp0Cases",
+    "Check for pow(nan, +/-0)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestNan4 = {
+    (SDLTest_TestCaseFp) pow_nanArgsCases, "pow_nanArgsCases",
+    "Check for pow(x, y) with either x or y being nan", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestZero1 = {
+    (SDLTest_TestCaseFp) pow_baseNZeroExpOddCases, "pow_baseNZeroExpOddCases",
+    "Check for pow(-0.0, y), with y an odd integer.", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestZero2 = {
+    (SDLTest_TestCaseFp) pow_basePZeroExpOddCases, "pow_basePZeroExpOddCases",
+    "Check for pow(0.0, y), with y an odd integer.", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestZero3 = {
+    (SDLTest_TestCaseFp) pow_baseNZeroCases, "pow_baseNZeroCases",
+    "Check for pow(-0.0, y), with y finite and even or non-integer number", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestZero4 = {
+    (SDLTest_TestCaseFp) pow_basePZeroCases, "pow_basePZeroCases",
+    "Check for pow(0.0, y), with y finite and even or non-integer number", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestRegular = {
+    (SDLTest_TestCaseFp) pow_regularCases, "pow_regularCases",
+    "Check a set of regular values", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestPowOf2 = {
+    (SDLTest_TestCaseFp) pow_powerOfTwo, "pow_powerOfTwo",
+    "Check the powers of two from 1 to 8", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference powTestRange = {
+    (SDLTest_TestCaseFp) pow_rangeTest, "pow_rangeTest",
+    "Check a range of positive integer to the power of 0", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -1401,6 +1877,12 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &log10TestLimit, &log10TestNan,
     &log10TestBase, &log10TestRegular,
+
+    &powTestExpInf1, &powTestExpInf2, &powTestExpInf3,
+    &powTestBaseInf1, &powTestBaseInf2,
+    &powTestNan1, &powTestNan2, &powTestNan3, &powTestNan4,
+    &powTestZero1, &powTestZero2, &powTestZero3, &powTestZero4,
+    &powTestRegular, &powTestPowOf2, &powTestRange,
 
     NULL
 };
