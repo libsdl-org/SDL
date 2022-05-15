@@ -545,6 +545,7 @@ display_handle_done(void *data,
     SDL_VideoData* video = driverdata->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
+    const SDL_bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
 
     /*
      * When using xdg-output, two wl-output.done events will be emitted:
@@ -597,8 +598,8 @@ display_handle_done(void *data,
     desktop_mode.driverdata = driverdata->output;
 
     /*
-     * The native display mode is only exposed separately from the desktop size if:
-     * the desktop is scaled and the wp_viewporter protocol is supported.
+     * The native display mode is only exposed separately from the desktop size if the
+     * desktop is scaled and the wp_viewporter protocol is supported.
      */
     if (driverdata->scale_factor > 1.0f && video->viewporter != NULL) {
         if (driverdata->index > -1) {
@@ -643,8 +644,8 @@ display_handle_done(void *data,
     SDL_SetCurrentDisplayMode(dpy, &desktop_mode);
     SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
 
-    /* Add emulated modes if wp_viewporter is supported. */
-    if (video->viewporter) {
+    /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
+    if (video->viewporter && mode_emulation_enabled) {
         AddEmulatedModes(dpy, (driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0);
     }
 
