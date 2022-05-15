@@ -1509,6 +1509,21 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR "SDL_VIDEO_WAYLAND_PREFER_LIBDECOR"
 
 /**
+ *  \brief  A variable controlling whether video mode emulation is enabled under Wayland.
+ *
+ *  When this hint is set, a standard set of emulated CVT video modes will be exposed for use by the application.
+ *  If it is disabled, the only modes exposed will be the logical desktop size and, in the case of a scaled
+ *  desktop, the native display resolution.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Video mode emulation is disabled.
+ *    "1"       - Video mode emulation is enabled.
+ *
+ *  By default video mode emulation is enabled.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION "SDL_VIDEO_WAYLAND_MODE_EMULATION"
+
+/**
 *  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
 *  
 *  If this hint is set before SDL_CreateWindowFrom() and the SDL_Window* it is set to has
