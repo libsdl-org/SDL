@@ -3,6 +3,7 @@
  */
 
 #include <math.h>
+#include <float.h>
 
 #include "SDL.h"
 #include "SDL_test.h"
