@@ -416,23 +416,25 @@ AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
     };
 
     int i;
+    SDL_DisplayMode mode;
     const int native_width  = dpy->display_modes->w;
     const int native_height = dpy->display_modes->h;
 
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
-        /* Only add modes that are smaller than the native mode */
-        if ((mode_list[i].w < native_width && mode_list[i].h < native_height) ||
-            (mode_list[i].w < native_width && mode_list[i].h == native_height)) {
-            SDL_DisplayMode mode = *dpy->display_modes;
+        mode = *dpy->display_modes;
 
-            if (rot_90) {
-                mode.w = mode_list[i].h;
-                mode.h = mode_list[i].w;
-            } else {
-                mode.w = mode_list[i].w;
-                mode.h = mode_list[i].h;
-            }
+        if (rot_90) {
+            mode.w = mode_list[i].h;
+            mode.h = mode_list[i].w;
+        } else {
+            mode.w = mode_list[i].w;
+            mode.h = mode_list[i].h;
+        }
 
+        /* Only add modes that are smaller than the native mode. */
+        if ((mode.w < native_width && mode.h < native_height) ||
+            (mode.w < native_width && mode.h == native_height) ||
+            (mode.w == native_width && mode.h < native_height)) {
             SDL_AddDisplayMode(dpy, &mode);
         }
     }
@@ -646,7 +648,9 @@ display_handle_done(void *data,
 
     /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
     if (video->viewporter && mode_emulation_enabled) {
-        AddEmulatedModes(dpy, (driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0);
+        const SDL_bool rot_90 = ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0) ||
+                                (driverdata->width < driverdata->height);
+        AddEmulatedModes(dpy, rot_90);
     }
 
     if (driverdata->index == -1) {
