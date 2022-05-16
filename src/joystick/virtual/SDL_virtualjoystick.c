@@ -100,6 +100,8 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     Uint16 button_mask = 0;
     Uint16 axis_mask = 0;
     Uint16 *guid16;
+    int axis_triggerleft = -1;
+    int axis_triggerright = -1;
 
     if (!desc) {
         return SDL_InvalidParamError("desc");
@@ -116,10 +118,10 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     }
     SDL_memcpy(&hwdata->desc, desc, sizeof(*desc));
 
-    if (desc->name) {
-        name = desc->name;
+    if (hwdata->desc.name) {
+        name = hwdata->desc.name;
     } else {
-        switch (desc->type) {
+        switch (hwdata->desc.type) {
         case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
             name = "Virtual Controller";
             break;
@@ -154,21 +156,39 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     }
     hwdata->name = SDL_strdup(name);
 
-    if (desc->type == SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
-        int i;
+    if (hwdata->desc.type == SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+        int i, axis;
 
-        if (desc->naxes >= 2) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_LEFTX) | (1 << SDL_CONTROLLER_AXIS_LEFTY));
-        }
-        if (desc->naxes >= 4) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_RIGHTX) | (1 << SDL_CONTROLLER_AXIS_RIGHTY));
-        }
-        if (desc->naxes >= 6) {
-            axis_mask |= ((1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT) | (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+        if (hwdata->desc.button_mask == 0) {
+            for (i = 0; i < hwdata->desc.nbuttons && i < sizeof(Uint16)*8; ++i) {
+                hwdata->desc.button_mask |= (1 << i);
+            }
         }
 
-        for (i = 0; i < desc->nbuttons && i < sizeof(Uint16)*8; ++i) {
-            button_mask |= (1 << i);
+        if (hwdata->desc.axis_mask == 0) {
+            if (hwdata->desc.naxes >= 2) {
+                hwdata->desc.axis_mask |= ((1 << SDL_CONTROLLER_AXIS_LEFTX) | (1 << SDL_CONTROLLER_AXIS_LEFTY));
+            }
+            if (hwdata->desc.naxes >= 4) {
+                hwdata->desc.axis_mask |= ((1 << SDL_CONTROLLER_AXIS_RIGHTX) | (1 << SDL_CONTROLLER_AXIS_RIGHTY));
+            }
+            if (hwdata->desc.naxes >= 6) {
+                hwdata->desc.axis_mask |= ((1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT) | (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+            }
+        }
+
+        /* Find the trigger axes */
+        axis = 0;
+        for (i = 0; axis < hwdata->desc.naxes && i < SDL_CONTROLLER_AXIS_MAX; ++i) {
+            if (hwdata->desc.axis_mask & (1 << i)) {
+                if (i == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+                    axis_triggerleft = axis;
+                }
+                if (i == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+                    axis_triggerright = axis;
+                }
+                ++axis;
+            }
         }
     }
 
@@ -177,41 +197,42 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     guid16 = (Uint16 *)hwdata->guid.data;
     *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_VIRTUAL);
     *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16(desc->vendor_id);
+    *guid16++ = SDL_SwapLE16(hwdata->desc.vendor_id);
     *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16(desc->product_id);
+    *guid16++ = SDL_SwapLE16(hwdata->desc.product_id);
     *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16(button_mask);
-    *guid16++ = SDL_SwapLE16(axis_mask);
+    *guid16++ = SDL_SwapLE16((Uint16)hwdata->desc.button_mask);
+    *guid16++ = SDL_SwapLE16((Uint16)hwdata->desc.axis_mask);
 
     /* Note that this is a Virtual device and what subtype it is */
     hwdata->guid.data[14] = 'v';
-    hwdata->guid.data[15] = (Uint8)desc->type;
+    hwdata->guid.data[15] = (Uint8)hwdata->desc.type;
 
     /* Allocate fields for different control-types */
-    if (desc->naxes > 0) {
-        hwdata->axes = SDL_calloc(desc->naxes, sizeof(Sint16));
+    if (hwdata->desc.naxes > 0) {
+        hwdata->axes = SDL_calloc(hwdata->desc.naxes, sizeof(Sint16));
         if (!hwdata->axes) {
             VIRTUAL_FreeHWData(hwdata);
             return SDL_OutOfMemory();
         }
 
         /* Trigger axes are at minimum value at rest */
-        if (desc->type == SDL_JOYSTICK_TYPE_GAMECONTROLLER &&
-            desc->naxes > SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
-            hwdata->axes[SDL_CONTROLLER_AXIS_TRIGGERLEFT] = SDL_JOYSTICK_AXIS_MIN;
-            hwdata->axes[SDL_CONTROLLER_AXIS_TRIGGERRIGHT] = SDL_JOYSTICK_AXIS_MIN;
+        if (axis_triggerleft >= 0) {
+            hwdata->axes[axis_triggerleft] = SDL_JOYSTICK_AXIS_MIN;
+        }
+        if (axis_triggerright >= 0) {
+            hwdata->axes[axis_triggerright] = SDL_JOYSTICK_AXIS_MIN;
         }
     }
-    if (desc->nbuttons > 0) {
-        hwdata->buttons = SDL_calloc(desc->nbuttons, sizeof(Uint8));
+    if (hwdata->desc.nbuttons > 0) {
+        hwdata->buttons = SDL_calloc(hwdata->desc.nbuttons, sizeof(Uint8));
         if (!hwdata->buttons) {
             VIRTUAL_FreeHWData(hwdata);
             return SDL_OutOfMemory();
         }
     }
-    if (desc->nhats > 0) {
-        hwdata->hats = SDL_calloc(desc->nhats, sizeof(Uint8));
+    if (hwdata->desc.nhats > 0) {
+        hwdata->hats = SDL_calloc(hwdata->desc.nhats, sizeof(Uint8));
         if (!hwdata->hats) {
             VIRTUAL_FreeHWData(hwdata);
             return SDL_OutOfMemory();
@@ -523,130 +544,141 @@ static SDL_bool
 VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+    int current_button = 0;
+    int current_axis = 0;
 
     if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
         return SDL_FALSE;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_A) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_A))) {
         out->a.kind = EMappingKind_Button;
-        out->a.target = SDL_CONTROLLER_BUTTON_A;
+        out->a.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_B) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_B))) {
         out->b.kind = EMappingKind_Button;
-        out->b.target = SDL_CONTROLLER_BUTTON_B;
+        out->b.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_X) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_X))) {
         out->x.kind = EMappingKind_Button;
-        out->x.target = SDL_CONTROLLER_BUTTON_X;
+        out->x.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_Y) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_Y))) {
         out->y.kind = EMappingKind_Button;
-        out->y.target = SDL_CONTROLLER_BUTTON_Y;
+        out->y.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_BACK) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_BACK))) {
         out->back.kind = EMappingKind_Button;
-        out->back.target = SDL_CONTROLLER_BUTTON_BACK;
+        out->back.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_GUIDE) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE))) {
         out->guide.kind = EMappingKind_Button;
-        out->guide.target = SDL_CONTROLLER_BUTTON_GUIDE;
+        out->guide.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_START) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_START))) {
         out->start.kind = EMappingKind_Button;
-        out->start.target = SDL_CONTROLLER_BUTTON_START;
+        out->start.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_LEFTSTICK) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_LEFTSTICK))) {
         out->leftstick.kind = EMappingKind_Button;
-        out->leftstick.target = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+        out->leftstick.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_RIGHTSTICK) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_RIGHTSTICK))) {
         out->rightstick.kind = EMappingKind_Button;
-        out->rightstick.target = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+        out->rightstick.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_LEFTSHOULDER))) {
         out->leftshoulder.kind = EMappingKind_Button;
-        out->leftshoulder.target = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+        out->leftshoulder.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))) {
         out->rightshoulder.kind = EMappingKind_Button;
-        out->rightshoulder.target = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+        out->rightshoulder.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_UP) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_UP))) {
         out->dpup.kind = EMappingKind_Button;
-        out->dpup.target = SDL_CONTROLLER_BUTTON_DPAD_UP;
+        out->dpup.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_DOWN))) {
         out->dpdown.kind = EMappingKind_Button;
-        out->dpdown.target = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+        out->dpdown.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_LEFT))) {
         out->dpleft.kind = EMappingKind_Button;
-        out->dpleft.target = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+        out->dpleft.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT))) {
         out->dpright.kind = EMappingKind_Button;
-        out->dpright.target = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+        out->dpright.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_MISC1) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_MISC1))) {
         out->misc1.kind = EMappingKind_Button;
-        out->misc1.target = SDL_CONTROLLER_BUTTON_MISC1;
+        out->misc1.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE1) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE1))) {
         out->paddle1.kind = EMappingKind_Button;
-        out->paddle1.target = SDL_CONTROLLER_BUTTON_PADDLE1;
+        out->paddle1.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE2) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE2))) {
         out->paddle2.kind = EMappingKind_Button;
-        out->paddle2.target = SDL_CONTROLLER_BUTTON_PADDLE2;
+        out->paddle2.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE3) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE3))) {
         out->paddle3.kind = EMappingKind_Button;
-        out->paddle3.target = SDL_CONTROLLER_BUTTON_PADDLE3;
+        out->paddle3.target = current_button++;
     }
 
-    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE4) {
+    if (current_button < hwdata->desc.nbuttons && (hwdata->desc.button_mask & (1 << SDL_CONTROLLER_BUTTON_PADDLE4))) {
         out->paddle4.kind = EMappingKind_Button;
-        out->paddle4.target = SDL_CONTROLLER_BUTTON_PADDLE4;
+        out->paddle4.target = current_button++;
     }
 
-    if (hwdata->desc.naxes > SDL_CONTROLLER_AXIS_LEFTY) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_LEFTX))) {
         out->leftx.kind = EMappingKind_Axis;
+        out->leftx.target = current_axis++;
+    }
+
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_LEFTY))) {
         out->lefty.kind = EMappingKind_Axis;
-        out->leftx.target = SDL_CONTROLLER_AXIS_LEFTX;
-        out->lefty.target = SDL_CONTROLLER_AXIS_LEFTY;
+        out->lefty.target = current_axis++;
     }
 
-    if (hwdata->desc.naxes > SDL_CONTROLLER_AXIS_RIGHTY) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_RIGHTX))) {
         out->rightx.kind = EMappingKind_Axis;
-        out->righty.kind = EMappingKind_Axis;
-        out->rightx.target = SDL_CONTROLLER_AXIS_RIGHTX;
-        out->righty.target = SDL_CONTROLLER_AXIS_RIGHTY;
+        out->rightx.target = current_axis++;
     }
 
-    if (hwdata->desc.naxes > SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_RIGHTY))) {
+        out->righty.kind = EMappingKind_Axis;
+        out->righty.target = current_axis++;
+    }
+
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT))) {
         out->lefttrigger.kind = EMappingKind_Axis;
+        out->lefttrigger.target = current_axis++;
+    }
+
+    if (current_axis < hwdata->desc.naxes && (hwdata->desc.axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT))) {
         out->righttrigger.kind = EMappingKind_Axis;
-        out->lefttrigger.target = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
-        out->righttrigger.target = SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
+        out->righttrigger.target = current_axis++;
     }
 
     return SDL_TRUE;
