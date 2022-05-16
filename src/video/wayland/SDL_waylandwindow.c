@@ -45,6 +45,12 @@
 #endif
 
 SDL_FORCE_INLINE SDL_bool
+EGLTransparencyEnabled()
+{
+    return SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, SDL_FALSE);
+}
+
+SDL_FORCE_INLINE SDL_bool
 FloatEqual(float a, float b)
 {
     const float diff    = SDL_fabsf(a - b);
@@ -264,11 +270,13 @@ ConfigureWindowGeometry(SDL_Window *window)
         data->pointer_scale_x = (float)fs_width / (float)output->width;
         data->pointer_scale_y = (float)fs_height / (float)output->height;
 
-        region = wl_compositor_create_region(viddata->compositor);
-        wl_region_add(region, data->viewport_rect.x, data->viewport_rect.y,
-                      data->viewport_rect.w, data->viewport_rect.h);
-        wl_surface_set_opaque_region(data->surface, region);
-        wl_region_destroy(region);
+        if (!EGLTransparencyEnabled()) {
+            region = wl_compositor_create_region(viddata->compositor);
+            wl_region_add(region, data->viewport_rect.x, data->viewport_rect.y,
+                          data->viewport_rect.w, data->viewport_rect.h);
+            wl_surface_set_opaque_region(data->surface, region);
+            wl_region_destroy(region);
+        }
     } else {
         if (NeedViewport(window)) {
             wl_surface_set_buffer_scale(data->surface, 1);
@@ -285,10 +293,12 @@ ConfigureWindowGeometry(SDL_Window *window)
         data->pointer_scale_x = 1.0f;
         data->pointer_scale_y = 1.0f;
 
-        region = wl_compositor_create_region(viddata->compositor);
-        wl_region_add(region, 0, 0, window->w, window->h);
-        wl_surface_set_opaque_region(data->surface, region);
-        wl_region_destroy(region);
+        if (!EGLTransparencyEnabled()) {
+            region = wl_compositor_create_region(viddata->compositor);
+            wl_region_add(region, 0, 0, window->w, window->h);
+            wl_surface_set_opaque_region(data->surface, region);
+            wl_region_destroy(region);
+        }
     }
 
     /* Recreate the pointer confinement region when the window geometry changes. */
@@ -1869,10 +1879,12 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    region = wl_compositor_create_region(c->compositor);
-    wl_region_add(region, 0, 0, window->w, window->h);
-    wl_surface_set_opaque_region(data->surface, region);
-    wl_region_destroy(region);
+    if (!EGLTransparencyEnabled()) {
+        region = wl_compositor_create_region(c->compositor);
+        wl_region_add(region, 0, 0, window->w, window->h);
+        wl_surface_set_opaque_region(data->surface, region);
+        wl_region_destroy(region);
+    }
 
     if (c->relative_mouse_mode) {
         Wayland_input_lock_pointer(c->input);
