@@ -41,7 +41,8 @@ typedef struct joystick_hwdata
     Uint8 *buttons;
     Uint8 *hats;
     SDL_JoystickID instance_id;
-    SDL_bool opened;
+    SDL_Joystick *joystick;
+
     struct joystick_hwdata *next;
 } joystick_hwdata;
 

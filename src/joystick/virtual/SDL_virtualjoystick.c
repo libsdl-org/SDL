@@ -71,6 +71,10 @@ VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         cur = cur->next;
     }
 
+    if (hwdata->joystick) {
+        hwdata->joystick->hwdata = NULL;
+        hwdata->joystick = NULL;
+    }
     if (hwdata->name) {
         SDL_free(hwdata->name);
         hwdata->name = NULL;
@@ -434,16 +438,12 @@ VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
     if (!hwdata) {
         return SDL_SetError("No such device");
     }
-    if (hwdata->opened) {
-        /* This should never happen, it's handled by the higher joystick code */
-        return SDL_SetError("Joystick already opened");
-    }
     joystick->instance_id = hwdata->instance_id;
     joystick->hwdata = hwdata;
     joystick->naxes = hwdata->desc.naxes;
     joystick->nbuttons = hwdata->desc.nbuttons;
     joystick->nhats = hwdata->desc.nhats;
-    hwdata->opened = SDL_TRUE;
+    hwdata->joystick = joystick;
     return 0;
 }
 
@@ -451,23 +451,39 @@ VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
 static int
 VIRTUAL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    joystick_hwdata *hwdata = joystick->hwdata;
+    int result;
 
-    if (hwdata && hwdata->desc.Rumble) {
-        return hwdata->desc.Rumble(hwdata->desc.userdata, low_frequency_rumble, high_frequency_rumble);
+    if (joystick->hwdata) {
+        joystick_hwdata *hwdata = joystick->hwdata;
+        if (hwdata->desc.Rumble) {
+            result = hwdata->desc.Rumble(hwdata->desc.userdata, low_frequency_rumble, high_frequency_rumble);
+        } else {
+            result = SDL_Unsupported();
+        }
+    } else {
+        result = SDL_SetError("Rumble failed, device disconnected");
     }
-    return SDL_Unsupported();
+
+    return result;
 }
 
 static int
 VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    joystick_hwdata *hwdata = joystick->hwdata;
+    int result;
 
-    if (hwdata && hwdata->desc.RumbleTriggers) {
-        return hwdata->desc.RumbleTriggers(hwdata->desc.userdata, left_rumble, right_rumble);
+    if (joystick->hwdata) {
+        joystick_hwdata *hwdata = joystick->hwdata;
+        if (hwdata->desc.RumbleTriggers) {
+            result = hwdata->desc.RumbleTriggers(hwdata->desc.userdata, left_rumble, right_rumble);
+        } else {
+            result = SDL_Unsupported();
+        }
+    } else {
+        result = SDL_SetError("Rumble failed, device disconnected");
     }
-    return SDL_Unsupported();
+
+    return result;
 }
 
 
@@ -495,23 +511,39 @@ VIRTUAL_JoystickGetCapabilities(SDL_Joystick *joystick)
 static int
 VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    joystick_hwdata *hwdata = joystick->hwdata;
+    int result;
 
-    if (hwdata && hwdata->desc.SetLED) {
-        return hwdata->desc.SetLED(hwdata->desc.userdata, red, green, blue);
+    if (joystick->hwdata) {
+        joystick_hwdata *hwdata = joystick->hwdata;
+        if (hwdata->desc.SetLED) {
+            result = hwdata->desc.SetLED(hwdata->desc.userdata, red, green, blue);
+        } else {
+            result = SDL_Unsupported();
+        }
+    } else {
+        result = SDL_SetError("SetLED failed, device disconnected");
     }
-    return SDL_Unsupported();
+
+    return result;
 }
 
 static int
 VIRTUAL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
-    joystick_hwdata *hwdata = joystick->hwdata;
+    int result;
 
-    if (hwdata && hwdata->desc.SendEffect) {
-        return hwdata->desc.SendEffect(hwdata->desc.userdata, data, size);
+    if (joystick->hwdata) {
+        joystick_hwdata *hwdata = joystick->hwdata;
+        if (hwdata->desc.SendEffect) {
+            result = hwdata->desc.SendEffect(hwdata->desc.userdata, data, size);
+        } else {
+            result = SDL_Unsupported();
+        }
+    } else {
+        result = SDL_SetError("SendEffect failed, device disconnected");
     }
-    return SDL_Unsupported();
+
+    return result;
 }
 
 static int
@@ -555,17 +587,11 @@ VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 static void
 VIRTUAL_JoystickClose(SDL_Joystick *joystick)
 {
-    joystick_hwdata *hwdata;
-
-    if (!joystick) {
-        return;
+    if (joystick->hwdata) {
+        joystick_hwdata *hwdata = joystick->hwdata;
+        hwdata->joystick = NULL;
+        joystick->hwdata = NULL;
     }
-    if (!joystick->hwdata) {
-        return;
-    }
-
-    hwdata = (joystick_hwdata *)joystick->hwdata;
-    hwdata->opened = SDL_FALSE;
 }
 
 
