@@ -185,7 +185,7 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
  * \returns the path of the selected joystick. If no path can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.24.
+ * \since This function is available since SDL 2.24.0.
  *
  * \sa SDL_JoystickPath
  * \sa SDL_JoystickOpen
@@ -386,7 +386,7 @@ typedef struct SDL_VirtualJoystickDesc
  *
  * \returns the joystick's device index, or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.0.24.
+ * \since This function is available since SDL 2.24.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc);
 
@@ -486,7 +486,7 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickName(SDL_Joystick *joystick);
  * \returns the path of the selected joystick. If no path can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.24.
+ * \since This function is available since SDL 2.24.0.
  *
  * \sa SDL_JoystickPathForIndex
  */

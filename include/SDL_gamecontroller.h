@@ -302,7 +302,7 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_
  * \returns the implementation-dependent path for the game controller, or NULL
  *          if there is no path or the index is invalid.
  *
- * \since This function is available since SDL 2.0.24.
+ * \since This function is available since SDL 2.24.0.
  *
  * \sa SDL_GameControllerPath
  */
@@ -416,7 +416,7 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerName(SDL_GameController *g
  * \returns the implementation dependent path for the game controller, or NULL
  *          if there is no path or the identifier passed is invalid.
  *
- * \since This function is available since SDL 2.0.24.
+ * \since This function is available since SDL 2.24.0.
  *
  * \sa SDL_GameControllerPathForIndex
  */
