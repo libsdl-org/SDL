@@ -820,7 +820,7 @@ main(int argc, char *argv[])
             }
         }
         if (argv[i] && *argv[i] != '-') {
-            controller_index = SDL_atoi(argv[1]);
+            controller_index = SDL_atoi(argv[i]);
             break;
         }
     }
