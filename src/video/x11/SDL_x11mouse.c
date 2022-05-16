@@ -244,8 +244,8 @@ X11_CreateSystemCursor(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_WAIT:      shape = XC_watch; break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR: shape = XC_tcross; break;
     case SDL_SYSTEM_CURSOR_WAITARROW: shape = XC_watch; break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:  shape = XC_fleur; break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:  shape = XC_fleur; break;
+    case SDL_SYSTEM_CURSOR_SIZENWSE:  shape = XC_top_left_corner; break;
+    case SDL_SYSTEM_CURSOR_SIZENESW:  shape = XC_top_right_corner; break;
     case SDL_SYSTEM_CURSOR_SIZEWE:    shape = XC_sb_h_double_arrow; break;
     case SDL_SYSTEM_CURSOR_SIZENS:    shape = XC_sb_v_double_arrow; break;
     case SDL_SYSTEM_CURSOR_SIZEALL:   shape = XC_fleur; break;
