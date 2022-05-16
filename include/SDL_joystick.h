@@ -382,7 +382,7 @@ typedef struct SDL_VirtualJoystickDesc
  *
  * \returns the joystick's device index, or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 2.0.24.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc);
 
