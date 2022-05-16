@@ -395,6 +395,11 @@ VIRTUAL_JoystickGetDevicePlayerIndex(int device_index)
 static void
 VIRTUAL_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
+    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+
+    if (hwdata && hwdata->desc.SetPlayerIndex) {
+        hwdata->desc.SetPlayerIndex(hwdata->desc.userdata, player_index);
+    }
 }
 
 
@@ -446,12 +451,22 @@ VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
 static int
 VIRTUAL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+    joystick_hwdata *hwdata = joystick->hwdata;
+
+    if (hwdata && hwdata->desc.Rumble) {
+        return hwdata->desc.Rumble(hwdata->desc.userdata, low_frequency_rumble, high_frequency_rumble);
+    }
     return SDL_Unsupported();
 }
 
 static int
 VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
+    joystick_hwdata *hwdata = joystick->hwdata;
+
+    if (hwdata && hwdata->desc.RumbleTriggers) {
+        return hwdata->desc.RumbleTriggers(hwdata->desc.userdata, left_rumble, right_rumble);
+    }
     return SDL_Unsupported();
 }
 
@@ -459,19 +474,43 @@ VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint1
 static Uint32
 VIRTUAL_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    return 0;
+    joystick_hwdata *hwdata = joystick->hwdata;
+    Uint32 caps = 0;
+
+    if (hwdata) {
+        if (hwdata->desc.Rumble) {
+            caps |= SDL_JOYCAP_RUMBLE;
+        }
+        if (hwdata->desc.RumbleTriggers) {
+            caps |= SDL_JOYCAP_RUMBLE_TRIGGERS;
+        }
+        if (hwdata->desc.SetLED) {
+            caps |= SDL_JOYCAP_LED;
+        }
+    }
+    return caps;
 }
 
 
 static int
 VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
+    joystick_hwdata *hwdata = joystick->hwdata;
+
+    if (hwdata && hwdata->desc.SetLED) {
+        return hwdata->desc.SetLED(hwdata->desc.userdata, red, green, blue);
+    }
     return SDL_Unsupported();
 }
 
 static int
 VIRTUAL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
+    joystick_hwdata *hwdata = joystick->hwdata;
+
+    if (hwdata && hwdata->desc.SendEffect) {
+        return hwdata->desc.SendEffect(hwdata->desc.userdata, data, size);
+    }
     return SDL_Unsupported();
 }
 
