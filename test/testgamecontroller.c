@@ -365,7 +365,7 @@ static void CloseVirtualController()
 {
     int i;
 
-    for (i = 0; i < SDL_NumJoysticks(); ++i) {
+    for (i = SDL_NumJoysticks(); i--; ) {
         if (SDL_JoystickIsVirtual(i)) {
             SDL_JoystickDetachVirtual(i);
         }
