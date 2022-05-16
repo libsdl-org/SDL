@@ -1739,6 +1739,114 @@ scalbn_regularCases(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_cos tests functions */
+
+/**
+ * \brief Checks positive and negative infinity.
+ */
+static int
+cos_infCases(void *args)
+{
+    double result;
+
+    result = SDL_cos(INFINITY);
+    SDLTest_AssertCheck(isnan(result),
+                        "Cos(%f), expected %f, got %f",
+                        INFINITY, NAN, result);
+
+    result = SDL_cos(-INFINITY);
+    SDLTest_AssertCheck(isnan(result),
+                        "Cos(%f), expected %f, got %f",
+                        -INFINITY, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for nan.
+ */
+static int
+cos_nanCase(void *args)
+{
+    const double result = SDL_cos(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Cos(%f), expected %f, got %f",
+                        NAN, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of regular values.
+ */
+static int
+cos_regularCases(void *args)
+{
+    const d_to_d regular_cases[] = {
+        { -M_PI, -1.0 },
+        { -0.0, 1.0 },
+        { 0.0, 1.0 },
+        { M_PI, -1.0 }
+    };
+    return helper_dtod("Cos", SDL_cos, regular_cases, SDL_arraysize(regular_cases));
+}
+
+/**
+ * \brief Checks cosine precision for the first 10 decimals.
+ */
+static int
+cos_precisionTest(void *args)
+{
+    Uint32 i;
+    Uint32 iterations = 20;
+    double angle = 0.0;
+    double step = 2.0 * M_PI / iterations;
+    const Sint64 expected[] = {
+        10000000000, 9510565162, 8090169943, 5877852522, 3090169943,
+        0, -3090169943, -5877852522, -8090169943, -9510565162,
+        -10000000000, -9510565162, -8090169943, -5877852522, -3090169943,
+        0, 3090169943, 5877852522, 8090169943, 9510565162
+    };
+    for (i = 0; i < iterations; i++, angle += step) {
+        Sint64 result = (Sint64) (SDL_cos(angle) * 10000000000);
+        SDLTest_AssertCheck(result == expected[i],
+                            "Cos(%f), expected %lld, got %lld",
+                            angle, expected[i], result);
+    }
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a range of values between 0 and UINT32_MAX.
+ */
+static int
+cos_rangeTest(void *args)
+{
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("Cos: Testing a range of %u values with steps of %u",
+                       RANGE_TEST_ITERATIONS,
+                       RANGE_TEST_STEP);
+
+    for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        /* Only log failures to save performances */
+        result = SDL_cos(test_value);
+        if (result < -1.0 || result > 1.0) {
+            SDLTest_AssertCheck(SDL_FALSE,
+                                "Cos(%.1f), expected [%.1f,%.1f], got %.1f",
+                                test_value, -1.0, 1.0, result);
+            return TEST_ABORTED;
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -2092,6 +2200,29 @@ static const SDLTest_TestCaseReference scalbnTestRegular = {
     "Check a set of regular cases", TEST_ENABLED
 };
 
+/* SDL_cos test cases */
+
+static const SDLTest_TestCaseReference cosTestInf = {
+    (SDLTest_TestCaseFp) cos_infCases, "cos_infCases",
+    "Check for positive and negative infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference cosTestNan = {
+    (SDLTest_TestCaseFp) cos_nanCase, "cos_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference cosTestRegular = {
+    (SDLTest_TestCaseFp) cos_regularCases, "cos_regularCases",
+    "Check a set of regular cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference cosTestPrecision = {
+    (SDLTest_TestCaseFp) cos_precisionTest, "cos_precisionTest",
+    "Check cosine precision to the tenth decimal", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference cosTestRange = {
+    (SDLTest_TestCaseFp) cos_rangeTest, "cos_rangeTest",
+    "Check a range of positive integer", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -2132,6 +2263,9 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &scalbnTestInf, &scalbnTestBaseZero, &scalbnTestExpZero,
     &scalbnTestNan, &scalbnTestRegular,
+
+    &cosTestInf, &cosTestNan, &cosTestRegular,
+    &cosTestPrecision, &cosTestRange,
 
     NULL
 };
