@@ -1073,14 +1073,13 @@ SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     SDL_LockJoysticks();
 
     isfreshvalue = red != joystick->led_red ||
-        green != joystick->led_green ||
-        blue != joystick->led_blue;
+                   green != joystick->led_green ||
+                   blue != joystick->led_blue;
 
-    if ( isfreshvalue || SDL_TICKS_PASSED( SDL_GetTicks(), joystick->led_expiration ) ) {
+    if (isfreshvalue || SDL_TICKS_PASSED(SDL_GetTicks(), joystick->led_expiration)) {
         result = joystick->driver->SetLED(joystick, red, green, blue);
         joystick->led_expiration = SDL_GetTicks() + SDL_LED_MIN_REPEAT_MS;
-    }
-    else {
+    } else {
         /* Avoid spamming the driver */
         result = 0;
     }
