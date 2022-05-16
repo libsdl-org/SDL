@@ -56,18 +56,6 @@ VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
     if (!hwdata) {
         return;
     }
-    if (hwdata->axes) {
-        SDL_free((void *)hwdata->axes);
-        hwdata->axes = NULL;
-    }
-    if (hwdata->buttons) {
-        SDL_free((void *)hwdata->buttons);
-        hwdata->buttons = NULL;
-    }
-    if (hwdata->hats) {
-        SDL_free(hwdata->hats);
-        hwdata->hats = NULL;
-    }
 
     /* Remove hwdata from SDL-global list */
     while (cur) {
@@ -83,81 +71,103 @@ VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         cur = cur->next;
     }
 
+    if (hwdata->name) {
+        SDL_free(hwdata->name);
+        hwdata->name = NULL;
+    }
+    if (hwdata->axes) {
+        SDL_free((void *)hwdata->axes);
+        hwdata->axes = NULL;
+    }
+    if (hwdata->buttons) {
+        SDL_free((void *)hwdata->buttons);
+        hwdata->buttons = NULL;
+    }
+    if (hwdata->hats) {
+        SDL_free(hwdata->hats);
+        hwdata->hats = NULL;
+    }
     SDL_free(hwdata);
 }
 
 
 int
-SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
-                               int naxes,
-                               int nbuttons,
-                               int nhats)
+SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
 {
     joystick_hwdata *hwdata = NULL;
     int device_index = -1;
-    const Uint16 vendor_id = 0;
-    const Uint16 product_id = 0;
+    const char *name = NULL;
     Uint16 button_mask = 0;
     Uint16 axis_mask = 0;
     Uint16 *guid16;
+
+    if (!desc) {
+        return SDL_InvalidParamError("desc");
+    }
+    if (desc->version != SDL_VIRTUAL_JOYSTICK_DESC_VERSION) {
+        /* Is this an old version that we can support? */
+        return SDL_SetError("Unsupported virtual joystick description version %d", desc->version);
+    }
 
     hwdata = SDL_calloc(1, sizeof(joystick_hwdata));
     if (!hwdata) {
         VIRTUAL_FreeHWData(hwdata);
         return SDL_OutOfMemory();
     }
+    SDL_memcpy(&hwdata->desc, desc, sizeof(*desc));
 
-    hwdata->naxes = naxes;
-    hwdata->nbuttons = nbuttons;
-    hwdata->nhats = nhats;
-
-    switch (type) {
-    case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
-        hwdata->name = "Virtual Controller";
-        break;
-    case SDL_JOYSTICK_TYPE_WHEEL:
-        hwdata->name = "Virtual Wheel";
-        break;
-    case SDL_JOYSTICK_TYPE_ARCADE_STICK:
-        hwdata->name = "Virtual Arcade Stick";
-        break;
-    case SDL_JOYSTICK_TYPE_FLIGHT_STICK:
-        hwdata->name = "Virtual Flight Stick";
-        break;
-    case SDL_JOYSTICK_TYPE_DANCE_PAD:
-        hwdata->name = "Virtual Dance Pad";
-        break;
-    case SDL_JOYSTICK_TYPE_GUITAR:
-        hwdata->name = "Virtual Guitar";
-        break;
-    case SDL_JOYSTICK_TYPE_DRUM_KIT:
-        hwdata->name = "Virtual Drum Kit";
-        break;
-    case SDL_JOYSTICK_TYPE_ARCADE_PAD:
-        hwdata->name = "Virtual Arcade Pad";
-        break;
-    case SDL_JOYSTICK_TYPE_THROTTLE:
-        hwdata->name = "Virtual Throttle";
-        break;
-    default:
-        hwdata->name = "Virtual Joystick";
-        break;
+    if (desc->name) {
+        name = desc->name;
+    } else {
+        switch (desc->type) {
+        case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+            name = "Virtual Controller";
+            break;
+        case SDL_JOYSTICK_TYPE_WHEEL:
+            name = "Virtual Wheel";
+            break;
+        case SDL_JOYSTICK_TYPE_ARCADE_STICK:
+            name = "Virtual Arcade Stick";
+            break;
+        case SDL_JOYSTICK_TYPE_FLIGHT_STICK:
+            name = "Virtual Flight Stick";
+            break;
+        case SDL_JOYSTICK_TYPE_DANCE_PAD:
+            name = "Virtual Dance Pad";
+            break;
+        case SDL_JOYSTICK_TYPE_GUITAR:
+            name = "Virtual Guitar";
+            break;
+        case SDL_JOYSTICK_TYPE_DRUM_KIT:
+            name = "Virtual Drum Kit";
+            break;
+        case SDL_JOYSTICK_TYPE_ARCADE_PAD:
+            name = "Virtual Arcade Pad";
+            break;
+        case SDL_JOYSTICK_TYPE_THROTTLE:
+            name = "Virtual Throttle";
+            break;
+        default:
+            name = "Virtual Joystick";
+            break;
+        }
     }
+    hwdata->name = SDL_strdup(name);
 
-    if (type == SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+    if (desc->type == SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
         int i;
 
-        if (naxes >= 2) {
+        if (desc->naxes >= 2) {
             axis_mask |= ((1 << SDL_CONTROLLER_AXIS_LEFTX) | (1 << SDL_CONTROLLER_AXIS_LEFTY));
         }
-        if (naxes >= 4) {
+        if (desc->naxes >= 4) {
             axis_mask |= ((1 << SDL_CONTROLLER_AXIS_RIGHTX) | (1 << SDL_CONTROLLER_AXIS_RIGHTY));
         }
-        if (naxes >= 6) {
+        if (desc->naxes >= 6) {
             axis_mask |= ((1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT) | (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
         }
 
-        for (i = 0; i < nbuttons && i < sizeof(Uint16)*8; ++i) {
+        for (i = 0; i < desc->nbuttons && i < sizeof(Uint16)*8; ++i) {
             button_mask |= (1 << i);
         }
     }
@@ -167,34 +177,41 @@ SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
     guid16 = (Uint16 *)hwdata->guid.data;
     *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_VIRTUAL);
     *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16(vendor_id);
+    *guid16++ = SDL_SwapLE16(desc->vendor_id);
     *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16(product_id);
+    *guid16++ = SDL_SwapLE16(desc->product_id);
     *guid16++ = 0;
     *guid16++ = SDL_SwapLE16(button_mask);
     *guid16++ = SDL_SwapLE16(axis_mask);
 
     /* Note that this is a Virtual device and what subtype it is */
     hwdata->guid.data[14] = 'v';
-    hwdata->guid.data[15] = (Uint8)type;
+    hwdata->guid.data[15] = (Uint8)desc->type;
 
     /* Allocate fields for different control-types */
-    if (naxes > 0) {
-        hwdata->axes = SDL_calloc(naxes, sizeof(Sint16));
+    if (desc->naxes > 0) {
+        hwdata->axes = SDL_calloc(desc->naxes, sizeof(Sint16));
         if (!hwdata->axes) {
             VIRTUAL_FreeHWData(hwdata);
             return SDL_OutOfMemory();
         }
+
+        /* Trigger axes are at minimum value at rest */
+        if (desc->type == SDL_JOYSTICK_TYPE_GAMECONTROLLER &&
+            desc->naxes > SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+            hwdata->axes[SDL_CONTROLLER_AXIS_TRIGGERLEFT] = SDL_JOYSTICK_AXIS_MIN;
+            hwdata->axes[SDL_CONTROLLER_AXIS_TRIGGERRIGHT] = SDL_JOYSTICK_AXIS_MIN;
+        }
     }
-    if (nbuttons > 0) {
-        hwdata->buttons = SDL_calloc(nbuttons, sizeof(Uint8));
+    if (desc->nbuttons > 0) {
+        hwdata->buttons = SDL_calloc(desc->nbuttons, sizeof(Uint8));
         if (!hwdata->buttons) {
             VIRTUAL_FreeHWData(hwdata);
             return SDL_OutOfMemory();
         }
     }
-    if (nhats > 0) {
-        hwdata->hats = SDL_calloc(nhats, sizeof(Uint8));
+    if (desc->nhats > 0) {
+        hwdata->hats = SDL_calloc(desc->nhats, sizeof(Uint8));
         if (!hwdata->hats) {
             VIRTUAL_FreeHWData(hwdata);
             return SDL_OutOfMemory();
@@ -243,7 +260,7 @@ SDL_JoystickSetVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value)
     }
 
     hwdata = (joystick_hwdata *)joystick->hwdata;
-    if (axis < 0 || axis >= hwdata->naxes) {
+    if (axis < 0 || axis >= hwdata->desc.naxes) {
         SDL_UnlockJoysticks();
         return SDL_SetError("Invalid axis index");
     }
@@ -268,7 +285,7 @@ SDL_JoystickSetVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 valu
     }
 
     hwdata = (joystick_hwdata *)joystick->hwdata;
-    if (button < 0 || button >= hwdata->nbuttons) {
+    if (button < 0 || button >= hwdata->desc.nbuttons) {
         SDL_UnlockJoysticks();
         return SDL_SetError("Invalid button index");
     }
@@ -293,7 +310,7 @@ SDL_JoystickSetVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value)
     }
 
     hwdata = (joystick_hwdata *)joystick->hwdata;
-    if (hat < 0 || hat >= hwdata->nhats) {
+    if (hat < 0 || hat >= hwdata->desc.nhats) {
         SDL_UnlockJoysticks();
         return SDL_SetError("Invalid hat index");
     }
@@ -338,7 +355,7 @@ VIRTUAL_JoystickGetDeviceName(int device_index)
     if (!hwdata) {
         return NULL;
     }
-    return hwdata->name ? hwdata->name : "";
+    return hwdata->name;
 }
 
 
@@ -399,9 +416,9 @@ VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
     joystick->instance_id = hwdata->instance_id;
     joystick->hwdata = hwdata;
-    joystick->naxes = hwdata->naxes;
-    joystick->nbuttons = hwdata->nbuttons;
-    joystick->nhats = hwdata->nhats;
+    joystick->naxes = hwdata->desc.naxes;
+    joystick->nbuttons = hwdata->desc.nbuttons;
+    joystick->nhats = hwdata->desc.nhats;
     hwdata->opened = SDL_TRUE;
     return 0;
 }
@@ -461,13 +478,17 @@ VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 
     hwdata = (joystick_hwdata *)joystick->hwdata;
 
-    for (i = 0; i < hwdata->naxes; ++i) {
+    if (hwdata->desc.Update) {
+        hwdata->desc.Update(hwdata->desc.userdata);
+    }
+
+    for (i = 0; i < hwdata->desc.naxes; ++i) {
         SDL_PrivateJoystickAxis(joystick, i, hwdata->axes[i]);
     }
-    for (i = 0; i < hwdata->nbuttons; ++i) {
+    for (i = 0; i < hwdata->desc.nbuttons; ++i) {
         SDL_PrivateJoystickButton(joystick, i, hwdata->buttons[i]);
     }
-    for (i = 0; i < hwdata->nhats; ++i) {
+    for (i = 0; i < hwdata->desc.nhats; ++i) {
         SDL_PrivateJoystickHat(joystick, i, hwdata->hats[i]);
     }
 }
@@ -501,7 +522,134 @@ VIRTUAL_JoystickQuit(void)
 static SDL_bool
 VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+
+    if (hwdata->desc.type != SDL_JOYSTICK_TYPE_GAMECONTROLLER) {
+        return SDL_FALSE;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_A) {
+        out->a.kind = EMappingKind_Button;
+        out->a.target = SDL_CONTROLLER_BUTTON_A;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_B) {
+        out->b.kind = EMappingKind_Button;
+        out->b.target = SDL_CONTROLLER_BUTTON_B;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_X) {
+        out->x.kind = EMappingKind_Button;
+        out->x.target = SDL_CONTROLLER_BUTTON_X;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_Y) {
+        out->y.kind = EMappingKind_Button;
+        out->y.target = SDL_CONTROLLER_BUTTON_Y;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_BACK) {
+        out->back.kind = EMappingKind_Button;
+        out->back.target = SDL_CONTROLLER_BUTTON_BACK;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_GUIDE) {
+        out->guide.kind = EMappingKind_Button;
+        out->guide.target = SDL_CONTROLLER_BUTTON_GUIDE;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_START) {
+        out->start.kind = EMappingKind_Button;
+        out->start.target = SDL_CONTROLLER_BUTTON_START;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_LEFTSTICK) {
+        out->leftstick.kind = EMappingKind_Button;
+        out->leftstick.target = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_RIGHTSTICK) {
+        out->rightstick.kind = EMappingKind_Button;
+        out->rightstick.target = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+        out->leftshoulder.kind = EMappingKind_Button;
+        out->leftshoulder.target = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+        out->rightshoulder.kind = EMappingKind_Button;
+        out->rightshoulder.target = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_UP) {
+        out->dpup.kind = EMappingKind_Button;
+        out->dpup.target = SDL_CONTROLLER_BUTTON_DPAD_UP;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+        out->dpdown.kind = EMappingKind_Button;
+        out->dpdown.target = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+        out->dpleft.kind = EMappingKind_Button;
+        out->dpleft.target = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+        out->dpright.kind = EMappingKind_Button;
+        out->dpright.target = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_MISC1) {
+        out->misc1.kind = EMappingKind_Button;
+        out->misc1.target = SDL_CONTROLLER_BUTTON_MISC1;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE1) {
+        out->paddle1.kind = EMappingKind_Button;
+        out->paddle1.target = SDL_CONTROLLER_BUTTON_PADDLE1;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE2) {
+        out->paddle2.kind = EMappingKind_Button;
+        out->paddle2.target = SDL_CONTROLLER_BUTTON_PADDLE2;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE3) {
+        out->paddle3.kind = EMappingKind_Button;
+        out->paddle3.target = SDL_CONTROLLER_BUTTON_PADDLE3;
+    }
+
+    if (hwdata->desc.nbuttons > SDL_CONTROLLER_BUTTON_PADDLE4) {
+        out->paddle4.kind = EMappingKind_Button;
+        out->paddle4.target = SDL_CONTROLLER_BUTTON_PADDLE4;
+    }
+
+    if (hwdata->desc.naxes > SDL_CONTROLLER_AXIS_LEFTY) {
+        out->leftx.kind = EMappingKind_Axis;
+        out->lefty.kind = EMappingKind_Axis;
+        out->leftx.target = SDL_CONTROLLER_AXIS_LEFTX;
+        out->lefty.target = SDL_CONTROLLER_AXIS_LEFTY;
+    }
+
+    if (hwdata->desc.naxes > SDL_CONTROLLER_AXIS_RIGHTY) {
+        out->rightx.kind = EMappingKind_Axis;
+        out->righty.kind = EMappingKind_Axis;
+        out->rightx.target = SDL_CONTROLLER_AXIS_RIGHTX;
+        out->righty.target = SDL_CONTROLLER_AXIS_RIGHTY;
+    }
+
+    if (hwdata->desc.naxes > SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+        out->lefttrigger.kind = EMappingKind_Axis;
+        out->righttrigger.kind = EMappingKind_Axis;
+        out->lefttrigger.target = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
+        out->righttrigger.target = SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
+    }
+
+    return SDL_TRUE;
 }
 
 SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver =

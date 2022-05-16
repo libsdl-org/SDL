@@ -168,6 +168,11 @@ typedef struct _SDL_GamepadMapping
     SDL_InputMapping dpdown;
     SDL_InputMapping dpleft;
     SDL_InputMapping dpright;
+    SDL_InputMapping misc1;
+    SDL_InputMapping paddle1;
+    SDL_InputMapping paddle2;
+    SDL_InputMapping paddle3;
+    SDL_InputMapping paddle4;
     SDL_InputMapping leftx;
     SDL_InputMapping lefty;
     SDL_InputMapping rightx;

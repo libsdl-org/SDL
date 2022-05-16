@@ -870,3 +870,4 @@
 #define SDL_GameControllerPath SDL_GameControllerPath_REAL
 #define SDL_JoystickPathForIndex SDL_JoystickPathForIndex_REAL
 #define SDL_JoystickPath SDL_JoystickPath_REAL
+#define SDL_JoystickAttachVirtualEx SDL_JoystickAttachVirtualEx_REAL

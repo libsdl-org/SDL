@@ -523,8 +523,22 @@ int
 SDL_JoystickAttachVirtual(SDL_JoystickType type,
                           int naxes, int nbuttons, int nhats)
 {
+    SDL_VirtualJoystickDesc desc;
+
+    SDL_zero(desc);
+    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
+    desc.type = (Uint16)type;
+    desc.naxes = (Uint16)naxes;
+    desc.nbuttons = (Uint16)nbuttons;
+    desc.nhats = (Uint16)nhats;
+    return SDL_JoystickAttachVirtualEx(&desc);
+}
+
+int
+SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc)
+{
 #if SDL_JOYSTICK_VIRTUAL
-    return SDL_JoystickAttachVirtualInner(type, naxes, nbuttons, nhats);
+    return SDL_JoystickAttachVirtualInner(desc);
 #else
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
