@@ -97,8 +97,6 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     joystick_hwdata *hwdata = NULL;
     int device_index = -1;
     const char *name = NULL;
-    Uint16 button_mask = 0;
-    Uint16 axis_mask = 0;
     Uint16 *guid16;
     int axis_triggerleft = -1;
     int axis_triggerright = -1;
