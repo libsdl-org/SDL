@@ -42,9 +42,10 @@ typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
-    struct wl_callback *frame_callback;
-    struct wl_event_queue *frame_event_queue;
-    struct wl_surface *frame_surface_wrapper;
+    struct wl_callback *gles_swap_frame_callback;
+    struct wl_event_queue *gles_swap_frame_event_queue;
+    struct wl_surface *gles_swap_frame_surface_wrapper;
+    struct wl_callback *surface_damage_frame_callback;
 
     union {
 #ifdef HAVE_LIBDECOR_H
