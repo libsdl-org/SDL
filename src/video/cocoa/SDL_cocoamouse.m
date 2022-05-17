@@ -105,6 +105,45 @@ Cocoa_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     return cursor;
 }}
 
+/* there are .pdf files of some of the cursors we need, installed by default on macOS, but not available through NSCursor.
+   If we can load them ourselves, use them, otherwise fallback to something standard but not super-great.
+   Since these are under /System, they should be available even to sandboxed apps. */
+static NSCursor *
+LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
+{
+    NSString *cursorPath = [@"/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors" stringByAppendingPathComponent:cursorName];
+    NSImage *image = [[NSImage alloc] initWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"cursor.pdf"]];
+    if ((image == nil) || (image.valid == NO)) {
+        return [NSCursor performSelector:fallback];
+    }
+
+    NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"info.plist"]];
+
+    /* we can't do animation atm.  :/ */
+    const int frames = [[info valueForKey:@"frames"] integerValue];
+    if (frames > 1) {
+        const NSSize cropped_size = NSMakeSize(image.size.width, (int) (image.size.height / frames));
+        NSImage *cropped = [[NSImage alloc] initWithSize:cropped_size];
+        if (cropped == nil) {
+            return [NSCursor performSelector:fallback];
+        }
+
+        #ifdef MAC_OS_VERSION_12_0  /* same value as deprecated symbol. */
+        const NSCompositingOperation operation = NSCompositingOperationCopy;
+        #else
+        const NSCompositingOperation operation = NSCompositeCopy;
+        #endif
+        [cropped lockFocus];
+        const NSRect cropped_rect = NSMakeRect(0, 0, cropped_size.width, cropped_size.height);
+        [image drawInRect:cropped_rect fromRect:cropped_rect operation:operation fraction:1];
+        [cropped unlockFocus];
+        image = cropped;
+    }
+
+    NSCursor *cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint([[info valueForKey:@"hotx"] doubleValue], [[info valueForKey:@"hoty"] doubleValue])];
+    return cursor;
+}
+
 static SDL_Cursor *
 Cocoa_CreateSystemCursor(SDL_SystemCursor id)
 { @autoreleasepool
@@ -119,27 +158,29 @@ Cocoa_CreateSystemCursor(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_IBEAM:
         nscursor = [NSCursor IBeamCursor];
         break;
-    case SDL_SYSTEM_CURSOR_WAIT:
-        nscursor = [NSCursor arrowCursor];
-        break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
         nscursor = [NSCursor crosshairCursor];
         break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
-        nscursor = [NSCursor arrowCursor];
+    case SDL_SYSTEM_CURSOR_WAIT:  /* !!! FIXME: this is more like WAITARROW */
+        nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
+        break;
+    case SDL_SYSTEM_CURSOR_WAITARROW:  /* !!! FIXME: this is meant to be animated */
+        nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
+        nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
+        break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        nscursor = [NSCursor closedHandCursor];
+        nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        nscursor = [NSCursor resizeLeftRightCursor];
+        nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        nscursor = [NSCursor resizeUpDownCursor];
+        nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        nscursor = [NSCursor closedHandCursor];
+        nscursor = LoadHiddenSystemCursor(@"move", @selector(closedHandCursor));
         break;
     case SDL_SYSTEM_CURSOR_NO:
         nscursor = [NSCursor operationNotAllowedCursor];
