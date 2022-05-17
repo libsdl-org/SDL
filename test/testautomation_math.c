@@ -1792,6 +1792,8 @@ cos_regularCases(void *args)
 
 /**
  * \brief Checks cosine precision for the first 10 decimals.
+ *
+ * This function depends on SDL_floor functioning.
  */
 static int
 cos_precisionTest(void *args)
@@ -1800,16 +1802,16 @@ cos_precisionTest(void *args)
     Uint32 iterations = 20;
     double angle = 0.0;
     double step = 2.0 * M_PI / iterations;
-    const Sint64 expected[] = {
-        10000000000, 9510565162, 8090169943, 5877852522, 3090169943,
-        0, -3090169943, -5877852522, -8090169943, -9510565162,
-        -10000000000, -9510565162, -8090169943, -5877852522, -3090169943,
-        0, 3090169943, 5877852522, 8090169943, 9510565162
+    const double expected[] = {
+        10000000000.0, 9510565162.0, 8090169943.0, 5877852522.0, 3090169943.0,
+        0.0, -3090169943.0, -5877852522.0, -8090169943.0, -9510565162.0,
+        -10000000000.0, -9510565162.0, -8090169943.0, -5877852522.0, -3090169943.0,
+        0.0, 3090169943.0, 5877852522.0, 8090169943.0, 9510565162.0
     };
     for (i = 0; i < iterations; i++, angle += step) {
-        Sint64 result = (Sint64) (SDL_cos(angle) * 10000000000);
-        SDLTest_AssertCheck(result == expected[i],
-                            "Cos(%f), expected %lld, got %lld",
+        double result = SDL_cos(angle) * 1.0E10;
+        SDLTest_AssertCheck(SDL_trunc(result) == expected[i],
+                            "Cos(%f), expected %f, got %f",
                             angle, expected[i], result);
     }
     return TEST_COMPLETED;
