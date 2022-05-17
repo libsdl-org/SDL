@@ -1653,6 +1653,12 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, 
         SDL_SetKeyboardFocus(data.window);
     }
 
+    /* SDL_WindowData will be holding a strong reference to the NSWindow, and
+     * it will also call [NSWindow close] in DestroyWindow before releasing the
+     * NSWindow, so the extra release provided by releasedWhenClosed isn't
+     * necessary. */
+    nswindow.releasedWhenClosed = NO;
+
     /* Prevents the window's "window device" from being destroyed when it is
      * hidden. See http://www.mikeash.com/pyblog/nsopenglcontext-and-one-shot.html
      */

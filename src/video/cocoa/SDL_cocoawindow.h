@@ -40,7 +40,10 @@ typedef enum
 } PendingWindowOperation;
 
 @interface Cocoa_WindowListener : NSResponder <NSWindowDelegate> {
-    SDL_WindowData *_data;
+    /* SDL_WindowData owns this Listener and has a strong reference to it.
+     * To avoid reference cycles, we could have either a weak or an
+     * unretained ref to the WindowData. */
+    __weak SDL_WindowData *_data;
     BOOL observingVisible;
     BOOL wasCtrlLeft;
     BOOL wasVisible;
