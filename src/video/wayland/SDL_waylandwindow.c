@@ -426,27 +426,44 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
     }
 }
 
-static const struct wl_callback_listener surface_frame_listener;
+const struct wl_callback_listener surface_damage_frame_listener;
 
 static void
-handle_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
+surface_damage_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
-    SDL_WindowData *wind = (SDL_WindowData *) data;
-    SDL_AtomicSet(&wind->swap_interval_ready, 1);  /* mark window as ready to present again. */
+    SDL_WindowData *wind = (SDL_WindowData *)data;
 
+    /* Manually set the damage region when using a viewport. */
     if (!SDL_RectEmpty(&wind->viewport_rect)) {
         wl_surface_damage(wind->surface, wind->viewport_rect.x, wind->viewport_rect.y,
                           wind->viewport_rect.w, wind->viewport_rect.h);
     }
 
-    /* reset this callback to fire again once a new frame was presented and compositor wants the next one. */
-    wind->frame_callback = wl_surface_frame(wind->frame_surface_wrapper);
     wl_callback_destroy(cb);
-    wl_callback_add_listener(wind->frame_callback, &surface_frame_listener, data);
+    wind->surface_damage_frame_callback = wl_surface_frame(wind->surface);
+    wl_callback_add_listener(wind->surface_damage_frame_callback, &surface_damage_frame_listener, data);
 }
 
-static const struct wl_callback_listener surface_frame_listener = {
-    handle_surface_frame_done
+const struct wl_callback_listener surface_damage_frame_listener = {
+    surface_damage_frame_done
+};
+
+static const struct wl_callback_listener gles_swap_frame_listener;
+
+static void
+gles_swap_frame_done(void *data, struct wl_callback *cb, uint32_t time)
+{
+    SDL_WindowData *wind = (SDL_WindowData *) data;
+    SDL_AtomicSet(&wind->swap_interval_ready, 1);  /* mark window as ready to present again. */
+
+    /* reset this callback to fire again once a new frame was presented and compositor wants the next one. */
+    wind->gles_swap_frame_callback = wl_surface_frame(wind->gles_swap_frame_surface_wrapper);
+    wl_callback_destroy(cb);
+    wl_callback_add_listener(wind->gles_swap_frame_callback, &gles_swap_frame_listener, data);
+}
+
+static const struct wl_callback_listener gles_swap_frame_listener = {
+    gles_swap_frame_done
 };
 
 
@@ -1838,12 +1855,16 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
      * window isn't visible.
      */
     if (window->flags & SDL_WINDOW_OPENGL) {
-        data->frame_event_queue = WAYLAND_wl_display_create_queue(data->waylandData->display);
-        data->frame_surface_wrapper = WAYLAND_wl_proxy_create_wrapper(data->surface);
-        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)data->frame_surface_wrapper, data->frame_event_queue);
-        data->frame_callback = wl_surface_frame(data->frame_surface_wrapper);
-        wl_callback_add_listener(data->frame_callback, &surface_frame_listener, data);
+        data->gles_swap_frame_event_queue = WAYLAND_wl_display_create_queue(data->waylandData->display);
+        data->gles_swap_frame_surface_wrapper = WAYLAND_wl_proxy_create_wrapper(data->surface);
+        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)data->gles_swap_frame_surface_wrapper, data->gles_swap_frame_event_queue);
+        data->gles_swap_frame_callback = wl_surface_frame(data->gles_swap_frame_surface_wrapper);
+        wl_callback_add_listener(data->gles_swap_frame_callback, &gles_swap_frame_listener, data);
     }
+
+    /* Fire a callback when the compositor wants a new frame to set the surface damage region. */
+    data->surface_damage_frame_callback = wl_surface_frame(data->surface);
+    wl_callback_add_listener(data->surface_damage_frame_callback, &surface_damage_frame_listener, data);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     if (c->surface_extension) {
@@ -2107,10 +2128,14 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 
         SDL_free(wind->outputs);
 
-        if (wind->frame_callback) {
-            WAYLAND_wl_event_queue_destroy(wind->frame_event_queue);
-            WAYLAND_wl_proxy_wrapper_destroy(wind->frame_surface_wrapper);
-            wl_callback_destroy(wind->frame_callback);
+        if (wind->gles_swap_frame_callback) {
+            WAYLAND_wl_event_queue_destroy(wind->gles_swap_frame_event_queue);
+            WAYLAND_wl_proxy_wrapper_destroy(wind->gles_swap_frame_surface_wrapper);
+            wl_callback_destroy(wind->gles_swap_frame_callback);
+        }
+
+        if (wind->surface_damage_frame_callback) {
+            wl_callback_destroy(wind->surface_damage_frame_callback);
         }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
