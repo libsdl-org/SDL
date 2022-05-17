@@ -1957,6 +1957,78 @@ sin_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_tan tests functions */
+
+/**
+ * \brief Checks positive and negative infinity.
+ */
+static int
+tan_infCases(void *args)
+{
+    double result;
+
+    result = SDL_tan(INFINITY);
+    SDLTest_AssertCheck(isnan(result),
+                        "Tan(%f), expected %f, got %f",
+                        INFINITY, NAN, result);
+
+    result = SDL_tan(-INFINITY);
+    SDLTest_AssertCheck(isnan(result),
+                        "Tan(%f), expected %f, got %f",
+                        -INFINITY, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for nan.
+ */
+static int
+tan_nanCase(void *args)
+{
+    const double result = SDL_tan(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Tan(%f), expected %f, got %f",
+                        NAN, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zero.
+ */
+static int
+tan_zeroCases(void *args)
+{
+    const d_to_d regular_cases[] = {
+        { -0.0, -0.0 },
+        { 0.0, 0.0 }
+    };
+    return helper_dtod("Tan", SDL_tan, regular_cases, SDL_arraysize(regular_cases));
+}
+
+/**
+ * \brief Checks tangent precision for the first 10 decimals.
+ */
+static int
+tan_precisionTest(void *args)
+{
+    Uint32 i;
+    Uint32 iterations = 10;
+    double angle = 0.0;
+    double step = 2.0 * M_PI / iterations;
+    const double expected[] = {
+        0.0, 7265425280.0, 30776835371.0, -30776835371.0, -7265425280.0,
+        -0.0, 7265425280.0, 30776835371.0, -30776835371.0, -7265425280.0
+    };
+    for (i = 0; i < iterations; i++, angle += step) {
+        double result = SDL_tan(angle) * 1.0E10;
+        SDLTest_AssertCheck(SDL_trunc(result) == expected[i],
+                            "Tan(%f), expected %f, got %f",
+                            angle, expected[i], result);
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -2356,6 +2428,25 @@ static const SDLTest_TestCaseReference sinTestRange = {
     "Check a range of positive integer", TEST_ENABLED
 };
 
+/* SDL_tan test cases */
+
+static const SDLTest_TestCaseReference tanTestInf = {
+    (SDLTest_TestCaseFp) tan_infCases, "tan_infCases",
+    "Check for positive and negative infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference tanTestNan = {
+    (SDLTest_TestCaseFp) tan_nanCase, "tan_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference tanTestZero = {
+    (SDLTest_TestCaseFp) tan_zeroCases, "tan_zeroCases",
+    "Check a set of regular cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference tanTestPrecision = {
+    (SDLTest_TestCaseFp) tan_precisionTest, "tan_precisionTest",
+    "Check tane precision to the tenth decimal", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -2402,6 +2493,8 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &sinTestInf, &sinTestNan, &sinTestRegular,
     &sinTestPrecision, &sinTestRange,
+
+    &tanTestInf, &tanTestNan, &tanTestZero, &tanTestPrecision,
 
     NULL
 };
