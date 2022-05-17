@@ -1849,6 +1849,114 @@ cos_rangeTest(void *args)
     return TEST_COMPLETED;
 }
 
+/* SDL_sin tests functions */
+
+/**
+ * \brief Checks positive and negative infinity.
+ */
+static int
+sin_infCases(void *args)
+{
+    double result;
+
+    result = SDL_sin(INFINITY);
+    SDLTest_AssertCheck(isnan(result),
+                        "Sin(%f), expected %f, got %f",
+                        INFINITY, NAN, result);
+
+    result = SDL_sin(-INFINITY);
+    SDLTest_AssertCheck(isnan(result),
+                        "Sin(%f), expected %f, got %f",
+                        -INFINITY, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for nan.
+ */
+static int
+sin_nanCase(void *args)
+{
+    const double result = SDL_sin(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Sin(%f), expected %f, got %f",
+                        NAN, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a set of regular values.
+ */
+static int
+sin_regularCases(void *args)
+{
+    const d_to_d regular_cases[] = {
+        { -M_PI / 2, -1.0 },
+        { -0.0, -0.0 },
+        { 0.0, 0.0 },
+        { M_PI / 2, 1.0 }
+    };
+    return helper_dtod("Sin", SDL_sin, regular_cases, SDL_arraysize(regular_cases));
+}
+
+/**
+ * \brief Checks sine precision for the first 10 decimals.
+ */
+static int
+sin_precisionTest(void *args)
+{
+    Uint32 i;
+    Uint32 iterations = 20;
+    double angle = 0.0;
+    double step = 2.0 * M_PI / iterations;
+    const double expected[] = {
+        0, 3090169943, 5877852522, 8090169943, 9510565162,
+        10000000000, 9510565162, 8090169943, 5877852522, 3090169943,
+        0, -3090169943, -5877852522, -8090169943, -9510565162,
+        -10000000000, -9510565162, -8090169943, -5877852522, -3090169943
+    };
+    for (i = 0; i < iterations; i++, angle += step) {
+        double result = SDL_sin(angle) * 1.0E10;
+        SDLTest_AssertCheck(SDL_trunc(result) == expected[i],
+                            "Sin(%f), expected %f, got %f",
+                            angle, expected[i], result);
+    }
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks a range of values between 0 and UINT32_MAX.
+ */
+static int
+sin_rangeTest(void *args)
+{
+    Uint32 i;
+    double test_value = 0.0;
+
+    SDLTest_AssertPass("Sin: Testing a range of %u values with steps of %u",
+                       RANGE_TEST_ITERATIONS,
+                       RANGE_TEST_STEP);
+
+    for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
+        double result;
+        /* These are tested elsewhere */
+        if (isnan(test_value) || isinf(test_value)) {
+            continue;
+        }
+
+        /* Only log failures to save performances */
+        result = SDL_sin(test_value);
+        if (result < -1.0 || result > 1.0) {
+            SDLTest_AssertCheck(SDL_FALSE,
+                                "Sin(%.1f), expected [%.1f,%.1f], got %.1f",
+                                test_value, -1.0, 1.0, result);
+            return TEST_ABORTED;
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -2225,6 +2333,29 @@ static const SDLTest_TestCaseReference cosTestRange = {
     "Check a range of positive integer", TEST_ENABLED
 };
 
+/* SDL_sin test cases */
+
+static const SDLTest_TestCaseReference sinTestInf = {
+    (SDLTest_TestCaseFp) sin_infCases, "sin_infCases",
+    "Check for positive and negative infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sinTestNan = {
+    (SDLTest_TestCaseFp) sin_nanCase, "sin_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sinTestRegular = {
+    (SDLTest_TestCaseFp) sin_regularCases, "sin_regularCases",
+    "Check a set of regular cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sinTestPrecision = {
+    (SDLTest_TestCaseFp) sin_precisionTest, "sin_precisionTest",
+    "Check sine precision to the tenth decimal", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference sinTestRange = {
+    (SDLTest_TestCaseFp) sin_rangeTest, "sin_rangeTest",
+    "Check a range of positive integer", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -2268,6 +2399,9 @@ static const SDLTest_TestCaseReference *mathTests[] = {
 
     &cosTestInf, &cosTestNan, &cosTestRegular,
     &cosTestPrecision, &cosTestRange,
+
+    &sinTestInf, &sinTestNan, &sinTestRegular,
+    &sinTestPrecision, &sinTestRange,
 
     NULL
 };
