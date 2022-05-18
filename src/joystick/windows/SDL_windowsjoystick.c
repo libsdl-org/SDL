@@ -330,7 +330,7 @@ SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex
 static SDL_DeviceNotificationData s_notification_data;
 
 /* Function/thread to scan the system for joysticks. */
-static int
+static int SDLCALL
 SDL_JoystickThread(void *_data)
 {
 #if SDL_JOYSTICK_XINPUT

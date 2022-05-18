@@ -1053,7 +1053,7 @@ RAWINPUT_JoystickGetDeviceInstanceID(int device_index)
     return RAWINPUT_GetDeviceByIndex(device_index)->joystick_id;
 }
 
-static int
+static int SDLCALL
 RAWINPUT_SortValueCaps(const void *A, const void *B)
 {
     HIDP_VALUE_CAPS *capsA = (HIDP_VALUE_CAPS *)A;

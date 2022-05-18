@@ -12,7 +12,7 @@
 
 #include "SDL_test.h"
 
-static int
+static int SDLCALL
 num_compare(const void *_a, const void *_b)
 {
     const int a = *((const int *) _a);

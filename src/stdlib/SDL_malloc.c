@@ -733,7 +733,7 @@ extern "C"
   maximum supported value of n differs across systems, but is in all
   cases less than the maximum representable value of a size_t.
 */
-    void *dlmalloc(size_t);
+    void * SDLCALL dlmalloc(size_t);
 
 /*
   free(void* p)
@@ -742,14 +742,14 @@ extern "C"
   It has no effect if p is null. If p was not malloced or already
   freed, free(p) will by default cause the current program to abort.
 */
-    void dlfree(void *);
+    void SDLCALL dlfree(void *);
 
 /*
   calloc(size_t n_elements, size_t element_size);
   Returns a pointer to n_elements * element_size bytes, with all locations
   set to zero.
 */
-    void *dlcalloc(size_t, size_t);
+    void * SDLCALL dlcalloc(size_t, size_t);
 
 /*
   realloc(void* p, size_t n)
@@ -774,7 +774,7 @@ extern "C"
   to be used as an argument to realloc is not supported.
 */
 
-    void *dlrealloc(void *, size_t);
+    void * SDLCALL dlrealloc(void *, size_t);
 
 /*
   memalign(size_t alignment, size_t n);
