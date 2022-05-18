@@ -214,7 +214,6 @@ set(NONINTERACTIVE
     testatomic
     testerror
     testfilesystem
-    testkeys
     testlocale
     testplatform
     testpower
@@ -233,15 +232,20 @@ if(LINUX)
     list(APPEND NONINTERACTIVE testevdev)
 endif()
 
-set(NEEDS_AUDIO
+if(SDL_DUMMYAUDIO)
+  set(NEEDS_AUDIO
     testaudioinfo
     testsurround
-)
+  )
+endif()
 
-set(NEEDS_DISPLAY
+if(SDL_DUMMYVIDEO)
+  set(NEEDS_DISPLAY
+    testkeys
     testbounds
     testdisplayinfo
-)
+  )
+endif()
 
 if(OPENGL_FOUND)
 add_dependencies(testshader OpenGL::GL)
