@@ -53,7 +53,7 @@ typedef struct SDL_HIDAPI_RumbleContext
 
 static SDL_HIDAPI_RumbleContext rumble_context;
 
-static int SDL_HIDAPI_RumbleThread(void *data)
+static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
 {
     SDL_HIDAPI_RumbleContext *ctx = (SDL_HIDAPI_RumbleContext *)data;
 

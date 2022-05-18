@@ -683,7 +683,7 @@ EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObject, LPVOID pContext)
 /* Sort using the data offset into the DInput struct.
  * This gives a reasonable ordering for the inputs.
  */
-static int
+static int SDLCALL
 SortDevFunc(const void *a, const void *b)
 {
     const input_t *inputA = (const input_t*)a;

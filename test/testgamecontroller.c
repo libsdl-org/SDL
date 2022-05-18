@@ -312,24 +312,24 @@ static SDL_bool ShowingFront()
     return showing_front;
 }
 
-static void VirtualControllerSetPlayerIndex(void *userdata, int player_index)
+static void SDLCALL VirtualControllerSetPlayerIndex(void *userdata, int player_index)
 {
     SDL_Log("Virtual Controller: player index set to %d\n", player_index);
 }
 
-static int VirtualControllerRumble(void *userdata, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int SDLCALL VirtualControllerRumble(void *userdata, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_Log("Virtual Controller: rumble set to %d/%d\n", low_frequency_rumble, high_frequency_rumble);
     return 0;
 }
 
-static int VirtualControllerRumbleTriggers(void *userdata, Uint16 left_rumble, Uint16 right_rumble)
+static int SDLCALL VirtualControllerRumbleTriggers(void *userdata, Uint16 left_rumble, Uint16 right_rumble)
 {
     SDL_Log("Virtual Controller: trigger rumble set to %d/%d\n", left_rumble, right_rumble);
     return 0;
 }
 
-static int VirtualControllerSetLED(void *userdata, Uint8 red, Uint8 green, Uint8 blue)
+static int SDLCALL VirtualControllerSetLED(void *userdata, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_Log("Virtual Controller: LED set to RGB %d,%d,%d\n", red, green, blue);
     return 0;
