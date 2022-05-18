@@ -64,6 +64,9 @@ testoverlay2.exe: testoverlay2.obj testyuv_cvt.obj
 testyuv.exe: testyuv.obj testyuv_cvt.obj
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
+testshader.exe: testshader.obj
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS) $(GLLIBS)} op q op el file {$<} name $@
+
 testime.exe: testime.obj
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS) $(TTFLIBS)} op q op el file {$<} name $@
 

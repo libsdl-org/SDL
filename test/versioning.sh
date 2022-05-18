@@ -56,6 +56,17 @@ else
     not_ok "Makefile.os2 $version disagrees with SDL_version.h $ref_version"
 fi
 
+major=$(sed -ne 's/^MAJOR_VERSION *= *//p' Makefile.w32)
+minor=$(sed -ne 's/^MINOR_VERSION *= *//p' Makefile.w32)
+micro=$(sed -ne 's/^MICRO_VERSION *= *//p' Makefile.w32)
+version="${major}.${minor}.${micro}"
+
+if [ "$ref_version" = "$version" ]; then
+    ok "Makefile.w32 $version"
+else
+    not_ok "Makefile.w32 $version disagrees with SDL_version.h $ref_version"
+fi
+
 version=$(sed -Ene 's/^[$]SDLVersion = "([0-9.]+)"\r?$/\1/p' build-scripts/winrtbuild.ps1)
 
 if [ "$ref_version" = "$version" ]; then
