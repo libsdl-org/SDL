@@ -30,6 +30,7 @@ GetNearbyFilename(const char *file)
     base = SDL_GetBasePath();
 
     if (base != NULL) {
+        SDL_RWops *rw;
         size_t len = SDL_strlen(base) + SDL_strlen(pathsep) + SDL_strlen(file) + 1;
 
         path = SDL_malloc(len);
@@ -42,13 +43,21 @@ GetNearbyFilename(const char *file)
 
         SDL_snprintf(path, len, "%s%s%s", base, pathsep, file);
         SDL_free(base);
-    } else {
-        path = SDL_strdup(file);
-        if (path == NULL) {
-            SDL_OutOfMemory();
+
+        rw = SDL_RWFromFile(path, "rb");
+        if (rw) {
+            SDL_RWclose(rw);
+            return path;
         }
+
+        /* Couldn't find the file in the base path */
+        SDL_free(path);
     }
 
+    path = SDL_strdup(file);
+    if (path == NULL) {
+        SDL_OutOfMemory();
+    }
     return path;
 }
 
