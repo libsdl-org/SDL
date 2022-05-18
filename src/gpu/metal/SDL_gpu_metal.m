@@ -51,6 +51,7 @@
     @property (nonatomic, assign) SDL_MetalView mtlview;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
     @property (nonatomic, retain) id<CAMetalDrawable> mtldrawable;  // current backbuffer
+    @property (nonatomic, assign) int swap_interval;
 @end
 
 @implementation METAL_GpuWindowData
@@ -544,6 +545,7 @@ METAL_GpuClaimWindow(SDL_GpuDevice *device, SDL_Window *window)
     layer.device = devdata.mtldevice;
     layer.framebufferOnly = NO;
     windata.mtllayer = layer;
+    windata.swap_interval = windata.mtllayer.displaySyncEnabled ? 1 : 0;
 
     window->gpu_driverdata = (void *) CFBridgingRetain(windata);
 
@@ -1429,6 +1431,20 @@ METAL_GpuPresent(SDL_GpuDevice *device, SDL_Window *window, SDL_GpuTexture *back
     METAL_GpuTextureData *texturedata = (__bridge METAL_GpuTextureData *) backbuffer->driverdata;
 
     SDL_assert(windata.mtldrawable != nil);  // higher level should have checked this.
+
+    // before 10.13 (and always on iOS?), this was always vsync.
+    #if (defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
+    if (@available(macOS 10.13, *)) {
+        if (windata.swap_interval != swapinterval) {
+            if (swapinterval >= 1) {
+                windata.mtllayer.displaySyncEnabled = YES;
+            } else {
+                windata.mtllayer.displaySyncEnabled = NO;
+            }
+            windata.swap_interval = swapinterval;
+        }
+    }
+    #endif
 
     [windata.mtldrawable present];
 
