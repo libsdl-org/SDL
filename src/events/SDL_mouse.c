@@ -866,8 +866,8 @@ SDL_GetGlobalMouseState(int *x, int *y)
     }
 }
 
-void
-SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
+static void
+SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -883,6 +883,20 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
         return;
     }
 
+    if (mouse->relative_mode && !ignore_relative_mode) {
+        /* 2.0.22 made warping in relative mode actually functional, which
+         * surprised many applications that weren't expecting the additional
+         * mouse motion.
+         *
+         * So for now, warping in relative mode adjusts the absolution position
+         * but doesn't generate motion events.
+         */
+        mouse->x = x;
+        mouse->y = y;
+        mouse->has_position = SDL_TRUE;
+        return;
+    }
+
     /* Ignore the previous position when we warp */
     mouse->has_position = SDL_FALSE;
 
@@ -892,6 +906,12 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
     } else {
         SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
     }
+}
+
+void
+SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
+{
+    SDL_PerformWarpMouseInWindow(window, x, y, SDL_FALSE);
 }
 
 int
@@ -953,8 +973,9 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     if (enabled && focusWindow) {
         SDL_SetMouseFocus(focusWindow);
 
-        if (mouse->relative_mode_warp)
-            SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
+        if (mouse->relative_mode_warp) {
+            SDL_PerformWarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2, SDL_TRUE);
+        }
     }
 
     if (focusWindow) {
@@ -962,7 +983,7 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
 
         /* Put the cursor back to where the application expects it */
         if (!enabled) {
-            SDL_WarpMouseInWindow(focusWindow, mouse->x, mouse->y);
+            SDL_PerformWarpMouseInWindow(focusWindow, mouse->x, mouse->y, SDL_TRUE);
         }
 
         SDL_UpdateMouseCapture(SDL_FALSE);
