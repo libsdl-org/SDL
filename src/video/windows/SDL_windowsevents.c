@@ -1371,10 +1371,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Window *window = data->window;
             if (window->hit_test) {
-                POINT winpoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+                POINT winpoint;
+                winpoint.x = GET_X_LPARAM(lParam);
+                winpoint.y = GET_Y_LPARAM(lParam);
                 if (ScreenToClient(hwnd, &winpoint)) {
-                    const SDL_Point point = { (int) winpoint.x, (int) winpoint.y };
-                    const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+                    SDL_Point point;
+                    SDL_HitTestResult rc;
+                    point.x = winpoint.x;
+                    point.y = winpoint.y;
+                    rc = window->hit_test(window, &point, window->hit_test_data);
                     switch (rc) {
                         #define POST_HIT_TEST(ret) { SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0); return ret; }
                         case SDL_HITTEST_DRAGGABLE: POST_HIT_TEST(HTCAPTION);
