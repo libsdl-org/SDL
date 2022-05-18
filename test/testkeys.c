@@ -27,10 +27,6 @@ main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        exit(1);
-    }
     for (scancode = 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         SDL_Log("Scancode #%d, \"%s\"\n", scancode,
                SDL_GetScancodeName(scancode));
