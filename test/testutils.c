@@ -35,15 +35,18 @@ GetNearbyFilename(const char *file)
         path = SDL_malloc(len);
 
         if (path == NULL) {
+            SDL_free(base);
             SDL_OutOfMemory();
             return NULL;
         }
 
         SDL_snprintf(path, len, "%s%s%s", base, pathsep, file);
-    }
-
-    if (base) {
         SDL_free(base);
+    } else {
+        path = SDL_strdup(file);
+        if (path == NULL) {
+            SDL_OutOfMemory();
+        }
     }
 
     return path;
