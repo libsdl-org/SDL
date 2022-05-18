@@ -1250,10 +1250,12 @@ EGLSurface
 SDL_EGL_CreateOffscreenSurface(_THIS, int width, int height)
 {
     EGLint attributes[] = {
-        EGL_WIDTH, width,
-        EGL_HEIGHT, height,
+        EGL_WIDTH, 0,
+        EGL_HEIGHT, 0,
         EGL_NONE
     };
+    attributes[1] = width;
+    attributes[3] = height;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
         return EGL_NO_SURFACE;
