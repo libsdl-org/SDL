@@ -35,6 +35,22 @@
 #include "SDL_windowsshape.h"
 #include "SDL_windowsvulkan.h"
 
+#ifdef D3D_DEBUG_INFO
+#ifndef D3D_SDK_VERSION
+#define D3D_SDK_VERSION   (32 | 0x80000000)
+#endif
+#ifndef D3D9b_SDK_VERSION
+#define D3D9b_SDK_VERSION (31 | 0x80000000)
+#endif
+#else /**/
+#ifndef D3D_SDK_VERSION
+#define D3D_SDK_VERSION   32
+#endif
+#ifndef D3D9b_SDK_VERSION
+#define D3D9b_SDK_VERSION 31
+#endif
+#endif
+
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
 static void WIN_VideoQuit(_THIS);
