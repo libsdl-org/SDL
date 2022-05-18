@@ -373,12 +373,12 @@ typedef struct SDL_VirtualJoystickDesc
     const char *name;   /**< the name of the joystick */
 
     void *userdata;     /**< User data pointer passed to callbacks */
-    void (*Update)(void *userdata); /**< Called when the joystick state should be updated */
-    void (*SetPlayerIndex)(void *userdata, int player_index); /**< Called when the player index is set */
-    int (*Rumble)(void *userdata, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble); /**< Implements SDL_JoystickRumble() */
-    int (*RumbleTriggers)(void *userdata, Uint16 left_rumble, Uint16 right_rumble); /**< Implements SDL_JoystickRumbleTriggers() */
-    int (*SetLED)(void *userdata, Uint8 red, Uint8 green, Uint8 blue); /**< Implements SDL_JoystickSetLED() */
-    int (*SendEffect)(void *userdata, const void *data, int size); /**< Implements SDL_JoystickSendEffect() */
+    void (SDLCALL *Update)(void *userdata); /**< Called when the joystick state should be updated */
+    void (SDLCALL *SetPlayerIndex)(void *userdata, int player_index); /**< Called when the player index is set */
+    int (SDLCALL *Rumble)(void *userdata, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble); /**< Implements SDL_JoystickRumble() */
+    int (SDLCALL *RumbleTriggers)(void *userdata, Uint16 left_rumble, Uint16 right_rumble); /**< Implements SDL_JoystickRumbleTriggers() */
+    int (SDLCALL *SetLED)(void *userdata, Uint8 red, Uint8 green, Uint8 blue); /**< Implements SDL_JoystickSetLED() */
+    int (SDLCALL *SendEffect)(void *userdata, const void *data, int size); /**< Implements SDL_JoystickSendEffect() */
 
 } SDL_VirtualJoystickDesc;
 
