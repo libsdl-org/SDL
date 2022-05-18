@@ -866,7 +866,7 @@ SDL_GetGlobalMouseState(int *x, int *y)
     }
 }
 
-static void
+void
 SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
