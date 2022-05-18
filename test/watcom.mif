@@ -18,11 +18,12 @@ TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
           testshader.exe testshape.exe testsprite2.exe testspriteminimal.exe &
           teststreaming.exe testthread.exe testtimer.exe testver.exe &
           testviewport.exe testwm2.exe torturethread.exe checkkeys.exe &
-          checkkeysthreads.exe testmouse.exe &
+          checkkeysthreads.exe testmouse.exe testgles.exe testgles2.exe &
           controllermap.exe testhaptic.exe testqsort.exe testresample.exe &
           testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
           testsurround.exe testyuv.exe testgl2.exe testvulkan.exe testnative.exe &
-          testautomation.exe
+          testautomation.exe testaudiohotplug.exe testcustomcursor.exe testmultiaudio.exe &
+          testoffscreen.exe testurl.exe
 
 # testautomation sources
 TASRCS = testautomation.c testautomation_audio.c testautomation_clipboard.c &
