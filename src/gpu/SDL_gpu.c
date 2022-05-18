@@ -503,7 +503,7 @@ crc32_append(Uint32 crc, const void *_buf, const size_t buflen)
 
 static Uint32 hash_pipeline(const void *key, void *data)
 {
-    /* this hashes most pointers; this hash is meant to be unique and contained in this process. As such, it also doesn't care about enum size or byte order. */
+    /* this hashes the shader pointers; this hash is meant to be unique and contained in this process. As such, it also doesn't care about enum size or byte order. */
     /* However, it _does_ care about uninitialized packing bytes, so it doesn't just hash the sizeof (object). */
     const SDL_GpuPipelineDescription *desc = (const SDL_GpuPipelineDescription *) key;
     Uint32 crc = CRC32_INIT_VALUE;
