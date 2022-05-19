@@ -11,6 +11,7 @@ DESCRIPTION = Simple DirectMedia Layer 2
 LIBHOME = .
 DLLFILE = $(LIBHOME)/$(LIBNAME).dll
 LIBFILE = $(LIBHOME)/$(LIBNAME).lib
+EXPFILE = $(LIBHOME)/$(LIBNAME).exp
 LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/nt" -I"$(%WATCOM)/h/nt/directx" -I"$(%WATCOM)/h"
@@ -31,8 +32,9 @@ CFLAGS_STATIC=$(CFLAGS)
 # building dll:
 CFLAGS_DLL =$(CFLAGS)
 CFLAGS_DLL+= -bd
-# building SDL itself (for DECLSPEC):
-CFLAGS_DLL+= -DDLL_EXPORT
+# we override the DECLSPEC define in begin_code.h, because we are using
+# an exports file to remove the _cdecl '_' prefix from the symbol names
+CFLAGS_DLL+= -DDECLSPEC=
 
 CFLAGS_DLL+= -DSDL_BUILD_MAJOR_VERSION=$(MAJOR_VERSION)
 CFLAGS_DLL+= -DSDL_BUILD_MINOR_VERSION=$(MINOR_VERSION)
@@ -116,7 +118,7 @@ $(DLLFILE): build_dll $(OBJS) $(MOBJS) $(RCOBJS) $(LNKFILE)
 
 $(LIBFILE): $(DLLFILE)
     @echo * Creating LIB file: $@
-    wlib -q -b -n -c -pa -s -t -zld -ii -io $* $(DLLFILE)
+    wlib -q -b -n -c -pa -s -t -zld -ii -io $* @$(EXPFILE)
 
 .c.obj:
     wcc386 $(CFLAGS_DLL) -fo=$^@ $<
@@ -197,8 +199,9 @@ $(LNKFILE): Makefile.w32
     @%append $@ NAME $(DLLFILE)
     @for %i in ($(OBJS)) do @%append $@ FILE %i
     @for %i in ($(LIBS)) do @%append $@ LIB %i
+    @%append $@ EXPORT=src/dynapi/SDL2.exports
     @%append $@ OPTION QUIET
-    @%append $@ OPTION IMPF=$(LIBHOME)/$^&.exp
+    @%append $@ OPTION IMPF=$(EXPFILE)
     @%append $@ OPTION MAP=$(LIBHOME)/$^&.map
     @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@$(DESCRIPTION)'
     @%append $@ OPTION ELIMINATE
