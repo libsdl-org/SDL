@@ -1052,6 +1052,8 @@ SDL_UpdateMouseCapture(SDL_bool force_release)
             if (capture_window) {
                 capture_window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
             }
+            mouse->capture_window = previous_capture;
+
             return -1;
         }
     }
