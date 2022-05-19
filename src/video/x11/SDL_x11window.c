@@ -27,6 +27,7 @@
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
+#include "../../events/SDL_events_c.h"
 
 #include "SDL_x11video.h"
 #include "SDL_x11mouse.h"
@@ -1385,12 +1386,19 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
                                       attrs.x, attrs.y, &x, &y, &childReturn);
 
             if (!caught_x11_error) {
-                if ((x != orig_x) || (y != orig_y) || (attrs.width != orig_w) || (attrs.height != orig_h)) {
-                    window->x = x;
-                    window->y = y;
-                    window->w = attrs.width;
-                    window->h = attrs.height;
-                    break;  /* window moved, time to go. */
+                SDL_bool window_changed = SDL_FALSE;
+                if ((x != orig_x) || (y != orig_y)) {
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, x, y);
+                    window_changed = SDL_TRUE;
+                }
+
+                if ((attrs.width != orig_w) || (attrs.height != orig_h)) {
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, attrs.width, attrs.height);
+                    window_changed = SDL_TRUE;
+                }
+
+                if (window_changed) {
+                    break;  /* window changed, time to go. */
                 }
             }
 
