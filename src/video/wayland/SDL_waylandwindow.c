@@ -351,6 +351,13 @@ SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
         libdecor_frame_set_max_content_size(wind->shell_surface.libdecor.frame,
                                             max_width,
                                             max_height);
+
+        if (commit) {
+            struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
+            libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
+            libdecor_state_free(state);
+            wl_surface_commit(wind->surface);
+        }
     } else
 #endif
     if (viddata->shell.xdg) {
@@ -396,16 +403,30 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
         }
         if (output) {
             if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-                /* ensure that window is resizable before going into fullscreen */
+                /* Ensure that window is resizable before going into fullscreen.
+                 * This triggers a frame commit internally, so a separate one is not necessary.
+                 */
                 libdecor_frame_set_capabilities(wind->shell_surface.libdecor.frame, LIBDECOR_ACTION_RESIZE);
                 wl_surface_commit(wind->surface);
+            } else if (commit) {
+                struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
+                libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
+                libdecor_state_free(state);
+                wl_surface_commit(wind->surface);
             }
+
             libdecor_frame_set_fullscreen(wind->shell_surface.libdecor.frame, output);
         } else {
             libdecor_frame_unset_fullscreen(wind->shell_surface.libdecor.frame);
+
             if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
                 /* restore previous RESIZE capability */
                 libdecor_frame_unset_capabilities(wind->shell_surface.libdecor.frame, LIBDECOR_ACTION_RESIZE);
+                wl_surface_commit(wind->surface);
+            } else if (commit) {
+                struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
+                libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
+                libdecor_state_free(state);
                 wl_surface_commit(wind->surface);
             }
         }
@@ -415,13 +436,13 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
+        if (commit) {
+            wl_surface_commit(wind->surface);
+        }
         if (output) {
             xdg_toplevel_set_fullscreen(wind->shell_surface.xdg.roleobj.toplevel, output);
         } else {
             xdg_toplevel_unset_fullscreen(wind->shell_surface.xdg.roleobj.toplevel);
-        }
-        if (commit) {
-            wl_surface_commit(wind->surface);
         }
     }
 }
