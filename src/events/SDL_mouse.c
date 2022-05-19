@@ -1069,6 +1069,17 @@ SDL_CaptureMouse(SDL_bool enabled)
         return SDL_Unsupported();
     }
 
+#ifdef __WIN32__
+    /* Windows mouse capture is tied to the current thread, and must be called
+     * from the thread that created the window being captured. Since we update
+     * the mouse capture state from the event processing, any application state
+     * changes must be processed on that thread as well.
+     */
+    if (!SDL_OnVideoThread()) {
+        return SDL_SetError("SDL_CaptureMouse() must be called on the main thread");
+    }
+#endif /* __WIN32__ */
+
     if (enabled && SDL_GetKeyboardFocus() == NULL) {
         return SDL_SetError("No window has focus");
     }
