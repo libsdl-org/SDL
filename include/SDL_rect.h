@@ -252,10 +252,10 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
 SDL_FORCE_INLINE SDL_bool SDL_FRectEqualsEpsilon(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
 {
     return (a && b && ((a == b) ||
-            ((SDL_fabs(a->x - b->x) <= epsilon) &&
-            (SDL_fabs(a->y - b->y) <= epsilon) &&
-            (SDL_fabs(a->w - b->w) <= epsilon) &&
-            (SDL_fabs(a->h - b->h) <= epsilon))))
+            ((SDL_fabsf(a->x - b->x) <= epsilon) &&
+            (SDL_fabsf(a->y - b->y) <= epsilon) &&
+            (SDL_fabsf(a->w - b->w) <= epsilon) &&
+            (SDL_fabsf(a->h - b->h) <= epsilon))))
             ? SDL_TRUE : SDL_FALSE;
 }
 
