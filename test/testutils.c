@@ -6,14 +6,6 @@ SPDX-License-Identifier: Zlib
 
 #include "testutils.h"
 
-#if defined(SDL_FILESYSTEM_OS2) || defined(SDL_FILESYSTEM_WINDOWS)
-static const char pathsep[] = "\\";
-#elif defined(SDL_FILESYSTEM_RISCOS)
-static const char pathsep[] = ".";
-#else
-static const char pathsep[] = "/";
-#endif
-
 /*
  * Return the absolute path to def in the SDL_GetBasePath() if possible, or
  * the relative path to def on platforms that don't have a working
@@ -31,7 +23,7 @@ GetNearbyFilename(const char *file)
 
     if (base != NULL) {
         SDL_RWops *rw;
-        size_t len = SDL_strlen(base) + SDL_strlen(pathsep) + SDL_strlen(file) + 1;
+        size_t len = SDL_strlen(base) + SDL_strlen(file) + 1;
 
         path = SDL_malloc(len);
 
@@ -41,7 +33,7 @@ GetNearbyFilename(const char *file)
             return NULL;
         }
 
-        SDL_snprintf(path, len, "%s%s%s", base, pathsep, file);
+        SDL_snprintf(path, len, "%s%s", base, file);
         SDL_free(base);
 
         rw = SDL_RWFromFile(path, "rb");
