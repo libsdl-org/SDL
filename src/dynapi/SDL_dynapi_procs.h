@@ -70,7 +70,7 @@ SDL_DYNAPI_PROC(IDirect3DDevice9*,SDL_RenderGetD3D9Device,(SDL_Renderer *a),(a),
 #endif
 
 #ifdef __IPHONEOS__
-SDL_DYNAPI_PROC(int,SDL_iPhoneSetAnimationCallback,(SDL_Window *a, int b, void c, void *d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_iPhoneSetAnimationCallback,(SDL_Window *a, int b, void (SDLCALL *c)(void *), void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_iPhoneSetEventPump,(SDL_bool a),(a),)
 #endif
 
