@@ -1028,21 +1028,32 @@ SDL_UpdateMouseCapture(SDL_bool force_release)
     }
 
     if (capture_window != mouse->capture_window) {
-        if (mouse->capture_window) {
-            mouse->CaptureMouse(NULL);
-            mouse->capture_window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-            mouse->capture_window = NULL;
+        /* We can get here recursively on Windows, so make sure we complete
+         * all of the window state operations before we change the capture state
+         * (e.g. https://github.com/libsdl-org/SDL/pull/5608)
+         */
+        SDL_Window *previous_capture = mouse->capture_window;
+
+        if (previous_capture) {
+            previous_capture->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
         }
 
         if (capture_window) {
-            if (mouse->CaptureMouse(capture_window) < 0) {
-                /* CaptureMouse() will have set an error */
-                return -1;
-            }
             capture_window->flags |= SDL_WINDOW_MOUSE_CAPTURE;
         }
 
         mouse->capture_window = capture_window;
+
+        if (mouse->CaptureMouse(capture_window) < 0) {
+            /* CaptureMouse() will have set an error, just restore the state */
+            if (previous_capture) {
+                previous_capture->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+            }
+            if (capture_window) {
+                capture_window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+            }
+            return -1;
+        }
     }
     return 0;
 }
