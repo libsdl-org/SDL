@@ -439,8 +439,6 @@
 #define SDL_iconv_close SDL_iconv_close_REAL
 #define SDL_iconv SDL_iconv_REAL
 #define SDL_iconv_string SDL_iconv_string_REAL
-#define SDL_CreateRGBSurfaceWithFormat SDL_CreateRGBSurfaceWithFormat_REAL
-#define SDL_CreateRGBSurfaceWithFormatFrom SDL_CreateRGBSurfaceWithFormatFrom_REAL
 #define SDL_CreateRGBSurface SDL_CreateRGBSurface_REAL
 #define SDL_CreateRGBSurfaceFrom SDL_CreateRGBSurfaceFrom_REAL
 #define SDL_FreeSurface SDL_FreeSurface_REAL
@@ -577,7 +575,6 @@
 #define SDL_WarpMouseGlobal SDL_WarpMouseGlobal_REAL
 #define SDL_WinRTGetFSPathUNICODE SDL_WinRTGetFSPathUNICODE_REAL
 #define SDL_WinRTGetFSPathUTF8 SDL_WinRTGetFSPathUTF8_REAL
-#define SDL_WinRTRunApp SDL_WinRTRunApp_REAL
 #define SDL_sqrtf SDL_sqrtf_REAL
 #define SDL_tan SDL_tan_REAL
 #define SDL_tanf SDL_tanf_REAL
@@ -753,7 +750,6 @@
 #define SDL_JoystickDetachVirtual SDL_JoystickDetachVirtual_REAL
 #define SDL_JoystickIsVirtual SDL_JoystickIsVirtual_REAL
 #define SDL_JoystickSetVirtualAxis SDL_JoystickSetVirtualAxis_REAL
-#define SDL_JoystickSetVirtualBall SDL_JoystickSetVirtualBall_REAL
 #define SDL_JoystickSetVirtualButton SDL_JoystickSetVirtualButton_REAL
 #define SDL_JoystickSetVirtualHat SDL_JoystickSetVirtualHat_REAL
 #define SDL_GetErrorMsg SDL_GetErrorMsg_REAL
