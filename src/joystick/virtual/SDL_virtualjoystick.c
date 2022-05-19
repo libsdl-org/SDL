@@ -203,8 +203,8 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     *guid16++ = 0;
     *guid16++ = SDL_SwapLE16(hwdata->desc.product_id);
     *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16((Uint16)hwdata->desc.button_mask);
-    *guid16++ = SDL_SwapLE16((Uint16)hwdata->desc.axis_mask);
+    *guid16++ = 0;
+    *guid16++ = 0; /* This will be overwritten below with the virtual controller signature */
 
     /* Note that this is a Virtual device and what subtype it is */
     hwdata->guid.data[14] = 'v';

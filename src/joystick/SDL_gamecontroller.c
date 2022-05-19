@@ -696,19 +696,20 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
             return s_pXInputMapping;
         }
 #endif
+        if (!mapping) {
+            if (SDL_IsJoystickHIDAPI(guid)) {
+                mapping = SDL_CreateMappingForHIDAPIController(guid);
+            } else if (SDL_IsJoystickRAWINPUT(guid)) {
+                mapping = SDL_CreateMappingForRAWINPUTController(guid);
+            } else if (SDL_IsJoystickWGI(guid)) {
+                mapping = SDL_CreateMappingForWGIController(guid);
+            } else if (SDL_IsJoystickVirtual(guid)) {
+                /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
 #ifdef __ANDROID__
-        if (!mapping && !SDL_IsJoystickHIDAPI(guid)) {
-            mapping = SDL_CreateMappingForAndroidController(guid);
-        }
+            } else {
+                mapping = SDL_CreateMappingForAndroidController(guid);
 #endif
-        if (!mapping && SDL_IsJoystickHIDAPI(guid)) {
-            mapping = SDL_CreateMappingForHIDAPIController(guid);
-        }
-        if (!mapping && SDL_IsJoystickRAWINPUT(guid)) {
-            mapping = SDL_CreateMappingForRAWINPUTController(guid);
-        }
-        if (!mapping && SDL_IsJoystickWGI(guid)) {
-            mapping = SDL_CreateMappingForWGIController(guid);
+            }
         }
     }
     return mapping;
