@@ -386,6 +386,20 @@ if(PSP)
     endforeach()
 endif()
 
+if(RISCOS)
+    set(ALL_TESTS_AIF "")
+    foreach(APP IN LISTS ALL_TESTS)
+        target_link_options(${APP} PRIVATE -static)
+        add_custom_command(
+            OUTPUT ${APP},ff8
+            COMMAND elf2aif ${APP} ${APP},ff8
+            DEPENDS ${APP}
+        )
+        add_custom_target(${APP}-aif ALL DEPENDS ${APP},ff8)
+        list(APPEND ALL_TESTS_AIF ${CMAKE_CURRENT_BINARY_DIR}/${APP},ff8)
+    endforeach()
+endif()
+
 foreach(APP IN LISTS NEEDS_RESOURCES)
     foreach(RESOURCE_FILE ${RESOURCE_FILES})
         if(PSP)
@@ -450,10 +464,17 @@ foreach(TESTCASE ${NONINTERACTIVE} ${NEEDS_AUDIO} ${NEEDS_DISPLAY})
 endforeach()
 
 if(SDL_INSTALL_TESTS)
-    install(
-        TARGETS ${ALL_TESTS}
-        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
-    )
+    if(RISCOS)
+        install(
+            FILES ${ALL_TESTS_AIF}
+            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+        )
+    else()
+        install(
+            TARGETS ${ALL_TESTS}
+            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+        )
+    endif()
     install(
         FILES ${RESOURCE_FILES}
         DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
