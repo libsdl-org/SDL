@@ -406,8 +406,6 @@ X11_GetGlobalMouseState(int *x, int *y)
                     buttons |= (mask & Button1Mask) ? SDL_BUTTON_LMASK : 0;
                     buttons |= (mask & Button2Mask) ? SDL_BUTTON_MMASK : 0;
                     buttons |= (mask & Button3Mask) ? SDL_BUTTON_RMASK : 0;
-                    buttons |= (mask & Button4Mask) ? SDL_BUTTON_X1MASK : 0;
-                    buttons |= (mask & Button5Mask) ? SDL_BUTTON_X2MASK : 0;
                     /* SDL_DisplayData->x,y point to screen origin, and adding them to mouse coordinates relative to root window doesn't do the right thing
                      * (observed on dual monitor setup with primary display being the rightmost one - mouse was offset to the right).
                      *
