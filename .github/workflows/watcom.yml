@@ -23,6 +23,11 @@ jobs:
         run: |
           cd test && wmake -f ${{ matrix.platform.makefile }}
           cd ..
+      - name: Run tests
+        if: "matrix.platform.makefile == 'Makefile.w32'"
+        run: |
+          cd test && wmake -f ${{ matrix.platform.makefile }} check-quick
+          cd ..
       - name: distclean
         run: |
           wmake -f ${{ matrix.platform.makefile }} distclean
