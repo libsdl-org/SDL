@@ -4348,7 +4348,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         return SDL_SetError("Invalid number of buttons");
     }
 
-    SDL_AtomicIncRef(&SDL_messagebox_count);
+    (void)SDL_AtomicIncRef(&SDL_messagebox_count);
 
     current_window = SDL_GetKeyboardFocus();
     relative_mode = SDL_GetRelativeMouseMode();
@@ -4456,7 +4456,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         }
     }
 
-    SDL_AtomicDecRef(&SDL_messagebox_count);
+    (void)SDL_AtomicDecRef(&SDL_messagebox_count);
 
     if (current_window) {
         SDL_RaiseWindow(current_window);
