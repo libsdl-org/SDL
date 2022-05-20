@@ -178,7 +178,7 @@ SDL_bool UIKit_Vulkan_GetInstanceExtensions(_THIS,
                                           const char **names)
 {
     static const char *const extensionsForUIKit[] = {
-        VK_KHR_SURFACE_EXTENSION_NAME, VK_MVK_IOS_SURFACE_EXTENSION_NAME
+        VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
     if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
