@@ -103,9 +103,11 @@ generatetestmeta:
 	done
 
 install: all
-	install -D -t $(DESTDIR)$(installedtestsdir) $(TARGETS)
-	install -m644 -D -t $(DESTDIR)$(installedtestsdir) $(DATA)
-	install -m644 -D -t $(DESTDIR)$(installedtestsmetadir) *.test
+	install -d $(DESTDIR)$(installedtestsdir)
+	install $(TARGETS) $(DESTDIR)$(installedtestsdir)
+	install -m644 $(DATA) $(DESTDIR)$(installedtestsdir)
+	install -d $(DESTDIR)$(installedtestsmetadir)
+	install -m644 *.test $(DESTDIR)$(installedtestsmetadir)
 
 Makefile: $(srcdir)/Makefile.in
 	$(SHELL) config.status $@
