@@ -1326,7 +1326,6 @@ pow_baseNanExp0Cases(void *args)
     SDLTest_AssertCheck(1.0 == result,
                         "Pow(%f,%f), expected %f, got %f",
                         NAN, 0.0, 1.0, result);
-    return TEST_COMPLETED;
 
     result = SDL_pow(NAN, -0.0);
     SDLTest_AssertCheck(1.0 == result,
