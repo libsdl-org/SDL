@@ -28,6 +28,11 @@
 
 #include <emscripten/emscripten.h>
 
+/* !!! FIXME: this currently expects that the audio callback runs in the main thread,
+   !!! FIXME:  in intervals when the application isn't running, but that may not be
+   !!! FIXME:  true always once pthread support becomes widespread. Revisit this code
+   !!! FIXME:  at some point and see what needs to be done for that! */
+
 static void
 FeedAudioDevice(_THIS, const void *buf, const int buflen)
 {
