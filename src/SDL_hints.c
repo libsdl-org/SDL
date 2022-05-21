@@ -179,6 +179,7 @@ SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
         }
         hint->name = SDL_strdup(name);
         if (!hint->name) {
+            SDL_free(entry);
             SDL_free(hint);
             SDL_OutOfMemory();
             return;
