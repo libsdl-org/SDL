@@ -153,6 +153,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_state_free (*WAYLAND_libdecor_state_free)
 #define libdecor_configuration_get_content_size (*WAYLAND_libdecor_configuration_get_content_size)
 #define libdecor_configuration_get_window_state (*WAYLAND_libdecor_configuration_get_window_state)
+#define libdecor_dispatch (*WAYLAND_libdecor_dispatch)
 #endif
 
 #else /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
