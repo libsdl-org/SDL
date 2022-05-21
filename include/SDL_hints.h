@@ -927,6 +927,18 @@ extern "C" {
 #define SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK "SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"
 
 /**
+ *  \brief   A variable controlling whether dispatching OpenGL context updates should block the dispatching thread until the main thread finishes processing
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Dispatching OpenGL context updates will allow the dispatching thread to continue execution.
+ *    "1"       - Dispatching OpenGL context updates will block the dispatching thread until the main thread finishes processing.
+ *
+ *  This hint only applies to Mac OS X
+ *
+ */
+#define SDL_HINT_MAC_OPENGL_SYNC_DISPATCH "SDL_MAC_OPENGL_SYNC_DISPATCH"
+
+/**
  *  \brief  A variable setting the double click radius, in pixels.
  */
 #define SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS    "SDL_MOUSE_DOUBLE_CLICK_RADIUS"

@@ -31,6 +31,7 @@
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/CGLRenderers.h>
 
+#include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_opengl.h"
 
@@ -135,7 +136,11 @@
     if ([NSThread isMainThread]) {
         [super update];
     } else {
-        dispatch_async(dispatch_get_main_queue(), ^{ [super update]; });
+        if (SDL_GetHintBoolean(SDL_HINT_MAC_OPENGL_SYNC_DISPATCH, SDL_FALSE)) {
+            dispatch_sync(dispatch_get_main_queue(), ^{ [super update]; });
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{ [super update]; });
+        }
     }
 }
 
