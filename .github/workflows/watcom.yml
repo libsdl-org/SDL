@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: open-watcom/setup-watcom@v0
+        with:
+          tag: 2022-05-01-Build
       - name: Build SDL2
         run: |
           wmake -f ${{ matrix.platform.makefile }}
