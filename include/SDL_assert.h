@@ -51,6 +51,8 @@ assert can have unique static variables associated with it.
 /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
+#elif defined(__has_builtin) && __has_builtin(__builtin_debugtrap)
+    #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif ( (!defined(__NACL__)) && ((defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))) )
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 #elif ( defined(__APPLE__) && (defined(__arm64__) || defined(__aarch64__)) )  /* this might work on other ARM targets, but this is a known quantity... */
