@@ -2159,6 +2159,94 @@ acos_precisionTest(void *args)
     return helper_dtod_approx("Acos", SDL_acos, precision_cases, SDL_arraysize(precision_cases));
 }
 
+/* SDL_asin tests functions */
+
+/**
+ * \brief Checks limits of the domain (+/-1).
+ */
+static int
+asin_limitCases(void *args)
+{
+    double result;
+
+    result = SDL_asin(1.0);
+    SDLTest_AssertCheck(M_PI / 2.0 == result,
+                        "Asin(%f), expected %f, got %f",
+                        1.0, M_PI / 2.0, result);
+
+    result = SDL_asin(-1.0);
+    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+                        "Asin(%f), expected %f, got %f",
+                        -1.0, -M_PI / 2.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks values outside the domain (|x| > 1).
+ */
+static int
+asin_outOfDomainCases(void *args)
+{
+    double result;
+
+    result = SDL_asin(1.1);
+    SDLTest_AssertCheck(isnan(result),
+                        "Asin(%f), expected %f, got %f",
+                        1.1, NAN, result);
+
+    result = SDL_asin(-1.1);
+    SDLTest_AssertCheck(isnan(result),
+                        "Asin(%f), expected %f, got %f",
+                        -1.1, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for nan.
+ */
+static int
+asin_nanCase(void *args)
+{
+    const double result = SDL_asin(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Asin(%f), expected %f, got %f",
+                        NAN, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks arc sine precision for the first 10 decimals.
+ */
+static int
+asin_precisionTest(void *args)
+{
+    const d_to_d precision_cases[] = {
+        { 0.9, 11197695149.0 },
+        { 0.8, 9272952180.0 },
+        { 0.7, 7753974966.0 },
+        { 0.6, 6435011087.0 },
+        { 0.5, 5235987755.0 },
+        { 0.4, 4115168460.0 },
+        { 0.3, 3046926540.0 },
+        { 0.2, 2013579207.0 },
+        { 0.1, 1001674211.0 },
+        { 0.0, 0.0 },
+        { -0.0, -0.0 },
+        { -0.1, -1001674211.0 },
+        { -0.2, -2013579207.0 },
+        { -0.3, -3046926540.0 },
+        { -0.4, -4115168460.0 },
+        { -0.5, -5235987755.0 },
+        { -0.6, -6435011087.0 },
+        { -0.7, -7753974966.0 },
+        { -0.8, -9272952180.0 },
+        { -0.9, -11197695149.0 }
+    };
+    return helper_dtod_approx("Asin", SDL_asin, precision_cases, SDL_arraysize(precision_cases));
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -2596,6 +2684,25 @@ static const SDLTest_TestCaseReference acosTestPrecision = {
     "Check acos precision to the tenth decimal", TEST_ENABLED
 };
 
+/* SDL_asin test cases */
+
+static const SDLTest_TestCaseReference asinTestLimit = {
+    (SDLTest_TestCaseFp) asin_limitCases, "asin_limitCases",
+    "Check the edge of the domain (+/-1)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference asinTestOutOfDomain = {
+    (SDLTest_TestCaseFp) asin_outOfDomainCases, "asin_outOfDomainCases",
+    "Check a for value outside the domain", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference asinTestNan = {
+    (SDLTest_TestCaseFp) asin_nanCase, "asin_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference asinTestPrecision = {
+    (SDLTest_TestCaseFp) asin_precisionTest, "asin_precisionTest",
+    "Check asin precision to the tenth decimal", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -2646,6 +2753,8 @@ static const SDLTest_TestCaseReference *mathTests[] = {
     &tanTestInf, &tanTestNan, &tanTestZero, &tanTestPrecision,
 
     &acosTestLimit, &acosTestOutOfDomain, &acosTestNan, &acosTestPrecision,
+
+    &asinTestLimit, &asinTestOutOfDomain, &asinTestNan, &asinTestPrecision,
 
     NULL
 };
