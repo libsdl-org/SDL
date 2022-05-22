@@ -76,6 +76,37 @@ helper_dtod(const char *func_name, d_to_d_func func,
 }
 
 /**
+ * \brief Runs all the cases on a given function with a signature double -> double,
+ * checks the first ten digits of the result (truncated).
+ *
+ * This function is used to test functions with inaccurate results such as trigonometric
+ * functions where angles such as PI/2 can't be accurately represented.
+ *
+ * \note Tests may fail if SDL_trunc is not functional.
+ *
+ * \param func_name, the name of the tested function.
+ * \param func, the function to call.
+ * \param cases, an array of all the cases.
+ * \param cases_size, the size of the cases array.
+ */
+static int
+helper_dtod_approx(const char *func_name, d_to_d_func func,
+                   const d_to_d *cases, const size_t cases_size)
+{
+    Uint32 i;
+    for (i = 0; i < cases_size; i++) {
+        const double result = func(cases[i].input) * 1.0E10;
+        SDLTest_AssertCheck(SDL_trunc(result) == cases[i].expected,
+                            "%s(%f), expected %f, got %f",
+                            func_name,
+                            cases[i].input,
+                            cases[i].expected, result);
+    }
+
+    return TEST_COMPLETED;
+}
+
+/**
  * \brief Runs all the cases on a given function with a signature (double, double) -> double
  *
  * \param func_name, the name of the tested function.
@@ -1791,29 +1822,31 @@ cos_regularCases(void *args)
 
 /**
  * \brief Checks cosine precision for the first 10 decimals.
- *
- * This function depends on SDL_floor functioning.
  */
 static int
 cos_precisionTest(void *args)
 {
-    Uint32 i;
-    Uint32 iterations = 20;
-    double angle = 0.0;
-    double step = 2.0 * M_PI / iterations;
-    const double expected[] = {
-        10000000000.0, 9510565162.0, 8090169943.0, 5877852522.0, 3090169943.0,
-        0.0, -3090169943.0, -5877852522.0, -8090169943.0, -9510565162.0,
-        -10000000000.0, -9510565162.0, -8090169943.0, -5877852522.0, -3090169943.0,
-        0.0, 3090169943.0, 5877852522.0, 8090169943.0, 9510565162.0
+    const d_to_d precision_cases[] = {
+        { M_PI * 1.0 / 10.0, 9510565162.0 },
+        { M_PI * 2.0 / 10.0, 8090169943.0 },
+        { M_PI * 3.0 / 10.0, 5877852522.0 },
+        { M_PI * 4.0 / 10.0, 3090169943.0 },
+        { M_PI * 5.0 / 10.0, 0.0 },
+        { M_PI * 6.0 / 10.0, -3090169943.0 },
+        { M_PI * 7.0 / 10.0, -5877852522.0 },
+        { M_PI * 8.0 / 10.0, -8090169943.0 },
+        { M_PI * 9.0 / 10.0, -9510565162.0 },
+        { M_PI * -1.0 / 10.0, 9510565162.0 },
+        { M_PI * -2.0 / 10.0, 8090169943.0 },
+        { M_PI * -3.0 / 10.0, 5877852522.0 },
+        { M_PI * -4.0 / 10.0, 3090169943.0 },
+        { M_PI * -5.0 / 10.0, 0.0 },
+        { M_PI * -6.0 / 10.0, -3090169943.0 },
+        { M_PI * -7.0 / 10.0, -5877852522.0 },
+        { M_PI * -8.0 / 10.0, -8090169943.0 },
+        { M_PI * -9.0 / 10.0, -9510565162.0 }
     };
-    for (i = 0; i < iterations; i++, angle += step) {
-        double result = SDL_cos(angle) * 1.0E10;
-        SDLTest_AssertCheck(SDL_trunc(result) == expected[i],
-                            "Cos(%f), expected %f, got %f",
-                            angle, expected[i], result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod_approx("Cos", SDL_cos, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /**
@@ -1905,23 +1938,27 @@ sin_regularCases(void *args)
 static int
 sin_precisionTest(void *args)
 {
-    Uint32 i;
-    Uint32 iterations = 20;
-    double angle = 0.0;
-    double step = 2.0 * M_PI / iterations;
-    const double expected[] = {
-        0, 3090169943, 5877852522, 8090169943, 9510565162,
-        10000000000, 9510565162, 8090169943, 5877852522, 3090169943,
-        0, -3090169943, -5877852522, -8090169943, -9510565162,
-        -10000000000, -9510565162, -8090169943, -5877852522, -3090169943
+    const d_to_d precision_cases[] = {
+        { M_PI * 1.0 / 10.0, 3090169943.0 },
+        { M_PI * 2.0 / 10.0, 5877852522.0 },
+        { M_PI * 3.0 / 10.0, 8090169943.0 },
+        { M_PI * 4.0 / 10.0, 9510565162.0 },
+        { M_PI * 5.0 / 10.0, 10000000000.0 },
+        { M_PI * 6.0 / 10.0, 9510565162.0 },
+        { M_PI * 7.0 / 10.0, 8090169943.0 },
+        { M_PI * 8.0 / 10.0, 5877852522.0 },
+        { M_PI * 9.0 / 10.0, 3090169943.0 },
+        { M_PI * -1.0 / 10.0, -3090169943.0 },
+        { M_PI * -2.0 / 10.0, -5877852522.0 },
+        { M_PI * -3.0 / 10.0, -8090169943.0 },
+        { M_PI * -4.0 / 10.0, -9510565162.0 },
+        { M_PI * -5.0 / 10.0, -10000000000.0 },
+        { M_PI * -6.0 / 10.0, -9510565162.0 },
+        { M_PI * -7.0 / 10.0, -8090169943.0 },
+        { M_PI * -8.0 / 10.0, -5877852522.0 },
+        { M_PI * -9.0 / 10.0, -3090169943.0 }
     };
-    for (i = 0; i < iterations; i++, angle += step) {
-        double result = SDL_sin(angle) * 1.0E10;
-        SDLTest_AssertCheck(SDL_trunc(result) == expected[i],
-                            "Sin(%f), expected %f, got %f",
-                            angle, expected[i], result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod_approx("Sin", SDL_sin, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /**
@@ -2011,21 +2048,29 @@ tan_zeroCases(void *args)
 static int
 tan_precisionTest(void *args)
 {
-    Uint32 i;
-    Uint32 iterations = 10;
-    double angle = 0.0;
-    double step = 2.0 * M_PI / iterations;
-    const double expected[] = {
-        0.0, 7265425280.0, 30776835371.0, -30776835371.0, -7265425280.0,
-        -0.0, 7265425280.0, 30776835371.0, -30776835371.0, -7265425280.0
+    const d_to_d precision_cases[] = {
+        { M_PI * 1.0 / 11.0, 2936264929.0 },
+        { M_PI * 2.0 / 11.0, 6426609771.0 },
+        { M_PI * 3.0 / 11.0, 11540615205.0 },
+        { M_PI * 4.0 / 11.0, 21896945629.0 },
+        { M_PI * 5.0 / 11.0, 69551527717.0 },
+        { M_PI * 6.0 / 11.0, -69551527717.0 },
+        { M_PI * 7.0 / 11.0, -21896945629.0 },
+        { M_PI * 8.0 / 11.0, -11540615205.0 },
+        { M_PI * 9.0 / 11.0, -6426609771.0 },
+        { M_PI * 10.0 / 11.0, -2936264929.0 },
+        { M_PI * -1.0 / 11.0, -2936264929.0 },
+        { M_PI * -2.0 / 11.0, -6426609771.0 },
+        { M_PI * -3.0 / 11.0, -11540615205.0 },
+        { M_PI * -4.0 / 11.0, -21896945629.0 },
+        { M_PI * -5.0 / 11.0, -69551527717.0 },
+        { M_PI * -6.0 / 11.0, 69551527717.0 },
+        { M_PI * -7.0 / 11.0, 21896945629.0 },
+        { M_PI * -8.0 / 11.0, 11540615205.0 },
+        { M_PI * -9.0 / 11.0, 6426609771.0 },
+        { M_PI * -10.0 / 11.0, 2936264929.0 }
     };
-    for (i = 0; i < iterations; i++, angle += step) {
-        double result = SDL_tan(angle) * 1.0E10;
-        SDLTest_AssertCheck(SDL_trunc(result) == expected[i],
-                            "Tan(%f), expected %f, got %f",
-                            angle, expected[i], result);
-    }
-    return TEST_COMPLETED;
+    return helper_dtod_approx("Tan", SDL_tan, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /* ================= Test References ================== */
