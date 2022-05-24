@@ -206,8 +206,7 @@ Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (info->version.major == SDL_MAJOR_VERSION &&
-        info->version.minor == SDL_MINOR_VERSION) {
+    if (info->version.major == SDL_MAJOR_VERSION) {
         info->subsystem = SDL_SYSWM_ANDROID;
         info->info.android.window = data->native_window;
 
@@ -217,8 +216,8 @@ Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 
         return SDL_TRUE;
     } else {
-        SDL_SetError("Application not compiled with SDL %d.%d",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("Application not compiled with SDL %d",
+                     SDL_MAJOR_VERSION);
         return SDL_FALSE;
     }
 }
