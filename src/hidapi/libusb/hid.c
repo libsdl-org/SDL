@@ -994,7 +994,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 }
 
 
-static int read_thread(void *param)
+static int SDLCALL read_thread(void *param)
 {
 	hid_device *dev = (hid_device *)param;
 	uint8_t *buf;
