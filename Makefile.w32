@@ -18,8 +18,9 @@ INCPATH = -I"$(%WATCOM)/h/nt" -I"$(%WATCOM)/h/nt/directx" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude
 INCPATH+= -I"src/video/khronos"
 
+LIBM = SDL2libm.lib
 TLIB = SDL2test.lib
-LIBS = user32.lib gdi32.lib winmm.lib imm32.lib ole32.lib oleaut32.lib shell32.lib setupapi.lib version.lib uuid.lib dxguid.lib
+LIBS = user32.lib gdi32.lib winmm.lib imm32.lib ole32.lib oleaut32.lib shell32.lib setupapi.lib version.lib uuid.lib dxguid.lib $(LIBM)
 
 CFLAGS = -bt=nt -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
 # max warnings:
@@ -59,10 +60,6 @@ SRCS+= SDL_blit.c SDL_blit_0.c SDL_blit_1.c SDL_blit_A.c SDL_blit_auto.c &
        SDL_pixels.c SDL_rect.c SDL_RLEaccel.c SDL_shape.c SDL_stretch.c &
        SDL_surface.c SDL_video.c SDL_clipboard.c SDL_vulkan_utils.c SDL_egl.c
 
-SRCS+= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &
-       k_cos.c k_rem_pio2.c k_sin.c k_tan.c &
-       s_atan.c s_copysign.c s_cos.c s_fabs.c s_floor.c s_scalbn.c s_sin.c s_tan.c
-
 SRCS+= SDL_syscond.c SDL_sysmutex.c SDL_syssem.c SDL_systhread.c SDL_systls.c
 SRCS+= SDL_systimer.c
 SRCS+= SDL_sysloadso.c
@@ -91,7 +88,7 @@ SRCS+= SDL_windowsclipboard.c SDL_windowsevents.c SDL_windowsframebuffer.c SDL_w
 
 SRCS+= SDL_dynapi.c
 
-RCSRCS+= version.rc
+RCSRCS = version.rc
 
 OBJS = $(SRCS:.c=.obj)
 RCOBJS= $(RCSRCS:.rc=.res)
@@ -99,7 +96,6 @@ RCOBJS= $(RCSRCS:.rc=.res)
 .extensions:
 .extensions: .lib .dll .obj .res .c .rc .asm
 
-.c: ./src/libm;
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/joystick/virtual;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
 .c: ./src/core/windows;./src/audio/winmm;./src/audio/directsound;./src/audio/wasapi;./src/loadso/windows;./src/filesystem/windows;./src/haptic/windows;./src/joystick/windows;./src/sensor/windows;./src/thread/windows;./src/timer/windows;./src/video/windows;
@@ -111,10 +107,9 @@ all: $(DLLFILE) $(LIBFILE) $(TLIB) .symbolic
 build_dll: .symbolic
     @echo * Compiling dll objects
 
-$(DLLFILE): build_dll $(OBJS) $(MOBJS) $(RCOBJS) $(LNKFILE)
+$(DLLFILE): build_dll $(OBJS) $(LIBM) $(RCOBJS) $(LNKFILE)
     @echo * Linking: $@
     wlink @$(LNKFILE)
-    wrc $(RCOBJS) $^@
 
 $(LIBFILE): $(DLLFILE)
     @echo * Creating LIB file: $@
@@ -140,9 +135,60 @@ SDL_blendpoint.obj: SDL_blendpoint.c
     wcc386 $(CFLAGS_DLL) -wcd=200 -fo=$^@ $<
 SDL_RLEaccel.obj: SDL_RLEaccel.c
     wcc386 $(CFLAGS_DLL) -wcd=201 -fo=$^@ $<
-# c99 mode needed because of structs with flexible array members in libusb.h
-SDL_hidapi.obj: SDL_hidapi.c
-    wcc386 $(CFLAGS_DLL) -za99 -fo=$^@ $<
+
+# SDL2libm
+MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &
+       k_cos.c k_rem_pio2.c k_sin.c k_tan.c &
+       s_atan.c s_copysign.c s_cos.c s_fabs.c s_floor.c s_scalbn.c s_sin.c s_tan.c
+MOBJS= $(MSRCS:.c=.obj)
+
+.c: ./src/libm;
+e_atan2.obj: e_atan2.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+e_exp.obj: e_exp.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+e_fmod.obj: e_fmod.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+e_log10.obj: e_log10.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+e_log.obj: e_log.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+e_pow.obj: e_pow.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+e_rem_pio2.obj: e_rem_pio2.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+e_sqrt.obj: e_sqrt.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+k_cos.obj: k_cos.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+k_rem_pio2.obj: k_rem_pio2.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+k_sin.obj: k_sin.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+k_tan.obj: k_tan.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_atan.obj: s_atan.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_copysign.obj: s_copysign.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_cos.obj: s_cos.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_fabs.obj: s_fabs.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_floor.obj: s_floor.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_scalbn.obj: s_scalbn.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_sin.obj: s_sin.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+s_tan.obj: s_tan.c
+    wcc386 $(CFLAGS_STATIC) -fo=$^@ $<
+
+build_libm: .symbolic
+    @echo * Compiling libm objects
+$(LIBM): build_libm $(MOBJS)
+    @echo * Creating: $@
+    wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $(MOBJS)
 
 # SDL2test
 TSRCS = SDL_test_assert.c SDL_test_common.c SDL_test_compare.c &
@@ -199,20 +245,22 @@ $(LNKFILE): Makefile.w32
     @%append $@ NAME $(DLLFILE)
     @for %i in ($(OBJS)) do @%append $@ FILE %i
     @for %i in ($(LIBS)) do @%append $@ LIB %i
+    @%append $@ OPTION RESOURCE=$(RCOBJS)
     @%append $@ EXPORT=src/dynapi/SDL2.exports
     @%append $@ OPTION QUIET
     @%append $@ OPTION IMPF=$(EXPFILE)
     @%append $@ OPTION MAP=$(LIBHOME)/$^&.map
     @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@$(DESCRIPTION)'
     @%append $@ OPTION ELIMINATE
-    @%append $@ OPTION OSNAME='Windows NT'
     @%append $@ OPTION SHOWDEAD
 
 clean: .SYMBOLIC
     @echo * Clean: $(LIBNAME)
     @if exist *.obj rm *.obj
+    @if exist *.res rm *.res
     @if exist *.err rm *.err
     @if exist $(LNKFILE) rm $(LNKFILE)
+    @if exist $(LIBM) rm $(LIBM)
 
 distclean: .SYMBOLIC clean
     @if exist $(LIBHOME)/*.exp rm $(LIBHOME)/*.exp
