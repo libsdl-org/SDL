@@ -2249,6 +2249,93 @@ asin_precisionTest(void *args)
     return helper_dtod_approx("Asin", SDL_asin, precision_cases, SDL_arraysize(precision_cases));
 }
 
+/* SDL_atan tests functions */
+
+/**
+ * \brief Checks limits of the domain (+/- infinity).
+ */
+static int
+atan_limitCases(void *args)
+{
+    double result;
+
+    result = SDL_atan(INFINITY);
+    SDLTest_AssertCheck(M_PI / 2.0 == result,
+                        "Atan(%f), expected %f, got %f",
+                        INFINITY, M_PI / 2.0, result);
+
+    result = SDL_atan(-INFINITY);
+    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+                        "Atan(%f), expected %f, got %f",
+                        -INFINITY, -M_PI / 2.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks positive and negative zeros.
+ */
+static int
+atan_zeroCases(void *args)
+{
+    double result;
+
+    result = SDL_atan(0.0);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Atan(%f), expected %f, got %f",
+                        0.0, 0.0, result);
+
+    result = SDL_atan(-0.0);
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Atan(%f), expected %f, got %f",
+                        -0.0, -0.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for nan.
+ */
+static int
+atan_nanCase(void *args)
+{
+    const double result = SDL_atan(NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Atan(%f), expected %f, got %f",
+                        NAN, NAN, result);
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks arc tangent precision for the first 10 decimals.
+ */
+static int
+atan_precisionTest(void *args)
+{
+    /* Checks angles from 9PI/20 -> -9PI/20 with steps of 1/20th */
+    const d_to_d precision_cases[] = {
+        { 6.313751514675041, 14137166941.0 },
+        { 3.0776835371752527, 12566370614.0 },
+        { 1.9626105055051504, 10995574287.0 },
+        { 1.3763819204711734, 9424777960.0 },
+        { 1.0, 7853981633.0 },
+        { 0.7265425280053609, 6283185307.0 },
+        { 0.5095254494944288, 4712388980.0 },
+        { 0.3249196962329063, 3141592653.0 },
+        { 0.15838444032453627, 1570796326.0 },
+        { -0.15838444032453627, -1570796326.0 },
+        { -0.3249196962329063, -3141592653.0 },
+        { -0.5095254494944288, -4712388980.0 },
+        { -0.7265425280053609, -6283185307.0 },
+        { -1.0, -7853981633.0 },
+        { -1.3763819204711734, -9424777960.0 },
+        { -1.9626105055051504, -10995574287.0 },
+        { -3.0776835371752527, -12566370614.0 },
+        { -6.313751514675041, -14137166941.0 },
+    };
+    return helper_dtod_approx("Atan", SDL_atan, precision_cases, SDL_arraysize(precision_cases));
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -2705,6 +2792,25 @@ static const SDLTest_TestCaseReference asinTestPrecision = {
     "Check asin precision to the tenth decimal", TEST_ENABLED
 };
 
+/* SDL_atan test cases */
+
+static const SDLTest_TestCaseReference atanTestLimit = {
+    (SDLTest_TestCaseFp) atan_limitCases, "atan_limitCases",
+    "Check the edge of the domain (+/- infinity)", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atanTestZero = {
+    (SDLTest_TestCaseFp) atan_zeroCases, "atan_zeroCases",
+    "Check for positive and negative zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atanTestNan = {
+    (SDLTest_TestCaseFp) atan_nanCase, "atan_nanCase",
+    "Check the NaN special case", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atanTestPrecision = {
+    (SDLTest_TestCaseFp) atan_precisionTest, "atan_precisionTest",
+    "Check atan precision to the tenth decimal", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -2757,6 +2863,8 @@ static const SDLTest_TestCaseReference *mathTests[] = {
     &acosTestLimit, &acosTestOutOfDomain, &acosTestNan, &acosTestPrecision,
 
     &asinTestLimit, &asinTestOutOfDomain, &asinTestNan, &asinTestPrecision,
+
+    &atanTestLimit, &atanTestZero, &atanTestNan, &atanTestPrecision,
 
     NULL
 };
