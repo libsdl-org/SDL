@@ -1137,8 +1137,8 @@ static SDL_bool OS2_GetWindowWMInfo(_THIS, SDL_Window * window,
         return SDL_TRUE;
     }
 
-    SDL_SetError("Application not compiled with SDL %u.%u",
-                 SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+    SDL_SetError("Application not compiled with SDL %u",
+                 SDL_MAJOR_VERSION);
     return SDL_FALSE;
 }
 
