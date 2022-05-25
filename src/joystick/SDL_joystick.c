@@ -2063,6 +2063,13 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
 }
 
 SDL_bool
+SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_XBoxOneController);
+}
+
+SDL_bool
 SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
 {
     if (vendor_id == USB_VENDOR_MICROSOFT) {
