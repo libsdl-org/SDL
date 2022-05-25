@@ -1524,7 +1524,7 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
 
 void SDL_hid_ble_scan(SDL_bool active)
 {
-#if __IPHONEOS__ || __TVOS__
+#if !SDL_HIDAPI_DISABLED && (__IPHONEOS__ || __TVOS__)
     hid_ble_scan(active);
 #endif
 }
