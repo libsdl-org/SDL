@@ -19,6 +19,9 @@
 #define EULER M_E
 #endif
 
+/* Margin of error for imprecise tests */
+#define EPSILON 1.0E-10
+
 /* ================= Test Structs ================== */
 
 /**
@@ -51,7 +54,8 @@ typedef double(SDLCALL *d_to_d_func)(double);
 typedef double(SDLCALL *dd_to_d_func)(double, double);
 
 /**
- * \brief Runs all the cases on a given function with a signature double -> double
+ * \brief Runs all the cases on a given function with a signature double -> double.
+ * The result is expected to be exact.
  *
  * \param func_name, the name of the tested function.
  * \param func, the function to call.
@@ -76,13 +80,8 @@ helper_dtod(const char *func_name, d_to_d_func func,
 }
 
 /**
- * \brief Runs all the cases on a given function with a signature double -> double,
- * checks the first ten digits of the result (truncated).
- *
- * This function is used to test functions with inaccurate results such as trigonometric
- * functions where angles such as PI/2 can't be accurately represented.
- *
- * \note Tests may fail if SDL_trunc is not functional.
+ * \brief Runs all the cases on a given function with a signature double -> double.
+ * Checks if the result between expected +/- EPSILON.
  *
  * \param func_name, the name of the tested function.
  * \param func, the function to call.
@@ -90,17 +89,20 @@ helper_dtod(const char *func_name, d_to_d_func func,
  * \param cases_size, the size of the cases array.
  */
 static int
-helper_dtod_approx(const char *func_name, d_to_d_func func,
-                   const d_to_d *cases, const size_t cases_size)
+helper_dtod_inexact(const char *func_name, d_to_d_func func,
+                    const d_to_d *cases, const size_t cases_size)
 {
     Uint32 i;
     for (i = 0; i < cases_size; i++) {
-        const double result = func(cases[i].input) * 1.0E10;
-        SDLTest_AssertCheck(SDL_trunc(result) == cases[i].expected,
-                            "%s(%f), expected %f, got %f",
+        const double result = func(cases[i].input);
+        SDLTest_AssertCheck(result >= cases[i].expected - EPSILON &&
+                                result <= cases[i].expected + EPSILON,
+                            "%s(%f), expected [%f,%f], got %f",
                             func_name,
                             cases[i].input,
-                            cases[i].expected, result);
+                            cases[i].expected - EPSILON,
+                            cases[i].expected + EPSILON,
+                            result);
     }
 
     return TEST_COMPLETED;
@@ -1827,26 +1829,26 @@ static int
 cos_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { M_PI * 1.0 / 10.0, 9510565162.0 },
-        { M_PI * 2.0 / 10.0, 8090169943.0 },
-        { M_PI * 3.0 / 10.0, 5877852522.0 },
-        { M_PI * 4.0 / 10.0, 3090169943.0 },
+        { M_PI * 1.0 / 10.0, 0.9510565162 },
+        { M_PI * 2.0 / 10.0, 0.8090169943 },
+        { M_PI * 3.0 / 10.0, 0.5877852522 },
+        { M_PI * 4.0 / 10.0, 0.3090169943 },
         { M_PI * 5.0 / 10.0, 0.0 },
-        { M_PI * 6.0 / 10.0, -3090169943.0 },
-        { M_PI * 7.0 / 10.0, -5877852522.0 },
-        { M_PI * 8.0 / 10.0, -8090169943.0 },
-        { M_PI * 9.0 / 10.0, -9510565162.0 },
-        { M_PI * -1.0 / 10.0, 9510565162.0 },
-        { M_PI * -2.0 / 10.0, 8090169943.0 },
-        { M_PI * -3.0 / 10.0, 5877852522.0 },
-        { M_PI * -4.0 / 10.0, 3090169943.0 },
+        { M_PI * 6.0 / 10.0, -0.3090169943 },
+        { M_PI * 7.0 / 10.0, -0.5877852522 },
+        { M_PI * 8.0 / 10.0, -0.8090169943 },
+        { M_PI * 9.0 / 10.0, -0.9510565162 },
+        { M_PI * -1.0 / 10.0, 0.9510565162 },
+        { M_PI * -2.0 / 10.0, 0.8090169943 },
+        { M_PI * -3.0 / 10.0, 0.5877852522 },
+        { M_PI * -4.0 / 10.0, 0.3090169943 },
         { M_PI * -5.0 / 10.0, 0.0 },
-        { M_PI * -6.0 / 10.0, -3090169943.0 },
-        { M_PI * -7.0 / 10.0, -5877852522.0 },
-        { M_PI * -8.0 / 10.0, -8090169943.0 },
-        { M_PI * -9.0 / 10.0, -9510565162.0 }
+        { M_PI * -6.0 / 10.0, -0.3090169943 },
+        { M_PI * -7.0 / 10.0, -0.5877852522 },
+        { M_PI * -8.0 / 10.0, -0.8090169943 },
+        { M_PI * -9.0 / 10.0, -0.9510565162 }
     };
-    return helper_dtod_approx("Cos", SDL_cos, precision_cases, SDL_arraysize(precision_cases));
+    return helper_dtod_inexact("Cos", SDL_cos, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /**
@@ -1939,26 +1941,26 @@ static int
 sin_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { M_PI * 1.0 / 10.0, 3090169943.0 },
-        { M_PI * 2.0 / 10.0, 5877852522.0 },
-        { M_PI * 3.0 / 10.0, 8090169943.0 },
-        { M_PI * 4.0 / 10.0, 9510565162.0 },
-        { M_PI * 5.0 / 10.0, 10000000000.0 },
-        { M_PI * 6.0 / 10.0, 9510565162.0 },
-        { M_PI * 7.0 / 10.0, 8090169943.0 },
-        { M_PI * 8.0 / 10.0, 5877852522.0 },
-        { M_PI * 9.0 / 10.0, 3090169943.0 },
-        { M_PI * -1.0 / 10.0, -3090169943.0 },
-        { M_PI * -2.0 / 10.0, -5877852522.0 },
-        { M_PI * -3.0 / 10.0, -8090169943.0 },
-        { M_PI * -4.0 / 10.0, -9510565162.0 },
-        { M_PI * -5.0 / 10.0, -10000000000.0 },
-        { M_PI * -6.0 / 10.0, -9510565162.0 },
-        { M_PI * -7.0 / 10.0, -8090169943.0 },
-        { M_PI * -8.0 / 10.0, -5877852522.0 },
-        { M_PI * -9.0 / 10.0, -3090169943.0 }
+        { M_PI * 1.0 / 10.0, 0.3090169943 },
+        { M_PI * 2.0 / 10.0, 0.5877852522 },
+        { M_PI * 3.0 / 10.0, 0.8090169943 },
+        { M_PI * 4.0 / 10.0, 0.9510565162 },
+        { M_PI * 5.0 / 10.0, 1.0 },
+        { M_PI * 6.0 / 10.0, 0.9510565162 },
+        { M_PI * 7.0 / 10.0, 0.8090169943 },
+        { M_PI * 8.0 / 10.0, 0.5877852522 },
+        { M_PI * 9.0 / 10.0, 0.3090169943 },
+        { M_PI * -1.0 / 10.0, -0.3090169943 },
+        { M_PI * -2.0 / 10.0, -0.5877852522 },
+        { M_PI * -3.0 / 10.0, -0.8090169943 },
+        { M_PI * -4.0 / 10.0, -0.9510565162 },
+        { M_PI * -5.0 / 10.0, -1.0 },
+        { M_PI * -6.0 / 10.0, -0.9510565162 },
+        { M_PI * -7.0 / 10.0, -0.8090169943 },
+        { M_PI * -8.0 / 10.0, -0.5877852522 },
+        { M_PI * -9.0 / 10.0, -0.3090169943 }
     };
-    return helper_dtod_approx("Sin", SDL_sin, precision_cases, SDL_arraysize(precision_cases));
+    return helper_dtod_inexact("Sin", SDL_sin, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /**
@@ -2049,28 +2051,28 @@ static int
 tan_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { M_PI * 1.0 / 11.0, 2936264929.0 },
-        { M_PI * 2.0 / 11.0, 6426609771.0 },
-        { M_PI * 3.0 / 11.0, 11540615205.0 },
-        { M_PI * 4.0 / 11.0, 21896945629.0 },
-        { M_PI * 5.0 / 11.0, 69551527717.0 },
-        { M_PI * 6.0 / 11.0, -69551527717.0 },
-        { M_PI * 7.0 / 11.0, -21896945629.0 },
-        { M_PI * 8.0 / 11.0, -11540615205.0 },
-        { M_PI * 9.0 / 11.0, -6426609771.0 },
-        { M_PI * 10.0 / 11.0, -2936264929.0 },
-        { M_PI * -1.0 / 11.0, -2936264929.0 },
-        { M_PI * -2.0 / 11.0, -6426609771.0 },
-        { M_PI * -3.0 / 11.0, -11540615205.0 },
-        { M_PI * -4.0 / 11.0, -21896945629.0 },
-        { M_PI * -5.0 / 11.0, -69551527717.0 },
-        { M_PI * -6.0 / 11.0, 69551527717.0 },
-        { M_PI * -7.0 / 11.0, 21896945629.0 },
-        { M_PI * -8.0 / 11.0, 11540615205.0 },
-        { M_PI * -9.0 / 11.0, 6426609771.0 },
-        { M_PI * -10.0 / 11.0, 2936264929.0 }
+        { M_PI * 1.0 / 11.0, 0.2936264929 },
+        { M_PI * 2.0 / 11.0, 0.6426609771 },
+        { M_PI * 3.0 / 11.0, 1.1540615205 },
+        { M_PI * 4.0 / 11.0, 2.1896945629 },
+        { M_PI * 5.0 / 11.0, 6.9551527717 },
+        { M_PI * 6.0 / 11.0, -6.9551527717 },
+        { M_PI * 7.0 / 11.0, -2.1896945629 },
+        { M_PI * 8.0 / 11.0, -1.1540615205 },
+        { M_PI * 9.0 / 11.0, -0.6426609771 },
+        { M_PI * 10.0 / 11.0, -0.2936264929 },
+        { M_PI * -1.0 / 11.0, -0.2936264929 },
+        { M_PI * -2.0 / 11.0, -0.6426609771 },
+        { M_PI * -3.0 / 11.0, -1.1540615205 },
+        { M_PI * -4.0 / 11.0, -2.1896945629 },
+        { M_PI * -5.0 / 11.0, -6.9551527717 },
+        { M_PI * -6.0 / 11.0, 6.9551527717 },
+        { M_PI * -7.0 / 11.0, 2.1896945629 },
+        { M_PI * -8.0 / 11.0, 1.1540615205 },
+        { M_PI * -9.0 / 11.0, 0.6426609771 },
+        { M_PI * -10.0 / 11.0, 0.2936264929 }
     };
-    return helper_dtod_approx("Tan", SDL_tan, precision_cases, SDL_arraysize(precision_cases));
+    return helper_dtod_inexact("Tan", SDL_tan, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /* SDL_acos tests functions */
@@ -2137,28 +2139,28 @@ static int
 acos_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { 0.9, 4510268117.0 },
-        { 0.8, 6435011087.0 },
-        { 0.7, 7953988301.0 },
-        { 0.6, 9272952180.0 },
-        { 0.5, 10471975511.0 },
-        { 0.4, 11592794807.0 },
-        { 0.3, 12661036727.0 },
-        { 0.2, 13694384060.0 },
-        { 0.1, 14706289056.0 },
-        { 0.0, 15707963267.0 },
-        { -0.0, 15707963267.0 },
-        { -0.1, 16709637479.0 },
-        { -0.2, 17721542475.0 },
-        { -0.3, 18754889808.0 },
-        { -0.4, 19823131728.0 },
-        { -0.5, 20943951023.0 },
-        { -0.6, 22142974355.0 },
-        { -0.7, 23461938234.0 },
-        { -0.8, 24980915447.0 },
-        { -0.9, 26905658417.0 },
+        { 0.9, 0.4510268117 },
+        { 0.8, 0.6435011087 },
+        { 0.7, 0.7953988301 },
+        { 0.6, 0.9272952180 },
+        { 0.5, 1.0471975511 },
+        { 0.4, 1.1592794807 },
+        { 0.3, 1.2661036727 },
+        { 0.2, 1.3694384060 },
+        { 0.1, 1.4706289056 },
+        { 0.0, 1.5707963267 },
+        { -0.0, 1.5707963267 },
+        { -0.1, 1.6709637479 },
+        { -0.2, 1.7721542475 },
+        { -0.3, 1.8754889808 },
+        { -0.4, 1.9823131728 },
+        { -0.5, 2.0943951023 },
+        { -0.6, 2.2142974355 },
+        { -0.7, 2.3461938234 },
+        { -0.8, 2.4980915447 },
+        { -0.9, 2.6905658417 },
     };
-    return helper_dtod_approx("Acos", SDL_acos, precision_cases, SDL_arraysize(precision_cases));
+    return helper_dtod_inexact("Acos", SDL_acos, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /* SDL_asin tests functions */
@@ -2225,28 +2227,28 @@ static int
 asin_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { 0.9, 11197695149.0 },
-        { 0.8, 9272952180.0 },
-        { 0.7, 7753974966.0 },
-        { 0.6, 6435011087.0 },
-        { 0.5, 5235987755.0 },
-        { 0.4, 4115168460.0 },
-        { 0.3, 3046926540.0 },
-        { 0.2, 2013579207.0 },
-        { 0.1, 1001674211.0 },
+        { 0.9, 1.1197695149 },
+        { 0.8, 0.9272952180 },
+        { 0.7, 0.7753974966 },
+        { 0.6, 0.6435011087 },
+        { 0.5, 0.5235987755 },
+        { 0.4, 0.4115168460 },
+        { 0.3, 0.3046926540 },
+        { 0.2, 0.2013579207 },
+        { 0.1, 0.1001674211 },
         { 0.0, 0.0 },
         { -0.0, -0.0 },
-        { -0.1, -1001674211.0 },
-        { -0.2, -2013579207.0 },
-        { -0.3, -3046926540.0 },
-        { -0.4, -4115168460.0 },
-        { -0.5, -5235987755.0 },
-        { -0.6, -6435011087.0 },
-        { -0.7, -7753974966.0 },
-        { -0.8, -9272952180.0 },
-        { -0.9, -11197695149.0 }
+        { -0.1, -0.1001674211 },
+        { -0.2, -0.2013579207 },
+        { -0.3, -0.3046926540 },
+        { -0.4, -0.4115168460 },
+        { -0.5, -0.5235987755 },
+        { -0.6, -0.6435011087 },
+        { -0.7, -0.7753974966 },
+        { -0.8, -0.9272952180 },
+        { -0.9, -1.1197695149 }
     };
-    return helper_dtod_approx("Asin", SDL_asin, precision_cases, SDL_arraysize(precision_cases));
+    return helper_dtod_inexact("Asin", SDL_asin, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /* SDL_atan tests functions */
@@ -2314,26 +2316,26 @@ atan_precisionTest(void *args)
 {
     /* Checks angles from 9PI/20 -> -9PI/20 with steps of 1/20th */
     const d_to_d precision_cases[] = {
-        { 6.313751514675041, 14137166941.0 },
-        { 3.0776835371752527, 12566370614.0 },
-        { 1.9626105055051504, 10995574287.0 },
-        { 1.3763819204711734, 9424777960.0 },
-        { 1.0, 7853981633.0 },
-        { 0.7265425280053609, 6283185307.0 },
-        { 0.5095254494944288, 4712388980.0 },
-        { 0.3249196962329063, 3141592653.0 },
-        { 0.15838444032453627, 1570796326.0 },
-        { -0.15838444032453627, -1570796326.0 },
-        { -0.3249196962329063, -3141592653.0 },
-        { -0.5095254494944288, -4712388980.0 },
-        { -0.7265425280053609, -6283185307.0 },
-        { -1.0, -7853981633.0 },
-        { -1.3763819204711734, -9424777960.0 },
-        { -1.9626105055051504, -10995574287.0 },
-        { -3.0776835371752527, -12566370614.0 },
-        { -6.313751514675041, -14137166941.0 },
+        { 6.313751514675041, 1.4137166941 },
+        { 3.0776835371752527, 1.2566370614 },
+        { 1.9626105055051504, 1.0995574287 },
+        { 1.3763819204711734, 0.9424777960 },
+        { 1.0, 0.7853981633 },
+        { 0.7265425280053609, 0.6283185307 },
+        { 0.5095254494944288, 0.4712388980 },
+        { 0.3249196962329063, 0.3141592653 },
+        { 0.15838444032453627, 0.1570796326 },
+        { -0.15838444032453627, -0.1570796326 },
+        { -0.3249196962329063, -0.3141592653 },
+        { -0.5095254494944288, -0.4712388980 },
+        { -0.7265425280053609, -0.6283185307 },
+        { -1.0, -0.7853981633 },
+        { -1.3763819204711734, -0.9424777960 },
+        { -1.9626105055051504, -1.0995574287 },
+        { -3.0776835371752527, -1.2566370614 },
+        { -6.313751514675041, -1.4137166941 },
     };
-    return helper_dtod_approx("Atan", SDL_atan, precision_cases, SDL_arraysize(precision_cases));
+    return helper_dtod_inexact("Atan", SDL_atan, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /* ================= Test References ================== */
