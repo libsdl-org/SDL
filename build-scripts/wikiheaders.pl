@@ -24,7 +24,22 @@ foreach (@ARGV) {
 my $wordwrap_mode = 'mediawiki';
 sub wordwrap_atom {   # don't call this directly.
     my $str = shift;
-    return fill('', '', $str);
+    my $retval = '';
+
+    # wordwrap but leave links intact, even if they overflow.
+    if ($wordwrap_mode eq 'mediawiki') {
+        while ($str =~ s/(.*?)\s*(\[https?\:\/\/.*?\s+.*?\])\s*//ms) {
+            $retval .= fill('', '', $1); # wrap it.
+            $retval .= "\n$2\n";  # don't wrap it.
+        }
+    } elsif ($wordwrap_mode eq 'md') {
+        while ($str =~ s/(.*?)\s*(\[.*?\]\(https?\:\/\/.*?\))\s*//ms) {
+            $retval .= fill('', '', $1); # wrap it.
+            $retval .= "\n$2\n";  # don't wrap it.
+        }
+    }
+
+    return $retval . fill('', '', $str);
 }
 
 sub wordwrap_with_bullet_indent {  # don't call this directly.
@@ -154,6 +169,9 @@ sub wikify_chunk {
 
         # Make some Markdown things into MediaWiki...
 
+        # links
+        $str =~ s/\[(.*?)\]\((https?\:\/\/.*?)\)/\[$2 $1\]/g;
+
         # bold+italic
         $str =~ s/\*\*\*(.*?)\*\*\*/'''''$1'''''/gms;
 
@@ -220,6 +238,9 @@ sub dewikify_chunk {
 
             $str =~ s/\[\[(SDL_[a-zA-Z0-9_]+)\]\]/$1/gms;  # Dump obvious wikilinks.
 
+            # links
+            $str =~ s/\[(https?\:\/\/.*?)\s+(.*?)\]/\[$2\]\($1\)/g;
+
             # <code></code> is also popular.  :/
             $str =~ s/\<code>(.*?)<\/code>/`$1`/gms;
 
@@ -243,6 +264,9 @@ sub dewikify_chunk {
         $str =~ s/\./\\[char46]/gms;  # make sure these can't become control codes.
         if ($wikitype eq 'mediawiki') {
             $str =~ s/\s*\[\[(SDL_[a-zA-Z0-9_]+)\]\]\s*/\n.BR $1\n/gms;  # Dump obvious wikilinks.
+
+            # links
+            $str =~ s/\[(https?\:\/\/.*?)\s+(.*?)\]/\n.URL "$1" "$2"\n/g;
 
             # <code></code> is also popular.  :/
             $str =~ s/\s*\<code>(.*?)<\/code>\s*/\n.BR $1\n/gms;
@@ -1137,6 +1161,13 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".\\\" Please report issues in the generation of this manpage from the wiki at:\n";
         $str .= ".\\\"   https://github.com/libsdl-org/SDL/issues/new?title=Misgenerated%20manpage%20for%20$fn\n";
         $str .= ".\\\" SDL can be found at https://libsdl.org/\n";
+
+        # Define a .URL macro. The "www.tmac" thing decides if we're using GNU roff (which has a .URL macro already), and if so, overrides the macro we just created.
+        # This wizadry is from https://web.archive.org/web/20060102165607/http://people.debian.org/~branden/talks/wtfm/wtfm.pdf
+        $str .= ".de URL\n";
+        $str .= '\\$2 \(laURL: \\$1 \(ra\\$3' . "\n";
+        $str .= "..\n";
+        $str .= '.if \n[.g] .mso www.tmac' . "\n";
 
         $str .= ".TH $fn 3 \"SDL $sdlversion\" \"Simple Directmedia Layer\" \"SDL$majorver FUNCTIONS\"\n";
         $str .= ".SH NAME\n";
