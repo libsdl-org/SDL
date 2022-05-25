@@ -4,7 +4,7 @@
 
 # shellcheck disable=SC2006,SC2268 # see below for rationale
 
-timestamp='2022-05-08'
+timestamp='2022-05-25'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1378,8 +1378,11 @@ EOF
     BePC:Haiku:*:*)	# Haiku running on Intel PC compatible.
 	GUESS=i586-pc-haiku
 	;;
-    x86_64:Haiku:*:*)
-	GUESS=x86_64-unknown-haiku
+    ppc:Haiku:*:*)	# Haiku running on Apple PowerPC
+	GUESS=powerpc-apple-haiku
+	;;
+    *:Haiku:*:*)	# Haiku modern gcc (not bound by BeOS compat)
+	GUESS=$UNAME_MACHINE-unknown-haiku
 	;;
     SX-4:SUPER-UX:*:*)
 	GUESS=sx4-nec-superux$UNAME_RELEASE
