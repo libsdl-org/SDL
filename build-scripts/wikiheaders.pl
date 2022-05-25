@@ -4,6 +4,8 @@ use warnings;
 use strict;
 use Text::Wrap;
 
+$Text::Wrap::huge = 'overflow';
+
 my $srcpath = undef;
 my $wikipath = undef;
 my $warn_about_missing = 0;
