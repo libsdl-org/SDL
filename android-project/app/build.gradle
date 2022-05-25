@@ -2,15 +2,12 @@ def buildAsLibrary = project.hasProperty('BUILD_AS_LIBRARY');
 def buildAsApplication = !buildAsLibrary
 if (buildAsApplication) {
     apply plugin: 'com.android.application'
-}
-else {
+} else {
     apply plugin: 'com.android.library'
 }
 
 android {
-    if (buildAsApplication) {
-        namespace "org.libsdl.app"
-    }
+    namespace "org.libsdl.app"
     compileSdkVersion 34
     defaultConfig {
         minSdkVersion 19
@@ -36,10 +33,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    applicationVariants.all { variant ->
-        tasks["merge${variant.name.capitalize()}Assets"]
-            .dependsOn("externalNativeBuild${variant.name.capitalize()}")
+
+    if (buildAsApplication) {
+        applicationVariants.all { variant ->
+            tasks["merge${variant.name.capitalize()}Assets"]
+                .dependsOn("externalNativeBuild${variant.name.capitalize()}")
+        }
     }
+
     if (!project.hasProperty('EXCLUDE_NATIVE_LIBS')) {
         sourceSets.main {
             jniLibs.srcDir 'libs'
@@ -60,12 +61,9 @@ android {
 
     if (buildAsLibrary) {
         libraryVariants.all { variant ->
-            variant.outputs.each { output ->
-                def outputFile = output.outputFile
-                if (outputFile != null && outputFile.name.endsWith(".aar")) {
-                    def fileName = "org.libsdl.app.aar";
-                    output.outputFile = new File(outputFile.parent, fileName);
-                }
+            variant.outputs.all {
+                def fileName = "org.libsdl.app.aar";
+                outputFileName = fileName
             }
         }
     }
