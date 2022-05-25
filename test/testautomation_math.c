@@ -22,6 +22,9 @@
 /* Margin of error for imprecise tests */
 #define EPSILON 1.0E-10
 
+/* Square root of 3 */
+#define SQRT3 1.7320508075688771931766041234368458390235900878906250
+
 /* ================= Test Structs ================== */
 
 /**
@@ -109,7 +112,8 @@ helper_dtod_inexact(const char *func_name, d_to_d_func func,
 }
 
 /**
- * \brief Runs all the cases on a given function with a signature (double, double) -> double
+ * \brief Runs all the cases on a given function with a signature
+ * (double, double) -> double. The result is expected to be exact.
  *
  * \param func_name, the name of the tested function.
  * \param func, the function to call.
@@ -128,6 +132,35 @@ helper_ddtod(const char *func_name, dd_to_d_func func,
                             func_name,
                             cases[i].x_input, cases[i].y_input,
                             cases[i].expected, result);
+    }
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Runs all the cases on a given function with a signature
+ * (double, double) -> double. Checks if the result between expected +/- EPSILON.
+ *
+ * \param func_name, the name of the tested function.
+ * \param func, the function to call.
+ * \param cases, an array of all the cases.
+ * \param cases_size, the size of the cases array.
+ */
+static int
+helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
+                     const dd_to_d *cases, const size_t cases_size)
+{
+    Uint32 i;
+    for (i = 0; i < cases_size; i++) {
+        const double result = func(cases[i].x_input, cases[i].y_input);
+        SDLTest_AssertCheck(result >= cases[i].expected - EPSILON &&
+                                result <= cases[i].expected + EPSILON,
+                            "%s(%f,%f), expected [%f,%f], got %f",
+                            func_name,
+                            cases[i].x_input, cases[i].y_input,
+                            cases[i].expected - EPSILON,
+                            cases[i].expected + EPSILON,
+                            result);
     }
 
     return TEST_COMPLETED;
@@ -2338,6 +2371,234 @@ atan_precisionTest(void *args)
     return helper_dtod_inexact("Atan", SDL_atan, precision_cases, SDL_arraysize(precision_cases));
 }
 
+/* SDL_atan2 tests functions */
+
+/* Zero cases */
+
+/**
+ * \brief Checks for both argument being 0.
+ */
+static int
+atan2_bothZeroCases(void *args)
+{
+    const dd_to_d cases[] = {
+        { 0.0, 0.0, 0.0 },
+        { -0.0, 0.0, -0.0 },
+        { 0.0, -0.0, M_PI },
+        { -0.0, -0.0, -M_PI },
+    };
+    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+}
+
+/**
+ * \brief Checks for the cases with Y=+/-0.
+ */
+static int
+atan2_yZeroCases(void *args)
+{
+    const dd_to_d cases[] = {
+        { 0.0, 1.0, 0.0 },
+        { 0.0, -1.0, M_PI },
+        { -0.0, 1.0, -0.0 },
+        { -0.0, -1.0, -M_PI }
+    };
+    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+}
+
+/**
+ * \brief Checks for the cases with X=+/-0.
+ */
+static int
+atan2_xZeroCases(void *args)
+{
+    const dd_to_d cases[] = {
+        { 1.0, 0.0, M_PI / 2.0 },
+        { -1.0, 0.0, -M_PI / 2.0 },
+        { 1.0, -0.0, M_PI / 2.0 },
+        { -1.0, -0.0, -M_PI / 2.0 }
+    };
+    return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
+}
+
+/* Infinity cases */
+
+/**
+ * \brief Checks for both argument being infinity.
+ */
+static int
+atan2_bothInfCases(void *args)
+{
+    double result;
+
+    result = SDL_atan2(INFINITY, INFINITY);
+    SDLTest_AssertCheck(M_PI / 4.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        INFINITY, INFINITY, M_PI / 4.0, result);
+
+    result = SDL_atan2(INFINITY, -INFINITY);
+    SDLTest_AssertCheck(3.0 * M_PI / 4.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        INFINITY, -INFINITY, 3.0 * M_PI / 4.0, result);
+
+    result = SDL_atan2(-INFINITY, INFINITY);
+    SDLTest_AssertCheck(-M_PI / 4.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        -INFINITY, INFINITY, -M_PI / 4.0, result);
+
+    result = SDL_atan2(-INFINITY, -INFINITY);
+    SDLTest_AssertCheck(-3.0 * M_PI / 4.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        -INFINITY, -INFINITY, -3.0 * M_PI / 4.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for the cases with Y=+/-inf.
+ */
+static int
+atan2_yInfCases(void *args)
+{
+    double result;
+
+    result = SDL_atan2(INFINITY, 1.0);
+    SDLTest_AssertCheck(M_PI / 2.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        INFINITY, 1.0, M_PI / 2.0, result);
+
+    result = SDL_atan2(INFINITY, -1.0);
+    SDLTest_AssertCheck(M_PI / 2.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        INFINITY, -1.0, M_PI / 2.0, result);
+
+    result = SDL_atan2(-INFINITY, 1.0);
+    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        -INFINITY, 1.0, -M_PI / 2.0, result);
+
+    result = SDL_atan2(-INFINITY, -1.0);
+    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        -INFINITY, -1.0, -M_PI / 2.0, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for the cases with X=+/-inf.
+ */
+static int
+atan2_xInfCases(void *args)
+{
+    double result;
+
+    result = SDL_atan2(1.0, INFINITY);
+    SDLTest_AssertCheck(0.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        1.0, INFINITY, 0.0, result);
+
+    result = SDL_atan2(-1.0, INFINITY);
+    SDLTest_AssertCheck(-0.0 == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        -1.0, INFINITY, -0.0, result);
+
+    result = SDL_atan2(1.0, -INFINITY);
+    SDLTest_AssertCheck(M_PI == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        1.0, -INFINITY, M_PI, result);
+
+    result = SDL_atan2(-1.0, -INFINITY);
+    SDLTest_AssertCheck(-M_PI == result,
+                        "Atan2(%f,%f), expected %f, got %f",
+                        -1.0, -INFINITY, -M_PI, result);
+
+    return TEST_COMPLETED;
+}
+
+/* Miscelanious cases */
+
+/**
+ * \brief Checks for the nan cases.
+ */
+static int
+atan2_nanCases(void *args)
+{
+    double result;
+
+    result = SDL_atan2(NAN, NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Atan2(%f,%f), expected %f, got %f",
+                        NAN, NAN, NAN, result);
+
+    result = SDL_atan2(NAN, 1.0);
+    SDLTest_AssertCheck(isnan(result),
+                        "Atan2(%f,%f), expected %f, got %f",
+                        NAN, 1.0, NAN, result);
+
+    result = SDL_atan2(1.0, NAN);
+    SDLTest_AssertCheck(isnan(result),
+                        "Atan2(%f,%f), expected %f, got %f",
+                        1.0, NAN, NAN, result);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * \brief Checks for the top right quadrant (X > 0, Y > 0).
+ */
+static int
+atan2_topRightQuadrantTest(void *args)
+{
+    const dd_to_d top_right_cases[] = {
+        { 1.0, 1.0, M_PI / 4.0 },
+        { SQRT3, 3.0, M_PI / 6.0 },
+        { SQRT3, 1.0, M_PI / 3.0 }
+    };
+    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, top_right_cases, SDL_arraysize(top_right_cases));
+}
+
+/**
+ * \brief Checks for the top left quadrant (X < 0, Y > 0).
+ */
+static int
+atan2_topLeftQuadrantTest(void *args)
+{
+    const dd_to_d top_left_cases[] = {
+        { 1.0, -1.0, 3.0 * M_PI / 4.0 },
+        { SQRT3, -3.0, 5.0 * M_PI / 6.0 },
+        { SQRT3, -1.0, 2.0 * M_PI / 3.0 }
+    };
+    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, top_left_cases, SDL_arraysize(top_left_cases));
+}
+
+/**
+ * \brief Checks for the bottom right quadrant (X > 0, Y < 0).
+ */
+static int
+atan2_bottomRightQuadrantTest(void *args)
+{
+    const dd_to_d bottom_right_cases[] = {
+        { -1.0, 1.0, -M_PI / 4 },
+        { -SQRT3, 3.0, -M_PI / 6.0 },
+        { -SQRT3, 1.0, -M_PI / 3.0 }
+    };
+    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, bottom_right_cases, SDL_arraysize(bottom_right_cases));
+}
+
+/**
+ * \brief Checks for the bottom left quadrant (X < 0, Y < 0).
+ */
+static int
+atan2_bottomLeftQuadrantTest(void *args)
+{
+    const dd_to_d bottom_left_cases[] = {
+        { -1.0, -1.0, -3.0 * M_PI / 4.0 },
+        { -SQRT3, -3.0, -5.0 * M_PI / 6.0 },
+        { -SQRT3, -1.0, -4.0 * M_PI / 6.0 }
+    };
+    return helper_ddtod_inexact("SDL_atan2", SDL_atan2, bottom_left_cases, SDL_arraysize(bottom_left_cases));
+}
+
 /* ================= Test References ================== */
 
 /* SDL_floor test cases */
@@ -2813,6 +3074,53 @@ static const SDLTest_TestCaseReference atanTestPrecision = {
     "Check atan precision to the tenth decimal", TEST_ENABLED
 };
 
+/* SDL_atan2 test cases */
+
+static const SDLTest_TestCaseReference atan2TestZero1 = {
+    (SDLTest_TestCaseFp) atan2_bothZeroCases, "atan2_bothZeroCases",
+    "Check for both arguments being zero", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestZero2 = {
+    (SDLTest_TestCaseFp) atan2_yZeroCases, "atan2_yZeroCases",
+    "Check for y=0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestZero3 = {
+    (SDLTest_TestCaseFp) atan2_xZeroCases, "atan2_xZeroCases",
+    "Check for x=0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestInf1 = {
+    (SDLTest_TestCaseFp) atan2_bothInfCases, "atan2_bothInfCases",
+    "Check for both arguments being infinity", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestInf2 = {
+    (SDLTest_TestCaseFp) atan2_yInfCases, "atan2_yInfCases",
+    "Check for y=0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestInf3 = {
+    (SDLTest_TestCaseFp) atan2_xInfCases, "atan2_xInfCases",
+    "Check for x=0", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestNan = {
+    (SDLTest_TestCaseFp) atan2_nanCases, "atan2_nanCases",
+    "Check the NaN special cases", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestQuadrantTopRight = {
+    (SDLTest_TestCaseFp) atan2_topRightQuadrantTest, "atan2_topRightQuadrantTest",
+    "Checks values in the top right quadrant", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestQuadrantTopLeft = {
+    (SDLTest_TestCaseFp) atan2_topLeftQuadrantTest, "atan2_topLeftQuadrantTest",
+    "Checks values in the top left quadrant", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestQuadrantBottomRight = {
+    (SDLTest_TestCaseFp) atan2_bottomRightQuadrantTest, "atan2_bottomRightQuadrantTest",
+    "Checks values in the bottom right quadrant", TEST_ENABLED
+};
+static const SDLTest_TestCaseReference atan2TestQuadrantBottomLeft = {
+    (SDLTest_TestCaseFp) atan2_bottomLeftQuadrantTest, "atan2_bottomLeftQuadrantTest",
+    "Checks values in the bottom left quadrant", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *mathTests[] = {
     &floorTestInf, &floorTestZero, &floorTestNan,
     &floorTestRound, &floorTestFraction, &floorTestRange,
@@ -2867,6 +3175,11 @@ static const SDLTest_TestCaseReference *mathTests[] = {
     &asinTestLimit, &asinTestOutOfDomain, &asinTestNan, &asinTestPrecision,
 
     &atanTestLimit, &atanTestZero, &atanTestNan, &atanTestPrecision,
+
+    &atan2TestZero1, &atan2TestZero2, &atan2TestZero3,
+    &atan2TestInf1, &atan2TestInf2, &atan2TestInf3,
+    &atan2TestNan, &atan2TestQuadrantTopRight, &atan2TestQuadrantTopLeft,
+    &atan2TestQuadrantBottomRight, &atan2TestQuadrantBottomLeft,
 
     NULL
 };
