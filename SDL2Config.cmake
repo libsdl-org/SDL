@@ -7,6 +7,9 @@ endif()
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL2staticTargets.cmake")
   include("${CMAKE_CURRENT_LIST_DIR}/SDL2staticTargets.cmake")
 endif()
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL2testTargets.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/SDL2testTargets.cmake")
+endif()
 
 # on static-only builds create an alias
 if(NOT TARGET SDL2::SDL2 AND TARGET SDL2::SDL2-static)

@@ -346,6 +346,7 @@ if(EMSCRIPTEN)
   set(SDL_ATOMIC_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
+  set(SDL_TEST_ENABLED_BY_DEFAULT OFF)
 endif()
 
 if(VITA OR PSP)
@@ -370,6 +371,10 @@ if (NOT DEFINED SDL_SHARED_ENABLED_BY_DEFAULT)
     set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
     set(SDL_STATIC_ENABLED_BY_DEFAULT OFF)
   endif()
+endif()
+
+if (NOT DEFINED SDL_TEST_ENABLED_BY_DEFAULT)
+  set(SDL_TEST_ENABLED_BY_DEFAULT ON)
 endif()
 
 set(LONGESTOPTIONNAME 0)  # set_option and friends will change this.
@@ -469,9 +474,10 @@ set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors
 
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
+set(SDL_TEST   ${SDL_TEST_ENABLED_BY_DEFAULT} CACHE BOOL "Build the SDL2_test library")
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
-set_option(SDL_TEST            "Build the test directory" OFF)
+dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
 set_option(SDL_INSTALL_TESTS   "Install test-cases" OFF)
 
 if(VITA)
@@ -2987,11 +2993,14 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 ##### Tests #####
 
 if(SDL_TEST)
-  include(CTest)
   include_directories(BEFORE "${SDL2_BINARY_DIR}/include")
   include_directories(AFTER "${SDL2_SOURCE_DIR}/include")
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
   add_library(SDL2_test STATIC ${TEST_SOURCES})
+  add_library(SDL2::SDL2test ALIAS SDL2_test)
+  set_target_properties(SDL2_test PROPERTIES
+      EXPORT_NAME SDL2test)
+  target_include_directories(SDL2_test PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
 endif()
 
 ##### Installation targets #####
@@ -3012,6 +3021,13 @@ if(NOT SDL2_DISABLE_INSTALL)
 
   if(SDL_STATIC)
     install(TARGETS SDL2-static EXPORT SDL2staticTargets
+      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+  endif()
+
+  if(SDL_TEST)
+    install(TARGETS SDL2_test EXPORT SDL2testTargets
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -3049,6 +3065,14 @@ if(NOT SDL2_DISABLE_INSTALL)
   if(SDL_STATIC)
     install(EXPORT SDL2staticTargets
       FILE SDL2staticTargets.cmake
+      NAMESPACE SDL2::
+      DESTINATION ${PKG_PREFIX}
+    )
+  endif()
+
+  if(SDL_TEST)
+    install(EXPORT SDL2testTargets
+      FILE SDL2testTargets.cmake
       NAMESPACE SDL2::
       DESTINATION ${PKG_PREFIX}
     )
@@ -3119,7 +3143,8 @@ endif()
 
 ##### Tests subproject (must appear after the install/uninstall targets) #####
 
-if(SDL_TEST)
+if(SDL_TESTS)
+  enable_testing()
   add_subdirectory(test)
 endif()
 
