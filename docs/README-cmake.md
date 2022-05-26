@@ -73,7 +73,7 @@ To use, set the following CMake variables when running CMake's configuration sta
 
 - for iOS-Simulator, using the latest, installed SDK, and building SDL test apps (as .app bundles):
 
-    `cmake ~/sdl -DSDL_TEST=1 -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_ARCHITECTURES=x86_64`
+    `cmake ~/sdl -DSDL_TESTS=1 -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_ARCHITECTURES=x86_64`
 
 - for tvOS-Simulator, using the latest, installed SDK:
 
