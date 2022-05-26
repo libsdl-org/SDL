@@ -56,6 +56,13 @@ set(CMAKE_MODULE_PATH "${SDL2_SOURCE_DIR}/cmake")
 include(${SDL2_SOURCE_DIR}/cmake/macros.cmake)
 include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 
+# Enable large file support on 32-bit glibc, so that we can access files
+# with large inode numbers
+check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
+if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+    add_compile_definitions(PRIVATE _FILE_OFFSET_BITS=64)
+endif()
+
 # See docs/release_checklist.md
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 23)
