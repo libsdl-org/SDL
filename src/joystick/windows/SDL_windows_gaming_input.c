@@ -34,6 +34,11 @@
 #include <cfgmgr32.h>
 #include <roapi.h>
 
+#ifdef __MINGW32__
+#define __FIReference_1_int __FIReference_1_INT32
+#define __FIReference_1_int_get_Value __FIReference_1_INT32_get_Value
+#define __FIReference_1_int_Release __FIReference_1_INT32_Release
+#endif
 
 struct joystick_hwdata
 {
