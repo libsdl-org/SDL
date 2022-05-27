@@ -4,7 +4,7 @@
 # This file is meant to be placed in Resources/CMake of a SDL2 framework
 
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../Headers/SDL_version.h")
-    message(AUTHOR_WARNING "Could not find SDL_version.h. This script is meant to be placed in the root of SDL2-devel-2.x.y-VC")
+    message(AUTHOR_WARNING "Could not find SDL_version.h. This script is meant to be placed in the Resources/CMake directory of SDL2.framework")
     return()
 endif()
 
