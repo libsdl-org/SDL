@@ -35,6 +35,13 @@
 #include <roapi.h>
 
 
+#ifdef ____FIReference_1_INT32_INTERFACE_DEFINED__
+/* MinGW-64 uses __FIReference_1_INT32 instead of Microsoft's __FIReference_1_int */
+#define __FIReference_1_int __FIReference_1_INT32
+#define __FIReference_1_int_get_Value __FIReference_1_INT32_get_Value
+#define __FIReference_1_int_Release __FIReference_1_INT32_Release
+#endif
+
 struct joystick_hwdata
 {
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller;
