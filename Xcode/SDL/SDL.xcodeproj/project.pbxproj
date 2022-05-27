@@ -3413,6 +3413,9 @@
 		F376F7262559B76800CFC0BC /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F7252559B76800CFC0BC /* CoreFoundation.framework */; };
 		F376F7282559B77100CFC0BC /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F7272559B77100CFC0BC /* CoreAudio.framework */; };
 		F376F7332559B79B00CFC0BC /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F6DE2559B5BA00CFC0BC /* GameController.framework */; };
+		F37A8E1A28405AA100C38E95 /* CMake in Resources */ = {isa = PBXBuildFile; fileRef = F37A8E1928405AA100C38E95 /* CMake */; };
+		F37A8E1B28405AA100C38E95 /* CMake in Resources */ = {isa = PBXBuildFile; fileRef = F37A8E1928405AA100C38E95 /* CMake */; };
+		F37A8E1C28405AA100C38E95 /* CMake in Resources */ = {isa = PBXBuildFile; fileRef = F37A8E1928405AA100C38E95 /* CMake */; };
 		F37DC5F325350EBC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F37DC5F525350ECC0002E6F7 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F38233852738EB8600F7F527 /* SDL_hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = F38233842738EB8600F7F527 /* SDL_hidapi.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -4011,6 +4014,7 @@
 		F376F7212559B74900CFC0BC /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		F376F7252559B76800CFC0BC /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		F376F7272559B77100CFC0BC /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreAudio.framework; sourceTree = DEVELOPER_DIR; };
+		F37A8E1928405AA100C38E95 /* CMake */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CMake; sourceTree = "<group>"; };
 		F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
 		F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreHaptics.framework; sourceTree = DEVELOPER_DIR; };
 		F38233842738EB8600F7F527 /* SDL_hidapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi.h; sourceTree = "<group>"; };
@@ -5223,6 +5227,7 @@
 		F59C710100D5CB5801000001 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				F37A8E1928405AA100C38E95 /* CMake */,
 				00794D3F09D0C461003FC8A1 /* License.txt */,
 				F59C710300D5CB5801000001 /* ReadMe.txt */,
 			);
@@ -7347,6 +7352,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F37A8E1B28405AA100C38E95 /* CMake in Resources */,
 				A75FDBBA23E4CBC700529352 /* ReadMe.txt in Resources */,
 				A75FDBB923E4CBC700529352 /* License.txt in Resources */,
 			);
@@ -7356,6 +7362,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F37A8E1C28405AA100C38E95 /* CMake in Resources */,
 				A75FDBBC23E4CBC800529352 /* ReadMe.txt in Resources */,
 				A75FDBBB23E4CBC800529352 /* License.txt in Resources */,
 			);
@@ -7365,6 +7372,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F37A8E1A28405AA100C38E95 /* CMake in Resources */,
 				A75FDBB823E4CBC700529352 /* ReadMe.txt in Resources */,
 				A75FDBB723E4CBC700529352 /* License.txt in Resources */,
 			);
