@@ -1,7 +1,8 @@
 # SDL2 CMake configuration file:
 # This file is meant to be placed in Resources/CMake of a SDL2 framework
 
-cmake_minimum_required(VERSION 3.0)
+# INTERFACE_LINK_OPTIONS needs CMake 3.12
+cmake_minimum_required(VERSION 3.12)
 
 set(_sdl2_known_comps SDL2)
 if(NOT SDL2_FIND_COMPONENTS)
@@ -32,17 +33,18 @@ set(SDL2_FOUND TRUE)
 set(SDL2_INCLUDE_DIR    "${CMAKE_CURRENT_LIST_DIR}/../../Headers")
 set(SDL2_INCLUDE_DIRS   "${SDL2_INCLUDE_DIR}")
 set(SDL2_LIBRARY        "${CMAKE_CURRENT_LIST_DIR}/../../SDL2")
-
+string(REGEX REPLACE "SDL2\\.framework.*" "SDL2.framework" SDL2_FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}")
+string(REGEX REPLACE "SDL2\\.framework.*" "" SDL2_FRAMEWORK_PARENT_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
 # All targets are created, even when some might not be requested though COMPONENTS.
 # This is done for compatibility with CMake generated SDL2-target.cmake files.
 
 if(NOT TARGET SDL2::SDL2)
-    add_library(SDL2::SDL2 SHARED IMPORTED)
+    add_library(SDL2::SDL2 INTERFACE IMPORTED)
     set_target_properties(SDL2::SDL2
         PROPERTIES
-            FRAMEWORK 1
-            IMPORTED_LOCATION "${SDL2_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+            INTERFACE_COMPILE_OPTIONS "-F;${SDL2_FRAMEWORK_PARENT_PATH}"
+            INTERFACE_INCLUDE_DIRECTORIES "SDL2.framework/Headers"
+            INTERFACE_LINK_OPTIONS "-F;${SDL2_FRAMEWORK_PARENT_PATH};-framework;SDL2"
     )
 endif()
