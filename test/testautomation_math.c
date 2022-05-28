@@ -8,21 +8,23 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
+/* ================= Test Constants ================== */
+
 /* Range tests parameters */
 #define RANGE_TEST_ITERATIONS 10000000
 #define RANGE_TEST_STEP       SDL_MAX_UINT32 / RANGE_TEST_ITERATIONS
 
-/* Define the Euler constant */
+/* Margin of error for imprecise tests */
+#define EPSILON 1.0E-10
+
+/* Euler constant (used in exp/log) */
 #ifndef M_E
 #define EULER 2.7182818284590450907955982984276488423347473144531250
 #else
 #define EULER M_E
 #endif
 
-/* Margin of error for imprecise tests */
-#define EPSILON 1.0E-10
-
-/* Square root of 3 */
+/* Square root of 3 (used in atan2) */
 #define SQRT3 1.7320508075688771931766041234368458390235900878906250
 
 /* ================= Test Structs ================== */
@@ -60,7 +62,7 @@ typedef double(SDLCALL *dd_to_d_func)(double, double);
  * \brief Runs all the cases on a given function with a signature double -> double.
  * The result is expected to be exact.
  *
- * \param func_name, the name of the tested function.
+ * \param func_name, a printable name for the tested function.
  * \param func, the function to call.
  * \param cases, an array of all the cases.
  * \param cases_size, the size of the cases array.
@@ -86,7 +88,7 @@ helper_dtod(const char *func_name, d_to_d_func func,
  * \brief Runs all the cases on a given function with a signature double -> double.
  * Checks if the result between expected +/- EPSILON.
  *
- * \param func_name, the name of the tested function.
+ * \param func_name, a printable name for the tested function.
  * \param func, the function to call.
  * \param cases, an array of all the cases.
  * \param cases_size, the size of the cases array.
@@ -115,7 +117,7 @@ helper_dtod_inexact(const char *func_name, d_to_d_func func,
  * \brief Runs all the cases on a given function with a signature
  * (double, double) -> double. The result is expected to be exact.
  *
- * \param func_name, the name of the tested function.
+ * \param func_name, a printable name for the tested function.
  * \param func, the function to call.
  * \param cases, an array of all the cases.
  * \param cases_size, the size of the cases array.
@@ -141,7 +143,7 @@ helper_ddtod(const char *func_name, dd_to_d_func func,
  * \brief Runs all the cases on a given function with a signature
  * (double, double) -> double. Checks if the result between expected +/- EPSILON.
  *
- * \param func_name, the name of the tested function.
+ * \param func_name, a printable name for the tested function.
  * \param func, the function to call.
  * \param cases, an array of all the cases.
  * \param cases_size, the size of the cases array.
@@ -172,7 +174,7 @@ helper_ddtod_inexact(const char *func_name, dd_to_d_func func,
  * This function is only meant to test functions that returns the input value if it is
  * integral: f(x) -> x for x in N.
  *
- * \param func_name, the name of the tested function.
+ * \param func_name, a printable name for the tested function.
  * \param func, the function to call.
  */
 static int
@@ -211,7 +213,8 @@ helper_range(const char *func_name, d_to_d_func func)
 /* SDL_floor tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: Infinity is returned as-is.
  */
 static int
 floor_infCases(void *args)
@@ -232,17 +235,22 @@ floor_infCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero.
+ * Inputs: +/-0.0.
+ * Expected: Zero is returned as-is.
  */
 static int
 floor_zeroCases(void *args)
 {
-    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    const d_to_d zero_cases[] = {
+        { 0.0, 0.0 },
+        { -0.0, -0.0 }
+    };
     return helper_dtod("Floor", SDL_floor, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
- * \brief Checks the NaN case.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 floor_nanCase(void *args)
@@ -255,7 +263,8 @@ floor_nanCase(void *args)
 }
 
 /**
- * \brief Checks round values (x.0) for themselves
+ * Inputs: integral values.
+ * Expected: the input value is returned as-is.
  */
 static int
 floor_roundNumbersCases(void *args)
@@ -274,7 +283,8 @@ floor_roundNumbersCases(void *args)
 }
 
 /**
- * \brief Checks a set of fractions
+ * Inputs: fractional values.
+ * Expected: the lower integral value is returned.
  */
 static int
 floor_fractionCases(void *args)
@@ -295,7 +305,8 @@ floor_fractionCases(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX
+ * Inputs: values in the range [0, UINT32_MAX].
+ * Expected: the input value is returned as-is.
  */
 static int
 floor_rangeTest(void *args)
@@ -306,7 +317,8 @@ floor_rangeTest(void *args)
 /* SDL_ceil tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: Infinity is returned as-is.
  */
 static int
 ceil_infCases(void *args)
@@ -327,17 +339,22 @@ ceil_infCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero.
+ * Inputs: +/-0.0.
+ * Expected: Zero is returned as-is.
  */
 static int
 ceil_zeroCases(void *args)
 {
-    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    const d_to_d zero_cases[] = {
+        { 0.0, 0.0 },
+        { -0.0, -0.0 }
+    };
     return helper_dtod("Ceil", SDL_ceil, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
- * \brief Checks the NaN case.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 ceil_nanCase(void *args)
@@ -350,7 +367,8 @@ ceil_nanCase(void *args)
 }
 
 /**
- * \brief Checks round values (x.0) for themselves
+ * Inputs: integral values.
+ * Expected: the input value is returned as-is.
  */
 static int
 ceil_roundNumbersCases(void *args)
@@ -369,7 +387,8 @@ ceil_roundNumbersCases(void *args)
 }
 
 /**
- * \brief Checks a set of fractions
+ * Inputs: fractional values.
+ * Expected: the higher integral value is returned.
  */
 static int
 ceil_fractionCases(void *args)
@@ -390,7 +409,8 @@ ceil_fractionCases(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX
+ * Inputs: values in the range [0, UINT32_MAX].
+ * Expected: the input value is returned as-is.
  */
 static int
 ceil_rangeTest(void *args)
@@ -401,7 +421,8 @@ ceil_rangeTest(void *args)
 /* SDL_trunc tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: Infinity is returned as-is.
  */
 static int
 trunc_infCases(void *args)
@@ -422,17 +443,22 @@ trunc_infCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero.
+ * Inputs: +/-0.0.
+ * Expected: Zero is returned as-is.
  */
 static int
 trunc_zeroCases(void *args)
 {
-    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    const d_to_d zero_cases[] = {
+        { 0.0, 0.0 },
+        { -0.0, -0.0 }
+    };
     return helper_dtod("Trunc", SDL_trunc, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
- * \brief Checks the NaN case.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 trunc_nanCase(void *args)
@@ -445,7 +471,8 @@ trunc_nanCase(void *args)
 }
 
 /**
- * \brief Checks round values (x.0) for themselves
+ * Inputs: integral values.
+ * Expected: the input value is returned as-is.
  */
 static int
 trunc_roundNumbersCases(void *args)
@@ -464,7 +491,8 @@ trunc_roundNumbersCases(void *args)
 }
 
 /**
- * \brief Checks a set of fractions
+ * Inputs: fractional values.
+ * Expected: the integral part is returned.
  */
 static int
 trunc_fractionCases(void *args)
@@ -485,7 +513,8 @@ trunc_fractionCases(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX
+ * Inputs: values in the range [0, UINT32_MAX].
+ * Expected: the input value is returned as-is.
  */
 static int
 trunc_rangeTest(void *args)
@@ -496,7 +525,8 @@ trunc_rangeTest(void *args)
 /* SDL_round tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: Infinity is returned as-is.
  */
 static int
 round_infCases(void *args)
@@ -517,17 +547,22 @@ round_infCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero.
+ * Inputs: +/-0.0.
+ * Expected: Zero is returned as-is.
  */
 static int
 round_zeroCases(void *args)
 {
-    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, -0.0 } };
+    const d_to_d zero_cases[] = {
+        { 0.0, 0.0 },
+        { -0.0, -0.0 }
+    };
     return helper_dtod("Round", SDL_round, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
- * \brief Checks the NaN case.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 round_nanCase(void *args)
@@ -540,7 +575,8 @@ round_nanCase(void *args)
 }
 
 /**
- * \brief Checks round values (x.0) for themselves
+ * Inputs: integral values.
+ * Expected: the input value is returned as-is.
  */
 static int
 round_roundNumbersCases(void *args)
@@ -559,7 +595,8 @@ round_roundNumbersCases(void *args)
 }
 
 /**
- * \brief Checks a set of fractions
+ * Inputs: fractional values.
+ * Expected: the nearest integral value is returned.
  */
 static int
 round_fractionCases(void *args)
@@ -580,7 +617,8 @@ round_fractionCases(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX
+ * Inputs: values in the range [0, UINT32_MAX].
+ * Expected: the input value is returned as-is.
  */
 static int
 round_rangeTest(void *args)
@@ -591,7 +629,8 @@ round_rangeTest(void *args)
 /* SDL_fabs tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: Positive Infinity is returned.
  */
 static int
 fabs_infCases(void *args)
@@ -612,17 +651,22 @@ fabs_infCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero
+ * Inputs: +/-0.0.
+ * Expected: Positive zero is returned.
  */
 static int
 fabs_zeroCases(void *args)
 {
-    const d_to_d zero_cases[] = { { 0.0, 0.0 }, { -0.0, 0.0 } };
+    const d_to_d zero_cases[] = {
+        { 0.0, 0.0 },
+        { -0.0, 0.0 }
+    };
     return helper_dtod("Fabs", SDL_fabs, zero_cases, SDL_arraysize(zero_cases));
 }
 
 /**
- * \brief Checks the NaN case.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 fabs_nanCase(void *args)
@@ -635,7 +679,8 @@ fabs_nanCase(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX
+ * Inputs: values in the range [0, UINT32_MAX].
+ * Expected: the input value is returned as-is.
  */
 static int
 fabs_rangeTest(void *args)
@@ -646,7 +691,8 @@ fabs_rangeTest(void *args)
 /* SDL_copysign tests functions */
 
 /**
- * \brief Checks positive and negative inifnity.
+ * Inputs: (+/-Infinity, +/-1.0).
+ * Expected: Infinity with the sign of 1.0 is returned.
  */
 static int
 copysign_infCases(void *args)
@@ -677,7 +723,8 @@ copysign_infCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero.
+ * Inputs: (+/-0.0, +/-1.0).
+ * Expected: 0.0 with the sign of 1.0 is returned.
  */
 static int
 copysign_zeroCases(void *args)
@@ -692,7 +739,9 @@ copysign_zeroCases(void *args)
 }
 
 /**
- * \brief Checks the NaN cases.
+ * Inputs: (NAN, +/-1.0).
+ * Expected: NAN with the sign of 1.0 is returned.
+ * NOTE: On some platforms signed NAN is not supported, so we only check if the result is still NAN.
  */
 static int
 copysign_nanCases(void *args)
@@ -712,7 +761,8 @@ copysign_nanCases(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX
+ * Inputs: values in the range [0, UINT32_MAX], +/-1.0.
+ * Expected: the input value with the sign of 1.0 is returned.
  */
 static int
 copysign_rangeTest(void *args)
@@ -754,7 +804,8 @@ copysign_rangeTest(void *args)
 /* SDL_fmod tests functions */
 
 /**
- * \brief Checks division of positive and negative inifnity.
+ * Inputs: (+/-Infinity, +/-1.0).
+ * Expected: NAN is returned.
  */
 static int
 fmod_divOfInfCases(void *args)
@@ -785,7 +836,8 @@ fmod_divOfInfCases(void *args)
 }
 
 /**
- * \brief Checks division by positive and negative inifnity.
+ * Inputs: (+/-1.0, +/-Infinity).
+ * Expected: 1.0 is returned as-is.
  */
 static int
 fmod_divByInfCases(void *args)
@@ -816,7 +868,8 @@ fmod_divByInfCases(void *args)
 }
 
 /**
- * \brief Checks division of positive and negative zero.
+ * Inputs: (+/-0.0, +/-1.0).
+ * Expected: Zero is returned as-is.
  */
 static int
 fmod_divOfZeroCases(void *args)
@@ -831,7 +884,8 @@ fmod_divOfZeroCases(void *args)
 }
 
 /**
- * \brief Checks division by positive and negative zero.
+ * Inputs: (+/-1.0, +/-0.0).
+ * Expected: NAN is returned.
  */
 static int
 fmod_divByZeroCases(void *args)
@@ -862,7 +916,8 @@ fmod_divByZeroCases(void *args)
 }
 
 /**
- * \brief Checks the NaN cases.
+ * Inputs: all permutation of NAN and +/-1.0.
+ * Expected: NAN is returned.
  */
 static int
 fmod_nanCases(void *args)
@@ -893,7 +948,8 @@ fmod_nanCases(void *args)
 }
 
 /**
- * \brief Checks a set of regular values.
+ * Inputs: values within the domain of the function.
+ * Expected: the correct result is returned.
  */
 static int
 fmod_regularCases(void *args)
@@ -908,7 +964,8 @@ fmod_regularCases(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX
+ * Inputs: values in the range [0, UINT32_MAX] divided by 1.0.
+ * Expected: Positive zero is always returned.
  */
 static int
 fmod_rangeTest(void *args)
@@ -942,7 +999,8 @@ fmod_rangeTest(void *args)
 /* SDL_exp tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: Infinity is returned as-is.
  */
 static int
 exp_infCases(void *args)
@@ -963,7 +1021,8 @@ exp_infCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero.
+ * Inputs: +/-0.0.
+ * Expected: 1.0 is returned.
  */
 static int
 exp_zeroCases(void *args)
@@ -976,9 +1035,9 @@ exp_zeroCases(void *args)
 }
 
 /**
- * \brief Checks for overflow.
- *
- * This test is skipped for double types larger than 64 bits.
+ * Input: 710.0 (overflows for 64bits double).
+ * Expected: Infinity is returned.
+ * NOTE: This test is skipped for double types larger than 64 bits.
  */
 static int
 exp_overflowCase(void *args)
@@ -997,7 +1056,8 @@ exp_overflowCase(void *args)
 }
 
 /**
- * \brief Checks the base case of 1.0.
+ * Input: 1.0
+ * Expected: The euler constant.
  */
 static int
 exp_baseCase(void *args)
@@ -1010,7 +1070,8 @@ exp_baseCase(void *args)
 }
 
 /**
- * \brief Checks a set of regular cases.
+ * Inputs: values within the domain of the function.
+ * Expected: the correct result is returned.
  */
 static int
 exp_regularCases(void *args)
@@ -1033,7 +1094,8 @@ exp_regularCases(void *args)
 /* SDL_log tests functions */
 
 /**
- * \brief Checks limits (zeros and positive infinity).
+ * Inputs: Positive Infinity and +/-0.0.
+ * Expected: Positive and negative Infinity respectively.
  */
 static int
 log_limitCases(void *args)
@@ -1059,7 +1121,8 @@ log_limitCases(void *args)
 }
 
 /**
- * \brief Checks some base cases.
+ * Inputs: 1.0 and the Euler constant.
+ * Expected: 0.0 and 1.0 respectively.
  */
 static int
 log_baseCases(void *args)
@@ -1080,7 +1143,8 @@ log_baseCases(void *args)
 }
 
 /**
- * \brief Checks the nan cases.
+ * Inputs: NAN and a negative value.
+ * Expected: NAN is returned.
  */
 static int
 log_nanCases(void *args)
@@ -1101,7 +1165,8 @@ log_nanCases(void *args)
 }
 
 /**
- * \brief Checks a set of regular cases.
+ * Inputs: values within the domain of the function.
+ * Expected: the correct result is returned.
  */
 static int
 log_regularCases(void *args)
@@ -1119,7 +1184,8 @@ log_regularCases(void *args)
 /* SDL_log10 tests functions */
 
 /**
- * \brief Checks limits (zeros and positive infinity).
+ * Inputs: Positive Infinity and +/-0.0.
+ * Expected: Positive and negative Infinity respectively.
  */
 static int
 log10_limitCases(void *args)
@@ -1145,7 +1211,8 @@ log10_limitCases(void *args)
 }
 
 /**
- * \brief Checks some base cases.
+ * Inputs: Powers of ten from 0 to 9.
+ * Expected: the exact power of ten is returned.
  */
 static int
 log10_baseCases(void *args)
@@ -1166,7 +1233,8 @@ log10_baseCases(void *args)
 }
 
 /**
- * \brief Checks the nan cases.
+ * Inputs: NAN and a negative value.
+ * Expected: NAN is returned.
  */
 static int
 log10_nanCases(void *args)
@@ -1187,7 +1255,8 @@ log10_nanCases(void *args)
 }
 
 /**
- * \brief Checks a set of regular cases.
+ * Inputs: values within the domain of the function.
+ * Expected: the correct result is returned.
  */
 static int
 log10_regularCases(void *args)
@@ -1207,7 +1276,8 @@ log10_regularCases(void *args)
 /* Tests with positive and negative infinities as exponents */
 
 /**
- * \brief Checks the cases where the base is negative one and the exponent is infinity.
+ * Inputs: (-1.0, +/-Infinity).
+ * Expected: 1.0 is returned.
  */
 static int
 pow_baseNOneExpInfCases(void *args)
@@ -1227,7 +1297,8 @@ pow_baseNOneExpInfCases(void *args)
     return TEST_COMPLETED;
 }
 /**
- * \brief Checks the case where the base is zero and the exponent is negative infinity.
+ * Inputs: (+/-0.0, -Infinity).
+ * Expected: Infinity is returned.
  */
 static int
 pow_baseZeroExpNInfCases(void *args)
@@ -1248,7 +1319,8 @@ pow_baseZeroExpNInfCases(void *args)
 }
 
 /**
- * \brief Checks the remaining cases where the exponent is infinity.
+ * Inputs: (x, +/-Infinity) where x is not +/-0.0.
+ * Expected: 0.0 when x < 1, Infinity when x > 1.
  */
 static int
 pow_expInfCases(void *args)
@@ -1281,7 +1353,8 @@ pow_expInfCases(void *args)
 /* Tests with positive and negative infinities as base */
 
 /**
- * \brief Checks the cases with positive infinity as base.
+ * Inputs: (Positive Infinity, x) where x is not +/-0.0.
+ * Expected: 0.0 when x is < 0, positive Infinity when x > 0.
  */
 static int
 pow_basePInfCases(void *args)
@@ -1312,7 +1385,12 @@ pow_basePInfCases(void *args)
 }
 
 /**
- * \brief Checks the cases with negative infinity as base.
+ * Inputs: (Negative Infinity, x) where x is not +/-0.0.
+ * Expected:
+ * - -0.0 when x is a negative odd integer,
+ * - 0.0 when x is a negative even integer or negative non-integer,
+ * - Negative Infinity when x is a positive odd integer,
+ * - Positive Infinity when x is a positive even integer or positive non-integer.
  */
 static int
 pow_baseNInfCases(void *args)
@@ -1352,10 +1430,13 @@ pow_baseNInfCases(void *args)
     return TEST_COMPLETED;
 }
 
-/* Tests related to nan */
+/* Tests related to NAN */
 
 /**
- * \brief Checks the case where the base is finite and negative and exponent is finite and non-integer.
+ * Inputs:
+ * - finite and negative base,
+ * - finite and non-integer exponent.
+ * Expected: NAN is returned.
  */
 static int
 pow_badOperationCase(void *args)
@@ -1368,7 +1449,8 @@ pow_badOperationCase(void *args)
 }
 
 /**
- * \brief Checks the case where the exponent is nan but the base is 1.
+ * Inputs: (1.0, NAN)
+ * Expected: 1.0 is returned.
  */
 static int
 pow_base1ExpNanCase(void *args)
@@ -1381,7 +1463,8 @@ pow_base1ExpNanCase(void *args)
 }
 
 /**
- * \brief Checks the cases where the base is nan but the exponent is 0.
+ * Inputs: (NAN, +/-0.0)
+ * Expected: 1.0 is returned.
  */
 static int
 pow_baseNanExp0Cases(void *args)
@@ -1402,7 +1485,8 @@ pow_baseNanExp0Cases(void *args)
 }
 
 /**
- * \brief Checks the cases where either argument is nan.
+ * Inputs: NAN as base, exponent or both.
+ * Expected: NAN is returned.
  */
 static int
 pow_nanArgsCases(void *args)
@@ -1430,7 +1514,10 @@ pow_nanArgsCases(void *args)
 /* Tests with positive and negative zeros as base */
 
 /**
- * \brief Checks cases with negative zero as base and an odd exponent.
+ * Inputs: (-0.0, x) where x is an odd integer.
+ * Expected:
+ * - Negative Infinity with a negative exponent,
+ * - -0.0 with a positive exponent.
  */
 static int
 pow_baseNZeroExpOddCases(void *args)
@@ -1451,7 +1538,10 @@ pow_baseNZeroExpOddCases(void *args)
 }
 
 /**
- * \brief Checks cases with positive zero as base and an odd exponent.
+ * Inputs: (0.0, x) where x is an odd integer.
+ * Expected:
+ * - 0.0 with a positive exponent,
+ * - Positive Infinity with a negative exponent.
  */
 static int
 pow_basePZeroExpOddCases(void *args)
@@ -1472,7 +1562,12 @@ pow_basePZeroExpOddCases(void *args)
 }
 
 /**
- * \brief Checks cases with negative zero as base and the exponent is finite and even or non-integer.
+ * Inputs: (-0.0, x), with x either:
+ * - finite and even,
+ * - finite and non-integer.
+ * Expected:
+ * - Positive Infinity if the exponent is negative,
+ * - 0.0 if the exponent is positive.
  */
 static int
 pow_baseNZeroCases(void *args)
@@ -1503,7 +1598,12 @@ pow_baseNZeroCases(void *args)
 }
 
 /**
- * \brief Checks cases with positive zero as base and the exponent is finite and even or non-integer.
+ * Inputs: (0.0, x), with x either:
+ * - finite and even,
+ * - finite and non-integer.
+ * Expected:
+ * - Positive Infinity if the exponent is negative,
+ * - 0.0 if the exponent is positive.
  */
 static int
 pow_basePZeroCases(void *args)
@@ -1536,7 +1636,8 @@ pow_basePZeroCases(void *args)
 /* Remaining tests */
 
 /**
- * \brief Checks a set of regular values.
+ * Inputs: values within the domain of the function.
+ * Expected: the correct result is returned.
  */
 static int
 pow_regularCases(void *args)
@@ -1553,26 +1654,28 @@ pow_regularCases(void *args)
 }
 
 /**
- * \brief Checks the powers of two from 1 to 8.
+ * Inputs: (2.0, x), with x in range [0, 8].
+ * Expected: the correct result is returned.
  */
 static int
 pow_powerOfTwo(void *args)
 {
     const dd_to_d power_of_two_cases[] = {
-        { 2.0, 1, 2.0 },
-        { 2.0, 2, 4.0 },
-        { 2.0, 3, 8.0 },
-        { 2.0, 4, 16.0 },
-        { 2.0, 5, 32.0 },
-        { 2.0, 6, 64.0 },
-        { 2.0, 7, 128.0 },
-        { 2.0, 8, 256.0 },
+        { 2.0, 1.0, 2.0 },
+        { 2.0, 2.0, 4.0 },
+        { 2.0, 3.0, 8.0 },
+        { 2.0, 4.0, 16.0 },
+        { 2.0, 5.0, 32.0 },
+        { 2.0, 6.0, 64.0 },
+        { 2.0, 7.0, 128.0 },
+        { 2.0, 8.0, 256.0 },
     };
     return helper_ddtod("Pow", SDL_pow, power_of_two_cases, SDL_arraysize(power_of_two_cases));
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX to the power of 0.
+ * Inputs: values in the range [0, UINT32_MAX] to the power of +/-0.0.
+ * Expected: 1.0 is always returned.
  */
 static int
 pow_rangeTest(void *args)
@@ -1614,7 +1717,8 @@ pow_rangeTest(void *args)
 /* SDL_sqrt tests functions */
 
 /**
- * \brief Checks for positive infinity.
+ * Input: Positive Infinity.
+ * Expected: Positive Infinity is returned.
  */
 static int
 sqrt_infCase(void *args)
@@ -1627,7 +1731,8 @@ sqrt_infCase(void *args)
 }
 
 /**
- * \brief Checks for the nan case.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 sqrt_nanCase(void *args)
@@ -1640,7 +1745,8 @@ sqrt_nanCase(void *args)
 }
 
 /**
- * \brief Checks for out of domain values (<0).
+ * Inputs: values outside the domain of the function.
+ * Expected: NAN is returned.
  */
 static int
 sqrt_outOfDomainCases(void *args)
@@ -1666,7 +1772,8 @@ sqrt_outOfDomainCases(void *args)
 }
 
 /**
- * \brief Checks a set of base cases.
+ * Inputs: +/-0.0 and 1.0.
+ * Expected: the input value is returned as-is.
  */
 static int
 sqrt_baseCases(void *args)
@@ -1680,7 +1787,8 @@ sqrt_baseCases(void *args)
 }
 
 /**
- * \brief Checks a set of regular cases.
+ * Inputs: values within the domain of the function.
+ * Expected: the correct result is returned.
  */
 static int
 sqrt_regularCases(void *args)
@@ -1700,7 +1808,8 @@ sqrt_regularCases(void *args)
 /* SDL_scalbn tests functions */
 
 /**
- * \brief Checks for positive and negative infinity arg.
+ * Input: (+/-Infinity, 1).
+ * Expected: Infinity is returned as-is.
  */
 static int
 scalbn_infCases(void *args)
@@ -1721,7 +1830,8 @@ scalbn_infCases(void *args)
 }
 
 /**
- * \brief Checks for positive and negative zero arg.
+ * Inputs: (+/-0.0, 1).
+ * Expected: Zero is returned as-is.
  */
 static int
 scalbn_baseZeroCases(void *args)
@@ -1742,7 +1852,8 @@ scalbn_baseZeroCases(void *args)
 }
 
 /**
- * \brief Checks for zero exp.
+ * Input: (x, 0)
+ * Expected: x is returned as-is.
  */
 static int
 scalbn_expZeroCase(void *args)
@@ -1755,7 +1866,8 @@ scalbn_expZeroCase(void *args)
 }
 
 /**
- * \brief Checks for NAN arg.
+ * Input: (NAN, x).
+ * Expected: NAN is returned.
  */
 static int
 scalbn_nanCase(void *args)
@@ -1768,9 +1880,9 @@ scalbn_nanCase(void *args)
 }
 
 /**
- * \brief Checks a set of regular values.
- *
- * This test depends on SDL_pow functionning.
+ * Inputs: values inside the domain of the function.
+ * Expected: the correct result is returned.
+ * NOTE: This test depends on SDL_pow and FLT_RADIX.
  */
 static int
 scalbn_regularCases(void *args)
@@ -1807,7 +1919,8 @@ scalbn_regularCases(void *args)
 /* SDL_cos tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: NAN is returned.
  */
 static int
 cos_infCases(void *args)
@@ -1828,7 +1941,8 @@ cos_infCases(void *args)
 }
 
 /**
- * \brief Checks for nan.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 cos_nanCase(void *args)
@@ -1841,7 +1955,8 @@ cos_nanCase(void *args)
 }
 
 /**
- * \brief Checks a set of regular values.
+ * Inputs: +/-0.0 and +/-Pi.
+ * Expected: +1.0 and -1.0 respectively.
  */
 static int
 cos_regularCases(void *args)
@@ -1856,7 +1971,8 @@ cos_regularCases(void *args)
 }
 
 /**
- * \brief Checks cosine precision for the first 10 decimals.
+ * Inputs: Angles between 1/10 and 9/10 of Pi (positive and negative).
+ * Expected: The correct result is returned (+/-EPSILON).
  */
 static int
 cos_precisionTest(void *args)
@@ -1885,7 +2001,8 @@ cos_precisionTest(void *args)
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX.
+ * Inputs: Values in the range [0, UINT32_MAX].
+ * Expected: A value between 0 and 1 is returned.
  */
 static int
 cos_rangeTest(void *args)
@@ -1919,7 +2036,8 @@ cos_rangeTest(void *args)
 /* SDL_sin tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: NAN is returned.
  */
 static int
 sin_infCases(void *args)
@@ -1940,7 +2058,8 @@ sin_infCases(void *args)
 }
 
 /**
- * \brief Checks for nan.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 sin_nanCase(void *args)
@@ -1953,7 +2072,8 @@ sin_nanCase(void *args)
 }
 
 /**
- * \brief Checks a set of regular values.
+ * Inputs: +/-0.0 and +/-Pi/2.
+ * Expected: +/-0.0 and +/-1.0 respectively.
  */
 static int
 sin_regularCases(void *args)
@@ -1968,7 +2088,9 @@ sin_regularCases(void *args)
 }
 
 /**
- * \brief Checks sine precision for the first 10 decimals.
+ * Inputs: Angles between 1/10 and 10/10 of Pi (positive and negative).
+ * Expected: The correct result is returned (+/-EPSILON).
+ * NOTE: +/-Pi/2 is tested in the regular cases.
  */
 static int
 sin_precisionTest(void *args)
@@ -1978,26 +2100,27 @@ sin_precisionTest(void *args)
         { M_PI * 2.0 / 10.0, 0.5877852522 },
         { M_PI * 3.0 / 10.0, 0.8090169943 },
         { M_PI * 4.0 / 10.0, 0.9510565162 },
-        { M_PI * 5.0 / 10.0, 1.0 },
         { M_PI * 6.0 / 10.0, 0.9510565162 },
         { M_PI * 7.0 / 10.0, 0.8090169943 },
         { M_PI * 8.0 / 10.0, 0.5877852522 },
         { M_PI * 9.0 / 10.0, 0.3090169943 },
+        { M_PI, 0.0 },
         { M_PI * -1.0 / 10.0, -0.3090169943 },
         { M_PI * -2.0 / 10.0, -0.5877852522 },
         { M_PI * -3.0 / 10.0, -0.8090169943 },
         { M_PI * -4.0 / 10.0, -0.9510565162 },
-        { M_PI * -5.0 / 10.0, -1.0 },
         { M_PI * -6.0 / 10.0, -0.9510565162 },
         { M_PI * -7.0 / 10.0, -0.8090169943 },
         { M_PI * -8.0 / 10.0, -0.5877852522 },
-        { M_PI * -9.0 / 10.0, -0.3090169943 }
+        { M_PI * -9.0 / 10.0, -0.3090169943 },
+        { -M_PI, 0.0 },
     };
     return helper_dtod_inexact("Sin", SDL_sin, precision_cases, SDL_arraysize(precision_cases));
 }
 
 /**
- * \brief Checks a range of values between 0 and UINT32_MAX.
+ * Inputs: Values in the range [0, UINT32_MAX].
+ * Expected: A value between 0 and 1 is returned.
  */
 static int
 sin_rangeTest(void *args)
@@ -2031,7 +2154,8 @@ sin_rangeTest(void *args)
 /* SDL_tan tests functions */
 
 /**
- * \brief Checks positive and negative infinity.
+ * Inputs: +/-Infinity.
+ * Expected: NAN is returned.
  */
 static int
 tan_infCases(void *args)
@@ -2052,7 +2176,8 @@ tan_infCases(void *args)
 }
 
 /**
- * \brief Checks for nan.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 tan_nanCase(void *args)
@@ -2065,7 +2190,8 @@ tan_nanCase(void *args)
 }
 
 /**
- * \brief Checks positive and negative zero.
+ * Inputs: +/-0.0.
+ * Expected: Zero is returned as-is.
  */
 static int
 tan_zeroCases(void *args)
@@ -2078,7 +2204,9 @@ tan_zeroCases(void *args)
 }
 
 /**
- * \brief Checks tangent precision for the first 10 decimals.
+ * Inputs: Angles between 1/11 and 10/11 of Pi (positive and negative).
+ * Expected: The correct result is returned (+/-EPSILON).
+ * NOTE: +/-Pi/2 is intentionally avoided as it returns garbage values.
  */
 static int
 tan_precisionTest(void *args)
@@ -2111,7 +2239,8 @@ tan_precisionTest(void *args)
 /* SDL_acos tests functions */
 
 /**
- * \brief Checks limits of the domain (+/-1).
+ * Inputs: +/-1.0.
+ * Expected: 0.0 and Pi respectively.
  */
 static int
 acos_limitCases(void *args)
@@ -2132,7 +2261,8 @@ acos_limitCases(void *args)
 }
 
 /**
- * \brief Checks values outside the domain (|x| > 1).
+ * Inputs: Values outside the domain of [-1, 1].
+ * Expected: NAN is returned.
  */
 static int
 acos_outOfDomainCases(void *args)
@@ -2153,7 +2283,8 @@ acos_outOfDomainCases(void *args)
 }
 
 /**
- * \brief Checks for nan.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 acos_nanCase(void *args)
@@ -2166,7 +2297,8 @@ acos_nanCase(void *args)
 }
 
 /**
- * \brief Checks arc cosine precision for the first 10 decimals.
+ * Inputs: Values between -0.9 and 0.9 with steps of 0.1.
+ * Expected: The correct result is returned (+/-EPSILON).
  */
 static int
 acos_precisionTest(void *args)
@@ -2199,7 +2331,8 @@ acos_precisionTest(void *args)
 /* SDL_asin tests functions */
 
 /**
- * \brief Checks limits of the domain (+/-1).
+ * Inputs: +/-1.0.
+ * Expected: +/-Pi/2 is returned.
  */
 static int
 asin_limitCases(void *args)
@@ -2220,7 +2353,8 @@ asin_limitCases(void *args)
 }
 
 /**
- * \brief Checks values outside the domain (|x| > 1).
+ * Inputs: Values outside the domain of [-1, 1].
+ * Expected: NAN is returned.
  */
 static int
 asin_outOfDomainCases(void *args)
@@ -2241,7 +2375,8 @@ asin_outOfDomainCases(void *args)
 }
 
 /**
- * \brief Checks for nan.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 asin_nanCase(void *args)
@@ -2254,7 +2389,8 @@ asin_nanCase(void *args)
 }
 
 /**
- * \brief Checks arc sine precision for the first 10 decimals.
+ * Inputs: Values between -0.9 and 0.9 with steps of 0.1.
+ * Expected: The correct result is returned (+/-EPSILON).
  */
 static int
 asin_precisionTest(void *args)
@@ -2287,7 +2423,8 @@ asin_precisionTest(void *args)
 /* SDL_atan tests functions */
 
 /**
- * \brief Checks limits of the domain (+/- infinity).
+ * Inputs: +/-Infinity.
+ * Expected: +/-Pi/2 is returned.
  */
 static int
 atan_limitCases(void *args)
@@ -2308,7 +2445,8 @@ atan_limitCases(void *args)
 }
 
 /**
- * \brief Checks positive and negative zeros.
+ * Inputs: +/-0.0.
+ * Expected: Zero is returned as-is.
  */
 static int
 atan_zeroCases(void *args)
@@ -2329,7 +2467,8 @@ atan_zeroCases(void *args)
 }
 
 /**
- * \brief Checks for nan.
+ * Input: NAN.
+ * Expected: NAN is returned.
  */
 static int
 atan_nanCase(void *args)
@@ -2342,12 +2481,12 @@ atan_nanCase(void *args)
 }
 
 /**
- * \brief Checks arc tangent precision for the first 10 decimals.
+ * Inputs: Values corresponding to angles between 9Pi/20 and -9Pi/20 with steps of Pi/20.
+ * Expected: The correct result is returned (+/-EPSILON).
  */
 static int
 atan_precisionTest(void *args)
 {
-    /* Checks angles from 9PI/20 -> -9PI/20 with steps of 1/20th */
     const d_to_d precision_cases[] = {
         { 6.313751514675041, 1.4137166941 },
         { 3.0776835371752527, 1.2566370614 },
@@ -2376,7 +2515,11 @@ atan_precisionTest(void *args)
 /* Zero cases */
 
 /**
- * \brief Checks for both argument being 0.
+ * Inputs: (+/-0.0, +/-0.0).
+ * Expected:
+ * - Zero if the second argument is positive zero.
+ * - Pi if the second argument is negative zero.
+ * - The sign is inherited from the first argument.
  */
 static int
 atan2_bothZeroCases(void *args)
@@ -2391,7 +2534,11 @@ atan2_bothZeroCases(void *args)
 }
 
 /**
- * \brief Checks for the cases with Y=+/-0.
+ * Inputs: (+/-0.0, +/-1.0).
+ * Expected:
+ * - Zero if the second argument is positive.
+ * - Pi if the second argument is negative.
+ * - The sign is inherited from the first argument.
  */
 static int
 atan2_yZeroCases(void *args)
@@ -2406,7 +2553,8 @@ atan2_yZeroCases(void *args)
 }
 
 /**
- * \brief Checks for the cases with X=+/-0.
+ * Inputs: (+/-1.0, +/-0.0).
+ * Expected: Pi/2 with the sign of the first argument.
  */
 static int
 atan2_xZeroCases(void *args)
@@ -2423,7 +2571,12 @@ atan2_xZeroCases(void *args)
 /* Infinity cases */
 
 /**
- * \brief Checks for both argument being infinity.
+ * Inputs: (+/-Infinity, +/-Infinity).
+ * Expected:
+ * - (+int, +inf) -> Pi/4,
+ * - (+int, -inf) -> 3Pi/4,
+ * - (-int, +inf) -> -Pi/4,
+ * - (-int, -inf) -> Pi.
  */
 static int
 atan2_bothInfCases(void *args)
@@ -2454,7 +2607,8 @@ atan2_bothInfCases(void *args)
 }
 
 /**
- * \brief Checks for the cases with Y=+/-inf.
+ * Inputs: (+/-Infinity, +/-1.0).
+ * Expected: Pi/2 with the sign of the first argument.
  */
 static int
 atan2_yInfCases(void *args)
@@ -2485,7 +2639,10 @@ atan2_yInfCases(void *args)
 }
 
 /**
- * \brief Checks for the cases with X=+/-inf.
+ * Inputs: (+/-1.0, +/-Infinity).
+ * Expected:
+ * - (+/-1.0, +inf) -> +/-0.0
+ * - (+/-1.0, -inf) -> +/-Pi.
  */
 static int
 atan2_xInfCases(void *args)
@@ -2518,7 +2675,8 @@ atan2_xInfCases(void *args)
 /* Miscelanious cases */
 
 /**
- * \brief Checks for the nan cases.
+ * Inputs: NAN as either or both of the arguments.
+ * Expected: NAN is returned.
  */
 static int
 atan2_nanCases(void *args)
@@ -2544,7 +2702,8 @@ atan2_nanCases(void *args)
 }
 
 /**
- * \brief Checks for the top right quadrant (X > 0, Y > 0).
+ * Inputs: (y, x) with x and y positive.
+ * Expected: Angle in the top right quadrant.
  */
 static int
 atan2_topRightQuadrantTest(void *args)
@@ -2558,7 +2717,8 @@ atan2_topRightQuadrantTest(void *args)
 }
 
 /**
- * \brief Checks for the top left quadrant (X < 0, Y > 0).
+ * Inputs: (y, x) with x negative and y positive.
+ * Expected: Angle in the top left quadrant.
  */
 static int
 atan2_topLeftQuadrantTest(void *args)
@@ -2572,7 +2732,8 @@ atan2_topLeftQuadrantTest(void *args)
 }
 
 /**
- * \brief Checks for the bottom right quadrant (X > 0, Y < 0).
+ * Inputs: (y, x) with x positive and y negative.
+ * Expected: Angle in the bottom right quadrant.
  */
 static int
 atan2_bottomRightQuadrantTest(void *args)
@@ -2586,7 +2747,8 @@ atan2_bottomRightQuadrantTest(void *args)
 }
 
 /**
- * \brief Checks for the bottom left quadrant (X < 0, Y < 0).
+ * Inputs: (y, x) with x and y negative.
+ * Expected: Angle in the bottom left quadrant.
  */
 static int
 atan2_bottomLeftQuadrantTest(void *args)
@@ -2605,504 +2767,504 @@ atan2_bottomLeftQuadrantTest(void *args)
 
 static const SDLTest_TestCaseReference floorTestInf = {
     (SDLTest_TestCaseFp) floor_infCases, "floor_infCases",
-    "Check positive and negative infinity", TEST_ENABLED
+    "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestZero = {
     (SDLTest_TestCaseFp) floor_zeroCases, "floor_zeroCases",
-    "Check positive and negative zero", TEST_ENABLED
+    "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestNan = {
     (SDLTest_TestCaseFp) floor_nanCase, "floor_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestRound = {
     (SDLTest_TestCaseFp) floor_roundNumbersCases, "floor_roundNumberCases",
-    "Check a set of round numbers", TEST_ENABLED
+    "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestFraction = {
     (SDLTest_TestCaseFp) floor_fractionCases, "floor_fractionCases",
-    "Check a set of fractions", TEST_ENABLED
+    "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference floorTestRange = {
     (SDLTest_TestCaseFp) floor_rangeTest, "floor_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_ceil test cases */
 
 static const SDLTest_TestCaseReference ceilTestInf = {
     (SDLTest_TestCaseFp) ceil_infCases, "ceil_infCases",
-    "Check positive and negative infinity", TEST_ENABLED
+    "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestZero = {
     (SDLTest_TestCaseFp) ceil_zeroCases, "ceil_zeroCases",
-    "Check positive and negative zero", TEST_ENABLED
+    "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestNan = {
     (SDLTest_TestCaseFp) ceil_nanCase, "ceil_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestRound = {
     (SDLTest_TestCaseFp) ceil_roundNumbersCases, "ceil_roundNumberCases",
-    "Check a set of round numbers", TEST_ENABLED
+    "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestFraction = {
     (SDLTest_TestCaseFp) ceil_fractionCases, "ceil_fractionCases",
-    "Check a set of fractions", TEST_ENABLED
+    "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference ceilTestRange = {
     (SDLTest_TestCaseFp) ceil_rangeTest, "ceil_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_trunc test cases */
 
 static const SDLTest_TestCaseReference truncTestInf = {
     (SDLTest_TestCaseFp) trunc_infCases, "trunc_infCases",
-    "Check positive and negative infinity", TEST_ENABLED
+    "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestZero = {
     (SDLTest_TestCaseFp) trunc_zeroCases, "trunc_zeroCases",
-    "Check positive and negative zero", TEST_ENABLED
+    "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestNan = {
     (SDLTest_TestCaseFp) trunc_nanCase, "trunc_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestRound = {
     (SDLTest_TestCaseFp) trunc_roundNumbersCases, "trunc_roundNumberCases",
-    "Check a set of round numbers", TEST_ENABLED
+    "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestFraction = {
     (SDLTest_TestCaseFp) trunc_fractionCases, "trunc_fractionCases",
-    "Check a set of fractions", TEST_ENABLED
+    "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference truncTestRange = {
     (SDLTest_TestCaseFp) trunc_rangeTest, "trunc_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_round test cases */
 
 static const SDLTest_TestCaseReference roundTestInf = {
     (SDLTest_TestCaseFp) round_infCases, "round_infCases",
-    "Check positive and negative infinity", TEST_ENABLED
+    "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestZero = {
     (SDLTest_TestCaseFp) round_zeroCases, "round_zeroCases",
-    "Check positive and negative zero", TEST_ENABLED
+    "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestNan = {
     (SDLTest_TestCaseFp) round_nanCase, "round_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestRound = {
     (SDLTest_TestCaseFp) round_roundNumbersCases, "round_roundNumberCases",
-    "Check a set of round numbers", TEST_ENABLED
+    "Checks a set of integral values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestFraction = {
     (SDLTest_TestCaseFp) round_fractionCases, "round_fractionCases",
-    "Check a set of fractions", TEST_ENABLED
+    "Checks a set of fractions", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference roundTestRange = {
     (SDLTest_TestCaseFp) round_rangeTest, "round_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_fabs test cases */
 
 static const SDLTest_TestCaseReference fabsTestInf = {
     (SDLTest_TestCaseFp) fabs_infCases, "fabs_infCases",
-    "Check positive and negative infinity", TEST_ENABLED
+    "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fabsTestZero = {
     (SDLTest_TestCaseFp) fabs_zeroCases, "fabs_zeroCases",
-    "Check positive and negative zero", TEST_ENABLED
+    "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fabsTestNan = {
     (SDLTest_TestCaseFp) fabs_nanCase, "fabs_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fabsTestRange = {
     (SDLTest_TestCaseFp) fabs_rangeTest, "fabs_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_copysign test cases */
 
 static const SDLTest_TestCaseReference copysignTestInf = {
     (SDLTest_TestCaseFp) copysign_infCases, "copysign_infCases",
-    "Check positive and negative infinity", TEST_ENABLED
+    "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestZero = {
     (SDLTest_TestCaseFp) copysign_zeroCases, "copysign_zeroCases",
-    "Check positive and negative zero", TEST_ENABLED
+    "Checks positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestNan = {
     (SDLTest_TestCaseFp) copysign_nanCases, "copysign_nanCases",
-    "Check the NaN special cases", TEST_ENABLED
+    "Checks NANs", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference copysignTestRange = {
     (SDLTest_TestCaseFp) copysign_rangeTest, "copysign_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_fmod test cases */
 
 static const SDLTest_TestCaseReference fmodTestDivOfInf = {
     (SDLTest_TestCaseFp) fmod_divOfInfCases, "fmod_divOfInfCases",
-    "Check division of positive and negative infinity", TEST_ENABLED
+    "Checks division of positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestDivByInf = {
     (SDLTest_TestCaseFp) fmod_divByInfCases, "fmod_divByInfCases",
-    "Check division by positive and negative infinity", TEST_ENABLED
+    "Checks division by positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestDivOfZero = {
     (SDLTest_TestCaseFp) fmod_divOfZeroCases, "fmod_divOfZeroCases",
-    "Check division of positive and negative zero", TEST_ENABLED
+    "Checks division of positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestDivByZero = {
     (SDLTest_TestCaseFp) fmod_divByZeroCases, "fmod_divByZeroCases",
-    "Check division by positive and negative zero", TEST_ENABLED
+    "Checks division by positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestNan = {
     (SDLTest_TestCaseFp) fmod_nanCases, "fmod_nanCases",
-    "Check the NaN special cases", TEST_ENABLED
+    "Checks NANs", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestRegular = {
     (SDLTest_TestCaseFp) fmod_regularCases, "fmod_regularCases",
-    "Check a set of regular values", TEST_ENABLED
+    "Checks a set of regular values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference fmodTestRange = {
     (SDLTest_TestCaseFp) fmod_rangeTest, "fmod_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_exp test cases */
 
 static const SDLTest_TestCaseReference expTestInf = {
     (SDLTest_TestCaseFp) exp_infCases, "exp_infCases",
-    "Check positive and negative infinity", TEST_ENABLED
+    "Checks positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestZero = {
     (SDLTest_TestCaseFp) exp_zeroCases, "exp_zeroCases",
-    "Check for positive and negative zero", TEST_ENABLED
+    "Checks for positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestOverflow = {
     (SDLTest_TestCaseFp) exp_overflowCase, "exp_overflowCase",
-    "Check for overflow", TEST_ENABLED
+    "Checks for overflow", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestBase = {
     (SDLTest_TestCaseFp) exp_baseCase, "exp_baseCase",
-    "Check the base case of 1.0", TEST_ENABLED
+    "Checks the base case", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference expTestRegular = {
     (SDLTest_TestCaseFp) exp_regularCases, "exp_regularCases",
-    "Check a set of regular values", TEST_ENABLED
+    "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_log test cases */
 
 static const SDLTest_TestCaseReference logTestLimit = {
     (SDLTest_TestCaseFp) log_limitCases, "log_limitCases",
-    "Check for limits", TEST_ENABLED
+    "Checks the domain limits", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference logTestNan = {
     (SDLTest_TestCaseFp) log_nanCases, "log_nanCases",
-    "Check for the nan cases", TEST_ENABLED
+    "Checks NAN and negative values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference logTestBase = {
     (SDLTest_TestCaseFp) log_baseCases, "log_baseCases",
-    "Check for base cases", TEST_ENABLED
+    "Checks the base cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference logTestRegular = {
     (SDLTest_TestCaseFp) log_regularCases, "log_regularCases",
-    "Check a set of regular values", TEST_ENABLED
+    "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_log10 test cases */
 
 static const SDLTest_TestCaseReference log10TestLimit = {
     (SDLTest_TestCaseFp) log10_limitCases, "log10_limitCases",
-    "Check for limits", TEST_ENABLED
+    "Checks the domain limits", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference log10TestNan = {
     (SDLTest_TestCaseFp) log10_nanCases, "log10_nanCases",
-    "Check for the nan cases", TEST_ENABLED
+    "Checks NAN and negative values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference log10TestBase = {
     (SDLTest_TestCaseFp) log10_baseCases, "log10_baseCases",
-    "Check for base cases", TEST_ENABLED
+    "Checks the base cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference log10TestRegular = {
     (SDLTest_TestCaseFp) log10_regularCases, "log10_regularCases",
-    "Check a set of regular values", TEST_ENABLED
+    "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_pow test cases */
 
 static const SDLTest_TestCaseReference powTestExpInf1 = {
     (SDLTest_TestCaseFp) pow_baseNOneExpInfCases, "pow_baseNOneExpInfCases",
-    "Check for pow(-1, +/-inf)", TEST_ENABLED
+    "Checks for pow(-1, +/-inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestExpInf2 = {
     (SDLTest_TestCaseFp) pow_baseZeroExpNInfCases, "pow_baseZeroExpNInfCases",
-    "Check for pow(+/-0, -inf)", TEST_ENABLED
+    "Checks for pow(+/-0, -inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestExpInf3 = {
     (SDLTest_TestCaseFp) pow_expInfCases, "pow_expInfCases",
-    "Check for pow(x, +/-inf)", TEST_ENABLED
+    "Checks for pow(x, +/-inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestBaseInf1 = {
     (SDLTest_TestCaseFp) pow_basePInfCases, "pow_basePInfCases",
-    "Check for pow(inf, x)", TEST_ENABLED
+    "Checks for pow(inf, x)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestBaseInf2 = {
     (SDLTest_TestCaseFp) pow_baseNInfCases, "pow_baseNInfCases",
-    "Check for pow(-inf, x)", TEST_ENABLED
+    "Checks for pow(-inf, x)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan1 = {
     (SDLTest_TestCaseFp) pow_badOperationCase, "pow_badOperationCase",
-    "Check for negative finite base and non-integer finite exponent", TEST_ENABLED
+    "Checks for negative finite base and non-integer finite exponent", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan2 = {
     (SDLTest_TestCaseFp) pow_base1ExpNanCase, "pow_base1ExpNanCase",
-    "Check for pow(1.0, nan)", TEST_ENABLED
+    "Checks for pow(1.0, NAN)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan3 = {
     (SDLTest_TestCaseFp) pow_baseNanExp0Cases, "pow_baseNanExp0Cases",
-    "Check for pow(nan, +/-0)", TEST_ENABLED
+    "Checks for pow(NAN, +/-0)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan4 = {
     (SDLTest_TestCaseFp) pow_nanArgsCases, "pow_nanArgsCases",
-    "Check for pow(x, y) with either x or y being nan", TEST_ENABLED
+    "Checks for pow(x, y) with either x or y being NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero1 = {
     (SDLTest_TestCaseFp) pow_baseNZeroExpOddCases, "pow_baseNZeroExpOddCases",
-    "Check for pow(-0.0, y), with y an odd integer.", TEST_ENABLED
+    "Checks for pow(-0.0, y), with y an odd integer.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero2 = {
     (SDLTest_TestCaseFp) pow_basePZeroExpOddCases, "pow_basePZeroExpOddCases",
-    "Check for pow(0.0, y), with y an odd integer.", TEST_ENABLED
+    "Checks for pow(0.0, y), with y an odd integer.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero3 = {
     (SDLTest_TestCaseFp) pow_baseNZeroCases, "pow_baseNZeroCases",
-    "Check for pow(-0.0, y), with y finite and even or non-integer number", TEST_ENABLED
+    "Checks for pow(-0.0, y), with y finite and even or non-integer number", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero4 = {
     (SDLTest_TestCaseFp) pow_basePZeroCases, "pow_basePZeroCases",
-    "Check for pow(0.0, y), with y finite and even or non-integer number", TEST_ENABLED
+    "Checks for pow(0.0, y), with y finite and even or non-integer number", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestRegular = {
     (SDLTest_TestCaseFp) pow_regularCases, "pow_regularCases",
-    "Check a set of regular values", TEST_ENABLED
+    "Checks a set of regular values", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestPowOf2 = {
     (SDLTest_TestCaseFp) pow_powerOfTwo, "pow_powerOfTwo",
-    "Check the powers of two from 1 to 8", TEST_ENABLED
+    "Checks the powers of two from 1 to 8", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestRange = {
     (SDLTest_TestCaseFp) pow_rangeTest, "pow_rangeTest",
-    "Check a range of positive integer to the power of 0", TEST_ENABLED
+    "Checks a range of positive integer to the power of 0", TEST_ENABLED
 };
 
 /* SDL_sqrt test cases */
 
 static const SDLTest_TestCaseReference sqrtTestInf = {
     (SDLTest_TestCaseFp) sqrt_infCase, "sqrt_infCase",
-    "Check positive infinity", TEST_ENABLED
+    "Checks positive infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestNan = {
     (SDLTest_TestCaseFp) sqrt_nanCase, "sqrt_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestDomain = {
     (SDLTest_TestCaseFp) sqrt_outOfDomainCases, "sqrt_outOfDomainCases",
-    "Check for out of domain values", TEST_ENABLED
+    "Checks for values out of the domain", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestBase = {
     (SDLTest_TestCaseFp) sqrt_baseCases, "sqrt_baseCases",
-    "Check the base cases", TEST_ENABLED
+    "Checks the base cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sqrtTestRegular = {
     (SDLTest_TestCaseFp) sqrt_regularCases, "sqrt_regularCases",
-    "Check a set of regular values", TEST_ENABLED
+    "Checks a set of regular values", TEST_ENABLED
 };
 
 /* SDL_scalbn test cases */
 
 static const SDLTest_TestCaseReference scalbnTestInf = {
     (SDLTest_TestCaseFp) scalbn_infCases, "scalbn_infCases",
-    "Check positive and negative infinity arg", TEST_ENABLED
+    "Checks positive and negative infinity arg", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestBaseZero = {
     (SDLTest_TestCaseFp) scalbn_baseZeroCases, "scalbn_baseZeroCases",
-    "Check for positive and negative zero arg", TEST_ENABLED
+    "Checks for positive and negative zero arg", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestExpZero = {
     (SDLTest_TestCaseFp) scalbn_expZeroCase, "scalbn_expZeroCase",
-    "Check for zero exp", TEST_ENABLED
+    "Checks for zero exp", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestNan = {
     (SDLTest_TestCaseFp) scalbn_nanCase, "scalbn_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference scalbnTestRegular = {
     (SDLTest_TestCaseFp) scalbn_regularCases, "scalbn_regularCases",
-    "Check a set of regular cases", TEST_ENABLED
+    "Checks a set of regular cases", TEST_ENABLED
 };
 
 /* SDL_cos test cases */
 
 static const SDLTest_TestCaseReference cosTestInf = {
     (SDLTest_TestCaseFp) cos_infCases, "cos_infCases",
-    "Check for positive and negative infinity", TEST_ENABLED
+    "Checks for positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestNan = {
     (SDLTest_TestCaseFp) cos_nanCase, "cos_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestRegular = {
     (SDLTest_TestCaseFp) cos_regularCases, "cos_regularCases",
-    "Check a set of regular cases", TEST_ENABLED
+    "Checks a set of regular cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestPrecision = {
     (SDLTest_TestCaseFp) cos_precisionTest, "cos_precisionTest",
-    "Check cosine precision to the tenth decimal", TEST_ENABLED
+    "Checks cosine precision", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference cosTestRange = {
     (SDLTest_TestCaseFp) cos_rangeTest, "cos_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_sin test cases */
 
 static const SDLTest_TestCaseReference sinTestInf = {
     (SDLTest_TestCaseFp) sin_infCases, "sin_infCases",
-    "Check for positive and negative infinity", TEST_ENABLED
+    "Checks for positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestNan = {
     (SDLTest_TestCaseFp) sin_nanCase, "sin_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestRegular = {
     (SDLTest_TestCaseFp) sin_regularCases, "sin_regularCases",
-    "Check a set of regular cases", TEST_ENABLED
+    "Checks a set of regular cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestPrecision = {
     (SDLTest_TestCaseFp) sin_precisionTest, "sin_precisionTest",
-    "Check sine precision to the tenth decimal", TEST_ENABLED
+    "Checks sine precision", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference sinTestRange = {
     (SDLTest_TestCaseFp) sin_rangeTest, "sin_rangeTest",
-    "Check a range of positive integer", TEST_ENABLED
+    "Checks a range of positive integer", TEST_ENABLED
 };
 
 /* SDL_tan test cases */
 
 static const SDLTest_TestCaseReference tanTestInf = {
     (SDLTest_TestCaseFp) tan_infCases, "tan_infCases",
-    "Check for positive and negative infinity", TEST_ENABLED
+    "Checks for positive and negative infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference tanTestNan = {
     (SDLTest_TestCaseFp) tan_nanCase, "tan_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference tanTestZero = {
     (SDLTest_TestCaseFp) tan_zeroCases, "tan_zeroCases",
-    "Check a set of regular cases", TEST_ENABLED
+    "Checks a set of regular cases", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference tanTestPrecision = {
     (SDLTest_TestCaseFp) tan_precisionTest, "tan_precisionTest",
-    "Check tane precision to the tenth decimal", TEST_ENABLED
+    "Checks tangent precision", TEST_ENABLED
 };
 
 /* SDL_acos test cases */
 
 static const SDLTest_TestCaseReference acosTestLimit = {
     (SDLTest_TestCaseFp) acos_limitCases, "acos_limitCases",
-    "Check the edge of the domain (+/-1)", TEST_ENABLED
+    "Checks the edge of the domain (+/-1)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference acosTestOutOfDomain = {
     (SDLTest_TestCaseFp) acos_outOfDomainCases, "acos_outOfDomainCases",
-    "Check a for value outside the domain", TEST_ENABLED
+    "Checks values outside the domain", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference acosTestNan = {
     (SDLTest_TestCaseFp) acos_nanCase, "acos_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference acosTestPrecision = {
     (SDLTest_TestCaseFp) acos_precisionTest, "acos_precisionTest",
-    "Check acos precision to the tenth decimal", TEST_ENABLED
+    "Checks acos precision", TEST_ENABLED
 };
 
 /* SDL_asin test cases */
 
 static const SDLTest_TestCaseReference asinTestLimit = {
     (SDLTest_TestCaseFp) asin_limitCases, "asin_limitCases",
-    "Check the edge of the domain (+/-1)", TEST_ENABLED
+    "Checks the edge of the domain (+/-1)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference asinTestOutOfDomain = {
     (SDLTest_TestCaseFp) asin_outOfDomainCases, "asin_outOfDomainCases",
-    "Check a for value outside the domain", TEST_ENABLED
+    "Checks values outside the domain", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference asinTestNan = {
     (SDLTest_TestCaseFp) asin_nanCase, "asin_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference asinTestPrecision = {
     (SDLTest_TestCaseFp) asin_precisionTest, "asin_precisionTest",
-    "Check asin precision to the tenth decimal", TEST_ENABLED
+    "Checks asin precision", TEST_ENABLED
 };
 
 /* SDL_atan test cases */
 
 static const SDLTest_TestCaseReference atanTestLimit = {
     (SDLTest_TestCaseFp) atan_limitCases, "atan_limitCases",
-    "Check the edge of the domain (+/- infinity)", TEST_ENABLED
+    "Checks the edge of the domain (+/-Infinity)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atanTestZero = {
     (SDLTest_TestCaseFp) atan_zeroCases, "atan_zeroCases",
-    "Check for positive and negative zero", TEST_ENABLED
+    "Checks for positive and negative zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atanTestNan = {
     (SDLTest_TestCaseFp) atan_nanCase, "atan_nanCase",
-    "Check the NaN special case", TEST_ENABLED
+    "Checks NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atanTestPrecision = {
     (SDLTest_TestCaseFp) atan_precisionTest, "atan_precisionTest",
-    "Check atan precision to the tenth decimal", TEST_ENABLED
+    "Checks atan precision", TEST_ENABLED
 };
 
 /* SDL_atan2 test cases */
 
 static const SDLTest_TestCaseReference atan2TestZero1 = {
     (SDLTest_TestCaseFp) atan2_bothZeroCases, "atan2_bothZeroCases",
-    "Check for both arguments being zero", TEST_ENABLED
+    "Checks for both arguments being zero", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestZero2 = {
     (SDLTest_TestCaseFp) atan2_yZeroCases, "atan2_yZeroCases",
-    "Check for y=0", TEST_ENABLED
+    "Checks for y=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestZero3 = {
     (SDLTest_TestCaseFp) atan2_xZeroCases, "atan2_xZeroCases",
-    "Check for x=0", TEST_ENABLED
+    "Checks for x=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestInf1 = {
     (SDLTest_TestCaseFp) atan2_bothInfCases, "atan2_bothInfCases",
-    "Check for both arguments being infinity", TEST_ENABLED
+    "Checks for both arguments being infinity", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestInf2 = {
     (SDLTest_TestCaseFp) atan2_yInfCases, "atan2_yInfCases",
-    "Check for y=0", TEST_ENABLED
+    "Checks for y=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestInf3 = {
     (SDLTest_TestCaseFp) atan2_xInfCases, "atan2_xInfCases",
-    "Check for x=0", TEST_ENABLED
+    "Checks for x=0", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestNan = {
     (SDLTest_TestCaseFp) atan2_nanCases, "atan2_nanCases",
-    "Check the NaN special cases", TEST_ENABLED
+    "Checks NANs", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference atan2TestQuadrantTopRight = {
     (SDLTest_TestCaseFp) atan2_topRightQuadrantTest, "atan2_topRightQuadrantTest",
