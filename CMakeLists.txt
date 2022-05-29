@@ -1416,8 +1416,10 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       endif()
 
       if(HAVE_LIBUNWIND_H)
-        # We've already found the header, so REQUIRE the lib to be present
-        pkg_search_module(UNWIND REQUIRED libunwind)
+        # We've already found the header, so link the lib if present.
+        # NB: This .pc file is not present on FreeBSD where the implicitly
+        # linked base system libgcc_s includes all libunwind ABI.
+        pkg_search_module(UNWIND libunwind)
         pkg_search_module(UNWIND_GENERIC libunwind-generic)
         list(APPEND EXTRA_TEST_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
       endif()
