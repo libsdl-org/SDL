@@ -2953,6 +2953,9 @@ if(SDL_SHARED)
   if(NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   endif()
+  # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
+  set_property(TARGET SDL2 PROPERTY INTERFACE_SDL2_SHARED TRUE)
+  set_property(TARGET SDL2 APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL2_SHARED)
 endif()
 
 if(SDL_STATIC)
@@ -2984,6 +2987,9 @@ if(SDL_STATIC)
   if(NOT ANDROID)
     set_target_properties(SDL2-static PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   endif()
+  # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
+  set_property(TARGET SDL2-static PROPERTY INTERFACE_SDL2_SHARED FALSE)
+  set_property(TARGET SDL2-static APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL2_SHARED)
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MAJOR_VERSION=${SDL_MAJOR_VERSION}")
