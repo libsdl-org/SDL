@@ -762,7 +762,7 @@ const char *wmtab[] = {
     "UNKNOWN (737)",
     "UNKNOWN (738)",
     "UNKNOWN (739)",
-    "UNKNOWN (740)",
+    "WM_GETDPISCALEDSIZE",
     "UNKNOWN (741)",
     "UNKNOWN (742)",
     "UNKNOWN (743)",

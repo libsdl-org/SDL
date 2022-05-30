@@ -1088,19 +1088,25 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                    inside their function, so I have to do it here.
                  */
                 BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+                UINT dpi;
+                
+                dpi = 96;
                 size.top = 0;
                 size.left = 0;
                 size.bottom = h;
                 size.right = w;
 
                 if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
-                    UINT dpi = data->videodata->GetDpiForWindow(hwnd);
+                    dpi = data->videodata->GetDpiForWindow(hwnd);
                     data->videodata->AdjustWindowRectExForDpi(&size, style, menu, 0, dpi);
                 } else {
                     AdjustWindowRectEx(&size, style, menu, 0);
                 }
                 w = size.right - size.left;
                 h = size.bottom - size.top;
+#ifdef HIGHDPI_DEBUG
+                SDL_Log("WM_GETMINMAXINFO: max window size: %dx%d using dpi: %u", w, h, dpi);
+#endif
             }
 
             /* Fix our size to the current size */
@@ -1422,7 +1428,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_GETDPISCALEDSIZE:
         /* Windows 10 Creators Update+ */
-        /* Documented as only being sent to windows that are per-monitor V2 DPI aware. */
+        /* Documented as only being sent to windows that are per-monitor V2 DPI aware.
+           
+           Experimentation shows it's only sent during interactive dragging, not in response to
+           SetWindowPos. */
         if (data->videodata->GetDpiForWindow && data->videodata->AdjustWindowRectExForDpi) {
             /* Windows expects applications to scale their window rects linearly
                when dragging between monitors with different DPI's.
@@ -1490,6 +1499,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             const int newDPI = HIWORD(wParam);
             RECT* const suggestedRect = (RECT*)lParam;
+            SDL_bool setExpectedResize = SDL_FALSE;
             int w, h;
 
 #ifdef HIGHDPI_DEBUG
@@ -1497,12 +1507,28 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 suggestedRect->left, suggestedRect->top, suggestedRect->right - suggestedRect->left, suggestedRect->bottom - suggestedRect->top);
 #endif
 
-            /* DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 means that
-               WM_GETDPISCALEDSIZE will have been called, so we can use suggestedRect. */
+            if (data->expected_resize) {
+                /* This DPI change is coming from an explicit SetWindowPos call within SDL.
+                   Assume all call sites are calculating the DPI-aware frame correctly, so
+                   we don't need to do any further adjustment. */
+#ifdef HIGHDPI_DEBUG
+                SDL_Log("WM_DPICHANGED: Doing nothing, assuming window is already sized correctly");
+#endif
+                return 0;
+            }
+
+            /* Interactive user-initiated resizing/movement */
+
             if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
+                /* WM_GETDPISCALEDSIZE should have been called prior, so we can trust the given
+                   suggestedRect. */
                 w = suggestedRect->right - suggestedRect->left;
                 h = suggestedRect->bottom - suggestedRect->top;
-            } else {
+
+#ifdef HIGHDPI_DEBUG
+                SDL_Log("WM_DPICHANGED: using suggestedRect");
+#endif
+            } else {               
                 RECT rect = { 0, 0, data->window->w, data->window->h };
                 const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
                 const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
@@ -1521,7 +1547,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 suggestedRect->left, suggestedRect->top, w, h);
 #endif
 
-            data->expected_resize = SDL_TRUE;
+            if (!data->expected_resize) {
+                setExpectedResize = SDL_TRUE;
+                data->expected_resize = SDL_TRUE;
+            }            
             SetWindowPos(hwnd,
                 NULL,
                 suggestedRect->left,
@@ -1529,7 +1558,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 w,
                 h,
                 SWP_NOZORDER | SWP_NOACTIVATE);
-            data->expected_resize = SDL_FALSE;
+            if (setExpectedResize) {
+                /* Only unset data->expected_resize if we set it above.
+                   WM_DPICHANGED can happen inside a block of code that sets data->expected_resize,
+                   e.g. WIN_SetWindowPositionInternal.
+                */
+                data->expected_resize = SDL_FALSE;
+            }
             return 0;
         }
         break;
