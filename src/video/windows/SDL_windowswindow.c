@@ -45,6 +45,8 @@
 #define SWP_NOCOPYBITS 0
 #endif
 
+/* #define HIGHDPI_DEBUG */
+
 /* Fake window to help with DirectInput events. */
 HWND SDL_HelperWindow = NULL;
 static const TCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
@@ -113,13 +115,14 @@ GetWindowStyle(SDL_Window * window)
 }
 
 static void
-WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current, 
-                              SDL_bool force_ignore_window_dpi)
+WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_VideoData* videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
+    UINT dpi;
 
+    dpi = 96;
     rect.left = 0;
     rect.top = 0;
     rect.right = (use_current ? window->w : window->windowed.w);
@@ -132,33 +135,21 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
         if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
             /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of 
                AdjustWindowRectEx. */
-            UINT dpi;
+            
+            UINT unused;
+            RECT screen_rect;
+            HMONITOR mon;
 
-            if (data && !force_ignore_window_dpi) {
-                /* The usual case - we have a HWND, so we can look up the DPI to use. */
-                dpi = videodata->GetDpiForWindow(data->hwnd);
-            } else {
-                /* In this case we guess the window DPI based on its rectangle on the screen.
-                 
-                   This happens at creation time of an SDL window, before we have a HWND, 
-                   and also in a bug workaround (when force_ignore_window_dpi is SDL_TRUE
-                   - see WIN_SetWindowFullscreen).
-                */
-                UINT unused;
-                RECT screen_rect;
-                HMONITOR mon;
+            screen_rect.left = (use_current ? window->x : window->windowed.x);
+            screen_rect.top = (use_current ? window->y : window->windowed.y);
+            screen_rect.right = screen_rect.left + (use_current ? window->w : window->windowed.w);
+            screen_rect.bottom  = screen_rect.top + (use_current ? window->h : window->windowed.h);
 
-                screen_rect.left = (use_current ? window->x : window->windowed.x);
-                screen_rect.top = (use_current ? window->y : window->windowed.y);
-                screen_rect.right = screen_rect.left + (use_current ? window->w : window->windowed.w);
-                screen_rect.bottom  = screen_rect.top + (use_current ? window->h : window->windowed.h);
+            mon = MonitorFromRect(&screen_rect, MONITOR_DEFAULTTONEAREST);
 
-                mon = MonitorFromRect(&screen_rect, MONITOR_DEFAULTTONEAREST);
-
-                /* GetDpiForMonitor docs promise to return the same hdpi / vdpi */
-                if (videodata->GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dpi, &unused) != S_OK) {
-                    dpi = 96;
-                }
+            /* GetDpiForMonitor docs promise to return the same hdpi / vdpi */
+            if (videodata->GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &dpi, &unused) != S_OK) {
+                dpi = 96;
             }
 
             videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, dpi);
@@ -171,6 +162,15 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
     *y = (use_current ? window->y : window->windowed.y) + rect.top;
     *width = (rect.right - rect.left);
     *height = (rect.bottom - rect.top);
+
+#ifdef HIGHDPI_DEBUG
+    SDL_Log("WIN_AdjustWindowRectWithStyle: in: %d, %d, %dx%d, returning: %d, %d, %dx%d, used dpi %d for frame calculation", 
+        (use_current ? window->x : window->windowed.x),
+        (use_current ? window->y : window->windowed.y),
+        (use_current ? window->w : window->windowed.w),
+        (use_current ? window->h : window->windowed.h),
+        *x, *y, *width, *height, dpi);
+#endif
 }
 
 static void
@@ -183,7 +183,7 @@ WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height
 
     style = GetWindowLong(hwnd, GWL_STYLE);
     menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-    WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, use_current, SDL_FALSE);
+    WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, use_current);
 }
 
 static void
@@ -269,7 +269,9 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
                 int x, y;
                 /* Figure out what the window area will be */
                 WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
+                data->expected_resize = SDL_TRUE;
                 SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
+                data->expected_resize = SDL_FALSE;
             } else {
                 window->w = w;
                 window->h = h;
@@ -353,7 +355,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
     style |= GetWindowStyle(window);
 
     /* Figure out what the window area will be */
-    WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_FALSE, SDL_FALSE);
+    WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_FALSE);
 
     hwnd =
         CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, parent, NULL,
@@ -535,7 +537,10 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
 void
 WIN_SetWindowPosition(_THIS, SDL_Window * window)
 {
-    WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
+    /* HighDPI support: removed SWP_NOSIZE. If the move results in a DPI change, we need to allow
+     * the window to resize (e.g. AdjustWindowRectExForDpi frame sizes are different).
+     */
+    WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOACTIVATE);
 }
 
 void
@@ -768,13 +773,7 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
         }
 
         menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-        /* HighDPI bug workaround - when leaving exclusive fullscreen, the window DPI reported
-           by GetDpiForWindow will be wrong. Pass SDL_TRUE for `force_ignore_window_dpi`
-           makes us recompute the DPI based on the monitor we are restoring onto.
-           Fixes windows shrinking slightly when going from exclusive fullscreen to windowed
-           on a HighDPI monitor with scaling.
-        */
-        WIN_AdjustWindowRectWithStyle(window, style, menu, &x, &y, &w, &h, SDL_FALSE, SDL_TRUE);
+        WIN_AdjustWindowRectWithStyle(window, style, menu, &x, &y, &w, &h, SDL_FALSE);
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = SDL_TRUE;
