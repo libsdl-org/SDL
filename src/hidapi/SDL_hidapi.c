@@ -1037,54 +1037,60 @@ int SDL_hid_init(void)
 #endif
 
 #ifdef SDL_LIBUSB_DYNAMIC
-    ++attempts;
-    libusb_ctx.libhandle = SDL_LoadObject(SDL_LIBUSB_DYNAMIC);
-    if (libusb_ctx.libhandle != NULL) {
-        SDL_bool loaded = SDL_TRUE;
-        #ifdef __OS2__
-        #define LOAD_LIBUSB_SYMBOL(func) \
-            if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
-        #else
-        #define LOAD_LIBUSB_SYMBOL(func) \
-            if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
-        #endif
-        LOAD_LIBUSB_SYMBOL(init)
-        LOAD_LIBUSB_SYMBOL(exit)
-        LOAD_LIBUSB_SYMBOL(get_device_list)
-        LOAD_LIBUSB_SYMBOL(free_device_list)
-        LOAD_LIBUSB_SYMBOL(get_device_descriptor)
-        LOAD_LIBUSB_SYMBOL(get_active_config_descriptor)
-        LOAD_LIBUSB_SYMBOL(get_config_descriptor)
-        LOAD_LIBUSB_SYMBOL(free_config_descriptor)
-        LOAD_LIBUSB_SYMBOL(get_bus_number)
-        LOAD_LIBUSB_SYMBOL(get_device_address)
-        LOAD_LIBUSB_SYMBOL(open)
-        LOAD_LIBUSB_SYMBOL(close)
-        LOAD_LIBUSB_SYMBOL(claim_interface)
-        LOAD_LIBUSB_SYMBOL(release_interface)
-        LOAD_LIBUSB_SYMBOL(kernel_driver_active)
-        LOAD_LIBUSB_SYMBOL(detach_kernel_driver)
-        LOAD_LIBUSB_SYMBOL(attach_kernel_driver)
-        LOAD_LIBUSB_SYMBOL(set_interface_alt_setting)
-        LOAD_LIBUSB_SYMBOL(alloc_transfer)
-        LOAD_LIBUSB_SYMBOL(submit_transfer)
-        LOAD_LIBUSB_SYMBOL(cancel_transfer)
-        LOAD_LIBUSB_SYMBOL(free_transfer)
-        LOAD_LIBUSB_SYMBOL(control_transfer)
-        LOAD_LIBUSB_SYMBOL(interrupt_transfer)
-        LOAD_LIBUSB_SYMBOL(handle_events)
-        LOAD_LIBUSB_SYMBOL(handle_events_completed)
-        #undef LOAD_LIBUSB_SYMBOL
+    if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "libusb disabled by SDL_HIDAPI_DISABLE_LIBUSB");
+        libusb_ctx.libhandle = NULL;
+    } else {
+        ++attempts;
+        libusb_ctx.libhandle = SDL_LoadObject(SDL_LIBUSB_DYNAMIC);
+        if (libusb_ctx.libhandle != NULL) {
+            SDL_bool loaded = SDL_TRUE;
+            #ifdef __OS2__
+            #define LOAD_LIBUSB_SYMBOL(func) \
+                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
+            #else
+            #define LOAD_LIBUSB_SYMBOL(func) \
+                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
+            #endif
+            LOAD_LIBUSB_SYMBOL(init)
+            LOAD_LIBUSB_SYMBOL(exit)
+            LOAD_LIBUSB_SYMBOL(get_device_list)
+            LOAD_LIBUSB_SYMBOL(free_device_list)
+            LOAD_LIBUSB_SYMBOL(get_device_descriptor)
+            LOAD_LIBUSB_SYMBOL(get_active_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(get_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(free_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(get_bus_number)
+            LOAD_LIBUSB_SYMBOL(get_device_address)
+            LOAD_LIBUSB_SYMBOL(open)
+            LOAD_LIBUSB_SYMBOL(close)
+            LOAD_LIBUSB_SYMBOL(claim_interface)
+            LOAD_LIBUSB_SYMBOL(release_interface)
+            LOAD_LIBUSB_SYMBOL(kernel_driver_active)
+            LOAD_LIBUSB_SYMBOL(detach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(attach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(set_interface_alt_setting)
+            LOAD_LIBUSB_SYMBOL(alloc_transfer)
+            LOAD_LIBUSB_SYMBOL(submit_transfer)
+            LOAD_LIBUSB_SYMBOL(cancel_transfer)
+            LOAD_LIBUSB_SYMBOL(free_transfer)
+            LOAD_LIBUSB_SYMBOL(control_transfer)
+            LOAD_LIBUSB_SYMBOL(interrupt_transfer)
+            LOAD_LIBUSB_SYMBOL(handle_events)
+            LOAD_LIBUSB_SYMBOL(handle_events_completed)
+            #undef LOAD_LIBUSB_SYMBOL
 
-        if (!loaded) {
-            SDL_UnloadObject(libusb_ctx.libhandle);
-            libusb_ctx.libhandle = NULL;
-            /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function"); */
-        } else if (LIBUSB_hid_init() < 0) {
-            SDL_UnloadObject(libusb_ctx.libhandle);
-            libusb_ctx.libhandle = NULL;
-        } else {
-            ++success;
+            if (!loaded) {
+                SDL_UnloadObject(libusb_ctx.libhandle);
+                libusb_ctx.libhandle = NULL;
+                /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function"); */
+            } else if (LIBUSB_hid_init() < 0) {
+                SDL_UnloadObject(libusb_ctx.libhandle);
+                libusb_ctx.libhandle = NULL;
+            } else {
+                ++success;
+            }
         }
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
