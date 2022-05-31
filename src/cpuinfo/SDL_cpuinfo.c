@@ -112,6 +112,12 @@
 #define CPU_HAS_NEON    (1 << 11)
 #define CPU_HAS_AVX512F (1 << 12)
 #define CPU_HAS_ARM_SIMD (1 << 13)
+#define CPU_HAS_LSX     (1 << 14)
+#define CPU_HAS_LASX    (1 << 15)
+
+#define CPU_CFG2 0x2
+#define CPU_CFG2_LSX    (1 << 6)
+#define CPU_CFG2_LASX   (1 << 7)
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__ && !__FreeBSD__
 /* This is the brute force way of detecting instruction sets...
@@ -508,6 +514,23 @@ CPU_haveNEON(void)
 #endif
 }
 
+static int
+CPU_readCPUCFG(void)
+{
+    uint32_t cfg2 = 0;
+#if defined __loongarch__
+    __asm__ volatile(
+        "cpucfg %0, %1 \n\t"
+        : "+&r"(cfg2)
+        : "r"(CPU_CFG2)
+    );
+#endif
+    return cfg2;
+}
+
+#define CPU_haveLSX() (CPU_readCPUCFG() & CPU_CFG2_LSX)
+#define CPU_haveLASX() (CPU_readCPUCFG() & CPU_CFG2_LASX)
+
 #if defined(__e2k__)
 inline int
 CPU_have3DNow(void)
@@ -885,6 +908,14 @@ SDL_GetCPUFeatures(void)
             SDL_CPUFeatures |= CPU_HAS_NEON;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
+	if (CPU_haveLSX()) {
+            SDL_CPUFeatures |= CPU_HAS_LSX;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
+        }
+	if (CPU_haveLASX()) {
+            SDL_CPUFeatures |= CPU_HAS_LASX;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
+        }
     }
     return SDL_CPUFeatures;
 }
@@ -972,6 +1003,18 @@ SDL_bool
 SDL_HasNEON(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_NEON);
+}
+
+SDL_bool
+SDL_HasLSX(void)
+{
+    return CPU_FEATURE_AVAILABLE(CPU_HAS_LSX);
+}
+
+SDL_bool
+SDL_HasLASX(void)
+{
+    return CPU_FEATURE_AVAILABLE(CPU_HAS_LASX);
 }
 
 static int SDL_SystemRAM = 0;
@@ -1170,6 +1213,8 @@ main()
     printf("AVX-512F: %d\n", SDL_HasAVX512F());
     printf("ARM SIMD: %d\n", SDL_HasARMSIMD());
     printf("NEON: %d\n", SDL_HasNEON());
+    printf("LSX: %d\n", SDL_HasLSX());
+    printf("LASX: %d\n", SDL_HasLASX());
     printf("RAM: %d MB\n", SDL_GetSystemRAM());
     return 0;
 }
