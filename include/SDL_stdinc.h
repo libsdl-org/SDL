@@ -28,7 +28,7 @@
 #ifndef SDL_stdinc_h_
 #define SDL_stdinc_h_
 
-#include "SDL_config.h"
+#include <SDL_config.h>
 
 #ifdef __APPLE__
 #ifndef _DARWIN_C_SOURCE
