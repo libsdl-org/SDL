@@ -3,29 +3,30 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-set(_sdl2_known_comps SDL2 SDL2main SDL2test)
-if(NOT SDL2_FIND_COMPONENTS)
-    set(SDL2_FIND_COMPONENTS ${_sdl2_known_comps})
-endif()
+include(FeatureSummary)
+set_package_properties(SDL2 PROPERTIES
+    URL "https://www.libsdl.org/"
+    DESCRIPTION "low level access to audio, keyboard, mouse, joystick, and graphics hardware"
+)
 
-# Fail early when an unknown component is requested
-list(REMOVE_DUPLICATES SDL2_FIND_COMPONENTS)
-list(REMOVE_ITEM SDL2_FIND_COMPONENTS ${_sdl2_known_comps})
-if(SDL2_FIND_COMPONENTS)
-    set(missing_required_comps)
-    foreach(missingcomp ${SDL2_FIND_COMPONENTS})
-        if(SDL2_FIND_REQUIRED_${missingcomp})
-            list(APPEND missing_required_comps ${missingcomp})
+# Copied from `configure_package_config_file`
+macro(set_and_check _var _file)
+    set(${_var} "${_file}")
+    if(NOT EXISTS "${_file}")
+        message(FATAL_ERROR "File or directory ${_file} referenced by variable ${_var} does not exist !")
+    endif()
+endmacro()
+
+# Copied from `configure_package_config_file`
+macro(check_required_components _NAME)
+    foreach(comp ${${_NAME}_FIND_COMPONENTS})
+        if(NOT ${_NAME}_${comp}_FOUND)
+            if(${_NAME}_FIND_REQUIRED_${comp})
+                set(${_NAME}_FOUND FALSE)
+            endif()
         endif()
     endforeach()
-    if(missing_required_comps)
-        if(NOT SDL2_FIND_QUIETLY)
-            message(WARNING "SDL2: following component(s) are not available: ${missing_required_comps}")
-        endif()
-        set(SDL2_FOUND FALSE)
-        return()
-    endif()
-endif()
+endmacro()
 
 set(SDL2_FOUND TRUE)
 
@@ -38,42 +39,73 @@ else()
     return()
 endif()
 
-set(SDL2_INCLUDE_DIR    "${CMAKE_CURRENT_LIST_DIR}/../include")
-set(SDL2_INCLUDE_DIRS   "${SDL2_INCLUDE_DIR}")
-set(SDL2_LIBRARY        "${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL2.lib")
-set(SDL2_DLL_LIBRARY    "${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL2.dll")
-set(SDL2main_LIBRARY    "${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL2main.lib")
-set(SDL2test_LIBRARY    "${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL2test.lib")
+# For compatibility with autotools sdl2-config.cmake, provide SDL2_* variables.
+
+set_and_check(SDL2_PREFIX       "${CMAKE_CURRENT_LIST_DIR}/..")
+set_and_check(SDL2_EXEC_PREFIX  "${CMAKE_CURRENT_LIST_DIR}/..")
+set_and_check(SDL2_INCLUDE_DIR  "${SDL2_PREFIX}/include/SDL2")
+set(SDL2_INCLUDE_DIRS           "${CMAKE_CURRENT_LIST_DIR}/../include;${SDL2_INCLUDE_DIR}")
+set_and_check(SDL2_BINDIR       "${SDL2_PREFIX}/lib/${_sdl_arch_subdir}")
+set_and_check(SDL2_LIBDIR       "${SDL2_PREFIX}/lib/${_sdl_arch_subdir}")
+
+set(SDL2_LIBRARIES      SDL2::SDL2main SDL2::SDL2)
+set(SDL2MAIN_LIBRARY    SDL2::SDL2main)
+set(SDL2TEST_LIBRARY    SDL2::SDL2test)
 
 
 # All targets are created, even when some might not be requested though COMPONENTS.
 # This is done for compatibility with CMake generated SDL2-target.cmake files.
 
-if(NOT TARGET SDL2::SDL2)
-    add_library(SDL2::SDL2 SHARED IMPORTED)
-    set_target_properties(SDL2::SDL2
-        PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
-            IMPORTED_IMPLIB "${SDL2_LIBRARY}"
-            IMPORTED_LOCATION "${SDL2_DLL_LIBRARY}"
-            COMPATIBLE_INTERFACE_BOOL "SDL2_SHARED"
-            INTERFACE_SDL2_SHARED "ON"
-    )
+set(_sdl2_library     "${SDL2_LIBDIR}/SDL2.lib")
+set(_sdl2_dll_library "${SDL2_BINDIR}/SDL2.dll")
+if(EXISTS "${_sdl2_library}" AND EXISTS "${_sdl2_dll_library}")
+    if(NOT TARGET SDL2::SDL2)
+        add_library(SDL2::SDL2 SHARED IMPORTED)
+        set_target_properties(SDL2::SDL2
+            PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
+                IMPORTED_IMPLIB "${_sdl2_library}"
+                IMPORTED_LOCATION "${_sdl2_dll_library}"
+                COMPATIBLE_INTERFACE_BOOL "SDL2_SHARED"
+                INTERFACE_SDL2_SHARED "ON"
+        )
+    endif()
+    set(SDL2_SDL2_FOUND TRUE)
+else()
+    set(SDL2_SDL2_FOUND FALSE)
 endif()
+unset(_sdl2_library)
+unset(_sdl2_dll_library)
 
-if(NOT TARGET SDL2::SDL2main)
-    add_library(SDL2::SDL2main STATIC IMPORTED)
-    set_target_properties(SDL2::SDL2main
+set(_sdl2main_library "${SDL2_LIBDIR}/SDL2main.lib")
+if(EXISTS "${_sdl2main_library}")
+    if(NOT TARGET SDL2::SDL2main)
+        add_library(SDL2::SDL2main STATIC IMPORTED)
+        set_target_properties(SDL2::SDL2main
         PROPERTIES
-            IMPORTED_LOCATION "${SDL2main_LIBRARY}"
-    )
+            IMPORTED_LOCATION "${_sdl2main_library}"
+        )
+    endif()
+    set(SDL2_SDL2main_FOUND TRUE)
+else()
+    set(SDL2_SDL2_FOUND FALSE)
 endif()
+unset(_sdl2main_library)
 
-if(NOT TARGET SDL2::SDL2test)
-    add_library(SDL2::SDL2test STATIC IMPORTED)
-    set_target_properties(SDL2::SDL2test
-        PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
-            IMPORTED_LOCATION "${SDL2test_LIBRARY}"
-    )
+set(_sdl2test_library "${SDL2_LIBDIR}/SDL2test.lib")
+if(EXISTS "${_sdl2test_library}")
+    if(NOT TARGET SDL2::SDL2test)
+        add_library(SDL2::SDL2test STATIC IMPORTED)
+        set_target_properties(SDL2::SDL2test
+            PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
+                IMPORTED_LOCATION "${_sdl2test_library}"
+        )
+    endif()
+    set(SDL2_SDL2test_FOUND TRUE)
+else()
+    set(SDL2_SDL2_FOUND FALSE)
 endif()
+unset(_sdl2test_library)
+
+check_required_components(SDL2)
