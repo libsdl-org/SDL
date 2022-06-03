@@ -2697,6 +2697,7 @@ configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
 if(NOT WINDOWS OR CYGWIN OR MINGW)
 
   set(prefix ${CMAKE_INSTALL_PREFIX})
+  file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
 
   set(exec_prefix "\${prefix}")
   set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")

@@ -653,6 +653,7 @@ SDL_RLD_FLAGS
 SDL_STATIC_LIBS
 SDL_LIBS
 SDL_CFLAGS
+bin_prefix_relpath
 cmake_prefix_relpath
 INSTALL_SDL2_CONFIG
 LIBUSB_LIBS
@@ -27056,6 +27057,10 @@ SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 eval pkg_prefix=$prefix
 eval pkg_cmakedir=$libdir/cmake/SDL2
 cmake_prefix_relpath="$(echo -n "$pkg_cmakedir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
+
+
+eval pkg_bindir=$bindir
+bin_prefix_relpath="$(echo -n "pkg_bindir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
 
 
 
