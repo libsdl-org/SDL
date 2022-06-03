@@ -19,14 +19,29 @@ jobs:
         - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32 }
         - { name: Windows (ARM),          flags: -A ARM }
         - { name: Windows (ARM64),        flags: -A ARM64 }
-        - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TEST=OFF, project: VisualC-WinRT/SDL-UWP.sln, projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0' }
+        - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TESTS=OFF,
+            project: VisualC-WinRT/SDL-UWP.sln, projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0' }
 
     steps:
     - uses: actions/checkout@v2
     - name: Configure CMake
-      run: cmake -B build -DSDL_TEST=ON ${{ matrix.platform.flags }}
+      run: cmake -S . -B build `
+        -DSDL_TESTS=ON `
+        ${{ matrix.platform.flags }} `
+        -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build CMake
       run: cmake --build build/ --config Release --parallel
+    - name: Install CMake
+      run: |
+        echo "SDL2_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV
+        cmake --install build/
+    - name: Verify CMake configuration files
+      if: ${{ !contains(matrix.platform.name, 'UWP') }}  # FIXME: cmake/test/CMakeLists.txt should support UWP
+      run: |
+        cmake -S cmake/test -B cmake_config_build `
+          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} `
+          ${{ matrix.platform.flags }}
+        cmake --build cmake_config_build --config Release
 
     - name: Add msbuild to PATH
       if: ${{ matrix.platform.project != '' }}
