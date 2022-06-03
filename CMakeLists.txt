@@ -287,7 +287,7 @@ if(MSVC)
   endif()
 endif()
 
-# Those are used for pkg-config and friends, so that the SDL2.pc, sdl2-config,
+# Those are used for pkg-config and friends, so that the sdl2.pc, sdl2-config,
 # etc. are created correctly.
 set(SDL_LIBS "-lSDL2")
 set(SDL_CFLAGS "")
@@ -312,7 +312,7 @@ if(CYGWIN)
     HAVE_GCC_NO_CYGWIN)
   set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   if(HAVE_GCC_NO_CYGWIN)
-    list(APPEND EXTRA_LDFLAGS "-mno-cygwin")
+    list(APPEND EXTRA_LDFLAGS_BUILD "-mno-cygwin")
     list(APPEND SDL_LIBS "-mno-cygwin")
   endif()
   set(SDL_CFLAGS "${SDL_CFLAGS} -I/usr/include/mingw")
@@ -612,15 +612,16 @@ if(USE_GCC OR USE_CLANG)
   endif()
 
   if(APPLE)
-    list(APPEND EXTRA_LDFLAGS "-Wl,-undefined,error")
-    list(APPEND EXTRA_LDFLAGS "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
-    list(APPEND EXTRA_LDFLAGS "-Wl,-current_version,${DYLIB_CURRENT_VERSION}")
+    # FIXME: use generator expression instead of appending to EXTRA_LDFLAGS_BUILD
+    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-undefined,error")
+    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
+    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${DYLIB_CURRENT_VERSION}")
   elseif(NOT OPENBSD)
     set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     if(HAVE_NO_UNDEFINED AND NOT (USE_CLANG AND WINDOWS))
-      list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
+      list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,--no-undefined")
     endif()
   endif()
 
@@ -1838,8 +1839,6 @@ elseif(WINDOWS)
   file(GLOB VERSION_SOURCES ${SDL2_SOURCE_DIR}/src/main/windows/*.rc)
   file(GLOB SDLMAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/windows/*.c)
   if(MINGW OR CYGWIN)
-    list(APPEND EXTRA_LIBS mingw32)
-    list(APPEND EXTRA_LDFLAGS "-mwindows")
     list(APPEND SDL_LIBS "-lmingw32" "-mwindows")
     if(NOT SDL2_DISABLE_SDL2MAIN)
       set(SDL_CFLAGS "${SDL_CFLAGS} -Dmain=SDL_main")
@@ -2850,7 +2849,7 @@ endif()
 message(STATUS "")
 message(STATUS " CFLAGS:        ${CMAKE_C_FLAGS}")
 message(STATUS " EXTRA_CFLAGS:  ${EXTRA_CFLAGS}")
-message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS}")
+message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD}")
 message(STATUS " EXTRA_LIBS:    ${EXTRA_LIBS}")
 message(STATUS "")
 message(STATUS " Build Shared Library: ${SDL_SHARED}")
@@ -2896,6 +2895,14 @@ if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   if (WIN32)
     target_link_libraries(SDL2main PRIVATE shell32)
+  endif()
+  if(MINGW OR CYGWIN)
+    cmake_minimum_required(VERSION 3.13)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+      target_link_options(SDL2main PUBLIC "-Wl,--undefined=_WinMain@16")
+    else()
+      target_link_options(SDL2main PUBLIC "-Wl,--undefined=WinMain")
+    endif()
   endif()
   if (NOT ANDROID)
     set_target_properties(SDL2main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
@@ -2945,11 +2952,17 @@ if(SDL_SHARED)
     endif()
     set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
-  target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
+  target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
   target_include_directories(SDL2 BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
+  if(MINGW OR CYGWIN)
+    if(NOT CMAKE_VERSION VERSION_LESS "3.13")
+      target_link_options(SDL2 PRIVATE -static-libgcc)
+    endif()
+  endif()
   if(NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   endif()
@@ -2963,12 +2976,11 @@ if(SDL_STATIC)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
-  if (NOT SDL_SHARED OR NOT WIN32 OR MINGW)
+  if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
+    # Avoid conflict between the dll import library and the static library
+    set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2-static")
+  else()
     set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
-    # Note: Apparently, OUTPUT_NAME must really be unique; even when
-    # CMAKE_IMPORT_LIBRARY_SUFFIX or the like are given. Otherwise
-    # the static build may race with the import lib and one will get
-    # clobbered, when the suffix is realized via subsequent rename.
   endif()
   set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
   # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
@@ -2979,7 +2991,7 @@ if(SDL_STATIC)
   endif()
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
-  target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
   target_include_directories(SDL2-static BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
   target_include_directories(SDL2-static PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
   # This picks up all the compiler options and such we've accumulated up to here.
@@ -3047,6 +3059,10 @@ if(NOT SDL2_DISABLE_INSTALL)
   endif ()
 
   include(CMakePackageConfigHelpers)
+  configure_package_config_file(SDL2Config.cmake.in "${CMAKE_BINARY_DIR}/SDL2Config.cmake"
+    PATH_VARS CMAKE_INSTALL_PREFIX CMAKE_INSTALL_FULL_BINDIR CMAKE_INSTALL_FULL_INCLUDEDIR CMAKE_INSTALL_FULL_LIBDIR
+    INSTALL_DESTINATION ${PKG_PREFIX}
+  )
   write_basic_package_version_file("${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake"
     VERSION ${SDL_VERSION}
     COMPATIBILITY AnyNewerVersion
@@ -3086,7 +3102,7 @@ if(NOT SDL2_DISABLE_INSTALL)
 
   install(
     FILES
-      ${CMAKE_CURRENT_SOURCE_DIR}/SDL2Config.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake
       ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
     DESTINATION ${PKG_PREFIX}
     COMPONENT Devel
