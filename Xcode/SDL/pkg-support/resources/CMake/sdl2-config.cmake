@@ -4,34 +4,46 @@
 # INTERFACE_LINK_OPTIONS needs CMake 3.12
 cmake_minimum_required(VERSION 3.12)
 
-set(_sdl2_known_comps SDL2)
-if(NOT SDL2_FIND_COMPONENTS)
-    set(SDL2_FIND_COMPONENTS ${_sdl2_known_comps})
-endif()
+include(FeatureSummary)
+set_package_properties(SDL2 PROPERTIES
+    URL "https://www.libsdl.org/"
+    DESCRIPTION "low level access to audio, keyboard, mouse, joystick, and graphics hardware"
+)
 
-# Fail early when an unknown component is requested
-list(REMOVE_DUPLICATES SDL2_FIND_COMPONENTS)
-list(REMOVE_ITEM SDL2_FIND_COMPONENTS ${_sdl2_known_comps})
-if(SDL2_FIND_COMPONENTS)
-    set(missing_required_comps)
-    foreach(missingcomp ${SDL2_FIND_COMPONENTS})
-        if(SDL2_FIND_REQUIRED_${missingcomp})
-            list(APPEND missing_required_comps ${missingcomp})
+# Copied from `configure_package_config_file`
+macro(set_and_check _var _file)
+    set(${_var} "${_file}")
+    if(NOT EXISTS "${_file}")
+        message(FATAL_ERROR "File or directory ${_file} referenced by variable ${_var} does not exist !")
+    endif()
+endmacro()
+
+# Copied from `configure_package_config_file`
+macro(check_required_components _NAME)
+    foreach(comp ${${_NAME}_FIND_COMPONENTS})
+        if(NOT ${_NAME}_${comp}_FOUND)
+            if(${_NAME}_FIND_REQUIRED_${comp})
+                set(${_NAME}_FOUND FALSE)
+            endif()
         endif()
     endforeach()
-    if(missing_required_comps)
-        if(NOT SDL2_FIND_QUIETLY)
-            message(WARNING "SDL2: following component(s) are not available: ${missing_required_comps}")
-        endif()
-        set(SDL2_FOUND FALSE)
-        return()
-    endif()
-endif()
+endmacro()
 
 set(SDL2_FOUND TRUE)
 
 string(REGEX REPLACE "SDL2\\.framework.*" "SDL2.framework" SDL2_FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}")
 string(REGEX REPLACE "SDL2\\.framework.*" "" SDL2_FRAMEWORK_PARENT_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+# For compatibility with autotools sdl2-config.cmake, provide SDL2_* variables.
+
+set_and_check(SDL2_PREFIX       "${SDL2_FRAMEWORK_PATH}")
+set_and_check(SDL2_EXEC_PREFIX  "${SDL2_FRAMEWORK_PATH}")
+set_and_check(SDL2_INCLUDE_DIR  "${SDL2_FRAMEWORK_PATH}/Headers")
+set(SDL2_INCLUDE_DIRS           "${SDL2_INCLUDE_DIR}")
+set_and_check(SDL2_BINDIR       "${SDL2_FRAMEWORK_PATH}")
+set_and_check(SDL2_LIBDIR       "${SDL2_FRAMEWORK_PATH}")
+
+set(SDL2_LIBRARIES "SDL2::SDL2")
 
 # All targets are created, even when some might not be requested though COMPONENTS.
 # This is done for compatibility with CMake generated SDL2-target.cmake files.
@@ -41,9 +53,12 @@ if(NOT TARGET SDL2::SDL2)
     set_target_properties(SDL2::SDL2
         PROPERTIES
             INTERFACE_COMPILE_OPTIONS "-F;${SDL2_FRAMEWORK_PARENT_PATH}"
-            INTERFACE_INCLUDE_DIRECTORIES "${SDL2_FRAMEWORK_PATH}/Headers"
+            INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
             INTERFACE_LINK_OPTIONS "-F;${SDL2_FRAMEWORK_PARENT_PATH};-framework;SDL2"
             COMPATIBLE_INTERFACE_BOOL "SDL2_SHARED"
             INTERFACE_SDL2_SHARED "ON"
     )
 endif()
+set(SDL2_SDL2_FOUND)
+
+check_required_components(SDL2)
