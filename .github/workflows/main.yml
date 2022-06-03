@@ -17,9 +17,10 @@ jobs:
         platform:
         - { name: Windows (mingw32),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
         - { name: Windows (mingw64),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
-        - { name: Linux (CMake),          os: ubuntu-20.04,   shell: sh,   flags: -GNinja }
-        - { name: Linux (autotools),      os: ubuntu-20.04,   shell: sh,   autotools: 'true' }
-        - { name: MacOS,                  os: macos-latest,   shell: sh }
+        - { name: Linux (CMake),          os: ubuntu-20.04,   shell: sh,    flags: true }
+        - { name: Linux (autotools),      os: ubuntu-20.04,   shell: sh,    autotools: true }
+        - { name: MacOS (CMake),          os: macos-latest,   shell: sh }
+        - { name: MacOS (autotools),      os: macos-latest,   shell: sh,    autotools: true }
 
     steps:
     - name: Set up MSYS2
@@ -79,78 +80,105 @@ jobs:
         meson build --buildtype release -Ddemo=false -Ddbus=disabled
         ninja -v -C build
         sudo meson install -C build
+    - name: Setup Macos dependencies
+      if: runner.os == 'macOS'
+      run: |
+        brew install \
+          ninja
     - uses: actions/checkout@v2
     - name: Check that versioning is consistent
       # We only need to run this once: arbitrarily use the Linux/CMake build
       if: "runner.os == 'Linux' && ! matrix.platform.autotools"
       run: ./test/versioning.sh
-    - name: Configure CMake
+    - name: Configure (CMake)
       if: "! matrix.platform.autotools"
-      run: cmake -B build -DSDL_TEST=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DSDL_INSTALL_TESTS=ON ${{ matrix.platform.flags }}
-    - name: Build
+      run: |
+        cmake -S . -B build -G Ninja \
+        -DSDL_TESTS=ON \
+        -DSDL_INSTALL_TESTS=ON \
+        -DCMAKE_INSTALL_PREFIX=cmake_prefix \
+        -DCMAKE_BUILD_TYPE=Release
+    - name: Build (CMake)
       if: "! matrix.platform.autotools"
-      run: cmake --build build/ --config Release
-    - name: Run build-time tests
+      run: |
+        cmake --build build/ --config Release --verbose --parallel
+    - name: Run build-time tests (CMake)
       if: "matrix.platform.shell == 'sh' && ! matrix.platform.autotools"
       run: |
         set -eu
         export SDL_TESTS_QUICK=1
         ctest -VV --test-dir build/
-    - name: Install
-      if: "matrix.platform.shell == 'sh' && ! matrix.platform.autotools"
+    - name: Install (CMake)
+      if: "! matrix.platform.autotools"
       run: |
         set -eu
-        rm -fr DESTDIR-cmake
-        DESTDIR=$(pwd)/DESTDIR-cmake cmake --install build/ --config Release
-        ( cd DESTDIR-cmake; find ) | LC_ALL=C sort -u
-    - name: Configure Autotools
+        cmake --install build/ --config Release
+        echo "SDL2_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
+        ( cd cmake_prefix; find ) | LC_ALL=C sort -u
+    - name: Configure (Autotools)
       if: matrix.platform.autotools
       run: |
         set -eu
         rm -fr build-autotools
         mkdir build-autotools
         ./autogen.sh
-        ( cd build-autotools && ../configure )
-        curdir="$(pwd)"
-        multiarch="$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
         (
-          mkdir -p build-autotools/test
-          cd build-autotools/test
-          ../../test/configure \
-            --x-includes=/usr/include \
-            --x-libraries="/usr/lib/${multiarch}" \
-            SDL_CFLAGS="-I${curdir}/include" \
-            SDL_LIBS="-L${curdir}/build-autotools/build/.libs -lSDL2" \
-            ac_cv_lib_SDL2_ttf_TTF_Init=no \
-            ${NULL+}
+          cd build-autotools
+          ${{ github.workspace }}/configure \
+            --prefix=${{ github.workspace }}/autotools_prefix \
         )
-    - name: Build with Autotools
+        if test "${{ runner.os }}" != "macOS" ; then
+          curdir="$(pwd)"
+          multiarch="$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
+          (
+            mkdir -p build-autotools/test
+            cd build-autotools/test
+            ${{ github.workspace }}/test/configure \
+              --x-includes=/usr/include \
+              --x-libraries="/usr/lib/${multiarch}" \
+              --prefix=${{ github.workspace }}/autotools_prefix \
+              SDL_CFLAGS="-I${curdir}/include" \
+              SDL_LIBS="-L${curdir}/build-autotools/build/.libs -lSDL2" \
+              ac_cv_lib_SDL2_ttf_TTF_Init=no \
+              ${NULL+}
+          )
+        fi
+    - name: Build (Autotools)
       if: matrix.platform.autotools
       run: |
         set -eu
         parallel="$(getconf _NPROCESSORS_ONLN)"
         make -j"${parallel}" -C build-autotools V=1
-        make -j"${parallel}" -C build-autotools/test V=1
-    - name: Run build-time tests with Autotools
-      if: matrix.platform.autotools
+        if test "${{ runner.os }}" != "macOS" ; then
+          make -j"${parallel}" -C build-autotools/test V=1
+        fi
+    - name: Run build-time tests (Autotools)
+      if: ${{ matrix.platform.autotools && (runner.os != 'macOS') }}
       run: |
         set -eu
         curdir="$(pwd)"
         parallel="$(getconf _NPROCESSORS_ONLN)"
         export SDL_TESTS_QUICK=1
         make -j"${parallel}" -C build-autotools/test check LD_LIBRARY_PATH="${curdir}/build-autotools/build/.libs"
-    - name: Install with Autotools
+    - name: Install (Autotools)
       if: matrix.platform.autotools
       run: |
         set -eu
         curdir="$(pwd)"
         parallel="$(getconf _NPROCESSORS_ONLN)"
-        rm -fr DESTDIR-autotools
-        mkdir DESTDIR-autotools
-        make -j"${parallel}" -C build-autotools install DESTDIR="${curdir}/DESTDIR-autotools" V=1
-        make -j"${parallel}" -C build-autotools/test install DESTDIR="${curdir}/DESTDIR-autotools" V=1
-        ( cd DESTDIR-autotools; find ) | LC_ALL=C sort -u
-    - name: Distcheck
+        make -j"${parallel}" -C build-autotools install V=1
+        if test "${{ runner.os }}" != "macOS" ; then
+          make -j"${parallel}" -C build-autotools/test install V=1
+        fi
+        ( cd autotools_prefix; find . ) | LC_ALL=C sort -u
+        echo "SDL2_DIR=$(pwd)/autotools_prefix" >> $GITHUB_ENV
+    - name: Verify CMake configuration files
+      run: |
+        cmake -S cmake/test -B cmake_config_build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
+        cmake --build cmake_config_build --verbose
+    - name: Distcheck (Autotools)
       if: matrix.platform.autotools
       run: |
         set -eu
@@ -162,7 +190,7 @@ jobs:
         tar -C distcheck -zxf build-autotools/SDL2-*.tar.gz
         ( cd distcheck/SDL2-* && ./configure )
         make -j"${parallel}" -C distcheck/SDL2-*
-    - name: Run installed-tests from Autotools
+    - name: Run installed-tests (Autotools)
       if: "runner.os == 'Linux' && matrix.platform.autotools"
       run: |
         set -eu

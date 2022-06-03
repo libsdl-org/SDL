@@ -11,6 +11,21 @@ jobs:
         with:
           version: 2.0.27
       - name: Configure CMake
-        run: emcmake cmake -B build -DCMAKE_VERBOSE_MAKEFILE=ON
+        run: |
+          emcmake cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=prefix
       - name: Build
-        run: cmake --build build/
+        run: cmake --build build/ --verbose
+      - name: Install
+        run: |
+          echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+          cmake --install build/
+      - name: Verify CMake configuration files
+        if: ${{ false }}  # FIXME: cmake/test/CMakeLists.txt should support emscripten
+        run: |
+          emcmake cmake -S cmake/test -B cmake_config_build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DTEST_SHARED=FALSE \
+            -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
+          cmake --build cmake_config_build --verbose
