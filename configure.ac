@@ -4688,6 +4688,12 @@ fi
 
 SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 
+dnl Calculate the location of the prefix, relative to the cmake folder
+eval pkg_prefix=$prefix
+eval pkg_cmakedir=$libdir/cmake/SDL2
+cmake_prefix_relpath="$(echo -n "$pkg_cmakedir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
+AC_SUBST([cmake_prefix_relpath])
+
 dnl Expand the cflags and libraries needed by apps using SDL
 AC_SUBST(SDL_CFLAGS)
 AC_SUBST(SDL_LIBS)
