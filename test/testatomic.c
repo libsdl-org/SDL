@@ -471,9 +471,6 @@ static SDL_bool DequeueEvent_Mutex(SDL_EventQueue *queue, SDL_Event *event)
     return status;
 }
 
-static SDL_sem *writersDone;
-static SDL_sem *readersDone;
-
 typedef struct
 {
     SDL_EventQueue *queue;
@@ -482,6 +479,7 @@ typedef struct
     int waits;
     SDL_bool lock_free;
     char padding2[SDL_CACHELINE_SIZE-sizeof(int)-sizeof(SDL_bool)];
+    SDL_Thread *thread;
 } WriterData;
 
 typedef struct
@@ -491,6 +489,7 @@ typedef struct
     int waits;
     SDL_bool lock_free;
     char padding[SDL_CACHELINE_SIZE-(sizeof(SDL_EventQueue*)+sizeof(int)*NUM_WRITERS+sizeof(int)+sizeof(SDL_bool))%SDL_CACHELINE_SIZE];
+    SDL_Thread *thread;
 } ReaderData;
 
 static int SDLCALL FIFO_Writer(void* _data)
@@ -523,7 +522,6 @@ static int SDLCALL FIFO_Writer(void* _data)
             }
         }
     }
-    SDL_SemPost(writersDone);
     return 0;
 }
 
@@ -560,7 +558,6 @@ static int SDLCALL FIFO_Reader(void* _data)
             }
         }
     }
-    SDL_SemPost(readersDone);
     return 0;
 }
 
@@ -590,6 +587,7 @@ static int SDLCALL FIFO_Watcher(void* _data)
 static void RunFIFOTest(SDL_bool lock_free)
 {
     SDL_EventQueue queue;
+    SDL_Thread *fifo_thread = NULL;
     WriterData writerData[NUM_WRITERS];
     ReaderData readerData[NUM_READERS];
     Uint32 start, end;
@@ -600,9 +598,6 @@ static void RunFIFOTest(SDL_bool lock_free)
 
     SDL_Log("\nFIFO test---------------------------------------\n\n");
     SDL_Log("Mode: %s\n", lock_free ? "LockFree" : "Mutex");
-
-    readersDone = SDL_CreateSemaphore(0);
-    writersDone = SDL_CreateSemaphore(0);
 
     SDL_memset(&queue, 0xff, sizeof(queue));
 
@@ -616,7 +611,7 @@ static void RunFIFOTest(SDL_bool lock_free)
 #ifdef TEST_SPINLOCK_FIFO
     /* Start a monitoring thread */
     if (lock_free) {
-        SDL_CreateThread(FIFO_Watcher, "FIFOWatcher", &queue);
+        fifo_thread = SDL_CreateThread(FIFO_Watcher, "FIFOWatcher", &queue);
     }
 #endif
 
@@ -628,7 +623,7 @@ static void RunFIFOTest(SDL_bool lock_free)
         SDL_snprintf(name, sizeof (name), "FIFOReader%d", i);
         readerData[i].queue = &queue;
         readerData[i].lock_free = lock_free;
-        SDL_CreateThread(FIFO_Reader, name, &readerData[i]);
+        readerData[i].thread = SDL_CreateThread(FIFO_Reader, name, &readerData[i]);
     }
 
     /* Start up the writers */
@@ -640,12 +635,12 @@ static void RunFIFOTest(SDL_bool lock_free)
         writerData[i].queue = &queue;
         writerData[i].index = i;
         writerData[i].lock_free = lock_free;
-        SDL_CreateThread(FIFO_Writer, name, &writerData[i]);
+        writerData[i].thread = SDL_CreateThread(FIFO_Writer, name, &writerData[i]);
     }
 
     /* Wait for the writers */
     for (i = 0; i < NUM_WRITERS; ++i) {
-        SDL_SemWait(writersDone);
+        SDL_WaitThread(writerData[i].thread, NULL);
     }
 
     /* Shut down the queue so readers exit */
@@ -653,13 +648,15 @@ static void RunFIFOTest(SDL_bool lock_free)
 
     /* Wait for the readers */
     for (i = 0; i < NUM_READERS; ++i) {
-        SDL_SemWait(readersDone);
+        SDL_WaitThread(readerData[i].thread, NULL);
     }
 
     end = SDL_GetTicks();
 
-    SDL_DestroySemaphore(readersDone);
-    SDL_DestroySemaphore(writersDone);
+    /* Wait for the FIFO thread */
+    if (fifo_thread) {
+        SDL_WaitThread(fifo_thread, NULL);
+    }
 
     if (!lock_free) {
         SDL_DestroyMutex(queue.mutex);
