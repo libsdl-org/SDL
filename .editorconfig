@@ -47,7 +47,7 @@ indent_style = space
 indent_size = 2
 indent_style = space
 
-[src/joystick/controller_type.h]
+[src/joystick/controller_type.*]
 indent_style = tab
 
 [src/joystick/hidapi/steam/*.h]

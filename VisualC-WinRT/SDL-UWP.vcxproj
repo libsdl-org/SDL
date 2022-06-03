@@ -114,6 +114,7 @@
     <ClInclude Include="..\src\haptic\windows\SDL_dinputhaptic_c.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_windowshaptic_c.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_xinputhaptic_c.h" />
+    <ClInclude Include="..\src\joystick\controller_type.h" />
     <ClInclude Include="..\src\joystick\SDL_gamecontrollerdb.h" />
     <ClInclude Include="..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\src\joystick\SDL_sysjoystick.h" />
@@ -250,6 +251,7 @@
     <ClCompile Include="..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\src\hidapi\SDL_hidapi.c" />
     <ClCompile Include="..\src\joystick\dummy\SDL_sysjoystick.c" />
+    <ClCompile Include="..\src\joystick\controller_type.c" />
     <ClCompile Include="..\src\joystick\SDL_gamecontroller.c" />
     <ClCompile Include="..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\src\joystick\virtual\SDL_virtualjoystick.c" />

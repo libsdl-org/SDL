@@ -916,6 +916,9 @@
     <ClCompile Include="..\..\src\hidapi\SDL_hidapi.c">
       <Filter>hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\controller_type.c">
+      <Filter>joystick</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c">
       <Filter>joystick</Filter>
     </ClCompile>
@@ -1204,7 +1207,7 @@
     <ClCompile Include="..\..\src\thread\SDL_thread.c">
       <Filter>thread</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c" >
+    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c">
       <Filter>thread\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">
