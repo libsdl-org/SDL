@@ -1476,7 +1476,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             /* Add the window frame size that would be used at nextDPI */
             {
-                RECT rect = { 0, 0, query_client_w_win, query_client_h_win };
+                RECT rect = {0};
+                rect.right = query_client_w_win;
+                rect.bottom = query_client_h_win;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
                     data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, nextDPI);
@@ -1529,9 +1531,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_Log("WM_DPICHANGED: using suggestedRect");
 #endif
             } else {               
-                RECT rect = { 0, 0, data->window->w, data->window->h };
                 const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
                 const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+
+                RECT rect = {0};
+                rect.right = data->window->w;
+                rect.bottom = data->window->h;
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
                     AdjustWindowRectEx(&rect, style, menu, 0);
