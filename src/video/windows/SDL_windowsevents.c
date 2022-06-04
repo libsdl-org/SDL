@@ -29,6 +29,7 @@
 #include "SDL_timer.h"
 #include "SDL_vkeys.h"
 #include "SDL_hints.h"
+#include "SDL_main.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
@@ -383,18 +384,18 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     if (!(keyState & 0x8000)) {
         WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, 0);
     }
-    data->mouse_button_flags = 0;
+    data->mouse_button_flags = (WPARAM)-1;
 }
 
 static void
-WIN_UpdateFocus(SDL_Window *window)
+WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     HWND hwnd = data->hwnd;
     SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
     SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
 
-    if (had_focus == has_focus) {
+    if (had_focus == has_focus || has_focus != expect_focus) {
         return;
     }
 
@@ -695,7 +696,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
                actually being the foreground window, but this appears to get called in all cases where
                the global foreground window changes to and from this window. */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, !!wParam);
             WIN_CheckICMProfileChanged(data->window);
         }
         break;
@@ -703,16 +704,22 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATE:
         {
             /* Update the focus in case we changed focus to a child window and then away from the application */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, !!LOWORD(wParam));
         }
         break;
 
     case WM_SETFOCUS:
+        {
+            /* Update the focus in case it's changing between top-level windows in the same application */
+            WIN_UpdateFocus(data->window, SDL_TRUE);
+        }
+        break;
+
     case WM_KILLFOCUS:
     case WM_ENTERIDLE:
         {
             /* Update the focus in case it's changing between top-level windows in the same application */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, SDL_FALSE);
         }
         break;
 
@@ -1193,9 +1200,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 break;
-            default:
+            case SIZE_RESTORED:
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_RESTORED, 0, 0);
+                break;
+            default:
                 break;
             }
         }
@@ -1388,10 +1397,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Window *window = data->window;
             if (window->hit_test) {
-                POINT winpoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+                POINT winpoint;
+                winpoint.x = GET_X_LPARAM(lParam);
+                winpoint.y = GET_Y_LPARAM(lParam);
                 if (ScreenToClient(hwnd, &winpoint)) {
-                    const SDL_Point point = { (int) winpoint.x, (int) winpoint.y };
-                    const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+                    SDL_Point point;
+                    SDL_HitTestResult rc;
+                    point.x = winpoint.x;
+                    point.y = winpoint.y;
+                    rc = window->hit_test(window, &point, window->hit_test_data);
                     switch (rc) {
                         #define POST_HIT_TEST(ret) { SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0); return ret; }
                         case SDL_HITTEST_DRAGGABLE: POST_HIT_TEST(HTCAPTION);

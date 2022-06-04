@@ -1,77 +1,13 @@
 # Open Watcom makefile to build SDL2 tests for OS/2
 # wmake -f Makefile.os2
 
-INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h" -I"../include"
+SYSTEM = os2v2
 
-CFLAGS = $(INCPATH) -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
+INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
+
+CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 CFLAGS+= -wx -wcd=303
 
-LIBPATH = ..
-LIBS    = SDL2.lib SDL2test.lib
+TNSRCS = testnative.c testnativeos2.c
 
-#CFLAGS+= -DHAVE_SDL_TTF
-#TTFLIBS = SDL2ttf.lib
-
-TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
-          testdrawchessboard.exe testdropfile.exe testerror.exe testfile.exe &
-          testfilesystem.exe testgamecontroller.exe testgeometry.exe testgesture.exe &
-          testhittesting.exe testhotplug.exe testiconv.exe testime.exe testlocale.exe &
-          testintersections.exe testjoystick.exe testkeys.exe testloadso.exe &
-          testlock.exe testmessage.exe testoverlay2.exe testplatform.exe &
-          testpower.exe testsensor.exe testrelative.exe testrendercopyex.exe &
-          testrendertarget.exe testrumble.exe testscale.exe testsem.exe &
-          testshader.exe testshape.exe testsprite2.exe testspriteminimal.exe &
-          teststreaming.exe testthread.exe testtimer.exe testver.exe &
-          testviewport.exe testwm2.exe torturethread.exe checkkeys.exe &
-          checkkeysthreads.exe testmouse.exe &
-          controllermap.exe testhaptic.exe testqsort.exe testresample.exe &
-          testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
-          testsurround.exe testyuv.exe testgl2.exe testvulkan.exe testnative.exe &
-          testautomation.exe
-
-# testautomation sources
-TASRCS = testautomation.c testautomation_audio.c testautomation_clipboard.c &
-         testautomation_events.c testautomation_hints.c &
-         testautomation_keyboard.c testautomation_main.c &
-         testautomation_mouse.c testautomation_pixels.c &
-         testautomation_platform.c testautomation_rect.c &
-         testautomation_render.c testautomation_rwops.c &
-         testautomation_sdltest.c testautomation_stdlib.c &
-         testautomation_surface.c testautomation_syswm.c &
-         testautomation_timer.c testautomation_video.c
-
-OBJS = $(TARGETS:.exe=.obj)
-COBJS = $(CSRCS:.c=.obj)
-TAOBJS = $(TASRCS:.c=.obj)
-
-all: $(TARGETS)
-
-.c: ../src/test
-
-.obj.exe:
-  wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
-
-.c.obj:
-  wcc386 $(CFLAGS) -fo=$^@ $<
-
-# specials
-testautomation.exe: $(TAOBJS)
-  wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
-
-testnative.exe: testnative.obj testnativeos2.obj
-  wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
-
-testoverlay2.exe: testoverlay2.obj testyuv_cvt.obj
-  wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
-
-testyuv.exe: testyuv.obj testyuv_cvt.obj
-  wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
-
-testime.exe: testime.obj
-  wlink SYS os2v2 libpath $(LIBPATH) lib {$(LIBS) $(TTFLIBS)} op q op el file {$<} name $@
-
-clean: .SYMBOLIC
-  @if exist *.obj rm *.obj
-  @if exist *.err rm *.err
-distclean: .SYMBOLIC clean
-  @if exist *.exe rm *.exe
+!include watcom.mif

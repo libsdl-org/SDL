@@ -24,6 +24,21 @@
 #include "SDL_blit.h"
 #include "SDL_blit_slow.h"
 
+#define FORMAT_ALPHA      0
+#define FORMAT_NO_ALPHA  -1
+#define FORMAT_2101010    1
+#define FORMAT_HAS_ALPHA(format)        format == 0
+#define FORMAT_HAS_NO_ALPHA(format)     format < 0
+static int SDL_INLINE detect_format(SDL_PixelFormat *pf) {
+    if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
+        return FORMAT_2101010;
+    } else if (pf->Amask) {
+        return FORMAT_ALPHA;
+    } else {
+        return FORMAT_NO_ALPHA;
+    }
+}
+
 /* The ONE TRUE BLITTER
  * This puppy has to handle all the unoptimized cases - yes, it's slow.
  */
@@ -46,8 +61,13 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
     SDL_PixelFormat *dst_fmt = info->dst_fmt;
     int srcbpp = src_fmt->BytesPerPixel;
     int dstbpp = dst_fmt->BytesPerPixel;
+    int srcfmt_val;
+    int dstfmt_val;
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
+
+    srcfmt_val = detect_format(src_fmt);
+    dstfmt_val = detect_format(dst_fmt);
 
     incy = (info->src_h << 16) / info->dst_h;
     incx = (info->src_w << 16) / info->dst_w;
@@ -62,14 +82,18 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
         while (n--) {
             srcx = posx >> 16;
             src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
-            if (src_fmt->Amask) {
-                DISEMBLE_RGBA(src, srcbpp, src_fmt, srcpixel, srcR, srcG,
-                              srcB, srcA);
-            } else {
-                DISEMBLE_RGB(src, srcbpp, src_fmt, srcpixel, srcR, srcG,
-                             srcB);
+
+            if (FORMAT_HAS_ALPHA(srcfmt_val)) {
+                DISEMBLE_RGBA(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB, srcA);
+            } else if (FORMAT_HAS_NO_ALPHA(srcfmt_val)) {
+                DISEMBLE_RGB(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB);
                 srcA = 0xFF;
+            } else {
+                /* SDL_PIXELFORMAT_ARGB2101010 */
+                srcpixel = *((Uint32 *)(src));
+                RGBA_FROM_ARGB2101010(srcpixel, srcR, srcG, srcB, srcA);
             }
+
             if (flags & SDL_COPY_COLORKEY) {
                 /* srcpixel isn't set for 24 bpp */
                 if (srcbpp == 3) {
@@ -82,13 +106,15 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                     continue;
                 }
             }
-            if (dst_fmt->Amask) {
-                DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG,
-                              dstB, dstA);
-            } else {
-                DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG,
-                             dstB);
+            if (FORMAT_HAS_ALPHA(dstfmt_val)) {
+                DISEMBLE_RGBA(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB, dstA);
+            } else if (FORMAT_HAS_NO_ALPHA(dstfmt_val)) {
+                DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
                 dstA = 0xFF;
+            } else {
+                /* SDL_PIXELFORMAT_ARGB2101010 */
+                dstpixel = *((Uint32 *)(dst));
+                RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
             }
 
             if (flags & SDL_COPY_MODULATE_COLOR) {
@@ -151,10 +177,15 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                     dstA = 255;
                 break;
             }
-            if (dst_fmt->Amask) {
+            if (FORMAT_HAS_ALPHA(dstfmt_val)) {
                 ASSEMBLE_RGBA(dst, dstbpp, dst_fmt, dstR, dstG, dstB, dstA);
-            } else {
+            } else if (FORMAT_HAS_NO_ALPHA(dstfmt_val)) {
                 ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
+            } else {
+                /* SDL_PIXELFORMAT_ARGB2101010 */
+                Uint32 pixel;
+                ARGB2101010_FROM_RGBA(pixel, dstR, dstG, dstB, dstA);
+                *(Uint32 *)dst = pixel;
             }
             posx += incx;
             dst += dstbpp;

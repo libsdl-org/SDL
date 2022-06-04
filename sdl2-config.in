@@ -1,6 +1,10 @@
 #!/bin/sh
 
-prefix=@prefix@
+# Get the canonical path of the folder containing this script
+bindir=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
+
+# Calculate the canonical path of the prefix, relative to the folder of this script
+prefix=$(cd -P -- "$bindir/@bin_prefix_relpath@" && printf '%s\n' "$(pwd -P)")
 exec_prefix=@exec_prefix@
 exec_prefix_set=no
 libdir=@libdir@
@@ -49,7 +53,8 @@ while test $# -gt 0; do
 @ENABLE_SHARED_TRUE@      ;;
 @ENABLE_STATIC_TRUE@@ENABLE_SHARED_TRUE@    --static-libs)
 @ENABLE_STATIC_TRUE@@ENABLE_SHARED_FALSE@    --libs|--static-libs)
-@ENABLE_STATIC_TRUE@      echo -L@libdir@ @SDL_LIBS@ @SDL_STATIC_LIBS@
+@ENABLE_STATIC_TRUE@      sdl_static_libs=$(echo "@SDL_LIBS@ @SDL_STATIC_LIBS@" | sed -E "s#-lSDL2[ $]#-Wl,-Bstatic -lSDL2 -Wl,-Bdynamic #g")
+@ENABLE_STATIC_TRUE@      echo -L@libdir@ $sdl_static_libs
 @ENABLE_STATIC_TRUE@      ;;
     *)
       echo "${usage}" 1>&2

@@ -747,7 +747,11 @@ HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
         }
     }
 
-    return SDL_HIDAPI_SendRumbleAndUnlock(device, data, report_size);
+    if (SDL_HIDAPI_SendRumbleAndUnlock(device, data, report_size) != report_size) {
+        return -1;
+    }
+
+    return 0;
 }
 
 static int
@@ -957,7 +961,10 @@ HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, 
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
-    if (packet->ucBatteryLevel & 0x10) {
+    /* A check of packet->ucBatteryLevel & 0x10 should work as a check for BT vs USB but doesn't
+     * seem to always work. Possibly related to being 100% charged?
+     */
+    if (!ctx->is_bluetooth) {
         /* 0x20 set means fully charged */
         SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
     } else {

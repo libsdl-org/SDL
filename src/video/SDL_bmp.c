@@ -412,6 +412,12 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             goto done;
         }
 
+        if (biBitCount >= 32) {  /* we shift biClrUsed by this value later. */
+            SDL_SetError("Unsupported or incorrect biBitCount field");
+            was_error = SDL_TRUE;
+            goto done;
+        }
+
         if (biClrUsed == 0) {
             biClrUsed = 1 << biBitCount;
         }

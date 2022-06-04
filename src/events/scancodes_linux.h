@@ -24,7 +24,7 @@
    Sources:
    - Linux kernel source input.h
 */
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 static SDL_Scancode const linux_scancode_table[] = {
     /*  0 */    SDL_SCANCODE_UNKNOWN,
     /*  1 */    SDL_SCANCODE_ESCAPE,
@@ -260,4 +260,4 @@ static SDL_Scancode const linux_scancode_table[] = {
     /*  235 */    SDL_SCANCODE_UNKNOWN, /* KEY_DOCUMENTS */
     /*  236 */    SDL_SCANCODE_UNKNOWN, /* KEY_BATTERY */
 };
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */

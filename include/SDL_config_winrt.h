@@ -123,6 +123,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_FREE 1
 #define HAVE_ALLOCA 1
 #define HAVE_QSORT 1
+#define HAVE_BSEARCH 1
 #define HAVE_ABS 1
 #define HAVE_MEMSET 1
 #define HAVE_MEMCPY 1
@@ -195,6 +196,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_TRUNCF 1
 #define HAVE__FSEEKI64 1
 
+#define HAVE_ROAPI_H  1
+
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_WASAPI 1
 #define SDL_AUDIO_DRIVER_DISK   1
@@ -253,10 +256,5 @@ typedef unsigned int uintptr_t;
 
 /* Enable system power support */
 #define SDL_POWER_WINRT 1
-
-/* Enable assembly routines (Win64 doesn't have inline asm) */
-#ifndef _WIN64
-#define SDL_ASSEMBLY_ROUTINES   1
-#endif
 
 #endif /* SDL_config_winrt_h_ */

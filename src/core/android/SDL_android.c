@@ -511,8 +511,9 @@ register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, i
 /* Library init */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    mJavaVM = vm;
     JNIEnv *env = NULL;
+
+    mJavaVM = vm;
 
     if ((*mJavaVM)->GetEnv(mJavaVM, (void **)&env, JNI_VERSION_1_4) != JNI_OK) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to get JNI Env");
@@ -1009,6 +1010,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 {
     SDL_LockMutex(Android_ActivityMutex);
 
+#if SDL_VIDEO_OPENGL_EGL
     if (Android_Window)
     {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1021,6 +1023,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 
         /* GL Context handling is done in the event loop because this function is run from the Java thread */
     }
+#endif
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1051,10 +1054,12 @@ retry:
             }
         }
 
+#if SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;
         }
+#endif
 
         if (data->native_window) {
             ANativeWindow_release(data->native_window);
@@ -2549,6 +2554,7 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
 SDL_bool Android_JNI_RequestPermission(const char *permission)
 {
     JNIEnv *env = Android_JNI_GetEnv();
+    jstring jpermission;
     const int requestCode = 1;
 
     /* Wait for any pending request on another thread */
@@ -2557,7 +2563,7 @@ SDL_bool Android_JNI_RequestPermission(const char *permission)
     }
     SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
 
-    jstring jpermission = (*env)->NewStringUTF(env, permission);
+    jpermission = (*env)->NewStringUTF(env, permission);
     (*env)->CallStaticVoidMethod(env, mActivityClass, midRequestPermission, jpermission, requestCode);
     (*env)->DeleteLocalRef(env, jpermission);
 

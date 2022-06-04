@@ -115,6 +115,12 @@ char *alloca();
 # endif
 #endif
 
+#ifdef SIZE_MAX
+# define SDL_SIZE_MAX SIZE_MAX
+#else
+# define SDL_SIZE_MAX ((size_t) -1)
+#endif
+
 /**
  * Check if the compiler supports a given builtin.
  * Supported by virtually all clang versions and recent gcc. Use this
@@ -233,6 +239,19 @@ typedef int64_t Sint64;
 typedef uint64_t Uint64;
 
 /* @} *//* Basic data types */
+
+/**
+ *  \name Floating-point constants
+ */
+/* @{ */
+
+#ifdef FLT_EPSILON
+#define SDL_FLT_EPSILON FLT_EPSILON
+#else
+#define SDL_FLT_EPSILON 1.1920928955078125e-07F /* 0x0.000002p0 */
+#endif
+
+/* @} *//* Floating-point constants */
 
 /* Make sure we have macros for printing width-based integers.
  * <stdint.h> should define these but this is not true all platforms.
@@ -354,8 +373,14 @@ typedef uint64_t Uint64;
 #endif
 #endif /* SDL_DISABLE_ANALYZE_MACROS */
 
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#define SDL_COMPILE_TIME_ASSERT(name, x) _Static_assert(x, #x)
+#elif defined(__cplusplus) && (__cplusplus >= 201103L)
+#define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
+#else /* universal, but may trigger -Wunused-local-typedefs */
 #define SDL_COMPILE_TIME_ASSERT(name, x)               \
        typedef int SDL_compile_time_assert_ ## name[(x) * 2 - 1]
+#endif
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
 SDL_COMPILE_TIME_ASSERT(uint8, sizeof(Uint8) == 1);
@@ -443,7 +468,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 extern DECLSPEC char *SDLCALL SDL_getenv(const char *name);
 extern DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
 
-extern DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, int (*compare) (const void *, const void *));
+extern DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
+extern DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
 
 extern DECLSPEC int SDLCALL SDL_abs(int x);
 
@@ -707,6 +733,65 @@ SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_B
 {
     return SDL_memcpy(dst, src, dwords * 4);
 }
+
+/**
+ * If a * b would overflow, return -1. Otherwise store a * b via ret
+ * and return 0.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
+                                            size_t b,
+                                            size_t *ret)
+{
+    if (a != 0 && b > SDL_SIZE_MAX / a) {
+        return -1;
+    }
+    *ret = a * b;
+    return 0;
+}
+
+#if _SDL_HAS_BUILTIN(__builtin_mul_overflow)
+/* This needs to be wrapped in an inline rather than being a direct #define,
+ * because __builtin_mul_overflow() is type-generic, but we want to be
+ * consistent about interpreting a and b as size_t. */
+SDL_FORCE_INLINE int _SDL_size_mul_overflow_builtin (size_t a,
+                                                     size_t b,
+                                                     size_t *ret)
+{
+    return __builtin_mul_overflow(a, b, ret) == 0 ? 0 : -1;
+}
+#define SDL_size_mul_overflow(a, b, ret) (_SDL_size_mul_overflow_builtin(a, b, ret))
+#endif
+
+/**
+ * If a + b would overflow, return -1. Otherwise store a + b via ret
+ * and return 0.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+SDL_FORCE_INLINE int SDL_size_add_overflow (size_t a,
+                                            size_t b,
+                                            size_t *ret)
+{
+    if (b > SDL_SIZE_MAX - a) {
+        return -1;
+    }
+    *ret = a + b;
+    return 0;
+}
+
+#if _SDL_HAS_BUILTIN(__builtin_add_overflow)
+/* This needs to be wrapped in an inline rather than being a direct #define,
+ * the same as the call to __builtin_mul_overflow() above. */
+SDL_FORCE_INLINE int _SDL_size_add_overflow_builtin (size_t a,
+                                                     size_t b,
+                                                     size_t *ret)
+{
+    return __builtin_add_overflow(a, b, ret) == 0 ? 0 : -1;
+}
+#define SDL_size_add_overflow(a, b, ret) (_SDL_size_add_overflow_builtin(a, b, ret))
+#endif
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

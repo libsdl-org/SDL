@@ -44,7 +44,6 @@ typedef struct
 {
     SDL_Window *window;
     Window xwindow;
-    Window fswindow;  /* used if we can't have the WM handle fullscreen. */
     Visual *visual;
     Colormap colormap;
 #ifndef NO_SHARED_MEMORY

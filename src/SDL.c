@@ -47,6 +47,7 @@
 #include "SDL_bits.h"
 #include "SDL_revision.h"
 #include "SDL_assert_c.h"
+#include "SDL_log_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_joystick_c.h"
@@ -61,6 +62,26 @@ extern int SDL_HelperWindowCreate(void);
 extern int SDL_HelperWindowDestroy(void);
 #endif
 
+#ifdef SDL_BUILD_MAJOR_VERSION
+SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MAJOR_VERSION,
+                        SDL_MAJOR_VERSION == SDL_BUILD_MAJOR_VERSION);
+SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MINOR_VERSION,
+                        SDL_MINOR_VERSION == SDL_BUILD_MINOR_VERSION);
+SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MICRO_VERSION,
+                        SDL_PATCHLEVEL == SDL_BUILD_MICRO_VERSION);
+#endif
+
+SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_min, SDL_MAJOR_VERSION >= 0);
+/* Limited only by the need to fit in SDL_version */
+SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_max, SDL_MAJOR_VERSION <= 255);
+
+SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_min, SDL_MINOR_VERSION >= 0);
+/* Limited only by the need to fit in SDL_version */
+SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 255);
+
+SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_min, SDL_PATCHLEVEL >= 0);
+/* Limited by its encoding in SDL_VERSIONNUM and in the ABI versions */
+SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
 
 /* This is not declared in any header, although it is shared between some
     parts of SDL, because we don't want anything calling it without an
@@ -155,6 +176,8 @@ SDL_InitSubSystem(Uint32 flags)
     if (!SDL_MainIsReady) {
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
+
+    SDL_LogInit();
 
     /* Clear the error message */
     SDL_ClearError();
@@ -316,6 +339,8 @@ SDL_InitSubSystem(Uint32 flags)
 #endif
     }
 
+    (void) flags_initialized;  /* make static analysis happy, since this only gets used in error cases. */
+
     return (0);
 
 quit_and_error:
@@ -468,11 +493,12 @@ SDL_Quit(void)
 
     SDL_ClearHints();
     SDL_AssertionsQuit();
-    SDL_LogResetPriorities();
 
 #if SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
+
+    SDL_LogQuit();
 
     /* Now that every subsystem has been quit, we reset the subsystem refcount
      * and the list of initialized subsystems.
@@ -561,6 +587,8 @@ SDL_GetPlatform(void)
     return "PlayStation Portable";
 #elif __VITA__
     return "PlayStation Vita";
+#elif __NGAGE__
+    return "Nokia N-Gage";
 #else
     return "Unknown (see SDL_platform.h)";
 #endif

@@ -584,6 +584,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * - `SDL_AUDIO_ALLOW_FREQUENCY_CHANGE`
  * - `SDL_AUDIO_ALLOW_FORMAT_CHANGE`
  * - `SDL_AUDIO_ALLOW_CHANNELS_CHANGE`
+ * - `SDL_AUDIO_ALLOW_SAMPLES_CHANGE`
  * - `SDL_AUDIO_ALLOW_ANY_CHANGE`
  *
  * These flags specify how SDL should behave when a device cannot offer a

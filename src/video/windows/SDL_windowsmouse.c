@@ -175,11 +175,13 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 static SDL_Cursor *
 WIN_CreateBlankCursor()
 {
+    SDL_Cursor *cursor = NULL;
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
     if (surface) {
-        return WIN_CreateCursor(surface, 0, 0);
+        cursor = WIN_CreateCursor(surface, 0, 0);
+        SDL_FreeSurface(surface);
     }
-    return NULL;
+    return cursor;
 }
 
 static SDL_Cursor *
@@ -370,7 +372,8 @@ WIN_QuitMouse(_THIS)
     }
 
     if (SDL_blank_cursor) {
-        SDL_FreeCursor(SDL_blank_cursor);
+        WIN_FreeCursor(SDL_blank_cursor);
+        SDL_blank_cursor = NULL;
     }
 }
 

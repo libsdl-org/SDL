@@ -321,6 +321,28 @@ SDL_JoystickNameForIndex(int device_index)
 }
 
 /*
+ * Get the implementation dependent path of a joystick
+ */
+const char *
+SDL_JoystickPathForIndex(int device_index)
+{
+    SDL_JoystickDriver *driver;
+    const char *path = NULL;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        path = driver->GetDevicePath(device_index);
+    }
+    SDL_UnlockJoysticks();
+
+    /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
+    if (!path) {
+        SDL_Unsupported();
+    }
+    return path;
+}
+
+/*
  *  Get the player index of a joystick, or -1 if it's not available
  */
 int
@@ -386,6 +408,8 @@ SDL_JoystickOpen(int device_index)
     SDL_Joystick *joystick;
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
+    const char *joystickpath = NULL;
+    SDL_JoystickPowerLevel initial_power_level;
 
     SDL_LockJoysticks();
 
@@ -435,6 +459,13 @@ SDL_JoystickOpen(int device_index)
         joystick->name = NULL;
     }
 
+    joystickpath = driver->GetDevicePath(device_index);
+    if (joystickpath) {
+        joystick->path = SDL_strdup(joystickpath);
+    } else {
+        joystick->path = NULL;
+    }
+
     joystick->guid = driver->GetDeviceGUID(device_index);
 
     if (joystick->naxes > 0) {
@@ -478,6 +509,11 @@ SDL_JoystickOpen(int device_index)
 
     SDL_UnlockJoysticks();
 
+    /* send initial battery event */
+    initial_power_level = joystick->epowerlevel;
+    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    SDL_PrivateJoystickBatteryLevel(joystick, initial_power_level);
+
     driver->Update(joystick);
 
     return joystick;
@@ -487,8 +523,22 @@ int
 SDL_JoystickAttachVirtual(SDL_JoystickType type,
                           int naxes, int nbuttons, int nhats)
 {
+    SDL_VirtualJoystickDesc desc;
+
+    SDL_zero(desc);
+    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
+    desc.type = (Uint16)type;
+    desc.naxes = (Uint16)naxes;
+    desc.nbuttons = (Uint16)nbuttons;
+    desc.nhats = (Uint16)nhats;
+    return SDL_JoystickAttachVirtualEx(&desc);
+}
+
+int
+SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc)
+{
 #if SDL_JOYSTICK_VIRTUAL
-    return SDL_JoystickAttachVirtualInner(type, naxes, nbuttons, nhats);
+    return SDL_JoystickAttachVirtualInner(desc);
 #else
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
@@ -834,6 +884,23 @@ SDL_JoystickName(SDL_Joystick *joystick)
     return joystick->name;
 }
 
+/*
+ * Get the implementation dependent path of this joystick
+ */
+const char *
+SDL_JoystickPath(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return NULL;
+    }
+
+    if (!joystick->path) {
+        SDL_Unsupported();
+        return NULL;
+    }
+    return joystick->path;
+}
+
 /**
  *  Get the player index of an opened joystick, or -1 if it's not available
  */
@@ -886,17 +953,18 @@ SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
         result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble);
     }
 
-    /* Save the rumble value regardless of success, so we don't spam the driver */
-    joystick->low_frequency_rumble = low_frequency_rumble;
-    joystick->high_frequency_rumble = high_frequency_rumble;
+    if (result == 0) {
+        joystick->low_frequency_rumble = low_frequency_rumble;
+        joystick->high_frequency_rumble = high_frequency_rumble;
 
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!joystick->rumble_expiration) {
-            joystick->rumble_expiration = 1;
+        if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
+            joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+            if (!joystick->rumble_expiration) {
+                joystick->rumble_expiration = 1;
+            }
+        } else {
+            joystick->rumble_expiration = 0;
         }
-    } else {
-        joystick->rumble_expiration = 0;
     }
     SDL_UnlockJoysticks();
 
@@ -920,17 +988,18 @@ SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
         result = joystick->driver->RumbleTriggers(joystick, left_rumble, right_rumble);
     }
 
-    /* Save the rumble value regardless of success, so we don't spam the driver */
-    joystick->left_trigger_rumble = left_rumble;
-    joystick->right_trigger_rumble = right_rumble;
+    if (result == 0) {
+        joystick->left_trigger_rumble = left_rumble;
+        joystick->right_trigger_rumble = right_rumble;
 
-    if ((left_rumble || right_rumble) && duration_ms) {
-        joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!joystick->trigger_rumble_expiration) {
-            joystick->trigger_rumble_expiration = 1;
+        if ((left_rumble || right_rumble) && duration_ms) {
+            joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+            if (!joystick->trigger_rumble_expiration) {
+                joystick->trigger_rumble_expiration = 1;
+            }
+        } else {
+            joystick->trigger_rumble_expiration = 0;
         }
-    } else {
-        joystick->trigger_rumble_expiration = 0;
     }
     SDL_UnlockJoysticks();
 
@@ -1004,14 +1073,13 @@ SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     SDL_LockJoysticks();
 
     isfreshvalue = red != joystick->led_red ||
-        green != joystick->led_green ||
-        blue != joystick->led_blue;
+                   green != joystick->led_green ||
+                   blue != joystick->led_blue;
 
-    if ( isfreshvalue || SDL_TICKS_PASSED( SDL_GetTicks(), joystick->led_expiration ) ) {
+    if (isfreshvalue || SDL_TICKS_PASSED(SDL_GetTicks(), joystick->led_expiration)) {
         result = joystick->driver->SetLED(joystick, red, green, blue);
         joystick->led_expiration = SDL_GetTicks() + SDL_LED_MIN_REPEAT_MS;
-    }
-    else {
+    } else {
         /* Avoid spamming the driver */
         result = 0;
     }
@@ -1098,6 +1166,7 @@ SDL_JoystickClose(SDL_Joystick *joystick)
     }
 
     SDL_free(joystick->name);
+    SDL_free(joystick->path);
     SDL_free(joystick->serial);
 
     /* Free the data associated with this joystick */
@@ -1588,10 +1657,12 @@ SDL_JoystickUpdate(void)
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
-            /* This should always be true, but seeing a crash in the wild...? */
-            if (joystick->driver) {
-                joystick->driver->Update(joystick);
+            /* This driver should always be != NULL, but seeing a crash in the wild...? */
+            if (!joystick->driver) {
+                continue;  /* nothing we can do, and other things use joystick->driver below here. */
             }
+
+            joystick->driver->Update(joystick);
 
             if (joystick->delayed_guide_button) {
                 SDL_GameControllerHandleDelayedGuideButton(joystick);
@@ -1992,6 +2063,13 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
 }
 
 SDL_bool
+SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_XBoxOneController);
+}
+
+SDL_bool
 SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
 {
     if (vendor_id == USB_VENDOR_MICROSOFT) {
@@ -2156,7 +2234,10 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb65d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb677),    /* Thrustmaster T150 */
-        MAKE_VIDPID(0x044f, 0xb66e),    /* Thrustmaster T300RS */
+        MAKE_VIDPID(0x044f, 0xb696),    /* Thrustmaster T248 */
+        MAKE_VIDPID(0x044f, 0xb66e),    /* Thrustmaster T300RS (normal mode) */
+        MAKE_VIDPID(0x044f, 0xb66f),    /* Thrustmaster T300RS (advanced mode) */
+        MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster T300RS (PS4 mode) */
         MAKE_VIDPID(0x044f, 0xb65e),    /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664),    /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669),    /* Thrustmaster TX (active mode) */
@@ -2488,8 +2569,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         return SDL_TRUE;
     }
 
-    if (SDL_IsGameControllerNameAndGUID(name, guid) &&
-        SDL_ShouldIgnoreGameController(name, guid)) {
+    if (SDL_ShouldIgnoreGameController(name, guid)) {
         return SDL_TRUE;
     }
 
@@ -2622,6 +2702,14 @@ Uint16 SDL_JoystickGetProductVersion(SDL_Joystick *joystick)
     return version;
 }
 
+Uint16 SDL_JoystickGetFirmwareVersion(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return 0;
+    }
+    return joystick->firmware_version;
+}
+
 const char *SDL_JoystickGetSerial(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
@@ -2714,7 +2802,19 @@ SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
 /* update the power level for this joystick */
 void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
 {
-    joystick->epowerlevel = ePowerLevel;
+    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialisation */
+    if (ePowerLevel != joystick->epowerlevel) {
+#if !SDL_EVENTS_DISABLED
+        if (SDL_GetEventState(SDL_JOYBATTERYUPDATED) == SDL_ENABLE) {
+            SDL_Event event;
+            event.type = SDL_JOYBATTERYUPDATED;
+            event.jbattery.which = joystick->instance_id;
+            event.jbattery.level = ePowerLevel;
+            SDL_PushEvent(&event);
+        }
+#endif /* !SDL_EVENTS_DISABLED */
+        joystick->epowerlevel = ePowerLevel;
+    }
 }
 
 /* return its power level */
@@ -2731,9 +2831,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     SDL_JoystickTouchpadInfo *touchpad_info;
     SDL_JoystickTouchpadFingerInfo *finger_info;
     int posted;
-#if !SDL_EVENTS_DISABLED
     Uint32 event_type;
-#endif
 
     if (touchpad < 0 || touchpad >= joystick->ntouchpads) {
         return 0;
@@ -2777,7 +2875,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
         }
     }
 
-#if !SDL_EVENTS_DISABLED
     if (state == finger_info->state) {
         event_type = SDL_CONTROLLERTOUCHPADMOTION;
     } else if (state) {
@@ -2785,7 +2882,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     } else {
         event_type = SDL_CONTROLLERTOUCHPADUP;
     }
-#endif
 
     /* We ignore events if we don't have keyboard focus, except for touch release */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {

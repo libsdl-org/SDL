@@ -256,8 +256,7 @@ SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
     UnregisterClass(data->wincl.lpszClassName, data->wincl.hInstance);
 
     if (data->coinitialized == S_OK) {
-        /* Workaround for CoUninitialize() crash in NotifyInitializeSpied() */
-        /*WIN_CoUninitialize();*/
+        WIN_CoUninitialize();
     }
 }
 
@@ -331,7 +330,7 @@ SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex
 static SDL_DeviceNotificationData s_notification_data;
 
 /* Function/thread to scan the system for joysticks. */
-static int
+static int SDLCALL
 SDL_JoystickThread(void *_data)
 {
 #if SDL_JOYSTICK_XINPUT
@@ -556,7 +555,6 @@ WINDOWS_JoystickDetect(void)
     }
 }
 
-/* Function to get the device-dependent name of a joystick */
 static const char *
 WINDOWS_JoystickGetDeviceName(int device_index)
 {
@@ -567,6 +565,18 @@ WINDOWS_JoystickGetDeviceName(int device_index)
         device = device->pNext;
 
     return device->joystickname;
+}
+
+static const char *
+WINDOWS_JoystickGetDevicePath(int device_index)
+{
+    JoyStick_DeviceData *device = SYS_Joystick;
+    int index;
+
+    for (index = device_index; index > 0; index--)
+        device = device->pNext;
+
+    return device->path;
 }
 
 static int
@@ -756,6 +766,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickGetCount,
     WINDOWS_JoystickDetect,
     WINDOWS_JoystickGetDeviceName,
+    WINDOWS_JoystickGetDevicePath,
     WINDOWS_JoystickGetDevicePlayerIndex,
     WINDOWS_JoystickSetDevicePlayerIndex,
     WINDOWS_JoystickGetDeviceGUID,

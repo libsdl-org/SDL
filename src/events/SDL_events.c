@@ -35,7 +35,7 @@
 #include "SDL_syswm.h"
 
 #undef SDL_PRIs64
-#ifdef __WIN32__
+#if defined(__WIN32__) && !defined(__CYGWIN__)
 #define SDL_PRIs64  "I64d"
 #else
 #define SDL_PRIs64  "lld"
@@ -150,13 +150,19 @@ SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, 
     SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
-/* 0 (default) means no logging, 1 means logging, 2 means logging with mouse and finger motion */
-static int SDL_DoEventLogging = 0;
+/**
+ * Verbosity of logged events as defined in SDL_HINT_EVENT_LOGGING:
+ *  - 0: (default) no logging
+ *  - 1: logging of most events
+ *  - 2: as above, plus mouse and finger motion
+ *  - 3: as above, plus SDL_SysWMEvents
+ */
+static int SDL_EventLoggingVerbosity = 0;
 
 static void SDLCALL
 SDL_EventLoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_DoEventLogging = (hint && *hint) ? SDL_clamp(SDL_atoi(hint), 0, 2) : 0;
+    SDL_EventLoggingVerbosity = (hint && *hint) ? SDL_clamp(SDL_atoi(hint), 0, 3) : 0;
 }
 
 static void
@@ -166,12 +172,17 @@ SDL_LogEvent(const SDL_Event *event)
     char details[128];
 
     /* sensor/mouse/finger motion are spammy, ignore these if they aren't demanded. */
-    if ( (SDL_DoEventLogging < 2) &&
+    if ( (SDL_EventLoggingVerbosity < 2) &&
             ( (event->type == SDL_MOUSEMOTION) ||
               (event->type == SDL_FINGERMOTION) ||
               (event->type == SDL_CONTROLLERTOUCHPADMOTION) ||
               (event->type == SDL_CONTROLLERSENSORUPDATE) ||
               (event->type == SDL_SENSORUPDATE) ) ) {
+        return;
+    }
+
+    /* window manager events are even more spammy, and don't provide much useful info. */
+    if ((SDL_EventLoggingVerbosity < 3) && (event->type == SDL_SYSWMEVENT)) {
         return;
     }
 
@@ -590,7 +601,7 @@ SDL_AddEvent(SDL_Event * event)
         SDL_EventQ.free = entry->next;
     }
 
-    if (SDL_DoEventLogging) {
+    if (SDL_EventLoggingVerbosity > 0) {
         SDL_LogEvent(event);
     }
 
@@ -684,7 +695,7 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
     /* Don't look after we've quit */
     if (!SDL_AtomicGet(&SDL_EventQ.active)) {
         /* We get a few spurious events at shutdown, so don't warn then */
-        if (action != SDL_ADDEVENT) {
+        if (action == SDL_GETEVENT) {
             SDL_SetError("The event system has been shut down");
         }
         return (-1);

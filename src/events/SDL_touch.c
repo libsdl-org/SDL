@@ -265,8 +265,13 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
 
 #if SYNTHESIZE_TOUCH_TO_MOUSE
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
+    /* SDL_HINT_VITA_TOUCH_MOUSE_DEVICE: controlling which touchpad should generate synthetic mouse events, PSVita-only */
     {
+#if defined(__vita__)
+        if (mouse->touch_mouse_events && ((mouse->vita_touch_mouse_device == id) || (mouse->vita_touch_mouse_device == 2)) ) {
+#else
         if (mouse->touch_mouse_events) {
+#endif
             /* FIXME: maybe we should only restrict to a few SDL_TouchDeviceType */
             if (id != SDL_MOUSE_TOUCHID) {
                 if (window) {

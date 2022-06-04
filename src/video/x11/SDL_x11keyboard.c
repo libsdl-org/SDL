@@ -37,7 +37,7 @@
 #include <locale.h>
 #endif
 
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 static const struct {
     KeySym keysym;
     SDL_Scancode scancode;
@@ -160,7 +160,7 @@ static const struct
     { xfree86_scancode_table2, SDL_arraysize(xfree86_scancode_table2) },
     { xvnc_scancode_table, SDL_arraysize(xvnc_scancode_table) },
 };
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 /* This function only works for keyboards in US QWERTY layout */
 static SDL_Scancode
@@ -267,13 +267,6 @@ X11_InitKeyboard(_THIS)
     int best_index;
     int distance;
     Bool xkb_repeat = 0;
-    XKeyboardState values;
-    SDL_zero(values);
-    values.global_auto_repeat = AutoRepeatModeOff;
-    
-    X11_XGetKeyboardControl(data->display, &values);
-    if (values.global_auto_repeat != AutoRepeatModeOn)
-        X11_XAutoRepeatOn(data->display);
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     {
@@ -408,6 +401,8 @@ X11_InitKeyboard(_THIS)
 #ifdef SDL_USE_IME
     SDL_IME_Init();
 #endif
+
+    X11_ReconcileKeyboardState(_this);
 
     return 0;
 }

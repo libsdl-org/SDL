@@ -30,6 +30,8 @@
 #ifndef UNICODE
 #define UNICODE 1
 #endif
+#undef WINVER
+#define WINVER 0x0501
 #undef _WIN32_WINNT
 #define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
 #endif
@@ -63,9 +65,18 @@ extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
 
+#if !defined(__WINRT__)
+/* Load a function from combase.dll */
+void *WIN_LoadComBaseFunction(const char *name);
+#endif
+
 /* Wrap up the oddities of CoInitialize() into a common function. */
 extern HRESULT WIN_CoInitialize(void);
 extern void WIN_CoUninitialize(void);
+
+/* Wrap up the oddities of RoInitialize() into a common function. */
+extern HRESULT WIN_RoInitialize(void);
+extern void WIN_RoUninitialize(void);
 
 /* Returns SDL_TRUE if we're running on Windows Vista and newer */
 extern BOOL WIN_IsWindowsVistaOrGreater(void);

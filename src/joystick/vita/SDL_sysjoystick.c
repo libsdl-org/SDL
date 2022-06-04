@@ -179,7 +179,6 @@ SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
     return device_index;
 }
 
-/* Function to get the device-dependent name of a joystick */
 const char *VITA_JoystickGetDeviceName(int index)
 {
     if (index == 0)
@@ -195,7 +194,12 @@ const char *VITA_JoystickGetDeviceName(int index)
         return "PSVita Controller";
 
     SDL_SetError("No joystick available with that index");
-    return(NULL);
+    return NULL;
+}
+
+const char *VITA_JoystickGetDevicePath(int index)
+{
+    return NULL;
 }
 
 static int
@@ -400,6 +404,7 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
     VITA_JoystickGetCount,
     VITA_JoystickDetect,
     VITA_JoystickGetDeviceName,
+    VITA_JoystickGetDevicePath,
     VITA_JoystickGetDevicePlayerIndex,
     VITA_JoystickSetDevicePlayerIndex,
     VITA_JoystickGetDeviceGUID,

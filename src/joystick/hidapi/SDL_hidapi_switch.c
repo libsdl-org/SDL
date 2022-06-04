@@ -63,6 +63,11 @@
 #define SWITCH_GYRO_SCALE      14.2842f
 #define SWITCH_ACCEL_SCALE     4096.f
 
+#define SWITCH_GYRO_SCALE_OFFSET      13371.0f
+#define SWITCH_GYRO_SCALE_MULT        936.0f
+#define SWITCH_ACCEL_SCALE_OFFSET     16384.0f
+#define SWITCH_ACCEL_SCALE_MULT       4.0f
+
 typedef enum {
     k_eSwitchInputReportIDs_SubcommandReply       = 0x21,
     k_eSwitchInputReportIDs_FullControllerState   = 0x30,
@@ -113,6 +118,14 @@ typedef enum {
 #define k_unSPIStickCalibrationStartOffset  0x603D
 #define k_unSPIStickCalibrationEndOffset    0x604E
 #define k_unSPIStickCalibrationLength       (k_unSPIStickCalibrationEndOffset - k_unSPIStickCalibrationStartOffset + 1)
+
+#define k_unSPIIMUScaleStartOffset  0x6020
+#define k_unSPIIMUScaleEndOffset    0x6037
+#define k_unSPIIMUScaleLength       (k_unSPIIMUScaleEndOffset - k_unSPIIMUScaleStartOffset + 1)
+
+#define k_unSPIIMUUserScaleStartOffset  0x8026
+#define k_unSPIIMUUserScaleEndOffset    0x8039
+#define k_unSPIIMUUserScaleLength       (k_unSPIIMUUserScaleEndOffset - k_unSPIIMUUserScaleStartOffset + 1)
 
 #pragma pack(1)
 typedef struct
@@ -266,6 +279,16 @@ typedef struct {
             Sint16 sMax;
         } axis[2];
     } m_StickExtents[2];
+
+    struct IMUScaleData {
+        float fAccelScaleX;
+        float fAccelScaleY;
+        float fAccelScaleZ;
+
+        float fGyroScaleX;
+        float fGyroScaleY;
+        float fGyroScaleZ;
+    } m_IMUScaleData;
 } SDL_DriverSwitch_Context;
 
 
@@ -769,6 +792,72 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     return SDL_TRUE;
 }
 
+static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
+{
+    Uint8* pIMUScale;
+    SwitchSubcommandInputPacket_t* reply = NULL;
+    Sint16 sAccelRawX, sAccelRawY, sAccelRawZ, sGyroRawX, sGyroRawY, sGyroRawZ;
+
+    /* Read Calibration Info */
+    SwitchSPIOpData_t readParams;
+    readParams.unAddress = k_unSPIIMUScaleStartOffset;
+    readParams.ucLength = k_unSPIIMUScaleLength;
+
+    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t*)&readParams, sizeof(readParams), &reply)) {
+        const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
+        const float gyroScale = (float)M_PI / 180.0f / SWITCH_GYRO_SCALE;
+
+        ctx->m_IMUScaleData.fAccelScaleX = accelScale;
+        ctx->m_IMUScaleData.fAccelScaleY = accelScale;
+        ctx->m_IMUScaleData.fAccelScaleZ = accelScale;
+
+        ctx->m_IMUScaleData.fGyroScaleX = gyroScale;
+        ctx->m_IMUScaleData.fGyroScaleY = gyroScale;
+        ctx->m_IMUScaleData.fGyroScaleZ = gyroScale;
+
+        return SDL_FALSE;
+    }
+
+    /* IMU scale gives us multipliers for converting raw values to real world values */
+    pIMUScale = reply->spiReadData.rgucReadData;
+
+    sAccelRawX = ((pIMUScale[1] << 8) & 0xF00) | pIMUScale[0];
+    sAccelRawY = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
+    sAccelRawZ = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
+
+    sGyroRawX = ((pIMUScale[13] << 8) & 0xF00) | pIMUScale[12];
+    sGyroRawY = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
+    sGyroRawZ = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
+
+    /* Check for user calibration data. If it's present and set, it'll override the factory settings */
+    readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
+    readParams.ucLength = k_unSPIIMUUserScaleLength;
+    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t*)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
+        pIMUScale = reply->spiReadData.rgucReadData;
+        
+        sAccelRawX = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
+        sAccelRawY = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
+        sAccelRawZ = ((pIMUScale[7] << 8) & 0xF00) | pIMUScale[6];
+
+        sGyroRawX = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
+        sGyroRawY = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
+        sGyroRawZ = ((pIMUScale[19] << 8) & 0xF00) | pIMUScale[18];
+    }
+
+    /* Accelerometer scale */
+    ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / (float)(SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
+    ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / (float)(SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
+    ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / (float)(SWITCH_ACCEL_SCALE_OFFSET - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
+
+    /* Gyro scale */
+    ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / (float)(SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawX) * (float)M_PI / 180.0f;
+    ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / (float)(SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawY) * (float)M_PI / 180.0f;
+    ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / (float)(SWITCH_GYRO_SCALE_OFFSET - (float)sGyroRawZ) * (float)M_PI / 180.0f;
+
+    return SDL_TRUE;
+}
+
+
 static Sint16 ApplyStickCalibrationCentered(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue, Sint16 sCenter)
 {
     sRawValue -= sCenter;
@@ -911,6 +1000,11 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
 
         if (!LoadStickCalibration(ctx, input_mode)) {
             SDL_SetError("Couldn't load stick calibration");
+            goto error;
+        }
+
+        if (!LoadIMUCalibration(ctx)) {
+            SDL_SetError("Couldn't load sensor calibration");
             goto error;
         }
 
@@ -1146,20 +1240,6 @@ HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joy
     return 0;
 }
 
-static float
-HIDAPI_DriverSwitch_ScaleGyro(Sint16 value)
-{
-    float result = (value / SWITCH_GYRO_SCALE) * (float)M_PI / 180.0f;
-    return result;
-}
-
-static float
-HIDAPI_DriverSwitch_ScaleAccel(Sint16 value)
-{
-    float result = (value / SWITCH_ACCEL_SCALE) * SDL_STANDARD_GRAVITY;
-    return result;
-}
-
 static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchInputOnlyControllerStatePacket_t *packet)
 {
     Sint16 axis;
@@ -1357,13 +1437,13 @@ static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *c
      * users will want consistent axis mappings across devices.
      */
     if (type == SDL_SENSOR_GYRO) {
-        data[0] = -HIDAPI_DriverSwitch_ScaleGyro(values[1]);
-        data[1] = HIDAPI_DriverSwitch_ScaleGyro(values[2]);
-        data[2] = -HIDAPI_DriverSwitch_ScaleGyro(values[0]);
+        data[0] = -(ctx->m_IMUScaleData.fGyroScaleY * (float)values[1]);
+        data[1] = ctx->m_IMUScaleData.fGyroScaleZ * (float)values[2];
+        data[2] = -(ctx->m_IMUScaleData.fGyroScaleX * (float)values[0]);
     } else {
-        data[0] = -HIDAPI_DriverSwitch_ScaleAccel(values[1]);
-        data[1] = HIDAPI_DriverSwitch_ScaleAccel(values[2]);
-        data[2] = -HIDAPI_DriverSwitch_ScaleAccel(values[0]);
+        data[0] = -(ctx->m_IMUScaleData.fAccelScaleY * (float)values[1]);
+        data[1] = ctx->m_IMUScaleData.fAccelScaleZ * (float)values[2];
+        data[2] = -(ctx->m_IMUScaleData.fAccelScaleX * (float)values[0]);
     }
 
     /* Right Joy-Con flips some axes, so let's flip them back for consistency */
@@ -1440,20 +1520,20 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
      * LSB of connection nibble is USB/Switch connection status
      */
     if (packet->controllerState.ucBatteryAndConnection & 0x1) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
     } else {
         /* LSB of the battery nibble is used to report charging.
          * The battery level is reported from 0(empty)-8(full)
          */
         int level = (packet->controllerState.ucBatteryAndConnection & 0xE0) >> 4;
         if (level == 0) {
-            joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
         } else if (level <= 2) {
-            joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
         } else if (level <= 6) {
-            joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
         } else {
-            joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
         }
     }
 

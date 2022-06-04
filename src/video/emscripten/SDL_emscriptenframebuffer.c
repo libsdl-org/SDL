@@ -26,6 +26,8 @@
 #include "SDL_emscriptenframebuffer.h"
 #include "SDL_hints.h"
 
+#include <emscripten/threading.h>
+
 
 int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
@@ -57,18 +59,9 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * form
     return 0;
 }
 
-int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+static void
+Emscripten_UpdateWindowFramebufferWorker(SDL_Surface* surface)
 {
-    SDL_Surface *surface;
-
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    surface = data->surface;
-    if (!surface) {
-        return SDL_SetError("Couldn't find framebuffer surface for window");
-    }
-
-    /* Send the data to the display */
-
     EM_ASM_INT({
         var w = $0;
         var h = $1;
@@ -156,6 +149,29 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         SDL2.ctx.putImageData(SDL2.image, 0, 0);
         return 0;
     }, surface->w, surface->h, surface->pixels);
+}
+
+int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+{
+    SDL_Surface *surface;
+
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    surface = data->surface;
+    if (!surface) {
+        return SDL_SetError("Couldn't find framebuffer surface for window");
+    }
+
+    /* Send the data to the display */
+
+    if (emscripten_is_main_runtime_thread()) {
+        Emscripten_UpdateWindowFramebufferWorker(surface);
+    } else {
+        emscripten_sync_run_in_main_runtime_thread(
+            EM_FUNC_SIG_VI,
+            Emscripten_UpdateWindowFramebufferWorker,
+            (uint32_t)surface
+        );
+    }
 
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */

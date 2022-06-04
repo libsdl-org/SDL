@@ -30,6 +30,11 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
+#ifdef SDL_VIDEO_VITA_PVR_OGL
+#include <GL/gl.h>
+#include <GL/glext.h>
+#endif
+
 /* To prevent unnecessary window recreation, 
  * these should match the defaults selected in SDL_GL_ResetAttributes 
  */
@@ -317,6 +322,20 @@ GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
         }
     }
     return result;
+}
+
+static void
+GL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
+{
+    /* If the window x/y/w/h changed at all, assume the viewport has been
+     * changed behind our backs. x/y changes might seem weird but viewport
+     * resets have been observed on macOS at minimum!
+     */
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED ||
+        event->event == SDL_WINDOWEVENT_MOVED) {
+        GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+        data->drawstate.viewport_dirty = SDL_TRUE;
+    }
 }
 
 static int
@@ -1212,9 +1231,9 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
     }
 
 #ifdef __MACOSX__
-    // On macOS, moving the window seems to invalidate the OpenGL viewport state,
-    // so don't bother trying to persist it across frames; always reset it.
-    // Workaround for: https://github.com/libsdl-org/SDL/issues/1504
+    // On macOS on older systems, the OpenGL view change and resize events aren't
+    // necessarily synchronized, so just always reset it.
+    // Workaround for: https://discourse.libsdl.org/t/sdl-2-0-22-prerelease/35306/6
     data->drawstate.viewport_dirty = SDL_TRUE;
 #endif
 
@@ -1733,6 +1752,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 
+#ifndef SDL_VIDEO_VITA_PVR_OGL
     window_flags = SDL_GetWindowFlags(window);
     if (!(window_flags & SDL_WINDOW_OPENGL) ||
         profile_mask == SDL_GL_CONTEXT_PROFILE_ES || major != RENDERER_CONTEXT_MAJOR || minor != RENDERER_CONTEXT_MINOR) {
@@ -1746,6 +1766,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
             goto error;
         }
     }
+#endif
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
@@ -1760,6 +1781,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         goto error;
     }
 
+    renderer->WindowEvent = GL_WindowEvent;
     renderer->GetOutputSize = GL_GetOutputSize;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
     renderer->CreateTexture = GL_CreateTexture;

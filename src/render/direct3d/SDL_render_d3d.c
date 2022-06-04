@@ -41,6 +41,13 @@
 
 #include "SDL_shaders_d3d.h"
 
+#ifdef __WATCOMC__
+/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/868 is merged */
+#define D3DBLENDOP_REVSUBTRACT 3
+/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/869 is merged */
+#define D3DERR_UNSUPPORTEDCOLOROPERATION MAKE_D3DHRESULT( 2073 )
+#endif
+
 typedef struct
 {
     SDL_Rect viewport;
@@ -347,7 +354,8 @@ D3D_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-static D3DBLEND GetBlendFunc(SDL_BlendFactor factor)
+static D3DBLEND
+GetBlendFunc(SDL_BlendFactor factor)
 {
     switch (factor) {
     case SDL_BLENDFACTOR_ZERO:
@@ -370,9 +378,28 @@ static D3DBLEND GetBlendFunc(SDL_BlendFactor factor)
         return D3DBLEND_DESTALPHA;
     case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
         return D3DBLEND_INVDESTALPHA;
-    default:
-        return (D3DBLEND)0;
+    default: break;
     }
+    return (D3DBLEND) 0;
+}
+
+static D3DBLENDOP
+GetBlendEquation(SDL_BlendOperation operation)
+{
+    switch (operation) {
+    case SDL_BLENDOPERATION_ADD:
+        return D3DBLENDOP_ADD;
+    case SDL_BLENDOPERATION_SUBTRACT:
+        return D3DBLENDOP_SUBTRACT;
+    case SDL_BLENDOPERATION_REV_SUBTRACT:
+        return D3DBLENDOP_REVSUBTRACT;
+    case SDL_BLENDOPERATION_MINIMUM:
+        return D3DBLENDOP_MIN;
+    case SDL_BLENDOPERATION_MAXIMUM:
+        return D3DBLENDOP_MAX;
+    default: break;
+    }
+    return (D3DBLENDOP) 0;
 }
 
 static SDL_bool
@@ -387,14 +414,16 @@ D3D_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     SDL_BlendOperation alphaOperation = SDL_GetBlendModeAlphaOperation(blendMode);
 
     if (!GetBlendFunc(srcColorFactor) || !GetBlendFunc(srcAlphaFactor) ||
-        !GetBlendFunc(dstColorFactor) || !GetBlendFunc(dstAlphaFactor)) {
+        !GetBlendEquation(colorOperation) ||
+        !GetBlendFunc(dstColorFactor) || !GetBlendFunc(dstAlphaFactor) ||
+        !GetBlendEquation(alphaOperation)) {
         return SDL_FALSE;
     }
-    if ((srcColorFactor != srcAlphaFactor || dstColorFactor != dstAlphaFactor) && !data->enableSeparateAlphaBlend) {
-        return SDL_FALSE;
-    }
-    if (colorOperation != SDL_BLENDOPERATION_ADD || alphaOperation != SDL_BLENDOPERATION_ADD) {
-        return SDL_FALSE;
+
+    if (!data->enableSeparateAlphaBlend) {
+        if ((srcColorFactor != srcAlphaFactor) || (dstColorFactor != dstAlphaFactor) || (colorOperation != alphaOperation)) {
+            return SDL_FALSE;
+        }
     }
     return SDL_TRUE;
 }
@@ -1040,11 +1069,15 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
                                             GetBlendFunc(SDL_GetBlendModeSrcColorFactor(blend)));
             IDirect3DDevice9_SetRenderState(data->device, D3DRS_DESTBLEND,
                                             GetBlendFunc(SDL_GetBlendModeDstColorFactor(blend)));
+            IDirect3DDevice9_SetRenderState(data->device, D3DRS_BLENDOP,
+                                            GetBlendEquation(SDL_GetBlendModeColorOperation(blend)));
             if (data->enableSeparateAlphaBlend) {
                 IDirect3DDevice9_SetRenderState(data->device, D3DRS_SRCBLENDALPHA,
                                                 GetBlendFunc(SDL_GetBlendModeSrcAlphaFactor(blend)));
                 IDirect3DDevice9_SetRenderState(data->device, D3DRS_DESTBLENDALPHA,
                                                 GetBlendFunc(SDL_GetBlendModeDstAlphaFactor(blend)));
+                IDirect3DDevice9_SetRenderState(data->device, D3DRS_BLENDOPALPHA,
+                                                GetBlendEquation(SDL_GetBlendModeAlphaOperation(blend)));
             }
         }
 
@@ -1053,7 +1086,13 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
-        const D3DVIEWPORT9 d3dviewport = { viewport->x, viewport->y, viewport->w, viewport->h, 0.0f, 1.0f };
+        D3DVIEWPORT9 d3dviewport;
+        d3dviewport.X = viewport->x;
+        d3dviewport.Y = viewport->y;
+        d3dviewport.Width = viewport->w;
+        d3dviewport.Height = viewport->h;
+        d3dviewport.MinZ = 0.0f;
+        d3dviewport.MaxZ = 1.0f;
         IDirect3DDevice9_SetViewport(data->device, &d3dviewport);
 
         /* Set an orthographic projection matrix */
@@ -1080,7 +1119,11 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     if (data->drawstate.cliprect_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
         const SDL_Rect *rect = &data->drawstate.cliprect;
-        const RECT d3drect = { viewport->x + rect->x, viewport->y + rect->y, viewport->x + rect->x + rect->w, viewport->y + rect->y + rect->h };
+        RECT d3drect;
+        d3drect.left = viewport->x + rect->x;
+        d3drect.top = viewport->y + rect->y;
+        d3drect.right = viewport->x + rect->x + rect->w;
+        d3drect.bottom = viewport->y + rect->y + rect->h;
         IDirect3DDevice9_SetScissorRect(data->device, &d3drect);
         data->drawstate.cliprect_dirty = SDL_FALSE;
     }
@@ -1195,7 +1238,9 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
                 } else {
                     /* Clear is defined to clear the entire render target */
-                    const D3DVIEWPORT9 wholeviewport = { 0, 0, backw, backh, 0.0f, 1.0f };
+                    D3DVIEWPORT9 wholeviewport = { 0, 0, 0, 0, 0.0f, 1.0f };
+                    wholeviewport.Width = backw;
+                    wholeviewport.Height = backh;
                     IDirect3DDevice9_SetViewport(data->device, &wholeviewport);
                     data->drawstate.viewport_dirty = SDL_TRUE;  /* we still need to (re)set orthographic projection, so always mark it dirty. */
                     IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
@@ -1702,6 +1747,9 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         }
     }
 #endif
+    data->drawstate.viewport_dirty = SDL_TRUE;
+    data->drawstate.cliprect_dirty = SDL_TRUE;
+    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
     data->drawstate.blend = SDL_BLENDMODE_INVALID;
 
     return renderer;

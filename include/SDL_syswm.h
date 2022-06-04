@@ -298,6 +298,8 @@ struct SDL_SysWMinfo
             struct wl_egl_window *egl_window;       /**< Wayland EGL window (native window) */
             struct xdg_surface *xdg_surface;        /**< Wayland xdg surface (window manager handle) */
             struct xdg_toplevel *xdg_toplevel;      /**< Wayland xdg toplevel role */
+            struct xdg_popup *xdg_popup;            /**< Wayland xdg popup role */
+            struct xdg_positioner *xdg_positioner;  /**< Wayland xdg positioner, for popup */
         } wl;
 #endif
 #if defined(SDL_VIDEO_DRIVER_MIR)  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */

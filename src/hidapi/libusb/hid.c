@@ -994,7 +994,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 }
 
 
-static int read_thread(void *param)
+static int SDLCALL read_thread(void *param)
 {
 	hid_device *dev = (hid_device *)param;
 	uint8_t *buf;
@@ -1497,6 +1497,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 
 	/* Clean up the Transfer objects allocated in read_thread(). */
 	free(dev->transfer->buffer);
+	dev->transfer->buffer = NULL;
 	libusb_free_transfer(dev->transfer);
 
 	/* release the interface */

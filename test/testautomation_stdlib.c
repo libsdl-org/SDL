@@ -322,6 +322,168 @@ stdlib_sscanf(void *arg)
   return TEST_COMPLETED;
 }
 
+#if defined(_WIN64)
+# define SIZE_FORMAT "I64u"
+#elif defined(__WIN32__)
+# define SIZE_FORMAT "I32u"
+#else
+# define SIZE_FORMAT "zu"
+#endif
+
+typedef struct
+{
+    size_t a;
+    size_t b;
+    size_t result;
+    int status;
+} overflow_test;
+
+static const overflow_test multiplications[] =
+{
+    { 1, 1, 1, 0 },
+    { 0, 0, 0, 0 },
+    { SDL_SIZE_MAX, 0, 0, 0 },
+    { SDL_SIZE_MAX, 1, SDL_SIZE_MAX, 0 },
+    { SDL_SIZE_MAX / 2, 2, SDL_SIZE_MAX - (SDL_SIZE_MAX % 2), 0 },
+    { SDL_SIZE_MAX / 23, 23, SDL_SIZE_MAX - (SDL_SIZE_MAX % 23), 0 },
+
+    { (SDL_SIZE_MAX / 2) + 1, 2, 0, -1 },
+    { (SDL_SIZE_MAX / 23) + 42, 23, 0, -1 },
+    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, -1 },
+};
+
+static const overflow_test additions[] =
+{
+    { 1, 1, 2, 0 },
+    { 0, 0, 0, 0 },
+    { SDL_SIZE_MAX, 0, SDL_SIZE_MAX, 0 },
+    { SDL_SIZE_MAX - 1, 1, SDL_SIZE_MAX, 0 },
+    { SDL_SIZE_MAX - 42, 23, SDL_SIZE_MAX - (42 - 23), 0 },
+
+    { SDL_SIZE_MAX, 1, 0, -1 },
+    { SDL_SIZE_MAX, 23, 0, -1 },
+    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, -1 },
+};
+
+static int
+stdlib_overflow(void *arg)
+{
+  size_t i;
+  size_t useBuiltin;
+
+  for (useBuiltin = 0; useBuiltin < 2; useBuiltin++) {
+      if (useBuiltin) {
+          SDLTest_Log("Using gcc/clang builtins if possible");
+      } else {
+          SDLTest_Log("Not using gcc/clang builtins");
+      }
+
+      for (i = 0; i < SDL_arraysize(multiplications); i++) {
+          const overflow_test *t = &multiplications[i];
+          int status;
+          size_t result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_mul_overflow(t->a, t->b, &result);
+          } else {
+              /* This disables the macro that tries to use a gcc/clang
+               * builtin, so we test the fallback implementation instead. */
+              status = (SDL_size_mul_overflow)(t->a, t->b, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should succeed",
+                                  t->a, t->b);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->a, t->b, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should fail",
+                                  t->a, t->b);
+          }
+
+          if (t->a == t->b) {
+              continue;
+          }
+
+          result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_mul_overflow(t->b, t->a, &result);
+          } else {
+              status = (SDL_size_mul_overflow)(t->b, t->a, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should succeed",
+                                  t->b, t->a);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->b, t->a, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should fail",
+                                  t->b, t->a);
+          }
+      }
+
+      for (i = 0; i < SDL_arraysize(additions); i++) {
+          const overflow_test *t = &additions[i];
+          int status;
+          size_t result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_add_overflow(t->a, t->b, &result);
+          } else {
+              status = (SDL_size_add_overflow)(t->a, t->b, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should succeed",
+                                  t->a, t->b);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->a, t->b, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should fail",
+                                  t->a, t->b);
+          }
+
+          if (t->a == t->b) {
+              continue;
+          }
+
+          result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_add_overflow(t->b, t->a, &result);
+          } else {
+              status = (SDL_size_add_overflow)(t->b, t->a, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should succeed",
+                                  t->b, t->a);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->b, t->a, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should fail",
+                                  t->b, t->a);
+          }
+      }
+  }
+
+  return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -337,9 +499,17 @@ static const SDLTest_TestCaseReference stdlibTest3 =
 static const SDLTest_TestCaseReference stdlibTest4 =
         { (SDLTest_TestCaseFp)stdlib_sscanf, "stdlib_sscanf", "Call to SDL_sscanf", TEST_ENABLED };
 
+static const SDLTest_TestCaseReference stdlibTestOverflow =
+        { stdlib_overflow, "stdlib_overflow", "Overflow detection", TEST_ENABLED };
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] =  {
-    &stdlibTest1, &stdlibTest2, &stdlibTest3, &stdlibTest4, NULL
+    &stdlibTest1,
+    &stdlibTest2,
+    &stdlibTest3,
+    &stdlibTest4,
+    &stdlibTestOverflow,
+    NULL
 };
 
 /* Standard C routine test suite (global) */

@@ -34,24 +34,19 @@ typedef struct joystick_hwdata
 {
     SDL_JoystickType type;
     SDL_bool attached;
-    const char *name;
+    char *name;
     SDL_JoystickGUID guid;
-    int naxes;
+    SDL_VirtualJoystickDesc desc;
     Sint16 *axes;
-    int nbuttons;
     Uint8 *buttons;
-    int nhats;
     Uint8 *hats;
     SDL_JoystickID instance_id;
-    SDL_bool opened;
+    SDL_Joystick *joystick;
+
     struct joystick_hwdata *next;
 } joystick_hwdata;
 
-int SDL_JoystickAttachVirtualInner(SDL_JoystickType type,
-                                   int naxes,
-                                   int nbuttons,
-                                   int nhats);
-
+int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc);
 int SDL_JoystickDetachVirtualInner(int device_index);
 
 int SDL_JoystickSetVirtualAxisInner(SDL_Joystick * joystick, int axis, Sint16 value);
@@ -59,4 +54,7 @@ int SDL_JoystickSetVirtualButtonInner(SDL_Joystick * joystick, int button, Uint8
 int SDL_JoystickSetVirtualHatInner(SDL_Joystick * joystick, int hat, Uint8 value);
 
 #endif  /* SDL_JOYSTICK_VIRTUAL */
+
 #endif  /* SDL_VIRTUALJOYSTICK_C_H */
+
+/* vi: set ts=4 sw=4 expandtab: */

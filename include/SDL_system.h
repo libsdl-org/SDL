@@ -178,7 +178,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  * This function is only available on Apple iOS.
  *
  * For more information see:
- * [README-ios.md](https://hg.libsdl.org/SDL/file/default/docs/README-ios.md)
+ * https://github.com/libsdl-org/SDL/blob/main/docs/README-ios.md
  *
  * This functions is also accessible using the macro
  * SDL_iOSSetAnimationCallback() since SDL 2.0.4.
@@ -195,7 +195,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  *
  * \sa SDL_iPhoneSetEventPump
  */
-extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
+extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
 
 #define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
 

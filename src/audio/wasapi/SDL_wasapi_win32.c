@@ -362,7 +362,7 @@ typedef struct
     WAVEFORMATEXTENSIBLE fmt;
 } EndpointItem;
 
-static int sort_endpoints(const void *_a, const void *_b)
+static int SDLCALL sort_endpoints(const void *_a, const void *_b)
 {
     LPWSTR a = ((const EndpointItem *) _a)->devid;
     LPWSTR b = ((const EndpointItem *) _b)->devid;

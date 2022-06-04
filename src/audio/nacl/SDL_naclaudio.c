@@ -49,8 +49,8 @@ static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta
     const int len = (int) buffer_size;
     SDL_AudioDevice* _this = (SDL_AudioDevice*) data;
     SDL_AudioCallback callback = _this->callbackspec.callback;
-    
-    SDL_LockMutex(private->mutex);  /* !!! FIXME: is this mutex necessary? */
+
+    SDL_LockMutex(_this->mixer_lock);
 
     /* Only do something if audio is enabled */
     if (!SDL_AtomicGet(&_this->enabled) || SDL_AtomicGet(&_this->paused)) {
@@ -58,34 +58,31 @@ static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta
             SDL_AudioStreamClear(_this->stream);
         }
         SDL_memset(stream, _this->spec.silence, len);
-        return;
-    }
+    } else {
+        SDL_assert(_this->spec.size == len);
 
-    SDL_assert(_this->spec.size == len);
+        if (_this->stream == NULL) {  /* no conversion necessary. */
+            callback(_this->callbackspec.userdata, stream, len);
+        } else {  /* streaming/converting */
+            const int stream_len = _this->callbackspec.size;
+            while (SDL_AudioStreamAvailable(_this->stream) < len) {
+                callback(_this->callbackspec.userdata, _this->work_buffer, stream_len);
+                if (SDL_AudioStreamPut(_this->stream, _this->work_buffer, stream_len) == -1) {
+                    SDL_AudioStreamClear(_this->stream);
+                    SDL_AtomicSet(&_this->enabled, 0);
+                    break;
+                }
+            }
 
-    if (_this->stream == NULL) {  /* no conversion necessary. */
-        SDL_LockMutex(_this->mixer_lock);
-        callback(_this->callbackspec.userdata, stream, len);
-        SDL_UnlockMutex(_this->mixer_lock);
-    } else {  /* streaming/converting */
-        const int stream_len = _this->callbackspec.size;
-        while (SDL_AudioStreamAvailable(_this->stream) < len) {
-            callback(_this->callbackspec.userdata, _this->work_buffer, stream_len);
-            if (SDL_AudioStreamPut(_this->stream, _this->work_buffer, stream_len) == -1) {
-                SDL_AudioStreamClear(_this->stream);
-                SDL_AtomicSet(&_this->enabled, 0);
-                break;
+            const int got = SDL_AudioStreamGet(_this->stream, stream, len);
+            SDL_assert((got < 0) || (got == len));
+            if (got != len) {
+                SDL_memset(stream, _this->spec.silence, len);
             }
         }
-
-        const int got = SDL_AudioStreamGet(_this->stream, stream, len);
-        SDL_assert((got < 0) || (got == len));
-        if (got != len) {
-            SDL_memset(stream, _this->spec.silence, len);
-        }
     }
 
-    SDL_UnlockMutex(private->mutex);
+    SDL_UnlockMutex(_this->mixer_lock);
 }
 
 static void NACLAUDIO_CloseDevice(SDL_AudioDevice *device) {
@@ -94,7 +91,6 @@ static void NACLAUDIO_CloseDevice(SDL_AudioDevice *device) {
     SDL_PrivateAudioData *hidden = (SDL_PrivateAudioData *) device->hidden;
     
     ppb_audio->StopPlayback(hidden->audio);
-    SDL_DestroyMutex(hidden->mutex);
     core->ReleaseResource(hidden->audio);
 }
 
@@ -109,7 +105,6 @@ NACLAUDIO_OpenDevice(_THIS, const char *devname) {
         return SDL_OutOfMemory();
     }
     
-    private->mutex = SDL_CreateMutex();
     _this->spec.freq = 44100;
     _this->spec.format = AUDIO_S16LSB;
     _this->spec.channels = 2;

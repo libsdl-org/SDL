@@ -685,7 +685,7 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
     state.output.pos = 0;
     state.output.size = outputsize / sizeof(Sint16);
-    state.output.data = (Sint16 *)SDL_malloc(outputsize);
+    state.output.data = (Sint16 *)SDL_calloc(1, outputsize);
     if (state.output.data == NULL) {
         return SDL_OutOfMemory();
     }

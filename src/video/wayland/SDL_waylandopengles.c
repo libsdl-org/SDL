@@ -205,11 +205,11 @@ Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
         data = (SDL_WindowData *) window->driverdata;
 
         if (w) {
-            *w = window->w * data->scale_factor;
+            *w = data->drawable_width;
         }
 
         if (h) {
-            *h = window->h * data->scale_factor;
+            *h = data->drawable_height;
         }
     }
 }

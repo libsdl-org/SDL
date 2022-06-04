@@ -653,6 +653,8 @@ SDL_RLD_FLAGS
 SDL_STATIC_LIBS
 SDL_LIBS
 SDL_CFLAGS
+bin_prefix_relpath
+cmake_prefix_relpath
 INSTALL_SDL2_CONFIG
 LIBUSB_LIBS
 LIBUSB_CFLAGS
@@ -673,6 +675,8 @@ X_CFLAGS
 XMKMF
 RPI_LIBS
 RPI_CFLAGS
+DECOR_LIBS
+DECOR_CFLAGS
 FUSIONSOUND_LIBS
 FUSIONSOUND_CFLAGS
 ARTSCONFIG
@@ -876,13 +880,11 @@ with_x
 enable_x11_shared
 enable_video_x11_xcursor
 enable_video_x11_xdbe
-enable_video_x11_xinerama
 enable_video_x11_xinput
 enable_video_x11_xfixes
 enable_video_x11_xrandr
 enable_video_x11_scrnsaver
 enable_video_x11_xshape
-enable_video_x11_vm
 enable_video_vivante
 enable_video_cocoa
 enable_video_metal
@@ -944,6 +946,8 @@ PULSEAUDIO_CFLAGS
 PULSEAUDIO_LIBS
 FUSIONSOUND_CFLAGS
 FUSIONSOUND_LIBS
+DECOR_CFLAGS
+DECOR_LIBS
 RPI_CFLAGS
 RPI_LIBS
 XMKMF
@@ -1664,8 +1668,6 @@ Optional Features:
   --enable-video-x11-xcursor
                           enable X11 Xcursor support [default=yes]
   --enable-video-x11-xdbe enable X11 Xdbe support [default=yes]
-  --enable-video-x11-xinerama
-                          enable X11 Xinerama support [default=yes]
   --enable-video-x11-xinput
                           enable X11 XInput extension for manymouse, tablets,
                           etc [default=yes]
@@ -1678,7 +1680,6 @@ Optional Features:
                           enable X11 screensaver extension [default=yes]
   --enable-video-x11-xshape
                           enable X11 XShape support [default=yes]
-  --enable-video-x11-vm   use X11 VM extension for fullscreen [default=yes]
   --enable-video-vivante  use Vivante EGL video driver [default=yes]
   --enable-video-cocoa    use Cocoa video driver [default=yes]
   --enable-video-metal    include Metal support [default=yes]
@@ -1779,6 +1780,9 @@ Some influential environment variables:
               C compiler flags for FUSIONSOUND, overriding pkg-config
   FUSIONSOUND_LIBS
               linker flags for FUSIONSOUND, overriding pkg-config
+  DECOR_CFLAGS
+              C compiler flags for DECOR, overriding pkg-config
+  DECOR_LIBS  linker flags for DECOR, overriding pkg-config
   RPI_CFLAGS  C compiler flags for RPI, overriding pkg-config
   RPI_LIBS    linker flags for RPI, overriding pkg-config
   XMKMF       Path to xmkmf, Makefile generator for X Window System
@@ -2847,22 +2851,21 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 orig_CFLAGS="$CFLAGS"
 
-#
-# Making releases:
-# Edit include/SDL_version.h and change the version, then:
-#   SDL_MICRO_VERSION += 1;
-#   SDL_INTERFACE_AGE += 1;
-#   SDL_BINARY_AGE += 1;
-# if any functions have been added, set SDL_INTERFACE_AGE to 0.
-# if backwards compatibility has been broken,
-# set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
-#
+# See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
-SDL_MINOR_VERSION=0
-SDL_MICRO_VERSION=21
-SDL_INTERFACE_AGE=3
-SDL_BINARY_AGE=21
+SDL_MINOR_VERSION=23
+SDL_MICRO_VERSION=0
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
+
+SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
+case "$SDL_MINOR_VERSION" in #(
+  *[02468]) :
+        SDL_INTERFACE_AGE="$SDL_MICRO_VERSION" ;; #(
+  *) :
+        SDL_INTERFACE_AGE=0 ;; #(
+  *) :
+     ;;
+esac
 
 
 
@@ -7124,7 +7127,7 @@ $as_echo "$lt_cv_ld_force_load" >&6; }
     darwin1.*)
       _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
     darwin*)
-      case ${MACOSX_DEPLOYMENT_TARGET},$host in
+      case $MACOSX_DEPLOYMENT_TARGET,$host in
         10.[012],*|,*powerpc*-darwin[5-8]*)
           _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
         *)
@@ -12252,10 +12255,17 @@ CC=$lt_save_CC
 CFLAGS=$lt_save_CFLAGS
 
 
-LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
-LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
-LT_REVISION=$SDL_INTERFACE_AGE
+# For historical reasons, the library name redundantly includes the major
+# version twice: libSDL2-2.0.so.0.
+# TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
+LT_RELEASE=2.0
+# Increment this if there is an incompatible change - but if that happens,
+# we should rename the library from SDL2 to SDL3, at which point this would
+# reset to 0 anyway.
+LT_MAJOR=0
 LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
+LT_CURRENT=`expr $LT_MAJOR + $LT_AGE`
+LT_REVISION=$SDL_INTERFACE_AGE
 
 
 
@@ -16961,6 +16971,22 @@ $as_echo "#define SDL_DEFAULT_ASSERT_LEVEL 3" >>confdefs.h
         ;;
 esac
 
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MAJOR_VERSION $SDL_MAJOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MINOR_VERSION $SDL_MINOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MICRO_VERSION $SDL_MICRO_VERSION
+_ACEOF
+
+
 # Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
   enableval=$enable_dependency_tracking;
@@ -17710,7 +17736,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit
+    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -18220,9 +18246,6 @@ fi
 
 if test x$enable_assembly = xyes; then
     SUMMARY_modules="${SUMMARY_modules} assembly"
-
-
-$as_echo "#define SDL_ASSEMBLY_ROUTINES 1" >>confdefs.h
 
 
     # Make sure that we don't generate floating point code that would
@@ -20361,6 +20384,40 @@ $as_echo "#define SDL_ARM_NEON_BLITTERS 1" >>confdefs.h
     fi
 }
 
+CheckObjectiveCARC()
+{
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clang -fobjc-arc option" >&5
+$as_echo_n "checking for clang -fobjc-arc option... " >&6; }
+    have_clang_objc_arc=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -fobjc-arc"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    int x = 0;
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_clang_objc_arc=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_clang_objc_arc" >&5
+$as_echo "$have_clang_objc_arc" >&6; }
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_clang_objc_arc = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -fobjc-arc"
+    fi
+}
+
 CheckVisibilityHidden()
 {
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -fvisibility=hidden option" >&5
@@ -20572,7 +20629,7 @@ $as_echo_n "checking for Wayland support... " >&6; }
         video_wayland=no
         if  test x$video_opengl_egl = xyes && \
             test x$video_opengles_v2 = xyes; then
-            if $PKG_CONFIG --exists wayland-client wayland-scanner wayland-egl wayland-cursor egl 'xkbcommon >= 0.5.0'; then
+            if $PKG_CONFIG --exists 'wayland-client >= 1.18' wayland-scanner wayland-egl wayland-cursor egl 'xkbcommon >= 0.5.0'; then
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
@@ -20676,17 +20733,79 @@ else
 fi
 
             if test x$enable_libdecor = xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdecor support" >&5
-$as_echo_n "checking for libdecor support... " >&6; }
-                if $PKG_CONFIG --exists libdecor-0; then :
-  video_libdecor=yes
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdecor-0" >&5
+$as_echo_n "checking for libdecor-0... " >&6; }
+
+if test -n "$DECOR_CFLAGS"; then
+    pkg_cv_DECOR_CFLAGS="$DECOR_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdecor-0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdecor-0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DECOR_CFLAGS=`$PKG_CONFIG --cflags "libdecor-0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 else
-  video_libdecor=no
+  pkg_failed=yes
 fi
-                { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_libdecor" >&5
-$as_echo "$video_libdecor" >&6; }
+ else
+    pkg_failed=untried
+fi
+if test -n "$DECOR_LIBS"; then
+    pkg_cv_DECOR_LIBS="$DECOR_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdecor-0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdecor-0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_DECOR_LIBS=`$PKG_CONFIG --libs "libdecor-0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        DECOR_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libdecor-0" 2>&1`
+        else
+	        DECOR_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libdecor-0" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$DECOR_PKG_ERRORS" >&5
+
+	video_libdecor=no
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	video_libdecor=no
+else
+	DECOR_CFLAGS=$pkg_cv_DECOR_CFLAGS
+	DECOR_LIBS=$pkg_cv_DECOR_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	video_libdecor=yes
+fi
                 if test x$video_libdecor = xyes; then
-                    EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags libdecor-0`"
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS $DECOR_CFLAGS"
 
 $as_echo "#define HAVE_LIBDECOR_H 1" >>confdefs.h
 
@@ -20699,18 +20818,16 @@ else
 fi
 
 
+                    decor_lib=`find_lib "libdecor-0.so.*" "$DECOR_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+
                     if test x$enable_wayland_shared != xyes; then
                        enable_libdecor_shared=no
                     fi
-
-                    decor_lib=`find_lib "libdecor-0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
-
                     if test x$have_loadso != xyes && \
                        test x$enable_libdecor_shared = xyes; then
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&5
 $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libdecor loading" >&2;}
                     fi
-
                     if test x$have_loadso = xyes && \
                        test x$enable_libdecor_shared = xyes && test x$decor_lib != x; then
                         echo "-- dynamic libdecor -> $decor_lib"
@@ -20720,7 +20837,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
                     else
-                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs libdecor-0`"
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DECOR_LIBS"
                     fi
                 fi
             fi
@@ -21674,37 +21791,31 @@ fi
                     x11_lib='/opt/X11/lib/libX11.6.dylib'
                     x11ext_lib='/opt/X11/lib/libXext.6.dylib'
                     xcursor_lib='/opt/X11/lib/libXcursor.1.dylib'
-                    xinerama_lib='/opt/X11/lib/libXinerama.1.dylib'
                     xinput_lib='/opt/X11/lib/libXi.6.dylib'
                     xfixes_lib='/opt/X11/lib/libXfixes.3.dylib'
                     xrandr_lib='/opt/X11/lib/libXrandr.2.dylib'
                     xrender_lib='/opt/X11/lib/libXrender.1.dylib'
                     xss_lib='/opt/X11/lib/libXss.1.dylib'
-                    xvidmode_lib='/opt/X11/lib/libXxf86vm.1.dylib'
                     ;;
                 *-*-openbsd*)
                     x11_lib='libX11.so'
                     x11ext_lib='libXext.so'
                     xcursor_lib='libXcursor.so'
-                    xinerama_lib='libXinerama.so'
                     xinput_lib='libXi.so'
                     xfixes_lib='libXfixes.so'
                     xrandr_lib='libXrandr.so'
                     xrender_lib='libXrender.so'
                     xss_lib='libXss.so'
-                    xvidmode_lib='libXxf86vm.so'
                     ;;
                 *)
                     x11_lib=`find_lib "libX11.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     x11ext_lib=`find_lib "libXext.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xcursor_lib=`find_lib "libXcursor.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
-                    xinerama_lib=`find_lib "libXinerama.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xinput_lib=`find_lib "libXi.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xfixes_lib=`find_lib "libXfixes.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrandr_lib=`find_lib "libXrandr.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrender_lib=`find_lib "libXrender.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xss_lib=`find_lib "libXss.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
-                    xvidmode_lib=`find_lib "libXxf86vm.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     ;;
             esac
 
@@ -21955,88 +22066,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XDBE 1" >>confdefs.h
 
                     SUMMARY_video_x11="${SUMMARY_video_x11} xdbe"
                 fi
-            fi
-            # Check whether --enable-video-x11-xinerama was given.
-if test "${enable_video_x11_xinerama+set}" = set; then :
-  enableval=$enable_video_x11_xinerama;
-else
-  enable_video_x11_xinerama=yes
-fi
-
-            if test x$enable_video_x11_xinerama = xyes; then
-                definitely_enable_video_x11_xinerama=no
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/Xinerama.h" "ac_cv_header_X11_extensions_Xinerama_h" "#include <X11/Xlib.h>
-
-"
-if test "x$ac_cv_header_X11_extensions_Xinerama_h" = xyes; then :
-  have_xinerama_h_hdr=yes
-else
-  have_xinerama_h_hdr=no
-fi
-
-
-                if test x$have_xinerama_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xinerama_lib != x ; then
-                        echo "-- dynamic libXinerama -> $xinerama_lib"
-
-cat >>confdefs.h <<_ACEOF
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINERAMA "$xinerama_lib"
-_ACEOF
-
-                        definitely_enable_video_x11_xinerama=yes
-                    else
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XineramaQueryExtension in -lXinerama" >&5
-$as_echo_n "checking for XineramaQueryExtension in -lXinerama... " >&6; }
-if ${ac_cv_lib_Xinerama_XineramaQueryExtension+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lXinerama  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char XineramaQueryExtension ();
-int
-main ()
-{
-return XineramaQueryExtension ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_Xinerama_XineramaQueryExtension=yes
-else
-  ac_cv_lib_Xinerama_XineramaQueryExtension=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xinerama_XineramaQueryExtension" >&5
-$as_echo "$ac_cv_lib_Xinerama_XineramaQueryExtension" >&6; }
-if test "x$ac_cv_lib_Xinerama_XineramaQueryExtension" = xyes; then :
-  have_xinerama_lib=yes
-fi
-
-                        if test x$have_xinerama_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXinerama"
-                            definitely_enable_video_x11_xinerama=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_xinerama = xyes; then
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_XINERAMA 1" >>confdefs.h
-
-                SUMMARY_video_x11="${SUMMARY_video_x11} xinerama"
             fi
             # Check whether --enable-video-x11-xinput was given.
 if test "${enable_video_x11_xinput+set}" = set; then :
@@ -22449,88 +22478,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XSHAPE 1" >>confdefs.h
 
                     SUMMARY_video_x11="${SUMMARY_video_x11} xshape"
                 fi
-            fi
-            # Check whether --enable-video-x11-vm was given.
-if test "${enable_video_x11_vm+set}" = set; then :
-  enableval=$enable_video_x11_vm;
-else
-  enable_video_x11_vm=yes
-fi
-
-            if test x$enable_video_x11_vm = xyes; then
-                definitely_enable_video_x11_vm=no
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/xf86vmode.h" "ac_cv_header_X11_extensions_xf86vmode_h" "#include <X11/Xlib.h>
-
-"
-if test "x$ac_cv_header_X11_extensions_xf86vmode_h" = xyes; then :
-  have_vm_h_hdr=yes
-else
-  have_vm_h_hdr=no
-fi
-
-
-                if test x$have_vm_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xvidmode_lib != x ; then
-                        echo "-- dynamic libXxf86vm -> $xvidmode_lib"
-
-cat >>confdefs.h <<_ACEOF
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XVIDMODE "$xvidmode_lib"
-_ACEOF
-
-                        definitely_enable_video_x11_vm=yes
-                    else
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XF86VidModeQueryVersion in -lXxf86vm" >&5
-$as_echo_n "checking for XF86VidModeQueryVersion in -lXxf86vm... " >&6; }
-if ${ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lXxf86vm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char XF86VidModeQueryVersion ();
-int
-main ()
-{
-return XF86VidModeQueryVersion ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion=yes
-else
-  ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" >&5
-$as_echo "$ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" >&6; }
-if test "x$ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" = xyes; then :
-  have_vm_lib=yes
-fi
-
-                        if test x$have_vm_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXxf86vm"
-                            definitely_enable_video_x11_vm=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_vm = xyes; then
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
-
-                SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
     fi
@@ -24712,6 +24659,30 @@ $as_echo "$have_wince" >&6; }
 
     # This fixes Windows stack alignment with newer GCC
     CheckStackBoundary
+
+    # headers needed elsewhere
+    ac_fn_c_check_header_mongrel "$LINENO" "tpcshrd.h" "ac_cv_header_tpcshrd_h" "$ac_includes_default"
+if test "x$ac_cv_header_tpcshrd_h" = xyes; then :
+  have_tpcshrd_h=yes
+fi
+
+
+    if test x$have_tpcshrd_h = xyes; then
+
+$as_echo "#define HAVE_TPCSHRD_H 1" >>confdefs.h
+
+    fi
+    ac_fn_c_check_header_mongrel "$LINENO" "roapi.h" "ac_cv_header_roapi_h" "$ac_includes_default"
+if test "x$ac_cv_header_roapi_h" = xyes; then :
+  have_roapi_h=yes
+fi
+
+
+    if test x$have_roapi_h = xyes; then
+
+$as_echo "#define HAVE_ROAPI_H 1" >>confdefs.h
+
+    fi
 }
 
 CheckOS2()
@@ -26188,17 +26159,6 @@ $as_echo "#define SDL_HAPTIC_DINPUT 1" >>confdefs.h
                 have_haptic=yes
             fi
         fi
-        ac_fn_c_check_header_mongrel "$LINENO" "tpcshrd.h" "ac_cv_header_tpcshrd_h" "$ac_includes_default"
-if test "x$ac_cv_header_tpcshrd_h" = xyes; then :
-  have_tpcshrd_h=yes
-fi
-
-
-        if test x$have_tpcshrd_h = xyes; then
-
-$as_echo "#define HAVE_TPCSHRD_H 1" >>confdefs.h
-
-        fi
         # Set up files for the sensor library
         ac_fn_c_check_header_mongrel "$LINENO" "sensorsapi.h" "ac_cv_header_sensorsapi_h" "$ac_includes_default"
 if test "x$ac_cv_header_sensorsapi_h" = xyes; then :
@@ -26527,6 +26487,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_CARBON"
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_OSX"
 
+        CheckObjectiveCARC
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
@@ -26683,8 +26644,11 @@ $as_echo "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
         CheckClockGettime
         CheckEmscriptenGLES
 
-        SOURCES="$SOURCES $srcdir/src/misc/emscripten/*.c"
-        have_misc=yes
+        # Set up files for the misc library
+        if test x$enable_misc = xyes; then
+            SOURCES="$SOURCES $srcdir/src/misc/emscripten/*.c"
+            have_misc=yes
+        fi
 
          # Set up files for the power library
         if test x$enable_power = xyes; then
@@ -26695,7 +26659,7 @@ $as_echo "#define SDL_POWER_EMSCRIPTEN 1" >>confdefs.h
             have_power=yes
         fi
 
-        # Set up files for the power library
+        # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
 
 $as_echo "#define SDL_JOYSTICK_EMSCRIPTEN 1" >>confdefs.h
@@ -27089,6 +27053,15 @@ else
 fi
 
 SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
+
+eval pkg_prefix=$prefix
+eval pkg_cmakedir=$libdir/cmake/SDL2
+cmake_prefix_relpath="$(echo -n "$pkg_cmakedir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
+
+
+eval pkg_bindir=$bindir
+bin_prefix_relpath="$(echo -n "pkg_bindir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
+
 
 
 

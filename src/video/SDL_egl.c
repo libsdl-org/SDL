@@ -27,7 +27,6 @@
 #endif
 #if SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
-#include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidvideo.h"
 #endif
 #if SDL_VIDEO_DRIVER_RPI
@@ -99,7 +98,7 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
-#if SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL && !SDL_VIDEO_VITA_PVR_OGL
 #include "SDL_opengl.h"
 #endif
 
@@ -530,7 +529,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 #endif
     /* Try the implementation-specific eglGetDisplay even if eglGetPlatformDisplay fails */
-    if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
+    if ((_this->egl_data->egl_display == EGL_NO_DISPLAY) && (_this->egl_data->eglGetDisplay != NULL)) {
         _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
     }
     if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
@@ -1062,7 +1061,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
             if (SDL_GL_ExtensionSupported("GL_OES_surfaceless_context")) {
                 _this->gl_allow_no_surface = SDL_TRUE;
             }
-#if SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL && !defined(SDL_VIDEO_DRIVER_VITA)
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
             void (APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);
@@ -1251,10 +1250,12 @@ EGLSurface
 SDL_EGL_CreateOffscreenSurface(_THIS, int width, int height)
 {
     EGLint attributes[] = {
-        EGL_WIDTH, width,
-        EGL_HEIGHT, height,
+        EGL_WIDTH, 0,
+        EGL_HEIGHT, 0,
         EGL_NONE
     };
+    attributes[1] = width;
+    attributes[3] = height;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
         return EGL_NO_SURFACE;

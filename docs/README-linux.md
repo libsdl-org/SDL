@@ -3,8 +3,8 @@ Linux
 
 By default SDL will only link against glibc, the rest of the features will be
 enabled dynamically at runtime depending on the available features on the target
-system. So, for example if you built SDL with Xinerama support and the target
-system does not have the Xinerama libraries installed, it will be disabled
+system. So, for example if you built SDL with XRandR support and the target
+system does not have the XRandR libraries installed, it will be disabled
 at runtime, and you won't get a missing library error, at least with the 
 default configuration parameters.
 
@@ -17,7 +17,7 @@ Ubuntu 20.04, all available features enabled:
     sudo apt-get install build-essential git make cmake autoconf automake \
     libtool pkg-config libasound2-dev libpulse-dev libaudio-dev libjack-dev \
     libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
-    libxinerama-dev libxxf86vm-dev libxss-dev libgl1-mesa-dev libdbus-1-dev \
+    libxss-dev libgl1-mesa-dev libdbus-1-dev \
     libudev-dev libgles2-mesa-dev libegl1-mesa-dev libibus-1.0-dev \
     fcitx-libs-dev libsamplerate0-dev libsndio-dev libwayland-dev \
     libxkbcommon-dev libdrm-dev libgbm-dev
@@ -27,12 +27,11 @@ Fedora 35, all available features enabled:
     sudo yum install gcc git-core make cmake autoconf automake libtool \
     alsa-lib-devel pulseaudio-libs-devel nas-devel pipewire-devel \
     libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXfixes-devel \
-    libXi-devel libXinerama-devel libXxf86vm-devel libXScrnSaver-devel \
-    dbus-devel ibus-devel fcitx-devel systemd-devel mesa-libGL-devel \
-    libxkbcommon-devel mesa-libGLES-devel mesa-libEGL-devel vulkan-devel \
-    wayland-devel wayland-protocols-devel libdrm-devel mesa-libgbm-devel \
-    libusb-devel pipewire-jack-audio-connection-kit-devel libdecor-devel \
-    libsamplerate-devel
+    libXi-devel libXScrnSaver-devel dbus-devel ibus-devel fcitx-devel \
+    systemd-devel mesa-libGL-devel libxkbcommon-devel mesa-libGLES-devel \
+    mesa-libEGL-devel vulkan-devel wayland-devel wayland-protocols-devel \
+    libdrm-devel mesa-libgbm-devel libusb-devel libdecor-devel \
+    libsamplerate-devel pipewire-jack-audio-connection-kit-devel \
 
 NOTES:
 - This includes all the audio targets except arts and esd, because Ubuntu
