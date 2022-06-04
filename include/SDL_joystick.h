@@ -575,6 +575,18 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProduct(SDL_Joystick *joystick);
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProductVersion(SDL_Joystick *joystick);
 
 /**
+ * Get the firmware version of an opened joystick, if available.
+ *
+ * If the firmware version isn't available this function returns 0.
+ *
+ * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
+ * \returns the firmware version of the selected joystick, or 0 if unavailable.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetFirmwareVersion(SDL_Joystick *joystick);
+
+/**
  * Get the serial number of an opened joystick, if available.
  *
  * Returns the serial number of the joystick, or NULL if it is not available.

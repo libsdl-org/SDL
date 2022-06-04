@@ -2702,6 +2702,14 @@ Uint16 SDL_JoystickGetProductVersion(SDL_Joystick *joystick)
     return version;
 }
 
+Uint16 SDL_JoystickGetFirmwareVersion(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return 0;
+    }
+    return joystick->firmware_version;
+}
+
 const char *SDL_JoystickGetSerial(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {

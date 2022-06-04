@@ -841,3 +841,5 @@
 ++'_SDL_JoystickPathForIndex'.'SDL2.dll'.'SDL_JoystickPathForIndex'
 ++'_SDL_JoystickPath'.'SDL2.dll'.'SDL_JoystickPath'
 ++'_SDL_JoystickAttachVirtualEx'.'SDL2.dll'.'SDL_JoystickAttachVirtualEx'
+++'_SDL_GameControllerGetFirmwareVersion'.'SDL2.dll'.'SDL_GameControllerGetFirmwareVersion'
+++'_SDL_JoystickGetFirmwareVersion'.'SDL2.dll'.'SDL_JoystickGetFirmwareVersion'

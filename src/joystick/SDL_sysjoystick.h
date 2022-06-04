@@ -68,6 +68,7 @@ struct _SDL_Joystick
     char *path;                 /* Joystick path - system dependent */
     char *serial;               /* Joystick serial */
     SDL_JoystickGUID guid;      /* Joystick guid */
+    Uint16 firmware_version;    /* Firmware version, if available */
 
     int naxes;                  /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes;

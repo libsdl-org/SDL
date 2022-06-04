@@ -2360,6 +2360,12 @@ SDL_GameControllerGetProductVersion(SDL_GameController *gamecontroller)
     return SDL_JoystickGetProductVersion(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
+Uint16
+SDL_GameControllerGetFirmwareVersion(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickGetFirmwareVersion(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
 const char *
 SDL_GameControllerGetSerial(SDL_GameController *gamecontroller)
 {
