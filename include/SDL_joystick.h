@@ -43,6 +43,7 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
+#include "SDL_guid.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -69,9 +70,7 @@ struct _SDL_Joystick;
 typedef struct _SDL_Joystick SDL_Joystick;
 
 /* A structure that encodes the stable unique id for a joystick device */
-typedef struct {
-    Uint8 data[16];
-} SDL_JoystickGUID;
+typedef SDL_GUID SDL_JoystickGUID;
 
 /**
  * This is a unique ID for a joystick for the time it is connected to the system,

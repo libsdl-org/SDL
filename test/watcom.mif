@@ -11,7 +11,7 @@ TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
           testdrawchessboard.exe testdropfile.exe testerror.exe testfile.exe &
           testfilesystem.exe testgamecontroller.exe testgeometry.exe testgesture.exe &
           testhittesting.exe testhotplug.exe testiconv.exe testime.exe testlocale.exe &
-          testintersections.exe testjoystick.exe testkeys.exe testloadso.exe &
+          testguid.exe testintersections.exe testjoystick.exe testkeys.exe testloadso.exe &
           testlock.exe testmessage.exe testoverlay2.exe testplatform.exe &
           testpower.exe testsensor.exe testrelative.exe testrendercopyex.exe &
           testrendertarget.exe testrumble.exe testscale.exe testsem.exe &
