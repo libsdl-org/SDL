@@ -85,6 +85,7 @@ add_executable(testgesture testgesture.c)
 add_executable(testgl2 testgl2.c)
 add_executable(testgles testgles.c)
 add_executable(testgles2 testgles2.c)
+add_executable(testguid testguid.c)
 add_executable(testhaptic testhaptic.c)
 add_executable(testhotplug testhotplug.c)
 add_executable(testrumble testrumble.c)
@@ -166,6 +167,7 @@ SET(ALL_TESTS
     testgl2
     testgles
     testgles2
+    testguid
     testhaptic
     testhittesting
     testhotplug
@@ -214,6 +216,7 @@ set(NONINTERACTIVE
     testatomic
     testerror
     testfilesystem
+    testguid
     testlocale
     testplatform
     testpower
@@ -313,35 +316,36 @@ if(PSP)
     # Build EBOOT files if building for PSP
     set(BUILD_EBOOT
         ${NEEDS_RESOURCES}
-        testbounds
-        testgl2
-        testsem
-        testdisplayinfo
-        teststreaming
-        testgeometry
-        testfile
-        testdraw2
-        testviewport
-        testhittesting
-        testoverlay2
-        testver
-        testdrawchessboard
-        testsurround
-        testintersections
-        testmessage
-        testaudiocapture
-        testerror
         testatomic
-        testjoystick
-        testiconv
-        testfilesystem
-        testplatform
-        testthread
-        testqsort
+        testaudiocapture
         testaudioinfo
+        testbounds
+        testdisplayinfo
+        testdraw2
+        testdrawchessboard
+        testerror
+        testfile
+        testfilesystem
+        testgeometry
+        testgl2
+        testguid
+        testhittesting
+        testiconv
+        testintersections
+        testjoystick
         testlock
-        testtimer
+        testmessage
+        testoverlay2
+        testplatform
         testpower
+        testqsort
+        testsem
+        teststreaming
+        testsurround
+        testthread
+        testtimer
+        testver
+        testviewport
         testwm2
         torturethread
     )

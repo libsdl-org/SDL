@@ -843,3 +843,5 @@
 ++'_SDL_JoystickAttachVirtualEx'.'SDL2.dll'.'SDL_JoystickAttachVirtualEx'
 ++'_SDL_GameControllerGetFirmwareVersion'.'SDL2.dll'.'SDL_GameControllerGetFirmwareVersion'
 ++'_SDL_JoystickGetFirmwareVersion'.'SDL2.dll'.'SDL_JoystickGetFirmwareVersion'
+++'_SDL_GUIDToString'.'SDL2.dll'.'SDL_GUIDToString'
+++'_SDL_GUIDFromString'.'SDL2.dll'.'SDL_GUIDFromString'

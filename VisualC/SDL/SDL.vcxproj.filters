@@ -231,6 +231,9 @@
     <ClInclude Include="..\..\include\SDL_gesture.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL_guid.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL_haptic.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -833,6 +836,7 @@
     <ClCompile Include="..\..\src\SDL_assert.c" />
     <ClCompile Include="..\..\src\SDL_dataqueue.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
+    <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\audio\SDL_audio.c">

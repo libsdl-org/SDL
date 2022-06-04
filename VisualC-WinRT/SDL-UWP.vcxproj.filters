@@ -63,6 +63,9 @@
     <ClInclude Include="..\include\SDL_filesystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL_guid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\SDL_haptic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -631,6 +634,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\SDL_error.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SDL_guid.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\SDL_hints.c">

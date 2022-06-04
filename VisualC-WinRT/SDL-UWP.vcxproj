@@ -45,6 +45,7 @@
     <ClInclude Include="..\include\SDL_error.h" />
     <ClInclude Include="..\include\SDL_events.h" />
     <ClInclude Include="..\include\SDL_filesystem.h" />
+    <ClInclude Include="..\include\SDL_guid.h" />
     <ClInclude Include="..\include\SDL_haptic.h" />
     <ClInclude Include="..\include\SDL_hints.h" />
     <ClInclude Include="..\include\SDL_hidapi.h" />
@@ -301,6 +302,7 @@
     <ClCompile Include="..\src\SDL_dataqueue.c" />
     <ClCompile Include="..\src\SDL_list.c" />
     <ClCompile Include="..\src\SDL_error.c" />
+    <ClCompile Include="..\src\SDL_guid.c" />
     <ClCompile Include="..\src\SDL_hints.c" />
     <ClCompile Include="..\src\SDL_log.c" />
     <ClCompile Include="..\src\sensor\dummy\SDL_dummysensor.c" />
