@@ -35,6 +35,8 @@
 #include "SDL_windowsshape.h"
 #include "SDL_windowsvulkan.h"
 
+/* #define HIGHDPI_DEBUG */
+
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
 static void WIN_VideoQuit(_THIS);
@@ -299,12 +301,25 @@ WIN_DeclareDPIAwarePerMonitorV2(_THIS)
 {
     SDL_VideoData* data = (SDL_VideoData*)_this->driverdata;
 
-    /* Declare DPI aware(may have been done in external code or a manifest, as well) */
+    /* Declare DPI aware (may have been done in external code or a manifest, as well) */
     if (data->SetProcessDpiAwarenessContext) {
         /* Windows 10, version 1607 */
 
         /* NOTE: SetThreadDpiAwarenessContext doesn't work here with OpenGL - the OpenGL contents
-           end up still getting OS scaled. (tested on Windows 10 21H1 19043.1348, NVIDIA 496.49) */
+           end up still getting OS scaled. (tested on Windows 10 21H1 19043.1348, NVIDIA 496.49)
+
+           NOTE: Enabling DPI awareness through Windows Explorer
+           (right click .exe -> Properties -> Compatibility -> High DPI Settings -> 
+           check "Override high DPI Scaling behaviour", select Application) gives
+           a DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE context (at least on Windows 10 21H1), and
+           setting DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 will fail.
+
+           NOTE: Entering exclusive fullscreen in a DPI_AWARENESS_CONTEXT_UNAWARE process
+           appears to cause Windows to change the .exe manifest to DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE
+           on future launches. This means attempting to use DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+           will fail in the future until you manually clear the "Override high DPI Scaling behaviour"
+           setting in Windows Explorer (tested on Windows 10 21H2).
+         */
         if (data->SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) {
             return TRUE;
         } else {
@@ -314,6 +329,30 @@ WIN_DeclareDPIAwarePerMonitorV2(_THIS)
         /* Older OS: fall back to per-monitor (or system) */
         return WIN_DeclareDPIAwarePerMonitor(_this);
     }
+}
+
+static const char*
+WIN_GetDPIAwareness(_THIS)
+{
+    SDL_VideoData* data = (SDL_VideoData*)_this->driverdata;
+
+    if (data->GetThreadDpiAwarenessContext && data->AreDpiAwarenessContextsEqual) {
+        DPI_AWARENESS_CONTEXT context = data->GetThreadDpiAwarenessContext();
+
+        if (data->AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_UNAWARE)) {
+            return "unaware";
+        } else if (data->AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_SYSTEM_AWARE)) {
+            return "system";
+        } else if (data->AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE)) {
+            return "permonitor";
+        } else if (data->AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) {
+            return "permonitorv2";
+        } else if (data->AreDpiAwarenessContextsEqual(context, DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED)) {
+            return "unaware_gdiscaled";
+        }
+    }
+
+    return "";
 }
 
 static void
@@ -340,6 +379,10 @@ WIN_VideoInit(_THIS)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
     WIN_InitDPIAwareness(_this);
+
+#ifdef HIGHDPI_DEBUG
+    SDL_Log("DPI awareness: %s", WIN_GetDPIAwareness(_this));
+#endif
 
     if (WIN_InitModes(_this) < 0) {
         return -1;
