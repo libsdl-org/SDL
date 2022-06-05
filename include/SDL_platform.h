@@ -183,6 +183,9 @@
 #undef __PSP__
 #define __PSP__ 1
 #endif
+#if defined(PS2)
+#define __PS2__ 1
+#endif
 
 /* The NACL compiler defines __native_client__ and __pnacl__
  * Ref: http://www.chromium.org/nativeclient/pnacl/stability-of-the-pnacl-bitcode-abi
