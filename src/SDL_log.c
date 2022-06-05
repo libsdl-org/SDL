@@ -467,7 +467,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
         SDL_NSLog(SDL_priority_prefixes[priority], message);
         return;
     }
-#elif defined(__PSP__)
+#elif defined(__PSP__) || defined(__PS2__)
     {
         FILE*        pFile;
         pFile = fopen ("SDL_Log.txt", "a");
