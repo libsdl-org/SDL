@@ -98,6 +98,10 @@
 #include <swis.h>
 #endif
 
+#ifdef __PS2__
+#include <kernel.h>
+#endif
+
 #define CPU_HAS_RDTSC   (1 << 0)
 #define CPU_HAS_ALTIVEC (1 << 1)
 #define CPU_HAS_MMX     (1 << 2)
@@ -1079,6 +1083,12 @@ SDL_GetSystemRAM(void)
             /* Vita has 512MiB on SoC, that's split into 256MiB(+109MiB in extended memory mode) for app
                +26MiB of physically continuous memory, +112MiB of CDRAM(VRAM) + system reserved memory. */
             SDL_SystemRAM = 536870912;
+        }
+#endif
+#ifdef __PS2__
+        if (SDL_SystemRAM <= 0) {
+            /* PlayStation 2 has 32MiB however there are some special models with 64 and 128 */
+            SDL_SystemRAM = GetMemorySize();
         }
 #endif
 #endif
