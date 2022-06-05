@@ -1231,7 +1231,7 @@ int rect_testEnclosePointsParam(void *arg)
 {
     SDL_Point points[1];
     int count;
-    SDL_Rect clip;
+    SDL_Rect clip = { 0 };
     SDL_Rect result;
     SDL_bool anyEnclosed;
 
@@ -1457,7 +1457,7 @@ int rect_testUnionRectInside(void *arg)
  */
 int rect_testUnionRectParam(void *arg)
 {
-    SDL_Rect rectA, rectB;
+    SDL_Rect rectA, rectB = { 0 };
     SDL_Rect result;
 
     /* invalid parameter combinations */
