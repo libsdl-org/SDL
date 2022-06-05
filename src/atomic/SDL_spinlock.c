@@ -40,6 +40,10 @@
 #include <xmmintrin.h>
 #endif
 
+#if defined(PS2)
+#include <kernel.h>
+#endif
+
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
 extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
@@ -131,7 +135,19 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 #elif defined(__SOLARIS__) && !defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
     return (SDL_bool) ((int) atomic_cas_32((volatile uint32_t*)lock, 0, 1) == 0);
+#elif defined(PS2)
+    uint32_t oldintr;
+    SDL_bool res = SDL_FALSE;
+    // disable interuption
+    oldintr = DIntr();
 
+    if (*lock == 0) {
+        *lock = 1;
+        res = SDL_TRUE;
+    }
+    // enable interuption
+    if(oldintr) { EIntr(); }
+    return res;
 #else
 #error Please implement for your platform.
     return SDL_FALSE;
