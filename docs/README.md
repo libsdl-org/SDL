@@ -45,6 +45,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [Supported Platforms](README-platforms.md)
 - [Porting information](README-porting.md)
 - [PSP](README-psp.md)
+- [PS2](README-ps2.md)
 - [Raspberry Pi](README-raspberrypi.md)
 - [Touch](README-touch.md)
 - [Versions](README-versions.md)
