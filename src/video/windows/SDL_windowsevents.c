@@ -1501,7 +1501,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             const int newDPI = HIWORD(wParam);
             RECT* const suggestedRect = (RECT*)lParam;
-            SDL_bool setExpectedResize = SDL_FALSE;
             int w, h;
 
 #ifdef HIGHDPI_DEBUG
@@ -1530,7 +1529,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #ifdef HIGHDPI_DEBUG
                 SDL_Log("WM_DPICHANGED: using suggestedRect");
 #endif
-            } else {               
+            } else {
+                /* permonitor and earlier DPI awareness: calculate the new frame w/h such that
+                   the client area size is maintained. */
                 const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
                 const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
 
@@ -1552,10 +1553,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 suggestedRect->left, suggestedRect->top, w, h);
 #endif
 
-            if (!data->expected_resize) {
-                setExpectedResize = SDL_TRUE;
-                data->expected_resize = SDL_TRUE;
-            }            
+            data->expected_resize = SDL_TRUE;
             SetWindowPos(hwnd,
                 NULL,
                 suggestedRect->left,
@@ -1563,13 +1561,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 w,
                 h,
                 SWP_NOZORDER | SWP_NOACTIVATE);
-            if (setExpectedResize) {
-                /* Only unset data->expected_resize if we set it above.
-                   WM_DPICHANGED can happen inside a block of code that sets data->expected_resize,
-                   e.g. WIN_SetWindowPositionInternal.
-                */
-                data->expected_resize = SDL_FALSE;
-            }
+            data->expected_resize = SDL_FALSE;
             return 0;
         }
         break;
