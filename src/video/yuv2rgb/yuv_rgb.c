@@ -687,4 +687,38 @@ void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 
 #endif //__SSE2__
 
+#ifdef __loongarch_sx
+
+#define LSX_FUNCTION_NAME	yuv420_rgb24_lsx
+#define STD_FUNCTION_NAME	yuv420_rgb24_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_RGB24
+#include "yuv_rgb_lsx_func.h"
+
+#define LSX_FUNCTION_NAME	yuv420_rgba_lsx
+#define STD_FUNCTION_NAME	yuv420_rgba_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_RGBA
+#include "yuv_rgb_lsx_func.h"
+
+#define LSX_FUNCTION_NAME	yuv420_bgra_lsx
+#define STD_FUNCTION_NAME	yuv420_bgra_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_BGRA
+#include "yuv_rgb_lsx_func.h"
+
+#define LSX_FUNCTION_NAME	yuv420_argb_lsx
+#define STD_FUNCTION_NAME	yuv420_argb_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_ARGB
+#include "yuv_rgb_lsx_func.h"
+
+#define LSX_FUNCTION_NAME	yuv420_abgr_lsx
+#define STD_FUNCTION_NAME	yuv420_abgr_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_ABGR
+#include "yuv_rgb_lsx_func.h"
+
+#endif  //__loongarch_sx
+
 #endif /* SDL_HAVE_YUV */

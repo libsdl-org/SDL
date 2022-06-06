@@ -70,7 +70,7 @@ main_getcmdline(void)
         if (!argv[i]) {
             return OutOfMemory();
         }
-        CopyMemory(argv[i], arg, len);
+        SDL_memcpy(argv[i], arg, len);
         SDL_free(arg);
     }
     argv[i] = NULL;

@@ -871,4 +871,6 @@
 #define SDL_JoystickGetFirmwareVersion SDL_JoystickGetFirmwareVersion_REAL
 #define SDL_GUIDToString SDL_GUIDToString_REAL
 #define SDL_GUIDFromString SDL_GUIDFromString_REAL
+#define SDL_HasLSX SDL_HasLSX_REAL
+#define SDL_HasLASX SDL_HasLASX_REAL
 #define SDL_RenderGetD3D12Device SDL_RenderGetD3D12Device_REAL
