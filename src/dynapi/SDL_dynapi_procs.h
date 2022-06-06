@@ -946,3 +946,5 @@ SDL_DYNAPI_PROC(Uint16,SDL_GameControllerGetFirmwareVersion,(SDL_GameController 
 SDL_DYNAPI_PROC(Uint16,SDL_JoystickGetFirmwareVersion,(SDL_Joystick *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_GUIDToString,(SDL_GUID a, char *b, int c),(a,b,c),)
 SDL_DYNAPI_PROC(SDL_GUID,SDL_GUIDFromString,(const char *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_HasLSX,(void),(),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_HasLASX,(void),(),return)
