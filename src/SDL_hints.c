@@ -52,7 +52,7 @@ SDL_SetHintWithPriority(const char *name, const char *value,
     SDL_Hint *hint;
     SDL_HintWatch *entry;
 
-    if (!name || !value) {
+    if (!name) {
         return SDL_FALSE;
     }
 
