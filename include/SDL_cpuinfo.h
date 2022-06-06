@@ -444,9 +444,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
 /**
  * Determine whether the CPU has LSX (LOONGARCH SIMD) features.
  *
- * This always returns false on CPUs that aren't using LOONGARCH instruction sets.
+ * This always returns false on CPUs that aren't using LOONGARCH instruction
+ * sets.
  *
- * \returns SDL_TRUE if the CPU has LOONGARCH LSX features or SDL_FALSE if not.
+ * \returns SDL_TRUE if the CPU has LOONGARCH LSX features or SDL_FALSE if
+ *          not.
  *
  * \since This function is available since SDL 2.0.23.
  */
@@ -455,9 +457,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasLSX(void);
 /**
  * Determine whether the CPU has LASX (LOONGARCH SIMD) features.
  *
- * This always returns false on CPUs that aren't using LOONGARCH instruction sets.
+ * This always returns false on CPUs that aren't using LOONGARCH instruction
+ * sets.
  *
- * \returns SDL_TRUE if the CPU has LOONGARCH LASX features or SDL_FALSE if not.
+ * \returns SDL_TRUE if the CPU has LOONGARCH LASX features or SDL_FALSE if
+ *          not.
  *
  * \since This function is available since SDL 2.0.23.
  */
