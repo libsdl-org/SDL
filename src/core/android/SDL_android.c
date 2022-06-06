@@ -511,8 +511,9 @@ register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, i
 /* Library init */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    mJavaVM = vm;
     JNIEnv *env = NULL;
+
+    mJavaVM = vm;
 
     if ((*mJavaVM)->GetEnv(mJavaVM, (void **)&env, JNI_VERSION_1_4) != JNI_OK) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to get JNI Env");
@@ -2553,6 +2554,7 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
 SDL_bool Android_JNI_RequestPermission(const char *permission)
 {
     JNIEnv *env = Android_JNI_GetEnv();
+    jstring jpermission;
     const int requestCode = 1;
 
     /* Wait for any pending request on another thread */
@@ -2561,7 +2563,7 @@ SDL_bool Android_JNI_RequestPermission(const char *permission)
     }
     SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
 
-    jstring jpermission = (*env)->NewStringUTF(env, permission);
+    jpermission = (*env)->NewStringUTF(env, permission);
     (*env)->CallStaticVoidMethod(env, mActivityClass, midRequestPermission, jpermission, requestCode);
     (*env)->DeleteLocalRef(env, jpermission);
 

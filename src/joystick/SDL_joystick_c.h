@@ -62,6 +62,9 @@ extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16
 extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name);
 extern SDL_GameControllerType SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 product, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
 
+/* Function to return whether a joystick is an Xbox One controller */
+extern SDL_bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
+
 /* Function to return whether a joystick is an Xbox One Elite controller */
 extern SDL_bool SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id);
 
@@ -168,6 +171,11 @@ typedef struct _SDL_GamepadMapping
     SDL_InputMapping dpdown;
     SDL_InputMapping dpleft;
     SDL_InputMapping dpright;
+    SDL_InputMapping misc1;
+    SDL_InputMapping paddle1;
+    SDL_InputMapping paddle2;
+    SDL_InputMapping paddle3;
+    SDL_InputMapping paddle4;
     SDL_InputMapping leftx;
     SDL_InputMapping lefty;
     SDL_InputMapping rightx;

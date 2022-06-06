@@ -87,6 +87,28 @@ _m_prefetch(void *__P)
 #endif /* __linux__ */
 #endif /* !SDL_BYTEORDER */
 
+#ifndef SDL_FLOATWORDORDER           /* Not defined in SDL_config.h? */
+/* predefs from newer gcc versions: */
+#if defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__FLOAT_WORD_ORDER__)
+#if (__FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN
+#elif (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define SDL_FLOATWORDORDER   SDL_BIG_ENDIAN
+#else
+#error Unsupported endianness
+#endif /**/
+#elif defined(__MAVERICK__)
+/* For Maverick, float words are always little-endian. */
+#define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN
+#elif (defined(__arm__) || defined(__thumb__)) && !defined(__VFP_FP__) && !defined(__ARM_EABI__)
+/* For FPA, float words are always big-endian. */
+#define SDL_FLOATWORDORDER   SDL_BIG_ENDIAN
+#else
+/* By default, assume that floats words follow the memory system mode. */
+#define SDL_FLOATWORDORDER   SDL_BYTEORDER
+#endif /* __FLOAT_WORD_ORDER__ */
+#endif /* !SDL_FLOATWORDORDER */
+
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */

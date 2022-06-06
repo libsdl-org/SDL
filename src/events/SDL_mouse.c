@@ -410,7 +410,6 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         mouse->x = x;
         mouse->y = y;
         mouse->has_position = SDL_TRUE;
-        return 0;
     } else if (!xrel && !yrel) {  /* Drop events that don't change state */
 #ifdef DEBUG_MOUSE
         SDL_Log("Mouse event didn't change state - dropped!\n");
@@ -868,7 +867,7 @@ SDL_GetGlobalMouseState(int *x, int *y)
 }
 
 void
-SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
+SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -884,6 +883,20 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
         return;
     }
 
+    if (mouse->relative_mode && !ignore_relative_mode) {
+        /* 2.0.22 made warping in relative mode actually functional, which
+         * surprised many applications that weren't expecting the additional
+         * mouse motion.
+         *
+         * So for now, warping in relative mode adjusts the absolution position
+         * but doesn't generate motion events.
+         */
+        mouse->x = x;
+        mouse->y = y;
+        mouse->has_position = SDL_TRUE;
+        return;
+    }
+
     /* Ignore the previous position when we warp */
     mouse->has_position = SDL_FALSE;
 
@@ -893,6 +906,12 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
     } else {
         SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
     }
+}
+
+void
+SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
+{
+    SDL_PerformWarpMouseInWindow(window, x, y, SDL_FALSE);
 }
 
 int
@@ -954,8 +973,9 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     if (enabled && focusWindow) {
         SDL_SetMouseFocus(focusWindow);
 
-        if (mouse->relative_mode_warp)
-            SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
+        if (mouse->relative_mode_warp) {
+            SDL_PerformWarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2, SDL_TRUE);
+        }
     }
 
     if (focusWindow) {
@@ -963,7 +983,7 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
 
         /* Put the cursor back to where the application expects it */
         if (!enabled) {
-            SDL_WarpMouseInWindow(focusWindow, mouse->x, mouse->y);
+            SDL_PerformWarpMouseInWindow(focusWindow, mouse->x, mouse->y, SDL_TRUE);
         }
 
         SDL_UpdateMouseCapture(SDL_FALSE);
@@ -999,7 +1019,8 @@ SDL_UpdateMouseCapture(SDL_bool force_release)
     }
 
     if (!force_release) {
-        if (mouse->capture_desired || (mouse->auto_capture && SDL_GetMouseState(NULL, NULL) != 0)) {
+        if (SDL_GetMessageBoxCount() == 0 &&
+            (mouse->capture_desired || (mouse->auto_capture && SDL_GetMouseState(NULL, NULL) != 0))) {
             if (!mouse->relative_mode) {
                 capture_window = SDL_GetKeyboardFocus();
             }
@@ -1007,21 +1028,34 @@ SDL_UpdateMouseCapture(SDL_bool force_release)
     }
 
     if (capture_window != mouse->capture_window) {
-        if (mouse->capture_window) {
-            mouse->CaptureMouse(NULL);
-            mouse->capture_window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-            mouse->capture_window = NULL;
+        /* We can get here recursively on Windows, so make sure we complete
+         * all of the window state operations before we change the capture state
+         * (e.g. https://github.com/libsdl-org/SDL/pull/5608)
+         */
+        SDL_Window *previous_capture = mouse->capture_window;
+
+        if (previous_capture) {
+            previous_capture->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
         }
 
         if (capture_window) {
-            if (mouse->CaptureMouse(capture_window) < 0) {
-                /* CaptureMouse() will have set an error */
-                return -1;
-            }
             capture_window->flags |= SDL_WINDOW_MOUSE_CAPTURE;
         }
 
         mouse->capture_window = capture_window;
+
+        if (mouse->CaptureMouse(capture_window) < 0) {
+            /* CaptureMouse() will have set an error, just restore the state */
+            if (previous_capture) {
+                previous_capture->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+            }
+            if (capture_window) {
+                capture_window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+            }
+            mouse->capture_window = previous_capture;
+
+            return -1;
+        }
     }
     return 0;
 }
@@ -1034,6 +1068,17 @@ SDL_CaptureMouse(SDL_bool enabled)
     if (!mouse->CaptureMouse) {
         return SDL_Unsupported();
     }
+
+#ifdef __WIN32__
+    /* Windows mouse capture is tied to the current thread, and must be called
+     * from the thread that created the window being captured. Since we update
+     * the mouse capture state from the event processing, any application state
+     * changes must be processed on that thread as well.
+     */
+    if (!SDL_OnVideoThread()) {
+        return SDL_SetError("SDL_CaptureMouse() must be called on the main thread");
+    }
+#endif /* __WIN32__ */
 
     if (enabled && SDL_GetKeyboardFocus() == NULL) {
         return SDL_SetError("No window has focus");

@@ -653,6 +653,8 @@ SDL_RLD_FLAGS
 SDL_STATIC_LIBS
 SDL_LIBS
 SDL_CFLAGS
+bin_prefix_relpath
+cmake_prefix_relpath
 INSTALL_SDL2_CONFIG
 LIBUSB_LIBS
 LIBUSB_CFLAGS
@@ -806,6 +808,7 @@ with_aix_soname
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+enable_largefile
 enable_assertions
 enable_dependency_tracking
 enable_libc
@@ -878,13 +881,11 @@ with_x
 enable_x11_shared
 enable_video_x11_xcursor
 enable_video_x11_xdbe
-enable_video_x11_xinerama
 enable_video_x11_xinput
 enable_video_x11_xfixes
 enable_video_x11_xrandr
 enable_video_x11_scrnsaver
 enable_video_x11_xshape
-enable_video_x11_vm
 enable_video_vivante
 enable_video_cocoa
 enable_video_metal
@@ -1583,6 +1584,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-largefile     omit support for large files
   --enable-assertions     Enable internal sanity checks
                           (auto/disabled/release/enabled/paranoid)
                           [default=auto]
@@ -1668,8 +1670,6 @@ Optional Features:
   --enable-video-x11-xcursor
                           enable X11 Xcursor support [default=yes]
   --enable-video-x11-xdbe enable X11 Xdbe support [default=yes]
-  --enable-video-x11-xinerama
-                          enable X11 Xinerama support [default=yes]
   --enable-video-x11-xinput
                           enable X11 XInput extension for manymouse, tablets,
                           etc [default=yes]
@@ -1682,7 +1682,6 @@ Optional Features:
                           enable X11 screensaver extension [default=yes]
   --enable-video-x11-xshape
                           enable X11 XShape support [default=yes]
-  --enable-video-x11-vm   use X11 VM extension for fullscreen [default=yes]
   --enable-video-vivante  use Vivante EGL video driver [default=yes]
   --enable-video-cocoa    use Cocoa video driver [default=yes]
   --enable-video-metal    include Metal support [default=yes]
@@ -2854,22 +2853,21 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 orig_CFLAGS="$CFLAGS"
 
-#
-# Making releases:
-# Edit include/SDL_version.h and change the version, then:
-#   SDL_MICRO_VERSION += 1;
-#   SDL_INTERFACE_AGE += 1;
-#   SDL_BINARY_AGE += 1;
-# if any functions have been added, set SDL_INTERFACE_AGE to 0.
-# if backwards compatibility has been broken,
-# set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
-#
+# See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
-SDL_MINOR_VERSION=0
-SDL_MICRO_VERSION=22
-SDL_INTERFACE_AGE=0
-SDL_BINARY_AGE=22
+SDL_MINOR_VERSION=23
+SDL_MICRO_VERSION=0
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
+
+SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
+case "$SDL_MINOR_VERSION" in #(
+  *[02468]) :
+        SDL_INTERFACE_AGE="$SDL_MICRO_VERSION" ;; #(
+  *) :
+        SDL_INTERFACE_AGE=0 ;; #(
+  *) :
+     ;;
+esac
 
 
 
@@ -12259,10 +12257,17 @@ CC=$lt_save_CC
 CFLAGS=$lt_save_CFLAGS
 
 
-LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
-LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
-LT_REVISION=$SDL_INTERFACE_AGE
+# For historical reasons, the library name redundantly includes the major
+# version twice: libSDL2-2.0.so.0.
+# TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
+LT_RELEASE=2.0
+# Increment this if there is an incompatible change - but if that happens,
+# we should rename the library from SDL2 to SDL3, at which point this would
+# reset to 0 anyway.
+LT_MAJOR=0
 LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
+LT_CURRENT=`expr $LT_MAJOR + $LT_AGE`
+LT_REVISION=$SDL_INTERFACE_AGE
 
 
 
@@ -16391,6 +16396,206 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+# Check whether --enable-largefile was given.
+if test "${enable_largefile+set}" = set; then :
+  enableval=$enable_largefile;
+fi
+
+if test "$enable_largefile" != no; then
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for special C compiler options needed for large files" >&5
+$as_echo_n "checking for special C compiler options needed for large files... " >&6; }
+if ${ac_cv_sys_largefile_CC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_sys_largefile_CC=no
+     if test "$GCC" != yes; then
+       ac_save_CC=$CC
+       while :; do
+	 # IRIX 6.2 and later do not support large files by default,
+	 # so use the C compiler's -n32 option if that helps.
+	 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+ /* Check that off_t can represent 2**63 - 1 correctly.
+    We can't simply define LARGE_OFF_T to be 9223372036854775807,
+    since some C++ compilers masquerading as C compilers
+    incorrectly reject 9223372036854775807.  */
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+  int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+		       && LARGE_OFF_T % 2147483647 == 1)
+		      ? 1 : -1];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+	 if ac_fn_c_try_compile "$LINENO"; then :
+  break
+fi
+rm -f core conftest.err conftest.$ac_objext
+	 CC="$CC -n32"
+	 if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sys_largefile_CC=' -n32'; break
+fi
+rm -f core conftest.err conftest.$ac_objext
+	 break
+       done
+       CC=$ac_save_CC
+       rm -f conftest.$ac_ext
+    fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sys_largefile_CC" >&5
+$as_echo "$ac_cv_sys_largefile_CC" >&6; }
+  if test "$ac_cv_sys_largefile_CC" != no; then
+    CC=$CC$ac_cv_sys_largefile_CC
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for _FILE_OFFSET_BITS value needed for large files" >&5
+$as_echo_n "checking for _FILE_OFFSET_BITS value needed for large files... " >&6; }
+if ${ac_cv_sys_file_offset_bits+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  while :; do
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+ /* Check that off_t can represent 2**63 - 1 correctly.
+    We can't simply define LARGE_OFF_T to be 9223372036854775807,
+    since some C++ compilers masquerading as C compilers
+    incorrectly reject 9223372036854775807.  */
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+  int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+		       && LARGE_OFF_T % 2147483647 == 1)
+		      ? 1 : -1];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sys_file_offset_bits=no; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#define _FILE_OFFSET_BITS 64
+#include <sys/types.h>
+ /* Check that off_t can represent 2**63 - 1 correctly.
+    We can't simply define LARGE_OFF_T to be 9223372036854775807,
+    since some C++ compilers masquerading as C compilers
+    incorrectly reject 9223372036854775807.  */
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+  int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+		       && LARGE_OFF_T % 2147483647 == 1)
+		      ? 1 : -1];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sys_file_offset_bits=64; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  ac_cv_sys_file_offset_bits=unknown
+  break
+done
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sys_file_offset_bits" >&5
+$as_echo "$ac_cv_sys_file_offset_bits" >&6; }
+case $ac_cv_sys_file_offset_bits in #(
+  no | unknown) ;;
+  *)
+cat >>confdefs.h <<_ACEOF
+#define _FILE_OFFSET_BITS $ac_cv_sys_file_offset_bits
+_ACEOF
+;;
+esac
+rm -rf conftest*
+  if test $ac_cv_sys_file_offset_bits = unknown; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for _LARGE_FILES value needed for large files" >&5
+$as_echo_n "checking for _LARGE_FILES value needed for large files... " >&6; }
+if ${ac_cv_sys_large_files+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  while :; do
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+ /* Check that off_t can represent 2**63 - 1 correctly.
+    We can't simply define LARGE_OFF_T to be 9223372036854775807,
+    since some C++ compilers masquerading as C compilers
+    incorrectly reject 9223372036854775807.  */
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+  int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+		       && LARGE_OFF_T % 2147483647 == 1)
+		      ? 1 : -1];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sys_large_files=no; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#define _LARGE_FILES 1
+#include <sys/types.h>
+ /* Check that off_t can represent 2**63 - 1 correctly.
+    We can't simply define LARGE_OFF_T to be 9223372036854775807,
+    since some C++ compilers masquerading as C compilers
+    incorrectly reject 9223372036854775807.  */
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+  int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+		       && LARGE_OFF_T % 2147483647 == 1)
+		      ? 1 : -1];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sys_large_files=1; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  ac_cv_sys_large_files=unknown
+  break
+done
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sys_large_files" >&5
+$as_echo "$ac_cv_sys_large_files" >&6; }
+case $ac_cv_sys_large_files in #(
+  no | unknown) ;;
+  *)
+cat >>confdefs.h <<_ACEOF
+#define _LARGE_FILES $ac_cv_sys_large_files
+_ACEOF
+;;
+esac
+rm -rf conftest*
+  fi
+
+
+fi
+
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
 # incompatible versions:
@@ -16967,6 +17172,22 @@ $as_echo "#define SDL_DEFAULT_ASSERT_LEVEL 3" >>confdefs.h
         as_fn_error $? "*** unknown assertion level. stop." "$LINENO" 5
         ;;
 esac
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MAJOR_VERSION $SDL_MAJOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MINOR_VERSION $SDL_MINOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_BUILD_MICRO_VERSION $SDL_MICRO_VERSION
+_ACEOF
+
 
 # Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
@@ -17717,7 +17938,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit
+    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -18227,10 +18448,6 @@ fi
 
 if test x$enable_assembly = xyes; then
     SUMMARY_modules="${SUMMARY_modules} assembly"
-
-
-$as_echo "#define SDL_ASSEMBLY_ROUTINES 1" >>confdefs.h
-
 
     # Make sure that we don't generate floating point code that would
     # cause illegal instruction exceptions on older processors
@@ -20368,6 +20585,40 @@ $as_echo "#define SDL_ARM_NEON_BLITTERS 1" >>confdefs.h
     fi
 }
 
+CheckObjectiveCARC()
+{
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clang -fobjc-arc option" >&5
+$as_echo_n "checking for clang -fobjc-arc option... " >&6; }
+    have_clang_objc_arc=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -fobjc-arc"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    int x = 0;
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_clang_objc_arc=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_clang_objc_arc" >&5
+$as_echo "$have_clang_objc_arc" >&6; }
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_clang_objc_arc = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -fobjc-arc"
+    fi
+}
+
 CheckVisibilityHidden()
 {
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -fvisibility=hidden option" >&5
@@ -21741,37 +21992,31 @@ fi
                     x11_lib='/opt/X11/lib/libX11.6.dylib'
                     x11ext_lib='/opt/X11/lib/libXext.6.dylib'
                     xcursor_lib='/opt/X11/lib/libXcursor.1.dylib'
-                    xinerama_lib='/opt/X11/lib/libXinerama.1.dylib'
                     xinput_lib='/opt/X11/lib/libXi.6.dylib'
                     xfixes_lib='/opt/X11/lib/libXfixes.3.dylib'
                     xrandr_lib='/opt/X11/lib/libXrandr.2.dylib'
                     xrender_lib='/opt/X11/lib/libXrender.1.dylib'
                     xss_lib='/opt/X11/lib/libXss.1.dylib'
-                    xvidmode_lib='/opt/X11/lib/libXxf86vm.1.dylib'
                     ;;
                 *-*-openbsd*)
                     x11_lib='libX11.so'
                     x11ext_lib='libXext.so'
                     xcursor_lib='libXcursor.so'
-                    xinerama_lib='libXinerama.so'
                     xinput_lib='libXi.so'
                     xfixes_lib='libXfixes.so'
                     xrandr_lib='libXrandr.so'
                     xrender_lib='libXrender.so'
                     xss_lib='libXss.so'
-                    xvidmode_lib='libXxf86vm.so'
                     ;;
                 *)
                     x11_lib=`find_lib "libX11.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     x11ext_lib=`find_lib "libXext.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xcursor_lib=`find_lib "libXcursor.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
-                    xinerama_lib=`find_lib "libXinerama.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xinput_lib=`find_lib "libXi.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xfixes_lib=`find_lib "libXfixes.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrandr_lib=`find_lib "libXrandr.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xrender_lib=`find_lib "libXrender.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     xss_lib=`find_lib "libXss.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
-                    xvidmode_lib=`find_lib "libXxf86vm.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`
                     ;;
             esac
 
@@ -22022,88 +22267,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XDBE 1" >>confdefs.h
 
                     SUMMARY_video_x11="${SUMMARY_video_x11} xdbe"
                 fi
-            fi
-            # Check whether --enable-video-x11-xinerama was given.
-if test "${enable_video_x11_xinerama+set}" = set; then :
-  enableval=$enable_video_x11_xinerama;
-else
-  enable_video_x11_xinerama=yes
-fi
-
-            if test x$enable_video_x11_xinerama = xyes; then
-                definitely_enable_video_x11_xinerama=no
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/Xinerama.h" "ac_cv_header_X11_extensions_Xinerama_h" "#include <X11/Xlib.h>
-
-"
-if test "x$ac_cv_header_X11_extensions_Xinerama_h" = xyes; then :
-  have_xinerama_h_hdr=yes
-else
-  have_xinerama_h_hdr=no
-fi
-
-
-                if test x$have_xinerama_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xinerama_lib != x ; then
-                        echo "-- dynamic libXinerama -> $xinerama_lib"
-
-cat >>confdefs.h <<_ACEOF
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINERAMA "$xinerama_lib"
-_ACEOF
-
-                        definitely_enable_video_x11_xinerama=yes
-                    else
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XineramaQueryExtension in -lXinerama" >&5
-$as_echo_n "checking for XineramaQueryExtension in -lXinerama... " >&6; }
-if ${ac_cv_lib_Xinerama_XineramaQueryExtension+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lXinerama  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char XineramaQueryExtension ();
-int
-main ()
-{
-return XineramaQueryExtension ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_Xinerama_XineramaQueryExtension=yes
-else
-  ac_cv_lib_Xinerama_XineramaQueryExtension=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xinerama_XineramaQueryExtension" >&5
-$as_echo "$ac_cv_lib_Xinerama_XineramaQueryExtension" >&6; }
-if test "x$ac_cv_lib_Xinerama_XineramaQueryExtension" = xyes; then :
-  have_xinerama_lib=yes
-fi
-
-                        if test x$have_xinerama_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXinerama"
-                            definitely_enable_video_x11_xinerama=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_xinerama = xyes; then
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_XINERAMA 1" >>confdefs.h
-
-                SUMMARY_video_x11="${SUMMARY_video_x11} xinerama"
             fi
             # Check whether --enable-video-x11-xinput was given.
 if test "${enable_video_x11_xinput+set}" = set; then :
@@ -22516,88 +22679,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XSHAPE 1" >>confdefs.h
 
                     SUMMARY_video_x11="${SUMMARY_video_x11} xshape"
                 fi
-            fi
-            # Check whether --enable-video-x11-vm was given.
-if test "${enable_video_x11_vm+set}" = set; then :
-  enableval=$enable_video_x11_vm;
-else
-  enable_video_x11_vm=yes
-fi
-
-            if test x$enable_video_x11_vm = xyes; then
-                definitely_enable_video_x11_vm=no
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/xf86vmode.h" "ac_cv_header_X11_extensions_xf86vmode_h" "#include <X11/Xlib.h>
-
-"
-if test "x$ac_cv_header_X11_extensions_xf86vmode_h" = xyes; then :
-  have_vm_h_hdr=yes
-else
-  have_vm_h_hdr=no
-fi
-
-
-                if test x$have_vm_h_hdr = xyes; then
-                    if test x$enable_x11_shared = xyes && test x$xvidmode_lib != x ; then
-                        echo "-- dynamic libXxf86vm -> $xvidmode_lib"
-
-cat >>confdefs.h <<_ACEOF
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XVIDMODE "$xvidmode_lib"
-_ACEOF
-
-                        definitely_enable_video_x11_vm=yes
-                    else
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XF86VidModeQueryVersion in -lXxf86vm" >&5
-$as_echo_n "checking for XF86VidModeQueryVersion in -lXxf86vm... " >&6; }
-if ${ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lXxf86vm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char XF86VidModeQueryVersion ();
-int
-main ()
-{
-return XF86VidModeQueryVersion ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion=yes
-else
-  ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" >&5
-$as_echo "$ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" >&6; }
-if test "x$ac_cv_lib_Xxf86vm_XF86VidModeQueryVersion" = xyes; then :
-  have_vm_lib=yes
-fi
-
-                        if test x$have_vm_lib = xyes ; then
-                            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lXxf86vm"
-                            definitely_enable_video_x11_vm=yes
-                        fi
-                    fi
-                fi
-            fi
-            if test x$definitely_enable_video_x11_vm = xyes; then
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
-
-                SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
     fi
@@ -26607,6 +26688,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_CARBON"
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_OSX"
 
+        CheckObjectiveCARC
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
@@ -27172,6 +27254,15 @@ else
 fi
 
 SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
+
+eval pkg_prefix=$prefix
+eval pkg_cmakedir=$libdir/cmake/SDL2
+cmake_prefix_relpath="$(echo -n "$pkg_cmakedir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
+
+
+eval pkg_bindir=$bindir
+bin_prefix_relpath="$(echo -n "pkg_bindir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
+
 
 
 

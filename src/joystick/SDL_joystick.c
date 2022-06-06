@@ -321,6 +321,28 @@ SDL_JoystickNameForIndex(int device_index)
 }
 
 /*
+ * Get the implementation dependent path of a joystick
+ */
+const char *
+SDL_JoystickPathForIndex(int device_index)
+{
+    SDL_JoystickDriver *driver;
+    const char *path = NULL;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        path = driver->GetDevicePath(device_index);
+    }
+    SDL_UnlockJoysticks();
+
+    /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
+    if (!path) {
+        SDL_Unsupported();
+    }
+    return path;
+}
+
+/*
  *  Get the player index of a joystick, or -1 if it's not available
  */
 int
@@ -386,6 +408,8 @@ SDL_JoystickOpen(int device_index)
     SDL_Joystick *joystick;
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
+    const char *joystickpath = NULL;
+    SDL_JoystickPowerLevel initial_power_level;
 
     SDL_LockJoysticks();
 
@@ -435,6 +459,13 @@ SDL_JoystickOpen(int device_index)
         joystick->name = NULL;
     }
 
+    joystickpath = driver->GetDevicePath(device_index);
+    if (joystickpath) {
+        joystick->path = SDL_strdup(joystickpath);
+    } else {
+        joystick->path = NULL;
+    }
+
     joystick->guid = driver->GetDeviceGUID(device_index);
 
     if (joystick->naxes > 0) {
@@ -478,6 +509,11 @@ SDL_JoystickOpen(int device_index)
 
     SDL_UnlockJoysticks();
 
+    /* send initial battery event */
+    initial_power_level = joystick->epowerlevel;
+    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    SDL_PrivateJoystickBatteryLevel(joystick, initial_power_level);
+
     driver->Update(joystick);
 
     return joystick;
@@ -487,8 +523,22 @@ int
 SDL_JoystickAttachVirtual(SDL_JoystickType type,
                           int naxes, int nbuttons, int nhats)
 {
+    SDL_VirtualJoystickDesc desc;
+
+    SDL_zero(desc);
+    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
+    desc.type = (Uint16)type;
+    desc.naxes = (Uint16)naxes;
+    desc.nbuttons = (Uint16)nbuttons;
+    desc.nhats = (Uint16)nhats;
+    return SDL_JoystickAttachVirtualEx(&desc);
+}
+
+int
+SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc)
+{
 #if SDL_JOYSTICK_VIRTUAL
-    return SDL_JoystickAttachVirtualInner(type, naxes, nbuttons, nhats);
+    return SDL_JoystickAttachVirtualInner(desc);
 #else
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
@@ -834,6 +884,23 @@ SDL_JoystickName(SDL_Joystick *joystick)
     return joystick->name;
 }
 
+/*
+ * Get the implementation dependent path of this joystick
+ */
+const char *
+SDL_JoystickPath(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return NULL;
+    }
+
+    if (!joystick->path) {
+        SDL_Unsupported();
+        return NULL;
+    }
+    return joystick->path;
+}
+
 /**
  *  Get the player index of an opened joystick, or -1 if it's not available
  */
@@ -1006,14 +1073,13 @@ SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     SDL_LockJoysticks();
 
     isfreshvalue = red != joystick->led_red ||
-        green != joystick->led_green ||
-        blue != joystick->led_blue;
+                   green != joystick->led_green ||
+                   blue != joystick->led_blue;
 
-    if ( isfreshvalue || SDL_TICKS_PASSED( SDL_GetTicks(), joystick->led_expiration ) ) {
+    if (isfreshvalue || SDL_TICKS_PASSED(SDL_GetTicks(), joystick->led_expiration)) {
         result = joystick->driver->SetLED(joystick, red, green, blue);
         joystick->led_expiration = SDL_GetTicks() + SDL_LED_MIN_REPEAT_MS;
-    }
-    else {
+    } else {
         /* Avoid spamming the driver */
         result = 0;
     }
@@ -1100,6 +1166,7 @@ SDL_JoystickClose(SDL_Joystick *joystick)
     }
 
     SDL_free(joystick->name);
+    SDL_free(joystick->path);
     SDL_free(joystick->serial);
 
     /* Free the data associated with this joystick */
@@ -1996,6 +2063,13 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
 }
 
 SDL_bool
+SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return (eType == k_eControllerType_XBoxOneController);
+}
+
+SDL_bool
 SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
 {
     if (vendor_id == USB_VENDOR_MICROSOFT) {
@@ -2495,8 +2569,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         return SDL_TRUE;
     }
 
-    if (SDL_IsGameControllerNameAndGUID(name, guid) &&
-        SDL_ShouldIgnoreGameController(name, guid)) {
+    if (SDL_ShouldIgnoreGameController(name, guid)) {
         return SDL_TRUE;
     }
 
@@ -2629,6 +2702,14 @@ Uint16 SDL_JoystickGetProductVersion(SDL_Joystick *joystick)
     return version;
 }
 
+Uint16 SDL_JoystickGetFirmwareVersion(SDL_Joystick *joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return 0;
+    }
+    return joystick->firmware_version;
+}
+
 const char *SDL_JoystickGetSerial(SDL_Joystick *joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
@@ -2654,74 +2735,31 @@ SDL_JoystickType SDL_JoystickGetType(SDL_Joystick *joystick)
 /* convert the guid to a printable string */
 void SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID)
 {
-    static const char k_rgchHexToASCII[] = "0123456789abcdef";
-    int i;
-
-    if ((pszGUID == NULL) || (cbGUID <= 0)) {
-        return;
-    }
-
-    for (i = 0; i < sizeof(guid.data) && i < (cbGUID-1)/2; i++) {
-        /* each input byte writes 2 ascii chars, and might write a null byte. */
-        /* If we don't have room for next input byte, stop */
-        unsigned char c = guid.data[i];
-
-        *pszGUID++ = k_rgchHexToASCII[c >> 4];
-        *pszGUID++ = k_rgchHexToASCII[c & 0x0F];
-    }
-    *pszGUID = '\0';
-}
-
-/*-----------------------------------------------------------------------------
- * Purpose: Returns the 4 bit nibble for a hex character
- * Input  : c -
- * Output : unsigned char
- *-----------------------------------------------------------------------------*/
-static unsigned char nibble(unsigned char c)
-{
-    if ((c >= '0') && (c <= '9')) {
-        return (c - '0');
-    }
-
-    if ((c >= 'A') && (c <= 'F')) {
-        return (c - 'A' + 0x0a);
-    }
-
-    if ((c >= 'a') && (c <= 'f')) {
-        return (c - 'a' + 0x0a);
-    }
-
-    /* received an invalid character, and no real way to return an error */
-    /* AssertMsg1(false, "Q_nibble invalid hex character '%c' ", c); */
-    return 0;
+    SDL_GUIDToString(guid, pszGUID, cbGUID);
 }
 
 /* convert the string version of a joystick guid to the struct */
 SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
 {
-    SDL_JoystickGUID guid;
-    int maxoutputbytes= sizeof(guid);
-    size_t len = SDL_strlen(pchGUID);
-    Uint8 *p;
-    size_t i;
-
-    /* Make sure it's even */
-    len = (len) & ~0x1;
-
-    SDL_memset(&guid, 0x00, sizeof(guid));
-
-    p = (Uint8 *)&guid;
-    for (i = 0; (i < len) && ((p - (Uint8 *)&guid) < maxoutputbytes); i+=2, p++) {
-        *p = (nibble((unsigned char)pchGUID[i]) << 4) | nibble((unsigned char)pchGUID[i+1]);
-    }
-
-    return guid;
+    return SDL_GUIDFromString(pchGUID);
 }
 
 /* update the power level for this joystick */
 void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
 {
-    joystick->epowerlevel = ePowerLevel;
+    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialisation */
+    if (ePowerLevel != joystick->epowerlevel) {
+#if !SDL_EVENTS_DISABLED
+        if (SDL_GetEventState(SDL_JOYBATTERYUPDATED) == SDL_ENABLE) {
+            SDL_Event event;
+            event.type = SDL_JOYBATTERYUPDATED;
+            event.jbattery.which = joystick->instance_id;
+            event.jbattery.level = ePowerLevel;
+            SDL_PushEvent(&event);
+        }
+#endif /* !SDL_EVENTS_DISABLED */
+        joystick->epowerlevel = ePowerLevel;
+    }
 }
 
 /* return its power level */

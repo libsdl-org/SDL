@@ -26,7 +26,7 @@
 
 
 #ifdef __SSE__
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define SSE_BEGIN \
@@ -128,7 +128,7 @@ SDL_FillRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 DEFINE_SSE_FILLRECT(2, Uint16)
 DEFINE_SSE_FILLRECT(4, Uint32)
 
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 #endif /* __SSE__ */
 
 static void

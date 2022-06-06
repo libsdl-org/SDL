@@ -47,9 +47,9 @@ extern "C" {
 
 
 /**
- *  \brief The maximum size of a log message
+ *  \brief The maximum size of a log message prior to SDL 2.0.24
  *
- *  Messages longer than the maximum size will be truncated
+ *  As of 2.0.24 there is no limit to the length of SDL log messages.
  */
 #define SDL_MAX_LOG_MESSAGE 4096
 

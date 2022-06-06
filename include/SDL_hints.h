@@ -392,13 +392,14 @@ extern "C" {
 #define SDL_HINT_ENABLE_STEAM_CONTROLLERS "SDL_ENABLE_STEAM_CONTROLLERS"
 
 /**
- *  \brief  A variable controlling whether SDL logs all events pushed onto its internal queue.
+ *  \brief  A variable controlling verbosity of the logging of SDL events pushed onto the internal queue.
  *
- *  This variable can be set to the following values:
+ *  This variable can be set to the following values, from least to most verbose:
  *
  *    "0"     - Don't log any events (default)
- *    "1"     - Log all events except mouse and finger motion, which are pretty spammy.
- *    "2"     - Log all events.
+ *    "1"     - Log most events (other than the really spammy ones).
+ *    "2"     - Include mouse and finger motion events.
+ *    "3"     - Include SDL_SysWMEvent events.
  *
  *  This is generally meant to be used to debug SDL itself, but can be useful
  *  for application developers that need better visibility into what is going
@@ -870,6 +871,24 @@ extern "C" {
   *  This variable is currently only used by the Linux joystick driver.
   */
 #define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
+
+ /**
+  *  \brief  A variable controlling whether joysticks on Linux will always treat 'hat' axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Only map hat axis inputs to digital hat outputs if the input axes appear to actually be digital (the default)
+  *    "1"       - Always handle the input axes numbered ABS_HAT0X to ABS_HAT3Y as digital hats
+  */
+#define SDL_HINT_LINUX_DIGITAL_HATS "SDL_LINUX_DIGITAL_HATS"
+
+ /**
+  *  \brief  A variable controlling whether digital hats on Linux will apply deadzones to their underlying input axes or use unfiltered values.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Return digital hat values based on unfiltered input axis values
+  *    "1"       - Return digital hat values with deadzones on the input axes taken into account (the default)
+  */
+#define SDL_HINT_LINUX_HAT_DEADZONES "SDL_LINUX_HAT_DEADZONES"
 
  /**
   *  \brief  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
@@ -1452,9 +1471,7 @@ extern "C" {
  *                SDL_WINDOW_RESIZABLE windows will offer the "fullscreen"
  *                button on their titlebars).
  *
- *  The default value is "1". Spaces are disabled regardless of this hint if
- *   the OS isn't at least Mac OS X Lion (10.7). This hint must be set before
- *   any windows are created.
+ *  The default value is "1". This hint must be set before any windows are created.
  */
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 
@@ -1592,13 +1609,11 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
 
 /**
- *  \brief  A variable controlling whether the X11 Xinerama extension should be used.
+ *  \brief  A no-longer-used variable controlling whether the X11 Xinerama extension should be used.
  *
- *  This variable can be set to the following values:
- *    "0"       - Disable Xinerama
- *    "1"       - Enable Xinerama
- *
- *  By default SDL will use Xinerama if it is available.
+ * Before SDL 2.0.24, this would let apps and users disable Xinerama support on X11.
+ *  Now SDL never uses Xinerama, and does not check for this hint at all.
+ *  The preprocessor define is left here for source compatibility.
  */
 #define SDL_HINT_VIDEO_X11_XINERAMA         "SDL_VIDEO_X11_XINERAMA"
 
@@ -1609,18 +1624,16 @@ extern "C" {
  *    "0"       - Disable XRandR
  *    "1"       - Enable XRandR
  *
- *  By default SDL will not use XRandR because of window manager issues.
+ *  By default SDL will use XRandR.
  */
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
- *  \brief  A variable controlling whether the X11 VidMode extension should be used.
+ *  \brief  A no-longer-used variable controlling whether the X11 VidMode extension should be used.
  *
- *  This variable can be set to the following values:
- *    "0"       - Disable XVidMode
- *    "1"       - Enable XVidMode
- *
- *  By default SDL will use XVidMode if it is available.
+ * Before SDL 2.0.24, this would let apps and users disable XVidMode support on X11.
+ *  Now SDL never uses XVidMode, and does not check for this hint at all.
+ *  The preprocessor define is left here for source compatibility.
  */
 #define SDL_HINT_VIDEO_X11_XVIDMODE         "SDL_VIDEO_X11_XVIDMODE"
 

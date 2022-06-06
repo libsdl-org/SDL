@@ -134,14 +134,8 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
     const Uint16 USAGE_MULTIAXISCONTROLLER = 0x0008;
     int i;
     SDL_GameControllerType type;
-    SDL_JoystickGUID check_guid;
 
-    /* Make sure we have a generic GUID here, otherwise if we pass a HIDAPI
-       guid, this call will create a game controller mapping for the device.
-     */
-    check_guid = device->guid;
-    check_guid.data[14] = 0;
-    if (SDL_ShouldIgnoreJoystick(device->name, check_guid)) {
+    if (SDL_ShouldIgnoreJoystick(device->name, device->guid)) {
         return NULL;
     }
 
@@ -783,6 +777,21 @@ HIDAPI_JoystickGetDeviceName(int device_index)
     return name;
 }
 
+static const char *
+HIDAPI_JoystickGetDevicePath(int device_index)
+{
+    SDL_HIDAPI_Device *device;
+    const char *path = NULL;
+
+    device = HIDAPI_GetDeviceByIndex(device_index, NULL);
+    if (device) {
+        /* FIXME: The device could be freed after this path is returned... */
+        path = device->path;
+    }
+
+    return path;
+}
+
 static int
 HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
 {
@@ -1030,6 +1039,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetCount,
     HIDAPI_JoystickDetect,
     HIDAPI_JoystickGetDeviceName,
+    HIDAPI_JoystickGetDevicePath,
     HIDAPI_JoystickGetDevicePlayerIndex,
     HIDAPI_JoystickSetDevicePlayerIndex,
     HIDAPI_JoystickGetDeviceGUID,

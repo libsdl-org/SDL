@@ -704,97 +704,7 @@ SDL_Convert51To71(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 /* SDL's resampler uses a "bandlimited interpolation" algorithm:
      https://ccrma.stanford.edu/~jos/resample/ */
 
-#define RESAMPLER_ZERO_CROSSINGS 5
-#define RESAMPLER_BITS_PER_SAMPLE 16
-#define RESAMPLER_SAMPLES_PER_ZERO_CROSSING  (1 << ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1))
-#define RESAMPLER_FILTER_SIZE ((RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS) + 1)
-
-/* This is a "modified" bessel function, so you can't use POSIX j0() */
-static double
-bessel(const double x)
-{
-    const double xdiv2 = x / 2.0;
-    double i0 = 1.0f;
-    double f = 1.0f;
-    int i = 1;
-
-    while (SDL_TRUE) {
-        const double diff = SDL_pow(xdiv2, i * 2) / SDL_pow(f, 2);
-        if (diff < 1.0e-21f) {
-            break;
-        }
-        i0 += diff;
-        i++;
-        f *= (double) i;
-    }
-
-    return i0;
-}
-
-/* build kaiser table with cardinal sine applied to it, and array of differences between elements. */
-static void
-kaiser_and_sinc(float *table, float *diffs, const int tablelen, const double beta)
-{
-    const int lenm1 = tablelen - 1;
-    const int lenm1div2 = lenm1 / 2;
-    int i;
-
-    table[0] = 1.0f;
-    for (i = 1; i < tablelen; i++) {
-        const double kaiser = bessel(beta * SDL_sqrt(1.0 - SDL_pow(((i - lenm1) / 2.0) / lenm1div2, 2.0))) / bessel(beta);
-        table[tablelen - i] = (float) kaiser;
-    }
-
-    for (i = 1; i < tablelen; i++) {
-        const float x = (((float) i) / ((float) RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * ((float) M_PI);
-        table[i] *= SDL_sinf(x) / x;
-        diffs[i - 1] = table[i] - table[i - 1];
-    }
-    diffs[lenm1] = 0.0f;
-}
-
-
-static SDL_SpinLock ResampleFilterSpinlock = 0;
-static float *ResamplerFilter = NULL;
-static float *ResamplerFilterDifference = NULL;
-
-int
-SDL_PrepareResampleFilter(void)
-{
-    SDL_AtomicLock(&ResampleFilterSpinlock);
-    if (!ResamplerFilter) {
-        /* if dB > 50, beta=(0.1102 * (dB - 8.7)), according to Matlab. */
-        const double dB = 80.0;
-        const double beta = 0.1102 * (dB - 8.7);
-        const size_t alloclen = RESAMPLER_FILTER_SIZE * sizeof (float);
-
-        ResamplerFilter = (float *) SDL_malloc(alloclen);
-        if (!ResamplerFilter) {
-            SDL_AtomicUnlock(&ResampleFilterSpinlock);
-            return SDL_OutOfMemory();
-        }
-
-        ResamplerFilterDifference = (float *) SDL_malloc(alloclen);
-        if (!ResamplerFilterDifference) {
-            SDL_free(ResamplerFilter);
-            ResamplerFilter = NULL;
-            SDL_AtomicUnlock(&ResampleFilterSpinlock);
-            return SDL_OutOfMemory();
-        }
-        kaiser_and_sinc(ResamplerFilter, ResamplerFilterDifference, RESAMPLER_FILTER_SIZE, beta);
-    }
-    SDL_AtomicUnlock(&ResampleFilterSpinlock);
-    return 0;
-}
-
-void
-SDL_FreeResampleFilter(void)
-{
-    SDL_free(ResamplerFilter);
-    SDL_free(ResamplerFilterDifference);
-    ResamplerFilter = NULL;
-    ResamplerFilterDifference = NULL;
-}
+#include "SDL_audio_resampler_filter.h"
 
 static int
 ResamplerPadding(const int inrate, const int outrate)
@@ -803,7 +713,7 @@ ResamplerPadding(const int inrate, const int outrate)
         return 0;
     }
     if (inrate > outrate) {
-        return (int) SDL_ceil(((float) (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float) outrate)));
+        return (int) SDL_ceilf(((float) (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float) outrate)));
     }
     return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
 }
@@ -815,33 +725,38 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                         const float *inbuf, const int inbuflen,
                         float *outbuf, const int outbuflen)
 {
-    const double finrate = (double) inrate;
-    const double outtimeincr = 1.0 / ((float) outrate);
-    const double  ratio = ((float) outrate) / ((float) inrate);
+    /* Note that this used to be double, but it looks like we can get by with float in most cases at
+       almost twice the speed on Intel processors, and orders of magnitude more
+       on CPUs that need a software fallback for double calculations. */
+    typedef float ResampleFloatType;
+
+    const ResampleFloatType finrate = (ResampleFloatType) inrate;
+    const ResampleFloatType outtimeincr = ((ResampleFloatType) 1.0f) / ((ResampleFloatType) outrate);
+    const ResampleFloatType ratio = ((float) outrate) / ((float) inrate);
     const int paddinglen = ResamplerPadding(inrate, outrate);
     const int framelen = chans * (int)sizeof (float);
     const int inframes = inbuflen / framelen;
     const int wantedoutframes = (int) ((inbuflen / framelen) * ratio);  /* outbuflen isn't total to write, it's total available. */
     const int maxoutframes = outbuflen / framelen;
     const int outframes = SDL_min(wantedoutframes, maxoutframes);
+    ResampleFloatType outtime = 0.0f;
     float *dst = outbuf;
-    double outtime = 0.0;
     int i, j, chan;
 
     for (i = 0; i < outframes; i++) {
         const int srcindex = (int) (outtime * inrate);
-        const double intime = ((double) srcindex) / finrate;
-        const double innexttime = ((double) (srcindex + 1)) / finrate;
-        const double interpolation1 = 1.0 - ((innexttime - outtime) / (innexttime - intime));
+        const ResampleFloatType intime = ((ResampleFloatType) srcindex) / finrate;
+        const ResampleFloatType innexttime = ((ResampleFloatType) (srcindex + 1)) / finrate;
+        const ResampleFloatType indeltatime = innexttime - intime;
+        const ResampleFloatType interpolation1 = (indeltatime == 0.0f) ? 1.0f : (1.0f - ((innexttime - outtime) / indeltatime));
         const int filterindex1 = (int) (interpolation1 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
-        const double interpolation2 = 1.0 - interpolation1;
+        const ResampleFloatType interpolation2 = 1.0f - interpolation1;
         const int filterindex2 = (int) (interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
 
         for (chan = 0; chan < chans; chan++) {
             float outsample = 0.0f;
 
             /* do this twice to calculate the sample, once for the "left wing" and then same for the right. */
-            /* !!! FIXME: do both wings in one loop */
             for (j = 0; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
                 const int srcframe = srcindex - j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
@@ -849,12 +764,15 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                 outsample += (float)(insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
             }
 
+            /* Do the right wing! */
             for (j = 0; (filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
+                const int jsamples = j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
                 const int srcframe = srcindex + 1 + j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a post loop. */
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation2 * ResamplerFilterDifference[filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
+                outsample += (float)(insample * (ResamplerFilter[filterindex2 + jsamples] + (interpolation2 * ResamplerFilterDifference[filterindex2 + jsamples])));
             }
+
             *(dst++) = outsample;
         }
 
@@ -1117,10 +1035,6 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
     filter = ChooseCVTResampler(dst_channels);
     if (filter == NULL) {
         return SDL_SetError("No conversion available for these rates");
-    }
-
-    if (SDL_PrepareResampleFilter() < 0) {
-        return -1;
     }
 
     /* Update (cvt) with filter details... */
@@ -1740,13 +1654,6 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
             if (!retval->resampler_state) {
                 SDL_FreeAudioStream(retval);
                 SDL_OutOfMemory();
-                return NULL;
-            }
-
-            if (SDL_PrepareResampleFilter() < 0) {
-                SDL_free(retval->resampler_state);
-                retval->resampler_state = NULL;
-                SDL_FreeAudioStream(retval);
                 return NULL;
             }
 

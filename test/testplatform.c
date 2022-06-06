@@ -86,11 +86,17 @@ TestEndian(SDL_bool verbose)
     int error = 0;
     Uint16 value = 0x1234;
     int real_byteorder;
+    int real_floatwordorder = 0;
     Uint16 value16 = 0xCDAB;
     Uint16 swapped16 = 0xABCD;
     Uint32 value32 = 0xEFBEADDE;
     Uint32 swapped32 = 0xDEADBEEF;
     Uint64 value64, swapped64;
+
+    union {
+       double d;
+       Uint32 ui32[2];
+    } value_double;
 
     value64 = 0xEFBEADDE;
     value64 <<= 32;
@@ -98,6 +104,7 @@ TestEndian(SDL_bool verbose)
     swapped64 = 0x1234ABCD;
     swapped64 <<= 32;
     swapped64 |= 0xDEADBEEF;
+    value_double.d = 3.141593;
 
     if (verbose) {
         SDL_Log("Detected a %s endian machine.\n",
@@ -112,6 +119,22 @@ TestEndian(SDL_bool verbose)
         if (verbose) {
             SDL_Log("Actually a %s endian machine!\n",
                    (real_byteorder == SDL_LIL_ENDIAN) ? "little" : "big");
+        }
+        ++error;
+    }
+    if (verbose) {
+        SDL_Log("Detected a %s endian float word order machine.\n",
+               (SDL_FLOATWORDORDER == SDL_LIL_ENDIAN) ? "little" : "big");
+    }
+    if (value_double.ui32[0] == 0x82c2bd7f && value_double.ui32[1] == 0x400921fb) {
+        real_floatwordorder = SDL_LIL_ENDIAN;
+    } else if (value_double.ui32[0] == 0x400921fb && value_double.ui32[1] == 0x82c2bd7f) {
+        real_floatwordorder = SDL_BIG_ENDIAN;
+    }
+    if (real_floatwordorder != SDL_FLOATWORDORDER) {
+        if (verbose) {
+            SDL_Log("Actually a %s endian float word order machine!\n",
+                   (real_floatwordorder == SDL_LIL_ENDIAN) ? "little" : (real_floatwordorder == SDL_BIG_ENDIAN) ? "big" : "unknown" );
         }
         ++error;
     }

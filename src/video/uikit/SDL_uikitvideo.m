@@ -278,11 +278,16 @@ UIKit_ForceUpdateHomeIndicator()
  */
 
 #if !defined(SDL_VIDEO_DRIVER_COCOA)
-void SDL_NSLog(const char *text)
+void SDL_NSLog(const char *prefix, const char *text)
 {
     @autoreleasepool {
-        NSString *str = [NSString stringWithUTF8String:text];
-        NSLog(@"%@", str);
+        NSString *nsText = [NSString stringWithUTF8String:text];
+        if (prefix) {
+            NSString *nsPrefix = [NSString stringWithUTF8String:prefix];
+            NSLog(@"%@: %@", nsPrefix, nsText);
+        } else {
+            NSLog(@"%@", nsText);
+        }
     }
 }
 #endif /* SDL_VIDEO_DRIVER_COCOA */

@@ -97,18 +97,15 @@ DECLARE_ALERT_STYLE(Critical);
 
 @class SDLTranslatorResponder;
 
-typedef struct SDL_VideoData
-{
-    int allow_spaces;
-    unsigned int modifierFlags;
-    void *key_layout;
-    SDLTranslatorResponder *fieldEdit;
-    NSInteger clipboard_count;
-    Uint32 screensaver_activity;
-    BOOL screensaver_use_iopm;
-    IOPMAssertionID screensaver_assertion;
-    SDL_mutex *swaplock;
-} SDL_VideoData;
+@interface SDL_VideoData : NSObject
+    @property (nonatomic) int allow_spaces;
+    @property (nonatomic) unsigned int modifierFlags;
+    @property (nonatomic) void *key_layout;
+    @property (nonatomic) SDLTranslatorResponder *fieldEdit;
+    @property (nonatomic) NSInteger clipboard_count;
+    @property (nonatomic) IOPMAssertionID screensaver_assertion;
+    @property (nonatomic) SDL_mutex *swaplock;
+@end
 
 /* Utility functions */
 extern NSImage * Cocoa_CreateImage(SDL_Surface * surface);

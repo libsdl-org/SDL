@@ -640,6 +640,7 @@ EXCLUDE                = ../include/SDL_opengles2_gl2ext.h \
                          ../include/SDL_opengles.h \
                          ../include/SDL_opengl.h \
                          ../include/SDL_egl.h \
+                         ./release_checklist.md \
 
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 

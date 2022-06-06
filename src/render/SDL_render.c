@@ -2673,11 +2673,16 @@ static int
 RenderDrawPointsWithRects(SDL_Renderer * renderer,
                           const SDL_Point * points, const int count)
 {
-    int retval = -1;
+    int retval;
     SDL_bool isstack;
-    SDL_FRect *frects = SDL_small_alloc(SDL_FRect, count, &isstack);
+    SDL_FRect *frects;
     int i;
 
+    if (count < 1) {
+        return 0;
+    }
+
+    frects = SDL_small_alloc(SDL_FRect, count, &isstack);
     if (!frects) {
         return SDL_OutOfMemory();
     }
@@ -2689,9 +2694,7 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
         frects[i].h = renderer->scale.y;
     }
 
-    if (count) {
-        retval = QueueCmdFillRects(renderer, frects, count);
-    }
+    retval = QueueCmdFillRects(renderer, frects, count);
 
     SDL_small_free(frects, isstack);
 
@@ -2746,11 +2749,16 @@ static int
 RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
                            const SDL_FPoint * fpoints, const int count)
 {
-    int retval = -1;
+    int retval;
     SDL_bool isstack;
-    SDL_FRect *frects = SDL_small_alloc(SDL_FRect, count, &isstack);
+    SDL_FRect *frects;
     int i;
 
+    if (count < 1) {
+        return 0;
+    }
+
+    frects = SDL_small_alloc(SDL_FRect, count, &isstack);
     if (!frects) {
         return SDL_OutOfMemory();
     }
@@ -2762,9 +2770,7 @@ RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
         frects[i].h = renderer->scale.y;
     }
 
-    if (count) {
-        retval = QueueCmdFillRects(renderer, frects, count);
-    }
+    retval = QueueCmdFillRects(renderer, frects, count);
 
     SDL_small_free(frects, isstack);
 

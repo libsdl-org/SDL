@@ -744,12 +744,17 @@ DARWIN_JoystickDetect(void)
     }
 }
 
-/* Function to get the device-dependent name of a joystick */
 const char *
 DARWIN_JoystickGetDeviceName(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->product : "UNKNOWN";
+}
+
+const char *
+DARWIN_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
 }
 
 static int
@@ -1115,6 +1120,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickGetCount,
     DARWIN_JoystickDetect,
     DARWIN_JoystickGetDeviceName,
+    DARWIN_JoystickGetDevicePath,
     DARWIN_JoystickGetDevicePlayerIndex,
     DARWIN_JoystickSetDevicePlayerIndex,
     DARWIN_JoystickGetDeviceGUID,

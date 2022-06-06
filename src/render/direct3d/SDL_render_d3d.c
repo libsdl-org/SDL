@@ -41,6 +41,13 @@
 
 #include "SDL_shaders_d3d.h"
 
+#ifdef __WATCOMC__
+/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/868 is merged */
+#define D3DBLENDOP_REVSUBTRACT 3
+/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/869 is merged */
+#define D3DERR_UNSUPPORTEDCOLOROPERATION MAKE_D3DHRESULT( 2073 )
+#endif
+
 typedef struct
 {
     SDL_Rect viewport;
@@ -1079,7 +1086,13 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
-        const D3DVIEWPORT9 d3dviewport = { viewport->x, viewport->y, viewport->w, viewport->h, 0.0f, 1.0f };
+        D3DVIEWPORT9 d3dviewport;
+        d3dviewport.X = viewport->x;
+        d3dviewport.Y = viewport->y;
+        d3dviewport.Width = viewport->w;
+        d3dviewport.Height = viewport->h;
+        d3dviewport.MinZ = 0.0f;
+        d3dviewport.MaxZ = 1.0f;
         IDirect3DDevice9_SetViewport(data->device, &d3dviewport);
 
         /* Set an orthographic projection matrix */
@@ -1106,7 +1119,11 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     if (data->drawstate.cliprect_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
         const SDL_Rect *rect = &data->drawstate.cliprect;
-        const RECT d3drect = { viewport->x + rect->x, viewport->y + rect->y, viewport->x + rect->x + rect->w, viewport->y + rect->y + rect->h };
+        RECT d3drect;
+        d3drect.left = viewport->x + rect->x;
+        d3drect.top = viewport->y + rect->y;
+        d3drect.right = viewport->x + rect->x + rect->w;
+        d3drect.bottom = viewport->y + rect->y + rect->h;
         IDirect3DDevice9_SetScissorRect(data->device, &d3drect);
         data->drawstate.cliprect_dirty = SDL_FALSE;
     }
@@ -1221,7 +1238,9 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
                 } else {
                     /* Clear is defined to clear the entire render target */
-                    const D3DVIEWPORT9 wholeviewport = { 0, 0, backw, backh, 0.0f, 1.0f };
+                    D3DVIEWPORT9 wholeviewport = { 0, 0, 0, 0, 0.0f, 1.0f };
+                    wholeviewport.Width = backw;
+                    wholeviewport.Height = backh;
                     IDirect3DDevice9_SetViewport(data->device, &wholeviewport);
                     data->drawstate.viewport_dirty = SDL_TRUE;  /* we still need to (re)set orthographic projection, so always mark it dirty. */
                     IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
@@ -1728,6 +1747,9 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         }
     }
 #endif
+    data->drawstate.viewport_dirty = SDL_TRUE;
+    data->drawstate.cliprect_dirty = SDL_TRUE;
+    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
     data->drawstate.blend = SDL_BLENDMODE_INVALID;
 
     return renderer;

@@ -910,6 +910,7 @@ output_callback(void *data)
      * and run the callback with the work buffer to keep the callback
      * firing regularly in case the audio is being used as a timer.
      */
+    SDL_LockMutex(this->mixer_lock);
     if (!SDL_AtomicGet(&this->paused)) {
         if (SDL_AtomicGet(&this->enabled)) {
             dst = spa_buf->datas[0].data;
@@ -919,18 +920,13 @@ output_callback(void *data)
         }
 
         if (!this->stream) {
-            SDL_LockMutex(this->mixer_lock);
             this->callbackspec.callback(this->callbackspec.userdata, dst, this->callbackspec.size);
-            SDL_UnlockMutex(this->mixer_lock);
         } else {
             int got;
 
             /* Fire the callback until we have enough to fill a buffer */
             while (SDL_AudioStreamAvailable(this->stream) < this->spec.size) {
-                SDL_LockMutex(this->mixer_lock);
                 this->callbackspec.callback(this->callbackspec.userdata, this->work_buffer, this->callbackspec.size);
-                SDL_UnlockMutex(this->mixer_lock);
-
                 SDL_AudioStreamPut(this->stream, this->work_buffer, this->callbackspec.size);
             }
 
@@ -940,6 +936,7 @@ output_callback(void *data)
     } else {
         SDL_memset(spa_buf->datas[0].data, this->spec.silence, this->spec.size);
     }
+    SDL_UnlockMutex(this->mixer_lock);
 
     spa_buf->datas[0].chunk->offset = 0;
     spa_buf->datas[0].chunk->stride = this->hidden->stride;

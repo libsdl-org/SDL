@@ -456,7 +456,7 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
     pNewJoystick = *(JoyStick_DeviceData**)pContext;
     while (pNewJoystick) {
         /* update GUIDs of joysticks with matching paths, in case they're not open yet */
-        if (SDL_strcmp(pNewJoystick->hidPath, hidPath) == 0) {
+        if (SDL_strcmp(pNewJoystick->path, hidPath) == 0) {
             /* if we are replacing the front of the list then update it */
             if (pNewJoystick == *(JoyStick_DeviceData**)pContext) {
                 *(JoyStick_DeviceData**)pContext = pNewJoystick->pNext;
@@ -483,7 +483,7 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
     CHECK(pNewJoystick);
 
     SDL_zerop(pNewJoystick);
-    SDL_strlcpy(pNewJoystick->hidPath, hidPath, SDL_arraysize(pNewJoystick->hidPath));
+    SDL_strlcpy(pNewJoystick->path, hidPath, SDL_arraysize(pNewJoystick->path));
     SDL_memcpy(&pNewJoystick->dxdevice, pDeviceInstance, sizeof(DIDEVICEINSTANCE));
     SDL_memset(pNewJoystick->guid.data, 0, sizeof(pNewJoystick->guid.data));
 
@@ -683,7 +683,7 @@ EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObject, LPVOID pContext)
 /* Sort using the data offset into the DInput struct.
  * This gives a reasonable ordering for the inputs.
  */
-static int
+static int SDLCALL
 SortDevFunc(const void *a, const void *b)
 {
     const input_t *inputA = (const input_t*)a;

@@ -403,8 +403,8 @@ UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 
             return SDL_TRUE;
         } else {
-            SDL_SetError("Application not compiled with SDL %d.%d",
-                         SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+            SDL_SetError("Application not compiled with SDL %d",
+                         SDL_MAJOR_VERSION);
             return SDL_FALSE;
         }
     }

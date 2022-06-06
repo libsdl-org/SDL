@@ -30,6 +30,8 @@
 #ifndef UNICODE
 #define UNICODE 1
 #endif
+#undef WINVER
+#define WINVER 0x0501
 #undef _WIN32_WINNT
 #if !defined(SDL_VIDEO_RENDER_D3D12)
 #define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */

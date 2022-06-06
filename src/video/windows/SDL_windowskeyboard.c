@@ -65,7 +65,7 @@ WIN_InitKeyboard(_THIS)
     data->ime_hwnd_current = 0;
     data->ime_himc = 0;
     data->ime_composition_length = 32 * sizeof(WCHAR);
-    data->ime_composition = (WCHAR*)SDL_malloc(data->ime_composition_length);
+    data->ime_composition = (WCHAR*)SDL_malloc(data->ime_composition_length + sizeof(WCHAR));
     data->ime_composition[0] = 0;
     data->ime_readingstring[0] = 0;
     data->ime_cursor = 0;
@@ -813,7 +813,7 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 
         length = ImmGetCompositionStringW(himc, GCS_COMPATTR, NULL, 0);
         if (length > 0) {
-            Uint8* attributes = (Uint8*)SDL_malloc(length);
+            Uint8* attributes = (Uint8*)SDL_malloc(length + sizeof(WCHAR));
             ImmGetCompositionString(himc, GCS_COMPATTR, attributes, length);
 
             for (start = 0; start < length; ++start) {
@@ -863,7 +863,7 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
         size_t len = SDL_min(SDL_wcslen(videodata->ime_composition), (size_t)videodata->ime_cursor);
 
         size += sizeof(videodata->ime_readingstring);
-        buffer = (WCHAR*)SDL_malloc(size);
+        buffer = (WCHAR*)SDL_malloc(size + sizeof(WCHAR));
         buffer[0] = 0;
 
         SDL_wcslcpy(buffer, videodata->ime_composition, len + 1);
@@ -871,7 +871,7 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
         SDL_wcslcat(buffer, &videodata->ime_composition[len], size);
     }
     else {
-        buffer = (WCHAR*)SDL_malloc(size);
+        buffer = (WCHAR*)SDL_malloc(size + sizeof(WCHAR));
         buffer[0] = 0;
         SDL_wcslcpy(buffer, videodata->ime_composition, size);
     }

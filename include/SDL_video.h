@@ -2009,13 +2009,8 @@ extern DECLSPEC void SDLCALL SDL_GL_GetDrawableSize(SDL_Window * window, int *w,
  * retry the call with 1 for the interval.
  *
  * Adaptive vsync is implemented for some glX drivers with
- * GLX_EXT_swap_control_tear:
- *
- * https://www.opengl.org/registry/specs/EXT/glx_swap_control_tear.txt
- *
- * and for some Windows drivers with WGL_EXT_swap_control_tear:
- *
- * https://www.opengl.org/registry/specs/EXT/wgl_swap_control_tear.txt
+ * GLX_EXT_swap_control_tear, and for some Windows drivers with
+ * WGL_EXT_swap_control_tear.
  *
  * Read more on the Khronos wiki:
  * https://www.khronos.org/opengl/wiki/Swap_Interval#Adaptive_Vsync

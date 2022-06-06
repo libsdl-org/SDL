@@ -696,19 +696,20 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
             return s_pXInputMapping;
         }
 #endif
+        if (!mapping) {
+            if (SDL_IsJoystickHIDAPI(guid)) {
+                mapping = SDL_CreateMappingForHIDAPIController(guid);
+            } else if (SDL_IsJoystickRAWINPUT(guid)) {
+                mapping = SDL_CreateMappingForRAWINPUTController(guid);
+            } else if (SDL_IsJoystickWGI(guid)) {
+                mapping = SDL_CreateMappingForWGIController(guid);
+            } else if (SDL_IsJoystickVirtual(guid)) {
+                /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
 #ifdef __ANDROID__
-        if (!mapping && !SDL_IsJoystickHIDAPI(guid)) {
-            mapping = SDL_CreateMappingForAndroidController(guid);
-        }
+            } else {
+                mapping = SDL_CreateMappingForAndroidController(guid);
 #endif
-        if (!mapping && SDL_IsJoystickHIDAPI(guid)) {
-            mapping = SDL_CreateMappingForHIDAPIController(guid);
-        }
-        if (!mapping && SDL_IsJoystickRAWINPUT(guid)) {
-            mapping = SDL_CreateMappingForRAWINPUTController(guid);
-        }
-        if (!mapping && SDL_IsJoystickWGI(guid)) {
-            mapping = SDL_CreateMappingForWGIController(guid);
+            }
         }
     }
     return mapping;
@@ -1258,6 +1259,11 @@ static ControllerMapping_t *SDL_PrivateGenerateAutomaticControllerMapping(const 
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpdown", &raw_map->dpdown);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpleft", &raw_map->dpleft);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpright", &raw_map->dpright);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc1", &raw_map->misc1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->paddle1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle2", &raw_map->paddle2);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle3", &raw_map->paddle3);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle4", &raw_map->paddle4);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftx", &raw_map->leftx);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefty", &raw_map->lefty);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightx", &raw_map->rightx);
@@ -1732,6 +1738,20 @@ SDL_GameControllerNameForIndex(int device_index)
 }
 
 
+/*
+ * Get the implementation dependent path of a controller
+ */
+const char *
+SDL_GameControllerPathForIndex(int device_index)
+{
+    ControllerMapping_t *pSupportedController = SDL_PrivateGetControllerMapping(device_index);
+    if (pSupportedController) {
+        return SDL_JoystickPathForIndex(device_index);
+    }
+    return NULL;
+}
+
+
 /**
  *  Get the type of a game controller.
  */
@@ -1820,12 +1840,10 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     }
 #endif
 
-#if defined(__ANDROID__)
     if (name && SDL_strcmp(name, "uinput-fpc") == 0) {
         /* The Google Pixel fingerprint sensor reports itself as a joystick */
         return SDL_TRUE;
     }
-#endif
 
     if (SDL_allowed_controllers.num_entries == 0 &&
         SDL_ignored_controllers.num_entries == 0) {
@@ -2294,6 +2312,15 @@ SDL_GameControllerName(SDL_GameController *gamecontroller)
     }
 }
 
+const char *
+SDL_GameControllerPath(SDL_GameController *gamecontroller)
+{
+    if (!gamecontroller)
+        return NULL;
+
+    return SDL_JoystickPath(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
 SDL_GameControllerType
 SDL_GameControllerGetType(SDL_GameController *gamecontroller)
 {
@@ -2331,6 +2358,12 @@ Uint16
 SDL_GameControllerGetProductVersion(SDL_GameController *gamecontroller)
 {
     return SDL_JoystickGetProductVersion(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
+Uint16
+SDL_GameControllerGetFirmwareVersion(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickGetFirmwareVersion(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
 const char *

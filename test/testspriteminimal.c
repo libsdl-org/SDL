@@ -20,6 +20,7 @@
 #endif
 
 #include "SDL.h"
+#include "testutils.h"
 
 #define WINDOW_WIDTH    640
 #define WINDOW_HEIGHT   480
@@ -40,55 +41,6 @@ quit(int rc)
 {
     SDL_Quit();
     exit(rc);
-}
-
-int
-LoadSprite(const char *file)
-{
-    SDL_Surface *temp;
-
-    /* Load the sprite image */
-    temp = SDL_LoadBMP(file);
-    if (temp == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", file, SDL_GetError());
-        return (-1);
-    }
-    sprite_w = temp->w;
-    sprite_h = temp->h;
-
-    /* Set transparent pixel as the pixel at (0,0) */
-    if (temp->format->palette) {
-        SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *) temp->pixels);
-    } else {
-        switch (temp->format->BitsPerPixel) {
-        case 15:
-            SDL_SetColorKey(temp, SDL_TRUE,
-                            (*(Uint16 *) temp->pixels) & 0x00007FFF);
-            break;
-        case 16:
-            SDL_SetColorKey(temp, SDL_TRUE, *(Uint16 *) temp->pixels);
-            break;
-        case 24:
-            SDL_SetColorKey(temp, SDL_TRUE,
-                            (*(Uint32 *) temp->pixels) & 0x00FFFFFF);
-            break;
-        case 32:
-            SDL_SetColorKey(temp, SDL_TRUE, *(Uint32 *) temp->pixels);
-            break;
-        }
-    }
-
-    /* Create textures from the image */
-    sprite = SDL_CreateTextureFromSurface(renderer, temp);
-    if (!sprite) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(temp);
-        return (-1);
-    }
-    SDL_FreeSurface(temp);
-
-    /* We're ready to roll. :) */
-    return (0);
 }
 
 void
@@ -158,7 +110,9 @@ main(int argc, char *argv[])
         quit(2);
     }
 
-    if (LoadSprite("icon.bmp") < 0) {
+    sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
+
+    if (sprite == NULL) {
         quit(2);
     }
 

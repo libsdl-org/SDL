@@ -54,11 +54,6 @@ typedef struct SDL_Point
 /**
  * The structure that defines a point (floating point)
  *
- * \sa SDL_FRectEmpty
- * \sa SDL_FRectEquals
- * \sa SDL_HasIntersectionF
- * \sa SDL_IntersectFRect
- * \sa SDL_UnionFRect
  * \sa SDL_EncloseFPoints
  * \sa SDL_PointInFRect
  */
@@ -76,6 +71,7 @@ typedef struct SDL_FPoint
  * \sa SDL_RectEquals
  * \sa SDL_HasIntersection
  * \sa SDL_IntersectRect
+ * \sa SDL_IntersectRectAndLine
  * \sa SDL_UnionRect
  * \sa SDL_EnclosePoints
  */
@@ -88,6 +84,16 @@ typedef struct SDL_Rect
 
 /**
  * A rectangle, with the origin at the upper left (floating point).
+ *
+ * \sa SDL_FRectEmpty
+ * \sa SDL_FRectEquals
+ * \sa SDL_FRectEqualsEpsilon
+ * \sa SDL_HasIntersectionF
+ * \sa SDL_IntersectFRect
+ * \sa SDL_IntersectFRectAndLine
+ * \sa SDL_UnionFRect
+ * \sa SDL_EncloseFPoints
+ * \sa SDL_PointInFRect
  */
 typedef struct SDL_FRect
 {
@@ -246,10 +252,10 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
 SDL_FORCE_INLINE SDL_bool SDL_FRectEqualsEpsilon(const SDL_FRect *a, const SDL_FRect *b, const float epsilon)
 {
     return (a && b && ((a == b) ||
-            ((SDL_fabs(a->x - b->x) <= epsilon) &&
-            (SDL_fabs(a->y - b->y) <= epsilon) &&
-            (SDL_fabs(a->w - b->w) <= epsilon) &&
-            (SDL_fabs(a->h - b->h) <= epsilon))))
+            ((SDL_fabsf(a->x - b->x) <= epsilon) &&
+            (SDL_fabsf(a->y - b->y) <= epsilon) &&
+            (SDL_fabsf(a->w - b->w) <= epsilon) &&
+            (SDL_fabsf(a->h - b->h) <= epsilon))))
             ? SDL_TRUE : SDL_FALSE;
 }
 

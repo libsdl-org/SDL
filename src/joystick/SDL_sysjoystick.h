@@ -65,8 +65,10 @@ struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Joystick name - system dependent */
+    char *path;                 /* Joystick path - system dependent */
     char *serial;               /* Joystick serial */
     SDL_JoystickGUID guid;      /* Joystick guid */
+    Uint16 firmware_version;    /* Firmware version, if available */
 
     int naxes;                  /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes;
@@ -118,6 +120,7 @@ struct _SDL_Joystick
 };
 
 /* Device bus definitions */
+#define SDL_HARDWARE_BUS_VIRTUAL    0x00
 #define SDL_HARDWARE_BUS_USB        0x03
 #define SDL_HARDWARE_BUS_BLUETOOTH  0x05
 
@@ -145,6 +148,9 @@ typedef struct _SDL_JoystickDriver
 
     /* Function to get the device-dependent name of a joystick */
     const char *(*GetDeviceName)(int device_index);
+
+    /* Function to get the device-dependent path of a joystick */
+    const char *(*GetDevicePath)(int device_index);
 
     /* Function to get the player index of a joystick */
     int (*GetDevicePlayerIndex)(int device_index);

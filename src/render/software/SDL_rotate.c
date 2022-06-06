@@ -62,11 +62,6 @@ typedef struct tColorY {
 } tColorY;
 
 /* !
-\brief Returns maximum of two numbers a and b.
-*/
-#define MAX(a,b)    (((a) > (b)) ? (a) : (b))
-
-/* !
 \brief Number of guard rows added to destination surfaces.
 
 This is a simple but effective workaround for observed issues.

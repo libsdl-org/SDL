@@ -65,11 +65,15 @@
 #undef __LINUX__ /* do we need to do this? */
 #define __ANDROID__ 1
 #endif
+#if defined(__NGAGE__)
+#undef __NGAGE__
+#define __NGAGE__ 1
+#endif
 
 #if defined(__APPLE__)
 /* lets us know what version of Mac OS X we're compiling on */
-#include "AvailabilityMacros.h"
-#include "TargetConditionals.h"
+#include <AvailabilityMacros.h>
+#include <TargetConditionals.h>
 
 /* Fix building with older SDKs that don't define these
    See this for more information:
@@ -104,9 +108,9 @@
 /* if not compiling for iOS */
 #undef __MACOSX__
 #define __MACOSX__  1
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-# error SDL for Mac OS X only supports deploying on 10.6 and above.
-#endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 1060 */
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
+# error SDL for Mac OS X only supports deploying on 10.7 and above.
+#endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 1070 */
 #endif /* TARGET_OS_IPHONE */
 #endif /* defined(__APPLE__) */
 

@@ -27,14 +27,7 @@
 /* This file contains portable string manipulation functions for SDL */
 
 #include "SDL_stdinc.h"
-
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-/* Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment */
-#undef va_copy
-#define va_copy(dst, src)   dst = src
-#elif defined(__GNUC__) && (__GNUC__ < 3)
-#define va_copy(to, from)   __va_copy(to, from)
-#endif
+#include "SDL_vacopy.h"
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 #define SDL_isupperhex(X)   (((X) >= 'A') && ((X) <= 'F'))
