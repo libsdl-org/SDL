@@ -66,7 +66,7 @@ SDL_SetHintWithPriority(const char *name, const char *value,
             if (priority < hint->priority) {
                 return SDL_FALSE;
             }
-            if ( ((hint->value == NULL) != (value == NULL)) || (value && (SDL_strcmp(hint->value, value) != 0)) ) {
+            if (!hint->value || !value || SDL_strcmp(hint->value, value) != 0) {
                 for (entry = hint->callbacks; entry; ) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
