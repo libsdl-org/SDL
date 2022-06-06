@@ -80,6 +80,7 @@ SRCS+= SDL_syspower.c
 SRCS+= SDL_d3dmath.c
 SRCS+= SDL_render_d3d.c SDL_shaders_d3d.c
 SRCS+= SDL_render_d3d11.c SDL_shaders_d3d11.c
+SRCS+= SDL_render_d3d12.c SDL_shaders_d3d12.c
 SRCS+= SDL_render_gl.c SDL_shaders_gl.c
 SRCS+= SDL_render_gles2.c SDL_shaders_gles2.c
 SRCS+= SDL_windowssensor.c
@@ -99,7 +100,7 @@ RCOBJS= $(RCSRCS:.rc=.res)
 .c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
 .c: ./src/haptic/dummy;./src/joystick/dummy;./src/joystick/virtual;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
 .c: ./src/core/windows;./src/audio/winmm;./src/audio/directsound;./src/audio/wasapi;./src/loadso/windows;./src/filesystem/windows;./src/haptic/windows;./src/joystick/windows;./src/sensor/windows;./src/thread/windows;./src/timer/windows;./src/video/windows;
-.c: ./src/locale/;./src/locale/windows;./src/misc;./src/misc/windows;./src/power/windows;./src/joystick/hidapi;./src/hidapi;./src/render/direct3d;./src/render/direct3d11;./src/render/opengl;./src/render/opengles2
+.c: ./src/locale/;./src/locale/windows;./src/misc;./src/misc/windows;./src/power/windows;./src/joystick/hidapi;./src/hidapi;./src/render/direct3d;./src/render/direct3d11;./src/render/direct3d12;./src/render/opengl;./src/render/opengles2
 .rc: ./src/main/windows
 
 all: $(DLLFILE) $(LIBFILE) $(TLIB) .symbolic
