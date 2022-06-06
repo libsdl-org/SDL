@@ -790,7 +790,6 @@
 #define SDL_lroundf SDL_lroundf_REAL
 #define SDL_SoftStretchLinear SDL_SoftStretchLinear_REAL
 #define SDL_RenderGetD3D11Device SDL_RenderGetD3D11Device_REAL
-#define SDL_RenderGetD3D12Device SDL_RenderGetD3D12Device_REAL
 #define SDL_UpdateNVTexture SDL_UpdateNVTexture_REAL
 #define SDL_SetWindowKeyboardGrab SDL_SetWindowKeyboardGrab_REAL
 #define SDL_SetWindowMouseGrab SDL_SetWindowMouseGrab_REAL
@@ -872,3 +871,4 @@
 #define SDL_JoystickGetFirmwareVersion SDL_JoystickGetFirmwareVersion_REAL
 #define SDL_GUIDToString SDL_GUIDToString_REAL
 #define SDL_GUIDFromString SDL_GUIDFromString_REAL
+#define SDL_RenderGetD3D12Device SDL_RenderGetD3D12Device_REAL

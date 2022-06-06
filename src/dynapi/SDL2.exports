@@ -845,3 +845,4 @@
 ++'_SDL_JoystickGetFirmwareVersion'.'SDL2.dll'.'SDL_JoystickGetFirmwareVersion'
 ++'_SDL_GUIDToString'.'SDL2.dll'.'SDL_GUIDToString'
 ++'_SDL_GUIDFromString'.'SDL2.dll'.'SDL_GUIDFromString'
+++'_SDL_RenderGetD3D12Device'.'SDL2.dll'.'SDL_RenderGetD3D12Device'
