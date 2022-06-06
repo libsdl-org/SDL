@@ -785,6 +785,12 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     }
 #endif
 
+#if SDL_VIDEO_DRIVER_X11_XRANDR
+    if (videodata->xrandr_event_base && (xevent->type == (videodata->xrandr_event_base + RRNotify))) {
+        X11_HandleXRandREvent(_this, xevent);
+    }
+#endif
+
     /* Send a SDL_SYSWMEVENT if the application wants them */
     if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;

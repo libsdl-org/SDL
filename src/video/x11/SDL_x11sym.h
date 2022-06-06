@@ -276,6 +276,7 @@ SDL_X11_SYM(XIEventMask*,XIGetSelectedEvents,(Display *a,Window b,int *c),(a,b,c
 #if SDL_VIDEO_DRIVER_X11_XRANDR
 SDL_X11_MODULE(XRANDR)
 SDL_X11_SYM(Status,XRRQueryVersion,(Display *dpy,int *major_versionp,int *minor_versionp),(dpy,major_versionp,minor_versionp),return)
+SDL_X11_SYM(Bool,XRRQueryExtension,(Display *dpy,int *event_base_return,int *error_base_return),(dpy,event_base_return,error_base_return),return);
 SDL_X11_SYM(XRRScreenConfiguration *,XRRGetScreenInfo,(Display *dpy,Drawable draw),(dpy,draw),return)
 SDL_X11_SYM(SizeID,XRRConfigCurrentConfiguration,(XRRScreenConfiguration *config,Rotation *rotation),(config,rotation),return)
 SDL_X11_SYM(short,XRRConfigCurrentRate,(XRRScreenConfiguration *config),(config),return)
@@ -297,6 +298,7 @@ SDL_X11_SYM(Atom*,XRRListOutputProperties,(Display *dpy, RROutput output, int *n
 SDL_X11_SYM(XRRPropertyInfo*,XRRQueryOutputProperty,(Display *dpy,RROutput output, Atom property),(dpy,output,property),return)
 SDL_X11_SYM(int,XRRGetOutputProperty,(Display *dpy,RROutput output, Atom property, long offset, long length, Bool _delete, Bool pending, Atom req_type, Atom *actual_type, int *actual_format, unsigned long *nitems, unsigned long *bytes_after, unsigned char **prop),(dpy,output,property,offset,length, _delete, pending, req_type, actual_type, actual_format, nitems, bytes_after, prop),return)
 SDL_X11_SYM(RROutput,XRRGetOutputPrimary,(Display *dpy,Window window),(dpy,window),return)
+SDL_X11_SYM(void,XRRSelectInput,(Display *dpy, Window window, int mask),(dpy,window,mask),)
 #endif
 
 /* MIT-SCREEN-SAVER support */
