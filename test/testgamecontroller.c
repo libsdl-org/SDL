@@ -133,6 +133,7 @@ static void AddController(int device_index, SDL_bool verbose)
     SDL_JoystickID controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
     SDL_GameController *controller;
     SDL_GameController **controllers;
+    Uint16 firmware_version;
 
     controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
     if (controller_id < 0) {
@@ -166,6 +167,13 @@ static void AddController(int device_index, SDL_bool verbose)
         const char *name = SDL_GameControllerName(gamecontroller);
         const char *path = SDL_GameControllerPath(gamecontroller);
         SDL_Log("Opened game controller %s%s%s\n", name, path ? ", " : "", path ? path : "");
+    }
+
+    firmware_version = SDL_GameControllerGetFirmwareVersion(gamecontroller);
+    if (firmware_version) {
+        if (verbose) {
+            SDL_Log("Firmware version: 0x%x (%d)\n", firmware_version, firmware_version);
+        }
     }
 
     if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_ACCEL)) {
