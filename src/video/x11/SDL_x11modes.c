@@ -148,30 +148,6 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-static int
-GetXftDPI(Display* dpy)
-{
-    char* xdefault_resource;
-    int xft_dpi, err;
-
-    xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
-
-    if(!xdefault_resource) {
-        return 0;
-    }
-
-    /*
-     * It's possible for SDL_atoi to call SDL_strtol, if it fails due to a
-     * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
-     * errno to ERANGE. So we need to check for this so we dont get crazy dpi
-     * values
-     */
-    xft_dpi = SDL_atoi(xdefault_resource);
-    err = errno;
-
-    return err == ERANGE ? 0 : xft_dpi;
-}
-
 #if SDL_VIDEO_DRIVER_X11_XRANDR
 static SDL_bool
 CheckXRandR(Display * display, int *major, int *minor)
@@ -333,7 +309,6 @@ X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScre
     Uint32 pixelformat;
     XPixmapFormatValues *pixmapformats;
     int scanline_pad;
-    int xft_dpi = 0;
     int i, n;
 
     if (get_visualinfo(dpy, screen, &vinfo) < 0) {
@@ -405,14 +380,6 @@ X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScre
     displaydata->hdpi = display_mm_width ? (((float) mode.w) * 25.4f / display_mm_width) : 0.0f;
     displaydata->vdpi = display_mm_height ? (((float) mode.h) * 25.4f / display_mm_height) : 0.0f;
     displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
-
-    /* if xft dpi is available we will use this over xrandr (!!! FIXME: ...yeah?) */
-    xft_dpi = GetXftDPI(dpy);
-    if (xft_dpi > 0) {
-        displaydata->hdpi = (float) xft_dpi;
-        displaydata->vdpi = (float) xft_dpi;
-    }
-
     displaydata->scanline_pad = scanline_pad;
     displaydata->x = display_x;
     displaydata->y = display_y;
@@ -564,6 +531,30 @@ X11_InitModes_XRandR(_THIS)
     return 0;
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
+
+static int
+GetXftDPI(Display* dpy)
+{
+    char* xdefault_resource;
+    int xft_dpi, err;
+
+    xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
+
+    if(!xdefault_resource) {
+        return 0;
+    }
+
+    /*
+     * It's possible for SDL_atoi to call SDL_strtol, if it fails due to a
+     * overflow or an underflow, it will return LONG_MAX or LONG_MIN and set
+     * errno to ERANGE. So we need to check for this so we dont get crazy dpi
+     * values
+     */
+    xft_dpi = SDL_atoi(xdefault_resource);
+    err = errno;
+
+    return err == ERANGE ? 0 : xft_dpi;
+}
 
 /* This is used if there's no better functionality--like XRandR--to use.
    It won't attempt to supply different display modes at all, but it can
