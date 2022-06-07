@@ -483,11 +483,6 @@ set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared versi
 set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
 set(SDL_TEST   ${SDL_TEST_ENABLED_BY_DEFAULT} CACHE BOOL "Build the SDL2_test library")
 
-# Some platforms have CMAKE_POSITION_INDEPENDENT_CODE not defined
-if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
-  set(CMAKE_POSITION_INDEPENDENT_CODE FALSE)
-endif()
-
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" "${CMAKE_POSITION_INDEPENDENT_CODE}" "SDL_STATIC" OFF)
 dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
 set_option(SDL_INSTALL_TESTS   "Install test-cases" OFF)

@@ -4007,7 +4007,23 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             if (texture && s.w != 0 && s.h != 0) {
                 SDL_SetTextureAlphaMod(texture, col0_.a);
                 SDL_SetTextureColorMod(texture, col0_.r, col0_.g, col0_.b);
-                SDL_RenderCopyF(renderer, texture, &s, &d);
+                if (s.w > 0 && s.h > 0) {
+                    SDL_RenderCopyF(renderer, texture, &s, &d);
+                } else {
+                    int flags = 0;
+                    if (s.w < 0) {
+                        flags |= SDL_FLIP_HORIZONTAL;
+                        s.w *= -1;
+                        s.x -= s.w;
+                    }
+                    if (s.h < 0) {
+                        flags |= SDL_FLIP_VERTICAL;
+                        s.h *= -1;
+                        s.y -= s.h;
+                    }
+                    SDL_RenderCopyExF(renderer, texture, &s, &d, 0, NULL, flags);
+                }
+
 #if DEBUG_SW_RENDER_GEOMETRY
                 SDL_Log("Rect-COPY: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                         (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
@@ -4017,8 +4033,8 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_SetRenderDrawColor(renderer, col0_.r, col0_.g, col0_.b, col0_.a);
                 SDL_RenderFillRectF(renderer, &d);
 #if DEBUG_SW_RENDER_GEOMETRY
-                SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
-                        (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
+                SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
+                        (void *)texture, d.x, d.y, d.w, d.h);
             } else {
                 SDL_Log("Rect-DISMISS: RGB %d %d %d - Alpha:%d - texture=%p: src=(%d,%d, %d x %d) dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                         (void *)texture, s.x, s.y, s.w, s.h, d.x, d.y, d.w, d.h);
