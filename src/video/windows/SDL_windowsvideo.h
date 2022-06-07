@@ -188,6 +188,8 @@ typedef struct SDL_VideoData
                                         UINT             *dpiY );
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
 
+    SDL_bool dpi_scaling_enabled;
+
     SDL_bool ime_com_initialized;
     struct ITfThreadMgr *ime_threadmgr;
     SDL_bool ime_initialized;

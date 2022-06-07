@@ -1374,11 +1374,16 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 
                 /* Generate a mode change event here */
                 if (resized) {
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(WIN32)
                     /* Android may not resize the window to exactly what our fullscreen mode is, especially on
                      * windowed Android environments like the Chromebook or Samsung DeX.  Given this, we shouldn't
                      * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
                      * Android's SetWindowFullscreen will generate the window event for us with the proper final size.
+                     */
+
+                    /* This is also unnecessary on Win32 (WIN_SetWindowFullscreen calls SetWindowPos,
+                     * WM_WINDOWPOSCHANGED will send SDL_WINDOWEVENT_RESIZED). Also, on Windows with DPI scaling enabled,
+                     * we're keeping modes in pixels, but window sizes in dpi-scaled points, so this would be a unit mismatch.
                      */
                     SDL_SendWindowEvent(other, SDL_WINDOWEVENT_RESIZED,
                                         fullscreen_mode.w, fullscreen_mode.h);

@@ -203,6 +203,7 @@ WIN_CreateDevice(int devindex)
     device->GL_UnloadLibrary = WIN_GL_UnloadLibrary;
     device->GL_CreateContext = WIN_GL_CreateContext;
     device->GL_MakeCurrent = WIN_GL_MakeCurrent;
+    device->GL_GetDrawableSize = WIN_GL_GetDrawableSize;
     device->GL_SetSwapInterval = WIN_GL_SetSwapInterval;
     device->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
     device->GL_SwapWindow = WIN_GL_SwapWindow;
@@ -214,6 +215,7 @@ WIN_CreateDevice(int devindex)
     device->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
     device->GL_CreateContext = WIN_GLES_CreateContext;
     device->GL_MakeCurrent = WIN_GLES_MakeCurrent;
+    device->GL_GetDrawableSize = WIN_GLES_GetDrawableSize;
     device->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
     device->GL_SwapWindow = WIN_GLES_SwapWindow;
@@ -224,6 +226,7 @@ WIN_CreateDevice(int devindex)
     device->Vulkan_UnloadLibrary = WIN_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = WIN_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = WIN_Vulkan_CreateSurface;
+    device->Vulkan_GetDrawableSize = WIN_GL_GetDrawableSize;
 #endif
 
     device->StartTextInput = WIN_StartTextInput;
@@ -373,12 +376,25 @@ WIN_InitDPIAwareness(_THIS)
     }
 }
 
+static void
+WIN_InitDPIScaling(_THIS)
+{
+    SDL_VideoData* data = (SDL_VideoData*)_this->driverdata;
+
+    if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_DPI_SCALING, SDL_FALSE)) {
+        WIN_DeclareDPIAwarePerMonitorV2(_this);
+
+        data->dpi_scaling_enabled = SDL_TRUE;
+    }
+}
+
 int
 WIN_VideoInit(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
     WIN_InitDPIAwareness(_this);
+    WIN_InitDPIScaling(_this);
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("DPI awareness: %s", WIN_GetDPIAwareness(_this));

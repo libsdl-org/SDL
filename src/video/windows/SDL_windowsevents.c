@@ -749,7 +749,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 /* Only generate mouse events for real mouse */
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                     lParam != data->last_pointer_update) {
-                    SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    int x = GET_X_LPARAM(lParam);
+                    int y = GET_Y_LPARAM(lParam);
+
+                    WIN_ClientPointToSDL(data->window, &x, &y);
+
+                    SDL_SendMouseMotion(data->window, 0, 0, x, y);
                 }
             }
         }
@@ -1068,6 +1073,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             SDL_GetWindowMinimumSize(data->window, &min_w, &min_h);
             SDL_GetWindowMaximumSize(data->window, &max_w, &max_h);
 
+            /* Convert w, h, min_w, min_h, max_w, max_h from dpi-scaled points to pixels,
+               treating them as coordinates within the client area. */
+            WIN_ClientPointFromSDL(data->window, &w, &h);
+            WIN_ClientPointFromSDL(data->window, &min_w, &min_h);
+            WIN_ClientPointFromSDL(data->window, &max_w, &max_h);
+
             /* Store in min_w and min_h difference between current size and minimal
                size so we don't need to call AdjustWindowRectEx twice */
             min_w -= w;
@@ -1168,16 +1179,21 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             x = rect.left;
             y = rect.top;
+            WIN_ScreenPointToSDL(&x, &y);
+
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, x, y);
 
+            /* Convert client area width/height from pixels to dpi-scaled points */
             w = rect.right - rect.left;
             h = rect.bottom - rect.top;
+            WIN_ClientPointToSDL(data->window, &w, &h);
+
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w, h);
 
 #ifdef HIGHDPI_DEBUG
-            SDL_Log("WM_WINDOWPOSCHANGED: Windows client rect (pixels): (%d, %d) (%d x %d)\tSDL client rect: (%d, %d) (%d x %d)\tGetDpiForWindow: %d",
-                    rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-                    x, y, w, h, data->videodata->GetDpiForWindow ? (int)data->videodata->GetDpiForWindow(data->hwnd) : 0);
+            SDL_Log("WM_WINDOWPOSCHANGED: Windows client rect (pixels): (%d, %d) (%d x %d)\tSDL client rect (points): (%d, %d) (%d x %d) cached dpi %d, windows reported dpi %d",
+                rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
+                x, y, w, h, data->scaling_dpi, data->videodata->GetDpiForWindow ? data->videodata->GetDpiForWindow(data->hwnd) : 0);
 #endif
 
             /* Forces a WM_PAINT event */
@@ -1385,6 +1401,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
                     w = data->window->windowed.w;
                     h = data->window->windowed.h;
+                    WIN_ClientPointFromSDL(data->window, &w, &h);
                     params->rgrc[0].right = params->rgrc[0].left + w;
                     params->rgrc[0].bottom = params->rgrc[0].top + h;
                 }
@@ -1405,6 +1422,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SDL_HitTestResult rc;
                     point.x = winpoint.x;
                     point.y = winpoint.y;
+                    WIN_ClientPointToSDL(data->window, &point.x, &point.y);
                     rc = window->hit_test(window, &point, window->hit_test_data);
                     switch (rc) {
                         #define POST_HIT_TEST(ret) { SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0); return ret; }
@@ -1474,6 +1492,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 query_client_h_win = sizeInOut->cy - frame_h;
             }
 
+            /* Convert to new dpi if we are using scaling. 
+             * Otherwise leave as pixels.
+             */
+            if (data->videodata->dpi_scaling_enabled) {
+                query_client_w_win = MulDiv(query_client_w_win, nextDPI, prevDPI);
+                query_client_h_win = MulDiv(query_client_h_win, nextDPI, prevDPI);
+            }
+
             /* Add the window frame size that would be used at nextDPI */
             {
                 RECT rect = {0};
@@ -1508,6 +1534,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 suggestedRect->left, suggestedRect->top, suggestedRect->right - suggestedRect->left, suggestedRect->bottom - suggestedRect->top);
 #endif
 
+            if (data->videodata->dpi_scaling_enabled) {
+                /* Update the cached DPI value for this window */
+                data->scaling_dpi = newDPI;
+
+                /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged. 
+                   Renderers need to get this to know that the framebuffer size changed. */
+                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
+            }
+
             if (data->expected_resize) {
                 /* This DPI change is coming from an explicit SetWindowPos call within SDL.
                    Assume all call sites are calculating the DPI-aware frame correctly, so
@@ -1538,6 +1573,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 RECT rect = {0};
                 rect.right = data->window->w;
                 rect.bottom = data->window->h;
+
+                if (data->videodata->dpi_scaling_enabled) {
+                    /* scale client size to from points to the new DPI */
+                    rect.right = MulDiv(rect.right, newDPI, 96);
+                    rect.bottom = MulDiv(rect.bottom, newDPI, 96);
+                }
 
                 if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
                     AdjustWindowRectEx(&rect, style, menu, 0);
