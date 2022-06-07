@@ -290,6 +290,7 @@ WIN_WarpMouseGlobal(int x, int y)
 {
     POINT pt;
 
+    WIN_ScreenPointFromSDL(&x, &y, NULL);
     pt.x = x;
     pt.y = y;
     SetCursorPos(pt.x, pt.y);
@@ -333,6 +334,7 @@ WIN_GetGlobalMouseState(int *x, int *y)
     GetCursorPos(&pt);
     *x = (int) pt.x;
     *y = (int) pt.y;
+    WIN_ScreenPointToSDL(x, y);
 
     retval |= GetAsyncKeyState(!swapButtons ? VK_LBUTTON : VK_RBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
     retval |= GetAsyncKeyState(!swapButtons ? VK_RBUTTON : VK_LBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;
