@@ -25083,12 +25083,31 @@ if test "x$ac_cv_header_d3d11_1_h" = xyes; then :
 fi
 
 
-        ac_fn_c_check_header_mongrel "$LINENO" "d3d12.h" "ac_cv_header_d3d12_h" "$ac_includes_default"
-if test "x$ac_cv_header_d3d12_h" = xyes; then :
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for d3d12 Windows SDK version" >&5
+$as_echo_n "checking for d3d12 Windows SDK version... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <winsdkver.h>
+#include <sdkddkver.h>
+#if WDK_NTDDI_VERSION < 0x0A000008
+asdf
+#endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
   have_d3d12=yes
 fi
-
-
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: have_d3d12" >&5
+$as_echo "have_d3d12" >&6; }
         ac_fn_c_check_header_mongrel "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
 if test "x$ac_cv_header_ddraw_h" = xyes; then :
   have_ddraw=yes
