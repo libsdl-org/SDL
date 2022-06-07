@@ -1200,6 +1200,8 @@ extern "C" {
  *
  *  This variable is case insensitive and can be set to the following values:
  *    "direct3d"
+ *    "direct3d11"
+ *    "direct3d12"
  *    "opengl"
  *    "opengles2"
  *    "opengles"

@@ -3264,6 +3264,7 @@ CheckDIRECTX()
     if test x$enable_directx = xyes; then
         AC_CHECK_HEADER(d3d9.h, have_d3d=yes)
         AC_CHECK_HEADER(d3d11_1.h, have_d3d11=yes)
+        AC_CHECK_HEADER(d3d12.h, have_d3d12=yes)
         AC_CHECK_HEADER(ddraw.h, have_ddraw=yes)
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
@@ -3990,6 +3991,10 @@ case "$host" in
             if test x$enable_render_d3d = xyes -a x$have_d3d11 = xyes; then
                 AC_DEFINE(SDL_VIDEO_RENDER_D3D11, 1, [ ])
                 SUMMARY_video="${SUMMARY_video} d3d11"
+            fi
+            if test x$enable_render_d3d = xyes -a x$have_d3d12 = xyes; then
+                AC_DEFINE(SDL_VIDEO_RENDER_D3D12, 1, [ ])
+                SUMMARY_video="${SUMMARY_video} d3d12"
             fi
         fi
         # Set up files for the audio library

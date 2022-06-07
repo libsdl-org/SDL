@@ -20,7 +20,7 @@
 */
 #include "../SDL_internal.h"
 
-#if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11) && !SDL_RENDER_DISABLED
+#if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12) && !SDL_RENDER_DISABLED
 
 /* Direct3D matrix math functions */
 
@@ -67,6 +67,6 @@ Float4X4 MatrixRotationX(float r);
 Float4X4 MatrixRotationY(float r);
 Float4X4 MatrixRotationZ(float r);
 
-#endif /* (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11) && !SDL_RENDER_DISABLED */
+#endif /* (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12) && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

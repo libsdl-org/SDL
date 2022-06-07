@@ -102,6 +102,22 @@ typedef struct ID3D11Device ID3D11Device;
  */
 extern DECLSPEC ID3D11Device* SDLCALL SDL_RenderGetD3D11Device(SDL_Renderer * renderer);
 
+typedef struct ID3D12Device ID3D12Device;
+
+/**
+ * Get the D3D12 device associated with a renderer.
+ *
+ * Once you are done using the device, you should release it to avoid a
+ * resource leak.
+ *
+ * \param renderer the renderer from which to get the associated D3D12 device
+ * \returns the D3D12 device associated with given renderer or NULL if it is
+ *          not a D3D12 renderer; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.0.23.
+ */
+extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* renderer);
+
 /**
  * Get the DXGI Adapter and Output indices for the specified display index.
  *

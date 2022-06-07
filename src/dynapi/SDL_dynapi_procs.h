@@ -948,3 +948,6 @@ SDL_DYNAPI_PROC(void,SDL_GUIDToString,(SDL_GUID a, char *b, int c),(a,b,c),)
 SDL_DYNAPI_PROC(SDL_GUID,SDL_GUIDFromString,(const char *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasLSX,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasLASX,(void),(),return)
+#ifdef __WIN32__
+SDL_DYNAPI_PROC(ID3D12Device*,SDL_RenderGetD3D12Device,(SDL_Renderer *a),(a),return)
+#endif
