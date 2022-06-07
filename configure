@@ -25090,7 +25090,7 @@ $as_echo_n "checking for d3d12 Windows SDK version... " >&6; }
 
 #include <winsdkver.h>
 #include <sdkddkver.h>
-#if WDK_NTDDI_VERSION < 0x0A000008
+#if WDK_NTDDI_VERSION <= 0x0A000008
 asdf
 #endif
 
