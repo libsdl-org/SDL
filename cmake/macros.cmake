@@ -17,8 +17,8 @@ macro(SET_OPTION _NAME _DESC)
 endmacro()
 
 macro(DEP_OPTION _NAME _DESC _DEFLT _DEPTEST _FAILDFLT)
-  add_to_alloptions(${_NAME})
-  cmake_dependent_option(${_NAME} ${_DESC} ${_DEFLT} ${_DEPTEST} ${_FAILDFLT})
+  add_to_alloptions("${_NAME}")
+  cmake_dependent_option("${_NAME}" "${_DESC}" "${_DEFLT}" "${_DEPTEST}" "${_FAILDFLT}")
 endmacro()
 
 macro(OPTION_STRING _NAME _DESC _VALUE)
