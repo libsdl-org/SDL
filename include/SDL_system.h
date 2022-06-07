@@ -114,7 +114,7 @@ typedef struct ID3D12Device ID3D12Device;
  * \returns the D3D12 device associated with given renderer or NULL if it is
  *          not a D3D12 renderer; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.23.
+ * \since This function is available since SDL 2.24.0.
  */
 extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* renderer);
 
