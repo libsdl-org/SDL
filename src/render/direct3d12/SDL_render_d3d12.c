@@ -713,13 +713,13 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
             goto done;
         }
 
-        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIDebug1, &data->dxgiDebug);
+        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIDebug1, (void **)&data->dxgiDebug);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
             goto done;
         }
 
-        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIInfoQueue, &dxgiInfoQueue);
+        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIInfoQueue, (void **)&dxgiInfoQueue);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
             goto done;
@@ -1019,16 +1019,12 @@ done:
     return result;
 }
 
-#ifdef __WIN32__
-
 static DXGI_MODE_ROTATION
 D3D12_GetCurrentRotation()
 {
     /* FIXME */
     return DXGI_MODE_ROTATION_IDENTITY;
 }
-
-#endif /* __WIN32__ */
 
 static BOOL
 D3D12_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
@@ -1143,7 +1139,7 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
 
     IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, windowinfo.info.win.window, DXGI_MWA_NO_WINDOW_CHANGES);
 
-    result = IDXGISwapChain1_QueryInterface(swapChain, &SDL_IID_IDXGISwapChain4, &data->swapChain);
+    result = IDXGISwapChain1_QueryInterface(swapChain, &SDL_IID_IDXGISwapChain4, (void **)&data->swapChain);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain1::QueryInterface"), result);
         goto done;
@@ -1267,7 +1263,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             data->swapChain,
             i,
             &SDL_IID_ID3D12Resource,
-            &data->renderTargets[i]
+            (void **) &data->renderTargets[i]
             );
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain4::GetBuffer"), result);
@@ -1664,7 +1660,7 @@ D3D12_UpdateTextureInternal(D3D12_RenderData * rendererData, ID3D12Resource * te
     result = ID3D12Resource_Map(rendererData->uploadBuffers[rendererData->currentUploadBuffer],
         0,
         NULL,
-        &textureMemory
+        (void **)&textureMemory
         );
     if (FAILED(result)) {
         SAFE_RELEASE(rendererData->uploadBuffers[rendererData->currentUploadBuffer]);
@@ -1926,7 +1922,7 @@ D3D12_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     result = ID3D12Resource_Map(textureData->stagingBuffer,
         0,
         NULL,
-        &textureMemory
+        (void **)&textureMemory
     );
     if (FAILED(result)) {
         SAFE_RELEASE(rendererData->uploadBuffers[rendererData->currentUploadBuffer]);
@@ -2182,7 +2178,6 @@ D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
     HRESULT result = S_OK;
     const int vbidx = rendererData->currentVertexBuffer;
     const UINT stride = sizeof(VertexPositionColor);
-    const UINT offset = 0;
     UINT8* vertexBufferData = NULL;
     D3D12_RANGE range;
 
@@ -2205,7 +2200,7 @@ D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
         return E_FAIL;
     }
 
-    result = ID3D12Resource_Map(rendererData->vertexBuffers[vbidx].resource, 0, &range, &vertexBufferData);
+    result = ID3D12Resource_Map(rendererData->vertexBuffers[vbidx].resource, 0, &range, (void **)&vertexBufferData);
     if (FAILED(result)) {
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Resource::Map [vertex buffer]"), result);
     }
@@ -2810,7 +2805,7 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     result = ID3D12Resource_Map(readbackBuffer,
         0,
         NULL,
-        &textureMemory
+        (void **)&textureMemory
     );
     if (FAILED(result)) {
         SAFE_RELEASE(readbackBuffer);
