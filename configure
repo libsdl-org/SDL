@@ -838,9 +838,9 @@ enable_3dnow
 enable_sse
 enable_sse2
 enable_sse3
+enable_altivec
 enable_lsx
 enable_lasx
-enable_altivec
 enable_oss
 enable_alsa
 with_alsa_prefix
@@ -1622,9 +1622,9 @@ Optional Features:
   --enable-sse            use SSE assembly routines [default=yes]
   --enable-sse2           use SSE2 assembly routines [default=maybe]
   --enable-sse3           use SSE3 assembly routines [default=maybe]
+  --enable-altivec        use Altivec assembly routines [default=yes]
   --enable-lsx            use LSX assembly routines [default=yes]
   --enable-lasx           use LASX assembly routines [default=yes]
-  --enable-altivec        use Altivec assembly routines [default=yes]
   --enable-oss            support the OSS audio API [default=maybe]
   --enable-alsa           support the ALSA audio API [default=yes]
   --disable-alsatest      Do not try to compile and run a test Alsa program
@@ -18773,129 +18773,6 @@ $as_echo "#define HAVE_IMMINTRIN_H 1" >>confdefs.h
 
     fi
 
-    # Check whether --enable-lsx was given.
-if test "${enable_lsx+set}" = set; then :
-  enableval=$enable_lsx;
-else
-  enable_lsx=yes
-fi
-
-    if test x$enable_lsx = xyes; then
-        save_CFLAGS="$CFLAGS"
-        have_gcc_lsx=no
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -mlsx option" >&5
-$as_echo_n "checking for GCC -mlsx option... " >&6; }
-        lsx_CFLAGS="-mlsx"
-        CFLAGS="$save_CFLAGS $lsx_CFLAGS"
-
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #ifndef __loongarch_sx
-        #error Assembler CPP flag not enabled
-        #endif
-
-int
-main ()
-{
-
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_lsx=yes
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lsx" >&5
-$as_echo "$have_gcc_lsx" >&6; }
-        CFLAGS="$save_CFLAGS"
-
-        if test x$have_gcc_lsx = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $lsx_CFLAGS"
-            SUMMARY_math="${SUMMARY_math} lsx"
-        fi
-    fi
-
-    ac_fn_c_check_header_mongrel "$LINENO" "lsxintrin.h" "ac_cv_header_lsxintrin_h" "$ac_includes_default"
-if test "x$ac_cv_header_lsxintrin_h" = xyes; then :
-  have_lsx_h_hdr=yes
-else
-  have_lsx_h_hdr=no
-fi
-
-
-    if test x$have_lsx_h_hdr = xyes; then
-
-$as_echo "#define HAVE_LSXINTRIN_H 1" >>confdefs.h
-
-    fi
-
-
-    # Check whether --enable-lasx was given.
-if test "${enable_lasx+set}" = set; then :
-  enableval=$enable_lasx;
-else
-  enable_LASX=yes
-fi
-
-    if test x$enable_LASX = xyes; then
-        save_CFLAGS="$CFLAGS"
-        have_gcc_lasx=no
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -mlasx option" >&5
-$as_echo_n "checking for GCC -mlasx option... " >&6; }
-        lasx_CFLAGS="-mlasx"
-        CFLAGS="$save_CFLAGS $lasx_CFLAGS"
-
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #ifndef __loongarch_asx
-        #error Assembler CPP flag not enabled
-        #endif
-
-int
-main ()
-{
-
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_lasx=yes
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lasx" >&5
-$as_echo "$have_gcc_lasx" >&6; }
-        CFLAGS="$save_CFLAGS"
-
-        if test x$have_gcc_lasx = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $lasx_CFLAGS"
-            SUMMARY_math="${SUMMARY_math} lasx"
-        fi
-    fi
-
-    ac_fn_c_check_header_mongrel "$LINENO" "lasxintrin.h" "ac_cv_header_lasxintrin_h" "$ac_includes_default"
-if test "x$ac_cv_header_lasxintrin_h" = xyes; then :
-  have_lasx_h_hdr=yes
-else
-  have_lasx_h_hdr=no
-fi
-
-
-    if test x$have_lasx_h_hdr = xyes; then
-
-$as_echo "#define HAVE_LASXINTRIN_H 1" >>confdefs.h
-
-    fi
-
     # Check whether --enable-altivec was given.
 if test "${enable_altivec+set}" = set; then :
   enableval=$enable_altivec;
@@ -19037,6 +18914,148 @@ $as_echo "#define HAVE_ALTIVEC_H 1" >>confdefs.h
         fi
     fi
 fi
+
+    # Check whether --enable-lsx was given.
+if test "${enable_lsx+set}" = set; then :
+  enableval=$enable_lsx;
+else
+  enable_lsx=yes
+fi
+
+    if test x$enable_lsx = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_gcc_lsx=no
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -mlsx option" >&5
+$as_echo_n "checking for GCC -mlsx option... " >&6; }
+        lsx_CFLAGS="-mlsx"
+        CFLAGS="$save_CFLAGS $lsx_CFLAGS"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #ifndef __loongarch_sx
+        #error Assembler CPP flag not enabled
+        #endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_gcc_lsx=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lsx" >&5
+$as_echo "$have_gcc_lsx" >&6; }
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_lsx = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $lsx_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} lsx"
+        fi
+    fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lsxintrin.h" >&5
+$as_echo_n "checking for lsxintrin.h... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <lsxintrin.h>
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_lsxintrin_h_hdr=yes
+else
+  have_lsxintrin_h_hdr=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_lsxintrin_h_hdr" >&5
+$as_echo "$have_lsxintrin_h_hdr" >&6; }
+    if test x$have_lsxintrin_h_hdr = xyes; then
+
+$as_echo "#define HAVE_LSXINTRIN_H 1" >>confdefs.h
+
+    fi
+
+    # Check whether --enable-lasx was given.
+if test "${enable_lasx+set}" = set; then :
+  enableval=$enable_lasx;
+else
+  enable_LASX=yes
+fi
+
+    if test x$enable_LASX = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_gcc_lasx=no
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -mlasx option" >&5
+$as_echo_n "checking for GCC -mlasx option... " >&6; }
+        lasx_CFLAGS="-mlasx"
+        CFLAGS="$save_CFLAGS $lasx_CFLAGS"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #ifndef __loongarch_asx
+        #error Assembler CPP flag not enabled
+        #endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_gcc_lasx=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lasx" >&5
+$as_echo "$have_gcc_lasx" >&6; }
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_lasx = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $lasx_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} lasx"
+        fi
+    fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lasxintrin.h" >&5
+$as_echo_n "checking for lasxintrin.h... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <lasxintrin.h>
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_lasxintrin_h_hdr=yes
+else
+  have_lasxintrin_h_hdr=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_lasxintrin_h_hdr" >&5
+$as_echo "$have_lasxintrin_h_hdr" >&6; }
+    if test x$have_lasxintrin_h_hdr = xyes; then
+
+$as_echo "#define HAVE_LASXINTRIN_H 1" >>confdefs.h
+
+    fi
 
 CheckOSS()
 {
@@ -25064,6 +25083,12 @@ if test "x$ac_cv_header_d3d11_1_h" = xyes; then :
 fi
 
 
+        ac_fn_c_check_header_mongrel "$LINENO" "d3d12.h" "ac_cv_header_d3d12_h" "$ac_includes_default"
+if test "x$ac_cv_header_d3d12_h" = xyes; then :
+  have_d3d12=yes
+fi
+
+
         ac_fn_c_check_header_mongrel "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
 if test "x$ac_cv_header_ddraw_h" = xyes; then :
   have_ddraw=yes
@@ -26420,6 +26445,12 @@ $as_echo "#define SDL_VIDEO_RENDER_D3D 1" >>confdefs.h
 $as_echo "#define SDL_VIDEO_RENDER_D3D11 1" >>confdefs.h
 
                 SUMMARY_video="${SUMMARY_video} d3d11"
+            fi
+            if test x$enable_render_d3d = xyes -a x$have_d3d12 = xyes; then
+
+$as_echo "#define SDL_VIDEO_RENDER_D3D12 1" >>confdefs.h
+
+                SUMMARY_video="${SUMMARY_video} d3d12"
             fi
         fi
         # Set up files for the audio library
