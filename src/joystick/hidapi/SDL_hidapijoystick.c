@@ -36,6 +36,12 @@
 #include "../windows/SDL_rawinputjoystick_c.h"
 #endif
 
+#ifdef __LINUX__
+#include <dirent.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <unistd.h>
+#endif
 
 struct joystick_hwdata
 {
@@ -1056,6 +1062,54 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickQuit,
     HIDAPI_JoystickGetGamepadMapping
 };
+
+#ifdef __LINUX__
+void
+HIDAPI_InhibitInput(const char *hidraw, SDL_bool inhibit)
+{
+    char sysnode[PATH_MAX];
+    char sysbase[PATH_MAX];
+
+    DIR *input_dir;
+    struct dirent *dent;
+    int fd;
+
+    hidraw = SDL_strstr(hidraw, "hidraw");
+    if (!hidraw) {
+        return;
+    }
+
+    /* Get the sysfs path of the device */
+    SDL_snprintf(sysnode, PATH_MAX, "/sys/class/hidraw/%s", hidraw);
+    if (!realpath(sysnode, sysbase)) {
+        return;
+    }
+
+    /* Get the sysfs path of the input device base */
+    SDL_snprintf(sysnode, PATH_MAX, "%s/../../input", sysbase);
+    if (!realpath(sysnode, sysbase)) {
+        return;
+    }
+
+    input_dir = opendir(sysnode);
+    if (!input_dir) {
+        return;
+    }
+    while ((dent = readdir(input_dir)) != NULL) {
+        if (SDL_strncmp(dent->d_name, "input", 5) != 0) {
+            continue;
+        }
+        SDL_snprintf(sysnode, PATH_MAX, "%s/%s/inhibited", sysbase, dent->d_name);
+        fd = open(sysnode, O_WRONLY);
+        if (fd < 0) {
+            continue;
+        }
+        write(fd, inhibit == SDL_TRUE ? "Y\n" : "N\n", 2);
+        close(fd);
+    }
+    closedir(input_dir);
+}
+#endif
 
 #endif /* SDL_JOYSTICK_HIDAPI */
 

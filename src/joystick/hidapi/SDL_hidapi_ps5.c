@@ -559,6 +559,11 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         SDL_SetError("Couldn't open %s", device->path);
         return SDL_FALSE;
     }
+
+#ifdef __LINUX__
+    HIDAPI_InhibitInput(device->path, SDL_TRUE);
+#endif
+
     device->context = ctx;
 
     /* Read a report to see what mode we're in */
@@ -1085,6 +1090,9 @@ HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick
 
     SDL_LockMutex(device->dev_lock);
     {
+#ifdef __LINUX__
+        HIDAPI_InhibitInput(device->path, SDL_FALSE);
+#endif
         SDL_hid_close(device->dev);
         device->dev = NULL;
 

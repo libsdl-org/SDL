@@ -134,6 +134,10 @@ extern void HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size);
 
 extern float HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max);
 
+#ifdef __LINUX__
+extern void HIDAPI_InhibitInput(const char *hidraw, SDL_bool inhibit);
+#endif
+
 #endif /* SDL_JOYSTICK_HIDAPI_H */
 
 /* vi: set ts=4 sw=4 expandtab: */
