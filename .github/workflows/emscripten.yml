@@ -22,7 +22,6 @@ jobs:
           echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
           cmake --install build/
       - name: Verify CMake configuration files
-        if: ${{ false }}  # FIXME: cmake/test/CMakeLists.txt should support emscripten
         run: |
           emcmake cmake -S cmake/test -B cmake_config_build \
             -DCMAKE_BUILD_TYPE=Release \
