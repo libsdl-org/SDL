@@ -60,10 +60,13 @@ dnl AC_CANONICAL_HOST
 dnl Check for tools
 AC_PROG_CC
 AC_PROG_CXX
-AC_SYS_LARGEFILE
+AC_PROG_EGREP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
+
+dnl 64-bit file offsets if possible unless --disable-largefile is specified
+AC_SYS_LARGEFILE
 
 dnl Make sure that srcdir is a full pathname
 case "$host" in
@@ -319,7 +322,8 @@ if test x$enable_libc = xyes; then
     AC_DEFINE(HAVE_LIBC, 1, [ ])
 
 dnl Check for C library headers
-    AC_HEADER_STDC
+dnl AC_CHECK_INCLUDES_DEFAULT is an autoconf-2.7x thing where AC_HEADER_STDC is deprecated.
+    m4_ifdef([AC_CHECK_INCLUDES_DEFAULT], [AC_CHECK_INCLUDES_DEFAULT], [AC_HEADER_STDC])
     AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h)
 
 dnl Check for typedefs, structures, etc.
@@ -853,7 +857,7 @@ dnl Check for various instruction support
 fi
 
     AC_ARG_ENABLE(lsx,
-[AC_HELP_STRING([--enable-lsx], [use LSX assembly routines [default=yes]])],
+[AS_HELP_STRING([--enable-lsx], [use LSX assembly routines [default=yes]])],
                   , enable_lsx=yes)
     if test x$enable_lsx = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -885,7 +889,7 @@ fi
     fi
 
     AC_ARG_ENABLE(lasx,
-[AC_HELP_STRING([--enable-lasx], [use LASX assembly routines [default=yes]])],
+[AS_HELP_STRING([--enable-lasx], [use LASX assembly routines [default=yes]])],
                   , enable_LASX=yes)
     if test x$enable_LASX = xyes; then
         save_CFLAGS="$CFLAGS"
