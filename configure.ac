@@ -3268,6 +3268,8 @@ CheckDIRECTX()
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <winsdkver.h>
 #include <sdkddkver.h>
+#include <d3d12.h>
+ID3D12Device5 *device;
 #if WDK_NTDDI_VERSION <= 0x0A000008
 asdf
 #endif
