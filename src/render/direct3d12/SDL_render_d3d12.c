@@ -1540,6 +1540,7 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     if (texture->access & SDL_TEXTUREACCESS_TARGET) {
         D3D12_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+        SDL_zero(renderTargetViewDesc);
         renderTargetViewDesc.Format = textureDesc.Format;
         renderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
         renderTargetViewDesc.Texture2D.MipSlice = 0;
