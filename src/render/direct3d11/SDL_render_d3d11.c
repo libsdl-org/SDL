@@ -1177,6 +1177,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         }
     }
 #endif /* SDL_HAVE_YUV */
+    SDL_zero(resourceViewDesc);
     resourceViewDesc.Format = textureDesc.Format;
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MostDetailedMip = 0;
@@ -1227,9 +1228,11 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
         }
     }
+#endif /* SDL_HAVE_YUV */
 
     if (texture->access & SDL_TEXTUREACCESS_TARGET) {
         D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+        SDL_zero(renderTargetViewDesc);
         renderTargetViewDesc.Format = textureDesc.Format;
         renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
         renderTargetViewDesc.Texture2D.MipSlice = 0;
@@ -1243,7 +1246,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateRenderTargetView"), result);
         }
     }
-#endif /* SDL_HAVE_YUV */
+
     return 0;
 }
 
