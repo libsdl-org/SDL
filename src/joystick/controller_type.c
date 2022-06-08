@@ -66,7 +66,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Commander PS3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0086 ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Commander PC (Uses the Xbox 360 protocol, but has PS3 buttons)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0087 ), k_eControllerType_PS3Controller, NULL },	// HORI fighting mini stick
-	{ MAKE_CONTROLLER_ID( 0x0f30, 0x1100 ), k_eControllerType_PS3Controller, NULL },	// Quanba Q1 fight stick
+	{ MAKE_CONTROLLER_ID( 0x0f30, 0x1100 ), k_eControllerType_PS3Controller, NULL },	// Qanba Q1 fight stick
 	{ MAKE_CONTROLLER_ID( 0x11ff, 0x3331 ), k_eControllerType_PS3Controller, NULL },	// SRXJ-PH2400
 	{ MAKE_CONTROLLER_ID( 0x1345, 0x1000 ), k_eControllerType_PS3Controller, NULL },	// PS2 ACME GA-D5
 	{ MAKE_CONTROLLER_ID( 0x1345, 0x6005 ), k_eControllerType_PS3Controller, NULL },	// ps2 maybe break out later
@@ -80,7 +80,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller, NULL },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0x83c3 ), k_eControllerType_PS3Controller, NULL },	// gioteck vx2
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0xc121 ), k_eControllerType_PS3Controller, NULL },	//
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2000 ), k_eControllerType_PS3Controller, NULL },	// Quanba Drone
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2000 ), k_eControllerType_PS3Controller, NULL },	// Qanba Drone
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2302 ), k_eControllerType_PS3Controller, NULL },	// Qanba Obsidian
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller, NULL },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x8380, 0x0003 ), k_eControllerType_PS3Controller, NULL },	// BTP 2163
 	{ MAKE_CONTROLLER_ID( 0x8888, 0x0308 ), k_eControllerType_PS3Controller, NULL },	// Sony PS3 Controller
@@ -118,6 +119,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller, NULL },	// Razer Raiju 2 Tournament edition BT
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1100 ), k_eControllerType_PS4Controller, NULL },	// Razer RAION Fightpad - Trackpad, no gyro, lightbar hardcoded to green
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller, NULL },	// PowerA Fusion Fight Pad
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2300 ), k_eControllerType_PS4Controller, "Qanba Obsidian Arcade Joystick" },	// Qanba Obsidian
 	{ MAKE_CONTROLLER_ID( 0x7545, 0x0104 ), k_eControllerType_PS4Controller, NULL },	// Armor 3 or Level Up Cobra - At least one variant has gyro
 	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller, NULL },	// Astro C40
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0207 ), k_eControllerType_PS4Controller, NULL },	// Victrix Pro Fightstick w/ Touchpad for PS4
