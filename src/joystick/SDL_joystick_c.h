@@ -90,9 +90,6 @@ extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16
 /* Function to return whether a joystick is a Steam Controller */
 extern SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
 
-/* Function to return whether a joystick uses SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS */
-extern SDL_bool SDL_JoystickUsesButtonLabelHint(Uint16 vendor_id, Uint16 product_id);
-
 /* Function to return whether a joystick guid comes from the XInput driver */
 extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
 

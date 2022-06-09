@@ -28,6 +28,7 @@
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
 #include "SDL_gamecontrollerdb.h"
+#include "controller_type.h"
 #include "usb_ids.h"
 
 #if !SDL_EVENTS_DISABLED
@@ -648,14 +649,13 @@ static ControllerMapping_t *SDL_CreateMappingForRAWINPUTController(SDL_JoystickG
 {
     Uint16 vendor;
     Uint16 product;
-    Uint16 version;
     SDL_bool existing;
     char mapping_string[1024];
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
-    if (SDL_JoystickUsesButtonLabelHint(vendor, product) &&
+    if (GuessControllerType(vendor, product) == k_eControllerType_XInputSwitchController &&
         SDL_GetHintBoolean(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS, SDL_TRUE)) {
         SDL_strlcat(mapping_string, "a:b1,b:b0,x:b3,y:b2,back:b6,guide:b10,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
     } else {

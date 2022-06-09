@@ -2187,18 +2187,6 @@ SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id)
 }
 
 SDL_bool
-SDL_JoystickUsesButtonLabelHint(Uint16 vendor_id, Uint16 product_id)
-{
-    EControllerType eType = GuessControllerType(vendor_id, product_id);
-    return (eType == k_eControllerType_SwitchProController ||
-            eType == k_eControllerType_SwitchInputOnlyController ||
-            eType == k_eControllerType_XInputSwitchController ||
-            (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) ||
-            (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
-            (vendor_id == USB_VENDOR_SHENZHEN && product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER));
-}
-
-SDL_bool
 SDL_IsJoystickXInput(SDL_JoystickGUID guid)
 {
     return (guid.data[14] == 'x') ? SDL_TRUE : SDL_FALSE;
