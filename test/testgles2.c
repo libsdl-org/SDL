@@ -454,7 +454,7 @@ void loop()
         switch (event.type) {
         case SDL_WINDOWEVENT:
             switch (event.window.event) {
-                case SDL_WINDOWEVENT_RESIZED:
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
                     for (i = 0; i < state->num_windows; ++i) {
                         if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
                             int w, h;
