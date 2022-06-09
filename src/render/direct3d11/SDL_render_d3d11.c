@@ -27,7 +27,9 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
+#if !defined(__WINRT__)
 #include "../../video/windows/SDL_windowswindow.h"
+#endif
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
@@ -911,7 +913,11 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
+#if defined(__WINRT__)
+    SDL_GetWindowSize(renderer->window, &w, &h);
+#else
     WIN_GetDrawableSize(renderer->window, &w, &h);
+#endif
     data->rotation = D3D11_GetCurrentRotation();
     /* SDL_Log("%s: windowSize={%d,%d}, orientation=%d\n", __FUNCTION__, w, h, (int)data->rotation); */
     if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
@@ -1052,12 +1058,14 @@ D3D11_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
+#if !defined(__WINRT__)
 static int
 D3D11_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
     WIN_GetDrawableSize(renderer->window, w, h);
     return 0;
 }
+#endif
 
 static SDL_bool
 D3D11_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
@@ -2371,7 +2379,9 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D11_WindowEvent;
+#if !defined(__WINRT__)
     renderer->GetOutputSize = D3D11_GetOutputSize;
+#endif
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
