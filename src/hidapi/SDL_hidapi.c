@@ -416,10 +416,7 @@ HIDAPI_UpdateDiscovery()
                     const char *action = NULL;
                     action = usyms->udev_device_get_action(pUdevDevice);
                     if (!action || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
-                        const char *subsystem = usyms->udev_device_get_subsystem(pUdevDevice);
-                        if (!subsystem || SDL_strcmp(subsystem, "backlight") != 0) {
-                            ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
-                        }
+                        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
                     }
                     usyms->udev_device_unref(pUdevDevice);
                 }
