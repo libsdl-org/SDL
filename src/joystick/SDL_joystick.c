@@ -1810,6 +1810,11 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     char *name;
     size_t i, len;
 
+    /* Use the given name for the Nintendo Online NES Controllers */
+    if (SDL_strncmp(product_name, "NES Controller", 14) == 0) {
+        return SDL_strdup(product_name);
+    }
+
     custom_name = GuessControllerName(vendor, product);
     if (custom_name) {
         return SDL_strdup(custom_name);
@@ -2051,6 +2056,10 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
                 break;
             case k_eControllerType_SwitchJoyConLeft:
             case k_eControllerType_SwitchJoyConRight:
+                /* We always support the Nintendo Online NES Controllers */
+                if (name && SDL_strncmp(name, "NES Controller", 14) == 0) {
+                    return SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+                }
                 type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
                 break;
             default:

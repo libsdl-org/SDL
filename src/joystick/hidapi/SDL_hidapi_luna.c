@@ -54,7 +54,7 @@ HIDAPI_DriverLuna_IsSupportedDevice(const char *name, SDL_GameControllerType typ
 }
 
 static const char *
-HIDAPI_DriverLuna_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverLuna_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return "Amazon Luna Controller";
 }

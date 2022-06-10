@@ -71,7 +71,7 @@ HIDAPI_DriverGameCube_IsSupportedDevice(const char *name, SDL_GameControllerType
 }
 
 static const char *
-HIDAPI_DriverGameCube_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverGameCube_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return "Nintendo GameCube Controller";
 }

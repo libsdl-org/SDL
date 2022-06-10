@@ -1004,7 +1004,7 @@ HIDAPI_DriverSteam_IsSupportedDevice(const char *name, SDL_GameControllerType ty
 }
 
 static const char *
-HIDAPI_DriverSteam_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverSteam_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return "Steam Controller";
 }

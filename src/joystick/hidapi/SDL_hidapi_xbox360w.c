@@ -57,7 +57,7 @@ HIDAPI_DriverXbox360W_IsSupportedDevice(const char *name, SDL_GameControllerType
 }
 
 static const char *
-HIDAPI_DriverXbox360W_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverXbox360W_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return "Xbox 360 Wireless Controller";
 }

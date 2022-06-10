@@ -200,8 +200,8 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
 
     device->driver = HIDAPI_GetDeviceDriver(device);
     if (device->driver) {
-        const char *name = device->driver->GetDeviceName(device->vendor_id, device->product_id);
-        if (name) {
+        const char *name = device->driver->GetDeviceName(device->name, device->vendor_id, device->product_id);
+        if (name && name != device->name) {
             SDL_free(device->name);
             device->name = SDL_strdup(name);
         }

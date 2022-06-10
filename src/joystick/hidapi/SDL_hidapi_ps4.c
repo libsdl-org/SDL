@@ -155,7 +155,7 @@ HIDAPI_DriverPS4_IsSupportedDevice(const char *name, SDL_GameControllerType type
 }
 
 static const char *
-HIDAPI_DriverPS4_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverPS4_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     if (vendor_id == USB_VENDOR_SONY) {
         return "PS4 Controller";

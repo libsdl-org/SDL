@@ -305,7 +305,27 @@ HasHomeLED(int vendor_id, int product_id)
         return SDL_FALSE;
     }
 
+    /* The Nintendo Online classic controllers don't have a Home LED */
+    if (vendor_id == USB_VENDOR_NINTENDO &&
+        (product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER ||
+         product_id == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER ||
+         product_id == USB_PRODUCT_NINTENDO_SNES_CONTROLLER)) {
+        return SDL_FALSE;
+    }
+
     return SDL_TRUE;
+}
+
+static SDL_bool
+AlwaysUsesLabels(int vendor_id, int product_id)
+{
+    /* These controllers don't have a diamond button configuration, so always use labels */
+    if (vendor_id == USB_VENDOR_NINTENDO &&
+        (product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER ||
+         product_id == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER)) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 static SDL_bool
@@ -342,7 +362,7 @@ HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType t
 }
 
 static const char *
-HIDAPI_DriverSwitch_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverSwitch_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     /* Give a user friendly name for this controller */
     if (vendor_id == USB_VENDOR_NINTENDO) {
@@ -355,7 +375,23 @@ HIDAPI_DriverSwitch_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
         }
 
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
+            /* Use the given name for the Nintendo Online NES Controllers */
+            if (SDL_strncmp(name, "NES Controller", 14) == 0) {
+                return name;
+            }
             return "Nintendo Switch Joy-Con Right";
+        }
+
+        if (product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+            return "Nintendo N64 Controller";
+        }
+
+        if (product_id == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER) {
+            return "Nintendo SEGA Genesis Controller";
+        }
+
+        if (product_id == USB_PRODUCT_NINTENDO_SNES_CONTROLLER) {
+            return "Nintendo SNES Controller";
         }
     }
 
@@ -1061,8 +1097,12 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         ctx->m_bIsGameCube = SDL_TRUE;
     }
 
-    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
-                        SDL_GameControllerButtonReportingHintChanged, ctx);
+    if (AlwaysUsesLabels(device->vendor_id, device->product_id)) {
+        ctx->m_bUseButtonLabels = SDL_TRUE;
+    } else {
+        SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
+                            SDL_GameControllerButtonReportingHintChanged, ctx);
+    }
 
     /* Initialize the joystick capabilities */
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
