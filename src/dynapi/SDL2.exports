@@ -848,3 +848,4 @@
 ++'_SDL_HasLSX'.'SDL2.dll'.'SDL_HasLSX'
 ++'_SDL_HasLASX'.'SDL2.dll'.'SDL_HasLASX'
 ++'_SDL_RenderGetD3D12Device'.'SDL2.dll'.'SDL_RenderGetD3D12Device'
+++'_SDL_utf8strnlen'.'SDL2.dll'.'SDL_utf8strnlen'
