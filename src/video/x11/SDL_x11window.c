@@ -1074,6 +1074,10 @@ X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
     X11_XSync(display, False);
     X11_XCheckIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
     X11_XCheckIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
+
+    /* Make sure the window manager didn't resize our window for the difference. */
+    X11_XResizeWindow(display, data->xwindow, window->w, window->h);
+    X11_XSync(display, False);
 }
 
 void
