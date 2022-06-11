@@ -41,7 +41,7 @@ extern "C" {
 
 
 /* Platform specific functions for Windows */
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 	
 typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
 
@@ -138,7 +138,7 @@ extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* ren
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex );
 
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 
 /* Platform specific functions for Linux */
@@ -578,6 +578,25 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
 #ifdef __IPHONEOS__
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
+#endif
+
+/* Functions used only by GDK */
+#if defined(__GDK__)
+typedef struct XTaskQueueObject * XTaskQueueHandle;
+
+/**
+ * Gets a reference to the global async task queue handle for GDK,
+ * initializing if needed.
+ * 
+ * Once you are done with the task queue, you should call XTaskQueueCloseHandle
+ * to reduce the reference count to avoid a resource leak.
+ * 
+ * \param outTaskQueue a pointer to be filled in with task queue handle.
+ * \returns 0 if success, -1 if any error occurs.
+ * 
+ */
+extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue);
+
 #endif
 
 /* Ends C function definitions when using C++ */

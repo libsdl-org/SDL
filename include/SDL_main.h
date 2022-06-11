@@ -39,7 +39,7 @@
  */
 #define SDL_MAIN_AVAILABLE
 
-#elif defined(__WINRT__)
+#elif defined(__WINRT__) || defined(__GDK__)
 /* On WinRT, SDL provides a main function that initializes CoreApplication,
    creating an instance of IFrameworkView in the process.
 
@@ -48,6 +48,8 @@
    src/main/winrt/SDL_WinRT_main_NonXAML.cpp, or a copy of it, must be compiled
    into the app itself.  In XAML apps, the function, SDL_WinRTRunApp must be
    called, with a pointer to the Direct3D-hosted XAML control passed in.
+
+   All Microsoft GDK platforms should link against SDL2main to get the required WinMain.
 */
 #define SDL_MAIN_NEEDED
 
@@ -145,7 +147,7 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  */
 extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 
 /**
  * Register a win32 window class for SDL's use.
@@ -189,7 +191,7 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 
 #ifdef __WINRT__

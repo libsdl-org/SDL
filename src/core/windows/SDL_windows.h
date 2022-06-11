@@ -38,6 +38,16 @@
 #else
 #define _WIN32_WINNT  0xA00   /* For D3D12, 0xA00 is required */
 #endif
+#elif defined(__WINGDK__)
+#define WIN32_LEAN_AND_MEAN
+#define STRICT
+#ifndef UNICODE
+#define UNICODE 1
+#endif
+#undef WINVER
+#define WINVER 0xA00
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0xA00
 #endif
 
 #include <windows.h>

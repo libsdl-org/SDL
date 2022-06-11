@@ -875,3 +875,4 @@
 #define SDL_HasLASX SDL_HasLASX_REAL
 #define SDL_RenderGetD3D12Device SDL_RenderGetD3D12Device_REAL
 #define SDL_utf8strnlen SDL_utf8strnlen_REAL
+#define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
