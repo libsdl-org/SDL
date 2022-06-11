@@ -973,7 +973,10 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
             status = _this->WaitEventTimeout(_this, loop_timeout);
             /* Set wakeup_window to NULL without holding the lock. */
             _this->wakeup_window = NULL;
-            if (status <= 0) {
+            if (status == 0 && need_periodic_poll && loop_timeout == PERIODIC_POLL_INTERVAL_MS) {
+                /* We may have woken up to poll. Try again */
+                continue;
+            } else if (status <= 0) {
                 /* There is either an error or the timeout is elapsed: return */
                 return status;
             }
