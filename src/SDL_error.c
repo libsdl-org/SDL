@@ -25,8 +25,6 @@
 #include "SDL_error.h"
 #include "SDL_error_c.h"
 
-#define SDL_ERRBUFIZE   1024
-
 int
 SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
