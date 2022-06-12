@@ -3277,8 +3277,8 @@ ID3D12Device5 *device;
 #if WDK_NTDDI_VERSION <= 0x0A000008
 asdf
 #endif
-            ]],[])], [have_d3d12=yes],[])
-        AC_MSG_RESULT(have_d3d12)
+            ]])], [have_d3d12=yes],[have_d3d12=no])
+        AC_MSG_RESULT($have_d3d12)
         AC_CHECK_HEADER(ddraw.h, have_ddraw=yes)
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
