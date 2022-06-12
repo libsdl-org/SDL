@@ -196,6 +196,100 @@ WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mod
     return SDL_TRUE;
 }
 
+/* The win32 API calls in this function require Windows Vista or later. */
+/* these are normally WINAPI but VS2017 is saying "warning C4229: anachronism used: modifiers on data are ignored" */
+typedef LONG (*SDL_WIN32PROC_GetDisplayConfigBufferSizes)(UINT32 flags, UINT32* numPathArrayElements, UINT32* numModeInfoArrayElements);
+typedef LONG (*SDL_WIN32PROC_QueryDisplayConfig)(UINT32 flags, UINT32* numPathArrayElements, DISPLAYCONFIG_PATH_INFO* pathArray, UINT32* numModeInfoArrayElements, DISPLAYCONFIG_MODE_INFO* modeInfoArray, DISPLAYCONFIG_TOPOLOGY_ID* currentTopologyId);
+typedef LONG (*SDL_WIN32PROC_DisplayConfigGetDeviceInfo)(DISPLAYCONFIG_DEVICE_INFO_HEADER* requestPacket);
+
+static char *
+WIN_GetDisplayNameVista(const WCHAR *deviceName)
+{
+    void *dll;
+    SDL_WIN32PROC_GetDisplayConfigBufferSizes pGetDisplayConfigBufferSizes;
+    SDL_WIN32PROC_QueryDisplayConfig pQueryDisplayConfig;
+    SDL_WIN32PROC_DisplayConfigGetDeviceInfo pDisplayConfigGetDeviceInfo;
+    DISPLAYCONFIG_PATH_INFO *paths = NULL;
+    DISPLAYCONFIG_MODE_INFO *modes = NULL;
+    char *retval = NULL;
+    UINT32 pathCount = 0;
+    UINT32 modeCount = 0;
+    UINT32 i;
+    LONG rc;
+
+    dll = SDL_LoadObject("USER32.DLL");
+    if (!dll) {
+        return NULL;
+    }
+
+    pGetDisplayConfigBufferSizes = (SDL_WIN32PROC_GetDisplayConfigBufferSizes) SDL_LoadFunction(dll, "GetDisplayConfigBufferSizes");
+    pQueryDisplayConfig = (SDL_WIN32PROC_QueryDisplayConfig) SDL_LoadFunction(dll, "QueryDisplayConfig");
+    pDisplayConfigGetDeviceInfo = (SDL_WIN32PROC_DisplayConfigGetDeviceInfo) SDL_LoadFunction(dll, "DisplayConfigGetDeviceInfo");
+
+    if (!pGetDisplayConfigBufferSizes || !pQueryDisplayConfig || !pDisplayConfigGetDeviceInfo) {
+        goto WIN_GetDisplayNameVista_failed;
+    }
+
+    do {
+        rc = pGetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &pathCount, &modeCount);
+        if (rc != ERROR_SUCCESS) {
+            goto WIN_GetDisplayNameVista_failed;
+        }
+
+        SDL_free(paths);
+        SDL_free(modes);
+
+        paths = (DISPLAYCONFIG_PATH_INFO *) SDL_malloc(sizeof (DISPLAYCONFIG_PATH_INFO) * pathCount);
+        modes = (DISPLAYCONFIG_MODE_INFO *) SDL_malloc(sizeof (DISPLAYCONFIG_MODE_INFO) * modeCount);
+        if ((paths == NULL) || (modes == NULL)) {
+            goto WIN_GetDisplayNameVista_failed;
+        }
+
+        rc = pQueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &pathCount, paths, &modeCount, modes, 0);
+    } while (rc == ERROR_INSUFFICIENT_BUFFER);
+
+    if (rc == ERROR_SUCCESS) {
+        for (i = 0; i < pathCount; i++) {
+            DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName;
+            DISPLAYCONFIG_TARGET_DEVICE_NAME targetName;
+
+            SDL_zero(sourceName);
+            sourceName.header.adapterId = paths[i].targetInfo.adapterId;
+            sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+            sourceName.header.size = sizeof (sourceName);
+            rc = pDisplayConfigGetDeviceInfo(&sourceName.header);
+            if (rc != ERROR_SUCCESS) {
+                break;
+            } else if (SDL_wcscmp(deviceName, sourceName.viewGdiDeviceName) != 0) {
+                continue;
+            }
+
+            SDL_zero(targetName);
+            targetName.header.adapterId = paths[i].targetInfo.adapterId;
+            targetName.header.id = paths[i].targetInfo.id;
+            targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+            targetName.header.size = sizeof (targetName);
+            rc = pDisplayConfigGetDeviceInfo(&targetName.header);
+            if (rc == ERROR_SUCCESS) {
+                retval = WIN_StringToUTF8W(targetName.monitorFriendlyDeviceName);
+            }
+            break;
+        }
+    }
+
+    SDL_free(paths);
+    SDL_free(modes);
+    SDL_UnloadObject(dll);
+    return retval;
+
+WIN_GetDisplayNameVista_failed:
+    SDL_free(retval);
+    SDL_free(paths);
+    SDL_free(modes);
+    SDL_UnloadObject(dll);
+    return NULL;
+}
+
 static SDL_bool
 WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool send_event)
 {
@@ -204,7 +298,6 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
     SDL_DisplayOrientation orientation;
-    DISPLAY_DEVICEW device;
 
 #ifdef DEBUG_MODES
     SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
@@ -243,10 +336,16 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
     displaydata->IsValid = SDL_TRUE;
 
     SDL_zero(display);
-    device.cb = sizeof(device);
-    if (EnumDisplayDevicesW(info->szDevice, 0, &device, 0)) {
-        display.name = WIN_StringToUTF8W(device.DeviceString);
+    display.name = WIN_GetDisplayNameVista(info->szDevice);
+    if (display.name == NULL) {
+        DISPLAY_DEVICEW device;
+        SDL_zero(device);
+        device.cb = sizeof (device);
+        if (EnumDisplayDevicesW(info->szDevice, 0, &device, 0)) {
+            display.name = WIN_StringToUTF8W(device.DeviceString);
+        }
     }
+
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.orientation = orientation;
