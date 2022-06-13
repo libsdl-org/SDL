@@ -652,7 +652,7 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE "SDL_JOYSTICK_GAMECUBE_RUMBLE_BRAKE"
 
- /**
+/**
   *  \brief  A variable controlling whether Switch Joy-Cons should be treated the same as Switch Pro Controllers when using the HIDAPI driver.
   *
   *  This variable can be set to the following values:
@@ -663,7 +663,7 @@ extern "C" {
   */
 #define SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS "SDL_JOYSTICK_HIDAPI_JOY_CONS"
 
- /**
+/**
   *  \brief  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
   *
   *  This variable can be set to the following values:
@@ -800,7 +800,7 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX   "SDL_JOYSTICK_HIDAPI_XBOX"
 
- /**
+/**
   *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
   *
   *  This variable can be set to the following values:
@@ -809,7 +809,7 @@ extern "C" {
   */
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
 
- /**
+/**
   *  \brief  A variable controlling whether the RAWINPUT driver should pull correlated data from XInput.
   *
   *  This variable can be set to the following values:
@@ -822,7 +822,7 @@ extern "C" {
   */
 #define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT   "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
 
- /**
+/**
   *  \brief  A variable controlling whether the ROG Chakram mice should show up as joysticks
   *
   *  This variable can be set to the following values:
@@ -831,7 +831,7 @@ extern "C" {
   */
 #define SDL_HINT_JOYSTICK_ROG_CHAKRAM "SDL_JOYSTICK_ROG_CHAKRAM"
 
- /**
+/**
   *  \brief  A variable controlling whether a separate thread should be used
   *          for handling joystick detection and raw input messages on Windows
   *
@@ -865,14 +865,14 @@ extern "C" {
  */
 #define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER      "SDL_KMSDRM_REQUIRE_DRM_MASTER"
 
- /**
+/**
   *  \brief  A comma separated list of devices to open as joysticks
   *
   *  This variable is currently only used by the Linux joystick driver.
   */
 #define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
 
- /**
+/**
   *  \brief  A variable controlling whether joysticks on Linux will always treat 'hat' axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.
   *
   *  This variable can be set to the following values:
@@ -881,7 +881,7 @@ extern "C" {
   */
 #define SDL_HINT_LINUX_DIGITAL_HATS "SDL_LINUX_DIGITAL_HATS"
 
- /**
+/**
   *  \brief  A variable controlling whether digital hats on Linux will apply deadzones to their underlying input axes or use unfiltered values.
   *
   *  This variable can be set to the following values:
@@ -890,7 +890,7 @@ extern "C" {
   */
 #define SDL_HINT_LINUX_HAT_DEADZONES "SDL_LINUX_HAT_DEADZONES"
 
- /**
+/**
   *  \brief  A variable controlling whether to use the classic /dev/input/js* joystick interface or the newer /dev/input/event* joystick interface on Linux
   *
   *  This variable can be set to the following values:
@@ -901,7 +901,7 @@ extern "C" {
   */
 #define SDL_HINT_LINUX_JOYSTICK_CLASSIC "SDL_LINUX_JOYSTICK_CLASSIC"
 
- /**
+/**
   *  \brief  A variable controlling whether joysticks on Linux adhere to their HID-defined deadzones or return unfiltered values.
   *
   *  This variable can be set to the following values:
@@ -1258,7 +1258,7 @@ extern "C" {
  */
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
 
- /**
+/**
  * \brief A variable to control whether the return key on the soft keyboard
  *        should hide the soft keyboard on Android and iOS.
  *
@@ -1838,7 +1838,7 @@ extern "C" {
  */
 #define SDL_HINT_WINDOWS_DPI_AWARENESS "SDL_WINDOWS_DPI_AWARENESS"
 
- /**
+/**
  * \brief Uses DPI-scaled points as the SDL coordinate system on Windows.
  * 
  *  This changes the SDL coordinate system units to be DPI-scaled points, rather than pixels everywhere.
