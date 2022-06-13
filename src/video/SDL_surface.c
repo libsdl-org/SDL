@@ -42,7 +42,7 @@ SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
  * Return SDL_SIZE_MAX on overflow.
  */
 static size_t
-SDL_CalculatePitch(Uint32 format, size_t width)
+SDL_CalculatePitch(Uint32 format, size_t width, SDL_bool minimal)
 {
     size_t pitch;
 
@@ -59,11 +59,13 @@ SDL_CalculatePitch(Uint32 format, size_t width)
         }
         pitch /= 8;
     }
-    /* 4-byte aligning for speed */
-    if (SDL_size_add_overflow(pitch, 3, &pitch)) {
-        return SDL_SIZE_MAX;
+    if (!minimal) {
+        /* 4-byte aligning for speed */
+        if (SDL_size_add_overflow(pitch, 3, &pitch)) {
+            return SDL_SIZE_MAX;
+        }
+        pitch &= ~3;
     }
-    pitch &= ~3;
     return pitch;
 }
 
@@ -92,7 +94,7 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
         return NULL;
     }
 
-    pitch = SDL_CalculatePitch(format, width);
+    pitch = SDL_CalculatePitch(format, width, SDL_FALSE);
     if (pitch > SDL_MAX_SINT32) {
         /* Overflow... */
         SDL_OutOfMemory();
@@ -206,6 +208,9 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
                          Uint32 Amask)
 {
     SDL_Surface *surface;
+    Uint32 format;
+    size_t minimalPitch;
+
     if (width < 0) {
         SDL_InvalidParamError("width");
         return NULL;
@@ -216,13 +221,21 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
         return NULL;
     }
 
-    if (pitch < 0) {
+    format = SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
+
+    if (format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_SetError("Unknown pixel format");
+        return NULL;
+    }
+
+    minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+
+    if (pitch < 0 || ((size_t) pitch) < minimalPitch) {
         SDL_InvalidParamError("pitch");
         return NULL;
     }
 
-
-    surface = SDL_CreateRGBSurface(0, 0, 0, depth, Rmask, Gmask, Bmask, Amask);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, depth, format);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
@@ -245,6 +258,8 @@ SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
                          Uint32 format)
 {
     SDL_Surface *surface;
+    size_t minimalPitch;
+
     if (width < 0) {
         SDL_InvalidParamError("width");
         return NULL;
@@ -255,11 +270,12 @@ SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
         return NULL;
     }
 
-    if (pitch < 0) {
+    minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+
+    if (pitch < 0 || ((size_t) pitch) < minimalPitch) {
         SDL_InvalidParamError("pitch");
         return NULL;
     }
-
 
     surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, depth, format);
     if (surface != NULL) {
