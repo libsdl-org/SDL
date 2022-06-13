@@ -53,12 +53,12 @@ set(_sdl2_libraries "@SDL_LIBS@")
 set(_sdl2_static_private_libs "@SDL_STATIC_LIBS@")
 
 # Convert _sdl2_libraries to list and keep only libraries
-string(REGEX MATCHALL "-[lm]([a-zA-Z0-9._]+)" _sdl2_libraries "${_sdl2_libraries}")
+string(REGEX MATCHALL "-[lm]([-a-zA-Z0-9._]+)" _sdl2_libraries "${_sdl2_libraries}")
 string(REGEX REPLACE "^-l" "" _sdl2_libraries "${_sdl2_libraries}")
 string(REGEX REPLACE ";-l" ";" _sdl2_libraries "${_sdl2_libraries}")
 
 # Convert _sdl2_static_private_libs to list and keep only libraries
-string(REGEX MATCHALL "(-[lm]([a-zA-Z0-9._]+))|(-Wl,[^ ]*framework[^ ]*)" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
+string(REGEX MATCHALL "(-[lm]([-a-zA-Z0-9._]+))|(-Wl,[^ ]*framework[^ ]*)" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
 string(REGEX REPLACE "^-l" "" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
 string(REGEX REPLACE ";-l" ";" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
 
