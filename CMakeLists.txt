@@ -1415,7 +1415,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
         # We've already found the header, so REQUIRE the lib to be present
         pkg_search_module(UNWIND REQUIRED libunwind)
         pkg_search_module(UNWIND_GENERIC libunwind-generic)
-        list(APPEND EXTRA_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
+        list(APPEND EXTRA_TEST_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
       endif()
     endif()
 
@@ -3041,6 +3041,7 @@ if(SDL_TEST)
   set_target_properties(SDL2_test PROPERTIES
       EXPORT_NAME SDL2test)
   target_include_directories(SDL2_test PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
+  target_link_libraries(SDL2_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
 ##### Installation targets #####
