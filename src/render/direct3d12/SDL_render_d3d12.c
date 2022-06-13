@@ -33,6 +33,7 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
+#include "../../video/windows/SDL_windowswindow.h"
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
@@ -238,7 +239,6 @@ static const GUID SDL_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-
 
 
 UINT
@@ -485,6 +485,13 @@ D3D12_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
+static int
+D3D12_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
+{
+    WIN_GetDrawableSize(renderer->window, w, h);
+    return 0;
+}
+
 static D3D12_BLEND
 GetBlendFunc(SDL_BlendFactor factor)
 {
@@ -563,7 +570,7 @@ D3D12_CreatePipelineState(SDL_Renderer * renderer,
     SDL_BlendMode blendMode,
     D3D12_PRIMITIVE_TOPOLOGY_TYPE topology,
     DXGI_FORMAT rtvFormat
-    ) 
+    )
 {
     const D3D12_INPUT_ELEMENT_DESC vertexDesc[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -1211,7 +1218,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
-    SDL_GetWindowSize(renderer->window, &w, &h);
+    WIN_GetDrawableSize(renderer->window, &w, &h);
     data->rotation = D3D12_GetCurrentRotation();
     if (D3D12_IsDisplayRotated90Degrees(data->rotation)) {
         int tmp = w;
@@ -2936,6 +2943,7 @@ D3D12_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D12_WindowEvent;
+    renderer->GetOutputSize = D3D12_GetOutputSize;
     renderer->SupportsBlendMode = D3D12_SupportsBlendMode;
     renderer->CreateTexture = D3D12_CreateTexture;
     renderer->UpdateTexture = D3D12_UpdateTexture;
