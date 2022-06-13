@@ -378,6 +378,7 @@
 #cmakedefine SDL_THREAD_OS2 @SDL_THREAD_OS2@
 #cmakedefine SDL_THREAD_VITA @SDL_THREAD_VITA@
 #cmakedefine SDL_THREAD_PSP @SDL_THREAD_PSP@
+#cmakedefine SDL_THREAD_PS2 @SDL_THREAD_PS2@
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU @SDL_TIMER_HAIKU@
