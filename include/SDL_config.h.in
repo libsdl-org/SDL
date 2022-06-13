@@ -460,6 +460,7 @@
 #undef SDL_FILESYSTEM_OS2
 #undef SDL_FILESYSTEM_VITA
 #undef SDL_FILESYSTEM_PSP
+#undef SDL_FILESYSTEM_PS2
 
 /* Enable misc subsystem */
 #undef SDL_MISC_DUMMY
