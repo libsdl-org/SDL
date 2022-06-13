@@ -593,6 +593,79 @@ surface_testBlitBlendLoop(void *arg) {
 
 }
 
+int
+surface_testOverflow(void *arg)
+{
+    char buf[1024];
+    const char *expectedError;
+    SDL_Surface *surface;
+
+    SDL_memset(buf, '\0', sizeof(buf));
+
+    expectedError = "Parameter 'width' is invalid";
+    surface = SDL_CreateRGBSurfaceWithFormat(0, -3, 100, 8, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative width");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, -1, 1, 8, 4, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative width");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateRGBSurfaceFrom(buf, -1, 1, 32, 4, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative width");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+
+    expectedError = "Parameter 'height' is invalid";
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 100, -3, 8, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative height");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 1, -1, 8, 4, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative height");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateRGBSurfaceFrom(buf, 1, -1, 32, 4, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative height");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+
+    expectedError = "Parameter 'pitch' is invalid";
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 4, 1, 8, -1, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative pitch");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    surface = SDL_CreateRGBSurfaceFrom(buf, 1, 1, 32, -1, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+    SDLTest_AssertCheck(surface == NULL, "Should detect negative pitch");
+    SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                        "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+
+    if (sizeof (size_t) == 4 && sizeof (int) >= 4) {
+        expectedError = "Out of memory";
+        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32, 1, 8, SDL_PIXELFORMAT_INDEX8);
+        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width + alignment");
+        SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                            "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32 / 2, 1, 32, SDL_PIXELFORMAT_ARGB8888);
+        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
+        SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                            "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 29) - 1, (1 << 29) - 1, 8, SDL_PIXELFORMAT_INDEX8);
+        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height");
+        SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                            "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 15) + 1, (1 << 15) + 1, 32, SDL_PIXELFORMAT_ARGB8888);
+        SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
+        SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
+                            "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
+    }
+    else {
+        SDLTest_Log("Can't easily overflow size_t on this platform");
+    }
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Surface test cases */
@@ -635,11 +708,14 @@ static const SDLTest_TestCaseReference surfaceTest11 =
 static const SDLTest_TestCaseReference surfaceTest12 =
         { (SDLTest_TestCaseFp)surface_testBlitBlendMod, "surface_testBlitBlendMod", "Tests blitting routines with mod blending mode.", TEST_ENABLED};
 
+static const SDLTest_TestCaseReference surfaceTestOverflow =
+        { surface_testOverflow, "surface_testOverflow", "Test overflow detection.", TEST_ENABLED};
+
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] =  {
     &surfaceTest1, &surfaceTest2, &surfaceTest3, &surfaceTest4, &surfaceTest5,
     &surfaceTest6, &surfaceTest7, &surfaceTest8, &surfaceTest9, &surfaceTest10,
-    &surfaceTest11, &surfaceTest12, NULL
+    &surfaceTest11, &surfaceTest12, &surfaceTestOverflow, NULL
 };
 
 /* Surface test suite (global) */
