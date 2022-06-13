@@ -2524,6 +2524,12 @@ elseif(PSP)
 elseif(PS2)
   list(APPEND EXTRA_CFLAGS "-DPS2")
 
+  if(SDL_TIMERS)
+    set(SDL_TIMER_PS2 1)
+    file(GLOB PS2_TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/ps2/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PS2_TIMER_SOURCES})
+    set(HAVE_SDL_TIMERS TRUE)
+  endif()
 elseif(OS2)
   list(APPEND EXTRA_CFLAGS "-DOS2EMX_PLAIN_CHAR")
 
