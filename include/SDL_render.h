@@ -1021,7 +1021,7 @@ extern DECLSPEC void SDLCALL SDL_RenderWindowToLogical(SDL_Renderer * renderer,
                                                             int windowX, int windowY, 
                                                             float *logicalX, float *logicalY);
                                                   
-                                                  /**
+/**
  * Get real coordinates of point in window when given logical coordinates of point in renderer.
  * Logical coordinates will differ from real coordinates when render is scaled and logical renderer size set
  * 
