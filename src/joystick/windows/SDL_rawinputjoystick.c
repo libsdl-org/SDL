@@ -1349,15 +1349,15 @@ RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
 static Uint32
 RAWINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    RAWINPUT_DeviceContext *ctx = joystick->hwdata;
     Uint32 result = 0;
+#if defined(SDL_JOYSTICK_RAWINPUT_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT_WGI)
+    RAWINPUT_DeviceContext *ctx = joystick->hwdata;
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     if (ctx->is_xinput) {
         result |= SDL_JOYCAP_RUMBLE;
     }
 #endif
-
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (ctx->is_xinput) {
         result |= SDL_JOYCAP_RUMBLE;
@@ -1367,6 +1367,7 @@ RAWINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
         }
     }
 #endif
+#endif /**/
 
     return result;
 }

@@ -334,6 +334,7 @@ WIN_DeclareDPIAwarePerMonitorV2(_THIS)
     }
 }
 
+#ifdef HIGHDPI_DEBUG
 static const char*
 WIN_GetDPIAwareness(_THIS)
 {
@@ -357,6 +358,7 @@ WIN_GetDPIAwareness(_THIS)
 
     return "";
 }
+#endif
 
 static void
 WIN_InitDPIAwareness(_THIS)

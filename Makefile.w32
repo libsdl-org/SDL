@@ -136,6 +136,8 @@ SDL_blendpoint.obj: SDL_blendpoint.c
     wcc386 $(CFLAGS_DLL) -wcd=200 -fo=$^@ $<
 SDL_RLEaccel.obj: SDL_RLEaccel.c
     wcc386 $(CFLAGS_DLL) -wcd=201 -fo=$^@ $<
+SDL_malloc.obj: SDL_malloc.c
+    wcc386 $(CFLAGS_DLL) -wcd=201 -fo=$^@ $<
 
 # SDL2libm
 MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &

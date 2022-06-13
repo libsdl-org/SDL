@@ -118,13 +118,11 @@ GetWindowStyle(SDL_Window * window)
 
 /**
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
- * 
  * Can be called before we have a HWND.
  */
 static void
 WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_VideoData* videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
     int dpi;
@@ -140,12 +138,12 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
     WIN_ScreenPointFromSDL(x, y, &dpi);
     /* Note, use the guessed DPI returned from WIN_ScreenPointFromSDL rather than the cached one in
        data->scaling_dpi.
-       
+
        - This is called before the window is created, so we can't rely on data->scaling_dpi
        - Bug workaround: when leaving exclusive fullscreen, the cached DPI and window DPI reported
          by GetDpiForWindow will be wrong, and would cause windows shrinking slightly when
          going from exclusive fullscreen to windowed on a HighDPI monitor with scaling if we used them.
-    */  
+    */
     *width = MulDiv(*width, dpi, 96);
     *height = MulDiv(*height, dpi, 96);
 
@@ -163,7 +161,6 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
         if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
             /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of 
                AdjustWindowRectEx. */
-            
             UINT unused;
             RECT screen_rect;
             HMONITOR mon;
@@ -855,7 +852,6 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    SDL_VideoData *videodata = data->videodata;
     HWND hwnd = data->hwnd;
     MONITORINFO minfo;
     DWORD style;
