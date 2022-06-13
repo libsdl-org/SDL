@@ -144,7 +144,7 @@ TestGuidToString(void)
                 ++written_size;
             }
             if (!ASSERT_EQ("Output length is within expected bounds", 1, written_size <= size)) {
-                SDL_Log("  with lenght %d: wrote %d of %d permitted bytes",
+                SDL_Log("  with length %d: wrote %d of %d permitted bytes",
                         size, written_size, size);
             }
             if (size >= 33) {

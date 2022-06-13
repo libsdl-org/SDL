@@ -1827,7 +1827,7 @@ int SDL_X11_SetWindowTitle(Display* display, Window xwindow, char* title) {
     } else if (conv < 0) {
         return SDL_OutOfMemory();
     } else { /* conv > 0 */
-        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%d characters were not convertable to the current locale!", conv);
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%d characters were not convertible to the current locale!", conv);
         return 0;
     }
 

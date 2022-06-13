@@ -544,7 +544,7 @@ static const SDLTest_TestCaseReference platformTest1 =
         { (SDLTest_TestCaseFp)platform_testTypes, "platform_testTypes", "Tests predefined types", TEST_ENABLED};
 
 static const SDLTest_TestCaseReference platformTest2 =
-        { (SDLTest_TestCaseFp)platform_testEndianessAndSwap, "platform_testEndianessAndSwap", "Tests endianess and swap functions", TEST_ENABLED};
+        { (SDLTest_TestCaseFp)platform_testEndianessAndSwap, "platform_testEndianessAndSwap", "Tests endianness and swap functions", TEST_ENABLED};
 
 static const SDLTest_TestCaseReference platformTest3 =
         { (SDLTest_TestCaseFp)platform_testGetFunctions, "platform_testGetFunctions", "Tests various SDL_GetXYZ functions", TEST_ENABLED};
