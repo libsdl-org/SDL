@@ -353,7 +353,7 @@ static int
 QueueCmdSetViewport(SDL_Renderer *renderer)
 {
     int retval = 0;
-    if (!renderer->viewport_queued || (SDL_memcmp(&renderer->viewport, &renderer->last_queued_viewport, sizeof (SDL_Rect)) != 0)) {
+    if (!renderer->viewport_queued || (SDL_memcmp(&renderer->viewport, &renderer->last_queued_viewport, sizeof (SDL_DRect)) != 0)) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
         retval = -1;
         if (cmd != NULL) {
@@ -368,7 +368,7 @@ QueueCmdSetViewport(SDL_Renderer *renderer)
             if (retval < 0) {
                 cmd->command = SDL_RENDERCMD_NO_OP;
             } else {
-                SDL_memcpy(&renderer->last_queued_viewport, &renderer->viewport, sizeof (SDL_Rect));
+                SDL_memcpy(&renderer->last_queued_viewport, &renderer->viewport, sizeof (SDL_DRect));
                 renderer->viewport_queued = SDL_TRUE;
             }
         }
@@ -382,7 +382,7 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
     int retval = 0;
     if ((!renderer->cliprect_queued) ||
          (renderer->clipping_enabled != renderer->last_queued_cliprect_enabled) ||
-         (SDL_memcmp(&renderer->clip_rect, &renderer->last_queued_cliprect, sizeof (SDL_Rect)) != 0)) {
+         (SDL_memcmp(&renderer->clip_rect, &renderer->last_queued_cliprect, sizeof (SDL_DRect)) != 0)) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
         if (cmd == NULL) {
             retval = -1;
@@ -394,7 +394,7 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
             cmd->data.cliprect.rect.y = (int)SDL_floor(renderer->clip_rect.y);
             cmd->data.cliprect.rect.w = (int)SDL_floor(renderer->clip_rect.w);
             cmd->data.cliprect.rect.h = (int)SDL_floor(renderer->clip_rect.h);
-            SDL_memcpy(&renderer->last_queued_cliprect, &renderer->clip_rect, sizeof (SDL_Rect));
+            SDL_memcpy(&renderer->last_queued_cliprect, &renderer->clip_rect, sizeof (SDL_DRect));
             renderer->last_queued_cliprect_enabled = renderer->clipping_enabled;
             renderer->cliprect_queued = SDL_TRUE;
         }
