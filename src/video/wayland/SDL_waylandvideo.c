@@ -354,6 +354,16 @@ static void
 xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
                               const char *description)
 {
+    SDL_WaylandOutputData* driverdata = data;
+
+    if (driverdata->index == -1) {
+        /* xdg-output descriptions, if available, supersede wl-output model names. */
+        if (driverdata->placeholder.name != NULL) {
+            SDL_free(driverdata->placeholder.name);
+        }
+
+        driverdata->placeholder.name = SDL_strdup(description);
+    }
 }
 
 static const struct zxdg_output_v1_listener xdg_output_listener = {
@@ -477,7 +487,9 @@ display_handle_geometry(void *data,
     }
     driverdata->physical_width = physical_width;
     driverdata->physical_height = physical_height;
-    if (driverdata->index == -1) {
+
+    /* The output name is only set if xdg-output hasn't provided a description. */
+    if (driverdata->index == -1 && driverdata->placeholder.name == NULL) {
         driverdata->placeholder.name = SDL_strdup(model);
     }
 
