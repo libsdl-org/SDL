@@ -1966,6 +1966,7 @@ SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 produc
             0x1bad, /* Harmonix */
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
+            0x2c22, /* Qanba */
         };
 
         int i;

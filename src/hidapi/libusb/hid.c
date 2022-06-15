@@ -635,6 +635,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x1bad, /* Harmonix */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
+		0x2c22, /* Qanba */
 	};
 
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
