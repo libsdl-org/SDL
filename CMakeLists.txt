@@ -3169,6 +3169,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
     # TODO: what about the .spec file? Is it only needed for RPM creation?
     install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
+    install(FILES "LICENSE.txt" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
   endif()
 endif()
 
