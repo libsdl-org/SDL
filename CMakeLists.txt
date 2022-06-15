@@ -1394,7 +1394,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       if(IBUS_FOUND)
         set(HAVE_IBUS_IBUS_H TRUE)
         target_include_directories(sdl-build-options INTERFACE "${IBUS_INCLUDE_DIRS}")
-        list(APPEND EXTRA_LIBS ${IBUS_LIBRARIES})
       endif()
 
       if (HAVE_IBUS_IBUS_H OR HAVE_FCITX)
