@@ -15,12 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (mingw32),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
-        - { name: Windows (mingw64),      os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
-        - { name: Linux (CMake),          os: ubuntu-20.04,   shell: sh,    flags: true }
-        - { name: Linux (autotools),      os: ubuntu-20.04,   shell: sh,    autotools: true }
-        - { name: MacOS (CMake),          os: macos-latest,   shell: sh }
-        - { name: MacOS (autotools),      os: macos-latest,   shell: sh,    autotools: true }
+        - { name: Windows (mingw32),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, cc: gcc }
+        - { name: Windows (mingw64+clang),  os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, cc: clang }
+        - { name: Linux (CMake),            os: ubuntu-20.04,   shell: sh,    flags: true }
+        - { name: Linux (autotools),        os: ubuntu-20.04,   shell: sh,    autotools: true }
+        - { name: MacOS (CMake),            os: macos-latest,   shell: sh }
+        - { name: MacOS (autotools),        os: macos-latest,   shell: sh,    autotools: true }
 
     steps:
     - name: Set up MSYS2
@@ -29,10 +29,21 @@ jobs:
       with:
         msystem: ${{ matrix.platform.msystem }}
         install: >-
-          ${{ matrix.platform.msys-env }}-gcc
+          ${{ matrix.platform.msys-env }}-${{ matrix.platform.cc }}
           ${{ matrix.platform.msys-env }}-cmake
           ${{ matrix.platform.msys-env }}-ninja
           ${{ matrix.platform.msys-env }}-pkg-config
+    - name: Configure MSYS2 compiler
+      if: matrix.platform.shell == 'msys2 {0}'
+      run: |
+        if test x${{ matrix.platform.cc}} == xgcc; then
+          echo "CC=gcc" >> $GITHUB_ENV
+          echo "CXX=g++" >> $GITHUB_ENV
+        fi
+        if test x${{ matrix.platform.cc}} == xclang; then
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+        fi
 
     - name: Setup Linux dependencies
       if: runner.os == 'Linux'
