@@ -1268,7 +1268,7 @@ log10_regularCases(void *args)
         { 789.123, 2.8971447016351858927407647570362314581871032714843750 },
         { 2734.876324, 3.436937691540090433761633903486654162406921386718750 }
     };
-    return helper_dtod("Log10", SDL_log10, regular_cases, SDL_arraysize(regular_cases));
+    return helper_dtod_inexact("Log10", SDL_log10, regular_cases, SDL_arraysize(regular_cases));
 }
 
 /* SDL_pow tests functions */
