@@ -2522,7 +2522,7 @@ elseif(PSP)
     )
 
 elseif(PS2)
-  list(APPEND EXTRA_CFLAGS "-DPS2")
+  list(APPEND EXTRA_CFLAGS "-DPS2" "-D__PS2__")
 
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_PS2 1)
