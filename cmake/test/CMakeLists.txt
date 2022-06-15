@@ -3,6 +3,15 @@
 cmake_minimum_required(VERSION 3.12)
 project(sdl_test LANGUAGES C)
 
+if(ANDROID)
+    macro(add_executable NAME)
+        set(args ${ARGN})
+        list(REMOVE_ITEM args WIN32)
+        add_library(${NAME} SHARED ${args})
+        unset(args)
+    endmacro()
+endif()
+
 cmake_policy(SET CMP0074 NEW)
 
 # Override CMAKE_FIND_ROOT_PATH_MODE to allow search for SDL2 outside of sysroot
