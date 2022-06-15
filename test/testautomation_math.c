@@ -2,8 +2,8 @@
  * Math test suite
  */
 
-#include <math.h>
 #include <float.h>
+#include <math.h>
 
 #include "SDL.h"
 #include "SDL_test.h"
@@ -1802,7 +1802,7 @@ sqrt_regularCases(void *args)
         { 2887.12782400000014604302123188972473144531250, 53.732 },
         { 65600.0156250, 256.125 }
     };
-    return helper_dtod("Sqrt", SDL_sqrt, regular_cases, SDL_arraysize(regular_cases));
+    return helper_dtod_inexact("Sqrt", SDL_sqrt, regular_cases, SDL_arraysize(regular_cases));
 }
 
 /* SDL_scalbn tests functions */
@@ -2432,12 +2432,14 @@ atan_limitCases(void *args)
     double result;
 
     result = SDL_atan(INFINITY);
-    SDLTest_AssertCheck(M_PI / 2.0 == result,
+    SDLTest_AssertCheck((M_PI / 2.0) - EPSILON <= result &&
+                            result <= (M_PI / 2.0) + EPSILON,
                         "Atan(%f), expected %f, got %f",
                         INFINITY, M_PI / 2.0, result);
 
     result = SDL_atan(-INFINITY);
-    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+    SDLTest_AssertCheck((-M_PI / 2.0) - EPSILON <= result &&
+                            result <= (-M_PI / 2.0) + EPSILON,
                         "Atan(%f), expected %f, got %f",
                         -INFINITY, -M_PI / 2.0, result);
 
