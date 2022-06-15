@@ -253,10 +253,8 @@ if(SDL_DUMMYVIDEO)
 endif()
 
 if(OPENGL_FOUND)
-add_dependencies(testshader OpenGL::GL)
-add_dependencies(testgl2 OpenGL::GL)
-target_link_libraries(testshader OpenGL::GL)
-target_link_libraries(testgl2 OpenGL::GL)
+    target_link_libraries(testshader OpenGL::GL)
+    target_link_libraries(testgl2 OpenGL::GL)
 endif()
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
