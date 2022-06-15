@@ -297,7 +297,7 @@ endif()
 # Those are used for pkg-config and friends, so that the sdl2.pc, sdl2-config,
 # etc. are created correctly.
 set(SDL_LIBS "-lSDL2")
-set(SDL_CFLAGS "")
+set(SDL_CFLAGS )
 
 # When building shared lib for Windows with MinGW,
 # avoid the DLL having a "lib" prefix
@@ -322,7 +322,7 @@ if(CYGWIN)
     list(APPEND EXTRA_LDFLAGS_BUILD "-mno-cygwin")
     list(APPEND SDL_LIBS "-mno-cygwin")
   endif()
-  set(SDL_CFLAGS "${SDL_CFLAGS} -I/usr/include/mingw")
+  list(APPEND SDL_CFLAGS "-I/usr/include/mingw")
 endif()
 
 # General includes
@@ -1861,7 +1861,7 @@ elseif(WINDOWS)
   if(MINGW OR CYGWIN)
     list(APPEND SDL_LIBS "-lmingw32" "-mwindows")
     if(NOT SDL2_DISABLE_SDL2MAIN)
-      set(SDL_CFLAGS "${SDL_CFLAGS} -Dmain=SDL_main")
+      list(APPEND SDL_CFLAGS "-Dmain=SDL_main")
       list(APPEND SDL_LIBS "-lSDL2main")
     endif(NOT SDL2_DISABLE_SDL2MAIN)
   endif()
@@ -2760,6 +2760,8 @@ Libs.private:")
     listtostr(SDL_LIBS _SDL_LIBS)
     set(SDL_LIBS ${_SDL_LIBS})
   endif()
+  listtostr(SDL_CFLAGS _SDL_CFLAGS "")
+  set(SDL_CFLAGS ${_SDL_CFLAGS})
 
   # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
   # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
