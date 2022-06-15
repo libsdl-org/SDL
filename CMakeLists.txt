@@ -517,15 +517,18 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/video/yuv2rgb/*.c)
 
 
-if(SDL_ASSERTIONS STREQUAL "auto")
+set(SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED 1)
+if(SDL_ASSERTIONS MATCHES "^(auto|)$")
   # Do nada - use optimization settings to determine the assertion level
-elseif(SDL_ASSERTIONS STREQUAL "disabled")
+  set(SDL_DEFAULT_ASSERT_LEVEL )
+  set(SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED 0)
+elseif(SDL_ASSERTIONS MATCHES "^(disabled|0)$")
   set(SDL_DEFAULT_ASSERT_LEVEL 0)
-elseif(SDL_ASSERTIONS STREQUAL "release")
+elseif(SDL_ASSERTIONS MATCHES "^(release|1)$")
   set(SDL_DEFAULT_ASSERT_LEVEL 1)
-elseif(SDL_ASSERTIONS STREQUAL "enabled")
+elseif(SDL_ASSERTIONS MATCHES "^(enabled|2)$")
   set(SDL_DEFAULT_ASSERT_LEVEL 2)
-elseif(SDL_ASSERTIONS STREQUAL "paranoid")
+elseif(SDL_ASSERTIONS MATCHES "^(paranoid|3)$")
   set(SDL_DEFAULT_ASSERT_LEVEL 3)
 else()
   message_error("unknown assertion level")

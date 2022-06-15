@@ -261,7 +261,9 @@
 #cmakedefine HAVE_XINPUT_STATE_EX @HAVE_XINPUT_STATE_EX@
 
 /* SDL internal assertion support */
+#if @SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED@
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL @SDL_DEFAULT_ASSERT_LEVEL@
+#endif
 
 /* Allow disabling of core subsystems */
 #cmakedefine SDL_ATOMIC_DISABLED @SDL_ATOMIC_DISABLED@
