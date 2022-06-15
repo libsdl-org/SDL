@@ -4,11 +4,57 @@ on: [push, pull_request]
 
 jobs:
   android:
+    name: ${{ matrix.platform.name }}
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { name: Android.mk  }
+          - { name: CMake, cmake: '-DCMAKE_SYSTEM_PROCESSOR=aarch64 -DANDROID_PLATFORM=android-23  -DCMAKE_SYSTEM_VERSION=23 ' }
+
     steps:
       - uses: actions/checkout@v2
       - uses: nttld/setup-ndk@v1
+        id: setup_ndk
         with:
           ndk-version: r21e
-      - name: Build
-        run: ./build-scripts/androidbuildlibs.sh
+      - name: Build (Android.mk)
+        if: ${{ matrix.platform.name == 'Android.mk' }}
+        run: |
+          ./build-scripts/androidbuildlibs.sh
+      - name: Setup (CMake)
+        if: ${{ matrix.platform.name == 'CMake' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build
+      - name: Configure (CMake)
+        if: ${{ matrix.platform.name == 'CMake' }}
+        run: |
+          cmake -B build \
+            -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
+            ${{ matrix.platform.cmake }} \
+            -DSDL_STATIC_PIC=ON \
+            -DCMAKE_INSTALL_PREFIX=prefix \
+            -DCMAKE_BUILD_TYPE=Release \
+            -GNinja
+      - name: Build (CMake)
+        if: ${{ matrix.platform.name == 'CMake' }}
+        run: |
+          cmake --build build --config Release --parallel --verbose
+      - name: Install (CMake)
+        if: ${{ matrix.platform.name == 'CMake' }}
+        run: |
+          cmake --install build --config Release
+          echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+          ( cd prefix; find ) | LC_ALL=C sort -u
+      - name: Verify CMake configuration files
+        if: ${{ matrix.platform.name == 'CMake' }}
+        run: |
+          cmake -S cmake/test -B cmake_config_build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
+            ${{ matrix.platform.cmake }} \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
+          cmake --build cmake_config_build --verbose
