@@ -649,6 +649,11 @@ if(MSVC)
   target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_SECURE_NO_WARNINGS")
 endif()
 
+if(MSVC)
+  # Due to a limitation of Microsoft's LTO implementation, LTO must be disabled for memcpy and memset.
+  set_property(SOURCE src/stdlib/SDL_memcpy.c src/stdlib/SDL_memset.c APPEND PROPERTY COMPILE_FLAGS /GL-)
+endif()
+
 if(SDL_ASSEMBLY)
   if(USE_GCC OR USE_CLANG)
     # TODO: Those all seem to be quite GCC specific - needs to be
