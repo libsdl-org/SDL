@@ -1386,7 +1386,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
       if(DBUS_FOUND)
         set(HAVE_DBUS_DBUS_H TRUE)
         target_include_directories(sdl-build-options INTERFACE "${DBUS_INCLUDE_DIRS}")
-        list(APPEND EXTRA_LIBS ${DBUS_LIBRARIES})
         # Fcitx need only dbus.
         set(HAVE_FCITX TRUE)
       endif()
