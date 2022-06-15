@@ -192,3 +192,14 @@ macro(check_required_components _NAME)
 endmacro()
 
 check_required_components(SDL2)
+
+# Create SDL2::SDL2 alias for static-only builds
+if(TARGET SDL2::SDL2-static AND NOT TARGET SDL2::SDL2)
+  if(CMAKE_VERSION VERSION_LESS "3.18")
+    # FIXME: Aliasing local targets is not supported on CMake < 3.18, so make it global.
+    add_library(SDL2::SDL2 INTERFACE IMPORTED)
+    set_target_properties(SDL2::SDL2 PROPERTIES INTERFACE_LINK_LIBRARIES "SDL2::SDL2-static")
+  else()
+    add_library(SDL2::SDL2 ALIAS SDL2::SDL2-static)
+  endif()
+endif()

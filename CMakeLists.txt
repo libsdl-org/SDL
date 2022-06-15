@@ -3194,3 +3194,8 @@ endif()
 
 ##### Fix Objective C builds #####
 set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} ${CMAKE_C_FLAGS}")
+
+# Make sure SDL2::SDL2 always exists
+if(TARGET SDL2::SDL2-static AND NOT TARGET SDL2::SDL2)
+  add_library(SDL2::SDL2 ALIAS SDL2-static)
+endif()
