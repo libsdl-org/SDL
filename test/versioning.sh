@@ -34,9 +34,9 @@ else
     not_ok "configure.ac $version disagrees with SDL_version.h $ref_version"
 fi
 
-major=$(sed -ne 's/^set(SDL_MAJOR_VERSION \([0-9]\+\))$/\1/p' CMakeLists.txt)
-minor=$(sed -ne 's/^set(SDL_MINOR_VERSION \([0-9]\+\))$/\1/p' CMakeLists.txt)
-micro=$(sed -ne 's/^set(SDL_MICRO_VERSION \([0-9]\+\))$/\1/p' CMakeLists.txt)
+major=$(sed -ne 's/^set(SDL_MAJOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
+minor=$(sed -ne 's/^set(SDL_MINOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
+micro=$(sed -ne 's/^set(SDL_MICRO_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
 version="${major}.${minor}.${micro}"
 
 if [ "$ref_version" = "$version" ]; then
@@ -67,7 +67,7 @@ else
     not_ok "Makefile.w32 $version disagrees with SDL_version.h $ref_version"
 fi
 
-version=$(sed -Ene 's/^[$]SDLVersion = "([0-9.]+)"\r?$/\1/p' build-scripts/winrtbuild.ps1)
+version=$(sed -Ene 's/^[$]SDLVersion = "([0-9.]*)"\r?$/\1/p' build-scripts/winrtbuild.ps1)
 
 if [ "$ref_version" = "$version" ]; then
     ok "winrtbuild.ps1 $version"
@@ -92,7 +92,7 @@ else
     not_ok "version.rc PRODUCTVERSION $tuple disagrees with SDL_version.h $ref_tuple"
 fi
 
-tuple=$(sed -Ene 's/^ *VALUE "FileVersion", "([0-9, ]+)\\0"\r?$/\1/p' src/main/windows/version.rc | tr -d '\r')
+tuple=$(sed -Ene 's/^ *VALUE "FileVersion", "([0-9, ]*)\\0"\r?$/\1/p' src/main/windows/version.rc | tr -d '\r')
 ref_tuple="${ref_major}, ${ref_minor}, ${ref_micro}, 0"
 
 if [ "$ref_tuple" = "$tuple" ]; then
@@ -101,7 +101,7 @@ else
     not_ok "version.rc FileVersion $tuple disagrees with SDL_version.h $ref_tuple"
 fi
 
-tuple=$(sed -Ene 's/^ *VALUE "ProductVersion", "([0-9, ]+)\\0"\r?$/\1/p' src/main/windows/version.rc | tr -d '\r')
+tuple=$(sed -Ene 's/^ *VALUE "ProductVersion", "([0-9, ]*)\\0"\r?$/\1/p' src/main/windows/version.rc | tr -d '\r')
 
 if [ "$ref_tuple" = "$tuple" ]; then
     ok "version.rc ProductVersion $tuple"
