@@ -6,10 +6,25 @@ use Text::Wrap;
 
 $Text::Wrap::huge = 'overflow';
 
+my $projectfullname = 'Simple Directmedia Layer';
+my $projectshortname = 'SDL';
+my $wikisubdir = '';
+my $incsubdir = 'include';
+my $apiprefixregex = undef;
+my $versionfname = 'include/SDL_version.h';
+my $versionmajorregex = '\A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z';
+my $versionminorregex = '\A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z';
+my $versionpatchregex = '\A\#define\s+SDL_PATCHLEVEL\s+(\d+)\Z';
+my $mainincludefname = 'SDL.h';
+my $selectheaderregex = '\ASDL.*?\.h\Z';
+my $projecturl = 'https://libsdl.org/';
+my $wikiurl = 'https://wiki.libsdl.org';
+my $bugreporturl = 'https://github.com/libsdl-org/sdlwiki/issues/new';
 my $srcpath = undef;
 my $wikipath = undef;
 my $warn_about_missing = 0;
 my $copy_direction = 0;
+my $optionsfname = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
@@ -17,8 +32,52 @@ foreach (@ARGV) {
     $copy_direction = 1, next if $_ eq '--copy-to-header';
     $copy_direction = -1, next if $_ eq '--copy-to-wiki';
     $copy_direction = -2, next if $_ eq '--copy-to-manpages';
+    if (/\A--options=(.*)\Z/) {
+        $optionsfname = $1;
+        next;
+    }
     $srcpath = $_, next if not defined $srcpath;
     $wikipath = $_, next if not defined $wikipath;
+}
+
+my $default_optionsfname = '.wikiheaders-options';
+$default_optionsfname = "$srcpath/$default_optionsfname" if defined $srcpath;
+
+if ((not defined $optionsfname) && (-f $default_optionsfname)) {
+    $optionsfname = $default_optionsfname;
+}
+
+if (defined $optionsfname) {
+    open OPTIONS, '<', $optionsfname or die("Failed to open options file '$optionsfname': $!\n");
+    while (<OPTIONS>) {
+        chomp;
+        if (/\A(.*?)\=(.*)\Z/) {
+            my $key = $1;
+            my $val = $2;
+            $key =~ s/\A\s+//;
+            $key =~ s/\s+\Z//;
+            $val =~ s/\A\s+//;
+            $val =~ s/\s+\Z//;
+            $warn_about_missing = int($val), next if $key eq 'warn_about_missing';
+            $srcpath = $val, next if $key eq 'srcpath';
+            $wikipath = $val, next if $key eq 'wikipath';
+            $apiprefixregex = $val, next if $key eq 'apiprefixregex';
+            $projectfullname = $val, next if $key eq 'projectfullname';
+            $projectshortname = $val, next if $key eq 'projectshortname';
+            $wikisubdir = $val, next if $key eq 'wikisubdir';
+            $incsubdir = $val, next if $key eq 'incsubdir';
+            $versionmajorregex = $val, next if $key eq 'versionmajorregex';
+            $versionminorregex = $val, next if $key eq 'versionminorregex';
+            $versionpatchregex = $val, next if $key eq 'versionpatchregex';
+            $versionfname = $val, next if $key eq 'versionfname';
+            $mainincludefname = $val, next if $key eq 'mainincludefname';
+            $selectheaderregex = $val, next if $key eq 'selectheaderregex';
+            $projecturl = $val, next if $key eq 'projecturl';
+            $wikiurl = $val, next if $key eq 'wikiurl';
+            $bugreporturl = $val, next if $key eq 'bugreporturl';
+        }
+    }
+    close(OPTIONS);
 }
 
 my $wordwrap_mode = 'mediawiki';
@@ -159,13 +218,17 @@ sub wikify_chunk {
         while ($str =~ s/\A(.*?)\`(.*?)\`//ms) {
             my $codeblock = $2;
             $codedstr .= wikify_chunk($wikitype, $1, undef, undef);
-            # Convert obvious SDL things to wikilinks, even inside `code` blocks.
-            $codeblock =~ s/\b(SDL_[a-zA-Z0-9_]+)/[[$1]]/gms;
+            if (defined $apiprefixregex) {
+                # Convert obvious API things to wikilinks, even inside `code` blocks.
+                $codeblock =~ s/\b($apiprefixregex[a-zA-Z0-9_]+)/[[$1]]/gms;
+            }
             $codedstr .= "<code>$codeblock</code>";
         }
 
-        # Convert obvious SDL things to wikilinks.
-        $str =~ s/\b(SDL_[a-zA-Z0-9_]+)/[[$1]]/gms;
+        # Convert obvious API things to wikilinks.
+        if (defined $apiprefixregex) {
+            $str =~ s/\b($apiprefixregex[a-zA-Z0-9_]+)/[[$1]]/gms;
+        }
 
         # Make some Markdown things into MediaWiki...
 
@@ -190,8 +253,10 @@ sub wikify_chunk {
             $str .= "<syntaxhighlight lang='$codelang'>$code<\/syntaxhighlight>";
         }
     } elsif ($wikitype eq 'md') {
-        # Convert obvious SDL things to wikilinks.
-        $str =~ s/\b(SDL_[a-zA-Z0-9_]+)/[$1]($1)/gms;
+        # Convert obvious API things to wikilinks.
+        if (defined $apiprefixregex) {
+            $str =~ s/\b($apiprefixregex[a-zA-Z0-9_]+)/[$1]($1)/gms;
+        }
         if (defined $code) {
             $str .= "```$codelang$code```";
         }
@@ -236,7 +301,10 @@ sub dewikify_chunk {
             # Doxygen supports Markdown (and it just simply looks better than MediaWiki
             # when looking at the raw headers), so do some conversions here as necessary.
 
-            $str =~ s/\[\[(SDL_[a-zA-Z0-9_]+)\]\]/$1/gms;  # Dump obvious wikilinks.
+            # Dump obvious wikilinks.
+            if (defined $apiprefixregex) {
+                $str =~ s/\[\[($apiprefixregex[a-zA-Z0-9_]+)\]\]/$1/gms;
+            }
 
             # links
             $str =~ s/\[(https?\:\/\/.*?)\s+(.*?)\]/\[$2\]\($1\)/g;
@@ -263,7 +331,10 @@ sub dewikify_chunk {
     } elsif ($dewikify_mode eq 'manpage') {
         $str =~ s/\./\\[char46]/gms;  # make sure these can't become control codes.
         if ($wikitype eq 'mediawiki') {
-            $str =~ s/\s*\[\[(SDL_[a-zA-Z0-9_]+)\]\]\s*/\n.BR $1\n/gms;  # Dump obvious wikilinks.
+            # Dump obvious wikilinks.
+            if (defined $apiprefixregex) {
+                $str =~ s/\s*\[\[($apiprefixregex[a-zA-Z0-9_]+)\]\]\s*/\n.BR $1\n/gms;
+            }
 
             # links
             $str =~ s/\[(https?\:\/\/.*?)\s+(.*?)\]/\n.URL "$1" "$2"\n/g;
@@ -362,11 +433,13 @@ my %headerfuncslocation = ();   # $headerfuncslocation{"SDL_OpenAudio"} -> name 
 my %headerfuncschunk = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> offset in array in %headers that should be replaced for this function.
 my %headerfuncshasdoxygen = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
 
-my $incpath = "$srcpath/include";
+my $incpath = "$srcpath";
+$incpath .= "/$incsubdir" if $incsubdir ne '';
+
 opendir(DH, $incpath) or die("Can't opendir '$incpath': $!\n");
 while (readdir(DH)) {
     my $dent = $_;
-    next if not $dent =~ /\ASDL.*?\.h\Z/;  # just SDL*.h headers.
+    next if not $dent =~ /$selectheaderregex/;  # just selected headers.
     open(FH, '<', "$incpath/$dent") or die("Can't open '$incpath/$dent': $!\n");
 
     my @contents = ();
@@ -516,7 +589,7 @@ opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
 while (readdir(DH)) {
     my $dent = $_;
     my $type = '';
-    if ($dent =~ /\ASDL.*?\.(md|mediawiki)\Z/) {
+    if ($dent =~ /\.(md|mediawiki)\Z/) {
         $type = $1;
     } else {
         next;  # only dealing with wiki pages.
@@ -744,6 +817,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             foreach (@desclines) {
                 s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
+                s/\A\/*//;
                 $str .= "\\sa $_\n";
             }
         }
@@ -952,7 +1026,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 if ($wikitype eq 'mediawiki') {
                     $sections{'Related Functions'} .= ":[[$sa]]\n";
                 } elsif ($wikitype eq 'md') {
-                    $sections{'Related Functions'} .= "* [$sa](/$sa)\n";
+                    $sections{'Related Functions'} .= "* [$sa]($sa)\n";
                 } else { die("Expected wikitype '$wikitype'\n"); }
             }
         }
@@ -1102,22 +1176,23 @@ if ($copy_direction == 1) {  # --copy-to-headers
     my $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
     chomp($gitrev);
 
-    open(FH, '<', "$srcpath/include/SDL_version.h") or die("Can't open '$srcpath/include/SDL_version.h': $!\n");
+    # !!! FIXME
+    open(FH, '<', "$srcpath/$versionfname") or die("Can't open '$srcpath/$versionfname': $!\n");
     my $majorver = 0;
     my $minorver = 0;
     my $patchver = 0;
     while (<FH>) {
         chomp;
-        if (/\A\#define SDL_MAJOR_VERSION\s+(\d+)\Z/) {
+        if (/$versionmajorregex/) {
             $majorver = int($1);
-        } elsif (/\A\#define SDL_MINOR_VERSION\s+(\d+)\Z/) {
+        } elsif (/$versionminorregex/) {
             $minorver = int($1);
-        } elsif (/\A\#define SDL_PATCHLEVEL\s+(\d+)\Z/) {
+        } elsif (/$versionpatchregex/) {
             $patchver = int($1);
         }
     }
     close(FH);
-    my $sdlversion = "$majorver.$minorver.$patchver";
+    my $fullversion = "$majorver.$minorver.$patchver";
 
     foreach (keys %headerfuncs) {
         my $fn = $_;
@@ -1152,15 +1227,15 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".\\\" This manpage content is licensed under Creative Commons\n";
         $str .= ".\\\"  Attribution 4.0 International (CC BY 4.0)\n";
         $str .= ".\\\"   https://creativecommons.org/licenses/by/4.0/\n";
-        $str .= ".\\\" This manpage was generated from SDL's wiki page for $fn:\n";
-        $str .= ".\\\"   https://wiki.libsdl.org/$fn\n";
+        $str .= ".\\\" This manpage was generated from ${projectshortname}'s wiki page for $fn:\n";
+        $str .= ".\\\"   $wikiurl/$fn\n";
         $str .= ".\\\" Generated with SDL/build-scripts/wikiheaders.pl\n";
         $str .= ".\\\"  revision $gitrev\n" if $gitrev ne '';
         $str .= ".\\\" Please report issues in this manpage's content at:\n";
-        $str .= ".\\\"   https://github.com/libsdl-org/sdlwiki/issues/new?title=Feedback%20on%20page%20$fn\n";
+        $str .= ".\\\"   $bugreporturl\n";
         $str .= ".\\\" Please report issues in the generation of this manpage from the wiki at:\n";
         $str .= ".\\\"   https://github.com/libsdl-org/SDL/issues/new?title=Misgenerated%20manpage%20for%20$fn\n";
-        $str .= ".\\\" SDL can be found at https://libsdl.org/\n";
+        $str .= ".\\\" $projectshortname can be found at $projecturl\n";
 
         # Define a .URL macro. The "www.tmac" thing decides if we're using GNU roff (which has a .URL macro already), and if so, overrides the macro we just created.
         # This wizadry is from https://web.archive.org/web/20060102165607/http://people.debian.org/~branden/talks/wtfm/wtfm.pdf
@@ -1169,7 +1244,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= "..\n";
         $str .= '.if \n[.g] .mso www.tmac' . "\n";
 
-        $str .= ".TH $fn 3 \"SDL $sdlversion\" \"Simple Directmedia Layer\" \"SDL$majorver FUNCTIONS\"\n";
+        $str .= ".TH $fn 3 \"$projectshortname $fullversion\" \"$projectfullname\" \"$projectshortname$majorver FUNCTIONS\"\n";
         $str .= ".SH NAME\n";
 
         $str .= "$fn";
@@ -1178,7 +1253,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         $str .= ".SH SYNOPSIS\n";
         $str .= ".nf\n";
-        $str .= ".B #include \\(dqSDL.h\\(dq\n";
+        $str .= ".B #include \\(dq$mainincludefname\\(dq\n";
         $str .= ".PP\n";
 
         my @decllines = split /\n/, $decl;
@@ -1249,6 +1324,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             foreach (@desclines) {
                 s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
+                s/\A\/*//;
                 s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
                 s/\A\s+//;
                 s/\s+\Z//;
@@ -1267,14 +1343,14 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".UE\n";
         $str .= ".PP\n";
         $str .= "This manpage was generated from\n";
-        $str .= ".UR https://wiki.libsdl.org/$fn\n";
-        $str .= "SDL's wiki\n";
+        $str .= ".UR $wikiurl/$fn\n";
+        $str .= "${projectshortname}'s wiki\n";
         $str .= ".UE\n";
         $str .= "using SDL/build-scripts/wikiheaders.pl";
         $str .= " revision $gitrev" if $gitrev ne '';
         $str .= ".\n";
         $str .= "Please report issues in this manpage at\n";
-        $str .= ".UR https://github.com/libsdl-org/sdlwiki/issues/new\n";
+        $str .= ".UR $bugreporturl\n";
         $str .= "our bugtracker!\n";
         $str .= ".UE\n";
         }
