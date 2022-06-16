@@ -13,10 +13,10 @@ jobs:
       image: vitasdk/vitasdk:latest
     steps:
     - uses: actions/checkout@v2
-    - name: Install CMake and GNU Make
+    - name: Install build requirements
       run: |
         apk update 
-        apk add cmake make ninja
+        apk add cmake ninja pkgconf
     - name: Configure CMake
       run: |
         cmake -S . -B build -G Ninja \
@@ -40,3 +40,13 @@ jobs:
           -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
           -DCMAKE_BUILD_TYPE=Release
         cmake --build cmake_config_build --verbose
+    - name: Verify sdl2-config
+      run: |
+        export CC=arm-vita-eabi-gcc
+        export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+        cmake/test/test_sdlconfig.sh
+    - name: Verify sdl2.pc
+      run: |
+        export CC=arm-vita-eabi-gcc
+        export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+        cmake/test/test_pkgconfig.sh
