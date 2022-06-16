@@ -277,6 +277,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller, NULL },	// Afterglow Gamepad 1
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller, NULL },	// Afterglow Gamepad 3
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller, NULL },	// Rock Candy Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2303 ), k_eControllerType_XBox360Controller, "Qanba Obsidian Arcade Joystick" },	// Qanba Obsidian Arcade Joystick
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2503 ), k_eControllerType_XBox360Controller, "Qanba Dragon Arcade Joystick" },	// Qanba Dragon Arcade Joystick
 
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02d1 ), k_eControllerType_XBoxOneController, "Xbox One Controller" },	// Microsoft X-Box One pad
