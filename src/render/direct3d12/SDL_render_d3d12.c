@@ -31,7 +31,6 @@
 #define SDL_D3D12_MAX_NUM_TEXTURES 16384
 #define SDL_D3D12_NUM_UPLOAD_BUFFERS 32
 
-#define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/windows/SDL_windowswindow.h"
 #include "SDL_hints.h"
@@ -53,7 +52,7 @@
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 #endif
 
-#define SAFE_RELEASE(X) if ((X)) { IUnknown_Release(SDL_static_cast(IUnknown*, X)); X = NULL; }
+#define SAFE_RELEASE(X) if (X) { (X)->lpVtbl->Release(X); X = NULL; }
 
 
 /* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
@@ -142,9 +141,9 @@ typedef struct
     void *hD3D12Mod;
     IDXGIFactory6 *dxgiFactory;
     IDXGIAdapter4 *dxgiAdapter;
-    ID3D12Device5 *d3dDevice;
+    ID3D12Device1 *d3dDevice;
     ID3D12Debug *debugInterface;
-    IDXGIDebug1 *dxgiDebug;
+    IDXGIDebug *dxgiDebug;
     ID3D12CommandQueue *commandQueue;
     ID3D12GraphicsCommandList2 *commandList;
     IDXGISwapChain4 *swapChain;
@@ -336,7 +335,7 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
 
         /* Check for any leaks if in debug mode */
         if (data->dxgiDebug) {
-            IDXGIDebug1_ReportLiveObjects(data->dxgiDebug, SDL_DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL);
+            data->dxgiDebug->lpVtbl->ReportLiveObjects(data->dxgiDebug, SDL_DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL);
             SAFE_RELEASE(data->dxgiDebug);
         }
 
@@ -362,10 +361,10 @@ D3D12_CPUtoGPUHandle(ID3D12DescriptorHeap * heap, D3D12_CPU_DESCRIPTOR_HANDLE CP
     SIZE_T offset;
     
     /* Calculate the correct offset into the heap */
-    ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(heap, &CPUHeapStart);
+    heap->lpVtbl->GetCPUDescriptorHandleForHeapStart(heap, &CPUHeapStart);
     offset = CPUHandle.ptr - CPUHeapStart.ptr;
     
-    ID3D12DescriptorHeap_GetGPUDescriptorHandleForHeapStart(heap, &GPUHandle);
+    heap->lpVtbl->GetGPUDescriptorHandleForHeapStart(heap, &GPUHandle);
     GPUHandle.ptr += offset;
 
     return GPUHandle;
@@ -374,13 +373,11 @@ D3D12_CPUtoGPUHandle(ID3D12DescriptorHeap * heap, D3D12_CPU_DESCRIPTOR_HANDLE CP
 static void
 D3D12_WaitForGPU(D3D12_RenderData * data)
 {
-    HRESULT result;
-
     if (data->commandQueue && data->fence && data->fenceEvent)
     {
-        result = ID3D12CommandQueue_Signal(data->commandQueue, data->fence, data->fenceValue);
-        if (ID3D12Fence_GetCompletedValue(data->fence) < data->fenceValue) {
-            result = ID3D12Fence_SetEventOnCompletion(
+        data->commandQueue->lpVtbl->Signal(data->commandQueue, data->fence, data->fenceValue);
+        if (data->fence->lpVtbl->GetCompletedValue(data->fence) < data->fenceValue) {
+            data->fence->lpVtbl->SetEventOnCompletion(
                 data->fence,
                 data->fenceValue,
                 data->fenceEvent
@@ -403,7 +400,7 @@ D3D12_GetCurrentRenderTargetView(SDL_Renderer * renderer)
     }
 
     SDL_zero(rtvDescriptor);
-    ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->rtvDescriptorHeap, &rtvDescriptor);
+    data->rtvDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(data->rtvDescriptorHeap, &rtvDescriptor);
     rtvDescriptor.ptr += data->currentBackBufferIndex * data->rtvDescriptorSize;
     return rtvDescriptor;
 }
@@ -425,7 +422,7 @@ D3D12_TransitionResource(D3D12_RenderData * data,
         barrier.Transition.StateAfter = afterState;
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-        ID3D12GraphicsCommandList2_ResourceBarrier(data->commandList, 1, &barrier);
+        data->commandList->lpVtbl->ResourceBarrier(data->commandList, 1, &barrier);
     }
 }
 
@@ -434,9 +431,10 @@ D3D12_ResetCommandList(D3D12_RenderData * data)
 {
     int i;
     ID3D12DescriptorHeap *rootDescriptorHeaps[] = { data->srvDescriptorHeap, data->samplerDescriptorHeap };
+    ID3D12CommandAllocator *commandAllocator = data->commandAllocators[data->currentBackBufferIndex];
 
-    ID3D12CommandAllocator_Reset(data->commandAllocators[data->currentBackBufferIndex]);
-    ID3D12GraphicsCommandList2_Reset(data->commandList, data->commandAllocators[data->currentBackBufferIndex], NULL);
+    commandAllocator->lpVtbl->Reset(commandAllocator);
+    data->commandList->lpVtbl->Reset(data->commandList, commandAllocator, NULL);
     data->currentPipelineState = NULL;
     data->currentVertexBuffer = 0;
     data->issueBatch = SDL_FALSE;
@@ -450,7 +448,7 @@ D3D12_ResetCommandList(D3D12_RenderData * data)
     }
     data->currentUploadBuffer = 0;
 
-    ID3D12GraphicsCommandList2_SetDescriptorHeaps(data->commandList, 2, rootDescriptorHeaps);
+    data->commandList->lpVtbl->SetDescriptorHeaps(data->commandList, 2, rootDescriptorHeaps);
 }
 
 static int
@@ -459,12 +457,12 @@ D3D12_IssueBatch(D3D12_RenderData * data)
     HRESULT result = S_OK;
 
     /* Issue the command list */
-    result = ID3D12GraphicsCommandList2_Close(data->commandList);
+    result = data->commandList->lpVtbl->Close(data->commandList);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D12_IssueBatch"), result);
         return result;
     }
-    ID3D12CommandQueue_ExecuteCommandLists(data->commandQueue, 1, (ID3D12CommandList* const*)&data->commandList);
+    data->commandQueue->lpVtbl->ExecuteCommandLists(data->commandQueue, 1, (ID3D12CommandList* const*)&data->commandList);
 
     D3D12_WaitForGPU(data);
     
@@ -543,7 +541,6 @@ GetBlendEquation(SDL_BlendOperation operation)
 static void
 D3D12_CreateBlendState(SDL_Renderer * renderer, SDL_BlendMode blendMode, D3D12_BLEND_DESC * outBlendDesc)
 {
-    D3D12_RenderData *data = (D3D12_RenderData *) renderer->driverdata;
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
     SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
     SDL_BlendOperation colorOperation = SDL_GetBlendModeColorOperation(blendMode);
@@ -551,7 +548,7 @@ D3D12_CreateBlendState(SDL_Renderer * renderer, SDL_BlendMode blendMode, D3D12_B
     SDL_BlendFactor dstAlphaFactor = SDL_GetBlendModeDstAlphaFactor(blendMode);
     SDL_BlendOperation alphaOperation = SDL_GetBlendModeAlphaOperation(blendMode);
 
-    SDL_zero(*outBlendDesc);
+    SDL_zerop(outBlendDesc);
     outBlendDesc->AlphaToCoverageEnable = FALSE;
     outBlendDesc->IndependentBlendEnable = FALSE;
     outBlendDesc->RenderTarget[0].BlendEnable = TRUE;
@@ -610,11 +607,11 @@ D3D12_CreatePipelineState(SDL_Renderer * renderer,
     pipelineDesc.SampleDesc.Count = 1;
     pipelineDesc.SampleDesc.Quality = 0;
 
-    result = ID3D12Device_CreateGraphicsPipelineState(
+    result = data->d3dDevice->lpVtbl->CreateGraphicsPipelineState(
         data->d3dDevice,
         &pipelineDesc,
         &SDL_IID_ID3D12PipelineState,
-        &pipelineState
+        (void **)&pipelineState
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateGraphicsPipelineState"), result);
@@ -701,9 +698,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
 
     if (createDebug) {
-        IDXGIInfoQueue* dxgiInfoQueue = NULL;
         PFN_D3D12_GET_DEBUG_INTERFACE D3D12GetDebugInterfaceFunc;
-        PFN_CREATE_DXGI_FACTORY DXGIGetDebugInterfaceFunc;
 
         D3D12GetDebugInterfaceFunc = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(data->hD3D12Mod, "D3D12GetDebugInterface");
         if (!D3D12GetDebugInterfaceFunc) {
@@ -711,7 +706,13 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
             goto done;
         }
         D3D12GetDebugInterfaceFunc(&SDL_IID_ID3D12Debug, (void**)&data->debugInterface);
-        ID3D12Debug_EnableDebugLayer(data->debugInterface);
+        data->debugInterface->lpVtbl->EnableDebugLayer(data->debugInterface);
+    }
+
+    if (createDebug) {
+#ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
+        IDXGIInfoQueue *dxgiInfoQueue = NULL;
+        PFN_CREATE_DXGI_FACTORY DXGIGetDebugInterfaceFunc;
 
         /* If the debug hint is set, also create the DXGI factory in debug mode */
         DXGIGetDebugInterfaceFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
@@ -732,10 +733,11 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
             goto done;
         }
 
-        IDXGIInfoQueue_SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
-        IDXGIInfoQueue_SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-        creationFlags = DXGI_CREATE_FACTORY_DEBUG;
+        dxgiInfoQueue->lpVtbl->SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
+        dxgiInfoQueue->lpVtbl->SetBreakOnSeverity(dxgiInfoQueue, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
         SAFE_RELEASE(dxgiInfoQueue);
+#endif /* __IDXGIInfoQueue_INTERFACE_DEFINED__ */
+        creationFlags = DXGI_CREATE_FACTORY_DEBUG;
     }
 
     result = CreateDXGIFactoryFunc(creationFlags, &SDL_IID_IDXGIFactory6, (void**)&data->dxgiFactory);
@@ -745,11 +747,11 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     }
 
     /* Prefer a high performance adapter if there are multiple choices */
-    result = IDXGIFactory6_EnumAdapterByGpuPreference(data->dxgiFactory,
+    result = data->dxgiFactory->lpVtbl->EnumAdapterByGpuPreference(data->dxgiFactory,
         0,
         DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
         &SDL_IID_IDXGIAdapter4,
-        &data->dxgiAdapter
+        (void **)&data->dxgiAdapter
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D12CreateDevice"), result);
@@ -759,7 +761,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     result = D3D12CreateDeviceFunc((IUnknown *)data->dxgiAdapter,
         D3D_FEATURE_LEVEL_11_0, /* Request minimum feature level 11.0 for maximum compatibility */
         &SDL_IID_ID3D12Device5,
-        &d3dDevice
+        (void **)&d3dDevice
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D12CreateDevice"), result);
@@ -772,7 +774,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
         D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
         D3D12_INFO_QUEUE_FILTER filter;
 
-        result = ID3D12Device_QueryInterface(d3dDevice, &SDL_IID_ID3D12InfoQueue, (void **)&infoQueue);
+        result = d3dDevice->lpVtbl->QueryInterface(d3dDevice, &SDL_IID_ID3D12InfoQueue, (void **)&infoQueue);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device to ID3D12InfoQueue"), result);
             goto done;
@@ -781,15 +783,15 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
         SDL_zero(filter);
         filter.DenyList.NumSeverities = 1;
         filter.DenyList.pSeverityList = severities;
-        ID3D12InfoQueue_PushStorageFilter(infoQueue, &filter);
+        infoQueue->lpVtbl->PushStorageFilter(infoQueue, &filter);
 
-        ID3D12InfoQueue_SetBreakOnSeverity(infoQueue, D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
-        ID3D12InfoQueue_SetBreakOnSeverity(infoQueue, D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+        infoQueue->lpVtbl->SetBreakOnSeverity(infoQueue, D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+        infoQueue->lpVtbl->SetBreakOnSeverity(infoQueue, D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
 
         SAFE_RELEASE(infoQueue);
     }
 
-    result = ID3D12Device_QueryInterface(d3dDevice, &SDL_IID_ID3D12Device5, (void **)&data->d3dDevice);
+    result = d3dDevice->lpVtbl->QueryInterface(d3dDevice, &SDL_IID_ID3D12Device5, (void **)&data->d3dDevice);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device to ID3D12Device5"), result);
         goto done;
@@ -800,10 +802,10 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-    result = ID3D12Device_CreateCommandQueue(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateCommandQueue(data->d3dDevice,
         &queueDesc,
         &SDL_IID_ID3D12CommandQueue,
-        &data->commandQueue
+        (void **)&data->commandQueue
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommandQueue"), result);
@@ -814,22 +816,22 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     SDL_zero(descriptorHeapDesc);
     descriptorHeapDesc.NumDescriptors = SDL_D3D12_NUM_BUFFERS;
     descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    result = ID3D12Device_CreateDescriptorHeap(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateDescriptorHeap(data->d3dDevice,
         &descriptorHeapDesc,
         &SDL_IID_ID3D12DescriptorHeap,
-        &data->rtvDescriptorHeap
+        (void **)&data->rtvDescriptorHeap
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateDescriptorHeap [rtv]"), result);
         goto done;
     }
-    data->rtvDescriptorSize = ID3D12Device_GetDescriptorHandleIncrementSize(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    data->rtvDescriptorSize = d3dDevice->lpVtbl->GetDescriptorHandleIncrementSize(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
     descriptorHeapDesc.NumDescriptors = SDL_D3D12_MAX_NUM_TEXTURES;
-    result = ID3D12Device_CreateDescriptorHeap(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateDescriptorHeap(data->d3dDevice,
         &descriptorHeapDesc,
         &SDL_IID_ID3D12DescriptorHeap,
-        &data->textureRTVDescriptorHeap
+        (void **)&data->textureRTVDescriptorHeap
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateDescriptorHeap [texture rtv]"), result);
@@ -840,40 +842,40 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     descriptorHeapDesc.NumDescriptors = SDL_D3D12_MAX_NUM_TEXTURES;
     descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    result = ID3D12Device_CreateDescriptorHeap(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateDescriptorHeap(data->d3dDevice,
         &descriptorHeapDesc,
         &SDL_IID_ID3D12DescriptorHeap,
-        &data->srvDescriptorHeap
+        (void **)&data->srvDescriptorHeap
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateDescriptorHeap  [srv]"), result);
         goto done;
     }
     rootDescriptorHeaps[0] = data->srvDescriptorHeap;
-    data->srvDescriptorSize = ID3D12Device_GetDescriptorHandleIncrementSize(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    data->srvDescriptorSize = d3dDevice->lpVtbl->GetDescriptorHandleIncrementSize(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     SDL_zero(descriptorHeapDesc);
     descriptorHeapDesc.NumDescriptors = 2;
     descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
     descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    result = ID3D12Device_CreateDescriptorHeap(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateDescriptorHeap(data->d3dDevice,
         &descriptorHeapDesc,
         &SDL_IID_ID3D12DescriptorHeap,
-        &data->samplerDescriptorHeap
+        (void **)&data->samplerDescriptorHeap
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateDescriptorHeap  [sampler]"), result);
         goto done;
     }
     rootDescriptorHeaps[1] = data->samplerDescriptorHeap;
-    data->samplerDescriptorSize = ID3D12Device_GetDescriptorHandleIncrementSize(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+    data->samplerDescriptorSize = d3dDevice->lpVtbl->GetDescriptorHandleIncrementSize(d3dDevice, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 
     /* Create a command allocator for each back buffer */
     for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
-        result = ID3D12Device_CreateCommandAllocator(data->d3dDevice,
+        result = data->d3dDevice->lpVtbl->CreateCommandAllocator(data->d3dDevice,
             D3D12_COMMAND_LIST_TYPE_DIRECT,
             &SDL_IID_ID3D12CommandAllocator,
-            &data->commandAllocators[i]
+            (void **)&data->commandAllocators[i]
             );
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommandAllocator"), result);
@@ -882,13 +884,13 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     }
 
     /* Create the command list */
-    result = ID3D12Device_CreateCommandList(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateCommandList(data->d3dDevice,
         0,
         D3D12_COMMAND_LIST_TYPE_DIRECT,
         data->commandAllocators[0],
         NULL,
         &SDL_IID_ID3D12GraphicsCommandList2,
-        &data->commandList
+        (void **)&data->commandList
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommandList"), result);
@@ -896,14 +898,14 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     }
 
     /* Set the descriptor heaps to the correct initial value */
-    ID3D12GraphicsCommandList2_SetDescriptorHeaps(data->commandList, 2, rootDescriptorHeaps);
+    data->commandList->lpVtbl->SetDescriptorHeaps(data->commandList, 2, rootDescriptorHeaps);
 
     /* Create the fence and fence event */
-    result = ID3D12Device_CreateFence(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateFence(data->d3dDevice,
         data->fenceValue,
         D3D12_FENCE_FLAG_NONE,
         &SDL_IID_ID3D12Fence,
-        &data->fence
+        (void **)&data->fence
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateFence"), result);
@@ -922,12 +924,12 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     for (i = 0; i < NUM_ROOTSIGS; ++i) {
         D3D12_SHADER_BYTECODE rootSigData;
         D3D12_GetRootSignatureData(i, &rootSigData);
-        result = ID3D12Device_CreateRootSignature(data->d3dDevice,
+        result = data->d3dDevice->lpVtbl->CreateRootSignature(data->d3dDevice,
             0,
             rootSigData.pShaderBytecode,
             rootSigData.BytecodeLength,
             &SDL_IID_ID3D12RootSignature,
-            &data->rootSignatures[i]
+            (void **)&data->rootSignatures[i]
             );
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateRootSignature"), result);
@@ -953,10 +955,10 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     /* Create a vertex buffer heap and populate it with resources */
     SDL_zero(vbufferHeapDesc);
     vbufferHeapDesc.SizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT * SDL_D3D12_NUM_VERTEX_BUFFERS;
-    ID3D12Device_GetCustomHeapProperties(data->d3dDevice, &vbufferHeapDesc.Properties, 0, D3D12_HEAP_TYPE_UPLOAD);
+    data->d3dDevice->lpVtbl->GetCustomHeapProperties(data->d3dDevice, &vbufferHeapDesc.Properties, 0, D3D12_HEAP_TYPE_UPLOAD);
     vbufferHeapDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
     vbufferHeapDesc.Flags = D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
-    result = ID3D12Device_CreateHeap(data->d3dDevice, &vbufferHeapDesc, &SDL_IID_ID3D12Heap, &data->vertexBufferHeap);
+    result = data->d3dDevice->lpVtbl->CreateHeap(data->d3dDevice, &vbufferHeapDesc, &SDL_IID_ID3D12Heap, (void **)&data->vertexBufferHeap);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateHeap"), result);
         goto done;
@@ -976,14 +978,14 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     vbufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     for (i = 0; i < SDL_D3D12_NUM_VERTEX_BUFFERS; ++i) {
-        result = ID3D12Device_CreatePlacedResource(data->d3dDevice,
+        result = data->d3dDevice->lpVtbl->CreatePlacedResource(data->d3dDevice,
             data->vertexBufferHeap,
             i * D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT,
             &vbufferDesc,
             D3D12_RESOURCE_STATE_GENERIC_READ,
             NULL,
             &SDL_IID_ID3D12Resource,
-            &data->vertexBuffers[i].resource
+            (void **)&data->vertexBuffers[i].resource
             );
         
         if (FAILED(result)) {
@@ -991,7 +993,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
             goto done;
         }
 
-        data->vertexBuffers[i].view.BufferLocation = ID3D12Resource_GetGPUVirtualAddress(data->vertexBuffers[i].resource);
+        data->vertexBuffers[i].view.BufferLocation = data->vertexBuffers[i].resource->lpVtbl->GetGPUVirtualAddress(data->vertexBuffers[i].resource);
         data->vertexBuffers[i].view.StrideInBytes = sizeof(VertexPositionColor);
     }
 
@@ -1006,12 +1008,12 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     samplerDesc.MinLOD = 0.0f;
     samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->samplerDescriptorHeap, &data->nearestPixelSampler);
-    ID3D12Device_CreateSampler(data->d3dDevice, &samplerDesc, data->nearestPixelSampler);
+    data->samplerDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(data->samplerDescriptorHeap, &data->nearestPixelSampler);
+    data->d3dDevice->lpVtbl->CreateSampler(data->d3dDevice, &samplerDesc, data->nearestPixelSampler);
 
     samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     data->linearSampler.ptr = data->nearestPixelSampler.ptr + data->samplerDescriptorSize;
-    ID3D12Device_CreateSampler(data->d3dDevice, &samplerDesc, data->linearSampler);
+    data->d3dDevice->lpVtbl->CreateSampler(data->d3dDevice, &samplerDesc, data->linearSampler);
 
     /* Initialize the pool allocator for SRVs */
     for (i = 0; i < SDL_D3D12_MAX_NUM_TEXTURES; ++i) {
@@ -1106,6 +1108,7 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
     IDXGISwapChain1* swapChain;
     HRESULT result = S_OK;
+    SDL_SysWMinfo windowinfo;
 
     /* Create a swap chain using the same adapter as the existing Direct3D device. */
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
@@ -1127,11 +1130,10 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
         DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING; /* To support presenting with allow tearing on */
 
-    SDL_SysWMinfo windowinfo;
     SDL_VERSION(&windowinfo.version);
     SDL_GetWindowWMInfo(renderer->window, &windowinfo);
 
-    result = IDXGIFactory6_CreateSwapChainForHwnd(data->dxgiFactory,
+    result = data->dxgiFactory->lpVtbl->CreateSwapChainForHwnd(data->dxgiFactory,
         (IUnknown *)data->commandQueue,
         windowinfo.info.win.window,
         &swapChainDesc,
@@ -1144,9 +1146,9 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
         goto done;
     }
 
-    IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, windowinfo.info.win.window, DXGI_MWA_NO_WINDOW_CHANGES);
+    data->dxgiFactory->lpVtbl->MakeWindowAssociation(data->dxgiFactory, windowinfo.info.win.window, DXGI_MWA_NO_WINDOW_CHANGES);
 
-    result = IDXGISwapChain1_QueryInterface(swapChain, &SDL_IID_IDXGISwapChain4, (void **)&data->swapChain);
+    result = swapChain->lpVtbl->QueryInterface(swapChain, &SDL_IID_IDXGISwapChain4, (void **)&data->swapChain);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain1::QueryInterface"), result);
         goto done;
@@ -1155,7 +1157,7 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     /* Ensure that the swapchain does not queue more than one frame at a time. This both reduces latency
      * and ensures that the application will only render after each VSync, minimizing power consumption.
      */
-    result = IDXGISwapChain4_SetMaximumFrameLatency(data->swapChain, 1);
+    result = data->swapChain->lpVtbl->SetMaximumFrameLatency(data->swapChain, 1);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain4::SetMaximumFrameLatency"), result);
         goto done;
@@ -1228,7 +1230,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 
     if (data->swapChain) {
         /* If the swap chain already exists, resize it. */
-        result = IDXGISwapChain_ResizeBuffers(data->swapChain,
+        result = data->swapChain->lpVtbl->ResizeBuffers(data->swapChain,
             0,
             w, h,
             DXGI_FORMAT_UNKNOWN,
@@ -1256,7 +1258,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     /* Set the proper rotation for the swap chain. */
     if (WIN_IsWindows8OrGreater()) {
         if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL) {
-            result = IDXGISwapChain4_SetRotation(data->swapChain, data->rotation);
+            result = data->swapChain->lpVtbl->SetRotation(data->swapChain, data->rotation);
             if (FAILED(result)) {
                 WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain4::SetRotation"), result);
                 goto done;
@@ -1266,8 +1268,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 
     /* Get each back buffer render target and create render target views */
     for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
-        result = IDXGISwapChain4_GetBuffer(
-            data->swapChain,
+        result = data->swapChain->lpVtbl->GetBuffer(data->swapChain,
             i,
             &SDL_IID_ID3D12Resource,
             (void **) &data->renderTargets[i]
@@ -1282,20 +1283,20 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
         SDL_zero(rtvDescriptor);
-        ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->rtvDescriptorHeap, &rtvDescriptor);
+        data->rtvDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(data->rtvDescriptorHeap, &rtvDescriptor);
         rtvDescriptor.ptr += i * data->rtvDescriptorSize;
-        ID3D12Device5_CreateRenderTargetView(data->d3dDevice, data->renderTargets[i], &rtvDesc, rtvDescriptor);
+        data->d3dDevice->lpVtbl->CreateRenderTargetView(data->d3dDevice, data->renderTargets[i], &rtvDesc, rtvDescriptor);
     }
 
     /* Set back buffer index to current buffer */
-    data->currentBackBufferIndex = IDXGISwapChain4_GetCurrentBackBufferIndex(data->swapChain);
+    data->currentBackBufferIndex = data->swapChain->lpVtbl->GetCurrentBackBufferIndex(data->swapChain);
 
     /* Set the swap chain target immediately, so that a target is always set
      * even before we get to SetDrawState. Without this it's possible to hit
      * null references in places like ReadPixels!
      */
     data->currentRenderTargetView = D3D12_GetCurrentRenderTargetView(renderer);
-    ID3D12GraphicsCommandList2_OMSetRenderTargets(data->commandList, 1, &data->currentRenderTargetView, FALSE, NULL);
+    data->commandList->lpVtbl->OMSetRenderTargets(data->commandList, 1, &data->currentRenderTargetView, FALSE, NULL);
     D3D12_TransitionResource(data,
         data->renderTargets[data->currentBackBufferIndex],
         D3D12_RESOURCE_STATE_PRESENT,
@@ -1413,14 +1414,14 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     heapProps.CreationNodeMask = 1;
     heapProps.VisibleNodeMask = 1;
 
-    result = ID3D12Device_CreateCommittedResource(rendererData->d3dDevice,
+    result = rendererData->d3dDevice->lpVtbl->CreateCommittedResource(rendererData->d3dDevice,
         &heapProps,
         D3D12_HEAP_FLAG_NONE,
         &textureDesc,
         D3D12_RESOURCE_STATE_COPY_DEST,
         NULL,
         &SDL_IID_ID3D12Resource,
-        &textureData->mainTexture
+        (void **)&textureData->mainTexture
         );
     textureData->mainResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
     if (FAILED(result)) {
@@ -1435,14 +1436,14 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         textureDesc.Width = (textureDesc.Width + 1) / 2;
         textureDesc.Height = (textureDesc.Height + 1) / 2;
 
-        result = ID3D12Device_CreateCommittedResource(rendererData->d3dDevice,
+        result = rendererData->d3dDevice->lpVtbl->CreateCommittedResource(rendererData->d3dDevice,
             &heapProps,
             D3D12_HEAP_FLAG_NONE,
             &textureDesc,
             D3D12_RESOURCE_STATE_COPY_DEST,
             NULL,
             &SDL_IID_ID3D12Resource,
-            &textureData->mainTextureU
+            (void **)&textureData->mainTextureU
             );
         textureData->mainResourceStateU = D3D12_RESOURCE_STATE_COPY_DEST;
         if (FAILED(result)) {
@@ -1450,14 +1451,14 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
         }
 
-        result = ID3D12Device_CreateCommittedResource(rendererData->d3dDevice,
+        result = rendererData->d3dDevice->lpVtbl->CreateCommittedResource(rendererData->d3dDevice,
             &heapProps,
             D3D12_HEAP_FLAG_NONE,
             &textureDesc,
             D3D12_RESOURCE_STATE_COPY_DEST,
             NULL,
             &SDL_IID_ID3D12Resource,
-            &textureData->mainTextureV
+            (void **)&textureData->mainTextureV
             );
         textureData->mainResourceStateV = D3D12_RESOURCE_STATE_COPY_DEST;
         if (FAILED(result)) {
@@ -1476,19 +1477,19 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         nvTextureDesc.Width = (textureDesc.Width + 1) / 2;
         nvTextureDesc.Height = (textureDesc.Height + 1) / 2;
 
-        result = ID3D12Device_CreateCommittedResource(rendererData->d3dDevice,
+        result = rendererData->d3dDevice->lpVtbl->CreateCommittedResource(rendererData->d3dDevice,
             &heapProps,
             D3D12_HEAP_FLAG_NONE,
             &nvTextureDesc,
             D3D12_RESOURCE_STATE_COPY_DEST,
             NULL,
             &SDL_IID_ID3D12Resource,
-            &textureData->mainTextureNV
+            (void **)&textureData->mainTextureNV
         );
         textureData->mainResourceStateNV = D3D12_RESOURCE_STATE_COPY_DEST;
         if (FAILED(result)) {
             D3D12_DestroyTexture(renderer, texture);
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device1::CreateTexture2D"), result);
+            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateTexture2D"), result);
         }
     }
 #endif /* SDL_HAVE_YUV */
@@ -1500,29 +1501,29 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     resourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 
     textureData->mainSRVIndex = D3D12_GetAvailableSRVIndex(renderer);
-    ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceView);
+    rendererData->srvDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceView);
     textureData->mainTextureResourceView.ptr += textureData->mainSRVIndex * rendererData->srvDescriptorSize;
 
-    ID3D12Device_CreateShaderResourceView(rendererData->d3dDevice,
+    rendererData->d3dDevice->lpVtbl->CreateShaderResourceView(rendererData->d3dDevice,
         textureData->mainTexture,
         &resourceViewDesc,
         textureData->mainTextureResourceView
         );
 #if SDL_HAVE_YUV
     if (textureData->yuv) {
-        ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewU);
+        rendererData->srvDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewU);
         textureData->mainSRVIndexU = D3D12_GetAvailableSRVIndex(renderer);
         textureData->mainTextureResourceViewU.ptr += textureData->mainSRVIndexU * rendererData->srvDescriptorSize;
-        ID3D12Device_CreateShaderResourceView(rendererData->d3dDevice,
+        rendererData->d3dDevice->lpVtbl->CreateShaderResourceView(rendererData->d3dDevice,
             textureData->mainTextureU,
             &resourceViewDesc,
             textureData->mainTextureResourceViewU
             );
 
-        ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewV);
+        rendererData->srvDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewV);
         textureData->mainSRVIndexV = D3D12_GetAvailableSRVIndex(renderer);
         textureData->mainTextureResourceViewV.ptr += textureData->mainSRVIndexV * rendererData->srvDescriptorSize;
-        ID3D12Device_CreateShaderResourceView(rendererData->d3dDevice,
+        rendererData->d3dDevice->lpVtbl->CreateShaderResourceView(rendererData->d3dDevice,
             textureData->mainTextureV,
             &resourceViewDesc,
             textureData->mainTextureResourceViewV
@@ -1534,10 +1535,10 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
         nvResourceViewDesc.Format = DXGI_FORMAT_R8G8_UNORM;
 
-        ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewNV);
+        rendererData->srvDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewNV);
         textureData->mainSRVIndexNV = D3D12_GetAvailableSRVIndex(renderer);
         textureData->mainTextureResourceViewNV.ptr += textureData->mainSRVIndexNV * rendererData->srvDescriptorSize;
-        ID3D12Device_CreateShaderResourceView(rendererData->d3dDevice,
+        rendererData->d3dDevice->lpVtbl->CreateShaderResourceView(rendererData->d3dDevice,
             textureData->mainTextureNV,
             &nvResourceViewDesc,
             textureData->mainTextureResourceViewNV
@@ -1552,10 +1553,10 @@ D3D12_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         renderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
         renderTargetViewDesc.Texture2D.MipSlice = 0;
 
-        ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->textureRTVDescriptorHeap, &textureData->mainTextureRenderTargetView);
+        rendererData->textureRTVDescriptorHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart(rendererData->textureRTVDescriptorHeap, &textureData->mainTextureRenderTargetView);
         textureData->mainTextureRenderTargetView.ptr += textureData->mainSRVIndex * rendererData->rtvDescriptorSize;
 
-        ID3D12Device_CreateRenderTargetView(rendererData->d3dDevice,
+        rendererData->d3dDevice->lpVtbl->CreateRenderTargetView(rendererData->d3dDevice,
             (ID3D12Resource*)textureData->mainTexture,
             &renderTargetViewDesc,
             textureData->mainTextureRenderTargetView);
@@ -1615,9 +1616,11 @@ D3D12_UpdateTextureInternal(D3D12_RenderData * rendererData, ID3D12Resource * te
     D3D12_TEXTURE_COPY_LOCATION srcLocation;
     D3D12_TEXTURE_COPY_LOCATION dstLocation;
     BYTE *textureMemory;
+    ID3D12Resource *uploadBuffer;
 
     /* Create an upload buffer, which will be used to write to the main texture. */
-    ID3D12Resource_GetDesc(texture, &textureDesc);
+    SDL_zero(textureDesc);
+    texture->lpVtbl->GetDesc(texture, &textureDesc);
     textureDesc.Width = w;
     textureDesc.Height = h;
 
@@ -1634,7 +1637,7 @@ D3D12_UpdateTextureInternal(D3D12_RenderData * rendererData, ID3D12Resource * te
     uploadDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     /* Figure out how much we need to allocate for the upload buffer */
-    ID3D12Device_GetCopyableFootprints(rendererData->d3dDevice,
+    rendererData->d3dDevice->lpVtbl->GetCopyableFootprints(rendererData->d3dDevice,
         &textureDesc,
         0,
         1,
@@ -1651,21 +1654,22 @@ D3D12_UpdateTextureInternal(D3D12_RenderData * rendererData, ID3D12Resource * te
     heapProps.VisibleNodeMask = 1;
 
     /* Create the upload buffer */
-    result = ID3D12Device_CreateCommittedResource(rendererData->d3dDevice,
+    result = rendererData->d3dDevice->lpVtbl->CreateCommittedResource(rendererData->d3dDevice,
         &heapProps,
         D3D12_HEAP_FLAG_NONE,
         &uploadDesc,
         D3D12_RESOURCE_STATE_GENERIC_READ,
         NULL,
         &SDL_IID_ID3D12Resource,
-        &rendererData->uploadBuffers[rendererData->currentUploadBuffer]
+        (void **)&rendererData->uploadBuffers[rendererData->currentUploadBuffer]
         );
     if (FAILED(result)) {
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [create upload buffer]"), result);
     }
 
     /* Get a write-only pointer to data in the upload buffer: */
-    result = ID3D12Resource_Map(rendererData->uploadBuffers[rendererData->currentUploadBuffer],
+    uploadBuffer = rendererData->uploadBuffers[rendererData->currentUploadBuffer];
+    result = uploadBuffer->lpVtbl->Map(uploadBuffer,
         0,
         NULL,
         (void **)&textureMemory
@@ -1706,7 +1710,7 @@ D3D12_UpdateTextureInternal(D3D12_RenderData * rendererData, ID3D12Resource * te
     }
 
     /* Commit the changes back to the upload buffer: */
-    ID3D12Resource_Unmap(rendererData->uploadBuffers[rendererData->currentUploadBuffer], 0, NULL);
+    uploadBuffer->lpVtbl->Unmap(uploadBuffer, 0, NULL);
 
     /* Make sure the destination is in the correct resource state */
     D3D12_TransitionResource(rendererData, texture, *resourceState, D3D12_RESOURCE_STATE_COPY_DEST);
@@ -1722,7 +1726,7 @@ D3D12_UpdateTextureInternal(D3D12_RenderData * rendererData, ID3D12Resource * te
     srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
     srcLocation.PlacedFootprint = placedTextureDesc;
 
-    ID3D12GraphicsCommandList_CopyTextureRegion(rendererData->commandList,
+    rendererData->commandList->lpVtbl->CopyTextureRegion(rendererData->commandList,
         &dstLocation,
         x,
         y,
@@ -1879,7 +1883,8 @@ D3D12_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     }
     
     /* Create an upload buffer, which will be used to write to the main texture. */
-    ID3D12Resource_GetDesc(textureData->mainTexture, &textureDesc);
+    SDL_zero(textureDesc);
+    textureData->mainTexture->lpVtbl->GetDesc(textureData->mainTexture, &textureDesc);
     textureDesc.Width = rect->w;
     textureDesc.Height = rect->h;
 
@@ -1896,7 +1901,7 @@ D3D12_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     uploadDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     /* Figure out how much we need to allocate for the upload buffer */
-    ID3D12Device_GetCopyableFootprints(rendererData->d3dDevice,
+    rendererData->d3dDevice->lpVtbl->GetCopyableFootprints(rendererData->d3dDevice,
         &textureDesc,
         0,
         1,
@@ -1913,21 +1918,21 @@ D3D12_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     heapProps.VisibleNodeMask = 1;
 
     /* Create the upload buffer */
-    result = ID3D12Device_CreateCommittedResource(rendererData->d3dDevice,
+    result = rendererData->d3dDevice->lpVtbl->CreateCommittedResource(rendererData->d3dDevice,
         &heapProps,
         D3D12_HEAP_FLAG_NONE,
         &uploadDesc,
         D3D12_RESOURCE_STATE_GENERIC_READ,
         NULL,
         &SDL_IID_ID3D12Resource,
-        &textureData->stagingBuffer
+        (void **)&textureData->stagingBuffer
     );
     if (FAILED(result)) {
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [create upload buffer]"), result);
     }
 
     /* Get a write-only pointer to data in the upload buffer: */
-    result = ID3D12Resource_Map(textureData->stagingBuffer,
+    result = textureData->stagingBuffer->lpVtbl->Map(textureData->stagingBuffer,
         0,
         NULL,
         (void **)&textureMemory
@@ -1990,9 +1995,10 @@ D3D12_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 #endif
     /* Commit the pixel buffer's changes back to the staging texture: */
-    ID3D12Resource_Unmap(textureData->stagingBuffer, 0, NULL);
+    textureData->stagingBuffer->lpVtbl->Unmap(textureData->stagingBuffer, 0, NULL);
 
-    ID3D12Resource_GetDesc(textureData->mainTexture, &textureDesc);
+    SDL_zero(textureDesc);
+    textureData->mainTexture->lpVtbl->GetDesc(textureData->mainTexture, &textureDesc);
     textureDesc.Width = textureData->lockedRect.w;
     textureDesc.Height = textureData->lockedRect.h;
 
@@ -2026,7 +2032,7 @@ D3D12_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
     srcLocation.PlacedFootprint = placedTextureDesc;
 
-    ID3D12GraphicsCommandList_CopyTextureRegion(rendererData->commandList,
+    rendererData->commandList->lpVtbl->CopyTextureRegion(rendererData->commandList,
         &dstLocation,
         textureData->lockedRect.x,
         textureData->lockedRect.y,
@@ -2188,6 +2194,7 @@ D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
     const UINT stride = sizeof(VertexPositionColor);
     UINT8* vertexBufferData = NULL;
     D3D12_RANGE range;
+    ID3D12Resource *vertexBuffer;
 
     range.Begin = 0;
     range.End = 0;
@@ -2208,16 +2215,17 @@ D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
         return E_FAIL;
     }
 
-    result = ID3D12Resource_Map(rendererData->vertexBuffers[vbidx].resource, 0, &range, (void **)&vertexBufferData);
+    vertexBuffer = rendererData->vertexBuffers[vbidx].resource;
+    result = vertexBuffer->lpVtbl->Map(vertexBuffer, 0, &range, (void **)&vertexBufferData);
     if (FAILED(result)) {
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Resource::Map [vertex buffer]"), result);
     }
     SDL_memcpy(vertexBufferData, vertexData, dataSizeInBytes);
-    ID3D12Resource_Unmap(rendererData->vertexBuffers[vbidx].resource, 0, NULL);
+    vertexBuffer->lpVtbl->Unmap(vertexBuffer, 0, NULL);
 
     rendererData->vertexBuffers[vbidx].view.SizeInBytes = (UINT)dataSizeInBytes;
 
-    ID3D12GraphicsCommandList_IASetVertexBuffers(rendererData->commandList, 0, 1, &rendererData->vertexBuffers[vbidx].view);
+    rendererData->commandList->lpVtbl->IASetVertexBuffers(rendererData->commandList, 0, 1, &rendererData->vertexBuffers[vbidx].view);
 
     rendererData->currentVertexBuffer++;
     if (rendererData->currentVertexBuffer >= SDL_D3D12_NUM_VERTEX_BUFFERS) {
@@ -2313,7 +2321,7 @@ D3D12_UpdateViewport(SDL_Renderer * renderer)
     d3dviewport.MinDepth = 0.0f;
     d3dviewport.MaxDepth = 1.0f;
     /* SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}\n", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height); */
-    ID3D12GraphicsCommandList_RSSetViewports(data->commandList, 1, &d3dviewport);
+    data->commandList->lpVtbl->RSSetViewports(data->commandList, 1, &d3dviewport);
 
     data->viewportDirty = SDL_FALSE;
 
@@ -2374,8 +2382,8 @@ D3D12_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, D3D12_
             return SDL_SetError("[direct3d12] Unable to create required pipeline state");
         }
 
-        ID3D12GraphicsCommandList2_SetPipelineState(rendererData->commandList, rendererData->currentPipelineState->pipelineState);
-        ID3D12GraphicsCommandList2_SetGraphicsRootSignature(rendererData->commandList,
+        rendererData->commandList->lpVtbl->SetPipelineState(rendererData->commandList, rendererData->currentPipelineState->pipelineState);
+        rendererData->commandList->lpVtbl->SetGraphicsRootSignature(rendererData->commandList,
             rendererData->rootSignatures[D3D12_GetRootSignatureType(rendererData->currentPipelineState->shader)]);
         /* When we change these we will need to re-upload the constant buffer and reset any descriptors */
         updateSubresource = SDL_TRUE;
@@ -2384,7 +2392,7 @@ D3D12_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, D3D12_
     }
 
     if (renderTargetView.ptr != rendererData->currentRenderTargetView.ptr) {
-        ID3D12GraphicsCommandList2_OMSetRenderTargets(rendererData->commandList, 1, &renderTargetView, FALSE, NULL);
+        rendererData->commandList->lpVtbl->OMSetRenderTargets(rendererData->commandList, 1, &renderTargetView, FALSE, NULL);
         rendererData->currentRenderTargetView = renderTargetView;
     }
 
@@ -2401,7 +2409,7 @@ D3D12_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, D3D12_
             /* D3D12_GetViewportAlignedD3DRect will have set the SDL error */
             return -1;
         }
-        ID3D12GraphicsCommandList2_RSSetScissorRects(rendererData->commandList, 1, &scissorRect);
+        rendererData->commandList->lpVtbl->RSSetScissorRects(rendererData->commandList, 1, &scissorRect);
         rendererData->cliprectDirty = SDL_FALSE;
     }
 
@@ -2413,7 +2421,7 @@ D3D12_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, D3D12_
     if (firstShaderResource.ptr != rendererData->currentShaderResource.ptr) {
         for (i = 0; i < numShaderResources; ++i) {
             D3D12_GPU_DESCRIPTOR_HANDLE GPUHandle = D3D12_CPUtoGPUHandle(rendererData->srvDescriptorHeap, shaderResources[i]);
-            ID3D12GraphicsCommandList2_SetGraphicsRootDescriptorTable(rendererData->commandList, i + 1, GPUHandle);
+            rendererData->commandList->lpVtbl->SetGraphicsRootDescriptorTable(rendererData->commandList, i + 1, GPUHandle);
         }
         rendererData->currentShaderResource.ptr = firstShaderResource.ptr;
     }
@@ -2447,13 +2455,13 @@ D3D12_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, D3D12_
                 break;
         }
 
-        ID3D12GraphicsCommandList2_SetGraphicsRootDescriptorTable(rendererData->commandList, tableIndex, GPUHandle);
+        rendererData->commandList->lpVtbl->SetGraphicsRootDescriptorTable(rendererData->commandList, tableIndex, GPUHandle);
         rendererData->currentSampler = *sampler;
     }
 
     if (updateSubresource == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
         SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix));
-        ID3D12GraphicsCommandList2_SetGraphicsRoot32BitConstants(rendererData->commandList,
+        rendererData->commandList->lpVtbl->SetGraphicsRoot32BitConstants(rendererData->commandList,
             0,
             32,
             &rendererData->vertexShaderConstantsData,
@@ -2556,8 +2564,8 @@ static void
 D3D12_DrawPrimitives(SDL_Renderer * renderer, D3D12_PRIMITIVE_TOPOLOGY primitiveTopology, const size_t vertexStart, const size_t vertexCount)
 {
      D3D12_RenderData *rendererData = (D3D12_RenderData *) renderer->driverdata;
-     ID3D12GraphicsCommandList_IASetPrimitiveTopology(rendererData->commandList, primitiveTopology);
-     ID3D12GraphicsCommandList_DrawInstanced(rendererData->commandList, (UINT)vertexCount, 1, 0, 0);
+     rendererData->commandList->lpVtbl->IASetPrimitiveTopology(rendererData->commandList, primitiveTopology);
+     rendererData->commandList->lpVtbl->DrawInstanced(rendererData->commandList, (UINT)vertexCount, 1, 0, 0);
 }
 
 static int
@@ -2617,7 +2625,7 @@ D3D12_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 };
                 
                 D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor = D3D12_GetCurrentRenderTargetView(renderer);
-                ID3D12GraphicsCommandList2_ClearRenderTargetView(rendererData->commandList, rtvDescriptor, colorRGBA, 0, NULL);
+                rendererData->commandList->lpVtbl->ClearRenderTargetView(rendererData->commandList, rtvDescriptor, colorRGBA, 0, NULL);
                 break;
             }
 
@@ -2706,7 +2714,8 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     }
 
     /* Create a staging texture to copy the screen's data to: */
-    ID3D12Resource_GetDesc(backBuffer, &textureDesc);
+    SDL_zero(textureDesc);
+    backBuffer->lpVtbl->GetDesc(backBuffer, &textureDesc);
     textureDesc.Width = rect->w;
     textureDesc.Height = rect->h;
 
@@ -2723,7 +2732,7 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     readbackDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     /* Figure out how much we need to allocate for the upload buffer */
-    ID3D12Device_GetCopyableFootprints(data->d3dDevice,
+    data->d3dDevice->lpVtbl->GetCopyableFootprints(data->d3dDevice,
         &textureDesc,
         0,
         1,
@@ -2739,17 +2748,17 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     heapProps.CreationNodeMask = 1;
     heapProps.VisibleNodeMask = 1;
 
-    result = ID3D12Device_CreateCommittedResource(data->d3dDevice,
+    result = data->d3dDevice->lpVtbl->CreateCommittedResource(data->d3dDevice,
         &heapProps,
         D3D12_HEAP_FLAG_NONE,
         &readbackDesc,
         D3D12_RESOURCE_STATE_COPY_DEST,
         NULL,
         &SDL_IID_ID3D12Resource,
-        &readbackBuffer
+        (void **)&readbackBuffer
     );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device1::CreateTexture2D [create staging texture]"), result);
+        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateTexture2D [create staging texture]"), result);
         goto done;
     }
 
@@ -2776,8 +2785,7 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     pitchedDesc.Depth = 1;
     if (pitchedDesc.Format == DXGI_FORMAT_R8_UNORM) {
         bpp = 1;
-    }
-    else {
+    } else {
         bpp = 4;
     }
     pitchedDesc.RowPitch = D3D12_Align(pitchedDesc.Width * bpp, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
@@ -2796,7 +2804,7 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
     srcLocation.SubresourceIndex = 0;
 
-    ID3D12GraphicsCommandList_CopyTextureRegion(data->commandList,
+    data->commandList->lpVtbl->CopyTextureRegion(data->commandList,
         &dstLocation,
         0, 0, 0,
         &srcLocation,
@@ -2810,7 +2818,7 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     D3D12_TransitionResource(data, backBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
 
     /* Map the staging texture's data to CPU-accessible memory: */
-    result = ID3D12Resource_Map(readbackBuffer,
+    result = readbackBuffer->lpVtbl->Map(readbackBuffer,
         0,
         NULL,
         (void **)&textureMemory
@@ -2833,7 +2841,7 @@ D3D12_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         pitch);
 
     /* Unmap the texture: */
-    ID3D12Resource_Unmap(readbackBuffer, 0, NULL);
+    readbackBuffer->lpVtbl->Unmap(readbackBuffer, 0, NULL);
 
 done:
     SAFE_RELEASE(readbackBuffer);
@@ -2856,8 +2864,8 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
         );
 
     /* Issue the command list */
-    result = ID3D12GraphicsCommandList2_Close(data->commandList);
-    ID3D12CommandQueue_ExecuteCommandLists(data->commandQueue, 1, (ID3D12CommandList * const *)&data->commandList);
+    result = data->commandList->lpVtbl->Close(data->commandList);
+    data->commandQueue->lpVtbl->ExecuteCommandLists(data->commandQueue, 1, (ID3D12CommandList * const *)&data->commandList);
 
     if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
         syncInterval = 1;
@@ -2870,7 +2878,7 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
     /* The application may optionally specify "dirty" or "scroll"
      * rects to improve efficiency in certain scenarios.
      */
-    result = IDXGISwapChain4_Present(data->swapChain, syncInterval, presentFlags);
+    result = data->swapChain->lpVtbl->Present(data->swapChain, syncInterval, presentFlags);
 
     if (FAILED(result) && result != DXGI_ERROR_WAS_STILL_DRAWING) {
         /* If the device was removed either by a disconnect or a driver upgrade, we 
@@ -2886,11 +2894,10 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
         }
     } else {
         /* Wait for the GPU and move to the next frame */
-        result = ID3D12CommandQueue_Signal(data->commandQueue, data->fence, data->fenceValue);
+        result = data->commandQueue->lpVtbl->Signal(data->commandQueue, data->fence, data->fenceValue);
 
-        if (ID3D12Fence_GetCompletedValue(data->fence) < data->fenceValue) {
-            result = ID3D12Fence_SetEventOnCompletion(
-                data->fence,
+        if (data->fence->lpVtbl->GetCompletedValue(data->fence) < data->fenceValue) {
+            result = data->fence->lpVtbl->SetEventOnCompletion(data->fence,
                 data->fenceValue,
                 data->fenceEvent
                 );
@@ -2898,7 +2905,7 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
         }
 
         data->fenceValue++;
-        data->currentBackBufferIndex = IDXGISwapChain4_GetCurrentBackBufferIndex(data->swapChain);
+        data->currentBackBufferIndex = data->swapChain->lpVtbl->GetCurrentBackBufferIndex(data->swapChain);
 
         /* Reset the command allocator and command list, and transition back to render target */
         D3D12_ResetCommandList(data);
@@ -3035,7 +3042,7 @@ SDL_RenderGetD3D12Device(SDL_Renderer * renderer)
 
     device = (ID3D12Device *)data->d3dDevice;
     if (device) {
-        ID3D12Device_AddRef(device);
+        device->lpVtbl->AddRef(device);
     }
 #endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
 
