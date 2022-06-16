@@ -485,6 +485,8 @@ dep_option(SDL_STATIC_PIC      "Static version of the library should be built wi
 dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST OFF)
 set_option(SDL_INSTALL_TESTS   "Install test-cases" OFF)
 
+set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
+
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
