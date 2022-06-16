@@ -422,7 +422,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x187f ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1883 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller	
 	{ MAKE_CONTROLLER_ID( 0x03eb, 0xff01 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2303 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0ef8 ), k_eControllerType_XBox360Controller, NULL },	// Homemade fightstick based on brook pcb (with XInput driver??)
 	{ MAKE_CONTROLLER_ID( 0x046d, 0x1000 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x1345, 0x6006 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller
