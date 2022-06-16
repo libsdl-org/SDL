@@ -1837,21 +1837,46 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     if (*vendor_name && *product_name) {
         len = (SDL_strlen(vendor_name) + 1 + SDL_strlen(product_name) + 1);
         name = (char *)SDL_malloc(len);
-        if (!name) {
-            return NULL;
+        if (name) {
+            SDL_snprintf(name, len, "%s %s", vendor_name, product_name);
         }
-        SDL_snprintf(name, len, "%s %s", vendor_name, product_name);
     } else if (*product_name) {
         name = SDL_strdup(product_name);
     } else if (vendor || product) {
-        len = (6 + 1 + 6 + 1);
-        name = (char *)SDL_malloc(len);
-        if (!name) {
-            return NULL;
+        /* Couldn't find a controller name, try to give it one based on device type */
+        switch (SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, NULL, SDL_TRUE)) {
+        case SDL_CONTROLLER_TYPE_XBOX360:
+            name = SDL_strdup("Xbox 360 Controller");
+            break;
+        case SDL_CONTROLLER_TYPE_XBOXONE:
+            name = SDL_strdup("Xbox One Controller");
+            break;
+        case SDL_CONTROLLER_TYPE_PS3:
+            name = SDL_strdup("PS3 Controller");
+            break;
+        case SDL_CONTROLLER_TYPE_PS4:
+            name = SDL_strdup("PS4 Controller");
+            break;
+        case SDL_CONTROLLER_TYPE_PS5:
+            name = SDL_strdup("PS5 Controller");
+            break;
+        case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+            name = SDL_strdup("Nintendo Switch Pro Controller");
+            break;
+        default:
+            len = (6 + 1 + 6 + 1);
+            name = (char *)SDL_malloc(len);
+            if (name) {
+                SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
+            }
+            break;
         }
-        SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
     } else {
         name = SDL_strdup("Controller");
+    }
+
+    if (!name) {
+        return NULL;
     }
 
     /* Trim trailing whitespace */
@@ -1902,9 +1927,85 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
 }
 
 SDL_GameControllerType
-SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product)
+SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI)
 {
-    return SDL_GetJoystickGameControllerType(NULL, vendor, product, -1, 0, 0, 0);
+    SDL_GameControllerType type = SDL_CONTROLLER_TYPE_UNKNOWN;
+
+    if (vendor == 0x0000 && product == 0x0000) {
+        /* Some devices are only identifiable by their name */
+        if (name &&
+            (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
+             SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
+             SDL_strcmp(name, "Wireless Gamepad") == 0)) {
+            /* HORI or PowerA Switch Pro Controller clone */
+            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+        }
+
+    } else if (vendor == 0x0001 && product == 0x0001) {
+        type = SDL_CONTROLLER_TYPE_UNKNOWN;
+
+    } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
+        type = SDL_CONTROLLER_TYPE_XBOXONE;
+
+    } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
+               (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
+        type = SDL_CONTROLLER_TYPE_AMAZON_LUNA;
+
+    } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
+        type = SDL_CONTROLLER_TYPE_GOOGLE_STADIA;
+
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+            type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
+
+    } else {
+        switch (GuessControllerType(vendor, product)) {
+        case k_eControllerType_XBox360Controller:
+            type = SDL_CONTROLLER_TYPE_XBOX360;
+            break;
+        case k_eControllerType_XBoxOneController:
+            type = SDL_CONTROLLER_TYPE_XBOXONE;
+            break;
+        case k_eControllerType_PS3Controller:
+            type = SDL_CONTROLLER_TYPE_PS3;
+            break;
+        case k_eControllerType_PS4Controller:
+            type = SDL_CONTROLLER_TYPE_PS4;
+            break;
+        case k_eControllerType_PS5Controller:
+            type = SDL_CONTROLLER_TYPE_PS5;
+            break;
+        case k_eControllerType_XInputPS4Controller:
+            if (forUI) {
+                type = SDL_CONTROLLER_TYPE_PS4;
+            } else {
+                type = SDL_CONTROLLER_TYPE_UNKNOWN;
+            }
+            break;
+        case k_eControllerType_SwitchProController:
+        case k_eControllerType_SwitchInputOnlyController:
+            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+            break;
+        case k_eControllerType_XInputSwitchController:
+            if (forUI) {
+                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+            } else {
+                type = SDL_CONTROLLER_TYPE_UNKNOWN;
+            }
+            break;
+        case k_eControllerType_SwitchJoyConLeft:
+        case k_eControllerType_SwitchJoyConRight:
+            /* We always support the Nintendo Online NES Controllers */
+            if (name && SDL_strncmp(name, "NES Controller", 14) == 0) {
+                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+            } else {
+                type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return type;
 }
 
 SDL_GameControllerType
@@ -1914,159 +2015,14 @@ SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *nam
     Uint16 vendor, product;
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
-    type = SDL_GetJoystickGameControllerType(name, vendor, product, -1, 0, 0, 0);
+    type = SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, name, SDL_TRUE);
     if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
         if (SDL_IsJoystickXInput(guid)) {
             /* This is probably an Xbox One controller */
             return SDL_CONTROLLER_TYPE_XBOXONE;
         }
-    }
-    return type;
-}
-
-SDL_GameControllerType
-SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 product, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
-{
-    static const int LIBUSB_CLASS_VENDOR_SPEC = 0xFF;
-    static const int XB360_IFACE_SUBCLASS = 93;
-    static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
-    static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
-    static const int XBONE_IFACE_SUBCLASS = 71;
-    static const int XBONE_IFACE_PROTOCOL = 208;
-
-    SDL_GameControllerType type = SDL_CONTROLLER_TYPE_UNKNOWN;
-
-    /* This code should match the checks in libusb/hid.c and HIDDeviceManager.java */
-    if (interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
-        interface_subclass == XB360_IFACE_SUBCLASS &&
-        (interface_protocol == XB360_IFACE_PROTOCOL ||
-         interface_protocol == XB360W_IFACE_PROTOCOL)) {
-
-        static const int SUPPORTED_VENDORS[] = {
-            0x0079, /* GPD Win 2 */
-            0x044f, /* Thrustmaster */
-            0x045e, /* Microsoft */
-            0x046d, /* Logitech */
-            0x056e, /* Elecom */
-            0x06a3, /* Saitek */
-            0x0738, /* Mad Catz */
-            0x07ff, /* Mad Catz */
-            0x0e6f, /* PDP */
-            0x0f0d, /* Hori */
-            0x1038, /* SteelSeries */
-            0x11c9, /* Nacon */
-            0x12ab, /* Unknown */
-            0x1430, /* RedOctane */
-            0x146b, /* BigBen */
-            0x1532, /* Razer */
-            0x15e4, /* Numark */
-            0x162e, /* Joytech */
-            0x1689, /* Razer Onza */
-            0x1949, /* Lab126, Inc. */
-            0x1bad, /* Harmonix */
-            0x20d6, /* PowerA */
-            0x24c6, /* PowerA */
-            0x2c22, /* Qanba */
-        };
-
-        int i;
-        for (i = 0; i < SDL_arraysize(SUPPORTED_VENDORS); ++i) {
-            if (vendor == SUPPORTED_VENDORS[i]) {
-                type = SDL_CONTROLLER_TYPE_XBOX360;
-                break;
-            }
-        }
-    }
-
-    if (interface_number == 0 &&
-        interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
-        interface_subclass == XBONE_IFACE_SUBCLASS &&
-        interface_protocol == XBONE_IFACE_PROTOCOL) {
-
-        static const int SUPPORTED_VENDORS[] = {
-            0x045e, /* Microsoft */
-            0x0738, /* Mad Catz */
-            0x0e6f, /* PDP */
-            0x0f0d, /* Hori */
-            0x1532, /* Razer */
-            0x20d6, /* PowerA */
-            0x24c6, /* PowerA */
-            0x2e24, /* Hyperkin */
-        };
-
-        int i;
-        for (i = 0; i < SDL_arraysize(SUPPORTED_VENDORS); ++i) {
-            if (vendor == SUPPORTED_VENDORS[i]) {
-                type = SDL_CONTROLLER_TYPE_XBOXONE;
-                break;
-            }
-        }
-    }
-
-    if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
-        if (vendor == 0x0000 && product == 0x0000) {
-            /* Some devices are only identifiable by their name */
-            if (name &&
-                (SDL_strcmp(name, "Lic Pro Controller") == 0 ||
-                 SDL_strcmp(name, "Nintendo Wireless Gamepad") == 0 ||
-                 SDL_strcmp(name, "Wireless Gamepad") == 0)) {
-                /* HORI or PowerA Switch Pro Controller clone */
-                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-            } else if (name && SDL_strcmp(name, "Virtual Joystick") == 0) {
-                type = SDL_CONTROLLER_TYPE_VIRTUAL;
-            } else {
-                type = SDL_CONTROLLER_TYPE_UNKNOWN;
-            }
-
-        } else if (vendor == 0x0001 && product == 0x0001) {
-            type = SDL_CONTROLLER_TYPE_UNKNOWN;
-
-        } else if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER) {
-            type = SDL_CONTROLLER_TYPE_XBOXONE;
-
-        } else if ((vendor == USB_VENDOR_AMAZON && product == USB_PRODUCT_AMAZON_LUNA_CONTROLLER) ||
-                   (vendor == BLUETOOTH_VENDOR_AMAZON && product == BLUETOOTH_PRODUCT_LUNA_CONTROLLER)) {
-            type = SDL_CONTROLLER_TYPE_AMAZON_LUNA;
-
-        } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
-            type = SDL_CONTROLLER_TYPE_GOOGLE_STADIA;
-
-        } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
-                type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
-
-        } else {
-            switch (GuessControllerType(vendor, product)) {
-            case k_eControllerType_XBox360Controller:
-                type = SDL_CONTROLLER_TYPE_XBOX360;
-                break;
-            case k_eControllerType_XBoxOneController:
-                type = SDL_CONTROLLER_TYPE_XBOXONE;
-                break;
-            case k_eControllerType_PS3Controller:
-                type = SDL_CONTROLLER_TYPE_PS3;
-                break;
-            case k_eControllerType_PS4Controller:
-                type = SDL_CONTROLLER_TYPE_PS4;
-                break;
-            case k_eControllerType_PS5Controller:
-                type = SDL_CONTROLLER_TYPE_PS5;
-                break;
-            case k_eControllerType_SwitchProController:
-            case k_eControllerType_SwitchInputOnlyController:
-                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-                break;
-            case k_eControllerType_SwitchJoyConLeft:
-            case k_eControllerType_SwitchJoyConRight:
-                /* We always support the Nintendo Online NES Controllers */
-                if (name && SDL_strncmp(name, "NES Controller", 14) == 0) {
-                    return SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-                }
-                type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
-                break;
-            default:
-                type = SDL_CONTROLLER_TYPE_UNKNOWN;
-                break;
-            }
+        if (SDL_IsJoystickVirtual(guid)) {
+            return SDL_CONTROLLER_TYPE_VIRTUAL;
         }
     }
     return type;
@@ -2580,7 +2536,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    type = SDL_GetJoystickGameControllerType(name, vendor, product, -1, 0, 0, 0);
+    type = SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, name, SDL_FALSE);
     if ((type == SDL_CONTROLLER_TYPE_PS4 || type == SDL_CONTROLLER_TYPE_PS5) && SDL_IsPS4RemapperRunning()) {
         return SDL_TRUE;
     }
