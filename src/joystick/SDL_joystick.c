@@ -2285,6 +2285,12 @@ static SDL_bool SDL_IsJoystickProductArcadeStick(Uint32 vidpid)
         MAKE_VIDPID(0x1532, 0x0a00),    /* Razer Atrox Arcade Stick */
         MAKE_VIDPID(0x0f0d, 0x00aa),    /* HORI Real Arcade Pro V Hayabusa in Switch Mode */
         MAKE_VIDPID(0x20d6, 0xa715),    /* PowerA Nintendo Switch Fusion Arcade Stick */
+        MAKE_VIDPID(0x2c22, 0x2300),    /* Qanba Obsidian Arcade Joystick in PS4 Mode */
+        MAKE_VIDPID(0x2c22, 0x2302),    /* Qanba Obsidian Arcade Joystick in PS3 Mode */
+        MAKE_VIDPID(0x2c22, 0x2303),    /* Qanba Obsidian Arcade Joystick in PC Mode */
+        MAKE_VIDPID(0x2c22, 0x2500),    /* Qanba Dragon Arcade Joystick in PS4 Mode */
+        MAKE_VIDPID(0x2c22, 0x2502),    /* Qanba Dragon Arcade Joystick in PS3 Mode */
+        MAKE_VIDPID(0x2c22, 0x2503),    /* Qanba Dragon Arcade Joystick in PC Mode */
     };
     int i;
 
