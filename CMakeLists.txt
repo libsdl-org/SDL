@@ -439,7 +439,7 @@ dep_option(SDL_ARTS_SHARED         "Dynamically load aRts audio support" ON "SDL
 set_option(SDL_NAS                 "Support the NAS audio API" ${UNIX_SYS})
 dep_option(SDL_NAS_SHARED          "Dynamically load NAS audio support" ON "SDL_NAS" OFF)
 set_option(SDL_SNDIO               "Support the sndio audio API" ${UNIX_SYS})
-dep_option(SDL_SNDIO_SHARED        "Dynamically load the sndio audio API" ${UNIX_SYS} ON "SDL_SNDIO" OFF)
+dep_option(SDL_SNDIO_SHARED        "Dynamically load the sndio audio API" ON "SDL_SNDIO" OFF)
 set_option(SDL_FUSIONSOUND         "Use FusionSound audio driver" OFF)
 dep_option(SDL_FUSIONSOUND_SHARED  "Dynamically load fusionsound audio support" ON "SDL_FUSIONSOUND" OFF)
 set_option(SDL_LIBSAMPLERATE       "Use libsamplerate for audio rate conversion" ${UNIX_SYS})
