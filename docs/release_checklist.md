@@ -10,6 +10,7 @@
     * `Xcode/SDL/Info-Framework.plist`: `CFBundleShortVersionString`,
         `CFBundleVersion`
     * `Makefile.os2`: `VERSION`
+    * `Makefile.w32`: `*_VERSION`
     * `build-scripts/winrtbuild.ps1`: `$SDLVersion`
     * `include/SDL_version.h`: `SDL_*_VERSION`, `SDL_PATCHLEVEL`
     * `src/main/windows/version.rc`: `FILEVERSION`, `PRODUCTVERSION`,
