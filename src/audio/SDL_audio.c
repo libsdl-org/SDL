@@ -382,7 +382,7 @@ add_audio_device(const char *name, SDL_AudioSpec *spec, void *handle, SDL_AudioD
     item->dupenum = 0;
     item->name = item->original_name;
     if (spec != NULL) {
-        SDL_memcpy(&item->spec, spec, sizeof(SDL_AudioSpec));
+        SDL_copyp(&item->spec, spec);
     } else {
         SDL_zero(item->spec);
     }
@@ -1131,7 +1131,7 @@ SDL_GetAudioDeviceSpec(int index, int iscapture, SDL_AudioSpec *spec)
             SDL_assert(item != NULL);
         }
         SDL_assert(item != NULL);
-        SDL_memcpy(spec, &item->spec, sizeof(SDL_AudioSpec));
+        SDL_copyp(spec, &item->spec);
         retval = 0;
     } else {
         retval = SDL_InvalidParamError("index");
@@ -1193,7 +1193,7 @@ close_audio_device(SDL_AudioDevice * device)
 static int
 prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
 {
-    SDL_memcpy(prepared, orig, sizeof(SDL_AudioSpec));
+    SDL_copyp(prepared, orig);
 
     if (orig->freq == 0) {
         const char *env = SDL_getenv("SDL_AUDIO_FREQUENCY");

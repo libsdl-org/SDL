@@ -255,7 +255,7 @@ SW_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * text
 
     cmd->data.draw.count = 1;
 
-    SDL_memcpy(verts, srcrect, sizeof (SDL_Rect));
+    SDL_copyp(verts, srcrect);
     verts++;
 
     verts->x = (int)dstrect->x;
@@ -290,14 +290,14 @@ SW_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
 
     cmd->data.draw.count = 1;
 
-    SDL_memcpy(&verts->srcrect, srcrect, sizeof (SDL_Rect));
+    SDL_copyp(&verts->srcrect, srcrect);
 
     verts->dstrect.x = (int)dstrect->x;
     verts->dstrect.y = (int)dstrect->y;
     verts->dstrect.w = (int)dstrect->w;
     verts->dstrect.h = (int)dstrect->h;
     verts->angle = angle;
-    SDL_memcpy(&verts->center, center, sizeof (SDL_FPoint));
+    SDL_copyp(&verts->center, center);
     verts->flip = flip;
     verts->scale_x = scale_x;
     verts->scale_y = scale_y;

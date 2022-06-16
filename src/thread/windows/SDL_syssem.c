@@ -430,7 +430,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
 #endif
 
         /* Copy instead of using pointer to save one level of indirection */
-        SDL_memcpy(&SDL_sem_impl_active, impl, sizeof(SDL_sem_impl_active));
+        SDL_copyp(&SDL_sem_impl_active, impl);
     }
     return SDL_sem_impl_active.Create(initial_value);
 }

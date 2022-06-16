@@ -2452,7 +2452,7 @@ D3D12_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, D3D12_
     }
 
     if (updateSubresource == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
-        SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix));
+        SDL_copyp(&rendererData->vertexShaderConstantsData.model, newmatrix);
         ID3D12GraphicsCommandList2_SetGraphicsRoot32BitConstants(rendererData->commandList,
             0,
             32,
@@ -2584,7 +2584,7 @@ D3D12_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &rendererData->currentViewport;
                 if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
+                    SDL_copy(rendererData->currentViewport, cmd->data.viewport.rect);
                     rendererData->viewportDirty = SDL_TRUE;
                 }
                 break;
@@ -2602,7 +2602,7 @@ D3D12_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     rect = &rendererData->currentViewport;
                 }
                 if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(&rendererData->currentCliprect, rect, sizeof (SDL_Rect));
+                    SDL_copy(rendererData->currentCliprect, cmd->data.cliprect.rect);
                     rendererData->cliprectDirty = SDL_TRUE;
                 }
                 break;

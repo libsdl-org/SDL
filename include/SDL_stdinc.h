@@ -501,6 +501,16 @@ extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, 
 #define SDL_zerop(x) SDL_memset((x), 0, sizeof(*(x)))
 #define SDL_zeroa(x) SDL_memset((x), 0, sizeof((x)))
 
+#define SDL_copy(dst, src)                                                                  \
+    { SDL_COMPILE_TIME_ASSERT("SDL_memcpy check", sizeof (dst) == sizeof (src)); }          \
+    SDL_memcpy(&(dst), &(src), sizeof (src))
+
+
+#define SDL_copyp(dst, src)                                                                 \
+    { SDL_COMPILE_TIME_ASSERT("SDL_memcpy check", sizeof (*(dst)) == sizeof (*(src))); }    \
+    SDL_memcpy((dst), (src), sizeof (*(src)))
+
+
 /* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
 SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
 {
