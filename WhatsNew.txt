@@ -18,13 +18,28 @@ General:
       * The patchlevel indicates successive prereleases, for example
         2.23.1 and 2.23.2 would be prereleases during development of
         the SDL 2.24.0 stable release.
-* Added SDL_bsearch() to the stdlib routines
+* Added SDL_bsearch() and SDL_utf8strnlen() to the stdlib routines
+* Added SDL_size_mul_overflow() and SDL_size_add_overflow() for better size overflow protection
 * Added functions to get the platform dependent name for a joystick or game controller:
     * SDL_JoystickPathForIndex()
     * SDL_JoystickPath()
     * SDL_GameControllerPathForIndex()
     * SDL_GameControllerPath()
+* Added SDL_GameControllerGetFirmwareVersion() and SDL_JoystickGetFirmwareVersion(), currently implemented for DualSense(tm) Wireless Controllers using HIDAPI
+* Added SDL_JoystickAttachVirtualEx() for extended virtual controller support
 * Added joystick event SDL_JOYBATTERYUPDATED for when battery status changes.
+* Added SDL_GUIDToString() and SDL_GUIDFromString() to convert between SDL GUID and string
+* Added SDL_HasLSX() and SDL_HasLASX() to detect LoongArch SIMD support
+
+Windows:
+* Added a D3D12 renderer implementation and SDL_RenderGetD3D12Device() to retrieve the D3D12 device associated with it
+* Added the hint SDL_HINT_WINDOWS_DPI_AWARENESS to set whether the application is DPI-aware. This hint must be set before initializing the video subsystem.
+* Added the hint SDL_HINT_WINDOWS_DPI_SCALING to control whether the SDL coordinates are in DPI-scaled points or pixels.
+
+Linux:
+* Added the hint SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION to control whether to expose a set of emulated modes in addition to the native resolution modes available on Wayland
+* Added the hint SDL_HINT_LINUX_DIGITAL_HATS to control whether to treat hats as digital rather than checking to see if they may be analog
+* Added the hint SDL_HINT_LINUX_HAT_DEADZONES to control whether to use deadzones on analog hats
 
 ---------------------------------------------------------------------------
 2.0.22:

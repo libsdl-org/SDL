@@ -3436,7 +3436,7 @@ orig_CFLAGS="$CFLAGS"
 # See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=23
-SDL_MICRO_VERSION=0
+SDL_MICRO_VERSION=1
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
@@ -14084,11 +14084,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_cxx11+y}
+if test ${ac_cv_prog_cxx_11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_cxx11=no
+  ac_cv_prog_cxx_11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14130,11 +14130,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_cxx98+y}
+if test ${ac_cv_prog_cxx_98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_cxx98=no
+  ac_cv_prog_cxx_98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -27167,7 +27167,7 @@ printf %s "checking for d3d12 Windows SDK version... " >&6; }
 #include <winsdkver.h>
 #include <sdkddkver.h>
 #include <d3d12.h>
-ID3D12Device5 *device;
+ID3D12Device1 *device;
 #if WDK_NTDDI_VERSION <= 0x0A000008
 asdf
 #endif

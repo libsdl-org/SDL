@@ -65,7 +65,7 @@ endif()
 # See docs/release_checklist.md
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 23)
-set(SDL_MICRO_VERSION 0)
+set(SDL_MICRO_VERSION 1)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
 # Set defaults preventing destination file conflicts
@@ -326,7 +326,7 @@ endif()
 
 # General includes
 target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")
-target_include_directories(sdl-build-options BEFORE INTERFACE "${SDL2_BINARY_DIR}/include")
+target_include_directories(sdl-build-options BEFORE INTERFACE "${SDL2_BINARY_DIR}/include" "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
 target_include_directories(sdl-build-options INTERFACE "${SDL2_SOURCE_DIR}/include")
 # Note: The clang toolset for Visual Studio does not support the '-idirafter' option.
 if(USE_GCC OR (USE_CLANG AND NOT MSVC_CLANG))
@@ -1304,7 +1304,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS AND NOT HAIKU)
     CheckNAS()
     CheckSNDIO()
     CheckFusionSound()
-    CheckLibSampleRate()
   endif()
 
   if(SDL_VIDEO)
@@ -1716,7 +1715,7 @@ elseif(WINDOWS)
   if(SDL_THREADS)
     set(SDL_THREAD_GENERIC_COND_SUFFIX 1)
     set(SDL_THREAD_WINDOWS 1)
-    set(SOURCE_FILES ${SOURCE_FILES}
+    list(APPEND SOURCE_FILES
       ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_syscond_cv.c
       ${SDL2_SOURCE_DIR}/src/thread/windows/SDL_sysmutex.c
@@ -1888,7 +1887,7 @@ elseif(APPLE)
   # Requires the darwin file implementation
   if(SDL_FILE)
     file(GLOB EXTRA_SOURCES ${SDL2_SOURCE_DIR}/src/file/cocoa/*.m)
-    set(SOURCE_FILES ${EXTRA_SOURCES} ${SOURCE_FILES})
+    list(APPEND SOURCE_FILES ${EXTRA_SOURCES})
     set(HAVE_SDL_FILE TRUE)
   endif()
 
@@ -2322,7 +2321,7 @@ elseif(VITA)
   endif()
   if(SDL_THREADS)
     set(SDL_THREAD_VITA 1)
-    set(SOURCE_FILES ${SOURCE_FILES}
+    list(APPEND SOURCE_FILES
       ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_sysmutex.c
       ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_syssem.c
       ${SDL2_SOURCE_DIR}/src/thread/vita/SDL_systhread.c
@@ -2527,19 +2526,19 @@ elseif(PS2)
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_PS2 1)
     file(GLOB PS2_FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/ps2/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${PS2_FILESYSTEM_SOURCES})
+    list(APPEND SOURCE_FILES ${PS2_FILESYSTEM_SOURCES})
     set(HAVE_SDL_FILESYSTEM TRUE)
   endif()
   if(SDL_THREADS)
     set(SDL_THREAD_PS2 1)
     file(GLOB PS2_THREAD_SOURCES ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c ${SDL2_SOURCE_DIR}/src/thread/ps2/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${PS2_THREAD_SOURCES})
+    list(APPEND SOURCE_FILES ${PS2_THREAD_SOURCES})
     set(HAVE_SDL_THREADS TRUE)
   endif()
   if(SDL_TIMERS)
     set(SDL_TIMER_PS2 1)
     file(GLOB PS2_TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/ps2/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${PS2_TIMER_SOURCES})
+    list(APPEND SOURCE_FILES ${PS2_TIMER_SOURCES})
     set(HAVE_SDL_TIMERS TRUE)
   endif()
 elseif(OS2)
@@ -2619,6 +2618,9 @@ if(HAVE_VULKAN AND NOT SDL_LOADSO)
   set(SDL_VIDEO_VULKAN 0)
 endif()
 
+# Platform-independent options
+CheckLibSampleRate()
+
 # Dummies
 # configure.ac does it differently:
 # if not have X
@@ -2696,8 +2698,14 @@ endif()
 #   endif()
 # endif()
 
+# config variables may contain generator expression, so we need to generate SDL_config.h in 2 steps:
+# 1. replace all `#cmakedefine`'s and `@abc@`
 configure_file("${SDL2_SOURCE_DIR}/include/SDL_config.h.cmake"
-  "${SDL2_BINARY_DIR}/include/SDL_config.h")
+  "${SDL2_BINARY_DIR}/SDL_config.h.intermediate")
+# 2. generate SDL_config in an build_type-dependent folder (which should be first in the include search path)
+file(GENERATE
+    OUTPUT "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h"
+    INPUT "${SDL2_BINARY_DIR}/SDL_config.h.intermediate")
 
 # Prepare the flags and remove duplicates
 if(EXTRA_LDFLAGS)
@@ -2934,14 +2942,14 @@ if(WARN_ABOUT_ARM_NEON_ASM_MIT)
 endif()
 
 # Ensure that the extra cflags are used at compile time
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} ${EXTRA_CFLAGS_BUILD}")
 
 if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   # Build SDLmain
   add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
-  target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
+  target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" PRIVATE "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
   target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   if (WIN32)
     target_link_libraries(SDL2main PRIVATE shell32)
@@ -3005,7 +3013,7 @@ if(SDL_SHARED)
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
-  target_include_directories(SDL2 BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
+  target_include_directories(SDL2 BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
   target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
@@ -3023,7 +3031,6 @@ if(SDL_SHARED)
 endif()
 
 if(SDL_STATIC)
-  set (BUILD_SHARED_LIBS FALSE)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
@@ -3043,7 +3050,7 @@ if(SDL_STATIC)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
   target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL2-static BEFORE PRIVATE "${SDL2_BINARY_DIR}/include")
+  target_include_directories(SDL2-static BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
   target_include_directories(SDL2-static PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL2-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
@@ -3062,14 +3069,14 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 ##### Tests #####
 
 if(SDL_TEST)
-  include_directories(BEFORE "${SDL2_BINARY_DIR}/include")
-  include_directories(AFTER "${SDL2_SOURCE_DIR}/include")
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
   add_library(SDL2_test STATIC ${TEST_SOURCES})
   add_library(SDL2::SDL2test ALIAS SDL2_test)
   set_target_properties(SDL2_test PROPERTIES
       EXPORT_NAME SDL2test)
-  target_include_directories(SDL2_test PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
+  target_include_directories(SDL2_test PUBLIC
+      "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>"
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   target_link_libraries(SDL2_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 

@@ -13,7 +13,7 @@ dnl Set various version strings - taken gratefully from the GTk sources
 # See docs/release_checklist.md
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=23
-SDL_MICRO_VERSION=0
+SDL_MICRO_VERSION=1
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
@@ -3273,7 +3273,7 @@ CheckDIRECTX()
 #include <winsdkver.h>
 #include <sdkddkver.h>
 #include <d3d12.h>
-ID3D12Device5 *device;
+ID3D12Device1 *device;
 #if WDK_NTDDI_VERSION <= 0x0A000008
 asdf
 #endif
