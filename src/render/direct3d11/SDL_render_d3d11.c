@@ -2102,7 +2102,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &rendererData->currentViewport;
                 if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_copy(rendererData->currentViewport, cmd->data.viewport.rect);
+                    SDL_copyp(viewport, &cmd->data.viewport.rect);
                     rendererData->viewportDirty = SDL_TRUE;
                 }
                 break;
@@ -2115,7 +2115,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     rendererData->cliprectDirty = SDL_TRUE;
                 }
                 if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_copy(rendererData->currentCliprect, cmd->data.cliprect.rect);
+                    SDL_copyp(&rendererData->currentCliprect, &cmd->data.cliprect.rect);
                     rendererData->cliprectDirty = SDL_TRUE;
                 }
                 break;

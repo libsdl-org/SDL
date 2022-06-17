@@ -1572,7 +1572,7 @@ static void OS2_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     SDL_DisplayMode mode;
 
     debug_os2("Enter");
-    SDL_copy(mode, display->current_mode);
+    SDL_copyp(&mode, &display->current_mode);
     mode.driverdata = (MODEDATA *) SDL_malloc(sizeof(MODEDATA));
     if (!mode.driverdata) return; /* yikes.. */
     SDL_memcpy(mode.driverdata, display->current_mode.driverdata, sizeof(MODEDATA));

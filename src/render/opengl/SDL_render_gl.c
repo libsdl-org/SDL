@@ -1255,7 +1255,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &data->drawstate.viewport;
                 if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_copy(data->drawstate.viewport, cmd->data.viewport.rect);
+                    SDL_copyp(viewport, &cmd->data.viewport.rect);
                     data->drawstate.viewport_dirty = SDL_TRUE;
                 }
                 break;
@@ -1269,7 +1269,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 }
 
                 if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_copy(data->drawstate.cliprect, cmd->data.cliprect.rect);
+                    SDL_copyp(&data->drawstate.cliprect, &cmd->data.cliprect.rect);
                     data->drawstate.cliprect_dirty = SDL_TRUE;
                 }
                 break;

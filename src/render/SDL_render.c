@@ -368,7 +368,7 @@ QueueCmdSetViewport(SDL_Renderer *renderer)
             if (retval < 0) {
                 cmd->command = SDL_RENDERCMD_NO_OP;
             } else {
-                SDL_copy(renderer->last_queued_viewport, renderer->viewport);
+                SDL_copyp(&renderer->last_queued_viewport, &renderer->viewport);
                 renderer->viewport_queued = SDL_TRUE;
             }
         }
@@ -394,7 +394,7 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
             cmd->data.cliprect.rect.y = (int)SDL_floor(renderer->clip_rect.y);
             cmd->data.cliprect.rect.w = (int)SDL_floor(renderer->clip_rect.w);
             cmd->data.cliprect.rect.h = (int)SDL_floor(renderer->clip_rect.h);
-            SDL_copy(renderer->last_queued_cliprect, renderer->clip_rect);
+            SDL_copyp(&renderer->last_queued_cliprect, &renderer->clip_rect);
             renderer->last_queued_cliprect_enabled = renderer->clipping_enabled;
             renderer->cliprect_queued = SDL_TRUE;
         }
