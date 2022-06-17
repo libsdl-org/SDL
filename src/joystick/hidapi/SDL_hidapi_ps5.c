@@ -120,7 +120,7 @@ typedef struct
     Uint8 rgucRightTriggerEffect[11];   /* 10 */
     Uint8 rgucLeftTriggerEffect[11];    /* 21 */
     Uint8 rgucUnknown1[6];              /* 32 */
-    Uint8 ucLedFlags;                   /* 38 */
+    Uint8 ucEnableBits3;                /* 38 */
     Uint8 rgucUnknown2[2];              /* 39 */
     Uint8 ucLedAnim;                    /* 41 */
     Uint8 ucLedBrightness;              /* 42 */
@@ -158,6 +158,7 @@ typedef struct {
     SDL_bool report_sensors;
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
+    Uint16 firmware_version;
     Uint32 last_packet;
     int player_index;
     SDL_bool player_lights;
@@ -396,12 +397,19 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
     }
 
     if (ctx->rumble_left || ctx->rumble_right) {
-        effects.ucEnableBits1 |= 0x01; /* Enable rumble emulation */
-        effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
+        if (ctx->firmware_version < 0x0224) {
+            effects.ucEnableBits1 |= 0x01; /* Enable rumble emulation */
 
-        /* Shift to reduce effective rumble strength to match Xbox controllers */
-        effects.ucRumbleLeft = ctx->rumble_left >> 1;
-        effects.ucRumbleRight = ctx->rumble_right >> 1;
+            /* Shift to reduce effective rumble strength to match Xbox controllers */
+            effects.ucRumbleLeft = ctx->rumble_left >> 1;
+            effects.ucRumbleRight = ctx->rumble_right >> 1;
+        } else {
+            effects.ucEnableBits3 |= 0x04; /* Enable improved rumble emulation on 2.24 firmware and newer */
+
+            effects.ucRumbleLeft = ctx->rumble_left;
+            effects.ucRumbleRight = ctx->rumble_right;
+        }
+        effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
     } else {
         /* Leaving emulated rumble bits off will restore audio haptics */
     }
@@ -607,7 +615,8 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
            This will also enable enhanced reports over Bluetooth
         */
         if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdFirmwareInfo, data, USB_PACKET_LENGTH) >= 46) {
-            joystick->firmware_version = (Uint16)data[44] | ((Uint16)data[45] << 8);
+            ctx->firmware_version = (Uint16)data[44] | ((Uint16)data[45] << 8);
+            joystick->firmware_version = ctx->firmware_version;
         }
     }
 
