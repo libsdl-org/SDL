@@ -597,6 +597,9 @@ while (readdir(DH)) {
         next;  # only dealing with wiki pages.
     }
 
+    # Ignore "Category*" pages.
+    next if ($dent =~ /\ACategory/);
+
     open(FH, '<', "$wikipath/$dent") or die("Can't open '$wikipath/$dent': $!\n");
 
     my $current_section = '[start]';
