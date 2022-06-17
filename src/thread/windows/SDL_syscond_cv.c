@@ -261,7 +261,7 @@ SDL_CreateCond(void)
         }
 #endif
 
-        SDL_memcpy(&SDL_cond_impl_active, impl, sizeof(SDL_cond_impl_active));
+        SDL_copyp(&SDL_cond_impl_active, impl);
     }
     return SDL_cond_impl_active.Create();
 }

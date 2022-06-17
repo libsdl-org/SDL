@@ -431,7 +431,7 @@ SDL_Fcitx_UpdateTextRect(SDL_Rect *rect)
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
 
     if (rect) {
-        SDL_memcpy(cursor, rect, sizeof(SDL_Rect));
+        SDL_copyp(cursor, rect);
     }
 
     focused_win = SDL_GetKeyboardFocus();
