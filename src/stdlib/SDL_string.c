@@ -51,7 +51,7 @@ static unsigned UTF8_TrailingBytes(unsigned char c)
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL)
 static size_t
-SDL_ScanLong(const char *text, int radix, long *valuep)
+SDL_ScanLong(const char *text, int count, int radix, long *valuep)
 {
     const char *textstart = text;
     long value = 0;
@@ -78,6 +78,10 @@ SDL_ScanLong(const char *text, int radix, long *valuep)
         value *= radix;
         value += v;
         ++text;
+
+        if (count > 0 && (text - textstart) == count) {
+            break;
+        }
     }
     if (valuep && text > textstart) {
         if (negative && value) {
@@ -92,7 +96,7 @@ SDL_ScanLong(const char *text, int radix, long *valuep)
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD)
 static size_t
-SDL_ScanUnsignedLong(const char *text, int radix, unsigned long *valuep)
+SDL_ScanUnsignedLong(const char *text, int count, int radix, unsigned long *valuep)
 {
     const char *textstart = text;
     unsigned long value = 0;
@@ -114,6 +118,10 @@ SDL_ScanUnsignedLong(const char *text, int radix, unsigned long *valuep)
         value *= radix;
         value += v;
         ++text;
+
+        if (count > 0 && (text - textstart) == count) {
+            break;
+        }
     }
     if (valuep && text > textstart) {
         *valuep = value;
@@ -156,7 +164,7 @@ SDL_ScanUintPtrT(const char *text, int radix, uintptr_t * valuep)
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOLL)
 static size_t
-SDL_ScanLongLong(const char *text, int radix, Sint64 * valuep)
+SDL_ScanLongLong(const char *text, int count, int radix, Sint64 * valuep)
 {
     const char *textstart = text;
     Sint64 value = 0;
@@ -183,6 +191,10 @@ SDL_ScanLongLong(const char *text, int radix, Sint64 * valuep)
         value *= radix;
         value += v;
         ++text;
+
+        if (count > 0 && (text - textstart) == count) {
+            break;
+        }
     }
     if (valuep && text > textstart) {
         if (negative && value) {
@@ -197,7 +209,7 @@ SDL_ScanLongLong(const char *text, int radix, Sint64 * valuep)
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOULL)
 static size_t
-SDL_ScanUnsignedLongLong(const char *text, int radix, Uint64 * valuep)
+SDL_ScanUnsignedLongLong(const char *text, int count, int radix, Uint64 * valuep)
 {
     const char *textstart = text;
     Uint64 value = 0;
@@ -219,6 +231,10 @@ SDL_ScanUnsignedLongLong(const char *text, int radix, Uint64 * valuep)
         value *= radix;
         value += v;
         ++text;
+
+        if (count > 0 && (text - textstart) == count) {
+            break;
+        }
     }
     if (valuep && text > textstart) {
         *valuep = value;
@@ -240,7 +256,7 @@ SDL_ScanFloat(const char *text, double *valuep)
         negative = SDL_TRUE;
         ++text;
     }
-    text += SDL_ScanUnsignedLong(text, 10, &lvalue);
+    text += SDL_ScanUnsignedLong(text, 0, 10, &lvalue);
     value += lvalue;
     if (*text == '.') {
         int mult = 10;
@@ -872,7 +888,7 @@ SDL_strtol(const char *string, char **endp, int base)
         }
     }
 
-    len = SDL_ScanLong(string, base, &value);
+    len = SDL_ScanLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
@@ -897,7 +913,7 @@ SDL_strtoul(const char *string, char **endp, int base)
         }
     }
 
-    len = SDL_ScanUnsignedLong(string, base, &value);
+    len = SDL_ScanUnsignedLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
@@ -922,7 +938,7 @@ SDL_strtoll(const char *string, char **endp, int base)
         }
     }
 
-    len = SDL_ScanLongLong(string, base, &value);
+    len = SDL_ScanLongLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
@@ -947,7 +963,7 @@ SDL_strtoull(const char *string, char **endp, int base)
         }
     }
 
-    len = SDL_ScanUnsignedLongLong(string, base, &value);
+    len = SDL_ScanUnsignedLongLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
@@ -1125,7 +1141,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                 suppress = SDL_TRUE;
                 ++fmt;
             }
-            fmt += SDL_ScanLong(fmt, 10, &count);
+            fmt += SDL_ScanLong(fmt, 0, 10, &count);
 
             if (*fmt == 'c') {
                 if (!count) {
@@ -1189,7 +1205,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                 case 'd':
                     if (inttype == DO_LONGLONG) {
                         Sint64 value;
-                        advance = SDL_ScanLongLong(text, radix, &value);
+                        advance = SDL_ScanLongLong(text, count, radix, &value);
                         text += advance;
                         if (advance && !suppress) {
                             Sint64 *valuep = va_arg(ap, Sint64 *);
@@ -1198,7 +1214,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                         }
                     } else {
                         long value;
-                        advance = SDL_ScanLong(text, radix, &value);
+                        advance = SDL_ScanLong(text, count, radix, &value);
                         text += advance;
                         if (advance && !suppress) {
                             switch (inttype) {
@@ -1243,7 +1259,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                 case 'u':
                     if (inttype == DO_LONGLONG) {
                         Uint64 value = 0;
-                        advance = SDL_ScanUnsignedLongLong(text, radix, &value);
+                        advance = SDL_ScanUnsignedLongLong(text, count, radix, &value);
                         text += advance;
                         if (advance && !suppress) {
                             Uint64 *valuep = va_arg(ap, Uint64 *);
@@ -1252,7 +1268,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                         }
                     } else {
                         unsigned long value = 0;
-                        advance = SDL_ScanUnsignedLong(text, radix, &value);
+                        advance = SDL_ScanUnsignedLong(text, count, radix, &value);
                         text += advance;
                         if (advance && !suppress) {
                             switch (inttype) {
