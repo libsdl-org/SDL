@@ -43,8 +43,8 @@ endif()
 
 set_and_check(SDL2_PREFIX       "${CMAKE_CURRENT_LIST_DIR}/..")
 set_and_check(SDL2_EXEC_PREFIX  "${CMAKE_CURRENT_LIST_DIR}/..")
-set_and_check(SDL2_INCLUDE_DIR  "${SDL2_PREFIX}/include/SDL2")
-set(SDL2_INCLUDE_DIRS           "${CMAKE_CURRENT_LIST_DIR}/../include;${SDL2_INCLUDE_DIR}")
+set_and_check(SDL2_INCLUDE_DIR  "${SDL2_PREFIX}/include")
+set(SDL2_INCLUDE_DIRS           "${SDL2_INCLUDE_DIR}")
 set_and_check(SDL2_BINDIR       "${SDL2_PREFIX}/lib/${_sdl_arch_subdir}")
 set_and_check(SDL2_LIBDIR       "${SDL2_PREFIX}/lib/${_sdl_arch_subdir}")
 
