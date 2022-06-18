@@ -105,6 +105,7 @@ Fcitx_GetPreeditString(SDL_DBusContext *dbus,
         dbus->message_iter_recurse(&iter, &array);
         while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_STRUCT) {
             dbus->message_iter_recurse(&array, &sub);
+            subtext = NULL;
             if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_STRING) {
                 dbus->message_iter_get_basic(&sub, &subtext);
                 if (subtext && *subtext) {
