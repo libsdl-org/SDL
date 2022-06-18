@@ -155,7 +155,7 @@ typedef struct _SDL_JoystickDriver
     /* Function to get the player index of a joystick */
     int (*GetDevicePlayerIndex)(int device_index);
 
-    /* Function to get the player index of a joystick */
+    /* Function to set the player index of a joystick */
     void (*SetDevicePlayerIndex)(int device_index, int player_index);
 
     /* Function to return the stable GUID for a plugged in device */
@@ -226,6 +226,7 @@ extern SDL_JoystickDriver SDL_WGI_JoystickDriver;
 extern SDL_JoystickDriver SDL_WINDOWS_JoystickDriver;
 extern SDL_JoystickDriver SDL_WINMM_JoystickDriver;
 extern SDL_JoystickDriver SDL_OS2_JoystickDriver;
+extern SDL_JoystickDriver SDL_PS2_JoystickDriver;
 extern SDL_JoystickDriver SDL_PSP_JoystickDriver;
 extern SDL_JoystickDriver SDL_VITA_JoystickDriver;
 
