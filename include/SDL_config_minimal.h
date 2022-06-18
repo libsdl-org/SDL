@@ -49,6 +49,7 @@ typedef unsigned long long uint64_t;
 typedef unsigned long uintptr_t;
 #else
 #define HAVE_STDINT_H 1
+#define HAVE_INTTYPES_H 1
 #endif /* Visual Studio 2008 */
 
 #ifdef __GNUC__
