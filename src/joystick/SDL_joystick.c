@@ -1811,7 +1811,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     size_t i, len;
 
     /* Use the given name for the Nintendo Online NES Controllers */
-    if (SDL_strncmp(product_name, "NES Controller", 14) == 0) {
+    if (product_name && SDL_strncmp(product_name, "NES Controller", 14) == 0) {
         return SDL_strdup(product_name);
     }
 
