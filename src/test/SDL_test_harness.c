@@ -473,8 +473,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
             /* Within each suite, loop over all test cases to check if we have a filter match */
             testCounter = 0;
-            while (testSuite->testCases[testCounter] && testFilter == 0)
-            {
+            while (testSuite->testCases[testCounter] && testFilter == 0) {
                 testCase = testSuite->testCases[testCounter];
                 testCounter++;
                 if (testCase->name != NULL && SDL_strcmp(filter, testCase->name) == 0) {
@@ -491,6 +490,18 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
         if (suiteFilter == 0 && testFilter == 0) {
             SDLTest_LogError("Filter '%s' did not match any test suite/case.", filter);
+            for (suiteCounter = 0; testSuites[suiteCounter]; ++suiteCounter) {
+                testSuite = testSuites[suiteCounter];
+                if (testSuite->name != NULL) {
+                    SDLTest_Log("Test suite: %s", testSuite->name);
+                }
+
+                /* Within each suite, loop over all test cases to check if we have a filter match */
+                for (testCounter = 0; testSuite->testCases[testCounter]; ++testCounter) {
+                    testCase = testSuite->testCases[testCounter];
+                    SDLTest_Log("      test: %s", testCase->name);
+                }
+            }
             SDLTest_Log("Exit code: 2");
             SDL_free((void *) failedTests);
             return 2;
