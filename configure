@@ -14084,11 +14084,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_11+y}
+if test ${ac_cv_prog_cxx_cxx11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_11=no
+  ac_cv_prog_cxx_cxx11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14130,11 +14130,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_98+y}
+if test ${ac_cv_prog_cxx_cxx98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_98=no
+  ac_cv_prog_cxx_cxx98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -27102,6 +27102,17 @@ fi
     if test x$have_roapi_h = xyes; then
 
 printf "%s\n" "#define HAVE_ROAPI_H 1" >>confdefs.h
+
+    fi
+    ac_fn_c_check_header_compile "$LINENO" "shellscalingapi.h" "ac_cv_header_shellscalingapi_h" "$ac_includes_default"
+if test "x$ac_cv_header_shellscalingapi_h" = xyes
+then :
+  have_shellscalingapi_h=yes
+fi
+
+    if test x$shellscalingapi_h = xyes; then
+
+printf "%s\n" "#define HAVE_SHELLSCALINGAPI_H 1" >>confdefs.h
 
     fi
 }

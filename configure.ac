@@ -3242,6 +3242,10 @@ CheckWINDOWS()
     if test x$have_roapi_h = xyes; then
         AC_DEFINE(HAVE_ROAPI_H, 1, [ ])
     fi
+    AC_CHECK_HEADER(shellscalingapi.h,have_shellscalingapi_h=yes)
+    if test x$shellscalingapi_h = xyes; then
+        AC_DEFINE(HAVE_SHELLSCALINGAPI_H, 1, [ ])
+    fi
 }
 
 dnl Determine whether the compiler can produce OS/2 executables

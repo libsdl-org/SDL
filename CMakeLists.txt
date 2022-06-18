@@ -1651,6 +1651,7 @@ elseif(WINDOWS)
   check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
+  check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
 
   if(SDL_AUDIO)
     if(NOT WINDOWS_STORE)

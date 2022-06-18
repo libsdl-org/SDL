@@ -274,7 +274,7 @@ typedef struct DISPLAYCONFIG_TARGET_DEVICE_NAME
 
 #endif /* WINVER < 0x0601 */
 
-#if WINVER < 0x0603
+#ifndef HAVE_SHELLSCALINGAPI_H
 
 typedef enum MONITOR_DPI_TYPE {
     MDT_EFFECTIVE_DPI = 0,
@@ -291,7 +291,7 @@ typedef enum PROCESS_DPI_AWARENESS {
 
 #else
 #include <shellscalingapi.h>
-#endif /* WINVER < 0x0603 */
+#endif
 
 #ifndef _DPI_AWARENESS_CONTEXTS_
 
