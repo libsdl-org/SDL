@@ -319,6 +319,14 @@ stdlib_sscanf(void *arg)
   SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
   SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
 
+  output = 123;
+  expected_output = 0xa;
+  expected_result = 1;
+  result = SDL_sscanf("aa", "%1x", &output);
+  SDLTest_AssertPass("Call to SDL_sscanf(\"aa\", \"%%1x\", &output)");
+  SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
   return TEST_COMPLETED;
 }
 
