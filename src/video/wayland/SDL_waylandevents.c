@@ -1563,8 +1563,8 @@ text_input_preedit_string(void *data,
             size_t cursor_begin_utf8 = cursor_begin >= 0 ? SDL_utf8strnlen(text, cursor_begin) : -1;
             size_t cursor_end_utf8 = cursor_end >= 0 ? SDL_utf8strnlen(text, cursor_end) : -1;
             size_t cursor_size_utf8;
-            if (cursor_end_utf8 >= 0) {
-                if (cursor_begin_utf8 >= 0) {
+            if (cursor_end_utf8 != (size_t)-1) {
+                if (cursor_begin_utf8 != (size_t)-1) {
                     cursor_size_utf8 = cursor_end_utf8 - cursor_begin_utf8;
                 } else {
                     cursor_size_utf8 = cursor_end_utf8;
