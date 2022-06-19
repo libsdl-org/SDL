@@ -840,6 +840,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             foreach (@desclines) {
                 s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
+                s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\A\/*//;
                 $str .= "\\sa $_\n";
             }
@@ -1355,6 +1356,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             foreach (@desclines) {
                 s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
+                s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\A\/*//;
                 s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
                 s/\A\s+//;
