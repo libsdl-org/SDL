@@ -3169,12 +3169,12 @@ if(NOT SDL2_DISABLE_INSTALL)
   )
 
   file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
-  file(GLOB BIN_INCLUDE_FILES ${SDL2_BINARY_DIR}/include/*.h)
-  foreach(_FNAME ${BIN_INCLUDE_FILES})
-    get_filename_component(_INCNAME ${_FNAME} NAME)
-    list(REMOVE_ITEM INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/${_INCNAME})
-  endforeach()
-  list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
+  list(REMOVE_ITEM INCLUDE_FILES
+      "${SDL2_SOURCE_DIR}/include/SDL_config.h"
+      "${SDL2_SOURCE_DIR}/include/SDL_revision.h")
+  list(APPEND INCLUDE_FILES
+      "${SDL2_BINARY_DIR}/include/SDL_revision.h"
+      "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h")
   install(FILES ${INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
 
   string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
