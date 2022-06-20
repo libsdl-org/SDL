@@ -893,3 +893,4 @@
 #define SDL_SensorGetDataWithTimestamp SDL_SensorGetDataWithTimestamp_REAL
 #define SDL_ResetHints SDL_ResetHints_REAL
 #define SDL_strcasestr SDL_strcasestr_REAL
+#define SDL_GetWindowContentScale SDL_GetWindowContentScale_REAL

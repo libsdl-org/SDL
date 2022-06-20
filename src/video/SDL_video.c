@@ -2495,6 +2495,27 @@ SDL_GetWindowMaximumSize(SDL_Window * window, int *max_w, int *max_h)
 }
 
 void
+SDL_GetWindowContentScale(SDL_Window *window, float *h, float *v)
+{
+    CHECK_WINDOW_MAGIC(window,);
+
+    if (_this->GetWindowContentScale) {
+        _this->GetWindowContentScale(_this, window, h, v);
+    } else {
+        int width, height, pixWidth, pixHeight;
+
+        SDL_GetWindowSize(window, &width, &height);
+        SDL_GetWindowSizeInPixels(window, &pixWidth, &pixHeight);
+
+        if (h)
+            *h = pixWidth / (float) width;
+
+        if (v)
+            *v = pixHeight / (float) height;
+    }
+}
+
+void
 SDL_ShowWindow(SDL_Window * window)
 {
     CHECK_WINDOW_MAGIC(window,);

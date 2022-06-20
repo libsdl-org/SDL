@@ -1132,6 +1132,36 @@ extern DECLSPEC void SDLCALL SDL_GetWindowMaximumSize(SDL_Window * window,
                                                       int *w, int *h);
 
 /**
+ * Get the OS-provided scale factor to apply to the contents of the window.
+ * 
+ * The content scale is how much larger the OS wants us to draw elements
+ * like text to match the user's preferences 
+ * (usually based on DPI of the monitor).
+ * 
+ * SDL_GetWindowSizeInPixels() divided by SDL_GetWindowSize() is approximately
+ * equivalent to these values, differing slightly due to rounding behaviors.
+ * 
+ * This value can change if the user changes the scaling settings on the OS, 
+ * or if they have multiple monitors with different scaling settings and drag
+ * the window between them.
+ * The `SDL_WINDOWEVENT_SIZE_CHANGED` window event is raised when this happens.
+ *
+ * \param window the window to query
+ * \param h a pointer filled in with the horizontal content scale of the 
+ *          window, may be NULL
+ * \param v a pointer filled in with the vertical content scale of the
+ *          window, may be NULL
+ *
+ * \since This function is available since SDL 2.25.0.
+ *
+ * \sa SDL_GetWindowSizeInPixels
+ * \sa SDL_GetWindowSize
+ */
+extern DECLSPEC void SDLCALL SDL_GetWindowContentScale(SDL_Window * window, 
+                                                       float * h, float * v);
+
+
+/**
  * Set the border state of a window.
  *
  * This will add or remove the window's `SDL_WINDOW_BORDERLESS` flag and add

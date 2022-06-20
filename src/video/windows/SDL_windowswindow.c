@@ -1504,6 +1504,19 @@ WIN_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
+void
+WIN_GetWindowContentScale(_THIS, SDL_Window *window, float *h, float *v)
+{
+    const SDL_WindowData *data = ((SDL_WindowData *) window->driverdata);
+   
+    float scale = data->scaling_dpi / 96.0f;
+
+    if (h)
+        *h = scale;
+    if (v)
+        *v = scale;
+}
+
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
 
 /* vi: set ts=4 sw=4 expandtab: */
