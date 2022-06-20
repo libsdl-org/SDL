@@ -6,10 +6,6 @@ if(SDL_INSTALL_TESTS)
     include(GNUInstallDirs)
 endif()
 
-# Global settings for all of the test targets
-# FIXME: is this wrong?
-remove_definitions(-DUSING_GENERATED_CONFIG_H)
-
 if(PSP)
     link_libraries(
         SDL2main
