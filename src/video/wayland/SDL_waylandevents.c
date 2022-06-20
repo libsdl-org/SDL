@@ -1560,9 +1560,9 @@ text_input_preedit_string(void *data,
     text_input->has_preedit = SDL_TRUE;
     if (text) {
         if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
-            size_t cursor_begin_utf8 = cursor_begin >= 0 ? SDL_utf8strnlen(text, cursor_begin) : -1;
-            size_t cursor_end_utf8 = cursor_end >= 0 ? SDL_utf8strnlen(text, cursor_end) : -1;
-            size_t cursor_size_utf8;
+            int cursor_begin_utf8 = cursor_begin >= 0 ? (int)SDL_utf8strnlen(text, cursor_begin) : -1;
+            int cursor_end_utf8 = cursor_end >= 0 ? (int)SDL_utf8strnlen(text, cursor_end) : -1;
+            int cursor_size_utf8;
             if (cursor_end_utf8 >= 0) {
                 if (cursor_begin_utf8 >= 0) {
                     cursor_size_utf8 = cursor_end_utf8 - cursor_begin_utf8;
@@ -1574,11 +1574,11 @@ text_input_preedit_string(void *data,
             }
             SDL_SendEditingText(text, cursor_begin_utf8, cursor_size_utf8);
         } else {
-            size_t text_bytes = SDL_strlen(text), i = 0;
-            size_t cursor = 0;
+            int text_bytes = (int)SDL_strlen(text), i = 0;
+            int cursor = 0;
             do {
-                const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
-                const size_t chars = SDL_utf8strlen(buf);
+                const int sz = (int)SDL_utf8strlcpy(buf, text+i, sizeof(buf));
+                const int chars = (int)SDL_utf8strlen(buf);
     
                 SDL_SendEditingText(buf, cursor, chars);
     

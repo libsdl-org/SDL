@@ -101,6 +101,9 @@ typedef unsigned int uintptr_t;
 #if defined(WDK_NTDDI_VERSION) && WDK_NTDDI_VERSION > 0x0A000008 /* 10.0.19041.0 */
 #define HAVE_D3D12_H 1
 #endif
+#if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0603  /* Windows 8.1 SDK */
+#define HAVE_SHELLSCALINGAPI_H 1
+#endif
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
 #define HAVE_TPCSHRD_H 1

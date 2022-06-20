@@ -31,12 +31,14 @@
 #define UNICODE 1
 #endif
 #undef WINVER
-#define WINVER 0x0501
 #undef _WIN32_WINNT
-#if !defined(SDL_VIDEO_RENDER_D3D12)
-#define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
-#else
+#if defined(SDL_VIDEO_RENDER_D3D12)
 #define _WIN32_WINNT  0xA00   /* For D3D12, 0xA00 is required */
+#elif defined(HAVE_SHELLSCALINGAPI_H)
+#define _WIN32_WINNT  0x603   /* For DPI support */
+#else
+#define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
+#define WINVER       _WIN32_WINNT
 #endif
 #elif defined(__WINGDK__)
 #define WIN32_LEAN_AND_MEAN
@@ -45,9 +47,9 @@
 #define UNICODE 1
 #endif
 #undef WINVER
-#define WINVER 0xA00
 #undef _WIN32_WINNT
-#define _WIN32_WINNT 0xA00
+#define _WIN32_WINNT  0xA00
+#define WINVER       _WIN32_WINNT
 #endif
 
 #include <windows.h>
