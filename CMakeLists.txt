@@ -59,7 +59,7 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 # with large inode numbers
 check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
 if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-    add_compile_definitions(PRIVATE _FILE_OFFSET_BITS=64)
+    add_definitions(-D_FILE_OFFSET_BITS=64)
 endif()
 
 # See docs/release_checklist.md

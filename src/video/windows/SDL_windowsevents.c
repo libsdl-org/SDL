@@ -1538,19 +1538,20 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 suggestedRect->left, suggestedRect->top, suggestedRect->right - suggestedRect->left, suggestedRect->bottom - suggestedRect->top);
 #endif
 
-            if (data->videodata->dpi_scaling_enabled) {
-                /* Update the cached DPI value for this window */
-                data->scaling_dpi = newDPI;
-
-                /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged. 
-                   Renderers need to get this to know that the framebuffer size changed. */
-                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
-            }
-
             if (data->expected_resize) {
                 /* This DPI change is coming from an explicit SetWindowPos call within SDL.
                    Assume all call sites are calculating the DPI-aware frame correctly, so
                    we don't need to do any further adjustment. */
+
+                if (data->videodata->dpi_scaling_enabled) {
+                    /* Update the cached DPI value for this window */
+                    data->scaling_dpi = newDPI;
+
+                    /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
+                       Renderers need to get this to know that the framebuffer size changed. */
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
+                }
+
 #ifdef HIGHDPI_DEBUG
                 SDL_Log("WM_DPICHANGED: Doing nothing, assuming window is already sized correctly");
 #endif
@@ -1607,6 +1608,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 h,
                 SWP_NOZORDER | SWP_NOACTIVATE);
             data->expected_resize = SDL_FALSE;
+
+            if (data->videodata->dpi_scaling_enabled) {
+                /* Update the cached DPI value for this window */
+                data->scaling_dpi = newDPI;
+
+                /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
+                   Renderers need to get this to know that the framebuffer size changed. */
+                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
+            }
+
             return 0;
         }
         break;
