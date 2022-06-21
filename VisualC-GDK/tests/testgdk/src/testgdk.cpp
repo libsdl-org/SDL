@@ -10,9 +10,8 @@
   freely.
 */
 /* testgdk:  Basic tests of using task queue/xbl (with simple drawing) in GDK.
- * NOTE: Login will only work if on the XDKS.1 sandbox. To switch, use:
- *           XblPCSandbox XDKS.1
- *       You must also have a test account (create in Partner Center).
+ * NOTE: As of June 2022 GDK, login will only work if MicrosoftGame.config is
+ * configured properly. See README-gdk.md.
  */
 
 #include <stdlib.h>
@@ -69,7 +68,7 @@ UserLoggedIn(XUserHandle user)
     if (SUCCEEDED(hr)) {
         SDL_Log("User logged in: %s", gamertag);
     } else {
-        SDL_Log("[GDK] UserLoggedIn -- XUserGetGamertag failed: %d.", hr);
+        SDL_Log("[GDK] UserLoggedIn -- XUserGetGamertag failed: 0x%08x.", hr);
     }
 
     XUserCloseHandle(user);
@@ -88,7 +87,7 @@ AddUserUICallback(XAsyncBlock *asyncBlock)
         hr = XUserGetId(user, &userId);
         if (FAILED(hr)) {
             /* If unable to get the user ID, it means the account is banned, etc. */
-            SDL_Log("[GDK] AddUserSilentCallback -- XUserGetId failed: %d.", hr);
+            SDL_Log("[GDK] AddUserSilentCallback -- XUserGetId failed: 0x%08x.", hr);
             XUserCloseHandle(user);
 
             /* Per the docs, likely should call XUserResolveIssueWithUiAsync here. */
@@ -96,7 +95,7 @@ AddUserUICallback(XAsyncBlock *asyncBlock)
             UserLoggedIn(user);
         }
     } else {
-        SDL_Log("[GDK] AddUserUICallback -- XUserAddAsync failed: %d.", hr);
+        SDL_Log("[GDK] AddUserUICallback -- XUserAddAsync failed: 0x%08x.", hr);
     }
 
     delete asyncBlock;
@@ -116,7 +115,7 @@ AddUserUI()
 
     if (FAILED(hr)) {
         delete asyncBlock;
-        SDL_Log("[GDK] AddUserSilent -- failed: %d", hr);
+        SDL_Log("[GDK] AddUserSilent -- failed: 0x%08x", hr);
     }
 }
 
@@ -133,14 +132,14 @@ AddUserSilentCallback(XAsyncBlock *asyncBlock)
         hr = XUserGetId(user, &userId);
         if (FAILED(hr)) {
             /* If unable to get the user ID, it means the account is banned, etc. */
-            SDL_Log("[GDK] AddUserSilentCallback -- XUserGetId failed: %d. Trying with UI.", hr);
+            SDL_Log("[GDK] AddUserSilentCallback -- XUserGetId failed: 0x%08x. Trying with UI.", hr);
             XUserCloseHandle(user);
             AddUserUI();
         } else {
             UserLoggedIn(user);
         }
     } else {
-        SDL_Log("[GDK] AddUserSilentCallback -- XUserAddAsync failed: %d. Trying with UI.", hr);
+        SDL_Log("[GDK] AddUserSilentCallback -- XUserAddAsync failed: 0x%08x. Trying with UI.", hr);
         AddUserUI();
     }
 
@@ -161,7 +160,7 @@ AddUserSilent()
 
     if (FAILED(hr)) {
         delete asyncBlock;
-        SDL_Log("[GDK] AddUserSilent -- failed: %d", hr);
+        SDL_Log("[GDK] AddUserSilent -- failed: 0x%08x", hr);
     }
 }
 
