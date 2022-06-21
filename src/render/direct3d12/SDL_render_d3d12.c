@@ -3024,7 +3024,7 @@ SDL_RenderDriver D3D12_RenderDriver = {
 
 #endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
 
-#if defined(__WIN32__) || defined(__WINGDK__)
+#if defined(__WIN32__) || defined(__GDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
 ID3D12Device *
 SDL_RenderGetD3D12Device(SDL_Renderer * renderer)
@@ -3048,6 +3048,6 @@ SDL_RenderGetD3D12Device(SDL_Renderer * renderer)
 
     return device;
 }
-#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 /* vi: set ts=4 sw=4 expandtab: */

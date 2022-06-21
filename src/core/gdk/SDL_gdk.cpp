@@ -21,7 +21,6 @@
 #include "../../SDL_internal.h"
 
 #include "SDL_system.h"
-#include "SDL_loadso.h"
 #include "../windows/SDL_windows.h"
 #include <XGameRuntime.h>
 

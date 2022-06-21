@@ -149,6 +149,6 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 }
 
 } /* extern "C" */
-#endif /* __WINGDK__ */
+#endif /* __GDK__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
