@@ -912,11 +912,11 @@ SDL_GetCPUFeatures(void)
             SDL_CPUFeatures |= CPU_HAS_NEON;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
-    if (CPU_haveLSX()) {
+        if (CPU_haveLSX()) {
             SDL_CPUFeatures |= CPU_HAS_LSX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
-    if (CPU_haveLASX()) {
+        if (CPU_haveLASX()) {
             SDL_CPUFeatures |= CPU_HAS_LASX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
         }

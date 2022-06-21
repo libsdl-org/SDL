@@ -63,7 +63,7 @@ GDK_DispatchTaskQueue(void)
      */
     if (GDK_GlobalTaskQueue) {
         /* Dispatch any callbacks which are ready. */
-        while (XTaskQueueDispatch(GDK_GlobalTaskQueue, XTaskQueuePort::Completion, 0)) {
-        }
+        while (XTaskQueueDispatch(GDK_GlobalTaskQueue, XTaskQueuePort::Completion, 0))
+            ;
     }
 }

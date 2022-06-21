@@ -117,8 +117,8 @@ main_getcmdline(void)
         /* !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit? */
         /* Terminate the task queue and dispatch any pending tasks */
         XTaskQueueTerminate(taskQueue, false, nullptr, nullptr);
-        while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0)) {
-        }
+        while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0))
+            ;
 
         XTaskQueueCloseHandle(taskQueue);
 
