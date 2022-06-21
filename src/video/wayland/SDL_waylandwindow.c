@@ -184,8 +184,9 @@ GetBufferSize(SDL_Window *window, int *width, int *height)
     if (FullscreenModeEmulation(window)) {
         GetFullScreenDimensions(window, NULL, NULL, &buf_width, &buf_height);
     } else if (NeedViewport(window)) {
-        buf_width  = (int)SDL_ceil(window->w * data->scale_factor);
-        buf_height = (int)SDL_ceil(window->h * data->scale_factor);
+        /* Round fractional backbuffer sizes halfway away from zero. */
+        buf_width  = (int)SDL_lroundf(window->w * data->scale_factor);
+        buf_height = (int)SDL_lroundf(window->h * data->scale_factor);
     } else {
         /*
          * Integer scaled windowed or fullscreen with no viewport
@@ -1897,8 +1898,8 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    data->drawable_width = SDL_ceilf(window->w * data->scale_factor);
-    data->drawable_height = SDL_ceilf(window->h * data->scale_factor);
+    data->drawable_width = SDL_lroundf(window->w * data->scale_factor);
+    data->drawable_height = SDL_lroundf(window->h * data->scale_factor);
 
     if (window->flags & SDL_WINDOW_OPENGL) {
         data->egl_window = WAYLAND_wl_egl_window_create(data->surface, data->drawable_width, data->drawable_height);
