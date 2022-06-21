@@ -398,6 +398,12 @@ VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
     return SDL_Unsupported();
 }
 
+static SDL_bool
+VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_VITA_JoystickDriver =
 {
     VITA_JoystickInit,
@@ -423,6 +429,7 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
     VITA_JoystickUpdate,
     VITA_JoystickClose,
     VITA_JoystickQuit,
+    VITA_JoystickGetGamepadMapping,
 };
 
 #endif /* SDL_JOYSTICK_VITA */
