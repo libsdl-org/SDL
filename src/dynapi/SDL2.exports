@@ -849,4 +849,4 @@
 ++'_SDL_HasLASX'.'SDL2.dll'.'SDL_HasLASX'
 ++'_SDL_RenderGetD3D12Device'.'SDL2.dll'.'SDL_RenderGetD3D12Device'
 ++'_SDL_utf8strnlen'.'SDL2.dll'.'SDL_utf8strnlen'
-++'_SDL_GDKGetTaskQueue'.'SDL2.dll'.'SDL_GDKGetTaskQueue'
+# ++'_SDL_GDKGetTaskQueue'.'SDL2.dll'.'SDL_GDKGetTaskQueue'
