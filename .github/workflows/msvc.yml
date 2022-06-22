@@ -24,20 +24,34 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Configure CMake
-      run: cmake -S . -B build `
+    - name: Create CMake project using SDL as a subproject
+      shell: python
+      run: |
+        import os
+        import textwrap
+        srcdir = r"${{ github.workspace }}".replace("\\", "/")
+        builddir = f"{ srcdir }/build"
+        os.makedirs(builddir)
+        with open(f"{ builddir }/CMakeLists.txt", "w") as f:
+          f.write(textwrap.dedent(f"""\
+            cmake_minimum_required(VERSION 3.0)
+            project(sdl_user)
+            add_subdirectory("{ srcdir }" SDL)
+          """))
+    - name: Configure (CMake)
+      run: cmake -S build -B build `
         -DSDL_TESTS=ON `
         -DSDL_INSTALL_TESTS=ON `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
-    - name: Build CMake
+    - name: Build (CMake)
       run: cmake --build build/ --config Release --parallel
     - name: Run build-time tests
       if: "! contains(matrix.platform.name, 'ARM')"
       run: |
         $env:SDL_TESTS_QUICK=1
         ctest -VV --test-dir build/ -C Release
-    - name: Install CMake
+    - name: Install (CMake)
       run: |
         echo "SDL2_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV
         cmake --install build/
