@@ -3162,7 +3162,7 @@ if(NOT SDL2_DISABLE_INSTALL)
 
   install(
     FILES
-      ${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake
+      ${CMAKE_BINARY_DIR}/SDL2Config.cmake
       ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
     DESTINATION ${PKG_PREFIX}
     COMPONENT Devel
