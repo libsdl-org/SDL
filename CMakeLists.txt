@@ -3119,11 +3119,11 @@ if(NOT SDL2_DISABLE_INSTALL)
   endif ()
 
   include(CMakePackageConfigHelpers)
-  configure_package_config_file(SDL2Config.cmake.in "${CMAKE_BINARY_DIR}/SDL2Config.cmake"
+  configure_package_config_file(SDL2Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake"
     PATH_VARS CMAKE_INSTALL_PREFIX CMAKE_INSTALL_FULL_BINDIR CMAKE_INSTALL_FULL_INCLUDEDIR CMAKE_INSTALL_FULL_LIBDIR
     INSTALL_DESTINATION ${PKG_PREFIX}
   )
-  write_basic_package_version_file("${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake"
+  write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL2ConfigVersion.cmake"
     VERSION ${SDL_VERSION}
     COMPATIBILITY AnyNewerVersion
   )
@@ -3162,8 +3162,8 @@ if(NOT SDL2_DISABLE_INSTALL)
 
   install(
     FILES
-      ${CMAKE_BINARY_DIR}/SDL2Config.cmake
-      ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/SDL2ConfigVersion.cmake
     DESTINATION ${PKG_PREFIX}
     COMPONENT Devel
   )
