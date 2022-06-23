@@ -2534,7 +2534,7 @@ elseif(PSP)
   endif(NOT SDL2_DISABLE_SDL2MAIN)
 
 elseif(PS2)
-  list(APPEND EXTRA_CFLAGS "-DPS2" "-D__PS2__" "-I$ENV{PS2SDK}/ports/include")
+  list(APPEND EXTRA_CFLAGS "-DPS2" "-D__PS2__" "-I$ENV{PS2SDK}/ports/include" "-I$ENV{PS2DEV}/gsKit/include")
 
   file(GLOB PS2_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/ps2/*.c)
   set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${PS2_MAIN_SOURCES})
@@ -2569,9 +2569,19 @@ elseif(PS2)
     list(APPEND SOURCE_FILES ${PS2_TIMER_SOURCES})
     set(HAVE_SDL_TIMERS TRUE)
   endif()
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_PS2 1)
+    set(SDL_VIDEO_RENDER_PS2 1)
+    file(GLOB PS2_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/ps2/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PS2_VIDEO_SOURCES})
+    set(SDL_VIDEO_OPENGL 0)
+    set(HAVE_SDL_VIDEO TRUE)
+  endif()
 
   list(APPEND EXTRA_LIBS
     patches
+    gskit
+    dmakit
     ps2_drivers
   )
 
