@@ -123,8 +123,8 @@ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode);
 static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item);
 static int SDL_EVDEV_device_removed(const char *dev_path);
 
-#if SDL_USE_LIBUDEV
 static int SDL_EVDEV_device_added(const char *dev_path, int udev_class);
+#if SDL_USE_LIBUDEV
 static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class,
     const char *dev_path);
 #endif /* SDL_USE_LIBUDEV */
@@ -175,7 +175,30 @@ SDL_EVDEV_Init(void)
         /* Force a scan to build the initial device list */
         SDL_UDEV_Scan();
 #else
-        /* TODO: Scan the devices manually, like a caveman */
+        {
+            /* Allow the user to specify a list of devices explicitly of
+               the form:
+                  deviceclass:path[,deviceclass:path[,...]]
+               where device class is an integer representing the
+               SDL_UDEV_deviceclass and path is the full path to
+               the event device. */
+            const char* devices = SDL_getenv("SDL_EVDEV_DEVICES");
+            if (devices) {
+                /* Assume this is the old use of the env var and it is not in
+                   ROM. */
+                char* rest = (char*) devices;
+                char* spec;
+                while ((spec = strtok_r(rest, ",", &rest))) {
+                    char* endofcls = 0;
+                    long cls = strtol(spec, &endofcls, 0);
+                    if (endofcls)
+                        SDL_EVDEV_device_added(endofcls + 1, cls);
+                }
+            }
+            else {
+                /* TODO: Scan the devices manually, like a caveman */
+            }
+        }
 #endif /* SDL_USE_LIBUDEV */
 
         _this->kbd = SDL_EVDEV_kbd_init();
@@ -507,7 +530,6 @@ SDL_EVDEV_translate_keycode(int keycode)
     return scancode;
 }
 
-#ifdef SDL_USE_LIBUDEV
 static int
 SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
 {
@@ -607,7 +629,6 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
 
     return 0;
 }
-#endif /* SDL_USE_LIBUDEV */
 
 static void
 SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item* item) {
@@ -745,7 +766,6 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
 #endif /* EVIOCGMTSLOTS */
 }
 
-#if SDL_USE_LIBUDEV
 static int
 SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 {
@@ -807,7 +827,6 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 
     return _this->num_devices++;
 }
-#endif /* SDL_USE_LIBUDEV */
 
 static int
 SDL_EVDEV_device_removed(const char *dev_path)
