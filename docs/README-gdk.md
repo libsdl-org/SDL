@@ -9,7 +9,7 @@ At this time, only Windows GDK is supported. Xbox support is slated for the futu
 Requirements
 ------------
 
-* Microsoft Visual Studio 2017 or higher (2022 recommended)
+* Microsoft Visual Studio 2022 (in theory, it should also work in 2017 or 2019, but this has not been tested)
 * Microsoft GDK June 2022 or newer (public release [here](https://github.com/microsoft/GDK/releases/tag/June_2022))
 * To publish a package or successfully authenticate a user, you will need to create an app id/configure services in Partner Center. However, for local testing purposes (without authenticating on Xbox Live), the identifiers used by the GDK test programs in the included solution will work.
 
@@ -25,7 +25,7 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
     * Initializing/uninitializing the game runtime, and initializing Xbox Live services
     * Creating a global task queue and setting it as the default for the process. When running any async operations, passing in `NULL` as the task queue will make the task get added to the global task queue.
   
-  * An implementation on `WinMain` that performs the above GDK setup (you should link against SDL2main.lib, as in Windows x64). If you do not use it, you will need to perform the steps in SDL_gdk_main.cpp in your own `WinMain`.
+  * An implementation on `WinMain` that performs the above GDK setup (you should link against SDL2main.lib, as in Windows x64). If you are unable to do this, you can instead manually call `SDL_GDKRunApp` from your entry point, passing in your `SDL_main` function and `NULL` as the parameters.
   * Global task queue callbacks are dispatched during `SDL_PumpEvents` (which is also called internally if using `SDL_PollEvent`).
   * You can get the handle of the global task queue through `SDL_GDKGetTaskQueue`, if needed. When done with the queue, be sure to use `XTaskQueueCloseHandle` to decrement the reference count (otherwise it will cause a resource leak).
   
@@ -68,13 +68,14 @@ While the Gaming.Desktop.x64 configuration sets most of the required settings, t
 * Under Linker > General > Additional Library Directories, make sure to reference the path where the newly-built SDL2.lib and SDL2main.lib are
 * Under Linker > Input > Additional Dependencies, you need the following:
   * `SDL2.lib`
-  * `SDL2main.lib`
+  * `SDL2main.lib` (unless not using)
   * `xgameruntime.lib`
   * `../Microsoft.Xbox.Services.141.GDK.C.Thunks.lib`
+* Note that in general, the GDK libraries depend on the MSVC C/C++ runtime, so there is no way to remove this dependency from a GDK program that links against GDK.
 
 ### 4. Setting up SDL_main ###
 
-Rather than using your own implementation of `WinMain`, it's recommended that you instead `#include "SDL_main.h"` and declare a standard main function. However, if you want to implement `WinMain` yourself, make sure you perform all the required GDK setup steps performed in the provided SDL_gdk_main.cpp.
+Rather than using your own implementation of `WinMain`, it's recommended that you instead `#include "SDL_main.h"` and declare a standard main function. If you are unable to do this, you can instead manually call `SDL_GDKRunApp` from your entry point, passing in your `SDL_main` function and `NULL` as the parameters.
 
 ### 5. Required DLLs ###
 
@@ -117,7 +118,7 @@ If you are testing Xbox Live functionality, it's likely you will need to change 
 
 1. Run "Desktop VS 2022 Gaming Command Prompt" from the Start Menu
 2. Switch the sandbox name with:
-   `XblPCSandbox SANDBOX.NAME`
+   `XblPCSandbox SANDBOX.#`
 3. (To switch back to the retail sandbox):
    `XblPCSandbox RETAIL`
 

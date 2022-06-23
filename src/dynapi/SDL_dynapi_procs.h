@@ -958,4 +958,5 @@ SDL_DYNAPI_PROC(size_t,SDL_utf8strnlen,(const char *a, size_t b),(a,b),return)
 
 #if defined(__GDK__)
 SDL_DYNAPI_PROC(int,SDL_GDKGetTaskQueue,(XTaskQueueHandle *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_GDKRunApp,(SDL_main_func a, void *b),(a,b),return)
 #endif

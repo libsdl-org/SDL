@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\main\gdk\SDL_gdk_main.cpp" />
+    <ClCompile Include="..\..\src\main\gdk\SDL_gdk_main.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>SDL2main</ProjectName>

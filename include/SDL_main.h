@@ -39,7 +39,7 @@
  */
 #define SDL_MAIN_AVAILABLE
 
-#elif defined(__WINRT__) || defined(__GDK__)
+#elif defined(__WINRT__)
 /* On WinRT, SDL provides a main function that initializes CoreApplication,
    creating an instance of IFrameworkView in the process.
 
@@ -48,8 +48,15 @@
    src/main/winrt/SDL_WinRT_main_NonXAML.cpp, or a copy of it, must be compiled
    into the app itself.  In XAML apps, the function, SDL_WinRTRunApp must be
    called, with a pointer to the Direct3D-hosted XAML control passed in.
+*/
+#define SDL_MAIN_NEEDED
 
-   All Microsoft GDK platforms should link against SDL2main to get the required WinMain.
+#elif defined(__GDK__)
+/* On GDK, SDL provides a main function that initializes the game runtime.
+
+   Please note that #include'ing SDL_main.h is not enough to get a main()
+   function working. You must either link against SDL2main or, if not possible,
+   call the SDL_GDKRunApp function from your entry point.
 */
 #define SDL_MAIN_NEEDED
 
@@ -226,6 +233,19 @@ extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_fun
 
 #endif /* __IPHONEOS__ */
 
+#ifdef __GDK__
+
+/**
+ * Initialize and launch an SDL GDK application.
+ *
+ * \param mainFunction the SDL app's C-style main(), an SDL_main_func
+ * \param reserved reserved for future use; should be NULL
+ * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
+ *          more information on the failure.
+ */
+extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
+
+#endif /* __GDK__ */
 
 #ifdef __cplusplus
 }

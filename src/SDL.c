@@ -612,7 +612,7 @@ SDL_IsTablet(void)
 #endif
 }
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__)
 
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
 /* Need to include DllMain() on Watcom C for some reason.. */
