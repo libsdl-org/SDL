@@ -597,15 +597,19 @@ while (readdir(DH)) {
         next;  # only dealing with wiki pages.
     }
 
+    my $fn = $dent;
+    $fn =~ s/\..*\Z//;
+
+    # Ignore FrontPage.
+    next if $fn eq 'FrontPage';
+
     # Ignore "Category*" pages.
-    next if ($dent =~ /\ACategory/);
+    next if ($fn =~ /\ACategory/);
 
     open(FH, '<', "$wikipath/$dent") or die("Can't open '$wikipath/$dent': $!\n");
 
     my $current_section = '[start]';
     my @section_order = ( $current_section );
-    my $fn = $dent;
-    $fn =~ s/\..*\Z//;
     my %sections = ();
     $sections{$current_section} = '';
 
