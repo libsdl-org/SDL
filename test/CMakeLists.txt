@@ -33,6 +33,8 @@ link_libraries(
         SDL2_test
         SDL2-static
         patches
+        gskit
+        dmakit
         ps2_drivers
 )
 else()
