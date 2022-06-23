@@ -141,6 +141,7 @@ add_executable(testqsort testqsort.c)
 add_executable(testbounds testbounds.c)
 add_executable(testcustomcursor testcustomcursor.c)
 add_executable(controllermap controllermap.c testutils.c)
+add_executable(basiccontrollermap basiccontrollermap.c)
 add_executable(testvulkan testvulkan.c)
 add_executable(testoffscreen testoffscreen.c)
 
@@ -148,6 +149,7 @@ SET(ALL_TESTS
     checkkeys
     checkkeysthreads
     controllermap
+    basiccontrollermap
     loopwave
     loopwavequeue
     testatomic
@@ -265,6 +267,7 @@ if(PSP OR PS2)
         testscale
         testrendercopyex
         controllermap
+        basiccontrollermap
         testyuv
         testgamecontroller
         testshape
@@ -288,6 +291,7 @@ else()
         testscale
         testrendercopyex
         controllermap
+        basiccontrollermap
         testyuv
         testgamecontroller
         testshape
