@@ -18394,15 +18394,7 @@ printf "%s\n" "#define SDL_DEFAULT_ASSERT_LEVEL 3" >>confdefs.h
         ;;
 esac
 
-
-printf "%s\n" "#define SDL_BUILD_MAJOR_VERSION $SDL_MAJOR_VERSION" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_BUILD_MINOR_VERSION $SDL_MINOR_VERSION" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_BUILD_MICRO_VERSION $SDL_MICRO_VERSION" >>confdefs.h
-
+EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_BUILD_MAJOR_VERSION=$SDL_MAJOR_VERSION -DSDL_BUILD_MINOR_VERSION=$SDL_MINOR_VERSION -DSDL_BUILD_MICRO_VERSION=$SDL_MICRO_VERSION"
 
 # Check whether --enable-dependency-tracking was given.
 if test ${enable_dependency_tracking+y}
