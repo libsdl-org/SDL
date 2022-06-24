@@ -95,6 +95,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_ANDROID
     &ANDROIDAUDIO_bootstrap,
 #endif
+#if SDL_AUDIO_DRIVER_PS2
+    &PS2AUDIO_bootstrap,
+#endif
 #if SDL_AUDIO_DRIVER_PSP
     &PSPAUDIO_bootstrap,
 #endif
