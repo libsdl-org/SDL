@@ -19,6 +19,7 @@ distfile = $(distdir).tar.gz
 @SET_MAKE@
 SHELL	= @SHELL@
 CC      = @CC@
+CXX     = @CXX@
 INCLUDE = @INCLUDE@
 CFLAGS  = @BUILD_CFLAGS@
 EXTRA_CFLAGS = @EXTRA_CFLAGS@
@@ -49,7 +50,7 @@ WAYLAND_SCANNER_CODE_MODE = @WAYLAND_SCANNER_CODE_MODE@
 
 INSTALL_SDL2_CONFIG = @INSTALL_SDL2_CONFIG@
 
-SRC_DIST = *.md *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac docs include Makefile.* sdl2-config.cmake.in sdl2-config-version.cmake.in sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in SDL2Config.cmake src test VisualC VisualC-WinRT Xcode Xcode-iOS wayland-protocols
+SRC_DIST = *.md *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac docs include Makefile.* mingw sdl2-config.cmake.in sdl2-config-version.cmake.in sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in SDL2Config.cmake src test VisualC VisualC-WinRT Xcode Xcode-iOS wayland-protocols
 GEN_DIST = SDL2.spec
 
 ifneq ($V,1)
@@ -79,6 +80,7 @@ HDRS = \
 	SDL_filesystem.h \
 	SDL_gamecontroller.h \
 	SDL_gesture.h \
+	SDL_guid.h \
 	SDL_haptic.h \
 	SDL_hidapi.h \
 	SDL_hints.h \

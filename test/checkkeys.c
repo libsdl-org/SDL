@@ -165,7 +165,11 @@ loop()
             PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED) ? SDL_TRUE : SDL_FALSE, (event.key.repeat) ? SDL_TRUE : SDL_FALSE);
             break;
         case SDL_TEXTEDITING:
-            PrintText("EDIT", event.text.text);
+            PrintText("EDIT", event.edit.text);
+            break;
+        case SDL_TEXTEDITING_EXT:
+            PrintText("EDIT_EXT", event.editExt.text);
+            SDL_free(event.editExt.text);
             break;
         case SDL_TEXTINPUT:
             PrintText("INPUT", event.text.text);
@@ -206,6 +210,9 @@ main(int argc, char *argv[])
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Enable extended text editing events */
+    SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
 
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {

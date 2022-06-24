@@ -85,25 +85,56 @@ GetAppName()
 }
 
 static size_t
-Fcitx_GetPreeditString(SDL_DBusContext *dbus, DBusMessage *msg, char **ret) {
+Fcitx_GetPreeditString(SDL_DBusContext *dbus,
+        DBusMessage *msg,
+        char **ret,
+        Sint32 *start_pos,
+        Sint32 *end_pos)
+{
     char *text = NULL, *subtext;
     size_t text_bytes = 0;
     DBusMessageIter iter, array, sub;
+    Sint32 p_start_pos = -1;
+    Sint32 p_end_pos = -1;
 
     dbus->message_iter_init(msg, &iter);
     /* Message type is a(si)i, we only need string part */
     if (dbus->message_iter_get_arg_type(&iter) == DBUS_TYPE_ARRAY) {
+        size_t pos = 0;
         /* First pass: calculate string length */
         dbus->message_iter_recurse(&iter, &array);
         while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_STRUCT) {
             dbus->message_iter_recurse(&array, &sub);
+            subtext = NULL;
             if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_STRING) {
                 dbus->message_iter_get_basic(&sub, &subtext);
                 if (subtext && *subtext) {
                     text_bytes += SDL_strlen(subtext);
                 }
             }
+            dbus->message_iter_next(&sub);
+            if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_INT32 && p_end_pos == -1) {
+                /* Type is a bit field defined as follows:                */
+                /* bit 3: Underline, bit 4: HighLight, bit 5: DontCommit, */
+                /* bit 6: Bold,      bit 7: Strike,    bit 8: Italic      */
+                Sint32 type;
+                dbus->message_iter_get_basic(&sub, &type);
+                /* We only consider highlight */
+                if (type & (1 << 4)) {
+                    if (p_start_pos == -1) {
+                        p_start_pos = pos;
+                    }
+                } else if (p_start_pos != -1 && p_end_pos == -1) {
+                    p_end_pos = pos;
+                }
+            }
             dbus->message_iter_next(&array);
+            if (subtext && *subtext) {
+                pos += SDL_utf8strlen(subtext);
+            }
+        }
+        if (p_start_pos != -1 && p_end_pos == -1) {
+            p_end_pos = pos;
         }
         if (text_bytes) {
             text = SDL_malloc(text_bytes + 1);
@@ -129,8 +160,30 @@ Fcitx_GetPreeditString(SDL_DBusContext *dbus, DBusMessage *msg, char **ret) {
             text_bytes = 0;
         }
     }
-    *ret= text;
+
+    *ret = text;
+    *start_pos = p_start_pos;
+    *end_pos = p_end_pos;
     return text_bytes;
+}
+
+static Sint32
+Fcitx_GetPreeditCursorByte(SDL_DBusContext *dbus, DBusMessage *msg)
+{
+    Sint32 byte = -1;
+    DBusMessageIter iter;
+
+    dbus->message_iter_init(msg, &iter);
+
+    dbus->message_iter_next(&iter);
+
+    if (dbus->message_iter_get_arg_type(&iter) != DBUS_TYPE_INT32) {
+        return -1;
+    }
+
+    dbus->message_iter_get_basic(&iter, &byte);
+
+    return byte;
 }
 
 static DBusHandlerResult
@@ -162,20 +215,28 @@ DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
 
     if (dbus->message_is_signal(msg, FCITX_IC_DBUS_INTERFACE, "UpdateFormattedPreedit")) {
         char *text = NULL;
-        size_t text_bytes = Fcitx_GetPreeditString(dbus, msg, &text);
+        Sint32 start_pos, end_pos;
+        size_t text_bytes = Fcitx_GetPreeditString(dbus, msg, &text, &start_pos, &end_pos);
         if (text_bytes) {
-            char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
-            size_t i = 0;
-            size_t cursor = 0;
+            if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
+                if (start_pos == -1) {
+                    Sint32 byte_pos = Fcitx_GetPreeditCursorByte(dbus, msg);
+                    start_pos = byte_pos >= 0 ? SDL_utf8strnlen(text, byte_pos) : -1;
+                }
+                SDL_SendEditingText(text, start_pos, end_pos >= 0 ? end_pos - start_pos : -1);
+            } else {
+                char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
+                size_t i = 0;
+                size_t cursor = 0;
+                while (i < text_bytes) {
+                    const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
+                    const size_t chars = SDL_utf8strlen(buf);
 
-            while (i < text_bytes) {
-                const size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-                const size_t chars = SDL_utf8strlen(buf);
+                    SDL_SendEditingText(buf, cursor, chars);
 
-                SDL_SendEditingText(buf, cursor, chars);
-
-                i += sz;
-                cursor += chars;
+                    i += sz;
+                    cursor += chars;
+                }
             }
             SDL_free(text);
         } else {
@@ -339,11 +400,11 @@ SDL_Fcitx_Reset(void)
 }
 
 SDL_bool
-SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
+SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
-    Uint32 state = Fcitx_ModState();
+    Uint32 mod_state = Fcitx_ModState();
     Uint32 handled = SDL_FALSE;
-    Uint32 is_release = SDL_FALSE;
+    Uint32 is_release = (state == SDL_RELEASED);
     Uint32 event_time = 0;
 
     if (!fcitx_client.ic_path) {
@@ -351,7 +412,7 @@ SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
     }
 
     if (SDL_DBus_CallMethod(FCITX_DBUS_SERVICE, fcitx_client.ic_path, FCITX_IC_DBUS_INTERFACE, "ProcessKeyEvent",
-            DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
+            DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mod_state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
         if (handled) {
             SDL_Fcitx_UpdateTextRect(NULL);
@@ -371,7 +432,7 @@ SDL_Fcitx_UpdateTextRect(SDL_Rect *rect)
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
 
     if (rect) {
-        SDL_memcpy(cursor, rect, sizeof(SDL_Rect));
+        SDL_copyp(cursor, rect);
     }
 
     focused_win = SDL_GetKeyboardFocus();

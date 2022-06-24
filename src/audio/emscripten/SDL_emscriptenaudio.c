@@ -28,11 +28,16 @@
 
 #include <emscripten/emscripten.h>
 
+/* !!! FIXME: this currently expects that the audio callback runs in the main thread,
+   !!! FIXME:  in intervals when the application isn't running, but that may not be
+   !!! FIXME:  true always once pthread support becomes widespread. Revisit this code
+   !!! FIXME:  at some point and see what needs to be done for that! */
+
 static void
 FeedAudioDevice(_THIS, const void *buf, const int buflen)
 {
     const int framelen = (SDL_AUDIO_BITSIZE(this->spec.format) / 8) * this->spec.channels;
-    EM_ASM_ARGS({
+    MAIN_THREAD_EM_ASM({
         var SDL2 = Module['SDL2'];
         var numChannels = SDL2.audio.currentOutputBuffer['numberOfChannels'];
         for (var c = 0; c < numChannels; ++c) {
@@ -101,7 +106,7 @@ HandleCaptureProcess(_THIS)
         return;
     }
 
-    EM_ASM_ARGS({
+    MAIN_THREAD_EM_ASM({
         var SDL2 = Module['SDL2'];
         var numChannels = SDL2.capture.currentCaptureBuffer.numberOfChannels;
         for (var c = 0; c < numChannels; ++c) {
@@ -147,7 +152,7 @@ HandleCaptureProcess(_THIS)
 static void
 EMSCRIPTENAUDIO_CloseDevice(_THIS)
 {
-    EM_ASM_({
+    MAIN_THREAD_EM_ASM({
         var SDL2 = Module['SDL2'];
         if ($0) {
             if (SDL2.capture.silenceTimer !== undefined) {
@@ -201,7 +206,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
     /* based on parts of library_sdl.js */
 
     /* create context */
-    result = EM_ASM_INT({
+    result = MAIN_THREAD_EM_ASM_INT({
         if(typeof(Module['SDL2']) === 'undefined') {
             Module['SDL2'] = {};
         }
@@ -280,7 +285,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
            feels like it's a pretty inefficient tapdance in similar ways,
            to be honest. */
 
-        EM_ASM_({
+        MAIN_THREAD_EM_ASM({
             var SDL2 = Module['SDL2'];
             var have_microphone = function(stream) {
                 //console.log('SDL audio capture: we have a microphone! Replacing silence callback.');
@@ -323,7 +328,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
         }, this->spec.channels, this->spec.samples, HandleCaptureProcess, this);
     } else {
         /* setup a ScriptProcessorNode */
-        EM_ASM_ARGS({
+        MAIN_THREAD_EM_ASM({
             var SDL2 = Module['SDL2'];
             SDL2.audio.scriptProcessorNode = SDL2.audioContext['createScriptProcessor']($1, 0, $0);
             SDL2.audio.scriptProcessorNode['onaudioprocess'] = function (e) {
@@ -359,26 +364,26 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->ProvidesOwnCallbackThread = SDL_TRUE;
 
     /* check availability */
-    available = EM_ASM_INT_V({
+    available = MAIN_THREAD_EM_ASM_INT({
         if (typeof(AudioContext) !== 'undefined') {
-            return SDL_TRUE;
+            return true;
         } else if (typeof(webkitAudioContext) !== 'undefined') {
-            return SDL_TRUE;
+            return true;
         }
-        return SDL_FALSE;
+        return false;
     });
 
     if (!available) {
         SDL_SetError("No audio context available");
     }
 
-    capture_available = available && EM_ASM_INT_V({
+    capture_available = available && MAIN_THREAD_EM_ASM_INT({
         if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) {
-            return SDL_TRUE;
+            return true;
         } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') {
-            return SDL_TRUE;
+            return true;
         }
-        return SDL_FALSE;
+        return false;
     });
 
     impl->HasCaptureSupport = capture_available ? SDL_TRUE : SDL_FALSE;

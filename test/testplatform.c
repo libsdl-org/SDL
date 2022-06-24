@@ -25,30 +25,30 @@ badsize(size_t sizeoftype, size_t hardcodetype)
     return sizeoftype != hardcodetype;
 }
 
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT8, SDL_MAX_SINT8 == 127);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT8, SDL_MIN_SINT8 == -128);
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT8, SDL_MAX_UINT8 == 255);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT8, SDL_MIN_UINT8 == 0);
+
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT16, SDL_MAX_SINT16 == 32767);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT16, SDL_MIN_SINT16 == -32768);
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT16, SDL_MAX_UINT16 == 65535);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT16, SDL_MIN_UINT16 == 0);
+
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT32, SDL_MAX_SINT32 == 2147483647);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT32, SDL_MIN_SINT32 == ~0x7fffffff); /* Instead of -2147483648, which is treated as unsigned by some compilers */
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT32, SDL_MAX_UINT32 == 4294967295u);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT32, SDL_MIN_UINT32 == 0);
+
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT64, SDL_MAX_SINT64 == 9223372036854775807ll);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT64, SDL_MIN_SINT64 == ~0x7fffffffffffffffll); /* Instead of -9223372036854775808, which is treated as unsigned by compilers */
+SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT64, SDL_MAX_UINT64 == 18446744073709551615ull);
+SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT64, SDL_MIN_UINT64 == 0);
+
 int
 TestTypes(SDL_bool verbose)
 {
     int error = 0;
-
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT8, SDL_MAX_SINT8 == 127);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT8, SDL_MIN_SINT8 == -128);
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT8, SDL_MAX_UINT8 == 255);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT8, SDL_MIN_UINT8 == 0);
-
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT16, SDL_MAX_SINT16 == 32767);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT16, SDL_MIN_SINT16 == -32768);
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT16, SDL_MAX_UINT16 == 65535);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT16, SDL_MIN_UINT16 == 0);
-
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT32, SDL_MAX_SINT32 == 2147483647);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT32, SDL_MIN_SINT32 == ~0x7fffffff); /* Instead of -2147483648, which is treated as unsigned by some compilers */
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT32, SDL_MAX_UINT32 == 4294967295u);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT32, SDL_MIN_UINT32 == 0);
-
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_SINT64, SDL_MAX_SINT64 == 9223372036854775807ll);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_SINT64, SDL_MIN_SINT64 == ~0x7fffffffffffffffll); /* Instead of -9223372036854775808, which is treated as unsigned by compilers */
-	SDL_COMPILE_TIME_ASSERT(SDL_MAX_UINT64, SDL_MAX_UINT64 == 18446744073709551615ull);
-	SDL_COMPILE_TIME_ASSERT(SDL_MIN_UINT64, SDL_MIN_UINT64 == 0);
 
     if (badsize(sizeof(Uint8), 1)) {
         if (verbose)
@@ -86,11 +86,17 @@ TestEndian(SDL_bool verbose)
     int error = 0;
     Uint16 value = 0x1234;
     int real_byteorder;
+    int real_floatwordorder = 0;
     Uint16 value16 = 0xCDAB;
     Uint16 swapped16 = 0xABCD;
     Uint32 value32 = 0xEFBEADDE;
     Uint32 swapped32 = 0xDEADBEEF;
     Uint64 value64, swapped64;
+
+    union {
+       double d;
+       Uint32 ui32[2];
+    } value_double;
 
     value64 = 0xEFBEADDE;
     value64 <<= 32;
@@ -98,6 +104,7 @@ TestEndian(SDL_bool verbose)
     swapped64 = 0x1234ABCD;
     swapped64 <<= 32;
     swapped64 |= 0xDEADBEEF;
+    value_double.d = 3.141593;
 
     if (verbose) {
         SDL_Log("Detected a %s endian machine.\n",
@@ -112,6 +119,22 @@ TestEndian(SDL_bool verbose)
         if (verbose) {
             SDL_Log("Actually a %s endian machine!\n",
                    (real_byteorder == SDL_LIL_ENDIAN) ? "little" : "big");
+        }
+        ++error;
+    }
+    if (verbose) {
+        SDL_Log("Detected a %s endian float word order machine.\n",
+               (SDL_FLOATWORDORDER == SDL_LIL_ENDIAN) ? "little" : "big");
+    }
+    if (value_double.ui32[0] == 0x82c2bd7f && value_double.ui32[1] == 0x400921fb) {
+        real_floatwordorder = SDL_LIL_ENDIAN;
+    } else if (value_double.ui32[0] == 0x400921fb && value_double.ui32[1] == 0x82c2bd7f) {
+        real_floatwordorder = SDL_BIG_ENDIAN;
+    }
+    if (real_floatwordorder != SDL_FLOATWORDORDER) {
+        if (verbose) {
+            SDL_Log("Actually a %s endian float word order machine!\n",
+                   (real_floatwordorder == SDL_LIL_ENDIAN) ? "little" : (real_floatwordorder == SDL_BIG_ENDIAN) ? "big" : "unknown" );
         }
         ++error;
     }

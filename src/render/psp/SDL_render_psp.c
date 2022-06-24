@@ -556,7 +556,8 @@ static int
 TextureShouldSwizzle(PSP_TextureData* psp_texture, SDL_Texture *texture)
 {
     return !((texture->access == SDL_TEXTUREACCESS_TARGET) && InVram(psp_texture->data))
-             && (texture->w >= 16 || texture->h >= 16);
+            && texture->access != SDL_TEXTUREACCESS_STREAMING
+            && (texture->w >= 16 || texture->h >= 16);
 }
 
 static void
@@ -774,14 +775,13 @@ PSP_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FR
 
     cmd->data.draw.count = count;
     for (i = 0; i < count; i++, rects++) {
-        const SDL_FRect *rect = &rects[i];
-        verts->x = rect->x;
-        verts->y = rect->y;
+        verts->x = rects->x;
+        verts->y = rects->y;
         verts->z = 0.0f;
         verts++;
 
-        verts->x = rect->x + rect->w;
-        verts->y = rect->y + rect->h;
+        verts->x = rects->x + rects->w + 0.5f;
+        verts->y = rects->y + rects->h + 0.5f;
         verts->z = 0.0f;
         verts++;
     }
@@ -881,7 +881,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
 static int
 PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     VertTV *verts = (VertTV *) SDL_AllocateRenderVertices(renderer, 4 * sizeof (VertTV), 4, &cmd->data.draw.first);
     const float centerx = center->x;
@@ -891,14 +891,12 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     const float width = dstrect->w - centerx;
     const float height = dstrect->h - centery;
     float s, c;
-    float cw, sw, ch, sh;
+    float cw1, sw1, ch1, sh1, cw2, sw2, ch2, sh2;
 
     float u0 = srcrect->x;
     float v0 = srcrect->y;
     float u1 = srcrect->x + srcrect->w;
     float v1 = srcrect->y + srcrect->h;
-
-
 
     if (!verts) {
         return -1;
@@ -906,12 +904,16 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 
     cmd->data.draw.count = 1;
 
-    MathSincos(degToRad(angle), &s, &c);
+    MathSincos(degToRad(360-angle), &s, &c);
 
-    cw = c * width;
-    sw = s * width;
-    ch = c * height;
-    sh = s * height;
+    cw1 = c * -centerx;
+    sw1 = s * -centerx;
+    ch1 = c * -centery;
+    sh1 = s * -centery;
+    cw2 = c * width;
+    sw2 = s * width;
+    ch2 = c * height;
+    sh2 = s * height;
 
     if (flip & SDL_FLIP_VERTICAL) {
         Swap(&v0, &v1);
@@ -923,31 +925,44 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 
     verts->u = u0;
     verts->v = v0;
-    verts->x = x - cw + sh;
-    verts->y = y - sw - ch;
+    verts->x = x + cw1 + sh1;
+    verts->y = y - sw1 + ch1;
     verts->z = 0;
     verts++;
 
     verts->u = u0;
     verts->v = v1;
-    verts->x = x - cw - sh;
-    verts->y = y - sw + ch;
+    verts->x = x + cw1 + sh2;
+    verts->y = y - sw1 + ch2;
     verts->z = 0;
     verts++;
 
     verts->u = u1;
     verts->v = v1;
-    verts->x = x + cw - sh;
-    verts->y = y + sw + ch;
+    verts->x = x + cw2 + sh2;
+    verts->y = y - sw2 + ch2;
     verts->z = 0;
     verts++;
 
     verts->u = u1;
     verts->v = v0;
-    verts->x = x + cw + sh;
-    verts->y = y + sw - ch;
+    verts->x = x + cw2 + sh1;
+    verts->y = y - sw2 + ch1;
     verts->z = 0;
-    verts++;
+
+    if (scale_x != 1.0f || scale_y != 1.0f) {
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+    }
 
     return 0;
 }

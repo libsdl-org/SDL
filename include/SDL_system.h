@@ -102,6 +102,22 @@ typedef struct ID3D11Device ID3D11Device;
  */
 extern DECLSPEC ID3D11Device* SDLCALL SDL_RenderGetD3D11Device(SDL_Renderer * renderer);
 
+typedef struct ID3D12Device ID3D12Device;
+
+/**
+ * Get the D3D12 device associated with a renderer.
+ *
+ * Once you are done using the device, you should release it to avoid a
+ * resource leak.
+ *
+ * \param renderer the renderer from which to get the associated D3D12 device
+ * \returns the D3D12 device associated with given renderer or NULL if it is
+ *          not a D3D12 renderer; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* renderer);
+
 /**
  * Get the DXGI Adapter and Output indices for the specified display index.
  *
@@ -178,7 +194,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  * This function is only available on Apple iOS.
  *
  * For more information see:
- * [README-ios.md](https://hg.libsdl.org/SDL/file/default/docs/README-ios.md)
+ * https://github.com/libsdl-org/SDL/blob/main/docs/README-ios.md
  *
  * This functions is also accessible using the macro
  * SDL_iOSSetAnimationCallback() since SDL 2.0.4.
@@ -195,7 +211,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  *
  * \sa SDL_iPhoneSetEventPump
  */
-extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
+extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
 
 #define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
 
@@ -532,7 +548,7 @@ extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path
 extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
 
 /**
- * Detects the device family of WinRT plattform at runtime.
+ * Detects the device family of WinRT platform at runtime.
  *
  * \returns a value from the SDL_WinRT_DeviceFamily enum.
  *

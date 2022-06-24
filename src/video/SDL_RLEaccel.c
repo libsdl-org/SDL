@@ -92,10 +92,6 @@
 #include "SDL_blit.h"
 #include "SDL_RLEaccel_c.h"
 
-#ifndef MIN
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
 #define PIXEL_COPY(to, from, len, bpp)          \
     SDL_memcpy(to, from, (size_t)(len) * (bpp))
 
@@ -1161,13 +1157,13 @@ RLEAlphaSurface(SDL_Surface * surface)
                     ADD_OPAQUE_COUNTS(max_opaque_run, 0);
                     skip -= max_opaque_run;
                 }
-                len = MIN(run, max_opaque_run);
+                len = SDL_min(run, max_opaque_run);
                 ADD_OPAQUE_COUNTS(skip, len);
                 dst += copy_opaque(dst, src + runstart, len, sf, df);
                 runstart += len;
                 run -= len;
                 while (run) {
-                    len = MIN(run, max_opaque_run);
+                    len = SDL_min(run, max_opaque_run);
                     ADD_OPAQUE_COUNTS(0, len);
                     dst += copy_opaque(dst, src + runstart, len, sf, df);
                     runstart += len;
@@ -1195,13 +1191,13 @@ RLEAlphaSurface(SDL_Surface * surface)
                     ADD_TRANSL_COUNTS(max_transl_run, 0);
                     skip -= max_transl_run;
                 }
-                len = MIN(run, max_transl_run);
+                len = SDL_min(run, max_transl_run);
                 ADD_TRANSL_COUNTS(skip, len);
                 dst += copy_transl(dst, src + runstart, len, sf, df);
                 runstart += len;
                 run -= len;
                 while (run) {
-                    len = MIN(run, max_transl_run);
+                    len = SDL_min(run, max_transl_run);
                     ADD_TRANSL_COUNTS(0, len);
                     dst += copy_transl(dst, src + runstart, len, sf, df);
                     runstart += len;
@@ -1222,9 +1218,13 @@ RLEAlphaSurface(SDL_Surface * surface)
 
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
-        SDL_SIMDFree(surface->pixels);
+        if (surface->flags & SDL_SIMD_ALIGNED) {
+            SDL_SIMDFree(surface->pixels);
+            surface->flags &= ~SDL_SIMD_ALIGNED;
+        } else {
+            SDL_free(surface->pixels);
+        }
         surface->pixels = NULL;
-        surface->flags &= ~SDL_SIMD_ALIGNED;
     }
 
     /* reallocate the buffer to release unused memory */
@@ -1359,14 +1359,14 @@ RLEColorkeySurface(SDL_Surface * surface)
                 ADD_COUNTS(maxn, 0);
                 skip -= maxn;
             }
-            len = MIN(run, maxn);
+            len = SDL_min(run, maxn);
             ADD_COUNTS(skip, len);
             SDL_memcpy(dst, srcbuf + runstart * bpp, len * bpp);
             dst += len * bpp;
             run -= len;
             runstart += len;
             while (run) {
-                len = MIN(run, maxn);
+                len = SDL_min(run, maxn);
                 ADD_COUNTS(0, len);
                 SDL_memcpy(dst, srcbuf + runstart * bpp, len * bpp);
                 dst += len * bpp;
@@ -1386,9 +1386,13 @@ RLEColorkeySurface(SDL_Surface * surface)
 
     /* Now that we have it encoded, release the original pixels */
     if (!(surface->flags & SDL_PREALLOC)) {
-        SDL_SIMDFree(surface->pixels);
+        if (surface->flags & SDL_SIMD_ALIGNED) {
+            SDL_SIMDFree(surface->pixels);
+            surface->flags &= ~SDL_SIMD_ALIGNED;
+        } else {
+            SDL_free(surface->pixels);
+        }
         surface->pixels = NULL;
-        surface->flags &= ~SDL_SIMD_ALIGNED;
     }
 
     /* reallocate the buffer to release unused memory */

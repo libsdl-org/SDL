@@ -179,7 +179,6 @@ SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
     return device_index;
 }
 
-/* Function to get the device-dependent name of a joystick */
 const char *VITA_JoystickGetDeviceName(int index)
 {
     if (index == 0)
@@ -195,7 +194,12 @@ const char *VITA_JoystickGetDeviceName(int index)
         return "PSVita Controller";
 
     SDL_SetError("No joystick available with that index");
-    return(NULL);
+    return NULL;
+}
+
+const char *VITA_JoystickGetDevicePath(int index)
+{
+    return NULL;
 }
 
 static int
@@ -394,12 +398,19 @@ VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
     return SDL_Unsupported();
 }
 
+static SDL_bool
+VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_VITA_JoystickDriver =
 {
     VITA_JoystickInit,
     VITA_JoystickGetCount,
     VITA_JoystickDetect,
     VITA_JoystickGetDeviceName,
+    VITA_JoystickGetDevicePath,
     VITA_JoystickGetDevicePlayerIndex,
     VITA_JoystickSetDevicePlayerIndex,
     VITA_JoystickGetDeviceGUID,
@@ -418,6 +429,7 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
     VITA_JoystickUpdate,
     VITA_JoystickClose,
     VITA_JoystickQuit,
+    VITA_JoystickGetGamepadMapping,
 };
 
 #endif /* SDL_JOYSTICK_VITA */

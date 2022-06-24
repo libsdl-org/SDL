@@ -98,6 +98,14 @@ _m_prefetch(void *__P)
 #if defined(__3dNOW__) && !defined(SDL_DISABLE_MM3DNOW_H)
 #include <mm3dnow.h>
 #endif
+#if defined(__loongarch_sx) && !defined(SDL_DISABLE_LSX_H)
+#include <lsxintrin.h>
+#define __LSX__
+#endif
+#if defined(__loongarch_asx) && !defined(SDL_DISABLE_LASX_H)
+#include <lasxintrin.h>
+#define __LASX__
+#endif
 #if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
 #include <immintrin.h>
 #else
@@ -434,6 +442,32 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasARMSIMD(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
 
 /**
+ * Determine whether the CPU has LSX (LOONGARCH SIMD) features.
+ *
+ * This always returns false on CPUs that aren't using LOONGARCH instruction
+ * sets.
+ *
+ * \returns SDL_TRUE if the CPU has LOONGARCH LSX features or SDL_FALSE if
+ *          not.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasLSX(void);
+
+/**
+ * Determine whether the CPU has LASX (LOONGARCH SIMD) features.
+ *
+ * This always returns false on CPUs that aren't using LOONGARCH instruction
+ * sets.
+ *
+ * \returns SDL_TRUE if the CPU has LOONGARCH LASX features or SDL_FALSE if
+ *          not.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasLASX(void);
+
+/**
  * Get the amount of RAM configured in the system.
  *
  * \returns the amount of RAM configured in the system in MB.
@@ -494,7 +528,7 @@ extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
  *
  * \since This function is available since SDL 2.0.10.
  *
- * \sa SDL_SIMDAlignment
+ * \sa SDL_SIMDGetAlignment
  * \sa SDL_SIMDRealloc
  * \sa SDL_SIMDFree
  */
@@ -518,7 +552,7 @@ extern DECLSPEC void * SDLCALL SDL_SIMDAlloc(const size_t len);
  *
  * \since This function is available since SDL 2.0.14.
  *
- * \sa SDL_SIMDAlignment
+ * \sa SDL_SIMDGetAlignment
  * \sa SDL_SIMDAlloc
  * \sa SDL_SIMDFree
  */

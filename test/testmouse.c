@@ -39,6 +39,11 @@ static Line *active = NULL;
 static Line *lines = NULL;
 static int buttons = 0;
 
+static SDL_bool wheel_x_active = SDL_FALSE;
+static SDL_bool wheel_y_active = SDL_FALSE;
+static float wheel_x = SCREEN_WIDTH * 0.5f;
+static float wheel_y = SCREEN_HEIGHT * 0.5f;
+
 static SDL_bool done = SDL_FALSE;
 
 void
@@ -81,6 +86,25 @@ loop(void *arg)
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
+        case SDL_MOUSEWHEEL:
+                if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+                        event.wheel.preciseX *= -1.0f;
+                        event.wheel.preciseY *= -1.0f;
+                        event.wheel.x *= -1;
+                        event.wheel.y *= -1;
+                }
+                if (event.wheel.preciseX != 0.0f) {
+                        wheel_x_active = SDL_TRUE;
+                        /* "positive to the right and negative to the left"  */
+                        wheel_x += event.wheel.preciseX * 10.0f;
+                }
+                if (event.wheel.preciseY != 0.0f) {
+                        wheel_y_active = SDL_TRUE;
+                        /* "positive away from the user and negative towards the user" */
+                        wheel_y -= event.wheel.preciseY * 10.0f;
+                }
+                break;
+
         case SDL_MOUSEMOTION:
             if (!active)
                 break;
@@ -100,6 +124,8 @@ loop(void *arg)
             case SDL_BUTTON_LEFT:   active->r = 255; buttons |= SDL_BUTTON_LMASK; break;
             case SDL_BUTTON_MIDDLE: active->g = 255; buttons |= SDL_BUTTON_MMASK; break;
             case SDL_BUTTON_RIGHT:  active->b = 255; buttons |= SDL_BUTTON_RMASK; break;
+            case SDL_BUTTON_X1:     active->r = 255; active->b = 255; buttons |= SDL_BUTTON_X1MASK; break;
+            case SDL_BUTTON_X2:     active->g = 255; active->b = 255; buttons |= SDL_BUTTON_X2MASK; break;
             }
             break;
         case SDL_MOUSEBUTTONUP:
@@ -110,6 +136,8 @@ loop(void *arg)
             case SDL_BUTTON_LEFT:   buttons &= ~SDL_BUTTON_LMASK; break;
             case SDL_BUTTON_MIDDLE: buttons &= ~SDL_BUTTON_MMASK; break;
             case SDL_BUTTON_RIGHT:  buttons &= ~SDL_BUTTON_RMASK; break;
+            case SDL_BUTTON_X1:     buttons &= ~SDL_BUTTON_X1MASK; break;
+            case SDL_BUTTON_X2:     buttons &= ~SDL_BUTTON_X2MASK; break;
             }
 
             if (buttons == 0) {
@@ -130,6 +158,16 @@ loop(void *arg)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    /* Mouse wheel */
+    SDL_SetRenderDrawColor(renderer, 0, 255, 128, 255);
+    if (wheel_x_active) {
+            SDL_RenderDrawLine(renderer, wheel_x, 0, wheel_x, SCREEN_HEIGHT);
+    }
+    if (wheel_y_active) {
+            SDL_RenderDrawLine(renderer, 0, wheel_y, SCREEN_WIDTH, wheel_y);
+    }
+
+    /* Lines from mouse clicks */
     DrawLines(renderer);
     if (active)
         DrawLine(renderer, active);

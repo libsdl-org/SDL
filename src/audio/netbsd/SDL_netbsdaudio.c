@@ -56,7 +56,7 @@ static void
 NETBSDAUDIO_Status(_THIS)
 {
 #ifdef DEBUG_AUDIO
-    /* *INDENT-OFF* */
+    /* *INDENT-OFF* */ /* clang-format off */
     audio_info_t info;
     const struct audio_prinfo *prinfo;
 
@@ -118,7 +118,7 @@ NETBSDAUDIO_Status(_THIS)
             "",
             this->spec.format,
             this->spec.size);
-    /* *INDENT-ON* */
+    /* *INDENT-ON* */ /* clang-format on */
 #endif /* DEBUG_AUDIO */
 }
 

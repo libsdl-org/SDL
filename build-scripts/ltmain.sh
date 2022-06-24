@@ -7081,8 +7081,20 @@ func_mode_link ()
 	prev=xcompiler
 	continue
 	;;
-
-      -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
+     # Solaris ld rejects as of 11.4. Refer to Oracle bug 22985199.
+     -pthread)
+	case $host in
+	  *solaris2*) ;;
+	  *)
+	    case "$new_inherited_linker_flags " in
+	        *" $arg "*) ;;
+	        * ) func_append new_inherited_linker_flags " $arg" ;;
+	    esac
+	  ;;
+	esac
+	continue
+	;;
+      -mt|-mthreads|-kthread|-Kthread|-pthreads|--thread-safe \
       |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
 	func_append compiler_flags " $arg"
 	func_append compile_command " $arg"

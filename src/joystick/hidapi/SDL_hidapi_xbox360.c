@@ -83,7 +83,7 @@ HIDAPI_DriverXbox360_IsSupportedDevice(const char *name, SDL_GameControllerType 
 }
 
 static const char *
-HIDAPI_DriverXbox360_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverXbox360_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return NULL;
 }

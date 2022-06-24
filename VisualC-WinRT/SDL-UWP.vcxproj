@@ -45,6 +45,7 @@
     <ClInclude Include="..\include\SDL_error.h" />
     <ClInclude Include="..\include\SDL_events.h" />
     <ClInclude Include="..\include\SDL_filesystem.h" />
+    <ClInclude Include="..\include\SDL_guid.h" />
     <ClInclude Include="..\include\SDL_haptic.h" />
     <ClInclude Include="..\include\SDL_hints.h" />
     <ClInclude Include="..\include\SDL_hidapi.h" />
@@ -114,6 +115,7 @@
     <ClInclude Include="..\src\haptic\windows\SDL_dinputhaptic_c.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_windowshaptic_c.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_xinputhaptic_c.h" />
+    <ClInclude Include="..\src\joystick\controller_type.h" />
     <ClInclude Include="..\src\joystick\SDL_gamecontrollerdb.h" />
     <ClInclude Include="..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\src\joystick\SDL_sysjoystick.h" />
@@ -144,6 +146,8 @@
     <ClInclude Include="..\src\SDL_fatal.h" />
     <ClInclude Include="..\src\SDL_hints_c.h" />
     <ClInclude Include="..\src\SDL_internal.h" />
+    <ClInclude Include="..\src\SDL_list.h" />
+    <ClInclude Include="..\src\SDL_log_c.h" />
     <ClInclude Include="..\src\sensor\dummy\SDL_dummysensor.h" />
     <ClInclude Include="..\src\sensor\SDL_sensor_c.h" />
     <ClInclude Include="..\src\sensor\SDL_syssensor.h" />
@@ -248,6 +252,7 @@
     <ClCompile Include="..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\src\hidapi\SDL_hidapi.c" />
     <ClCompile Include="..\src\joystick\dummy\SDL_sysjoystick.c" />
+    <ClCompile Include="..\src\joystick\controller_type.c" />
     <ClCompile Include="..\src\joystick\SDL_gamecontroller.c" />
     <ClCompile Include="..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\src\joystick\virtual\SDL_virtualjoystick.c" />
@@ -295,7 +300,9 @@
     <ClCompile Include="..\src\SDL.c" />
     <ClCompile Include="..\src\SDL_assert.c" />
     <ClCompile Include="..\src\SDL_dataqueue.c" />
+    <ClCompile Include="..\src\SDL_list.c" />
     <ClCompile Include="..\src\SDL_error.c" />
+    <ClCompile Include="..\src\SDL_guid.c" />
     <ClCompile Include="..\src\SDL_hints.c" />
     <ClCompile Include="..\src\SDL_log.c" />
     <ClCompile Include="..\src\sensor\dummy\SDL_dummysensor.c" />
@@ -304,6 +311,8 @@
     <ClCompile Include="..\src\stdlib\SDL_getenv.c" />
     <ClCompile Include="..\src\stdlib\SDL_iconv.c" />
     <ClCompile Include="..\src\stdlib\SDL_malloc.c" />
+    <ClCompile Include="..\src\stdlib\SDL_memcpy.c" />
+    <ClCompile Include="..\src\stdlib\SDL_memset.c" />
     <ClCompile Include="..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\src\stdlib\SDL_string.c" />
@@ -414,10 +423,9 @@
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>8.2</ApplicationTypeRevision>
-    <TargetPlatformVersion>10.0.10069.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10069.0</TargetPlatformMinVersion>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.10240.0</WindowsTargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -1,0 +1,15 @@
+projectfullname = SDL_mixer
+projectshortname = SDL_mixer
+incsubdir = include
+wikisubdir =
+apiprefixregex = (SDL_|SDLK_|KMOD_|AUDIO_)
+mainincludefname = SDL.h
+versionfname = include/SDL_version.h
+versionmajorregex = \A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z
+versionminorregex = \A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z
+versionpatchregex = \A\#define\s+SDL_PATCHLEVEL\s+(\d+)\Z
+selectheaderregex = \ASDL.*?\.h\Z
+projecturl = https://libsdl.org/
+wikiurl = https://wiki.libsdl.org
+bugreporturl = https://github.com/libsdl-org/sdlwiki/issues/new
+warn_about_missing = 0

@@ -1,81 +1,205 @@
-# sdl2 cmake project-config input for ./configure scripts
+# sdl2 cmake project-config input for ./configure script
 
-set(prefix "@prefix@") 
+include(FeatureSummary)
+set_package_properties(SDL2 PROPERTIES
+    URL "https://www.libsdl.org/"
+    DESCRIPTION "low level access to audio, keyboard, mouse, joystick, and graphics hardware"
+)
+
+# Copied from `configure_package_config_file`
+macro(set_and_check _var _file)
+    set(${_var} "${_file}")
+    if(NOT EXISTS "${_file}")
+        message(FATAL_ERROR "File or directory ${_file} referenced by variable ${_var} does not exist !")
+    endif()
+endmacro()
+
+# Copied from `configure_package_config_file`
+macro(check_required_components _NAME)
+    foreach(comp ${${_NAME}_FIND_COMPONENTS})
+        if(NOT ${_NAME}_${comp}_FOUND)
+            if(${_NAME}_FIND_REQUIRED_${comp})
+                set(${_NAME}_FOUND FALSE)
+            endif()
+        endif()
+    endforeach()
+endmacro()
+
+get_filename_component(prefix "${CMAKE_CURRENT_LIST_DIR}@cmake_prefix_relpath@" ABSOLUTE)
 set(exec_prefix "@exec_prefix@")
+set(bindir "@bindir@")
 set(libdir "@libdir@")
 set(includedir "@includedir@")
-set(SDL2_PREFIX "${prefix}")
-set(SDL2_EXEC_PREFIX "${exec_prefix}")
-set(SDL2_LIBDIR "${libdir}")
-set(SDL2_INCLUDE_DIRS "${includedir}/SDL2")
-set(SDL2_LIBRARIES "-L${SDL2_LIBDIR} @SDL_RLD_FLAGS@ @SDL_LIBS@")
-string(STRIP "${SDL2_LIBRARIES}" SDL2_LIBRARIES)
 
-if(NOT TARGET SDL2::SDL2)
-  # provide SDL2::SDL2, SDL2::SDL2main and SDL2::SDL2-static targets, like SDL2Config.cmake does, for compatibility
+set_and_check(SDL2_PREFIX         "${prefix}")
+set_and_check(SDL2_EXEC_PREFIX    "${exec_prefix}")
+set_and_check(SDL2_BINDIR         "${bindir}")
+set_and_check(SDL2_INCLUDE_DIR    "${includedir}/SDL2")
+set_and_check(SDL2_LIBDIR         "${libdir}")
+set(SDL2_INCLUDE_DIRS             "${includedir};${SDL2_INCLUDE_DIR}")
 
-  # Remove -lSDL2 as that is handled by CMake, note the space at the end so it does not replace e.g. -lSDL2main
-  # This may require "libdir" beeing set (from above)
-  string(REPLACE "-lSDL2 " "" SDL2_EXTRA_LINK_FLAGS "@SDL_RLD_FLAGS@ @SDL_LIBS@ ")
-  # also get rid of -lSDL2main, if you want to link against that use both SDL2::SDL2main and SDL2::SDL2 (in that order)
-  # (SDL2Config.cmake has the same behavior)
-  string(REPLACE "-lSDL2main" "" SDL2_EXTRA_LINK_FLAGS ${SDL2_EXTRA_LINK_FLAGS})
-  string(STRIP "${SDL2_EXTRA_LINK_FLAGS}" SDL2_EXTRA_LINK_FLAGS)
-  string(REPLACE "-lSDL2 " "" SDL2_EXTRA_LINK_FLAGS_STATIC "@SDL_STATIC_LIBS@ ")
-  string(STRIP "${SDL2_EXTRA_LINK_FLAGS_STATIC}" SDL2_EXTRA_LINK_FLAGS_STATIC)
+set(SDL2_LIBRARIES SDL2::SDL2)
+set(SDL2_STATIC_LIBRARIES SDL2::SDL2-static)
+set(SDL2MAIN_LIBRARY)
+set(SDL2TEST_LIBRARY SDL2::SDL2test)
 
-if(WIN32 AND NOT MSVC)
-  # MINGW needs very special handling, because the link order must be exactly -lmingw32 -lSDL2main -lSDL2
-  # for it to work at all (and -mwindows somewhere); a normal SHARED IMPORTED or STATIC IMPORTED library always puts itself first
-  # so handle this like a header-only lib and put everything in INTERFACE_LINK_LIBRARIES
+unset(prefix)
+unset(exec_prefix)
+unset(bindir)
+unset(libdir)
+unset(includedir)
 
-  add_library(SDL2::SDL2 INTERFACE IMPORTED)
-  set_target_properties(SDL2::SDL2 PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
-    INTERFACE_LINK_LIBRARIES "-L${SDL2_LIBDIR} -lSDL2")
+set(_sdl2_libraries "@SDL_LIBS@")
+set(_sdl2_static_private_libs "@SDL_STATIC_LIBS@")
 
-  add_library(SDL2::SDL2main INTERFACE IMPORTED)
-  set_target_properties(SDL2::SDL2main PROPERTIES
-    INTERFACE_LINK_LIBRARIES "-L${SDL2_LIBDIR} -lmingw32 -lSDL2main -mwindows")
+# Convert _sdl2_libraries to list and keep only libraries
+string(REGEX MATCHALL "-[lm]([-a-zA-Z0-9._]+)" _sdl2_libraries "${_sdl2_libraries}")
+string(REGEX REPLACE "^-l" "" _sdl2_libraries "${_sdl2_libraries}")
+string(REGEX REPLACE ";-l" ";" _sdl2_libraries "${_sdl2_libraries}")
 
-else() # (not WIN32) or MSVC
+# Convert _sdl2_static_private_libs to list and keep only libraries
+string(REGEX MATCHALL "(-[lm]([-a-zA-Z0-9._]+))|(-Wl,[^ ]*framework[^ ]*)" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
+string(REGEX REPLACE "^-l" "" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
+string(REGEX REPLACE ";-l" ";" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
 
-  add_library(SDL2::SDL2 SHARED IMPORTED)
-  set_target_properties(SDL2::SDL2 PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
-    IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-    IMPORTED_LOCATION "${SDL2_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}SDL2${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-  if(MSVC)
-    # This file is generated when building SDL2 with autotools and MinGW, and MinGW/dlltool
-    # isn't able to generate .lib files that are usable by recent MSVC versions 
-    # (something about "module unsafe for SAFESEH"; SAFESEH is enabled by default in MSVC).
-    # The .lib file for SDL2.dll *could* be generated with `gendef SDL2.dll` and then
-    # `lib.exe /machine:x86 /def:SDL2.def /out:SDL2.lib` (or /machine:amd64)
-    # but that requires lib.exe from a Visual Studio installation - and that still doesn't
-    # give you a static SDL2main.lib with SAFESEH support that you'll need (unless you don't use SDL2main)
-    # Note that when building SDL2 with CMake and MSVC, the result works with both MinGW and MSVC.
-
-    message(FATAL_ERROR, "This build of libSDL2 only supports MinGW, not MSVC (Visual C++), because it lacks .lib files!")
-    # MSVC needs SDL2.lib set as IMPORTED_IMPLIB to link against (comment out message() call above if you added SDL2.lib yourself)
-    set_target_properties(SDL2::SDL2 PROPERTIES IMPORTED_IMPLIB "${SDL2_LIBDIR}/SDL2.lib")
+if(_sdl2_libraries MATCHES ".*SDL2main.*")
+  list(INSERT SDL2_LIBRARIES 0 SDL2::SDL2main)
+  list(INSERT SDL2_STATIC_LIBRARIES 0 SDL2::SDL2main)
+  set(_sdl2main_library ${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2main${CMAKE_STATIC_LIBRARY_SUFFIX})
+  if(EXISTS "${_sdl2main_library}")
+    set(SDL2MAIN_LIBRARY SDL2::SDL2main)
+    if(NOT TARGET SDL2::SDL2main)
+      add_library(SDL2::SDL2main STATIC IMPORTED)
+      set_target_properties(SDL2::SDL2main
+        PROPERTIES
+          IMPORTED_LOCATION "${_sdl2main_library}"
+      )
+      if(WIN32)
+        # INTERFACE_LINK_OPTIONS needs CMake 3.13
+        cmake_minimum_required(VERSION 3.13)
+        # Mark WinMain/WinMain@16 as undefined, such that it will be withheld by the linker.
+        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+          set_target_properties(SDL2::SDL2main
+            PROPERTIES
+              INTERFACE_LINK_OPTIONS "-Wl,--undefined=_WinMain@16"
+          )
+        else()
+          set_target_properties(SDL2::SDL2main
+            PROPERTIES
+              INTERFACE_LINK_OPTIONS "-Wl,--undefined=WinMain"
+          )
+        endif()
+      endif()
+    endif()
+    set(SDL2_SDL2main_FOUND TRUE)
   else()
-    # this mustn't be set for MSVC, so do it here in an extra call here
-    set_target_properties(SDL2::SDL2 PROPERTIES INTERFACE_LINK_LIBRARIES  "${SDL2_EXTRA_LINK_FLAGS}")
+    set(SDL2_SDL2main_FOUND FALSE)
   endif()
+  unset(_sdl2main_library)
+endif()
 
-  add_library(SDL2::SDL2main STATIC IMPORTED)
-  set_target_properties(SDL2::SDL2main PROPERTIES
-    IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-    IMPORTED_LOCATION "${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2main${CMAKE_STATIC_LIBRARY_SUFFIX}")
+# Remove SDL2 since this is the "central" library
+# Remove SDL2main since this will be provided by SDL2::SDL2main (if available)
+# Remove mingw32 and cygwin since these are not needed when using `-Wl,--undefined,WinMain`
+set(_sdl2_link_libraries ${_sdl2_libraries})
+list(REMOVE_ITEM _sdl2_link_libraries SDL2 SDL2main mingw32 cygwin)
 
-endif() # (not WIN32) or MSVC
+if(WIN32)
+  set(_sdl2_implib "${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2${CMAKE_SHARED_LIBRARY_SUFFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  set(_sdl2_dll "${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2${CMAKE_SHARED_LIBRARY_SUFFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  if(EXISTS "${_sdl2_implib}" AND EXISTS "${_sdl2_dll}")
+    if(NOT TARGET SDL2::SDL2)
+      add_library(SDL2::SDL2 SHARED IMPORTED)
+      set_target_properties(SDL2::SDL2 PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${_sdl2_link_libraries}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+        IMPORTED_IMPLIB "${_sdl2_implib}"
+        IMPORTED_LOCATION "${_sdl2_dll}"
+      )
+    endif()
+    set(SDL2_SDL2_FOUND TRUE)
+  else()
+    set(SDL2_SDL2_FOUND FALSE)
+  endif()
+  unset(_sdl2_implib)
+  unset(_sdl2_dll)
+else()
+  set(_sdl2_shared "${SDL2_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}SDL2${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  if(EXISTS "${_sdl2_shared}")
+    if(NOT TARGET SDL2::SDL2)
+      add_library(SDL2::SDL2 SHARED IMPORTED)
+      set_target_properties(SDL2::SDL2 PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${_sdl2_link_libraries}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+        IMPORTED_LOCATION "${_sdl2_shared}"
+      )
+    endif()
+    set(SDL2_SDL2_FOUND TRUE)
+  else()
+    set(SDL2_SDL2_FOUND FALSE)
+  endif()
+  unset(_sdl2_shared)
+endif()
 
-  add_library(SDL2::SDL2-static STATIC IMPORTED)
-  set_target_properties(SDL2::SDL2-static PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
-    IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-    IMPORTED_LOCATION "${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2${CMAKE_STATIC_LIBRARY_SUFFIX}"
-    INTERFACE_LINK_LIBRARIES "${SDL2_EXTRA_LINK_FLAGS_STATIC}")
+set(_sdl2_static "${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2${CMAKE_STATIC_LIBRARY_SUFFIX}")
+if(EXISTS "${_sdl2_static}")
+  if(NOT TARGET SDL2::SDL2-static)
+    add_library(SDL2::SDL2-static STATIC IMPORTED)
+    set_target_properties(SDL2::SDL2-static
+      PROPERTIES
+        IMPORTED_LOCATION "${_sdl2_static}"
+        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${_sdl2_link_libraries};${_sdl2_static_private_libs}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+    )
+  endif()
+  set(SDL2_SDL2-static_FOUND TRUE)
+else()
+  set(SDL2_SDL2-static_FOUND FALSE)
+endif()
+unset(_sdl2_static)
 
-endif() # NOT TARGET SDL2::SDL2
+unset(_sdl2_link_libraries)
+
+set(_sdl2test_library "${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2_test${CMAKE_STATIC_LIBRARY_SUFFIX}")
+if(EXISTS "${_sdl2test_library}")
+  if(NOT TARGET SDL2::SDL2test)
+    add_library(SDL2::SDL2test STATIC IMPORTED)
+    set_target_properties(SDL2::SDL2test
+      PROPERTIES
+        IMPORTED_LOCATION "_sdl2test_library"
+        INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+    )
+  endif()
+  set(SDL2_SDL2test_FOUND TRUE)
+else()
+  set(SDL2_SDL2test_FOUND FALSE)
+endif()
+unset(_sdl2test_library)
+
+# Copied from `configure_package_config_file`
+macro(check_required_components _NAME)
+  foreach(comp ${${_NAME}_FIND_COMPONENTS})
+    if(NOT ${_NAME}_${comp}_FOUND)
+      if(${_NAME}_FIND_REQUIRED_${comp})
+        set(${_NAME}_FOUND FALSE)
+      endif()
+    endif()
+  endforeach()
+endmacro()
+
+check_required_components(SDL2)
+
+# Create SDL2::SDL2 alias for static-only builds
+if(TARGET SDL2::SDL2-static AND NOT TARGET SDL2::SDL2)
+  if(CMAKE_VERSION VERSION_LESS "3.18")
+    # FIXME: Aliasing local targets is not supported on CMake < 3.18, so make it global.
+    add_library(SDL2::SDL2 INTERFACE IMPORTED)
+    set_target_properties(SDL2::SDL2 PROPERTIES INTERFACE_LINK_LIBRARIES "SDL2::SDL2-static")
+  else()
+    add_library(SDL2::SDL2 ALIAS SDL2::SDL2-static)
+  endif()
+endif()

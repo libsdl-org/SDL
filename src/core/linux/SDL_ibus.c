@@ -22,6 +22,7 @@
 
 #ifdef HAVE_IBUS_IBUS_H
 #include "SDL.h"
+#include "SDL_hints.h"
 #include "SDL_syswm.h"
 #include "SDL_ibus.h"
 #include "SDL_dbus.h"
@@ -66,107 +67,217 @@ IBus_ModState(void)
     return ibus_mods;
 }
 
+static SDL_bool
+IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
+                  DBusMessageIter *inside, const char * struct_id, size_t id_size)
+{
+    DBusMessageIter sub;
+    if (dbus->message_iter_get_arg_type(iter) != DBUS_TYPE_VARIANT) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_recurse(iter, &sub);
+
+    if (dbus->message_iter_get_arg_type(&sub) != DBUS_TYPE_STRUCT) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_recurse(&sub, inside);
+
+    if (dbus->message_iter_get_arg_type(inside) != DBUS_TYPE_STRING) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_get_basic(inside, &struct_id);
+    if (!struct_id || SDL_strncmp(struct_id, struct_id, id_size) != 0) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
+static SDL_bool
+IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
+                           Uint32 *start_pos, Uint32 *end_pos)
+{
+    DBusMessageIter sub1, sub2, array;
+
+    if (!IBus_EnterVariant(conn, iter, dbus, &sub1, "IBusText", sizeof("IBusText"))) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_next(&sub1);
+    dbus->message_iter_next(&sub1);
+    dbus->message_iter_next(&sub1);
+
+    if (!IBus_EnterVariant(conn, &sub1, dbus, &sub2, "IBusAttrList", sizeof("IBusAttrList"))) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_next(&sub2);
+    dbus->message_iter_next(&sub2);
+
+    if (dbus->message_iter_get_arg_type(&sub2) != DBUS_TYPE_ARRAY) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_recurse(&sub2, &array);
+
+    while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_VARIANT) {
+        DBusMessageIter sub;
+        if (IBus_EnterVariant(conn, &array, dbus, &sub, "IBusAttribute", sizeof("IBusAttribute"))) {
+            Uint32 type;
+
+            dbus->message_iter_next(&sub);
+            dbus->message_iter_next(&sub);
+
+            /* From here on, the structure looks like this:                    */
+            /* Uint32 type: 1=underline, 2=foreground, 3=background            */
+            /* Uint32 value: for underline it's 0=NONE, 1=SINGLE, 2=DOUBLE,    */
+            /*                                    3=LOW,  4=ERROR              */
+            /*                 for foreground and background it's a color      */
+            /* Uint32 start_index: starting position for the style (utf8-char) */
+            /* Uint32 end_index: end position for the style (utf8-char)        */
+
+            dbus->message_iter_get_basic(&sub, &type);
+            /* We only use the background type to determine the selection */
+            if (type == 3) {
+                Uint32 start = -1;
+                dbus->message_iter_next(&sub);
+                dbus->message_iter_next(&sub);
+                if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_UINT32) {
+                    dbus->message_iter_get_basic(&sub, &start);
+                    dbus->message_iter_next(&sub);
+                    if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_UINT32) {
+                        dbus->message_iter_get_basic(&sub, end_pos);
+                        *start_pos = start;
+                        return SDL_TRUE;
+                    }
+                }
+            }
+        }
+        dbus->message_iter_next(&array);
+    }
+    return SDL_FALSE;
+}
+
 static const char *
 IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus)
 {
     /* The text we need is nested weirdly, use dbus-monitor to see the structure better */
     const char *text = NULL;
-    const char *struct_id = NULL;
-    DBusMessageIter sub1, sub2;
+    DBusMessageIter sub;
 
-    if (dbus->message_iter_get_arg_type(iter) != DBUS_TYPE_VARIANT) {
+    if (!IBus_EnterVariant(conn, iter, dbus, &sub, "IBusText", sizeof("IBusText"))) {
         return NULL;
     }
-    
-    dbus->message_iter_recurse(iter, &sub1);
-    
-    if (dbus->message_iter_get_arg_type(&sub1) != DBUS_TYPE_STRUCT) {
+
+    dbus->message_iter_next(&sub);
+    dbus->message_iter_next(&sub);
+
+    if (dbus->message_iter_get_arg_type(&sub) != DBUS_TYPE_STRING) {
         return NULL;
     }
-    
-    dbus->message_iter_recurse(&sub1, &sub2);
-    
-    if (dbus->message_iter_get_arg_type(&sub2) != DBUS_TYPE_STRING) {
-        return NULL;
-    }
-    
-    dbus->message_iter_get_basic(&sub2, &struct_id);
-    if (!struct_id || SDL_strncmp(struct_id, "IBusText", sizeof("IBusText")) != 0) {
-        return NULL;
-    }
-    
-    dbus->message_iter_next(&sub2);
-    dbus->message_iter_next(&sub2);
-    
-    if (dbus->message_iter_get_arg_type(&sub2) != DBUS_TYPE_STRING) {
-        return NULL;
-    }
-    
-    dbus->message_iter_get_basic(&sub2, &text);
-    
+    dbus->message_iter_get_basic(&sub, &text);
+
     return text;
+}
+
+static SDL_bool
+IBus_GetVariantCursorPos(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
+                         Uint32 *pos)
+{
+    dbus->message_iter_next(iter);
+
+    if (dbus->message_iter_get_arg_type(iter) != DBUS_TYPE_UINT32) {
+        return SDL_FALSE;
+    }
+
+    dbus->message_iter_get_basic(iter, pos);
+
+    return SDL_TRUE;
 }
 
 static DBusHandlerResult
 IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
     SDL_DBusContext *dbus = (SDL_DBusContext *)user_data;
-        
+
     if (dbus->message_is_signal(msg, IBUS_INPUT_INTERFACE, "CommitText")) {
         DBusMessageIter iter;
         const char *text;
 
         dbus->message_iter_init(msg, &iter);
-        
         text = IBus_GetVariantText(conn, &iter, dbus);
+
         if (text && *text) {
             char buf[SDL_TEXTINPUTEVENT_TEXT_SIZE];
             size_t text_bytes = SDL_strlen(text), i = 0;
-            
+
             while (i < text_bytes) {
                 size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
                 SDL_SendKeyboardText(buf);
-                
+
                 i += sz;
             }
         }
-        
+
         return DBUS_HANDLER_RESULT_HANDLED;
     }
-    
+
     if (dbus->message_is_signal(msg, IBUS_INPUT_INTERFACE, "UpdatePreeditText")) {
         DBusMessageIter iter;
         const char *text;
 
         dbus->message_iter_init(msg, &iter);
         text = IBus_GetVariantText(conn, &iter, dbus);
-        
-        if (text) {
-            char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
-            size_t text_bytes = SDL_strlen(text), i = 0;
-            size_t cursor = 0;
-            
-            do {
-                const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
-                const size_t chars = SDL_utf8strlen(buf);
-                
-                SDL_SendEditingText(buf, cursor, chars);
 
-                i += sz;
-                cursor += chars;
-            } while (i < text_bytes);
+        if (text) {
+            if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
+                Uint32 pos, start_pos, end_pos;
+                SDL_bool has_pos = SDL_FALSE;
+                SDL_bool has_dec_pos = SDL_FALSE;
+
+                dbus->message_iter_init(msg, &iter);
+                has_dec_pos = IBus_GetDecorationPosition(conn, &iter, dbus, &start_pos, &end_pos);
+                if (!has_dec_pos)
+                {
+                    dbus->message_iter_init(msg, &iter);
+                    has_pos = IBus_GetVariantCursorPos(conn, &iter, dbus, &pos);
+                }
+
+                if(has_dec_pos) {
+                    SDL_SendEditingText(text, start_pos, end_pos - start_pos);
+                } else if (has_pos) {
+                    SDL_SendEditingText(text, pos, -1);
+                } else {
+                    SDL_SendEditingText(text, -1, -1);
+                }
+            } else {
+                char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
+                size_t text_bytes = SDL_strlen(text), i = 0;
+                size_t cursor = 0;
+
+                do {
+                    const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
+                    const size_t chars = SDL_utf8strlen(buf);
+
+                    SDL_SendEditingText(buf, cursor, chars);
+                    i += sz;
+                    cursor += chars;
+                } while (i < text_bytes);
+            }
         }
-        
+
         SDL_IBus_UpdateTextRect(NULL);
-        
+
         return DBUS_HANDLER_RESULT_HANDLED;
     }
-    
+
     if (dbus->message_is_signal(msg, IBUS_INPUT_INTERFACE, "HidePreeditText")) {
         SDL_SendEditingText("", 0, 0);
         return DBUS_HANDLER_RESULT_HANDLED;
     }
-    
+
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -503,15 +614,20 @@ SDL_IBus_Reset(void)
 }
 
 SDL_bool
-SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
+SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 { 
     Uint32 result = 0;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
-    
+
+
     if (IBus_CheckConnection(dbus)) {
         Uint32 mods = IBus_ModState();
+        Uint32 ibus_keycode = keycode - 8;
+        if (state == SDL_RELEASED) {
+            mods |= (1 << 30); // IBUS_RELEASE_MASK
+        }
         if (!SDL_DBus_CallMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "ProcessKeyEvent",
-                DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mods, DBUS_TYPE_INVALID,
+                DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &ibus_keycode, DBUS_TYPE_UINT32, &mods, DBUS_TYPE_INVALID,
                 DBUS_TYPE_BOOLEAN, &result, DBUS_TYPE_INVALID)) {
             result = 0;
         }

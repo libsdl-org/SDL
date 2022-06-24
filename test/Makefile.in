@@ -2,6 +2,15 @@
 
 srcdir  = @srcdir@
 
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+libdir = @libdir@
+libexecdir = @libexecdir@
+includedir = @includedir@
+datarootdir = @datarootdir@
+datadir = @datadir@
+
 CC      = @CC@
 EXE	= @EXE@
 CFLAGS  = @CFLAGS@ -g
@@ -31,6 +40,7 @@ TARGETS = \
 	testgamecontroller$(EXE) \
 	testgeometry$(EXE) \
 	testgesture$(EXE) \
+	testguid$(EXE) \
 	testhaptic$(EXE) \
 	testhittesting$(EXE) \
 	testhotplug$(EXE) \
@@ -79,7 +89,26 @@ TARGETS = \
 @OPENGLES2_TARGETS@ += testgles2$(EXE)
 
 
-all: Makefile $(TARGETS) copydatafiles
+all: Makefile $(TARGETS) copydatafiles generatetestmeta
+
+installedtestsdir = $(libexecdir)/installed-tests/SDL2
+installedtestsmetadir = $(datadir)/installed-tests/SDL2
+
+generatetestmeta:
+	rm -f *.test
+	set -e; for exe in $(noninteractive) $(needs_audio) $(needs_display); do \
+		sed \
+			-e 's#@installedtestsdir@#$(installedtestsdir)#g' \
+			-e "s#@exe@#$$exe#g" \
+			< $(srcdir)/template.test.in > $$exe.test; \
+	done
+
+install: all
+	install -d $(DESTDIR)$(installedtestsdir)
+	install $(TARGETS) $(DESTDIR)$(installedtestsdir)
+	install -m644 $(DATA) $(DESTDIR)$(installedtestsdir)
+	install -d $(DESTDIR)$(installedtestsmetadir)
+	install -m644 *.test $(DESTDIR)$(installedtestsmetadir)
 
 Makefile: $(srcdir)/Makefile.in
 	$(SHELL) config.status $@
@@ -90,10 +119,10 @@ checkkeys$(EXE): $(srcdir)/checkkeys.c
 checkkeysthreads$(EXE): $(srcdir)/checkkeysthreads.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-loopwave$(EXE): $(srcdir)/loopwave.c
+loopwave$(EXE): $(srcdir)/loopwave.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-loopwavequeue$(EXE): $(srcdir)/loopwavequeue.c
+loopwavequeue$(EXE): $(srcdir)/loopwavequeue.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testsurround$(EXE): $(srcdir)/testsurround.c
@@ -123,13 +152,14 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_syswm.c \
 		      $(srcdir)/testautomation_timer.c \
 		      $(srcdir)/testautomation_video.c \
-		      $(srcdir)/testautomation_hints.c
+		      $(srcdir)/testautomation_hints.c \
+		      $(srcdir)/testautomation_math.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
-testmultiaudio$(EXE): $(srcdir)/testmultiaudio.c
+testmultiaudio$(EXE): $(srcdir)/testmultiaudio.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testaudiohotplug$(EXE): $(srcdir)/testaudiohotplug.c
+testaudiohotplug$(EXE): $(srcdir)/testaudiohotplug.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testaudiocapture$(EXE): $(srcdir)/testaudiocapture.c
@@ -165,15 +195,15 @@ testevdev$(EXE): $(srcdir)/testevdev.c
 testfile$(EXE): $(srcdir)/testfile.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testgamecontroller$(EXE): $(srcdir)/testgamecontroller.c
+testgamecontroller$(EXE): $(srcdir)/testgamecontroller.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testgeometry$(EXE): $(srcdir)/testgeometry.c
+testgeometry$(EXE): $(srcdir)/testgeometry.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testgesture$(EXE): $(srcdir)/testgesture.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
- 
+
 testgl2$(EXE): $(srcdir)/testgl2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
@@ -183,8 +213,11 @@ testgles$(EXE): $(srcdir)/testgles.c
 testgles2$(EXE): $(srcdir)/testgles2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
-testgles2_sdf$(EXE): $(srcdir)/testgles2_sdf.c
+testgles2_sdf$(EXE): $(srcdir)/testgles2_sdf.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
+
+testguid$(EXE): $(srcdir)/testguid.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testhaptic$(EXE): $(srcdir)/testhaptic.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
@@ -198,10 +231,10 @@ testrumble$(EXE): $(srcdir)/testrumble.c
 testthread$(EXE): $(srcdir)/testthread.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testiconv$(EXE): $(srcdir)/testiconv.c
+testiconv$(EXE): $(srcdir)/testiconv.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testime$(EXE): $(srcdir)/testime.c
+testime$(EXE): $(srcdir)/testime.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @SDL_TTF_LIB@
 
 testjoystick$(EXE): $(srcdir)/testjoystick.c
@@ -219,18 +252,21 @@ testlock$(EXE): $(srcdir)/testlock.c
 ifeq (@ISMACOSX@,true)
 testnative$(EXE): $(srcdir)/testnative.c \
 			$(srcdir)/testnativecocoa.m \
+			$(srcdir)/testutils.c \
 			$(srcdir)/testnativex11.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) -framework Cocoa @XLIB@
 endif
 
 ifeq (@ISWINDOWS@,true)
 testnative$(EXE): $(srcdir)/testnative.c \
+			$(srcdir)/testutils.c \
 			$(srcdir)/testnativew32.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 endif
 
 ifeq (@ISUNIX@,true)
 testnative$(EXE): $(srcdir)/testnative.c \
+			$(srcdir)/testutils.c \
 			$(srcdir)/testnativex11.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @XLIB@
 endif
@@ -252,7 +288,7 @@ endif
 endif
 endif
 
-testoverlay2$(EXE): $(srcdir)/testoverlay2.c $(srcdir)/testyuv_cvt.c
+testoverlay2$(EXE): $(srcdir)/testoverlay2.c $(srcdir)/testyuv_cvt.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testplatform$(EXE): $(srcdir)/testplatform.c
@@ -264,10 +300,10 @@ testpower$(EXE): $(srcdir)/testpower.c
 testfilesystem$(EXE): $(srcdir)/testfilesystem.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testrendertarget$(EXE): $(srcdir)/testrendertarget.c
+testrendertarget$(EXE): $(srcdir)/testrendertarget.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testscale$(EXE): $(srcdir)/testscale.c
+testscale$(EXE): $(srcdir)/testscale.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testsem$(EXE): $(srcdir)/testsem.c
@@ -282,13 +318,13 @@ testshader$(EXE): $(srcdir)/testshader.c
 testshape$(EXE): $(srcdir)/testshape.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testsprite2$(EXE): $(srcdir)/testsprite2.c
+testsprite2$(EXE): $(srcdir)/testsprite2.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testspriteminimal$(EXE): $(srcdir)/testspriteminimal.c
+testspriteminimal$(EXE): $(srcdir)/testspriteminimal.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
-teststreaming$(EXE): $(srcdir)/teststreaming.c
+teststreaming$(EXE): $(srcdir)/teststreaming.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
 testtimer$(EXE): $(srcdir)/testtimer.c
@@ -300,7 +336,7 @@ testurl$(EXE): $(srcdir)/testurl.c
 testver$(EXE): $(srcdir)/testver.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testviewport$(EXE): $(srcdir)/testviewport.c
+testviewport$(EXE): $(srcdir)/testviewport.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testwm2$(EXE): $(srcdir)/testwm2.c
@@ -312,7 +348,7 @@ testyuv$(EXE): $(srcdir)/testyuv.c $(srcdir)/testyuv_cvt.c
 torturethread$(EXE): $(srcdir)/torturethread.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testrendercopyex$(EXE): $(srcdir)/testrendercopyex.c
+testrendercopyex$(EXE): $(srcdir)/testrendercopyex.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
 testmessage$(EXE): $(srcdir)/testmessage.c
@@ -330,7 +366,7 @@ testbounds$(EXE): $(srcdir)/testbounds.c
 testcustomcursor$(EXE): $(srcdir)/testcustomcursor.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-controllermap$(EXE): $(srcdir)/controllermap.c
+controllermap$(EXE): $(srcdir)/controllermap.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testvulkan$(EXE): $(srcdir)/testvulkan.c
@@ -344,12 +380,55 @@ testmouse$(EXE): $(srcdir)/testmouse.c
 
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) *.test
 
 distclean: clean
 	rm -f Makefile
 	rm -f config.status config.cache config.log
 	rm -rf $(srcdir)/autom4te*
+
+noninteractive = \
+	testatomic$(EXE) \
+	testerror$(EXE) \
+	testevdev$(EXE) \
+	testfilesystem$(EXE) \
+	testkeys$(EXE) \
+	testlocale$(EXE) \
+	testplatform$(EXE) \
+	testpower$(EXE) \
+	testqsort$(EXE) \
+	testthread$(EXE) \
+	testtimer$(EXE) \
+	testver$(EXE) \
+	$(NULL)
+
+needs_audio = \
+	testaudioinfo$(EXE) \
+	testsurround$(EXE) \
+	$(NULL)
+
+needs_display = \
+	testbounds$(EXE) \
+	testdisplayinfo$(EXE) \
+	$(NULL)
+
+TESTS = $(noninteractive) $(needs_audio) $(needs_display)
+
+check:
+	@set -e; \
+	status=0; \
+	export SDL_AUDIODRIVER=dummy; \
+	export SDL_VIDEODRIVER=dummy; \
+	for exe in $(TESTS); do \
+		echo "$$exe..."; \
+		if ./"$$exe"; then \
+			echo "$$exe: OK"; \
+		else \
+			echo "$$exe: FAILED: $$?"; \
+			status=1; \
+		fi; \
+	done; \
+	exit "$$status"
 
 DATA = \
 	axis.bmp \
@@ -364,6 +443,7 @@ DATA = \
 	testgles2_sdf_img_sdf.bmp \
 	testyuv.bmp \
 	unifont-13.0.06.hex \
+	utf8.txt \
 	$(NULL)
 
 ifneq ($(srcdir), .)

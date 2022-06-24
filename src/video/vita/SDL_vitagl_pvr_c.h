@@ -19,17 +19,16 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_vitagl_c_h_
-#define SDL_vitagl_c_h_
+#ifndef SDL_vitagl_pvr_c_h_
+#define SDL_vitagl_pvr_c_h_
 
 #include "SDL_vitavideo.h"
 
-extern int VITA_GL_MakeCurrent(_THIS,SDL_Window * window, SDL_GLContext context);
-extern int VITA_GL_SwapWindow(_THIS, SDL_Window * window);
 extern SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window * window);
 extern int VITA_GL_LoadLibrary(_THIS, const char *path);
+extern void *VITA_GL_GetProcAddress(_THIS, const char *proc);
 
 
-#endif /* SDL_vitagl_c_h_ */
+#endif /* SDL_vitagl_pvr_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

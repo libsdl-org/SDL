@@ -37,7 +37,7 @@ typedef struct JoyStick_DeviceData
     BYTE SubType;
     Uint8 XInputUserId;
     DIDEVICEINSTANCE dxdevice;
-    char hidPath[MAX_PATH];
+    char path[MAX_PATH];
     struct JoyStick_DeviceData *pNext;
 } JoyStick_DeviceData;
 

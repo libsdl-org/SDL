@@ -37,9 +37,9 @@ struct SDL_PrivateAudioData
     struct pw_context     *context;
     struct SDL_DataQueue  *buffer;
 
-    size_t       buffer_period_size;
-    Sint32       stride; /* Bytes-per-frame */
-    SDL_atomic_t stream_initialized;
+    size_t input_buffer_packet_size;
+    Sint32 stride; /* Bytes-per-frame */
+    int    stream_init_status;
 };
 
 #endif /* SDL_pipewire_h_ */

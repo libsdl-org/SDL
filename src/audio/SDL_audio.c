@@ -382,7 +382,7 @@ add_audio_device(const char *name, SDL_AudioSpec *spec, void *handle, SDL_AudioD
     item->dupenum = 0;
     item->name = item->original_name;
     if (spec != NULL) {
-        SDL_memcpy(&item->spec, spec, sizeof(SDL_AudioSpec));
+        SDL_copyp(&item->spec, spec);
     } else {
         SDL_zero(item->spec);
     }
@@ -936,7 +936,7 @@ SDL_AudioInit(const char *driver_name)
 
     /* Select the proper audio driver */
     if (driver_name == NULL) {
-        driver_name = SDL_getenv("SDL_AUDIODRIVER");
+        driver_name = SDL_GetHint(SDL_HINT_AUDIODRIVER);
     }
 
     if (driver_name != NULL && *driver_name != 0) {
@@ -945,6 +945,15 @@ SDL_AudioInit(const char *driver_name)
             const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
             size_t driver_attempt_len = (driver_attempt_end != NULL) ? (driver_attempt_end - driver_attempt)
                                                                      : SDL_strlen(driver_attempt);
+#if SDL_AUDIO_DRIVER_DSOUND
+            /* SDL 1.2 uses the name "dsound", so we'll support both. */
+            if (driver_attempt_len == SDL_strlen("dsound") &&
+                (SDL_strncasecmp(driver_attempt, "dsound", driver_attempt_len) == 0)) {
+                driver_attempt = "directsound";
+                driver_attempt_len = SDL_strlen("directsound");
+            }
+#endif
+
 #if SDL_AUDIO_DRIVER_PULSEAUDIO
             /* SDL 1.2 uses the name "pulse", so we'll support both. */
             if (driver_attempt_len == SDL_strlen("pulse") &&
@@ -1131,7 +1140,7 @@ SDL_GetAudioDeviceSpec(int index, int iscapture, SDL_AudioSpec *spec)
             SDL_assert(item != NULL);
         }
         SDL_assert(item != NULL);
-        SDL_memcpy(spec, &item->spec, sizeof(SDL_AudioSpec));
+        SDL_copyp(spec, &item->spec);
         retval = 0;
     } else {
         retval = SDL_InvalidParamError("index");
@@ -1193,7 +1202,7 @@ close_audio_device(SDL_AudioDevice * device)
 static int
 prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
 {
-    SDL_memcpy(prepared, orig, sizeof(SDL_AudioSpec));
+    SDL_copyp(prepared, orig);
 
     if (orig->freq == 0) {
         const char *env = SDL_getenv("SDL_AUDIO_FREQUENCY");
@@ -1649,8 +1658,6 @@ SDL_AudioQuit(void)
 #ifdef HAVE_LIBSAMPLERATE_H
     UnloadLibSampleRate();
 #endif
-
-    SDL_FreeResampleFilter();
 }
 
 #define NUM_FORMATS 10

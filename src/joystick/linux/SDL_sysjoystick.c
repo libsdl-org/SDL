@@ -82,6 +82,10 @@
 #define DEBUG_INPUT_EVENTS 1
 #endif
 
+#if 0
+#define DEBUG_GAMEPAD_MAPPING 1
+#endif
+
 typedef enum
 {
     ENUMERATION_UNSET,
@@ -109,6 +113,7 @@ typedef struct SDL_joylist_item
     /* Steam Controller support */
     SDL_bool m_bSteamController;
 
+    SDL_bool checked_mapping;
     SDL_GamepadMapping *mapping;
 } SDL_joylist_item;
 
@@ -492,21 +497,6 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     }
 }
 
-#ifdef HAVE_INOTIFY
-#ifdef HAVE_INOTIFY_INIT1
-static int SDL_inotify_init1(void) {
-    return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
-}
-#else
-static int SDL_inotify_init1(void) {
-    int fd = inotify_init();
-    if (fd  < 0) return -1;
-    fcntl(fd, F_SETFL, O_NONBLOCK);
-    fcntl(fd, F_SETFD, FD_CLOEXEC);
-    return fd;
-}
-#endif
-
 static int
 StrHasPrefix(const char *string, const char *prefix)
 {
@@ -561,6 +551,21 @@ IsJoystickDeviceNode(const char *node)
     }
 }
 
+#ifdef HAVE_INOTIFY
+#ifdef HAVE_INOTIFY_INIT1
+static int SDL_inotify_init1(void) {
+    return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+}
+#else
+static int SDL_inotify_init1(void) {
+    int fd = inotify_init();
+    if (fd  < 0) return -1;
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    return fd;
+}
+#endif
+
 static void
 LINUX_InotifyJoystickDetect(void)
 {
@@ -605,6 +610,26 @@ LINUX_InotifyJoystickDetect(void)
 }
 #endif /* HAVE_INOTIFY */
 
+static int get_event_joystick_index(int event)
+{
+    int joystick_index = -1;
+    int i, count;
+    struct dirent **entries = NULL;
+    char path[PATH_MAX];
+
+    SDL_snprintf(path, SDL_arraysize(path), "/sys/class/input/event%d/device", event);
+    count = scandir(path, &entries, NULL, alphasort);
+    for (i = 0; i < count; ++i) {
+        if (SDL_strncmp(entries[i]->d_name, "js", 2) == 0) {
+            joystick_index = SDL_atoi(entries[i]->d_name+2);
+        }
+        free(entries[i]); /* This should NOT be SDL_free() */
+    }
+    free(entries); /* This should NOT be SDL_free() */
+
+    return joystick_index;
+}
+
 /* Detect devices by reading /dev/input. In the inotify code path we
  * have to do this the first time, to detect devices that already existed
  * before we started; in the non-inotify code path we do this repeatedly
@@ -615,12 +640,39 @@ filter_entries(const struct dirent *entry)
     return IsJoystickDeviceNode(entry->d_name);
 }
 static int
-sort_entries(const struct dirent **a, const struct dirent **b)
+sort_entries(const void *_a, const void *_b)
 {
-    int numA = SDL_atoi((*a)->d_name+5);
-    int numB = SDL_atoi((*b)->d_name+5);
+    const struct dirent **a = (const struct dirent **)_a;
+    const struct dirent **b = (const struct dirent **)_b;
+    int numA, numB;
+    int offset;
+
+    if (SDL_classic_joysticks) {
+        offset = 2; /* strlen("js") */
+        numA = SDL_atoi((*a)->d_name+offset);
+        numB = SDL_atoi((*b)->d_name+offset);
+    } else {
+        offset = 5; /* strlen("event") */
+        numA = SDL_atoi((*a)->d_name+offset);
+        numB = SDL_atoi((*b)->d_name+offset);
+
+        /* See if we can get the joystick ordering */
+        {
+            int jsA = get_event_joystick_index(numA);
+            int jsB = get_event_joystick_index(numB);
+            if (jsA >= 0 && jsB >= 0) {
+                numA = jsA;
+                numB = jsB;
+            } else if (jsA >= 0) {
+                return -1;
+            } else if (jsB >= 0) {
+                return 1;
+            }
+        }
+    }
     return (numA - numB);
 }
+
 static void
 LINUX_FallbackJoystickDetect(void)
 {
@@ -633,10 +685,13 @@ LINUX_FallbackJoystickDetect(void)
         /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
         if (stat("/dev/input", &sb) == 0 && sb.st_mtime != last_input_dir_mtime) {
             int i, count;
-            struct dirent **entries;
+            struct dirent **entries = NULL;
             char path[PATH_MAX];
 
-            count = scandir("/dev/input", &entries, filter_entries, sort_entries);
+            count = scandir("/dev/input", &entries, filter_entries, NULL);
+            if (count > 1) {
+                qsort(entries, count, sizeof(*entries), sort_entries);
+            }
             for (i = 0; i < count; ++i) {
                 SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
                 MaybeAddDevice(path);
@@ -683,29 +738,7 @@ LINUX_JoystickInit(void)
 
     SDL_classic_joysticks = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_CLASSIC, SDL_FALSE);
 
-#if SDL_USE_LIBUDEV
-    if (enumeration_method == ENUMERATION_UNSET) {
-        if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
-            enumeration_method = ENUMERATION_FALLBACK;
-
-        } else if (access("/.flatpak-info", F_OK) == 0
-                 || access("/run/host/container-manager", F_OK) == 0) {
-            /* Explicitly check `/.flatpak-info` because, for old versions of
-             * Flatpak, this was the only available way to tell if we were in
-             * a Flatpak container. */
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Container detected, disabling udev integration");
-            enumeration_method = ENUMERATION_FALLBACK;
-
-        } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Using udev for joystick device discovery");
-            enumeration_method = ENUMERATION_LIBUDEV;
-        }
-    }
-#endif
+    enumeration_method = ENUMERATION_UNSET;
 
     /* First see if the user specified one or more joysticks to use */
     if (devices != NULL) {
@@ -734,6 +767,28 @@ LINUX_JoystickInit(void)
     LINUX_JoystickDetect();
 
 #if SDL_USE_LIBUDEV
+    if (enumeration_method == ENUMERATION_UNSET) {
+        if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", SDL_FALSE)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
+            enumeration_method = ENUMERATION_FALLBACK;
+
+        } else if (access("/.flatpak-info", F_OK) == 0
+                 || access("/run/host/container-manager", F_OK) == 0) {
+            /* Explicitly check `/.flatpak-info` because, for old versions of
+             * Flatpak, this was the only available way to tell if we were in
+             * a Flatpak container. */
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Container detected, disabling udev integration");
+            enumeration_method = ENUMERATION_FALLBACK;
+
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "Using udev for joystick device discovery");
+            enumeration_method = ENUMERATION_LIBUDEV;
+        }
+    }
+
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         if (SDL_UDEV_Init() < 0) {
             return SDL_SetError("Could not initialize UDEV");
@@ -803,11 +858,16 @@ JoystickByDevIndex(int device_index)
     return item;
 }
 
-/* Function to get the device-dependent name of a joystick */
 static const char *
 LINUX_JoystickGetDeviceName(int device_index)
 {
     return JoystickByDevIndex(device_index)->name;
+}
+
+static const char *
+LINUX_JoystickGetDevicePath(int device_index)
+{
+    return JoystickByDevIndex(device_index)->path;
 }
 
 static int
@@ -870,6 +930,37 @@ allocate_balldata(SDL_Joystick *joystick)
     return (0);
 }
 
+static SDL_bool
+GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *absinfo_y)
+{
+    /* A "hat" is assumed to be a digital input with at most 9 possible states
+     * (3 per axis: negative/zero/positive), as opposed to a true "axis" which
+     * can report a continuous range of possible values. Unfortunately the Linux
+     * joystick interface makes no distinction between digital hat axes and any
+     * other continuous analog axis, so we have to guess. */
+
+    /* If both axes are missing, they're not anything. */
+    if (!absinfo_x && !absinfo_y)
+        return SDL_FALSE;
+
+    /* If the hint says so, treat all hats as digital. */
+    if (SDL_GetHintBoolean(SDL_HINT_LINUX_DIGITAL_HATS, SDL_FALSE))
+        return SDL_TRUE;
+
+    /* If both axes have ranges constrained between -1 and 1, they're definitely digital. */
+    if ((!absinfo_x || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) &&
+        (!absinfo_y || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1)))
+        return SDL_TRUE;
+
+    /* If both axes lack fuzz, flat, and resolution values, they're probably digital. */
+    if ((!absinfo_x || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) &&
+        (!absinfo_y || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution)))
+        return SDL_TRUE;
+
+    /* Otherwise, treat them as analog. */
+    return SDL_FALSE;
+}
+
 static void
 ConfigJoystick(SDL_Joystick *joystick, int fd)
 {
@@ -880,6 +971,7 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
     unsigned long ffbit[NBITS(FF_MAX)] = { 0 };
     Uint8 key_pam_size, abs_pam_size;
     SDL_bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_FALSE);
+    SDL_bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_HAT_DEADZONES, SDL_TRUE);
 
     /* See if this device uses the new unified event API */
     if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
@@ -907,10 +999,45 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
                 ++joystick->nbuttons;
             }
         }
+        for (i = ABS_HAT0X; i <= ABS_HAT3Y; i += 2) {
+            int hat_x = -1;
+            int hat_y = -1;
+            struct input_absinfo absinfo_x;
+            struct input_absinfo absinfo_y;
+            if (test_bit(i, absbit))
+                hat_x = ioctl(fd, EVIOCGABS(i), &absinfo_x);
+            if (test_bit(i + 1, absbit))
+                hat_y = ioctl(fd, EVIOCGABS(i + 1), &absinfo_y);
+            if (GuessIfAxesAreDigitalHat((hat_x < 0 ? (void*)0 : &absinfo_x),
+                                         (hat_y < 0 ? (void*)0 : &absinfo_y))) {
+                const int hat_index = (i - ABS_HAT0X) / 2;
+                struct hat_axis_correct *correct = &joystick->hwdata->hat_correct[hat_index];
+#ifdef DEBUG_INPUT_EVENTS
+                SDL_Log("Joystick has digital hat: #%d\n", hat_index);
+                if (hat_x >= 0) {
+                    SDL_Log("X Values = { val:%d, min:%d, max:%d, fuzz:%d, flat:%d, res:%d }\n",
+                            absinfo_x.value, absinfo_x.minimum, absinfo_x.maximum,
+                            absinfo_x.fuzz, absinfo_x.flat, absinfo_x.resolution);
+                }
+                if (hat_y >= 0) {
+                    SDL_Log("Y Values = { val:%d, min:%d, max:%d, fuzz:%d, flat:%d, res:%d }\n",
+                            absinfo_y.value, absinfo_y.minimum, absinfo_y.maximum,
+                            absinfo_y.fuzz, absinfo_y.flat, absinfo_y.resolution);
+                }
+#endif /* DEBUG_INPUT_EVENTS */
+                joystick->hwdata->hats_indices[hat_index] = joystick->nhats;
+                joystick->hwdata->has_hat[hat_index] = SDL_TRUE;
+                correct->use_deadzones = use_hat_deadzones;
+                correct->minimum[0] = (hat_x < 0) ? -1 : absinfo_x.minimum;
+                correct->maximum[0] = (hat_x < 0) ?  1 : absinfo_x.maximum;
+                correct->minimum[1] = (hat_y < 0) ? -1 : absinfo_y.minimum;
+                correct->maximum[1] = (hat_y < 0) ?  1 : absinfo_y.maximum;
+                ++joystick->nhats;
+            }
+        }
         for (i = 0; i < ABS_MAX; ++i) {
-            /* Skip hats */
-            if (i == ABS_HAT0X) {
-                i = ABS_HAT3Y;
+            /* Skip digital hats */
+            if (joystick->hwdata->has_hat[(i - ABS_HAT0X) / 2]) {
                 continue;
             }
             if (test_bit(i, absbit)) {
@@ -922,9 +1049,9 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
                 }
 #ifdef DEBUG_INPUT_EVENTS
                 SDL_Log("Joystick has absolute axis: 0x%.2x\n", i);
-                SDL_Log("Values = { %d, %d, %d, %d, %d }\n",
+                SDL_Log("Values = { val:%d, min:%d, max:%d, fuzz:%d, flat:%d, res:%d }\n",
                         absinfo.value, absinfo.minimum, absinfo.maximum,
-                        absinfo.fuzz, absinfo.flat);
+                        absinfo.fuzz, absinfo.flat, absinfo.resolution);
 #endif /* DEBUG_INPUT_EVENTS */
                 joystick->hwdata->abs_map[i] = joystick->naxes;
                 joystick->hwdata->has_abs[i] = SDL_TRUE;
@@ -950,24 +1077,6 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
                     }
                 }
                 ++joystick->naxes;
-            }
-        }
-        for (i = ABS_HAT0X; i <= ABS_HAT3Y; i += 2) {
-            if (test_bit(i, absbit) || test_bit(i + 1, absbit)) {
-                struct input_absinfo absinfo;
-                int hat_index = (i - ABS_HAT0X) / 2;
-
-                if (ioctl(fd, EVIOCGABS(i), &absinfo) < 0) {
-                    continue;
-                }
-#ifdef DEBUG_INPUT_EVENTS
-                SDL_Log("Joystick has hat %d\n", hat_index);
-                SDL_Log("Values = { %d, %d, %d, %d, %d }\n",
-                        absinfo.value, absinfo.minimum, absinfo.maximum,
-                        absinfo.fuzz, absinfo.flat);
-#endif /* DEBUG_INPUT_EVENTS */
-                joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
-                joystick->hwdata->has_hat[hat_index] = SDL_TRUE;
             }
         }
         if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
@@ -1015,14 +1124,19 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
         for (i = 0; i < abs_pam_size; ++i) {
             Uint8 code = joystick->hwdata->abs_pam[i];
 
+            // TODO: is there any way to detect analog hats in advance via this API?
             if (code >= ABS_HAT0X && code <= ABS_HAT3Y) {
                 int hat_index = (code - ABS_HAT0X) / 2;
                 if (!joystick->hwdata->has_hat[hat_index]) {
 #ifdef DEBUG_INPUT_EVENTS
-                    SDL_Log("Joystick has hat %d\n", hat_index);
+                    SDL_Log("Joystick has digital hat: #%d\n", hat_index);
 #endif
                     joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
                     joystick->hwdata->has_hat[hat_index] = SDL_TRUE;
+                    joystick->hwdata->hat_correct[hat_index].minimum[0] = -1;
+                    joystick->hwdata->hat_correct[hat_index].maximum[0] =  1;
+                    joystick->hwdata->hat_correct[hat_index].minimum[1] = -1;
+                    joystick->hwdata->hat_correct[hat_index].maximum[1] =  1;
                 }
             } else {
 #ifdef DEBUG_INPUT_EVENTS
@@ -1221,26 +1335,48 @@ LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 }
 
 static void
-HandleHat(SDL_Joystick *stick, Uint8 hat, int axis, int value)
+HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
 {
+    const int hatnum = stick->hwdata->hats_indices[hatidx];
     struct hwdata_hat *the_hat;
+    struct hat_axis_correct *correct;
     const Uint8 position_map[3][3] = {
         {SDL_HAT_LEFTUP, SDL_HAT_UP, SDL_HAT_RIGHTUP},
         {SDL_HAT_LEFT, SDL_HAT_CENTERED, SDL_HAT_RIGHT},
         {SDL_HAT_LEFTDOWN, SDL_HAT_DOWN, SDL_HAT_RIGHTDOWN}
     };
 
-    the_hat = &stick->hwdata->hats[hat];
+    the_hat = &stick->hwdata->hats[hatnum];
+    correct = &stick->hwdata->hat_correct[hatidx];
+    /* Hopefully we detected any analog axes and left them as is rather than trying
+     * to use them as digital hats, but just in case, the deadzones here will
+     * prevent the slightest of twitches on an analog axis from registering as a hat
+     * movement. If the axes really are digital, this won't hurt since they should
+     * only ever be sending min, 0, or max anyway. */
     if (value < 0) {
-        value = 0;
-    } else if (value == 0) {
-        value = 1;
+        if (value <= correct->minimum[axis]) {
+            correct->minimum[axis] = value;
+            value = 0;
+        } else if (!correct->use_deadzones || value < correct->minimum[axis] / 3) {
+            value = 0;
+        } else {
+            value = 1;
+        }
     } else if (value > 0) {
-        value = 2;
+        if (value >= correct->maximum[axis]) {
+            correct->maximum[axis] = value;
+            value = 2;
+        } else if (!correct->use_deadzones || value > correct->maximum[axis] / 3) {
+            value = 2;
+        } else {
+            value = 1;
+        }
+    } else { // value == 0
+        value = 1;
     }
     if (value != the_hat->axis[axis]) {
         the_hat->axis[axis] = value;
-        SDL_PrivateJoystickHat(stick, hat,
+        SDL_PrivateJoystickHat(stick, hatnum,
                                position_map[the_hat->axis[1]][the_hat->axis[0]]);
     }
 }
@@ -1295,10 +1431,7 @@ PollAllValues(SDL_Joystick *joystick)
 
     /* Poll all axis */
     for (i = ABS_X; i < ABS_MAX; i++) {
-        if (i == ABS_HAT0X) {  /* we handle hats in the next loop, skip them for now. */
-            i = ABS_HAT3Y;
-            continue;
-        }
+        /* We don't need to test for digital hats here, they won't have has_abs[] set */
         if (joystick->hwdata->has_abs[i]) {
             if (ioctl(joystick->hwdata->fd, EVIOCGABS(i), &absinfo) >= 0) {
                 absinfo.value = AxisCorrect(joystick, i, absinfo.value);
@@ -1314,15 +1447,16 @@ PollAllValues(SDL_Joystick *joystick)
         }
     }
 
-    /* Poll all hats */
+    /* Poll all digital hats */
     for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++) {
         const int baseaxis = i - ABS_HAT0X;
         const int hatidx = baseaxis / 2;
         SDL_assert(hatidx < SDL_arraysize(joystick->hwdata->has_hat));
+        /* We don't need to test for analog axes here, they won't have has_hat[] set */
         if (joystick->hwdata->has_hat[hatidx]) {
             if (ioctl(joystick->hwdata->fd, EVIOCGABS(i), &absinfo) >= 0) {
                 const int hataxis = baseaxis % 2;
-                HandleHat(joystick, joystick->hwdata->hats_indices[hatidx], hataxis, absinfo.value);
+                HandleHat(joystick, hatidx, hataxis, absinfo.value);
             }
         }
     }
@@ -1350,7 +1484,7 @@ static void
 HandleInputEvents(SDL_Joystick *joystick)
 {
     struct input_event events[32];
-    int i, len, code;
+    int i, len, code, hat_index;
 
     if (joystick->hwdata->fresh) {
         PollAllValues(joystick);
@@ -1385,9 +1519,11 @@ HandleInputEvents(SDL_Joystick *joystick)
                 case ABS_HAT2Y:
                 case ABS_HAT3X:
                 case ABS_HAT3Y:
-                    code -= ABS_HAT0X;
-                    HandleHat(joystick, joystick->hwdata->hats_indices[code / 2], code % 2, events[i].value);
-                    break;
+                    hat_index = (code - ABS_HAT0X) / 2;
+                    if (joystick->hwdata->has_hat[hat_index]) {
+                        HandleHat(joystick, hat_index, code % 2, events[i].value);
+                        break;
+                    }
                 default:
                     events[i].value = AxisCorrect(joystick, code, events[i].value);
                     SDL_PrivateJoystickAxis(joystick,
@@ -1440,7 +1576,7 @@ static void
 HandleClassicEvents(SDL_Joystick *joystick)
 {
     struct js_event events[32];
-    int i, len, code;
+    int i, len, code, hat_index;
 
     joystick->hwdata->fresh = SDL_FALSE;
     while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
@@ -1464,9 +1600,11 @@ HandleClassicEvents(SDL_Joystick *joystick)
                 case ABS_HAT2Y:
                 case ABS_HAT3X:
                 case ABS_HAT3Y:
-                    code -= ABS_HAT0X;
-                    HandleHat(joystick, joystick->hwdata->hats_indices[code / 2], code % 2, events[i].value);
-                    break;
+                    hat_index = (code - ABS_HAT0X) / 2;
+                    if (joystick->hwdata->has_hat[hat_index]) {
+                        HandleHat(joystick, hat_index, code % 2, events[i].value);
+                        break;
+                    }
                 default:
                     SDL_PrivateJoystickAxis(joystick,
                                             joystick->hwdata->abs_map[code],
@@ -1572,10 +1710,18 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
+    unsigned int mapped;
 
-    if (item->mapping) {
-        SDL_memcpy(out, item->mapping, sizeof(*out));
-        return SDL_TRUE;
+    if (item->checked_mapping) {
+        if (item->mapping) {
+            SDL_memcpy(out, item->mapping, sizeof(*out));
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Prior mapping for device %d", device_index);
+#endif
+            return SDL_TRUE;
+        } else {
+            return SDL_FALSE;
+        }
     }
 
     /* We temporarily open the device to check how it's configured. Make
@@ -1594,6 +1740,8 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+
+    item->checked_mapping = SDL_TRUE;
 
     if (PrepareJoystickHwdata(joystick, item) == -1) {
         SDL_free(joystick->hwdata);
@@ -1617,11 +1765,17 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     if (joystick->hwdata->has_key[BTN_A]) {
         out->a.kind = EMappingKind_Button;
         out->a.target = joystick->hwdata->key_map[BTN_A];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped A to button %d (BTN_A)", out->a.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_B]) {
         out->b.kind = EMappingKind_Button;
         out->b.target = joystick->hwdata->key_map[BTN_B];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped B to button %d (BTN_B)", out->b.target);
+#endif
     }
 
     /* Xbox controllers use BTN_X and BTN_Y, and PS4 controllers use BTN_WEST and BTN_NORTH */
@@ -1629,47 +1783,74 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         if (joystick->hwdata->has_key[BTN_WEST]) {
             out->x.kind = EMappingKind_Button;
             out->x.target = joystick->hwdata->key_map[BTN_WEST];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped X to button %d (BTN_WEST)", out->x.target);
+#endif
         }
 
         if (joystick->hwdata->has_key[BTN_NORTH]) {
             out->y.kind = EMappingKind_Button;
             out->y.target = joystick->hwdata->key_map[BTN_NORTH];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped Y to button %d (BTN_NORTH)", out->y.target);
+#endif
         }
     } else {
         if (joystick->hwdata->has_key[BTN_X]) {
             out->x.kind = EMappingKind_Button;
             out->x.target = joystick->hwdata->key_map[BTN_X];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped X to button %d (BTN_X)", out->x.target);
+#endif
         }
 
         if (joystick->hwdata->has_key[BTN_Y]) {
             out->y.kind = EMappingKind_Button;
             out->y.target = joystick->hwdata->key_map[BTN_Y];
+#ifdef DEBUG_GAMEPAD_MAPPING
+            SDL_Log("Mapped Y to button %d (BTN_Y)", out->y.target);
+#endif
         }
     }
 
     if (joystick->hwdata->has_key[BTN_SELECT]) {
         out->back.kind = EMappingKind_Button;
         out->back.target = joystick->hwdata->key_map[BTN_SELECT];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped BACK to button %d (BTN_SELECT)", out->back.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_START]) {
         out->start.kind = EMappingKind_Button;
         out->start.target = joystick->hwdata->key_map[BTN_START];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped START to button %d (BTN_START)", out->start.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_THUMBL]) {
         out->leftstick.kind = EMappingKind_Button;
         out->leftstick.target = joystick->hwdata->key_map[BTN_THUMBL];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTSTICK to button %d (BTN_THUMBL)", out->leftstick.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_THUMBR]) {
         out->rightstick.kind = EMappingKind_Button;
         out->rightstick.target = joystick->hwdata->key_map[BTN_THUMBR];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTSTICK to button %d (BTN_THUMBR)", out->rightstick.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_MODE]) {
         out->guide.kind = EMappingKind_Button;
         out->guide.target = joystick->hwdata->key_map[BTN_MODE];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped GUIDE to button %d (BTN_MODE)", out->guide.target);
+#endif
     }
 
     /*
@@ -1677,84 +1858,191 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
        can be digital, or analog, or both at the same time.
      */
 
-    /* Prefer digital shoulder buttons, but settle for analog if missing. */
+    /* Prefer digital shoulder buttons, but settle for digital or analog hat. */
+    mapped = 0;
+
     if (joystick->hwdata->has_key[BTN_TL]) {
         out->leftshoulder.kind = EMappingKind_Button;
         out->leftshoulder.target = joystick->hwdata->key_map[BTN_TL];
+        mapped |= 0x1;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTSHOULDER to button %d (BTN_TL)", out->leftshoulder.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_TR]) {
         out->rightshoulder.kind = EMappingKind_Button;
         out->rightshoulder.target = joystick->hwdata->key_map[BTN_TR];
+        mapped |= 0x2;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTSHOULDER to button %d (BTN_TR)", out->rightshoulder.target);
+#endif
     }
 
-    if (joystick->hwdata->has_hat[1] && /* Check if ABS_HAT1{X, Y} is available. */
-       (!joystick->hwdata->has_key[BTN_TL] || !joystick->hwdata->has_key[BTN_TR])) {
+    if (mapped != 0x3 && joystick->hwdata->has_hat[1]) {
         int hat = joystick->hwdata->hats_indices[1] << 4;
         out->leftshoulder.kind = EMappingKind_Hat;
         out->rightshoulder.kind = EMappingKind_Hat;
         out->leftshoulder.target = hat | 0x4;
         out->rightshoulder.target = hat | 0x2;
+        mapped |= 0x3;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFT+RIGHTSHOULDER to hat 1 (ABS_HAT1X, ABS_HAT1Y)");
+#endif
     }
 
-    /* Prefer analog triggers, but settle for digital if missing. */
-    if (joystick->hwdata->has_hat[2]) { /* Check if ABS_HAT2{X,Y} is available. */
+    if (!(mapped & 0x1) && joystick->hwdata->has_abs[ABS_HAT1Y]) {
+        out->leftshoulder.kind = EMappingKind_Axis;
+        out->leftshoulder.target = joystick->hwdata->abs_map[ABS_HAT1Y];
+        mapped |= 0x1;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTSHOULDER to axis %d (ABS_HAT1Y)", out->leftshoulder.target);
+#endif
+    }
+
+    if (!(mapped & 0x2) && joystick->hwdata->has_abs[ABS_HAT1X]) {
+        out->rightshoulder.kind = EMappingKind_Axis;
+        out->rightshoulder.target = joystick->hwdata->abs_map[ABS_HAT1X];
+        mapped |= 0x2;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTSHOULDER to axis %d (ABS_HAT1X)", out->rightshoulder.target);
+#endif
+    }
+
+    /* Prefer analog triggers, but settle for digital hat or buttons. */
+    mapped = 0;
+
+    if (joystick->hwdata->has_abs[ABS_HAT2Y]) {
+        out->lefttrigger.kind = EMappingKind_Axis;
+        out->lefttrigger.target = joystick->hwdata->abs_map[ABS_HAT2Y];
+        mapped |= 0x1;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_HAT2Y)", out->lefttrigger.target);
+#endif
+    } else if (joystick->hwdata->has_abs[ABS_Z]) {
+        out->lefttrigger.kind = EMappingKind_Axis;
+        out->lefttrigger.target = joystick->hwdata->abs_map[ABS_Z];
+        mapped |= 0x1;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTTRIGGER to axis %d (ABS_Z)", out->lefttrigger.target);
+#endif
+    }
+
+    if (joystick->hwdata->has_abs[ABS_HAT2X]) {
+        out->righttrigger.kind = EMappingKind_Axis;
+        out->righttrigger.target = joystick->hwdata->abs_map[ABS_HAT2X];
+        mapped |= 0x2;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_HAT2X)", out->righttrigger.target);
+#endif
+    } else if (joystick->hwdata->has_abs[ABS_RZ]) {
+        out->righttrigger.kind = EMappingKind_Axis;
+        out->righttrigger.target = joystick->hwdata->abs_map[ABS_RZ];
+        mapped |= 0x2;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTTRIGGER to axis %d (ABS_RZ)", out->righttrigger.target);
+#endif
+    }
+
+    if (mapped != 0x3 && joystick->hwdata->has_hat[2]) {
         int hat = joystick->hwdata->hats_indices[2] << 4;
         out->lefttrigger.kind = EMappingKind_Hat;
         out->righttrigger.kind = EMappingKind_Hat;
         out->lefttrigger.target = hat | 0x4;
         out->righttrigger.target = hat | 0x2;
-    } else {
-        if (joystick->hwdata->has_abs[ABS_Z]) {
-            out->lefttrigger.kind = EMappingKind_Axis;
-            out->lefttrigger.target = joystick->hwdata->abs_map[ABS_Z];
-        } else if (joystick->hwdata->has_key[BTN_TL2]) {
-            out->lefttrigger.kind = EMappingKind_Button;
-            out->lefttrigger.target = joystick->hwdata->key_map[BTN_TL2];
-        }
-
-        if (joystick->hwdata->has_abs[ABS_RZ]) {
-            out->righttrigger.kind = EMappingKind_Axis;
-            out->righttrigger.target = joystick->hwdata->abs_map[ABS_RZ];
-        } else if (joystick->hwdata->has_key[BTN_TR2]) {
-            out->righttrigger.kind = EMappingKind_Button;
-            out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
-        }
+        mapped |= 0x3;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFT+RIGHTTRIGGER to hat 2 (ABS_HAT2X, ABS_HAT2Y)");
+#endif
     }
 
-    /* Prefer digital D-Pad, but settle for analog if missing. */
+    if (!(mapped & 0x1) && joystick->hwdata->has_key[BTN_TL2]) {
+        out->lefttrigger.kind = EMappingKind_Button;
+        out->lefttrigger.target = joystick->hwdata->key_map[BTN_TL2];
+        mapped |= 0x1;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTTRIGGER to button %d (BTN_TL2)", out->lefttrigger.target);
+#endif
+    }
+
+    if (!(mapped & 0x2) && joystick->hwdata->has_key[BTN_TR2]) {
+        out->righttrigger.kind = EMappingKind_Button;
+        out->righttrigger.target = joystick->hwdata->key_map[BTN_TR2];
+        mapped |= 0x2;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTTRIGGER to button %d (BTN_TR2)", out->righttrigger.target);
+#endif
+    }
+
+    /* Prefer digital D-Pad buttons, but settle for digital or analog hat. */
+    mapped = 0;
+
     if (joystick->hwdata->has_key[BTN_DPAD_UP]) {
         out->dpup.kind = EMappingKind_Button;
         out->dpup.target = joystick->hwdata->key_map[BTN_DPAD_UP];
+        mapped |= 0x1;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped DPUP to button %d (BTN_DPAD_UP)", out->dpup.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_DPAD_DOWN]) {
         out->dpdown.kind = EMappingKind_Button;
         out->dpdown.target = joystick->hwdata->key_map[BTN_DPAD_DOWN];
+        mapped |= 0x2;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped DPDOWN to button %d (BTN_DPAD_DOWN)", out->dpdown.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_DPAD_LEFT]) {
         out->dpleft.kind = EMappingKind_Button;
         out->dpleft.target = joystick->hwdata->key_map[BTN_DPAD_LEFT];
+        mapped |= 0x4;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped DPLEFT to button %d (BTN_DPAD_LEFT)", out->dpleft.target);
+#endif
     }
 
     if (joystick->hwdata->has_key[BTN_DPAD_RIGHT]) {
         out->dpright.kind = EMappingKind_Button;
         out->dpright.target = joystick->hwdata->key_map[BTN_DPAD_RIGHT];
+        mapped |= 0x8;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped DPRIGHT to button %d (BTN_DPAD_RIGHT)", out->dpright.target);
+#endif
     }
 
-    if (joystick->hwdata->has_hat[0] && /* Check if ABS_HAT0{X,Y} is available. */
-       (!joystick->hwdata->has_key[BTN_DPAD_LEFT] || !joystick->hwdata->has_key[BTN_DPAD_RIGHT] ||
-        !joystick->hwdata->has_key[BTN_DPAD_UP] || !joystick->hwdata->has_key[BTN_DPAD_DOWN])) {
-       int hat = joystick->hwdata->hats_indices[0] << 4;
-       out->dpleft.kind = EMappingKind_Hat;
-       out->dpright.kind = EMappingKind_Hat;
-       out->dpup.kind = EMappingKind_Hat;
-       out->dpdown.kind = EMappingKind_Hat;
-       out->dpleft.target = hat | 0x8;
-       out->dpright.target = hat | 0x2;
-       out->dpup.target = hat | 0x1;
-       out->dpdown.target = hat | 0x4;
+    if (mapped != 0xF) {
+        if (joystick->hwdata->has_hat[0]) {
+            int hat = joystick->hwdata->hats_indices[0] << 4;
+            out->dpleft.kind = EMappingKind_Hat;
+            out->dpright.kind = EMappingKind_Hat;
+            out->dpup.kind = EMappingKind_Hat;
+            out->dpdown.kind = EMappingKind_Hat;
+            out->dpleft.target = hat | 0x8;
+            out->dpright.target = hat | 0x2;
+            out->dpup.target = hat | 0x1;
+            out->dpdown.target = hat | 0x4;
+            mapped |= 0xF;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped DPUP+DOWN+LEFT+RIGHT to hat 0 (ABS_HAT0X, ABS_HAT0Y)");
+#endif
+        } else if (joystick->hwdata->has_abs[ABS_HAT0X] && joystick->hwdata->has_abs[ABS_HAT0Y]) {
+            out->dpleft.kind = EMappingKind_Axis;
+            out->dpright.kind = EMappingKind_Axis;
+            out->dpup.kind = EMappingKind_Axis;
+            out->dpdown.kind = EMappingKind_Axis;
+            out->dpleft.target = joystick->hwdata->abs_map[ABS_HAT0X];
+            out->dpright.target = joystick->hwdata->abs_map[ABS_HAT0X];
+            out->dpup.target = joystick->hwdata->abs_map[ABS_HAT0Y];
+            out->dpdown.target = joystick->hwdata->abs_map[ABS_HAT0Y];
+            mapped |= 0xF;
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped DPUP+DOWN to axis %d (ABS_HAT0Y)", out->dpup.target);
+        SDL_Log("Mapped DPLEFT+RIGHT to axis %d (ABS_HAT0X)", out->dpleft.target);
+#endif
+        }
     }
 
     if (joystick->hwdata->has_abs[ABS_X] && joystick->hwdata->has_abs[ABS_Y]) {
@@ -1762,6 +2050,10 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         out->lefty.kind = EMappingKind_Axis;
         out->leftx.target = joystick->hwdata->abs_map[ABS_X];
         out->lefty.target = joystick->hwdata->abs_map[ABS_Y];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped LEFTX to axis %d (ABS_X)", out->leftx.target);
+        SDL_Log("Mapped LEFTY to axis %d (ABS_Y)", out->lefty.target);
+#endif
     }
 
     if (joystick->hwdata->has_abs[ABS_RX] && joystick->hwdata->has_abs[ABS_RY]) {
@@ -1769,6 +2061,10 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
         out->righty.kind = EMappingKind_Axis;
         out->rightx.target = joystick->hwdata->abs_map[ABS_RX];
         out->righty.target = joystick->hwdata->abs_map[ABS_RY];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped RIGHTX to axis %d (ABS_RX)", out->rightx.target);
+        SDL_Log("Mapped RIGHTY to axis %d (ABS_RY)", out->righty.target);
+#endif
     }
 
     LINUX_JoystickClose(joystick);
@@ -1779,6 +2075,9 @@ LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     if (item->mapping) {
         SDL_memcpy(item->mapping, out, sizeof(*out));
     }
+#ifdef DEBUG_GAMEPAD_MAPPING
+    SDL_Log("Generated mapping for device %d", device_index);
+#endif
 
     return SDL_TRUE;
 }
@@ -1789,6 +2088,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickGetCount,
     LINUX_JoystickDetect,
     LINUX_JoystickGetDeviceName,
+    LINUX_JoystickGetDevicePath,
     LINUX_JoystickGetDevicePlayerIndex,
     LINUX_JoystickSetDevicePlayerIndex,
     LINUX_JoystickGetDeviceGUID,

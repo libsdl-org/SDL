@@ -8,7 +8,6 @@
 #include "SDL_test.h"
 
 
-const int _numHintsEnum = 25;
 const char* _HintsEnum[] =
   {
     SDL_HINT_ACCELEROMETER_AS_JOYSTICK,
@@ -32,9 +31,7 @@ const char* _HintsEnum[] =
     SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS,
     SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
     SDL_HINT_VIDEO_WIN_D3DCOMPILER,
-    SDL_HINT_VIDEO_X11_XINERAMA,
     SDL_HINT_VIDEO_X11_XRANDR,
-    SDL_HINT_VIDEO_X11_XVIDMODE,
     SDL_HINT_XINPUT_ENABLED,
   };
 const char* _HintsVerbose[] =
@@ -60,12 +57,13 @@ const char* _HintsVerbose[] =
     "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS",
     "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT",
     "SDL_VIDEO_WIN_D3DCOMPILER",
-    "SDL_VIDEO_X11_XINERAMA",
     "SDL_VIDEO_X11_XRANDR",
-    "SDL_VIDEO_X11_XVIDMODE",
     "SDL_XINPUT_ENABLED"
   };
 
+SDL_COMPILE_TIME_ASSERT(HintsEnum, SDL_arraysize(_HintsEnum) == SDL_arraysize(_HintsVerbose));
+
+const int _numHintsEnum = SDL_arraysize(_HintsEnum);
 
 /* Test case functions */
 

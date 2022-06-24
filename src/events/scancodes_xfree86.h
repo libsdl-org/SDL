@@ -28,7 +28,7 @@
    Sources:
    - atKeyNames.h from XFree86 source code
 */
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 static const SDL_Scancode xfree86_scancode_table[] = {
     /*  0 */    SDL_SCANCODE_UNKNOWN,
     /*  1 */    SDL_SCANCODE_ESCAPE,
@@ -509,4 +509,4 @@ static const SDL_Scancode xvnc_scancode_table[] = {
 
 #endif /* scancodes_xfree86_h_ */
 
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */

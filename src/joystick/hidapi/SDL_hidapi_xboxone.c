@@ -285,7 +285,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, SDL_GameControllerType 
 }
 
 static const char *
-HIDAPI_DriverXboxOne_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverXboxOne_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return NULL;
 }

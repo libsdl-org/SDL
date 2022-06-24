@@ -4,7 +4,7 @@
 
 # shellcheck disable=SC2006,SC2268 # see below for rationale
 
-timestamp='2022-01-03'
+timestamp='2022-05-25'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -929,6 +929,9 @@ EOF
     i*:PW*:*)
 	GUESS=$UNAME_MACHINE-pc-pw32
 	;;
+    *:SerenityOS:*:*)
+        GUESS=$UNAME_MACHINE-pc-serenity
+        ;;
     *:Interix*:*)
 	case $UNAME_MACHINE in
 	    x86)
@@ -1148,16 +1151,27 @@ EOF
 	;;
     x86_64:Linux:*:*)
 	set_cc_for_build
+	CPU=$UNAME_MACHINE
 	LIBCABI=$LIBC
 	if test "$CC_FOR_BUILD" != no_compiler_found; then
-	    if (echo '#ifdef __ILP32__'; echo IS_X32; echo '#endif') | \
-		(CCOPTS="" $CC_FOR_BUILD -E - 2>/dev/null) | \
-		grep IS_X32 >/dev/null
-	    then
-		LIBCABI=${LIBC}x32
-	    fi
+	    ABI=64
+	    sed 's/^	    //' << EOF > "$dummy.c"
+	    #ifdef __i386__
+	    ABI=x86
+	    #else
+	    #ifdef __ILP32__
+	    ABI=x32
+	    #endif
+	    #endif
+EOF
+	    cc_set_abi=`$CC_FOR_BUILD -E "$dummy.c" 2>/dev/null | grep '^ABI' | sed 's, ,,g'`
+	    eval "$cc_set_abi"
+	    case $ABI in
+		x86) CPU=i686 ;;
+		x32) LIBCABI=${LIBC}x32 ;;
+	    esac
 	fi
-	GUESS=$UNAME_MACHINE-pc-linux-$LIBCABI
+	GUESS=$CPU-pc-linux-$LIBCABI
 	;;
     xtensa*:Linux:*:*)
 	GUESS=$UNAME_MACHINE-unknown-linux-$LIBC
@@ -1364,8 +1378,11 @@ EOF
     BePC:Haiku:*:*)	# Haiku running on Intel PC compatible.
 	GUESS=i586-pc-haiku
 	;;
-    x86_64:Haiku:*:*)
-	GUESS=x86_64-unknown-haiku
+    ppc:Haiku:*:*)	# Haiku running on Apple PowerPC
+	GUESS=powerpc-apple-haiku
+	;;
+    *:Haiku:*:*)	# Haiku modern gcc (not bound by BeOS compat)
+	GUESS=$UNAME_MACHINE-unknown-haiku
 	;;
     SX-4:SUPER-UX:*:*)
 	GUESS=sx4-nec-superux$UNAME_RELEASE

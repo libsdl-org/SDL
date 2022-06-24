@@ -2,6 +2,84 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.24.0:
+---------------------------------------------------------------------------
+
+General:
+* New version numbering scheme, similar to GLib and Flatpak.
+    * An even number in the minor version (second component) indicates
+      a production-ready stable release such as 2.24.0, which would have
+      been 2.0.24 under the old system.
+      * The patchlevel (micro version, third component) indicates a
+        bugfix-only update: for example, 2.24.1 would be a bugfix-only
+        release to fix bugs in 2.24.0, without adding new features.
+    * An odd number in the minor version indicates a prerelease such
+      as 2.23.0. Stable distributions should not use these prereleases.
+      * The patchlevel indicates successive prereleases, for example
+        2.23.1 and 2.23.2 would be prereleases during development of
+        the SDL 2.24.0 stable release.
+* Added SDL_bsearch() and SDL_utf8strnlen() to the stdlib routines
+* Added SDL_size_mul_overflow() and SDL_size_add_overflow() for better size overflow protection
+* Added functions to get the platform dependent name for a joystick or game controller:
+    * SDL_JoystickPathForIndex()
+    * SDL_JoystickPath()
+    * SDL_GameControllerPathForIndex()
+    * SDL_GameControllerPath()
+* Added SDL_GameControllerGetFirmwareVersion() and SDL_JoystickGetFirmwareVersion(), currently implemented for DualSense(tm) Wireless Controllers using HIDAPI
+* Added SDL_JoystickAttachVirtualEx() for extended virtual controller support
+* Added joystick event SDL_JOYBATTERYUPDATED for when battery status changes.
+* Added SDL_GUIDToString() and SDL_GUIDFromString() to convert between SDL GUID and string
+* Added SDL_HasLSX() and SDL_HasLASX() to detect LoongArch SIMD support
+
+Windows:
+* Added a D3D12 renderer implementation and SDL_RenderGetD3D12Device() to retrieve the D3D12 device associated with it
+* Added the hint SDL_HINT_WINDOWS_DPI_AWARENESS to set whether the application is DPI-aware. This hint must be set before initializing the video subsystem.
+* Added the hint SDL_HINT_WINDOWS_DPI_SCALING to control whether the SDL coordinates are in DPI-scaled points or pixels.
+
+Linux:
+* Added the hint SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION to control whether to expose a set of emulated modes in addition to the native resolution modes available on Wayland
+* Added the hint SDL_HINT_LINUX_DIGITAL_HATS to control whether to treat hats as digital rather than checking to see if they may be analog
+* Added the hint SDL_HINT_LINUX_HAT_DEADZONES to control whether to use deadzones on analog hats
+
+---------------------------------------------------------------------------
+2.0.22:
+---------------------------------------------------------------------------
+
+General:
+* Added SDL_RenderGetWindow() to get the window associated with a renderer
+* Added floating point rectangle functions:
+    * SDL_PointInFRect()
+    * SDL_FRectEmpty()
+    * SDL_FRectEquals()
+    * SDL_FRectEqualsEpsilon()
+    * SDL_HasIntersectionF()
+    * SDL_IntersectFRect()
+    * SDL_UnionFRect()
+    * SDL_EncloseFPoints()
+    * SDL_IntersectFRectAndLine()
+* Added SDL_IsTextInputShown() which returns whether the IME window is currently shown
+* Added SDL_ClearComposition() to dismiss the composition window without disabling IME input
+* Added SDL_TEXTEDITING_EXT event for handling long composition text, and a hint SDL_HINT_IME_SUPPORT_EXTENDED_TEXT to enable it
+* Added the hint SDL_HINT_MOUSE_RELATIVE_MODE_CENTER to control whether the mouse should be constrained to the whole window or the center of the window when relative mode is enabled
+* The mouse is now automatically captured when mouse buttons are pressed, and the hint SDL_HINT_MOUSE_AUTO_CAPTURE allows you to control this behavior
+* Added the hint SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL to let SDL know that a foreign window will be used with OpenGL
+* Added the hint SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN to let SDL know that a foreign window will be used with Vulkan
+* Added the hint SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE to specify whether an SDL_QUIT event will be delivered when the last application window is closed
+* Added the hint SDL_HINT_JOYSTICK_ROG_CHAKRAM to control whether ROG Chakram mice show up as joysticks
+
+Windows:
+* Added support for SDL_BLENDOPERATION_MINIMUM and SDL_BLENDOPERATION_MAXIMUM to the D3D9 renderer
+
+Linux:
+* Compiling with Wayland support requires libwayland-client version 1.18.0 or later
+* Added the hint SDL_HINT_X11_WINDOW_TYPE to specify the _NET_WM_WINDOW_TYPE of SDL windows
+* Added the hint SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR to allow using libdecor with compositors that support xdg-decoration
+
+Android:
+* Added SDL_AndroidSendMessage() to send a custom command to the SDL java activity
+
+
+---------------------------------------------------------------------------
 2.0.20:
 ---------------------------------------------------------------------------
 

@@ -63,7 +63,7 @@ Now, before chrooting into the ARM sysroot, you'll need to apply a workaround,
 edit $SYSROOT/etc/ld.so.preload and comment out all lines in it.
 
     sudo chroot $SYSROOT
-    apt-get install libudev-dev libasound2-dev libdbus-1-dev libraspberrypi0 libraspberrypi-bin libraspberrypi-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev
+    apt-get install libudev-dev libasound2-dev libdbus-1-dev libraspberrypi0 libraspberrypi-bin libraspberrypi-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxss-dev
     exit
     sudo umount $SYSROOT/dev
     sudo umount $SYSROOT/proc

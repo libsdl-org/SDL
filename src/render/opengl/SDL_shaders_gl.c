@@ -284,7 +284,7 @@ static const char *shader_source[NUM_SHADERS][2] =
 "    gl_FragColor = texture2D(tex0, v_texCoord) * v_color;\n"
 "}"
     },
-
+#if SDL_HAVE_YUV
     /* SHADER_YUV_JPEG */
     {
         /* vertex shader */
@@ -384,6 +384,7 @@ static const char *shader_source[NUM_SHADERS][2] =
         BT709_SHADER_CONSTANTS
         NV21_SHADER_BODY
     },
+#endif /* SDL_HAVE_YUV */
 };
 
 static SDL_bool

@@ -43,6 +43,7 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
+#include "SDL_guid.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -69,9 +70,7 @@ struct _SDL_Joystick;
 typedef struct _SDL_Joystick SDL_Joystick;
 
 /* A structure that encodes the stable unique id for a joystick device */
-typedef struct {
-    Uint8 data[16];
-} SDL_JoystickGUID;
+typedef SDL_GUID SDL_JoystickGUID;
 
 /**
  * This is a unique ID for a joystick for the time it is connected to the system,
@@ -153,6 +152,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void);
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_JoystickName
+ * \sa SDL_JoystickPath
  * \sa SDL_JoystickOpen
  */
 extern DECLSPEC int SDLCALL SDL_NumJoysticks(void);
@@ -173,6 +173,23 @@ extern DECLSPEC int SDLCALL SDL_NumJoysticks(void);
  * \sa SDL_JoystickOpen
  */
 extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
+
+/**
+ * Get the implementation dependent path of a joystick.
+ *
+ * This can be called before any joysticks are opened.
+ *
+ * \param device_index the index of the joystick to query (the N'th joystick
+ *                     on the system)
+ * \returns the path of the selected joystick. If no path can be found, this
+ *          function returns NULL; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_JoystickPath
+ * \sa SDL_JoystickOpen
+ */
+extern DECLSPEC const char *SDLCALL SDL_JoystickPathForIndex(int device_index);
 
 /**
  * Get the player index of a joystick, or -1 if it's not available This can be
@@ -331,6 +348,54 @@ extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtual(SDL_JoystickType type,
                                                       int nhats);
 
 /**
+ * The structure that defines an extended virtual joystick description
+ *
+ * The caller must zero the structure and then initialize the version with `SDL_VIRTUAL_JOYSTICK_DESC_VERSION` before passing it to SDL_JoystickAttachVirtualEx()
+ *  All other elements of this structure are optional and can be left 0.
+ *
+ * \sa SDL_JoystickAttachVirtualEx
+ */
+typedef struct SDL_VirtualJoystickDesc
+{
+    Uint16 version;     /**< `SDL_VIRTUAL_JOYSTICK_DESC_VERSION` */
+    Uint16 type;        /**< `SDL_JoystickType` */
+    Uint16 naxes;       /**< the number of axes on this joystick */
+    Uint16 nbuttons;    /**< the number of buttons on this joystick */
+    Uint16 nhats;       /**< the number of hats on this joystick */
+    Uint16 vendor_id;   /**< the USB vendor ID of this joystick */
+    Uint16 product_id;  /**< the USB product ID of this joystick */
+    Uint16 padding;     /**< unused */
+    Uint32 button_mask; /**< A mask of which buttons are valid for this controller
+                             e.g. (1 << SDL_CONTROLLER_BUTTON_A) */
+    Uint32 axis_mask;   /**< A mask of which axes are valid for this controller
+                             e.g. (1 << SDL_CONTROLLER_AXIS_LEFTX) */
+    const char *name;   /**< the name of the joystick */
+
+    void *userdata;     /**< User data pointer passed to callbacks */
+    void (SDLCALL *Update)(void *userdata); /**< Called when the joystick state should be updated */
+    void (SDLCALL *SetPlayerIndex)(void *userdata, int player_index); /**< Called when the player index is set */
+    int (SDLCALL *Rumble)(void *userdata, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble); /**< Implements SDL_JoystickRumble() */
+    int (SDLCALL *RumbleTriggers)(void *userdata, Uint16 left_rumble, Uint16 right_rumble); /**< Implements SDL_JoystickRumbleTriggers() */
+    int (SDLCALL *SetLED)(void *userdata, Uint8 red, Uint8 green, Uint8 blue); /**< Implements SDL_JoystickSetLED() */
+    int (SDLCALL *SendEffect)(void *userdata, const void *data, int size); /**< Implements SDL_JoystickSendEffect() */
+
+} SDL_VirtualJoystickDesc;
+
+/**
+ * \brief The current version of the SDL_VirtualJoystickDesc structure
+ */
+#define SDL_VIRTUAL_JOYSTICK_DESC_VERSION   1
+
+/**
+ * Attach a new virtual joystick with extended properties.
+ *
+ * \returns the joystick's device index, or -1 if an error occurred.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc);
+
+/**
  * Detach a virtual joystick.
  *
  * \param device_index a value previously returned from
@@ -420,6 +485,19 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, in
 extern DECLSPEC const char *SDLCALL SDL_JoystickName(SDL_Joystick *joystick);
 
 /**
+ * Get the implementation dependent path of a joystick.
+ *
+ * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
+ * \returns the path of the selected joystick. If no path can be found, this
+ *          function returns NULL; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_JoystickPathForIndex
+ */
+extern DECLSPEC const char *SDLCALL SDL_JoystickPath(SDL_Joystick *joystick);
+
+/**
  * Get the player index of an opened joystick.
  *
  * For XInput controllers this returns the XInput user index. Many joysticks
@@ -494,6 +572,19 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProduct(SDL_Joystick *joystick);
  * \since This function is available since SDL 2.0.6.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProductVersion(SDL_Joystick *joystick);
+
+/**
+ * Get the firmware version of an opened joystick, if available.
+ *
+ * If the firmware version isn't available this function returns 0.
+ *
+ * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
+ * \returns the firmware version of the selected joystick, or 0 if
+ *          unavailable.
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetFirmwareVersion(SDL_Joystick *joystick);
 
 /**
  * Get the serial number of an opened joystick, if available.
@@ -829,9 +920,9 @@ extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 lo
  * Each call to this function cancels any previous trigger rumble effect, and
  * calling it with 0 intensity stops any rumbling.
  *
- * Note that this function is for _trigger_ rumble; the first joystick to
- * support this was the PlayStation 5's DualShock 5 controller. If you want
- * the (more common) whole-controller rumble, use SDL_JoystickRumble()
+ * Note that this is rumbling of the _triggers_ and not the game controller as
+ * a whole. This is currently only supported on Xbox One controllers. If you
+ * want the (more common) whole-controller rumble, use SDL_JoystickRumble()
  * instead.
  *
  * \param joystick The joystick to vibrate

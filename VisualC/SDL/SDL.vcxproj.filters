@@ -169,6 +169,9 @@
     <Filter Include="video\khronos\vulkan">
       <UniqueIdentifier>{4755f3a6-49ac-46d6-86be-21f5c21f2197}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\direct3d12">
+      <UniqueIdentifier>{f48c2b17-1bee-4fec-a7c8-24cf619abe08}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -229,6 +232,9 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL_gesture.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL_guid.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL_haptic.h">
@@ -401,6 +407,7 @@
     </ClInclude>
     <ClInclude Include="..\..\src\SDL_dataqueue.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
+    <ClInclude Include="..\..\src\SDL_list.h" />
     <ClInclude Include="..\..\include\SDL_metal.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -824,6 +831,10 @@
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
     <ClInclude Include="..\..\src\SDL_hints_c.h" />
     <ClInclude Include="..\..\src\SDL_internal.h" />
+    <ClInclude Include="..\..\src\SDL_log_c.h" />
+    <ClInclude Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -831,7 +842,9 @@
     <ClCompile Include="..\..\src\SDL_assert.c" />
     <ClCompile Include="..\..\src\SDL_dataqueue.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
+    <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
+    <ClCompile Include="..\..\src\SDL_list.c" />
     <ClCompile Include="..\..\src\audio\SDL_audio.c">
       <Filter>audio</Filter>
     </ClCompile>
@@ -912,6 +925,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\hidapi\SDL_hidapi.c">
       <Filter>hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\controller_type.c">
+      <Filter>joystick</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c">
       <Filter>joystick</Filter>
@@ -1201,7 +1217,7 @@
     <ClCompile Include="..\..\src\thread\SDL_thread.c">
       <Filter>thread</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c" >
+    <ClCompile Include="..\..\src\thread\windows\SDL_syscond_cv.c">
       <Filter>thread\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">
@@ -1315,6 +1331,12 @@
     <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c">
       <Filter>power\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12.c">
+      <Filter>render\direct3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.c">
+      <Filter>render\direct3d12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

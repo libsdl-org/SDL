@@ -26,6 +26,8 @@
 #include "SDL_emscriptenframebuffer.h"
 #include "SDL_hints.h"
 
+#include <emscripten/threading.h>
+
 
 int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
@@ -69,7 +71,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
 
     /* Send the data to the display */
 
-    EM_ASM_INT({
+    MAIN_THREAD_EM_ASM({
         var w = $0;
         var h = $1;
         var pixels = $2;
@@ -154,7 +156,6 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         }
 
         SDL2.ctx.putImageData(SDL2.image, 0, 0);
-        return 0;
     }, surface->w, surface->h, surface->pixels);
 
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {

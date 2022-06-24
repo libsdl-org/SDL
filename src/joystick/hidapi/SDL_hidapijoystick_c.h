@@ -90,7 +90,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     SDL_bool enabled;
     SDL_bool enabled_default;
     SDL_bool (*IsSupportedDevice)(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
-    const char *(*GetDeviceName)(Uint16 vendor_id, Uint16 product_id);
+    const char *(*GetDeviceName)(const char *name, Uint16 vendor_id, Uint16 product_id);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
     int (*GetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id);
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);

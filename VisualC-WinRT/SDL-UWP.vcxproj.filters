@@ -63,6 +63,9 @@
     <ClInclude Include="..\include\SDL_filesystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL_guid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\SDL_haptic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -330,6 +333,9 @@
     <ClInclude Include="..\src\SDL_internal.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\SDL_log_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\locale\SDL_syslocale.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -409,6 +415,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\SDL_dataqueue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SDL_list.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\haptic\windows\SDL_xinputhaptic_c.h">
@@ -627,6 +636,9 @@
     <ClCompile Include="..\src\SDL_error.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SDL_guid.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\SDL_hints.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -780,6 +792,9 @@
     <ClCompile Include="..\src\SDL_dataqueue.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SDL_list.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\haptic\windows\SDL_dinputhaptic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -813,9 +828,15 @@
     <ClCompile Include="..\src\misc\SDL_url.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClInclude Include="..\src\joystick\controller_type.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\joystick\windows\SDL_windows_gaming_input.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\joystick\controller_type.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
