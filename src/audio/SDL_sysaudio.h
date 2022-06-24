@@ -204,6 +204,7 @@ extern AudioBootStrap FUSIONSOUND_bootstrap;
 extern AudioBootStrap aaudio_bootstrap;
 extern AudioBootStrap openslES_bootstrap;
 extern AudioBootStrap ANDROIDAUDIO_bootstrap;
+extern AudioBootStrap PS2AUDIO_bootstrap;
 extern AudioBootStrap PSPAUDIO_bootstrap;
 extern AudioBootStrap VITAAUD_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
