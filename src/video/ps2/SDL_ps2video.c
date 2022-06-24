@@ -57,6 +57,9 @@ static void PS2_VideoQuit(_THIS);
 
 /* PS2 driver bootstrap functions */
 
+static GSGLOBAL *gsGlobal = NULL;
+static int vsync_sema_id = 0;
+
 static void
 PS2_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -96,17 +99,112 @@ VideoBootStrap PS2_bootstrap = {
 };
 
 
+/* PRIVATE METHODS */
+static int vsync_handler()
+{
+   iSignalSema(vsync_sema_id);
+
+   ExitHandler();
+   return 0;
+}
+
+/* Copy of gsKit_sync_flip, but without the 'flip' */
+static void gsKit_sync(GSGLOBAL *gsGlobal)
+{
+   if (!gsGlobal->FirstFrame) WaitSema(vsync_sema_id);
+   while (PollSema(vsync_sema_id) >= 0)
+   	;
+}
+
+/* Copy of gsKit_sync_flip, but without the 'sync' */
+static void gsKit_flip(GSGLOBAL *gsGlobal)
+{
+   if (!gsGlobal->FirstFrame)
+   {
+      if (gsGlobal->DoubleBuffering == GS_SETTING_ON)
+      {
+         GS_SET_DISPFB2( gsGlobal->ScreenBuffer[
+               gsGlobal->ActiveBuffer & 1] / 8192,
+               gsGlobal->Width / 64, gsGlobal->PSM, 0, 0 );
+
+         gsGlobal->ActiveBuffer ^= 1;
+      }
+
+   }
+
+   gsKit_setactive(gsGlobal);
+}
+
 int
 PS2_VideoInit(_THIS)
 {
+	ee_sema_t sema;
+    sema.init_count = 0;
+    sema.max_count = 1;
+    sema.option = 0;
+    vsync_sema_id = CreateSema(&sema);
+
+	gsGlobal = gsKit_init_global();
+
+	gsGlobal->Mode = gsKit_check_rom();
+	if (gsGlobal->Mode == GS_MODE_PAL){
+		gsGlobal->Height = 512;
+	} else {
+		gsGlobal->Height = 448;
+	}
+
+	gsGlobal->PSM  = GS_PSM_CT24;
+	gsGlobal->PSMZ = GS_PSMZ_16S;
+	gsGlobal->ZBuffering = GS_SETTING_OFF;
+	gsGlobal->DoubleBuffering = GS_SETTING_ON;
+	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+	gsGlobal->Dithering = GS_SETTING_OFF;
+
+	gsKit_set_primalpha(gsGlobal, GS_SETREG_ALPHA(0, 1, 0, 1, 0), 0);
+
+	dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8, 1 << DMA_CHANNEL_GIF);
+	dmaKit_chan_init(DMA_CHANNEL_GIF);
+
+	printf("\nGraphics: created %ix%i video surface\n",
+		gsGlobal->Width, gsGlobal->Height);
+
+	gsKit_set_clamp(gsGlobal, GS_CMODE_REPEAT);
+
+	gsKit_vram_clear(gsGlobal);
+
+	gsKit_init_screen(gsGlobal);
+
+	gsKit_TexManager_init(gsGlobal);
+
+	gsKit_add_vsync_handler(vsync_handler);
+
+	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
+
+    gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x80,0x00,0x00,0x80,0x00));	
+
+	if (gsGlobal->DoubleBuffering == GS_SETTING_OFF) {
+		gsKit_sync(gsGlobal);
+		gsKit_queue_exec(gsGlobal);
+    } else {
+		gsKit_queue_exec(gsGlobal);
+		gsKit_finish();
+		gsKit_sync(gsGlobal);
+		gsKit_flip(gsGlobal);
+	}
+	gsKit_TexManager_nextFrame(gsGlobal);
+
     SDL_DisplayMode mode;
 
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.w = 1024;
-    mode.h = 768;
-    mode.refresh_rate = 0;
+    mode.w = 640;
+    if (gsGlobal->Mode == GS_MODE_PAL){
+        mode.h = 512;
+    } else {
+        mode.h = 448;
+    }
+    mode.refresh_rate = 60;
     mode.driverdata = NULL;
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
@@ -119,14 +217,58 @@ PS2_VideoInit(_THIS)
 }
 
 static int
+SDL_to_PS2_PFM(Uint32 format)
+{
+    switch (format) {
+    case SDL_PIXELFORMAT_RGBA5551:
+        return GS_PSM_CT16S;
+    case SDL_PIXELFORMAT_RGB24:
+        return GS_PSM_CT24;
+    case SDL_PIXELFORMAT_ABGR32:
+        return GS_PSM_CT32;
+    default:
+        return GS_PSM_CT24;
+    }
+}
+
+static int
 PS2_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
+    gsGlobal->Mode = GS_MODE_NTSC;
+	gsGlobal->Width = mode->w;
+	if ((gsGlobal->Interlace == GS_INTERLACED) && (gsGlobal->Field == GS_FRAME))
+		gsGlobal->Height = mode->h / 2;
+	else
+		gsGlobal->Height = mode->h;
+
+	gsGlobal->PSM = SDL_to_PS2_PFM(mode->format);
+	gsGlobal->PSMZ = GS_PSMZ_16S;
+
+	gsGlobal->ZBuffering = GS_SETTING_OFF;
+	gsGlobal->DoubleBuffering = GS_SETTING_ON;
+	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+	gsGlobal->Dithering = GS_SETTING_OFF;
+
+	gsGlobal->Interlace = GS_INTERLACED;
+	gsGlobal->Field = GS_FIELD;
+
+	gsKit_set_primalpha(gsGlobal, GS_SETREG_ALPHA(0, 1, 0, 1, 0), 0);
+
+	gsKit_set_clamp(gsGlobal, GS_CMODE_REPEAT);
+	gsKit_vram_clear(gsGlobal);
+	gsKit_init_screen(gsGlobal);
+	gsKit_set_display_offset(gsGlobal, -0.5f, -0.5f);
+	gsKit_sync_flip(gsGlobal);
+
+	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
+    gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0x80,0x00));	
     return 0;
 }
 
 void
 PS2_VideoQuit(_THIS)
 {
+    gsKit_deinit_global(gsGlobal);
 }
 
 #endif /* SDL_VIDEO_DRIVER_PS2 */

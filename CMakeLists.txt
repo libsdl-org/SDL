@@ -3040,6 +3040,10 @@ if(APPLE)
   target_compile_options(sdl-build-options INTERFACE "-fobjc-arc")
 endif()
 
+if(PS2)
+  target_compile_options(sdl-build-options INTERFACE "-Wno-error=declaration-after-statement")
+endif()
+
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
   add_dependencies(SDL2 sdl_headers_copy)

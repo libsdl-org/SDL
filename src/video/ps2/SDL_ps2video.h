@@ -25,6 +25,14 @@
 
 #include "../SDL_sysvideo.h"
 
+#include <kernel.h>
+
+#include <gsKit.h>
+#include <dmaKit.h>
+
+#include <gsToolkit.h>
+#include <gsInline.h>
+
 #endif /* SDL_ps2video_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
