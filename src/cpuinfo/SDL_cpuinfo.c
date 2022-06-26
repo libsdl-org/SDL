@@ -51,7 +51,7 @@
 #if defined(__MACOSX__) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h>         /* For AltiVec check */
 #elif defined(__OpenBSD__) && defined(__powerpc__)
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
 #elif defined(__FreeBSD__) && defined(__powerpc__)
