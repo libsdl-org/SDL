@@ -74,7 +74,7 @@ macro(LISTTOSTR _LIST _OUTPUT)
   # Do not use string(REPLACE ";" " ") here to avoid messing up list
   # entries
   foreach(_ITEM ${${_LIST}})
-    set(${_OUTPUT} "${_LPREFIX}${_ITEM} ${${_OUTPUT}}")
+    set(${_OUTPUT} "${${_OUTPUT}} ${_LPREFIX}${_ITEM}")
   endforeach()
 endmacro()
 
@@ -88,7 +88,7 @@ macro(LISTTOSTRREV _LIST _OUTPUT)
   # Do not use string(REPLACE ";" " ") here to avoid messing up list
   # entries
   foreach(_ITEM ${${_LIST}})
-    set(${_OUTPUT} "${${_OUTPUT}} ${_LPREFIX}${_ITEM}")
+    set(${_OUTPUT} "${_LPREFIX}${_ITEM} ${${_OUTPUT}}")
   endforeach()
 endmacro()
 

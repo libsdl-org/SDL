@@ -11,7 +11,7 @@ jobs:
     - name: Setup dependencies
       run: |
         apk update 
-        apk add cmake gmp mpc1 mpfr4 make
+        apk add cmake gmp mpc1 mpfr4 make pkgconf
     - name: Configure CMake
       run: |
         cmake -S . -B build \
@@ -35,3 +35,15 @@ jobs:
           -DTEST_SHARED=FALSE \
           -DCMAKE_BUILD_TYPE=Release
         cmake --build cmake_config_build --verbose
+    - name: Verify sdl2-config
+      run: |
+        export CC=psp-gcc
+        export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
+        cmake/test/test_sdlconfig.sh
+    - name: Verify sdl2.pc
+      run: |
+        export CC=psp-gcc
+        export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
+        cmake/test/test_pkgconfig.sh

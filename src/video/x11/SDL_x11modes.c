@@ -291,7 +291,7 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
 
 
 static int
-X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res)
+X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_bool send_event)
 {
     Atom EDID = X11_XInternAtom(dpy, "EDID", False);
     XRROutputInfo *output_info;
@@ -396,7 +396,7 @@ X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScre
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.driverdata = displaydata;
-    return SDL_AddVideoDisplay(&display, SDL_TRUE);
+    return SDL_AddVideoDisplay(&display, send_event);
 }
 
 static void
@@ -444,7 +444,7 @@ X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent *ev)
                 }
 
                 if (res) {
-                    X11_AddXRandRDisplay(_this, dpy, screen, ev->output, res);
+                    X11_AddXRandRDisplay(_this, dpy, screen, ev->output, res, SDL_TRUE);
                     X11_XRRFreeScreenResources(res);
                 }
             }
@@ -512,7 +512,7 @@ X11_InitModes_XRandR(_THIS)
                     (!looking_for_primary && (screen == default_screen) && (res->outputs[output] == primary))) {
                     continue;
                 }
-                if (X11_AddXRandRDisplay(_this, dpy, screen, res->outputs[output], res) == -1) {
+                if (X11_AddXRandRDisplay(_this, dpy, screen, res->outputs[output], res, SDL_FALSE) == -1) {
                     break;
                 }
             }

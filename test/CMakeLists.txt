@@ -1,20 +1,21 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(SDL2 C)
-include(CTest)
+cmake_minimum_required(VERSION 3.0)
+project(SDL2_test)
+
+if(NOT TARGET SDL2::SDL2-static)
+    find_package(SDL2 2.0.23 REQUIRED COMPONENTS SDL2-static SDL2test)
+endif()
+
+enable_testing()
 
 if(SDL_INSTALL_TESTS)
     include(GNUInstallDirs)
 endif()
 
-# Global settings for all of the test targets
-# FIXME: is this wrong?
-remove_definitions(-DUSING_GENERATED_CONFIG_H)
-
 if(PSP)
     link_libraries(
-        SDL2main
-        SDL2_test
-        SDL2-static
+        SDL2::SDL2main
+        SDL2::SDL2test
+        SDL2::SDL2-static
         GL
         pspvram
         pspvfpu
@@ -27,7 +28,7 @@ if(PSP)
         psppower
     )
 else()
-    link_libraries(SDL2_test SDL2-static)
+    link_libraries(SDL2::SDL2test SDL2::SDL2-static)
 endif()
 
 if(WINDOWS)
