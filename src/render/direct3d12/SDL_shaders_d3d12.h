@@ -22,6 +22,11 @@
 
 /* D3D12 shader implementation */
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     SHADER_SOLID,
     SHADER_RGB,
@@ -53,5 +58,10 @@ extern void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *ou
 extern void D3D12_GetPixelShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode);
 extern D3D12_RootSignature D3D12_GetRootSignatureType(D3D12_Shader shader);
 extern void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE* outBytecode);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
