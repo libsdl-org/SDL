@@ -59,8 +59,8 @@
 #define D3D_GUID(X) (X)
 #else
 #define SAFE_RELEASE(X) if (X) { (X)->lpVtbl->Release(X); X = NULL; }
-#define D3D_CALL(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), __VA_ARGS__)
-#define D3D_CALL_RET(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), __VA_ARGS__)
+#define D3D_CALL(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
+#define D3D_CALL_RET(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
 #define D3D_GUID(X) &(X)
 #endif
 
