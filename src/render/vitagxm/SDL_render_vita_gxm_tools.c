@@ -1008,6 +1008,26 @@ gxm_texture_get_datap(const gxm_texture *texture)
     return sceGxmTextureGetData(&texture->gxm_tex);
 }
 
+static SceGxmColorFormat tex_format_to_color_format(SceGxmTextureFormat format)
+{
+    switch (format) {
+    case SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ARGB:
+        return SCE_GXM_COLOR_FORMAT_U8U8U8U8_ARGB;
+    case SCE_GXM_TEXTURE_FORMAT_U8U8U8_RGB:
+        return SCE_GXM_COLOR_FORMAT_U8U8U8_RGB;
+    case SCE_GXM_TEXTURE_FORMAT_U8U8U8_BGR:
+        return SCE_GXM_COLOR_FORMAT_U8U8U8_BGR;
+    case SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR:
+        return SCE_GXM_COLOR_FORMAT_U8U8U8U8_ABGR;
+    case SCE_GXM_TEXTURE_FORMAT_U5U6U5_RGB:
+        return SCE_GXM_COLOR_FORMAT_U5U6U5_RGB;
+    case SCE_GXM_TEXTURE_FORMAT_U5U6U5_BGR:
+        return SCE_GXM_COLOR_FORMAT_U5U6U5_BGR;
+    default:
+        return SCE_GXM_COLOR_FORMAT_U8U8U8U8_ABGR;
+    }
+}
+
 gxm_texture *
 create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget, unsigned int *return_w, unsigned int *return_h, unsigned int *return_pitch, float *return_wscale)
 {
@@ -1082,9 +1102,10 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         uint32_t depthStrideInSamples = alignedWidth;
         const uint32_t alignedColorSurfaceStride = ALIGN(w, 8);
 
+
         int err = sceGxmColorSurfaceInit(
             &texture->gxm_colorsurface,
-            SCE_GXM_COLOR_FORMAT_A8B8G8R8,
+            tex_format_to_color_format(format),
             SCE_GXM_COLOR_SURFACE_LINEAR,
             SCE_GXM_COLOR_SURFACE_SCALE_NONE,
             SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT,
