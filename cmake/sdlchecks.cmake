@@ -632,6 +632,7 @@ macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
         ARGS "${_CODE_MODE}" "${_XML}" "${_WAYLAND_PROT_C_CODE}"
     )
 
+    list(APPEND SDL_GENERATED_HEADERS "${_WAYLAND_PROT_H_CODE}")
     list(APPEND SOURCE_FILES "${_WAYLAND_PROT_C_CODE}")
 endmacro()
 

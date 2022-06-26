@@ -109,6 +109,10 @@ math(EXPR DYLIB_COMPAT_VERSION_MAJOR "${LT_MAJOR} + 1")
 set(DYLIB_CURRENT_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.${DYLIB_CURRENT_VERSION_MINOR}.0")
 set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_COMPAT_VERSION_MAJOR}.0.0")
 
+# This list holds all generated headers.
+# To avoid generating them twice, these are added to a dummy target on which all sdl targets depend.
+set(SDL_GENERATED_HEADERS)
+
 #message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT} :: ${LT_RELEASE}")
 
 # General settings & flags
@@ -2716,7 +2720,10 @@ endif()
 # 1. replace all `#cmakedefine`'s and `@abc@`
 configure_file("${SDL2_SOURCE_DIR}/include/SDL_config.h.cmake"
   "${SDL2_BINARY_DIR}/SDL_config.h.intermediate")
-# 2. generate SDL_config in an build_type-dependent folder (which should be first in the include search path)
+# 2. Create the "include-config-${CMAKE_BUILD_TYPE}" folder (fails on older CMake versions when it does not exist)
+string(TOLOWER "${CMAKE_BUILD_TYPE}" lower_build_type)
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/include-config-${lower_build_type}")
+# 3. generate SDL_config in an build_type-dependent folder (which should be first in the include search path)
 file(GENERATE
     OUTPUT "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h"
     INPUT "${SDL2_BINARY_DIR}/SDL_config.h.intermediate")
@@ -2779,6 +2786,7 @@ foreach(_hdr IN LISTS SDL2_INCLUDE_FILES)
         DEPENDS "${_hdr}")
   endif()
 endforeach()
+list(APPEND SDL_GENERATED_HEADERS ${SDL2_COPIED_INCLUDE_FILES})
 
 if(NOT WINDOWS OR CYGWIN OR MINGW)
 
@@ -2896,6 +2904,10 @@ if (SDL_ASAN)
   endif()
 endif()
 
+# Create target that collects all all generated include files.
+add_custom_target(sdl_headers_copy
+    DEPENDS ${SDL_GENERATED_HEADERS})
+
 ##### Info output #####
 message(STATUS "")
 message(STATUS "SDL2 was configured with the following options:")
@@ -2967,7 +2979,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} ${EXTRA_CFLAGS_BUILD}")
 
 if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   # Build SDLmain
-  add_library(SDL2main STATIC ${SDLMAIN_SOURCES} ${SDL2_COPIED_INCLUDE_FILES})
+  add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
+  add_dependencies(SDL2main sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
   target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" PRIVATE "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
@@ -2997,7 +3010,8 @@ if(APPLE)
 endif()
 
 if(SDL_SHARED)
-  add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES} ${SDL2_COPIED_INCLUDE_FILES})
+  add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
+  add_dependencies(SDL2 sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -3055,7 +3069,8 @@ if(SDL_SHARED)
 endif()
 
 if(SDL_STATIC)
-  add_library(SDL2-static STATIC ${SOURCE_FILES} ${SDL2_COPIED_INCLUDE_FILES})
+  add_library(SDL2-static STATIC ${SOURCE_FILES})
+  add_dependencies(SDL2-static sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
   if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
@@ -3097,7 +3112,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 
 if(SDL_TEST)
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
-  add_library(SDL2_test STATIC ${TEST_SOURCES} ${SDL2_COPIED_INCLUDE_FILES})
+  add_library(SDL2_test STATIC ${TEST_SOURCES})
+  add_dependencies(SDL2_test sdl_headers_copy)
   add_library(SDL2::SDL2test ALIAS SDL2_test)
   set_target_properties(SDL2_test PROPERTIES
       EXPORT_NAME SDL2test)
