@@ -180,16 +180,16 @@ IsControllerXbox(GCController *controller)
 static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
-    if ((@available(macOS 11.3, *)) && !GCController.shouldMonitorBackgroundEvents) {
-        GCController.shouldMonitorBackgroundEvents = YES;
-    }
-
     Uint16 *guid16 = (Uint16 *)device->guid.data;
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint8 subtype = 0;
-
     const char *name = NULL;
+
+    if ((@available(macOS 11.3, *)) && !GCController.shouldMonitorBackgroundEvents) {
+        GCController.shouldMonitorBackgroundEvents = YES;
+    }
+
     /* Explicitly retain the controller because SDL_JoystickDeviceItem is a
      * struct, and ARC doesn't work with structs. */
     device->controller = (__bridge GCController *) CFBridgingRetain(controller);
@@ -213,6 +213,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5);
 #endif
         int nbuttons = 0;
+        BOOL has_direct_menu;
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
@@ -251,7 +252,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_GUIDE);
             ++nbuttons;
         }
-        BOOL has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
+        has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
 #if TARGET_OS_TV
         /* On tvOS MFi controller menu button brings you to the home screen */
         if (is_MFi) {
@@ -575,6 +576,7 @@ IOS_JoystickInit(void)
 #endif
 
     @autoreleasepool {
+        NSNotificationCenter *center;
 #ifdef SDL_JOYSTICK_iOS_ACCELEROMETER
         if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
             /* Default behavior, accelerometer as joystick */
@@ -599,7 +601,7 @@ IOS_JoystickInit(void)
                             SDL_AppleTVRemoteRotationHintChanged, NULL);
 #endif /* TARGET_OS_TV */
 
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        center = [NSNotificationCenter defaultCenter];
 
         connectObserver = [center addObserverForName:GCControllerDidConnectNotification
                                               object:nil
@@ -907,9 +909,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
             if (joystick->hwdata->has_dualshock_touchpad) {
-                buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
-
                 GCControllerDirectionPad *dpad;
+                buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
 
                 dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadOne];
                 if (dpad.xAxis.value || dpad.yAxis.value) {
@@ -1129,6 +1130,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
     @autoreleasepool {
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
             NSError *error = nil;
+            CHHapticDynamicParameter *param;
 
             if (self.engine == nil) {
                 return SDL_SetError("Haptics engine was stopped");
@@ -1143,8 +1145,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             }
 
             if (self.player == nil) {
-                CHHapticEventParameter *param = [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
-                CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
+                CHHapticEventParameter *event_param = [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
+                CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:event_param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
                 CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error];
                 if (error != nil) {
                     return SDL_SetError("Couldn't create haptic pattern: %s", [error.localizedDescription UTF8String]);
@@ -1157,7 +1159,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 self.active = false;
             }
 
-            CHHapticDynamicParameter *param = [[CHHapticDynamicParameter alloc] initWithParameterID:CHHapticDynamicParameterIDHapticIntensityControl value:intensity relativeTime:0];
+            param = [[CHHapticDynamicParameter alloc] initWithParameterID:CHHapticDynamicParameterIDHapticIntensityControl value:intensity relativeTime:0];
             [self.player sendParameters:[NSArray arrayWithObject:param] atTime:0 error:&error];
             if (error != nil) {
                 return SDL_SetError("Couldn't update haptic player: %s", [error.localizedDescription UTF8String]);
@@ -1176,8 +1178,10 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 -(id) initWithController:(GCController*)controller locality:(GCHapticsLocality)locality API_AVAILABLE(macos(10.16), ios(14.0), tvos(14.0))
 {
     @autoreleasepool {
-        self = [super init];
         NSError *error;
+        __weak __typeof(self) weakSelf;
+        self = [super init];
+        weakSelf = self;
 
         self.engine = [controller.haptics createEngineWithLocality:locality];
         if (self.engine == nil) {
@@ -1191,7 +1195,6 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             return nil;
         }
 
-        __weak __typeof(self) weakSelf = self;
         self.engine.stoppedHandler = ^(CHHapticEngineStoppedReason stoppedReason) {
             SDL_RumbleMotor *_this = weakSelf;
             if (_this == nil) {

@@ -31,25 +31,28 @@ SDL_WindowShaper*
 Cocoa_CreateShaper(SDL_Window* window)
 { @autoreleasepool
 {
+    SDL_WindowShaper* result;
+    SDL_ShapeData* data;
+    int resized_properly;
     SDL_WindowData* windata = (__bridge SDL_WindowData*)window->driverdata;
     [windata.nswindow setOpaque:NO];
 
     [windata.nswindow setStyleMask:NSWindowStyleMaskBorderless];
 
-    SDL_WindowShaper* result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
+    result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
     window->shaper = result;
 
-    SDL_ShapeData* data = (SDL_ShapeData *)SDL_malloc(sizeof(SDL_ShapeData));
+    data = (SDL_ShapeData *)SDL_malloc(sizeof(SDL_ShapeData));
     result->driverdata = data;
     data->context = [windata.nswindow graphicsContext];
     data->saved = SDL_FALSE;
     data->shape = NULL;
 
-    int resized_properly = Cocoa_ResizeWindowShape(window);
+    resized_properly = Cocoa_ResizeWindowShape(window);
     SDL_assert(resized_properly == 0);
     return result;
 }}

@@ -112,35 +112,37 @@ static NSCursor *
 LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
 {
     NSString *cursorPath = [@"/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors" stringByAppendingPathComponent:cursorName];
+    NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"info.plist"]];
+    /* we can't do animation atm.  :/ */
+    const int frames = [[info valueForKey:@"frames"] integerValue];
+    NSCursor *cursor;
     NSImage *image = [[NSImage alloc] initWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"cursor.pdf"]];
     if ((image == nil) || (image.valid == NO)) {
         return [NSCursor performSelector:fallback];
     }
 
-    NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"info.plist"]];
-
-    /* we can't do animation atm.  :/ */
-    const int frames = [[info valueForKey:@"frames"] integerValue];
     if (frames > 1) {
+        #ifdef MAC_OS_VERSION_12_0  /* same value as deprecated symbol. */
+        const NSCompositingOperation operation = NSCompositingOperationCopy;
+        #else
+        const NSCompositingOperation operation = NSCompositeCopy;
+        #endif
         const NSSize cropped_size = NSMakeSize(image.size.width, (int) (image.size.height / frames));
         NSImage *cropped = [[NSImage alloc] initWithSize:cropped_size];
         if (cropped == nil) {
             return [NSCursor performSelector:fallback];
         }
 
-        #ifdef MAC_OS_VERSION_12_0  /* same value as deprecated symbol. */
-        const NSCompositingOperation operation = NSCompositingOperationCopy;
-        #else
-        const NSCompositingOperation operation = NSCompositeCopy;
-        #endif
         [cropped lockFocus];
-        const NSRect cropped_rect = NSMakeRect(0, 0, cropped_size.width, cropped_size.height);
-        [image drawInRect:cropped_rect fromRect:cropped_rect operation:operation fraction:1];
+        {
+            const NSRect cropped_rect = NSMakeRect(0, 0, cropped_size.width, cropped_size.height);
+            [image drawInRect:cropped_rect fromRect:cropped_rect operation:operation fraction:1];
+        }
         [cropped unlockFocus];
         image = cropped;
     }
 
-    NSCursor *cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint([[info valueForKey:@"hotx"] doubleValue], [[info valueForKey:@"hoty"] doubleValue])];
+    cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint([[info valueForKey:@"hotx"] doubleValue], [[info valueForKey:@"hoty"] doubleValue])];
     return cursor;
 }
 
@@ -247,6 +249,7 @@ SDL_FindWindowAtPoint(const int x, const int y)
 static int
 Cocoa_WarpMouseGlobal(int x, int y)
 {
+    CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->focus) {
         SDL_WindowData *data = (__bridge SDL_WindowData *) mouse->focus->driverdata;
@@ -256,7 +259,7 @@ Cocoa_WarpMouseGlobal(int x, int y)
             return 0;
         }
     }
-    const CGPoint point = CGPointMake((float)x, (float)y);
+    point = CGPointMake((float)x, (float)y);
 
     Cocoa_HandleMouseWarp(point.x, point.y);
 
@@ -295,6 +298,8 @@ static int
 Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
     CGError result;
+    SDL_Window *window;
+    SDL_WindowData *data;
     if (enabled) {
         DLog("Turning on.");
         result = CGAssociateMouseAndMouseCursorPosition(NO);
@@ -309,7 +314,7 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window gets focus, if it
      * doesn't have focus right now.
      */
-    SDL_Window *window = SDL_GetKeyboardFocus();
+    window = SDL_GetKeyboardFocus();
     if (!window) {
         return 0;
     }
@@ -317,7 +322,7 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window finishes being moved,
      * if it is being moved right now.
      */
-    SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+    data = (__bridge SDL_WindowData *) window->driverdata;
     if ([data.listener isMovingOrFocusClickPending]) {
         return 0;
     }
@@ -363,6 +368,7 @@ Cocoa_GetGlobalMouseState(int *x, int *y)
 int
 Cocoa_InitMouse(_THIS)
 {
+    NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseData *driverdata = (SDL_MouseData*) SDL_calloc(1, sizeof(SDL_MouseData));
     if (driverdata == NULL) {
@@ -382,7 +388,7 @@ Cocoa_InitMouse(_THIS)
 
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
-    const NSPoint location =  [NSEvent mouseLocation];
+    location =  [NSEvent mouseLocation];
     driverdata->lastMoveX = location.x;
     driverdata->lastMoveY = location.y;
     return 0;
@@ -419,6 +425,13 @@ Cocoa_HandleTitleButtonEvent(_THIS, NSEvent *event)
 void
 Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
 {
+    SDL_Mouse *mouse;
+    SDL_MouseData *driverdata;
+    SDL_MouseID mouseID;
+    NSPoint location;
+    CGFloat lastMoveX, lastMoveY;
+    float deltaX, deltaY;
+    SDL_bool seenWarp;
     switch ([event type]) {
         case NSEventTypeMouseMoved:
         case NSEventTypeLeftMouseDragged:
@@ -446,19 +459,19 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
             return;
     }
 
-    SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseData *driverdata = (SDL_MouseData*)mouse->driverdata;
+    mouse = SDL_GetMouse();
+    driverdata = (SDL_MouseData*)mouse->driverdata;
     if (!driverdata) {
         return;  /* can happen when returning from fullscreen Space on shutdown */
     }
 
-    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
-    const SDL_bool seenWarp = driverdata->seenWarp;
+    mouseID = mouse ? mouse->mouseID : 0;
+    seenWarp = driverdata->seenWarp;
     driverdata->seenWarp = NO;
 
-    const NSPoint location =  [NSEvent mouseLocation];
-    const CGFloat lastMoveX = driverdata->lastMoveX;
-    const CGFloat lastMoveY = driverdata->lastMoveY;
+    location =  [NSEvent mouseLocation];
+    lastMoveX = driverdata->lastMoveX;
+    lastMoveY = driverdata->lastMoveY;
     driverdata->lastMoveX = location.x;
     driverdata->lastMoveY = location.y;
     DLog("Last seen mouse: (%g, %g)", location.x, location.y);
@@ -476,8 +489,8 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         }
     }
 
-    float deltaX = [event deltaX];
-    float deltaY = [event deltaY];
+    deltaX = [event deltaX];
+    deltaY = [event deltaY];
 
     if (seenWarp) {
         deltaX += (lastMoveX - driverdata->lastWarpX);
@@ -492,15 +505,18 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
 void
 Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
+    SDL_MouseID mouseID;
+    SDL_MouseWheelDirection direction;
+    CGFloat x, y;
     SDL_Mouse *mouse = SDL_GetMouse();
     if (!mouse) {
         return;
     }
 
-    SDL_MouseID mouseID = mouse->mouseID;
-    CGFloat x = -[event deltaX];
-    CGFloat y = [event deltaY];
-    SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL;
+    mouseID = mouse->mouseID;
+    x = -[event deltaX];
+    y = [event deltaY];
+    direction = SDL_MOUSEWHEEL_NORMAL;
 
     if ([event isDirectionInvertedFromDevice] == YES) {
         direction = SDL_MOUSEWHEEL_FLIPPED;
