@@ -3042,7 +3042,7 @@ SDL_RenderDriver D3D12_RenderDriver = {
 
 #endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -3069,6 +3069,6 @@ SDL_RenderGetD3D12Device(SDL_Renderer * renderer)
 
     return device;
 }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 /* vi: set ts=4 sw=4 expandtab: */

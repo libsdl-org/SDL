@@ -79,7 +79,7 @@ _m_prefetch(void *__P)
 #if !defined(SDL_DISABLE_ARM_NEON_H)
 #  if defined(__ARM_NEON)
 #    include <arm_neon.h>
-#  elif defined(__WINDOWS__) || defined(__WINRT__)
+#  elif defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)
 /* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
 #    if defined(_M_ARM)
 #      include <armintr.h>

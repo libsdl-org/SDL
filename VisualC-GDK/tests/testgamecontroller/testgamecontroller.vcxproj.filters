@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\test\testgamecontroller.c" />
+    <ClCompile Include="..\..\..\test\testutils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\test\controllermap_back.bmp" />
+    <CopyFileToFolders Include="..\..\..\test\axis.bmp" />
+    <CopyFileToFolders Include="..\..\..\test\button.bmp" />
+    <CopyFileToFolders Include="..\..\..\test\controllermap.bmp" />
+    <CopyFileToFolders Include="..\..\logos\Logo44x44.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo100x100.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo150x150.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo480x480.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="MicrosoftGame.config" />
+    <CopyFileToFolders Include="PackageLayout.xml" />
+    <CopyFileToFolders Include="$(Console_GRDKExtLibRoot)Xbox.Services.API.C\DesignTime\CommonConfiguration\Neutral\Lib\Release\Microsoft.Xbox.Services.141.GDK.C.Thunks.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="logos">
+      <UniqueIdentifier>{5e858cf0-6fba-498d-b33d-11c8ecbb79c7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

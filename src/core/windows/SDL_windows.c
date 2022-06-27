@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINRT__)
+#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 
 #include "SDL_windows.h"
 #include "SDL_error.h"
@@ -338,6 +338,6 @@ WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
     winrect->bottom = sdlrect->y + sdlrect->h - 1;
 }
 
-#endif /* __WIN32__ || __WINRT__ */
+#endif /* defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__) */
 
 /* vi: set ts=4 sw=4 expandtab: */

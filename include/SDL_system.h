@@ -41,7 +41,7 @@ extern "C" {
 
 
 /* Platform specific functions for Windows */
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 	
 typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
 
@@ -54,6 +54,10 @@ typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsi
  * \since This function is available since SDL 2.0.4.
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
+
+#endif /* defined(__WIN32__) || defined(__GDK__) */
+
+#if defined(__WIN32__) || defined(__WINGDK__)
 
 /**
  * Get the D3D9 adapter index that matches the specified display index.
@@ -102,6 +106,10 @@ typedef struct ID3D11Device ID3D11Device;
  */
 extern DECLSPEC ID3D11Device* SDLCALL SDL_RenderGetD3D11Device(SDL_Renderer * renderer);
 
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
+
+#if defined(__WIN32__) || defined(__GDK__)
+
 typedef struct ID3D12Device ID3D12Device;
 
 /**
@@ -117,6 +125,10 @@ typedef struct ID3D12Device ID3D12Device;
  * \since This function is available since SDL 2.24.0.
  */
 extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* renderer);
+
+#endif /* defined(__WIN32__) || defined(__GDK__) */
+
+#if defined(__WIN32__) || defined(__WINGDK__)
 
 /**
  * Get the DXGI Adapter and Output indices for the specified display index.
@@ -138,8 +150,7 @@ extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* ren
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex );
 
-#endif /* __WIN32__ */
-
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 /* Platform specific functions for Linux */
 #ifdef __LINUX__
@@ -578,6 +589,25 @@ extern DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
 #ifdef __IPHONEOS__
 extern DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(void);
+#endif
+
+/* Functions used only by GDK */
+#if defined(__GDK__)
+typedef struct XTaskQueueObject * XTaskQueueHandle;
+
+/**
+ * Gets a reference to the global async task queue handle for GDK,
+ * initializing if needed.
+ * 
+ * Once you are done with the task queue, you should call XTaskQueueCloseHandle
+ * to reduce the reference count to avoid a resource leak.
+ * 
+ * \param outTaskQueue a pointer to be filled in with task queue handle.
+ * \returns 0 if success, -1 if any error occurs.
+ * 
+ */
+extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue);
+
 #endif
 
 /* Ends C function definitions when using C++ */

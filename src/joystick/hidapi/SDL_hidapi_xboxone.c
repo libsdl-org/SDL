@@ -156,7 +156,7 @@ SetInitState(SDL_DriverXboxOne_Context *ctx, SDL_XboxOneInitState state)
 static void
 SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 {
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
     /* The Windows driver is taking care of acks */
 #else
     if ((data[1] & 0x30) == 0x30) {
@@ -179,7 +179,7 @@ SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
             SDL_SetError("Couldn't send ack packet");
         }
     }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__ */
 }
 
 #if 0
@@ -912,7 +912,7 @@ HIDAPI_DriverXboxOne_UpdateInitState(SDL_HIDAPI_Device *device, SDL_DriverXboxOn
 
         switch (ctx->init_state) {
         case XBOX_ONE_INIT_STATE_START_NEGOTIATING:
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
             /* The Windows driver is taking care of negotiation */
             SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
 #else

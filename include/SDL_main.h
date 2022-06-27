@@ -51,6 +51,15 @@
 */
 #define SDL_MAIN_NEEDED
 
+#elif defined(__GDK__)
+/* On GDK, SDL provides a main function that initializes the game runtime.
+
+   Please note that #include'ing SDL_main.h is not enough to get a main()
+   function working. You must either link against SDL2main or, if not possible,
+   call the SDL_GDKRunApp function from your entry point.
+*/
+#define SDL_MAIN_NEEDED
+
 #elif defined(__IPHONEOS__)
 /* On iOS SDL provides a main function that creates an application delegate
    and starts the iOS application run loop.
@@ -148,7 +157,7 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  */
 extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 
 /**
  * Register a win32 window class for SDL's use.
@@ -192,7 +201,7 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 
 #ifdef __WINRT__
@@ -227,6 +236,19 @@ extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_fun
 
 #endif /* __IPHONEOS__ */
 
+#ifdef __GDK__
+
+/**
+ * Initialize and launch an SDL GDK application.
+ *
+ * \param mainFunction the SDL app's C-style main(), an SDL_main_func
+ * \param reserved reserved for future use; should be NULL
+ * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
+ *          more information on the failure.
+ */
+extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
+
+#endif /* __GDK__ */
 
 #ifdef __cplusplus
 }

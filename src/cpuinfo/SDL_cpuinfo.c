@@ -24,7 +24,7 @@
 #include "../SDL_internal.h"
 #endif
 
-#if defined(__WIN32__) || defined(__WINRT__)
+#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 #if defined(__OS2__)
@@ -456,7 +456,7 @@ CPU_haveNEON(void)
    query the OS kernel in a platform-specific way. :/ */
 #if defined(SDL_CPUINFO_DISABLED)
    return 0; /* disabled */
-#elif (defined(__WINDOWS__) || defined(__WINRT__)) && (defined(_M_ARM) || defined(_M_ARM64))
+#elif (defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
 /* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
 /* Seems to have been removed */
 #  if !defined(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)
@@ -671,7 +671,7 @@ SDL_GetCPUCount(void)
             sysctlbyname("hw.ncpu", &SDL_CPUCount, &size, NULL, 0);
         }
 #endif
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
         if (SDL_CPUCount <= 0) {
             SYSTEM_INFO info;
             GetSystemInfo(&info);
@@ -912,11 +912,11 @@ SDL_GetCPUFeatures(void)
             SDL_CPUFeatures |= CPU_HAS_NEON;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
-	if (CPU_haveLSX()) {
+        if (CPU_haveLSX()) {
             SDL_CPUFeatures |= CPU_HAS_LSX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
-	if (CPU_haveLASX()) {
+        if (CPU_haveLASX()) {
             SDL_CPUFeatures |= CPU_HAS_LASX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
         }
@@ -1053,7 +1053,7 @@ SDL_GetSystemRAM(void)
             }
         }
 #endif
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
             stat.dwLength = sizeof(stat);

@@ -40,6 +40,16 @@
 #define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
 #endif
 #define WINVER        _WIN32_WINNT
+#elif defined(__WINGDK__)
+#define WIN32_LEAN_AND_MEAN
+#define STRICT
+#ifndef UNICODE
+#define UNICODE 1
+#endif
+#undef WINVER
+#undef _WIN32_WINNT
+#define _WIN32_WINNT  0xA00
+#define WINVER        _WIN32_WINNT
 #endif
 
 #include <windows.h>
