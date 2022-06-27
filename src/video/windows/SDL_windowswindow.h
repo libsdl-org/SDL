@@ -27,6 +27,11 @@
 #include "../SDL_egl_c.h"
 #endif
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct
 {
     SDL_Window *window;
@@ -101,6 +106,11 @@ extern void WIN_ClientPointToSDL(const SDL_Window *window, int *w, int *h);
 extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *w, int *h);
 extern void WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept);
 extern int WIN_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_windowswindow_h_ */
 

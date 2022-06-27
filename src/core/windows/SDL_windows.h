@@ -75,6 +75,11 @@
 #define SDL_tcsstr SDL_strstr
 #endif
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Sets an error message based on a given HRESULT */
 extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 
@@ -113,6 +118,11 @@ extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
 /* Convert between SDL_rect and RECT */
 extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _INCLUDED_WINDOWS_H */
 
