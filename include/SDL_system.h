@@ -598,13 +598,15 @@ typedef struct XTaskQueueObject * XTaskQueueHandle;
 /**
  * Gets a reference to the global async task queue handle for GDK,
  * initializing if needed.
- * 
- * Once you are done with the task queue, you should call XTaskQueueCloseHandle
- * to reduce the reference count to avoid a resource leak.
- * 
+ *
+ * Once you are done with the task queue, you should call
+ * XTaskQueueCloseHandle to reduce the reference count to avoid a resource
+ * leak.
+ *
  * \param outTaskQueue a pointer to be filled in with task queue handle.
  * \returns 0 if success, -1 if any error occurs.
- * 
+ *
+ * \since This function is available since SDL 2.24.0.
  */
 extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue);
 
