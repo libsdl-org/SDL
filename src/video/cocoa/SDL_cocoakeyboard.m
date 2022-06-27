@@ -390,6 +390,7 @@ UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
     int i;
     SDL_Scancode scancode;
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    CFDataRef uchrDataRef;
 
     /* See if the keymap needs to be updated */
     key_layout = TISCopyCurrentKeyboardLayoutInputSource();
@@ -401,7 +402,7 @@ UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
     SDL_GetDefaultKeymap(keymap);
 
     /* Try Unicode data first */
-    CFDataRef uchrDataRef = TISGetInputSourceProperty(key_layout, kTISPropertyUnicodeKeyLayoutData);
+    uchrDataRef = TISGetInputSourceProperty(key_layout, kTISPropertyUnicodeKeyLayoutData);
     if (uchrDataRef) {
         chr_data = CFDataGetBytePtr(uchrDataRef);
     } else {
@@ -472,6 +473,7 @@ void
 Cocoa_StartTextInput(_THIS)
 { @autoreleasepool
 {
+    NSView *parentView;
     SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
     SDL_Window *window = SDL_GetKeyboardFocus();
     NSWindow *nswindow = nil;
@@ -479,7 +481,7 @@ Cocoa_StartTextInput(_THIS)
         nswindow = ((__bridge SDL_WindowData*)window->driverdata).nswindow;
     }
 
-    NSView *parentView = [nswindow contentView];
+    parentView = [nswindow contentView];
 
     /* We only keep one field editor per process, since only the front most
      * window can receive text input events, so it make no sense to keep more
@@ -527,13 +529,14 @@ Cocoa_SetTextInputRect(_THIS, SDL_Rect *rect)
 void
 Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
+    unsigned short scancode;
+    SDL_Scancode code;
     SDL_VideoData *data = _this ? ((__bridge SDL_VideoData *) _this->driverdata) : nil;
     if (!data) {
         return;  /* can happen when returning from fullscreen Space on shutdown */
     }
 
-    unsigned short scancode = [event keyCode];
-    SDL_Scancode code;
+    scancode = [event keyCode];
 #if 0
     const char *text;
 #endif

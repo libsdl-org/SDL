@@ -189,6 +189,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     const char *glversion;
     int glversion_major;
     int glversion_minor;
+    NSOpenGLPixelFormatAttribute profile;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #if SDL_VIDEO_OPENGL_EGL
@@ -216,7 +217,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     attr[i++] = NSOpenGLPFAAllowOfflineRenderers;
 
-    NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersionLegacy;
+    profile = NSOpenGLProfileVersionLegacy;
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) {
         profile = NSOpenGLProfileVersion3_2Core;
     }

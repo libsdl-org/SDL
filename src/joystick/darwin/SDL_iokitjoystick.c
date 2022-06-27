@@ -985,7 +985,7 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     recDevice *device = joystick->hwdata;
     recElement *element;
     SInt32 value, range;
-    int i;
+    int i, goodRead = SDL_FALSE;
 
     if (!device) {
         return;
@@ -1001,7 +1001,6 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     element = device->firstAxis;
     i = 0;
 
-    int goodRead = SDL_FALSE;
     while (element) {
         goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
         if (goodRead) {

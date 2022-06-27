@@ -229,6 +229,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (void)focusSomeWindow:(NSNotification *)aNotification
 {
+    SDL_VideoDevice *device;
     /* HACK: Ignore the first call. The application gets a
      * applicationDidBecomeActive: a little bit after the first window is
      * created, and if we don't ignore it, a window that has been created with
@@ -246,7 +247,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         return;
     }
 
-    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    device = SDL_GetVideoDevice();
     if (device && device->windows) {
         SDL_Window *window = device->windows;
         int i;
