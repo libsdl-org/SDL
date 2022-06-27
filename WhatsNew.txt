@@ -30,6 +30,7 @@ General:
 * Added joystick event SDL_JOYBATTERYUPDATED for when battery status changes.
 * Added SDL_GUIDToString() and SDL_GUIDFromString() to convert between SDL GUID and string
 * Added SDL_HasLSX() and SDL_HasLASX() to detect LoongArch SIMD support
+* Added SDL_GetOriginalMemoryFunctions()
 
 Windows:
 * Added a D3D12 renderer implementation and SDL_RenderGetD3D12Device() to retrieve the D3D12 device associated with it

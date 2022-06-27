@@ -5328,6 +5328,25 @@ static struct
     real_malloc, real_calloc, real_realloc, real_free, { 0 }
 };
 
+void SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
+                                    SDL_calloc_func *calloc_func,
+                                    SDL_realloc_func *realloc_func,
+                                    SDL_free_func *free_func)
+{
+    if (malloc_func) {
+        *malloc_func = real_malloc;
+    }
+    if (calloc_func) {
+        *calloc_func = real_calloc;
+    }
+    if (realloc_func) {
+        *realloc_func = real_realloc;
+    }
+    if (free_func) {
+        *free_func = real_free;
+    }
+}
+
 void SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                             SDL_calloc_func *calloc_func,
                             SDL_realloc_func *realloc_func,
