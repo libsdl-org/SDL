@@ -86,7 +86,6 @@ static void SDL_InitDynamicAPI(void);
                 va_end(ap); \
             } \
         } \
-        va_end(ap); \
         if (result >= 0) { \
             result = jump_table.SDL_SetError("%s", str); \
         } \
