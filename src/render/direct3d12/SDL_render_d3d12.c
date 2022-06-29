@@ -39,10 +39,17 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#include "SDL_render_d3d12_xbox.h"
+#ifndef D3D12_TEXTURE_DATA_PITCH_ALIGNMENT
+#define D3D12_TEXTURE_DATA_PITCH_ALIGNMENT 256
+#endif
+#else
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <d3d12sdklayers.h>
+#endif
 
 #include "SDL_shaders_d3d12.h"
 
@@ -153,14 +160,18 @@ typedef struct
 {
     void *hDXGIMod;
     void *hD3D12Mod;
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    UINT64 frameToken;
+#else
     IDXGIFactory6 *dxgiFactory;
     IDXGIAdapter4 *dxgiAdapter;
+    IDXGIDebug *dxgiDebug;
+    IDXGISwapChain4 *swapChain;
+#endif
     ID3D12Device1 *d3dDevice;
     ID3D12Debug *debugInterface;
-    IDXGIDebug *dxgiDebug;
     ID3D12CommandQueue *commandQueue;
     ID3D12GraphicsCommandList2 *commandList;
-    IDXGISwapChain4 *swapChain;
     DXGI_SWAP_EFFECT swapEffect;
 
     /* Descriptor heaps */
@@ -232,7 +243,7 @@ typedef struct
 static const GUID SDL_IID_IDXGIFactory6 = { 0xc1b6694f, 0xff09, 0x44a9, { 0xb0, 0x3c, 0x77, 0x90, 0x0a, 0x0a, 0x1d, 0x17 } };
 static const GUID SDL_IID_IDXGIAdapter4 = { 0x3c8d99d1, 0x4fbf, 0x4181, { 0xa8, 0x2c, 0xaf, 0x66, 0xbf, 0x7b, 0xd2, 0x4e } };
 static const GUID SDL_IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
-static const GUID SDL_IID_ID3D12Device5 = { 0x8b4f173b, 0x2fea, 0x4b80, { 0x8f, 0x58, 0x43, 0x07, 0x19, 0x1a, 0xb9, 0x5d } };
+static const GUID SDL_IID_ID3D12Device1 = { 0x77acce80, 0x638e, 0x4e65, { 0x88, 0x95, 0xc1, 0xf2, 0x33, 0x86, 0x86, 0x3e } };
 static const GUID SDL_IID_IDXGISwapChain4 = { 0x3D585D5A, 0xBD4A, 0x489E, { 0xB1, 0xF4, 0x3D, 0xBC, 0xB6, 0x45, 0x2F, 0xFB } };
 static const GUID SDL_IID_IDXGIDebug1 = { 0xc5a05f0c, 0x16f2, 0x4adf, { 0x9f, 0x4d, 0xa8, 0xc4, 0xd5, 0x8a, 0xc5, 0x50 } };
 static const GUID SDL_IID_IDXGIInfoQueue = { 0xD67441C7,0x672A,0x476f, { 0x9E,0x82,0xCD,0x55,0xB4,0x49,0x49,0xCE } };
@@ -308,8 +319,11 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
     if (data) {
         int i;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         SAFE_RELEASE(data->dxgiFactory);
         SAFE_RELEASE(data->dxgiAdapter);
+        SAFE_RELEASE(data->swapChain);
+#endif
         SAFE_RELEASE(data->d3dDevice);
         SAFE_RELEASE(data->debugInterface);
         SAFE_RELEASE(data->commandQueue);
@@ -318,7 +332,6 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
         SAFE_RELEASE(data->textureRTVDescriptorHeap);
         SAFE_RELEASE(data->srvDescriptorHeap);
         SAFE_RELEASE(data->samplerDescriptorHeap);
-        SAFE_RELEASE(data->swapChain);
         SAFE_RELEASE(data->fence);
         SAFE_RELEASE(data->vertexBufferHeap);
 
@@ -347,12 +360,14 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
         data->currentRenderTargetView.ptr = 0;
         data->currentSampler.ptr = 0;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         /* Check for any leaks if in debug mode */
         if (data->dxgiDebug) {
             DXGI_DEBUG_RLO_FLAGS rloFlags = (DXGI_DEBUG_RLO_FLAGS)(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL);
             D3D_CALL(data->dxgiDebug, ReportLiveObjects, SDL_DXGI_DEBUG_ALL, rloFlags);
             SAFE_RELEASE(data->dxgiDebug);
         }
+#endif
 
         /* Unload the D3D libraries.  This should be done last, in order
          * to prevent IUnknown::Release() calls from crashing.
@@ -653,10 +668,12 @@ D3D12_CreatePipelineState(SDL_Renderer * renderer,
 static HRESULT
 D3D12_CreateDeviceResources(SDL_Renderer* renderer)
 {
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     typedef HRESULT(WINAPI* PFN_CREATE_DXGI_FACTORY)(UINT flags, REFIID riid, void** ppFactory);
     PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc;
-    D3D12_RenderData* data = (D3D12_RenderData*)renderer->driverdata;
     PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
+#endif
+    D3D12_RenderData* data = (D3D12_RenderData*)renderer->driverdata;
     ID3D12Device* d3dDevice = NULL;
     HRESULT result = S_OK;
     UINT creationFlags = 0;
@@ -683,6 +700,10 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
         DXGI_FORMAT_R8_UNORM
     };
 
+    /* See if we need debug interfaces */
+    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
+
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     data->hDXGIMod = SDL_LoadObject("dxgi.dll");
     if (!data->hDXGIMod) {
         result = E_FAIL;
@@ -707,9 +728,6 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
         goto done;
     }
 
-    /* See if we need debug interfaces */
-    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
-
     if (createDebug) {
         PFN_D3D12_GET_DEBUG_INTERFACE D3D12GetDebugInterfaceFunc;
 
@@ -721,7 +739,15 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
         D3D12GetDebugInterfaceFunc(D3D_GUID(SDL_IID_ID3D12Debug), (void**)&data->debugInterface);
         D3D_CALL(data->debugInterface, EnableDebugLayer);
     }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    result = D3D12_XBOX_CreateDevice(&d3dDevice, createDebug);
+    if (FAILED(result)) {
+        /* SDL Error is set by D3D12_XBOX_CreateDevice */
+        goto done;
+    }
+#else
     if (createDebug) {
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
         IDXGIInfoQueue *dxgiInfoQueue = NULL;
@@ -773,7 +799,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     
     result = D3D12CreateDeviceFunc((IUnknown *)data->dxgiAdapter,
         D3D_FEATURE_LEVEL_11_0, /* Request minimum feature level 11.0 for maximum compatibility */
-        D3D_GUID(SDL_IID_ID3D12Device5),
+        D3D_GUID(SDL_IID_ID3D12Device1),
         (void **)&d3dDevice
         );
     if (FAILED(result)) {
@@ -803,10 +829,11 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
 
         SAFE_RELEASE(infoQueue);
     }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
-    result = D3D_CALL(d3dDevice, QueryInterface, D3D_GUID(SDL_IID_ID3D12Device5), (void **)&data->d3dDevice);
+    result = D3D_CALL(d3dDevice, QueryInterface, D3D_GUID(SDL_IID_ID3D12Device1), (void **)&data->d3dDevice);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device to ID3D12Device5"), result);
+        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device to ID3D12Device1"), result);
         goto done;
     }
 
@@ -1115,6 +1142,7 @@ D3D12_GetViewportAlignedD3DRect(SDL_Renderer * renderer, const SDL_Rect * sdlRec
     return 0;
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static HRESULT
 D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
 {
@@ -1182,6 +1210,7 @@ done:
     SAFE_RELEASE(swapChain);
     return result;
 }
+#endif
 
 static HRESULT D3D12_UpdateForWindowSizeChange(SDL_Renderer * renderer);
 
@@ -1241,6 +1270,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         h = tmp;
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (data->swapChain) {
         /* If the swap chain already exists, resize it. */
         result = D3D_CALL(data->swapChain, ResizeBuffers,
@@ -1278,9 +1308,17 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             }
         }
     }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     /* Get each back buffer render target and create render target views */
     for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+        result = D3D12_XBOX_CreateBackBufferTarget(data->d3dDevice, renderer->window->w, renderer->window->h, (void **) &data->renderTargets[i]);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D12_XBOX_CreateBackBufferTarget"), result);
+            goto done;
+        }
+#else
         result = D3D_CALL(data->swapChain, GetBuffer,
             i,
             D3D_GUID(SDL_IID_ID3D12Resource),
@@ -1290,6 +1328,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain4::GetBuffer"), result);
             goto done;
         }
+#endif
 
         SDL_zero(rtvDesc);
         rtvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -1302,7 +1341,11 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     }
 
     /* Set back buffer index to current buffer */
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    data->currentBackBufferIndex = 0;
+#else
     data->currentBackBufferIndex = D3D_CALL(data->swapChain, GetCurrentBackBufferIndex);
+#endif
 
     /* Set the swap chain target immediately, so that a target is always set
      * even before we get to SetDrawState. Without this it's possible to hit
@@ -1317,6 +1360,10 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         );
 
     data->viewportDirty = SDL_TRUE;
+
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    D3D12_XBOX_StartFrame(data->d3dDevice, &data->frameToken);
+#endif
 
 done:
     return result;
@@ -2865,8 +2912,10 @@ static void
 D3D12_RenderPresent(SDL_Renderer * renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *) renderer->driverdata;
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     UINT syncInterval;
     UINT presentFlags;
+#endif
     HRESULT result;
 
     /* Transition the render target to present state */
@@ -2880,6 +2929,9 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
     result = D3D_CALL(data->commandList, Close);
     D3D_CALL(data->commandQueue, ExecuteCommandLists, 1, (ID3D12CommandList * const *)&data->commandList);
 
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    result = D3D12_XBOX_PresentFrame(data->commandQueue, data->frameToken, data->renderTargets[data->currentBackBufferIndex]);
+#else
     if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
         syncInterval = 1;
         presentFlags = 0;
@@ -2892,6 +2944,7 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
      * rects to improve efficiency in certain scenarios.
      */
     result = D3D_CALL(data->swapChain, Present, syncInterval, presentFlags);
+#endif
 
     if (FAILED(result) && result != DXGI_ERROR_WAS_STILL_DRAWING) {
         /* If the device was removed either by a disconnect or a driver upgrade, we 
@@ -2918,7 +2971,12 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
         }
 
         data->fenceValue++;
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+        data->currentBackBufferIndex++;
+        data->currentBackBufferIndex %= SDL_D3D12_NUM_BUFFERS;
+#else
         data->currentBackBufferIndex = D3D_CALL(data->swapChain, GetCurrentBackBufferIndex);
+#endif
 
         /* Reset the command allocator and command list, and transition back to render target */
         D3D12_ResetCommandList(data);
@@ -2927,6 +2985,10 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
             D3D12_RESOURCE_STATE_PRESENT,
             D3D12_RESOURCE_STATE_RENDER_TARGET
             );
+
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+        D3D12_XBOX_StartFrame(data->d3dDevice, &data->frameToken);
+#endif
     }
 }
 

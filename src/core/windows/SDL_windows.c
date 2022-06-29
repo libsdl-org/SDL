@@ -96,6 +96,9 @@ WIN_CoInitialize(void)
        attribute, which, AFAIK, should initialize COM.
     */
     return S_OK;
+#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    /* On Xbox, there's no need to call CoInitializeEx (and it's not implemented) */
+    return S_OK;
 #else
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     if (hr == RPC_E_CHANGED_MODE) {
@@ -179,7 +182,7 @@ WIN_RoUninitialize(void)
 #endif
 }
 
-#ifndef __WINRT__
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static BOOL
 IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
@@ -203,7 +206,7 @@ IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServiceP
 
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
-#ifdef __WINRT__
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
@@ -212,7 +215,7 @@ BOOL WIN_IsWindowsVistaOrGreater(void)
 
 BOOL WIN_IsWindows7OrGreater(void)
 {
-#ifdef __WINRT__
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
@@ -221,7 +224,7 @@ BOOL WIN_IsWindows7OrGreater(void)
 
 BOOL WIN_IsWindows8OrGreater(void)
 {
-#ifdef __WINRT__
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
@@ -252,8 +255,8 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 char *
 WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
-#if __WINRT__
-    return WIN_StringToUTF8(name);  /* No registry access on WinRT/UWP, go with what we've got. */
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    return WIN_StringToUTF8(name);  /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
 #else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;

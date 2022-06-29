@@ -41,7 +41,7 @@
 #include "../SDL_sysjoystick.h"
 #include "../../thread/SDL_systhread.h"
 #include "../../core/windows/SDL_windows.h"
-#if !defined(__WINRT__)
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include <dbt.h>
 #endif
 
@@ -62,6 +62,11 @@
 /* CM_Register_Notification definitions */
 
 #define CR_SUCCESS (0x00000000)
+
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 DECLARE_HANDLE(HCMNOTIFICATION);
 typedef HCMNOTIFICATION* PHCMNOTIFICATION;
@@ -141,7 +146,7 @@ static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB,
 
 JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
 
-#ifndef __WINRT__
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static HMODULE cfgmgr32_lib_handle;
 static CM_Register_NotificationFunc CM_Register_Notification;
 static CM_Unregister_NotificationFunc CM_Unregister_Notification;
@@ -419,7 +424,7 @@ SDL_StopJoystickThread(void)
     s_joystickThread = NULL;
 }
 
-#endif /* !__WINRT__ */
+#endif /* !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
@@ -453,7 +458,7 @@ WINDOWS_JoystickInit(void)
 
     WINDOWS_JoystickDetect();
 
-#ifndef __WINRT__
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_CreateDeviceNotificationFunc();
 
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_FALSE);
@@ -738,7 +743,7 @@ WINDOWS_JoystickQuit(void)
     }
     SYS_Joystick = NULL;
 
-#ifndef __WINRT__
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (s_bJoystickThread) {
         SDL_StopJoystickThread();
     } else {
@@ -783,6 +788,11 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickQuit,
     WINDOWS_JoystickGetGamepadMapping
 };
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #else
 

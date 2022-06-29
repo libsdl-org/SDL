@@ -20,11 +20,10 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED
+#if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_stdinc.h"
 
-#define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
 #include <d3d12.h>
 
@@ -59,11 +58,6 @@
 
      xxd --include <FILE>
   */
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-#define D3D12_USE_SHADER_MODEL_4_0_level_9_3
-#else
-#define D3D12_USE_SHADER_MODEL_4_0_level_9_1
-#endif
 
 /* The color-only-rendering pixel shader:
 
@@ -6962,6 +6956,6 @@ void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECO
     outBytecode->BytecodeLength = D3D12_rootsigs[rootSig].rs_shader_size;
 }
 
-#endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED  && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
 /* vi: set ts=4 sw=4 expandtab: */

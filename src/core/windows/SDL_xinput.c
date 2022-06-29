@@ -22,6 +22,10 @@
 
 #include "SDL_xinput.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 XInputGetState_t SDL_XInputGetState = NULL;
 XInputSetState_t SDL_XInputSetState = NULL;
@@ -33,7 +37,7 @@ static HANDLE s_pXInputDLL = 0;
 static int s_XInputDLLRefCount = 0;
 
 
-#ifdef __WINRT__
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
 
 int
 WIN_LoadXInputDLL(void)
@@ -66,7 +70,7 @@ WIN_UnloadXInputDLL(void)
 {
 }
 
-#else /* !__WINRT__ */
+#else /* !(defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)) */
 
 int
 WIN_LoadXInputDLL(void)
@@ -135,5 +139,10 @@ WIN_UnloadXInputDLL(void)
 }
 
 #endif /* __WINRT__ */
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

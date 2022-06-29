@@ -172,4 +172,22 @@ SDL_GetPrefPath(const char *org, const char *app)
 
 #endif /* SDL_FILESYSTEM_WINDOWS */
 
+#ifdef SDL_FILESYSTEM_XBOX
+#include "SDL_filesystem.h"
+char *
+SDL_GetBasePath(void)
+{
+    /* FIXME: Is this correct? */
+    return NULL;
+}
+
+char *
+SDL_GetPrefPath(const char *org, const char *app)
+{
+    /* FIXME: Is this correct? */
+    return NULL;
+}
+#endif /* SDL_FILESYSTEM_XBOX */
+
+
 /* vi: set ts=4 sw=4 expandtab: */

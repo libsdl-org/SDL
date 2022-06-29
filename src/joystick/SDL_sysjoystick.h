@@ -27,6 +27,11 @@
 #include "SDL_joystick.h"
 #include "SDL_joystick_c.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* The SDL joystick structure */
 typedef struct _SDL_JoystickAxisInfo
 {
@@ -229,6 +234,11 @@ extern SDL_JoystickDriver SDL_OS2_JoystickDriver;
 extern SDL_JoystickDriver SDL_PS2_JoystickDriver;
 extern SDL_JoystickDriver SDL_PSP_JoystickDriver;
 extern SDL_JoystickDriver SDL_VITA_JoystickDriver;
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_sysjoystick_h_ */
 

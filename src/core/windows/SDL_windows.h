@@ -50,6 +50,20 @@
 #undef _WIN32_WINNT
 #define _WIN32_WINNT  0xA00
 #define WINVER        _WIN32_WINNT
+#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef STRICT
+#define STRICT
+#endif
+#ifndef UNICODE
+#define UNICODE 1
+#endif
+#undef WINVER
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0xA00
+#define WINVER       _WIN32_WINNT
 #endif
 
 #include <windows.h>
