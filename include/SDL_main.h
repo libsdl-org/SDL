@@ -245,6 +245,8 @@ extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_fun
  * \param reserved reserved for future use; should be NULL
  * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
  *          more information on the failure.
+ *
+ * \since This function is available since SDL 2.24.0.
  */
 extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
 
