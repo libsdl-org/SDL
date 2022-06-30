@@ -73,13 +73,17 @@ static void SDL_InitDynamicAPI(void);
     _static int SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
         char buf[128], *str = buf; \
         int result; \
-        va_list ap; initcall; va_start(ap, fmt); \
+        va_list ap; initcall; \
+        va_start(ap, fmt); \
         result = jump_table.SDL_vsnprintf(buf, sizeof(buf), fmt, ap); \
+        va_end(ap); \
         if (result >= 0 && (size_t)result >= sizeof(buf)) { \
             size_t len = (size_t)result + 1; \
             str = (char *)jump_table.SDL_malloc(len); \
             if (str) { \
+                va_start(ap, fmt); \
                 result = jump_table.SDL_vsnprintf(str, len, fmt, ap); \
+                va_end(ap); \
             } \
         } \
         va_end(ap); \
