@@ -2575,7 +2575,7 @@ elseif(PS2)
     file(GLOB PS2_VIDEO_SOURCES 
     ${SDL2_SOURCE_DIR}/src/video/ps2/*.c
     ${SDL2_SOURCE_DIR}/src/render/ps2/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${PS2_VIDEO_SOURCES})
+    list(APPEND SOURCE_FILES ${PS2_VIDEO_SOURCES})
     set(SDL_VIDEO_OPENGL 0)
     set(HAVE_SDL_VIDEO TRUE)
   endif()

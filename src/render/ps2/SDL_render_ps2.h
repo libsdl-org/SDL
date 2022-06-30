@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_render_sw_c_h_
-#define SDL_render_sw_c_h_
+#ifndef SDL_render_ps2_h_
+#define SDL_render_ps2_h_
 
 #include <kernel.h>
 
@@ -30,8 +30,8 @@
 #include <gsToolkit.h>
 #include <gsInline.h>
 
-extern SDL_Renderer * SW_CreateRendererForSurface(SDL_Surface * surface);
+extern SDL_Renderer * PS2_CreateRendererForSurface(SDL_Surface * surface);
 
-#endif /* SDL_render_sw_c_h_ */
+#endif /* SDL_render_ps2_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
