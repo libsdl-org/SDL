@@ -327,7 +327,6 @@ endif()
 # General includes
 target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")
 target_include_directories(sdl-build-options BEFORE INTERFACE "${SDL2_BINARY_DIR}/include" "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
-target_include_directories(sdl-build-options INTERFACE "${SDL2_SOURCE_DIR}/include")
 # Note: The clang toolset for Visual Studio does not support the '-idirafter' option.
 if(USE_GCC OR (USE_CLANG AND NOT MSVC_CLANG))
   # !!! FIXME: do we _need_ to mess with CMAKE_C_FLAGS here?
@@ -2750,6 +2749,16 @@ endif()
 configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
   "${SDL2_BINARY_DIR}/include/SDL_revision.h")
 
+# Copy all non-generated headers to "${SDL2_BINARY_DIR}/include"
+# This is done to avoid the inclusion of a pre-generated SDL_config.h
+file(GLOB SDL2_INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
+foreach(hdr IN LISTS SDL2_INCLUDE_FILES)
+  if(hdr MATCHES ".*(SDL_config|SDL_revision).*")
+    list(REMOVE_ITEM SDL2_INCLUDE_FILES "${hdr}")
+  endif()
+endforeach()
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_INCLUDE_FILES} "${SDL2_BINARY_DIR}/include")
+
 if(NOT WINDOWS OR CYGWIN OR MINGW)
 
   set(prefix ${CMAKE_INSTALL_PREFIX})
@@ -2951,7 +2960,7 @@ if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
   target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" PRIVATE "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
-  target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
+  target_include_directories(SDL2main PUBLIC "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
   if (WIN32)
     target_link_libraries(SDL2main PRIVATE shell32)
   endif()
@@ -3014,8 +3023,11 @@ if(SDL_SHARED)
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
-  target_include_directories(SDL2 BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
-  target_include_directories(SDL2 PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>;$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
+  target_include_directories(SDL2 PUBLIC
+      "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(MINGW OR CYGWIN)
@@ -3051,8 +3063,11 @@ if(SDL_STATIC)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
   target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL2-static BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
-  target_include_directories(SDL2-static PUBLIC "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>" $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:include/SDL2>)
+  target_include_directories(SDL2-static PUBLIC
+      "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL2-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(NOT ANDROID)
@@ -3076,9 +3091,10 @@ if(SDL_TEST)
   set_target_properties(SDL2_test PROPERTIES
       EXPORT_NAME SDL2test)
   target_include_directories(SDL2_test PUBLIC
+      "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
-      "$<BUILD_INTERFACE:${SDL2_SOURCE_DIR}/include>"
-      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
   target_link_libraries(SDL2_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
@@ -3169,14 +3185,12 @@ if(NOT SDL2_DISABLE_INSTALL)
     COMPONENT Devel
   )
 
-  file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
-  list(REMOVE_ITEM INCLUDE_FILES
-      "${SDL2_SOURCE_DIR}/include/SDL_config.h"
-      "${SDL2_SOURCE_DIR}/include/SDL_revision.h")
-  list(APPEND INCLUDE_FILES
+  install(
+    FILES
+      ${SDL2_INCLUDE_FILES}
       "${SDL2_BINARY_DIR}/include/SDL_revision.h"
-      "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h")
-  install(FILES ${INCLUDE_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
+      "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
 
   string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
   if (UPPER_BUILD_TYPE MATCHES DEBUG)
