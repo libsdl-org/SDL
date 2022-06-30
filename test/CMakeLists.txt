@@ -27,6 +27,14 @@ if(PSP)
         psphprm
         psppower
     )
+elseif(PS2)
+link_libraries(
+        SDL2main
+        SDL2_test
+        SDL2-static
+        patches
+        ps2_drivers
+)
 else()
     link_libraries(SDL2::SDL2test SDL2::SDL2-static)
 endif()

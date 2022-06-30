@@ -2539,7 +2539,10 @@ elseif(PSP)
   endif(NOT SDL2_DISABLE_SDL2MAIN)
 
 elseif(PS2)
-  list(APPEND EXTRA_CFLAGS "-DPS2" "-D__PS2__")
+  list(APPEND EXTRA_CFLAGS "-DPS2" "-D__PS2__" "-I${PS2SDK}/ports/include")
+
+  file(GLOB PS2_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/ps2/*.c)
+  set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${PS2_MAIN_SOURCES})
 
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_PS2 1)
@@ -2559,6 +2562,12 @@ elseif(PS2)
     list(APPEND SOURCE_FILES ${PS2_TIMER_SOURCES})
     set(HAVE_SDL_TIMERS TRUE)
   endif()
+
+  list(APPEND EXTRA_LIBS
+    patches
+    ps2_drivers
+  )
+
 elseif(OS2)
   list(APPEND EXTRA_CFLAGS "-DOS2EMX_PLAIN_CHAR")
 
