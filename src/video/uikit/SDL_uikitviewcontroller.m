@@ -35,10 +35,6 @@
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
 
-#if SDL_IPHONE_KEYBOARD
-#include "keyinfotable.h"
-#endif
-
 #if TARGET_OS_TV
 static void SDLCALL
 SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -421,33 +417,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
                  * convert them to key presses */
                 int i;
                 for (i = 0; i < len; i++) {
-                    unichar c = [changeText characterAtIndex:i];
-                    SDL_Scancode code;
-                    Uint16 mod;
-
-                    if (c < 127) {
-                        /* Figure out the SDL_Scancode and SDL_keymod for this unichar */
-                        code = unicharToUIKeyInfoTable[c].code;
-                        mod  = unicharToUIKeyInfoTable[c].mod;
-                    } else {
-                        /* We only deal with ASCII right now */
-                        code = SDL_SCANCODE_UNKNOWN;
-                        mod = 0;
-                    }
-
-                    if (mod & KMOD_SHIFT) {
-                        /* If character uses shift, press shift */
-                        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
-                    }
-
-                    /* send a keydown and keyup even for the character */
-                    SDL_SendKeyboardKey(SDL_PRESSED, code);
-                    SDL_SendKeyboardKey(SDL_RELEASED, code);
-
-                    if (mod & KMOD_SHIFT) {
-                        /* If character uses shift, release shift */
-                        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
-                    }
+                    SDL_SendKeyboardUnicodeKey([changeText characterAtIndex:i]);
                 }
             }
             SDL_SendKeyboardText([changeText UTF8String]);
