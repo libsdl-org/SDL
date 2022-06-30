@@ -2001,6 +2001,15 @@ extern "C" {
  */
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
 
+ /**
+  *  \brief  A variable that lets you disable the detection and use of DirectInput gamepad devices
+  *
+  *  The variable can be set to the following values:
+  *    "0"       - Disable DirectInput detection (only uses XInput)
+  *    "1"       - Enable DirectInput detection (the default)
+  */
+#define SDL_HINT_DIRECTINPUT_ENABLED "SDL_DIRECTINPUT_ENABLED"
+
 /**
  *  \brief  A variable that causes SDL to use the old axis and button mapping for XInput devices.
  *

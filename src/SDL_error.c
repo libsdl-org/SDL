@@ -38,16 +38,20 @@ SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 
         va_start(ap, fmt);
         result = SDL_vsnprintf(error->str, error->len, fmt, ap);
+        va_end(ap);
+
         if (result >= 0 && (size_t)result >= error->len && error->realloc_func) {
             size_t len = (size_t)result + 1;
             char *str = (char *)error->realloc_func(error->str, len);
             if (str) {
                 error->str = str;
                 error->len = len;
+                va_start(ap, fmt);
                 SDL_vsnprintf(error->str, error->len, fmt, ap);
+                va_end(ap);
             }
         }
-        va_end(ap);
+
 
         if (SDL_LogGetPriority(SDL_LOG_CATEGORY_ERROR) <= SDL_LOG_PRIORITY_DEBUG) {
             /* If we are in debug mode, print out the error message */

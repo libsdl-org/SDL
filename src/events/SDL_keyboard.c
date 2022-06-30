@@ -27,6 +27,7 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "../video/SDL_sysvideo.h"
+#include "scancodes_ascii.h"
 
 
 /* #define DEBUG_KEYBOARD */
@@ -817,6 +818,33 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
     }
 
     return (posted);
+}
+
+int
+SDL_SendKeyboardUnicodeKey(Uint32 ch)
+{
+    SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
+    uint16_t mod = 0;
+
+    if (ch < SDL_arraysize(SDL_ASCIIKeyInfoTable)) {
+        code = SDL_ASCIIKeyInfoTable[ch].code;
+        mod = SDL_ASCIIKeyInfoTable[ch].mod;
+    }
+
+    if (mod & KMOD_SHIFT) {
+        /* If the character uses shift, press shift down */
+        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
+    }
+
+    /* Send a keydown and keyup for the character */
+    SDL_SendKeyboardKey(SDL_PRESSED, code);
+    SDL_SendKeyboardKey(SDL_RELEASED, code);
+
+    if (mod & KMOD_SHIFT) {
+        /* If the character uses shift, release shift */
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+    }
+    return 0;
 }
 
 int

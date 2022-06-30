@@ -174,6 +174,15 @@ loop()
         case SDL_TEXTINPUT:
             PrintText("INPUT", event.text.text);
             break;
+        case SDL_FINGERDOWN:
+            if (SDL_IsTextInputActive()) {
+                SDL_Log("Stopping text input\n");
+                SDL_StopTextInput();
+            } else {
+                SDL_Log("Starting text input\n");
+                SDL_StartTextInput();
+            }
+            break;
         case SDL_MOUSEBUTTONDOWN:
             /* Left button quits the app, other buttons toggles text input */
             if (event.button.button == SDL_BUTTON_LEFT) {
@@ -210,6 +219,9 @@ main(int argc, char *argv[])
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+    /* Disable mouse emulation */
+    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 
     /* Enable extended text editing events */
     SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
