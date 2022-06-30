@@ -53,6 +53,10 @@
 #include "wmmsg.h"
 #endif
 
+#ifdef __GDK__
+#include "../../core/gdk/SDL_gdk.h"
+#endif
+
 /* #define HIGHDPI_DEBUG */
 
 /* Masks for processing the windows KEYDOWN and KEYUP messages */
@@ -1803,6 +1807,10 @@ WIN_PumpEvents(_THIS)
 
     /* Update mouse capture */
     WIN_UpdateMouseCapture();
+
+#ifdef __GDK__
+    GDK_DispatchTaskQueue();
+#endif
 }
 
 

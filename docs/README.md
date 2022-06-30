@@ -34,6 +34,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [DirectFB](README-directfb.md)
 - [DynAPI](README-dynapi.md)
 - [Emscripten](README-emscripten.md)
+- [GDK](README-gdk.md)
 - [Gesture](README-gesture.md)
 - [Git](README-git.md)
 - [iOS](README-ios.md)

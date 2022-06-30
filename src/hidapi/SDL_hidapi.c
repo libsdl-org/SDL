@@ -37,7 +37,7 @@
 
 #if !SDL_HIDAPI_DISABLED
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -89,7 +89,7 @@ static struct
     SDL_bool m_bCanGetNotifications;
     Uint32 m_unLastDetect;
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
     SDL_threadID m_nThreadID;
     WNDCLASSEXA m_wndClass;
     HWND m_hwndMsg;
@@ -110,7 +110,7 @@ static struct
 } SDL_HIDAPI_discovery;
 
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
 struct _DEV_BROADCAST_HDR
 {
     DWORD       dbch_size;
@@ -156,7 +156,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
 
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 
 #if defined(__MACOSX__)
@@ -219,7 +219,7 @@ HIDAPI_InitializeDiscovery()
     SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_FALSE;
     SDL_HIDAPI_discovery.m_unLastDetect = 0;
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
     SDL_HIDAPI_discovery.m_nThreadID = SDL_ThreadID();
 
     SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
@@ -246,7 +246,7 @@ HIDAPI_InitializeDiscovery()
         SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification( SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES );
         SDL_HIDAPI_discovery.m_bCanGetNotifications = ( SDL_HIDAPI_discovery.m_hNotify != 0 );
     }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 #if defined(__MACOSX__)
     SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMasterPortDefault);
@@ -369,7 +369,7 @@ HIDAPI_UpdateDiscovery()
         return;
     }
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
 #if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
     /* We'll only get messages on the same thread that created the window */
     if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
@@ -382,7 +382,7 @@ HIDAPI_UpdateDiscovery()
         }
     }
 #endif
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 #if defined(__MACOSX__)
     if (SDL_HIDAPI_discovery.m_notificationPort) {
@@ -474,7 +474,7 @@ HIDAPI_ShutdownDiscovery()
         return;
     }
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
     if (SDL_HIDAPI_discovery.m_hNotify)
         UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
 
@@ -578,7 +578,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #include "mac/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx 1
-#elif __WINDOWS__
+#elif __WINDOWS__ || __WINGDK__
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx 1

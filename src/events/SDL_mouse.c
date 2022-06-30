@@ -28,7 +28,7 @@
 #include "SDL_events_c.h"
 #include "../SDL_hints_c.h"
 #include "../video/SDL_sysvideo.h"
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"    // For GetDoubleClickTime()
 #endif
 #if defined(__OS2__)
@@ -55,7 +55,7 @@ SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *ol
     if (hint && *hint) {
         mouse->double_click_time = SDL_atoi(hint);
     } else {
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
         mouse->double_click_time = GetDoubleClickTime();
 #elif defined(__OS2__)
         mouse->double_click_time = WinQuerySysValue(HWND_DESKTOP, SV_DBLCLKTIME);
@@ -1069,7 +1069,7 @@ SDL_CaptureMouse(SDL_bool enabled)
         return SDL_Unsupported();
     }
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
     /* Windows mouse capture is tied to the current thread, and must be called
      * from the thread that created the window being captured. Since we update
      * the mouse capture state from the event processing, any application state
@@ -1078,7 +1078,7 @@ SDL_CaptureMouse(SDL_bool enabled)
     if (!SDL_OnVideoThread()) {
         return SDL_SetError("SDL_CaptureMouse() must be called on the main thread");
     }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
     if (enabled && SDL_GetKeyboardFocus() == NULL) {
         return SDL_SetError("No window has focus");

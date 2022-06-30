@@ -144,7 +144,7 @@
 #endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
-/* Try to find out if we're compiling for WinRT or non-WinRT */
+/* Try to find out if we're compiling for WinRT, GDK or non-WinRT/GDK */
 #if defined(_MSC_VER) && defined(__has_include)
 #if __has_include(<winapifamily.h>)
 #define HAVE_WINAPIFAMILY_H 1
@@ -169,6 +169,9 @@
 #if WINAPI_FAMILY_WINRT
 #undef __WINRT__
 #define __WINRT__ 1
+#elif defined(_GAMING_DESKTOP) /* GDK project configuration always defines _GAMING_XXX */
+#undef __WINGDK__
+#define __WINGDK__ 1
 #else
 #undef __WINDOWS__
 #define __WINDOWS__ 1
@@ -178,6 +181,11 @@
 #if defined(__WINDOWS__)
 #undef __WIN32__
 #define __WIN32__ 1
+#endif
+/* This is to support generic "any GDK" separate from a platform-specific GDK */
+#if defined(__WINGDK__) || defined(__XBOXONEGDK__) || defined(__XBOXSERIESGDK__)
+#undef __GDK__
+#define __GDK__ 1
 #endif
 #if defined(__PSP__)
 #undef __PSP__
