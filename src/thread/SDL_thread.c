@@ -211,7 +211,7 @@ SDL_GetStaticErrBuf()
     return &SDL_global_error;
 }
 
-static void
+static void SDLCALL
 SDL_FreeErrBuf(void *data)
 {
     SDL_error *errbuf = (SDL_error *)data;
