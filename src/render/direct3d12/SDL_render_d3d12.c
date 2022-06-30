@@ -27,7 +27,6 @@
 
 #define SDL_D3D12_NUM_BUFFERS 2
 #define SDL_D3D12_NUM_VERTEX_BUFFERS 256
-#define SDL_D3D12_VERTEX_BUFFER_MAX_TRIS 2048
 #define SDL_D3D12_MAX_NUM_TEXTURES 16384
 #define SDL_D3D12_NUM_UPLOAD_BUFFERS 32
 
@@ -146,6 +145,7 @@ typedef struct
 {
     ID3D12Resource *resource;
     D3D12_VERTEX_BUFFER_VIEW view;
+    size_t size;
 } D3D12_VertexBuffer;
 
 /* For SRV pool allocator */
@@ -200,7 +200,6 @@ typedef struct
     D3D12_PipelineState *currentPipelineState;
 
     D3D12_VertexBuffer vertexBuffers[SDL_D3D12_NUM_VERTEX_BUFFERS];
-    ID3D12Heap *vertexBufferHeap;
     D3D12_CPU_DESCRIPTOR_HANDLE nearestPixelSampler;
     D3D12_CPU_DESCRIPTOR_HANDLE linearSampler;
 
@@ -333,7 +332,6 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
         SAFE_RELEASE(data->srvDescriptorHeap);
         SAFE_RELEASE(data->samplerDescriptorHeap);
         SAFE_RELEASE(data->fence);
-        SAFE_RELEASE(data->vertexBufferHeap);
 
         for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
             SAFE_RELEASE(data->commandAllocators[i]);
@@ -664,6 +662,55 @@ D3D12_CreatePipelineState(SDL_Renderer * renderer,
     return &pipelineStates[data->pipelineStateCount - 1];
 }
 
+static HRESULT
+D3D12_CreateVertexBuffer(D3D12_RenderData *data, size_t vbidx, size_t size)
+{
+    D3D12_HEAP_PROPERTIES vbufferHeapProps;
+    D3D12_RESOURCE_DESC vbufferDesc;
+    HRESULT result;
+
+    SAFE_RELEASE(data->vertexBuffers[vbidx].resource);
+
+    SDL_zero(vbufferHeapProps);
+    vbufferHeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+    vbufferHeapProps.CreationNodeMask = 1;
+    vbufferHeapProps.VisibleNodeMask = 1;
+
+    SDL_zero(vbufferDesc);
+    vbufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    vbufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+    vbufferDesc.Width = size;
+    vbufferDesc.Height = 1;
+    vbufferDesc.DepthOrArraySize = 1;
+    vbufferDesc.MipLevels = 1;
+    vbufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+    vbufferDesc.SampleDesc.Count = 1;
+    vbufferDesc.SampleDesc.Quality = 0;
+    vbufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    vbufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+    result = D3D_CALL(data->d3dDevice, CreateCommittedResource,
+        &vbufferHeapProps,
+        D3D12_HEAP_FLAG_NONE,
+        &vbufferDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        NULL,
+        D3D_GUID(SDL_IID_ID3D12Resource),
+        (void **) &data->vertexBuffers[vbidx].resource
+        );
+
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreatePlacedResource [vertex buffer]"), result);
+        return result;
+    }
+
+    data->vertexBuffers[vbidx].view.BufferLocation = D3D_CALL(data->vertexBuffers[vbidx].resource, GetGPUVirtualAddress);
+    data->vertexBuffers[vbidx].view.StrideInBytes = sizeof(VertexPositionColor);
+    data->vertexBuffers[vbidx].size = size;
+
+    return result;
+}
+
 /* Create resources that depend on the device. */
 static HRESULT
 D3D12_CreateDeviceResources(SDL_Renderer* renderer)
@@ -682,8 +729,6 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
 
     D3D12_COMMAND_QUEUE_DESC queueDesc;
     D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc;
-    D3D12_HEAP_DESC vbufferHeapDesc;
-    D3D12_RESOURCE_DESC vbufferDesc;
     D3D12_SAMPLER_DESC samplerDesc;
     ID3D12DescriptorHeap *rootDescriptorHeaps[2];
 
@@ -992,49 +1037,9 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
         }
     }
 
-    /* Create a vertex buffer heap and populate it with resources */
-    SDL_zero(vbufferHeapDesc);
-    vbufferHeapDesc.SizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT * SDL_D3D12_NUM_VERTEX_BUFFERS;
-    D3D_CALL_RET(data->d3dDevice, GetCustomHeapProperties, &vbufferHeapDesc.Properties, 0, D3D12_HEAP_TYPE_UPLOAD);
-    vbufferHeapDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-    vbufferHeapDesc.Flags = D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
-    result = D3D_CALL(data->d3dDevice, CreateHeap, &vbufferHeapDesc, D3D_GUID(SDL_IID_ID3D12Heap), (void **)&data->vertexBufferHeap);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateHeap"), result);
-        goto done;
-    }
-
-    SDL_zero(vbufferDesc);
-    vbufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    vbufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-    vbufferDesc.Width = sizeof(VertexPositionColor) * SDL_D3D12_VERTEX_BUFFER_MAX_TRIS;
-    vbufferDesc.Height = 1;
-    vbufferDesc.DepthOrArraySize = 1;
-    vbufferDesc.MipLevels = 1;
-    vbufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-    vbufferDesc.SampleDesc.Count = 1;
-    vbufferDesc.SampleDesc.Quality = 0;
-    vbufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    vbufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
+    /* Create default vertex buffers  */
     for (i = 0; i < SDL_D3D12_NUM_VERTEX_BUFFERS; ++i) {
-        result = D3D_CALL(data->d3dDevice, CreatePlacedResource,
-            data->vertexBufferHeap,
-            i * D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT,
-            &vbufferDesc,
-            D3D12_RESOURCE_STATE_GENERIC_READ,
-            NULL,
-            D3D_GUID(SDL_IID_ID3D12Resource),
-            (void **)&data->vertexBuffers[i].resource
-            );
-        
-        if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreatePlacedResource [vertex buffer]"), result);
-            goto done;
-        }
-
-        data->vertexBuffers[i].view.BufferLocation = D3D_CALL(data->vertexBuffers[i].resource, GetGPUVirtualAddress);
-        data->vertexBuffers[i].view.StrideInBytes = sizeof(VertexPositionColor);
+        D3D12_CreateVertexBuffer(data, i, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
     }
 
     /* Create samplers to use when drawing textures: */
@@ -2270,9 +2275,9 @@ D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
         }
     }
 
-    if (dataSizeInBytes > SDL_D3D12_VERTEX_BUFFER_MAX_TRIS * stride) {
-        SDL_SetError("d3d12 renderer does not support more than %d verts in a vertex buffer", SDL_D3D12_VERTEX_BUFFER_MAX_TRIS);
-        return E_FAIL;
+    /* If the existing vertex buffer isn't big enough, we need to recreate a big enough one */
+    if (dataSizeInBytes > rendererData->vertexBuffers[vbidx].size) {
+        D3D12_CreateVertexBuffer(rendererData, vbidx, dataSizeInBytes);
     }
 
     vertexBuffer = rendererData->vertexBuffers[vbidx].resource;
@@ -2625,7 +2630,7 @@ D3D12_DrawPrimitives(SDL_Renderer * renderer, D3D12_PRIMITIVE_TOPOLOGY primitive
 {
      D3D12_RenderData *rendererData = (D3D12_RenderData *) renderer->driverdata;
      D3D_CALL(rendererData->commandList, IASetPrimitiveTopology, primitiveTopology);
-     D3D_CALL(rendererData->commandList, DrawInstanced, (UINT)vertexCount, 1, 0, 0);
+     D3D_CALL(rendererData->commandList, DrawInstanced, (UINT)vertexCount, 1, (UINT)vertexStart, 0);
 }
 
 static int
