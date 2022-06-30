@@ -55,129 +55,106 @@
 #ifdef __OpenBSD__
 static SDL_bool openbsd69orgreater = SDL_FALSE;
 #define KMSDRM_DRI_PATH openbsd69orgreater ? "/dev/dri/" : "/dev/"
-#define KMSDRM_DRI_DEVFMT openbsd69orgreater ? "%scard%d" : "%sdrm%d"
 #define KMSDRM_DRI_DEVNAME openbsd69orgreater ? "card" : "drm"
-#define KMSDRM_DRI_DEVNAMESIZE openbsd69orgreater ? 4 : 3
-#define KMSDRM_DRI_CARDPATHFMT openbsd69orgreater ? "/dev/dri/card%d" : "/dev/drm%d"
 #else
 #define KMSDRM_DRI_PATH "/dev/dri/"
-#define KMSDRM_DRI_DEVFMT "%scard%d"
 #define KMSDRM_DRI_DEVNAME "card"
-#define KMSDRM_DRI_DEVNAMESIZE 4
-#define KMSDRM_DRI_CARDPATHFMT "/dev/dri/card%d"
 #endif
+
+#define KMSDRM_DRI_CARDPATHFMT KMSDRM_DRI_PATH KMSDRM_DRI_DEVNAME "%d"
+#define KMSDRM_DRI_DEVNAMESIZE sizeof(KMSDRM_DRI_DEVNAME) - 1
+#define KMSDRM_DRI_PATHSIZE    sizeof(KMSDRM_DRI_PATH) - 1
 
 #ifndef EGL_PLATFORM_GBM_MESA
 #define EGL_PLATFORM_GBM_MESA 0x31D7
 #endif
 
 static int
-check_modestting(int devindex)
-{
-    SDL_bool available = SDL_FALSE;
-    char device[512];
-    int drm_fd;
-    int i;
-
-    SDL_snprintf(device, sizeof (device), KMSDRM_DRI_DEVFMT, KMSDRM_DRI_PATH, devindex);
-
-    drm_fd = open(device, O_RDWR | O_CLOEXEC);
-    if (drm_fd >= 0) {
-        if (SDL_KMSDRM_LoadSymbols()) {
-            drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
-            if (resources) {
-                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
-                  KMSDRM_DRI_DEVFMT
-                  " connector, encoder and CRTC counts are: %d %d %d",
-                  KMSDRM_DRI_PATH, devindex,
-                  resources->count_connectors, resources->count_encoders,
-                  resources->count_crtcs);
-
-                if (resources->count_connectors > 0
-                 && resources->count_encoders > 0
-                 && resources->count_crtcs > 0)
-                {
-                    available = SDL_FALSE;
-                    for (i = 0; i < resources->count_connectors; i++) {
-                        drmModeConnector *conn = KMSDRM_drmModeGetConnector(drm_fd,
-                            resources->connectors[i]);
-
-                        if (!conn) {
-                            continue;
-                        }
-
-                        if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes) {
-                            if (SDL_GetHintBoolean(SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER, SDL_TRUE)) {
-                                /* Skip this device if we can't obtain DRM master */
-                                KMSDRM_drmSetMaster(drm_fd);
-                                if (KMSDRM_drmAuthMagic(drm_fd, 0) == -EACCES) {
-                                    continue;
-                                }
-                            }
-
-                            available = SDL_TRUE;
-                            break;
-                        }
-
-                        KMSDRM_drmModeFreeConnector(conn);
-                    }
-                }
-                KMSDRM_drmModeFreeResources(resources);
-            }
-            SDL_KMSDRM_UnloadSymbols();
-        }
-        close(drm_fd);
-    }
-
-    return available;
-}
-
-static int get_dricount(void)
-{
-    int devcount = 0;
-    struct dirent *res;
-    struct stat sb;
-    DIR *folder;
-
-    if (!(stat(KMSDRM_DRI_PATH, &sb) == 0
-                && S_ISDIR(sb.st_mode))) {
-        /*printf("The path %s cannot be opened or is not available\n", KMSDRM_DRI_PATH);*/
-        return 0;
-    }
-
-    if (access(KMSDRM_DRI_PATH, F_OK) == -1) {
-        /*printf("The path %s cannot be opened\n", KMSDRM_DRI_PATH);*/
-        return 0;
-    }
-
-    folder = opendir(KMSDRM_DRI_PATH);
-    if (folder) {
-        while ((res = readdir(folder))) {
-            int len = SDL_strlen(res->d_name);
-            if (len > KMSDRM_DRI_DEVNAMESIZE && SDL_strncmp(res->d_name,
-                      KMSDRM_DRI_DEVNAME, KMSDRM_DRI_DEVNAMESIZE) == 0) {
-                devcount++;
-            }
-        }
-        closedir(folder);
-    }
-
-    return devcount;
-}
-
-static int
 get_driindex(void)
 {
-    const int devcount = get_dricount();
+    int available = -ENOENT;
+    char device[512] = KMSDRM_DRI_PATH;
+    int drm_fd;
     int i;
+    int devindex = -1;
+    DIR *folder = opendir(device);
+    if (!folder) {
+        SDL_SetError("Failed to open directory '%s'.\n", device);
+        return -ENOENT;
+    }
 
-    for (i = 0; i < devcount; i++) {
-        if (check_modestting(i)) {
-            return i;
+    memcpy(device + KMSDRM_DRI_PATHSIZE, KMSDRM_DRI_DEVNAME,
+           KMSDRM_DRI_DEVNAMESIZE);
+    for (struct dirent *res; (res = readdir(folder));) {
+        if (!memcmp(res->d_name, KMSDRM_DRI_DEVNAME, KMSDRM_DRI_DEVNAMESIZE)) {
+            memcpy(device + KMSDRM_DRI_PATHSIZE + KMSDRM_DRI_DEVNAMESIZE,
+                   res->d_name + KMSDRM_DRI_DEVNAMESIZE, 5);
+
+            drm_fd = open(device, O_RDWR | O_CLOEXEC);
+            if (drm_fd >= 0) {
+                devindex = SDL_atoi(device + KMSDRM_DRI_PATHSIZE +
+                                    KMSDRM_DRI_DEVNAMESIZE);
+                if (SDL_KMSDRM_LoadSymbols()) {
+                    drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
+                    if (resources) {
+                        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
+                                     KMSDRM_DRI_CARDPATHFMT
+                                     " connector, encoder and CRTC counts "
+                                     "are: %d %d %d",
+                                     devindex, resources->count_connectors,
+                                     resources->count_encoders,
+                                     resources->count_crtcs);
+
+                        if (resources->count_connectors > 0 &&
+                            resources->count_encoders > 0 &&
+                            resources->count_crtcs > 0) {
+                            available = -ENOENT;
+                            for (i = 0; i < resources->count_connectors; i++) {
+                                drmModeConnector *conn =
+                                    KMSDRM_drmModeGetConnector(
+                                        drm_fd, resources->connectors[i]);
+
+                                if (!conn) {
+                                    continue;
+                                }
+
+                                if (conn->connection == DRM_MODE_CONNECTED &&
+                                    conn->count_modes) {
+                                    if (SDL_GetHintBoolean(
+                                            SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER,
+                                            SDL_TRUE)) {
+                                        /* Skip this device if we can't obtain
+                                         * DRM master */
+                                        KMSDRM_drmSetMaster(drm_fd);
+                                        if (KMSDRM_drmAuthMagic(drm_fd, 0) ==
+                                            -EACCES) {
+                                            continue;
+                                        }
+                                    }
+
+                                    available = devindex;
+                                    break;
+                                }
+
+                                KMSDRM_drmModeFreeConnector(conn);
+                            }
+                        }
+                        KMSDRM_drmModeFreeResources(resources);
+                    }
+                    SDL_KMSDRM_UnloadSymbols();
+                }
+                close(drm_fd);
+            }
+
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
+                         "Failed to open KMSDRM device %s, errno: %d\n", device,
+                         errno);
         }
     }
 
-    return -ENOENT;
+    closedir(folder);
+
+    return available;
 }
 
 static int
