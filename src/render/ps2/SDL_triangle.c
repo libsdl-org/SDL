@@ -67,9 +67,9 @@ int SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surface
     points[4] = srcpoints[2];
     points[5] = dstpoints[2];
     for (i = 0; i < 3; i++) {
-        trianglepoint_2_fixedpoint(&points[2 * i + 1]);
+        PS2_trianglepoint_2_fixedpoint(&points[2 * i + 1]);
     }
-    return SDL_SW_BlitTriangle(src, dst, points);
+    return SDL_PS2_BlitTriangle(src, dst, points);
 }
 
 int SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
@@ -81,9 +81,9 @@ int SDL_FillTriangle(SDL_Surface *dst, const SDL_Point points[3], Uint32 color)
     }
     for (i = 0; i < 3; i++) {
         points_tmp[i] = points[i];
-        trianglepoint_2_fixedpoint(&points_tmp[i]);
+        PS2_trianglepoint_2_fixedpoint(&points_tmp[i]);
     }
-    return SDL_SW_FillTriangle(dst, points_tmp, SDL_BLENDMODE_NONE, color);
+    return SDL_PS2_FillTriangle(dst, points_tmp, SDL_BLENDMODE_NONE, color);
 }
 #endif
 
@@ -114,7 +114,7 @@ static int is_top_left(const SDL_Point *a, const SDL_Point *b, int is_clockwise)
     return 0;
 }
 
-void trianglepoint_2_fixedpoint(SDL_Point *a) {
+void PS2_trianglepoint_2_fixedpoint(SDL_Point *a) {
     a->x <<= FP_BITS;
     a->y <<= FP_BITS;
 }
@@ -202,7 +202,7 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
         }                                                                                               \
     }                                                                                                   \
 
-int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Point *d2, SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2)
+int SDL_PS2_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Point *d2, SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2)
 {
     int ret = 0;
     int dst_locked = 0;
@@ -314,7 +314,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
         SDL_Point p;
         p.x = dstrect.x;
         p.y = dstrect.y;
-        trianglepoint_2_fixedpoint(&p);
+        PS2_trianglepoint_2_fixedpoint(&p);
         p.x += (1 << FP_BITS) / 2;
         p.y += (1 << FP_BITS) / 2;
         w0_row = cross_product(d1, d2, p.x, p.y);
@@ -439,7 +439,7 @@ end:
 
 
 
-int SDL_SW_BlitTriangle(
+int SDL_PS2_BlitTriangle(
         SDL_Surface *src,
         SDL_Point *s0, SDL_Point *s1, SDL_Point *s2,
         SDL_Surface *dst,
@@ -587,7 +587,7 @@ int SDL_SW_BlitTriangle(
         SDL_Point p;
         p.x = dstrect.x;
         p.y = dstrect.y;
-        trianglepoint_2_fixedpoint(&p);
+        PS2_trianglepoint_2_fixedpoint(&p);
         p.x += (1 << FP_BITS) / 2;
         p.y += (1 << FP_BITS) / 2;
         w0_row = cross_product(d1, d2, p.x, p.y);
@@ -883,6 +883,6 @@ SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
     TRIANGLE_END_LOOP
 }
 
-#endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

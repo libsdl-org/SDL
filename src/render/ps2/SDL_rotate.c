@@ -574,4 +574,4 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
     return rz_dst;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED */

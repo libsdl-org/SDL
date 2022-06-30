@@ -23,7 +23,7 @@
 #if SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED
 
 #include "../SDL_sysrender.h"
-#include "SDL_render_sw_c.h"
+#include "SDL_render_ps2.h"
 #include "SDL_hints.h"
 
 #include "SDL_draw.h"
@@ -1168,9 +1168,6 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
 	dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8, 1 << DMA_CHANNEL_GIF);
 	dmaKit_chan_init(DMA_CHANNEL_GIF);
 
-	printf("\nGraphics: created %ix%i video surface\n",
-		gsGlobal->Width, gsGlobal->Height);
-
 	gsKit_set_clamp(gsGlobal, GS_CMODE_REPEAT);
 
 	gsKit_vram_clear(gsGlobal);
@@ -1224,6 +1221,6 @@ SDL_RenderDriver PS2_RenderDriver = {
     .max_texture_height = 512,}
 };
 
-#endif /* SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_PS2 */
 
 /* vi: set ts=4 sw=4 expandtab: */

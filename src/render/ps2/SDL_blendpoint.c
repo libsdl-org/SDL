@@ -357,6 +357,6 @@ SDL_BlendPoints(SDL_Surface * dst, const SDL_Point * points, int count,
     return status;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

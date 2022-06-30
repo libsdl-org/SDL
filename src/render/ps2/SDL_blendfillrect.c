@@ -352,6 +352,6 @@ SDL_BlendFillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
     return status;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_SW */
 
 /* vi: set ts=4 sw=4 expandtab: */
