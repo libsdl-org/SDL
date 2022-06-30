@@ -439,6 +439,16 @@ typedef void *(SDLCALL *SDL_realloc_func)(void *mem, size_t size);
 typedef void (SDLCALL *SDL_free_func)(void *mem);
 
 /**
+ * Get the original set of SDL memory functions
+ *
+ * \since This function is available since SDL 2.24.0.
+ */
+extern DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
+                                                            SDL_calloc_func *calloc_func,
+                                                            SDL_realloc_func *realloc_func,
+                                                            SDL_free_func *free_func);
+
+/**
  * Get the current set of SDL memory functions
  *
  * \since This function is available since SDL 2.0.7.

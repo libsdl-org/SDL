@@ -851,3 +851,4 @@
 ++'_SDL_utf8strnlen'.'SDL2.dll'.'SDL_utf8strnlen'
 # ++'_SDL_GDKGetTaskQueue'.'SDL2.dll'.'SDL_GDKGetTaskQueue'
 # ++'_SDL_GDKRunApp'.'SDL2.dll'.'SDL_GDKRunApp'
+++'_SDL_GetOriginalMemoryFunctions'.'SDL2.dll'.'SDL_GetOriginalMemoryFunctions'

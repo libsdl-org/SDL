@@ -125,6 +125,26 @@ static int main_testImpliedJoystickQuit (void *arg)
 #endif
 }
 
+static int
+main_testSetError(void *arg)
+{
+    size_t i;
+    char error[1024];
+
+    error[0] = '\0';
+    SDL_SetError("");
+    SDLTest_AssertCheck(SDL_strcmp(error, SDL_GetError()) == 0, "SDL_SetError(\"\")");
+
+    for (i = 0; i < (sizeof(error)-1); ++i) {
+        error[i] = 'a' + (i % 26);
+    }
+    error[i] = '\0';
+    SDL_SetError("%s", error);
+    SDLTest_AssertCheck(SDL_strcmp(error, SDL_GetError()) == 0, "SDL_SetError(\"abc...1023\")");
+
+    return TEST_COMPLETED;
+}
+
 static const SDLTest_TestCaseReference mainTest1 =
         { (SDLTest_TestCaseFp)main_testInitQuitJoystickHaptic, "main_testInitQuitJoystickHaptic", "Tests SDL_Init/Quit of Joystick and Haptic subsystem", TEST_ENABLED};
 
@@ -137,12 +157,16 @@ static const SDLTest_TestCaseReference mainTest3 =
 static const SDLTest_TestCaseReference mainTest4 =
         { (SDLTest_TestCaseFp)main_testImpliedJoystickQuit, "main_testImpliedJoystickQuit", "Tests that quit for gamecontroller doesn't quit joystick if you inited it explicitly", TEST_ENABLED};
 
+static const SDLTest_TestCaseReference mainTest5 =
+        { (SDLTest_TestCaseFp)main_testSetError, "main_testSetError", "Tests that SDL_SetError() handles arbitrarily large strings", TEST_ENABLED};
+
 /* Sequence of Main test cases */
 static const SDLTest_TestCaseReference *mainTests[] =  {
     &mainTest1,
     &mainTest2,
     &mainTest3,
     &mainTest4,
+    &mainTest5,
     NULL
 };
 
