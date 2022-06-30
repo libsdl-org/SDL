@@ -18951,13 +18951,15 @@ then :
   ac_cv_func_alloca_works=yes
 else $as_nop
   ac_cv_func_alloca_works=no
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 fi
+
+fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_alloca_works" >&5
 printf "%s\n" "$ac_cv_func_alloca_works" >&6; }
-fi
 
 if test $ac_cv_func_alloca_works = yes; then
 
