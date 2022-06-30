@@ -12,6 +12,8 @@
 #include <sifrpc.h>
 #include <iopcontrol.h>
 #include <sbv_patches.h>
+#include <ps2_fileXio_driver.h>
+#include <ps2_memcard_driver.h>
 
 #ifdef main
     #undef main
@@ -24,11 +26,27 @@ static void prepare_IOP()
    sbv_patch_disable_prefix_check();
 }
 
+static void init_drivers() {
+    init_fileXio_driver();
+    init_memcard_driver(true);
+}
+
+static void deinit_drivers() {
+    deinit_memcard_driver(true);
+    deinit_fileXio_driver();
+}
+
 int main(int argc, char *argv[])
 {
+    int res;
     prepare_IOP();
+    init_drivers();
 
-    return SDL_main(argc, argv);
+    res = SDL_main(argc, argv);
+
+    deinit_drivers();    
+    
+    return res;
 }
 
 #endif /* _EE */
