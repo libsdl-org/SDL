@@ -87,7 +87,7 @@ SDL_TicksInit(void)
         has_monotonic_time = SDL_TRUE;
     } else
 #elif defined(__APPLE__)
-    if (0 == mach_timebase_info(&mach_base_info)) {
+    if (mach_timebase_info(&mach_base_info) == 0) {
         has_monotonic_time = SDL_TRUE;
         start_mach = mach_absolute_time();
     } else
