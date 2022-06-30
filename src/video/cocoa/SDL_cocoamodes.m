@@ -185,6 +185,9 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArray
         int  i;
 
         for (i = 0; i < modescount; i++) {
+            int otherW, otherH, otherpixelW, otherpixelH, otherrefresh;
+            Uint32 otherformat;
+            bool otherGUI;
             CGDisplayModeRef othermode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modelist, i);
             uint32_t otherioflags = CGDisplayModeGetIOFlags(othermode);
 
@@ -196,13 +199,13 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArray
                 continue;
             }
 
-            int otherW = (int) CGDisplayModeGetWidth(othermode);
-            int otherH = (int) CGDisplayModeGetHeight(othermode);
-            int otherpixelW = (int) CGDisplayModeGetPixelWidth(othermode);
-            int otherpixelH = (int) CGDisplayModeGetPixelHeight(othermode);
-            int otherrefresh = GetDisplayModeRefreshRate(othermode, link);
-            Uint32 otherformat = GetDisplayModePixelFormat(othermode);
-            bool otherGUI = CGDisplayModeIsUsableForDesktopGUI(othermode);
+            otherW = (int) CGDisplayModeGetWidth(othermode);
+            otherH = (int) CGDisplayModeGetHeight(othermode);
+            otherpixelW = (int) CGDisplayModeGetPixelWidth(othermode);
+            otherpixelH = (int) CGDisplayModeGetPixelHeight(othermode);
+            otherrefresh = GetDisplayModeRefreshRate(othermode, link);
+            otherformat = GetDisplayModePixelFormat(othermode);
+            otherGUI = CGDisplayModeIsUsableForDesktopGUI(othermode);
 
             /* Ignore this mode if it's low-dpi (@1x) and we have a high-dpi
              * mode in the list with the same size in points.
@@ -417,11 +420,13 @@ Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
         return -1;
     }
 
-    const NSRect frame = [screen visibleFrame];
-    rect->x = (int)frame.origin.x;
-    rect->y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - frame.origin.y - frame.size.height);
-    rect->w = (int)frame.size.width;
-    rect->h = (int)frame.size.height;
+    {
+        const NSRect frame = [screen visibleFrame];
+        rect->x = (int)frame.origin.x;
+        rect->y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - frame.origin.y - frame.size.height);
+        rect->w = (int)frame.size.width;
+        rect->h = (int)frame.size.height;
+    }
 
     return 0;
 }
@@ -487,20 +492,21 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
         }
     }
 
-    const CGSize displaySize = CGDisplayScreenSize(data->display);
-    const int pixelWidth =  displayNativeSize.width;
-    const int pixelHeight = displayNativeSize.height;
+    {
+        const CGSize displaySize = CGDisplayScreenSize(data->display);
+        const int pixelWidth =  displayNativeSize.width;
+        const int pixelHeight = displayNativeSize.height;
 
-    if (ddpi) {
-        *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH));
+        if (ddpi) {
+            *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH));
+        }
+        if (hdpi) {
+            *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width);
+        }
+        if (vdpi) {
+            *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height);
+        }
     }
-    if (hdpi) {
-        *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width);
-    }
-    if (vdpi) {
-        *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height);
-    }
-
     return 0;
 }}
 

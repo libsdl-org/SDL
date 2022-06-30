@@ -115,6 +115,7 @@ Cocoa_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 int
 Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
 {
+    NSView* v;
     /* The current context is lost in here; save it and reset it. */
     SDL_WindowData *windowdata = (__bridge SDL_WindowData *) window->driverdata;
     SDL_Window *current_win = SDL_GL_GetCurrentWindow();
@@ -134,7 +135,7 @@ Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
     }
   
     /* Create the GLES window surface */
-    NSView* v = windowdata.nswindow.contentView;
+    v = windowdata.nswindow.contentView;
     windowdata.egl_surface = SDL_EGL_CreateSurface(_this, (__bridge NativeWindowType)[v layer]);
 
     if (windowdata.egl_surface == EGL_NO_SURFACE) {
