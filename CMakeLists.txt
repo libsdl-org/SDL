@@ -2752,12 +2752,19 @@ configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
 # Copy all non-generated headers to "${SDL2_BINARY_DIR}/include"
 # This is done to avoid the inclusion of a pre-generated SDL_config.h
 file(GLOB SDL2_INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
-foreach(hdr IN LISTS SDL2_INCLUDE_FILES)
-  if(hdr MATCHES ".*(SDL_config|SDL_revision).*")
-    list(REMOVE_ITEM SDL2_INCLUDE_FILES "${hdr}")
+set(SDL2_COPIED_INCLUDE_FILES)
+foreach(_hdr IN LISTS SDL2_INCLUDE_FILES)
+  if(_hdr MATCHES ".*(SDL_config|SDL_revision).*")
+    list(REMOVE_ITEM SDL2_INCLUDE_FILES "${_hdr}")
+  else()
+    get_filename_component(_name "${_hdr}" NAME)
+    set(_bin_hdr "${SDL2_BINARY_DIR}/include/${_name}")
+    list(APPEND SDL2_COPIED_INCLUDE_FILES "${_bin_hdr}")
+    add_custom_command(OUTPUT "${_bin_hdr}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_hdr}" "${_bin_hdr}"
+        DEPENDS "${_hdr}")
   endif()
 endforeach()
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_INCLUDE_FILES} "${SDL2_BINARY_DIR}/include")
 
 if(NOT WINDOWS OR CYGWIN OR MINGW)
 
@@ -2956,7 +2963,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} ${EXTRA_CFLAGS_BUILD}")
 
 if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   # Build SDLmain
-  add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
+  add_library(SDL2main STATIC ${SDLMAIN_SOURCES} ${SDL2_COPIED_INCLUDE_FILES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2main ALIAS SDL2main)
   target_include_directories(SDL2main BEFORE PRIVATE "${SDL2_BINARY_DIR}/include" PRIVATE "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
@@ -2986,7 +2993,7 @@ if(APPLE)
 endif()
 
 if(SDL_SHARED)
-  add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
+  add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES} ${SDL2_COPIED_INCLUDE_FILES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -3044,7 +3051,7 @@ if(SDL_SHARED)
 endif()
 
 if(SDL_STATIC)
-  add_library(SDL2-static STATIC ${SOURCE_FILES})
+  add_library(SDL2-static STATIC ${SOURCE_FILES} ${SDL2_COPIED_INCLUDE_FILES})
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
   if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
@@ -3086,7 +3093,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 
 if(SDL_TEST)
   file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
-  add_library(SDL2_test STATIC ${TEST_SOURCES})
+  add_library(SDL2_test STATIC ${TEST_SOURCES} ${SDL2_COPIED_INCLUDE_FILES})
   add_library(SDL2::SDL2test ALIAS SDL2_test)
   set_target_properties(SDL2_test PROPERTIES
       EXPORT_NAME SDL2test)
