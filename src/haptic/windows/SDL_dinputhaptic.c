@@ -27,6 +27,7 @@
 
 #if SDL_HAPTIC_DINPUT
 
+#include "SDL_hints.h"
 #include "SDL_stdinc.h"
 #include "SDL_timer.h"
 #include "SDL_windowshaptic_c.h"
@@ -75,6 +76,11 @@ SDL_DINPUT_HapticInit(void)
 
     if (dinput != NULL) {       /* Already open. */
         return SDL_SetError("Haptic: SubSystem already open.");
+    }
+
+    if (!SDL_GetHintBoolean(SDL_HINT_DIRECTINPUT_ENABLED, SDL_TRUE)) {
+        /* In some environments, IDirectInput8_Initialize / _EnumDevices can take a minute even with no controllers. */
+        return 0;
     }
 
     ret = WIN_CoInitialize();
