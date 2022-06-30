@@ -55,15 +55,17 @@
 #ifdef __OpenBSD__
 static SDL_bool openbsd69orgreater = SDL_FALSE;
 #define KMSDRM_DRI_PATH openbsd69orgreater ? "/dev/dri/" : "/dev/"
+#define KMSDRM_DRI_PATHSIZE    openbsd69orgreater ? 9 : 5
 #define KMSDRM_DRI_DEVNAME openbsd69orgreater ? "card" : "drm"
+#define KMSDRM_DRI_DEVNAMESIZE openbsd69orgreater ? 4 : 3
 #else
 #define KMSDRM_DRI_PATH "/dev/dri/"
+#define KMSDRM_DRI_PATHSIZE    9
 #define KMSDRM_DRI_DEVNAME "card"
+#define KMSDRM_DRI_DEVNAMESIZE 4
 #endif
 
 #define KMSDRM_DRI_CARDPATHFMT KMSDRM_DRI_PATH KMSDRM_DRI_DEVNAME "%d"
-#define KMSDRM_DRI_DEVNAMESIZE sizeof(KMSDRM_DRI_DEVNAME) - 1
-#define KMSDRM_DRI_PATHSIZE    sizeof(KMSDRM_DRI_PATH) - 1
 
 #ifndef EGL_PLATFORM_GBM_MESA
 #define EGL_PLATFORM_GBM_MESA 0x31D7
@@ -79,16 +81,17 @@ get_driindex(void)
     int devindex = -1;
     DIR *folder = opendir(device);
     if (!folder) {
-        SDL_SetError("Failed to open directory '%s'.\n", device);
+        SDL_SetError("Failed to open directory '%s'", device);
         return -ENOENT;
     }
 
-    memcpy(device + KMSDRM_DRI_PATHSIZE, KMSDRM_DRI_DEVNAME,
-           KMSDRM_DRI_DEVNAMESIZE);
+    strncpy(device + KMSDRM_DRI_PATHSIZE, KMSDRM_DRI_DEVNAME,
+            KMSDRM_DRI_DEVNAMESIZE + 1);
     for (struct dirent *res; (res = readdir(folder));) {
-        if (!memcmp(res->d_name, KMSDRM_DRI_DEVNAME, KMSDRM_DRI_DEVNAMESIZE)) {
-            memcpy(device + KMSDRM_DRI_PATHSIZE + KMSDRM_DRI_DEVNAMESIZE,
-                   res->d_name + KMSDRM_DRI_DEVNAMESIZE, 5);
+        if (SDL_memcmp(res->d_name, KMSDRM_DRI_DEVNAME,
+                       KMSDRM_DRI_DEVNAMESIZE) == 0) {
+            strncpy(device + KMSDRM_DRI_PATHSIZE + KMSDRM_DRI_DEVNAMESIZE,
+                    res->d_name + KMSDRM_DRI_DEVNAMESIZE, 6);
 
             drm_fd = open(device, O_RDWR | O_CLOEXEC);
             if (drm_fd >= 0) {
@@ -97,13 +100,12 @@ get_driindex(void)
                 if (SDL_KMSDRM_LoadSymbols()) {
                     drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
                     if (resources) {
-                        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
-                                     KMSDRM_DRI_CARDPATHFMT
-                                     " connector, encoder and CRTC counts "
-                                     "are: %d %d %d",
-                                     devindex, resources->count_connectors,
-                                     resources->count_encoders,
-                                     resources->count_crtcs);
+                        SDL_LogDebug(
+                            SDL_LOG_CATEGORY_VIDEO,
+                            KMSDRM_DRI_CARDPATHFMT
+                            " connector, encoder and CRTC counts are: %d %d %d",
+                            devindex, resources->count_connectors,
+                            resources->count_encoders, resources->count_crtcs);
 
                         if (resources->count_connectors > 0 &&
                             resources->count_encoders > 0 &&
