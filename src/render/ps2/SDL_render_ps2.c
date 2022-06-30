@@ -27,11 +27,6 @@
 #include "SDL_hints.h"
 
 #include "SDL_draw.h"
-#include "SDL_blendfillrect.h"
-#include "SDL_blendline.h"
-#include "SDL_blendpoint.h"
-#include "SDL_drawline.h"
-#include "SDL_drawpoint.h"
 #include "SDL_rotate.h"
 #include "SDL_triangle.h"
 
@@ -90,6 +85,133 @@ static void gsKit_flip(GSGLOBAL *gsGlobal)
 
    gsKit_setactive(gsGlobal);
 }
+
+
+int
+PS2_DrawPoints(SDL_Surface * dst, const SDL_Point * points, int count,
+               Uint32 color)
+{
+    int minx, miny;
+    int maxx, maxy;
+    int i;
+    int x, y;
+
+    if (!dst) {
+        return SDL_InvalidParamError("SDL_DrawPoints(): dst");
+    }
+
+    /* This function doesn't work on surfaces < 8 bpp */
+    if (dst->format->BitsPerPixel < 8) {
+        return SDL_SetError("SDL_DrawPoints(): Unsupported surface format");
+    }
+
+    minx = dst->clip_rect.x;
+    maxx = dst->clip_rect.x + dst->clip_rect.w - 1;
+    miny = dst->clip_rect.y;
+    maxy = dst->clip_rect.y + dst->clip_rect.h - 1;
+
+    for (i = 0; i < count; ++i) {
+        x = points[i].x;
+        y = points[i].y;
+
+        if (x < minx || x > maxx || y < miny || y > maxy) {
+            continue;
+        }
+
+        gsKit_prim_point(gsGlobal, x, y, 1, color);
+    }
+    return 0;
+}
+
+int
+PS2_DrawLines(SDL_Surface * dst, const SDL_Point * points, int count,
+              Uint32 color)
+{
+    int i;
+    int x1, y1;
+    int x2, y2;
+
+    if (!dst) {
+        return SDL_InvalidParamError("SDL_DrawLines(): dst");
+    }
+
+    for (i = 1; i < count; ++i) {
+        x1 = points[i-1].x;
+        y1 = points[i-1].y;
+        x2 = points[i].x;
+        y2 = points[i].y;
+
+        gsKit_prim_line(gsGlobal, x1, y1, x2, y2, 1, color);
+    }
+    if (points[0].x != points[count-1].x || points[0].y != points[count-1].y) {
+        SDL_DrawPoint(dst, points[count-1].x, points[count-1].y, color);
+    }
+    return 0;
+}
+
+
+int
+PS2_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
+              Uint32 color)
+{
+    SDL_Rect clipped;
+    Uint8 *pixels;
+    const SDL_Rect* rect;
+    int i;
+
+    if (!dst) {
+        return SDL_InvalidParamError("SDL_FillRects(): dst");
+    }
+
+    /* Nothing to do */
+    if (dst->w == 0 || dst->h == 0) {
+        return 0;
+    }
+
+    /* Perform software fill */
+    if (!dst->pixels) {
+        return SDL_SetError("SDL_FillRects(): You must lock the surface");
+    }
+
+    if (!rects) {
+        return SDL_InvalidParamError("SDL_FillRects(): rects");
+    }
+
+    /* This function doesn't usually work on surfaces < 8 bpp
+     * Except: support for 4bits, when filling full size.
+     */
+    if (dst->format->BitsPerPixel < 8) {
+        if (count == 1) {
+            const SDL_Rect *r = &rects[0];
+            if (r->x == 0 && r->y == 0 && r->w == dst->w && r->w == dst->h) {
+                if (dst->format->BitsPerPixel == 4) {
+                    Uint8 b = (((Uint8) color << 4) | (Uint8) color);
+                    SDL_memset(dst->pixels, b, dst->h * dst->pitch);
+                    return 1;
+                }
+            }
+        }
+        return SDL_SetError("SDL_FillRects(): Unsupported surface format");
+    }
+
+
+    for (i = 0; i < count; ++i) {
+        rect = &rects[i];
+        /* Perform clipping */
+        if (!SDL_IntersectRect(rect, &dst->clip_rect, &clipped)) {
+            continue;
+        }
+        rect = &clipped;
+
+        gsKit_prim_sprite(gsGlobal, rect->x, rect->y, rect->w, rect->h, 1, color);
+
+    }
+
+    /* We're done! */
+    return 0;
+}
+
+
 
 
 static SDL_Surface *
@@ -757,6 +879,7 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const Uint8 b = cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
                 gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(r,g,b,a/2,0x00));
+                renderer->line_method = SDL_RENDERLINEMETHOD_LINES;
                 drawstate.surface_cliprect_dirty = SDL_TRUE;
                 break;
             }
@@ -780,11 +903,8 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     }
                 }
 
-                if (blend == SDL_BLENDMODE_NONE) {
-                    SDL_DrawPoints(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
-                } else {
-                    SDL_BlendPoints(surface, verts, count, blend, r, g, b, a);
-                }
+                PS2_DrawPoints(surface, verts, count, (r | (g << 8) | (b << 16) | (a << 24)));
+
                 break;
             }
 
@@ -807,12 +927,7 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     }
                 }
 
-                if (blend == SDL_BLENDMODE_NONE) {
-                    SDL_DrawLines(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
-                } else {
-                    SDL_BlendLines(surface, verts, count, blend, r, g, b, a);
-                }
-
+                PS2_DrawLines(surface, verts, count, (r | (g << 8) | (b << 16) | (a << 24)));
                 break;
             }
 
@@ -835,11 +950,8 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     }
                 }
 
-                if (blend == SDL_BLENDMODE_NONE) {
-                    SDL_FillRects(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
-                } else {
-                    SDL_BlendFillRects(surface, verts, count, blend, r, g, b, a);
-                }
+                PS2_FillRects(surface, verts, count, (r | (g << 8) | (b << 16) | (a << 24)));
+
                 break;
             }
 

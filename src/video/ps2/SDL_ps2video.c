@@ -159,7 +159,7 @@ PS2_VideoInit(_THIS)
 
     /* Use a fake 32-bpp desktop mode */
     SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_RGB888;
+    mode.format = SDL_PIXELFORMAT_RGBA8888;
     mode.w = 640;
     /*if (gsGlobal->Mode == GS_MODE_PAL){
         mode.h = 512;
