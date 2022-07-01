@@ -2390,14 +2390,11 @@ class SDLInputConnection extends BaseInputConnection {
         // Workaround to capture backspace key. Ref: http://stackoverflow.com/questions/14560344/android-backspace-in-webview-baseinputconnection
         // and https://bugzilla.libsdl.org/show_bug.cgi?id=2265
         if (beforeLength > 0 && afterLength == 0) {
-            boolean ret = true;
             // backspace(s)
             while (beforeLength-- > 0) {
-               boolean ret_key = sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
-                              && sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-               ret = ret && ret_key;
+                nativeGenerateScancodeForUnichar('\b');
             }
-            return ret;
+            return true;
         }
 
         return super.deleteSurroundingText(beforeLength, afterLength);
