@@ -174,17 +174,18 @@ SDL_GetPrefPath(const char *org, const char *app)
 
 #ifdef SDL_FILESYSTEM_XBOX
 #include "SDL_filesystem.h"
+#include "SDL_error.h"
 char *
 SDL_GetBasePath(void)
 {
-    /* FIXME: Is this correct? */
+    SDL_Unsupported();
     return NULL;
 }
 
 char *
 SDL_GetPrefPath(const char *org, const char *app)
 {
-    /* FIXME: Is this correct? */
+    SDL_Unsupported();
     return NULL;
 }
 #endif /* SDL_FILESYSTEM_XBOX */

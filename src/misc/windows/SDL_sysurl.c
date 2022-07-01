@@ -29,7 +29,7 @@ int
 SDL_SYS_OpenURL(const char *url)
 {
     /* Not supported */
-    return -1;
+    return SDL_Unsupported();
 }
 #else
 /* https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx */
