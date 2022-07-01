@@ -1,42 +1,13 @@
-/*
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely.
-*/
-
 /**
- * Automated tests for GUID processing
+ * GUID test suite
  */
 
-#include <stdio.h>
-
 #include "SDL.h"
+#include "SDL_test.h"
 
-/* Helpers */
+/* ================= Test Case Implementation ================== */
 
-static int _error_count = 0;
-
-static int
-_require_eq(Uint64 expected, Uint64 actual, int line, char *msg)
-{
-    if (expected != actual) {
-        _error_count += 1;
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "[%s, L%d] %s: Actual %ld (0x%lx) != expected %ld (0x%lx)",
-                     __FILE__, line, msg, actual, actual, expected, expected);
-        return 0;
-    }
-    return 1;
-}
-
-#define ASSERT_EQ(MSG, EXPECTED, ACTUAL) _require_eq((EXPECTED), (ACTUAL), __LINE__, (MSG))
-
-/* Helpers */
+/* Helper functions */
 
 #define NUM_TEST_GUIDS 5
 
@@ -75,18 +46,20 @@ upper_lower_to_bytestring(Uint8* out, Uint64 upper, Uint64 lower)
     }
 }
 
-/* ================= Test Case Implementation ================== */
+
+/* Test case functions */
 
 /**
  * @brief Check String-to-GUID conversion
  *
  * @sa SDL_GUIDFromString
  */
-static void
-TestGuidFromString(void)
+static int
+TestGuidFromString(void *arg)
 {
     int i;
 
+    SDLTest_AssertPass("Call to SDL_GUIDFromString");
     for (i = 0; i < NUM_TEST_GUIDS; ++i) {
         Uint8 expected[16];
         SDL_GUID guid;
@@ -95,10 +68,10 @@ TestGuidFromString(void)
                                   test_guids[i].upper, test_guids[i].lower);
 
         guid = SDL_GUIDFromString(test_guids[i].str);
-        if (!ASSERT_EQ("GUID from string", 0, SDL_memcmp(expected, guid.data, 16))) {
-            SDL_Log("  GUID was: '%s'", test_guids[i].str);
-        }
+        SDLTest_AssertCheck(SDL_memcmp(expected, guid.data, 16) == 0, "GUID from string, GUID was: '%s'", test_guids[i].str);
     }
+
+    return TEST_COMPLETED;
 }
 
 /**
@@ -106,11 +79,12 @@ TestGuidFromString(void)
  *
  * @sa SDL_GUIDToString
  */
-static void
-TestGuidToString(void)
+static int
+TestGuidToString(void *arg)
 {
     int i;
 
+    SDLTest_AssertPass("Call to SDL_GUIDToString");
     for (i = 0; i < NUM_TEST_GUIDS; ++i) {
         const int guid_str_offset = 4;
         char guid_str_buf[64];
@@ -134,36 +108,43 @@ TestGuidToString(void)
             /* Check bytes before guid_str_buf */
             expected_prefix = fill_char | (fill_char << 8) | (fill_char << 16) | (fill_char << 24);
             SDL_memcpy(&actual_prefix, guid_str_buf, 4);
-            if (!ASSERT_EQ("String buffer memory before output untouched: ", expected_prefix, actual_prefix)) {
-                SDL_Log("  at size=%d", size);
-            }
+            SDLTest_AssertCheck(expected_prefix == actual_prefix, "String buffer memory before output untouched, expected: %i, got: %i, at size=%d", expected_prefix, actual_prefix, size);
 
             /* Check that we did not overwrite too much */
             written_size = 0;
             while ((guid_str[written_size] & 0xff) != fill_char && written_size < 256) {
                 ++written_size;
             }
-            if (!ASSERT_EQ("Output length is within expected bounds", 1, written_size <= size)) {
-                SDL_Log("  with length %d: wrote %d of %d permitted bytes",
-                        size, written_size, size);
-            }
+            SDLTest_AssertCheck(written_size <= size, "Output length is within expected bounds, with length %d: wrote %d of %d permitted bytes", size, written_size, size);
             if (size >= 33) {
-                if (!ASSERT_EQ("GUID string equality", 0, SDL_strcmp(guid_str, test_guids[i].str))) {
-                    SDL_Log("  from string: %s", test_guids[i].str);
-                }
+                SDLTest_AssertCheck(SDL_strcmp(guid_str, test_guids[i].str) == 0, "GUID string equality, from string: %s", test_guids[i].str);
             }
         }
     }
+
+    return TEST_COMPLETED;
 }
 
-int
-main(int argc, char *argv[])
-{
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+/* ================= Test References ================== */
 
-    TestGuidFromString();
-    TestGuidToString();
+/* GUID routine test cases */
+static const SDLTest_TestCaseReference guidTest1 =
+        { (SDLTest_TestCaseFp)TestGuidFromString, "TestGuidFromString", "Call to SDL_GUIDFromString", TEST_ENABLED };
 
-    return _error_count > 0;
-}
+static const SDLTest_TestCaseReference guidTest2 =
+        { (SDLTest_TestCaseFp)TestGuidToString, "TestGuidToString", "Call to SDL_GUIDToString", TEST_ENABLED };
+
+/* Sequence of GUID routine test cases */
+static const SDLTest_TestCaseReference *guidTests[] =  {
+    &guidTest1,
+    &guidTest2,
+    NULL
+};
+
+/* GUID routine test suite (global) */
+SDLTest_TestSuiteReference guidTestSuite = {
+    "GUID",
+    NULL,
+    guidTests,
+    NULL
+};
