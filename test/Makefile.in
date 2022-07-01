@@ -40,7 +40,6 @@ TARGETS = \
 	testgamecontroller$(EXE) \
 	testgeometry$(EXE) \
 	testgesture$(EXE) \
-	testguid$(EXE) \
 	testhaptic$(EXE) \
 	testhittesting$(EXE) \
 	testhotplug$(EXE) \
@@ -138,6 +137,7 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_audio.c \
 		      $(srcdir)/testautomation_clipboard.c \
 		      $(srcdir)/testautomation_events.c \
+		      $(srcdir)/testautomation_guid.c \
 		      $(srcdir)/testautomation_keyboard.c \
 		      $(srcdir)/testautomation_main.c \
 		      $(srcdir)/testautomation_mouse.c \
@@ -215,9 +215,6 @@ testgles2$(EXE): $(srcdir)/testgles2.c
 
 testgles2_sdf$(EXE): $(srcdir)/testgles2_sdf.c $(srcdir)/testutils.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
-
-testguid$(EXE): $(srcdir)/testguid.c
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testhaptic$(EXE): $(srcdir)/testhaptic.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
