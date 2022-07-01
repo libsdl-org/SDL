@@ -228,6 +228,9 @@ loop()
     SDLTest_TextWindowDisplay(textwin, renderer);
     SDL_RenderPresent(renderer);
 
+    /* Slow down framerate */
+    SDL_Delay(100);
+
 #ifdef __EMSCRIPTEN__
     if (done) {
         emscripten_cancel_main_loop();
