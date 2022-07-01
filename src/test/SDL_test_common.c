@@ -1196,7 +1196,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                     }
                 }
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
                 /* Print the D3D9 adapter index */
                 adapterIndex = SDL_Direct3D9GetAdapterIndex( i );
                 SDL_Log("D3D9 Adapter Index: %d", adapterIndex);

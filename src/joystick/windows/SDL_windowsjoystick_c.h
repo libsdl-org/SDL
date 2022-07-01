@@ -27,6 +27,11 @@
 
 #define MAX_INPUTS  256     /* each joystick can have up to 256 inputs */
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct JoyStick_DeviceData
 {
     SDL_JoystickGUID guid;
@@ -90,5 +95,10 @@ extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
 #endif
 
 extern void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

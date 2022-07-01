@@ -22,6 +22,11 @@
 
 #include "../../core/windows/SDL_xinput.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern SDL_bool SDL_XINPUT_Enabled(void);
 extern int SDL_XINPUT_JoystickInit(void);
 extern void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext);
@@ -31,5 +36,10 @@ extern Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick * joystick);
 extern void SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick);
 extern void SDL_XINPUT_JoystickClose(SDL_Joystick * joystick);
 extern void SDL_XINPUT_JoystickQuit(void);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

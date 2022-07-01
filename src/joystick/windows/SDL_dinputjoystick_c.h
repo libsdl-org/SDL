@@ -20,6 +20,11 @@
 */
 #include "../../SDL_internal.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int SDL_DINPUT_JoystickInit(void);
 extern void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext);
 extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
@@ -29,5 +34,10 @@ extern Uint32 SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick * joystick);
 extern void SDL_DINPUT_JoystickUpdate(SDL_Joystick * joystick);
 extern void SDL_DINPUT_JoystickClose(SDL_Joystick * joystick);
 extern void SDL_DINPUT_JoystickQuit(void);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

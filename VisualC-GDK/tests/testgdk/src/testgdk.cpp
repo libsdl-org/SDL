@@ -44,11 +44,32 @@ static SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
 
 int done;
 
+static struct
+{
+    SDL_AudioSpec spec;
+    Uint8 *sound;    /* Pointer to wave data */
+    Uint32 soundlen; /* Length of wave data */
+    int soundpos;    /* Current play position */
+} wave;
+
+static SDL_AudioDeviceID device;
+
+static void
+close_audio()
+{
+    if (device != 0) {
+        SDL_CloseAudioDevice(device);
+        device = 0;
+    }
+}
+
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
     SDL_free(sprites);
+    close_audio();
+    SDL_FreeWAV(wave.sound);
     SDLTest_CommonQuit(state);
     /* If rc is 0, just let main return normally rather than calling exit.
      * This allows testing of platforms where SDL_main is required and does meaningful cleanup.
@@ -56,6 +77,51 @@ quit(int rc)
     if (rc != 0) {
         exit(rc);
     }
+}
+
+static void
+open_audio()
+{
+    /* Initialize fillerup() variables */
+    device = SDL_OpenAudioDevice(NULL, SDL_FALSE, &wave.spec, NULL, 0);
+    if (!device) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
+        SDL_FreeWAV(wave.sound);
+        quit(2);
+    }
+
+    /* Let the audio run */
+    SDL_PauseAudioDevice(device, SDL_FALSE);
+}
+
+static void
+reopen_audio()
+{
+    close_audio();
+    open_audio();
+}
+
+void SDLCALL
+fillerup(void *unused, Uint8 *stream, int len)
+{
+    Uint8 *waveptr;
+    int waveleft;
+
+    /* Set up the pointers */
+    waveptr = wave.sound + wave.soundpos;
+    waveleft = wave.soundlen - wave.soundpos;
+
+    /* Go! */
+    while (waveleft <= len) {
+        SDL_memcpy(stream, waveptr, waveleft);
+        stream += waveleft;
+        len -= waveleft;
+        waveptr = wave.sound;
+        waveleft = wave.soundlen;
+        wave.soundpos = 0;
+    }
+    SDL_memcpy(stream, waveptr, len);
+    wave.soundpos += len;
 }
 
 void
@@ -285,7 +351,17 @@ loop()
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_KEYDOWN && !event.key.repeat) {
+            SDL_Log("Initial SDL_KEYDOWN: %s", SDL_GetScancodeName(event.key.keysym.scancode));
+        }
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+        /* On Xbox, ignore the keydown event because the features aren't supported */
+        if (event.type != SDL_KEYDOWN) {
+            SDLTest_CommonEvent(state, &event, &done);
+        }
+#else
         SDLTest_CommonEvent(state, &event, &done);
+#endif
     }
     for (i = 0; i < state->num_windows; ++i) {
         if (state->windows[i] == NULL)
@@ -299,12 +375,13 @@ main(int argc, char *argv[])
 {
     int i;
     const char *icon = "icon.bmp";
+    char *soundname = NULL;
 
     /* Initialize parameters */
     num_sprites = NUM_SPRITES;
 
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     if (!state) {
         return 1;
     }
@@ -381,6 +458,31 @@ main(int argc, char *argv[])
         quit(2);
     }
 
+    soundname = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
+
+    if (soundname == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        quit(1);
+    }
+
+    /* Load the wave file into memory */
+    if (SDL_LoadWAV(soundname, &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", soundname, SDL_GetError());
+        quit(1);
+    }
+
+    wave.spec.callback = fillerup;
+
+    /* Show the list of available drivers */
+    SDL_Log("Available audio drivers:");
+    for (i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
+        SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
+    }
+
+    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+
+    open_audio();
+
     /* Main render loop */
     done = 0;
 
@@ -392,6 +494,8 @@ main(int argc, char *argv[])
     }
 
     quit(0);
+
+    SDL_free(soundname);
     return 0;
 }
 

@@ -3,7 +3,7 @@ GDK
 
 This port allows SDL applications to run via Microsoft's Game Development Kit (GDK).
 
-At this time, only Windows GDK is supported. Xbox support is slated for the future.
+Windows (GDK) and  Xbox One/Xbox Series (GDKX) are supported. Although most of the Xbox code is included in the public SDL source code, NDA access is required for a small number of source files. If you have access to GDKX, these required Xbox files are posted on the GDK forums [here](https://forums.xboxlive.com/questions/130003/).
 
 
 Requirements
@@ -56,7 +56,7 @@ In your game's existing Visual Studio Solution, go to Build > Configuration Mana
 
 ### 2. Build SDL2 and SDL2main for GDK ###
 
-Open `VisualC-GDK/SDL.sln` in Visual Studio, you need to build the SDL2 and SDL2main targets (Release is recommended). You will need to copy/keep track of the `SDL2.dll`, `XCurl.dll` (which is output by Gaming.Desktop.x64), `SDL2.lib`, and `SDL2main.lib` output files for your game project.
+Open `VisualC-GDK/SDL.sln` in Visual Studio, you need to build the SDL2 and SDL2main targets for the Gaming.Desktop.x64 platform (Release is recommended). You will need to copy/keep track of the `SDL2.dll`, `XCurl.dll` (which is output by Gaming.Desktop.x64), `SDL2.lib`, and `SDL2main.lib` output files for your game project.
 
 *Alternatively*, you could setup your solution file to instead reference the SDL2/SDL2main project file targets from the SDL source, and add those projects as a dependency. This would mean that SDL2 and SDL2main would both be built when your game is built. 
 

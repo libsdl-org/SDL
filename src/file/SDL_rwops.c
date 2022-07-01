@@ -75,7 +75,9 @@
 static int SDLCALL
 windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
 {
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     UINT old_error_mode;
+#endif
     HANDLE h;
     DWORD r_right, w_right;
     DWORD must_exist, truncate;
@@ -112,9 +114,11 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
     if (!context->hidden.windowsio.buffer.data) {
         return SDL_OutOfMemory();
     }
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Do not open a dialog box if failure */
     old_error_mode =
         SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#endif
 
     {
         LPTSTR tstr = WIN_UTF8ToString(filename);
@@ -125,8 +129,10 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
         SDL_free(tstr);
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* restore old behavior */
     SetErrorMode(old_error_mode);
+#endif
 
     if (h == INVALID_HANDLE_VALUE) {
         SDL_free(context->hidden.windowsio.buffer.data);

@@ -35,6 +35,11 @@
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
 #include "../../thread/SDL_systhread.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Internal stuff.
  */
@@ -45,7 +50,7 @@ int
 SDL_XINPUT_HapticInit(void)
 {
     if (SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE)) {
-        loaded_xinput = (WIN_LoadXInputDLL() == 0);
+        loaded_xinput = (WIN_LoadXInputDLL() == 0) ? SDL_TRUE : SDL_FALSE;
     }
 
     /* If the joystick subsystem is active, it will manage adding XInput haptic devices */
@@ -364,6 +369,11 @@ SDL_XINPUT_HapticStopAll(SDL_Haptic * haptic)
     SDL_UnlockMutex(haptic->hwdata->mutex);
     return (XINPUTSETSTATE(haptic->hwdata->userid, &vibration) == ERROR_SUCCESS) ? 0 : -1;
 }
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #else /* !SDL_HAPTIC_XINPUT */
 

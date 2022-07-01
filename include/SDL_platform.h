@@ -172,6 +172,12 @@
 #elif defined(_GAMING_DESKTOP) /* GDK project configuration always defines _GAMING_XXX */
 #undef __WINGDK__
 #define __WINGDK__ 1
+#elif defined(_GAMING_XBOX_XBOXONE)
+#undef __XBOXONE__
+#define __XBOXONE__ 1
+#elif defined(_GAMING_XBOX_SCARLETT)
+#undef __XBOXSERIES__
+#define __XBOXSERIES__ 1
 #else
 #undef __WINDOWS__
 #define __WINDOWS__ 1
@@ -183,7 +189,7 @@
 #define __WIN32__ 1
 #endif
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
-#if defined(__WINGDK__) || defined(__XBOXONEGDK__) || defined(__XBOXSERIESGDK__)
+#if defined(__WINGDK__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #undef __GDK__
 #define __GDK__ 1
 #endif

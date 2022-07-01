@@ -26,7 +26,13 @@
 #include "SDL_windows.h"
 
 #ifdef HAVE_XINPUT_H
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+/* Xbox supports an XInput wrapper which is a C++-only header... */
+#include <XInputOnGameInput.h>
+using namespace XInputOnGameInput;
+#else
 #include <xinput.h>
+#endif
 #endif /* HAVE_XINPUT_H */
 
 #ifndef XUSER_MAX_COUNT
@@ -147,6 +153,11 @@
 #define BATTERY_LEVEL_FULL              0x03
 #endif
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* typedef's for XInput structs we use */
 
 #ifndef HAVE_XINPUT_GAMEPAD_EX
@@ -242,6 +253,11 @@ extern XInputSetState_t SDL_XInputSetState;
 extern XInputGetCapabilities_t SDL_XInputGetCapabilities;
 extern XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation;
 extern DWORD SDL_XInputVersion;  /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #define XINPUTGETSTATE          SDL_XInputGetState
 #define XINPUTSETSTATE          SDL_XInputSetState
