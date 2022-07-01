@@ -1076,6 +1076,7 @@ HIDAPI_JoystickQuit(void)
 
     SDL_hid_exit();
 
+    SDL_HIDAPI_change_count = 0;
     shutting_down = SDL_FALSE;
     initialized = SDL_FALSE;
 }
