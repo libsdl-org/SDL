@@ -1776,7 +1776,7 @@ WIN_PumpEvents(_THIS)
                 /* This mouse message happened after the warp */
                 SDL_last_warp_time = 0;
             }
-#endif !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
             TranslateMessage(&msg);
