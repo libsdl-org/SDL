@@ -1314,23 +1314,19 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
 }
 
 SDL_RenderDriver PS2_RenderDriver = {
-    PS2_CreateRenderer,
-    {
-     "PS2 gsKit",
-     SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-     8,
-     {
-      SDL_PIXELFORMAT_ARGB8888,
-      SDL_PIXELFORMAT_ABGR8888,
-      SDL_PIXELFORMAT_RGBA8888,
-      SDL_PIXELFORMAT_BGRA8888,
-      SDL_PIXELFORMAT_RGB888,
-      SDL_PIXELFORMAT_BGR888,
-      SDL_PIXELFORMAT_RGB565,
-      SDL_PIXELFORMAT_RGB555
-     },
-    .max_texture_width = 512,
-    .max_texture_height = 512,}
+    .CreateRenderer = PS2_CreateRenderer,
+    .info = {
+        .name = "PS2 gsKit",
+        .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
+        .num_texture_formats = 3,
+        .texture_formats = { 
+            [0] = SDL_PIXELFORMAT_ABGR1555,
+            [1] = SDL_PIXELFORMAT_ABGR8888,
+            [2] = SDL_PIXELFORMAT_BGR888,
+        },
+        .max_texture_width = 1024,
+        .max_texture_height = 1024,
+    }
 };
 
 #endif /* SDL_VIDEO_RENDER_PS2 */
