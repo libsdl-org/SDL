@@ -201,29 +201,6 @@ PS2_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FR
 }
 
 static int
-PS2_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-             const SDL_Rect * srcrect, const SDL_FRect * dstrect)
-{
-    return 0;
-}
-
-static int
-PS2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
-{
-    return 0;
-}
-
-static int
-PS2_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * texture,
-                const SDL_Rect * srcrect, const SDL_Rect * final_rect,
-                const double angle, const SDL_FPoint * center, const SDL_RendererFlip flip, float scale_x, float scale_y)
-{
-    return 0;
-}
-
-static int
 PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -276,6 +253,15 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 PS2_RenderClear(renderer, cmd);
                 break;
             }
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
+                break;
+
+            case SDL_RENDERCMD_COPY: /* unused */
+                break;
+
+            case SDL_RENDERCMD_COPY_EX: /* unused */
+                break;
+                
             default: 
                 break;
         }
@@ -427,8 +413,6 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueDrawPoints = PS2_QueueDrawPoints;
     renderer->QueueDrawLines = PS2_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueFillRects = PS2_QueueFillRects;
-    renderer->QueueCopy = PS2_QueueCopy;
-    renderer->QueueCopyEx = PS2_QueueCopyEx;
     renderer->QueueGeometry = PS2_QueueGeometry;
     renderer->RunCommandQueue = PS2_RunCommandQueue;
     renderer->RenderReadPixels = PS2_RenderReadPixels;
