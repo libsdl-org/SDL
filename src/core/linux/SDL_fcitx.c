@@ -424,7 +424,7 @@ SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 }
 
 void
-SDL_Fcitx_UpdateTextRect(SDL_Rect *rect)
+SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
 {
     SDL_Window *focused_win = NULL;
     SDL_SysWMinfo info;

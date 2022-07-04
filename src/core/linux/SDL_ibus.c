@@ -639,7 +639,7 @@ SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 }
 
 void
-SDL_IBus_UpdateTextRect(SDL_Rect *rect)
+SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
 {
     SDL_Window *focused_win;
     SDL_SysWMinfo info;
