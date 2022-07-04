@@ -48,23 +48,57 @@
 #include "SDL_ps2framebuffer_c.h"
 #include "SDL_hints.h"
 
-#define PS2VID_DRIVER_NAME "ps2"
-
-/* Initialization/Query functions */
-static int PS2_VideoInit(_THIS);
-static int PS2_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
-static void PS2_VideoQuit(_THIS);
-
 /* PS2 driver bootstrap functions */
 
-static void
-PS2_DeleteDevice(SDL_VideoDevice * device)
+static int PS2_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+{
+    return 0;
+}
+
+static void PS2_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_free(device);
 }
 
-static SDL_VideoDevice *
-PS2_CreateDevice(int devindex)
+static int PS2_VideoInit(_THIS)
+{
+    SDL_VideoDisplay display;
+    SDL_DisplayMode current_mode;
+
+    SDL_zero(current_mode);
+
+    current_mode.w = 640;
+    current_mode.h = 480;
+    current_mode.refresh_rate = 60;
+    
+    /* 32 bpp for default */
+    current_mode.format = SDL_PIXELFORMAT_ABGR8888;
+    current_mode.driverdata = NULL;
+
+    SDL_zero(display);
+    display.desktop_mode = current_mode;
+    display.current_mode = current_mode;
+    display.driverdata = NULL;
+    SDL_AddDisplayMode(&display, &current_mode);
+
+    /* 16 bpp secondary mode */
+    current_mode.format = SDL_PIXELFORMAT_ABGR1555;
+    display.desktop_mode = current_mode;
+    display.current_mode = current_mode;
+    SDL_AddDisplayMode(&display, &current_mode);
+
+
+    SDL_AddVideoDisplay(&display, SDL_FALSE);
+
+    return 1;
+}
+
+static void PS2_VideoQuit(_THIS)
+{
+    /*gsKit_deinit_global(gsGlobal);*/
+}
+
+static SDL_VideoDevice *PS2_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
@@ -74,7 +108,6 @@ PS2_CreateDevice(int devindex)
         SDL_OutOfMemory();
         return (0);
     }
-    device->is_dummy = SDL_TRUE;
 
     /* Set the function pointers */
     device->VideoInit = PS2_VideoInit;
@@ -91,120 +124,10 @@ PS2_CreateDevice(int devindex)
 }
 
 VideoBootStrap PS2_bootstrap = {
-    PS2VID_DRIVER_NAME, "SDL PS2 video driver",
+    "PS2", 
+    "PS2 Video Driver",
     PS2_CreateDevice
 };
-
-int
-PS2_VideoInit(_THIS)
-{
-    /*
-	ee_sema_t sema;
-    sema.init_count = 0;
-    sema.max_count = 1;
-    sema.option = 0;
-    vsync_sema_id = CreateSema(&sema);
-
-	gsGlobal = gsKit_init_global();
-
-	gsGlobal->Mode = gsKit_check_rom();
-	if (gsGlobal->Mode == GS_MODE_PAL){
-		gsGlobal->Height = 512;
-	} else {
-		gsGlobal->Height = 448;
-	}
-
-	gsGlobal->PSM  = GS_PSM_CT24;
-	gsGlobal->PSMZ = GS_PSMZ_16S;
-	gsGlobal->ZBuffering = GS_SETTING_OFF;
-	gsGlobal->DoubleBuffering = GS_SETTING_ON;
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-	gsGlobal->Dithering = GS_SETTING_OFF;
-
-	gsKit_set_primalpha(gsGlobal, GS_SETREG_ALPHA(0, 1, 0, 1, 0), 0);
-
-	dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8, 1 << DMA_CHANNEL_GIF);
-	dmaKit_chan_init(DMA_CHANNEL_GIF);
-
-	printf("\nGraphics: created %ix%i video surface\n",
-		gsGlobal->Width, gsGlobal->Height);
-
-	gsKit_set_clamp(gsGlobal, GS_CMODE_REPEAT);
-
-	gsKit_vram_clear(gsGlobal);
-
-	gsKit_init_screen(gsGlobal);
-
-	gsKit_TexManager_init(gsGlobal);
-
-	gsKit_add_vsync_handler(vsync_handler);
-
-	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
-
-    gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x80,0x00,0x00,0x80,0x00));	
-
-	if (gsGlobal->DoubleBuffering == GS_SETTING_OFF) {
-		gsKit_sync(gsGlobal);
-		gsKit_queue_exec(gsGlobal);
-    } else {
-		gsKit_queue_exec(gsGlobal);
-		gsKit_finish();
-		gsKit_sync(gsGlobal);
-		gsKit_flip(gsGlobal);
-	}
-	gsKit_TexManager_nextFrame(gsGlobal);
-    */
-
-    SDL_DisplayMode mode;
-
-    /* Use a fake 32-bpp desktop mode */
-    SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_RGBA8888;
-    mode.w = 640;
-    /*if (gsGlobal->Mode == GS_MODE_PAL){
-        mode.h = 512;
-    } else {
-        mode.h = 448;
-    }*/
-    mode.h = 448;
-    mode.refresh_rate = 60;
-    mode.driverdata = NULL;
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
-        return -1;
-    }
-
-    SDL_AddDisplayMode(&_this->displays[0], &mode);
-
-    /* We're done! */
-    return 0;
-}
-
-static int
-SDL_to_PS2_PFM(Uint32 format)
-{
-    switch (format) {
-    case SDL_PIXELFORMAT_RGBA5551:
-        return GS_PSM_CT16S;
-    case SDL_PIXELFORMAT_RGB24:
-        return GS_PSM_CT24;
-    case SDL_PIXELFORMAT_ABGR32:
-        return GS_PSM_CT32;
-    default:
-        return GS_PSM_CT24;
-    }
-}
-
-static int
-PS2_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
-{
-    return 0;
-}
-
-void
-PS2_VideoQuit(_THIS)
-{
-    /*gsKit_deinit_global(gsGlobal);*/
-}
 
 #endif /* SDL_VIDEO_DRIVER_PS2 */
 

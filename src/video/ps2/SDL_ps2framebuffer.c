@@ -31,7 +31,7 @@
 int SDL_PS2_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const Uint32 surface_format = SDL_PIXELFORMAT_RGB888;
+    const Uint32 surface_format = SDL_PIXELFORMAT_ABGR8888;
     int w, h;
 
     /* Free the old framebuffer surface */
