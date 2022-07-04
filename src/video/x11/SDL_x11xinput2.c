@@ -265,6 +265,11 @@ X11_InitXinput2Multitouch(_THIS)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     XIDeviceInfo *info;
     int ndevices,i,j;
+
+    if (!X11_Xinput2IsMultitouchSupported()) {
+        return;
+    }
+
     info = X11_XIQueryDevice(data->display, XIAllDevices, &ndevices);
 
     for (i = 0; i < ndevices; i++) {
@@ -354,6 +359,10 @@ X11_Xinput2GrabTouch(_THIS, SDL_Window *window)
     XIGrabModifiers mods;
     XIEventMask eventmask;
 
+    if (!X11_Xinput2IsMultitouchSupported()) {
+        return;
+    }
+
     mods.modifiers = XIAnyModifier;
     mods.status = 0;
 
@@ -378,6 +387,10 @@ X11_Xinput2UngrabTouch(_THIS, SDL_Window *window)
     Display *display = data->videodata->display;
 
     XIGrabModifiers mods;
+
+    if (!X11_Xinput2IsMultitouchSupported()) {
+        return;
+    }
 
     mods.modifiers = XIAnyModifier;
     mods.status = 0;
