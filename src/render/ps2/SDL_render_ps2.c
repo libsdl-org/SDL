@@ -144,7 +144,7 @@ PS2_DrawLines(SDL_Surface * dst, const SDL_Point * points, int count,
         gsKit_prim_line(gsGlobal, x1, y1, x2, y2, 1, color);
     }
     if (points[0].x != points[count-1].x || points[0].y != points[count-1].y) {
-        SDL_DrawPoint(dst, points[count-1].x, points[count-1].y, color);
+        PS2_DrawPoints(dst, points, 1, color);
     }
     return 0;
 }
@@ -266,33 +266,76 @@ PS2_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 }
 
 static int
+PixelFormatToPS2PSM(Uint32 format)
+{
+    switch (format) {
+    case SDL_PIXELFORMAT_ABGR1555:
+        return GS_PSM_CT16S;
+    case SDL_PIXELFORMAT_BGR888:
+        return GS_PSM_CT24;
+    case SDL_PIXELFORMAT_ABGR8888:
+        return GS_PSM_CT32;
+    default:
+        return GS_PSM_CT32;
+    }
+}
+
+static int
 PS2_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
+    GSTEXTURE* ps2_tex = (GSTEXTURE*) SDL_calloc(1, sizeof(GSTEXTURE));
 
-    if (!SDL_PixelFormatEnumToMasks
-        (texture->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
-        return SDL_SetError("Unknown texture format");
+    if(!ps2_tex)
+        return SDL_OutOfMemory();
+
+	ps2_tex->Delayed = true;
+    ps2_tex->Width = texture->w;
+    ps2_tex->Height = texture->h;
+    ps2_tex->PSM = PixelFormatToPS2PSM(texture->format);
+    ps2_tex->Mem = memalign(128, gsKit_texture_size_ee(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM));
+
+    if(!ps2_tex->Mem)
+    {
+        SDL_free(ps2_tex);
+        return SDL_OutOfMemory();
     }
 
-    texture->driverdata =
-        SDL_CreateRGBSurface(0, texture->w, texture->h, bpp, Rmask, Gmask,
-                             Bmask, Amask);
-    SDL_SetSurfaceColorMod(texture->driverdata, texture->color.r, texture->color.g, texture->color.b);
-    SDL_SetSurfaceAlphaMod(texture->driverdata, texture->color.a);
-    SDL_SetSurfaceBlendMode(texture->driverdata, texture->blendMode);
+	if(!ps2_tex->Delayed)
+	{
+		ps2_tex->Vram = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM), GSKIT_ALLOC_USERBUFFER);
+		if(ps2_tex->Vram == GSKIT_ALLOC_ERROR) {
+			printf("VRAM Allocation Failed. Will not upload texture.\n");
+			return -1;
+		}
 
-    /* Only RLE encode textures without an alpha channel since the RLE coder
-     * discards the color values of pixels with an alpha value of zero.
-     */
-    if (texture->access == SDL_TEXTUREACCESS_STATIC && !Amask) {
-        SDL_SetSurfaceRLE(texture->driverdata, 1);
-    }
+		if(ps2_tex->Clut != NULL) {
+			if(ps2_tex->PSM == GS_PSM_T4)
+				ps2_tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(8, 2, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
+			else
+				ps2_tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(16, 16, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
 
-    if (!texture->driverdata) {
-        return -1;
-    }
+			if(ps2_tex->VramClut == GSKIT_ALLOC_ERROR)
+			{
+				printf("VRAM CLUT Allocation Failed. Will not upload texture.\n");
+				return -1;
+			}
+		}
+
+		gsKit_texture_upload(gsGlobal, ps2_tex);
+		free(ps2_tex->Mem);
+		ps2_tex->Mem = NULL;
+		if(ps2_tex->Clut != NULL) {
+			free(ps2_tex->Clut);
+			ps2_tex->Clut = NULL;
+		}
+	} else {
+		gsKit_setup_tbw(ps2_tex);
+	}
+
+    texture->driverdata = ps2_tex;
+
     return 0;
 }
 
@@ -326,12 +369,12 @@ static int
 PS2_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * rect, void **pixels, int *pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    GSTEXTURE *surface = (GSTEXTURE *) texture->driverdata;
 
     *pixels =
-        (void *) ((Uint8 *) surface->pixels + rect->y * surface->pitch +
-                  rect->x * surface->format->BytesPerPixel);
-    *pitch = surface->pitch;
+        (void *) ((Uint8 *) surface->Mem +
+        gsKit_texture_size_ee(surface->Width, surface->Height, surface->PSM));
+    //*pitch = surface->pitch;
     return 0;
 }
 
@@ -1064,13 +1107,27 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                         }
                     }
 
+                    GSTEXTURE* tex = cmd->data.draw.texture->driverdata;
+
                     for (i = 0; i < count; i += 3, ptr += 3) {
-                        SDL_PS2_BlitTriangle(
-                                src,
-                                &(ptr[0].src), &(ptr[1].src), &(ptr[2].src),
-                                surface,
-                                &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst),
-                                ptr[0].color, ptr[1].color, ptr[2].color);
+                        float x1 = ptr[0].dst.x;
+                        float y1 = ptr[0].dst.y;
+
+                        float x2 = ptr[1].dst.x;
+                        float y2 = ptr[1].dst.y;
+
+                        float x3 = ptr[2].dst.x;
+                        float y3 = ptr[2].dst.y;
+
+                        Uint32 c1 = (ptr[0].color.r | (ptr[0].color.g << 8) | (ptr[0].color.b << 16) | (ptr[0].color.a << 24));
+                        Uint32 c2 = (ptr[1].color.r | (ptr[1].color.g << 8) | (ptr[1].color.b << 16) | (ptr[1].color.a << 24));
+                        Uint32 c3 = (ptr[0].color.r | (ptr[2].color.g << 8) | (ptr[2].color.b << 16) | (ptr[2].color.a << 24));
+
+                        if (tex->Delayed == true) {
+	                    	gsKit_TexManager_bind(gsGlobal, tex);
+	                    }
+                        //It still need some works to make texture render on-screen
+                        gsKit_prim_triangle_goraud_texture(gsGlobal, tex, x1, y1, 0, 0, x2, y2, 0, 1, x3, y3, 1, 0, 1, c1, c2, c3);
                     }
                 } else {
                     GeometryFillData *ptr = (GeometryFillData *) verts;
@@ -1087,8 +1144,21 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                         }
                     }
 
-                    for (i = 0; i < count; i += 3, ptr += 3) {
-                        SDL_PS2_FillTriangle(surface, &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst), blend, ptr[0].color, ptr[1].color, ptr[2].color);
+                    for (i = 0; i < count; i += 3, ptr += 3) { //These for loops need to be in a separated function
+                        float x1 = ptr[0].dst.x;
+                        float y1 = ptr[0].dst.y;
+
+                        float x2 = ptr[1].dst.x;
+                        float y2 = ptr[1].dst.y;
+
+                        float x3 = ptr[2].dst.x;
+                        float y3 = ptr[2].dst.y;
+
+                        Uint32 c1 = (ptr[0].color.r | (ptr[0].color.g << 8) | (ptr[0].color.b << 16) | (ptr[0].color.a << 24));
+                        Uint32 c2 = (ptr[1].color.r | (ptr[1].color.g << 8) | (ptr[1].color.b << 16) | (ptr[1].color.a << 24));
+                        Uint32 c3 = (ptr[0].color.r | (ptr[2].color.g << 8) | (ptr[2].color.b << 16) | (ptr[2].color.a << 24));
+
+                        gsKit_prim_triangle_gouraud(gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
                     }
                 }
                 break;
