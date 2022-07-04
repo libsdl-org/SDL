@@ -40,12 +40,12 @@
     SDL_Rect  _inputRect;
 }
 - (void)doCommandBySelector:(SEL)myselector;
-- (void)setInputRect:(SDL_Rect *)rect;
+- (void)setInputRect:(const SDL_Rect *)rect;
 @end
 
 @implementation SDLTranslatorResponder
 
-- (void)setInputRect:(SDL_Rect *)rect
+- (void)setInputRect:(const SDL_Rect *)rect
 {
     _inputRect = *rect;
 }
@@ -514,7 +514,7 @@ Cocoa_StopTextInput(_THIS)
 }}
 
 void
-Cocoa_SetTextInputRect(_THIS, SDL_Rect *rect)
+Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
 

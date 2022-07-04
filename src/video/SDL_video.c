@@ -4259,7 +4259,7 @@ SDL_StopTextInput(void)
 }
 
 void
-SDL_SetTextInputRect(SDL_Rect *rect)
+SDL_SetTextInputRect(const SDL_Rect *rect)
 {
     if (_this && _this->SetTextInputRect) {
         _this->SetTextInputRect(_this, rect);

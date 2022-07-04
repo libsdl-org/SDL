@@ -303,7 +303,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsTextInputShown(void);
  *
  * \sa SDL_StartTextInput
  */
-extern DECLSPEC void SDLCALL SDL_SetTextInputRect(SDL_Rect *rect);
+extern DECLSPEC void SDLCALL SDL_SetTextInputRect(const SDL_Rect *rect);
 
 /**
  * Check whether the platform has screen keyboard support.
