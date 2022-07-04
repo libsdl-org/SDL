@@ -37,6 +37,7 @@
 typedef struct
 {
     GSGLOBAL *gsGlobal;
+    uint64_t drawColor;
     int32_t vsync_callback_id;
     SDL_bool vsync; /* wether we do vsync */
 } PS2_RenderData;
@@ -232,6 +233,21 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
 }
 
 static int
+PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    int colorR, colorG, colorB, colorA;
+
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    
+    colorR = (cmd->data.color.r) >> 1;
+    colorG = (cmd->data.color.g) >> 1;
+    colorB = (cmd->data.color.b) >> 1;
+    colorA = (cmd->data.color.a) >> 1;
+    data->drawColor = GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
+    return 0;
+}
+
+static int
 PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     int colorR, colorG, colorB, colorA;
@@ -252,6 +268,10 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 {
     while (cmd) {
         switch (cmd->command) {
+            case SDL_RENDERCMD_SETDRAWCOLOR: {
+                PS2_RenderSetDrawColor(renderer, cmd);
+                break;
+            }
             case SDL_RENDERCMD_CLEAR: {
                 PS2_RenderClear(renderer, cmd);
                 break;
@@ -386,7 +406,7 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
 
 	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
 
-    gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x80,0x00,0x00,0x80,0x00));
+    gsKit_clear(gsGlobal, GS_BLACK);
 
     data->gsGlobal = gsGlobal;
     if (flags & SDL_RENDERER_PRESENTVSYNC) {
