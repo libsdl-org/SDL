@@ -80,15 +80,19 @@ static const char *SDL_priority_prefixes[SDL_NUM_LOG_PRIORITIES] = {
 };
 
 #ifdef __ANDROID__
-static const char *SDL_category_prefixes[SDL_LOG_CATEGORY_RESERVED1] = {
+static const char *SDL_category_prefixes[] = {
     "APP",
     "ERROR",
+    "ASSERT",
     "SYSTEM",
     "AUDIO",
     "VIDEO",
     "RENDER",
-    "INPUT"
+    "INPUT",
+    "TEST"
 };
+
+SDL_COMPILE_TIME_ASSERT(category_prefixes_enum, SDL_TABLESIZE(SDL_category_prefixes) == SDL_LOG_CATEGORY_RESERVED1);
 
 static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
     ANDROID_LOG_UNKNOWN,
