@@ -179,7 +179,6 @@ SDL_GetBasePath(void)
             if (exe && *exe == '.') {
                 const char *pwd = SDL_getenv("PWD");
                 if (pwd && *pwd) {
-                    pwddst = (char *) SDL_malloc(PATH_MAX + 1);
                     SDL_asprintf(&pwddst, "%s/%s", pwd, exe); 
                 }
             }
