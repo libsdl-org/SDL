@@ -180,9 +180,7 @@ SDL_GetBasePath(void)
                 const char *pwd = SDL_getenv("PWD");
                 if (pwd && *pwd) {
                     pwddst = (char *) SDL_malloc(PATH_MAX + 1);
-                    strcpy(pwddst, pwd);
-                    strcat(pwddst, "/");
-                    strcat(pwddst, exe);
+                    SDL_asprintf(&pwddst, "%s/%s", pwd, exe); 
                 }
             }
         }
