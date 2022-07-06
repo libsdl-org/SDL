@@ -108,7 +108,7 @@ Wayland_StopTextInput(_THIS)
 }
 
 void
-Wayland_SetTextInputRect(_THIS, SDL_Rect *rect)
+Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
