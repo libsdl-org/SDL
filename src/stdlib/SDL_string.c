@@ -695,6 +695,9 @@ SDL_strchr(const char *string, int c)
         }
         ++string;
     }
+    if (c == '\0') {
+        return (char *) string;
+    }
     return NULL;
 #endif /* HAVE_STRCHR */
 }
@@ -707,7 +710,7 @@ SDL_strrchr(const char *string, int c)
 #elif defined(HAVE_RINDEX)
     return SDL_const_cast(char*,rindex(string, c));
 #else
-    const char *bufp = string + SDL_strlen(string) - 1;
+    const char *bufp = string + SDL_strlen(string);
     while (bufp >= string) {
         if (*bufp == c) {
             return (char *) bufp;
