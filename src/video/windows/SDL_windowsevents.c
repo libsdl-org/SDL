@@ -265,6 +265,7 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
     return code;
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static SDL_bool
 WIN_ShouldIgnoreFocusClick()
 {
@@ -460,6 +461,7 @@ WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
         data->in_window_deactivation = SDL_FALSE;
     }
 }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 static BOOL
 WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
@@ -502,6 +504,7 @@ ShouldGenerateWindowCloseOnAltF4(void)
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 /* We want to generate mouse events from mouse and pen, and touch events from touchscreens */
 #define MI_WP_SIGNATURE         0xFF515700
 #define MI_WP_SIGNATURE_MASK    0xFFFFFF00
@@ -532,6 +535,7 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
     }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 static SDL_WindowData *
 WIN_GetWindowDataFromHWND(HWND hwnd)
@@ -550,6 +554,7 @@ WIN_GetWindowDataFromHWND(HWND hwnd)
     return NULL;
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 LRESULT CALLBACK
 WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -635,6 +640,7 @@ static void WIN_CheckICMProfileChanged(SDL_Window* window)
         }
     }
 }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -657,10 +663,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     /* Get the window data for the window */
     data = WIN_GetWindowDataFromHWND(hwnd);
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (!data) {
         /* Fallback */
         data = (SDL_WindowData *) GetProp(hwnd, TEXT("SDL_WindowData"));
     }
+#endif
     if (!data) {
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
@@ -677,8 +685,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 #endif /* WMMSG_DEBUG */
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
         return 0;
+#endif
 
     switch (msg) {
 
@@ -692,6 +702,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     case WM_NCACTIVATE:
         {
             /* Don't immediately clip the cursor in case we're clicking minimize/maximize buttons */
@@ -941,6 +952,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         returnCode = 0;
         break;
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -1022,6 +1034,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         returnCode = 0;
         break;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #ifdef WM_INPUTLANGCHANGE
     case WM_INPUTLANGCHANGE:
         {
@@ -1621,6 +1634,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     }
 
     /* If there's a window proc, assume it's going to handle messages */
@@ -1633,6 +1647,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static void WIN_UpdateClipCursorForWindows()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1679,6 +1694,7 @@ static void WIN_UpdateMouseCapture()
         }
     }
 }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 /* A message hook called before TranslateMessage() */
 static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
@@ -1736,11 +1752,13 @@ WIN_SendWakeupEvent(_THIS, SDL_Window *window)
 void
 WIN_PumpEvents(_THIS)
 {
-    const Uint8 *keystate;
     MSG msg;
     DWORD end_ticks = GetTickCount() + 1;
     int new_messages = 0;
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    const Uint8 *keystate;
     SDL_Window *focusWindow;
+#endif
 
     if (g_WindowsEnableMessageLoop) {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1748,6 +1766,7 @@ WIN_PumpEvents(_THIS)
                 g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
             }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
             /* Don't dispatch any mouse motion queued prior to or including the last mouse warp */
             if (msg.message == WM_MOUSEMOVE && SDL_last_warp_time) {
                 if (!SDL_TICKS_PASSED(msg.time, (SDL_last_warp_time + 1))) {
@@ -1757,6 +1776,7 @@ WIN_PumpEvents(_THIS)
                 /* This mouse message happened after the warp */
                 SDL_last_warp_time = 0;
             }
+#endif !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
             TranslateMessage(&msg);
@@ -1777,6 +1797,7 @@ WIN_PumpEvents(_THIS)
         }
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Windows loses a shift KEYUP event when you have both pressed at once and let go of one.
        You won't get a KEYUP until both are released, and that keyup will only be for the second
        key you released. Take heroic measures and check the keystate as of the last handled event,
@@ -1807,6 +1828,7 @@ WIN_PumpEvents(_THIS)
 
     /* Update mouse capture */
     WIN_UpdateMouseCapture();
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 #ifdef __GDK__
     GDK_DispatchTaskQueue();
@@ -1821,8 +1843,10 @@ HINSTANCE SDL_Instance = NULL;
 
 static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
 {
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (wcex.hIcon) DestroyIcon(wcex.hIcon);
     if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
+#endif
     SDL_free(SDL_Appname);
     SDL_Appname = NULL;
 }
@@ -1831,9 +1855,11 @@ static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
 int
 SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
-    const char *hint;
     WNDCLASSEX wcex;
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    const char *hint;
     TCHAR path[MAX_PATH];
+#endif
 
     /* Only do this once... */
     if (app_registered) {
@@ -1865,6 +1891,7 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON);
     if (hint && *hint) {
         wcex.hIcon = LoadIcon(SDL_Instance, MAKEINTRESOURCE(SDL_atoi(hint)));
@@ -1878,6 +1905,7 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
         GetModuleFileName(SDL_Instance, path, MAX_PATH);
         ExtractIconEx(path, 0, &wcex.hIcon, &wcex.hIconSm, 1);
     }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     if (!RegisterClassEx(&wcex)) {
         WIN_CleanRegisterApp(wcex);
@@ -1904,9 +1932,11 @@ SDL_UnregisterApp()
         wcex.hIcon = NULL;
         wcex.hIconSm = NULL;
         /* Check for any registered window classes. */
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         if (GetClassInfoEx(SDL_Instance, SDL_Appname, &wcex)) {
             UnregisterClass(SDL_Appname, SDL_Instance);
         }
+#endif
         WIN_CleanRegisterApp(wcex);
     }
 }

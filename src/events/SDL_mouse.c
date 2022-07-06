@@ -55,7 +55,7 @@ SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *ol
     if (hint && *hint) {
         mouse->double_click_time = SDL_atoi(hint);
     } else {
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(__WINGDK__)
         mouse->double_click_time = GetDoubleClickTime();
 #elif defined(__OS2__)
         mouse->double_click_time = WinQuerySysValue(HWND_DESKTOP, SV_DBLCLKTIME);

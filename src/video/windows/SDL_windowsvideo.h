@@ -27,7 +27,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1500)
+#if defined(_MSC_VER) && (_MSC_VER >= 1500) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include <msctf.h>
 #else
 #include "SDL_msctf.h"
@@ -41,11 +41,15 @@
 
 #include "SDL_windowsclipboard.h"
 #include "SDL_windowsevents.h"
+
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include "SDL_windowskeyboard.h"
 #include "SDL_windowsmodes.h"
 #include "SDL_windowsmouse.h"
 #include "SDL_windowsopengl.h"
 #include "SDL_windowsopengles.h"
+#endif
+
 #include "SDL_windowswindow.h"
 #include "SDL_events.h"
 #include "SDL_loadso.h"
@@ -330,6 +334,7 @@ typedef struct
     void *data;
 } TSFSink;
 
+#ifndef SDL_DISABLE_WINDOWS_IME
 /* Definition from Win98DDK version of IMM.H */
 typedef struct tagINPUTCONTEXT2 {
     HWND hWnd;
@@ -353,6 +358,7 @@ typedef struct tagINPUTCONTEXT2 {
     DWORD fdwInit;
     DWORD dwReserve[3];
 } INPUTCONTEXT2, *PINPUTCONTEXT2, NEAR *NPINPUTCONTEXT2, FAR *LPINPUTCONTEXT2;
+#endif /* !SDL_DISABLE_WINDOWS_IME */
 
 /* Private display data */
 
@@ -362,6 +368,7 @@ typedef struct SDL_VideoData
 
     DWORD clipboard_count;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* Xbox doesn't support user32/shcore*/
     /* Touch input functions */
     void* userDLL;
     BOOL (WINAPI *CloseTouchInputHandle)( HTOUCHINPUT );
@@ -384,9 +391,11 @@ typedef struct SDL_VideoData
                                         UINT             *dpiX,
                                         UINT             *dpiY );
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     SDL_bool dpi_scaling_enabled;
 
+ #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_com_initialized;
     struct ITfThreadMgr *ime_threadmgr;
     SDL_bool ime_initialized;
@@ -435,6 +444,7 @@ typedef struct SDL_VideoData
     TSFSink *ime_uielemsink;
     TSFSink *ime_ippasink;
     LONG ime_uicontext;
+#endif /* !SDL_DISABLE_WINDOWS_IME */
 
     BYTE pre_hook_key_state[256];
     UINT _SDL_WAKEUP;

@@ -836,6 +836,9 @@
     <ClInclude Include="..\..\src\core\gdk\SDL_gdk.h">
       <Filter>core\gdk</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\SDL_render_d3d12_xbox.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1347,6 +1350,15 @@
     </ClCompile>
     <ClCompile Include="..\..\src\core\gdk\SDL_gdk.cpp">
       <Filter>core\gdk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12_xbox.cpp">
+      <Filter>render\direct3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxone.cpp">
+      <Filter>render\direct3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxseries.cpp">
+      <Filter>render\direct3d12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

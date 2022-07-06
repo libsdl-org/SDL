@@ -3,6 +3,7 @@
     <FileGroup DestinationPath="." SourcePath="." Include="testgdk.exe" />
     <FileGroup DestinationPath="." SourcePath="." Include="MicrosoftGame.config" />
     <FileGroup DestinationPath="." SourcePath="." Include="*.bmp" />
+    <FileGroup DestinationPath="." SourcePath="." Include="*.wav" />
     <FileGroup DestinationPath="." SourcePath="." Include="*.png" />
     <FileGroup DestinationPath="." SourcePath="." Include="*.dll" />
   </Chunk>

@@ -41,7 +41,7 @@ static LARGE_INTEGER ticks_per_second;
 static void
 SDL_SetSystemTimerResolution(const UINT uPeriod)
 {
-#ifndef __WINRT__
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     static UINT timer_period = 0;
 
     if (uPeriod != timer_period) {

@@ -581,6 +581,10 @@ SDL_GetPlatform(void)
     return "WinRT";
 #elif __WINGDK__
     return "WinGDK";
+#elif __XBOXONE__
+    return "Xbox One";
+#elif __XBOXSERIES__
+    return "Xbox Series";
 #elif __TVOS__
     return "tvOS";
 #elif __IPHONEOS__
