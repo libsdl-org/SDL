@@ -1004,7 +1004,7 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
  * and logical renderer size set
  *
  * \param renderer the renderer from which the logical coordinates should be
- *                 calcualted
+ *                 calculated
  * \param windowX the real X coordinate in the window
  * \param windowY the real Y coordinate in the window
  * \param logicalX the pointer filled with the logical x coordinate
