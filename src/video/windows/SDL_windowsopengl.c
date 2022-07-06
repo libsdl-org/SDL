@@ -74,6 +74,11 @@
 #define WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB                0x20A9
 #endif
 
+#ifndef WGL_ARB_pixel_format_float
+#define WGL_ARB_pixel_format_float
+#define WGL_TYPE_RGBA_FLOAT_ARB                         0x21A0
+#endif
+
 #ifndef WGL_ARB_context_flush_control
 #define WGL_ARB_context_flush_control
 #define WGL_CONTEXT_RELEASE_BEHAVIOR_ARB   0x2097
@@ -595,6 +600,10 @@ WIN_GL_SetupWindowInternal(_THIS, SDL_Window * window)
     if (_this->gl_config.multisamplesamples) {
         *iAttr++ = WGL_SAMPLES_ARB;
         *iAttr++ = _this->gl_config.multisamplesamples;
+    }
+
+    if (_this->gl_config.floatbuffers) {
+        *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
 
     if (_this->gl_config.framebuffer_srgb_capable) {

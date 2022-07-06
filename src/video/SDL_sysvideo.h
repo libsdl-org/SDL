@@ -368,6 +368,7 @@ struct SDL_VideoDevice
         int stereo;
         int multisamplebuffers;
         int multisamplesamples;
+        int floatbuffers;
         int accelerated;
         int major_version;
         int minor_version;

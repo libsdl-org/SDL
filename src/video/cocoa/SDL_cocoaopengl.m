@@ -261,6 +261,9 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         attr[i++] = _this->gl_config.multisamplesamples;
         attr[i++] = NSOpenGLPFANoRecovery;
     }
+    if (_this->gl_config.floatbuffers) {
+        attr[i++] = NSOpenGLPFAColorFloat;
+    }
 
     if (_this->gl_config.accelerated >= 0) {
         if (_this->gl_config.accelerated) {

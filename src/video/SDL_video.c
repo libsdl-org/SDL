@@ -3519,6 +3519,7 @@ SDL_GL_ResetAttributes()
     _this->gl_config.stereo = 0;
     _this->gl_config.multisamplebuffers = 0;
     _this->gl_config.multisamplesamples = 0;
+    _this->gl_config.floatbuffers = 0;
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
 
@@ -3606,6 +3607,9 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         break;
     case SDL_GL_MULTISAMPLESAMPLES:
         _this->gl_config.multisamplesamples = value;
+        break;
+    case SDL_GL_FLOATBUFFERS:
+        _this->gl_config.floatbuffers = value;
         break;
     case SDL_GL_ACCELERATED_VISUAL:
         _this->gl_config.accelerated = value;
