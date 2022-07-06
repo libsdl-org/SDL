@@ -53,19 +53,16 @@
 #include <errno.h>
 
 #ifdef __OpenBSD__
-static SDL_bool openbsd69orgreater = SDL_FALSE;
-#define KMSDRM_DRI_PATH openbsd69orgreater ? "/dev/dri/" : "/dev/"
-#define KMSDRM_DRI_PATHSIZE    openbsd69orgreater ? 9 : 5
-#define KMSDRM_DRI_DEVNAME openbsd69orgreater ? "card" : "drm"
-#define KMSDRM_DRI_DEVNAMESIZE openbsd69orgreater ? 4 : 3
+static SDL_bool moderndri = SDL_FALSE;
 #else
-#define KMSDRM_DRI_PATH "/dev/dri/"
-#define KMSDRM_DRI_PATHSIZE    9
-#define KMSDRM_DRI_DEVNAME "card"
-#define KMSDRM_DRI_DEVNAMESIZE 4
+static SDL_bool moderndri = SDL_TRUE;
 #endif
 
-#define KMSDRM_DRI_CARDPATHFMT KMSDRM_DRI_PATH KMSDRM_DRI_DEVNAME "%d"
+static char kmsdrm_dri_path[16] = "";
+static int kmsdrm_dri_pathsize = 0;
+static char kmsdrm_dri_devname[8] = "";
+static int kmsdrm_dri_devnamesize = 0;
+static char kmsdrm_dri_cardpath[32] = "";
 
 #ifndef EGL_PLATFORM_GBM_MESA
 #define EGL_PLATFORM_GBM_MESA 0x31D7
@@ -75,37 +72,40 @@ static int
 get_driindex(void)
 {
     int available = -ENOENT;
-    char device[512] = KMSDRM_DRI_PATH;
+    char device[32];
     int drm_fd;
     int i;
     int devindex = -1;
-    DIR *folder = opendir(device);
+    DIR *folder;
+
+    SDL_strlcpy(device, kmsdrm_dri_path, kmsdrm_dri_pathsize + 1);
+    folder = opendir(device);
     if (!folder) {
         SDL_SetError("Failed to open directory '%s'", device);
         return -ENOENT;
     }
 
-    strncpy(device + KMSDRM_DRI_PATHSIZE, KMSDRM_DRI_DEVNAME,
-            KMSDRM_DRI_DEVNAMESIZE + 1);
+    SDL_strlcpy(device + kmsdrm_dri_pathsize, kmsdrm_dri_devname,
+                kmsdrm_dri_devnamesize + 1);
     for (struct dirent *res; (res = readdir(folder));) {
-        if (SDL_memcmp(res->d_name, KMSDRM_DRI_DEVNAME,
-                       KMSDRM_DRI_DEVNAMESIZE) == 0) {
-            strncpy(device + KMSDRM_DRI_PATHSIZE + KMSDRM_DRI_DEVNAMESIZE,
-                    res->d_name + KMSDRM_DRI_DEVNAMESIZE, 6);
+        if (SDL_memcmp(res->d_name, kmsdrm_dri_devname,
+                       kmsdrm_dri_devnamesize) == 0) {
+            SDL_strlcpy(device + kmsdrm_dri_pathsize + kmsdrm_dri_devnamesize,
+                        res->d_name + kmsdrm_dri_devnamesize, 6);
 
             drm_fd = open(device, O_RDWR | O_CLOEXEC);
             if (drm_fd >= 0) {
-                devindex = SDL_atoi(device + KMSDRM_DRI_PATHSIZE +
-                                    KMSDRM_DRI_DEVNAMESIZE);
+                devindex = SDL_atoi(device + kmsdrm_dri_pathsize +
+                                    kmsdrm_dri_devnamesize);
                 if (SDL_KMSDRM_LoadSymbols()) {
                     drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
                     if (resources) {
-                        SDL_LogDebug(
-                            SDL_LOG_CATEGORY_VIDEO,
-                            KMSDRM_DRI_CARDPATHFMT
-                            " connector, encoder and CRTC counts are: %d %d %d",
-                            devindex, resources->count_connectors,
-                            resources->count_encoders, resources->count_crtcs);
+                        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
+                                     "%s%d connector, encoder and CRTC counts are: %d %d %d",
+                                     kmsdrm_dri_cardpath, devindex,
+                                     resources->count_connectors,
+                                     resources->count_encoders,
+                                     resources->count_crtcs);
 
                         if (resources->count_connectors > 0 &&
                             resources->count_encoders > 0 &&
@@ -172,10 +172,24 @@ KMSDRM_Available(void)
     if (!(uname(&nameofsystem) < 0)) {
         releaseversion = SDL_atof(nameofsystem.release);
         if (releaseversion >= 6.9) {
-            openbsd69orgreater = SDL_TRUE;
+            moderndri = SDL_TRUE;
         }
     }
 #endif
+
+    if (moderndri) {
+        SDL_strlcpy(kmsdrm_dri_path, "/dev/dri/", sizeof("/dev/dri/") + 1);
+        SDL_strlcpy(kmsdrm_dri_devname, "card", sizeof("card") + 1);
+    } else {
+        SDL_strlcpy(kmsdrm_dri_path, "/dev/", sizeof("/dev/") + 1);
+        SDL_strlcpy(kmsdrm_dri_devname, "drm", sizeof("drm") + 1);
+    }
+
+    kmsdrm_dri_pathsize = SDL_strlen(kmsdrm_dri_path);
+    kmsdrm_dri_devnamesize = SDL_strlen(kmsdrm_dri_devname);
+    SDL_snprintf(kmsdrm_dri_cardpath, sizeof(kmsdrm_dri_cardpath), "%s%s",
+                 kmsdrm_dri_path, kmsdrm_dri_devname);
+
     ret = get_driindex();
     if (ret >= 0)
         return 1;
@@ -711,8 +725,9 @@ KMSDRM_InitDisplays (_THIS) {
     int ret = 0;
     int i;
 
-    /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD) */
-    SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), KMSDRM_DRI_CARDPATHFMT, viddata->devindex);
+    /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD version less than 6.9) */
+    SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), "%s%d",
+                 kmsdrm_dri_cardpath, viddata->devindex);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", viddata->devpath);
     viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
