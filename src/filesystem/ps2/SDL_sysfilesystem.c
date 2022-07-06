@@ -47,6 +47,33 @@ SDL_GetBasePath(void)
   return retval;
 }
 
+/* Do a recursive mkdir of parents folders */
+static void recursive_mkdir(const char *dir) {
+  char tmp[FILENAME_MAX];
+  char *base = SDL_GetBasePath();
+  char *p = NULL;
+  size_t len;
+
+  snprintf(tmp, sizeof(tmp),"%s",dir);
+  len = strlen(tmp);
+  if (tmp[len - 1] == '/')
+      tmp[len - 1] = 0;
+
+  for (p = tmp + 1; *p; p++) {
+    if (*p == '/') {
+      *p = 0;
+      // Just creating subfolders from current path
+      if (strstr(tmp, base) != NULL)
+        mkdir(tmp, S_IRWXU);
+
+      *p = '/';
+    }
+  }
+
+  free(base);
+  mkdir(tmp, S_IRWXU);
+}
+
 char *
 SDL_GetPrefPath(const char *org, const char *app)
 {
@@ -71,7 +98,7 @@ SDL_GetPrefPath(const char *org, const char *app)
   }
   free(base);
 
-  mkdir(retval, 0x0755);
+  recursive_mkdir(retval);
   
   return retval;
 }
