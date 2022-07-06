@@ -3120,7 +3120,7 @@ struct SDLTest_CharTextureCache {
 */
 static struct SDLTest_CharTextureCache *SDLTest_CharTextureCacheList;
 
-int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, char c)
+int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
 {
     const Uint32 charWidth = FONT_CHARACTER_SIZE;
     const Uint32 charHeight = FONT_CHARACTER_SIZE;
@@ -3156,7 +3156,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, char c)
     drect.h = charHeight;
 
     /* Character index in cache */
-    ci = (unsigned char)c;
+    ci = c;
 
     /* Search for this renderer's cache */
     for (cache = SDLTest_CharTextureCacheList; cache != NULL; cache = cache->next) {
@@ -3242,21 +3242,232 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, char c)
     return (result);
 }
 
+/* Gets a unicode value from a UTF-8 encoded string
+ * Outputs increment to advance the string */
+#define UNKNOWN_UNICODE 0xFFFD
+static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
+{
+    const Uint8 *p = (const Uint8 *)src;
+    size_t left = 0;
+    size_t save_srclen = srclen;
+    SDL_bool overlong = SDL_FALSE;
+    SDL_bool underflow = SDL_FALSE;
+    Uint32 ch = UNKNOWN_UNICODE;
+
+    if (srclen == 0) {
+        return UNKNOWN_UNICODE;
+    }
+    if (p[0] >= 0xFC) {
+        if ((p[0] & 0xFE) == 0xFC) {
+            if (p[0] == 0xFC && (p[1] & 0xFC) == 0x80) {
+                overlong = SDL_TRUE;
+            }
+            ch = (Uint32) (p[0] & 0x01);
+            left = 5;
+        }
+    } else if (p[0] >= 0xF8) {
+        if ((p[0] & 0xFC) == 0xF8) {
+            if (p[0] == 0xF8 && (p[1] & 0xF8) == 0x80) {
+                overlong = SDL_TRUE;
+            }
+            ch = (Uint32) (p[0] & 0x03);
+            left = 4;
+        }
+    } else if (p[0] >= 0xF0) {
+        if ((p[0] & 0xF8) == 0xF0) {
+            if (p[0] == 0xF0 && (p[1] & 0xF0) == 0x80) {
+                overlong = SDL_TRUE;
+            }
+            ch = (Uint32) (p[0] & 0x07);
+            left = 3;
+        }
+    } else if (p[0] >= 0xE0) {
+        if ((p[0] & 0xF0) == 0xE0) {
+            if (p[0] == 0xE0 && (p[1] & 0xE0) == 0x80) {
+                overlong = SDL_TRUE;
+            }
+            ch = (Uint32) (p[0] & 0x0F);
+            left = 2;
+        }
+    } else if (p[0] >= 0xC0) {
+        if ((p[0] & 0xE0) == 0xC0) {
+            if ((p[0] & 0xDE) == 0xC0) {
+                overlong = SDL_TRUE;
+            }
+            ch = (Uint32) (p[0] & 0x1F);
+            left = 1;
+        }
+    } else {
+        if ((p[0] & 0x80) == 0x00) {
+            ch = (Uint32) p[0];
+        }
+    }
+    --srclen;
+    while (left > 0 && srclen > 0) {
+        ++p;
+        if ((p[0] & 0xC0) != 0x80) {
+            ch = UNKNOWN_UNICODE;
+            break;
+        }
+        ch <<= 6;
+        ch |= (p[0] & 0x3F);
+        --srclen;
+        --left;
+    }
+    if (left > 0) {
+        underflow = SDL_TRUE;
+    }
+
+    if (overlong || underflow ||
+        (ch >= 0xD800 && ch <= 0xDFFF) ||
+        (ch == 0xFFFE || ch == 0xFFFF) || ch > 0x10FFFF) {
+        ch = UNKNOWN_UNICODE;
+    }
+
+    *inc = (int)(save_srclen - srclen);
+
+    return ch;
+}
+
+#define UTF8_IsTrailingByte(c) ((c) >= 0x80 && (c) <= 0xBF)
+
 int SDLTest_DrawString(SDL_Renderer * renderer, int x, int y, const char *s)
 {
     const Uint32 charWidth = FONT_CHARACTER_SIZE;
     int result = 0;
     int curx = x;
     int cury = y;
-    const char *curchar = s;
+    size_t len = SDL_strlen(s);
 
-    while (*curchar && !result) {
-        result |= SDLTest_DrawCharacter(renderer, curx, cury, *curchar);
+    while (len > 0 && !result) {
+        int advance = 0;
+        Uint32 ch = UTF8_getch(s, len, &advance);
+        if (ch < 256) {
+            result |= SDLTest_DrawCharacter(renderer, curx, cury, ch);
+        }
         curx += charWidth;
-        curchar++;
+        s += advance;
+        len -= advance;
     }
 
     return (result);
+}
+
+SDLTest_TextWindow *SDLTest_TextWindowCreate(int x, int y, int w, int h)
+{
+    SDLTest_TextWindow *textwin = (SDLTest_TextWindow *)SDL_malloc(sizeof(*textwin));
+
+    if ( !textwin ) {
+        return NULL;
+    }
+
+    textwin->rect.x = x;
+    textwin->rect.y = y;
+    textwin->rect.w = w;
+    textwin->rect.h = h;
+    textwin->current = 0;
+    textwin->numlines = (h / FONT_LINE_HEIGHT);
+    textwin->lines = (char **)SDL_calloc(textwin->numlines, sizeof(*textwin->lines));
+    if ( !textwin->lines ) {
+        SDL_free(textwin);
+        return NULL;
+    }
+    return textwin;
+}
+
+void SDLTest_TextWindowDisplay(SDLTest_TextWindow *textwin, SDL_Renderer *renderer)
+{
+    int i, y;
+
+    for ( y = textwin->rect.y, i = 0; i < textwin->numlines; ++i, y += FONT_LINE_HEIGHT ) {
+        if ( textwin->lines[i] ) {
+            SDLTest_DrawString(renderer, textwin->rect.x, y, textwin->lines[i]);
+        }
+    }
+}
+
+void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, const char *fmt, ...)
+{
+	char text[1024];
+	va_list ap;
+
+	va_start(ap, fmt);
+	SDL_vsnprintf(text, sizeof(text), fmt, ap);
+	va_end(ap);
+
+    SDLTest_TextWindowAddTextWithLength(textwin, text, SDL_strlen(text));
+}
+
+void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char *text, size_t len)
+{
+    size_t existing;
+    SDL_bool newline = SDL_FALSE;
+    char *line;
+
+    if ( len > 0 && text[len - 1] == '\n' ) {
+        --len;
+        newline = SDL_TRUE;
+    }
+
+    if ( textwin->lines[textwin->current] ) {
+        existing = SDL_strlen(textwin->lines[textwin->current]);
+    } else {
+        existing = 0;
+    }
+
+    if ( *text == '\b' ) {
+        if ( existing ) {
+            while (existing > 1 && UTF8_IsTrailingByte((Uint8)textwin->lines[textwin->current][existing - 1])) {
+                --existing;
+            }
+            --existing;
+            textwin->lines[textwin->current][existing] = '\0';
+        } else if (textwin->current > 0) {
+            SDL_free(textwin->lines[textwin->current]);
+            textwin->lines[textwin->current] = NULL;
+            --textwin->current;
+        }
+        return;
+    }
+
+    line = (char *)SDL_realloc(textwin->lines[textwin->current], existing + len + 1);
+    if ( line ) {
+        SDL_memcpy(&line[existing], text, len);
+        line[existing + len] = '\0';
+        textwin->lines[textwin->current] = line;
+        if ( newline ) {
+            if (textwin->current == textwin->numlines - 1) {
+                SDL_free(textwin->lines[0]);
+                SDL_memcpy(&textwin->lines[0], &textwin->lines[1], (textwin->numlines-1) * sizeof(textwin->lines[1]));
+                textwin->lines[textwin->current] = NULL;
+            } else {
+                ++textwin->current;
+            }
+        }
+    }
+}
+
+void SDLTest_TextWindowClear(SDLTest_TextWindow *textwin)
+{
+    int i;
+
+    for ( i = 0; i < textwin->numlines; ++i )
+    {
+        if ( textwin->lines[i] ) {
+            SDL_free(textwin->lines[i]);
+            textwin->lines[i] = NULL;
+        }
+    }
+    textwin->current = 0;
+}
+
+void SDLTest_TextWindowDestroy(SDLTest_TextWindow *textwin)
+{
+    if ( textwin ) {
+        SDLTest_TextWindowClear(textwin);
+        SDL_free(textwin->lines);
+        SDL_free(textwin);
+    }
 }
 
 void SDLTest_CleanupTextDrawing(void)
