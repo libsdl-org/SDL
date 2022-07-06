@@ -58,11 +58,11 @@ static SDL_bool moderndri = SDL_FALSE;
 static SDL_bool moderndri = SDL_TRUE;
 #endif
 
-static char kmsdrm_dri_path[16] = "";
+static char kmsdrm_dri_path[16];
 static int kmsdrm_dri_pathsize = 0;
-static char kmsdrm_dri_devname[8] = "";
+static char kmsdrm_dri_devname[8];
 static int kmsdrm_dri_devnamesize = 0;
-static char kmsdrm_dri_cardpath[32] = "";
+static char kmsdrm_dri_cardpath[32];
 
 #ifndef EGL_PLATFORM_GBM_MESA
 #define EGL_PLATFORM_GBM_MESA 0x31D7
@@ -72,13 +72,13 @@ static int
 get_driindex(void)
 {
     int available = -ENOENT;
-    char device[32];
+    char device[sizeof(kmsdrm_dri_cardpath)];
     int drm_fd;
     int i;
     int devindex = -1;
     DIR *folder;
 
-    SDL_strlcpy(device, kmsdrm_dri_path, kmsdrm_dri_pathsize + 1);
+    SDL_strlcpy(device, kmsdrm_dri_path, sizeof(device));
     folder = opendir(device);
     if (!folder) {
         SDL_SetError("Failed to open directory '%s'", device);
@@ -86,12 +86,14 @@ get_driindex(void)
     }
 
     SDL_strlcpy(device + kmsdrm_dri_pathsize, kmsdrm_dri_devname,
-                kmsdrm_dri_devnamesize + 1);
+                sizeof(device) - kmsdrm_dri_devnamesize);
     for (struct dirent *res; (res = readdir(folder));) {
         if (SDL_memcmp(res->d_name, kmsdrm_dri_devname,
                        kmsdrm_dri_devnamesize) == 0) {
             SDL_strlcpy(device + kmsdrm_dri_pathsize + kmsdrm_dri_devnamesize,
-                        res->d_name + kmsdrm_dri_devnamesize, 6);
+                        res->d_name + kmsdrm_dri_devnamesize,
+                        sizeof(device) - kmsdrm_dri_pathsize -
+                            kmsdrm_dri_devnamesize);
 
             drm_fd = open(device, O_RDWR | O_CLOEXEC);
             if (drm_fd >= 0) {
@@ -178,11 +180,11 @@ KMSDRM_Available(void)
 #endif
 
     if (moderndri) {
-        SDL_strlcpy(kmsdrm_dri_path, "/dev/dri/", sizeof("/dev/dri/") + 1);
-        SDL_strlcpy(kmsdrm_dri_devname, "card", sizeof("card") + 1);
+        SDL_strlcpy(kmsdrm_dri_path, "/dev/dri/", sizeof(kmsdrm_dri_path));
+        SDL_strlcpy(kmsdrm_dri_devname, "card", sizeof(kmsdrm_dri_devname));
     } else {
-        SDL_strlcpy(kmsdrm_dri_path, "/dev/", sizeof("/dev/") + 1);
-        SDL_strlcpy(kmsdrm_dri_devname, "drm", sizeof("drm") + 1);
+        SDL_strlcpy(kmsdrm_dri_path, "/dev/", sizeof(kmsdrm_dri_path));
+        SDL_strlcpy(kmsdrm_dri_devname, "drm", sizeof(kmsdrm_dri_devname));
     }
 
     kmsdrm_dri_pathsize = SDL_strlen(kmsdrm_dri_path);
