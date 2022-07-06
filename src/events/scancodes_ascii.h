@@ -47,7 +47,7 @@ static ASCIIKeyInfo SDL_ASCIIKeyInfoTable[] = {
 /*   7 */ { SDL_SCANCODE_UNKNOWN, 0 },
 /*   8 */ { SDL_SCANCODE_BACKSPACE, 0 },
 /*   9 */ { SDL_SCANCODE_UNKNOWN, 0 },
-/*  10 */ { SDL_SCANCODE_UNKNOWN, 0 },
+/*  10 */ { SDL_SCANCODE_RETURN, 0 },
 /*  11 */ { SDL_SCANCODE_UNKNOWN, 0 },
 /*  12 */ { SDL_SCANCODE_UNKNOWN, 0 },
 /*  13 */ { SDL_SCANCODE_RETURN, 0 },
