@@ -44,6 +44,10 @@
 #include <kernel.h>
 #endif
 
+#if !defined(HAVE_GCC_ATOMICS) && defined(__MACOSX__)
+#include <libkern/OSAtomic.h>
+#endif
+
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
 extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
