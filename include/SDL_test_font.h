@@ -107,8 +107,8 @@ void SDLTest_TextWindowDisplay(SDLTest_TextWindow *textwin, SDL_Renderer *render
 /**
  *  \brief Add text to a multi-line text output window
  *
- *  Adds UTF-8 text to the end of the current text. The '\n' newline character starts a
- *  new line of text. The '\b' backspace character deletes the last character or, if the
+ *  Adds UTF-8 text to the end of the current text. The newline character starts a
+ *  new line of text. The backspace character deletes the last character or, if the
  *  line is empty, deletes the line and goes to the end of the previous line.
  *
  *  \param textwin The text output window
@@ -122,8 +122,8 @@ void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, SDL_PRINTF_FORMAT_ST
 /**
  *  \brief Add text to a multi-line text output window
  *
- *  Adds UTF-8 text to the end of the current text. The '\n' newline character starts a
- *  new line of text. The '\b' backspace character deletes the last character or, if the
+ *  Adds UTF-8 text to the end of the current text. The newline character starts a
+ *  new line of text. The backspace character deletes the last character or, if the
  *  line is empty, deletes the line and goes to the end of the previous line.
  *
  *  \param textwin The text output window
