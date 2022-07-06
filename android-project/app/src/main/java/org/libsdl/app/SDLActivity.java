@@ -2356,6 +2356,29 @@ class SDLInputConnection extends BaseInputConnection {
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
 
+        /* Generate backspaces for the text we're going to replace */
+        final Editable content = getEditable();
+        if (content != null) {
+            int a = getComposingSpanStart(content);
+            int b = getComposingSpanEnd(content);
+            if (a == -1 || b == -1) {
+                a = Selection.getSelectionStart(content);
+                b = Selection.getSelectionEnd(content);
+            }
+            if (a < 0) a = 0;
+            if (b < 0) b = 0;
+            if (b < a) {
+                int tmp = a;
+                a = b;
+                b = tmp;
+            }
+            int backspaces = (b - a);
+
+            for (int i = 0; i < backspaces; i++) {
+                nativeGenerateScancodeForUnichar('\b');
+            }
+        }
+
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if (c == '\n') {
