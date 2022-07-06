@@ -96,7 +96,6 @@ add_executable(testgesture testgesture.c)
 add_executable(testgl2 testgl2.c)
 add_executable(testgles testgles.c)
 add_executable(testgles2 testgles2.c)
-add_executable(testguid testguid.c)
 add_executable(testhaptic testhaptic.c)
 add_executable(testhotplug testhotplug.c)
 add_executable(testrumble testrumble.c)
@@ -178,7 +177,6 @@ SET(ALL_TESTS
     testgl2
     testgles
     testgles2
-    testguid
     testhaptic
     testhittesting
     testhotplug
@@ -227,7 +225,6 @@ set(NONINTERACTIVE
     testatomic
     testerror
     testfilesystem
-    testguid
     testlocale
     testplatform
     testpower
@@ -337,7 +334,6 @@ if(PSP)
         testfilesystem
         testgeometry
         testgl2
-        testguid
         testhittesting
         testiconv
         testintersections
