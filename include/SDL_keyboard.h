@@ -288,7 +288,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsTextInputShown(void);
 /**
  * Set the rectangle used to type Unicode text inputs.
  *
- * Note: If you want use system native IME window, try to set hint
+ * To start text input in a given location, this function is intended to be
+ * called before SDL_StartTextInput, although some platforms support moving
+ * the rectangle even while text input (and a composition) is active.
+ *
+ * Note: If you want to use the system native IME window, try setting hint
  * **SDL_HINT_IME_SHOW_UI** to **1**, otherwise this function won't give you
  * any feedback.
  *
