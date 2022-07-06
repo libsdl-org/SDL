@@ -471,9 +471,6 @@
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h">
       <Filter>events</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\events\SDL_sysevents.h">
-      <Filter>events</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\events\SDL_touch_c.h">
       <Filter>events</Filter>
     </ClInclude>

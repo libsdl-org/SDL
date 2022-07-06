@@ -28,9 +28,9 @@
 #include "SDL_hints.h"
 
 #include "../../core/unix/SDL_poll.h"
-#include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/scancodes_xfree86.h"
+#include "../SDL_sysvideo.h"
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandevents_c.h"
