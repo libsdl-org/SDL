@@ -31,9 +31,7 @@
 void
 X11_InitTouch(_THIS)
 {
-    if (X11_Xinput2IsMultitouchSupported()) {
-        X11_InitXinput2Multitouch(_this);
-    }
+    X11_InitXinput2Multitouch(_this);
 }
 
 void
