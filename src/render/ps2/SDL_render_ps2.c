@@ -34,6 +34,20 @@
 /* turn black GS Screen */
 #define GS_BLACK GS_SETREG_RGBA(0x00, 0x00, 0x00, 0x80)
 
+typedef struct texture_vertex {
+    float x;
+    float y;
+    float u;
+    float v;
+    SDL_Color color;
+} texture_vertex;
+
+typedef struct color_vertex {
+    float x;
+    float y;
+    SDL_Color color;
+} color_vertex;
+
 typedef struct
 {
     GSGLOBAL *gsGlobal;
@@ -104,8 +118,6 @@ PS2_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 static int
 PS2_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
     GSTEXTURE* ps2_tex = (GSTEXTURE*) SDL_calloc(1, sizeof(GSTEXTURE));
     PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
 
@@ -206,8 +218,98 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
+    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
+    int i;
+    int count = indices ? num_indices : num_vertices;
+
+    cmd->data.draw.count = count;
+    size_indices = indices ? size_indices : 0;
+
+    if (texture) {
+        GSTEXTURE* ps2_tex = (GSTEXTURE*) texture->driverdata;
+        texture_vertex *vertices;
+
+        vertices = (texture_vertex *)SDL_AllocateRenderVertices(renderer, 
+                                                                count * sizeof(texture_vertex), 
+                                                                4, 
+                                                                &cmd->data.draw.first);
+
+        if (!vertices) {
+            return -1;
+        }
+
+
+        for (i = 0; i < count; i++) {
+            int j;
+            float *xy_;
+            float *uv_;
+            SDL_Color col_;
+            if (size_indices == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indices == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
+
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
+            uv_ = (float *)((char*)uv + j * uv_stride);
+
+            vertices[i].x = xy_[0] * scale_x;
+            vertices[i].y = xy_[1] * scale_y;
+            vertices[i].u = uv_[0];
+            vertices[i].v = uv_[1];
+            vertices[i].color = col_;
+
+            vertices++;
+        }
+
+    } else {
+        color_vertex *vertices;
+
+        vertices = (color_vertex *)SDL_AllocateRenderVertices(renderer, 
+                                                        count * sizeof(color_vertex), 
+                                                        4, 
+                                                        &cmd->data.draw.first);
+
+        if (!vertices) {
+            return -1;
+        }
+
+
+        for (i = 0; i < count; i++) {
+            int j;
+            float *xy_;
+            SDL_Color col_;
+            if (size_indices == 4) {
+                j = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                j = ((const Uint16 *)indices)[i];
+            } else if (size_indices == 1) {
+                j = ((const Uint8 *)indices)[i];
+            } else {
+                j = i;
+            }
+
+            xy_ = (float *)((char*)xy + j * xy_stride);
+            col_ = *(SDL_Color *)((char*)color + j * color_stride);
+
+            vertices[i].x = xy_[0] * scale_x;
+            vertices[i].y = xy_[1] * scale_y;
+            vertices[i].color = col_;
+
+            vertices++;
+        }
+
+    }
+
     return 0;
+
 }
+
 
 static int
 PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
