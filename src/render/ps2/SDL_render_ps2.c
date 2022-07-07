@@ -343,6 +343,65 @@ PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 }
 
 static int
+PS2_RenderGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    
+    const size_t count = cmd->data.draw.count;
+    if (cmd->data.draw.texture == NULL) {
+        const color_vertex *verts = (color_vertex *) (cmd->data.draw.first);
+
+        for (int i = 0; i < count; i += 3) {
+            float x1 = verts[i+0].x;
+            float y1 = verts[i+0].y;
+
+            float x2 = verts[i+1].x;
+            float y2 = verts[i+1].y;
+
+            float x3 = verts[i+2].x;
+            float y3 = verts[i+2].y;
+
+            Uint32 c1 = verts[i+0].color;
+            Uint32 c2 = verts[i+1].color;
+            Uint32 c3 = verts[i+2].color;
+
+            //It still need some works to make texture render on-screen
+            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
+
+            verts++;
+            verts++;
+            verts++;
+        }
+    } else {
+        const texture_vertex *verts = (texture_vertex *) (cmd->data.draw.first);
+        
+        for (int i = 0; i < count; i += 3) {
+            float x1 = verts[i+0].x;
+            float y1 = verts[i+0].y;
+
+            float x2 = verts[i+1].x;
+            float y2 = verts[i+1].y;
+
+            float x3 = verts[i+2].x;
+            float y3 = verts[i+2].y;
+
+            Uint32 c1 = verts[i+0].color;
+            Uint32 c2 = verts[i+1].color;
+            Uint32 c3 = verts[i+2].color;
+
+            //It still need some works to make texture render on-screen
+            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
+
+            verts++;
+            verts++;
+            verts++;
+        }
+    }
+    
+    return 0;
+}
+
+static int
 PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     while (cmd) {
@@ -363,6 +422,10 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
+            case SDL_RENDERCMD_GEOMETRY: {
+                PS2_RenderGeometry(renderer, cmd);
+                break;
+            }
                 
             default: 
                 break;
