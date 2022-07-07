@@ -39,13 +39,13 @@ typedef struct texture_vertex {
     float y;
     float u;
     float v;
-    SDL_Color color;
+    uint64_t color;
 } texture_vertex;
 
 typedef struct color_vertex {
     float x;
     float y;
-    SDL_Color color;
+    uint64_t color;
 } color_vertex;
 
 typedef struct
@@ -262,7 +262,7 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             vertices[i].y = xy_[1] * scale_y;
             vertices[i].u = uv_[0];
             vertices[i].v = uv_[1];
-            vertices[i].color = col_;
+            vertices[i].color = GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);
 
             vertices++;
         }
@@ -299,7 +299,7 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
 
             vertices[i].x = xy_[0] * scale_x;
             vertices[i].y = xy_[1] * scale_y;
-            vertices[i].color = col_;
+            vertices[i].color =  GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);;
 
             vertices++;
         }
