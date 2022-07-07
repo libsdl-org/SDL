@@ -119,7 +119,6 @@ static int
 PS2_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GSTEXTURE* ps2_tex = (GSTEXTURE*) SDL_calloc(1, sizeof(GSTEXTURE));
-    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
 
     if (!ps2_tex)
         return SDL_OutOfMemory();
@@ -225,7 +224,6 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        GSTEXTURE* ps2_tex = (GSTEXTURE*) texture->driverdata;
         texture_vertex *vertices;
 
         vertices = (texture_vertex *)SDL_AllocateRenderVertices(renderer, 
@@ -390,7 +388,7 @@ PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cm
 
 	        gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
 
-            gsKit_prim_triangle_goraud_texture(data->gsGlobal, ps2_tex, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3, 1, c1, c2, c3);
+            gsKit_prim_triangle_goraud_texture(data->gsGlobal, ps2_tex, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3, 0, c1, c2, c3);
         }
     } else {
         const color_vertex *verts = (color_vertex *) (vertices + cmd->data.draw.first);
@@ -417,7 +415,7 @@ PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cm
 
             verts++;
 
-            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
+            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 0, c1, c2, c3);
             
         }
     } 
@@ -528,6 +526,7 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     PS2_RenderData *data;
+    GSGLOBAL *gsGlobal;
     ee_sema_t sema;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
@@ -548,8 +547,8 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     sema.max_count = 1;
     sema.option = 0;
     vsync_sema_id = CreateSema(&sema);
-
-	GSGLOBAL *gsGlobal = gsKit_init_global();
+    
+    gsGlobal = gsKit_init_global();
 
 	gsGlobal->Mode = gsKit_check_rom();
 	if (gsGlobal->Mode == GS_MODE_PAL){
