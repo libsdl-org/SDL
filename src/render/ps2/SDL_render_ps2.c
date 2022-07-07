@@ -218,7 +218,6 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
 {
-    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
     int i;
     int count = indices ? num_indices : num_vertices;
 
@@ -343,58 +342,76 @@ PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 }
 
 static int
-PS2_RenderGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
     
     const size_t count = cmd->data.draw.count;
     if (cmd->data.draw.texture == NULL) {
-        const color_vertex *verts = (color_vertex *) (cmd->data.draw.first);
+        const color_vertex *verts = (color_vertex *) (vertices + cmd->data.draw.first);
 
-        for (int i = 0; i < count; i += 3) {
-            float x1 = verts[i+0].x;
-            float y1 = verts[i+0].y;
+        for (int i = 0; i < count/3; i++) {
+            float x1 = verts->x;
+            float y1 = verts->y;
+            uint64_t c1 = verts->color;
 
-            float x2 = verts[i+1].x;
-            float y2 = verts[i+1].y;
+            verts++;
 
-            float x3 = verts[i+2].x;
-            float y3 = verts[i+2].y;
+            float x2 = verts->x;
+            float y2 = verts->y;
+            uint64_t c2 = verts->color;
 
-            Uint32 c1 = verts[i+0].color;
-            Uint32 c2 = verts[i+1].color;
-            Uint32 c3 = verts[i+2].color;
+            verts++;
+
+            float x3 = verts->x;
+            float y3 = verts->y;
+            uint64_t c3 = verts->color;
+
+            verts++;
 
             //It still need some works to make texture render on-screen
             gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
-
-            verts++;
-            verts++;
-            verts++;
+            
         }
     } else {
-        const texture_vertex *verts = (texture_vertex *) (cmd->data.draw.first);
+        const texture_vertex *verts = (texture_vertex *) (vertices + cmd->data.draw.first);
+        GSTEXTURE *ps2_tex = (GSTEXTURE *) cmd->data.draw.texture->driverdata;
         
-        for (int i = 0; i < count; i += 3) {
-            float x1 = verts[i+0].x;
-            float y1 = verts[i+0].y;
+        for (int i = 0; i < count/3; i++) {
+            float x1 = verts->x;
+            float y1 = verts->y;
 
-            float x2 = verts[i+1].x;
-            float y2 = verts[i+1].y;
+            float u1 = verts->u;
+            float v1 = verts->v;
 
-            float x3 = verts[i+2].x;
-            float y3 = verts[i+2].y;
-
-            Uint32 c1 = verts[i+0].color;
-            Uint32 c2 = verts[i+1].color;
-            Uint32 c3 = verts[i+2].color;
-
-            //It still need some works to make texture render on-screen
-            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
+            uint64_t c1 = verts->color;
 
             verts++;
+
+            float x2 = verts->x;
+            float y2 = verts->y;
+
+            float u2 = verts->u;
+            float v2 = verts->v;
+
+            uint64_t c2 = verts->color;
+
             verts++;
+
+            float x3 = verts->x;
+            float y3 = verts->y;
+
+            float u3 = verts->u;
+            float v3 = verts->v;
+
+            uint64_t c3 = verts->color;
+
             verts++;
+
+            if (ps2_tex->Delayed) {
+	        	gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
+	        }
+            gsKit_prim_triangle_goraud_texture(data->gsGlobal, ps2_tex, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3, 1, c1, c2, c3);
         }
     }
     
@@ -423,7 +440,7 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
             case SDL_RENDERCMD_GEOMETRY: {
-                PS2_RenderGeometry(renderer, cmd);
+                PS2_RenderGeometry(renderer, vertices, cmd);
                 break;
             }
                 
