@@ -26,6 +26,7 @@
 #include "SDL_hints.h"
 
 #include <kernel.h>
+#include <malloc.h>
 #include <gsKit.h>
 #include <dmaKit.h>
 #include <gsToolkit.h>
