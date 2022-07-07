@@ -257,11 +257,11 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             col_ = *(SDL_Color *)((char*)color + j * color_stride);
             uv_ = (float *)((char*)uv + j * uv_stride);
 
-            vertices[i].x = xy_[0] * scale_x;
-            vertices[i].y = xy_[1] * scale_y;
-            vertices[i].u = uv_[0];
-            vertices[i].v = uv_[1];
-            vertices[i].color = GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);
+            vertices->x = xy_[0] * scale_x;
+            vertices->y = xy_[1] * scale_y;
+            vertices->u = uv_[0];
+            vertices->v = uv_[1];
+            vertices->color = GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);
 
             vertices++;
         }
@@ -296,9 +296,9 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             xy_ = (float *)((char*)xy + j * xy_stride);
             col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
-            vertices[i].x = xy_[0] * scale_x;
-            vertices[i].y = xy_[1] * scale_y;
-            vertices[i].color =  GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);;
+            vertices->x = xy_[0] * scale_x;
+            vertices->y = xy_[1] * scale_y;
+            vertices->color =  GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);;
 
             vertices++;
         }
@@ -344,76 +344,83 @@ PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 static int
 PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
+
+    int i;
+    uint64_t c1, c2, c3;
+    float x1, y1, x2, y2, x3, y3;
+    float u1, v1, u2, v2, u3, v3;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
     
     const size_t count = cmd->data.draw.count;
-    if (cmd->data.draw.texture == NULL) {
-        const color_vertex *verts = (color_vertex *) (vertices + cmd->data.draw.first);
 
-        for (int i = 0; i < count/3; i++) {
-            float x1 = verts->x;
-            float y1 = verts->y;
-            uint64_t c1 = verts->color;
-
-            verts++;
-
-            float x2 = verts->x;
-            float y2 = verts->y;
-            uint64_t c2 = verts->color;
-
-            verts++;
-
-            float x3 = verts->x;
-            float y3 = verts->y;
-            uint64_t c3 = verts->color;
-
-            verts++;
-
-            //It still need some works to make texture render on-screen
-            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
-            
-        }
-    } else {
+    if (cmd->data.draw.texture) {
         const texture_vertex *verts = (texture_vertex *) (vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *) cmd->data.draw.texture->driverdata;
         
-        for (int i = 0; i < count/3; i++) {
-            float x1 = verts->x;
-            float y1 = verts->y;
+        for (i = 0; i < count/3; i++) {
+            x1 = verts->x;
+            y1 = verts->y;
 
-            float u1 = verts->u;
-            float v1 = verts->v;
+            u1 = verts->u * ps2_tex->Width;
+            v1 = verts->v * ps2_tex->Height;
 
-            uint64_t c1 = verts->color;
-
-            verts++;
-
-            float x2 = verts->x;
-            float y2 = verts->y;
-
-            float u2 = verts->u;
-            float v2 = verts->v;
-
-            uint64_t c2 = verts->color;
+            c1 = verts->color;
 
             verts++;
 
-            float x3 = verts->x;
-            float y3 = verts->y;
+            x2 = verts->x;
+            y2 = verts->y;
 
-            float u3 = verts->u;
-            float v3 = verts->v;
+            u2 = verts->u * ps2_tex->Width;
+            v2 = verts->v * ps2_tex->Height;
 
-            uint64_t c3 = verts->color;
+            c2 = verts->color;
 
             verts++;
 
-            if (ps2_tex->Delayed) {
-	        	gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
-	        }
+            x3 = verts->x;
+            y3 = verts->y;
+
+            u3 = verts->u * ps2_tex->Width;
+            v3 = verts->v * ps2_tex->Height;
+
+            c3 = verts->color;
+
+            verts++;
+
+	        gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
+
             gsKit_prim_triangle_goraud_texture(data->gsGlobal, ps2_tex, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3, 1, c1, c2, c3);
         }
-    }
+    } else {
+        const color_vertex *verts = (color_vertex *) (vertices + cmd->data.draw.first);
+
+        for (i = 0; i < count/3; i++) {
+            x1 = verts->x;
+            y1 = verts->y;
+
+            c1 = verts->color;
+
+            verts++;
+
+            x2 = verts->x;
+            y2 = verts->y;
+            
+            c2 = verts->color;
+
+            verts++;
+
+            x3 = verts->x;
+            y3 = verts->y;
+            
+            c3 = verts->color;
+
+            verts++;
+
+            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 1, c1, c2, c3);
+            
+        }
+    } 
     
     return 0;
 }
