@@ -465,9 +465,10 @@ PS2_RenderPresent(SDL_Renderer * renderer)
 static void
 PS2_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
 
-    SDL_FreeSurface(surface);
+    SDL_free(ps2_texture->Mem);
+    SDL_free(ps2_texture);
 }
 
 static void
