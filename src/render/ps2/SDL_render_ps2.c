@@ -208,6 +208,19 @@ PS2_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 static int
 PS2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
+    clear_vertex *verts = (clear_vertex *) SDL_AllocateRenderVertices(renderer, count * sizeof (clear_vertex), 4, &cmd->data.draw.first);
+    int i;
+
+    if (!verts) {
+        return -1;
+    }
+
+    cmd->data.draw.count = count;
+
+    for (i = 0; i < count; i++, verts++, points++) {
+        verts->x = points->x;
+        verts->y = points->y;
+    }
     return 0;
 }
 
@@ -474,6 +487,32 @@ PS2_FillRects(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand * cmd)
     return 0;
 }
 
+int
+PS2_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand * cmd)
+{
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    uint64_t color;
+    int i;
+
+    const size_t count = cmd->data.draw.count;
+
+    const uint8_t ColorR = cmd->data.draw.r >> 1;
+    const uint8_t ColorG = cmd->data.draw.g >> 1;
+    const uint8_t ColorB = cmd->data.draw.b >> 1;
+    const uint8_t ColorA = cmd->data.draw.a >> 1;
+
+    color = GS_SETREG_RGBAQ(ColorR, ColorG, ColorB, ColorA, 0x00);
+
+    const clear_vertex *verts = (clear_vertex *) (vertices + cmd->data.draw.first);
+
+    for (i = 0; i < count; i++, verts++) {
+        gsKit_prim_point(data->gsGlobal, verts->x, verts->y, 0, color);
+    }
+
+    /* We're done! */
+    return 0;
+}
+
 static int
 PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
@@ -485,6 +524,10 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             }
             case SDL_RENDERCMD_CLEAR: {
                 PS2_RenderClear(renderer, cmd);
+                break;
+            }
+            case SDL_RENDERCMD_DRAW_POINTS: {
+                PS2_RenderPoints(renderer, vertices, cmd);
                 break;
             }
             case SDL_RENDERCMD_FILL_RECTS: {
