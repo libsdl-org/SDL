@@ -34,6 +34,10 @@
 
 /* turn black GS Screen */
 #define GS_BLACK GS_SETREG_RGBA(0x00, 0x00, 0x00, 0x80)
+/* Size of Persistent drawbuffer (Single Buffered) */
+#define RENDER_QUEUE_PER_POOLSIZE 1024 * 256 // 256K of persistent renderqueue
+/* Size of Oneshot drawbuffer (Double Buffered, so it uses this size * 2) */
+#define RENDER_QUEUE_OS_POOLSIZE 1024 * 1024 * 2 // 2048K of oneshot renderqueue
 
 typedef struct clear_vertex {
     float x;
@@ -533,6 +537,7 @@ PS2_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     SDL_free(ps2_texture);
 }
 
+
 static void
 PS2_DestroyRenderer(SDL_Renderer * renderer)
 {
@@ -588,7 +593,7 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     sema.option = 0;
     vsync_sema_id = CreateSema(&sema);
     
-    gsGlobal = gsKit_init_global();
+    gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
 	gsGlobal->Mode = gsKit_check_rom();
 	if (gsGlobal->Mode == GS_MODE_PAL){
