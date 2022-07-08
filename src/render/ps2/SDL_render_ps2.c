@@ -225,28 +225,6 @@ PS2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
 }
 
 static int
-PS2_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
-{
-    SDL_Rect *verts = (SDL_Rect *) SDL_AllocateRenderVertices(renderer, count * sizeof (SDL_Rect), 4, &cmd->data.draw.first);
-    int i;
-
-    if (!verts) {
-        return -1;
-    }
-
-    cmd->data.draw.count = count;
-
-    for (i = 0; i < count; i++, verts++, rects++) {
-        verts->x = (int)rects->x;
-        verts->y = (int)rects->y;
-        verts->w = rects->w + 0.5f;
-        verts->h = rects->h + 0.5f;
-    }
-
-    return 0;
-}
-
-static int
 PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -459,35 +437,6 @@ PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cm
 }
 
 int
-PS2_FillRects(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand * cmd)
-{
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    const SDL_Rect* rect;
-    uint64_t color;
-    int i;
-
-    const size_t count = cmd->data.draw.count;
-
-   const uint8_t ColorR = cmd->data.draw.r >> 1;
-   const uint8_t ColorG = cmd->data.draw.g >> 1;
-   const uint8_t ColorB = cmd->data.draw.b >> 1;
-   const uint8_t ColorA = cmd->data.draw.a >> 1;
-
-    color = GS_SETREG_RGBAQ(ColorR, ColorG, ColorB, ColorA, 0x00);
-
-    SDL_Rect *rects = (SDL_Rect *) (vertices + cmd->data.draw.first);
-
-    for (i = 0; i < count; i++) {
-        rect = &rects[i];
-        gsKit_prim_sprite(data->gsGlobal, rect->x, rect->y, rect->w, rect->h, 0, color);
-
-    }
-
-    /* We're done! */
-    return 0;
-}
-
-int
 PS2_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand * cmd)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
@@ -530,21 +479,16 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 PS2_RenderPoints(renderer, vertices, cmd);
                 break;
             }
-            case SDL_RENDERCMD_FILL_RECTS: {
-                PS2_FillRects(renderer, vertices, cmd);
+            case SDL_RENDERCMD_FILL_RECTS: /* unused */
                 break;
-            }
-
             case SDL_RENDERCMD_COPY: /* unused */
                 break;
-
             case SDL_RENDERCMD_COPY_EX: /* unused */
                 break;
             case SDL_RENDERCMD_GEOMETRY: {
                 PS2_RenderGeometry(renderer, vertices, cmd);
                 break;
             }
-                
             default: 
                 break;
         }
@@ -697,7 +641,6 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetDrawColor = PS2_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = PS2_QueueDrawPoints;
     renderer->QueueDrawLines = PS2_QueueDrawPoints;  /* lines and points queue vertices the same way. */
-    renderer->QueueFillRects = PS2_QueueFillRects;
     renderer->QueueGeometry = PS2_QueueGeometry;
     renderer->RunCommandQueue = PS2_RunCommandQueue;
     renderer->RenderReadPixels = PS2_RenderReadPixels;
