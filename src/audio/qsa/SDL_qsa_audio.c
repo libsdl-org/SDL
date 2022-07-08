@@ -260,7 +260,7 @@ static int
 QSA_OpenDevice(_THIS, const char *devname)
 {
     const QSA_Device *device = (const QSA_Device *) this->handle;
-    SDL_Bool iscapture = this->iscapture;
+    SDL_bool iscapture = this->iscapture;
     int status = 0;
     int format = 0;
     SDL_AudioFormat test_format;
