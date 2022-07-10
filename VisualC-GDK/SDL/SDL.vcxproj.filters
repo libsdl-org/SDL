@@ -432,6 +432,9 @@
     <ClInclude Include="..\..\src\core\windows\SDL_hid.h">
       <Filter>core\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\core\windows\SDL_immdevice.h">
+      <Filter>core\windows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h">
       <Filter>core\windows</Filter>
     </ClInclude>
@@ -874,6 +877,9 @@
       <Filter>atomic</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c">
+      <Filter>core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c">
       <Filter>core\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c">
