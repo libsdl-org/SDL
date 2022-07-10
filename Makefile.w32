@@ -73,7 +73,7 @@ SRCS+= SDL_locale.c SDL_syslocale.c
 SRCS+= SDL_url.c SDL_sysurl.c
 
 SRCS+= SDL_winmm.c SDL_directsound.c SDL_wasapi.c SDL_wasapi_win32.c
-SRCS+= SDL_hid.c SDL_windows.c SDL_xinput.c
+SRCS+= SDL_hid.c SDL_immdevice.c SDL_windows.c SDL_xinput.c
 SRCS+= SDL_dinputhaptic.c SDL_windowshaptic.c SDL_xinputhaptic.c
 SRCS+= SDL_dinputjoystick.c SDL_rawinputjoystick.c SDL_windowsjoystick.c SDL_windows_gaming_input.c SDL_xinputjoystick.c
 SRCS+= SDL_syspower.c

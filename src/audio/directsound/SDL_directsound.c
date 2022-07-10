@@ -29,10 +29,18 @@
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_directsound.h"
+#if HAVE_MMDEVICEAPI_H
+#include "../../core/windows/SDL_immdevice.h"
+#endif /* HAVE_MMDEVICEAPI_H */
 
 #ifndef WAVE_FORMAT_IEEE_FLOAT
 #define WAVE_FORMAT_IEEE_FLOAT 0x0003
 #endif
+
+/* For Vista+, we can enumerate DSound devices with IMMDevice */
+#if HAVE_MMDEVICEAPI_H
+static SDL_bool SupportsIMMDevice = SDL_FALSE;
+#endif /* HAVE_MMDEVICEAPI_H */
 
 /* DirectX function pointers for audio */
 static void* DSoundDLL = NULL;
@@ -172,8 +180,16 @@ FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
 static void
 DSOUND_DetectDevices(void)
 {
-    pDirectSoundCaptureEnumerateW(FindAllDevs, (void *) ((size_t) 1));
-    pDirectSoundEnumerateW(FindAllDevs, (void *) ((size_t) 0));
+#if HAVE_MMDEVICEAPI_H
+    if (SupportsIMMDevice) {
+        SDL_IMMDevice_EnumerateEndpoints(SDL_TRUE);
+    } else {
+#endif /* HAVE_MMDEVICEAPI_H */
+        pDirectSoundCaptureEnumerateW(FindAllDevs, (void *)((size_t)1));
+        pDirectSoundEnumerateW(FindAllDevs, (void *)((size_t)0));
+#if HAVE_MMDEVICEAPI_H
+    }
+#endif /* HAVE_MMDEVICEAPI_H*/
 }
 
 
@@ -567,6 +583,12 @@ DSOUND_OpenDevice(_THIS, const char *devname)
 static void
 DSOUND_Deinitialize(void)
 {
+#if HAVE_MMDEVICEAPI_H
+    if (SupportsIMMDevice) {
+        SDL_IMMDevice_Quit();
+        SupportsIMMDevice = SDL_FALSE;
+    }
+#endif /* HAVE_MMDEVICEAPI_H */
     DSOUND_Unload();
 }
 
@@ -577,6 +599,10 @@ DSOUND_Init(SDL_AudioDriverImpl * impl)
     if (!DSOUND_Load()) {
         return SDL_FALSE;
     }
+
+#if HAVE_MMDEVICEAPI_H
+    SupportsIMMDevice = !(SDL_IMMDevice_Init() < 0);
+#endif /* HAVE_MMDEVICEAPI_H */
 
     /* Set the function pointers */
     impl->DetectDevices = DSOUND_DetectDevices;
