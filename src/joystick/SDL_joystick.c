@@ -1957,6 +1957,9 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
     } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
         type = SDL_CONTROLLER_TYPE_GOOGLE_STADIA;
 
+    } else if (vendor == USB_VENDOR_NVIDIA && product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER) {
+        type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
+
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
             type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
 

@@ -634,6 +634,10 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 /* The Google Stadia controller has a share button and a Google Assistant button */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
+            case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD:
+                /* The NVIDIA SHIELD controller has a home button between back and start buttons */
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                break;
             default:
                 if (vendor == 0 && product == 0) {
                     /* This is a Bluetooth Nintendo Switch Pro controller */
