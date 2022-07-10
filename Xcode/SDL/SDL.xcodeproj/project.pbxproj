@@ -93,6 +93,15 @@
 		75E09169241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */; };
 		75E0916A241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */; };
 		75E0916B241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */; };
+		9846B07C287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B07D287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B07E287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B07F287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B080287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B081287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B082287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B083287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
+		9846B084287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
 		A1626A3E2617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
 		A1626A3F2617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
 		A1626A402617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
@@ -3629,6 +3638,7 @@
 		5C2EF7001FC9EF0F003F5197 /* SDL_egl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_egl.h; sourceTree = "<group>"; };
 		75E09158241EA924004729E1 /* SDL_virtualjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_virtualjoystick.c; sourceTree = "<group>"; };
 		75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_virtualjoystick_c.h; sourceTree = "<group>"; };
+		9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_shield.c; sourceTree = "<group>"; };
 		A1626A3D2617006A003F1973 /* SDL_triangle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_triangle.c; sourceTree = "<group>"; };
 		A1626A512617008C003F1973 /* SDL_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_triangle.h; sourceTree = "<group>"; };
 		A1BB8B6127F6CF320057CFA8 /* SDL_list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_list.c; sourceTree = "<group>"; };
@@ -4902,6 +4912,7 @@
 		A7D8A7BE23E2513E00DCD162 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
+				9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3F07D59269640160074468B /* SDL_hidapi_luna.c */,
 				A7D8A7C323E2513E00DCD162 /* SDL_hidapi_ps4.c */,
@@ -7631,6 +7642,7 @@
 				A75FCE3B23E25AB700529352 /* SDL_wave.c in Sources */,
 				A75FCE3C23E25AB700529352 /* s_tan.c in Sources */,
 				A75FCE3D23E25AB700529352 /* SDL_hints.c in Sources */,
+				9846B083287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A75FCE3E23E25AB700529352 /* SDL_hidapi_ps4.c in Sources */,
 				A75FCE3F23E25AB700529352 /* SDL_pixels.c in Sources */,
 				A75FCE4123E25AB700529352 /* SDL_sysloadso.c in Sources */,
@@ -7823,6 +7835,7 @@
 				A75FCFF423E25AC700529352 /* SDL_wave.c in Sources */,
 				A75FCFF523E25AC700529352 /* s_tan.c in Sources */,
 				A75FCFF623E25AC700529352 /* SDL_hints.c in Sources */,
+				9846B084287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A75FCFF723E25AC700529352 /* SDL_hidapi_ps4.c in Sources */,
 				A75FCFF823E25AC700529352 /* SDL_pixels.c in Sources */,
 				A75FCFFA23E25AC700529352 /* SDL_sysloadso.c in Sources */,
@@ -8001,6 +8014,7 @@
 				A769B1BE23E259AE00872273 /* SDL_error.c in Sources */,
 				A769B1BF23E259AE00872273 /* SDL_blit.c in Sources */,
 				A769B1C023E259AE00872273 /* SDL_rwops.c in Sources */,
+				9846B081287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A769B1C123E259AE00872273 /* SDL_uikitviewcontroller.m in Sources */,
 				A769B1C223E259AE00872273 /* s_cos.c in Sources */,
 				A769B1C323E259AE00872273 /* SDL_steamcontroller.c in Sources */,
@@ -8208,6 +8222,7 @@
 				A7D8B54023E2514300DCD162 /* SDL_hidapi_ps4.c in Sources */,
 				A7D8AD6F23E2514100DCD162 /* SDL_pixels.c in Sources */,
 				5616CA52252BB35A005D5928 /* SDL_url.c in Sources */,
+				9846B07D287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A7D8B75F23E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				A7D8B5F423E2514300DCD162 /* SDL_syspower.c in Sources */,
 				A7D8B95123E2514400DCD162 /* SDL_iconv.c in Sources */,
@@ -8400,6 +8415,7 @@
 				A7D8B54123E2514300DCD162 /* SDL_hidapi_ps4.c in Sources */,
 				A7D8AD7023E2514100DCD162 /* SDL_pixels.c in Sources */,
 				5616CA55252BB35B005D5928 /* SDL_url.c in Sources */,
+				9846B07E287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A7D8B76023E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				A7D8B5F523E2514300DCD162 /* SDL_syspower.c in Sources */,
 				A7D8B95223E2514400DCD162 /* SDL_iconv.c in Sources */,
@@ -8578,6 +8594,7 @@
 				A7D8B8E823E2514400DCD162 /* SDL_error.c in Sources */,
 				A7D8AD6C23E2514100DCD162 /* SDL_blit.c in Sources */,
 				A7D8B5C123E2514300DCD162 /* SDL_rwops.c in Sources */,
+				9846B080287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A7D8ACD323E2514100DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8BA9523E2514400DCD162 /* s_cos.c in Sources */,
 				A7D8B4D423E2514300DCD162 /* SDL_steamcontroller.c in Sources */,
@@ -8699,6 +8716,7 @@
 				A7D8B62F23E2514300DCD162 /* SDL_sysfilesystem.m in Sources */,
 				A7D8BAC723E2514500DCD162 /* e_pow.c in Sources */,
 				A7D8B41C23E2514300DCD162 /* SDL_systls.c in Sources */,
+				9846B07C287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A7D8BBD923E2574800DCD162 /* SDL_uikitmessagebox.m in Sources */,
 				A7D8AD2923E2514100DCD162 /* SDL_vulkan_utils.c in Sources */,
 				A7D8A95123E2514000DCD162 /* SDL_spinlock.c in Sources */,
@@ -8889,6 +8907,7 @@
 				A7D8AE7F23E2514100DCD162 /* SDL_yuv.c in Sources */,
 				A7D8B63223E2514300DCD162 /* SDL_sysfilesystem.m in Sources */,
 				A7D8BACA23E2514500DCD162 /* e_pow.c in Sources */,
+				9846B07F287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A7D8B41F23E2514300DCD162 /* SDL_systls.c in Sources */,
 				A7D8AD2C23E2514100DCD162 /* SDL_vulkan_utils.c in Sources */,
 				A7D8A95423E2514000DCD162 /* SDL_spinlock.c in Sources */,
@@ -9079,6 +9098,7 @@
 				A7D8B63423E2514300DCD162 /* SDL_sysfilesystem.m in Sources */,
 				A7D8BACC23E2514500DCD162 /* e_pow.c in Sources */,
 				A7D8B42123E2514300DCD162 /* SDL_systls.c in Sources */,
+				9846B082287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
 				A7D8AD2E23E2514100DCD162 /* SDL_vulkan_utils.c in Sources */,
 				A7D8A95623E2514000DCD162 /* SDL_spinlock.c in Sources */,
 				A7D8BAB423E2514400DCD162 /* s_atan.c in Sources */,
