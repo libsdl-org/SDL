@@ -77,6 +77,7 @@ enum PW_READY_FLAGS
 static SDL_bool pipewire_initialized = SDL_FALSE;
 
 /* Pipewire entry points */
+static char *(*PIPEWIRE_pw_get_library_version)(void);
 static void (*PIPEWIRE_pw_init)(int *, char **);
 static void (*PIPEWIRE_pw_deinit)(void);
 static struct pw_thread_loop *(*PIPEWIRE_pw_thread_loop_new)(const char *, const struct spa_dict *);
@@ -168,6 +169,7 @@ unload_pipewire_library()
 static int
 load_pipewire_syms()
 {
+    SDL_PIPEWIRE_SYM(pw_get_library_version);
     SDL_PIPEWIRE_SYM(pw_init);
     SDL_PIPEWIRE_SYM(pw_deinit);
     SDL_PIPEWIRE_SYM(pw_thread_loop_new);
@@ -204,8 +206,18 @@ init_pipewire_library()
 {
     if (!load_pipewire_library()) {
         if (!load_pipewire_syms()) {
-            PIPEWIRE_pw_init(NULL, NULL);
-            return 0;
+            int major, minor, patch, nargs;
+            const char *version = PIPEWIRE_pw_get_library_version();
+            nargs = SDL_sscanf(version, "%d.%d.%d", &major, &minor, &patch);
+            if (nargs < 3) {
+                return -1;
+            }
+
+            /* SDL can build against 0.3.20, but requires 0.3.24 */
+            if ((major >= 0) && (major > 0 || minor >= 3) && (major > 0 || minor > 3 || patch >= 24)) {
+                PIPEWIRE_pw_init(NULL, NULL);
+                return 0;
+            }
         }
     }
 
