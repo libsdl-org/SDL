@@ -64,11 +64,6 @@ AC_PROG_EGREP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
-AC_PROG_AWK
-
-if test -z "$AWK"; then
-    AC_MSG_ERROR([*** Required awk tool not found!])
-fi
 
 dnl 64-bit file offsets if possible unless --disable-largefile is specified
 AC_SYS_LARGEFILE
@@ -186,7 +181,7 @@ find_lib()
         host_lib_path="/usr/$base_libdir /usr/local/$base_libdir"
     fi
     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
-        lib=[`ls -- $path/$1 2>/dev/null | sed -e 's,.*/,,' | $AWK '{print length() " " $0;}' | sort -n -r | tail -1 | sed 's/^[0-9]\+ //'`]
+        lib=[`ls -- $path/$1 2>/dev/null | sed -e '/\.so\..*\./d' -e 's,.*/,,' | sort | tail -1`]
         if test x$lib != x; then
             echo $lib
             return
