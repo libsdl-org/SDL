@@ -92,7 +92,7 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *
  * `C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\`
  *
- * On Linux, the string might look like"
+ * On Linux, the string might look like:
  *
  * `/home/bob/.local/share/My Program Name/`
  *
