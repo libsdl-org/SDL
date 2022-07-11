@@ -471,6 +471,40 @@ SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid)
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);
 }
 
+int
+SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    WAVEFORMATEXTENSIBLE fmt;
+    IMMDevice *device = NULL;
+    char *filler;
+    GUID morefiller;
+    const EDataFlow dataflow = iscapture ? eCapture : eRender;
+    HRESULT ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, &device);
+
+    if (FAILED(ret)) {
+        SDL_assert(device == NULL);
+        return WIN_SetErrorFromHRESULT("WASAPI can't find default audio endpoint", ret);
+    }
+
+    if (name == NULL) {
+        name = &filler;
+    }
+
+    SDL_zero(fmt);
+    GetMMDeviceInfo(device, name, &fmt, &morefiller);
+    IMMDevice_Release(device);
+
+    if (name == &filler) {
+        SDL_free(filler);
+    }
+
+    SDL_zerop(spec);
+    spec->channels = (Uint8)fmt.Format.nChannels;
+    spec->freq = fmt.Format.nSamplesPerSec;
+    spec->format = WaveFormatToSDLFormat((WAVEFORMATEX *) &fmt);
+    return 0;
+}
+
 SDL_AudioFormat
 WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
 {

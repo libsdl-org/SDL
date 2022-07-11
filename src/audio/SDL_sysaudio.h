@@ -78,6 +78,7 @@ typedef struct SDL_AudioDriverImpl
     void (*UnlockDevice) (_THIS);
     void (*FreeDeviceHandle) (void *handle);  /**< SDL is done with handle from SDL_AddAudioDevice() */
     void (*Deinitialize) (void);
+    int (*GetDefaultAudioInfo) (char **name, SDL_AudioSpec *spec, int iscapture);
 
     /* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
 

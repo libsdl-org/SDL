@@ -1154,6 +1154,24 @@ SDL_GetAudioDeviceSpec(int index, int iscapture, SDL_AudioSpec *spec)
 }
 
 
+int
+SDL_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    if (spec == NULL) {
+        return SDL_InvalidParamError("spec");
+    }
+
+    if (!SDL_GetCurrentAudioDriver()) {
+        return SDL_SetError("Audio subsystem is not initialized");
+    }
+
+    if (current_audio.impl.GetDefaultAudioInfo == NULL) {
+        return SDL_Unsupported();
+    }
+    return current_audio.impl.GetDefaultAudioInfo(name, spec, iscapture);
+}
+
+
 static void
 close_audio_device(SDL_AudioDevice * device)
 {

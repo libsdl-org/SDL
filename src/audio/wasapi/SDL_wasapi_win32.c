@@ -145,6 +145,12 @@ WASAPI_EnumerateEndpoints(void)
     SDL_IMMDevice_EnumerateEndpoints(SDL_FALSE);
 }
 
+int
+WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    return SDL_IMMDevice_GetDefaultAudioInfo(name, spec, iscapture);
+}
+
 void
 WASAPI_PlatformDeleteActivationHandler(void *handler)
 {

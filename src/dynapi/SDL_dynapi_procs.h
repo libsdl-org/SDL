@@ -962,3 +962,4 @@ SDL_DYNAPI_PROC(int,SDL_GDKRunApp,(SDL_main_func a, void *b),(a,b),return)
 #endif
 SDL_DYNAPI_PROC(void,SDL_GetOriginalMemoryFunctions,(SDL_malloc_func *a, SDL_calloc_func *b, SDL_realloc_func *c, SDL_free_func *d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_ResetKeyboard,(void),(),)
+SDL_DYNAPI_PROC(int,SDL_GetDefaultAudioInfo,(char **a, SDL_AudioSpec *b, int c),(a,b,c),return)

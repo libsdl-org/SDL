@@ -244,6 +244,12 @@ WASAPI_PlatformDeleteActivationHandler(void *handler)
 }
 
 int
+WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    return SDL_Unsupported();
+}
+
+int
 WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
 {
     LPCWSTR devid = _this->hidden->devid;

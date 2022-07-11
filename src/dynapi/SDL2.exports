@@ -853,3 +853,4 @@
 # ++'_SDL_GDKRunApp'.'SDL2.dll'.'SDL_GDKRunApp'
 ++'_SDL_GetOriginalMemoryFunctions'.'SDL2.dll'.'SDL_GetOriginalMemoryFunctions'
 ++'_SDL_ResetKeyboard'.'SDL2.dll'.'SDL_ResetKeyboard'
+++'_SDL_GetDefaultAudioInfo'.'SDL2.dll'.'SDL_GetDefaultAudioInfo'
