@@ -236,8 +236,9 @@ struct node_object
 {
     struct spa_list link;
 
-    Uint32 id;
-    int    seq;
+    Uint32   id;
+    int      seq;
+    SDL_bool persist;
 
     /*
      * NOTE: If used, this is *must* be allocated with SDL_malloc() or similar
@@ -491,7 +492,7 @@ core_events_metadata_callback(void *object, uint32_t id, int seq)
 {
     struct node_object *node = object;
 
-    if (id == PW_ID_CORE && seq == node->seq) {
+    if (id == PW_ID_CORE && seq == node->seq && !node->persist) {
         node_object_destroy(node);
     }
 }
@@ -646,17 +647,21 @@ get_name_from_json(const char *json)
 static int
 metadata_property(void *object, Uint32 subject, const char *key, const char *type, const char *value)
 {
+    struct node_object *node = object;
+
     if (subject == PW_ID_CORE && key != NULL && value != NULL) {
         if (!SDL_strcmp(key, "default.audio.sink")) {
             if (pipewire_default_sink_id != NULL) {
                 SDL_free(pipewire_default_sink_id);
             }
             pipewire_default_sink_id = get_name_from_json(value);
+            node->persist = SDL_TRUE;
         } else if (!SDL_strcmp(key, "default.audio.source")) {
             if (pipewire_default_source_id != NULL) {
                 SDL_free(pipewire_default_source_id);
             }
             pipewire_default_source_id = get_name_from_json(value);
+            node->persist = SDL_TRUE;
         }
     }
 
@@ -1286,31 +1291,38 @@ PIPEWIRE_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     struct io_node *node;
     char *target;
+    int ret = 0;
+
+    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
+
     if (iscapture) {
         if (pipewire_default_source_id == NULL) {
-            return SDL_SetError("PipeWire could not find a default source");
+            ret = SDL_SetError("PipeWire could not find a default source");
+            goto failed;
         }
         target = pipewire_default_source_id;
     } else {
         if (pipewire_default_sink_id == NULL) {
-            return SDL_SetError("PipeWire could not find a default sink");
+            ret = SDL_SetError("PipeWire could not find a default sink");
+            goto failed;
         }
         target = pipewire_default_sink_id;
     }
 
-    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
     node = io_list_get(target);
     if (node == NULL) {
-        PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
-        return SDL_SetError("PipeWire device list is out of sync with defaults");
+        ret = SDL_SetError("PipeWire device list is out of sync with defaults");
+        goto failed;
     }
 
     if (name != NULL) {
         *name = SDL_strdup(node->name);
     }
     SDL_copyp(spec, &node->spec);
+
+failed:
     PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
-    return 0;
+    return ret;
 }
 
 static void
