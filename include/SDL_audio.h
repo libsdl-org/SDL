@@ -533,12 +533,12 @@ extern DECLSPEC int SDLCALL SDL_GetAudioDeviceSpec(int index,
  * should call this function sparingly!
  *
  * `spec` will be filled with the sample rate, sample format, and channel
- * count, if a default device exists on the system. If `name` is provided, will
- * be filled with either a dynamically-allocated UTF-8 string or NULL.
+ * count, if a default device exists on the system. If `name` is provided,
+ * will be filled with either a dynamically-allocated UTF-8 string or NULL.
  *
  * \param name A pointer to be filled with the name of the default device (can
-               be NULL). Please call SDL_free() when you are done with this
-               pointer!
+ *             be NULL). Please call SDL_free() when you are done with this
+ *             pointer!
  * \param spec The SDL_AudioSpec to be initialized by this function.
  * \param iscapture non-zero to query the default recording device, zero to
  *                  query the default output device.
