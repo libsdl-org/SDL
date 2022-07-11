@@ -63,6 +63,7 @@
 
 #define PW_POD_BUFFER_LENGTH         1024
 #define PW_THREAD_NAME_BUFFER_LENGTH 128
+#define PW_MAX_IDENTIFIER_LENGTH     256
 
 enum PW_READY_FLAGS
 {
@@ -263,11 +264,10 @@ struct io_node
     SDL_bool      is_capture;
     SDL_AudioSpec spec;
 
-    /* FIXME: These sizes are arbitrary! */
-    #define MAX_FRIENDLY_NAME 256
-    #define MAX_IDENTIFIER_PATH 256
-    char name[MAX_FRIENDLY_NAME]; /* Friendly name */
-    char path[MAX_IDENTIFIER_PATH]; /* OS identifier (i.e. ALSA endpoint) */
+    const char *name; /* Friendly name */
+    const char *path; /* OS identifier (i.e. ALSA endpoint) */
+
+    char buf[]; /* Buffer to hold the name and path strings. */
 };
 
 /* The global hotplug thread and associated objects. */
@@ -626,7 +626,7 @@ get_name_from_json(const char *json)
 {
     struct spa_json parser[2];
     char key[7]; /* "name" */
-    char value[MAX_IDENTIFIER_PATH];
+    char value[PW_MAX_IDENTIFIER_LENGTH];
     spa_json_init(&parser[0], json, SDL_strlen(json));
     if (spa_json_enter_object(&parser[0], &parser[1]) <= 0) {
         /* Not actually JSON */
@@ -686,6 +686,8 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
             const char     *node_path;
             struct io_node *io;
             SDL_bool        is_capture;
+            int             desc_buffer_len;
+            int             path_buffer_len;
 
             /* Just want sink and capture */
             if (!SDL_strcasecmp(media_class, "Audio/Sink")) {
@@ -707,7 +709,9 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
                 }
 
                 /* Allocate and initialize the I/O node information struct */
-                node->userdata = io = SDL_calloc(1, sizeof(struct io_node));
+                desc_buffer_len = SDL_strlen(node_desc) + 1;
+                path_buffer_len = SDL_strlen(node_path) + 1;
+                node->userdata = io = SDL_calloc(1, sizeof(struct io_node) + desc_buffer_len + path_buffer_len);
                 if (io == NULL) {
                     node_object_destroy(node);
                     SDL_OutOfMemory();
@@ -718,8 +722,10 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
                 io->id          = id;
                 io->is_capture  = is_capture;
                 io->spec.format = AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion. */
-                SDL_strlcpy(io->name, node_desc, sizeof(io->name));
-                SDL_strlcpy(io->path, node_path, sizeof(io->path));
+                io->name        = io->buf;
+                io->path        = io->buf + desc_buffer_len;
+                SDL_strlcpy(io->buf, node_desc, desc_buffer_len);
+                SDL_strlcpy(io->buf + desc_buffer_len, node_path, path_buffer_len);
 
                 /* Update sync points */
                 hotplug_core_sync(node);
