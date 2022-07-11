@@ -90,8 +90,20 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_PumpEvents
+ * \sa SDL_ResetKeyboard
  */
 extern DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState(int *numkeys);
+
+/**
+ * Clear the state of the keyboard
+ *
+ * This function will generate key up events for all pressed keys.
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_GetKeyboardState
+ */
+extern DECLSPEC void SDLCALL SDL_ResetKeyboard(void);
 
 /**
  * Get the current key modifier state for the keyboard.

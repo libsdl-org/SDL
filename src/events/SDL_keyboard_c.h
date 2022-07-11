@@ -29,9 +29,6 @@
 /* Initialize the keyboard subsystem */
 extern int SDL_KeyboardInit(void);
 
-/* Clear the state of the keyboard */
-extern void SDL_ResetKeyboard(void);
-
 /* Get the default keymap */
 extern void SDL_GetDefaultKeymap(SDL_Keycode * keymap);
 
