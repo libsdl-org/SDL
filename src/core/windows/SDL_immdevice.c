@@ -84,7 +84,7 @@ GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSIBLE *fmt, GU
 /* This is a list of device id strings we have inflight, so we have consistent pointers to the same device. */
 typedef struct DevIdList
 {
-    WCHAR *str;
+    LPWSTR str;
     LPGUID guid;
     struct DevIdList *next;
 } DevIdList;
@@ -118,7 +118,9 @@ SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTEN
 {
     DevIdList *devidlist;
     SDL_AudioSpec spec;
+    LPWSTR devidcopy;
     LPGUID cpyguid;
+    LPVOID driverdata;
 
     /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
        In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
@@ -137,20 +139,28 @@ SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTEN
         return;  /* oh well. */
     }
 
-    devid = SDL_wcsdup(devid);
-    if (!devid) {
+    devidcopy = SDL_wcsdup(devid);
+    if (!devidcopy) {
         SDL_free(devidlist);
         return;  /* oh well. */
     }
 
-    cpyguid = (LPGUID)SDL_malloc(sizeof(GUID));
-    if (!cpyguid) {
-        SDL_free(devidlist);
-        return; /* oh well. */
+    if (useguid) {
+        /* This is freed by DSOUND_FreeDeviceData! */
+        cpyguid = (LPGUID)SDL_malloc(sizeof(GUID));
+        if (!cpyguid) {
+            SDL_free(devidlist);
+            SDL_free(devidcopy);
+            return; /* oh well. */
+        }
+        SDL_memcpy(cpyguid, dsoundguid, sizeof(GUID));
+        driverdata = cpyguid;
+    } else {
+        cpyguid = NULL;
+        driverdata = devidcopy;
     }
-    SDL_memcpy(cpyguid, dsoundguid, sizeof(GUID));
 
-    devidlist->str = (WCHAR *)devid;
+    devidlist->str = devidcopy;
     devidlist->guid = cpyguid;
     devidlist->next = deviceid_list;
     deviceid_list = devidlist;
@@ -159,7 +169,7 @@ SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTEN
     spec.channels = (Uint8)fmt->Format.nChannels;
     spec.freq = fmt->Format.nSamplesPerSec;
     spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *)fmt);
-    SDL_AddAudioDevice(iscapture, devname, &spec, useguid ? ((void *) cpyguid) : ((void *) devid));
+    SDL_AddAudioDevice(iscapture, devname, &spec, driverdata);
 }
 
 /* We need a COM subclass of IMMNotificationClient for hotplug support, which is
