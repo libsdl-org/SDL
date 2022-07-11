@@ -64,6 +64,7 @@ void WASAPI_UnrefDevice(_THIS);
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
 void WASAPI_EnumerateEndpoints(void);
+int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
 int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
 void WASAPI_PlatformThreadInit(_THIS);
 void WASAPI_PlatformThreadDeinit(_THIS);

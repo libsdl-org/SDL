@@ -634,6 +634,7 @@ WASAPI_Init(SDL_AudioDriverImpl * impl)
     impl->FlushCapture = WASAPI_FlushCapture;
     impl->CloseDevice = WASAPI_CloseDevice;
     impl->Deinitialize = WASAPI_Deinitialize;
+    impl->GetDefaultAudioInfo = WASAPI_GetDefaultAudioInfo;
     impl->HasCaptureSupport = SDL_TRUE;
 
     return SDL_TRUE;   /* this audio target is available. */

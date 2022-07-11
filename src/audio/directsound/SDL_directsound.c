@@ -156,6 +156,17 @@ DSOUND_FreeDeviceHandle(void *handle)
     SDL_free(handle);
 }
 
+static int
+DSOUND_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+#if HAVE_MMDEVICEAPI_H
+    if (SupportsIMMDevice) {
+        return SDL_IMMDevice_GetDefaultAudioInfo(name, spec, iscapture);
+    }
+#endif /* HAVE_MMDEVICEAPI_H */
+    return SDL_Unsupported();
+}
+
 static BOOL CALLBACK
 FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
 {
@@ -615,6 +626,7 @@ DSOUND_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = DSOUND_CloseDevice;
     impl->FreeDeviceHandle = DSOUND_FreeDeviceHandle;
     impl->Deinitialize = DSOUND_Deinitialize;
+    impl->GetDefaultAudioInfo = DSOUND_GetDefaultAudioInfo;
 
     impl->HasCaptureSupport = SDL_TRUE;
 
