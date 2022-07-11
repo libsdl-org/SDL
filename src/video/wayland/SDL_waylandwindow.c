@@ -40,6 +40,7 @@
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
+#include "fractional-scale-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1098,7 +1099,10 @@ handle_surface_enter(void *data, struct wl_surface *surface,
 
     /* Update the scale factor after the move so that fullscreen outputs are updated. */
     Wayland_move_window(window->sdlwindow, driverdata);
-    update_scale_factor(window);
+
+    if (!window->fractional_scale) {
+        update_scale_factor(window);
+    }
 }
 
 static void
@@ -1136,7 +1140,9 @@ handle_surface_leave(void *data, struct wl_surface *surface,
                             window->outputs[window->num_outputs - 1]);
     }
 
-    update_scale_factor(window);
+    if (!window->fractional_scale) {
+        update_scale_factor(window);
+    }
 }
 
 static const struct wl_surface_listener surface_listener = {
@@ -1633,6 +1639,29 @@ Wayland_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
     return 0;
 }
 
+void handle_preferred_scale_changed(void *data,
+                     struct wp_fractional_scale_v1 *wp_fractional_scale_v1,
+                     uint preferred_scale)
+{
+    SDL_WindowData *window = data;
+    float old_factor = window->scale_factor;
+    float new_factor = preferred_scale / 120.; /* 120 is a magic number defined in the spec as a common denominator*/
+
+    if (!(window->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+        /* Scale will always be 1, just ignore this */
+        return;
+    }
+
+    if (!FloatEqual(new_factor, old_factor)) {
+        Wayland_HandleResize(window->sdlwindow, window->sdlwindow->w, window->sdlwindow->h, new_factor);
+    }
+}
+
+static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
+    handle_preferred_scale_changed
+};
+
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 static void SDLCALL
 QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
@@ -2050,6 +2079,12 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         Wayland_input_lock_pointer(c->input);
     }
 
+    if (c->fractional_scale_manager) {
+        data->fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(c->fractional_scale_manager, data->surface);
+        wp_fractional_scale_v1_add_listener(data->fractional_scale,
+                                         &fractional_scale_listener, data);
+    }
+
     /* Moved this call to ShowWindow: wl_surface_commit(data->surface); */
     WAYLAND_wl_display_flush(c->display);
 
@@ -2241,6 +2276,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 
         if (wind->draw_viewport) {
             wp_viewport_destroy(wind->draw_viewport);
+        }
+
+        if (wind->fractional_scale) {
+            wp_fractional_scale_v1_destroy(wind->fractional_scale);
         }
 
         SDL_free(wind->outputs);
