@@ -1759,15 +1759,15 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
         /* guid16[4] is product ID */
         guid16[5] == 0x0000
         /* guid16[6] is product version */
-   ) {
+    ) {
         if (vendor) {
-            *vendor = guid16[2];
+            *vendor = SDL_SwapLE16(guid16[2]);
         }
         if (product) {
-            *product = guid16[4];
+            *product = SDL_SwapLE16(guid16[4]);
         }
         if (version) {
-            *version = guid16[6];
+            *version = SDL_SwapLE16(guid16[6]);
         }
     } else {
         if (vendor) {
