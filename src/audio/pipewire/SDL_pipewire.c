@@ -1192,17 +1192,8 @@ PIPEWIRE_OpenDevice(_THIS, const char *devname)
         return SDL_SetError("Pipewire: Failed to create stream loop (%i)", errno);
     }
 
-    /*
-     * Load the realtime module so Pipewire can set the loop thread to the appropriate priority.
-     *
-     * NOTE: Pipewire versions 0.3.22 or higher require the PW_KEY_CONFIG_NAME property (with client-rt.conf),
-     *       lower versions require explicitly specifying the 'rtkit' module.
-     *
-     *       PW_KEY_CONTEXT_PROFILE_MODULES is deprecated and can be safely removed if the minimum required
-     *       Pipewire version is increased to 0.3.22 or higher at some point.
-     */
-    props = PIPEWIRE_pw_properties_new(PW_KEY_CONFIG_NAME, "client-rt.conf",
-                                       PW_KEY_CONTEXT_PROFILE_MODULES, "default,rtkit", NULL);
+    /* Load the realtime module so Pipewire can set the loop thread to the appropriate priority. */
+    props = PIPEWIRE_pw_properties_new(PW_KEY_CONFIG_NAME, "client-rt.conf", NULL);
     if (props == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream context properties (%i)", errno);
     }
