@@ -155,6 +155,7 @@ HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     /* Request battery and charging info */
+    ctx->battery_level = SDL_JOYSTICK_POWER_UNKNOWN;
     ctx->last_battery_query_time = SDL_GetTicks();
     HIDAPI_DriverShield_SendCommand(device, CMD_CHARGE_STATE, NULL, 0);
     HIDAPI_DriverShield_SendCommand(device, CMD_BATTERY_STATE, NULL, 0);
