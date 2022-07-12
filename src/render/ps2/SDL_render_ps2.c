@@ -166,10 +166,11 @@ static int
 PS2_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * rect, const void *pixels, int pitch)
 {
-/*  PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata; */
     const Uint8 *src;
     Uint8 *dst;
     int row, length,dpitch;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
     src = pixels;
 
     PS2_LockTexture(renderer, texture, rect, (void **)&dst, &dpitch);
@@ -183,6 +184,8 @@ PS2_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
             dst += dpitch;
         }
     }
+
+    gsKit_TexManager_invalidate(data->gsGlobal, ps2_texture);
 
     return 0;
 }
