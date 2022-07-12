@@ -103,13 +103,13 @@ HIDAPI_DriverShield_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystick
 }
 
 static int
-HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, Uint8* data, int size)
+HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
 {
     SDL_DriverShield_Context *ctx = device->context;
     Uint8 cmd_pkt[HID_REPORT_SIZE];
 
     if (size >= sizeof(cmd_pkt) - 3) {
-        return SDL_SetError("Invalid command data");
+        return SDL_SetError("Command data exceeds HID report size");
     }
 
     if (SDL_HIDAPI_LockRumble() < 0) {
@@ -221,7 +221,17 @@ HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joys
 static int
 HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
-    return SDL_Unsupported();
+    const Uint8 *data_bytes = data;
+
+    if (size > 1) {
+        /* Single command byte followed by a variable length payload */
+        return HIDAPI_DriverShield_SendCommand(device, data_bytes[0], &data_bytes[1], size - 1);
+    } else if (size == 1) {
+        /* Single command byte with no payload */
+        return HIDAPI_DriverShield_SendCommand(device, data_bytes[0], NULL, 0);
+    } else {
+        return SDL_SetError("Effect data must at least contain a command byte");
+    }
 }
 
 static int
