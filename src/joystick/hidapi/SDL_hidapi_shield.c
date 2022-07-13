@@ -50,12 +50,6 @@
 /* Reports that are too small are dropped over Bluetooth */
 #define HID_REPORT_SIZE 33
 
-enum
-{
-    SDL_CONTROLLER_BUTTON_SHIELD_HOME = 15,
-    SDL_CONTROLLER_NUM_SHIELD_BUTTONS,
-};
-
 typedef struct {
     Uint8 seq_num;
 
@@ -150,7 +144,7 @@ HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     device->context = ctx;
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = SDL_CONTROLLER_NUM_SHIELD_BUTTONS;
+    joystick->nbuttons = 16;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
@@ -317,8 +311,9 @@ HIDAPI_DriverShield_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverShield_C
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, SDL_SwapLE16(*(Sint16*)&data[21]) - 0x8000);
 
     if (ctx->last_state[17] != data[17]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_SHIELD_HOME, (data[17] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[17] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[17] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[17] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));

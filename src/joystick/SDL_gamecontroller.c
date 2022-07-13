@@ -635,7 +635,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
             case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD:
-                /* The NVIDIA SHIELD controller has a home button between back and start buttons */
+                /* The NVIDIA SHIELD controller has a share button between back and start buttons */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
             default:

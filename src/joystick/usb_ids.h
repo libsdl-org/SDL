@@ -39,7 +39,6 @@
 #define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_VALVE        0x28de
 
-#define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER                0x7214
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                  0x0419
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER                0x9400
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER               0x1846
@@ -51,6 +50,7 @@
 #define USB_PRODUCT_NINTENDO_N64_CONTROLLER                 0x2019
 #define USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER        0x201e
 #define USB_PRODUCT_NINTENDO_SNES_CONTROLLER                0x2017
+#define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER                0x7214
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008
 #define USB_PRODUCT_RAZER_ATROX                             0x0a00
