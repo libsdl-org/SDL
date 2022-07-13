@@ -138,8 +138,11 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_clipboard.c \
 		      $(srcdir)/testautomation_events.c \
 		      $(srcdir)/testautomation_guid.c \
+		      $(srcdir)/testautomation_hints.c \
+		      $(srcdir)/testautomation_joystick.c \
 		      $(srcdir)/testautomation_keyboard.c \
 		      $(srcdir)/testautomation_main.c \
+		      $(srcdir)/testautomation_math.c \
 		      $(srcdir)/testautomation_mouse.c \
 		      $(srcdir)/testautomation_pixels.c \
 		      $(srcdir)/testautomation_platform.c \
@@ -151,9 +154,7 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_surface.c \
 		      $(srcdir)/testautomation_syswm.c \
 		      $(srcdir)/testautomation_timer.c \
-		      $(srcdir)/testautomation_video.c \
-		      $(srcdir)/testautomation_hints.c \
-		      $(srcdir)/testautomation_math.c
+		      $(srcdir)/testautomation_video.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
 testmultiaudio$(EXE): $(srcdir)/testmultiaudio.c $(srcdir)/testutils.c

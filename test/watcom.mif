@@ -49,16 +49,18 @@ needs_display = &
 TESTS = $(noninteractive) $(needs_audio) $(needs_display)
 
 # testautomation sources
-TASRCS = testautomation.c testautomation_audio.c testautomation_clipboard.c &
-         testautomation_events.c testautomation_hints.c &
-         testautomation_keyboard.c testautomation_main.c &
-         testautomation_mouse.c testautomation_pixels.c &
-         testautomation_platform.c testautomation_rect.c &
-         testautomation_render.c testautomation_rwops.c &
-         testautomation_sdltest.c testautomation_stdlib.c &
-         testautomation_surface.c testautomation_syswm.c &
-         testautomation_timer.c testautomation_video.c &
-         testautomation_math.c testautomation_guid.c
+TASRCS = testautomation.c &
+	testautomation_audio.c testautomation_clipboard.c &
+	testautomation_events.c testautomation_guid.c &
+	testautomation_hints.c testautomation_joystick.c &
+	testautomation_keyboard.c testautomation_main.c &
+	testautomation_math.c testautomation_mouse.c &
+	testautomation_pixels.c testautomation_platform.c &
+	testautomation_rect.c testautomation_render.c &
+	testautomation_rwops.c testautomation_sdltest.c &
+	testautomation_stdlib.c testautomation_surface.c &
+	testautomation_syswm.c testautomation_timer.c &
+	testautomation_video.c
 
 OBJS = $(TARGETS:.exe=.obj)
 COBJS = $(CSRCS:.c=.obj)
