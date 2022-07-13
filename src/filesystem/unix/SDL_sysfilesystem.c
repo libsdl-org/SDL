@@ -155,7 +155,7 @@ SDL_GetBasePath(void)
     size_t len;
     const int mib[] = { CTL_KERN, KERN_PROC_ARGS, getpid(), KERN_PROC_ARGV };
     if (sysctl(mib, 4, NULL, &len, NULL, 0) != -1) {
-        char *exe;
+        char *exe, *pwddst;
         char *realpathbuf = (char *) SDL_malloc(PATH_MAX + 1);
         if (!realpathbuf) {
             SDL_OutOfMemory();
@@ -172,7 +172,7 @@ SDL_GetBasePath(void)
         sysctl(mib, 4, cmdline, &len, NULL, 0);
 
         exe = cmdline[0];
-        char *pwddst = NULL;
+        pwddst = NULL;
         if (SDL_strchr(exe, '/') == NULL) {  /* not a relative or absolute path, check $PATH for it */
             exe = search_path_for_binary(cmdline[0]);
         } else {
