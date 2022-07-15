@@ -119,6 +119,13 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define wl_data_source_interface (*WAYLAND_wl_data_source_interface)
 #define wl_data_device_manager_interface (*WAYLAND_wl_data_device_manager_interface)
 
+/*
+ * These must be included before libdecor.h, otherwise the libdecor header
+ * pulls in the system Wayland protocol headers instead of ours.
+ */
+#include "wayland-client-protocol.h"
+#include "wayland-egl.h"
+
 #ifdef HAVE_LIBDECOR_H
 /* Must be included before our defines */
 #include <libdecor.h>
@@ -163,9 +170,6 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
-
-#include "wayland-client-protocol.h"
-#include "wayland-egl.h"
 
 #endif /* SDL_waylanddyn_h_ */
 
