@@ -29,6 +29,7 @@
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_directsound.h"
+#include <mmreg.h>
 #if HAVE_MMDEVICEAPI_H
 #include "../../core/windows/SDL_immdevice.h"
 #endif /* HAVE_MMDEVICEAPI_H */
@@ -52,6 +53,9 @@ static fnDirectSoundCreate8 pDirectSoundCreate8 = NULL;
 static fnDirectSoundEnumerateW pDirectSoundEnumerateW = NULL;
 static fnDirectSoundCaptureCreate8 pDirectSoundCaptureCreate8 = NULL;
 static fnDirectSoundCaptureEnumerateW pDirectSoundCaptureEnumerateW = NULL;
+
+static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 
 static void
 DSOUND_Unload(void)
@@ -551,21 +555,57 @@ DSOUND_OpenDevice(_THIS, const char *devname)
                              (int) (DSBSIZE_MAX / numchunks));
             } else {
                 int rc;
-                WAVEFORMATEX wfmt;
+                WAVEFORMATEXTENSIBLE wfmt;
                 SDL_zero(wfmt);
-                if (SDL_AUDIO_ISFLOAT(this->spec.format)) {
-                    wfmt.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
+                if (this->spec.channels > 2) {
+                    wfmt.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+                    wfmt.Format.cbSize = sizeof(wfmt) - sizeof(WAVEFORMATEX);
+
+                    if (SDL_AUDIO_ISFLOAT(this->spec.format)) {
+                        SDL_memcpy(&wfmt.SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID));
+                    } else {
+                        wfmt.SubFormat = SDL_KSDATAFORMAT_SUBTYPE_PCM;
+                        SDL_memcpy(&wfmt.SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID));
+                    }
+                    wfmt.Samples.wValidBitsPerSample = SDL_AUDIO_BITSIZE(this->spec.format);
+
+                    switch (this->spec.channels)
+                    {
+                    case 3: /* 3.0 (or 2.1) */
+                        wfmt.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER;
+                        break;
+                    case 4: /* 4.0 */
+                        wfmt.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT;
+                        break;
+                    case 5: /* 5.0 (or 4.1) */
+                        wfmt.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT;
+                        break;
+                    case 6: /* 5.1 */
+                        wfmt.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT;
+                        break;
+                    case 7: /* 6.1 */
+                        wfmt.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_BACK_CENTER;
+                        break;
+                    case 8: /* 7.1 */
+                        wfmt.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT;
+                        break;
+                    default:
+                        SDL_assert(0 && "Unsupported channel count!");
+                        break;
+                    }
+                } else if (SDL_AUDIO_ISFLOAT(this->spec.format)) {
+                    wfmt.Format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
                 } else {
-                    wfmt.wFormatTag = WAVE_FORMAT_PCM;
+                    wfmt.Format.wFormatTag = WAVE_FORMAT_PCM;
                 }
 
-                wfmt.wBitsPerSample = SDL_AUDIO_BITSIZE(this->spec.format);
-                wfmt.nChannels = this->spec.channels;
-                wfmt.nSamplesPerSec = this->spec.freq;
-                wfmt.nBlockAlign = wfmt.nChannels * (wfmt.wBitsPerSample / 8);
-                wfmt.nAvgBytesPerSec = wfmt.nSamplesPerSec * wfmt.nBlockAlign;
+                wfmt.Format.wBitsPerSample = SDL_AUDIO_BITSIZE(this->spec.format);
+                wfmt.Format.nChannels = this->spec.channels;
+                wfmt.Format.nSamplesPerSec = this->spec.freq;
+                wfmt.Format.nBlockAlign = wfmt.Format.nChannels * (wfmt.Format.wBitsPerSample / 8);
+                wfmt.Format.nAvgBytesPerSec = wfmt.Format.nSamplesPerSec * wfmt.Format.nBlockAlign;
 
-                rc = iscapture ? CreateCaptureBuffer(this, bufsize, &wfmt) : CreateSecondary(this, bufsize, &wfmt);
+                rc = iscapture ? CreateCaptureBuffer(this, bufsize, (WAVEFORMATEX*) &wfmt) : CreateSecondary(this, bufsize, (WAVEFORMATEX*) &wfmt);
                 if (rc == 0) {
                     this->hidden->num_buffers = numchunks;
                     break;
