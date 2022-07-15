@@ -346,11 +346,23 @@ SDL_IMMDevice_Init(void)
 void
 SDL_IMMDevice_Quit(void)
 {
+    DevIdList *devidlist;
+    DevIdList *next;
+
     if (enumerator) {
         IMMDeviceEnumerator_UnregisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);
         IMMDeviceEnumerator_Release(enumerator);
         enumerator = NULL;
     }
+
+    WIN_CoUninitialize();
+
+    for (devidlist = deviceid_list; devidlist; devidlist = next) {
+        next = devidlist->next;
+        SDL_free(devidlist->str);
+        SDL_free(devidlist);
+    }
+    deviceid_list = NULL;
 }
 
 int

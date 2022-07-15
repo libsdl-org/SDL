@@ -68,8 +68,6 @@ WASAPI_PlatformInit(void)
 void
 WASAPI_PlatformDeinit(void)
 {
-    SDL_IMMDevice_Quit();
-
     if (libavrt) {
         FreeLibrary(libavrt);
         libavrt = NULL;
@@ -78,7 +76,7 @@ WASAPI_PlatformDeinit(void)
     pAvSetMmThreadCharacteristicsW = NULL;
     pAvRevertMmThreadCharacteristics = NULL;
 
-    WIN_CoUninitialize();
+    SDL_IMMDevice_Quit();
 }
 
 void

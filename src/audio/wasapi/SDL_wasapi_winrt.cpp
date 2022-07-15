@@ -62,6 +62,15 @@ extern "C" {
     SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
 }
 
+/* This is a list of device id strings we have inflight, so we have consistent pointers to the same device. */
+typedef struct DevIdList
+{
+    WCHAR *str;
+    struct DevIdList *next;
+} DevIdList;
+
+static DevIdList *deviceid_list = NULL;
+
 class SDL_WasapiDeviceEventHandler
 {
 public:
@@ -204,10 +213,20 @@ int WASAPI_PlatformInit(void)
 
 void WASAPI_PlatformDeinit(void)
 {
+    DevIdList *devidlist;
+    DevIdList *next;
+
     delete playback_device_event_handler;
     playback_device_event_handler = nullptr;
     delete capture_device_event_handler;
     capture_device_event_handler = nullptr;
+
+    for (devidlist = deviceid_list; devidlist; devidlist = next) {
+        next = devidlist->next;
+        SDL_free(devidlist->str);
+        SDL_free(devidlist);
+    }
+    deviceid_list = NULL;
 }
 
 void WASAPI_EnumerateEndpoints(void)
@@ -358,15 +377,6 @@ WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
     }
     return 0;
 }
-
-/* This is a list of device id strings we have inflight, so we have consistent pointers to the same device. */
-typedef struct DevIdList
-{
-    WCHAR *str;
-    struct DevIdList *next;
-} DevIdList;
-
-static DevIdList *deviceid_list = NULL;
 
 static void
 WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
