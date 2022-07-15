@@ -632,37 +632,75 @@ pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
 }
 
 static void
-pointer_handle_axis_common(struct SDL_WaylandInput *input, SDL_bool discrete,
+pointer_handle_axis_common(struct SDL_WaylandInput *input, enum SDL_WaylandAxisEvent type,
                            uint32_t axis, wl_fixed_t value)
 {
     enum wl_pointer_axis a = axis;
 
     if (input->pointer_focus) {
         switch (a) {
-            case WL_POINTER_AXIS_VERTICAL_SCROLL:
-                if (discrete) {
-                    /* this is a discrete axis event so we process it and flag
-                     * to ignore future continuous axis events in this frame */
-                    input->pointer_curr_axis_info.is_y_discrete = SDL_TRUE;
-                } else if(input->pointer_curr_axis_info.is_y_discrete) {
-                    /* this is a continuous axis event and we have already
-                     * processed a discrete axis event before so we ignore it */
-                    break;
+        case WL_POINTER_AXIS_VERTICAL_SCROLL:
+            switch (type) {
+            case AXIS_EVENT_VALUE120:
+                /*
+                 * High resolution scroll event. The spec doesn't state that axis_value120
+                 * events are limited to one per frame, so the values are accumulated.
+                 */
+                if (input->pointer_curr_axis_info.y_axis_type != AXIS_EVENT_VALUE120) {
+                    input->pointer_curr_axis_info.y_axis_type = AXIS_EVENT_VALUE120;
+                    input->pointer_curr_axis_info.y = 0.0f;
                 }
-                input->pointer_curr_axis_info.y = 0 - (float)wl_fixed_to_double(value);
+                input->pointer_curr_axis_info.y += 0 - (float)wl_fixed_to_double(value);
                 break;
-            case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-                if (discrete) {
-                    /* this is a discrete axis event so we process it and flag
-                     * to ignore future continuous axis events in this frame */
-                    input->pointer_curr_axis_info.is_x_discrete = SDL_TRUE;
-                } else if(input->pointer_curr_axis_info.is_x_discrete) {
-                    /* this is a continuous axis event and we have already
-                     * processed a discrete axis event before so we ignore it */
-                    break;
+            case AXIS_EVENT_DISCRETE:
+                /*
+                 * This is a discrete axis event, so we process it and set the
+                 * flag to ignore future continuous axis events in this frame.
+                 */
+                if (input->pointer_curr_axis_info.y_axis_type != AXIS_EVENT_DISCRETE) {
+                    input->pointer_curr_axis_info.y_axis_type = AXIS_EVENT_DISCRETE;
+                    input->pointer_curr_axis_info.y = 0 - (float)wl_fixed_to_double(value);
                 }
-                input->pointer_curr_axis_info.x = (float)wl_fixed_to_double(value);
                 break;
+            case AXIS_EVENT_CONTINUOUS:
+                /* Only process continuous events if no discrete events have been received. */
+                if (input->pointer_curr_axis_info.y_axis_type == AXIS_EVENT_CONTINUOUS) {
+                    input->pointer_curr_axis_info.y = 0 - (float)wl_fixed_to_double(value);
+                }
+                break;
+            }
+            break;
+        case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+            switch (type) {
+            case AXIS_EVENT_VALUE120:
+                /*
+                 * High resolution scroll event. The spec doesn't state that axis_value120
+                 * events are limited to one per frame, so the values are accumulated.
+                 */
+                if (input->pointer_curr_axis_info.x_axis_type != AXIS_EVENT_VALUE120) {
+                    input->pointer_curr_axis_info.x_axis_type = AXIS_EVENT_VALUE120;
+                    input->pointer_curr_axis_info.x = 0.0f;
+                }
+                input->pointer_curr_axis_info.x += (float)wl_fixed_to_double(value);
+                break;
+            case AXIS_EVENT_DISCRETE:
+                /*
+                 * This is a discrete axis event, so we process it and set the
+                 * flag to ignore future continuous axis events in this frame.
+                 */
+                if (input->pointer_curr_axis_info.x_axis_type != AXIS_EVENT_DISCRETE) {
+                    input->pointer_curr_axis_info.x_axis_type = AXIS_EVENT_DISCRETE;
+                    input->pointer_curr_axis_info.x = (float)wl_fixed_to_double(value);
+                }
+                break;
+            case AXIS_EVENT_CONTINUOUS:
+                /* Only process continuous events if no discrete events have been received. */
+                if (input->pointer_curr_axis_info.x_axis_type == AXIS_EVENT_CONTINUOUS) {
+                    input->pointer_curr_axis_info.x = (float)wl_fixed_to_double(value);
+                }
+                break;
+            }
+            break;
         }
     }
 }
@@ -674,7 +712,7 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
     struct SDL_WaylandInput *input = data;
 
     if(wl_seat_get_version(input->seat) >= 5)
-        pointer_handle_axis_common(input, SDL_FALSE, axis, value);
+        pointer_handle_axis_common(input, AXIS_EVENT_CONTINUOUS, axis, value);
     else
         pointer_handle_axis_common_v1(input, time, axis, value);
 }
@@ -686,15 +724,29 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
     SDL_WindowData *window = input->pointer_focus;
     float x, y;
 
-    if (input->pointer_curr_axis_info.is_x_discrete)
-        x = input->pointer_curr_axis_info.x;
-    else
+    switch(input->pointer_curr_axis_info.x_axis_type) {
+    case AXIS_EVENT_CONTINUOUS:
         x = input->pointer_curr_axis_info.x / WAYLAND_WHEEL_AXIS_UNIT;
+        break;
+    case AXIS_EVENT_DISCRETE:
+        x = input->pointer_curr_axis_info.x;
+        break;
+    case AXIS_EVENT_VALUE120:
+        x = input->pointer_curr_axis_info.x / 120.0f;
+        break;
+    }
 
-    if (input->pointer_curr_axis_info.is_y_discrete)
-        y = input->pointer_curr_axis_info.y;
-    else
+    switch(input->pointer_curr_axis_info.y_axis_type) {
+    case AXIS_EVENT_CONTINUOUS:
         y = input->pointer_curr_axis_info.y / WAYLAND_WHEEL_AXIS_UNIT;
+        break;
+    case AXIS_EVENT_DISCRETE:
+        y = input->pointer_curr_axis_info.y;
+        break;
+    case AXIS_EVENT_VALUE120:
+        y = input->pointer_curr_axis_info.y / 120.0f;
+        break;
+    }
 
     /* clear pointer_curr_axis_info for next frame */
     SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
@@ -725,9 +777,17 @@ pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
 
-    pointer_handle_axis_common(input, SDL_TRUE, axis, wl_fixed_from_int(discrete));
+    pointer_handle_axis_common(input, AXIS_EVENT_DISCRETE, axis, wl_fixed_from_int(discrete));
 }
 
+static void
+pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
+                             uint32_t axis, int32_t value120)
+{
+    struct SDL_WaylandInput *input = data;
+
+    pointer_handle_axis_common(input, AXIS_EVENT_VALUE120, axis, wl_fixed_from_int(value120));
+}
 
 static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_enter,
@@ -739,6 +799,7 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_axis_source,     // Version 5
     pointer_handle_axis_stop,       // Version 5
     pointer_handle_axis_discrete,   // Version 5
+    pointer_handle_axis_value120    // Version 8
 };
 
 static void
