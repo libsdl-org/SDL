@@ -564,7 +564,6 @@ DSOUND_OpenDevice(_THIS, const char *devname)
                     if (SDL_AUDIO_ISFLOAT(this->spec.format)) {
                         SDL_memcpy(&wfmt.SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID));
                     } else {
-                        wfmt.SubFormat = SDL_KSDATAFORMAT_SUBTYPE_PCM;
                         SDL_memcpy(&wfmt.SubFormat, &SDL_KSDATAFORMAT_SUBTYPE_PCM, sizeof(GUID));
                     }
                     wfmt.Samples.wValidBitsPerSample = SDL_AUDIO_BITSIZE(this->spec.format);
