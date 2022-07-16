@@ -1964,8 +1964,16 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
+    int old_w = window->w, old_h = window->h;
+    float old_scale = scale;
 
-    if (data->needs_resize_event || window->w != width || window->h != height || !FloatEqual(data->scale_factor, scale)) {
+    /* Update the window geometry. */
+    window->w = width;
+    window->h = height;
+    data->scale_factor = scale;
+    ConfigureWindowGeometry(window);
+
+    if (data->needs_resize_event || old_w != width || old_h != height || !FloatEqual(data->scale_factor, old_scale)) {
         /* We may have already updated window w/h (or only adjusted scale factor),
          * so we must override the deduplication logic in the video core */
         window->w = 0;
@@ -1973,12 +1981,8 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
         window->w = width;
         window->h = height;
-        data->scale_factor = scale;
         data->needs_resize_event = SDL_FALSE;
     }
-
-    /* Update the window geometry. */
-    ConfigureWindowGeometry(window);
 
     /* XXX: This workarounds issues with commiting buffers with old size after
      * already acknowledging the new size, which can cause protocol violations.
