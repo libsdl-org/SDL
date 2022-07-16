@@ -31,11 +31,13 @@ General:
 * Added SDL_GUIDToString() and SDL_GUIDFromString() to convert between SDL GUID and string
 * Added SDL_HasLSX() and SDL_HasLASX() to detect LoongArch SIMD support
 * Added SDL_GetOriginalMemoryFunctions()
+* Added SDL_GetDefaultAudioInfo() to get the name and format of the default audio device, currently implemented for PipeWire, PulseAudio, WASAPI, and DirectSound
 
 Windows:
 * Added a D3D12 renderer implementation and SDL_RenderGetD3D12Device() to retrieve the D3D12 device associated with it
 * Added the hint SDL_HINT_WINDOWS_DPI_AWARENESS to set whether the application is DPI-aware. This hint must be set before initializing the video subsystem.
 * Added the hint SDL_HINT_WINDOWS_DPI_SCALING to control whether the SDL coordinates are in DPI-scaled points or pixels.
+* Added support for SDL_GetAudioDeviceSpec to the DirectSound backend
 
 Linux:
 * Added the hint SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION to control whether to expose a set of emulated modes in addition to the native resolution modes available on Wayland
