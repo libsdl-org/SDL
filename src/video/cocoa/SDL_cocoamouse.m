@@ -114,7 +114,7 @@ LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
     NSString *cursorPath = [@"/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors" stringByAppendingPathComponent:cursorName];
     NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"info.plist"]];
     /* we can't do animation atm.  :/ */
-    const int frames = [[info valueForKey:@"frames"] integerValue];
+    const int frames = (int)[[info valueForKey:@"frames"] integerValue];
     NSCursor *cursor;
     NSImage *image = [[NSImage alloc] initWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"cursor.pdf"]];
     if ((image == nil) || (image.valid == NO)) {

@@ -72,7 +72,6 @@ SDL_GetPrefPath(const char *org, const char *app)
 { @autoreleasepool
 {
     char *retval = NULL;
-    static SDL_bool shown = SDL_FALSE;
     NSArray *array;
 
     if (!app) {
@@ -94,10 +93,13 @@ SDL_GetPrefPath(const char *org, const char *app)
      * between sessions. If you want your app's save data to
      * actually stick around, you'll need to use iCloud storage.
      */
-    if (!shown)
     {
-        shown = SDL_TRUE;
-        SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.\n");
+        static SDL_bool shown = SDL_FALSE;
+        if (!shown)
+        {
+            shown = SDL_TRUE;
+            SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.\n");
+        }
     }
 
     array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);

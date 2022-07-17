@@ -186,8 +186,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
     Uint8 subtype = 0;
     const char *name = NULL;
 
-    if ((@available(macOS 11.3, *)) && !GCController.shouldMonitorBackgroundEvents) {
-        GCController.shouldMonitorBackgroundEvents = YES;
+    if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
+        if (!GCController.shouldMonitorBackgroundEvents) {
+            GCController.shouldMonitorBackgroundEvents = YES;
+        }
     }
 
     /* Explicitly retain the controller because SDL_JoystickDeviceItem is a
@@ -576,7 +578,9 @@ IOS_JoystickInit(void)
 #endif
 
     @autoreleasepool {
+#ifdef SDL_JOYSTICK_MFI
         NSNotificationCenter *center;
+#endif
 #ifdef SDL_JOYSTICK_iOS_ACCELEROMETER
         if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
             /* Default behavior, accelerometer as joystick */
