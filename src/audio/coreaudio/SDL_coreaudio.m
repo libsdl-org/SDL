@@ -1173,6 +1173,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 
     impl->ProvidesOwnCallbackThread = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
+    impl->SupportsNonPow2Samples = SDL_TRUE;
 
     return SDL_TRUE;   /* this audio target is available. */
 }

@@ -1413,6 +1413,19 @@ open_audio_device(const char *devname, int iscapture,
         }
     }
 
+    /* For backends that require a power-of-two value for spec.samples, take the
+     * value we got from 'desired' and round up to the nearest value
+     */
+    if (!current_audio.impl.SupportsNonPow2Samples && device->spec.samples > 0) {
+        device->spec.samples -= 1;
+        device->spec.samples |= device->spec.samples >> 1;
+        device->spec.samples |= device->spec.samples >> 2;
+        device->spec.samples |= device->spec.samples >> 4;
+        device->spec.samples |= device->spec.samples >> 8;
+        device->spec.samples |= device->spec.samples >> 16;
+        device->spec.samples += 1;
+    }
+
     if (current_audio.impl.OpenDevice(device, devname) < 0) {
         close_audio_device(device);
         return 0;

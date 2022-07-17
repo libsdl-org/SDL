@@ -1417,6 +1417,7 @@ PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 
     impl->HasCaptureSupport         = SDL_TRUE;
     impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->SupportsNonPow2Samples    = SDL_TRUE;
 
     return SDL_TRUE;
 }
