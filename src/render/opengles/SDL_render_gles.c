@@ -25,6 +25,7 @@
 #include "SDL_hints.h"
 #include "SDL_opengles.h"
 #include "../SDL_sysrender.h"
+#include "../../SDL_utils_c.h"
 
 /* To prevent unnecessary window recreation,
  * these should match the defaults selected in SDL_GL_ResetAttributes
@@ -303,17 +304,6 @@ GLES_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     return SDL_TRUE;
 }
 
-static SDL_INLINE int
-power_of_2(int input)
-{
-    int value = 1;
-
-    while (value < input) {
-        value <<= 1;
-    }
-    return value;
-}
-
 static int
 GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -374,8 +364,8 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     data->type = GL_TEXTURE_2D;
     /* no NPOV textures allowed in OpenGL ES (yet) */
-    texture_w = power_of_2(texture->w);
-    texture_h = power_of_2(texture->h);
+    texture_w = SDL_powerof2(texture->w);
+    texture_h = SDL_powerof2(texture->h);
     data->texw = (GLfloat) texture->w / texture_w;
     data->texh = (GLfloat) texture->h / texture_h;
 

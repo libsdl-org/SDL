@@ -792,6 +792,9 @@
     <ClCompile Include="..\src\SDL_list.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\SDL_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\haptic\windows\SDL_dinputhaptic.c">
       <Filter>Source Files</Filter>
     </ClCompile>

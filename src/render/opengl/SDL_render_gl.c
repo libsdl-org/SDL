@@ -25,6 +25,7 @@
 #include "SDL_opengl.h"
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
+#include "../../SDL_utils_c.h"
 
 #ifdef __MACOSX__
 #include <OpenGL/OpenGL.h>
@@ -411,17 +412,6 @@ GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     return SDL_TRUE;
 }
 
-SDL_FORCE_INLINE int
-power_of_2(int input)
-{
-    int value = 1;
-
-    while (value < input) {
-        value <<= 1;
-    }
-    return value;
-}
-
 SDL_FORCE_INLINE SDL_bool
 convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
                GLint* internalFormat, GLenum* format, GLenum* type)
@@ -540,8 +530,8 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         data->texw = (GLfloat) texture_w;
         data->texh = (GLfloat) texture_h;
     } else {
-        texture_w = power_of_2(texture->w);
-        texture_h = power_of_2(texture->h);
+        texture_w = SDL_powerof2(texture->w);
+        texture_h = SDL_powerof2(texture->h);
         data->texw = (GLfloat) (texture->w) / texture_w;
         data->texh = (GLfloat) texture->h / texture_h;
     }

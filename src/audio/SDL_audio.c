@@ -27,6 +27,7 @@
 #include "SDL_audio_c.h"
 #include "SDL_sysaudio.h"
 #include "../thread/SDL_systhread.h"
+#include "../SDL_utils_c.h"
 
 #define _THIS SDL_AudioDevice *_this
 
@@ -1417,13 +1418,7 @@ open_audio_device(const char *devname, int iscapture,
      * value we got from 'desired' and round up to the nearest value
      */
     if (!current_audio.impl.SupportsNonPow2Samples && device->spec.samples > 0) {
-        device->spec.samples -= 1;
-        device->spec.samples |= device->spec.samples >> 1;
-        device->spec.samples |= device->spec.samples >> 2;
-        device->spec.samples |= device->spec.samples >> 4;
-        device->spec.samples |= device->spec.samples >> 8;
-        device->spec.samples |= device->spec.samples >> 16;
-        device->spec.samples += 1;
+        device->spec.samples = SDL_powerof2(device->spec.samples);
     }
 
     if (current_audio.impl.OpenDevice(device, devname) < 0) {
