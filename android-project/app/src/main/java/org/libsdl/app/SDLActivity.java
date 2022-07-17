@@ -53,6 +53,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.text.Editable;
+import android.text.Selection;
 
 import java.util.Hashtable;
 import java.util.Locale;
