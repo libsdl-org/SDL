@@ -723,11 +723,10 @@ SDL_RenderDriver PS2_RenderDriver = {
     .info = {
         .name = "PS2 gsKit",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-        .num_texture_formats = 3,
+        .num_texture_formats = 2,
         .texture_formats = { 
             [0] = SDL_PIXELFORMAT_ABGR1555,
             [1] = SDL_PIXELFORMAT_ABGR8888,
-            [2] = SDL_PIXELFORMAT_BGR888,
         },
         .max_texture_width = 1024,
         .max_texture_height = 1024,
