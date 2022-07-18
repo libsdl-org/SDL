@@ -34,7 +34,9 @@ int SDL_powerof2(int x)
     }
 
     /* This trick works for 32-bit values */
-    SDL_COMPILE_TIME_ASSERT(SDL_powerof2, sizeof(x) == sizeof(Uint32));
+    {
+        SDL_COMPILE_TIME_ASSERT(SDL_powerof2, sizeof(x) == sizeof(Uint32));
+    }
     value = x;
     value -= 1;
     value |= value >> 1;
