@@ -25,7 +25,7 @@
 #include "../SDL_internal.h"
 
 #ifndef DEBUG_CONVERT
-#define DEBUG_CONVERT 0
+#define DEBUG_CONVERT 1
 #endif
 
 #if DEBUG_CONVERT
