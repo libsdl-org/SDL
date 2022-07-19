@@ -29,7 +29,7 @@
 #endif
 
 #if DEBUG_CONVERT
-#define LOG_DEBUG_CONVERT(from, to) fprintf(stderr, "Converting %s to %s.\n", from, to);
+#define LOG_DEBUG_CONVERT(from, to) SDL_Log("SDL_AUDIO_CONVERT: Converting %s to %s.\n", from, to);
 #else
 #define LOG_DEBUG_CONVERT(from, to)
 #endif
