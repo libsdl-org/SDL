@@ -266,7 +266,7 @@ static void write_converter(const int fromchans, const int tochans)
            "{\n", remove_dots(fromstr), remove_dots(tostr));
 
     if (convert_backwards) {  /* must convert backwards when growing the output in-place. */
-        printf("    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / %d) * %d)));\n", fromchans, tochans - 1);
+        printf("    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / %d) * %d))) - %d;\n", fromchans, tochans, tochans);
         printf("    const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - %d;\n", fromchans);
     } else {
         printf("    float *dst = (float *) cvt->buf;\n");

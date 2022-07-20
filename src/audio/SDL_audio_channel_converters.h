@@ -24,7 +24,7 @@
 static void SDLCALL
 SDL_ConvertMonoToStereo(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 1)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 2))) - 2;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 1;
     int i;
 
@@ -47,7 +47,7 @@ SDL_ConvertMonoToStereo(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertMonoTo21(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 2)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 3))) - 3;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 1;
     int i;
 
@@ -71,7 +71,7 @@ SDL_ConvertMonoTo21(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertMonoToQuad(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 3)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 4))) - 4;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 1;
     int i;
 
@@ -96,7 +96,7 @@ SDL_ConvertMonoToQuad(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertMonoTo41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 4)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 5))) - 5;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 1;
     int i;
 
@@ -122,7 +122,7 @@ SDL_ConvertMonoTo41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertMonoTo51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 5)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 6))) - 6;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 1;
     int i;
 
@@ -149,7 +149,7 @@ SDL_ConvertMonoTo51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertMonoTo61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 6)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 7))) - 7;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 1;
     int i;
 
@@ -177,7 +177,7 @@ SDL_ConvertMonoTo61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertMonoTo71(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 7)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 1) * 8))) - 8;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 1;
     int i;
 
@@ -226,7 +226,7 @@ SDL_ConvertStereoToMono(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertStereoTo21(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 2)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 3))) - 3;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 2;
     int i;
 
@@ -249,7 +249,7 @@ SDL_ConvertStereoTo21(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertStereoToQuad(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 3)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 4))) - 4;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 2;
     int i;
 
@@ -273,7 +273,7 @@ SDL_ConvertStereoToQuad(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertStereoTo41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 4)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 5))) - 5;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 2;
     int i;
 
@@ -298,7 +298,7 @@ SDL_ConvertStereoTo41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertStereoTo51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 5)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 6))) - 6;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 2;
     int i;
 
@@ -324,7 +324,7 @@ SDL_ConvertStereoTo51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertStereoTo61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 6)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 7))) - 7;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 2;
     int i;
 
@@ -351,7 +351,7 @@ SDL_ConvertStereoTo61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertStereoTo71(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 7)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 2) * 8))) - 8;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 2;
     int i;
 
@@ -421,7 +421,7 @@ SDL_Convert21ToStereo(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert21ToQuad(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 3)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 4))) - 4;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 3;
     int i;
 
@@ -446,7 +446,7 @@ SDL_Convert21ToQuad(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert21To41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 4)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 5))) - 5;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 3;
     int i;
 
@@ -471,7 +471,7 @@ SDL_Convert21To41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert21To51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 5)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 6))) - 6;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 3;
     int i;
 
@@ -497,7 +497,7 @@ SDL_Convert21To51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert21To61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 6)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 7))) - 7;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 3;
     int i;
 
@@ -524,7 +524,7 @@ SDL_Convert21To61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert21To71(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 7)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 3) * 8))) - 8;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 3;
     int i;
 
@@ -619,7 +619,7 @@ SDL_ConvertQuadTo21(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertQuadTo41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 4)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 5))) - 5;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 4;
     int i;
 
@@ -644,7 +644,7 @@ SDL_ConvertQuadTo41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertQuadTo51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 5)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 6))) - 6;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 4;
     int i;
 
@@ -670,7 +670,7 @@ SDL_ConvertQuadTo51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertQuadTo61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 6)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 7))) - 7;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 4;
     int i;
 
@@ -699,7 +699,7 @@ SDL_ConvertQuadTo61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_ConvertQuadTo71(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 7)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 4) * 8))) - 8;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 4;
     int i;
 
@@ -819,7 +819,7 @@ SDL_Convert41ToQuad(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert41To51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 5) * 5)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 5) * 6))) - 6;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 5;
     int i;
 
@@ -845,7 +845,7 @@ SDL_Convert41To51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert41To61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 5) * 6)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 5) * 7))) - 7;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 5;
     int i;
 
@@ -874,7 +874,7 @@ SDL_Convert41To61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert41To71(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 5) * 7)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 5) * 8))) - 8;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 5;
     int i;
 
@@ -1022,7 +1022,7 @@ SDL_Convert51To41(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert51To61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 6) * 6)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 6) * 7))) - 7;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 6;
     int i;
 
@@ -1051,7 +1051,7 @@ SDL_Convert51To61(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert51To71(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 6) * 7)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 6) * 8))) - 8;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 6;
     int i;
 
@@ -1235,7 +1235,7 @@ SDL_Convert61To51(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 static void SDLCALL
 SDL_Convert61To71(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 7) * 7)));
+    float *dst = ((float *) (cvt->buf + ((cvt->len_cvt / 7) * 8))) - 8;
     const float *src = ((const float *) (cvt->buf + cvt->len_cvt)) - 7;
     int i;
 
