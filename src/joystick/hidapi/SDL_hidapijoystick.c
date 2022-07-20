@@ -180,6 +180,7 @@ SDL_GetJoystickGameControllerProtocol(const char *name, Uint16 vendor, Uint16 pr
             0x1532, /* Razer */
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
+            0x2dc8, /* 8BitDo */
             0x2e24, /* Hyperkin */
         };
 

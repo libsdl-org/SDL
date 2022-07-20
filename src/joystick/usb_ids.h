@@ -24,6 +24,7 @@
 
 /* Definitions of useful USB VID/PID values */
 
+#define USB_VENDOR_8BITDO       0x2dc8
 #define USB_VENDOR_AMAZON       0x1949
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_GOOGLE       0x18d1
@@ -39,6 +40,7 @@
 #define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_VALVE        0x28de
 
+#define USB_PRODUCT_8BITDO_XBOX_CONTROLLER                  0x2002
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                  0x0419
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER                0x9400
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER               0x1846

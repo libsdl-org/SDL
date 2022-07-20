@@ -278,6 +278,7 @@ public class HIDDeviceManager {
             0x1532, // Razer Wildcat
             0x20d6, // PowerA
             0x24c6, // PowerA
+            0x2dc8, /* 8BitDo */
             0x2e24, // Hyperkin
         };
 
