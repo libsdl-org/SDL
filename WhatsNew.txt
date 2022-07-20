@@ -33,6 +33,8 @@ General:
 * Added SDL_GetOriginalMemoryFunctions()
 * Added SDL_GetDefaultAudioInfo() to get the name and format of the default audio device, currently implemented for PipeWire, PulseAudio, WASAPI, and DirectSound
 * Added HIDAPI driver for the NVIDIA SHIELD controller (2017 model) to enable support for battery status and rumble
+* Added support for opening audio devices with 3 or 5 channels (2.1, 4.1). All channel counts from Mono to 7.1 are now supported.
+* Rewrote audio channel converters used by SDL_AudioCVT, based on the channel matrix coefficients used as the default for FAudio voices
 
 Windows:
 * Added a D3D12 renderer implementation and SDL_RenderGetD3D12Device() to retrieve the D3D12 device associated with it
