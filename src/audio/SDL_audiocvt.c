@@ -1983,10 +1983,6 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         /* All combinations of supported channel counts should have been handled by now, but let's be defensive */
         return SDL_SetError("Invalid channel combination");
     } else if (channel_converter != NULL) {
-        if (SDL_AddAudioCVTFilter(cvt, channel_converter) < 0) {
-            return -1;
-        }
-
         /* swap in some SIMD versions for a few of these. */
         if (channel_converter == SDL_Convert51ToStereo) {
             SDL_AudioFilter filter = NULL;
@@ -2008,6 +2004,10 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             if (!filter && SDL_HasSSE3()) { filter = SDL_ConvertStereoToMono_SSE3; }
             #endif
             if (filter) { channel_converter = filter; }
+        }
+
+        if (SDL_AddAudioCVTFilter(cvt, channel_converter) < 0) {
+            return -1;
         }
 
         if (src_channels < dst_channels) {
