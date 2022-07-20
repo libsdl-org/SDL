@@ -1240,22 +1240,12 @@ prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
         }
     }
 
-    switch (orig->channels) {
-    case 0:{
-            const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
-            if ((!env) || ((prepared->channels = (Uint8) SDL_atoi(env)) == 0)) {
-                prepared->channels = 2; /* a reasonable default */
-                break;
-            }
+    if (orig->channels == 0) {
+        const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
+        if ((!env) || ((prepared->channels = (Uint8) SDL_atoi(env)) == 0)) {
+            prepared->channels = 2; /* a reasonable default */
         }
-    case 1:                    /* Mono */
-    case 2:                    /* Stereo */
-    case 4:                    /* Quadrophonic */
-    case 6:                    /* 5.1 surround */
-    case 7:                    /* 6.1 surround */
-    case 8:                    /* 7.1 surround */
-        break;
-    default:
+    } else if (orig->channels > 8) {
         SDL_SetError("Unsupported number of audio channels.");
         return 0;
     }
