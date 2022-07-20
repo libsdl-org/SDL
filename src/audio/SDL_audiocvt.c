@@ -76,8 +76,8 @@
  * - FC=front center speaker
  * - BL=back left speaker
  * - BR=back right speaker
- * - SR=side right speaker
- * - SL=side left speaker
+ * - SR=surround right speaker
+ * - SL=surround left speaker
  * - BC=back center speaker
  * - LFE=low-frequency speaker
  *
