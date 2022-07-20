@@ -431,7 +431,7 @@ static void SDLCALL
 SDL_Convert_Byteswap(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
 #if DEBUG_CONVERT
-    printf("Converting byte order\n");
+    SDL_Log("SDL_AUDIO_CONVERT: Converting byte order\n");
 #endif
 
     switch (SDL_AUDIO_BITSIZE(format)) {
@@ -765,7 +765,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     }
 
 #if DEBUG_CONVERT
-    printf("Build format %04x->%04x, channels %u->%u, rate %d->%d\n",
+    SDL_Log("SDL_AUDIO_CONVERT: Build format %04x->%04x, channels %u->%u, rate %d->%d\n",
            src_fmt, dst_fmt, src_channels, dst_channels, src_rate, dst_rate);
 #endif
 
@@ -1199,7 +1199,7 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
         const int frames = workbuflen / framesize;
         resamplebuflen = ((int) SDL_ceil(frames * stream->rate_incr)) * framesize;
         #if DEBUG_AUDIOSTREAM
-        printf("AUDIOSTREAM: will resample %d bytes to %d (ratio=%.6f)\n", workbuflen, resamplebuflen, stream->rate_incr);
+        SDL_Log("AUDIOSTREAM: will resample %d bytes to %d (ratio=%.6f)\n", workbuflen, resamplebuflen, stream->rate_incr);
         #endif
         workbuflen += resamplebuflen;
     }
@@ -1212,7 +1212,7 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
     workbuflen += neededpaddingbytes;
 
     #if DEBUG_AUDIOSTREAM
-    printf("AUDIOSTREAM: Putting %d bytes of preconverted audio, need %d byte work buffer\n", buflen, workbuflen);
+    SDL_Log("AUDIOSTREAM: Putting %d bytes of preconverted audio, need %d byte work buffer\n", buflen, workbuflen);
     #endif
 
     workbuf = EnsureStreamBufferSize(stream, workbuflen);
@@ -1233,7 +1233,7 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
         buflen = stream->cvt_before_resampling.len_cvt;
 
         #if DEBUG_AUDIOSTREAM
-        printf("AUDIOSTREAM: After initial conversion we have %d bytes\n", buflen);
+        SDL_Log("AUDIOSTREAM: After initial conversion we have %d bytes\n", buflen);
         #endif
     }
 
@@ -1260,7 +1260,7 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
         }
 
         #if DEBUG_AUDIOSTREAM
-        printf("AUDIOSTREAM: After resampling we have %d bytes\n", buflen);
+        SDL_Log("AUDIOSTREAM: After resampling we have %d bytes\n", buflen);
         #endif
     }
 
@@ -1273,12 +1273,12 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
         buflen = stream->cvt_after_resampling.len_cvt;
 
         #if DEBUG_AUDIOSTREAM
-        printf("AUDIOSTREAM: After final conversion we have %d bytes\n", buflen);
+        SDL_Log("AUDIOSTREAM: After final conversion we have %d bytes\n", buflen);
         #endif
     }
 
     #if DEBUG_AUDIOSTREAM
-    printf("AUDIOSTREAM: Final output is %d bytes\n", buflen);
+    SDL_Log("AUDIOSTREAM: Final output is %d bytes\n", buflen);
     #endif
 
     if (maxputbytes) {
@@ -1304,7 +1304,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
        !!! FIXME:  a few samples at the end and convert them separately. */
 
     #if DEBUG_AUDIOSTREAM
-    printf("AUDIOSTREAM: wants to put %d preconverted bytes\n", buflen);
+    SDL_Log("AUDIOSTREAM: wants to put %d preconverted bytes\n", buflen);
     #endif
 
     if (!stream) {
@@ -1324,7 +1324,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
         (stream->dst_rate == stream->src_rate) &&
         !stream->cvt_after_resampling.needed) {
         #if DEBUG_AUDIOSTREAM
-        printf("AUDIOSTREAM: no conversion needed at all, queueing %d bytes.\n", len);
+        SDL_Log("AUDIOSTREAM: no conversion needed at all, queueing %d bytes.\n", len);
         #endif
         return SDL_WriteToDataQueue(stream->queue, buf, len);
     }
@@ -1367,7 +1367,7 @@ int SDL_AudioStreamFlush(SDL_AudioStream *stream)
     }
 
     #if DEBUG_AUDIOSTREAM
-    printf("AUDIOSTREAM: flushing! staging_buffer_filled=%d bytes\n", stream->staging_buffer_filled);
+    SDL_Log("AUDIOSTREAM: flushing! staging_buffer_filled=%d bytes\n", stream->staging_buffer_filled);
     #endif
 
     /* shouldn't use a staging buffer if we're not resampling. */
@@ -1388,7 +1388,7 @@ int SDL_AudioStreamFlush(SDL_AudioStream *stream)
             int flush_remaining = ((int) SDL_ceil(actual_input_frames * stream->rate_incr)) * stream->dst_sample_frame_size;
 
             #if DEBUG_AUDIOSTREAM
-            printf("AUDIOSTREAM: flushing with padding to get max %d bytes!\n", flush_remaining);
+            SDL_Log("AUDIOSTREAM: flushing with padding to get max %d bytes!\n", flush_remaining);
             #endif
 
             SDL_memset(stream->staging_buffer + filled, '\0', stream->staging_buffer_size - filled);
@@ -1417,7 +1417,7 @@ int
 SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
 {
     #if DEBUG_AUDIOSTREAM
-    printf("AUDIOSTREAM: want to get %d converted bytes\n", len);
+    SDL_Log("AUDIOSTREAM: want to get %d converted bytes\n", len);
     #endif
 
     if (!stream) {
