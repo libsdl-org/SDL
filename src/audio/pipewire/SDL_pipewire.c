@@ -117,13 +117,14 @@ static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
 
+static int         pipewire_version_major;
+static int         pipewire_version_minor;
+static int         pipewire_version_patch;
+
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
 static const char *pipewire_library = SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC;
 static void       *pipewire_handle  = NULL;
-static int         pipewire_version_major;
-static int         pipewire_version_minor;
-static int         pipewire_version_patch;
 
 static int
 pipewire_dlsym(const char *fn, void **addr)
