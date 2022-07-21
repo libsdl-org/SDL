@@ -28,6 +28,13 @@ if(MSVC)
   target_compile_options(sdl-build-options INTERFACE "/MP")
 endif(MSVC)
 
+# CMake 3.0 expands the "if(${A})" in "set(OFF 1);set(A OFF);if(${A})" to "if(1)"
+# CMake 3.24+ emits a warning when not set.
+unset(OFF)
+unset(ON)
+if(POLICY CMP0054)
+  cmake_policy(SET CMP0054 NEW)
+endif()
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
 # !!! FIXME:  for the SDL2 shared library (so you get an
