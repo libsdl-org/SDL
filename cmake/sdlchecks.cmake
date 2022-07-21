@@ -422,7 +422,10 @@ macro(CheckX11)
         FindLibraryAndSONAME("${_LIB}")
     endforeach()
 
-    find_path(X_INCLUDEDIR X11/Xlib.h
+    set(X11_dirs)
+    find_path(X_INCLUDEDIR
+      NAMES X11/Xlib.h
+      PATHS
         /usr/pkg/xorg/include
         /usr/X11R6/include
         /usr/X11R7/include
@@ -436,18 +439,17 @@ macro(CheckX11)
 
     if(X_INCLUDEDIR)
       list(APPEND EXTRA_CFLAGS "-I${X_INCLUDEDIR}")
-      list(APPEND CMAKE_REQUIRED_INCLUDES "${X_INCLUDEDIR}")
     endif()
 
-    check_include_file(X11/Xcursor/Xcursor.h HAVE_XCURSOR_H)
-    check_include_file(X11/extensions/XInput2.h HAVE_XINPUT2_H)
-    check_include_file(X11/extensions/Xrandr.h HAVE_XRANDR_H)
-    check_include_file(X11/extensions/Xfixes.h HAVE_XFIXES_H_)
-    check_include_file(X11/extensions/Xrender.h HAVE_XRENDER_H)
-    check_include_file(X11/extensions/scrnsaver.h HAVE_XSS_H)
-    check_include_file(X11/extensions/shape.h HAVE_XSHAPE_H)
-    check_include_files("X11/Xlib.h;X11/extensions/Xdbe.h" HAVE_XDBE_H)
-    check_include_files("X11/Xlib.h;X11/Xproto.h;X11/extensions/Xext.h" HAVE_XEXT_H)
+    find_file(HAVE_XCURSOR_H NAMES "X11/Xcursor/Xcursor.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XINPUT2_H NAMES "X11/extensions/XInput2.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XRANDR_H NAMES "X11/extensions/Xrandr.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XFIXES_H_ NAMES "X11/extensions/Xfixes.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XRENDER_H NAMES "X11/extensions/Xrender.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XSS_H NAMES "X11/extensions/scrnsaver.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XSHAPE_H NAMES "X11/extensions/shape.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XDBE_H NAMES "X11/extensions/Xdbe.h" HINTS "${X_INCLUDEDIR}")
+    find_file(HAVE_XEXT_H NAMES "X11/extensions/Xext.h" HINTS "${X_INCLUDEDIR}")
 
     if(X11_LIB)
       if(NOT HAVE_XEXT_H)
