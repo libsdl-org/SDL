@@ -3478,7 +3478,7 @@ void SDLTest_CleanupTextDrawing(void)
     struct SDLTest_CharTextureCache* cache, *next;
 
     cache = SDLTest_CharTextureCacheList;
-    do {
+    while (cache) {
         for (i = 0; i < SDL_arraysize(cache->charTextureCache); ++i) {
             if (cache->charTextureCache[i]) {
                 SDL_DestroyTexture(cache->charTextureCache[i]);
@@ -3489,7 +3489,7 @@ void SDLTest_CleanupTextDrawing(void)
         next = cache->next;
         SDL_free(cache);
         cache = next;
-    } while (cache);
+    }
 
     SDLTest_CharTextureCacheList = NULL;
 }
