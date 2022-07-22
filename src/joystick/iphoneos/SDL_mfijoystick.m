@@ -178,6 +178,16 @@ IsControllerXbox(GCController *controller)
     return FALSE;
 }
 static BOOL
+IsControllerSwitchPro(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Switch Pro Controller"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 *guid16 = (Uint16 *)device->guid.data;
@@ -211,8 +221,9 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         BOOL is_xbox = IsControllerXbox(controller);
         BOOL is_ps4 = IsControllerPS4(controller);
         BOOL is_ps5 = IsControllerPS5(controller);
+        BOOL is_switch_pro = IsControllerSwitchPro(controller);
 #if TARGET_OS_TV
-        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5);
+        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5 && !is_switch_pro);
 #endif
         int nbuttons = 0;
         BOOL has_direct_menu;
@@ -220,7 +231,8 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 #ifdef SDL_JOYSTICK_HIDAPI
         if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
             (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS4)) ||
-            (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5))) {
+            (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5)) ||
+            (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO))) {
             /* The HIDAPI driver is taking care of this device */
             return FALSE;
         }
@@ -330,6 +342,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         } else if (is_ps5) {
             vendor = USB_VENDOR_SONY;
             product = USB_PRODUCT_SONY_DS5;
+            subtype = 0;
+        } else if (is_switch_pro) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_PRO;
             subtype = 0;
         } else {
             vendor = USB_VENDOR_APPLE;
