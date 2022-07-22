@@ -697,7 +697,10 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  * in pixels may differ from its size in screen coordinates on platforms with
  * high-DPI support (e.g. iOS and macOS). Use SDL_GetWindowSize() to query the
  * client area's size in screen coordinates, and SDL_GL_GetDrawableSize() or
- * SDL_GetRendererOutputSize() to query the drawable size in pixels.
+ * SDL_GetRendererOutputSize() to query the drawable size in pixels. Note that
+ * when this flag is set, the drawable size can vary after the window is
+ * created and should be queried after major window events such as when the
+ * window is resized or moved between displays.
  *
  * If the window is set fullscreen, the width and height parameters `w` and
  * `h` will not be used. However, invalid size parameters (e.g. too large) may
