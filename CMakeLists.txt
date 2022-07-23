@@ -1895,7 +1895,7 @@ elseif(WINDOWS)
       list(APPEND SDL_CFLAGS "-Dmain=SDL_main")
       list(INSERT SDL_LIBS 0 "-lSDL2main")
     endif(NOT SDL2_DISABLE_SDL2MAIN)
-    list(INSERT SDL_LIBS 0 "-lmingw32" "-mwindows")
+    list(INSERT SDL_LIBS 0 "-lmingw32")
   endif()
 
 elseif(APPLE)
