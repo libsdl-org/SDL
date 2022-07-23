@@ -60,8 +60,12 @@ static const Uint8 GLES2_Fragment_Solid[] = " \
 static const Uint8 GLES2_Fragment_TextureABGR[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    varying vec4 v_color; \
-    varying vec2 v_texCoord; \
+    varying vec4 v_color;\n\
+    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+    varying highp vec2 v_texCoord;\n\
+    #else\n\
+    varying vec2 v_texCoord;\n\
+    #endif\n\
     \
     void main() \
     { \
@@ -74,8 +78,12 @@ static const Uint8 GLES2_Fragment_TextureABGR[] = " \
 static const Uint8 GLES2_Fragment_TextureARGB[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    varying vec4 v_color; \
-    varying vec2 v_texCoord; \
+    varying vec4 v_color;\n\
+    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+    varying highp vec2 v_texCoord;\n\
+    #else\n\
+    varying vec2 v_texCoord;\n\
+    #endif\n\
     \
     void main() \
     { \
@@ -91,8 +99,12 @@ static const Uint8 GLES2_Fragment_TextureARGB[] = " \
 static const Uint8 GLES2_Fragment_TextureRGB[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    varying vec4 v_color; \
-    varying vec2 v_texCoord; \
+    varying vec4 v_color;\n\
+    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+    varying highp vec2 v_texCoord;\n\
+    #else\n\
+    varying vec2 v_texCoord;\n\
+    #endif\n\
     \
     void main() \
     { \
@@ -109,8 +121,12 @@ static const Uint8 GLES2_Fragment_TextureRGB[] = " \
 static const Uint8 GLES2_Fragment_TextureBGR[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
-    varying vec4 v_color; \
-    varying vec2 v_texCoord; \
+    varying vec4 v_color;\n\
+    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+    varying highp vec2 v_texCoord;\n\
+    #else\n\
+    varying vec2 v_texCoord;\n\
+    #endif\n\
     \
     void main() \
     { \
@@ -157,7 +173,11 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "uniform sampler2D u_texture_u;\n"                              \
 "uniform sampler2D u_texture_v;\n"                              \
 "varying vec4 v_color;\n"                                       \
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"                           \
+"varying highp vec2 v_texCoord;\n"                              \
+"#else\n"                                                       \
 "varying vec2 v_texCoord;\n"                                    \
+"#endif\n"                                                      \
 "\n"                                                            \
 
 #define YUV_SHADER_BODY                                         \
@@ -308,8 +328,12 @@ static const Uint8 GLES2_Fragment_TextureExternalOES[] = " \
     #extension GL_OES_EGL_image_external : require\n\
     precision mediump float; \
     uniform samplerExternalOES u_texture; \
-    varying vec4 v_color; \
-    varying vec2 v_texCoord; \
+    varying vec4 v_color;\n\
+    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+    varying highp vec2 v_texCoord;\n\
+    #else\n\
+    varying vec2 v_texCoord;\n\
+    #endif\n\
     \
     void main() \
     { \
