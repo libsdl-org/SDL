@@ -42,6 +42,7 @@ jobs:
       run: cmake -S build -B build `
         -DSDL_TESTS=ON `
         -DSDL_INSTALL_TESTS=ON `
+        -DSDL2_DISABLE_INSTALL=OFF `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)
