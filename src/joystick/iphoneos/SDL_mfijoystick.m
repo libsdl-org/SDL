@@ -188,6 +188,36 @@ IsControllerSwitchPro(GCController *controller)
     return FALSE;
 }
 static BOOL
+IsControllerSwitchJoyConL(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L)"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerSwitchJoyConR(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (R)"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerSwitchJoyConPair(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L/R)"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 *guid16 = (Uint16 *)device->guid.data;
@@ -222,8 +252,9 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         BOOL is_ps4 = IsControllerPS4(controller);
         BOOL is_ps5 = IsControllerPS5(controller);
         BOOL is_switch_pro = IsControllerSwitchPro(controller);
+        BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
 #if TARGET_OS_TV
-        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5 && !is_switch_pro);
+        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5 && !is_switch_pro && !is_switch_joycon_pair);
 #endif
         int nbuttons = 0;
         BOOL has_direct_menu;
@@ -262,7 +293,8 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_BACK);
             ++nbuttons;
         }
-        if ([gamepad respondsToSelector:@selector(buttonHome)] && gamepad.buttonHome) {
+        /* The Nintendo Switch JoyCon home button doesn't ever show as being held down */
+        if ([gamepad respondsToSelector:@selector(buttonHome)] && gamepad.buttonHome && !is_switch_joycon_pair) {
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_GUIDE);
             ++nbuttons;
         }
@@ -347,6 +379,10 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             vendor = USB_VENDOR_NINTENDO;
             product = USB_PRODUCT_NINTENDO_SWITCH_PRO;
             subtype = 0;
+        } else if (is_switch_joycon_pair) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP;
+            subtype = 0;
         } else {
             vendor = USB_VENDOR_APPLE;
             product = 1;
@@ -367,7 +403,23 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         device->nbuttons = nbuttons;
 
     } else if (controller.gamepad) {
+        BOOL is_switch_joyconL = IsControllerSwitchJoyConL(controller);
+        BOOL is_switch_joyconR = IsControllerSwitchJoyConR(controller);
         int nbuttons = 0;
+
+        if (is_switch_joyconL) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT;
+            subtype = 0;
+        } else if (is_switch_joyconR) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT;
+            subtype = 0;
+        } else {
+            vendor = USB_VENDOR_APPLE;
+            product = 2;
+            subtype = 2;
+        }
 
         /* These buttons are part of the original MFi spec */
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_A);
@@ -380,9 +432,6 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         nbuttons += 7;
         device->uses_pause_handler = SDL_TRUE;
 
-        vendor = USB_VENDOR_APPLE;
-        product = 2;
-        subtype = 2;
         device->naxes = 0; /* no traditional analog inputs */
         device->nhats = 1; /* d-pad */
         device->nbuttons = nbuttons;
@@ -876,6 +925,23 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         Uint8 hatstate = SDL_HAT_CENTERED;
         int i;
         int pause_button_index = 0;
+
+#ifdef DEBUG_CONTROLLER_STATE
+        if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
+            if (controller.physicalInputProfile) {
+                for (id key in controller.physicalInputProfile.buttons) {
+                    GCControllerButtonInput *button = controller.physicalInputProfile.buttons[key];
+                    if (button.isPressed)
+                        NSLog(@"Button %@ = %s\n", key, button.isPressed ? "pressed" : "released");
+                }
+                for (id key in controller.physicalInputProfile.axes) {
+                    GCControllerAxisInput *axis = controller.physicalInputProfile.axes[key];
+                    if (axis.value != 0.0f)
+                        NSLog(@"Axis %@ = %.2f\n", key, axis.value);
+                }
+            }
+        }
+#endif
 
         if (controller.extendedGamepad) {
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
