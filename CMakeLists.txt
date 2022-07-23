@@ -5,6 +5,12 @@ endif()
 cmake_minimum_required(VERSION 3.0.0)
 project(SDL2 C CXX)
 
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  set(SDL2_SUBPROJECT OFF)
+else()
+  set(SDL2_SUBPROJECT ON)
+endif()
+
 if (HAIKU)
   set(LINKER_LANGUAGE CXX)
 endif()
@@ -414,7 +420,7 @@ endforeach()
 
 # Allow some projects to be built conditionally.
 set_option(SDL2_DISABLE_SDL2MAIN   "Disable building/installation of SDL2main" OFF)
-set_option(SDL2_DISABLE_INSTALL    "Disable installation of SDL2" OFF)
+set_option(SDL2_DISABLE_INSTALL    "Disable installation of SDL2" ${SDL2_SUBPROJECT})
 set_option(SDL2_DISABLE_UNINSTALL  "Disable uninstallation of SDL2" OFF)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
