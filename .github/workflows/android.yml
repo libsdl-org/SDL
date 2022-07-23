@@ -19,7 +19,7 @@ jobs:
       - uses: nttld/setup-ndk@v1
         id: setup_ndk
         with:
-          ndk-version: r21e
+          ndk-version: r25
       - name: Build (Android.mk)
         if: ${{ matrix.platform.name == 'Android.mk' }}
         run: |
