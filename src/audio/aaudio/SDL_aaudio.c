@@ -437,14 +437,17 @@ void aaudio_ResumeDevices(void)
 */
 SDL_bool aaudio_DetectBrokenPlayState( void )
 {
+    struct SDL_PrivateAudioData *private;
+    int64_t framePosition, timeNanoseconds;
+    aaudio_result_t res;
+
     if ( !audioDevice || !audioDevice->hidden ) {
         return SDL_FALSE;
     }
 
-    struct SDL_PrivateAudioData *private = audioDevice->hidden;
+    private = audioDevice->hidden;
 
-    int64_t framePosition, timeNanoseconds;
-    aaudio_result_t res = ctx.AAudioStream_getTimestamp( private->stream, CLOCK_MONOTONIC, &framePosition, &timeNanoseconds );
+    res = ctx.AAudioStream_getTimestamp( private->stream, CLOCK_MONOTONIC, &framePosition, &timeNanoseconds );
     if ( res == AAUDIO_ERROR_INVALID_STATE ) {
         aaudio_stream_state_t currentState = ctx.AAudioStream_getState( private->stream );
         /* AAudioStream_getTimestamp() will also return AAUDIO_ERROR_INVALID_STATE while the stream is still initially starting. But we only care if it silently went invalid while playing. */
