@@ -1296,8 +1296,8 @@ WIN_UpdateClipCursor(SDL_Window *window)
                     /* mouse_rect is the rect in Windows screen space */
                     mouse_rect.left = rect.left + mouse_rect_win_client.x;
                     mouse_rect.top = rect.top + mouse_rect_win_client.y;
-                    mouse_rect.right = mouse_rect.left + mouse_rect_win_client.w - 1;
-                    mouse_rect.bottom = mouse_rect.top + mouse_rect_win_client.h - 1;
+                    mouse_rect.right = mouse_rect.left + mouse_rect_win_client.w;
+                    mouse_rect.bottom = mouse_rect.top + mouse_rect_win_client.h;
                     if (IntersectRect(&intersection, &rect, &mouse_rect)) {
                         SDL_memcpy(&rect, &intersection, sizeof(rect));
                     } else if ((window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0) {
