@@ -50,6 +50,21 @@
 /* Reports that are too small are dropped over Bluetooth */
 #define HID_REPORT_SIZE 33
 
+typedef enum {
+    k_ShieldReportIdControllerState = 0x01,
+    k_ShieldReportIdCommandResponse = 0x03,
+    k_ShieldReportIdCommandRequest = 0x04,
+} EShieldReportId;
+
+/* This same report structure is used for both requests and responses */
+typedef struct {
+    Uint8 report_id;
+    Uint8 cmd;
+    Uint8 seq_num;
+    Uint8 payload[HID_REPORT_SIZE - 3];
+} ShieldCommandReport_t;
+SDL_COMPILE_TIME_ASSERT(ShieldCommandReport_t, sizeof(ShieldCommandReport_t) == HID_REPORT_SIZE);
+
 typedef struct {
     Uint8 seq_num;
 
@@ -100,9 +115,9 @@ static int
 HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
 {
     SDL_DriverShield_Context *ctx = device->context;
-    Uint8 cmd_pkt[HID_REPORT_SIZE];
+    ShieldCommandReport_t cmd_pkt;
 
-    if (size >= sizeof(cmd_pkt) - 3) {
+    if (size > sizeof(cmd_pkt.payload)) {
         return SDL_SetError("Command data exceeds HID report size");
     }
 
@@ -110,14 +125,17 @@ HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void
         return -1;
     }
 
-    cmd_pkt[0] = 0x04;
-    cmd_pkt[1] = cmd;
-    cmd_pkt[2] = ctx->seq_num++;
+    cmd_pkt.report_id = k_ShieldReportIdCommandRequest;
+    cmd_pkt.cmd = cmd;
+    cmd_pkt.seq_num = ctx->seq_num++;
     if (data) {
-        SDL_memcpy(&cmd_pkt[3], data, size);
+        SDL_memcpy(cmd_pkt.payload, data, size);
     }
 
-    if (SDL_HIDAPI_SendRumbleAndUnlock(device, cmd_pkt, sizeof(cmd_pkt)) != sizeof(cmd_pkt)) {
+    /* Zero unused data in the payload */
+    SDL_memset(&cmd_pkt.payload[size], 0, sizeof(cmd_pkt.payload) - size);
+
+    if (SDL_HIDAPI_SendRumbleAndUnlock(device, (Uint8*)&cmd_pkt, sizeof(cmd_pkt)) != sizeof(cmd_pkt)) {
         return SDL_SetError("Couldn't send command packet");
     }
 
@@ -326,6 +344,7 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick = NULL;
     Uint8 data[USB_PACKET_LENGTH];
     int size = 0;
+    ShieldCommandReport_t *cmd_resp_report;
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -338,22 +357,24 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_SHIELD_PROTOCOL
         HIDAPI_DumpPacket("NVIDIA SHIELD packet: size = %d", data, size);
 #endif
+        /* Byte 0 is HID report ID */
         switch (data[0]) {
-            case 0x01:
+            case k_ShieldReportIdControllerState:
                 HIDAPI_DriverShield_HandleStatePacket(joystick, ctx, data, size);
                 break;
-            case 0x03:
-                switch (data[1]) {
+            case k_ShieldReportIdCommandResponse:
+                cmd_resp_report = (ShieldCommandReport_t*)data;
+                switch (cmd_resp_report->cmd) {
                     case CMD_RUMBLE:
                         ctx->rumble_report_pending = SDL_FALSE;
                         HIDAPI_DriverShield_SendNextRumble(device);
                         break;
                     case CMD_CHARGE_STATE:
-                        ctx->charging = data[2] != 0;
+                        ctx->charging = cmd_resp_report->payload[0] != 0;
                         SDL_PrivateJoystickBatteryLevel(joystick, ctx->charging ? SDL_JOYSTICK_POWER_WIRED : ctx->battery_level);
                         break;
                     case CMD_BATTERY_STATE:
-                        switch (data[5]) {
+                        switch (cmd_resp_report->payload[2]) {
                             case 0:
                                 ctx->battery_level = SDL_JOYSTICK_POWER_EMPTY;
                                 break;
