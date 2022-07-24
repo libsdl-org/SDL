@@ -734,6 +734,7 @@ handle_configure_zxdg_decoration(void *data,
             /* libdecor isn't available, so no borders for you... oh well */
             return;
         }
+        WAYLAND_wl_display_roundtrip(driverdata->waylandData->display);
         SDL_HideWindow(window);
         driverdata->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
         SDL_ShowWindow(window);
