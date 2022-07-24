@@ -730,6 +730,10 @@ handle_configure_zxdg_decoration(void *data,
      * To do this we have to fully unmap, then map with libdecor loaded.
      */
     if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
+        if (window->flags & SDL_WINDOW_BORDERLESS) {
+            /* borderless windows do request CSD, so we got what we wanted */
+            return;
+        }
         if (!Wayland_LoadLibdecor(driverdata->waylandData, SDL_TRUE)) {
             /* libdecor isn't available, so no borders for you... oh well */
             return;
