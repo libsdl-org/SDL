@@ -1071,11 +1071,20 @@ SDL_GetDisplay(int displayIndex)
 int
 SDL_GetWindowDisplayIndex(SDL_Window * window)
 {
+    int displayIndex = -1;
+
     CHECK_WINDOW_MAGIC(window, -1);
     if (_this->GetWindowDisplayIndex) {
-        return _this->GetWindowDisplayIndex(_this, window);
+        displayIndex = _this->GetWindowDisplayIndex(_this, window);
+    }
+
+    /* A backend implementation may fail to get a display index for the window
+     * (for example if the window is off-screen), but other code may expect it
+     * to succeed in that situation, so we fall back to a generic position-
+     * based implementation in that case. */
+    if (displayIndex >= 0) {
+        return displayIndex;
     } else {
-        int displayIndex;
         int i, dist;
         int closest = -1;
         int closest_dist = 0x7FFFFFFF;

@@ -2230,25 +2230,37 @@ int
 Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window * window)
 { @autoreleasepool
 {
+    NSScreen *screen;
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
 
     /* Not recognized via CHECK_WINDOW_MAGIC */
-    if (data == NULL){
+    if (data == nil) {
         return 0;
     }
 
-    NSArray *screens = [NSScreen screens];
+    /* NSWindow.screen may be nil when the window is off-screen. */
+    screen = data.nswindow.screen;
 
-    int index = 0;
-    for (NSScreen *screen in screens) {
-        if (screen == data.nswindow.screen)
-            return index;
+    if (screen != nil) {
+        CGDirectDisplayID displayid;
+        int i;
 
-        index++;
+        /* https://developer.apple.com/documentation/appkit/nsscreen/1388360-devicedescription?language=objc */
+        displayid = [[screen.deviceDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
+
+        for (i = 0; i < _this->num_displays; i++) {
+            SDL_DisplayData *displaydata = (SDL_DisplayData *)_this->displays[i].driverdata;
+            if (displaydata != NULL && displaydata->display == displayid) {
+                return i;
+            }
+        }
     }
 
-    SDL_SetError("Couldn't find the display where the window is attached.");
-    return -1;
+    /* Other code may expect SDL_GetWindowDisplayIndex to always return a valid
+     * index for a window. The higher level GetWindowDisplayIndex code will fall
+     * back to a generic position-based query if the backend implementation
+     * fails. */
+    return SDL_SetError("Couldn't find the display where the window is located.");
 }}
 
 int
