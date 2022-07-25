@@ -29580,13 +29580,100 @@ fi
 
 SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 
-eval pkg_prefix=$prefix
-eval pkg_cmakedir=$libdir/cmake/SDL2
-cmake_prefix_relpath="$(echo -n "$pkg_cmakedir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
+pkg_cmakedir='$libdir/cmake/SDL2'
+for _lcl_i in pkg_cmakedir:prefix:cmake_prefix_relpath bindir:prefix:bin_prefix_relpath; do
+  _lcl_from=\$`echo "$_lcl_i" | sed 's,:.*$,,'`
+  _lcl_to=\$`echo "$_lcl_i" | sed 's,^[^:]*:,,' | sed 's,:[^:]*$,,'`
+  _lcl_result_var=`echo "$_lcl_i" | sed 's,^.*:,,'`
+  _lcl_receval="$_lcl_from"
+_lcl_from=`(test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+     test "x$exec_prefix" = xNONE && exec_prefix="${prefix}"
+     _lcl_receval_old=''
+     while test "$_lcl_receval_old" != "$_lcl_receval"; do
+       _lcl_receval_old="$_lcl_receval"
+       eval _lcl_receval="\"$_lcl_receval\""
+     done
+     echo "$_lcl_receval")`
+  _lcl_receval="$_lcl_to"
+_lcl_to=`(test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+     test "x$exec_prefix" = xNONE && exec_prefix="${prefix}"
+     _lcl_receval_old=''
+     while test "$_lcl_receval_old" != "$_lcl_receval"; do
+       _lcl_receval_old="$_lcl_receval"
+       eval _lcl_receval="\"$_lcl_receval\""
+     done
+     echo "$_lcl_receval")`
+  _lcl_notation="$_lcl_from$_lcl_to"
+  case ":$_lcl_from:" in
+# change empty paths to '.'
+  ::) _lcl_from='.' ;;
+# strip trailing slashes
+  :*[\\/]:) _lcl_from=`echo "$_lcl_from" | sed 's,[\\/]*$,,'` ;;
+  :*:) ;;
+esac
+# squeeze repeated slashes
+case '/' in
+# if the path contains any backslashes, turn slashes into backslashes
+ *\\*) _lcl_from=`echo "$_lcl_from" | sed 's,\(.\)[\\/][\\/]*,\1\\\\,g'` ;;
+# if the path contains slashes, also turn backslashes into slashes
+ *) _lcl_from=`echo "$_lcl_from" | sed 's,\(.\)[\\/][\\/]*,\1/,g'` ;;
+esac
+  case ":$_lcl_to:" in
+# change empty paths to '.'
+  ::) _lcl_to='.' ;;
+# strip trailing slashes
+  :*[\\/]:) _lcl_to=`echo "$_lcl_to" | sed 's,[\\/]*$,,'` ;;
+  :*:) ;;
+esac
+# squeeze repeated slashes
+case '/' in
+# if the path contains any backslashes, turn slashes into backslashes
+ *\\*) _lcl_to=`echo "$_lcl_to" | sed 's,\(.\)[\\/][\\/]*,\1\\\\,g'` ;;
+# if the path contains slashes, also turn backslashes into slashes
+ *) _lcl_to=`echo "$_lcl_to" | sed 's,\(.\)[\\/][\\/]*,\1/,g'` ;;
+esac
+  _lcl_common_prefix=''
+_lcl_second_prefix_match=''
+while test "$_lcl_second_prefix_match" != 0; do
+  _lcl_first_prefix=`expr "x$_lcl_from" : "x\($_lcl_common_prefix/*[^/]*\)"`
+  _lcl_second_prefix_match=`expr "x$_lcl_to" : "x$_lcl_first_prefix"`
+  if test "$_lcl_second_prefix_match" != 0; then
+    if test "$_lcl_first_prefix" != "$_lcl_common_prefix"; then
+      _lcl_common_prefix="$_lcl_first_prefix"
+    else
+      _lcl_second_prefix_match=0
+    fi
+  fi
+done
+_lcl_first_suffix=`expr "x$_lcl_from" : "x$_lcl_common_prefix/*\(.*\)"`
+_lcl_first_rel=''
+_lcl_tmp='xxx'
+while test "$_lcl_tmp" != ''; do
+  _lcl_tmp=`expr "x$_lcl_first_suffix" : "x[^/]*/*\(.*\)"`
+  if test "$_lcl_first_suffix" != ''; then
+     _lcl_first_suffix="$_lcl_tmp"
+     _lcl_first_rel="../$_lcl_first_rel"
+  fi
+done
+_lcl_second_suffix=`expr "x$_lcl_to" : "x$_lcl_common_prefix/*\(.*\)"`
+_lcl_result_tmp="$_lcl_first_rel$_lcl_second_suffix"
+  case ":$_lcl_result_tmp:" in
+# change empty paths to '.'
+  ::) _lcl_result_tmp='.' ;;
+# strip trailing slashes
+  :*[\\/]:) _lcl_result_tmp=`echo "$_lcl_result_tmp" | sed 's,[\\/]*$,,'` ;;
+  :*:) ;;
+esac
+# squeeze repeated slashes
+case "$_lcl_notation" in
+# if the path contains any backslashes, turn slashes into backslashes
+ *\\*) _lcl_result_tmp=`echo "$_lcl_result_tmp" | sed 's,\(.\)[\\/][\\/]*,\1\\\\,g'` ;;
+# if the path contains slashes, also turn backslashes into slashes
+ *) _lcl_result_tmp=`echo "$_lcl_result_tmp" | sed 's,\(.\)[\\/][\\/]*,\1/,g'` ;;
+esac
+  eval $_lcl_result_var='$_lcl_result_tmp'
+done
 
-
-eval pkg_bindir=$bindir
-bin_prefix_relpath="$(echo -n "pkg_bindir" | sed -E "s#^$pkg_prefix##" | sed -E "s#[A-Za-z0-9_ .-]+#..#g" )"
 
 
 
