@@ -3178,6 +3178,9 @@ if(APPLE)
   endforeach()
 endif()
 
+# Disable precompiled headers on SDL_dynapi.c to avoid applying dynapi overrides
+set_source_files_properties(src/dynapi/SDL_dynapi.c PROPERTIES SKIP_PRECOMPILE_HEADERS 1)
+
 if(SDL_SHARED)
   add_library(SDL3 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
   # alias target for in-tree builds
@@ -3231,6 +3234,9 @@ if(SDL_SHARED)
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
   set_property(TARGET SDL3 PROPERTY INTERFACE_SDL3_SHARED TRUE)
   set_property(TARGET SDL3 APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
+  if(NOT CMAKE_VERSION VERSION_LESS "3.16")
+    target_precompile_headers(SDL3 PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
+  endif()
 endif()
 
 if(SDL_STATIC)
@@ -3257,6 +3263,9 @@ if(SDL_STATIC)
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
   set_property(TARGET SDL3-static PROPERTY INTERFACE_SDL3_SHARED FALSE)
   set_property(TARGET SDL3-static APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
+  if(NOT CMAKE_VERSION VERSION_LESS "3.16")
+    target_precompile_headers(SDL3-static PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
+  endif()
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MAJOR_VERSION=${SDL_MAJOR_VERSION}")
