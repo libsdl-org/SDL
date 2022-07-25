@@ -745,6 +745,24 @@ static SDL_bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof(rgucBuffer), NULL);
 }
 
+static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)userdata;
+
+    if (hint && *hint) {
+        int value;
+
+        if (SDL_strchr(hint, '.') != NULL) {
+            value = (int)(100.0f * SDL_atof(hint));
+        } else if (SDL_GetStringBoolean(hint, SDL_TRUE)) {
+            value = 100;
+        } else {
+            value = 0;
+        }
+        SetHomeLED(ctx, value);
+    }
+}
+
 static SDL_bool SetSlotLED(SDL_DriverSwitch_Context *ctx, Uint8 slot)
 {
     Uint8 led_data = (1 << slot);
@@ -1066,14 +1084,8 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
 
         /* Set the LED state */
         if (ctx->m_bHasHomeLED) {
-            const char *hint = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED);
-            if (hint && *hint) {
-                if (SDL_GetStringBoolean(hint, SDL_TRUE)) {
-                    SetHomeLED(ctx, 100);
-                } else {
-                    SetHomeLED(ctx, 0);
-                }
-            }
+            SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
+                                SDL_HomeLEDHintChanged, ctx);
         }
         SetSlotLED(ctx, (joystick->instance_id % 4));
 
@@ -1653,6 +1665,9 @@ HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
+
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
+                        SDL_HomeLEDHintChanged, ctx);
 
     SDL_LockMutex(device->dev_lock);
     {
