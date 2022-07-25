@@ -63,13 +63,13 @@ jobs:
       - name: Verify sdl2-config
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
-          export CC="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
+          export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
           export PATH=${{ env.SDL2_DIR }}/bin:$PATH
           cmake/test/test_sdlconfig.sh
       - name: Verify sdl2.pc
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
-          export CC="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
+          export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
           export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
       - name: Verify Android.mk
