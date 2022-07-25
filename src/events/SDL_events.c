@@ -102,9 +102,9 @@ static struct
 static SDL_bool SDL_update_joysticks = SDL_TRUE;
 
 static void
-SDL_CalculateShouldUpdateJoysticks()
+SDL_CalculateShouldUpdateJoysticks(SDL_bool hint_value)
 {
-    if (SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_TRUE) &&
+    if (hint_value &&
         (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY))) {
         SDL_update_joysticks = SDL_TRUE;
     } else {
@@ -115,7 +115,7 @@ SDL_CalculateShouldUpdateJoysticks()
 static void SDLCALL
 SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_CalculateShouldUpdateJoysticks();
+    SDL_CalculateShouldUpdateJoysticks(SDL_GetStringBoolean(hint, SDL_TRUE));
 }
 
 #endif /* !SDL_JOYSTICK_DISABLED */
@@ -126,9 +126,9 @@ SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *old
 static SDL_bool SDL_update_sensors = SDL_TRUE;
 
 static void
-SDL_CalculateShouldUpdateSensors()
+SDL_CalculateShouldUpdateSensors(SDL_bool hint_value)
 {
-    if (SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_TRUE) &&
+    if (hint_value &&
         !SDL_disabled_events[SDL_SENSORUPDATE >> 8]) {
         SDL_update_sensors = SDL_TRUE;
     } else {
@@ -139,7 +139,7 @@ SDL_CalculateShouldUpdateSensors()
 static void SDLCALL
 SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_CalculateShouldUpdateSensors();
+    SDL_CalculateShouldUpdateSensors(SDL_GetStringBoolean(hint, SDL_TRUE));
 }
 
 #endif /* !SDL_SENSOR_DISABLED */
@@ -1306,10 +1306,10 @@ SDL_EventState(Uint32 type, int state)
         }
 
 #if !SDL_JOYSTICK_DISABLED
-        SDL_CalculateShouldUpdateJoysticks();
+        SDL_CalculateShouldUpdateJoysticks(SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_TRUE));
 #endif
 #if !SDL_SENSOR_DISABLED
-        SDL_CalculateShouldUpdateSensors();
+        SDL_CalculateShouldUpdateSensors(SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_TRUE));
 #endif
     }
 
