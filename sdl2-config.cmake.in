@@ -14,17 +14,6 @@ macro(set_and_check _var _file)
     endif()
 endmacro()
 
-# Copied from `configure_package_config_file`
-macro(check_required_components _NAME)
-    foreach(comp ${${_NAME}_FIND_COMPONENTS})
-        if(NOT ${_NAME}_${comp}_FOUND)
-            if(${_NAME}_FIND_REQUIRED_${comp})
-                set(${_NAME}_FOUND FALSE)
-            endif()
-        endif()
-    endforeach()
-endmacro()
-
 get_filename_component(prefix "${CMAKE_CURRENT_LIST_DIR}@cmake_prefix_relpath@" ABSOLUTE)
 set(exec_prefix "@exec_prefix@")
 set(bindir "@bindir@")
