@@ -1133,8 +1133,7 @@ if(ANDROID)
     file(GLOB OPENSLES_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/openslES/*.c)
     list(APPEND SOURCE_FILES ${OPENSLES_AUDIO_SOURCES})
 
-    find_library(ANDROID_OPENSLES_LIBRARY OpenSLES)
-    list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_OPENSLES_LIBRARY})
+    list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} OpenSLES)
 
     set(SDL_AUDIO_DRIVER_AAUDIO 1)
     file(GLOB AAUDIO_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/aaudio/*.c)
@@ -1201,10 +1200,7 @@ if(ANDROID)
     # Core stuff
     # find_library(ANDROID_DL_LIBRARY dl)
     # FIXME failing dlopen https://github.com/android-ndk/ndk/issues/929
-    find_library(ANDROID_DL_LIBRARY NAMES libdl.so dl)
-    find_library(ANDROID_LOG_LIBRARY log)
-    find_library(ANDROID_LIBRARY_LIBRARY android)
-    list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
+    list(APPEND EXTRA_LIBS dl log android)
     target_compile_definitions(sdl-build-options INTERFACE "-DGL_GLEXT_PROTOTYPES")
 
     #enable gles
@@ -1216,9 +1212,7 @@ if(ANDROID)
       set(SDL_VIDEO_OPENGL_ES2 1)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
 
-      find_library(OpenGLES1_LIBRARY GLESv1_CM)
-      find_library(OpenGLES2_LIBRARY GLESv2)
-      list(APPEND EXTRA_LIBS ${OpenGLES1_LIBRARY} ${OpenGLES2_LIBRARY})
+      list(APPEND EXTRA_LIBS GLESv1_CM GLESv2)
     endif()
 
     if(SDL_VULKAN)
