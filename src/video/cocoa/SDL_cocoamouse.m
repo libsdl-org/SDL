@@ -117,7 +117,7 @@ LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
     const int frames = (int)[[info valueForKey:@"frames"] integerValue];
     NSCursor *cursor;
     NSImage *image = [[NSImage alloc] initWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"cursor.pdf"]];
-    if ((image == nil) || (image.valid == NO)) {
+    if ((image == nil) || (image.isValid == NO)) {
         return [NSCursor performSelector:fallback];
     }
 
