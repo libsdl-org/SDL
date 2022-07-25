@@ -903,13 +903,12 @@ SDL_events_need_periodic_poll() {
 
 #if !SDL_JOYSTICK_DISABLED
     need_periodic_poll =
-        SDL_WasInit(SDL_INIT_JOYSTICK) &&
-        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY));
+        SDL_WasInit(SDL_INIT_JOYSTICK) && SDL_update_joysticks;
 #endif
 
 #if !SDL_SENSOR_DISABLED
     need_periodic_poll = need_periodic_poll ||
-        (SDL_WasInit(SDL_INIT_SENSOR) && !SDL_disabled_events[SDL_SENSORUPDATE >> 8]);
+        (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors);
 #endif
 
     return need_periodic_poll;
@@ -994,13 +993,13 @@ SDL_events_need_polling() {
 #if !SDL_JOYSTICK_DISABLED
     need_polling =
         SDL_WasInit(SDL_INIT_JOYSTICK) &&
-        (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY)) &&
+        SDL_update_joysticks &&
         (SDL_NumJoysticks() > 0);
 #endif
 
 #if !SDL_SENSOR_DISABLED
     need_polling = need_polling ||
-        (SDL_WasInit(SDL_INIT_SENSOR) && !SDL_disabled_events[SDL_SENSORUPDATE >> 8] && (SDL_NumSensors() > 0));
+        (SDL_WasInit(SDL_INIT_SENSOR) && SDL_update_sensors && (SDL_NumSensors() > 0));
 #endif
 
     return need_polling;
