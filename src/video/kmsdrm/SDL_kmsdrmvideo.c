@@ -80,7 +80,7 @@ get_driindex(void)
     const char *hint;
 
     hint = SDL_GetHint(SDL_HINT_KMSDRM_DEVICE_INDEX);
-    if (hint) {
+    if (hint && *hint) {
         const int idx = SDL_atoi(hint);
         if (idx >= 0) {
             return idx;  /* we'll take the user's request here. */
