@@ -17,7 +17,7 @@ jobs:
         platform:
         - { name: Windows (mingw32),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, cc: gcc }
         - { name: Windows (mingw64+clang),  os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, cc: clang }
-        - { name: Linux (CMake),            os: ubuntu-20.04,   shell: sh,    flags: true }
+        - { name: Linux (CMake),            os: ubuntu-20.04,   shell: sh }
         - { name: Linux (autotools),        os: ubuntu-20.04,   shell: sh,    autotools: true }
         - { name: MacOS (CMake),            os: macos-latest,   shell: sh }
         - { name: MacOS (autotools),        os: macos-latest,   shell: sh,    autotools: true }
@@ -108,7 +108,8 @@ jobs:
         -DSDL_TESTS=ON \
         -DSDL_INSTALL_TESTS=ON \
         -DCMAKE_INSTALL_PREFIX=cmake_prefix \
-        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64
     - name: Build (CMake)
       if: "! matrix.platform.autotools"
       run: |
