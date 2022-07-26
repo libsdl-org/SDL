@@ -1615,6 +1615,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, 
     data.nswindow = nswindow;
     data.created = created;
     data.videodata = videodata;
+    data.window_number = nswindow.windowNumber;
     data.nscontexts = [[NSMutableArray alloc] init];
     data.sdlContentView = nsview;
 
