@@ -218,9 +218,15 @@ KMSDRM_CreateDevice(void)
     SDL_VideoDevice *device;
     SDL_VideoData *viddata;
     int devindex = 0;  /* !!! FIXME: let app/user specify this. */
+    const char *hint;
 
     if (!KMSDRM_Available()) {
         return NULL;
+    }
+
+    hint = SDL_GetHint(SDL_HINT_KMSDRM_DEVICE_INDEX);
+    if (hint) {
+        devindex = SDL_atoi(hint);
     }
 
     if (!devindex || (devindex > 99)) {

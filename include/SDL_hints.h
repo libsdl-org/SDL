@@ -2140,6 +2140,20 @@ extern "C" {
  */
 #define SDL_HINT_AUDIODRIVER "SDL_AUDIODRIVER"
 
+/**
+ *  \brief  A variable that decides what KMSDRM device to use.
+ *
+ *  Internally, SDL might open something like "/dev/dri/cardNN" to
+ *  access KMSDRM functionality, where "NN" is a device index number.
+ *
+ *  SDL makes a guess at the best index to use (usually zero), but the
+ *  app or user can set this hint to a number between 0 and 99 to
+ *  force selection.
+ *
+ *  This hint is available since SDL 2.24.0.
+ */
+#define SDL_HINT_KMSDRM_DEVICE_INDEX "SDL_KMSDRM_DEVICE_INDEX"
+
 
 /**
  *  \brief  An enumeration of hint priorities
