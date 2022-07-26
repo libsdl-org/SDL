@@ -55,7 +55,7 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
 /* End undefined functions */
 
 static SDL_VideoDevice *
-HAIKU_CreateDevice(int devindex)
+HAIKU_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     /*SDL_VideoData *data;*/

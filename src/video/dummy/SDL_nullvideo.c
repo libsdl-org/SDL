@@ -75,7 +75,7 @@ DUMMY_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-DUMMY_CreateDevice(int devindex)
+DUMMY_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 

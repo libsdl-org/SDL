@@ -84,7 +84,7 @@ Android_DeleteDevice(SDL_VideoDevice *device)
 }
 
 static SDL_VideoDevice *
-Android_CreateDevice(int devindex)
+Android_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;

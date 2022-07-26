@@ -213,10 +213,11 @@ KMSDRM_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-KMSDRM_CreateDevice(int devindex)
+KMSDRM_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *viddata;
+    int devindex = 0;  /* !!! FIXME: let app/user specify this. */
 
     if (!KMSDRM_Available()) {
         return NULL;

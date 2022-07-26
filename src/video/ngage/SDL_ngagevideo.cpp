@@ -108,7 +108,7 @@ NGAGE_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-NGAGE_CreateDevice(int devindex)
+NGAGE_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData   *phdata;

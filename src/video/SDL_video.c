@@ -391,12 +391,11 @@ int
 SDL_VideoInit(const char *driver_name)
 {
     SDL_VideoDevice *video;
-    int index;
-    int i;
     SDL_bool init_events = SDL_FALSE;
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
+    int i;
 
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
@@ -426,7 +425,6 @@ SDL_VideoInit(const char *driver_name)
     init_touch = SDL_TRUE;
 
     /* Select the proper video driver */
-    i = index = 0;
     video = NULL;
     if (driver_name == NULL) {
         driver_name = SDL_GetHint(SDL_HINT_VIDEODRIVER);
@@ -441,7 +439,7 @@ SDL_VideoInit(const char *driver_name)
             for (i = 0; bootstrap[i]; ++i) {
                 if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
                     (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
-                    video = bootstrap[i]->create(index);
+                    video = bootstrap[i]->create();
                     break;
                 }
             }
@@ -450,7 +448,7 @@ SDL_VideoInit(const char *driver_name)
         }
     } else {
         for (i = 0; bootstrap[i]; ++i) {
-            video = bootstrap[i]->create(index);
+            video = bootstrap[i]->create();
             if (video != NULL) {
                 break;
             }

@@ -62,7 +62,7 @@ Emscripten_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-Emscripten_CreateDevice(int devindex)
+Emscripten_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 

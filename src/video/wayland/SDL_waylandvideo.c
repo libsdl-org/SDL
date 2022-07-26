@@ -174,7 +174,7 @@ Wayland_DeleteDevice(SDL_VideoDevice *device)
 }
 
 static SDL_VideoDevice *
-Wayland_CreateDevice(int devindex)
+Wayland_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
