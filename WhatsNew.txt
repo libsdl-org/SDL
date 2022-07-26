@@ -48,6 +48,9 @@ Linux:
 * Added the hint SDL_HINT_LINUX_DIGITAL_HATS to control whether to treat hats as digital rather than checking to see if they may be analog
 * Added the hint SDL_HINT_LINUX_HAT_DEADZONES to control whether to use deadzones on analog hats
 
+macOS:
+* Bumped minimum OS deployment version to macOS 10.9.
+
 ---------------------------------------------------------------------------
 2.0.22:
 ---------------------------------------------------------------------------
