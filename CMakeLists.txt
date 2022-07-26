@@ -678,7 +678,8 @@ endif()
 
 if(MSVC)
   # Due to a limitation of Microsoft's LTO implementation, LTO must be disabled for memcpy and memset.
-  set_property(SOURCE src/stdlib/SDL_memcpy.c src/stdlib/SDL_memset.c APPEND PROPERTY COMPILE_FLAGS /GL-)
+  # The same applies to various functions normally belonging in the C library (for x86 architecture).
+  set_property(SOURCE src/stdlib/SDL_mslibc.c APPEND PROPERTY COMPILE_FLAGS /GL-)
 endif()
 
 if(SDL_ASSEMBLY)

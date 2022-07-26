@@ -1352,10 +1352,7 @@
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.c">
       <Filter>render\direct3d12</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\stdlib\SDL_memcpy.c">
-      <Filter>stdlib</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\stdlib\SDL_memset.c">
+    <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c">
       <Filter>stdlib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\gdk\SDL_gdk.cpp">
