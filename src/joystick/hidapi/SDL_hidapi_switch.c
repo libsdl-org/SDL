@@ -260,6 +260,7 @@ typedef struct {
     Uint32 m_unRumblePending;
     SDL_bool m_bHasSensors;
     SDL_bool m_bReportSensors;
+    Uint32 m_unLastInput;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -1608,6 +1609,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
     SDL_Joystick *joystick = NULL;
     int size;
+    Uint32 now;
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -1615,6 +1617,8 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     if (!joystick) {
         return SDL_FALSE;
     }
+
+    now = SDL_GetTicks();
 
     while ((size = ReadInput(ctx)) > 0) {
 #ifdef DEBUG_SWITCH_PROTOCOL
@@ -1626,9 +1630,11 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
             switch (ctx->m_rgucReadBuffer[0]) {
             case k_eSwitchInputReportIDs_SimpleControllerState:
                 HandleSimpleControllerState(joystick, ctx, (SwitchSimpleStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
+                ctx->m_unLastInput = now;
                 break;
             case k_eSwitchInputReportIDs_FullControllerState:
                 HandleFullControllerState(joystick, ctx, (SwitchStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
+                ctx->m_unLastInput = now;
                 break;
             default:
                 break;
@@ -1636,12 +1642,22 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
+    if (!ctx->m_bInputOnly && !ctx->m_bUsingBluetooth) {
+        const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
+        if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+            /* Steam may have put the controller back into non-reporting mode */
+            SDL_UnlockMutex(ctx->device->dev_lock);
+            WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
+            SDL_LockMutex(ctx->device->dev_lock);
+        }
+    }
+
     if (ctx->m_bRumblePending || ctx->m_bRumbleZeroPending) {
         HIDAPI_DriverSwitch_SendPendingRumble(ctx);
     } else if (ctx->m_bRumbleActive &&
-               SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
+               SDL_TICKS_PASSED(now, ctx->m_unRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", SDL_GetTicks() - ctx->m_unRumbleSent);
+        SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", now - ctx->m_unRumbleSent);
 #endif
         WriteRumble(ctx);
     }
