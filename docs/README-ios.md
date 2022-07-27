@@ -1,10 +1,10 @@
 iOS
 ======
 
-Building the Simple DirectMedia Layer for iOS 5.1+
+Building the Simple DirectMedia Layer for iOS 9.0+
 ==============================================================================
 
-Requirements: Mac OS X 10.8 or later and the iOS 7+ SDK.
+Requirements: Mac OS X 10.9 or later and the iOS 9.0 or newer SDK.
 
 Instructions:
 

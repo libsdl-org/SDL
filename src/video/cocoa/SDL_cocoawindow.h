@@ -126,6 +126,7 @@ typedef enum
     @property (nonatomic) NSMutableArray *nscontexts;
     @property (nonatomic) SDL_bool created;
     @property (nonatomic) SDL_bool inWindowFullscreenTransition;
+    @property (nonatomic) NSInteger window_number;
     @property (nonatomic) NSInteger flash_request;
     @property (nonatomic) Cocoa_WindowListener *listener;
     @property (nonatomic) SDL_VideoData *videodata;

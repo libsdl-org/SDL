@@ -77,6 +77,15 @@ get_driindex(void)
     int i;
     int devindex = -1;
     DIR *folder;
+    const char *hint;
+
+    hint = SDL_GetHint(SDL_HINT_KMSDRM_DEVICE_INDEX);
+    if (hint && *hint) {
+        const int idx = SDL_atoi(hint);
+        if (idx >= 0) {
+            return idx;  /* we'll take the user's request here. */
+        }
+    }
 
     SDL_strlcpy(device, kmsdrm_dri_path, sizeof(device));
     folder = opendir(device);
@@ -193,8 +202,9 @@ KMSDRM_Available(void)
                  kmsdrm_dri_path, kmsdrm_dri_devname);
 
     ret = get_driindex();
-    if (ret >= 0)
+    if (ret >= 0) {
         return 1;
+    }
 
     return ret;
 }
@@ -217,24 +227,15 @@ KMSDRM_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *viddata;
-    int devindex = 0;  /* !!! FIXME: let app/user specify this. */
-    const char *hint;
+    int devindex;
 
     if (!KMSDRM_Available()) {
         return NULL;
     }
 
-    hint = SDL_GetHint(SDL_HINT_KMSDRM_DEVICE_INDEX);
-    if (hint) {
-        devindex = SDL_atoi(hint);
-    }
-
-    if (!devindex || (devindex > 99)) {
-        devindex = get_driindex();
-    }
-
+    devindex = get_driindex();
     if (devindex < 0) {
-        SDL_SetError("devindex (%d) must be between 0 and 99.\n", devindex);
+        SDL_SetError("devindex (%d) must be between 0 and 99.", devindex);
         return NULL;
     }
 
