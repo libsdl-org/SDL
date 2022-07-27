@@ -246,6 +246,19 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
     device->name = SDL_CreateJoystickName(0, 0, NULL, name);
 
+#ifdef DEBUG_CONTROLLER_PROFILE
+    if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
+        if (controller.physicalInputProfile) {
+            for (id key in controller.physicalInputProfile.buttons) {
+                NSLog(@"Button %@ available\n", key);
+            }
+            for (id key in controller.physicalInputProfile.axes) {
+                NSLog(@"Axis %@ available\n", key);
+            }
+        }
+    }
+#endif
+
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
         BOOL is_xbox = IsControllerXbox(controller);
