@@ -1303,7 +1303,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
-            // this code only gets called when xinput2 is not available -> so it has to remain here for compatibility reasons
+            /* this code only gets called when xinput2 is not available -> so it has to remain here for compatibility reasons */
             if (X11_IsWheelEvent(display,xevent,&xticks, &yticks)) {
                 SDL_SendMouseWheel(data->window, 0, (float) -xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
             } else {

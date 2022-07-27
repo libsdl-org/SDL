@@ -103,7 +103,7 @@ xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x, double in_y
             *out_y = in_y / (window->h - 1);
         }
     } else {
-        // couldn't find the window...
+        /* couldn't find the window... */
         *out_x = in_x;
         *out_y = in_y;
     }
@@ -170,6 +170,23 @@ X11_InitXinput2(_THIS)
     This should be working on all major desktop environments.
 */
 
+/*
+    device_information stores the type of a device
+    0   -> unknown
+    1   -> mouse
+    2   -> touchpad
+*/
+
+enum X11_DeviceType {
+    X11_DEVICE_UNKNOWN,
+    X11_DEVICE_MOUSE,
+    X11_DEVICE_TOUCHPAD
+};
+
+
+#define DEVICE_INFORMATION_SIZE 256
+static unsigned char device_information[DEVICE_INFORMATION_SIZE];
+
 static bool X11_IsTouchpadReversed(void)
 {
     return false;
@@ -180,13 +197,13 @@ static bool X11_IsMouseReversed(void)
     return false;
 }
 
-bool X11_IsXinput2DeviceTouchpad(Display *display, int sourceId)
+bool X11_IsXinput2DeviceTouchpad(Display *display, int deviceId)
 {
     XIDeviceInfo *info;
     int nDevices;
     bool isTouchpad = false;
 
-    info = X11_XIQueryDevice(display, sourceId, &nDevices);
+    info = X11_XIQueryDevice(display, deviceId, &nDevices);
     
     /* Is this the best way to do it? Probably not. Maybe we can check some device properties, but for now this should work aswell. */
     if (strstr(info[0].name, "Synaptics TouchPad") != NULL) {
@@ -195,6 +212,20 @@ bool X11_IsXinput2DeviceTouchpad(Display *display, int sourceId)
 
     X11_XIFreeDeviceInfo(info);
     return isTouchpad;
+}
+
+void X11_EnumerateDevices(Display *display)
+{
+    XIDeviceInfo *info;
+    int nDevices;
+
+    info = X11_XIQueryDevice(display, XIAllDevices, &nDevices);
+
+    for (int i = 0; i < nDevices; ++i) {
+        device_information[info[i].deviceid % DEVICE_INFORMATION_SIZE] = X11_IsXinput2DeviceTouchpad(display, info[i].deviceid) ? X11_DEVICE_TOUCHPAD : X11_DEVICE_MOUSE;
+    }
+
+    X11_XIFreeDeviceInfo(info);
 }
 
 int
@@ -207,7 +238,8 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
 
     switch (cookie->evtype) {
         SDL_Window *window;
-        case XI_ButtonPress: 
+        case XI_ButtonPress:
+            {
             int xticks = 0, yticks = 0;
             bool isTouchpad = false, isTouchpadReversed = false, isMouseReversed = false;
             SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL;
@@ -230,7 +262,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
                     break;
             }
 
-            isTouchpad = X11_IsXinput2DeviceTouchpad(event->display, event->sourceid);
+            isTouchpad = device_information[event->sourceid % DEVICE_INFORMATION_SIZE] == X11_DEVICE_TOUCHPAD ? true : false;
             isTouchpadReversed = X11_IsTouchpadReversed();
             isMouseReversed = X11_IsMouseReversed();
 
@@ -243,8 +275,23 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             }
 
             SDL_SendMouseWheel(window, 0, (float) -xticks, (float) yticks, direction);
+            }
             break;
-        case XI_RawMotion: {
+        case XI_HierarchyChanged:
+            {
+            XIHierarchyEvent *event = (XIHierarchyEvent*)cookie->data;
+                if (event->flags & XISlaveAdded) {
+                    X11_EnumerateDevices(event->display);
+                }
+                else if (event->flags & XISlaveRemoved) {
+                    /* Because we want to set the values for the slave devices and we only get the device id of the master device, we have to fill it up manually again */
+                    memset(device_information, 0, DEVICE_INFORMATION_SIZE);
+                    X11_EnumerateDevices(event->display);
+                }
+            }
+            break;
+        case XI_RawMotion:
+            {
             const XIRawEvent *rawev = (const XIRawEvent*)cookie->data;
             SDL_Mouse *mouse = SDL_GetMouse();
             double relative_coords[2];
@@ -271,7 +318,6 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             return 1;
             }
             break;
-
         case XI_RawButtonPress:
         case XI_RawButtonRelease:
             videodata->global_mouse_changed = SDL_TRUE;
@@ -375,8 +421,9 @@ X11_Xinput2SelectButtonAndTouch(_THIS, SDL_Window *window)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = NULL;
-    XIEventMask eventmask;
-    unsigned char mask[4] = { 0, 0, 0, 0 };
+    XIEventMask eventmasks[2];
+    unsigned char mask1[3] = { 0, 0, 0 };
+    unsigned char mask2[2] = { 0, 0 };
     SDL_WindowData *window_data = NULL;
 
     if (!X11_Xinput2IsInitialized()) {
@@ -385,25 +432,29 @@ X11_Xinput2SelectButtonAndTouch(_THIS, SDL_Window *window)
     data = (SDL_VideoData *) _this->driverdata;
     window_data = (SDL_WindowData*)window->driverdata;
     
-    eventmask.deviceid = XIAllMasterDevices;
-    eventmask.mask_len = sizeof(mask);
-    eventmask.mask = mask;
+    eventmasks[0].deviceid = XIAllMasterDevices;
+    eventmasks[0].mask_len = sizeof(mask1);
+    eventmasks[0].mask = mask1;
+    XISetMask(mask1, XI_ButtonPress);
 
-    XISetMask(mask, XI_ButtonPress);
+    eventmasks[1].deviceid = XIAllDevices;
+    eventmasks[1].mask_len = sizeof(mask2);
+    eventmasks[1].mask = mask2;
+    XISetMask(mask2, XI_HierarchyChanged);
 #endif
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     if (!X11_Xinput2IsMultitouchSupported()) {
         return;
     }
 
-    XISetMask(mask, XI_TouchBegin);
-    XISetMask(mask, XI_TouchUpdate);
-    XISetMask(mask, XI_TouchEnd);
-    XISetMask(mask, XI_Motion);
+    XISetMask(mask1, XI_TouchBegin);
+    XISetMask(mask1, XI_TouchUpdate);
+    XISetMask(mask1, XI_TouchEnd);
+    XISetMask(mask1, XI_Motion);
 #endif
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
-    X11_XISelectEvents(data->display,window_data->xwindow,&eventmask,1);
+    X11_XISelectEvents(data->display, window_data->xwindow, eventmasks, 2);
 #endif
 }
 

@@ -674,6 +674,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     X11_XSelectInput(display, RootWindow(display, screen), PropertyChangeMask);
 
     X11_XFlush(display);
+    X11_EnumerateDevices(display);
 
     return 0;
 }
