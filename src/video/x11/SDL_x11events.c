@@ -1303,18 +1303,19 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
+            // this code only gets called when xinput2 is not available -> so it has to remain here for compatibility reasons
             if (X11_IsWheelEvent(display,xevent,&xticks, &yticks)) {
                 SDL_SendMouseWheel(data->window, 0, (float) -xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
             } else {
                 SDL_bool ignore_click = SDL_FALSE;
                 int button = xevent->xbutton.button;
-                if(button == Button1) {
+                if (button == Button1) {
                     if (ProcessHitTest(_this, data, xevent)) {
                         SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
                         break;  /* don't pass this event on to app. */
                     }
                 }
-                else if(button > 7) {
+                else if (button > 7) {
                     /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
                        => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
                     button -= (8-SDL_BUTTON_X1);

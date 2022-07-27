@@ -164,14 +164,86 @@ X11_InitXinput2(_THIS)
 #endif
 }
 
+
+/* 
+    The following two functions should just return whether or wheter not the setting "Natural scrolling" or "Reverse scroll direction" is set.
+    This should be working on all major desktop environments.
+*/
+
+static bool X11_IsMousepadReversed(void)
+{
+    return false;
+}
+
+static bool X11_IsMouseReversed(void)
+{
+    return false;
+}
+
+bool X11_IsXinput2DeviceMousepad(Display *display, int sourceId)
+{
+    XIDeviceInfo *info;
+    int nDevices;
+    bool isMousepad = false;
+
+    info = X11_XIQueryDevice(display, sourceId, &nDevices);
+    
+    /* Is this the best way to do it? Probably not. Maybe we can check some device properties, but for now this should work aswell. */
+    if (strstr(info[0].name, "Synaptics TouchPad") != NULL) {
+        isMousepad = true;
+    }
+
+    X11_XIFreeDeviceInfo(info);
+    return isMousepad;
+}
+
 int
-X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
+X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
-    if(cookie->extension != xinput2_opcode) {
+    if (cookie->extension != xinput2_opcode) {
         return 0;
     }
-    switch(cookie->evtype) {
+
+    switch (cookie->evtype) {
+        SDL_Window *window;
+        case XI_ButtonPress: 
+            int xticks = 0, yticks = 0;
+            bool isMousepad = false, isMousepadReversed = false, isMouseReversed = false;
+            SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL;
+
+            const XIDeviceEvent *event = (const XIDeviceEvent*)cookie->data;
+            window = xinput2_get_sdlwindow(videodata, event->event);
+
+            switch (event->detail) {
+                case 4:
+                    yticks = 1;
+                    break;
+                case 5:
+                    yticks = -1;
+                    break;
+                case 6:
+                    xticks = 1;
+                    break;
+                case 7:
+                    xticks = -1;
+                    break;
+            }
+
+            isMousepad = X11_IsXinput2DeviceMousepad(event->display, event->sourceid);
+            isMousepadReversed = X11_IsMousepadReversed();
+            isMouseReversed = X11_IsMouseReversed();
+
+            if (isMousepad && isMousepadReversed) {
+                direction = SDL_MOUSEWHEEL_FLIPPED;
+            }
+
+            if (!isMousepad && isMouseReversed) {
+                direction = SDL_MOUSEWHEEL_FLIPPED;
+            }
+
+            SDL_SendMouseWheel(window, 0, (float) -xticks, (float) yticks, direction);
+            break;
         case XI_RawMotion: {
             const XIRawEvent *rawev = (const XIRawEvent*)cookie->data;
             SDL_Mouse *mouse = SDL_GetMouse();
@@ -215,7 +287,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             if (! pointer_emulated) {
                 SDL_Mouse *mouse = SDL_GetMouse();
                 if(!mouse->relative_mode || mouse->relative_mode_warp) {
-                    SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+                    window = xinput2_get_sdlwindow(videodata, xev->event);
                     if (window) {
                         SDL_SendMouseMotion(window, 0, 0, xev->event_x, xev->event_y);
                     }
@@ -228,7 +300,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
         case XI_TouchBegin: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
-            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            window = xinput2_get_sdlwindow(videodata, xev->event);
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouch(xev->sourceid, xev->detail, window, SDL_TRUE, x, y, 1.0);
             return 1;
@@ -237,7 +309,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
         case XI_TouchEnd: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
-            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            window = xinput2_get_sdlwindow(videodata, xev->event);
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouch(xev->sourceid, xev->detail, window, SDL_FALSE, x, y, 1.0);
             return 1;
@@ -246,7 +318,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
         case XI_TouchUpdate: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
-            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            window = xinput2_get_sdlwindow(videodata, xev->event);
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouchMotion(xev->sourceid, xev->detail, window, x, y, 1.0);
             return 1;
@@ -299,30 +371,38 @@ X11_InitXinput2Multitouch(_THIS)
 }
 
 void
-X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
+X11_Xinput2SelectButtonAndTouch(_THIS, SDL_Window *window)
 {
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+#if SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = NULL;
     XIEventMask eventmask;
     unsigned char mask[4] = { 0, 0, 0, 0 };
     SDL_WindowData *window_data = NULL;
 
-    if (!X11_Xinput2IsMultitouchSupported()) {
+    if (!X11_Xinput2IsInitialized()) {
         return;
     }
-
     data = (SDL_VideoData *) _this->driverdata;
     window_data = (SDL_WindowData*)window->driverdata;
-
+    
     eventmask.deviceid = XIAllMasterDevices;
     eventmask.mask_len = sizeof(mask);
     eventmask.mask = mask;
+
+    XISetMask(mask, XI_ButtonPress);
+#endif
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+    if (!X11_Xinput2IsMultitouchSupported()) {
+        return;
+    }
 
     XISetMask(mask, XI_TouchBegin);
     XISetMask(mask, XI_TouchUpdate);
     XISetMask(mask, XI_TouchEnd);
     XISetMask(mask, XI_Motion);
+#endif
 
+#if SDL_VIDEO_DRIVER_X11_XINPUT2
     X11_XISelectEvents(data->display,window_data->xwindow,&eventmask,1);
 #endif
 }
@@ -374,7 +454,6 @@ X11_Xinput2GrabTouch(_THIS, SDL_Window *window)
     XISetMask(eventmask.mask, XI_TouchUpdate);
     XISetMask(eventmask.mask, XI_TouchEnd);
     XISetMask(eventmask.mask, XI_Motion);
-
     X11_XIGrabTouchBegin(display, XIAllDevices, data->xwindow, True, &eventmask, 1, &mods);
 #endif
 }
