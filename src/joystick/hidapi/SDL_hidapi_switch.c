@@ -1646,9 +1646,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
         if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
             /* Steam may have put the controller back into non-reporting mode */
-            SDL_UnlockMutex(ctx->device->dev_lock);
             WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
-            SDL_LockMutex(ctx->device->dev_lock);
         }
     }
 
