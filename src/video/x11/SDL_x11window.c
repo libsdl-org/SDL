@@ -660,7 +660,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     }
 #endif
 
-    /* Selects the ButtonPress evends and (if supported) the multitouch events */
+    /* Selects the ButtonPress events and (if supported) the multitouch events */
     X11_Xinput2SelectButtonAndTouch(_this, window);
 
     X11_XSelectInput(display, w,

@@ -170,7 +170,7 @@ X11_InitXinput2(_THIS)
     This should be working on all major desktop environments.
 */
 
-static bool X11_IsMousepadReversed(void)
+static bool X11_IsTouchpadReversed(void)
 {
     return false;
 }
@@ -180,21 +180,21 @@ static bool X11_IsMouseReversed(void)
     return false;
 }
 
-bool X11_IsXinput2DeviceMousepad(Display *display, int sourceId)
+bool X11_IsXinput2DeviceTouchpad(Display *display, int sourceId)
 {
     XIDeviceInfo *info;
     int nDevices;
-    bool isMousepad = false;
+    bool isTouchpad = false;
 
     info = X11_XIQueryDevice(display, sourceId, &nDevices);
     
     /* Is this the best way to do it? Probably not. Maybe we can check some device properties, but for now this should work aswell. */
     if (strstr(info[0].name, "Synaptics TouchPad") != NULL) {
-        isMousepad = true;
+        isTouchpad = true;
     }
 
     X11_XIFreeDeviceInfo(info);
-    return isMousepad;
+    return isTouchpad;
 }
 
 int
@@ -209,7 +209,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
         SDL_Window *window;
         case XI_ButtonPress: 
             int xticks = 0, yticks = 0;
-            bool isMousepad = false, isMousepadReversed = false, isMouseReversed = false;
+            bool isTouchpad = false, isTouchpadReversed = false, isMouseReversed = false;
             SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL;
 
             const XIDeviceEvent *event = (const XIDeviceEvent*)cookie->data;
@@ -230,15 +230,15 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
                     break;
             }
 
-            isMousepad = X11_IsXinput2DeviceMousepad(event->display, event->sourceid);
-            isMousepadReversed = X11_IsMousepadReversed();
+            isTouchpad = X11_IsXinput2DeviceTouchpad(event->display, event->sourceid);
+            isTouchpadReversed = X11_IsTouchpadReversed();
             isMouseReversed = X11_IsMouseReversed();
 
-            if (isMousepad && isMousepadReversed) {
+            if (isTouchpad && isTouchpadReversed) {
                 direction = SDL_MOUSEWHEEL_FLIPPED;
             }
 
-            if (!isMousepad && isMouseReversed) {
+            if (!isTouchpad && isMouseReversed) {
                 direction = SDL_MOUSEWHEEL_FLIPPED;
             }
 
