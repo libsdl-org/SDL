@@ -64,6 +64,7 @@
 #cmakedefine HAVE_MEMORY_H 1
 #cmakedefine HAVE_SIGNAL_H 1
 #cmakedefine HAVE_STDARG_H 1
+#cmakedefine HAVE_STDDEF_H 1
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_STDIO_H 1
 #cmakedefine HAVE_STDLIB_H 1
