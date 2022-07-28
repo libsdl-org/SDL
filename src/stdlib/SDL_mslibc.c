@@ -27,7 +27,8 @@
 
 /* This file contains SDL replacements for functions in the C library */
 
-#ifndef HAVE_LIBC
+#if !defined(HAVE_LIBC) && !defined(SDL_STATIC_LIB)
+
 /* These are some C runtime intrinsics that need to be defined */
 
 #if defined(_MSC_VER)
@@ -712,6 +713,6 @@ RETZERO:
 
 #endif /* MSC_VER */
 
-#endif /* !HAVE_LIBC */
+#endif /* !HAVE_LIBC && !SDL_STATIC_LIB */
 
 /* vi: set ts=4 sw=4 expandtab: */
