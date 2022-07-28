@@ -346,7 +346,6 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
 
             if (! pointer_emulated) {
                 SDL_Mouse *mouse = SDL_GetMouse();
-
                 if(!mouse->relative_mode || mouse->relative_mode_warp) {
                     window = xinput2_get_sdlwindow(videodata, xev->event);
                     if (window) {
