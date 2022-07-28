@@ -372,7 +372,7 @@ HIDAPI_DriverSwitch_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 pro
         }
 
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT) {
-            return "Nintendo Switch Joy-Con Left";
+            return "Nintendo Switch Joy-Con (L)";
         }
 
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
@@ -380,7 +380,7 @@ HIDAPI_DriverSwitch_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 pro
             if (SDL_strncmp(name, "NES Controller", 14) == 0) {
                 return name;
             }
-            return "Nintendo Switch Joy-Con Right";
+            return "Nintendo Switch Joy-Con (R)";
         }
 
         if (product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
