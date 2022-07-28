@@ -3096,6 +3096,7 @@ if(SDL_STATIC)
     set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
   endif()
   set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}")
+  target_compile_definitions(SDL2-static PRIVATE SDL_STATIC_LIB)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
   target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
