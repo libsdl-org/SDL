@@ -321,6 +321,17 @@ if(MSVC)
   endif()
 endif()
 
+if(WATCOM)
+  # Remove -br compile option (DLL version of C/C++ run-time libraries)
+  foreach(flag_var
+      CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+      CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+    if(${flag_var} MATCHES "-br")
+      string(REGEX REPLACE "( |^)-br( |$)" " " ${flag_var} "${${flag_var}}")
+    endif()
+  endforeach()
+endif()
+
 # Those are used for pkg-config and friends, so that the sdl2.pc, sdl2-config,
 # etc. are created correctly.
 set(SDL_LIBS "-lSDL2")
@@ -330,6 +341,20 @@ set(SDL_CFLAGS )
 # avoid the DLL having a "lib" prefix
 if(WINDOWS)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
+endif()
+
+if(WATCOM)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei")
+  # Maximum warnings
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -wx")
+  # Disable W303 (Parameter 'xxx' has not been defined, but not referenced)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -wcd=303")
+  # Disable W200 ('xx' has been referenced but never assigned a value)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -wcd=200")
+  # Disable W124: Comparison result always 0
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -wcd=124")
+
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} option eliminate")
 endif()
 
 # Emscripten toolchain has a nonempty default value for this, and the checks
