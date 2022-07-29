@@ -1960,8 +1960,10 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
     } else if (vendor == USB_VENDOR_NVIDIA && product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER) {
         type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
 
-    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
-            type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
+    } else if (vendor == USB_VENDOR_NINTENDO &&
+               (product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP ||
+                product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_PAIR)) {
+            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
 
     } else {
         switch (GuessControllerType(vendor, product)) {
@@ -2000,12 +2002,7 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
             break;
         case k_eControllerType_SwitchJoyConLeft:
         case k_eControllerType_SwitchJoyConRight:
-            /* We always support the Nintendo Online NES Controllers */
-            if (name && SDL_strncmp(name, "NES Controller", 14) == 0) {
-                type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-            } else {
-                type = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_FALSE) ? SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO : SDL_CONTROLLER_TYPE_UNKNOWN;
-            }
+            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
             break;
         default:
             break;

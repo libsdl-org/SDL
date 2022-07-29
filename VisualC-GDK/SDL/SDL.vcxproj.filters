@@ -1054,7 +1054,7 @@
     <ClCompile Include="..\..\src\joystick\dummy\SDL_sysjoystick.c">
       <Filter>joystick\dummy</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c">
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c">
@@ -1085,6 +1085,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c">

@@ -593,6 +593,10 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b10,righttrigger:a5,start:b6,misc1:b15,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SNES_CONTROLLER) {
         SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+    } else if (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product) ||
+               SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
+        /* Mini gamepad mode */
+        SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,", sizeof(mapping_string));
     } else {
         /* All other controllers have the standard set of 19 buttons and 6 axes */
         SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof(mapping_string));
@@ -619,12 +623,6 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                /* Joy-Cons have extra buttons in the same place as paddles */
-                if (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product)) {
-                    SDL_strlcat(mapping_string, "paddle2:b17,paddle4:b19,", sizeof(mapping_string));
-                } else if (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
-                    SDL_strlcat(mapping_string, "paddle1:b16,paddle3:b18,", sizeof(mapping_string));
-                }
                 break;
             case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
                 /* Amazon Luna Controller has a mic button under the guide button */

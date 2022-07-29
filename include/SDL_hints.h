@@ -653,17 +653,6 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE "SDL_JOYSTICK_GAMECUBE_RUMBLE_BRAKE"
 
 /**
-  *  \brief  A variable controlling whether Switch Joy-Cons should be treated the same as Switch Pro Controllers when using the HIDAPI driver.
-  *
-  *  This variable can be set to the following values:
-  *    "0"       - basic Joy-Con support with no analog input (the default)
-  *    "1"       - Joy-Cons treated as half full Pro Controllers with analog inputs and sensors
-  *
-  *  This does not combine Joy-Cons into a single controller. That's up to the user.
-  */
-#define SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS "SDL_JOYSTICK_HIDAPI_JOY_CONS"
-
-/**
   *  \brief  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
   *
   *  This variable can be set to the following values:
@@ -788,6 +777,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH "SDL_JOYSTICK_HIDAPI_SWITCH"
+
+/**
+  *  \brief  A variable controlling whether Nintendo Switch Joy-Con controllers will be combined into a single Pro-like controller when using the HIDAPI driver
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Left and right Joy-Con controllers will not be combined and each will be a mini-gamepad
+  *    "1"       - Left and right Joy-Con controllers will be combined into a single controller (the default)
+  *
+  *  The default is "1"
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_COMBINE_JOY_CONS "SDL_JOYSTICK_HIDAPI_SWITCH_COMBINE_JOY_CONS"
 
 /**
  *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch controller is opened
