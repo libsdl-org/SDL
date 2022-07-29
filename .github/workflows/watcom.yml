@@ -8,10 +8,11 @@ jobs:
     runs-on: windows-latest
 
     strategy:
+      fail-fast: false
       matrix:
         platform:
-        - { name: Windows, makefile: Makefile.w32 }
-        - { name: OS/2,    makefile: Makefile.os2 }
+        - { name: Windows, makefile: Makefile.w32, cmake_toolchain_file: cmake/toolchains/watcom-windows.cmake }
+        - { name: OS/2,    makefile: Makefile.os2, cmake_toolchain_file: cmake/toolchains/watcom-os2.cmake }
 
     steps:
       - uses: actions/checkout@v2
@@ -33,3 +34,28 @@ jobs:
           wmake -f ${{ matrix.platform.makefile }} distclean
           cd test && wmake -f ${{ matrix.platform.makefile }} distclean
           cd ..
+      - name: Configure (CMake)
+        run: |
+          cmake -S . -B build `
+            -DSDL_TESTS=1 `
+            -DCMAKE_INSTALL_PREFIX=prefix `
+            -DCMAKE_BUILD_TYPE=Release `
+            -G "Watcom WMake"
+        env:
+          CMAKE_TOOLCHAIN_FILE: '${{ github.workspace }}/${{ matrix.platform.cmake_toolchain_file }}'
+      - name: Build (CMake)
+        run: |
+          cmake --build build
+      - name: Install (CMake)
+        run: |
+          echo "SDL2_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV
+          cmake --install build
+      - name: Verify CMake configuration files
+        run: |
+          cmake -S cmake/test -B cmake_config_build `
+            -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} `
+            -DCMAKE_BUILD_TYPE=Release `
+            -G "Watcom WMake"
+          cmake --build cmake_config_build
+        env:
+          CMAKE_TOOLCHAIN_FILE: '${{ github.workspace }}/${{ matrix.platform.cmake_toolchain_file }}'
