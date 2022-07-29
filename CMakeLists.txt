@@ -1058,14 +1058,6 @@ else()
   endif()
 endif()
 
-
-# Enable/disable various subsystems of the SDL library
-foreach(_SUB ${SDL_SUBSYSTEMS})
-  string(TOUPPER ${_SUB} _OPT)
-  if(NOT SDL_${_OPT})
-    set(SDL_${_OPT}_DISABLED 1)
-  endif()
-endforeach()
 if(SDL_HAPTIC)
   if(NOT SDL_JOYSTICK)
     # Haptic requires some private functions from the joystick subsystem.
@@ -2744,7 +2736,7 @@ endif()
 
 # We always need to have threads and timers around
 if(NOT HAVE_SDL_THREADS)
-  set(SDL_THREADS_DISABLED 1)
+  set(HAVE_SDL_THREADS FALSE)
   file(GLOB THREADS_SOURCES ${SDL2_SOURCE_DIR}/src/thread/generic/*.c)
   list(APPEND SOURCE_FILES ${THREADS_SOURCES})
 endif()
@@ -2764,6 +2756,14 @@ endif()
 #     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MMD -MT \$@")
 #   endif()
 # endif()
+
+# Enable/disable various subsystems of the SDL library
+foreach(_SUB ${SDL_SUBSYSTEMS})
+  string(TOUPPER ${_SUB} _OPT)
+  if(NOT SDL_${_OPT} OR (DEFINED HAVE_SDL_${_OPT} AND NOT HAVE_SDL_${_OPT}))
+    set(SDL_${_OPT}_DISABLED 1)
+  endif()
+endforeach()
 
 # config variables may contain generator expression, so we need to generate SDL_config.h in 2 steps:
 # 1. replace all `#cmakedefine`'s and `@abc@`
