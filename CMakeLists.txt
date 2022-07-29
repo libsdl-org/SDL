@@ -262,6 +262,8 @@ elseif(CMAKE_COMPILER_IS_GNUCC)
 elseif(MSVC_VERSION GREATER 1400) # VisualStudio 8.0+
   set(OPT_DEF_ASM TRUE)
   #set(CMAKE_C_FLAGS "/ZI /WX- /
+elseif(CMAKE_C_COMPILER_ID MATCHES ".*Watcom$")
+  set(WATCOM 1)
 else()
   set(OPT_DEF_ASM FALSE)
 endif()
