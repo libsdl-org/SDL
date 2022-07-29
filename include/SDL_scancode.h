@@ -428,6 +428,13 @@ typedef enum
     /* @} *//* Mobile keys */
 
     /* Add any other keys here. */
+
+    /*
+    * Windows may generate key events without scancodes. It may happen, for example, during the usage of 
+    * Windows clipboard with history (Win + V) when a user selects an option from the list of items to paste.
+    * The scancodes below are assigned when no scancode is provided. See https://github.com/libsdl-org/SDL/issues/3513.
+    * Other virtual keys may be added in the future if needed.
+    */
     SDL_SCANCODE_VIRTUAL_v = 291,
 
     SDL_NUM_SCANCODES = 512 /**< not a key, just marks the number of scancodes
