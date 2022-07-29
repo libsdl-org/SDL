@@ -121,7 +121,7 @@ X11_InitXinput2(_THIS)
 
     int version = 0;
     XIEventMask eventmask;
-    unsigned char mask[3] = { 0,0,0 };
+    unsigned char mask[4] = { 0, 0, 0, 0 };
     int event, err;
 
     /*
@@ -150,7 +150,7 @@ X11_InitXinput2(_THIS)
     xinput2_multitouch_supported = xinput2_version_atleast(version, 2, 2);
 #endif
 
-    /* Enable  Raw motion events for this display */
+    /* Enable raw motion events for this display */
     eventmask.deviceid = XIAllMasterDevices;
     eventmask.mask_len = sizeof(mask);
     eventmask.mask = mask;
@@ -159,7 +159,16 @@ X11_InitXinput2(_THIS)
     XISetMask(mask, XI_RawButtonPress);
     XISetMask(mask, XI_RawButtonRelease);
 
-    if (X11_XISelectEvents(data->display,DefaultRootWindow(data->display),&eventmask,1) != Success) {
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+    /* Enable raw touch events if supported */
+    if (X11_Xinput2IsMultitouchSupported()) {
+        XISetMask(mask, XI_RawTouchBegin);
+        XISetMask(mask, XI_RawTouchUpdate);
+        XISetMask(mask, XI_RawTouchEnd);
+    }
+#endif
+
+    if (X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask,1) != Success) {
         return;
     }
 #endif
@@ -527,6 +536,11 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             break;
         case XI_RawButtonPress:
         case XI_RawButtonRelease:
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+        case XI_RawTouchBegin:
+        case XI_RawTouchUpdate:
+        case XI_RawTouchEnd:
+#endif
             videodata->global_mouse_changed = SDL_TRUE;
             break;
 
@@ -547,8 +561,8 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
                 }
             }
             return 1;
-            }
-            break;
+        }
+        break;
 
         case XI_TouchBegin: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
@@ -557,8 +571,8 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouch(xev->sourceid, xev->detail, window, SDL_TRUE, x, y, 1.0);
             return 1;
-            }
-            break;
+        }
+        break;
         case XI_TouchEnd: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
@@ -566,8 +580,8 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouch(xev->sourceid, xev->detail, window, SDL_FALSE, x, y, 1.0);
             return 1;
-            }
-            break;
+        }
+        break;
         case XI_TouchUpdate: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
@@ -575,8 +589,9 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouchMotion(xev->sourceid, xev->detail, window, x, y, 1.0);
             return 1;
-            }
-            break;
+        }
+        break;
+
 #endif
     }
 #endif

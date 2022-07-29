@@ -81,8 +81,9 @@ get_driindex(void)
 
     hint = SDL_GetHint(SDL_HINT_KMSDRM_DEVICE_INDEX);
     if (hint && *hint) {
-        const int idx = SDL_atoi(hint);
-        if (idx >= 0) {
+        char *endptr = NULL;
+        const int idx = (int) SDL_strtol(hint, &endptr, 10);
+        if ((*endptr == '\0') && (idx >= 0)) {  /* *endptr==0 means "whole string was a valid number" */
             return idx;  /* we'll take the user's request here. */
         }
     }
