@@ -1240,7 +1240,6 @@ HIDAPI_JoystickQuit(void)
         SDL_HIDAPI_Device *device = SDL_HIDAPI_devices;
         if (device->parent) {
             /* When a child device goes away, so does the parent */
-            int i;
             device = device->parent;
             for (i = 0; i < device->num_children; ++i) {
                 HIDAPI_DelDevice(device->children[i]);
