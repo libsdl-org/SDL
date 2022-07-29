@@ -527,6 +527,7 @@ static const ControllerDescription_t arrControllers[] = {
     // We now support Joy-Cons if SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS is set to "1", but they won't be combined into one controller.
     { MAKE_CONTROLLER_ID( 0x057e, 0x2006 ), k_eControllerType_SwitchJoyConLeft, NULL },    // Nintendo Switch Joy-Con (Left)
     { MAKE_CONTROLLER_ID( 0x057e, 0x2007 ), k_eControllerType_SwitchJoyConRight, NULL },   // Nintendo Switch Joy-Con (Right)
+    { MAKE_CONTROLLER_ID( 0x057e, 0x2008 ), k_eControllerType_SwitchJoyConPair, NULL },    // Nintendo Switch Joy-Con (Left+Right Combined)
 
     // This same controller ID is spoofed by many 3rd-party Switch controllers.
     // The ones we currently know of are:

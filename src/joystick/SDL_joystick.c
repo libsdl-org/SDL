@@ -2120,6 +2120,7 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return (eType == k_eControllerType_SwitchProController ||
             eType == k_eControllerType_SwitchInputOnlyController ||
+            eType == k_eControllerType_SwitchJoyConPair ||
             (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP));
 }
 
