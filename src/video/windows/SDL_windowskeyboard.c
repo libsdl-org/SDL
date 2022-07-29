@@ -149,8 +149,6 @@ void WIN_UpdateKeymap(SDL_bool send_event)
         }
     }
 
-    keymap[SDL_SCANCODE_VIRTUAL_v] = SDLK_a + ('V' - 'A');
-
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
