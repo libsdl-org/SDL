@@ -2601,24 +2601,24 @@ elseif(PS2)
   )
 
 elseif(OS2)
-  list(APPEND EXTRA_CFLAGS "-DOS2EMX_PLAIN_CHAR")
-
   file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/os2/*.c)
   list(APPEND SOURCE_FILES ${CORE_SOURCES})
   if(NOT (HAVE_ICONV AND HAVE_ICONV_H))
     file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/os2/geniconv/*.c)
     list(APPEND SOURCE_FILES ${CORE_SOURCES})
+    list(APPEND EXTRA_LIBS libconv)
   endif()
 
   if(SDL_THREADS)
     set(SDL_THREAD_OS2 1)
     file(GLOB OS2_THREAD_SOURCES ${SDL2_SOURCE_DIR}/src/thread/os2/*.c)
     list(APPEND SOURCE_FILES ${OS2_THREAD_SOURCES})
+    list(APPEND SOURCE_FILES ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syscond.c)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
   if(SDL_TIMERS)
-    set(SDL_TIMER_UNIX 1)
+    set(SDL_TIMER_OS2 1)
     file(GLOB OS2_TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/os2/*.c)
     list(APPEND SOURCE_FILES ${OS2_TIMER_SOURCES})
     set(HAVE_SDL_TIMERS TRUE)
@@ -2668,6 +2668,14 @@ elseif(OS2)
 
   if(SDL_HIDAPI)
     CheckHIDAPI()
+  endif()
+
+  if(SDL_HAPTIC)
+    set(HAVE_SDL_HAPTIC FALSE)
+  endif()
+
+  if(SDL_POWER)
+    set(HAVE_SDL_POWER FALSE)
   endif()
 endif()
 
