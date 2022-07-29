@@ -198,7 +198,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku.*")
 endif()
 
 # Don't mistake osx for unix
-if(UNIX AND NOT ANDROID AND NOT APPLE AND NOT RISCOS)
+if(UNIX AND NOT (ANDROID OR APPLE OR RISCOS OR OS2))
   set(UNIX_SYS ON)
 else()
   set(UNIX_SYS OFF)
