@@ -26,6 +26,7 @@
 #include "SDL_x11xinput2.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
+#include "../../yxml/yxml.h"
 
 #define MAX_AXIS 16
 
@@ -171,30 +172,206 @@ X11_InitXinput2(_THIS)
 */
 
 /*
-    device_information stores the type of a device
-    0   -> unknown
-    1   -> mouse
-    2   -> touchpad
+    device_information stores the informations bitwise
 */
 
-enum X11_DeviceType {
-    X11_DEVICE_UNKNOWN,
-    X11_DEVICE_MOUSE,
-    X11_DEVICE_TOUCHPAD
+enum X11_DeviceInformation {
+    X11_DEVICE_UNKNOWN          =   0x01,
+    X11_DEVICE_MOUSE            =   0x02,
+    X11_DEVICE_TOUCHPAD         =   0x04,
+    X11_DEVICE_REVERSE_SCROLL   =   0x08
 };
 
 
 #define DEVICE_INFORMATION_SIZE 256
-static unsigned char device_information[DEVICE_INFORMATION_SIZE];
+static uint8_t device_information[DEVICE_INFORMATION_SIZE];
 
-static bool X11_IsTouchpadReversed(void)
+/* this function gives us the size of our file including the EOF byte */
+static long getSizeOfFileInBytes(FILE *fp)
 {
+    long size;
+
+    if (fseek(fp, 0, SEEK_END) != 0) {
+        return -1;
+    }
+
+    if ((size = ftell(fp)) == -1) {
+        return -1;
+    }
+
+    rewind(fp);
+
+    return size;
+}
+
+/*
+    the following two functions are more relevant for GNOME settings, as GNOME has these explicit settings.
+    xfce sets the reverse scroll direction for each device seperately
+*/
+
+bool X11_IsTouchpadNaturalScrolling(void)
+{
+    bool reverseScrolling = false;
+    return reverseScrolling;
+}
+
+bool X11_IsMouseNaturalScrolling(void)
+{
+    bool reverseScrolling = false;
+    return reverseScrolling;
+}
+
+char * getPathOfXfcePointerSettings(void)
+{
+    char *home;
+    char *halfPath = "/.config/xfce4/xfconf/xfce-perchannel-xml/pointers.xml";
+    char *path;
+
+    if ((home = getenv("HOME")) == NULL) {
+        return NULL;
+    }
+
+    path = malloc(strlen(home) + strlen(halfPath) + 1);
+    strcpy(path, home);
+    strcat(path, halfPath);
+    return path;
+}
+
+static void saveFileIntoMemory(FILE *fp, char *s, size_t len)
+{
+    int c;
+    for (size_t i = 0; i < len-1; ++i) {
+        if ((c = fgetc(fp)) == EOF) {
+            s[i] = '\0';
+            return;
+        }
+        s[i] = c;
+    }
+    s[len-1] = '\0';
+}
+
+/*
+    This function checks for the reverse scroll direction setting from the XfConf xml files
+    In the future more settings from different desktop environments should be supported. We use a small library to parse the XML.
+    https://dev.yorhel.nl/yxml/man
+*/
+
+static bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceName)
+{
+    long size;
+    void *buffer;
+    char *xdoc, *doc;
+
+    char *attrval = NULL;
+    bool ourDevice = false, ourSetting = false, isReverseScrollDirection = false;
+
+    yxml_t xml;
+
+    /* we are still working with our xfce configuration file */
+    if (fp == NULL) {
+        return false;
+    }
+
+    size = getSizeOfFileInBytes(fp);
+    if (size == -1) {
+        return false;
+    }
+
+    xdoc = malloc(size);
+    if (xdoc == NULL) {
+        return false;
+    }
+
+    saveFileIntoMemory(fp, xdoc, size);
+
+    buffer = malloc(size);
+    if (buffer == NULL) {
+        free(xdoc);
+        return false;
+    }
+
+    /* let's start parsing the actual XML configuration */
+    yxml_init(&xml, buffer, size);
+
+    doc = xdoc;
+    for (; *xdoc; xdoc++) {
+        yxml_ret_t r = yxml_parse(&xml, *xdoc);
+        if (r < 0) {
+            free(attrval);
+            free(buffer);
+            free(doc);
+            return false;
+        }
+
+        switch (r) {
+            case YXML_ATTRSTART:
+                attrval = calloc(size, 1);
+                break;
+            case YXML_ATTRVAL:
+                strcat(attrval, xml.data);
+                break;
+            case YXML_ATTREND:
+                if (ourSetting && !strcmp(xml.attr, "value")) {
+                    if (!strcmp(attrval, "true")) {
+                        isReverseScrollDirection = true;
+                    }
+                    free(attrval);
+                    free(buffer);
+                    free(doc);
+                    rewind(fp);
+                    return isReverseScrollDirection;
+                }
+                else if (ourDevice && !strcmp(xml.attr, "name") && !strcmp(attrval, "ReverseScrolling")) {
+                    ourSetting = true;
+                }
+                else if (!strcmp(xml.attr, "name") && !strcmp(attrval, xfceDeviceName)) {
+                    ourDevice = true;
+                }
+                /* reset my character array */
+                free(attrval);
+                break;
+            default:
+                break;
+        }
+    }
+
     return false;
 }
 
-static bool X11_IsMouseReversed(void)
+/*  modified function from https://gitlab.xfce.org/xfce/xfce4-settings/-/blob/master/xfsettingsd/pointers.c#700 in order to apply correct naming rules
+    for our devices to be found in the settings XML
+    don't forget to free the memory allocated by this function
+*/
+
+static char * xfce_pointers_helper_device_xfconf_name(const char *name)
 {
-    return false;
+    char *string;
+    const char *p;
+
+    /* NOTE: this function exists in both the dialog and
+     *       helper code and they have to identical! */
+
+    /* allocate a string */
+    size_t i = 0;
+    string = malloc(strlen(name) + 1);
+
+    /* create a name with only valid chars */
+    for (p = name; *p != '\0'; p++) {
+        if ((*p >= 'A' && *p <= 'Z')
+            || (*p >= 'a' && *p <= 'z')
+            || (*p >= '0' && *p <= '9')
+            || *p == '_' || *p == '-') {
+            string[i++] = *p;
+        }
+        else if (*p == ' ') {
+            string[i++] = '_';
+        }
+    }
+
+    string[i] = '\0';
+
+    /* return the new string */
+    return string;
 }
 
 bool X11_IsXinput2DeviceTouchpad(Display *display, int deviceId)
@@ -214,15 +391,38 @@ bool X11_IsXinput2DeviceTouchpad(Display *display, int deviceId)
     return isTouchpad;
 }
 
+/*
+    this function is called every time a new device is plugged in or out and in the window initialization phase
+    for now we will only then update the state of the settings for reverse scroll direction, etc.
+*/
+
 void X11_EnumerateDevices(Display *display)
 {
+    FILE *fp;
     XIDeviceInfo *info;
+    char *xfceName;
     int nDevices;
 
+    char *path = getPathOfXfcePointerSettings();
+    fp = fopen(path, "r");
+    free(path);
     info = X11_XIQueryDevice(display, XIAllDevices, &nDevices);
 
     for (int i = 0; i < nDevices; ++i) {
-        device_information[info[i].deviceid % DEVICE_INFORMATION_SIZE] = X11_IsXinput2DeviceTouchpad(display, info[i].deviceid) ? X11_DEVICE_TOUCHPAD : X11_DEVICE_MOUSE;
+        device_information[info[i].deviceid % DEVICE_INFORMATION_SIZE] |= X11_IsXinput2DeviceTouchpad(display, info[i].deviceid) ? X11_DEVICE_TOUCHPAD : X11_DEVICE_MOUSE;
+        xfceName = xfce_pointers_helper_device_xfconf_name(info[i].name);
+
+        /*
+            Well, this isn't an optimal solution but it will do the job for now. (We are only calling it on hierarchy changes and on window initialization)
+        */
+        if (fp && X11_IsDeviceReverseScrollDirection(fp, xfceName)) {
+            device_information[info[i].deviceid % DEVICE_INFORMATION_SIZE] |= X11_DEVICE_REVERSE_SCROLL;
+        }
+        free(xfceName);
+    }
+
+    if (fp) {
+        fclose(fp);
     }
 
     X11_XIFreeDeviceInfo(info);
@@ -241,7 +441,10 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
         case XI_ButtonPress:
             {
             int xticks = 0, yticks = 0;
-            bool isTouchpad = false, isTouchpadReversed = false, isMouseReversed = false;
+            /*
+            bool isTouchpad = false, isTouchpadNaturalScrolling = false, isMouseNaturalScrolling = false;
+            */
+            bool isDeviceReverseScrollDirection = false;
             SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL;
 
             const XIDeviceEvent *event = (const XIDeviceEvent*)cookie->data;
@@ -262,19 +465,23 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
                     break;
             }
 
-            isTouchpad = device_information[event->sourceid % DEVICE_INFORMATION_SIZE] == X11_DEVICE_TOUCHPAD ? true : false;
-            isTouchpadReversed = X11_IsTouchpadReversed();
-            isMouseReversed = X11_IsMouseReversed();
+            /*
+            while I started working on this, I had a GNOME implementation in mind. My new implementation is more abstract. But we can later
+            add support for GNOME easily aswell
 
-            if (isTouchpad && isTouchpadReversed) {
-                direction = SDL_MOUSEWHEEL_FLIPPED;
-            }
+            isTouchpad = device_information[event->sourceid % DEVICE_INFORMATION_SIZE] & X11_DEVICE_TOUCHPAD;
+            isTouchpadNaturalScrolling = X11_IsTouchpadNaturalScrolling();
+            isMouseNaturalScrolling = X11_IsMouseNaturalScrolling();
+            */
+            /* xfce setting based on the device that caused the event */
+            isDeviceReverseScrollDirection = device_information[event->sourceid % DEVICE_INFORMATION_SIZE] & X11_DEVICE_REVERSE_SCROLL;
 
-            if (!isTouchpad && isMouseReversed) {
+            if (isDeviceReverseScrollDirection) {
                 direction = SDL_MOUSEWHEEL_FLIPPED;
             }
 
             SDL_SendMouseWheel(window, 0, (float) -xticks, (float) yticks, direction);
+
             }
             break;
         case XI_HierarchyChanged:
