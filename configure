@@ -26390,7 +26390,7 @@ CheckInotify()
 {
     save_LIBS="$LIBS"
     case "$host" in
-     *-*-freebsd*) LIBS="$LIBS -linotify"
+     *-*-freebsd*|*-*dragonfly*) LIBS="$LIBS -linotify"
       ;;
     esac
            for ac_header in sys/inotify.h
@@ -26426,7 +26426,7 @@ fi
 printf "%s\n" "#define HAVE_INOTIFY 1" >>confdefs.h
 
         case "$host" in
-            *-*-freebsd*)
+            *-*-freebsd*|*-*-dragonfly*)
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS -linotify"
                 ;;
         esac

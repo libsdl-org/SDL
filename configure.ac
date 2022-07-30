@@ -2837,7 +2837,7 @@ CheckInotify()
 {
     save_LIBS="$LIBS"
     case "$host" in
-     *-*-freebsd*) LIBS="$LIBS -linotify"
+     *-*-freebsd*|*-*dragonfly*) LIBS="$LIBS -linotify"
       ;;
     esac
     AC_CHECK_HEADERS(sys/inotify.h, [have_inotify_inotify_h_hdr=yes])
@@ -2846,7 +2846,7 @@ CheckInotify()
     if test x$have_inotify_inotify_h_hdr = xyes -a x$have_inotify = xyes; then
         AC_DEFINE(HAVE_INOTIFY, 1, [ ])
         case "$host" in
-            *-*-freebsd*)
+            *-*-freebsd*|*-*-dragonfly*)
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS -linotify"
                 ;;
         esac
