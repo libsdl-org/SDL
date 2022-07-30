@@ -334,7 +334,7 @@ static bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceN
         }
     }
 
-    /* if for some reason r never is smaller then 0 */
+    /* if for some reason r never is smaller than 0 */
 
     free(buffer);
     free(doc);
