@@ -28,7 +28,7 @@
 
 static const char *video_usage[] = {
     "[--video driver]", "[--renderer driver]", "[--gldebug]",
-    "[--info all|video|modes|render|event]",
+    "[--info all|video|modes|render|event|event_motion]",
     "[--log all|error|system|audio|video|render|input]", "[--display N]",
     "[--metal-window | --opengl-window | --vulkan-window]",
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
@@ -166,6 +166,10 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         }
         if (SDL_strcasecmp(argv[index], "event") == 0) {
             state->verbose |= VERBOSE_EVENT;
+            return 2;
+        }
+        if (SDL_strcasecmp(argv[index], "event_motion") == 0) {
+            state->verbose |= (VERBOSE_EVENT | VERBOSE_MOTION);
             return 2;
         }
         return -1;
@@ -1464,13 +1468,6 @@ default: return "???";
 static void
 SDLTest_PrintEvent(SDL_Event * event)
 {
-#ifndef VERBOSE_MOTION_EVENTS
-    if ((event->type == SDL_MOUSEMOTION) || (event->type == SDL_FINGERMOTION)) {
-        /* Mouse and finger motion are really spammy */
-        return;
-    }
-#endif
-
     switch (event->type) {
     case SDL_DISPLAYEVENT:
         switch (event->display.event) {
@@ -1826,7 +1823,11 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
     static SDL_MouseMotionEvent lastEvent;
 
     if (state->verbose & VERBOSE_EVENT) {
-        SDLTest_PrintEvent(event);
+        if (((event->type != SDL_MOUSEMOTION) &&
+             (event->type != SDL_FINGERMOTION)) ||
+            ((state->verbose & VERBOSE_MOTION) != 0)) {
+            SDLTest_PrintEvent(event);
+        }
     }
 
     switch (event->type) {
