@@ -4,6 +4,12 @@ project(SDL2_test)
 if(NOT TARGET SDL2::SDL2-static)
     find_package(SDL2 2.0.23 REQUIRED COMPONENTS SDL2-static SDL2test)
 endif()
+if(WATCOM)
+    if(WIN32)
+        add_definitions(-DSDL_MAIN_HANDLED)
+    endif()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -oi")
+endif()
 
 enable_testing()
 
@@ -48,7 +54,9 @@ if(WINDOWS)
     # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
     # but we need them for VS as well.
     link_libraries(SDL2main)
-    add_definitions(-Dmain=SDL_main)
+    if(NOT WATCOM)
+        add_definitions(-Dmain=SDL_main)
+    endif()
 endif()
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
