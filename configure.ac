@@ -458,6 +458,14 @@ if test x$enable_video != xyes; then
 else
     SUMMARY_modules="${SUMMARY_modules} video"
 fi
+AC_ARG_ENABLE(yxml,
+[AS_HELP_STRING([--enable-yxml], [Enable the yxml subsystem [default=yes]])],
+              , enable_yxml=yes)
+if test x$enable_yxml != xyes; then
+    AC_DEFINE(SDL_YXML_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} yxml"
+fi
 AC_ARG_ENABLE(render,
 [AS_HELP_STRING([--enable-render], [Enable the render subsystem [default=yes]])],
               , enable_render=yes)
@@ -1908,6 +1916,7 @@ CheckX11()
 
             AC_DEFINE(SDL_VIDEO_DRIVER_X11, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/video/x11/*.c"
+            SOURCES="$SOURCES $srcdir/src/yxml/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $X_CFLAGS"
 
             # Needed so SDL applications can include SDL_syswm.h

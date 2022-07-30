@@ -844,6 +844,7 @@ enable_gcc_atomics
 enable_atomic
 enable_audio
 enable_video
+enable_yxml
 enable_render
 enable_events
 enable_joystick
@@ -1634,6 +1635,7 @@ Optional Features:
   --enable-atomic         Enable the atomic operations subsystem [default=yes]
   --enable-audio          Enable the audio subsystem [default=yes]
   --enable-video          Enable the video subsystem [default=yes]
+  --enable-yxml           Enable the yxml subsystem [default=yes]
   --enable-render         Enable the render subsystem [default=yes]
   --enable-events         Enable the events subsystem [default=yes]
   --enable-joystick       Enable the joystick subsystem [default=yes]
@@ -20231,6 +20233,21 @@ printf "%s\n" "#define SDL_VIDEO_DISABLED 1" >>confdefs.h
 else
     SUMMARY_modules="${SUMMARY_modules} video"
 fi
+# Check whether --enable-yxml was given.
+if test ${enable_yxml+y}
+then :
+  enableval=$enable_yxml;
+else $as_nop
+  enable_yxml=yes
+fi
+
+if test x$enable_yxml != xyes; then
+
+printf "%s\n" "#define SDL_YXML_DISABLED 1" >>confdefs.h
+
+else
+    SUMMARY_modules="${SUMMARY_modules} yxml"
+fi
 # Check whether --enable-render was given.
 if test ${enable_render+y}
 then :
@@ -24275,6 +24292,7 @@ fi
 printf "%s\n" "#define SDL_VIDEO_DRIVER_X11 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/video/x11/*.c"
+            SOURCES="$SOURCES $srcdir/src/yxml/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $X_CFLAGS"
 
             # Needed so SDL applications can include SDL_syswm.h

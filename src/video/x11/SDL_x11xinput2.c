@@ -22,6 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
+#include <stdbool.h>
 #include "SDL_x11video.h"
 #include "SDL_x11xinput2.h"
 #include "../../events/SDL_mouse_c.h"
@@ -174,12 +175,6 @@ X11_InitXinput2(_THIS)
 #endif
 }
 
-
-/* 
-    The following two functions should just return whether or wheter not the setting "Natural scrolling" or "Reverse scroll direction" is set.
-    This should be working on all major desktop environments.
-*/
-
 /*
     device_information stores the informations bitwise
 */
@@ -275,11 +270,6 @@ static bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceN
     bool ourDevice = false, ourSetting = false, isReverseScrollDirection = false;
 
     yxml_t xml;
-
-    /* we are still working with our xfce configuration file */
-    if (fp == NULL) {
-        return false;
-    }
 
     size = getSizeOfFileInBytes(fp);
     if (size == -1) {
@@ -407,14 +397,16 @@ bool X11_IsXinput2DeviceTouchpad(Display *display, int deviceId)
 
 void X11_EnumerateDevices(Display *display)
 {
-    FILE *fp;
+    FILE *fp = NULL;
     XIDeviceInfo *info;
     char *xfceName;
     int nDevices;
 
     char *path = getPathOfXfcePointerSettings();
-    fp = fopen(path, "r");
-    free(path);
+    if (path) {
+        fp = fopen(path, "r");
+        free(path);
+    }
     info = X11_XIQueryDevice(display, XIAllDevices, &nDevices);
 
     for (int i = 0; i < nDevices; ++i) {
