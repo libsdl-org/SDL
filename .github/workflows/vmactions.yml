@@ -1,0 +1,49 @@
+name: Build (VM Actions)
+
+on: [push, pull_request]
+
+jobs:
+  freebsd:
+    runs-on: macos-12
+    name: FreeBSD
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      uses: vmactions/freebsd-vm@v0
+      with:
+        usesh: true
+        prepare: |
+          pkg install -y \
+              gmake \
+              pkgconf \
+              libXcursor \
+              libXext \
+              libXinerama \
+              libXi \
+              libXfixes \
+              libXrandr \
+              libXScrnSaver \
+              libXxf86vm \
+              wayland \
+              wayland-protocols \
+              libxkbcommon \
+              mesa-libs \
+              libglvnd \
+              evdev-proto \
+              libinotify \
+              alsa-lib \
+              jackit \
+              nas \
+              pipewire \
+              pulseaudio \
+              sndio \
+              dbus \
+              zh-fcitx \
+              ibus \
+              libsamplerate \
+              libudev-devd
+
+        run: |
+          mkdir build_autotools
+          (cd build_autotools && CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ../configure)
+          gmake -C build_autotools -j`sysctl -n hw.ncpu` V=1
