@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if test "x$CC" = "x"; then
-    CC=gcc
+    CC=cc
 fi
 
 machine="$($CC -dumpmachine)"
