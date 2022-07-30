@@ -17,8 +17,10 @@ jobs:
         platform:
         - { name: Windows (mingw32),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, cc: gcc }
         - { name: Windows (mingw64+clang),  os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, cc: clang }
-        - { name: Linux (CMake),            os: ubuntu-20.04,   shell: sh }
-        - { name: Linux (autotools),        os: ubuntu-20.04,   shell: sh,    autotools: true }
+        - { name: Ubuntu 20.04 (CMake),     os: ubuntu-20.04,   shell: sh }
+        - { name: Ubuntu 20.04 (autotools), os: ubuntu-20.04,   shell: sh,    autotools: true }
+        - { name: Ubuntu 22.04 (CMake),     os: ubuntu-22.04,   shell: sh }
+        - { name: Ubuntu 22.04 (autotools), os: ubuntu-22.04,   shell: sh,    autotools: true }
         - { name: MacOS (CMake),            os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"' }
         - { name: MacOS (autotools),        os: macos-latest,   shell: sh,    autotools: true }
 
@@ -49,48 +51,18 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install \
-          autoconf \
-          gnome-desktop-testing \
-          wayland-protocols \
-          pkg-config \
-          ninja-build \
-          libasound2-dev \
-          libdbus-1-dev \
-          libegl1-mesa-dev \
-          libgl1-mesa-dev \
-          libgles2-mesa-dev \
-          libglu1-mesa-dev \
-          libibus-1.0-dev \
-          libpulse-dev \
-          libsdl2-2.0-0 \
-          libsndio-dev \
-          libudev-dev \
-          libwayland-dev \
-          libwayland-client++0 \
-          wayland-scanner++ \
-          libwayland-cursor++0 \
-          libx11-dev \
-          libxcursor-dev \
-          libxext-dev \
-          libxi-dev \
-          libxinerama-dev \
-          libxkbcommon-dev \
-          libxrandr-dev \
-          libxss-dev \
-          libxt-dev \
-          libxv-dev \
-          libxxf86vm-dev \
-          libdrm-dev \
-          libgbm-dev\
-          libpulse-dev \
-          libpango1.0-dev
-        sudo apt install meson
-        git clone --depth 1 https://gitlab.gnome.org/jadahl/libdecor.git --branch 0.1.0
-        cd libdecor
-        meson build --buildtype release -Ddemo=false -Ddbus=disabled
-        ninja -v -C build
-        sudo meson install -C build
+        sudo apt-get install build-essential git make autoconf automake libtool \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
+
+    - name: Setup extra Ubuntu 22.04 dependencies
+      if: matrix.platform.os == 'ubuntu-22.04'
+      run: |
+        sudo apt-get install libpipewire-0.3-dev libdecor-0-dev
+
     - name: Setup Macos dependencies
       if: runner.os == 'macOS'
       run: |
