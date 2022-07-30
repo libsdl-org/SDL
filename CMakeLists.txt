@@ -3217,7 +3217,7 @@ if(NOT SDL2_DISABLE_INSTALL)
   endif()
 
   ##### Export files #####
-  if (WINDOWS AND NOT MINGW)
+  if ((WINDOWS AND NOT MINGW) OR OS2)
     set(PKG_PREFIX "cmake")
   else ()
     set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
