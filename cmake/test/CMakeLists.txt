@@ -12,6 +12,26 @@ if(ANDROID)
     endmacro()
 endif()
 
+if(CMAKE_C_COMPILER_ID MATCHES ".*Watcom")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei")
+    # FIXME: add as target_compile_options(SDL2/SDL2-static PUBLIC) when bumping minimum CMake version
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ei")
+    # Disable W303 (Parameter 'xxx' has not been defined, but not referenced)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -wcd=303")
+
+    # Remove -br compile option (DLL version of C/C++ run-time libraries)
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+        if(${flag_var} MATCHES "-br")
+            string(REGEX REPLACE "( |^)-br( |$)" " " ${flag_var} "${${flag_var}}")
+        endif()
+    endforeach()
+    if(WIN32)
+        add_definitions(-DSDL_MAIN_HANDLED)
+    endif()
+endif()
+
 cmake_policy(SET CMP0074 NEW)
 
 # Override CMAKE_FIND_ROOT_PATH_MODE to allow search for SDL2 outside of sysroot
