@@ -287,9 +287,9 @@ SDL_EVDEV_Poll(void)
                     if (events[i].code >= BTN_MOUSE && events[i].code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
                         mouse_button = events[i].code - BTN_MOUSE;
                         if (events[i].value == 0) {
-                            SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, EVDEV_MouseButtons[mouse_button]);
+                            SDL_SendMouseButton(mouse->focus, (SDL_MouseID)item->fd, SDL_RELEASED, EVDEV_MouseButtons[mouse_button]);
                         } else if (events[i].value == 1) {
-                            SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_PRESSED, EVDEV_MouseButtons[mouse_button]);
+                            SDL_SendMouseButton(mouse->focus, (SDL_MouseID)item->fd, SDL_PRESSED, EVDEV_MouseButtons[mouse_button]);
                         }
                         break;
                     }
@@ -419,11 +419,11 @@ SDL_EVDEV_Poll(void)
                     case SYN_REPORT:
                         /* Send mouse axis changes together to ensure consistency and reduce event processing overhead */
                         if (item->mouse_x != 0 || item->mouse_y != 0) {
-                            SDL_SendMouseMotion(mouse->focus, mouse->mouseID, item->relative_mouse, item->mouse_x, item->mouse_y);
+                            SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
                             item->mouse_x = item->mouse_y = 0;
                         }
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
-                            SDL_SendMouseWheel(mouse->focus, mouse->mouseID,
+                            SDL_SendMouseWheel(mouse->focus, (SDL_MouseID)item->fd,
                                                item->mouse_hwheel / (item->high_res_hwheel ? 120.0f : 1.0f),
                                                item->mouse_wheel / (item->high_res_wheel ? 120.0f : 1.0f),
                                                SDL_MOUSEWHEEL_NORMAL);
