@@ -68,12 +68,12 @@ typedef struct SDL_evdevlist_item
     int fd;
 
     /* TODO: use this for every device, not just touchscreen */
-    int out_of_sync;
+    SDL_bool out_of_sync;
 
     /* TODO: expand on this to have data for every possible class (mouse,
        keyboard, touchpad, etc.). Also there's probably some things in here we
        can pull out to the SDL_evdevlist_item i.e. name */
-    int is_touchscreen;
+    SDL_bool is_touchscreen;
     struct {
         char* name;
 
@@ -470,11 +470,11 @@ SDL_EVDEV_Poll(void)
                         }
 
                         if (item->out_of_sync)
-                            item->out_of_sync = 0;
+                            item->out_of_sync = SDL_FALSE;
                         break;
                     case SYN_DROPPED:
                         if (item->is_touchscreen)
-                            item->out_of_sync = 1;
+                            item->out_of_sync = SDL_TRUE;
                         SDL_EVDEV_sync_device(item);
                         break;
                     default:
@@ -789,7 +789,7 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     }
 
     if (udev_class & SDL_UDEV_DEVICE_TOUCHSCREEN) {
-        item->is_touchscreen = 1;
+        item->is_touchscreen = SDL_TRUE;
 
         if ((ret = SDL_EVDEV_init_touchscreen(item)) < 0) {
             close(item->fd);
