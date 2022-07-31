@@ -96,8 +96,12 @@ typedef struct SDL_evdevlist_item
 
     } * touchscreen_data;
 
+    /* Mouse state */
     SDL_bool high_res_wheel;
     SDL_bool high_res_hwheel;
+    SDL_bool relative_mouse;
+    int mouse_x, mouse_y;
+    int mouse_wheel, mouse_hwheel;
 
     struct SDL_evdevlist_item *next;
 } SDL_evdevlist_item;
@@ -361,16 +365,20 @@ SDL_EVDEV_Poll(void)
                             if (item->touchscreen_data->max_slots != 1)
                                 break;
                             item->touchscreen_data->slots[0].x = events[i].value;
-                        } else
-                            SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, events[i].value, mouse->y);
+                        } else if (!item->relative_mouse) {
+                            /* FIXME: Normalize to input device's reported input range (EVIOCGABS) */
+                            item->mouse_x = events[i].value;
+                        }
                         break;
                     case ABS_Y:
                         if (item->is_touchscreen) {
                             if (item->touchscreen_data->max_slots != 1)
                                 break;
                             item->touchscreen_data->slots[0].y = events[i].value;
-                        } else
-                            SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, mouse->x, events[i].value);
+                        } else if (!item->relative_mouse) {
+                            /* FIXME: Normalize to input device's reported input range (EVIOCGABS) */
+                            item->mouse_y = events[i].value;
+                        }
                         break;
                     default:
                         break;
@@ -379,26 +387,28 @@ SDL_EVDEV_Poll(void)
                 case EV_REL:
                     switch(events[i].code) {
                     case REL_X:
-                        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_TRUE, events[i].value, 0);
+                        if (item->relative_mouse)
+                            item->mouse_x += events[i].value;
                         break;
                     case REL_Y:
-                        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_TRUE, 0, events[i].value);
+                        if (item->relative_mouse)
+                            item->mouse_y += events[i].value;
                         break;
                     case REL_WHEEL:
                         if (!item->high_res_wheel)
-                            SDL_SendMouseWheel(mouse->focus, mouse->mouseID, 0, events[i].value, SDL_MOUSEWHEEL_NORMAL);
+                            item->mouse_wheel += events[i].value;
                         break;
                     case REL_WHEEL_HI_RES:
                         SDL_assert(item->high_res_wheel);
-                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, 0, events[i].value / 120.0f, SDL_MOUSEWHEEL_NORMAL);
+                        item->mouse_wheel += events[i].value;
                         break;
                     case REL_HWHEEL:
                         if (!item->high_res_hwheel)
-                            SDL_SendMouseWheel(mouse->focus, mouse->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
+                            item->mouse_hwheel += events[i].value;
                         break;
                     case REL_HWHEEL_HI_RES:
                         SDL_assert(item->high_res_hwheel);
-                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, events[i].value / 120.0f, 0, SDL_MOUSEWHEEL_NORMAL);
+                        item->mouse_hwheel += events[i].value;
                         break;
                     default:
                         break;
@@ -407,6 +417,19 @@ SDL_EVDEV_Poll(void)
                 case EV_SYN:
                     switch (events[i].code) {
                     case SYN_REPORT:
+                        /* Send mouse axis changes together to ensure consistency and reduce event processing overhead */
+                        if (item->mouse_x != 0 || item->mouse_y != 0) {
+                            SDL_SendMouseMotion(mouse->focus, mouse->mouseID, item->relative_mouse, item->mouse_x, item->mouse_y);
+                            item->mouse_x = item->mouse_y = 0;
+                        }
+                        if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
+                            SDL_SendMouseWheel(mouse->focus, mouse->mouseID,
+                                               item->mouse_hwheel / (item->high_res_hwheel ? 120.0f : 1.0f),
+                                               item->mouse_wheel / (item->high_res_wheel ? 120.0f : 1.0f),
+                                               SDL_MOUSEWHEEL_NORMAL);
+                            item->mouse_wheel = item->mouse_hwheel = 0;
+                        }
+
                         if (!item->is_touchscreen) /* FIXME: temp hack */
                             break;
 
@@ -760,6 +783,7 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     }
 
     if (ioctl(item->fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0) {
+        item->relative_mouse = test_bit(REL_X, relbit) && test_bit(REL_Y, relbit);
         item->high_res_wheel = test_bit(REL_WHEEL_HI_RES, relbit);
         item->high_res_hwheel = test_bit(REL_HWHEEL_HI_RES, relbit);
     }
