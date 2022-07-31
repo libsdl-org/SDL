@@ -3112,6 +3112,10 @@ if(SDL_SHARED)
     endif()
     set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
+  if(WATCOM AND WINDOWS)
+    target_compile_definitions(SDL2 PRIVATE DECLSPEC=)
+    set_property(TARGET SDL2 APPEND_STRING PROPERTY LINK_FLAGS " EXPORT='${SDL2_SOURCE_DIR}/src/dynapi/SDL2.exports'")
+  endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
   target_include_directories(SDL2 PUBLIC
