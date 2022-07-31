@@ -24,7 +24,7 @@
 #define SDL_x11keyboard_h_
 
 extern int X11_InitKeyboard(_THIS);
-extern void X11_UpdateKeymap(_THIS);
+extern void X11_UpdateKeymap(_THIS, SDL_bool send_event);
 extern void X11_QuitKeyboard(_THIS);
 extern void X11_StartTextInput(_THIS);
 extern void X11_StopTextInput(_THIS);

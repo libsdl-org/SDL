@@ -1111,8 +1111,7 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
                                     Wayland_keymap_iter,
                                     &keymap);
-    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES);
-    SDL_SendKeymapChangedEvent();
+    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
 }
 
 static void

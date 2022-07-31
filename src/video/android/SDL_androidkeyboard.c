@@ -36,7 +36,7 @@ void Android_InitKeyboard(void)
 
     /* Add default scancode to key mapping */
     SDL_GetDefaultKeymap(keymap);
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
+    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, SDL_FALSE);
 }
 
 static SDL_Scancode Android_Keycodes[] = {

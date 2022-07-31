@@ -394,7 +394,7 @@ X11_InitKeyboard(_THIS)
         }
     }
 
-    X11_UpdateKeymap(_this);
+    X11_UpdateKeymap(_this, SDL_FALSE);
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
@@ -408,7 +408,7 @@ X11_InitKeyboard(_THIS)
 }
 
 void
-X11_UpdateKeymap(_THIS)
+X11_UpdateKeymap(_THIS, SDL_bool send_event)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     int i;
@@ -468,7 +468,7 @@ X11_UpdateKeymap(_THIS)
             }
         }
     }
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
+    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
 void

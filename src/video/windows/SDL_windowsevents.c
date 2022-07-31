@@ -1044,8 +1044,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #ifdef WM_INPUTLANGCHANGE
     case WM_INPUTLANGCHANGE:
         {
-            WIN_UpdateKeymap();
-            SDL_SendKeymapChangedEvent();
+            WIN_UpdateKeymap(SDL_TRUE);
         }
         returnCode = 1;
         break;

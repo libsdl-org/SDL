@@ -842,8 +842,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 X11_XRefreshKeyboardMapping(&xevent->xmapping);
             }
 
-            X11_UpdateKeymap(_this);
-            SDL_SendKeymapChangedEvent();
+            X11_UpdateKeymap(_this, SDL_TRUE);
         } else if (xevent->type == PropertyNotify && videodata && videodata->windowlist) {
             char* name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
 
@@ -1470,8 +1469,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                    icon). Since it changes the XKLAVIER_STATE property, we
                    notice and reinit our keymap here. This might not be the
                    right approach, but it seems to work. */
-                X11_UpdateKeymap(_this);
-                SDL_SendKeymapChangedEvent();
+                X11_UpdateKeymap(_this, SDL_TRUE);
             } else if (xevent->xproperty.atom == videodata->_NET_FRAME_EXTENTS) {
                 Atom type;
                 int format;

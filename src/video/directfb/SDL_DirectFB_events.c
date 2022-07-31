@@ -698,9 +698,9 @@ EnumKeyboards(DFBInputDeviceID device_id,
 
         SDL_GetDefaultKeymap(keymap);
 #if USE_MULTI_API
-        SDL_SetKeymap(devdata->num_keyboard, 0, keymap, SDL_NUM_SCANCODES);
+        SDL_SetKeymap(devdata->num_keyboard, 0, keymap, SDL_NUM_SCANCODES, SDL_FALSE);
 #else
-        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
+        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, SDL_FALSE);
 #endif
         devdata->num_keyboard++;
 
