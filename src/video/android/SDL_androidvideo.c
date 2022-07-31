@@ -201,8 +201,6 @@ Android_VideoInit(_THIS)
 
     SDL_AddDisplayMode(&_this->displays[0], &mode);
 
-    Android_InitKeyboard();
-
     Android_InitTouch();
 
     Android_InitMouse();
