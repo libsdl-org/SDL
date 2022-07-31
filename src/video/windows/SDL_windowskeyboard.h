@@ -24,7 +24,7 @@
 #define SDL_windowskeyboard_h_
 
 extern void WIN_InitKeyboard(_THIS);
-extern void WIN_UpdateKeymap(void);
+extern void WIN_UpdateKeymap(SDL_bool send_event);
 extern void WIN_QuitKeyboard(_THIS);
 
 extern void WIN_ResetDeadKeys(void);

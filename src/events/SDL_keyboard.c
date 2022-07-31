@@ -590,24 +590,36 @@ SDL_GetDefaultKeymap(SDL_Keycode * keymap)
 }
 
 void
-SDL_SetKeymap(int start, SDL_Keycode * keys, int length)
+SDL_SetKeymap(int start, SDL_Keycode * keys, int length, SDL_bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
+    SDL_Keycode normalized_keymap[SDL_NUM_SCANCODES];
 
     if (start < 0 || start + length > SDL_NUM_SCANCODES) {
         return;
     }
 
-    SDL_memcpy(&keyboard->keymap[start], keys, sizeof(*keys) * length);
+    SDL_memcpy(&normalized_keymap[start], keys, sizeof(*keys) * length);
 
     /* The number key scancodes always map to the number key keycodes.
      * On AZERTY layouts these technically are symbols, but users (and games)
      * always think of them and view them in UI as number keys.
      */
-    keyboard->keymap[SDL_SCANCODE_0] = SDLK_0;
+    normalized_keymap[SDL_SCANCODE_0] = SDLK_0;
     for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
-        keyboard->keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+        normalized_keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+    }
+
+    /* If the mapping didn't really change, we're done here */
+    if (!SDL_memcmp(&keyboard->keymap[start], &normalized_keymap[start], sizeof(*keys) * length)) {
+        return;
+    }
+
+    SDL_memcpy(&keyboard->keymap[start], &normalized_keymap[start], sizeof(*keys) * length);
+
+    if (send_event) {
+        SDL_SendKeymapChangedEvent();
     }
 }
 

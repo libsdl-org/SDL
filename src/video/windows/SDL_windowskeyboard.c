@@ -102,7 +102,7 @@ WIN_InitKeyboard(_THIS)
     data->ime_uielemsink = 0;
     data->ime_ippasink = 0;
 
-    WIN_UpdateKeymap();
+    WIN_UpdateKeymap(SDL_FALSE);
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
     SDL_SetScancodeName(SDL_SCANCODE_LGUI, "Left Windows");
@@ -115,7 +115,7 @@ WIN_InitKeyboard(_THIS)
 }
 
 void
-WIN_UpdateKeymap()
+WIN_UpdateKeymap(SDL_bool send_event)
 {
     int i;
     SDL_Scancode scancode;
@@ -152,7 +152,7 @@ WIN_UpdateKeymap()
         }
     }
 
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
+    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
 void
