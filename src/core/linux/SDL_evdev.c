@@ -229,11 +229,7 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
 
     switch(udev_event) {
     case SDL_UDEV_DEVICEADDED:
-        if (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) {
-            udev_class |= SDL_UDEV_DEVICE_TOUCHSCREEN;
-        }
-
-        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD | SDL_UDEV_DEVICE_TOUCHSCREEN)))
+        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD | SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD)))
             return;
 
         if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK))
@@ -513,7 +509,7 @@ SDL_EVDEV_translate_keycode(int keycode)
 
 #ifdef SDL_USE_LIBUDEV
 static int
-SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
+SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
 {
     int ret, i;
     unsigned long xreq, yreq;
@@ -600,7 +596,7 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
     }
 
     ret = SDL_AddTouch(item->fd, /* I guess our fd is unique enough */
-        SDL_TOUCH_DEVICE_DIRECT,
+        (udev_class & SDL_UDEV_DEVICE_TOUCHPAD) ? SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE : SDL_TOUCH_DEVICE_DIRECT,
         item->touchscreen_data->name);
     if (ret < 0) {
         SDL_free(item->touchscreen_data->slots);
@@ -788,10 +784,11 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
         item->high_res_hwheel = test_bit(REL_HWHEEL_HI_RES, relbit);
     }
 
-    if (udev_class & SDL_UDEV_DEVICE_TOUCHSCREEN) {
+    /* For now, we just treat a touchpad like a touchscreen */
+    if (udev_class & (SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD)) {
         item->is_touchscreen = SDL_TRUE;
 
-        if ((ret = SDL_EVDEV_init_touchscreen(item)) < 0) {
+        if ((ret = SDL_EVDEV_init_touchscreen(item, udev_class)) < 0) {
             close(item->fd);
             SDL_free(item->path);
             SDL_free(item);
