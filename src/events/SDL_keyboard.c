@@ -560,11 +560,9 @@ SDL_UCS4ToUTF8(Uint32 ch, char *dst)
 int
 SDL_KeyboardInit(void)
 {
-    SDL_Keyboard *keyboard = &SDL_keyboard;
-
     /* Set the default keymap */
-    SDL_memcpy(keyboard->keymap, SDL_default_keymap, sizeof(SDL_default_keymap));
-    return (0);
+    SDL_SetKeymap(0, SDL_default_keymap, SDL_NUM_SCANCODES, SDL_FALSE);
+    return 0;
 }
 
 void
@@ -590,7 +588,7 @@ SDL_GetDefaultKeymap(SDL_Keycode * keymap)
 }
 
 void
-SDL_SetKeymap(int start, SDL_Keycode * keys, int length, SDL_bool send_event)
+SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
