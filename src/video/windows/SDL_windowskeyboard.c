@@ -158,9 +158,16 @@ WIN_UpdateKeymap(SDL_bool send_event)
 void
 WIN_QuitKeyboard(_THIS)
 {
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
 #ifndef SDL_DISABLE_WINDOWS_IME
-    IME_Quit((SDL_VideoData *)_this->driverdata);
+    IME_Quit(data);
 #endif
+
+    if (data->ime_composition) {
+        SDL_free(data->ime_composition);
+        data->ime_composition = NULL;
+    }
 }
 
 void
