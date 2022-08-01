@@ -38,7 +38,7 @@ extern int X11_Xinput2IsMultitouchSupported(void);
 extern void X11_Xinput2SelectButtonAndTouch(_THIS, SDL_Window *window);
 extern void X11_Xinput2GrabTouch(_THIS, SDL_Window *window);
 extern void X11_Xinput2UngrabTouch(_THIS, SDL_Window *window);
-extern bool X11_IsXinput2DeviceMousepad(Display *display, int sourceId);
+extern SDL_bool X11_IsXinput2DeviceMousepad(Display *display, int sourceId);
 extern void X11_EnumerateDevices(Display *display);
 
 #endif /* SDL_x11xinput2_h_ */

@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
-#include <stdbool.h>
 #include "SDL_x11video.h"
 #include "SDL_x11xinput2.h"
 #include "../../events/SDL_mouse_c.h"
@@ -213,15 +212,15 @@ static long getSizeOfFileInBytes(FILE *fp)
     xfce sets the reverse scroll direction for each device seperately
 */
 
-bool X11_IsTouchpadNaturalScrolling(void)
+SDL_bool X11_IsTouchpadNaturalScrolling(void)
 {
-    bool reverseScrolling = false;
+    SDL_bool reverseScrolling = SDL_FALSE;
     return reverseScrolling;
 }
 
-bool X11_IsMouseNaturalScrolling(void)
+SDL_bool X11_IsMouseNaturalScrolling(void)
 {
-    bool reverseScrolling = false;
+    SDL_bool reverseScrolling = SDL_FALSE;
     return reverseScrolling;
 }
 
@@ -260,25 +259,25 @@ static void saveFileIntoMemory(FILE *fp, char *s, size_t len)
     https://dev.yorhel.nl/yxml/man
 */
 
-static bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceName)
+static SDL_bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceName)
 {
     long size;
     void *buffer;
     char *xdoc, *doc;
 
     char *attrval = NULL;
-    bool ourDevice = false, ourSetting = false, isReverseScrollDirection = false;
+    SDL_bool ourDevice = SDL_FALSE, ourSetting = SDL_FALSE, isReverseScrollDirection = SDL_FALSE;
 
     yxml_t xml;
 
     size = getSizeOfFileInBytes(fp);
     if (size == -1) {
-        return false;
+        return SDL_FALSE;
     }
 
     xdoc = malloc(size);
     if (xdoc == NULL) {
-        return false;
+        return SDL_FALSE;
     }
 
     saveFileIntoMemory(fp, xdoc, size);
@@ -286,7 +285,7 @@ static bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceN
     buffer = malloc(size);
     if (buffer == NULL) {
         free(xdoc);
-        return false;
+        return SDL_FALSE;
     }
 
     /* let's start parsing the actual XML configuration */
@@ -299,7 +298,7 @@ static bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceN
             free(attrval);
             free(buffer);
             free(doc);
-            return false;
+            return SDL_FALSE;
         }
 
         switch (r) {
@@ -338,7 +337,7 @@ static bool X11_IsDeviceReverseScrollDirection(FILE *fp, const char *xfceDeviceN
 
     free(buffer);
     free(doc);
-    return false;
+    return SDL_FALSE;
 }
 
 /*  modified function from https://gitlab.xfce.org/xfce/xfce4-settings/-/blob/master/xfsettingsd/pointers.c#700 in order to apply correct naming rules
@@ -377,17 +376,17 @@ static char * xfce_pointers_helper_device_xfconf_name(const char *name)
     return string;
 }
 
-bool X11_IsXinput2DeviceTouchpad(Display *display, int deviceId)
+SDL_bool X11_IsXinput2DeviceTouchpad(Display *display, int deviceId)
 {
     XIDeviceInfo *info;
     int nDevices;
-    bool isTouchpad = false;
+    SDL_bool isTouchpad = SDL_FALSE;
 
     info = X11_XIQueryDevice(display, deviceId, &nDevices);
     
     /* Is this the best way to do it? Probably not. Maybe we can check some device properties, but for now this should work aswell. */
     if (strstr(info[0].name, "Synaptics TouchPad") != NULL) {
-        isTouchpad = true;
+        isTouchpad = SDL_TRUE;
     }
 
     X11_XIFreeDeviceInfo(info);
