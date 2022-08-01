@@ -109,11 +109,7 @@ static int PixelFormatToPS2PSM(Uint32 format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_ABGR1555:
-        return GS_PSM_CT16S;
-    case SDL_PIXELFORMAT_BGR888:
-        return GS_PSM_CT24;
-    case SDL_PIXELFORMAT_ABGR8888:
-        return GS_PSM_CT32;
+        return GS_PSM_CT16;
     default:
         return GS_PSM_CT32;
     }
