@@ -25,6 +25,7 @@
 #if SDL_JOYSTICK_DINPUT
 
 #include "SDL_hints.h"
+#include "SDL_timer.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
