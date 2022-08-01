@@ -697,9 +697,9 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->SetTextureScaleMode = PS2_SetTextureScaleMode;
     renderer->SetRenderTarget = PS2_SetRenderTarget;
     renderer->QueueSetViewport = PS2_QueueSetViewport;
-    renderer->QueueSetDrawColor = PS2_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
+    renderer->QueueSetDrawColor = PS2_QueueSetViewport;
     renderer->QueueDrawPoints = PS2_QueueDrawPoints;
-    renderer->QueueDrawLines = PS2_QueueDrawLines;  /* lines and points queue vertices the same way. */
+    renderer->QueueDrawLines = PS2_QueueDrawLines;
     renderer->QueueGeometry = PS2_QueueGeometry;
     renderer->RunCommandQueue = PS2_RunCommandQueue;
     renderer->RenderReadPixels = PS2_RenderReadPixels;
