@@ -446,9 +446,9 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             {
             int xticks = 0, yticks = 0;
             /*
-            bool isTouchpad = false, isTouchpadNaturalScrolling = false, isMouseNaturalScrolling = false;
+            SDL_bool isTouchpad = SDL_FALSE, isTouchpadNaturalScrolling = SDL_FALSE, isMouseNaturalScrolling = SDL_FALSE;
             */
-            bool isDeviceReverseScrollDirection = false;
+            SDL_bool isDeviceReverseScrollDirection = SDL_FALSE;
             SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL;
 
             const XIDeviceEvent *event = (const XIDeviceEvent*)cookie->data;
