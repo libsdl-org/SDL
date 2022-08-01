@@ -162,6 +162,18 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(SDL_Window *wi
                                                                   const char **pNames);
 
 /**
+ * Get the device driver's string representation.
+ *
+ * \param id The id of the device
+ * \returns the device's name
+ *
+ * \since This function is available since SDL 2.0.23.
+ *
+ * \sa SDL_Vulkan_GetDriverVendorString
+ */
+extern DECLSPEC const char *SDLCALL SDL_Vulkan_GetDriverVendorString(uint32_t id);
+
+/**
  * Create a Vulkan rendering surface for a window.
  *
  * The `window` must have been created with the `SDL_WINDOW_VULKAN` flag and

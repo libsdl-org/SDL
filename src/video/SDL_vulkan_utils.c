@@ -117,6 +117,42 @@ const char *SDL_Vulkan_GetResultString(VkResult result)
     return "VK_<Unknown>";
 }
 
+const char *SDL_Vulkan_GetDriverVendorString(uint32_t id)
+{
+    switch (id) {
+        case 0x1002:
+            return "AMD";
+        case 0x1010:
+            return "ImgTec";
+        case 0x106B:
+            return "Apple";
+        case 0x10DE:
+            return "NVIDIA";
+        case 0x13B5:
+            return "ARM";
+        case 0x14E4:
+            return "Broadcom";
+        case 0x5143:
+            return "Qualcomm";
+        case 0x8086:
+            return "Intel";
+        case 0x10001:
+            return "VIV";
+        case 0x10002:
+            return "VSI";
+        case 0x10003:
+            return "Kazan";
+        case 0x10004:
+            return "Codeplay";
+        case 0x10005:
+            return "Mesa";
+        case 0x10006:
+            return "POCL";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties,
     Uint32 *extensionCount)
