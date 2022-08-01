@@ -162,10 +162,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(SDL_Window *wi
                                                                   const char **pNames);
 
 /**
- * Get the device driver's string representation.
+ * Translates the VkPhysicalDevice's "vendorID" (for example, a PCI vendor ID) to a human-readable string.
  *
- * \param id The id of the device
- * \returns the device's name
+ * \param id The vendorID field of VkPhysicalDeviceProperties
+ * \returns The vendor's human-readable name
  *
  * \since This function is available since SDL 2.0.23.
  *
