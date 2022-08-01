@@ -852,7 +852,6 @@ enable_hidapi
 enable_sensor
 enable_power
 enable_filesystem
-enable_threads
 enable_timers
 enable_file
 enable_misc
@@ -1643,7 +1642,6 @@ Optional Features:
   --enable-sensor         Enable the sensor subsystem [default=yes]
   --enable-power          Enable the power subsystem [default=yes]
   --enable-filesystem     Enable the filesystem subsystem [default=yes]
-  --enable-threads        Enable the threading subsystem [default=yes]
   --enable-timers         Enable the timer subsystem [default=yes]
   --enable-file           Enable the file subsystem [default=yes]
   --enable-misc           Enable the misc subsystem [default=yes]
@@ -20351,14 +20349,11 @@ printf "%s\n" "#define SDL_FILESYSTEM_DISABLED 1" >>confdefs.h
 else
     SUMMARY_modules="${SUMMARY_modules} filesystem"
 fi
-# Check whether --enable-threads was given.
-if test ${enable_threads+y}
-then :
-  enableval=$enable_threads;
-else $as_nop
-  enable_threads=yes
-fi
-
+# Many subsystems depend on threads, so leave them enabled by default
+#AC_ARG_ENABLE(threads,
+#[AS_HELP_STRING([--enable-threads], [Enable the threading subsystem [default=yes]])],
+#              , enable_threads=yes)
+enable_threads=yes
 if test x$enable_threads != xyes; then
 
 printf "%s\n" "#define SDL_THREADS_DISABLED 1" >>confdefs.h
