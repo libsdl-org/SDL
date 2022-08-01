@@ -623,24 +623,24 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 static void WIN_CheckICMProfileChanged(SDL_Window* window)
 {
-    SDL_VideoDisplay* display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData* data = (SDL_DisplayData*)display->driverdata;
-    static WCHAR currentIcmFileName[MAX_PATH] = { '\0' };
-    WCHAR icmFileName[MAX_PATH];
-    HDC hdc;
-    SDL_bool succeeded;
-    DWORD fileNameSize = MAX_PATH;
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData *data = display ? (SDL_DisplayData*)display->driverdata : NULL;
 
-    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
-    if (hdc) {
-        succeeded = GetICMProfileW(hdc, &fileNameSize, icmFileName);
-        DeleteDC(hdc);
-        if (succeeded) {
-            
-            if (SDL_wcsncmp(currentIcmFileName, icmFileName, fileNameSize)) {
-                SDL_wcslcpy(currentIcmFileName, icmFileName, fileNameSize);
-                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+    if (data) {
+        HDC hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
+        if (hdc) {
+            static WCHAR currentIcmFileName[MAX_PATH];
+            WCHAR icmFileName[MAX_PATH];
+            DWORD fileNameSize = SDL_arraysize(icmFileName);
+            if (GetICMProfileW(hdc, &fileNameSize, icmFileName)) {
+                /* fileNameSize includes '\0' on return */
+                fileNameSize *= sizeof(icmFileName[0]);
+                if (SDL_memcmp(currentIcmFileName, icmFileName, fileNameSize) != 0) {
+                    SDL_memcpy(currentIcmFileName, icmFileName, fileNameSize);
+                    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                }
             }
+            DeleteDC(hdc);
         }
     }
 }
