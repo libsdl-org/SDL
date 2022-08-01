@@ -729,6 +729,23 @@ isReparentNotify(Display *display, XEvent *ev, XPointer arg)
         ev->xreparent.serial == unmap->serial;
 }
 
+static int
+XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out)
+{
+    int result = X11_XLookupString(event_struct, buffer_return, bytes_buffer, keysym_return, status_in_out);
+    if (result > 0) {
+        char *utf8_text = SDL_iconv_string("UTF-8", "ISO-8859-1", buffer_return, result);
+        if (utf8_text) {
+            SDL_strlcpy(buffer_return, utf8_text, bytes_buffer);
+            SDL_free(utf8_text);
+            return SDL_strlen(buffer_return);
+        } else {
+            return 0;
+        }
+    }
+    return result;
+}
+
 static void
 X11_DispatchEvent(_THIS, XEvent *xevent)
 {
@@ -1047,10 +1064,10 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 X11_Xutf8LookupString(data->ic, &xevent->xkey, text, sizeof(text),
                                   &keysym, &status);
             } else {
-                X11_XLookupString(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+                XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
             }
 #else
-            X11_XLookupString(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+            XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
 #endif
 
 #ifdef SDL_USE_IME
@@ -1064,7 +1081,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                     if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
                         SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
                     }
-                    if(*text) {
+                    if (*text) {
                         SDL_SendKeyboardText(text);
                     }
                 } else {
