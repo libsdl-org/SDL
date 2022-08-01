@@ -522,14 +522,15 @@ if test x$enable_filesystem != xyes; then
 else
     SUMMARY_modules="${SUMMARY_modules} filesystem"
 fi
-AC_ARG_ENABLE(threads,
-[AS_HELP_STRING([--enable-threads], [Enable the threading subsystem [default=yes]])],
-              , enable_threads=yes)
-if test x$enable_threads != xyes; then
-    AC_DEFINE(SDL_THREADS_DISABLED, 1, [ ])
-else
-    SUMMARY_modules="${SUMMARY_modules} threads"
-fi
+# Many subsystems depend on threads, so leave them enabled by default
+#AC_ARG_ENABLE(threads,
+#[AS_HELP_STRING([--enable-threads], [Enable the threading subsystem [default=yes]])],
+#              , enable_threads=yes)
+#if test x$enable_threads != xyes; then
+#    AC_DEFINE(SDL_THREADS_DISABLED, 1, [ ])
+#else
+#    SUMMARY_modules="${SUMMARY_modules} threads"
+#fi
 AC_ARG_ENABLE(timers,
 [AS_HELP_STRING([--enable-timers], [Enable the timer subsystem [default=yes]])],
               , enable_timers=yes)
