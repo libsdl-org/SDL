@@ -348,6 +348,18 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
 }
 
 static int
+PS2_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    const SDL_Rect *viewport = &cmd->data.viewport.rect;
+
+    gsKit_set_display_offset(data->gsGlobal, viewport->x, viewport->y);
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->y, viewport->w, viewport->h));
+
+    return 0;
+}
+
+static int
 PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
@@ -580,8 +592,10 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 {
     while (cmd) {
         switch (cmd->command) {
-            case SDL_RENDERCMD_SETVIEWPORT: /* pending to be implemented */
+            case SDL_RENDERCMD_SETVIEWPORT: {
+                PS2_RenderSetViewPort(renderer, cmd);
                 break;
+            }
             case SDL_RENDERCMD_SETCLIPRECT: {
                 PS2_RenderSetClipRect(renderer, cmd);
                 break;
