@@ -347,6 +347,22 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
 
 }
 
+static int
+PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+
+    const SDL_Rect *rect = &cmd->data.cliprect.rect;
+
+    if(cmd->data.cliprect.enabled){
+        gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(rect->x, rect->y, rect->w, rect->h));
+    } else {
+        gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);
+    }
+
+    return 0;
+}
+
 
 static int
 PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
@@ -564,6 +580,12 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 {
     while (cmd) {
         switch (cmd->command) {
+            case SDL_RENDERCMD_SETVIEWPORT: /* pending to be implemented */
+                break;
+            case SDL_RENDERCMD_SETCLIPRECT: {
+                PS2_RenderSetClipRect(renderer, cmd);
+                break;
+            }
             case SDL_RENDERCMD_SETDRAWCOLOR: {
                 PS2_RenderSetDrawColor(renderer, cmd);
                 break;
@@ -590,7 +612,7 @@ PS2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 PS2_RenderGeometry(renderer, vertices, cmd);
                 break;
             }
-            default: 
+            case SDL_RENDERCMD_NO_OP: 
                 break;
         }
         cmd = cmd->next;
@@ -602,7 +624,7 @@ static int
 PS2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 format, void * pixels, int pitch)
 {
-    return 0;
+    return SDL_Unsupported();
 }
 
 static void
