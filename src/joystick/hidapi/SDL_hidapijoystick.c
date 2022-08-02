@@ -706,6 +706,7 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             SDL_free(device->serial);
             SDL_free(device->name);
             SDL_free(device->path);
+            SDL_free(device->children);
             SDL_free(device);
             return;
         }
@@ -761,6 +762,9 @@ HIDAPI_CreateCombinedJoyCons()
             if (combined && combined->driver) {
                 return SDL_TRUE;
             } else {
+                if (!combined) {
+                    SDL_free(children);
+                }
                 return SDL_FALSE;
             }
         }
