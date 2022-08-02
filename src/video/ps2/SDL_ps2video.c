@@ -95,7 +95,7 @@ static int PS2_VideoInit(_THIS)
 
 static void PS2_VideoQuit(_THIS)
 {
-    /*gsKit_deinit_global(gsGlobal);*/
+    
 }
 
 static SDL_VideoDevice *PS2_CreateDevice(int devindex)
