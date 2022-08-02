@@ -108,8 +108,9 @@ SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bool useguid)
             SDL_RemoveAudioDevice(iscapture, useguid ? ((void *) i->guid) : ((void *) i->str));
             SDL_free(i->str);
             SDL_free(i);
+        } else {
+            prev = i;
         }
-        prev = i;
     }
 }
 

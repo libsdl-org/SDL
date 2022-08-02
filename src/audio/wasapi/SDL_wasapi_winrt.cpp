@@ -396,8 +396,9 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
             SDL_RemoveAudioDevice(iscapture, i->str);
             SDL_free(i->str);
             SDL_free(i);
+        } else {
+            prev = i;
         }
-        prev = i;
     }
 }
 
