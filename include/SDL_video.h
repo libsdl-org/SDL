@@ -444,6 +444,15 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  * A failure of this function usually means that either no DPI information is
  * available or the `displayIndex` is out of range.
  *
+ * **WARNING**: This reports the DPI that the hardware reports, and it is not
+ * always reliable! It is almost always better to use SDL_GetWindowSize() to
+ * find the window size, which might be in logical points instead of pixels,
+ * and then SDL_GL_GetDrawableSize(), SDL_Vulkan_GetDrawableSize(),
+ * SDL_Metal_GetDrawableSize(), or SDL_GetRendererOutputSize(), and compare
+ * the two values to get an actual scaling value between the two. We will
+ * be rethinking how high-dpi details should be managed in SDL3 to make
+ * things more consistent, reliable, and clear.
+ *
  * \param displayIndex the index of the display from which DPI information
  *                     should be queried
  * \param ddpi a pointer filled in with the diagonal DPI of the display; may
