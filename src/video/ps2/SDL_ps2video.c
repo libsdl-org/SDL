@@ -44,8 +44,6 @@
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_ps2video.h"
-#include "SDL_ps2events_c.h"
-#include "SDL_ps2framebuffer_c.h"
 #include "SDL_hints.h"
 
 /* PS2 driver bootstrap functions */
@@ -81,13 +79,6 @@ static int PS2_VideoInit(_THIS)
     display.driverdata = NULL;
     SDL_AddDisplayMode(&display, &current_mode);
 
-    /* 16 bpp secondary mode */
-    current_mode.format = SDL_PIXELFORMAT_ABGR1555;
-    display.desktop_mode = current_mode;
-    display.current_mode = current_mode;
-    SDL_AddDisplayMode(&display, &current_mode);
-
-
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 
     return 1;
@@ -98,7 +89,12 @@ static void PS2_VideoQuit(_THIS)
     
 }
 
-static SDL_VideoDevice *PS2_CreateDevice(int devindex)
+static void PS2_PumpEvents(_THIS)
+{
+    /* do nothing. */
+}
+
+static SDL_VideoDevice *PS2_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
@@ -114,10 +110,6 @@ static SDL_VideoDevice *PS2_CreateDevice(int devindex)
     device->VideoQuit = PS2_VideoQuit;
     device->SetDisplayMode = PS2_SetDisplayMode;
     device->PumpEvents = PS2_PumpEvents;
-    device->CreateWindowFramebuffer = SDL_PS2_CreateWindowFramebuffer;
-    device->UpdateWindowFramebuffer = SDL_PS2_UpdateWindowFramebuffer;
-    device->DestroyWindowFramebuffer = SDL_PS2_DestroyWindowFramebuffer;
-
     device->free = PS2_DeleteDevice;
 
     return device;
