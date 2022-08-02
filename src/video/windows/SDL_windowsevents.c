@@ -621,29 +621,6 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
-static void WIN_CheckICMProfileChanged(SDL_Window* window)
-{
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *data = display ? (SDL_DisplayData*)display->driverdata : NULL;
-
-    if (data) {
-        HDC hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
-        if (hdc) {
-            static WCHAR currentIcmFileName[MAX_PATH];
-            WCHAR icmFileName[MAX_PATH];
-            DWORD fileNameSize = SDL_arraysize(icmFileName);
-            if (GetICMProfileW(hdc, &fileNameSize, icmFileName)) {
-                /* fileNameSize includes '\0' on return */
-                fileNameSize *= sizeof(icmFileName[0]);
-                if (SDL_memcmp(currentIcmFileName, icmFileName, fileNameSize) != 0) {
-                    SDL_memcpy(currentIcmFileName, icmFileName, fileNameSize);
-                    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
-                }
-            }
-            DeleteDC(hdc);
-        }
-    }
-}
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 LRESULT CALLBACK
@@ -716,7 +693,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                actually being the foreground window, but this appears to get called in all cases where
                the global foreground window changes to and from this window. */
             WIN_UpdateFocus(data->window, !!wParam);
-            WIN_CheckICMProfileChanged(data->window);
+            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }
         break;
 
@@ -1221,7 +1198,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Forces a WM_PAINT event */
             InvalidateRect(hwnd, NULL, FALSE);
 
-            WIN_CheckICMProfileChanged(data->window);
+            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }
         break;
 

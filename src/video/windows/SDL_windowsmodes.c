@@ -325,12 +325,11 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
         }
     }
 
-    displaydata = (SDL_DisplayData *) SDL_malloc(sizeof(*displaydata));
+    displaydata = (SDL_DisplayData *) SDL_calloc(1, sizeof(*displaydata));
     if (!displaydata) {
         return SDL_FALSE;
     }
-    SDL_memcpy(displaydata->DeviceName, info->szDevice,
-               sizeof(displaydata->DeviceName));
+    SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
     displaydata->MonitorHandle = hMonitor;
     displaydata->IsValid = SDL_TRUE;
 
