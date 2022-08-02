@@ -738,7 +738,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                     SDL_bool flush_viewport_cmd = SDL_TRUE;
 #endif
                     UpdateLogicalSize(renderer, flush_viewport_cmd);
-                } else {
+                } else if (event->window.event != SDL_WINDOWEVENT_MOVED) {
                     /* Window was resized, reset viewport */
                     int w, h;
 
