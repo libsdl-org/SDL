@@ -727,12 +727,8 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     
     gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
-	gsGlobal->Mode = gsKit_check_rom();
-	if (gsGlobal->Mode == GS_MODE_PAL){
-		gsGlobal->Height = 512;
-	} else {
-		gsGlobal->Height = 448;
-	}
+	gsGlobal->Mode = GS_MODE_NTSC;
+    gsGlobal->Height = 448;
 
 	gsGlobal->PSM  = GS_PSM_CT24;
 	gsGlobal->PSMZ = GS_PSMZ_16S;
