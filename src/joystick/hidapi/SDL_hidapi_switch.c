@@ -410,6 +410,11 @@ HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType t
         return SDL_FALSE;
     }
 
+    if (vendor_id == USB_VENDOR_NINTENDO) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+            return SDL_TRUE;
+        }
+    }
     return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO) ? SDL_TRUE : SDL_FALSE;
 }
 

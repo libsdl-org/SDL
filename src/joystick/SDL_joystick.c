@@ -1960,11 +1960,6 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
     } else if (vendor == USB_VENDOR_NVIDIA && product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER) {
         type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
 
-    } else if (vendor == USB_VENDOR_NINTENDO &&
-               (product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP ||
-                product == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_PAIR)) {
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
-
     } else {
         switch (GuessControllerType(vendor, product)) {
         case k_eControllerType_XBox360Controller:
@@ -1999,10 +1994,6 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
             } else {
                 type = SDL_CONTROLLER_TYPE_UNKNOWN;
             }
-            break;
-        case k_eControllerType_SwitchJoyConLeft:
-        case k_eControllerType_SwitchJoyConRight:
-            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
             break;
         default:
             break;

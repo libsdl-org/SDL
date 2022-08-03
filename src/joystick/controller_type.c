@@ -535,10 +535,10 @@ static const ControllerDescription_t arrControllers[] = {
     // * ZhiXu Gamepad Wireless
     // * Sunwaytek Wireless Motion Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x057e, 0x2009 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Switch Pro Controller
-    { MAKE_CONTROLLER_ID( 0x057e, 0x2017 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SNES Controller
-    { MAKE_CONTROLLER_ID( 0x057e, 0x2019 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online N64 Controller
-    { MAKE_CONTROLLER_ID( 0x057e, 0x201e ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SEGA Genesis Controller
-    
+    //{ MAKE_CONTROLLER_ID( 0x057e, 0x2017 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SNES Controller
+    //{ MAKE_CONTROLLER_ID( 0x057e, 0x2019 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online N64 Controller
+    //{ MAKE_CONTROLLER_ID( 0x057e, 0x201e ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SEGA Genesis Controller
+
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00c1 ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORIPAD for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Pokken Tournament DX Pro Pad
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00f6 ), k_eControllerType_SwitchProController, NULL },		// HORI Wireless Switch Pad
