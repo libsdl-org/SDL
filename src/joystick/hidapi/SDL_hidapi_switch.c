@@ -354,6 +354,44 @@ IsGameCubeFormFactor(int vendor_id, int product_id)
 }
 
 static SDL_bool
+HIDAPI_DriverNintendoClassic_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+{
+    if (vendor_id == USB_VENDOR_NINTENDO) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
+            if (SDL_strncmp(name, "NES Controller", 14) == 0) {
+                return SDL_TRUE;
+            }
+        }
+
+        if (product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+            return SDL_TRUE;
+        }
+
+        if (product_id == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER) {
+            return SDL_TRUE;
+        }
+
+        if (product_id == USB_PRODUCT_NINTENDO_SNES_CONTROLLER) {
+            return SDL_TRUE;
+        }
+    }
+
+    return SDL_FALSE;
+}
+
+static SDL_bool
+HIDAPI_DriverJoyCons_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+{
+    if (vendor_id == USB_VENDOR_NINTENDO) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT ||
+            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
 HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     /* The HORI Wireless Switch Pad enumerates as a HID device when connected via USB
@@ -366,9 +404,10 @@ HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType t
         return SDL_FALSE;
     }
 
-    /* We always support the Nintendo Online NES Controllers */
-    if (SDL_strncmp(name, "NES Controller", 14) == 0) {
-        return SDL_TRUE;
+    /* If it's handled by another driver, it's not handled here */
+    if (HIDAPI_DriverNintendoClassic_IsSupportedDevice(name, type, vendor_id, product_id, version, interface_number, interface_class, interface_subclass, interface_protocol) ||
+        HIDAPI_DriverJoyCons_IsSupportedDevice(name, type, vendor_id, product_id, version, interface_number, interface_class, interface_subclass, interface_protocol)) {
+        return SDL_FALSE;
     }
 
     return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO) ? SDL_TRUE : SDL_FALSE;
@@ -1942,6 +1981,50 @@ static void
 HIDAPI_DriverSwitch_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
+
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic =
+{
+    SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC,
+    SDL_TRUE,
+    SDL_TRUE,
+    HIDAPI_DriverNintendoClassic_IsSupportedDevice,
+    HIDAPI_DriverSwitch_GetDeviceName,
+    HIDAPI_DriverSwitch_InitDevice,
+    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
+    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    HIDAPI_DriverSwitch_UpdateDevice,
+    HIDAPI_DriverSwitch_OpenJoystick,
+    HIDAPI_DriverSwitch_RumbleJoystick,
+    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
+    HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    HIDAPI_DriverSwitch_SetJoystickLED,
+    HIDAPI_DriverSwitch_SendJoystickEffect,
+    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    HIDAPI_DriverSwitch_CloseJoystick,
+    HIDAPI_DriverSwitch_FreeDevice,
+};
+
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons =
+{
+    SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS,
+    SDL_TRUE,
+    SDL_TRUE,
+    HIDAPI_DriverJoyCons_IsSupportedDevice,
+    HIDAPI_DriverSwitch_GetDeviceName,
+    HIDAPI_DriverSwitch_InitDevice,
+    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
+    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    HIDAPI_DriverSwitch_UpdateDevice,
+    HIDAPI_DriverSwitch_OpenJoystick,
+    HIDAPI_DriverSwitch_RumbleJoystick,
+    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
+    HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    HIDAPI_DriverSwitch_SetJoystickLED,
+    HIDAPI_DriverSwitch_SendJoystickEffect,
+    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    HIDAPI_DriverSwitch_CloseJoystick,
+    HIDAPI_DriverSwitch_FreeDevice,
+};
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
 {

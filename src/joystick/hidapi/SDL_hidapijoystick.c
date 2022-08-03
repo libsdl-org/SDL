@@ -65,6 +65,8 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
     &SDL_HIDAPI_DriverSteam,
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
+    &SDL_HIDAPI_DriverNintendoClassic,
+    &SDL_HIDAPI_DriverJoyCons,
     &SDL_HIDAPI_DriverSwitch,
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
@@ -348,7 +350,7 @@ SDL_HIDAPIDriverHintChanged(void *userdata, const char *name, const char *oldVal
             SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
             driver->enabled = SDL_GetHintBoolean(driver->hint, enabled);
         }
-    } else if (SDL_strcmp(name, SDL_HINT_JOYSTICK_HIDAPI_SWITCH_COMBINE_JOY_CONS) == 0) {
+    } else if (SDL_strcmp(name, SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS) == 0) {
         SDL_HIDAPI_combine_joycons = enabled;
     } else {
         for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
@@ -419,7 +421,7 @@ HIDAPI_JoystickInit(void)
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
         SDL_AddHintCallback(driver->hint, SDL_HIDAPIDriverHintChanged, NULL);
     }
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_COMBINE_JOY_CONS,
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS,
                         SDL_HIDAPIDriverHintChanged, NULL);
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI,
                         SDL_HIDAPIDriverHintChanged, NULL);
@@ -1260,7 +1262,7 @@ HIDAPI_JoystickQuit(void)
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
         SDL_DelHintCallback(driver->hint, SDL_HIDAPIDriverHintChanged, NULL);
     }
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_COMBINE_JOY_CONS,
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS,
                         SDL_HIDAPIDriverHintChanged, NULL);
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI,
                         SDL_HIDAPIDriverHintChanged, NULL);
