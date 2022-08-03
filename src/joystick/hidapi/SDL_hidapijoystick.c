@@ -317,6 +317,17 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
         } else {
             enabled = device->driver->enabled;
         }
+        if (device->children) {
+            int i;
+
+            for (i = 0; i < device->num_children; ++i) {
+                SDL_HIDAPI_Device *child = device->children[i];
+                if (!child->driver || !child->driver->enabled) {
+                    enabled = SDL_FALSE;
+                    break;
+                }
+            }
+        }
         if (!enabled) {
             HIDAPI_CleanupDeviceDriver(device);
         }
@@ -813,7 +824,7 @@ check_removed:
         SDL_HIDAPI_Device *next = device->next;
 
         if (!device->seen ||
-            (device->driver && device->num_joysticks == 0 && !device->dev)) {
+            ((device->driver || device->children) && device->num_joysticks == 0 && !device->dev)) {
             if (device->parent) {
                 /* When a child device goes away, so does the parent */
                 int i;
