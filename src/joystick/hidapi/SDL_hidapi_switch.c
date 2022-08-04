@@ -110,6 +110,8 @@ typedef enum {
     k_eSwitchDeviceInfoControllerType_ProController  = 3,
     k_eSwitchDeviceInfoControllerType_NESLeft        = 9,
     k_eSwitchDeviceInfoControllerType_NESRight       = 10,
+    k_eSwitchDeviceInfoControllerType_SNES           = 11,
+    k_eSwitchDeviceInfoControllerType_SEGA_Genesis   = 13,
 } ESwitchDeviceInfoControllerType;
 
 #define k_unSwitchOutputPacketDataLength 49
