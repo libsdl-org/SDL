@@ -253,6 +253,8 @@ typedef struct {
     SDL_bool m_bUsingBluetooth;
     SDL_bool m_bIsGameCube;
     SDL_bool m_bUseButtonLabels;
+    SDL_bool m_bSyncWrite;
+    int      m_nMaxWriteAttempts;
     ESwitchDeviceInfoControllerType m_eControllerType;
     Uint8 m_rgucMACAddress[6];
     Uint8 m_nCommandNumber;
@@ -557,34 +559,19 @@ static SDL_bool WritePacket(SDL_DriverSwitch_Context *ctx, void *pBuf, Uint8 ucL
         pBuf = rgucBuf;
         ucLen = (Uint8)unWriteSize;
     }
-    return (WriteOutput(ctx, (Uint8 *)pBuf, ucLen) >= 0);
-}
-
-static SDL_bool
-WritePacketSync(SDL_DriverSwitch_Context *ctx, void *pBuf, Uint8 ucLen)
-{
-    Uint8 rgucBuf[k_unSwitchMaxOutputPacketLength];
-    const size_t unWriteSize = ctx->m_bUsingBluetooth ? k_unSwitchBluetoothPacketLength : k_unSwitchUSBPacketLength;
-
-    if (ucLen > k_unSwitchOutputPacketDataLength) {
-        return SDL_FALSE;
+    if (ctx->m_bSyncWrite) {
+        return (SDL_hid_write(ctx->device->dev, (Uint8 *)pBuf, ucLen) >= 0);
+    } else {
+        return (WriteOutput(ctx, (Uint8 *)pBuf, ucLen) >= 0);
     }
-
-    if (ucLen < unWriteSize) {
-        SDL_memcpy(rgucBuf, pBuf, ucLen);
-        SDL_memset(rgucBuf + ucLen, 0, unWriteSize - ucLen);
-        pBuf = rgucBuf;
-        ucLen = (Uint8) unWriteSize;
-    }
-    return (SDL_hid_write(ctx->device->dev, (Uint8 *)pBuf, ucLen) >= 0);
 }
 
 static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandInputPacket_t **ppReply)
 {
-    int nRetries = 5;
     SwitchSubcommandInputPacket_t *reply = NULL;
+    int nTries;
 
-    while (!reply && nRetries--) {
+    for (nTries = 1; !reply && nTries <= ctx->m_nMaxWriteAttempts; ++nTries) {
         SwitchSubcommandOutputPacket_t commandPacket;
         ConstructSubcommand(ctx, ucCommandID, pBuf, ucLen, &commandPacket);
 
@@ -601,34 +588,11 @@ static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
     return reply != NULL;
 }
 
-static SDL_bool
-WriteSubcommandSync(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandInputPacket_t **ppReply)
-{
-    int nRetries = 5;
-    SwitchSubcommandInputPacket_t *reply = NULL;
-
-    while (!reply && nRetries--) {
-        SwitchSubcommandOutputPacket_t commandPacket;
-        ConstructSubcommand(ctx, ucCommandID, pBuf, ucLen, &commandPacket);
-
-        if (!WritePacketSync(ctx, &commandPacket, sizeof(commandPacket))) {
-            continue;
-        }
-
-        reply = ReadSubcommandReply(ctx, ucCommandID);
-    }
-
-    if (ppReply) {
-        *ppReply = reply;
-    }
-    return reply != NULL;
-}
-
 static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, SDL_bool waitForReply)
 {
-    int nRetries = 10;
+    int nTries;
 
-    while (nRetries--) {
+    for (nTries = 1; nTries <= ctx->m_nMaxWriteAttempts; ++nTries) {
         SwitchProprietaryOutputPacket_t packet;
 
         if ((!pBuf && ucLen > 0) || ucLen > sizeof(packet.rgucProprietaryData)) {
@@ -647,39 +611,11 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
         }
 
         if (!waitForReply || ReadProprietaryReply(ctx, ucCommand)) {
+//SDL_Log("Succeeded%s after %d tries\n", ctx->m_bSyncWrite ? " (sync)" : "", nTries);
             return SDL_TRUE;
         }
     }
-    return SDL_FALSE;
-}
-
-static SDL_bool
-WriteProprietarySync(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, SDL_bool waitForReply)
-{
-    int nRetries = 10;
-
-    while (nRetries--) {
-        SwitchProprietaryOutputPacket_t packet;
-
-        if ((!pBuf && ucLen > 0) || ucLen > sizeof(packet.rgucProprietaryData)) {
-            return SDL_FALSE;
-        }
-
-        SDL_zero(packet);
-        packet.ucPacketType = k_eSwitchOutputReportIDs_Proprietary;
-        packet.ucProprietaryID = ucCommand;
-        if (pBuf) {
-            SDL_memcpy(packet.rgucProprietaryData, pBuf, ucLen);
-        }
-
-        if (!WritePacketSync(ctx, &packet, sizeof(packet))) {
-            continue;
-        }
-
-        if (!waitForReply || ReadProprietaryReply(ctx, ucCommand)) {
-            return SDL_TRUE;
-        }
-    }
+//SDL_Log("Failed%s after %d tries\n", ctx->m_bSyncWrite ? " (sync)" : "", nTries);
     return SDL_FALSE;
 }
 
@@ -1104,6 +1040,18 @@ static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
     return button;
 }
  
+static int
+GetMaxWriteAttempts(SDL_HIDAPI_Device *device)
+{
+    if (device->vendor_id == USB_VENDOR_NINTENDO &&
+        device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+        /* This device is a little slow and we know we're always on USB */
+        return 20;
+    } else {
+        return 5;
+    }
+}
+
 static ESwitchDeviceInfoControllerType
 ReadJoyConControllerType(SDL_HIDAPI_Device *device)
 {
@@ -1113,10 +1061,12 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof(*ctx));
     if (ctx) {
         ctx->device = device;
+        ctx->m_bSyncWrite = SDL_TRUE;
+        ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
 
         device->dev = SDL_hid_open_path(device->path, 0);
         if (device->dev) {
-            if (WriteProprietarySync(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+            if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
                 SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
 
                 eControllerType = (ESwitchDeviceInfoControllerType) status->ucDeviceType;
@@ -1130,7 +1080,7 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
                 SwitchSubcommandInputPacket_t *reply = NULL;
 
                 ctx->m_bUsingBluetooth = SDL_TRUE;
-                if (WriteSubcommandSync(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
+                if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
                     eControllerType = (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType;
                 }
             }
@@ -1242,6 +1192,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         SDL_SetError("Couldn't open %s", device->path);
         goto error;
     }
+    ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
 
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
