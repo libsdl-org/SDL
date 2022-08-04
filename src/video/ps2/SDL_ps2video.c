@@ -58,6 +58,14 @@ static void PS2_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
+static int PS2_CreateWindow(_THIS, SDL_Window * window)
+{
+    SDL_SetKeyboardFocus(window);
+
+    /* Window has been successfully created */
+    return 0;
+}
+
 static int PS2_VideoInit(_THIS)
 {
     SDL_VideoDisplay display;
@@ -109,6 +117,7 @@ static SDL_VideoDevice *PS2_CreateDevice(void)
     device->VideoInit = PS2_VideoInit;
     device->VideoQuit = PS2_VideoQuit;
     device->SetDisplayMode = PS2_SetDisplayMode;
+    device->CreateSDLWindow = PS2_CreateWindow;
     device->PumpEvents = PS2_PumpEvents;
     device->free = PS2_DeleteDevice;
 
