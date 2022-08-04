@@ -1116,8 +1116,6 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
 
         device->dev = SDL_hid_open_path(device->path, 0);
         if (device->dev) {
-            SwitchSubcommandInputPacket_t *reply = NULL;
-
             if (WriteProprietarySync(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
                 SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
 
