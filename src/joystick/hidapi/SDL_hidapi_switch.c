@@ -624,7 +624,7 @@ WriteSubcommandSync(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucComman
 
 static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, SDL_bool waitForReply)
 {
-    int nRetries = 5;
+    int nRetries = 10;
 
     while (nRetries--) {
         SwitchProprietaryOutputPacket_t packet;
