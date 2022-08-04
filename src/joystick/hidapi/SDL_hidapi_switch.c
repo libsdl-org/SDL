@@ -653,6 +653,36 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
     return SDL_FALSE;
 }
 
+static SDL_bool
+WriteProprietarySync(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, SDL_bool waitForReply)
+{
+    int nRetries = 10;
+
+    while (nRetries--) {
+        SwitchProprietaryOutputPacket_t packet;
+
+        if ((!pBuf && ucLen > 0) || ucLen > sizeof(packet.rgucProprietaryData)) {
+            return SDL_FALSE;
+        }
+
+        SDL_zero(packet);
+        packet.ucPacketType = k_eSwitchOutputReportIDs_Proprietary;
+        packet.ucProprietaryID = ucCommand;
+        if (pBuf) {
+            SDL_memcpy(packet.rgucProprietaryData, pBuf, ucLen);
+        }
+
+        if (!WritePacketSync(ctx, &packet, sizeof(packet))) {
+            continue;
+        }
+
+        if (!waitForReply || ReadProprietaryReply(ctx, ucCommand)) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static Uint8 EncodeRumbleHighAmplitude(Uint16 amplitude) {
     /* More information about these values can be found here:
      * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
@@ -766,6 +796,13 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
         size_t i;
 
         ctx->m_eControllerType = (ESwitchDeviceInfoControllerType)status->ucDeviceType;
+
+        /* The N64 controller reports as a Pro controller over USB */
+        if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController &&
+            ctx->device->product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+            ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_N64;
+        }
+
         for (i = 0; i < sizeof (ctx->m_rgucMACAddress); ++i)
             ctx->m_rgucMACAddress[i] = status->rgucMACAddress[ sizeof(ctx->m_rgucMACAddress) - i - 1 ];
 
@@ -1075,16 +1112,29 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
     /* Create enough of a context to read the controller type from the device */
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof(*ctx));
     if (ctx) {
-        SwitchSubcommandInputPacket_t *reply = NULL;
-
         ctx->device = device;
-        ctx->m_bUsingBluetooth = SDL_TRUE;
 
         device->dev = SDL_hid_open_path(device->path, 0);
         if (device->dev) {
-            if (WriteSubcommandSync(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
-                // Byte 2: Controller ID (1=LJC, 2=RJC, 3=Pro)
-                eControllerType = (ESwitchDeviceInfoControllerType) reply->deviceInfo.ucDeviceType;
+            SwitchSubcommandInputPacket_t *reply = NULL;
+
+            if (WriteProprietarySync(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+                SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+
+                eControllerType = (ESwitchDeviceInfoControllerType) status->ucDeviceType;
+
+                /* The N64 controller reports as a Pro controller over USB */
+                if (eControllerType == k_eSwitchDeviceInfoControllerType_ProController &&
+                    device->product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+                    eControllerType = k_eSwitchDeviceInfoControllerType_N64;
+                }
+            } else {
+                SwitchSubcommandInputPacket_t *reply = NULL;
+
+                ctx->m_bUsingBluetooth = SDL_TRUE;
+                if (WriteSubcommandSync(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
+                    eControllerType = (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType;
+                }
             }
             SDL_hid_close(device->dev);
             device->dev = NULL;
