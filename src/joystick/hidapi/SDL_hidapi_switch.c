@@ -328,11 +328,6 @@ static SDL_bool
 AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInfoControllerType eControllerType)
 {
     /* These controllers don't have a diamond button configuration, so always use labels */
-    if (vendor_id == 0x0f0d && product_id == 0x00dc) {
-        /* The HORIPAD S, which comes in two flavors: a GameCube style and an arcade pad style,
-         * neither of which should have their buttons remapped */
-        return SDL_TRUE;
-    }
     switch (eControllerType) {
     case k_eSwitchDeviceInfoControllerType_NESLeft:
     case k_eSwitchDeviceInfoControllerType_NESRight:
