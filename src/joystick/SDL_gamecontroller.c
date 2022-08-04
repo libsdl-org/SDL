@@ -594,7 +594,8 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SNES_CONTROLLER) {
         SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
     } else if (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product) ||
-               SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
+               SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product) ||
+               SDL_IsJoystickNintendoSwitchJoyConGrip(vendor, product)) {
         switch (guid.data[15]) {
         case 9:
         case 10:
@@ -619,6 +620,9 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         } else if (SDL_IsJoystickSteamController(vendor, product)) {
             /* Steam controllers have 2 back paddle buttons */
             SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
+            /* The Nintendo Switch Joy-Con combined controller has a share button */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
         } else {
             switch (SDL_GetJoystickGameControllerTypeFromGUID(guid, NULL)) {
             case SDL_CONTROLLER_TYPE_PS4:

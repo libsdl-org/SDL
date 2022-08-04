@@ -384,7 +384,8 @@ HIDAPI_DriverJoyCons_IsSupportedDevice(const char *name, SDL_GameControllerType 
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT ||
-            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
+            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT ||
+            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
             return SDL_TRUE;
         }
     }
@@ -410,11 +411,6 @@ HIDAPI_DriverSwitch_IsSupportedDevice(const char *name, SDL_GameControllerType t
         return SDL_FALSE;
     }
 
-    if (vendor_id == USB_VENDOR_NINTENDO) {
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
-            return SDL_TRUE;
-        }
-    }
     return (type == SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO) ? SDL_TRUE : SDL_FALSE;
 }
 
@@ -1101,9 +1097,20 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
 {
     /* The NES controllers need additional fix up, since we can't detect them without opening the device */
     if (device->vendor_id == USB_VENDOR_NINTENDO &&
-        device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
+        (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT ||
+         device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP)) {
         ESwitchDeviceInfoControllerType eControllerType = ReadJoyConControllerType(device);
         switch (eControllerType) {
+        case k_eSwitchDeviceInfoControllerType_JoyConLeft:
+            SDL_free(device->name);
+            device->name = SDL_strdup("Nintendo Switch Joy-Con (L)");
+            device->guid.data[15] = eControllerType;
+            break;
+        case k_eSwitchDeviceInfoControllerType_JoyConRight:
+            SDL_free(device->name);
+            device->name = SDL_strdup("Nintendo Switch Joy-Con (R)");
+            device->guid.data[15] = eControllerType;
+            break;
         case k_eSwitchDeviceInfoControllerType_NESLeft:
             SDL_free(device->name);
             device->name = SDL_strdup("NES Controller (L)");
@@ -1113,6 +1120,19 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
             SDL_free(device->name);
             device->name = SDL_strdup("NES Controller (R)");
             device->guid.data[15] = eControllerType;
+            break;
+        case k_eSwitchDeviceInfoControllerType_Unknown:
+            if (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+                if (device->interface_number == 1) {
+                    SDL_free(device->name);
+                    device->name = SDL_strdup("Nintendo Switch Joy-Con (L)");
+                    device->guid.data[15] = k_eSwitchDeviceInfoControllerType_JoyConLeft;
+                } else {
+                    SDL_free(device->name);
+                    device->name = SDL_strdup("Nintendo Switch Joy-Con (R)");
+                    device->guid.data[15] = k_eSwitchDeviceInfoControllerType_JoyConRight;
+                }
+            }
             break;
         default:
             break;
@@ -1930,7 +1950,8 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (!ctx->m_bInputOnly && !ctx->m_bUsingBluetooth) {
+    if (!ctx->m_bInputOnly && !ctx->m_bUsingBluetooth &&
+        ctx->device->product_id != USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
         const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
         if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
             /* Steam may have put the controller back into non-reporting mode */

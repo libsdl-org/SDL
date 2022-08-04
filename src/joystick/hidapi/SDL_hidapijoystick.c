@@ -746,10 +746,16 @@ HIDAPI_CreateCombinedJoyCons()
             continue;
         }
 
-        if (!joycons[0] && SDL_IsJoystickNintendoSwitchJoyConLeft(device->vendor_id, device->product_id)) {
+        if (!joycons[0] &&
+            (SDL_IsJoystickNintendoSwitchJoyConLeft(device->vendor_id, device->product_id) ||
+             (SDL_IsJoystickNintendoSwitchJoyConGrip(device->vendor_id, device->product_id) &&
+              SDL_strstr(device->name, "(L)") != NULL))) {
             joycons[0] = device;
         }
-        if (!joycons[1] && SDL_IsJoystickNintendoSwitchJoyConRight(device->vendor_id, device->product_id)) {
+        if (!joycons[1] &&
+            (SDL_IsJoystickNintendoSwitchJoyConRight(device->vendor_id, device->product_id) ||
+             (SDL_IsJoystickNintendoSwitchJoyConGrip(device->vendor_id, device->product_id) &&
+              SDL_strstr(device->name, "(R)") != NULL))) {
             joycons[1] = device;
         }
         if (joycons[0] && joycons[1]) {
