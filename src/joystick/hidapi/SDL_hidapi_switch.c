@@ -326,16 +326,15 @@ static SDL_bool
 AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInfoControllerType eControllerType)
 {
     /* These controllers don't have a diamond button configuration, so always use labels */
-    if (vendor_id == USB_VENDOR_NINTENDO &&
-        (product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER ||
-         product_id == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER)) {
+    switch (eControllerType) {
+    case k_eSwitchDeviceInfoControllerType_NESLeft:
+    case k_eSwitchDeviceInfoControllerType_NESRight:
+    case k_eSwitchDeviceInfoControllerType_N64:
+    case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
         return SDL_TRUE;
+    default:
+        return SDL_FALSE;
     }
-    if (eControllerType == k_eSwitchDeviceInfoControllerType_NESLeft ||
-        eControllerType == k_eSwitchDeviceInfoControllerType_NESRight) {
-        return SDL_TRUE;
-    }
-    return SDL_FALSE;
 }
 
 static SDL_bool
