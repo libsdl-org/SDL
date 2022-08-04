@@ -543,7 +543,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Pokken Tournament DX Pro Pad
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00f6 ), k_eControllerType_SwitchProController, NULL },		// HORI Wireless Switch Pad
 #ifdef _WIN32
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController, NULL },	 // HORI Fighting Commander - Is a Switch controller but shows up through XInput on Windows.
+	//{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController, NULL },	 // HORI Fighting Commander - Is a Switch controller but shows up through XInput on Windows.
 #else
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_SwitchProController, "HORI Fighting Commander" },
 #endif
