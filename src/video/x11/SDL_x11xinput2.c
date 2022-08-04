@@ -206,6 +206,7 @@ xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
     }
 }
 
+#if SDL_VIDEO_DRIVER_X11_XINPUT2
 static SDL_XInput2DeviceInfo *
 xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
 {
@@ -266,7 +267,7 @@ xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
 
     return devinfo;
 }
-
+#endif
 
 int
 X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
@@ -528,7 +529,6 @@ X11_Xinput2UngrabTouch(_THIS, SDL_Window *window)
     X11_XIUngrabTouchBegin(display, XIAllDevices, data->xwindow, 1, &mods);
 #endif
 }
-
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
 
