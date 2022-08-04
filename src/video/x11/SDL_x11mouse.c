@@ -452,6 +452,16 @@ X11_InitMouse(_THIS)
 void
 X11_QuitMouse(_THIS)
 {
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_XInput2DeviceInfo *i;
+    SDL_XInput2DeviceInfo *next;
+
+    for (i = data->mouse_device_info; i != NULL; i = next) {
+        next = i->next;
+        SDL_free(i);
+    }
+    data->mouse_device_info = NULL;
+
     X11_DestroyEmptyCursor();
 }
 

@@ -167,14 +167,109 @@ X11_InitXinput2(_THIS)
     }
 #endif
 
-    if (X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask,1) != Success) {
+    if (X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1) != Success) {
+        return;
+    }
+
+    SDL_zero(eventmask);
+    SDL_zeroa(mask);
+    eventmask.deviceid = XIAllDevices;
+    eventmask.mask_len = sizeof(mask);
+    eventmask.mask = mask;
+
+    XISetMask(mask, XI_HierarchyChanged);
+    if (X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1) != Success) {
         return;
     }
 #endif
 }
 
+/* xi2 device went away? take it out of the list. */
+static void
+xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
+{
+    SDL_XInput2DeviceInfo *prev = NULL;
+    SDL_XInput2DeviceInfo *devinfo;
+
+    for (devinfo = videodata->mouse_device_info; devinfo != NULL; devinfo = devinfo->next) {
+        if (devinfo->device_id == device_id) {
+            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
+            if (prev == NULL) {
+                videodata->mouse_device_info = devinfo->next;
+            } else {
+                prev->next = devinfo->next;
+            }
+            SDL_free(devinfo);
+            return;
+        }
+        prev = devinfo;
+    }
+}
+
+static SDL_XInput2DeviceInfo *
+xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
+{
+    /* cache device info as we see new devices. */
+    SDL_XInput2DeviceInfo *prev = NULL;
+    SDL_XInput2DeviceInfo *devinfo;
+    XIDeviceInfo *xidevinfo;
+    int axis = 0;
+    int i;
+
+    for (devinfo = videodata->mouse_device_info; devinfo != NULL; devinfo = devinfo->next) {
+        if (devinfo->device_id == device_id) {
+            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
+            if (prev != NULL) {  /* move this to the front of the list, assuming we'll get more from this one. */
+                prev->next = devinfo->next;
+                devinfo->next = videodata->mouse_device_info;
+                videodata->mouse_device_info = devinfo;
+            }
+            return devinfo;
+        }
+        prev = devinfo;
+    }
+
+    /* don't know about this device yet, query and cache it. */
+    devinfo = (SDL_XInput2DeviceInfo *) SDL_calloc(1, sizeof (SDL_XInput2DeviceInfo));
+    if (!devinfo) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    xidevinfo = X11_XIQueryDevice(videodata->display, device_id, &i);
+    if (!xidevinfo) {
+        SDL_free(devinfo);
+        return NULL;
+    }
+
+    devinfo->device_id = device_id;
+
+    /* !!! FIXME: this is sort of hacky because we only care about the first two axes we see, but any given
+       !!! FIXME:  axis could be relative or absolute, and they might not even be the X and Y axes!
+       !!! FIXME:  But we go on, for now. Maybe we need a more robust mouse API in SDL3... */
+    for (i = 0; i < xidevinfo->num_classes; i++) {
+        const XIValuatorClassInfo *v = (const XIValuatorClassInfo *) xidevinfo->classes[i];
+        if (v->type == XIValuatorClass) {
+            devinfo->relative[axis] = (v->mode == XIModeRelative) ? SDL_TRUE : SDL_FALSE;
+            devinfo->minval[axis] = v->min;
+            devinfo->maxval[axis] = v->max;
+            if (++axis >= 2) {
+                break;
+            }
+        }
+    }
+
+    X11_XIFreeDeviceInfo(xidevinfo);
+
+    devinfo->next = videodata->mouse_device_info;
+    videodata->mouse_device_info = devinfo;
+
+    return devinfo;
+}
+
+
 int
-X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
+X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
     if (cookie->extension != xinput2_opcode) {
@@ -184,28 +279,48 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
         case XI_RawMotion: {
             const XIRawEvent *rawev = (const XIRawEvent*)cookie->data;
             SDL_Mouse *mouse = SDL_GetMouse();
-            double relative_coords[2];
-            static Time prev_time = 0;
-            static double prev_rel_coords[2];
+            SDL_XInput2DeviceInfo *devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
+            double coords[2];
+            double processed_coords[2];
+            int i;
 
             videodata->global_mouse_changed = SDL_TRUE;
 
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!devinfo || !mouse->relative_mode || mouse->relative_mode_warp) {
                 return 0;
             }
 
             parse_valuators(rawev->raw_values,rawev->valuators.mask,
-                            rawev->valuators.mask_len,relative_coords,2);
+                            rawev->valuators.mask_len,coords,2);
 
-            if ((rawev->time == prev_time) && (relative_coords[0] == prev_rel_coords[0]) && (relative_coords[1] == prev_rel_coords[1])) {
+            if ((rawev->time == devinfo->prev_time) && (coords[0] == devinfo->prev_coords[0]) && (coords[1] == devinfo->prev_coords[1])) {
                 return 0;  /* duplicate event, drop it. */
             }
 
-            SDL_SendMouseMotion(mouse->focus,mouse->mouseID,1,(int)relative_coords[0],(int)relative_coords[1]);
-            prev_rel_coords[0] = relative_coords[0];
-            prev_rel_coords[1] = relative_coords[1];
-            prev_time = rawev->time;
+            for (i = 0; i < 2; i++) {
+                if (devinfo->relative[i]) {
+                    processed_coords[i] = coords[i];
+                } else {
+                    processed_coords[i] = devinfo->prev_coords[i] - coords[i];    /* convert absolute to relative */
+                }
+            }
+
+            SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int) processed_coords[0], (int) processed_coords[1]);
+            devinfo->prev_coords[0] = coords[0];
+            devinfo->prev_coords[1] = coords[1];
+            devinfo->prev_time = rawev->time;
             return 1;
+        }
+        break;
+
+        case XI_HierarchyChanged: {
+            const XIHierarchyEvent *hierev = (const XIHierarchyEvent *) cookie->data;
+            int i;
+            for (i = 0; i < hierev->num_info; i++) {
+                if (hierev->info[i].flags & XISlaveRemoved) {
+                    xinput2_remove_device_info(videodata, hierev->info[i].deviceid);
+                }
+            }
         }
         break;
 
