@@ -1095,36 +1095,55 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
     return eControllerType;
 }
 
+static void
+UpdateDeviceName(SDL_HIDAPI_Device *device, ESwitchDeviceInfoControllerType eControllerType)
+{
+    const char *name = NULL;
+
+    switch (eControllerType) {
+    case k_eSwitchDeviceInfoControllerType_JoyConLeft:
+        name = "Nintendo Switch Joy-Con (L)";
+        break;
+    case k_eSwitchDeviceInfoControllerType_JoyConRight:
+        name = "Nintendo Switch Joy-Con (R)";
+        break;
+    case k_eSwitchDeviceInfoControllerType_ProController:
+        name = "Nintendo Switch Pro Controller";
+        break;
+    case k_eSwitchDeviceInfoControllerType_NESLeft:
+        name = "Nintendo NES Controller (L)";
+        break;
+    case k_eSwitchDeviceInfoControllerType_NESRight:
+        name = "Nintendo NES Controller (R)";
+        break;
+    case k_eSwitchDeviceInfoControllerType_SNES:
+        name = "Nintendo SNES Controller";
+        break;
+    case k_eSwitchDeviceInfoControllerType_N64:
+        name = "Nintendo N64 Controller";
+        break;
+    case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
+        name = "Nintendo SEGA Genesis Controller";
+        break;
+    default:
+        break;
+    }
+
+    if (name && (!name || SDL_strcmp(name, device->name) != 0)) {
+        SDL_free(device->name);
+        device->name = SDL_strdup(name);
+    }
+}
+
 static SDL_bool
 HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
 {
     /* The NES controllers need additional fix up, since we can't detect them without opening the device */
-    if (device->vendor_id == USB_VENDOR_NINTENDO &&
-        (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT ||
-         device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP)) {
+    if (device->vendor_id == USB_VENDOR_NINTENDO) {
         ESwitchDeviceInfoControllerType eControllerType = ReadJoyConControllerType(device);
         switch (eControllerType) {
-        case k_eSwitchDeviceInfoControllerType_JoyConLeft:
-            SDL_free(device->name);
-            device->name = SDL_strdup("Nintendo Switch Joy-Con (L)");
-            device->guid.data[15] = eControllerType;
-            break;
-        case k_eSwitchDeviceInfoControllerType_JoyConRight:
-            SDL_free(device->name);
-            device->name = SDL_strdup("Nintendo Switch Joy-Con (R)");
-            device->guid.data[15] = eControllerType;
-            break;
-        case k_eSwitchDeviceInfoControllerType_NESLeft:
-            SDL_free(device->name);
-            device->name = SDL_strdup("NES Controller (L)");
-            device->guid.data[15] = eControllerType;
-            break;
-        case k_eSwitchDeviceInfoControllerType_NESRight:
-            SDL_free(device->name);
-            device->name = SDL_strdup("NES Controller (R)");
-            device->guid.data[15] = eControllerType;
-            break;
         case k_eSwitchDeviceInfoControllerType_Unknown:
+            /* This might be a Joy-Con that's missing from a charging grip slot */
             if (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
                 if (device->interface_number == 1) {
                     SDL_free(device->name);
@@ -1138,6 +1157,8 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
             }
             break;
         default:
+            UpdateDeviceName(device, eControllerType);
+            device->guid.data[15] = eControllerType;
             break;
         }
     }
@@ -1208,17 +1229,16 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
          * HandleFullControllerState is completely pointless. We need full state if we want battery
          * level and we only care about battery level over bluetooth anyway.
          */
-        if (device->vendor_id == USB_VENDOR_NINTENDO &&
-            (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO ||
-             device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP ||
-             device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT ||
-             device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT)) {
+        if (device->vendor_id == USB_VENDOR_NINTENDO) {
             input_mode = k_eSwitchInputReportIDs_FullControllerState;
         }
         
         if (input_mode == k_eSwitchInputReportIDs_FullControllerState &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight) {
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis) {
             /* Use the right sensor in the combined Joy-Con pair */
             if (!device->parent ||
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
