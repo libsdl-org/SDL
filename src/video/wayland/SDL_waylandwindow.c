@@ -1364,6 +1364,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
             unsetenv("XDG_ACTIVATION_TOKEN");
         }
     }
+
+    /*
+     * Roundtrip required to avoid a possible protocol violation when
+     * HideWindow was called immediately before ShowWindow.
+     */
+    WAYLAND_wl_display_roundtrip(c->display);
 }
 
 static void
@@ -1412,6 +1418,10 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
        wind->server_decoration = NULL;
     }
 
+    /* Be sure to detach after this is done, otherwise ShowWindow crashes! */
+    wl_surface_attach(wind->surface, NULL, 0, 0);
+    wl_surface_commit(wind->surface);
+
 #ifdef HAVE_LIBDECOR_H
     if (WINDOW_IS_LIBDECOR(data, window)) {
         if (wind->shell_surface.libdecor.frame) {
@@ -1433,9 +1443,11 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
         }
     }
 
-    /* Be sure to detach after this is done, otherwise ShowWindow crashes! */
-    wl_surface_attach(wind->surface, NULL, 0, 0);
-    wl_surface_commit(wind->surface);
+    /*
+     * Roundtrip required to avoid a possible protocol violation when
+     * ShowWindow is called immediately after HideWindow.
+     */
+    WAYLAND_wl_display_roundtrip(data->display);
 }
 
 static void
