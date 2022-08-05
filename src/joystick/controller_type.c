@@ -546,6 +546,7 @@ static const ControllerDescription_t arrControllers[] = {
 	// - NSW-108, classic GameCube controller
 	// - NSW-244, Fighting Commander arcade pad
 	// - NSW-278, Hori Pad Mini gamepad
+	// - NSW-326, HORIPAD FPS for Nintendo Switch
 	//
 	// The first two, at least, shouldn't have their buttons remapped, and since we
 	// can't tell which model we're actually using, we won't do any button remapping
