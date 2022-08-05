@@ -27,6 +27,16 @@
 #include "SDL_shaders_gles2.h"
 #include "SDL_stdinc.h"
 
+#define SHADER_PRELOGUE "\n\
+#if GL_FRAGMENT_PRECISION_HIGH\n\
+     precision mediump float;\n\
+#else\n\
+    #define mediump\n\
+    #define highp\n\
+    #define lowp\n\
+#endif\n\
+"
+
 /*************************************************************************************************
  * Vertex/fragment shader source                                                                 *
  *************************************************************************************************/
@@ -47,8 +57,7 @@ static const Uint8 GLES2_Vertex_Default[] = " \
     } \
 ";
 
-static const Uint8 GLES2_Fragment_Solid[] = " \
-    precision mediump float; \
+static const Uint8 GLES2_Fragment_Solid[] = SHADER_PRELOGUE" \
     varying vec4 v_color; \
     \
     void main() \
@@ -57,8 +66,7 @@ static const Uint8 GLES2_Fragment_Solid[] = " \
     } \
 ";
 
-static const Uint8 GLES2_Fragment_TextureABGR[] = " \
-    precision mediump float; \
+static const Uint8 GLES2_Fragment_TextureABGR[] = SHADER_PRELOGUE" \
     uniform sampler2D u_texture; \
     varying vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
@@ -75,8 +83,7 @@ static const Uint8 GLES2_Fragment_TextureABGR[] = " \
 ";
 
 /* ARGB to ABGR conversion */
-static const Uint8 GLES2_Fragment_TextureARGB[] = " \
-    precision mediump float; \
+static const Uint8 GLES2_Fragment_TextureARGB[] = SHADER_PRELOGUE" \
     uniform sampler2D u_texture; \
     varying vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
@@ -96,8 +103,7 @@ static const Uint8 GLES2_Fragment_TextureARGB[] = " \
 ";
 
 /* RGB to ABGR conversion */
-static const Uint8 GLES2_Fragment_TextureRGB[] = " \
-    precision mediump float; \
+static const Uint8 GLES2_Fragment_TextureRGB[] = SHADER_PRELOGUE" \
     uniform sampler2D u_texture; \
     varying vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
@@ -118,8 +124,7 @@ static const Uint8 GLES2_Fragment_TextureRGB[] = " \
 ";
 
 /* BGR to ABGR conversion */
-static const Uint8 GLES2_Fragment_TextureBGR[] = " \
-    precision mediump float; \
+static const Uint8 GLES2_Fragment_TextureBGR[] = SHADER_PRELOGUE" \
     uniform sampler2D u_texture; \
     varying vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
@@ -168,7 +173,7 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 
 
 #define YUV_SHADER_PROLOGUE                                     \
-"precision mediump float;\n"                                    \
+SHADER_PRELOGUE                                                 \
 "uniform sampler2D u_texture;\n"                                \
 "uniform sampler2D u_texture_u;\n"                              \
 "uniform sampler2D u_texture_v;\n"                              \
@@ -396,3 +401,4 @@ const Uint8 *GLES2_GetShader(GLES2_ShaderType type)
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
+
