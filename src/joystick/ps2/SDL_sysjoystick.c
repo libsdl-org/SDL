@@ -52,6 +52,7 @@ struct JoyInfo {
     uint8_t port;
     uint8_t slot;
     int8_t rumble_ready;
+    int8_t opened;
 } __attribute__ ((aligned (64)));
 
 static uint8_t enabled_pads = 0;
@@ -118,6 +119,7 @@ static int PS2_JoystickInit(void)
             if(padPortOpen(port, slot, (void *)info->padBuf) > 0) {
                 info->port = (uint8_t)port;
                 info->slot = (uint8_t)slot;
+                info->opened = 1;
                 enabled_pads++;
             }
         }
@@ -188,6 +190,16 @@ static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
 */
 static int PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
+    int index = joystick->instance_id;
+    struct JoyInfo *info = &joyInfo[index];
+
+    if (!info->opened) {
+        if (padPortOpen(info->port, info->slot, (void *)info->padBuf) > 0) {
+            info->opened = 1;
+        } else {
+            return -1;
+        }
+    }
     joystick->nbuttons = PS2_BUTTONS;
     joystick->naxes = PS2_TOTAL_AXIS;
     joystick->nhats = 0;
@@ -306,6 +318,7 @@ static void PS2_JoystickClose(SDL_Joystick *joystick)
     int index = joystick->instance_id;
     struct JoyInfo *info = &joyInfo[index];
     padPortClose(info->port, info->slot);
+    info->opened = 0;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
