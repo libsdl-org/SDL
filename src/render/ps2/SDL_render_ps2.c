@@ -158,6 +158,15 @@ PS2_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
+static void
+PS2_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
+
+    gsKit_TexManager_invalidate(data->gsGlobal, ps2_texture);
+}
+
 static int
 PS2_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * rect, const void *pixels, int pitch)
@@ -181,14 +190,9 @@ PS2_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         }
     }
 
-    gsKit_TexManager_invalidate(data->gsGlobal, ps2_texture);
+    PS2_UnlockTexture(renderer, texture);
 
     return 0;
-}
-
-static void
-PS2_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
-{
 }
 
 static void
