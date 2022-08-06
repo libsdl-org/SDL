@@ -322,6 +322,10 @@ void
 Wayland_data_source_destroy(SDL_WaylandDataSource *source)
 {
     if (source != NULL) {
+        SDL_WaylandDataDevice *data_device = (SDL_WaylandDataDevice *) source->data_device;
+        if (data_device && (data_device->selection_source == source)) {
+            data_device->selection_source = NULL;
+        }
         wl_data_source_destroy(source->source);
         mime_data_list_free(&source->mimes);
         SDL_free(source);
@@ -449,6 +453,7 @@ Wayland_data_device_set_selection(SDL_WaylandDataDevice *data_device,
                 Wayland_data_source_destroy(data_device->selection_source);
             }
             data_device->selection_source = source;
+            source->data_device = data_device;
         }
     }
 
