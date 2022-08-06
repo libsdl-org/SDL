@@ -41,10 +41,84 @@
 
 static BOOL UIKit_EventPumpEnabled = YES;
 
+
+@interface SDL_LifecycleObserver : NSObject
+@property (nonatomic, assign) BOOL isObservingNotifications;
+@end
+
+@implementation SDL_LifecycleObserver
+
+- (void)eventPumpChanged
+{
+    NSNotificationCenter *notificationCenter = NSNotificationCenter.defaultCenter;
+    if (UIKit_EventPumpEnabled && !self.isObservingNotifications) {
+        self.isObservingNotifications = YES;
+        [notificationCenter addObserver:self selector:@selector(applicationDidBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillResignActive) name:UIApplicationWillResignActiveNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationDidEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillTerminate) name:UIApplicationWillTerminateNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationDidReceiveMemoryWarning) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+#if !TARGET_OS_TV
+        [notificationCenter addObserver:self selector:@selector(applicationDidChangeStatusBarOrientation) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+#endif
+    } else if (!UIKit_EventPumpEnabled && self.isObservingNotifications) {
+        self.isObservingNotifications = NO;
+        [notificationCenter removeObserver:self];
+    }
+}
+
+- (void)applicationDidBecomeActive
+{
+    SDL_OnApplicationDidBecomeActive();
+}
+
+- (void)applicationWillResignActive
+{
+    SDL_OnApplicationWillResignActive();
+}
+
+- (void)applicationDidEnterBackground
+{
+    SDL_OnApplicationDidEnterBackground();
+}
+
+- (void)applicationWillEnterForeground
+{
+    SDL_OnApplicationWillEnterForeground();
+}
+
+- (void)applicationWillTerminate
+{
+    SDL_OnApplicationWillTerminate();
+}
+
+- (void)applicationDidReceiveMemoryWarning
+{
+    SDL_OnApplicationDidReceiveMemoryWarning();
+}
+
+#if !TARGET_OS_TV
+- (void)applicationDidChangeStatusBarOrientation
+{
+    SDL_OnApplicationDidChangeStatusBarOrientation();
+}
+#endif
+
+@end
+
+
 void
 SDL_iPhoneSetEventPump(SDL_bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
+
+    static SDL_LifecycleObserver *lifecycleObserver;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        lifecycleObserver = [SDL_LifecycleObserver new];
+    });
+    [lifecycleObserver eventPumpChanged];
 }
 
 void
