@@ -253,6 +253,8 @@ typedef struct {
     SDL_bool m_bUsingBluetooth;
     SDL_bool m_bIsGameCube;
     SDL_bool m_bUseButtonLabels;
+    SDL_bool m_bPlayerLights;
+    int      m_nPlayerIndex;
     SDL_bool m_bSyncWrite;
     int      m_nMaxWriteAttempts;
     ESwitchDeviceInfoControllerType m_eControllerType;
@@ -835,10 +837,26 @@ static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, con
     }
 }
 
-static SDL_bool SetSlotLED(SDL_DriverSwitch_Context *ctx, Uint8 slot)
+static void UpdateSlotLED(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 led_data = (1 << slot);
-    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
+    if (!ctx->m_bInputOnly) {
+        Uint8 slot = (ctx->m_nPlayerIndex % 4);
+        Uint8 led_data = ctx->m_bPlayerLights ? (1 << slot) : 0;
+
+        WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
+    }
+}
+
+static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)userdata;
+    SDL_bool bPlayerLights = SDL_GetStringBoolean(hint, SDL_TRUE);
+
+    if (bPlayerLights != ctx->m_bPlayerLights) {
+        ctx->m_bPlayerLights = bPlayerLights;
+
+        UpdateSlotLED(ctx);
+    }
 }
 
 static SDL_bool SetIMUEnabled(SDL_DriverSwitch_Context* ctx, SDL_bool enabled)
@@ -1171,6 +1189,15 @@ HIDAPI_DriverSwitch_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystick
 static void
 HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+
+    if (!ctx) {
+        return;
+    }
+
+    ctx->m_nPlayerIndex = player_index;
+
+    UpdateSlotLED(ctx);
 }
 
 static SDL_bool
@@ -1281,7 +1308,6 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
             SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
                                 SDL_HomeLEDHintChanged, ctx);
         }
-        SetSlotLED(ctx, (joystick->instance_id % 4));
 
         /* Set the serial number */
         {
@@ -1312,6 +1338,14 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                             SDL_GameControllerButtonReportingHintChanged, ctx);
     }
+
+    /* Initialize player index (needed for setting LEDs) */
+    ctx->m_nPlayerIndex = SDL_JoystickGetPlayerIndex(joystick);
+    ctx->m_bPlayerLights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED, SDL_TRUE);
+    UpdateSlotLED(ctx);
+
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
+                        SDL_PlayerLEDHintChanged, ctx);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 16;
@@ -2012,6 +2046,9 @@ HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
                         SDL_HomeLEDHintChanged, ctx);
+
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
+                        SDL_PlayerLEDHintChanged, ctx);
 
     SDL_LockMutex(device->dev_lock);
     {
