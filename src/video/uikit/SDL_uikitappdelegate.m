@@ -434,43 +434,6 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
-#if !TARGET_OS_TV
-- (void)application:(UIApplication *)application didChangeStatusBarOrientation:(UIInterfaceOrientation)oldStatusBarOrientation
-{
-    SDL_OnApplicationDidChangeStatusBarOrientation();
-}
-#endif
-
-- (void)applicationWillTerminate:(UIApplication *)application
-{
-    SDL_OnApplicationWillTerminate();
-}
-
-- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
-{
-    SDL_OnApplicationDidReceiveMemoryWarning();
-}
-
-- (void)applicationWillResignActive:(UIApplication*)application
-{
-    SDL_OnApplicationWillResignActive();
-}
-
-- (void)applicationDidEnterBackground:(UIApplication*)application
-{
-    SDL_OnApplicationDidEnterBackground();
-}
-
-- (void)applicationWillEnterForeground:(UIApplication*)application
-{
-    SDL_OnApplicationWillEnterForeground();
-}
-
-- (void)applicationDidBecomeActive:(UIApplication*)application
-{
-    SDL_OnApplicationDidBecomeActive();
-}
-
 - (void)sendDropFileForURL:(NSURL *)url
 {
     NSURL *fileURL = url.filePathURL;
