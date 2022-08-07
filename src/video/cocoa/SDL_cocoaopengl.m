@@ -43,6 +43,18 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+static SDL_bool SDL_opengl_sync_dispatch = SDL_FALSE;
+
+static void SDLCALL
+SDL_OpenGLSyncDispatchChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    if (hint && *hint == '1') {
+        SDL_opengl_sync_dispatch = SDL_TRUE;
+    } else {
+        SDL_opengl_sync_dispatch = SDL_FALSE;
+    }
+}
+
 @implementation SDLOpenGLContext : NSOpenGLContext
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format
@@ -53,6 +65,8 @@
         SDL_AtomicSet(&self->dirty, 0);
         self->window = NULL;
     }
+
+    SDL_AddHintCallback(SDL_HINT_MAC_OPENGL_SYNC_DISPATCH, SDL_OpenGLSyncDispatchChanged, NULL);
     return self;
 }
 
@@ -136,7 +150,7 @@
     if ([NSThread isMainThread]) {
         [super update];
     } else {
-        if (SDL_GetHintBoolean(SDL_HINT_MAC_OPENGL_SYNC_DISPATCH, SDL_FALSE)) {
+        if (SDL_opengl_sync_dispatch) {
             dispatch_sync(dispatch_get_main_queue(), ^{ [super update]; });
         } else {
             dispatch_async(dispatch_get_main_queue(), ^{ [super update]; });
