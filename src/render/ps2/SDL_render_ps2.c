@@ -174,8 +174,6 @@ PS2_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     const Uint8 *src;
     Uint8 *dst;
     int row, length,dpitch;
-    GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
-    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
     src = pixels;
 
     PS2_LockTexture(renderer, texture, rect, (void **)&dst, &dpitch);
@@ -198,6 +196,17 @@ PS2_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 static void
 PS2_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 {
+    GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
+    /*
+     set texture filtering according to scaleMode
+     suported hint values are nearest (0, default) or linear (1)
+     gskit scale mode is either GS_FILTER_NEAREST (good for tile-map)
+     or GS_FILTER_LINEAR (good for scaling)
+     */
+    uint32_t gsKitScaleMode = (scaleMode == SDL_ScaleModeNearest
+                        ? GS_FILTER_NEAREST
+                        : GS_FILTER_LINEAR);
+    ps2_texture->Filter = gsKitScaleMode;
 }
 
 static int
@@ -577,11 +586,11 @@ PS2_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand * cmd
     const uint8_t ColorB = cmd->data.draw.b >> 1;
     const uint8_t ColorA = cmd->data.draw.a >> 1;
 
+    const clear_vertex *verts = (clear_vertex *) (vertices + cmd->data.draw.first);
+
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     color = GS_SETREG_RGBAQ(ColorR, ColorG, ColorB, ColorA, 0x00);
-
-    const clear_vertex *verts = (clear_vertex *) (vertices + cmd->data.draw.first);
 
     for (i = 0; i < count; i++, verts++) {
         gsKit_prim_point(data->gsGlobal, verts->x, verts->y, 0, color);
