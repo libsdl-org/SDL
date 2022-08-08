@@ -216,7 +216,7 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
 static void SDLCALL
 SDL_JoystickAllowBackgroundEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    if (hint && *hint == '1') {
+    if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_joystick_allows_background_events = SDL_TRUE;
     } else {
         SDL_joystick_allows_background_events = SDL_FALSE;
