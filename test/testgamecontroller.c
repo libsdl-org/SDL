@@ -814,6 +814,11 @@ main(int argc, char *argv[])
             case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
                 description = "Google Stadia Controller";
                 break;
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+                description = "Nintendo Switch Joy-Con";
+                break;
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 description = "Nintendo Switch Pro Controller";
                 break;

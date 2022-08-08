@@ -1833,11 +1833,6 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     char *name;
     size_t i, len;
 
-    /* Use the given name for the Nintendo Online NES Controllers */
-    if (product_name && SDL_strncmp(product_name, "NES Controller", 14) == 0) {
-        return SDL_strdup(product_name);
-    }
-
     custom_name = GuessControllerName(vendor, product);
     if (custom_name) {
         return SDL_strdup(custom_name);
@@ -1976,6 +1971,20 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
 
     } else if (vendor == USB_VENDOR_GOOGLE && product == USB_PRODUCT_GOOGLE_STADIA_CONTROLLER) {
         type = SDL_CONTROLLER_TYPE_GOOGLE_STADIA;
+
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
+        type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
+        if (name && SDL_strstr(name, "NES Controller") != NULL) {
+            /* We don't have a type for the Nintendo Online NES Controller */
+            type = SDL_CONTROLLER_TYPE_UNKNOWN;
+        } else {
+            type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
+        }
+
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
+        type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
     } else if (vendor == USB_VENDOR_NVIDIA && product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER) {
         type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
@@ -2165,13 +2174,13 @@ SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16 product_id)
 SDL_bool
 SDL_IsJoystickNintendoSwitchJoyConGrip(Uint16 vendor_id, Uint16 product_id)
 {
-    return (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP);
+    return (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP);
 }
 
 SDL_bool
 SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 product_id)
 {
-    return (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_PAIR);
+    return (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR);
 }
 
 SDL_bool

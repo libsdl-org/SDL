@@ -363,7 +363,7 @@ static SDL_bool
 HIDAPI_DriverNintendoClassic_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
             if (SDL_strncmp(name, "NES Controller", 14) == 0) {
                 return SDL_TRUE;
             }
@@ -389,9 +389,9 @@ static SDL_bool
 HIDAPI_DriverJoyCons_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT ||
-            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT ||
-            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT ||
+            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT ||
+            product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
             return SDL_TRUE;
         }
     }
@@ -425,18 +425,25 @@ HIDAPI_DriverSwitch_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 pro
 {
     /* Give a user friendly name for this controller */
     if (vendor_id == USB_VENDOR_NINTENDO) {
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
-            return "Nintendo Switch Joy-Con Grip";
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
+            /* We don't know if this is left or right, just leave it alone */
+            return NULL;
         }
 
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
             return "Nintendo Switch Joy-Con (L)";
         }
 
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT) {
-            /* Use the given name for the Nintendo Online NES Controllers */
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
             if (SDL_strncmp(name, "NES Controller", 14) == 0) {
-                return name;
+                if (SDL_strstr(name, "(L)") != 0) {
+                    return "Nintendo NES Controller (L)";
+                } else if (SDL_strstr(name, "(R)") != 0) {
+                    return "Nintendo NES Controller (R)";
+                } else {
+                    /* Not sure what this is, just leave it alone */
+                    return NULL;
+                }
             }
             return "Nintendo Switch Joy-Con (R)";
         }
@@ -1062,7 +1069,7 @@ static int
 GetMaxWriteAttempts(SDL_HIDAPI_Device *device)
 {
     if (device->vendor_id == USB_VENDOR_NINTENDO &&
-        device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+        device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
         /* This device is a little slow and we know we're always on USB */
         return 20;
     } else {
@@ -1159,7 +1166,7 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
         switch (eControllerType) {
         case k_eSwitchDeviceInfoControllerType_Unknown:
             /* This might be a Joy-Con that's missing from a charging grip slot */
-            if (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+            if (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
                 if (device->interface_number == 1) {
                     SDL_free(device->name);
                     device->name = SDL_strdup("Nintendo Switch Joy-Con (L)");
@@ -2006,7 +2013,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (!ctx->m_bInputOnly && !ctx->m_bUsingBluetooth &&
-        ctx->device->product_id != USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP) {
+        ctx->device->product_id != USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
         const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
         if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
             /* Steam may have put the controller back into non-reporting mode */
