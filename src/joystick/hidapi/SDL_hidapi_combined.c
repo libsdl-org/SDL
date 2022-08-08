@@ -68,7 +68,7 @@ HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
         SDL_HIDAPI_Device *child = device->children[i];
         if (!child->driver->OpenJoystick(child, joystick)) {
             while (i-- > 0) {
-                SDL_HIDAPI_Device *child = device->children[i];
+                child = device->children[i];
                 child->driver->CloseJoystick(child, joystick);
             }
             return SDL_FALSE;
