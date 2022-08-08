@@ -34,6 +34,7 @@
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_opengl.h"
+#include "../../SDL_hints_c.h"
 
 #define DEFAULT_OPENGL  "/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib"
 
@@ -48,11 +49,7 @@ static SDL_bool SDL_opengl_sync_dispatch = SDL_FALSE;
 static void SDLCALL
 SDL_OpenGLSyncDispatchChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    if (hint && *hint == '1') {
-        SDL_opengl_sync_dispatch = SDL_TRUE;
-    } else {
-        SDL_opengl_sync_dispatch = SDL_FALSE;
-    }
+    SDL_opengl_sync_dispatch = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
 @implementation SDLOpenGLContext : NSOpenGLContext
