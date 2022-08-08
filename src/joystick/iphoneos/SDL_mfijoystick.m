@@ -394,7 +394,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             subtype = 0;
         } else if (is_switch_joycon_pair) {
             vendor = USB_VENDOR_NINTENDO;
-            product = USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
             subtype = 0;
         } else {
             vendor = USB_VENDOR_APPLE;
@@ -422,11 +422,11 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
         if (is_switch_joyconL) {
             vendor = USB_VENDOR_NINTENDO;
-            product = USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT;
             subtype = 0;
         } else if (is_switch_joyconR) {
             vendor = USB_VENDOR_NINTENDO;
-            product = USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT;
             subtype = 0;
         } else {
             vendor = USB_VENDOR_APPLE;
