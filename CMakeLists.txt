@@ -600,13 +600,17 @@ if(USE_GCC OR USE_CLANG)
     list(APPEND EXTRA_CFLAGS "-fno-strict-aliasing")
   endif()
 
-  check_c_compiler_flag(-Wdeclaration-after-statement HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
-  if(HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
-    check_c_compiler_flag(-Werror=declaration-after-statement HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
-    if(HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
-      list(APPEND EXTRA_CFLAGS "-Werror=declaration-after-statement")
+  # Android needs to bring in external files that don't adhere to the declaration-after-statement
+  # warning, so skip this warning on Android.
+  if(NOT ANDROID)
+    check_c_compiler_flag(-Wdeclaration-after-statement HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
+    if(HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
+      check_c_compiler_flag(-Werror=declaration-after-statement HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
+      if(HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
+        list(APPEND EXTRA_CFLAGS "-Werror=declaration-after-statement")
+      endif()
+      list(APPEND EXTRA_CFLAGS "-Wdeclaration-after-statement")
     endif()
-    list(APPEND EXTRA_CFLAGS "-Wdeclaration-after-statement")
   endif()
 
   if(DEPENDENCY_TRACKING)
