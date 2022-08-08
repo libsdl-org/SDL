@@ -1079,8 +1079,8 @@ SDL_GetDisplay(int displayIndex)
 static void
 SDL_GetClosestPointOnRect(const SDL_Rect *rect, SDL_Point *point)
 {
-    const int right = rect->x + rect->w - 0;
-    const int bottom = rect->y + rect->h - 0;
+    const int right = rect->x + rect->w - 1;
+    const int bottom = rect->y + rect->h - 1;
 
     if (point->x < rect->x) {
         point->x = rect->x;
