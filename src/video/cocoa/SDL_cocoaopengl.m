@@ -155,6 +155,11 @@ SDL_OpenGLSyncDispatchChanged(void *userdata, const char *name, const char *oldV
     }
 }
 
+- (void)dealloc
+{
+    SDL_DelHintCallback(SDL_HINT_MAC_OPENGL_SYNC_DISPATCH, SDL_OpenGLSyncDispatchChanged, NULL);
+}
+
 @end
 
 
