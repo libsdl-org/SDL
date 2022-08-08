@@ -104,6 +104,10 @@
 #elif defined(__PS2__)
 #define SDL_MAIN_AVAILABLE
 
+#define SDL_PS2_SKIP_IOP_RESET() \
+   void reset_IOP(); \
+   void reset_IOP() {}
+
 #endif
 #endif /* SDL_MAIN_HANDLED */
 

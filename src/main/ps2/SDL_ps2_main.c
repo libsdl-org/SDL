@@ -19,23 +19,25 @@
 #include <sbv_patches.h>
 #include <ps2_fileXio_driver.h>
 #include <ps2_memcard_driver.h>
+#include <ps2_usb_driver.h>
 
 #ifdef main
     #undef main
 #endif
 
+__attribute__((weak))
+void reset_IOP() {
+    SifInitRpc(0);
+    while(!SifIopReset(NULL, 0)){};
+    while(!SifIopSync()){};
+}
+
 static void prepare_IOP()
 {
+    reset_IOP();
     SifInitRpc(0);
-    // #if !defined(DEBUG) || defined(BUILD_FOR_PCSX2)
-    /* Comment this line if you don't wanna debug the output */
-    while(!SifIopReset(NULL, 0)){};
-    // #endif
-
-    while(!SifIopSync()){};
-   SifInitRpc(0);
-   sbv_patch_enable_lmb();
-   sbv_patch_disable_prefix_check();
+    sbv_patch_enable_lmb();
+    sbv_patch_disable_prefix_check();
 }
 
 static void init_drivers() {
@@ -52,18 +54,17 @@ static void deinit_drivers() {
 
 static void waitUntilDeviceIsReady(char *path)
 {
-   struct stat buffer;
-   int ret = -1;
-   int retries = 50;
+    struct stat buffer;
+    int ret = -1;
+    int retries = 50;
 
-   while(ret != 0 && retries > 0)
-   {
-      ret = stat(path, &buffer);
-      /* Wait untill the device is ready */
-      nopdelay();
+    while(ret != 0 && retries > 0) {
+        ret = stat(path, &buffer);
+        /* Wait untill the device is ready */
+        nopdelay();
 
-      retries--;
-   }
+        retries--;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -84,6 +85,6 @@ int main(int argc, char *argv[])
     return res;
 }
 
-#endif /* _EE */
+#endif /* _PS2 */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -16,6 +16,22 @@ cmake --build build
 cmake --install build
 ```
 
+## Notes
+If you trying to debug a SDL app through [ps2client](https://github.com/ps2dev/ps2client) you need to avoid the IOP reset, otherwise you will lose the conection with your computer.
+So to avoid the reset of the IOP CPU, you need to call to the macro `SDL_PS2_SKIP_IOP_RESET();`.
+It could be something similar as:
+```c
+.....
+
+SDL_PS2_SKIP_IOP_RESET();
+
+int main(int argc, char *argv[])
+{
+.....
+```
+For a release binary is recommendable to reset the IOP always. 
+
+Remember to do a clean compilation everytime you enable or disable the `SDL_PS2_SKIP_IOP_RESET` otherwise the change won't be reflected.
 
 ## Getting PS2 Dev
 [Installing PS2 Dev](https://github.com/ps2dev/ps2dev)
@@ -28,7 +44,4 @@ cmake --install build
 ## To Do
 - PS2 Screen Keyboard
 - Dialogs
-- Audio
-- Video
-- Controllers
 - Others
