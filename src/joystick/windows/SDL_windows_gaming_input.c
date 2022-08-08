@@ -32,6 +32,7 @@
 #define COBJMACROS
 #include "windows.gaming.input.h"
 #include <cfgmgr32.h>
+#include <objidlbase.h>
 #include <roapi.h>
 
 
@@ -213,11 +214,15 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
     }
 
     *ppvObject = NULL;
-    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IEventHandler_RawGameController)) {
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IAgileObject) || WIN_IsEqualIID(riid, &IID_IEventHandler_RawGameController)) {
         *ppvObject = This;
         return S_OK;
+    } else if (WIN_IsEqualIID(riid, &IID_IMarshal)) {
+        // This seems complicated. Let's hope it doesn't happen.
+        return E_OUTOFMEMORY;
+    } else {
+        return E_NOINTERFACE;
     }
-    return E_NOINTERFACE;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This)
