@@ -601,8 +601,8 @@ extern DECLSPEC SDL_DisplayMode * SDLCALL SDL_GetClosestDisplayMode(int displayI
  * Get the index of the display containing a point
  *
  * \param point the point to query
- * \returns the index of the display containing the point or a negative 
- *          error code on failure; call SDL_GetError() for more information.
+ * \returns the index of the display containing the point or a negative error
+ *          code on failure; call SDL_GetError() for more information.
  *
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetNumVideoDisplays
