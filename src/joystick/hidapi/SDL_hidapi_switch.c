@@ -1984,8 +1984,9 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
     }
 
     if (ctx->m_bReportSensors) {
-        SDL_bool bHasSensorData = (packet->imuState[0].sAccelX != 0 ||
-                                   packet->imuState[0].sGyroX != 0);
+        SDL_bool bHasSensorData = (packet->imuState[0].sAccelZ != 0 ||
+                                   packet->imuState[0].sAccelY != 0 ||
+                                   packet->imuState[0].sAccelX != 0);
         if (bHasSensorData) {
             ctx->m_bHasSensorData = SDL_TRUE;
 
@@ -1999,9 +2000,17 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
 
         } else if (ctx->m_bHasSensorData) {
             /* Uh oh, someone turned off the IMU? */
-            SDL_UnlockMutex(ctx->device->dev_lock);
+            SDL_HIDAPI_Device *device = ctx->device;
+
+            if (device->updating) {
+                SDL_UnlockMutex(device->dev_lock);
+            }
+
             SetIMUEnabled(ctx, SDL_TRUE);
-            SDL_LockMutex(ctx->device->dev_lock);
+
+            if (device->updating) {
+                SDL_LockMutex(device->dev_lock);
+            }
 
         } else {
             /* We have never gotten IMU data, probably not supported on this device */
