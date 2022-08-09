@@ -2034,16 +2034,15 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
             switch (ctx->m_rgucReadBuffer[0]) {
             case k_eSwitchInputReportIDs_SimpleControllerState:
                 HandleSimpleControllerState(joystick, ctx, (SwitchSimpleStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
-                ctx->m_unLastInput = now;
                 break;
             case k_eSwitchInputReportIDs_FullControllerState:
                 HandleFullControllerState(joystick, ctx, (SwitchStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
-                ctx->m_unLastInput = now;
                 break;
             default:
                 break;
             }
         }
+        ctx->m_unLastInput = now;
     }
 
     if (!ctx->m_bInputOnly && !ctx->m_bUsingBluetooth &&
@@ -2052,6 +2051,12 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
             /* Steam may have put the controller back into non-reporting mode */
             WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
+        }
+    } else if (ctx->m_bUsingBluetooth) {
+        const Uint32 INPUT_WAIT_TIMEOUT_MS = 1000;
+        if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+            /* Bluetooth may have disconnected, try reopening the controller */
+            size = -1;
         }
     }
 
