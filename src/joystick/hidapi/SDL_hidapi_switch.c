@@ -848,9 +848,11 @@ static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, con
 static void UpdateSlotLED(SDL_DriverSwitch_Context *ctx)
 {
     if (!ctx->m_bInputOnly) {
-        Uint8 slot = (ctx->m_nPlayerIndex % 4);
-        Uint8 led_data = ctx->m_bPlayerLights ? (1 << slot) : 0;
-
+        Uint8 led_data = 0;
+        
+        if (ctx->m_bPlayerLights && ctx->m_nPlayerIndex >= 0) {
+            led_data = (1 << (ctx->m_nPlayerIndex % 4));
+        }
         WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
     }
 }
