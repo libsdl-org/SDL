@@ -14,7 +14,7 @@ macro(set_and_check _var _file)
     endif()
 endmacro()
 
-get_filename_component(prefix "${CMAKE_CURRENT_LIST_DIR}@cmake_prefix_relpath@" ABSOLUTE)
+get_filename_component(prefix "${CMAKE_CURRENT_LIST_DIR}/@cmake_prefix_relpath@" ABSOLUTE)
 
 set(exec_prefix "@exec_prefix@")
 set(bindir "@bindir@")
