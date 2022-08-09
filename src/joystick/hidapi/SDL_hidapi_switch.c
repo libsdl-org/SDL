@@ -2057,7 +2057,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
             WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
         }
     } else if (ctx->m_bUsingBluetooth) {
-        const Uint32 INPUT_WAIT_TIMEOUT_MS = 1000;
+        const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
         if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
             /* Bluetooth may have disconnected, try reopening the controller */
             size = -1;
