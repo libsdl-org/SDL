@@ -45,6 +45,13 @@
 #endif
 #endif /* EGL_KHR_create_context */
 
+#ifndef EGL_EXT_pixel_format_float
+#define EGL_EXT_pixel_format_float
+#define EGL_COLOR_COMPONENT_TYPE_EXT 0x3339
+#define EGL_COLOR_COMPONENT_TYPE_FIXED_EXT 0x333A
+#define EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT 0x333B
+#endif
+
 #ifndef EGL_EXT_present_opaque
 #define EGL_EXT_present_opaque 1
 #define EGL_PRESENT_OPAQUE_EXT            0x31DF
@@ -760,6 +767,11 @@ SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
     if (_this->gl_config.multisamplesamples) {
         attribs[i++] = EGL_SAMPLES;
         attribs[i++] = _this->gl_config.multisamplesamples;
+    }
+
+    if (_this->gl_config.floatbuffers) {
+        attribs[i++] = EGL_COLOR_COMPONENT_TYPE_EXT;
+        attribs[i++] = EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT;
     }
 
     if (_this->egl_data->is_offscreen) {
