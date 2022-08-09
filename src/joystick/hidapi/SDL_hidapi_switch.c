@@ -249,7 +249,6 @@ typedef struct
 typedef struct {
     SDL_HIDAPI_Device *device;
     SDL_bool m_bInputOnly;
-    SDL_bool m_bHasHomeLED;
     SDL_bool m_bUsingBluetooth;
     SDL_bool m_bIsGameCube;
     SDL_bool m_bUseButtonLabels;
@@ -304,8 +303,11 @@ typedef struct {
 
 
 static SDL_bool
-HasHomeLED(int vendor_id, int product_id)
+HasHomeLED(SDL_DriverSwitch_Context *ctx)
 {
+    Uint16 vendor_id = ctx->device->vendor_id;
+    Uint16 product_id = ctx->device->product_id;
+
     /* The Power A Nintendo Switch Pro controllers don't have a Home LED */
     if (vendor_id == 0 && product_id == 0) {
         return SDL_FALSE;
@@ -318,9 +320,7 @@ HasHomeLED(int vendor_id, int product_id)
 
     /* The Nintendo Online classic controllers don't have a Home LED */
     if (vendor_id == USB_VENDOR_NINTENDO &&
-        (product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER ||
-         product_id == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER ||
-         product_id == USB_PRODUCT_NINTENDO_SNES_CONTROLLER)) {
+        ctx->m_eControllerType > k_eSwitchDeviceInfoControllerType_ProController) {
         return SDL_FALSE;
     }
 
@@ -1234,8 +1234,6 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
-        ctx->m_bHasHomeLED = HasHomeLED(device->vendor_id, device->product_id);
-
         /* Initialize rumble data */
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
@@ -1314,9 +1312,15 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         }
 
         /* Set the LED state */
-        if (ctx->m_bHasHomeLED) {
-            SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
-                                SDL_HomeLEDHintChanged, ctx);
+        if (HasHomeLED(ctx)) {
+            if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
+                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED,
+                                    SDL_HomeLEDHintChanged, ctx);
+            } else {
+                SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
+                                    SDL_HomeLEDHintChanged, ctx);
+            }
         }
 
         /* Set the serial number */
@@ -2090,8 +2094,14 @@ HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
-                        SDL_HomeLEDHintChanged, ctx);
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
+        ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+        SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED,
+                            SDL_HomeLEDHintChanged, ctx);
+    } else {
+        SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
+                            SDL_HomeLEDHintChanged, ctx);
+    }
 
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
                         SDL_PlayerLEDHintChanged, ctx);

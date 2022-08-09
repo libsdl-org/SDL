@@ -810,15 +810,26 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH "SDL_JOYSTICK_HIDAPI_SWITCH"
 
 /**
- *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch controller is opened
+ *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Pro controller is opened
  *
  *  This variable can be set to the following values:
  *    "0"       - home button LED is turned off
  *    "1"       - home button LED is turned on
  *
- *  By default the Home button LED state is not changed.
+ *  By default the Home button LED state is not changed. This hint can also be set to a floating point value between 0.0 and 1.0 which controls the brightness of the Home button LED.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"
+
+/**
+ *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Joy-Con controller is opened
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed. This hint can also be set to a floating point value between 0.0 and 1.0 which controls the brightness of the Home button LED.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED "SDL_JOYSTICK_HIDAPI_JOYCON_HOME_LED"
 
 /**
  *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a Nintendo Switch controller.
