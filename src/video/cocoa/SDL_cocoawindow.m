@@ -944,11 +944,6 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         pendingWindowOperation = PENDING_OPERATION_NONE;
         [self setFullscreenSpace:NO];
     } else {
-        /* Unset the resizable flag. 
-           This is a workaround for https://bugzilla.libsdl.org/show_bug.cgi?id=3697
-         */
-        SetWindowStyle(window, [nswindow styleMask] & (~NSWindowStyleMaskResizable));
-
         if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
             [NSMenu setMenuBarVisible:NO];
         }
@@ -1615,6 +1610,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, 
     data.nswindow = nswindow;
     data.created = created;
     data.videodata = videodata;
+    data.window_number = nswindow.windowNumber;
     data.nscontexts = [[NSMutableArray alloc] init];
     data.sdlContentView = nsview;
 

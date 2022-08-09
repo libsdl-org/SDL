@@ -15,11 +15,16 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (mingw32),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, cc: gcc }
-        - { name: Windows (mingw64+clang),  os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, cc: clang }
-        - { name: Linux (CMake),            os: ubuntu-20.04,   shell: sh,    flags: true }
-        - { name: Linux (autotools),        os: ubuntu-20.04,   shell: sh,    autotools: true }
-        - { name: MacOS (CMake),            os: macos-latest,   shell: sh }
+        - { name: Windows (mingw32),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
+        - { name: Windows (mingw64),        os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
+        - { name: Windows (clang32),        os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686 }
+        - { name: Windows (clang64),        os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64 }
+        - { name: Windows (ucrt64),         os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64 }
+        - { name: Ubuntu 20.04 (CMake),     os: ubuntu-20.04,   shell: sh }
+        - { name: Ubuntu 20.04 (autotools), os: ubuntu-20.04,   shell: sh,    autotools: true }
+        - { name: Ubuntu 22.04 (CMake),     os: ubuntu-22.04,   shell: sh }
+        - { name: Ubuntu 22.04 (autotools), os: ubuntu-22.04,   shell: sh,    autotools: true }
+        - { name: MacOS (CMake),            os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"' }
         - { name: MacOS (autotools),        os: macos-latest,   shell: sh,    autotools: true }
 
     steps:
@@ -29,68 +34,27 @@ jobs:
       with:
         msystem: ${{ matrix.platform.msystem }}
         install: >-
-          ${{ matrix.platform.msys-env }}-${{ matrix.platform.cc }}
+          ${{ matrix.platform.msys-env }}-cc
           ${{ matrix.platform.msys-env }}-cmake
           ${{ matrix.platform.msys-env }}-ninja
           ${{ matrix.platform.msys-env }}-pkg-config
-    - name: Configure MSYS2 compiler
-      if: matrix.platform.shell == 'msys2 {0}'
-      run: |
-        if test x${{ matrix.platform.cc}} == xgcc; then
-          echo "CC=gcc" >> $GITHUB_ENV
-          echo "CXX=g++" >> $GITHUB_ENV
-        fi
-        if test x${{ matrix.platform.cc}} == xclang; then
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "CXX=clang++" >> $GITHUB_ENV
-        fi
 
     - name: Setup Linux dependencies
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install \
-          autoconf \
-          gnome-desktop-testing \
-          wayland-protocols \
-          pkg-config \
-          ninja-build \
-          libasound2-dev \
-          libdbus-1-dev \
-          libegl1-mesa-dev \
-          libgl1-mesa-dev \
-          libgles2-mesa-dev \
-          libglu1-mesa-dev \
-          libibus-1.0-dev \
-          libpulse-dev \
-          libsdl2-2.0-0 \
-          libsndio-dev \
-          libudev-dev \
-          libwayland-dev \
-          libwayland-client++0 \
-          wayland-scanner++ \
-          libwayland-cursor++0 \
-          libx11-dev \
-          libxcursor-dev \
-          libxext-dev \
-          libxi-dev \
-          libxinerama-dev \
-          libxkbcommon-dev \
-          libxrandr-dev \
-          libxss-dev \
-          libxt-dev \
-          libxv-dev \
-          libxxf86vm-dev \
-          libdrm-dev \
-          libgbm-dev\
-          libpulse-dev \
-          libpango1.0-dev
-        sudo apt install meson
-        git clone --depth 1 https://gitlab.gnome.org/jadahl/libdecor.git --branch 0.1.0
-        cd libdecor
-        meson build --buildtype release -Ddemo=false -Ddbus=disabled
-        ninja -v -C build
-        sudo meson install -C build
+        sudo apt-get install build-essential git make autoconf automake libtool \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
+
+    - name: Setup extra Ubuntu 22.04 dependencies
+      if: matrix.platform.os == 'ubuntu-22.04'
+      run: |
+        sudo apt-get install libpipewire-0.3-dev libdecor-0-dev
+
     - name: Setup Macos dependencies
       if: runner.os == 'macOS'
       run: |
@@ -108,7 +72,8 @@ jobs:
         -DSDL_TESTS=ON \
         -DSDL_INSTALL_TESTS=ON \
         -DCMAKE_INSTALL_PREFIX=cmake_prefix \
-        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_BUILD_TYPE=Release \
+        ${{ matrix.platform.cmake }}
     - name: Build (CMake)
       if: "! matrix.platform.autotools"
       run: |
@@ -191,12 +156,10 @@ jobs:
         cmake --build cmake_config_build --verbose
     - name: Verify sdl2-config
       run: |
-        export CC=${{ matrix.platform.cc || 'gcc' }}
         export PATH=${{ env.SDL2_DIR }}/bin:$PATH
         cmake/test/test_sdlconfig.sh
     - name: Verify sdl2.pc
       run: |
-        export CC=${{ matrix.platform.cc || 'gcc' }}
         export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
     - name: Distcheck (Autotools)

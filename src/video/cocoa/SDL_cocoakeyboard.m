@@ -439,10 +439,7 @@ UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
                 keymap[scancode] = s[0];
             }
         }
-        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
-        if (send_event) {
-            SDL_SendKeymapChangedEvent();
-        }
+        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
         return;
     }
 

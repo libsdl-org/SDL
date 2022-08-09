@@ -91,7 +91,7 @@ NACL_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     return 0;
 }
 
-static SDL_VideoDevice *NACL_CreateDevice(int devindex) {
+static SDL_VideoDevice *NACL_CreateDevice(void) {
     SDL_VideoDevice *device;
     
     if (!NACL_Available()) {

@@ -545,7 +545,7 @@ pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
     enum wl_pointer_button_state state = state_w;
     uint32_t sdl_button;
 
-    if  (input->pointer_focus) {
+    if (window) {
         switch (button) {
             case BTN_LEFT:
                 sdl_button = SDL_BUTTON_LEFT;
@@ -567,6 +567,23 @@ pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
                 break;
             default:
                 return;
+        }
+
+        /* Wayland won't let you "capture" the mouse, but it will
+           automatically track the mouse outside the window if you
+           drag outside of it, until you let go of all buttons (even
+           if you add or remove presses outside the window, as long
+           as any button is still down, the capture remains) */
+        if (state) {  /* update our mask of currently-pressed buttons */
+            input->buttons_pressed |= SDL_BUTTON(sdl_button);
+        } else {
+            input->buttons_pressed &= ~(SDL_BUTTON(sdl_button));
+        }
+
+        if (input->buttons_pressed != 0) {
+            window->sdlwindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+        } else {
+            window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
         }
 
         Wayland_data_device_set_serial(input->data_device, serial);
@@ -913,9 +930,15 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface)
 {
     struct SDL_WaylandInput *input = data;
+    SDL_WindowData *window;
 
     if (!surface || !SDL_WAYLAND_own_surface(surface)) {
         return;
+    }
+
+    window = wl_surface_get_user_data(surface);
+    if (window) {
+        window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
     }
 
     /* Stop key repeat before clearing keyboard focus */
@@ -1111,8 +1134,7 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
                                     Wayland_keymap_iter,
                                     &keymap);
-    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES);
-    SDL_SendKeymapChangedEvent();
+    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
 }
 
 static void

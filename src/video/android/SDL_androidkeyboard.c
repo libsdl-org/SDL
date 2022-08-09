@@ -30,15 +30,6 @@
 
 #include "../../core/android/SDL_android.h"
 
-void Android_InitKeyboard(void)
-{
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
-
-    /* Add default scancode to key mapping */
-    SDL_GetDefaultKeymap(keymap);
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
-}
-
 static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN, /* AKEYCODE_UNKNOWN */
     SDL_SCANCODE_SOFTLEFT, /* AKEYCODE_SOFT_LEFT */

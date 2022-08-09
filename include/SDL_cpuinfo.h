@@ -470,7 +470,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasLASX(void);
 /**
  * Get the amount of RAM configured in the system.
  *
- * \returns the amount of RAM configured in the system in MB.
+ * \returns the amount of RAM configured in the system in MiB.
  *
  * \since This function is available since SDL 2.0.1.
  */

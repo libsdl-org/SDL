@@ -114,6 +114,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_DIRECTFB
     &DirectFB_RenderDriver,
 #endif
+#if SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED
+    &PS2_RenderDriver,
+#endif
 #if SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif

@@ -62,6 +62,7 @@ typedef struct
     RECT cursor_clipped_rect;
     SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
+    WCHAR *ICMFileName;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
@@ -92,6 +93,7 @@ extern void WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizabl
 extern void WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top);
 extern void WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 extern int WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
+extern void WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_bool send_event);
 extern void* WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size);
 extern int WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
 extern void WIN_SetWindowMouseRect(_THIS, SDL_Window * window);

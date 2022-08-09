@@ -105,7 +105,7 @@ WIN_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-WIN_CreateDevice(int devindex)
+WIN_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;

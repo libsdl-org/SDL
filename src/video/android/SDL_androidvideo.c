@@ -84,7 +84,7 @@ Android_DeleteDevice(SDL_VideoDevice *device)
 }
 
 static SDL_VideoDevice *
-Android_CreateDevice(int devindex)
+Android_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -200,8 +200,6 @@ Android_VideoInit(_THIS)
     display->orientation = Android_JNI_GetDisplayOrientation();
 
     SDL_AddDisplayMode(&_this->displays[0], &mode);
-
-    Android_InitKeyboard();
 
     Android_InitTouch();
 

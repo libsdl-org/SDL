@@ -58,7 +58,7 @@ OFFSCREEN_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-OFFSCREEN_CreateDevice(int devindex)
+OFFSCREEN_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 

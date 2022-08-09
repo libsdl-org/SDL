@@ -77,6 +77,16 @@ get_driindex(void)
     int i;
     int devindex = -1;
     DIR *folder;
+    const char *hint;
+
+    hint = SDL_GetHint(SDL_HINT_KMSDRM_DEVICE_INDEX);
+    if (hint && *hint) {
+        char *endptr = NULL;
+        const int idx = (int) SDL_strtol(hint, &endptr, 10);
+        if ((*endptr == '\0') && (idx >= 0)) {  /* *endptr==0 means "whole string was a valid number" */
+            return idx;  /* we'll take the user's request here. */
+        }
+    }
 
     SDL_strlcpy(device, kmsdrm_dri_path, sizeof(device));
     folder = opendir(device);
@@ -193,8 +203,9 @@ KMSDRM_Available(void)
                  kmsdrm_dri_path, kmsdrm_dri_devname);
 
     ret = get_driindex();
-    if (ret >= 0)
+    if (ret >= 0) {
         return 1;
+    }
 
     return ret;
 }
@@ -213,21 +224,19 @@ KMSDRM_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-KMSDRM_CreateDevice(int devindex)
+KMSDRM_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *viddata;
+    int devindex;
 
     if (!KMSDRM_Available()) {
         return NULL;
     }
 
-    if (!devindex || (devindex > 99)) {
-        devindex = get_driindex();
-    }
-
+    devindex = get_driindex();
     if (devindex < 0) {
-        SDL_SetError("devindex (%d) must be between 0 and 99.\n", devindex);
+        SDL_SetError("devindex (%d) must be between 0 and 99.", devindex);
         return NULL;
     }
 

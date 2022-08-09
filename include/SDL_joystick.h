@@ -514,7 +514,8 @@ extern DECLSPEC int SDLCALL SDL_JoystickGetPlayerIndex(SDL_Joystick *joystick);
  * Set the player index of an opened joystick.
  *
  * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
- * \param player_index the player index to set.
+ * \param player_index Player index to assign to this joystick, or -1 to clear
+ *                     the player index and turn off player LEDs.
  *
  * \since This function is available since SDL 2.0.12.
  */

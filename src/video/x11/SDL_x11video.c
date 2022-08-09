@@ -149,7 +149,7 @@ X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
 }
 
 static SDL_VideoDevice *
-X11_CreateDevice(int devindex)
+X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;

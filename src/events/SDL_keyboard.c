@@ -560,11 +560,9 @@ SDL_UCS4ToUTF8(Uint32 ch, char *dst)
 int
 SDL_KeyboardInit(void)
 {
-    SDL_Keyboard *keyboard = &SDL_keyboard;
-
     /* Set the default keymap */
-    SDL_memcpy(keyboard->keymap, SDL_default_keymap, sizeof(SDL_default_keymap));
-    return (0);
+    SDL_SetKeymap(0, SDL_default_keymap, SDL_NUM_SCANCODES, SDL_FALSE);
+    return 0;
 }
 
 void
@@ -590,24 +588,36 @@ SDL_GetDefaultKeymap(SDL_Keycode * keymap)
 }
 
 void
-SDL_SetKeymap(int start, SDL_Keycode * keys, int length)
+SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
+    SDL_Keycode normalized_keymap[SDL_NUM_SCANCODES];
 
     if (start < 0 || start + length > SDL_NUM_SCANCODES) {
         return;
     }
 
-    SDL_memcpy(&keyboard->keymap[start], keys, sizeof(*keys) * length);
+    SDL_memcpy(&normalized_keymap[start], keys, sizeof(*keys) * length);
 
     /* The number key scancodes always map to the number key keycodes.
      * On AZERTY layouts these technically are symbols, but users (and games)
      * always think of them and view them in UI as number keys.
      */
-    keyboard->keymap[SDL_SCANCODE_0] = SDLK_0;
+    normalized_keymap[SDL_SCANCODE_0] = SDLK_0;
     for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
-        keyboard->keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+        normalized_keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
+    }
+
+    /* If the mapping didn't really change, we're done here */
+    if (!SDL_memcmp(&keyboard->keymap[start], &normalized_keymap[start], sizeof(*keys) * length)) {
+        return;
+    }
+
+    SDL_memcpy(&keyboard->keymap[start], &normalized_keymap[start], sizeof(*keys) * length);
+
+    if (send_event) {
+        SDL_SendKeymapChangedEvent();
     }
 }
 
@@ -904,12 +914,16 @@ SDL_SendKeyboardText(const char *text)
     posted = 0;
     if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_Event event;
-        size_t i = 0, length = SDL_strlen(text);
+        size_t pos = 0, advance, length = SDL_strlen(text);
 
         event.text.type = SDL_TEXTINPUT;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
-        while (i < length) {
-            i += SDL_utf8strlcpy(event.text.text, text + i, SDL_arraysize(event.text.text));
+        while (pos < length) {
+            advance = SDL_utf8strlcpy(event.text.text, text + pos, SDL_arraysize(event.text.text));
+            if (!advance) {
+                break;
+            }
+            pos += advance;
             posted |= (SDL_PushEvent(&event) > 0);
         }
     }

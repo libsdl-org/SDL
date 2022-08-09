@@ -118,7 +118,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                     size_t output_len = 1;
                     char* output = NULL;
                     char* tmp = NULL;
-                    FILE* stdout = NULL;
+                    FILE* outputfp = NULL;
 
                     close(fd_pipe[1]); /* no writing to pipe */
                     /* At this point, if no button ID is needed, we can just bail as soon as the
@@ -146,14 +146,14 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                     }
                     output[0] = '\0';
 
-                    stdout = fdopen(fd_pipe[0], "r");
-                    if (!stdout) {
+                    outputfp = fdopen(fd_pipe[0], "r");
+                    if (!outputfp) {
                         SDL_free(output);
                         close(fd_pipe[0]);
                         return SDL_SetError("Couldn't open pipe for reading: %s", strerror(errno));
                     }
-                    tmp = fgets(output, output_len + 1, stdout);
-                    fclose(stdout);
+                    tmp = fgets(output, output_len + 1, outputfp);
+                    fclose(outputfp);
 
                     if ((tmp == NULL) || (*tmp == '\0') || (*tmp == '\n')) {
                         SDL_free(output);

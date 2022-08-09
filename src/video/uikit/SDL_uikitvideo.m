@@ -61,7 +61,7 @@ static void UIKit_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-UIKit_CreateDevice(int devindex)
+UIKit_CreateDevice(void)
 {
     @autoreleasepool {
         SDL_VideoDevice *device;

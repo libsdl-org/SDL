@@ -51,7 +51,7 @@ RISCOS_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-RISCOS_CreateDevice(int devindex)
+RISCOS_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;

@@ -325,12 +325,11 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
         }
     }
 
-    displaydata = (SDL_DisplayData *) SDL_malloc(sizeof(*displaydata));
+    displaydata = (SDL_DisplayData *) SDL_calloc(1, sizeof(*displaydata));
     if (!displaydata) {
         return SDL_FALSE;
     }
-    SDL_memcpy(displaydata->DeviceName, info->szDevice,
-               sizeof(displaydata->DeviceName));
+    SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
     displaydata->MonitorHandle = hMonitor;
     displaydata->IsValid = SDL_TRUE;
 
@@ -554,72 +553,6 @@ WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
 }
 
 /**
- * If x, y are outside of rect, snaps them to the closest point inside rect
- * (between rect->x, rect->y, inclusive, and rect->x + w, rect->y + h, exclusive)
- */
-static void
-SDL_GetClosestPointOnRect(const SDL_Rect *rect, int *x, int *y)
-{
-    const int right = rect->x + rect->w - 1;
-    const int bottom = rect->y + rect->h - 1;
-
-    if (*x < rect->x) {
-        *x = rect->x;
-    } else if (*x > right) {
-        *x = right;
-    }
-
-    if (*y < rect->y) {
-        *y = rect->y;
-    } else if (*y > bottom) {
-        *y = bottom;
-    }
-}
-
-/**
- * Returns the display index of the display which either encloses the given point
- * or is closest to it. The point is in SDL screen coordinates.
- */
-static int
-SDL_GetPointDisplayIndex(int x, int y)
-{
-    int i, dist;
-    int closest = -1;
-    int closest_dist = 0x7FFFFFFF;
-    SDL_Point closest_point_on_display;
-    SDL_Point delta;
-    SDL_Rect rect;
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Point point;
-    point.x = x;
-    point.y = y;
-
-    for (i = 0; i < _this->num_displays; ++i) {
-        /* Check for an exact match */
-        SDL_GetDisplayBounds(i, &rect);
-        if (SDL_EnclosePoints(&point, 1, &rect, NULL)) {
-            return i;
-        }
-
-        /* Snap x, y to the display rect */
-        closest_point_on_display = point;
-        SDL_GetClosestPointOnRect(&rect, &closest_point_on_display.x, &closest_point_on_display.y);
-
-        delta.x = point.x - closest_point_on_display.x;
-        delta.y = point.y - closest_point_on_display.y;
-        dist = (delta.x*delta.x + delta.y*delta.y);
-        if (dist < closest_dist) {
-            closest = i;
-            closest_dist = dist;
-        }
-    }
-    if (closest < 0) {
-        SDL_SetError("Couldn't find any displays");
-    }
-    return closest;
-}
-
-/**
  * Convert a point from the SDL coordinate system (monitor origins are in pixels, 
  * offset within a monitor in DPI-scaled points) to Windows virtual screen coordinates (pixels).
  * 
@@ -635,6 +568,9 @@ void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
     SDL_Rect bounds;
     float ddpi, hdpi, vdpi;
     int x_sdl, y_sdl;
+    SDL_Point point;
+	point.x = *x;
+	point.y = *y;
 
     if (dpiOut) {
         *dpiOut = 96;
@@ -650,7 +586,7 @@ void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
     }
 
     /* Can't use MonitorFromPoint for this because we currently have SDL coordinates, not pixels */
-    displayIndex = SDL_GetPointDisplayIndex(*x, *y);
+    displayIndex = SDL_GetPointDisplayIndex(&point);
 
     if (displayIndex < 0) {
         return;

@@ -1228,15 +1228,20 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     /* Create the shell surface and map the toplevel/popup */
 #ifdef HAVE_LIBDECOR_H
     if (WINDOW_IS_LIBDECOR(c, window)) {
-        data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
-                                                               data->surface,
-                                                               &libdecor_frame_interface,
-                                                               data);
-        if (data->shell_surface.libdecor.frame == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
+        if (data->shell_surface.libdecor.frame) {
+            /* If the frame already exists, just set the visibility. */
+            libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, true);
         } else {
-            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
-            libdecor_frame_map(data->shell_surface.libdecor.frame);
+            data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
+                                                                   data->surface,
+                                                                   &libdecor_frame_interface,
+                                                                   data);
+            if (data->shell_surface.libdecor.frame == NULL) {
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
+            } else {
+                libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
+                libdecor_frame_map(data->shell_surface.libdecor.frame);
+            }
         }
     } else
 #endif
@@ -1364,6 +1369,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
             unsetenv("XDG_ACTIVATION_TOKEN");
         }
     }
+
+    /*
+     * Roundtrip required to avoid a possible protocol violation when
+     * HideWindow was called immediately before ShowWindow.
+     */
+    WAYLAND_wl_display_roundtrip(c->display);
 }
 
 static void
@@ -1412,11 +1423,14 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
        wind->server_decoration = NULL;
     }
 
+    /* Be sure to detach after this is done, otherwise ShowWindow crashes! */
+    wl_surface_attach(wind->surface, NULL, 0, 0);
+    wl_surface_commit(wind->surface);
+
 #ifdef HAVE_LIBDECOR_H
     if (WINDOW_IS_LIBDECOR(data, window)) {
         if (wind->shell_surface.libdecor.frame) {
-            libdecor_frame_unref(wind->shell_surface.libdecor.frame);
-            wind->shell_surface.libdecor.frame = NULL;
+            libdecor_frame_set_visibility(wind->shell_surface.libdecor.frame, false);
         }
     } else
 #endif
@@ -1433,9 +1447,11 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
         }
     }
 
-    /* Be sure to detach after this is done, otherwise ShowWindow crashes! */
-    wl_surface_attach(wind->surface, NULL, 0, 0);
-    wl_surface_commit(wind->surface);
+    /*
+     * Roundtrip required to avoid a possible protocol violation when
+     * ShowWindow is called immediately after HideWindow.
+     */
+    WAYLAND_wl_display_roundtrip(data->display);
 }
 
 static void

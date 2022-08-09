@@ -549,13 +549,11 @@ Cocoa_PumpEvents(_THIS)
 void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
 { @autoreleasepool
 {
-    NSWindow *nswindow = ((__bridge SDL_WindowData *) window->driverdata).nswindow;
-
     NSEvent* event = [NSEvent otherEventWithType: NSEventTypeApplicationDefined
                                     location: NSMakePoint(0,0)
                                modifierFlags: 0
                                    timestamp: 0.0
-                                windowNumber: nswindow.windowNumber
+                                windowNumber: ((__bridge SDL_WindowData *) window->driverdata).window_number
                                      context: nil
                                      subtype: 0
                                        data1: 0

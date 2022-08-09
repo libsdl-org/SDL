@@ -1593,7 +1593,7 @@ static void OS2_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static SDL_VideoDevice *OS2_CreateDevice(int devindex)
+static SDL_VideoDevice *OS2_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
@@ -1648,22 +1648,22 @@ static SDL_VideoDevice *OS2_CreateDevice(int devindex)
     return device;
 }
 
-static SDL_VideoDevice *OS2DIVE_CreateDevice(int devindex)
+static SDL_VideoDevice *OS2DIVE_CreateDevice(void)
 {
     VIDEOOUTPUTINFO stVOInfo;
     if (!voDive.QueryInfo(&stVOInfo)) {
         return NULL;
     }
-    return OS2_CreateDevice(devindex);
+    return OS2_CreateDevice();
 }
 
-static SDL_VideoDevice *OS2VMAN_CreateDevice(int devindex)
+static SDL_VideoDevice *OS2VMAN_CreateDevice(void)
 {
     VIDEOOUTPUTINFO stVOInfo;
     if (!voVMan.QueryInfo(&stVOInfo)) {
           return NULL;
     }
-    return OS2_CreateDevice(devindex);
+    return OS2_CreateDevice();
 }
 
 

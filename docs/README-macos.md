@@ -43,13 +43,13 @@ make
 sudo make install
 ```
 
-This script builds SDL with 10.7 ABI compatibility on 64-bit Intel and 11.0
+This script builds SDL with 10.9 ABI compatibility on 64-bit Intel and 11.0
 ABI compatibility on ARM64 architectures.  For best compatibility you
 should compile your application the same way.
 
-Please note that building SDL requires at least Xcode 4.6 and the 10.7 SDK.
+Please note that building SDL requires at least Xcode 6 and the 10.9 SDK.
 PowerPC support for macOS has been officially dropped as of SDL 2.0.2.
-32-bit Intel and macOS 10.6 runtime support has been officially dropped as
+32-bit Intel and macOS 10.8 runtime support has been officially dropped as
 of SDL 2.24.0.
 
 To use the library once it's built, you essential have two possibilities:

@@ -368,6 +368,7 @@ struct SDL_VideoDevice
         int stereo;
         int multisamplebuffers;
         int multisamplesamples;
+        int floatbuffers;
         int accelerated;
         int major_version;
         int minor_version;
@@ -432,7 +433,7 @@ typedef struct VideoBootStrap
 {
     const char *name;
     const char *desc;
-    SDL_VideoDevice *(*create) (int devindex);
+    SDL_VideoDevice *(*create) (void);
 } VideoBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
@@ -445,6 +446,7 @@ extern VideoBootStrap HAIKU_bootstrap;
 extern VideoBootStrap PND_bootstrap;
 extern VideoBootStrap UIKIT_bootstrap;
 extern VideoBootStrap Android_bootstrap;
+extern VideoBootStrap PS2_bootstrap;
 extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;
 extern VideoBootStrap RISCOS_bootstrap;
@@ -452,6 +454,7 @@ extern VideoBootStrap RPI_bootstrap;
 extern VideoBootStrap KMSDRM_bootstrap;
 extern VideoBootStrap KMSDRM_LEGACY_bootstrap;
 extern VideoBootStrap DUMMY_bootstrap;
+extern VideoBootStrap DUMMY_evdev_bootstrap;
 extern VideoBootStrap Wayland_bootstrap;
 extern VideoBootStrap NACL_bootstrap;
 extern VideoBootStrap VIVANTE_bootstrap;
@@ -502,6 +505,8 @@ extern SDL_bool SDL_ShouldAllowTopmost(void);
 extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches);
 
 extern void SDL_ToggleDragAndDropSupport(void);
+
+extern int SDL_GetPointDisplayIndex(const SDL_Point * point);
 
 #endif /* SDL_sysvideo_h_ */
 

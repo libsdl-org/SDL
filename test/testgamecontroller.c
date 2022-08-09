@@ -764,7 +764,6 @@ main(int argc, char *argv[])
     char guid[64];
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
-    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_ROG_CHAKRAM, "1");
@@ -814,6 +813,11 @@ main(int argc, char *argv[])
                 break;
             case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
                 description = "Google Stadia Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+            case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+                description = "Nintendo Switch Joy-Con";
                 break;
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 description = "Nintendo Switch Pro Controller";

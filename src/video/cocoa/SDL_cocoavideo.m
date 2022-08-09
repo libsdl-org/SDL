@@ -55,7 +55,7 @@ Cocoa_DeleteDevice(SDL_VideoDevice * device)
 }}
 
 static SDL_VideoDevice *
-Cocoa_CreateDevice(int devindex)
+Cocoa_CreateDevice(void)
 { @autoreleasepool
 {
     SDL_VideoDevice *device;

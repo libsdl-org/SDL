@@ -248,7 +248,8 @@ typedef enum
     SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR,
     SDL_GL_CONTEXT_RESET_NOTIFICATION,
-    SDL_GL_CONTEXT_NO_ERROR
+    SDL_GL_CONTEXT_NO_ERROR,
+    SDL_GL_FLOATBUFFERS
 } SDL_GLattr;
 
 typedef enum
@@ -444,6 +445,15 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rec
  * A failure of this function usually means that either no DPI information is
  * available or the `displayIndex` is out of range.
  *
+ * **WARNING**: This reports the DPI that the hardware reports, and it is not
+ * always reliable! It is almost always better to use SDL_GetWindowSize() to
+ * find the window size, which might be in logical points instead of pixels,
+ * and then SDL_GL_GetDrawableSize(), SDL_Vulkan_GetDrawableSize(),
+ * SDL_Metal_GetDrawableSize(), or SDL_GetRendererOutputSize(), and compare
+ * the two values to get an actual scaling value between the two. We will be
+ * rethinking how high-dpi details should be managed in SDL3 to make things
+ * more consistent, reliable, and clear.
+ *
  * \param displayIndex the index of the display from which DPI information
  *                     should be queried
  * \param ddpi a pointer filled in with the diagonal DPI of the display; may
@@ -586,6 +596,35 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentDisplayMode(int displayIndex, SDL_Disp
  * \sa SDL_GetNumDisplayModes
  */
 extern DECLSPEC SDL_DisplayMode * SDLCALL SDL_GetClosestDisplayMode(int displayIndex, const SDL_DisplayMode * mode, SDL_DisplayMode * closest);
+
+/**
+ * Get the index of the display containing a point
+ *
+ * \param point the point to query
+ * \returns the index of the display containing the point or a negative error
+ *          code on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_GetDisplayBounds
+ * \sa SDL_GetNumVideoDisplays
+ */
+extern DECLSPEC int SDLCALL SDL_GetPointDisplayIndex(const SDL_Point * point);
+
+/**
+ * Get the index of the display primarily containing a rect
+ *
+ * \param rect the rect to query
+ * \returns the index of the display entirely containing the rect or closest
+ *          to the center of the rect on success or a negative error code on
+ *          failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_GetDisplayBounds
+ * \sa SDL_GetNumVideoDisplays
+ */
+extern DECLSPEC int SDLCALL SDL_GetRectDisplayIndex(const SDL_Rect * rect);
 
 /**
  * Get the index of the display associated with a window.

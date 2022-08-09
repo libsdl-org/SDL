@@ -219,7 +219,7 @@ parse_uevent_info(const char *uevent, unsigned *bus_type,
 	unsigned short *vendor_id, unsigned short *product_id,
 	char **serial_number_utf8, char **product_name_utf8)
 {
-	char *tmp = strdup(uevent);
+	char *tmp;
 	char *saveptr = NULL;
 	char *line;
 	char *key;
@@ -228,6 +228,15 @@ parse_uevent_info(const char *uevent, unsigned *bus_type,
 	int found_id = 0;
 	int found_serial = 0;
 	int found_name = 0;
+
+	if (!uevent) {
+		return 0;
+	}
+
+	tmp = strdup(uevent);
+	if (!tmp) {
+		return 0;
+	}
 
 	line = strtok_r(tmp, "\n", &saveptr);
 	while (line != NULL) {

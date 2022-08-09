@@ -592,6 +592,7 @@
     <ClCompile Include="..\..\src\joystick\controller_type.c" />
     <ClCompile Include="..\..\src\joystick\dummy\SDL_sysjoystick.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_luna.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c" />
@@ -697,8 +698,7 @@
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_memcpy.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_memset.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />

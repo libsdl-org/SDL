@@ -44,7 +44,7 @@ CFLAGS_DLL+= -DSDL_BUILD_MICRO_VERSION=$(MICRO_VERSION)
 RCFLAGS = -q -r -bt=nt $(INCPATH)
 
 SRCS = SDL.c SDL_assert.c SDL_error.c SDL_guid.c SDL_log.c SDL_dataqueue.c SDL_hints.c SDL_list.c SDL_utils.c
-SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_memcpy.c SDL_memset.c SDL_qsort.c SDL_stdlib.c SDL_string.c SDL_strtokr.c SDL_crc32.c
+SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_qsort.c SDL_stdlib.c SDL_string.c SDL_strtokr.c SDL_crc32.c
 SRCS+= SDL_cpuinfo.c SDL_atomic.c SDL_spinlock.c SDL_thread.c SDL_timer.c
 SRCS+= SDL_rwops.c SDL_power.c
 SRCS+= SDL_audio.c SDL_audiocvt.c SDL_audiodev.c SDL_audiotypecvt.c SDL_mixer.c SDL_wave.c
@@ -65,7 +65,7 @@ SRCS+= SDL_systimer.c
 SRCS+= SDL_sysloadso.c
 SRCS+= SDL_sysfilesystem.c
 SRCS+= SDL_syshaptic.c SDL_sysjoystick.c SDL_virtualjoystick.c
-SRCS+= SDL_hidapijoystick.c SDL_hidapi_rumble.c SDL_hidapi_gamecube.c SDL_hidapi_luna.c SDL_hidapi_ps4.c SDL_hidapi_ps5.c SDL_hidapi_shield.c SDL_hidapi_stadia.c SDL_hidapi_switch.c SDL_hidapi_xbox360.c SDL_hidapi_xbox360w.c SDL_hidapi_xboxone.c SDL_hidapi_steam.c
+SRCS+= SDL_hidapijoystick.c SDL_hidapi_rumble.c SDL_hidapi_combined.c SDL_hidapi_gamecube.c SDL_hidapi_luna.c SDL_hidapi_ps4.c SDL_hidapi_ps5.c SDL_hidapi_shield.c SDL_hidapi_stadia.c SDL_hidapi_switch.c SDL_hidapi_xbox360.c SDL_hidapi_xbox360w.c SDL_hidapi_xboxone.c SDL_hidapi_steam.c
 SRCS+= SDL_dummyaudio.c SDL_diskaudio.c
 SRCS+= SDL_nullvideo.c SDL_nullframebuffer.c SDL_nullevents.c
 SRCS+= SDL_dummysensor.c
