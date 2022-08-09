@@ -94,6 +94,8 @@ HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
                 serial = new_serial;
                 serial_length = new_length;
             }
+            SDL_free(joystick->serial);
+            joystick->serial = NULL;
         }
     }
 
