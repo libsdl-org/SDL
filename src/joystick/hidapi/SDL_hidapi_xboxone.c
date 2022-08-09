@@ -156,7 +156,7 @@ SetInitState(SDL_DriverXboxOne_Context *ctx, SDL_XboxOneInitState state)
 static void
 SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 {
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
     /* The Windows driver is taking care of acks */
 #else
     if ((data[1] & 0x30) == 0x30) {
@@ -179,7 +179,7 @@ SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
             SDL_SetError("Couldn't send ack packet");
         }
     }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__ */
 }
 
 #if 0
@@ -285,7 +285,7 @@ HIDAPI_DriverXboxOne_IsSupportedDevice(const char *name, SDL_GameControllerType 
 }
 
 static const char *
-HIDAPI_DriverXboxOne_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverXboxOne_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return NULL;
 }
@@ -605,7 +605,7 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
         }
     }
 
-    axis = ((int)*(Sint16*)(&data[6]) * 64) - 32768;
+    axis = ((int)SDL_SwapLE16(*(Sint16*)(&data[6])) * 64) - 32768;
     if (axis == 32704) {
         axis = 32767;
     }
@@ -614,7 +614,7 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
     }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
 
-    axis = ((int)*(Sint16*)(&data[8]) * 64) - 32768;
+    axis = ((int)SDL_SwapLE16(*(Sint16*)(&data[8])) * 64) - 32768;
     if (axis == -32768 && size == 30 && (data[22] & 0x40) != 0) {
         axis = 32767;
     }
@@ -623,13 +623,13 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXboxOne
     }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
 
-    axis = *(Sint16*)(&data[10]);
+    axis = SDL_SwapLE16(*(Sint16*)(&data[10]));
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
-    axis = *(Sint16*)(&data[12]);
+    axis = SDL_SwapLE16(*(Sint16*)(&data[12]));
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, ~axis);
-    axis = *(Sint16*)(&data[14]);
+    axis = SDL_SwapLE16(*(Sint16*)(&data[14]));
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
-    axis = *(Sint16*)(&data[16]);
+    axis = SDL_SwapLE16(*(Sint16*)(&data[16]));
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, ~axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
@@ -826,25 +826,25 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
     }
 
-    axis = ((int)*(Sint16*)(&data[9]) * 64) - 32768;
+    axis = ((int)SDL_SwapLE16(*(Sint16*)(&data[9])) * 64) - 32768;
     if (axis == 32704) {
         axis = 32767;
     }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
 
-    axis = ((int)*(Sint16*)(&data[11]) * 64) - 32768;
+    axis = ((int)SDL_SwapLE16(*(Sint16*)(&data[11])) * 64) - 32768;
     if (axis == 32704) {
         axis = 32767;
     }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
 
-    axis = (int)*(Uint16*)(&data[1]) - 0x8000;
+    axis = (int)SDL_SwapLE16(*(Uint16*)(&data[1])) - 0x8000;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
-    axis = (int)*(Uint16*)(&data[3]) - 0x8000;
+    axis = (int)SDL_SwapLE16(*(Uint16*)(&data[3])) - 0x8000;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
-    axis = (int)*(Uint16*)(&data[5]) - 0x8000;
+    axis = (int)SDL_SwapLE16(*(Uint16*)(&data[5])) - 0x8000;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
-    axis = (int)*(Uint16*)(&data[7]) - 0x8000;
+    axis = (int)SDL_SwapLE16(*(Uint16*)(&data[7])) - 0x8000;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
@@ -912,7 +912,7 @@ HIDAPI_DriverXboxOne_UpdateInitState(SDL_HIDAPI_Device *device, SDL_DriverXboxOn
 
         switch (ctx->init_state) {
         case XBOX_ONE_INIT_STATE_START_NEGOTIATING:
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
             /* The Windows driver is taking care of negotiation */
             SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
 #else

@@ -487,7 +487,9 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #endif /* WIN32 */
 
 #ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #define HAVE_MMAP 1
 #define HAVE_MORECORE 0
@@ -733,7 +735,7 @@ extern "C"
   maximum supported value of n differs across systems, but is in all
   cases less than the maximum representable value of a size_t.
 */
-    void *dlmalloc(size_t);
+    void * SDLCALL dlmalloc(size_t);
 
 /*
   free(void* p)
@@ -742,14 +744,14 @@ extern "C"
   It has no effect if p is null. If p was not malloced or already
   freed, free(p) will by default cause the current program to abort.
 */
-    void dlfree(void *);
+    void SDLCALL dlfree(void *);
 
 /*
   calloc(size_t n_elements, size_t element_size);
   Returns a pointer to n_elements * element_size bytes, with all locations
   set to zero.
 */
-    void *dlcalloc(size_t, size_t);
+    void * SDLCALL dlcalloc(size_t, size_t);
 
 /*
   realloc(void* p, size_t n)
@@ -774,7 +776,7 @@ extern "C"
   to be used as an argument to realloc is not supported.
 */
 
-    void *dlrealloc(void *, size_t);
+    void * SDLCALL dlrealloc(void *, size_t);
 
 /*
   memalign(size_t alignment, size_t n);
@@ -1247,7 +1249,7 @@ extern "C"
 #ifndef LACKS_UNISTD_H
 #include <unistd.h>             /* for sbrk */
 #else /* LACKS_UNISTD_H */
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__)
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__DragonFly__)
 extern void *sbrk(ptrdiff_t);
 #endif /* FreeBSD etc */
 #endif /* LACKS_UNISTD_H */
@@ -5305,10 +5307,10 @@ History:
 #endif /* !HAVE_MALLOC */
 
 #ifdef HAVE_MALLOC
-#define real_malloc malloc
-#define real_calloc calloc
-#define real_realloc realloc
-#define real_free free
+static void* SDLCALL real_malloc(size_t s) { return malloc(s); }
+static void* SDLCALL real_calloc(size_t n, size_t s) { return calloc(n, s); }
+static void* SDLCALL real_realloc(void *p, size_t s) { return realloc(p,s); }
+static void  SDLCALL real_free(void *p) { free(p); }
 #else
 #define real_malloc dlmalloc
 #define real_calloc dlcalloc
@@ -5327,6 +5329,25 @@ static struct
 } s_mem = {
     real_malloc, real_calloc, real_realloc, real_free, { 0 }
 };
+
+void SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
+                                    SDL_calloc_func *calloc_func,
+                                    SDL_realloc_func *realloc_func,
+                                    SDL_free_func *free_func)
+{
+    if (malloc_func) {
+        *malloc_func = real_malloc;
+    }
+    if (calloc_func) {
+        *calloc_func = real_calloc;
+    }
+    if (realloc_func) {
+        *realloc_func = real_realloc;
+    }
+    if (free_func) {
+        *free_func = real_free;
+    }
+}
 
 void SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                             SDL_calloc_func *calloc_func,

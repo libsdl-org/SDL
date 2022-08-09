@@ -30,6 +30,7 @@ extern int Android_CreateWindow(_THIS, SDL_Window *window);
 extern void Android_SetWindowTitle(_THIS, SDL_Window *window);
 extern void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 extern void Android_MinimizeWindow(_THIS, SDL_Window *window);
+extern void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
 
 extern void Android_DestroyWindow(_THIS, SDL_Window *window);
 extern SDL_bool Android_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
@@ -37,8 +38,10 @@ extern SDL_Window *Android_Window;
 
 typedef struct
 {
+#if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
     EGLContext egl_context; /* We use this to preserve the context when losing focus */
+#endif
     SDL_bool   backup_done;
     ANativeWindow *native_window;
     

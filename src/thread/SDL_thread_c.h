@@ -32,6 +32,8 @@
 #include "pthread/SDL_systhread_c.h"
 #elif SDL_THREAD_WINDOWS
 #include "windows/SDL_systhread_c.h"
+#elif SDL_THREAD_PS2
+#include "ps2/SDL_systhread_c.h"
 #elif SDL_THREAD_PSP
 #include "psp/SDL_systhread_c.h"
 #elif SDL_THREAD_VITA
@@ -40,6 +42,8 @@
 #include "stdcpp/SDL_systhread_c.h"
 #elif SDL_THREAD_OS2
 #include "os2/SDL_systhread_c.h"
+#elif SDL_THREAD_NGAGE
+#include "ngage/SDL_systhread_c.h"
 #else
 #error Need thread implementation for this platform
 #include "generic/SDL_systhread_c.h"

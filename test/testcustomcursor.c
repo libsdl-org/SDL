@@ -135,6 +135,8 @@ init_system_cursor(const char *image[])
 static SDLTest_CommonState *state;
 int done;
 static SDL_Cursor *cursors[1+SDL_NUM_SYSTEM_CURSORS];
+static SDL_SystemCursor cursor_types[1+SDL_NUM_SYSTEM_CURSORS];
+static int num_cursors;
 static int current_cursor;
 static int show_cursor;
 
@@ -156,11 +158,34 @@ loop()
         SDLTest_CommonEvent(state, &event, &done);
         if (event.type == SDL_MOUSEBUTTONDOWN) {
             if (event.button.button == SDL_BUTTON_LEFT) {
+                if (num_cursors == 0) {
+                    continue;
+                }
+
                 ++current_cursor;
-                if (current_cursor == SDL_arraysize(cursors)) {
+                if (current_cursor == num_cursors) {
                     current_cursor = 0;
                 }
+
                 SDL_SetCursor(cursors[current_cursor]);
+
+                switch (cursor_types[current_cursor]) {
+                    case (SDL_SystemCursor)-1:        SDL_Log("Custom cursor"); break;
+                    case SDL_SYSTEM_CURSOR_ARROW:     SDL_Log("Arrow"); break;
+                    case SDL_SYSTEM_CURSOR_IBEAM:     SDL_Log("I-beam"); break;
+                    case SDL_SYSTEM_CURSOR_WAIT:      SDL_Log("Wait"); break;
+                    case SDL_SYSTEM_CURSOR_CROSSHAIR: SDL_Log("Crosshair"); break;
+                    case SDL_SYSTEM_CURSOR_WAITARROW: SDL_Log("Small wait cursor (or Wait if not available)"); break;
+                    case SDL_SYSTEM_CURSOR_SIZENWSE:  SDL_Log("Double arrow pointing northwest and southeast"); break;
+                    case SDL_SYSTEM_CURSOR_SIZENESW:  SDL_Log("Double arrow pointing northeast and southwest"); break;
+                    case SDL_SYSTEM_CURSOR_SIZEWE:    SDL_Log("Double arrow pointing west and east"); break;
+                    case SDL_SYSTEM_CURSOR_SIZENS:    SDL_Log("Double arrow pointing north and south"); break;
+                    case SDL_SYSTEM_CURSOR_SIZEALL:   SDL_Log("Four pointed arrow pointing north, south, east, and west"); break;
+                    case SDL_SYSTEM_CURSOR_NO:        SDL_Log("Slashed circle or crossbones"); break;
+                    case SDL_SYSTEM_CURSOR_HAND:      SDL_Log("Hand"); break;
+                    default: SDL_Log("UNKNOWN CURSOR TYPE, FIX THIS PROGRAM."); break;
+                }
+
             } else {
                 show_cursor = !show_cursor;
                 SDL_ShowCursor(show_cursor);
@@ -219,23 +244,38 @@ main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
 
+    num_cursors = 0;
+
     if (color_cursor) {
-        cursors[0] = init_color_cursor(color_cursor);
+        SDL_Cursor *cursor = init_color_cursor(color_cursor);
+        if (cursor) {
+            cursors[num_cursors] = cursor;
+            cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+            num_cursors++;
+        }
     } else {
-        cursors[0] = init_system_cursor(arrow);
-    }
-    if (!cursors[0]) {
-        SDL_Log("Error, couldn't create cursor\n");
-        quit(2);
-    }
-    for (i = 0; i < SDL_NUM_SYSTEM_CURSORS; ++i) {
-        cursors[1+i] = SDL_CreateSystemCursor((SDL_SystemCursor)i);
-        if (!cursors[1+i]) {
-            SDL_Log("Error, couldn't create system cursor %d\n", i);
-            quit(2);
+        SDL_Cursor *cursor = init_system_cursor(arrow);
+        if (cursor) {
+            cursors[num_cursors] = cursor;
+            cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+            num_cursors++;
         }
     }
-    SDL_SetCursor(cursors[0]);
+
+    for (i = 0; i < SDL_NUM_SYSTEM_CURSORS; ++i) {
+        SDL_Cursor *cursor = SDL_CreateSystemCursor((SDL_SystemCursor)i);
+        if (cursor) {
+            cursors[num_cursors] = cursor;
+            cursor_types[num_cursors] = i;
+            num_cursors++;
+        }
+    }
+
+    if (num_cursors > 0) {
+        SDL_SetCursor(cursors[0]);
+    }
+
+    show_cursor = SDL_ShowCursor(SDL_QUERY);
 
     /* Main render loop */
     done = 0;
@@ -247,7 +287,7 @@ main(int argc, char *argv[])
     }
 #endif
 
-    for (i = 0; i < SDL_arraysize(cursors); ++i) {
+    for (i = 0; i < num_cursors; ++i) {
         SDL_FreeCursor(cursors[i]);
     }
     quit(0);

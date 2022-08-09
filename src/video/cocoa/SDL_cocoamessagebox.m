@@ -45,9 +45,9 @@
 
         /* Retain the NSWindow because we'll show the alert later on the main thread */
         if (window) {
-            nswindow = [((SDL_WindowData *) window->driverdata)->nswindow retain];
+            nswindow = ((__bridge SDL_WindowData *) window->driverdata).nswindow;
         } else {
-            nswindow = NULL;
+            nswindow = nil;
         }
     }
 
@@ -60,7 +60,7 @@
 #ifdef MAC_OS_X_VERSION_10_9
         if ([alert respondsToSelector:@selector(beginSheetModalForWindow:completionHandler:)]) {
             [alert beginSheetModalForWindow:nswindow completionHandler:^(NSModalResponse returnCode) {
-                clicked = returnCode;
+                self->clicked = returnCode;
             }];
         } else
 #endif
@@ -75,7 +75,7 @@
             SDL_Delay(100);
         }
 
-        [nswindow release];
+        nswindow = nil;
     } else {
         clicked = [alert runModal];
     }
@@ -92,9 +92,14 @@
 static void
 Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
 {
+    NSAlert* alert;
+    const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
+    SDLMessageBoxPresenter* presenter;
+    NSInteger clicked;
+    int i;
     Cocoa_RegisterApp();
 
-    NSAlert* alert = [[[NSAlert alloc] init] autorelease];
+    alert = [[NSAlert alloc] init];
 
     if (messageboxdata->flags & SDL_MESSAGEBOX_ERROR) {
         [alert setAlertStyle:NSAlertStyleCritical];
@@ -107,8 +112,6 @@ Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid
     [alert setMessageText:[NSString stringWithUTF8String:messageboxdata->title]];
     [alert setInformativeText:[NSString stringWithUTF8String:messageboxdata->message]];
 
-    const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
-    int i;
     for (i = 0; i < messageboxdata->numbuttons; ++i) {
         const SDL_MessageBoxButtonData *sdlButton;
         NSButton *button;
@@ -129,11 +132,11 @@ Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid
         }
     }
 
-    SDLMessageBoxPresenter* presenter = [[[SDLMessageBoxPresenter alloc] initWithParentWindow:messageboxdata->window] autorelease];
+    presenter = [[SDLMessageBoxPresenter alloc] initWithParentWindow:messageboxdata->window];
 
     [presenter showAlert:alert];
 
-    NSInteger clicked = presenter->clicked;
+    clicked = presenter->clicked;
     if (clicked >= NSAlertFirstButtonReturn) {
         clicked -= NSAlertFirstButtonReturn;
         if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {

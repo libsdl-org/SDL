@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\test\testutils.c" />
+    <ClCompile Include="src\testgdk.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\test\icon.bmp" />
+    <CopyFileToFolders Include="..\..\logos\Logo44x44.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo100x100.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo150x150.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo480x480.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(Console_GRDKExtLibRoot)Xbox.Services.API.C\DesignTime\CommonConfiguration\Neutral\Lib\Release\Microsoft.Xbox.Services.141.GDK.C.Thunks.dll">
+      <Filter>wingdk</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="wingdk\MicrosoftGame.config">
+      <Filter>wingdk</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="xboxseries\MicrosoftGame.config">
+      <Filter>xboxseries</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\..\test\sample.wav" />
+    <CopyFileToFolders Include="xboxone\MicrosoftGame.config">
+      <Filter>xboxone</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\SplashScreenImage.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="PackageLayout.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="logos">
+      <UniqueIdentifier>{c3c871f2-c7b7-4025-8ba4-037dde717fe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wingdk">
+      <UniqueIdentifier>{1678a80d-0ee8-4f48-bf89-9462d82dd98a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xboxseries">
+      <UniqueIdentifier>{1b47b96b-507e-40ec-9c25-99b1a4d5b575}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xboxone">
+      <UniqueIdentifier>{ac7aa2d5-f0f7-46eb-a548-5b6316f3b63b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

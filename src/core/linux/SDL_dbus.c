@@ -22,6 +22,7 @@
 #include "SDL_hints.h"
 #include "SDL_dbus.h"
 #include "SDL_atomic.h"
+#include "../../stdlib/SDL_vacopy.h"
 
 #if SDL_USE_LIBDBUS
 /* we never link directly to libdbus. */

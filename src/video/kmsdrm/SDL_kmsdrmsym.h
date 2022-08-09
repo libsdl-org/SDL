@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 #ifndef SDL_KMSDRM_MODULE
 #define SDL_KMSDRM_MODULE(modname)
@@ -125,6 +125,6 @@ SDL_KMSDRM_SYM(void,gbm_surface_release_buffer,(struct gbm_surface *surf, struct
 #undef SDL_KMSDRM_SYM
 #undef SDL_KMSDRM_SYM_CONST
 
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 
 /* vi: set ts=4 sw=4 expandtab: */

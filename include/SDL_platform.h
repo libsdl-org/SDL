@@ -65,11 +65,15 @@
 #undef __LINUX__ /* do we need to do this? */
 #define __ANDROID__ 1
 #endif
+#if defined(__NGAGE__)
+#undef __NGAGE__
+#define __NGAGE__ 1
+#endif
 
 #if defined(__APPLE__)
 /* lets us know what version of Mac OS X we're compiling on */
-#include "AvailabilityMacros.h"
-#include "TargetConditionals.h"
+#include <AvailabilityMacros.h>
+#include <TargetConditionals.h>
 
 /* Fix building with older SDKs that don't define these
    See this for more information:
@@ -104,9 +108,9 @@
 /* if not compiling for iOS */
 #undef __MACOSX__
 #define __MACOSX__  1
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-# error SDL for Mac OS X only supports deploying on 10.6 and above.
-#endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 1060 */
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
+# error SDL for Mac OS X only supports deploying on 10.7 and above.
+#endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 1070 */
 #endif /* TARGET_OS_IPHONE */
 #endif /* defined(__APPLE__) */
 
@@ -140,7 +144,7 @@
 #endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
-/* Try to find out if we're compiling for WinRT or non-WinRT */
+/* Try to find out if we're compiling for WinRT, GDK or non-WinRT/GDK */
 #if defined(_MSC_VER) && defined(__has_include)
 #if __has_include(<winapifamily.h>)
 #define HAVE_WINAPIFAMILY_H 1
@@ -165,6 +169,15 @@
 #if WINAPI_FAMILY_WINRT
 #undef __WINRT__
 #define __WINRT__ 1
+#elif defined(_GAMING_DESKTOP) /* GDK project configuration always defines _GAMING_XXX */
+#undef __WINGDK__
+#define __WINGDK__ 1
+#elif defined(_GAMING_XBOX_XBOXONE)
+#undef __XBOXONE__
+#define __XBOXONE__ 1
+#elif defined(_GAMING_XBOX_SCARLETT)
+#undef __XBOXSERIES__
+#define __XBOXSERIES__ 1
 #else
 #undef __WINDOWS__
 #define __WINDOWS__ 1
@@ -175,9 +188,17 @@
 #undef __WIN32__
 #define __WIN32__ 1
 #endif
+/* This is to support generic "any GDK" separate from a platform-specific GDK */
+#if defined(__WINGDK__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#undef __GDK__
+#define __GDK__ 1
+#endif
 #if defined(__PSP__)
 #undef __PSP__
 #define __PSP__ 1
+#endif
+#if defined(PS2)
+#define __PS2__ 1
 #endif
 
 /* The NACL compiler defines __native_client__ and __pnacl__

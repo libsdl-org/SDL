@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Script to sort the game controller database entries in SDL_gamecontroller.c
 
@@ -7,7 +7,7 @@ import re
 
 filename = "SDL_gamecontrollerdb.h"
 input = open(filename)
-output = open(filename + ".new", "w")
+output = open(f"{filename}.new", "w")
 parsing_controllers = False
 controllers = []
 controller_guids = {}
@@ -57,14 +57,14 @@ def write_controllers():
             print("Warning: entry '%s' is duplicate of entry '%s'" % (current_name, existing_name))
 
             if (not current_name.startswith("(DUPE)")):
-                entry[2] = "(DUPE) " + current_name
+                entry[2] = f"(DUPE) {current_name}"
 
             if (not existing_name.startswith("(DUPE)")):
-                controller_guids[entry[1]][2] = "(DUPE) " + existing_name
+                controller_guids[entry[1]][2] = f"(DUPE) {existing_name}"
 
         controller_guids[entry[1]] = entry
 
-    for entry in sorted(controllers, key=lambda entry: entry[2]+"-"+entry[1]):
+    for entry in sorted(controllers, key=lambda entry: f"{entry[2]}-{entry[1]}"):
         line = "".join(entry) + "\n"
         line = line.replace("\t", "    ")
         if not line.endswith(",\n") and not line.endswith("*/\n") and not line.endswith(",\r\n") and not line.endswith("*/\r\n"):
@@ -75,7 +75,7 @@ def write_controllers():
     controller_guids = {}
 
 for line in input:
-    if (parsing_controllers):
+    if parsing_controllers:
         if (line.startswith("{")):
             output.write(line)
         elif (line.startswith("    NULL")):
@@ -83,7 +83,7 @@ for line in input:
             write_controllers()
             output.write(line)
         elif (line.startswith("#if")):
-            print("Parsing " + line.strip())
+            print(f"Parsing {line.strip()}")
             output.write(line)
         elif (line.startswith("#endif")):
             write_controllers()
@@ -97,4 +97,4 @@ for line in input:
         output.write(line)
 
 output.close()
-print("Finished writing %s.new" % filename)
+print(f"Finished writing {filename}.new")

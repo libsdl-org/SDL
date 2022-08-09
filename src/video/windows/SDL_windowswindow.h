@@ -25,6 +25,13 @@
 
 #if SDL_VIDEO_OPENGL_EGL   
 #include "../SDL_egl_c.h"
+#else
+#include "../SDL_sysvideo.h"
+#endif
+
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 typedef struct
@@ -49,15 +56,22 @@ typedef struct
     Uint8 focus_click_pending;
     SDL_bool skip_update_clipcursor;
     Uint32 last_updated_clipcursor;
+    SDL_bool mouse_relative_mode_center;
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
     RECT cursor_clipped_rect;
     SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
+    WCHAR *ICMFileName;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
 #endif
+    /**
+     * Cached value of GetDpiForWindow, for use for scaling points in the client area
+     * between dpi-scaled points and pixels. Only used if videodata->dpi_scaling_enabled.
+     */
+    int scaling_dpi;
 } SDL_WindowData;
 
 extern int WIN_CreateWindow(_THIS, SDL_Window * window);
@@ -79,6 +93,7 @@ extern void WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizabl
 extern void WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top);
 extern void WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 extern int WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
+extern void WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_bool send_event);
 extern void* WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size);
 extern int WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
 extern void WIN_SetWindowMouseRect(_THIS, SDL_Window * window);
@@ -90,8 +105,16 @@ extern SDL_bool WIN_GetWindowWMInfo(_THIS, SDL_Window * window,
 extern void WIN_OnWindowEnter(_THIS, SDL_Window * window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
 extern int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
+extern void WIN_GetDrawableSize(const SDL_Window *window, int *w, int *h);
+extern void WIN_ClientPointToSDL(const SDL_Window *window, int *w, int *h);
+extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *w, int *h);
 extern void WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept);
 extern int WIN_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_windowswindow_h_ */
 

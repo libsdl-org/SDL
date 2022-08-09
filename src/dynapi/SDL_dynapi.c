@@ -71,11 +71,28 @@ static void SDL_InitDynamicAPI(void);
 
 #define SDL_DYNAPI_VARARGS(_static, name, initcall) \
     _static int SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
-        char buf[512]; /* !!! FIXME: dynamic allocation */ \
-        va_list ap; initcall; va_start(ap, fmt); \
-        jump_table.SDL_vsnprintf(buf, sizeof (buf), fmt, ap); \
+        char buf[128], *str = buf; \
+        int result; \
+        va_list ap; initcall; \
+        va_start(ap, fmt); \
+        result = jump_table.SDL_vsnprintf(buf, sizeof(buf), fmt, ap); \
         va_end(ap); \
-        return jump_table.SDL_SetError("%s", buf); \
+        if (result >= 0 && (size_t)result >= sizeof(buf)) { \
+            size_t len = (size_t)result + 1; \
+            str = (char *)jump_table.SDL_malloc(len); \
+            if (str) { \
+                va_start(ap, fmt); \
+                result = jump_table.SDL_vsnprintf(str, len, fmt, ap); \
+                va_end(ap); \
+            } \
+        } \
+        if (result >= 0) { \
+            result = jump_table.SDL_SetError("%s", str); \
+        } \
+        if (str != buf) { \
+            jump_table.SDL_free(str); \
+        } \
+        return result; \
     } \
     _static int SDLCALL SDL_sscanf##name(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...) { \
         int retval; va_list ap; initcall; va_start(ap, fmt); \
@@ -274,7 +291,7 @@ static void dynapi_warn(const char *msg)
 {
     const char *caption = "SDL Dynamic API Failure!";
     /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
-    #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+    #if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
     #elif defined(HAVE_STDIO_H)
     fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);

@@ -27,8 +27,6 @@
 
 HidD_GetString_t SDL_HidD_GetManufacturerString;
 HidD_GetString_t SDL_HidD_GetProductString;
-HidD_GetPreparsedData_t SDL_HidD_GetPreparsedData;
-HidD_FreePreparsedData_t SDL_HidD_FreePreparsedData;
 HidP_GetCaps_t SDL_HidP_GetCaps;
 HidP_GetButtonCaps_t SDL_HidP_GetButtonCaps;
 HidP_GetValueCaps_t SDL_HidP_GetValueCaps;
@@ -58,15 +56,13 @@ WIN_LoadHIDDLL(void)
 
     SDL_HidD_GetManufacturerString = (HidD_GetString_t)GetProcAddress(s_pHIDDLL, "HidD_GetManufacturerString");
     SDL_HidD_GetProductString = (HidD_GetString_t)GetProcAddress(s_pHIDDLL, "HidD_GetProductString");
-    SDL_HidD_GetPreparsedData = (HidD_GetPreparsedData_t)GetProcAddress(s_pHIDDLL, "HidD_GetPreparsedData");
-    SDL_HidD_FreePreparsedData = (HidD_FreePreparsedData_t)GetProcAddress(s_pHIDDLL, "HidD_FreePreparsedData");
     SDL_HidP_GetCaps = (HidP_GetCaps_t)GetProcAddress(s_pHIDDLL, "HidP_GetCaps");
     SDL_HidP_GetButtonCaps = (HidP_GetButtonCaps_t)GetProcAddress(s_pHIDDLL, "HidP_GetButtonCaps");
     SDL_HidP_GetValueCaps = (HidP_GetValueCaps_t)GetProcAddress(s_pHIDDLL, "HidP_GetValueCaps");
     SDL_HidP_MaxDataListLength = (HidP_MaxDataListLength_t)GetProcAddress(s_pHIDDLL, "HidP_MaxDataListLength");
     SDL_HidP_GetData = (HidP_GetData_t)GetProcAddress(s_pHIDDLL, "HidP_GetData");
-    if (!SDL_HidD_GetManufacturerString || !SDL_HidD_GetProductString || !SDL_HidD_GetPreparsedData ||
-        !SDL_HidD_FreePreparsedData || !SDL_HidP_GetCaps || !SDL_HidP_GetButtonCaps ||
+    if (!SDL_HidD_GetManufacturerString || !SDL_HidD_GetProductString ||
+        !SDL_HidP_GetCaps || !SDL_HidP_GetButtonCaps ||
         !SDL_HidP_GetValueCaps || !SDL_HidP_MaxDataListLength || !SDL_HidP_GetData) {
         WIN_UnloadHIDDLL();
         return -1;

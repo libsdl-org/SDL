@@ -661,7 +661,6 @@ EnumKeyboards(DFBInputDeviceID device_id,
 #if USE_MULTI_API
     SDL_Keyboard keyboard;
 #endif
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
 
     if (!cb->sys_kbd) {
         if (cb->sys_ids) {
@@ -696,12 +695,6 @@ EnumKeyboards(DFBInputDeviceID device_id,
 
         SDL_DFB_LOG("Keyboard %d - %s\n", device_id, desc.name);
 
-        SDL_GetDefaultKeymap(keymap);
-#if USE_MULTI_API
-        SDL_SetKeymap(devdata->num_keyboard, 0, keymap, SDL_NUM_SCANCODES);
-#else
-        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
-#endif
         devdata->num_keyboard++;
 
         if (cb->sys_kbd)

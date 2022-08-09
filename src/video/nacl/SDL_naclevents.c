@@ -23,8 +23,8 @@
 #if SDL_VIDEO_DRIVER_NACL
 
 #include "SDL.h"
-#include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_naclevents_c.h"
 #include "SDL_naclvideo.h"
 #include "ppapi_simple/ps_event.h"

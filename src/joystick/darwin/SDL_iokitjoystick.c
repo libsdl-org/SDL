@@ -744,12 +744,17 @@ DARWIN_JoystickDetect(void)
     }
 }
 
-/* Function to get the device-dependent name of a joystick */
 const char *
 DARWIN_JoystickGetDeviceName(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->product : "UNKNOWN";
+}
+
+const char *
+DARWIN_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
 }
 
 static int
@@ -980,7 +985,7 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     recDevice *device = joystick->hwdata;
     recElement *element;
     SInt32 value, range;
-    int i;
+    int i, goodRead = SDL_FALSE;
 
     if (!device) {
         return;
@@ -996,7 +1001,6 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     element = device->firstAxis;
     i = 0;
 
-    int goodRead = SDL_FALSE;
     while (element) {
         goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
         if (goodRead) {
@@ -1115,6 +1119,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickGetCount,
     DARWIN_JoystickDetect,
     DARWIN_JoystickGetDeviceName,
+    DARWIN_JoystickGetDevicePath,
     DARWIN_JoystickGetDevicePlayerIndex,
     DARWIN_JoystickSetDevicePlayerIndex,
     DARWIN_JoystickGetDeviceGUID,

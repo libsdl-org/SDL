@@ -39,7 +39,7 @@
 static __inline__ void __attribute__((__always_inline__, __nodebug__))
 _m_prefetch(void *__P)
 {
-  __builtin_prefetch (__P, 0, 3 /* _MM_HINT_T0 */);
+  __builtin_prefetch(__P, 0, 3 /* _MM_HINT_T0 */);
 }
 #endif /* __PRFCHWINTRIN_H */
 #endif /* __clang__ */
@@ -59,17 +59,26 @@ _m_prefetch(void *__P)
 #ifdef __linux__
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
 #include <endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
 #elif defined(__FreeBSD__) || defined(__NetBSD__)
 #include <sys/endian.h>
 #define SDL_BYTEORDER  BYTE_ORDER
+/* predefs from newer gcc and clang versions: */
+#elif defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__BYTE_ORDER__)
+#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#define SDL_BYTEORDER   SDL_LIL_ENDIAN
+#elif (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define SDL_BYTEORDER   SDL_BIG_ENDIAN
+#else
+#error Unsupported endianness
+#endif /**/
 #else
 #if defined(__hppa__) || \
     defined(__m68k__) || defined(mc68000) || defined(_M_M68K) || \
     (defined(__MIPS__) && defined(__MIPSEB__)) || \
-    defined(__ppc__) || defined(__POWERPC__) || defined(_M_PPC) || \
+    defined(__ppc__) || defined(__POWERPC__) || defined(__powerpc__) || defined(__PPC__) || \
     defined(__sparc__)
 #define SDL_BYTEORDER   SDL_BIG_ENDIAN
 #else
@@ -77,6 +86,28 @@ _m_prefetch(void *__P)
 #endif
 #endif /* __linux__ */
 #endif /* !SDL_BYTEORDER */
+
+#ifndef SDL_FLOATWORDORDER           /* Not defined in SDL_config.h? */
+/* predefs from newer gcc versions: */
+#if defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__FLOAT_WORD_ORDER__)
+#if (__FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN
+#elif (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define SDL_FLOATWORDORDER   SDL_BIG_ENDIAN
+#else
+#error Unsupported endianness
+#endif /**/
+#elif defined(__MAVERICK__)
+/* For Maverick, float words are always little-endian. */
+#define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN
+#elif (defined(__arm__) || defined(__thumb__)) && !defined(__VFP_FP__) && !defined(__ARM_EABI__)
+/* For FPA, float words are always big-endian. */
+#define SDL_FLOATWORDORDER   SDL_BIG_ENDIAN
+#else
+/* By default, assume that floats words follow the memory system mode. */
+#define SDL_FLOATWORDORDER   SDL_BYTEORDER
+#endif /* __FLOAT_WORD_ORDER__ */
+#endif /* !SDL_FLOATWORDORDER */
 
 
 #include "begin_code.h"

@@ -53,6 +53,7 @@ typedef struct {
     /* Without this variable, hid_write starts to lag a TON */
     SDL_bool rumbleUpdate;
     SDL_bool m_bUseButtonLabels;
+    SDL_bool useRumbleBrake;
 } SDL_DriverGameCube_Context;
 
 static SDL_bool
@@ -70,7 +71,7 @@ HIDAPI_DriverGameCube_IsSupportedDevice(const char *name, SDL_GameControllerType
 }
 
 static const char *
-HIDAPI_DriverGameCube_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverGameCube_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return "Nintendo GameCube Controller";
 }
@@ -90,6 +91,14 @@ static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata,
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)userdata;
     ctx->m_bUseButtonLabels = SDL_GetStringBoolean(hint, SDL_TRUE);
+}
+
+static void SDLCALL SDL_JoystickGameCubeRumbleBrakeHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    if (hint) {
+        SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)userdata;
+        ctx->useRumbleBrake = SDL_GetStringBoolean(hint, SDL_FALSE);
+    }
 }
 
 static Uint8 RemapButton(SDL_DriverGameCube_Context *ctx, Uint8 button)
@@ -142,6 +151,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     ctx->joysticks[2] = -1;
     ctx->joysticks[3] = -1;
     ctx->rumble[0] = rumbleMagic;
+    ctx->useRumbleBrake = SDL_FALSE;
 
     if (device->vendor_id != USB_VENDOR_NINTENDO) {
         ctx->pc_mode = SDL_TRUE;
@@ -195,6 +205,8 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
 
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE,
+                        SDL_JoystickGameCubeRumbleBrakeHintChanged, ctx);
     SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
@@ -439,12 +451,22 @@ HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
     for (i = 0; i < MAX_CONTROLLERS; i += 1) {
         if (joystick->instance_id == ctx->joysticks[i]) {
             if (ctx->wireless[i]) {
-                return SDL_SetError("Ninteno GameCube WaveBird controllers do not support rumble");
+                return SDL_SetError("Nintendo GameCube WaveBird controllers do not support rumble");
             }
             if (!ctx->rumbleAllowed[i]) {
                 return SDL_SetError("Second USB cable for WUP-028 not connected");
             }
-            val = (low_frequency_rumble > 0 || high_frequency_rumble > 0);
+            if (ctx->useRumbleBrake) {
+                if (low_frequency_rumble == 0 && high_frequency_rumble > 0) {
+                    val = 0; /* if only low is 0 we want to do a regular stop*/
+                } else if (low_frequency_rumble == 0 && high_frequency_rumble == 0) {
+                    val = 2; /* if both frequencies are 0 we want to do a hard stop */
+                } else {
+                    val = 1; /* normal rumble */
+                }
+            } else {
+                val = (low_frequency_rumble > 0 || high_frequency_rumble > 0);
+            }
             if (val != ctx->rumble[i + 1]) {
                 ctx->rumble[i + 1] = val;
                 ctx->rumbleUpdate = SDL_TRUE;
@@ -522,6 +544,8 @@ HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
 
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE,
+                        SDL_JoystickGameCubeRumbleBrakeHintChanged, ctx);
 
     SDL_LockMutex(device->dev_lock);
     {

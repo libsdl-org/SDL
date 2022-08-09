@@ -28,6 +28,11 @@
 #include "SDL_thread.h"
 #include "SDL_thread_c.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This function creates a thread, passing args to SDL_RunThread(),
    saves a system-dependent thread id in thread->id, and returns 0
    on success.
@@ -64,6 +69,11 @@ extern int SDL_SYS_SetTLSData(SDL_TLSData *data);
 extern SDL_Thread *
 SDL_CreateThreadInternal(int (SDLCALL * fn) (void *), const char *name,
                          const size_t stacksize, void *data);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_systhread_h_ */
 

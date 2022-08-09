@@ -28,6 +28,7 @@
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
 #include "SDL_gamecontrollerdb.h"
+#include "controller_type.h"
 #include "usb_ids.h"
 
 #if !SDL_EVENTS_DISABLED
@@ -586,6 +587,30 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         (vendor == USB_VENDOR_SHENZHEN && product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER)) {
         /* GameCube driver has 12 buttons and 6 axes */
         SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3,start:b8,x:b2,y:b3,", sizeof(mapping_string));
+    } else if (vendor == USB_VENDOR_NINTENDO && guid.data[15] != 0 && guid.data[15] != 3) {
+        switch (guid.data[15]) {
+        case 9:
+        case 10:
+            /* NES Controller */
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof(mapping_string));
+            break;
+        case 11:
+            /* SNES Controller */
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            break;
+        case 12:
+            /* N64 Controller */
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,misc1:b15,", sizeof(mapping_string));
+            break;
+        case 13:
+            /* SEGA Genesis Controller */
+            SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b10,righttrigger:a5,start:b6,misc1:b15,", sizeof(mapping_string));
+            break;
+        default:
+            /* Mini gamepad mode */
+            SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            break;
+        }
     } else {
         /* All other controllers have the standard set of 19 buttons and 6 axes */
         SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof(mapping_string));
@@ -599,6 +624,9 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         } else if (SDL_IsJoystickSteamController(vendor, product)) {
             /* Steam controllers have 2 back paddle buttons */
             SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
+            /* The Nintendo Switch Joy-Con combined controller has a share button */
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
         } else {
             switch (SDL_GetJoystickGameControllerTypeFromGUID(guid, NULL)) {
             case SDL_CONTROLLER_TYPE_PS4:
@@ -612,12 +640,6 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
-                /* Joy-Cons have extra buttons in the same place as paddles */
-                if (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product)) {
-                    SDL_strlcat(mapping_string, "paddle2:b17,paddle4:b19,", sizeof(mapping_string));
-                } else if (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product)) {
-                    SDL_strlcat(mapping_string, "paddle1:b16,paddle3:b18,", sizeof(mapping_string));
-                }
                 break;
             case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
                 /* Amazon Luna Controller has a mic button under the guide button */
@@ -625,6 +647,10 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 break;
             case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
                 /* The Google Stadia controller has a share button and a Google Assistant button */
+                SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+                break;
+            case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD:
+                /* The NVIDIA SHIELD controller has a share button between back and start buttons */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
                 break;
             default:
@@ -696,19 +722,20 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
             return s_pXInputMapping;
         }
 #endif
+        if (!mapping) {
+            if (SDL_IsJoystickHIDAPI(guid)) {
+                mapping = SDL_CreateMappingForHIDAPIController(guid);
+            } else if (SDL_IsJoystickRAWINPUT(guid)) {
+                mapping = SDL_CreateMappingForRAWINPUTController(guid);
+            } else if (SDL_IsJoystickWGI(guid)) {
+                mapping = SDL_CreateMappingForWGIController(guid);
+            } else if (SDL_IsJoystickVirtual(guid)) {
+                /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
 #ifdef __ANDROID__
-        if (!mapping && !SDL_IsJoystickHIDAPI(guid)) {
-            mapping = SDL_CreateMappingForAndroidController(guid);
-        }
+            } else {
+                mapping = SDL_CreateMappingForAndroidController(guid);
 #endif
-        if (!mapping && SDL_IsJoystickHIDAPI(guid)) {
-            mapping = SDL_CreateMappingForHIDAPIController(guid);
-        }
-        if (!mapping && SDL_IsJoystickRAWINPUT(guid)) {
-            mapping = SDL_CreateMappingForRAWINPUTController(guid);
-        }
-        if (!mapping && SDL_IsJoystickWGI(guid)) {
-            mapping = SDL_CreateMappingForWGIController(guid);
+            }
         }
     }
     return mapping;
@@ -1003,7 +1030,7 @@ static char *SDL_PrivateGetControllerGUIDFromMappingString(const char *pMapping)
         pchGUID[pFirstComma - pMapping] = '\0';
 
         /* Convert old style GUIDs to the new style in 2.0.5 */
-#if __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
         if (SDL_strlen(pchGUID) == 32 &&
             SDL_memcmp(&pchGUID[20], "504944564944", 12) == 0) {
             SDL_memcpy(&pchGUID[20], "000000000000", 12);
@@ -1258,6 +1285,11 @@ static ControllerMapping_t *SDL_PrivateGenerateAutomaticControllerMapping(const 
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpdown", &raw_map->dpdown);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpleft", &raw_map->dpleft);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "dpright", &raw_map->dpright);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "misc1", &raw_map->misc1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle1", &raw_map->paddle1);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle2", &raw_map->paddle2);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle3", &raw_map->paddle3);
+    SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "paddle4", &raw_map->paddle4);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "leftx", &raw_map->leftx);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefty", &raw_map->lefty);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "rightx", &raw_map->rightx);
@@ -1732,6 +1764,20 @@ SDL_GameControllerNameForIndex(int device_index)
 }
 
 
+/*
+ * Get the implementation dependent path of a controller
+ */
+const char *
+SDL_GameControllerPathForIndex(int device_index)
+{
+    ControllerMapping_t *pSupportedController = SDL_PrivateGetControllerMapping(device_index);
+    if (pSupportedController) {
+        return SDL_JoystickPathForIndex(device_index);
+    }
+    return NULL;
+}
+
+
 /**
  *  Get the type of a game controller.
  */
@@ -1820,12 +1866,10 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     }
 #endif
 
-#if defined(__ANDROID__)
     if (name && SDL_strcmp(name, "uinput-fpc") == 0) {
         /* The Google Pixel fingerprint sensor reports itself as a joystick */
         return SDL_TRUE;
     }
-#endif
 
     if (SDL_allowed_controllers.num_entries == 0 &&
         SDL_ignored_controllers.num_entries == 0) {
@@ -2294,6 +2338,15 @@ SDL_GameControllerName(SDL_GameController *gamecontroller)
     }
 }
 
+const char *
+SDL_GameControllerPath(SDL_GameController *gamecontroller)
+{
+    if (!gamecontroller)
+        return NULL;
+
+    return SDL_JoystickPath(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
 SDL_GameControllerType
 SDL_GameControllerGetType(SDL_GameController *gamecontroller)
 {
@@ -2331,6 +2384,12 @@ Uint16
 SDL_GameControllerGetProductVersion(SDL_GameController *gamecontroller)
 {
     return SDL_JoystickGetProductVersion(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
+Uint16
+SDL_GameControllerGetFirmwareVersion(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickGetFirmwareVersion(SDL_GameControllerGetJoystick(gamecontroller));
 }
 
 const char *
@@ -2685,6 +2744,7 @@ SDL_GameControllerEventState(int state)
     const Uint32 event_list[] = {
         SDL_CONTROLLERAXISMOTION, SDL_CONTROLLERBUTTONDOWN, SDL_CONTROLLERBUTTONUP,
         SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEREMOVED, SDL_CONTROLLERDEVICEREMAPPED,
+        SDL_CONTROLLERTOUCHPADDOWN, SDL_CONTROLLERTOUCHPADMOTION, SDL_CONTROLLERTOUCHPADUP, SDL_CONTROLLERSENSORUPDATE,
     };
     unsigned int i;
 

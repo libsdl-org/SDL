@@ -377,13 +377,15 @@ static void OS2_JoystickDetect(void)
 {
 }
 
-/***********************************************************/
-/* Function to get the device-dependent name of a joystick */
-/***********************************************************/
 static const char *OS2_JoystickGetDeviceName(int device_index)
 {
 	/* No need to verify if device exists, already done in upper layer */
 	return SYS_JoyData[device_index].szDeviceName;
+}
+
+static const char *OS2_JoystickGetDevicePath(int device_index)
+{
+	return NULL;
 }
 
 static int OS2_JoystickGetDevicePlayerIndex(int device_index)
@@ -779,6 +781,7 @@ SDL_JoystickDriver SDL_OS2_JoystickDriver =
 	OS2_NumJoysticks,
 	OS2_JoystickDetect,
 	OS2_JoystickGetDeviceName,
+	OS2_JoystickGetDevicePath,
 	OS2_JoystickGetDevicePlayerIndex,
 	OS2_JoystickSetDevicePlayerIndex,
 	OS2_JoystickGetDeviceGUID,

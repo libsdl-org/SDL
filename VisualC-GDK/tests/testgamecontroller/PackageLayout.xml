@@ -1,0 +1,9 @@
+<Package>
+  <Chunk Id="1000" Marker="Launch">
+    <FileGroup DestinationPath="." SourcePath="." Include="testgamecontroller.exe" />
+    <FileGroup DestinationPath="." SourcePath="." Include="MicrosoftGame.config" />
+    <FileGroup DestinationPath="." SourcePath="." Include="*.bmp" />
+    <FileGroup DestinationPath="." SourcePath="." Include="*.png" />
+    <FileGroup DestinationPath="." SourcePath="." Include="*.dll" />
+  </Chunk>
+</Package>

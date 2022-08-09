@@ -27,6 +27,9 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
+#if !defined(__WINRT__)
+#include "../../video/windows/SDL_windowswindow.h"
+#endif
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
@@ -91,7 +94,7 @@ typedef struct
     int lockedTexturePositionX;
     int lockedTexturePositionY;
     D3D11_FILTER scaleMode;
-
+#if SDL_HAVE_YUV
     /* YV12 texture support */
     SDL_bool yuv;
     ID3D11Texture2D *mainTextureU;
@@ -107,6 +110,7 @@ typedef struct
     Uint8 *pixels;
     int pitch;
     SDL_Rect locked_rect;
+#endif
 } D3D11_TextureData;
 
 /* Blend mode data */
@@ -668,7 +672,7 @@ done:
     return result;
 }
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
 
 static DXGI_MODE_ROTATION
 D3D11_GetCurrentRotation()
@@ -677,7 +681,7 @@ D3D11_GetCurrentRotation()
     return DXGI_MODE_ROTATION_IDENTITY;
 }
 
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 static BOOL
 D3D11_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
@@ -823,7 +827,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
         goto done;
 #endif
     } else {
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
         SDL_SysWMinfo windowinfo;
         SDL_VERSION(&windowinfo.version);
         SDL_GetWindowWMInfo(renderer->window, &windowinfo);
@@ -845,7 +849,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
 #else
         SDL_SetError(__FUNCTION__", Unable to find something to attach a swap chain to");
         goto done;
-#endif  /* ifdef __WIN32__ / else */
+#endif  /* defined(__WIN32__) || defined(__WINGDK__) / else */
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 
@@ -909,7 +913,11 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
+#if defined(__WINRT__)
     SDL_GetWindowSize(renderer->window, &w, &h);
+#else
+    WIN_GetDrawableSize(renderer->window, &w, &h);
+#endif
     data->rotation = D3D11_GetCurrentRotation();
     /* SDL_Log("%s: windowSize={%d,%d}, orientation=%d\n", __FUNCTION__, w, h, (int)data->rotation); */
     if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
@@ -997,6 +1005,16 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         goto done;
     }
 
+    /* Set the swap chain target immediately, so that a target is always set
+     * even before we get to SetDrawState. Without this it's possible to hit
+     * null references in places like ReadPixels!
+     */
+    ID3D11DeviceContext_OMSetRenderTargets(data->d3dContext,
+        1,
+        &data->mainRenderTargetView,
+        NULL
+        );
+
     data->viewportDirty = SDL_TRUE;
 
 done:
@@ -1039,6 +1057,15 @@ D3D11_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
         D3D11_UpdateForWindowSizeChange(renderer);
     }
 }
+
+#if !defined(__WINRT__)
+static int
+D3D11_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
+{
+    WIN_GetDrawableSize(renderer->window, w, h);
+    return 0;
+}
+#endif
 
 static SDL_bool
 D3D11_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
@@ -1116,7 +1143,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         D3D11_DestroyTexture(renderer, texture);
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
     }
-
+#if SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
         textureData->yuv = SDL_TRUE;
@@ -1165,7 +1192,8 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
         }
     }
-
+#endif /* SDL_HAVE_YUV */
+    SDL_zero(resourceViewDesc);
     resourceViewDesc.Format = textureDesc.Format;
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MostDetailedMip = 0;
@@ -1179,7 +1207,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         D3D11_DestroyTexture(renderer, texture);
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
     }
-
+#if SDL_HAVE_YUV
     if (textureData->yuv) {
         result = ID3D11Device_CreateShaderResourceView(rendererData->d3dDevice,
             (ID3D11Resource *)textureData->mainTextureU,
@@ -1216,9 +1244,11 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
         }
     }
+#endif /* SDL_HAVE_YUV */
 
     if (texture->access & SDL_TEXTUREACCESS_TARGET) {
         D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+        SDL_zero(renderTargetViewDesc);
         renderTargetViewDesc.Format = textureDesc.Format;
         renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
         renderTargetViewDesc.Texture2D.MipSlice = 0;
@@ -1250,6 +1280,7 @@ D3D11_DestroyTexture(SDL_Renderer * renderer,
     SAFE_RELEASE(data->mainTextureResourceView);
     SAFE_RELEASE(data->mainTextureRenderTargetView);
     SAFE_RELEASE(data->stagingTexture);
+#if SDL_HAVE_YUV
     SAFE_RELEASE(data->mainTextureU);
     SAFE_RELEASE(data->mainTextureResourceViewU);
     SAFE_RELEASE(data->mainTextureV);
@@ -1257,6 +1288,7 @@ D3D11_DestroyTexture(SDL_Renderer * renderer,
     SAFE_RELEASE(data->mainTextureNV);
     SAFE_RELEASE(data->mainTextureResourceViewNV);
     SDL_free(data->pixels);
+#endif
     SDL_free(data);
     texture->driverdata = NULL;
 }
@@ -1357,7 +1389,7 @@ D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch) < 0) {
         return -1;
     }
-
+#if SDL_HAVE_YUV
     if (textureData->yuv) {
         /* Skip to the correct offset into the next texture */
         srcPixels = (const void*)((const Uint8*)srcPixels + rect->h * srcPitch);
@@ -1381,6 +1413,7 @@ D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
             return -1;
         }
     }
+#endif /* SDL_HAVE_YUV */
     return 0;
 }
 
@@ -1448,7 +1481,7 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
     }
-
+#if SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         /* It's more efficient to upload directly... */
         if (!textureData->pixels) {
@@ -1465,7 +1498,7 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         *pitch = textureData->pitch;
         return 0;
     }
-
+#endif
     if (textureData->stagingTexture) {
         return SDL_SetError("texture is already locked");
     }
@@ -1529,7 +1562,7 @@ D3D11_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (!textureData) {
         return;
     }
-
+#if SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         const SDL_Rect *rect = &textureData->locked_rect;
         void *pixels =
@@ -1538,7 +1571,7 @@ D3D11_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         D3D11_UpdateTexture(renderer, texture, rect, pixels, textureData->pitch);
         return;
     }
-
+#endif
     /* Commit the pixel buffer's changes back to the staging texture: */
     ID3D11DeviceContext_Unmap(rendererData->d3dContext,
         (ID3D11Resource *)textureData->stagingTexture,
@@ -1949,7 +1982,7 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
     }
 
     if (updateSubresource == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
-        SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix));
+        SDL_copyp(&rendererData->vertexShaderConstantsData.model, newmatrix);
         ID3D11DeviceContext_UpdateSubresource(rendererData->d3dContext,
             (ID3D11Resource *)rendererData->vertexShaderConstants,
             0,
@@ -1981,7 +2014,7 @@ D3D11_SetCopyState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, const 
     default:
         return SDL_SetError("Unknown scale mode: %d\n", textureData->scaleMode);
     }
-
+#if SDL_HAVE_YUV
     if (textureData->yuv) {
         ID3D11ShaderResourceView *shaderResources[] = {
             textureData->mainTextureResourceView,
@@ -2032,7 +2065,7 @@ D3D11_SetCopyState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, const 
                                   SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
 
     }
-
+#endif /* SDL_HAVE_YUV */
     return D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_RGB],
                               1, &textureData->mainTextureResourceView, textureSampler, matrix);
 }
@@ -2068,8 +2101,8 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &rendererData->currentViewport;
-                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
+                    SDL_copyp(viewport, &cmd->data.viewport.rect);
                     rendererData->viewportDirty = SDL_TRUE;
                 }
                 break;
@@ -2081,8 +2114,8 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     rendererData->currentCliprectEnabled = cmd->data.cliprect.enabled;
                     rendererData->cliprectDirty = SDL_TRUE;
                 }
-                if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(&rendererData->currentCliprect, rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof(*rect)) != 0) {
+                    SDL_copyp(&rendererData->currentCliprect, rect);
                     rendererData->cliprectDirty = SDL_TRUE;
                 }
                 break;
@@ -2341,6 +2374,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     data = (D3D11_RenderData *) SDL_calloc(1, sizeof(*data));
     if (!data) {
+        SDL_free(renderer);
         SDL_OutOfMemory();
         return NULL;
     }
@@ -2348,6 +2382,9 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D11_WindowEvent;
+#if !defined(__WINRT__)
+    renderer->GetOutputSize = D3D11_GetOutputSize;
+#endif
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
@@ -2436,7 +2473,7 @@ SDL_RenderDriver D3D11_RenderDriver = {
 
 #endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
 /* This function needs to always exist on Windows, for the Dynamic API. */
 ID3D11Device *
 SDL_RenderGetD3D11Device(SDL_Renderer * renderer)
@@ -2460,6 +2497,6 @@ SDL_RenderGetD3D11Device(SDL_Renderer * renderer)
 
     return device;
 }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 /* vi: set ts=4 sw=4 expandtab: */

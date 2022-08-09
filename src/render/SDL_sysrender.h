@@ -28,6 +28,23 @@
 #include "SDL_mutex.h"
 #include "SDL_yuv_sw_c.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * A rectangle, with the origin at the upper left (double precision).
+ */
+typedef struct SDL_DRect
+{
+    double x;
+    double y;
+    double w;
+    double h;
+} SDL_DRect;
+
+
 /* The SDL 2D rendering system */
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
@@ -143,7 +160,7 @@ struct SDL_Renderer
                        const SDL_Rect * srcrect, const SDL_FRect * dstrect);
     int (*QueueCopyEx) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                         const SDL_Rect * srcquad, const SDL_FRect * dstrect,
-                        const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip);
+                        const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y);
     int (*QueueGeometry) (SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
                           const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
                           int num_vertices, const void *indices, int num_indices, int size_indices,
@@ -201,12 +218,12 @@ struct SDL_Renderer
     SDL_bool integer_scale;
 
     /* The drawable area within the window */
-    SDL_FRect viewport;
-    SDL_FRect viewport_backup;
+    SDL_DRect viewport;
+    SDL_DRect viewport_backup;
 
     /* The clip rectangle within the window */
-    SDL_FRect clip_rect;
-    SDL_FRect clip_rect_backup;
+    SDL_DRect clip_rect;
+    SDL_DRect clip_rect_backup;
 
     /* Wether or not the clipping rectangle is used. */
     SDL_bool clipping_enabled;
@@ -244,8 +261,8 @@ struct SDL_Renderer
     SDL_RenderCommand *render_commands_pool;
     Uint32 render_command_generation;
     Uint32 last_queued_color;
-    SDL_FRect last_queued_viewport;
-    SDL_FRect last_queued_cliprect;
+    SDL_DRect last_queued_viewport;
+    SDL_DRect last_queued_cliprect;
     SDL_bool last_queued_cliprect_enabled;
     SDL_bool color_queued;
     SDL_bool viewport_queued;
@@ -270,11 +287,13 @@ struct SDL_RenderDriver
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
 extern SDL_RenderDriver D3D_RenderDriver;
 extern SDL_RenderDriver D3D11_RenderDriver;
+extern SDL_RenderDriver D3D12_RenderDriver;
 extern SDL_RenderDriver GL_RenderDriver;
 extern SDL_RenderDriver GLES2_RenderDriver;
 extern SDL_RenderDriver GLES_RenderDriver;
 extern SDL_RenderDriver DirectFB_RenderDriver;
 extern SDL_RenderDriver METAL_RenderDriver;
+extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
 extern SDL_RenderDriver VITA_GXM_RenderDriver;
@@ -294,6 +313,11 @@ extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t num
 
 extern int SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect, SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode);
 extern int SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect, SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_sysrender_h_ */
 

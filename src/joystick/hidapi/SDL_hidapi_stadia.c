@@ -55,7 +55,7 @@ HIDAPI_DriverStadia_IsSupportedDevice(const char *name, SDL_GameControllerType t
 }
 
 static const char *
-HIDAPI_DriverStadia_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_DriverStadia_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
 {
     return "Google Stadia Controller";
 }

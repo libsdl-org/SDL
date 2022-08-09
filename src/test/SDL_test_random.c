@@ -70,7 +70,7 @@ void SDLTest_RandomInitTime(SDLTest_RandomContext * rndContext)
 
   srand((unsigned int)time(NULL));
   a=rand();
-  srand((unsigned int)clock());
+  srand((unsigned int)SDL_GetPerformanceCounter());
   b=rand();
   SDLTest_RandomInit(rndContext, a, b);
 }

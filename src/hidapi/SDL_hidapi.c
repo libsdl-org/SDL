@@ -37,7 +37,7 @@
 
 #if !SDL_HIDAPI_DISABLED
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -89,7 +89,7 @@ static struct
     SDL_bool m_bCanGetNotifications;
     Uint32 m_unLastDetect;
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
     SDL_threadID m_nThreadID;
     WNDCLASSEXA m_wndClass;
     HWND m_hwndMsg;
@@ -110,7 +110,7 @@ static struct
 } SDL_HIDAPI_discovery;
 
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINGDK__)
 struct _DEV_BROADCAST_HDR
 {
     DWORD       dbch_size;
@@ -156,7 +156,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
 
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 
 #if defined(__MACOSX__)
@@ -219,7 +219,7 @@ HIDAPI_InitializeDiscovery()
     SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_FALSE;
     SDL_HIDAPI_discovery.m_unLastDetect = 0;
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
     SDL_HIDAPI_discovery.m_nThreadID = SDL_ThreadID();
 
     SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
@@ -246,7 +246,7 @@ HIDAPI_InitializeDiscovery()
         SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification( SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES );
         SDL_HIDAPI_discovery.m_bCanGetNotifications = ( SDL_HIDAPI_discovery.m_hNotify != 0 );
     }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 #if defined(__MACOSX__)
     SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMasterPortDefault);
@@ -369,7 +369,7 @@ HIDAPI_UpdateDiscovery()
         return;
     }
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
 #if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
     /* We'll only get messages on the same thread that created the window */
     if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
@@ -382,7 +382,7 @@ HIDAPI_UpdateDiscovery()
         }
     }
 #endif
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 #if defined(__MACOSX__)
     if (SDL_HIDAPI_discovery.m_notificationPort) {
@@ -474,7 +474,7 @@ HIDAPI_ShutdownDiscovery()
         return;
     }
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINGDK__)
     if (SDL_HIDAPI_discovery.m_hNotify)
         UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
 
@@ -578,7 +578,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #include "mac/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx 1
-#elif __WINDOWS__
+#elif __WINDOWS__ || __WINGDK__
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
 #define udev_ctx 1
@@ -951,6 +951,7 @@ DeleteHIDDeviceWrapper(SDL_hid_device *device)
     }
 
 #if !SDL_HIDAPI_DISABLED
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
 
 #define COPY_IF_EXISTS(var) \
     if (pSrc->var != NULL) { \
@@ -987,6 +988,7 @@ CopyHIDDeviceInfo(struct SDL_hid_device_info *pSrc, struct SDL_hid_device_info *
 #undef COPY_IF_EXISTS
 #undef WCOPY_IF_EXISTS
 
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
 #endif /* !SDL_HIDAPI_DISABLED */
 
 static int SDL_hidapi_refcount = 0;
@@ -1032,54 +1034,60 @@ int SDL_hid_init(void)
 #endif
 
 #ifdef SDL_LIBUSB_DYNAMIC
-    ++attempts;
-    libusb_ctx.libhandle = SDL_LoadObject(SDL_LIBUSB_DYNAMIC);
-    if (libusb_ctx.libhandle != NULL) {
-        SDL_bool loaded = SDL_TRUE;
-        #ifdef __OS2__
-        #define LOAD_LIBUSB_SYMBOL(func) \
-            if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
-        #else
-        #define LOAD_LIBUSB_SYMBOL(func) \
-            if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
-        #endif
-        LOAD_LIBUSB_SYMBOL(init)
-        LOAD_LIBUSB_SYMBOL(exit)
-        LOAD_LIBUSB_SYMBOL(get_device_list)
-        LOAD_LIBUSB_SYMBOL(free_device_list)
-        LOAD_LIBUSB_SYMBOL(get_device_descriptor)
-        LOAD_LIBUSB_SYMBOL(get_active_config_descriptor)
-        LOAD_LIBUSB_SYMBOL(get_config_descriptor)
-        LOAD_LIBUSB_SYMBOL(free_config_descriptor)
-        LOAD_LIBUSB_SYMBOL(get_bus_number)
-        LOAD_LIBUSB_SYMBOL(get_device_address)
-        LOAD_LIBUSB_SYMBOL(open)
-        LOAD_LIBUSB_SYMBOL(close)
-        LOAD_LIBUSB_SYMBOL(claim_interface)
-        LOAD_LIBUSB_SYMBOL(release_interface)
-        LOAD_LIBUSB_SYMBOL(kernel_driver_active)
-        LOAD_LIBUSB_SYMBOL(detach_kernel_driver)
-        LOAD_LIBUSB_SYMBOL(attach_kernel_driver)
-        LOAD_LIBUSB_SYMBOL(set_interface_alt_setting)
-        LOAD_LIBUSB_SYMBOL(alloc_transfer)
-        LOAD_LIBUSB_SYMBOL(submit_transfer)
-        LOAD_LIBUSB_SYMBOL(cancel_transfer)
-        LOAD_LIBUSB_SYMBOL(free_transfer)
-        LOAD_LIBUSB_SYMBOL(control_transfer)
-        LOAD_LIBUSB_SYMBOL(interrupt_transfer)
-        LOAD_LIBUSB_SYMBOL(handle_events)
-        LOAD_LIBUSB_SYMBOL(handle_events_completed)
-        #undef LOAD_LIBUSB_SYMBOL
+    if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "libusb disabled by SDL_HIDAPI_DISABLE_LIBUSB");
+        libusb_ctx.libhandle = NULL;
+    } else {
+        ++attempts;
+        libusb_ctx.libhandle = SDL_LoadObject(SDL_LIBUSB_DYNAMIC);
+        if (libusb_ctx.libhandle != NULL) {
+            SDL_bool loaded = SDL_TRUE;
+            #ifdef __OS2__
+            #define LOAD_LIBUSB_SYMBOL(func) \
+                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
+            #else
+            #define LOAD_LIBUSB_SYMBOL(func) \
+                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
+            #endif
+            LOAD_LIBUSB_SYMBOL(init)
+            LOAD_LIBUSB_SYMBOL(exit)
+            LOAD_LIBUSB_SYMBOL(get_device_list)
+            LOAD_LIBUSB_SYMBOL(free_device_list)
+            LOAD_LIBUSB_SYMBOL(get_device_descriptor)
+            LOAD_LIBUSB_SYMBOL(get_active_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(get_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(free_config_descriptor)
+            LOAD_LIBUSB_SYMBOL(get_bus_number)
+            LOAD_LIBUSB_SYMBOL(get_device_address)
+            LOAD_LIBUSB_SYMBOL(open)
+            LOAD_LIBUSB_SYMBOL(close)
+            LOAD_LIBUSB_SYMBOL(claim_interface)
+            LOAD_LIBUSB_SYMBOL(release_interface)
+            LOAD_LIBUSB_SYMBOL(kernel_driver_active)
+            LOAD_LIBUSB_SYMBOL(detach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(attach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(set_interface_alt_setting)
+            LOAD_LIBUSB_SYMBOL(alloc_transfer)
+            LOAD_LIBUSB_SYMBOL(submit_transfer)
+            LOAD_LIBUSB_SYMBOL(cancel_transfer)
+            LOAD_LIBUSB_SYMBOL(free_transfer)
+            LOAD_LIBUSB_SYMBOL(control_transfer)
+            LOAD_LIBUSB_SYMBOL(interrupt_transfer)
+            LOAD_LIBUSB_SYMBOL(handle_events)
+            LOAD_LIBUSB_SYMBOL(handle_events_completed)
+            #undef LOAD_LIBUSB_SYMBOL
 
-        if (!loaded) {
-            SDL_UnloadObject(libusb_ctx.libhandle);
-            libusb_ctx.libhandle = NULL;
-            /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function"); */
-        } else if (LIBUSB_hid_init() < 0) {
-            SDL_UnloadObject(libusb_ctx.libhandle);
-            libusb_ctx.libhandle = NULL;
-        } else {
-            ++success;
+            if (!loaded) {
+                SDL_UnloadObject(libusb_ctx.libhandle);
+                libusb_ctx.libhandle = NULL;
+                /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function"); */
+            } else if (LIBUSB_hid_init() < 0) {
+                SDL_UnloadObject(libusb_ctx.libhandle);
+                libusb_ctx.libhandle = NULL;
+            } else {
+                ++success;
+            }
         }
     }
 #endif /* SDL_LIBUSB_DYNAMIC */
@@ -1185,9 +1193,9 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #ifdef SDL_LIBUSB_DYNAMIC
     if (libusb_ctx.libhandle) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
-  #ifdef DEBUG_HIDAPI
+#ifdef DEBUG_HIDAPI
         SDL_Log("libusb devices found:");
-  #endif
+#endif
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
             new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
             if (!new_dev) {
@@ -1197,11 +1205,11 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
                 return NULL;
             }
             CopyHIDDeviceInfo(usb_dev, new_dev);
-  #ifdef DEBUG_HIDAPI
+#ifdef DEBUG_HIDAPI
             SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
                     usb_dev->manufacturer_string, usb_dev->product_string,
                     usb_dev->vendor_id, usb_dev->product_id);
-  #endif
+#endif
 
             if (last != NULL) {
                 last->next = new_dev;
@@ -1522,7 +1530,7 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
 
 void SDL_hid_ble_scan(SDL_bool active)
 {
-#if __IPHONEOS__ || __TVOS__
+#if !SDL_HIDAPI_DISABLED && (__IPHONEOS__ || __TVOS__)
     hid_ble_scan(active);
 #endif
 }

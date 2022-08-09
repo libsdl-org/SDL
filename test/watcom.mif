@@ -1,0 +1,118 @@
+INCPATH+= -I"../include"
+LIBPATH = ..
+LIBS    = SDL2.lib SDL2test.lib testutils.lib
+
+#CFLAGS+= -DHAVE_SDL_TTF
+#TTFLIBS = SDL2ttf.lib
+
+CFLAGS+= $(INCPATH)
+
+TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
+          testdrawchessboard.exe testdropfile.exe testerror.exe testfile.exe &
+          testfilesystem.exe testgamecontroller.exe testgeometry.exe testgesture.exe &
+          testhittesting.exe testhotplug.exe testiconv.exe testime.exe testlocale.exe &
+          testintersections.exe testjoystick.exe testkeys.exe testloadso.exe &
+          testlock.exe testmessage.exe testoverlay2.exe testplatform.exe &
+          testpower.exe testsensor.exe testrelative.exe testrendercopyex.exe &
+          testrendertarget.exe testrumble.exe testscale.exe testsem.exe &
+          testshader.exe testshape.exe testsprite2.exe testspriteminimal.exe &
+          teststreaming.exe testthread.exe testtimer.exe testver.exe &
+          testviewport.exe testwm2.exe torturethread.exe checkkeys.exe &
+          checkkeysthreads.exe testmouse.exe testgles.exe testgles2.exe &
+          controllermap.exe testhaptic.exe testqsort.exe testresample.exe &
+          testaudioinfo.exe testaudiocapture.exe loopwave.exe loopwavequeue.exe &
+          testsurround.exe testyuv.exe testgl2.exe testvulkan.exe testnative.exe &
+          testautomation.exe testaudiohotplug.exe testcustomcursor.exe testmultiaudio.exe &
+          testoffscreen.exe testurl.exe
+
+noninteractive = &
+	testatomic.exe &
+	testerror.exe &
+	testfilesystem.exe &
+	testkeys.exe &
+	testlocale.exe &
+	testplatform.exe &
+	testpower.exe &
+	testqsort.exe &
+	testthread.exe &
+	testtimer.exe &
+	testver.exe
+
+needs_audio = &
+	testaudioinfo.exe &
+	testsurround.exe
+
+needs_display = &
+	testbounds.exe &
+	testdisplayinfo.exe
+
+TESTS = $(noninteractive) $(needs_audio) $(needs_display)
+
+# testautomation sources
+TASRCS = testautomation.c &
+	testautomation_audio.c testautomation_clipboard.c &
+	testautomation_events.c testautomation_guid.c &
+	testautomation_hints.c testautomation_joystick.c &
+	testautomation_keyboard.c testautomation_main.c &
+	testautomation_math.c testautomation_mouse.c &
+	testautomation_pixels.c testautomation_platform.c &
+	testautomation_rect.c testautomation_render.c &
+	testautomation_rwops.c testautomation_sdltest.c &
+	testautomation_stdlib.c testautomation_surface.c &
+	testautomation_syswm.c testautomation_timer.c &
+	testautomation_video.c
+
+OBJS = $(TARGETS:.exe=.obj)
+COBJS = $(CSRCS:.c=.obj)
+TAOBJS = $(TASRCS:.c=.obj)
+TNOBJS = $(TNSRCS:.c=.obj)
+
+all: testutils.lib $(TARGETS)
+
+.c: ../src/test
+
+.obj.exe:
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
+
+.c.obj:
+  wcc386 $(CFLAGS) -fo=$^@ $<
+
+# specials
+testautomation.exe: $(TAOBJS)
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
+
+testnative.exe: $(TNOBJS)
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
+
+testoverlay2.exe: testoverlay2.obj testyuv_cvt.obj
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
+
+testyuv.exe: testyuv.obj testyuv_cvt.obj
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
+
+testshader.exe: testshader.obj
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS) $(GLLIBS)} op q op el file {$<} name $@
+
+testime.exe: testime.obj
+  wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS) $(TTFLIBS)} op q op el file {$<} name $@
+
+testutils.lib: testutils.obj
+  wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $<
+
+check: .SYMBOLIC $(TESTS)
+  @set SDL_AUDIODRIVER=dummy
+  @set SDL_VIDEODRIVER=dummy
+  @copy "../SDL2.dll" .
+  @for %exe in ($(TESTS)) do %exe
+
+check-quick: .SYMBOLIC $(TESTS)
+  @set SDL_TESTS_QUICK=1
+  @set SDL_AUDIODRIVER=dummy
+  @set SDL_VIDEODRIVER=dummy
+  @copy "../SDL2.dll" .
+  @for %exe in ($(TESTS)) do %exe
+
+clean: .SYMBOLIC
+  rm -f *.obj *.err
+distclean: .SYMBOLIC clean
+  rm -f *.exe *.lib

@@ -16,6 +16,7 @@
 #include <time.h> /* for time() */
 
 #include "testnative.h"
+#include "testutils.h"
 
 #define WINDOW_W    640
 #define WINDOW_H    480
@@ -50,37 +51,6 @@ quit(int rc)
         factory->DestroyNativeWindow(native_window);
     }
     exit(rc);
-}
-
-SDL_Texture *
-LoadSprite(SDL_Renderer *renderer, const char *file)
-{
-    SDL_Surface *temp;
-    SDL_Texture *sprite;
-
-    /* Load the sprite image */
-    temp = SDL_LoadBMP(file);
-    if (temp == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
-        return 0;
-    }
-
-    /* Set transparent pixel as the pixel at (0,0) */
-    if (temp->format->palette) {
-        SDL_SetColorKey(temp, 1, *(Uint8 *) temp->pixels);
-    }
-
-    /* Create textures from the image */
-    sprite = SDL_CreateTextureFromSurface(renderer, temp);
-    if (!sprite) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(temp);
-        return 0;
-    }
-    SDL_FreeSurface(temp);
-
-    /* We're ready to roll. :) */
-    return sprite;
 }
 
 void
@@ -180,7 +150,7 @@ main(int argc, char *argv[])
     SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
     SDL_RenderClear(renderer);
 
-    sprite = LoadSprite(renderer, "icon.bmp");
+    sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
     if (!sprite) {
         quit(6);
     }

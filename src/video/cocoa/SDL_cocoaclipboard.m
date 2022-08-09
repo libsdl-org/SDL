@@ -29,7 +29,7 @@ int
 Cocoa_SetClipboardText(_THIS, const char *text)
 { @autoreleasepool
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
     NSPasteboard *pasteboard;
     NSString *format = NSPasteboardTypeString;
     NSString *nsstr = [NSString stringWithUTF8String:text];
@@ -38,7 +38,7 @@ Cocoa_SetClipboardText(_THIS, const char *text)
     }
 
     pasteboard = [NSPasteboard generalPasteboard];
-    data->clipboard_count = [pasteboard declareTypes:[NSArray arrayWithObject:format] owner:nil];
+    data.clipboard_count = [pasteboard declareTypes:[NSArray arrayWithObject:format] owner:nil];
     [pasteboard setString:nsstr forType:format];
 
     return 0;
@@ -86,7 +86,7 @@ Cocoa_HasClipboardText(_THIS)
 }
 
 void
-Cocoa_CheckClipboardUpdate(struct SDL_VideoData * data)
+Cocoa_CheckClipboardUpdate(SDL_VideoData * data)
 { @autoreleasepool
 {
     NSPasteboard *pasteboard;
@@ -94,11 +94,11 @@ Cocoa_CheckClipboardUpdate(struct SDL_VideoData * data)
 
     pasteboard = [NSPasteboard generalPasteboard];
     count = [pasteboard changeCount];
-    if (count != data->clipboard_count) {
-        if (data->clipboard_count) {
+    if (count != data.clipboard_count) {
+        if (data.clipboard_count) {
             SDL_SendClipboardUpdate();
         }
-        data->clipboard_count = count;
+        data.clipboard_count = count;
     }
 }}
 

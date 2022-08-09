@@ -36,18 +36,6 @@
 #define LIBICONV_PLUG 1
 #endif
 #include <iconv.h>
-
-/* Depending on which standard the iconv() was implemented with,
-   iconv() may or may not use const char ** for the inbuf param.
-   If we get this wrong, it's just a warning, so no big deal.
-*/
-#if defined(_XGP6) || defined(__APPLE__) || defined(__RISCOS__) || defined(__FREEBSD__) || \
-    defined(__EMSCRIPTEN__) || \
-    (defined(__GLIBC__) && ((__GLIBC__ > 2) || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)) || \
-    (defined(_NEWLIB_VERSION)))
-#define ICONV_INBUF_NONCONST
-#endif
-
 #include <errno.h>
 
 SDL_COMPILE_TIME_ASSERT(iconv_t, sizeof (iconv_t) <= sizeof (SDL_iconv_t));
@@ -69,12 +57,9 @@ SDL_iconv(SDL_iconv_t cd,
           const char **inbuf, size_t * inbytesleft,
           char **outbuf, size_t * outbytesleft)
 {
-    size_t retCode;
-#ifdef ICONV_INBUF_NONCONST
-    retCode = iconv((iconv_t) ((uintptr_t) cd), (char **) inbuf, inbytesleft, outbuf, outbytesleft);
-#else
-    retCode = iconv((iconv_t) ((uintptr_t) cd), inbuf, inbytesleft, outbuf, outbytesleft);
-#endif
+    /* iconv's second parameter may or may not be `const char const *` depending on the
+       C runtime's whims. Casting to void * seems to make everyone happy, though. */
+    const size_t retCode = iconv((iconv_t) ((uintptr_t) cd), (void *) inbuf, inbytesleft, outbuf, outbytesleft);
     if (retCode == (size_t) - 1) {
         switch (errno) {
         case E2BIG:
@@ -141,12 +126,12 @@ static struct
     const char *name;
     int format;
 } encodings[] = {
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
     { "ASCII", ENCODING_ASCII },
     { "US-ASCII", ENCODING_ASCII },
     { "8859-1", ENCODING_LATIN1 },
     { "ISO-8859-1", ENCODING_LATIN1 },
-#if defined(__WIN32__) || defined(__OS2__)
+#if defined(__WIN32__) || defined(__OS2__) || defined(__GDK__)
     { "WCHAR_T", ENCODING_UTF16LE },
 #else
     { "WCHAR_T", ENCODING_UCS4NATIVE },
@@ -175,7 +160,7 @@ static struct
     { "UCS-4LE", ENCODING_UCS4LE },
     { "UCS-4BE", ENCODING_UCS4BE },
     { "UCS-4-INTERNAL", ENCODING_UCS4NATIVE },
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 };
 
 static const char *

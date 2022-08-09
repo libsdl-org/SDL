@@ -20,11 +20,12 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsopengles.h"
 #include "SDL_windowsopengl.h"
+#include "SDL_windowswindow.h"
 
 /* EGL implementation of SDL OpenGL support */
 
@@ -40,6 +41,7 @@ WIN_GLES_LoadLibrary(_THIS, const char *path) {
         _this->GL_UnloadLibrary = WIN_GL_UnloadLibrary;
         _this->GL_CreateContext = WIN_GL_CreateContext;
         _this->GL_MakeCurrent = WIN_GL_MakeCurrent;
+        _this->GL_GetDrawableSize = WIN_GL_GetDrawableSize;
         _this->GL_SetSwapInterval = WIN_GL_SetSwapInterval;
         _this->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
         _this->GL_SwapWindow = WIN_GL_SwapWindow;
@@ -72,6 +74,7 @@ WIN_GLES_CreateContext(_THIS, SDL_Window * window)
         _this->GL_UnloadLibrary = WIN_GL_UnloadLibrary;
         _this->GL_CreateContext = WIN_GL_CreateContext;
         _this->GL_MakeCurrent = WIN_GL_MakeCurrent;
+        _this->GL_GetDrawableSize = WIN_GL_GetDrawableSize;
         _this->GL_SetSwapInterval = WIN_GL_SetSwapInterval;
         _this->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
         _this->GL_SwapWindow = WIN_GL_SwapWindow;
@@ -98,6 +101,12 @@ WIN_GLES_DeleteContext(_THIS, SDL_GLContext context)
 
 SDL_EGL_SwapWindow_impl(WIN)
 SDL_EGL_MakeCurrent_impl(WIN)
+
+void
+WIN_GLES_GetDrawableSize(_THIS, SDL_Window* window, int* w, int* h)
+{
+    WIN_GetDrawableSize(window, w, h);
+}
 
 int
 WIN_GLES_SetupWindow(_THIS, SDL_Window * window)

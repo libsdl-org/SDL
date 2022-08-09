@@ -51,6 +51,8 @@
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_BUILDING_WINRT) && SDL_BUILDING_WINRT  /* probably not useful on WinRT, given current .dll loading restrictions */
 #define SDL_DYNAMIC_API 0
+#elif defined(__PS2__) && __PS2__
+#define SDL_DYNAMIC_API 0
 #elif defined(__PSP__) && __PSP__
 #define SDL_DYNAMIC_API 0
 #elif defined(__riscos__) && __riscos__ /* probably not useful on RISC OS, since dlopen() can't be used when using static linking. */
@@ -59,6 +61,8 @@
 #define SDL_DYNAMIC_API 0  /* Turn off for static analysis, so reports are more clear. */
 #elif defined(__VITA__)
 #define SDL_DYNAMIC_API 0  /* vitasdk doesn't support dynamic linking */
+#elif defined(__NGAGE__)
+#define SDL_DYNAMIC_API 0  /* The N-Gage doesn't support dynamic linking either */
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
 #define SDL_DYNAMIC_API 0  /* we need dlopen(), but don't have it.... */
 #endif

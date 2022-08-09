@@ -488,7 +488,7 @@ int SDL_GestureDelTouch(SDL_TouchID touchId)
 
     SDL_numGestureTouches--;
     if (i != SDL_numGestureTouches) {
-        SDL_memcpy(&SDL_gestureTouch[i], &SDL_gestureTouch[SDL_numGestureTouches], sizeof(SDL_gestureTouch[i]));
+        SDL_copyp(&SDL_gestureTouch[i], &SDL_gestureTouch[SDL_numGestureTouches]);
     }
     return 0;
 }

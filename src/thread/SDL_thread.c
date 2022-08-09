@@ -200,19 +200,38 @@ SDL_Generic_SetTLSData(SDL_TLSData *storage)
     return 0;
 }
 
+/* Non-thread-safe global error variable */
+static SDL_error *
+SDL_GetStaticErrBuf()
+{
+    static SDL_error SDL_global_error;
+    static char SDL_global_error_str[128];
+    SDL_global_error.str = SDL_global_error_str;
+    SDL_global_error.len = sizeof(SDL_global_error_str);
+    return &SDL_global_error;
+}
+
+static void SDLCALL
+SDL_FreeErrBuf(void *data)
+{
+    SDL_error *errbuf = (SDL_error *)data;
+
+    if (errbuf->str) {
+        errbuf->free_func(errbuf->str);
+    }
+    errbuf->free_func(errbuf);
+}
+
 /* Routine to get the thread-specific error variable */
 SDL_error *
 SDL_GetErrBuf(void)
 {
 #if SDL_THREADS_DISABLED
-    /* Non-thread-safe global error variable */
-    static SDL_error SDL_global_error;
-    return &SDL_global_error;
+    return SDL_GetStaticErrBuf();
 #else
     static SDL_SpinLock tls_lock;
     static SDL_bool tls_being_created;
     static SDL_TLSID tls_errbuf;
-    static SDL_error SDL_global_errbuf;
     const SDL_error *ALLOCATION_IN_PROGRESS = (SDL_error *)-1;
     SDL_error *errbuf;
 
@@ -233,24 +252,33 @@ SDL_GetErrBuf(void)
         SDL_AtomicUnlock(&tls_lock);
     }
     if (!tls_errbuf) {
-        return &SDL_global_errbuf;
+        return SDL_GetStaticErrBuf();
     }
 
     SDL_MemoryBarrierAcquire();
     errbuf = (SDL_error *)SDL_TLSGet(tls_errbuf);
     if (errbuf == ALLOCATION_IN_PROGRESS) {
-        return &SDL_global_errbuf;
+        return SDL_GetStaticErrBuf();
     }
     if (!errbuf) {
+        /* Get the original memory functions for this allocation because the lifetime
+         * of the error buffer may span calls to SDL_SetMemoryFunctions() by the app
+         */
+        SDL_realloc_func realloc_func;
+        SDL_free_func free_func;
+        SDL_GetOriginalMemoryFunctions(NULL, NULL, &realloc_func, &free_func);
+
         /* Mark that we're in the middle of allocating our buffer */
         SDL_TLSSet(tls_errbuf, ALLOCATION_IN_PROGRESS, NULL);
-        errbuf = (SDL_error *)SDL_malloc(sizeof(*errbuf));
+        errbuf = (SDL_error *)realloc_func(NULL, sizeof(*errbuf));
         if (!errbuf) {
             SDL_TLSSet(tls_errbuf, NULL, NULL);
-            return &SDL_global_errbuf;
+            return SDL_GetStaticErrBuf();
         }
         SDL_zerop(errbuf);
-        SDL_TLSSet(tls_errbuf, errbuf, SDL_free);
+        errbuf->realloc_func = realloc_func;
+        errbuf->free_func = free_func;
+        SDL_TLSSet(tls_errbuf, errbuf, SDL_FreeErrBuf);
     }
     return errbuf;
 #endif /* SDL_THREADS_DISABLED */

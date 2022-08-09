@@ -27,12 +27,13 @@
 #ifndef SDL_error_c_h_
 #define SDL_error_c_h_
 
-#define ERR_MAX_STRLEN  128
-
 typedef struct SDL_error
 {
     int error; /* This is a numeric value corresponding to the current error */
-    char str[ERR_MAX_STRLEN];
+    char *str;
+    size_t len;
+    SDL_realloc_func realloc_func;
+    SDL_free_func free_func;
 } SDL_error;
 
 /* Defined in SDL_thread.c */

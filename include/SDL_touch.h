@@ -96,6 +96,14 @@ extern DECLSPEC int SDLCALL SDL_GetNumTouchDevices(void);
 extern DECLSPEC SDL_TouchID SDLCALL SDL_GetTouchDevice(int index);
 
 /**
+ * Get the touch device name as reported from the driver or NULL if the index
+ * is invalid.
+ *
+ * \since This function is available since SDL 2.0.22.
+ */
+extern DECLSPEC const char* SDLCALL SDL_GetTouchName(int index);
+
+/**
  * Get the type of the given touch device.
  *
  * \since This function is available since SDL 2.0.10.

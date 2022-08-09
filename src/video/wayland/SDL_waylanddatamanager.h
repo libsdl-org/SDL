@@ -40,6 +40,7 @@ typedef struct {
 typedef struct {
     struct wl_data_source *source;
     struct wl_list mimes;
+    void *data_device;
 } SDL_WaylandDataSource;
 
 typedef struct {

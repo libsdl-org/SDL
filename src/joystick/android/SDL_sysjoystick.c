@@ -558,6 +558,12 @@ ANDROID_JoystickGetDeviceName(int device_index)
     return JoystickByDevIndex(device_index)->name;
 }
 
+static const char *
+ANDROID_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
+}
+
 static int
 ANDROID_JoystickGetDevicePlayerIndex(int device_index)
 {
@@ -713,6 +719,7 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
     ANDROID_JoystickGetCount,
     ANDROID_JoystickDetect,
     ANDROID_JoystickGetDeviceName,
+    ANDROID_JoystickGetDevicePath,
     ANDROID_JoystickGetDevicePlayerIndex,
     ANDROID_JoystickSetDevicePlayerIndex,
     ANDROID_JoystickGetDeviceGUID,

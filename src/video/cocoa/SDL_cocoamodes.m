@@ -31,9 +31,6 @@
 #include <CoreVideo/CVBase.h>
 #include <CoreVideo/CVDisplayLink.h>
 
-/* we need this for ShowMenuBar() and HideMenuBar(). */
-#include <Carbon/Carbon.h>
-
 /* This gets us MAC_OS_X_VERSION_MIN_REQUIRED... */
 #include <AvailabilityMacros.h>
 
@@ -44,23 +41,6 @@
 #define kDisplayModeNativeFlag 0x02000000
 #endif
 
-
-static void
-Cocoa_ToggleMenuBar(const BOOL show)
-{
-    /* !!! FIXME: keep an eye on this.
-     * ShowMenuBar/HideMenuBar is officially unavailable for 64-bit binaries.
-     *  It happens to work, as of 10.7, but we're going to see if
-     *  we can just simply do without it on newer OSes...
-     */
-#if (MAC_OS_X_VERSION_MIN_REQUIRED < 1070) && !defined(__LP64__)
-    if (show) {
-        ShowMenuBar();
-    } else {
-        HideMenuBar();
-    }
-#endif
-}
 
 static int
 CG_SetError(const char *prefix, CGDisplayErr result)
@@ -205,6 +185,9 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArray
         int  i;
 
         for (i = 0; i < modescount; i++) {
+            int otherW, otherH, otherpixelW, otherpixelH, otherrefresh;
+            Uint32 otherformat;
+            bool otherGUI;
             CGDisplayModeRef othermode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modelist, i);
             uint32_t otherioflags = CGDisplayModeGetIOFlags(othermode);
 
@@ -216,13 +199,13 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArray
                 continue;
             }
 
-            int otherW = (int) CGDisplayModeGetWidth(othermode);
-            int otherH = (int) CGDisplayModeGetHeight(othermode);
-            int otherpixelW = (int) CGDisplayModeGetPixelWidth(othermode);
-            int otherpixelH = (int) CGDisplayModeGetPixelHeight(othermode);
-            int otherrefresh = GetDisplayModeRefreshRate(othermode, link);
-            Uint32 otherformat = GetDisplayModePixelFormat(othermode);
-            bool otherGUI = CGDisplayModeIsUsableForDesktopGUI(othermode);
+            otherW = (int) CGDisplayModeGetWidth(othermode);
+            otherH = (int) CGDisplayModeGetHeight(othermode);
+            otherpixelW = (int) CGDisplayModeGetPixelWidth(othermode);
+            otherpixelH = (int) CGDisplayModeGetPixelHeight(othermode);
+            otherrefresh = GetDisplayModeRefreshRate(othermode, link);
+            otherformat = GetDisplayModePixelFormat(othermode);
+            otherGUI = CGDisplayModeIsUsableForDesktopGUI(othermode);
 
             /* Ignore this mode if it's low-dpi (@1x) and we have a high-dpi
              * mode in the list with the same size in points.
@@ -306,7 +289,7 @@ Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     /* This API is deprecated in 10.9 with no good replacement (as of 10.15). */
     io_service_t servicePort = CGDisplayIOServicePort(displayID);
     CFDictionaryRef deviceInfo = IODisplayCreateInfoDictionary(servicePort, kIODisplayOnlyPreferredName);
-    NSDictionary *localizedNames = [(NSDictionary *)deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
+    NSDictionary *localizedNames = [(__bridge NSDictionary *)deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
     const char* displayName = NULL;
 
     if ([localizedNames count] > 0) {
@@ -437,11 +420,13 @@ Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
         return -1;
     }
 
-    const NSRect frame = [screen visibleFrame];
-    rect->x = (int)frame.origin.x;
-    rect->y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - frame.origin.y - frame.size.height);
-    rect->w = (int)frame.size.width;
-    rect->h = (int)frame.size.height;
+    {
+        const NSRect frame = [screen visibleFrame];
+        rect->x = (int)frame.origin.x;
+        rect->y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - frame.origin.y - frame.size.height);
+        rect->w = (int)frame.size.width;
+        rect->h = (int)frame.size.height;
+    }
 
     return 0;
 }
@@ -497,7 +482,7 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
                 CFRelease(dmOptions);
             } else
 #endif
-            if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
+            {
                 // fallback for 10.7
                 scaleFactor = [screen backingScaleFactor];
                 displayNativeSize.width = displayNativeSize.width * scaleFactor;
@@ -507,20 +492,21 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
         }
     }
 
-    const CGSize displaySize = CGDisplayScreenSize(data->display);
-    const int pixelWidth =  displayNativeSize.width;
-    const int pixelHeight = displayNativeSize.height;
+    {
+        const CGSize displaySize = CGDisplayScreenSize(data->display);
+        const int pixelWidth =  displayNativeSize.width;
+        const int pixelHeight = displayNativeSize.height;
 
-    if (ddpi) {
-        *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH));
+        if (ddpi) {
+            *ddpi = (SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH));
+        }
+        if (hdpi) {
+            *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width);
+        }
+        if (vdpi) {
+            *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height);
+        }
     }
-    if (hdpi) {
-        *hdpi = (pixelWidth * MM_IN_INCH / displaySize.width);
-    }
-    if (vdpi) {
-        *vdpi = (pixelHeight * MM_IN_INCH / displaySize.height);
-    }
-
     return 0;
 }}
 
@@ -646,10 +632,6 @@ Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         } else {
             CGDisplayRelease(displaydata->display);
         }
-
-        if (CGDisplayIsMain(displaydata->display)) {
-            Cocoa_ToggleMenuBar(YES);
-        }
     } else {
         /* Put up the blanking window (a window above all other windows) */
         if (CGDisplayIsMain(displaydata->display)) {
@@ -668,11 +650,6 @@ Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         if (result != kCGErrorSuccess) {
             CG_SetError("CGDisplaySwitchToMode()", result);
             goto ERR_NO_SWITCH;
-        }
-
-        /* Hide the menu bar so it doesn't intercept events */
-        if (CGDisplayIsMain(displaydata->display)) {
-            Cocoa_ToggleMenuBar(NO);
         }
     }
 
@@ -720,7 +697,6 @@ Cocoa_QuitModes(_THIS)
             CFRelease(mode->modes);
         }
     }
-    Cocoa_ToggleMenuBar(YES);
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */

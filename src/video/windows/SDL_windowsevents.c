@@ -29,10 +29,12 @@
 #include "SDL_timer.h"
 #include "SDL_vkeys.h"
 #include "SDL_hints.h"
+#include "SDL_main.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
 #include "SDL_hints.h"
+#include "SDL_log.h"
 
 /* Dropfile support */
 #include <shellapi.h>
@@ -50,6 +52,12 @@
 #include <stdio.h>
 #include "wmmsg.h"
 #endif
+
+#ifdef __GDK__
+#include "../../core/gdk/SDL_gdk.h"
+#endif
+
+/* #define HIGHDPI_DEBUG */
 
 /* Masks for processing the windows KEYDOWN and KEYUP messages */
 #define REPEATED_KEYMASK    (1<<30)
@@ -84,6 +92,12 @@
 #endif
 #ifndef WM_UNICHAR
 #define WM_UNICHAR 0x0109
+#endif
+#ifndef WM_DPICHANGED
+#define WM_DPICHANGED 0x02E0
+#endif
+#ifndef WM_GETDPISCALEDSIZE
+#define WM_GETDPISCALEDSIZE 0x02E4
 #endif
 
 #ifndef IS_HIGH_SURROGATE
@@ -251,6 +265,7 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
     return code;
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static SDL_bool
 WIN_ShouldIgnoreFocusClick()
 {
@@ -374,18 +389,18 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     if (!(keyState & 0x8000)) {
         WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, 0);
     }
-    data->mouse_button_flags = 0;
+    data->mouse_button_flags = (WPARAM)-1;
 }
 
 static void
-WIN_UpdateFocus(SDL_Window *window)
+WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     HWND hwnd = data->hwnd;
     SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
     SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
 
-    if (had_focus == has_focus) {
+    if (had_focus == has_focus || has_focus != expect_focus) {
         return;
     }
 
@@ -436,6 +451,10 @@ WIN_UpdateFocus(SDL_Window *window)
         data->in_window_deactivation = SDL_TRUE;
 
         SDL_SetKeyboardFocus(NULL);
+        /* In relative mode we are guaranteed to not have mouse focus if we don't have keyboard focus */
+        if (SDL_GetMouse()->relative_mode) {
+            SDL_SetMouseFocus(NULL);
+        }
         WIN_ResetDeadKeys();
 
         if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
@@ -446,6 +465,7 @@ WIN_UpdateFocus(SDL_Window *window)
         data->in_window_deactivation = SDL_FALSE;
     }
 }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 static BOOL
 WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
@@ -488,6 +508,7 @@ ShouldGenerateWindowCloseOnAltF4(void)
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 /* We want to generate mouse events from mouse and pen, and touch events from touchscreens */
 #define MI_WP_SIGNATURE         0xFF515700
 #define MI_WP_SIGNATURE_MASK    0xFFFFFF00
@@ -518,6 +539,7 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
     }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 static SDL_WindowData *
 WIN_GetWindowDataFromHWND(HWND hwnd)
@@ -536,6 +558,7 @@ WIN_GetWindowDataFromHWND(HWND hwnd)
     return NULL;
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 LRESULT CALLBACK
 WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -598,29 +621,7 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
-static void WIN_CheckICMProfileChanged(SDL_Window* window)
-{
-    SDL_VideoDisplay* display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData* data = (SDL_DisplayData*)display->driverdata;
-    static WCHAR currentIcmFileName[MAX_PATH] = { '\0' };
-    WCHAR icmFileName[MAX_PATH];
-    HDC hdc;
-    SDL_bool succeeded;
-    DWORD fileNameSize = MAX_PATH;
-
-    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
-    if (hdc) {
-        succeeded = GetICMProfileW(hdc, &fileNameSize, icmFileName);
-        DeleteDC(hdc);
-        if (succeeded) {
-            
-            if (SDL_wcsncmp(currentIcmFileName, icmFileName, fileNameSize)) {
-                SDL_wcslcpy(currentIcmFileName, icmFileName, fileNameSize);
-                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
-            }
-        }
-    }
-}
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -643,10 +644,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     /* Get the window data for the window */
     data = WIN_GetWindowDataFromHWND(hwnd);
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (!data) {
         /* Fallback */
         data = (SDL_WindowData *) GetProp(hwnd, TEXT("SDL_WindowData"));
     }
+#endif
     if (!data) {
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
@@ -655,16 +658,18 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         char message[1024];
         if (msg > MAX_WMMSG) {
-            SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%X, 0x%X\n", hwnd, msg, wParam, lParam);
+            SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%p, 0x%p\n", hwnd, msg, wParam, lParam);
         } else {
-            SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%X, 0x%X\n", hwnd, wmtab[msg], wParam, lParam);
+            SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%p, 0x%p\n", hwnd, wmtab[msg], wParam, lParam);
         }
         OutputDebugStringA(message);
     }
 #endif /* WMMSG_DEBUG */
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
         return 0;
+#endif
 
     switch (msg) {
 
@@ -678,6 +683,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     case WM_NCACTIVATE:
         {
             /* Don't immediately clip the cursor in case we're clicking minimize/maximize buttons */
@@ -686,24 +692,30 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
                actually being the foreground window, but this appears to get called in all cases where
                the global foreground window changes to and from this window. */
-            WIN_UpdateFocus(data->window);
-            WIN_CheckICMProfileChanged(data->window);
+            WIN_UpdateFocus(data->window, !!wParam);
+            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }
         break;
 
     case WM_ACTIVATE:
         {
             /* Update the focus in case we changed focus to a child window and then away from the application */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, !!LOWORD(wParam));
         }
         break;
 
     case WM_SETFOCUS:
+        {
+            /* Update the focus in case it's changing between top-level windows in the same application */
+            WIN_UpdateFocus(data->window, SDL_TRUE);
+        }
+        break;
+
     case WM_KILLFOCUS:
     case WM_ENTERIDLE:
         {
             /* Update the focus in case it's changing between top-level windows in the same application */
-            WIN_UpdateFocus(data->window);
+            WIN_UpdateFocus(data->window, SDL_FALSE);
         }
         break;
 
@@ -733,7 +745,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 /* Only generate mouse events for real mouse */
                 if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                     lParam != data->last_pointer_update) {
-                    SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    int x = GET_X_LPARAM(lParam);
+                    int y = GET_Y_LPARAM(lParam);
+
+                    WIN_ClientPointToSDL(data->window, &x, &y);
+
+                    SDL_SendMouseMotion(data->window, 0, 0, x, y);
                 }
             }
         }
@@ -907,8 +924,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                }
             }
 
-            /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window */
-            SDL_SetMouseFocus(NULL);
+            if (!SDL_GetMouse()->relative_mode) {
+                /* When WM_MOUSELEAVE is fired we can be assured that the cursor has left the window */
+                SDL_SetMouseFocus(NULL);
+            }
         }
 
         /* Once we get WM_MOUSELEAVE we're guaranteed that the window is no longer tracked */
@@ -916,6 +935,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         returnCode = 0;
         break;
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -997,11 +1017,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         returnCode = 0;
         break;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #ifdef WM_INPUTLANGCHANGE
     case WM_INPUTLANGCHANGE:
         {
-            WIN_UpdateKeymap();
-            SDL_SendKeymapChangedEvent();
+            WIN_UpdateKeymap(SDL_TRUE);
         }
         returnCode = 1;
         break;
@@ -1052,6 +1072,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             SDL_GetWindowMinimumSize(data->window, &min_w, &min_h);
             SDL_GetWindowMaximumSize(data->window, &max_w, &max_h);
 
+            /* Convert w, h, min_w, min_h, max_w, max_h from dpi-scaled points to pixels,
+               treating them as coordinates within the client area. */
+            WIN_ClientPointFromSDL(data->window, &w, &h);
+            WIN_ClientPointFromSDL(data->window, &min_w, &min_h);
+            WIN_ClientPointFromSDL(data->window, &max_w, &max_h);
+
             /* Store in min_w and min_h difference between current size and minimal
                size so we don't need to call AdjustWindowRectEx twice */
             min_w -= w;
@@ -1072,14 +1098,25 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                    inside their function, so I have to do it here.
                  */
                 BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+                UINT dpi;
+                
+                dpi = 96;
                 size.top = 0;
                 size.left = 0;
                 size.bottom = h;
                 size.right = w;
 
-                AdjustWindowRectEx(&size, style, menu, 0);
+                if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
+                    dpi = data->videodata->GetDpiForWindow(hwnd);
+                    data->videodata->AdjustWindowRectExForDpi(&size, style, menu, 0, dpi);
+                } else {
+                    AdjustWindowRectEx(&size, style, menu, 0);
+                }
                 w = size.right - size.left;
                 h = size.bottom - size.top;
+#ifdef HIGHDPI_DEBUG
+                SDL_Log("WM_GETMINMAXINFO: max window size: %dx%d using dpi: %u", w, h, dpi);
+#endif
             }
 
             /* Fix our size to the current size */
@@ -1141,16 +1178,27 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             x = rect.left;
             y = rect.top;
+            WIN_ScreenPointToSDL(&x, &y);
+
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, x, y);
 
+            /* Convert client area width/height from pixels to dpi-scaled points */
             w = rect.right - rect.left;
             h = rect.bottom - rect.top;
+            WIN_ClientPointToSDL(data->window, &w, &h);
+
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w, h);
+
+#ifdef HIGHDPI_DEBUG
+            SDL_Log("WM_WINDOWPOSCHANGED: Windows client rect (pixels): (%d, %d) (%d x %d)\tSDL client rect (points): (%d, %d) (%d x %d) cached dpi %d, windows reported dpi %d",
+                rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
+                x, y, w, h, data->scaling_dpi, data->videodata->GetDpiForWindow ? data->videodata->GetDpiForWindow(data->hwnd) : 0);
+#endif
 
             /* Forces a WM_PAINT event */
             InvalidateRect(hwnd, NULL, FALSE);
 
-            WIN_CheckICMProfileChanged(data->window);
+            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }
         break;
 
@@ -1167,9 +1215,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 break;
-            default:
+            case SIZE_RESTORED:
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_RESTORED, 0, 0);
+                break;
+            default:
                 break;
             }
         }
@@ -1350,6 +1400,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
                     w = data->window->windowed.w;
                     h = data->window->windowed.h;
+                    WIN_ClientPointFromSDL(data->window, &w, &h);
                     params->rgrc[0].right = params->rgrc[0].left + w;
                     params->rgrc[0].bottom = params->rgrc[0].top + h;
                 }
@@ -1362,10 +1413,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Window *window = data->window;
             if (window->hit_test) {
-                POINT winpoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+                POINT winpoint;
+                winpoint.x = GET_X_LPARAM(lParam);
+                winpoint.y = GET_Y_LPARAM(lParam);
                 if (ScreenToClient(hwnd, &winpoint)) {
-                    const SDL_Point point = { (int) winpoint.x, (int) winpoint.y };
-                    const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+                    SDL_Point point;
+                    SDL_HitTestResult rc;
+                    point.x = winpoint.x;
+                    point.y = winpoint.y;
+                    WIN_ClientPointToSDL(data->window, &point.x, &point.y);
+                    rc = window->hit_test(window, &point, window->hit_test_data);
                     switch (rc) {
                         #define POST_HIT_TEST(ret) { SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0); return ret; }
                         case SDL_HITTEST_DRAGGABLE: POST_HIT_TEST(HTCAPTION);
@@ -1385,6 +1442,181 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+
+    case WM_GETDPISCALEDSIZE:
+        /* Windows 10 Creators Update+ */
+        /* Documented as only being sent to windows that are per-monitor V2 DPI aware.
+           
+           Experimentation shows it's only sent during interactive dragging, not in response to
+           SetWindowPos. */
+        if (data->videodata->GetDpiForWindow && data->videodata->AdjustWindowRectExForDpi) {
+            /* Windows expects applications to scale their window rects linearly
+               when dragging between monitors with different DPI's.
+               e.g. a 100x100 window dragged to a 200% scaled monitor
+               becomes 200x200.
+
+               For SDL, we instead want the client size to scale linearly.
+               This is not the same as the window rect scaling linearly,
+               because Windows doesn't scale the non-client area (titlebar etc.)
+               linearly. So, we need to handle this message to request custom
+               scaling. */
+            
+            const int nextDPI = (int)wParam;
+            const int prevDPI = (int)data->videodata->GetDpiForWindow(hwnd);
+            SIZE *sizeInOut = (SIZE *)lParam;
+
+            int frame_w, frame_h;
+            int query_client_w_win, query_client_h_win;
+
+            const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+            const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+
+#ifdef HIGHDPI_DEBUG
+            SDL_Log("WM_GETDPISCALEDSIZE: current DPI: %d potential DPI: %d input size: (%dx%d)",
+                    prevDPI, nextDPI, sizeInOut->cx, sizeInOut->cy);
+#endif
+
+            /* Subtract the window frame size that would have been used at prevDPI */
+            {
+                RECT rect = {0};
+
+                if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, prevDPI);
+                }
+
+                frame_w = -rect.left + rect.right;
+                frame_h = -rect.top + rect.bottom;
+
+                query_client_w_win = sizeInOut->cx - frame_w;
+                query_client_h_win = sizeInOut->cy - frame_h;
+            }
+
+            /* Convert to new dpi if we are using scaling. 
+             * Otherwise leave as pixels.
+             */
+            if (data->videodata->dpi_scaling_enabled) {
+                query_client_w_win = MulDiv(query_client_w_win, nextDPI, prevDPI);
+                query_client_h_win = MulDiv(query_client_h_win, nextDPI, prevDPI);
+            }
+
+            /* Add the window frame size that would be used at nextDPI */
+            {
+                RECT rect = {0};
+                rect.right = query_client_w_win;
+                rect.bottom = query_client_h_win;
+
+                if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+                    data->videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, nextDPI);
+                }
+
+                /* This is supposed to control the suggested rect param of WM_DPICHANGED */
+                sizeInOut->cx = rect.right - rect.left;
+                sizeInOut->cy = rect.bottom - rect.top;
+            }
+
+#ifdef HIGHDPI_DEBUG
+            SDL_Log("WM_GETDPISCALEDSIZE: output size: (%dx%d)", sizeInOut->cx, sizeInOut->cy);
+#endif
+            return TRUE;
+        }
+        break;
+
+    case WM_DPICHANGED:
+        /* Windows 8.1+ */
+        {
+            const int newDPI = HIWORD(wParam);
+            RECT* const suggestedRect = (RECT*)lParam;
+            int w, h;
+
+#ifdef HIGHDPI_DEBUG
+            SDL_Log("WM_DPICHANGED: to %d\tsuggested rect: (%d, %d), (%dx%d)\n", newDPI,
+                suggestedRect->left, suggestedRect->top, suggestedRect->right - suggestedRect->left, suggestedRect->bottom - suggestedRect->top);
+#endif
+
+            if (data->expected_resize) {
+                /* This DPI change is coming from an explicit SetWindowPos call within SDL.
+                   Assume all call sites are calculating the DPI-aware frame correctly, so
+                   we don't need to do any further adjustment. */
+
+                if (data->videodata->dpi_scaling_enabled) {
+                    /* Update the cached DPI value for this window */
+                    data->scaling_dpi = newDPI;
+
+                    /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
+                       Renderers need to get this to know that the framebuffer size changed. */
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
+                }
+
+#ifdef HIGHDPI_DEBUG
+                SDL_Log("WM_DPICHANGED: Doing nothing, assuming window is already sized correctly");
+#endif
+                return 0;
+            }
+
+            /* Interactive user-initiated resizing/movement */
+
+            if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
+                /* WM_GETDPISCALEDSIZE should have been called prior, so we can trust the given
+                   suggestedRect. */
+                w = suggestedRect->right - suggestedRect->left;
+                h = suggestedRect->bottom - suggestedRect->top;
+
+#ifdef HIGHDPI_DEBUG
+                SDL_Log("WM_DPICHANGED: using suggestedRect");
+#endif
+            } else {
+                /* permonitor and earlier DPI awareness: calculate the new frame w/h such that
+                   the client area size is maintained. */
+                const DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+                const BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+
+                RECT rect = {0};
+                rect.right = data->window->w;
+                rect.bottom = data->window->h;
+
+                if (data->videodata->dpi_scaling_enabled) {
+                    /* scale client size to from points to the new DPI */
+                    rect.right = MulDiv(rect.right, newDPI, 96);
+                    rect.bottom = MulDiv(rect.bottom, newDPI, 96);
+                }
+
+                if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+                    AdjustWindowRectEx(&rect, style, menu, 0);
+                }
+
+                w = rect.right - rect.left;
+                h = rect.bottom - rect.top;
+            }
+            
+#ifdef HIGHDPI_DEBUG
+            SDL_Log("WM_DPICHANGED: current SDL window size: (%dx%d)\tcalling SetWindowPos: (%d, %d), (%dx%d)\n",
+                data->window->w, data->window->h,
+                suggestedRect->left, suggestedRect->top, w, h);
+#endif
+
+            data->expected_resize = SDL_TRUE;
+            SetWindowPos(hwnd,
+                NULL,
+                suggestedRect->left,
+                suggestedRect->top,
+                w,
+                h,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+            data->expected_resize = SDL_FALSE;
+
+            if (data->videodata->dpi_scaling_enabled) {
+                /* Update the cached DPI value for this window */
+                data->scaling_dpi = newDPI;
+
+                /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
+                   Renderers need to get this to know that the framebuffer size changed. */
+                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
+            }
+
+            return 0;
+        }
+        break;
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     }
 
     /* If there's a window proc, assume it's going to handle messages */
@@ -1397,6 +1629,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static void WIN_UpdateClipCursorForWindows()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1443,6 +1676,7 @@ static void WIN_UpdateMouseCapture()
         }
     }
 }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 /* A message hook called before TranslateMessage() */
 static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
@@ -1500,11 +1734,13 @@ WIN_SendWakeupEvent(_THIS, SDL_Window *window)
 void
 WIN_PumpEvents(_THIS)
 {
-    const Uint8 *keystate;
     MSG msg;
     DWORD end_ticks = GetTickCount() + 1;
     int new_messages = 0;
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    const Uint8 *keystate;
     SDL_Window *focusWindow;
+#endif
 
     if (g_WindowsEnableMessageLoop) {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1512,6 +1748,7 @@ WIN_PumpEvents(_THIS)
                 g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
             }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
             /* Don't dispatch any mouse motion queued prior to or including the last mouse warp */
             if (msg.message == WM_MOUSEMOVE && SDL_last_warp_time) {
                 if (!SDL_TICKS_PASSED(msg.time, (SDL_last_warp_time + 1))) {
@@ -1521,6 +1758,7 @@ WIN_PumpEvents(_THIS)
                 /* This mouse message happened after the warp */
                 SDL_last_warp_time = 0;
             }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
             TranslateMessage(&msg);
@@ -1541,6 +1779,7 @@ WIN_PumpEvents(_THIS)
         }
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Windows loses a shift KEYUP event when you have both pressed at once and let go of one.
        You won't get a KEYUP until both are released, and that keyup will only be for the second
        key you released. Take heroic measures and check the keystate as of the last handled event,
@@ -1571,6 +1810,11 @@ WIN_PumpEvents(_THIS)
 
     /* Update mouse capture */
     WIN_UpdateMouseCapture();
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+
+#ifdef __GDK__
+    GDK_DispatchTaskQueue();
+#endif
 }
 
 
@@ -1581,8 +1825,10 @@ HINSTANCE SDL_Instance = NULL;
 
 static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
 {
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (wcex.hIcon) DestroyIcon(wcex.hIcon);
     if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
+#endif
     SDL_free(SDL_Appname);
     SDL_Appname = NULL;
 }
@@ -1591,9 +1837,11 @@ static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
 int
 SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
-    const char *hint;
     WNDCLASSEX wcex;
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    const char *hint;
     TCHAR path[MAX_PATH];
+#endif
 
     /* Only do this once... */
     if (app_registered) {
@@ -1625,6 +1873,7 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON);
     if (hint && *hint) {
         wcex.hIcon = LoadIcon(SDL_Instance, MAKEINTRESOURCE(SDL_atoi(hint)));
@@ -1638,6 +1887,7 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
         GetModuleFileName(SDL_Instance, path, MAX_PATH);
         ExtractIconEx(path, 0, &wcex.hIcon, &wcex.hIconSm, 1);
     }
+#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     if (!RegisterClassEx(&wcex)) {
         WIN_CleanRegisterApp(wcex);
@@ -1664,9 +1914,11 @@ SDL_UnregisterApp()
         wcex.hIcon = NULL;
         wcex.hIconSm = NULL;
         /* Check for any registered window classes. */
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
         if (GetClassInfoEx(SDL_Instance, SDL_Appname, &wcex)) {
             UnregisterClass(SDL_Appname, SDL_Instance);
         }
+#endif
         WIN_CleanRegisterApp(wcex);
     }
 }

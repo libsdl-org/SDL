@@ -150,12 +150,12 @@ SDL_GetBasePath(void)
     }
 #endif
 #if defined(__OPENBSD__)
-    /* Please note that this will fail if the process was launched with a relative path and the cwd has changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD. */
+    /* Please note that this will fail if the process was launched with a relative path and $PWD + the cwd have changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD. */
     char **cmdline;
     size_t len;
     const int mib[] = { CTL_KERN, KERN_PROC_ARGS, getpid(), KERN_PROC_ARGV };
     if (sysctl(mib, 4, NULL, &len, NULL, 0) != -1) {
-        char *exe;
+        char *exe, *pwddst;
         char *realpathbuf = (char *) SDL_malloc(PATH_MAX + 1);
         if (!realpathbuf) {
             SDL_OutOfMemory();
@@ -172,13 +172,28 @@ SDL_GetBasePath(void)
         sysctl(mib, 4, cmdline, &len, NULL, 0);
 
         exe = cmdline[0];
+        pwddst = NULL;
         if (SDL_strchr(exe, '/') == NULL) {  /* not a relative or absolute path, check $PATH for it */
             exe = search_path_for_binary(cmdline[0]);
+        } else {
+            if (exe && *exe == '.') {
+                const char *pwd = SDL_getenv("PWD");
+                if (pwd && *pwd) {
+                    SDL_asprintf(&pwddst, "%s/%s", pwd, exe); 
+                }
+            }
         }
 
         if (exe) {
-            if (realpath(exe, realpathbuf) != NULL) {
-                retval = realpathbuf;
+            if (pwddst == NULL) {
+                if (realpath(exe, realpathbuf) != NULL) {
+                    retval = realpathbuf;
+                }
+            } else {
+                if (realpath(pwddst, realpathbuf) != NULL) {
+                    retval = realpathbuf;
+                }
+                SDL_free(pwddst);
             }
 
             if (exe != cmdline[0]) {

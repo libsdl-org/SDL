@@ -1,0 +1,72 @@
+name: Build (Sony Playstation 2)
+
+on: [push, pull_request]
+
+jobs:
+  ps2:
+    runs-on: ubuntu-latest
+    container: ps2dev/ps2dev:latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup dependencies
+      run: |
+        apk update 
+        apk add cmake gmp mpc1 mpfr4 ninja pkgconf make git
+
+    # To be removed once ps2_drivers is part of PS2DEV
+    - name: Install ps2_drivers lib
+      run: |
+        git clone https://github.com/fjtrujy/ps2_drivers.git
+        cd ps2_drivers
+        make -j $(getconf _NPROCESSORS_ONLN) clean
+        make -j $(getconf _NPROCESSORS_ONLN)
+        make -j $(getconf _NPROCESSORS_ONLN) install
+
+    - name: Configure (CMake)
+      run: |
+        cmake -S . -B build -G Ninja\
+          -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
+          -DSDL_TESTS=ON \
+          -DCMAKE_INSTALL_PREFIX=cmake_prefix \
+          -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build --config Release --verbose --parallel
+    - name: Install (CMake)
+      run: |
+        set -eu
+        cmake --install build/ --config Release
+        echo "SDL2_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
+        ( cd cmake_prefix; find ) | LC_ALL=C sort -u
+
+    - name: Verify CMake configuration files
+      run: |
+        cmake -S cmake/test -B cmake_config_build -G Ninja \
+          -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
+          -DTEST_SHARED=FALSE \
+          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
+          -DCMAKE_BUILD_TYPE=Release
+        cmake --build cmake_config_build --verbose
+    - name: Verify sdl2-config
+      run: |
+        export CC=mips64r5900el-ps2-elf-gcc
+        export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+        export EXTRA_LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
+        cmake/test/test_sdlconfig.sh
+    - name: Verify sdl2.pc
+      run: |
+        export CC=mips64r5900el-ps2-elf-gcc
+        export EXTRA_LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
+        export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+        cmake/test/test_pkgconfig.sh
+    
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+    - name: Upload artifacts
+      if: ${{ success() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: tests-${{ steps.slug.outputs.sha8 }}
+        path: |
+          build/test

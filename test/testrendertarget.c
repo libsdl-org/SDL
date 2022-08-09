@@ -20,7 +20,7 @@
 #endif
 
 #include "SDL_test_common.h"
-
+#include "testutils.h"
 
 static SDLTest_CommonState *state;
 
@@ -43,56 +43,6 @@ quit(int rc)
 {
     SDLTest_CommonQuit(state);
     exit(rc);
-}
-
-SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
-{
-    SDL_Surface *temp;
-    SDL_Texture *texture;
-
-    /* Load the sprite image */
-    temp = SDL_LoadBMP(file);
-    if (temp == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
-        return NULL;
-    }
-
-    /* Set transparent pixel as the pixel at (0,0) */
-    if (transparent) {
-        if (temp->format->palette) {
-            SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *) temp->pixels);
-        } else {
-            switch (temp->format->BitsPerPixel) {
-            case 15:
-                SDL_SetColorKey(temp, SDL_TRUE,
-                                (*(Uint16 *) temp->pixels) & 0x00007FFF);
-                break;
-            case 16:
-                SDL_SetColorKey(temp, SDL_TRUE, *(Uint16 *) temp->pixels);
-                break;
-            case 24:
-                SDL_SetColorKey(temp, SDL_TRUE,
-                                (*(Uint32 *) temp->pixels) & 0x00FFFFFF);
-                break;
-            case 32:
-                SDL_SetColorKey(temp, SDL_TRUE, *(Uint32 *) temp->pixels);
-                break;
-            }
-        }
-    }
-
-    /* Create textures from the image */
-    texture = SDL_CreateTextureFromSurface(renderer, temp);
-    if (!texture) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(temp);
-        return NULL;
-    }
-    SDL_FreeSurface(temp);
-
-    /* We're ready to roll. :) */
-    return texture;
 }
 
 SDL_bool
@@ -292,11 +242,11 @@ main(int argc, char *argv[])
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
         if (test_composite) {
-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon-alpha.bmp", SDL_TRUE);
+            drawstate->sprite = LoadTexture(drawstate->renderer, "icon-alpha.bmp", SDL_TRUE, NULL, NULL);
         } else {
-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", SDL_TRUE);
+            drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
         }
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", SDL_FALSE);
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", SDL_FALSE, NULL, NULL);
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }

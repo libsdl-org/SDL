@@ -30,7 +30,7 @@
 
 #include "../SDL_internal.h"
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -62,236 +62,7 @@
 #include "nacl_io/nacl_io.h"
 #endif
 
-#ifdef __VITA__
-
-#include <psp2/io/fcntl.h>
-#include <psp2/io/stat.h>
-
-#define READAHEAD_BUFFER_SIZE   1024
-static int SDLCALL
-vita_file_open(SDL_RWops * context, const char *filename, const char *mode)
-{
-    int h;
-    int open_flags;
-    SDL_bool has_r;
-    SDL_bool has_w;
-    SDL_bool has_a;
-    SDL_bool has_plus;
-
-    if (!context)
-        return -1;              /* failed (invalid call) */
-
-    context->hidden.vitaio.h = -1;   /* mark this as unusable */
-    context->hidden.vitaio.buffer.data = NULL;
-    context->hidden.vitaio.buffer.size = 0;
-    context->hidden.vitaio.buffer.left = 0;
-
-    open_flags = 0;
-
-    /* "r" = reading, file must exist */
-    /* "w" = writing, truncate existing, file may not exist */
-    /* "r+"= reading or writing, file must exist            */
-    /* "a" = writing, append file may not exist             */
-    /* "a+"= append + read, file may not exist              */
-    /* "w+" = read, write, truncate. file may not exist    */
-
-    has_r = SDL_strchr(mode, 'r') != NULL;
-    has_w = SDL_strchr(mode, 'w') != NULL;
-    has_a = SDL_strchr(mode, 'a') != NULL;
-    has_plus = SDL_strchr(mode, '+') != NULL;
-
-    if (has_plus)
-    {
-        if (has_r || has_w || has_a)
-        {
-            open_flags |= SCE_O_RDWR;
-        }
-    }
-    else
-    {
-        if (has_r)
-        {
-            open_flags |= SCE_O_RDONLY;
-        }
-        if (has_w || has_a)
-        {
-            open_flags |= SCE_O_WRONLY;
-        }
-    }
-    if (has_w || has_a)
-    {
-        open_flags |= SCE_O_CREAT;
-    }
-    if (has_w)
-    {
-        open_flags |= SCE_O_TRUNC;
-    }
-    if (has_a)
-    {
-        open_flags |= SCE_O_APPEND;
-    }
-
-    context->hidden.vitaio.buffer.data =
-        (char *) SDL_malloc(READAHEAD_BUFFER_SIZE);
-    if (!context->hidden.vitaio.buffer.data) {
-        return SDL_OutOfMemory();
-    }
-
-    /* Try to open the file on the filesystem first */
-    h = sceIoOpen(filename, open_flags, 0777);
-
-    if (h < 0) {
-        /* Try opening it from app0:/ container if it's a relative path */
-        char path[4096];
-        SDL_snprintf(path, 4096, "app0:/%s", filename);
-        h = sceIoOpen(path, open_flags, 0777);
-    }
-
-    if (h < 0) {
-        SDL_free(context->hidden.vitaio.buffer.data);
-        context->hidden.vitaio.buffer.data = NULL;
-        SDL_SetError("Couldn't open %s", filename);
-        return -2;              /* failed (sceIoOpen) */
-    }
-    context->hidden.vitaio.h = h;
-
-    return 0;                   /* ok */
-}
-
-static Sint64 SDLCALL
-vita_file_size(SDL_RWops * context)
-{
-    SceIoStat st;
-    if (!context || context->hidden.vitaio.h < 0) {
-        return SDL_SetError("vita_file_size: invalid context/file not opened");
-    }
-
-    if (sceIoGetstatByFd(context->hidden.vitaio.h, &st) < 0) {
-        return SDL_SetError("vita_file_size: could not get file size");
-    }
-    return st.st_size;
-}
-
-static Sint64 SDLCALL
-vita_file_seek(SDL_RWops * context, Sint64 offset, int whence)
-{
-    int vitawhence;
-
-    if (!context || context->hidden.vitaio.h < 0) {
-        return SDL_SetError("vita_file_seek: invalid context/file not opened");
-    }
-
-    /* FIXME: We may be able to satisfy the seek within buffered data */
-    if (whence == RW_SEEK_CUR && context->hidden.vitaio.buffer.left) {
-        offset -= (long)context->hidden.vitaio.buffer.left;
-    }
-    context->hidden.vitaio.buffer.left = 0;
-
-    switch (whence) {
-    case RW_SEEK_SET:
-        vitawhence = SCE_SEEK_SET;
-        break;
-    case RW_SEEK_CUR:
-        vitawhence = SCE_SEEK_CUR;
-        break;
-    case RW_SEEK_END:
-        vitawhence = SCE_SEEK_END;
-        break;
-    default:
-        return SDL_SetError("vita_file_seek: Unknown value for 'whence'");
-    }
-
-    return sceIoLseek(context->hidden.vitaio.h, offset, vitawhence);
-}
-
-static size_t SDLCALL
-vita_file_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
-{
-    size_t total_need;
-    size_t total_read = 0;
-    size_t read_ahead;
-    size_t byte_read;
-
-    total_need = size * maxnum;
-
-    if (!context || context->hidden.vitaio.h < 0 || !total_need) {
-        return 0;
-    }
-
-    if (context->hidden.vitaio.buffer.left > 0) {
-        void *data = (char *) context->hidden.vitaio.buffer.data +
-            context->hidden.vitaio.buffer.size -
-            context->hidden.vitaio.buffer.left;
-        read_ahead =
-            SDL_min(total_need, context->hidden.vitaio.buffer.left);
-        SDL_memcpy(ptr, data, read_ahead);
-        context->hidden.vitaio.buffer.left -= read_ahead;
-
-        if (read_ahead == total_need) {
-            return maxnum;
-        }
-        ptr = (char *) ptr + read_ahead;
-        total_need -= read_ahead;
-        total_read += read_ahead;
-    }
-
-    if (total_need < READAHEAD_BUFFER_SIZE) {
-        byte_read = sceIoRead(context->hidden.vitaio.h, context->hidden.vitaio.buffer.data, READAHEAD_BUFFER_SIZE);
-        read_ahead = SDL_min(total_need, (int) byte_read);
-        SDL_memcpy(ptr, context->hidden.vitaio.buffer.data, read_ahead);
-        context->hidden.vitaio.buffer.size = byte_read;
-        context->hidden.vitaio.buffer.left = byte_read - read_ahead;
-        total_read += read_ahead;
-    } else {
-        byte_read = sceIoRead(context->hidden.vitaio.h, ptr, total_need);
-        total_read += byte_read;
-    }
-    return (total_read / size);
-}
-
-static size_t SDLCALL
-vita_file_write(SDL_RWops * context, const void *ptr, size_t size,
-                 size_t num)
-{
-
-    size_t total_bytes;
-    size_t byte_written;
-    size_t nwritten;
-
-    total_bytes = size * num;
-
-    if (!context || context->hidden.vitaio.h < 0 || !size || !total_bytes) {
-        return 0;
-    }
-
-    if (context->hidden.vitaio.buffer.left) {
-        sceIoLseek(context->hidden.vitaio.h, -(SceOff)context->hidden.vitaio.buffer.left, SCE_SEEK_CUR);
-        context->hidden.vitaio.buffer.left = 0;
-    }
-
-    byte_written = sceIoWrite(context->hidden.vitaio.h, ptr, total_bytes);
-
-    nwritten = byte_written / size;
-    return nwritten;
-}
-
-static int SDLCALL
-vita_file_close(SDL_RWops * context)
-{
-    if (context) {
-        if (context->hidden.vitaio.h >= 0) {
-            sceIoClose(context->hidden.vitaio.h);
-            context->hidden.vitaio.h = -1;   /* to be sure */
-        }
-        SDL_free(context->hidden.vitaio.buffer.data);
-        context->hidden.vitaio.buffer.data = NULL;
-        SDL_FreeRW(context);
-    }
-    return 0;
-}
-#endif
-
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 
 /* Functions to read/write Win32 API file pointers */
 
@@ -304,7 +75,9 @@ vita_file_close(SDL_RWops * context)
 static int SDLCALL
 windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
 {
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     UINT old_error_mode;
+#endif
     HANDLE h;
     DWORD r_right, w_right;
     DWORD must_exist, truncate;
@@ -341,9 +114,11 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
     if (!context->hidden.windowsio.buffer.data) {
         return SDL_OutOfMemory();
     }
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Do not open a dialog box if failure */
     old_error_mode =
         SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#endif
 
     {
         LPTSTR tstr = WIN_UTF8ToString(filename);
@@ -354,8 +129,10 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
         SDL_free(tstr);
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* restore old behavior */
     SetErrorMode(old_error_mode);
+#endif
 
     if (h == INVALID_HANDLE_VALUE) {
         SDL_free(context->hidden.windowsio.buffer.data);
@@ -532,7 +309,7 @@ windows_file_close(SDL_RWops * context)
     }
     return 0;
 }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 #ifdef HAVE_STDIO_H
 
@@ -803,7 +580,7 @@ SDL_RWFromFile(const char *file, const char *mode)
     rwops->close = Android_JNI_FileClose;
     rwops->type = SDL_RWOPS_JNIFILE;
 
-#elif defined(__WIN32__)
+#elif defined(__WIN32__) || defined(__GDK__)
     rwops = SDL_AllocRW();
     if (!rwops)
         return NULL;            /* SDL_SetError already setup by SDL_AllocRW() */
@@ -817,20 +594,6 @@ SDL_RWFromFile(const char *file, const char *mode)
     rwops->write = windows_file_write;
     rwops->close = windows_file_close;
     rwops->type = SDL_RWOPS_WINFILE;
-#elif defined(__VITA__)
-    rwops = SDL_AllocRW();
-    if (!rwops)
-        return NULL;            /* SDL_SetError already setup by SDL_AllocRW() */
-    if (vita_file_open(rwops, file, mode) < 0) {
-        SDL_FreeRW(rwops);
-        return NULL;
-    }
-    rwops->size = vita_file_size;
-    rwops->seek = vita_file_seek;
-    rwops->read = vita_file_read;
-    rwops->write = vita_file_write;
-    rwops->close = vita_file_close;
-    rwops->type = SDL_RWOPS_VITAFILE;
 #elif HAVE_STDIO_H
     {
         #if __APPLE__ && !SDL_FILE_DISABLED // TODO: add dummy?

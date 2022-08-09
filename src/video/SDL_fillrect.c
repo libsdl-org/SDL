@@ -26,7 +26,7 @@
 
 
 #ifdef __SSE__
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define SSE_BEGIN \
@@ -128,7 +128,7 @@ SDL_FillRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 DEFINE_SSE_FILLRECT(2, Uint16)
 DEFINE_SSE_FILLRECT(4, Uint32)
 
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 #endif /* __SSE__ */
 
 static void
@@ -309,11 +309,6 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
         return SDL_InvalidParamError("SDL_FillRects(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
-        return SDL_SetError("SDL_FillRects(): Unsupported surface format");
-    }
-
     /* Nothing to do */
     if (dst->w == 0 || dst->h == 0) {
         return 0;
@@ -326,6 +321,23 @@ SDL_FillRects(SDL_Surface * dst, const SDL_Rect * rects, int count,
 
     if (!rects) {
         return SDL_InvalidParamError("SDL_FillRects(): rects");
+    }
+
+    /* This function doesn't usually work on surfaces < 8 bpp
+     * Except: support for 4bits, when filling full size.
+     */
+    if (dst->format->BitsPerPixel < 8) {
+        if (count == 1) {
+            const SDL_Rect *r = &rects[0];
+            if (r->x == 0 && r->y == 0 && r->w == dst->w && r->w == dst->h) {
+                if (dst->format->BitsPerPixel == 4) {
+                    Uint8 b = (((Uint8) color << 4) | (Uint8) color);
+                    SDL_memset(dst->pixels, b, dst->h * dst->pitch);
+                    return 1;
+                }
+            }
+        }
+        return SDL_SetError("SDL_FillRects(): Unsupported surface format");
     }
 
 #if SDL_ARM_NEON_BLITTERS

@@ -21,6 +21,7 @@
 
 #include "SDL_test.h"
 #include "SDL_test_common.h"
+#include "testutils.h"
 
 #define NUM_SPRITES    100
 #define MAX_SPEED     1
@@ -55,61 +56,31 @@ quit(int rc)
     SDL_free(positions);
     SDL_free(velocities);
     SDLTest_CommonQuit(state);
-    exit(rc);
+    /* If rc is 0, just let main return normally rather than calling exit.
+     * This allows testing of platforms where SDL_main is required and does meaningful cleanup.
+     */
+    if (rc != 0) {
+        exit(rc);
+    }
 }
 
 int
 LoadSprite(const char *file)
 {
     int i;
-    SDL_Surface *temp;
 
-    /* Load the sprite image */
-    temp = SDL_LoadBMP(file);
-    if (temp == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
-        return (-1);
-    }
-    sprite_w = temp->w;
-    sprite_h = temp->h;
-
-    /* Set transparent pixel as the pixel at (0,0) */
-    if (temp->format->palette) {
-        SDL_SetColorKey(temp, 1, *(Uint8 *) temp->pixels);
-    } else {
-        switch (temp->format->BitsPerPixel) {
-        case 15:
-            SDL_SetColorKey(temp, 1, (*(Uint16 *) temp->pixels) & 0x00007FFF);
-            break;
-        case 16:
-            SDL_SetColorKey(temp, 1, *(Uint16 *) temp->pixels);
-            break;
-        case 24:
-            SDL_SetColorKey(temp, 1, (*(Uint32 *) temp->pixels) & 0x00FFFFFF);
-            break;
-        case 32:
-            SDL_SetColorKey(temp, 1, *(Uint32 *) temp->pixels);
-            break;
-        }
-    }
-
-    /* Create textures from the image */
     for (i = 0; i < state->num_windows; ++i) {
-        SDL_Renderer *renderer = state->renderers[i];
-        sprites[i] = SDL_CreateTextureFromSurface(renderer, temp);
+        /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
+        sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &sprite_w, &sprite_h);
         if (!sprites[i]) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
-            SDL_FreeSurface(temp);
             return (-1);
         }
         if (SDL_SetTextureBlendMode(sprites[i], blendMode) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
-            SDL_FreeSurface(temp);
             SDL_DestroyTexture(sprites[i]);
             return (-1);
         }
     }
-    SDL_FreeSurface(temp);
 
     /* We're ready to roll. :) */
     return (0);

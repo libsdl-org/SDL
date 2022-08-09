@@ -131,6 +131,8 @@ static void openslES_DestroyEngine(void)
 static int
 openslES_CreateEngine(void)
 {
+    const SLInterfaceID ids[1] = { SL_IID_VOLUME };
+    const SLboolean req[1] = { SL_BOOLEAN_FALSE };
     SLresult result;
 
     LOGI("openSLES_CreateEngine()");
@@ -160,8 +162,6 @@ openslES_CreateEngine(void)
     LOGI("EngineGetInterface OK");
 
     /* create output mix */
-    const SLInterfaceID ids[1] = { SL_IID_VOLUME };
-    const SLboolean req[1] = { SL_BOOLEAN_FALSE };
     result = (*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 1, ids, req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateOutputMix failed: %d", result);
@@ -229,6 +229,12 @@ openslES_CreatePCMRecorder(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
     SLDataFormat_PCM format_pcm;
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq;
+    SLDataSink audioSnk;
+    SLDataLocator_IODevice loc_dev;
+    SLDataSource audioSrc;
+    const SLInterfaceID ids[1] = { SL_IID_ANDROIDSIMPLEBUFFERQUEUE };
+    const SLboolean req[1] = { SL_BOOLEAN_TRUE };
     SLresult result;
     int i;
 
@@ -250,11 +256,16 @@ openslES_CreatePCMRecorder(_THIS)
           this->spec.channels, (this->spec.format & 0x1000) ? "BE" : "LE", this->spec.samples);
 
     /* configure audio source */
-    SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE, SL_IODEVICE_AUDIOINPUT, SL_DEFAULTDEVICEID_AUDIOINPUT, NULL};
-    SLDataSource audioSrc = {&loc_dev, NULL};
+    loc_dev.locatorType = SL_DATALOCATOR_IODEVICE;
+    loc_dev.deviceType = SL_IODEVICE_AUDIOINPUT;
+    loc_dev.deviceID = SL_DEFAULTDEVICEID_AUDIOINPUT;
+    loc_dev.device = NULL;
+    audioSrc.pLocator = &loc_dev;
+    audioSrc.pFormat = NULL;
 
     /* configure audio sink */
-    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, NUM_BUFFERS };
+    loc_bufq.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
+    loc_bufq.numBuffers = NUM_BUFFERS;
 
     format_pcm.formatType    = SL_DATAFORMAT_PCM;
     format_pcm.numChannels   = this->spec.channels;
@@ -264,17 +275,11 @@ openslES_CreatePCMRecorder(_THIS)
     format_pcm.endianness    = SL_BYTEORDER_LITTLEENDIAN;
     format_pcm.channelMask   = SL_SPEAKER_FRONT_CENTER;
 
-    SLDataSink audioSnk = { &loc_bufq, &format_pcm };
+    audioSnk.pLocator = &loc_bufq;
+    audioSnk.pFormat = &format_pcm;
 
     /* create audio recorder */
     /* (requires the RECORD_AUDIO permission) */
-    const SLInterfaceID ids[1] = {
-        SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-    };
-    const SLboolean req[1] = {
-        SL_BOOLEAN_TRUE,
-    };
-
     result = (*engineEngine)->CreateAudioRecorder(engineEngine, &recorderObject, &audioSrc, &audioSnk, 1, ids, req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioRecorder failed: %d", result);
@@ -354,7 +359,6 @@ openslES_CreatePCMRecorder(_THIS)
     return 0;
 
 failed:
-
     return SDL_SetError("Open device failed!");
 }
 
@@ -384,7 +388,6 @@ openslES_DestroyPCMPlayer(_THIS)
 
     /* destroy buffer queue audio player object, and invalidate all associated interfaces */
     if (bqPlayerObject != NULL) {
-
         (*bqPlayerObject)->Destroy(bqPlayerObject);
 
         bqPlayerObject = NULL;
@@ -406,7 +409,14 @@ static int
 openslES_CreatePCMPlayer(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = this->hidden;
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq;
     SLDataFormat_PCM format_pcm;
+    SLAndroidDataFormat_PCM_EX format_pcm_ex;
+    SLDataSource audioSrc;
+    SLDataSink audioSnk;
+    SLDataLocator_OutputMix loc_outmix;
+    const SLInterfaceID ids[2] = { SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_VOLUME };
+    const SLboolean req[2] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_FALSE };
     SLresult result;
     int i;
 
@@ -414,34 +424,35 @@ openslES_CreatePCMPlayer(_THIS)
        it can be done as described here:
         https://developer.android.com/ndk/guides/audio/opensl/android-extensions.html#floating-point
     */
-#if 1
-    /* Just go with signed 16-bit audio as it's the most compatible */
-    this->spec.format = AUDIO_S16SYS;
-#else
-    SDL_AudioFormat test_format;
-    for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
-        if (SDL_AUDIO_ISSIGNED(test_format) && SDL_AUDIO_ISINT(test_format)) {
-            break;
+    if(SDL_GetAndroidSDKVersion() >= 21) {
+        SDL_AudioFormat test_format;
+        for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
+            if (SDL_AUDIO_ISSIGNED(test_format)) {
+                break;
+            }
         }
-    }
 
-    if (!test_format) {
-        /* Didn't find a compatible format : */
-        LOGI( "No compatible audio format, using signed 16-bit audio" );
-        test_format = AUDIO_S16SYS;
+        if (!test_format) {
+            /* Didn't find a compatible format : */
+            LOGI( "No compatible audio format, using signed 16-bit audio" );
+            test_format = AUDIO_S16SYS;
+        }
+        this->spec.format = test_format;
+    } else {
+        /* Just go with signed 16-bit audio as it's the most compatible */
+        this->spec.format = AUDIO_S16SYS;
     }
-    this->spec.format = test_format;
-#endif
 
     /* Update the fragment size as size in bytes */
     SDL_CalculateAudioSpec(&this->spec);
 
-    LOGI("Try to open %u hz %u bit chan %u %s samples %u",
-          this->spec.freq, SDL_AUDIO_BITSIZE(this->spec.format),
+    LOGI("Try to open %u hz %s %u bit chan %u %s samples %u",
+          this->spec.freq, SDL_AUDIO_ISFLOAT(this->spec.format) ? "float" : "pcm", SDL_AUDIO_BITSIZE(this->spec.format),
           this->spec.channels, (this->spec.format & 0x1000) ? "BE" : "LE", this->spec.samples);
 
     /* configure audio source */
-    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, NUM_BUFFERS };
+    loc_bufq.locatorType = SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE;
+    loc_bufq.numBuffers = NUM_BUFFERS;
 
     format_pcm.formatType    = SL_DATAFORMAT_PCM;
     format_pcm.numChannels   = this->spec.channels;
@@ -488,23 +499,28 @@ openslES_CreatePCMPlayer(_THIS)
         break;
     }
 
-    SLDataSource audioSrc = { &loc_bufq, &format_pcm };
+    if(SDL_AUDIO_ISFLOAT(this->spec.format)) {
+        /* Copy all setup into PCM EX structure */
+        format_pcm_ex.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
+        format_pcm_ex.endianness = format_pcm.endianness;
+        format_pcm_ex.channelMask = format_pcm.channelMask;
+        format_pcm_ex.numChannels = format_pcm.numChannels;
+        format_pcm_ex.sampleRate = format_pcm.samplesPerSec;
+        format_pcm_ex.bitsPerSample = format_pcm.bitsPerSample;
+        format_pcm_ex.containerSize = format_pcm.containerSize;
+        format_pcm_ex.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+    }
+
+    audioSrc.pLocator = &loc_bufq;
+    audioSrc.pFormat = SDL_AUDIO_ISFLOAT(this->spec.format) ? (void*)&format_pcm_ex : (void*)&format_pcm;
 
     /* configure audio sink */
-    SLDataLocator_OutputMix loc_outmix = { SL_DATALOCATOR_OUTPUTMIX, outputMixObject };
-    SLDataSink audioSnk = { &loc_outmix, NULL };
+    loc_outmix.locatorType = SL_DATALOCATOR_OUTPUTMIX;
+    loc_outmix.outputMix = outputMixObject;
+    audioSnk.pLocator = &loc_outmix;
+    audioSnk.pFormat = NULL;
 
     /* create audio player */
-    const SLInterfaceID ids[2] = {
-        SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-        SL_IID_VOLUME
-    };
-
-    const SLboolean req[2] = {
-        SL_BOOLEAN_TRUE,
-        SL_BOOLEAN_FALSE,
-    };
-
     result = (*engineEngine)->CreateAudioPlayer(engineEngine, &bqPlayerObject, &audioSrc, &audioSnk, 2, ids, req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioPlayer failed: %d", result);
@@ -577,7 +593,6 @@ openslES_CreatePCMPlayer(_THIS)
     return 0;
 
 failed:
-
     return -1;
 }
 

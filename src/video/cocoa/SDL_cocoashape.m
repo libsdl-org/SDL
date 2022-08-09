@@ -29,29 +29,33 @@
 
 SDL_WindowShaper*
 Cocoa_CreateShaper(SDL_Window* window)
+{ @autoreleasepool
 {
-    SDL_WindowData* windata = (SDL_WindowData*)window->driverdata;
-    [windata->nswindow setOpaque:NO];
+    SDL_WindowShaper* result;
+    SDL_ShapeData* data;
+    int resized_properly;
+    SDL_WindowData* windata = (__bridge SDL_WindowData*)window->driverdata;
+    [windata.nswindow setOpaque:NO];
 
-    [windata->nswindow setStyleMask:NSWindowStyleMaskBorderless];
+    [windata.nswindow setStyleMask:NSWindowStyleMaskBorderless];
 
-    SDL_WindowShaper* result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
+    result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
     window->shaper = result;
 
-    SDL_ShapeData* data = (SDL_ShapeData *)SDL_malloc(sizeof(SDL_ShapeData));
+    data = (SDL_ShapeData *)SDL_malloc(sizeof(SDL_ShapeData));
     result->driverdata = data;
-    data->context = [windata->nswindow graphicsContext];
+    data->context = [windata.nswindow graphicsContext];
     data->saved = SDL_FALSE;
     data->shape = NULL;
 
-    int resized_properly = Cocoa_ResizeWindowShape(window);
+    resized_properly = Cocoa_ResizeWindowShape(window);
     SDL_assert(resized_properly == 0);
     return result;
-}
+}}
 
 typedef struct {
     NSView* view;
@@ -74,7 +78,7 @@ Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowSha
 { @autoreleasepool
 {
     SDL_ShapeData* data = (SDL_ShapeData*)shaper->driverdata;
-    SDL_WindowData* windata = (SDL_WindowData*)shaper->window->driverdata;
+    SDL_WindowData* windata = (__bridge SDL_WindowData*)shaper->window->driverdata;
     SDL_CocoaClosure closure;
     if(data->saved == SDL_TRUE) {
         [data->context restoreGraphicsState];
@@ -86,10 +90,10 @@ Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowSha
     [NSGraphicsContext setCurrentContext:data->context];
 
     [[NSColor clearColor] set];
-    NSRectFill([windata->sdlContentView frame]);
+    NSRectFill([windata.sdlContentView frame]);
     data->shape = SDL_CalculateShapeTree(*shape_mode,shape);
 
-    closure.view = windata->sdlContentView;
+    closure.view = windata.sdlContentView;
     closure.path = [NSBezierPath bezierPath];
     closure.window = shaper->window;
     SDL_TraverseShapeTree(data->shape,&ConvertRects,&closure);

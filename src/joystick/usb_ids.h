@@ -24,6 +24,7 @@
 
 /* Definitions of useful USB VID/PID values */
 
+#define USB_VENDOR_8BITDO       0x2dc8
 #define USB_VENDOR_AMAZON       0x1949
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_GOOGLE       0x18d1
@@ -39,14 +40,20 @@
 #define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_VALVE        0x28de
 
+#define USB_PRODUCT_8BITDO_XBOX_CONTROLLER                  0x2002
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                  0x0419
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER                0x9400
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER               0x1846
 #define USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER               0x0337
+#define USB_PRODUCT_NINTENDO_N64_CONTROLLER                 0x2019
+#define USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER        0x201e
+#define USB_PRODUCT_NINTENDO_SNES_CONTROLLER                0x2017
+#define USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP             0x200e
+#define USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT             0x2006
+#define USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR             0x2008  /* Used by joycond */
+#define USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT            0x2007
 #define USB_PRODUCT_NINTENDO_SWITCH_PRO                     0x2009
-#define USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_LEFT            0x2006
-#define USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_RIGHT           0x2007
-#define USB_PRODUCT_NINTENDO_SWITCH_JOY_CON_GRIP            0x200e
+#define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER                0x7214
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008
 #define USB_PRODUCT_RAZER_ATROX                             0x0a00
@@ -55,7 +62,7 @@
 #define USB_PRODUCT_SONY_DS4_SLIM                           0x09cc
 #define USB_PRODUCT_SONY_DS5                                0x0ce6
 #define USB_PRODUCT_VICTRIX_FS_PRO_V2                       0x0207
-#define USB_PRODUCT_XBOX360_XUSB_CONTROLLER                 0x02a1    /* XUSB driver software PID */
+#define USB_PRODUCT_XBOX360_XUSB_CONTROLLER                 0x02a1  /* XUSB driver software PID */
 #define USB_PRODUCT_XBOX360_WIRED_CONTROLLER                0x028e
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER               0x0719
 #define USB_PRODUCT_XBOX_ONE_ADAPTIVE                       0x0b0a
@@ -76,8 +83,8 @@
 #define USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW             0x02da
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2        0x4001
 #define USB_PRODUCT_XBOX_SERIES_X_POWERA_SPECTRA            0x4002
-#define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER             0x02ff    /* XBOXGIP driver software PID */
-#define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER              0x02fe    /* Made up product ID for XInput */
+#define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER             0x02ff  /* XBOXGIP driver software PID */
+#define USB_PRODUCT_XBOX_ONE_XINPUT_CONTROLLER              0x02fe  /* Made up product ID for XInput */
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                   0x11ff
 
 /* USB usage pages */

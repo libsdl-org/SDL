@@ -28,7 +28,7 @@
 
 static const char *video_usage[] = {
     "[--video driver]", "[--renderer driver]", "[--gldebug]",
-    "[--info all|video|modes|render|event]",
+    "[--info all|video|modes|render|event|event_motion]",
     "[--log all|error|system|audio|video|render|input]", "[--display N]",
     "[--metal-window | --opengl-window | --vulkan-window]",
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
@@ -166,6 +166,10 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         }
         if (SDL_strcasecmp(argv[index], "event") == 0) {
             state->verbose |= VERBOSE_EVENT;
+            return 2;
+        }
+        if (SDL_strcasecmp(argv[index], "event_motion") == 0) {
+            state->verbose |= (VERBOSE_EVENT | VERBOSE_MOTION);
             return 2;
         }
         return -1;
@@ -1196,7 +1200,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                     }
                 }
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
                 /* Print the D3D9 adapter index */
                 adapterIndex = SDL_Direct3D9GetAdapterIndex( i );
                 SDL_Log("D3D9 Adapter Index: %d", adapterIndex);
@@ -1464,11 +1468,6 @@ default: return "???";
 static void
 SDLTest_PrintEvent(SDL_Event * event)
 {
-    if ((event->type == SDL_MOUSEMOTION) || (event->type == SDL_FINGERMOTION)) {
-        /* Mouse and finger motion are really spammy */
-        return;
-    }
-
     switch (event->type) {
     case SDL_DISPLAYEVENT:
         switch (event->display.event) {
@@ -1809,12 +1808,12 @@ FullscreenTo(int index, int windowId)
 
     flags = SDL_GetWindowFlags(window);
     if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen( window, SDL_FALSE );
+        SDL_SetWindowFullscreen( window, 0);
         SDL_Delay( 15 );
     }
 
     SDL_SetWindowPosition( window, rect.x, rect.y );
-    SDL_SetWindowFullscreen( window, SDL_TRUE );
+    SDL_SetWindowFullscreen( window, SDL_WINDOW_FULLSCREEN );
 }
 
 void
@@ -1824,7 +1823,11 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
     static SDL_MouseMotionEvent lastEvent;
 
     if (state->verbose & VERBOSE_EVENT) {
-        SDLTest_PrintEvent(event);
+        if (((event->type != SDL_MOUSEMOTION) &&
+             (event->type != SDL_FINGERMOTION)) ||
+            ((state->verbose & VERBOSE_MOTION) != 0)) {
+            SDLTest_PrintEvent(event);
+        }
     }
 
     switch (event->type) {
