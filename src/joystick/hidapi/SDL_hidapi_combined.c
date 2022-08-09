@@ -27,7 +27,7 @@
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
 #include "SDL_hidapijoystick_c.h"
-
+#include "../SDL_sysjoystick.h"
 
 static SDL_bool
 HIDAPI_DriverCombined_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -63,6 +63,8 @@ static SDL_bool
 HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     int i;
+    char *serial = NULL, *new_serial;
+    size_t serial_length = 0, new_length;
 
     for (i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
@@ -71,9 +73,36 @@ HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
                 child = device->children[i];
                 child->driver->CloseJoystick(child, joystick);
             }
+            if (serial) {
+                SDL_free(serial);
+            }
             return SDL_FALSE;
         }
+
+        /* Extend the serial number with the child serial number */
+        if (joystick->serial) {
+            new_length = serial_length + 1 + SDL_strlen(joystick->serial);
+            new_serial = (char *)SDL_realloc(serial, new_length);
+            if (new_serial) {
+                if (serial) {
+                    SDL_strlcat(new_serial, ",", new_length);
+                    SDL_strlcat(new_serial, joystick->serial, new_length);
+                } else {
+                    SDL_strlcpy(new_serial, joystick->serial, new_length);
+                }
+                SDL_free(serial);
+                serial = new_serial;
+                serial_length = new_length;
+            }
+        }
     }
+
+    /* Update the joystick with the combined serial numbers */
+    if (joystick->serial) {
+        SDL_free(joystick->serial);
+    }
+    joystick->serial = serial;
+
     return SDL_TRUE;
 }
 
