@@ -1747,6 +1747,22 @@ static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *c
         data[1] = -data[1];
     }
 
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft &&
+        !ctx->device->parent) {
+        /* Mini-gamepad mode, swap some axes around */
+        float tmp = data[2];
+        data[2] = -data[0];
+        data[0] = tmp;
+    }
+
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight &&
+        !ctx->device->parent) {
+        /* Mini-gamepad mode, swap some axes around */
+        float tmp = data[2];
+        data[2] = data[0];
+        data[0] = -tmp;
+    }
+
     SDL_PrivateJoystickSensor(joystick, type, data, 3);
 }
 
