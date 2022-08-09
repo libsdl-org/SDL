@@ -1808,12 +1808,12 @@ FullscreenTo(int index, int windowId)
 
     flags = SDL_GetWindowFlags(window);
     if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen( window, SDL_FALSE );
+        SDL_SetWindowFullscreen( window, 0);
         SDL_Delay( 15 );
     }
 
     SDL_SetWindowPosition( window, rect.x, rect.y );
-    SDL_SetWindowFullscreen( window, SDL_TRUE );
+    SDL_SetWindowFullscreen( window, SDL_WINDOW_FULLSCREEN );
 }
 
 void
