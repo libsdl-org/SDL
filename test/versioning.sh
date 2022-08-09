@@ -67,14 +67,6 @@ else
     not_ok "Makefile.w32 $version disagrees with SDL_version.h $ref_version"
 fi
 
-version=$(sed -Ene 's/^[$]SDLVersion = "([0-9.]*)"\r?$/\1/p' build-scripts/winrtbuild.ps1)
-
-if [ "$ref_version" = "$version" ]; then
-    ok "winrtbuild.ps1 $version"
-else
-    not_ok "winrtbuild.ps1 $version disagrees with SDL_version.h $ref_version"
-fi
-
 tuple=$(sed -ne 's/^ *FILEVERSION *//p' src/main/windows/version.rc | tr -d '\r')
 ref_tuple="${ref_major},${ref_minor},${ref_micro},0"
 
