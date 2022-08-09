@@ -280,15 +280,20 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
         case XI_RawMotion: {
             const XIRawEvent *rawev = (const XIRawEvent*)cookie->data;
             SDL_Mouse *mouse = SDL_GetMouse();
-            SDL_XInput2DeviceInfo *devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
+            SDL_XInput2DeviceInfo *devinfo;
             double coords[2];
             double processed_coords[2];
             int i;
 
             videodata->global_mouse_changed = SDL_TRUE;
 
-            if (!devinfo || !mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 return 0;
+            }
+
+            devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
+            if (!devinfo) {
+                return 0;  /* oh well. */
             }
 
             parse_valuators(rawev->raw_values,rawev->valuators.mask,
