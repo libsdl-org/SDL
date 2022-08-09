@@ -555,6 +555,9 @@ HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID
             }
         }
     }
+
+    /* Rescan the device list in case device state has changed */
+    SDL_HIDAPI_change_count = 0;
 }
 
 static int
@@ -1003,10 +1006,7 @@ HIDAPI_UpdateDevices(void)
             if (device->driver) {
                 if (SDL_TryLockMutex(device->dev_lock) == 0) {
                     device->updating = SDL_TRUE;
-                    if (!device->driver->UpdateDevice(device)) {
-                        /* Try re-enumerating the device if it fails */
-                        SDL_HIDAPI_change_count = 0;
-                    }
+                    device->driver->UpdateDevice(device);
                     device->updating = SDL_FALSE;
                     SDL_UnlockMutex(device->dev_lock);
                 }
