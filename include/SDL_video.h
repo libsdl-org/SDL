@@ -604,6 +604,8 @@ extern DECLSPEC SDL_DisplayMode * SDLCALL SDL_GetClosestDisplayMode(int displayI
  * \returns the index of the display containing the point or a negative error
  *          code on failure; call SDL_GetError() for more information.
  *
+ * \since This function is available since SDL 2.24.0.
+ *
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetNumVideoDisplays
  */
@@ -616,6 +618,8 @@ extern DECLSPEC int SDLCALL SDL_GetPointDisplayIndex(const SDL_Point * point);
  * \returns the index of the display entirely containing the rect or closest
  *          to the center of the rect on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.24.0.
  *
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetNumVideoDisplays
