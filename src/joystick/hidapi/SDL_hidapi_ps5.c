@@ -238,8 +238,9 @@ SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
         0x1B
     };
 
-    if (player_index >= 0 && player_index < SDL_arraysize(lights)) {
+    if (player_index >= 0) {
         /* Bitmask, 0x1F enables all lights, 0x20 changes instantly instead of fade */
+        player_index %= SDL_arraysize(lights);
         effects->ucPadLights = lights[player_index] | 0x20;
     } else {
         effects->ucPadLights = 0x00;
