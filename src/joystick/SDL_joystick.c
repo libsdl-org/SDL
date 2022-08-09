@@ -2897,6 +2897,7 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
 
                 /* Update internal sensor state */
                 SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+                SDL_Log("Sensor %d data: %.2f,%.2f,%.2f\n", sensor->type, data[0], data[1], data[2]);
 
                 /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED

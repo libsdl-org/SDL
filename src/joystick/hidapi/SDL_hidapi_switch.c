@@ -269,6 +269,7 @@ typedef struct {
     Uint32 m_unRumblePending;
     SDL_bool m_bHasSensors;
     SDL_bool m_bReportSensors;
+    SDL_bool m_bHasSensorData;
     Uint32 m_unLastInput;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
@@ -1977,13 +1978,28 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
     }
 
     if (ctx->m_bReportSensors) {
-        SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[2].sGyroX);
-        SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[1].sGyroX);
-        SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[0].sGyroX);
+        SDL_bool bHasSensorData = (packet->imuState[0].sAccelX != 0 ||
+                                   packet->imuState[0].sGyroX != 0);
+        if (bHasSensorData) {
+            ctx->m_bHasSensorData = SDL_TRUE;
 
-        SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[2].sAccelX);
-        SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[1].sAccelX);
-        SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[0].sAccelX);
+            SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[2].sGyroX);
+            SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[1].sGyroX);
+            SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[0].sGyroX);
+
+            SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[2].sAccelX);
+            SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[1].sAccelX);
+            SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[0].sAccelX);
+
+        } else if (ctx->m_bHasSensorData) {
+            /* Uh oh, someone turned off the IMU? */
+            SDL_UnlockMutex(ctx->device->dev_lock);
+            SetIMUEnabled(ctx, SDL_TRUE);
+            SDL_LockMutex(ctx->device->dev_lock);
+
+        } else {
+            /* We have never gotten IMU data, probably not supported on this device */
+        }
     }
 
     ctx->m_lastFullState = *packet;
