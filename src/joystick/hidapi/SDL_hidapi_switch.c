@@ -1230,6 +1230,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         goto error;
     }
     ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
+    ctx->m_bSyncWrite = SDL_TRUE;
 
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
@@ -1365,6 +1366,10 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     joystick->nbuttons = 16;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = ctx->m_bUsingBluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
+
+    /* Set up for input */
+    ctx->m_bSyncWrite = SDL_FALSE;
+    ctx->m_unLastInput = SDL_GetTicks();
 
     return SDL_TRUE;
 
