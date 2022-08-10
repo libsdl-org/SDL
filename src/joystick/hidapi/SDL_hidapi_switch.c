@@ -270,6 +270,7 @@ typedef struct {
     SDL_bool m_bReportSensors;
     SDL_bool m_bHasSensorData;
     Uint32 m_unLastInput;
+    Uint32 m_unLastIMUReset;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -1369,7 +1370,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
 
     /* Set up for input */
     ctx->m_bSyncWrite = SDL_FALSE;
-    ctx->m_unLastInput = SDL_GetTicks();
+    ctx->m_unLastIMUReset = ctx->m_unLastInput = SDL_GetTicks();
 
     return SDL_TRUE;
 
@@ -2005,16 +2006,22 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
 
         } else if (ctx->m_bHasSensorData) {
             /* Uh oh, someone turned off the IMU? */
-            SDL_HIDAPI_Device *device = ctx->device;
+            const Uint32 IMU_RESET_DELAY_MS = 3000;
+            Uint32 now = SDL_GetTicks();
 
-            if (device->updating) {
-                SDL_UnlockMutex(device->dev_lock);
-            }
+            if (SDL_TICKS_PASSED(now, ctx->m_unLastIMUReset + IMU_RESET_DELAY_MS)) {
+                SDL_HIDAPI_Device *device = ctx->device;
 
-            SetIMUEnabled(ctx, SDL_TRUE);
+                if (device->updating) {
+                    SDL_UnlockMutex(device->dev_lock);
+                }
 
-            if (device->updating) {
-                SDL_LockMutex(device->dev_lock);
+                SetIMUEnabled(ctx, SDL_TRUE);
+
+                if (device->updating) {
+                    SDL_LockMutex(device->dev_lock);
+                }
+                ctx->m_unLastIMUReset = now;
             }
 
         } else {
