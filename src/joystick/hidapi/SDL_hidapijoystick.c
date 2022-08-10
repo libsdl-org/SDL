@@ -1111,6 +1111,8 @@ HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     hwdata->device = device;
 
     if (!device->driver->OpenJoystick(device, joystick)) {
+        /* The open failed, mark this device as disconnected and update devices */
+        HIDAPI_JoystickDisconnected(device, joystickID);
         SDL_free(hwdata);
         return -1;
     }
