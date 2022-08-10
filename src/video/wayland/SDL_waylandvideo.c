@@ -736,7 +736,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
 }
 
 static void
-Wayland_free_display(uint32_t id)
+Wayland_free_display(SDL_VideoData *d, uint32_t id)
 {
     int num_displays = SDL_GetNumVideoDisplays();
     SDL_VideoDisplay *display;
@@ -747,6 +747,19 @@ Wayland_free_display(uint32_t id)
         display = SDL_GetDisplay(i);
         data = (SDL_WaylandOutputData *) display->driverdata;
         if (data->registry_id == id) {
+            if (d->output_list != NULL) {
+                SDL_WaylandOutputData *node = d->output_list;
+                if (node == data) {
+                    d->output_list = node->next;
+                } else {
+                    while (node->next != data && node->next != NULL) {
+                        node = node->next;
+                    }
+                    if (node->next != NULL) {
+                        node->next = node->next->next;
+                    }
+                }
+            }
             SDL_DelVideoDisplay(i);
             if (data->xdg_output) {
                 zxdg_output_v1_destroy(data->xdg_output);
@@ -886,8 +899,9 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 static void
 display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
+    SDL_VideoData *d = data;
     /* We don't get an interface, just an ID, so assume it's a wl_output :shrug: */
-    Wayland_free_display(id);
+    Wayland_free_display(d, id);
 }
 
 static const struct wl_registry_listener registry_listener = {
