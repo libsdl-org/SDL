@@ -1063,9 +1063,10 @@ static int
 exp_baseCase(void *args)
 {
     const double result = SDL_exp(1.0);
-    SDLTest_AssertCheck(EULER == result,
-                        "Exp(%f), expected %f, got %f",
-                        1.0, EULER, result);
+    SDLTest_AssertCheck(result >= EULER - EPSILON &&
+                            result <= EULER + EPSILON,
+                        "Exp(%f), expected [%f,%f], got %f",
+                        1.0, EULER - EPSILON, EULER + EPSILON, result);
     return TEST_COMPLETED;
 }
 
