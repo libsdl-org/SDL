@@ -981,13 +981,19 @@ extern "C" {
  *  \brief   A variable controlling whether dispatching OpenGL context updates should block the dispatching thread until the main thread finishes processing
  *
  *  This variable can be set to the following values:
- *    "0"       - Dispatching OpenGL context updates will allow the dispatching thread to continue execution.
- *    "1"       - Dispatching OpenGL context updates will block the dispatching thread until the main thread finishes processing.
+ *    "0"       - Dispatching OpenGL context updates will block the dispatching thread until the main thread finishes processing (default).
+ *    "1"       - Dispatching OpenGL context updates will allow the dispatching thread to continue execution.
  *
- *  This hint only applies to Mac OS X
+ *  Generally you want the default, but if you have OpenGL code in a background thread on a Mac, and the main thread
+ *  hangs because it's waiting for that background thread, but that background thread is also hanging because it's
+ *  waiting for the main thread to do an update, this might fix your issue.
+ *
+ *  This hint only applies to macOS.
+ *
+ *  This hint is available since SDL 2.24.0.
  *
  */
-#define SDL_HINT_MAC_OPENGL_SYNC_DISPATCH "SDL_MAC_OPENGL_SYNC_DISPATCH"
+#define SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH "SDL_MAC_OPENGL_ASYNC_DISPATCH"
 
 /**
  *  \brief  A variable setting the double click radius, in pixels.

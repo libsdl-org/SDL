@@ -44,12 +44,12 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-static SDL_bool SDL_opengl_sync_dispatch = SDL_FALSE;
+static SDL_bool SDL_opengl_async_dispatch = SDL_FALSE;
 
 static void SDLCALL
-SDL_OpenGLSyncDispatchChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_opengl_sync_dispatch = SDL_GetStringBoolean(hint, SDL_FALSE);
+    SDL_opengl_async_dispatch = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
 @implementation SDLOpenGLContext : NSOpenGLContext
@@ -63,7 +63,7 @@ SDL_OpenGLSyncDispatchChanged(void *userdata, const char *name, const char *oldV
         self->window = NULL;
     }
 
-    SDL_AddHintCallback(SDL_HINT_MAC_OPENGL_SYNC_DISPATCH, SDL_OpenGLSyncDispatchChanged, NULL);
+    SDL_AddHintCallback(SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH, SDL_OpenGLAsyncDispatchChanged, NULL);
     return self;
 }
 
@@ -147,17 +147,17 @@ SDL_OpenGLSyncDispatchChanged(void *userdata, const char *name, const char *oldV
     if ([NSThread isMainThread]) {
         [super update];
     } else {
-        if (SDL_opengl_sync_dispatch) {
-            dispatch_sync(dispatch_get_main_queue(), ^{ [super update]; });
-        } else {
+        if (SDL_opengl_async_dispatch) {
             dispatch_async(dispatch_get_main_queue(), ^{ [super update]; });
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), ^{ [super update]; });
         }
     }
 }
 
 - (void)dealloc
 {
-    SDL_DelHintCallback(SDL_HINT_MAC_OPENGL_SYNC_DISPATCH, SDL_OpenGLSyncDispatchChanged, NULL);
+    SDL_DelHintCallback(SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH, SDL_OpenGLAsyncDispatchChanged, NULL);
 }
 
 @end
