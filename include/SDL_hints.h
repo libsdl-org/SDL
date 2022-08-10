@@ -2208,6 +2208,28 @@ extern "C" {
 
 
 /**
+ *  \brief  A variable that treats trackpads as touch devices.
+ *
+ *  On macOS (and possibly other platforms in the future), SDL will report
+ *  touches on a trackpad as mouse input, which is generally what users
+ *  expect from this device; however, these are often actually full
+ *  multitouch-capable touch devices, so it might be preferable to some apps
+ *  to treat them as such.
+ *
+ *  Setting this hint to true will make the trackpad input report as a
+ *  multitouch device instead of a mouse. The default is false.
+ *
+ *  Note that most platforms don't support this hint. As of 2.24.0, it
+ *  only supports MacBooks' trackpads on macOS. Others may follow later.
+ *
+ *  This hint is checked during SDL_Init and can not be changed after.
+ *
+ *  This hint is available since SDL 2.24.0.
+ */
+#define SDL_HINT_TRACKPAD_IS_TOUCH_ONLY "SDL_TRACKPAD_IS_TOUCH_ONLY"
+
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum

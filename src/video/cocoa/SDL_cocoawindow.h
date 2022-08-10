@@ -56,6 +56,7 @@ typedef enum
     BOOL isDragAreaRunning;
 }
 
+-(BOOL) isTouchFromTrackpad:(NSEvent *)theEvent;
 -(void) listen:(SDL_WindowData *) data;
 -(void) pauseVisibleObservation;
 -(void) resumeVisibleObservation;

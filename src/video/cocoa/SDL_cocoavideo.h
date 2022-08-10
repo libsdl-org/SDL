@@ -99,6 +99,7 @@ DECLARE_ALERT_STYLE(Critical);
 
 @interface SDL_VideoData : NSObject
     @property (nonatomic) int allow_spaces;
+    @property (nonatomic) int trackpad_is_touch_only;
     @property (nonatomic) unsigned int modifierFlags;
     @property (nonatomic) void *key_layout;
     @property (nonatomic) SDLTranslatorResponder *fieldEdit;

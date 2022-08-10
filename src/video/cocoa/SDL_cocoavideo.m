@@ -197,6 +197,7 @@ Cocoa_VideoInit(_THIS)
     }
 
     data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, SDL_TRUE);
+    data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, SDL_FALSE);
 
     data.swaplock = SDL_CreateMutex();
     if (!data.swaplock) {
