@@ -2287,6 +2287,23 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
                                              const char *value);
 
 /**
+ * Reset a hint to the default value.
+ *
+ * This will reset a hint to the value of the environment variable, or NULL
+ * if the environment isn't set. Callbacks will be called normally with
+ * this change.
+ *
+ * \param name the hint to set
+ * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_GetHint
+ * \sa SDL_SetHint
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+
+/**
  * Get the value of a hint.
  *
  * \param name the hint to query

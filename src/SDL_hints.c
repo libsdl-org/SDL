@@ -97,6 +97,43 @@ SDL_SetHintWithPriority(const char *name, const char *value,
 }
 
 SDL_bool
+SDL_ResetHint(const char *name)
+{
+    const char *env;
+    SDL_Hint *hint, *prev;
+    SDL_HintWatch *entry;
+
+    if (!name) {
+        return SDL_FALSE;
+    }
+
+    env = SDL_getenv(name);
+    for (prev = NULL, hint = SDL_hints; hint; prev = hint, hint = hint->next) {
+        if (SDL_strcmp(name, hint->name) == 0) {
+            if ((env == NULL && hint->value != NULL) ||
+                (env != NULL && hint->value == NULL) ||
+                (env && SDL_strcmp(env, hint->value) != 0)) {
+                for (entry = hint->callbacks; entry; ) {
+                    /* Save the next entry in case this one is deleted */
+                    SDL_HintWatch *next = entry->next;
+                    entry->callback(entry->userdata, name, hint->value, env);
+                    entry = next;
+                }
+            }
+            if (prev) {
+                prev->next = hint->next;
+            } else {
+                SDL_hints = hint->next;
+            }
+            SDL_free(hint->value);
+            SDL_free(hint);
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool
 SDL_SetHint(const char *name, const char *value)
 {
     return SDL_SetHintWithPriority(name, value, SDL_HINT_NORMAL);

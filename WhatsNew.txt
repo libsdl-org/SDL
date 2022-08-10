@@ -20,6 +20,7 @@ General:
         the SDL 2.24.0 stable release.
 * Added SDL_bsearch() and SDL_utf8strnlen() to the stdlib routines
 * Added SDL_size_mul_overflow() and SDL_size_add_overflow() for better size overflow protection
+* Added SDL_ResetHint() to reset a hint to the default value
 * The hint SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS now defaults on
 * Added support for mini-gamepad mode for Nintendo Joy-Con controllers using the HIDAPI driver
 * Added the hint SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS to control whether Joy-Con controllers are automatically merged into a unified gamepad when using the HIDAPI driver. This hint defaults on.

@@ -98,8 +98,9 @@ hints_getHint(void *arg)
 int
 hints_setHint(void *arg)
 {
+  const char *testHint = "SDL_AUTOMATED_TEST_HINT";
   const char *originalValue;
-  const char *value;
+  char *value;
   const char *testValue;
   SDL_bool result;
   int i, j;
@@ -142,7 +143,54 @@ hints_setHint(void *arg)
     SDL_free((void *)originalValue);
   }
 
-  SDL_free((void *)value);
+  SDL_free(value);
+
+  /* Set default value in environment */
+  SDL_setenv(testHint, "original", 1);
+
+  SDLTest_AssertPass("Call to SDL_GetHint() after saving and restoring hint");
+  originalValue = SDL_GetHint(testHint);
+  value = (originalValue == NULL) ? NULL : SDL_strdup(originalValue);
+  SDL_SetHint(testHint, "temp");
+  SDL_SetHint(testHint, value);
+  SDL_free(value);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "original") == 0,
+    "testValue = %s, expected \"original\"",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(NULL, SDL_HINT_DEFAULT)");
+  SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_DEFAULT);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "original") == 0,
+    "testValue = %s, expected \"original\"",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE)");
+  SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "temp") == 0,
+    "testValue = %s, expected \"temp\"",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(NULL, SDL_HINT_OVERRIDE)");
+  SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_OVERRIDE);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue == NULL,
+    "testValue = %s, expected NULL",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_ResetHint()");
+  SDL_ResetHint(testHint);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "original") == 0,
+    "testValue = %s, expected \"original\"",
+    testValue);
 
   return TEST_COMPLETED;
 }

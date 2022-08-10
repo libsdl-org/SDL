@@ -882,3 +882,4 @@
 #define SDL_GetDefaultAudioInfo SDL_GetDefaultAudioInfo_REAL
 #define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_REAL
 #define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_REAL
+#define SDL_ResetHint SDL_ResetHint_REAL
