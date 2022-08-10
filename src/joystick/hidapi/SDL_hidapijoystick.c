@@ -1100,9 +1100,14 @@ HIDAPI_JoystickGetDeviceInstanceID(int device_index)
 static int
 HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    SDL_JoystickID joystickID;
+    SDL_JoystickID joystickID = -1;
     SDL_HIDAPI_Device *device = HIDAPI_GetDeviceByIndex(device_index, &joystickID);
     struct joystick_hwdata *hwdata;
+
+    if (!device || !device->driver) {
+        /* This should never happen - validated before being called */
+        return SDL_SetError("Couldn't find HIDAPI device at index %d\n", device_index);
+    }
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (!hwdata) {
