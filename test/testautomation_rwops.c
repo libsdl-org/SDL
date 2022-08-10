@@ -393,6 +393,7 @@ rwops_testFileWrite(void)
 int
 rwops_testFPRead(void)
 {
+#ifdef HAVE_LIBC
    FILE *fp;
    SDL_RWops *rw;
    int result;
@@ -428,6 +429,8 @@ rwops_testFPRead(void)
    SDLTest_AssertPass("Call to SDL_RWclose() succeeded");
    SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
 
+#endif /* HAVE_LIBC */
+
    return TEST_COMPLETED;
 }
 
@@ -443,6 +446,7 @@ rwops_testFPRead(void)
 int
 rwops_testFPWrite(void)
 {
+#ifdef HAVE_LIBC
    FILE *fp;
    SDL_RWops *rw;
    int result;
@@ -477,6 +481,8 @@ rwops_testFPWrite(void)
    result = SDL_RWclose(rw);
    SDLTest_AssertPass("Call to SDL_RWclose() succeeded");
    SDLTest_AssertCheck(result == 0, "Verify result value is 0; got: %d", result);
+
+#endif /* HAVE_LIBC */
 
    return TEST_COMPLETED;
 }
