@@ -271,6 +271,12 @@ WIN_GetDisplayNameVista(const WCHAR *deviceName)
             rc = pDisplayConfigGetDeviceInfo(&targetName.header);
             if (rc == ERROR_SUCCESS) {
                 retval = WIN_StringToUTF8W(targetName.monitorFriendlyDeviceName);
+                /* if we got an empty string, treat it as failure so we'll fallback
+                   to getting the generic name. */
+                if (retval && (*retval == '\0')) {
+                    SDL_free(retval);
+                    retval = NULL;
+                }
             }
             break;
         }
