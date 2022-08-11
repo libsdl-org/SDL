@@ -25,6 +25,9 @@
 
 /* Public domain CRC implementation adapted from:
    http://home.thep.lu.se/~bjorn/crc/crc32_simple.c
+
+   This algorithm is compatible with the 32-bit CRC described here:
+   https://www.lammertbies.nl/comm/info/crc-calculation
 */
 /* NOTE: DO NOT CHANGE THIS ALGORITHM
    There is code that relies on this in the joystick code
