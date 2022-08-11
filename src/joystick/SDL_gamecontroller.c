@@ -1614,9 +1614,8 @@ SDL_GameControllerMappingForIndex(int mapping_index)
             return CreateMappingString(mapping, mapping->guid);
         }
         --mapping_index;
-    } else {
-        SDL_SetError("Mapping not available");
     }
+    SDL_SetError("Mapping not available");
     return NULL;
 }
 
