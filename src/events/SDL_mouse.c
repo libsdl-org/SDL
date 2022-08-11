@@ -161,6 +161,14 @@ SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldVal
     }
 }
 
+static void SDLCALL
+SDL_MouseRelativeWarpMotionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->relative_mode_warp_motion = SDL_GetStringBoolean(hint, SDL_FALSE);
+}
+
 /* Public functions */
 int
 SDL_MouseInit(void)
@@ -194,6 +202,9 @@ SDL_MouseInit(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
+                        SDL_MouseRelativeWarpMotionChanged, mouse);
 
     mouse->was_touch_mouse_events = SDL_FALSE; /* no touch to mouse movement event pending */
 
@@ -377,13 +388,16 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         if (x == center_x && y == center_y) {
             mouse->last_x = center_x;
             mouse->last_y = center_y;
-            return 0;
-        }
-        if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
-            if (mouse->WarpMouse) {
-                mouse->WarpMouse(window, center_x, center_y);
-            } else {
-                SDL_PrivateSendMouseMotion(window, mouseID, 0, center_x, center_y);
+            if (!mouse->relative_mode_warp_motion) {
+                return 0;
+            }
+        } else {
+            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+                if (mouse->WarpMouse) {
+                    mouse->WarpMouse(window, center_x, center_y);
+                } else {
+                    SDL_PrivateSendMouseMotion(window, mouseID, 0, center_x, center_y);
+                }
             }
         }
     }
@@ -810,6 +824,9 @@ SDL_MouseQuit(void)
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
+                        SDL_MouseRelativeWarpMotionChanged, mouse);
 }
 
 Uint32
@@ -883,22 +900,26 @@ SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_r
         return;
     }
 
+    /* Ignore the previous position when we warp */
+    mouse->last_x = x;
+    mouse->last_y = y;
+    mouse->has_position = SDL_FALSE;
+
     if (mouse->relative_mode && !ignore_relative_mode) {
         /* 2.0.22 made warping in relative mode actually functional, which
          * surprised many applications that weren't expecting the additional
          * mouse motion.
          *
          * So for now, warping in relative mode adjusts the absolution position
-         * but doesn't generate motion events.
+         * but doesn't generate motion events, unless SDL_HINT_MOUSE_RELATIVE_WARP_MOTION is set.
          */
-        mouse->x = x;
-        mouse->y = y;
-        mouse->has_position = SDL_TRUE;
-        return;
+        if (!mouse->relative_mode_warp_motion) {
+            mouse->x = x;
+            mouse->y = y;
+            mouse->has_position = SDL_TRUE;
+            return;
+        }
     }
-
-    /* Ignore the previous position when we warp */
-    mouse->has_position = SDL_FALSE;
 
     if (mouse->WarpMouse &&
         (!mouse->relative_mode || mouse->relative_mode_warp)) {

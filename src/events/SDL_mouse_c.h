@@ -91,6 +91,7 @@ typedef struct
     SDL_bool has_position;
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
+    SDL_bool relative_mode_warp_motion;
     float normal_speed_scale;
     float relative_speed_scale;
     float scale_accum_x;
