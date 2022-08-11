@@ -857,3 +857,4 @@
 ++'_SDL_GetPointDisplayIndex'.'SDL2.dll'.'SDL_GetPointDisplayIndex'
 ++'_SDL_GetRectDisplayIndex'.'SDL2.dll'.'SDL_GetRectDisplayIndex'
 ++'_SDL_ResetHint'.'SDL2.dll'.'SDL_ResetHint'
+++'_SDL_crc16'.'SDL2.dll'.'SDL_crc16'

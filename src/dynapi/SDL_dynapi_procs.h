@@ -966,3 +966,4 @@ SDL_DYNAPI_PROC(int,SDL_GetDefaultAudioInfo,(char **a, SDL_AudioSpec *b, int c),
 SDL_DYNAPI_PROC(int,SDL_GetPointDisplayIndex,(const SDL_Point *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetRectDisplayIndex,(const SDL_Rect *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ResetHint,(const char *a),(a),return)
+SDL_DYNAPI_PROC(Uint16,SDL_crc16,(Uint16 a, const void *b, size_t c),(a,b,c),return)

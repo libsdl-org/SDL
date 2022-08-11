@@ -18,7 +18,7 @@ General:
       * The patchlevel indicates successive prereleases, for example
         2.23.1 and 2.23.2 would be prereleases during development of
         the SDL 2.24.0 stable release.
-* Added SDL_bsearch() and SDL_utf8strnlen() to the stdlib routines
+* Added SDL_bsearch(), SDL_crc16(), and  SDL_utf8strnlen() to the stdlib routines
 * Added SDL_size_mul_overflow() and SDL_size_add_overflow() for better size overflow protection
 * Added SDL_ResetHint() to reset a hint to the default value
 * The hint SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS now defaults on
