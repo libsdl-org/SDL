@@ -631,14 +631,12 @@ handle_configure_xdg_toplevel(void *data,
          * UPDATE: Nope, sure enough a compositor sends 0,0. This is a known bug:
          * https://bugs.kde.org/show_bug.cgi?id=444962
          */
-        if (!FullscreenModeEmulation(window)) {
-            if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
-                window->w = width;
-                window->h = height;
-                wind->needs_resize_event = SDL_TRUE;
-            }
-        } else {
-            GetFullScreenDimensions(window, &window->w, &window->h, NULL, NULL);
+        if (FullscreenModeEmulation(window)) {
+            GetFullScreenDimensions(window, &width, &height, NULL, NULL);
+        }
+        if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
+            window->w = width;
+            window->h = height;
             wind->needs_resize_event = SDL_TRUE;
         }
 
@@ -833,8 +831,6 @@ decoration_frame_configure(struct libdecor_frame *frame,
         } else {
             GetFullScreenDimensions(window, &width, &height, NULL, NULL);
         }
-
-        wind->needs_resize_event = SDL_TRUE;
 
         /* This part is good though. */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
