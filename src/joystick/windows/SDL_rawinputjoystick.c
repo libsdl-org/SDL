@@ -338,7 +338,9 @@ RAWINPUT_UpdateXInput()
                     xinput_state[user_index].connected = SDL_FALSE;
                 }
                 xinput_state[user_index].battery.BatteryType = BATTERY_TYPE_UNKNOWN;
-                XINPUTGETBATTERYINFORMATION(user_index, BATTERY_DEVTYPE_GAMEPAD, &xinput_state[user_index].battery);
+                if (XINPUTGETBATTERYINFORMATION) {
+                    XINPUTGETBATTERYINFORMATION(user_index, BATTERY_DEVTYPE_GAMEPAD, &xinput_state[user_index].battery);
+                }
             }
         }
     }
