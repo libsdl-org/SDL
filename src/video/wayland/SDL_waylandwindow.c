@@ -1643,7 +1643,8 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SetFullscreen(window, fullscreen ? output : NULL, SDL_TRUE);
 
-    WAYLAND_wl_display_flush(viddata->display);
+    /* Roundtrip required to receive the updated window dimensions */
+    WAYLAND_wl_display_roundtrip(viddata->display);
 }
 
 void
