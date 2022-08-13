@@ -932,11 +932,6 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
     SDL_Log("WIN_SetWindowFullscreen: %d", (int)fullscreen);
 #endif
 
-    /* Clear the window size, to force SDL_SendWindowEvent to send a SDL_WINDOWEVENT_RESIZED
-       event in WM_WINDOWPOSCHANGED. */
-    data->window->w = 0;
-    data->window->h = 0;
-
     if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
         top = HWND_TOPMOST;
     } else {

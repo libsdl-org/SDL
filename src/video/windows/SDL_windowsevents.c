@@ -1548,7 +1548,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     data->scaling_dpi = newDPI;
 
                     /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
-                       Renderers need to get this to know that the framebuffer size changed. */
+                       Renderers need to get this to know that the framebuffer size changed.
+
+                       We clear the window size to force the event to be delivered, but what we really
+                       want for SDL3 is a new event to notify that the DPI changed and then watch for
+                       that in the renderer directly.
+                     */
+                    data->window->w = 0;
+                    data->window->h = 0;
                     SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
                 }
 
