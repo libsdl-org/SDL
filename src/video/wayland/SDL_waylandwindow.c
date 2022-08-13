@@ -1370,7 +1370,10 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * Roundtrip required to avoid a possible protocol violation when
      * HideWindow was called immediately before ShowWindow.
      */
-    WAYLAND_wl_display_roundtrip(c->display);
+    if (data->needs_roundtrip) {
+        data->needs_roundtrip = SDL_FALSE;
+        WAYLAND_wl_display_roundtrip(c->display);
+    }
 }
 
 static void
@@ -1447,6 +1450,7 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
      * Roundtrip required to avoid a possible protocol violation when
      * ShowWindow is called immediately after HideWindow.
      */
+    wind->needs_roundtrip = SDL_TRUE;
     WAYLAND_wl_display_roundtrip(data->display);
 }
 
