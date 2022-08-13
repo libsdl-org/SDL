@@ -107,6 +107,7 @@ typedef struct {
     SDL_Rect viewport_rect;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
+    SDL_bool needs_roundtrip;
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
