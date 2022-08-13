@@ -2256,7 +2256,6 @@ D3D12_UpdateVertexBuffer(SDL_Renderer *renderer,
     D3D12_RenderData *rendererData = (D3D12_RenderData *) renderer->driverdata;
     HRESULT result = S_OK;
     const int vbidx = rendererData->currentVertexBuffer;
-    const UINT stride = sizeof(VertexPositionColor);
     UINT8* vertexBufferData = NULL;
     D3D12_RANGE range;
     ID3D12Resource *vertexBuffer;
