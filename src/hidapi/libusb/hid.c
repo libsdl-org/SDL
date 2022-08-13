@@ -1087,7 +1087,8 @@ static int SDLCALL read_thread(void *param)
 
 static void init_xbox360(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, struct libusb_config_descriptor *conf_desc)
 {
-	if (idVendor == 0x0f0d && idProduct == 0x00dc) {
+	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
+	    (idVendor == 0x0f0d && idProduct == 0x00dc) /* HORIPAD */) {
 		unsigned char data[20];
 
 		/* The HORIPAD FPS for Nintendo Switch requires this to enable input reports.
