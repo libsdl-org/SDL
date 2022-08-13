@@ -547,9 +547,6 @@ handle_configure_xdg_toplevel(void *data,
 
     if (!fullscreen) {
         if (window->flags & SDL_WINDOW_FULLSCREEN) {
-            /* We might need to re-enter fullscreen after being restored from minimized */
-            SetFullscreen(window, driverdata->output, SDL_FALSE);
-
             /* Foolishly do what the compositor says here. If it's wrong, don't
              * blame us, we were explicitly instructed to do this.
              *
@@ -785,13 +782,6 @@ decoration_frame_configure(struct libdecor_frame *frame,
     driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
 
     if (!fullscreen) {
-        if (window->flags & SDL_WINDOW_FULLSCREEN) {
-            /* We might need to re-enter fullscreen after being restored from minimized */
-            SetFullscreen(window, driverdata->output, SDL_FALSE);
-            fullscreen = SDL_TRUE;
-            floating = SDL_FALSE;
-        }
-
         /* Always send a maximized/restore event; if the event is redundant it will
          * automatically be discarded (see src/events/SDL_windowevents.c)
          *
@@ -1311,8 +1301,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
          * libdecor will call this as part of their configure event!
          * -flibit
          */
-        SDL_WaylandOutputData *odata = SDL_GetDisplayForWindow(window)->driverdata;
-        SetFullscreen(window, (window->flags & SDL_WINDOW_FULLSCREEN) ? odata->output : NULL, SDL_TRUE);
+        wl_surface_commit(data->surface);
         if (data->shell_surface.xdg.surface) {
             while (!data->shell_surface.xdg.initial_configure_seen) {
                 WAYLAND_wl_display_flush(c->display);
@@ -1370,10 +1359,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * Roundtrip required to avoid a possible protocol violation when
      * HideWindow was called immediately before ShowWindow.
      */
-    if (data->needs_roundtrip) {
-        data->needs_roundtrip = SDL_FALSE;
-        WAYLAND_wl_display_roundtrip(c->display);
-    }
+    WAYLAND_wl_display_roundtrip(c->display);
 }
 
 static void
@@ -1450,7 +1436,6 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
      * Roundtrip required to avoid a possible protocol violation when
      * ShowWindow is called immediately after HideWindow.
      */
-    wind->needs_roundtrip = SDL_TRUE;
     WAYLAND_wl_display_roundtrip(data->display);
 }
 
