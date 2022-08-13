@@ -149,6 +149,12 @@ struct SDL_SysWMinfo;
 /* Define the SDL video driver structure */
 #define _THIS   SDL_VideoDevice *_this
 
+/* Video device flags */
+typedef enum {
+    VIDEO_DEVICE_QUIRK_DISABLE_DISPLAY_MODE_SWITCHING       = 0x01,
+    VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE = 0x02,
+} DeviceQuirkFlags;
+
 struct SDL_VideoDevice
 {
     /* * * */
@@ -347,7 +353,7 @@ struct SDL_VideoDevice
     Uint32 next_object_id;
     char *clipboard_text;
     SDL_bool setting_display_mode;
-    SDL_bool disable_display_mode_switching;
+    Uint32 quirk_flags;
 
     /* * * */
     /* Data used by the GL drivers */

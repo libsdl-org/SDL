@@ -166,6 +166,18 @@ extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window * window);
 extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state);
 #endif
 
+/* Convenience functions for reading driver flags */
+static SDL_bool
+DisableDisplayModeSwitching(_THIS)
+{
+    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_DISPLAY_MODE_SWITCHING);
+}
+
+static SDL_bool
+DisableUnsetFullscreenOnMinimize(_THIS)
+{
+    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE);
+}
 
 /* Support for framebuffer emulation using an accelerated renderer */
 
@@ -1419,7 +1431,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
                 }
 
                 /* Don't try to change the display mode if the driver doesn't want it. */
-                if (_this->disable_display_mode_switching == SDL_FALSE) {
+                if (DisableDisplayModeSwitching(_this) == SDL_FALSE) {
                     /* only do the mode change if we want exclusive fullscreen */
                     if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
                         if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
@@ -2524,7 +2536,9 @@ SDL_MinimizeWindow(SDL_Window * window)
         return;
     }
 
-    SDL_UpdateFullscreenMode(window, SDL_FALSE);
+    if (!DisableUnsetFullscreenOnMinimize(_this)) {
+        SDL_UpdateFullscreenMode(window, SDL_FALSE);
+    }
 
     if (_this->MinimizeWindow) {
         _this->MinimizeWindow(_this, window);
@@ -3072,7 +3086,9 @@ SDL_OnWindowMoved(SDL_Window * window)
 void
 SDL_OnWindowMinimized(SDL_Window * window)
 {
-    SDL_UpdateFullscreenMode(window, SDL_FALSE);
+    if (!DisableUnsetFullscreenOnMinimize(_this)) {
+        SDL_UpdateFullscreenMode(window, SDL_FALSE);
+    }
 }
 
 void
@@ -3153,7 +3169,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
     hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
     if (!hint || !*hint || SDL_strcasecmp(hint, "auto") == 0) {
         if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP ||
-            _this->disable_display_mode_switching == SDL_TRUE) {
+            DisableDisplayModeSwitching(_this) == SDL_TRUE) {
             return SDL_FALSE;
         } else {
             return SDL_TRUE;
