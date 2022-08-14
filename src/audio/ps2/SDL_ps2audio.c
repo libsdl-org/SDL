@@ -130,7 +130,7 @@ static void PS2AUDIO_ThreadInit(_THIS)
     ee_thread_status_t status;
     thid = GetThreadId();
     if (ReferThreadStatus(GetThreadId(), &status) == 0) {
-        ChangeThreadPriority(thid, status.current_priority);
+        ChangeThreadPriority(thid, status.current_priority - 1);
     }
 }
 
