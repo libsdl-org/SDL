@@ -308,6 +308,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     SDL_SendDropComplete(NULL);
 }
 
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
+{
+    return YES;
+}
+
 @end
 
 static SDLAppDelegate *appDelegate = nil;
