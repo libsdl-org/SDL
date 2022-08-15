@@ -2101,7 +2101,7 @@ elseif(APPLE)
         #import <Metal/Metal.h>
         #import <QuartzCore/CAMetalLayer.h>
 
-        #if (!TARGET_CPU_X86_64 && !TARGET_CPU_ARM64)
+        #if (TARGET_OS_OSX && !TARGET_CPU_X86_64 && !TARGET_CPU_ARM64)
         #error Metal doesn't work on this configuration
         #endif
         int main(int argc, char **argv) { return 0; }" HAVE_FRAMEWORK_METAL)
