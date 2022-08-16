@@ -522,21 +522,19 @@ void
 HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
 {
     int i, j;
-    SDL_bool unique = HIDAPI_JoystickInstanceIsUnique(device, joystickID);
+   
+    SDL_LockJoysticks();
 
-    if (!unique) {
+    if (!HIDAPI_JoystickInstanceIsUnique(device, joystickID)) {
         /* Disconnecting a child always disconnects the parent */
         device = device->parent;
-        unique = SDL_TRUE;
     }
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
-            if (unique) {
-                SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joystickID);
-                if (joystick) {
-                    HIDAPI_JoystickClose(joystick);
-                }
+            SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joystickID);
+            if (joystick) {
+                HIDAPI_JoystickClose(joystick);
             }
 
             HIDAPI_DelJoystickInstanceFromDevice(device, joystickID);
@@ -546,18 +544,18 @@ HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID
                 HIDAPI_DelJoystickInstanceFromDevice(child, joystickID);
             }
 
-            if (unique) {
-                --SDL_HIDAPI_numjoysticks;
+            --SDL_HIDAPI_numjoysticks;
 
-                if (!shutting_down) {
-                    SDL_PrivateJoystickRemoved(joystickID);
-                }
+            if (!shutting_down) {
+                SDL_PrivateJoystickRemoved(joystickID);
             }
         }
     }
 
     /* Rescan the device list in case device state has changed */
     SDL_HIDAPI_change_count = 0;
+
+    SDL_UnlockJoysticks();
 }
 
 static int
