@@ -299,12 +299,14 @@ GetHintCtrlClickEmulateRightClick()
 static NSUInteger
 GetWindowWindowedStyle(SDL_Window * window)
 {
-    NSUInteger style = 0;
+    /* always allow miniaturization, otherwise you can't programatically
+       minimize the window, whether there's a title bar or not */
+    NSUInteger style = NSWindowStyleMaskMiniaturizable;
 
     if (window->flags & SDL_WINDOW_BORDERLESS) {
-        style = NSWindowStyleMaskBorderless;
+        style |= NSWindowStyleMaskBorderless;
     } else {
-        style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable);
+        style |= (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable);
     }
     if (window->flags & SDL_WINDOW_RESIZABLE) {
         style |= NSWindowStyleMaskResizable;
