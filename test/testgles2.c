@@ -583,7 +583,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d], [--threaded]", NULL };
+            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d]", "[--threaded]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
