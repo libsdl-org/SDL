@@ -1600,6 +1600,7 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
     if (data == NULL) {
         return;
     }
+    data->mouse_grabbed = SDL_FALSE;
 
     display = data->videodata->display;
 
@@ -1622,6 +1623,7 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
                 result = X11_XGrabPointer(display, data->xwindow, True, mask, GrabModeAsync,
                                  GrabModeAsync, data->xwindow, None, CurrentTime);
                 if (result == GrabSuccess) {
+                    data->mouse_grabbed = SDL_TRUE;
                     break;
                 }
                 SDL_Delay(50);
