@@ -2069,26 +2069,25 @@ void Wayland_SetWindowTitle(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = _this->driverdata;
+    const char *title = window->title ? window->title : "";
 
     if (WINDOW_IS_XDG_POPUP(window)) {
         return;
     }
 
-    if (window->title != NULL) {
 #ifdef HAVE_LIBDECOR_H
-        if (WINDOW_IS_LIBDECOR(viddata, window)) {
-            if (wind->shell_surface.libdecor.frame == NULL) {
-                return; /* Can't do anything yet, wait for ShowWindow */
-            }
-            libdecor_frame_set_title(wind->shell_surface.libdecor.frame, window->title);
-        } else
+    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+        if (wind->shell_surface.libdecor.frame == NULL) {
+            return; /* Can't do anything yet, wait for ShowWindow */
+        }
+        libdecor_frame_set_title(wind->shell_surface.libdecor.frame, title);
+    } else
 #endif
         if (viddata->shell.xdg) {
-            if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
-                return; /* Can't do anything yet, wait for ShowWindow */
-            }
-            xdg_toplevel_set_title(wind->shell_surface.xdg.roleobj.toplevel, window->title);
+        if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
+            return; /* Can't do anything yet, wait for ShowWindow */
         }
+        xdg_toplevel_set_title(wind->shell_surface.xdg.roleobj.toplevel, title);
     }
 
     WAYLAND_wl_display_flush(viddata->display);
