@@ -43,7 +43,7 @@ Wayland_SetClipboardText(_THIS, const char *text)
             if (text[0] != '\0') {
                 SDL_WaylandDataSource* source = Wayland_data_source_create(_this);
                 Wayland_data_source_add_data(source, TEXT_MIME, text,
-                                             SDL_strlen(text) + 1);
+                                             SDL_strlen(text));
 
                 status = Wayland_data_device_set_selection(data_device, source);
                 if (status != 0) {
