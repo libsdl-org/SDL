@@ -3382,7 +3382,6 @@
 		DB31407017554B71006C0E22 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179F0858DECD00B2BC32 /* IOKit.framework */; };
 		DB31407217554B71006C0E22 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; };
 		DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; };
-		E2D187D328A5673500D2B4F1 /* SDL2.h in Headers */ = {isa = PBXBuildFile; fileRef = E2D187D128A5673500D2B4F1 /* SDL2.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F32305FF28939F6400E66D30 /* SDL_hidapi_combined.c in Sources */ = {isa = PBXBuildFile; fileRef = F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */; };
 		F323060028939F6400E66D30 /* SDL_hidapi_combined.c in Sources */ = {isa = PBXBuildFile; fileRef = F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */; };
 		F323060128939F6400E66D30 /* SDL_hidapi_combined.c in Sources */ = {isa = PBXBuildFile; fileRef = F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */; };
@@ -4065,7 +4064,6 @@
 		BECDF6BE0761BA81005FE872 /* SDL2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SDL2; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB31407717554B71006C0E22 /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2D187CF28A5673500D2B4F1 /* SDL2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		E2D187D128A5673500D2B4F1 /* SDL2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL2.h; sourceTree = "<group>"; };
 		E2D187D228A5673500D2B4F1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_combined.c; sourceTree = "<group>"; };
 		F376F6182559B29300CFC0BC /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.1.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
@@ -5300,7 +5298,6 @@
 		E2D187D028A5673500D2B4F1 /* SDL2 */ = {
 			isa = PBXGroup;
 			children = (
-				E2D187D128A5673500D2B4F1 /* SDL2.h */,
 				E2D187D228A5673500D2B4F1 /* Info.plist */,
 			);
 			path = SDL2;
@@ -7226,7 +7223,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E2D187D328A5673500D2B4F1 /* SDL2.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7607,7 +7603,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Build an xcframework with both device and simulator files for all platforms.\n# Adapted from an answer in\n# https://developer.apple.com/forums/thread/666335?answerId=685927022#685927022\n\nif $XCODE_VERSION_ACTUAL < 1220; then\n\techo \"error: Building an xcframework requires Xcode 12.2 minimum.\";\n\texit 1;\nfi\n\nSCHEME_NAME=\"Framework-iOS\"\nFRAMEWORK_NAME=\"SDL2\"\nPROJECT_NAME=\"SDL\"\n\nSIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphonesimulator.xcarchive\"\nDEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphoneos.xcarchive\"\n\nOUTPUT_DIR=\"./Products/\"\n\n# Simulator xcarchive (arm64, i386, x86_64)\nxcodebuild archive \\\n\tONLY_ACTIVE_ARCH=NO \\\n\t-scheme ${SCHEME_NAME} \\\n\t-project \"${PROJECT_NAME}.xcodeproj\" \\\n\t-archivePath ${SIMULATOR_ARCHIVE_PATH} \\\n\t-sdk iphonesimulator \\\n\tBUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n\tSKIP_INSTALL=NO\n\n# Device xcarchive (arm64, armv7)\nxcodebuild archive \\\n\t-scheme ${SCHEME_NAME} \\\n\t-project \"${PROJECT_NAME}.xcodeproj\" \\\n\t-archivePath ${DEVICE_ARCHIVE_PATH} \\\n\t-sdk iphoneos \\\n\tBUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n\tSKIP_INSTALL=NO\n\n# Clean-up any existing instance of this xcframework from the Products directory\nrm -rf \"${OUTPUT_DIR}${FRAMEWORK_NAME}.xcframework\"\n\n# Create final xcframework\nxcodebuild -create-xcframework \\\n\t-framework \"${DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n\t-framework \"${SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n\t-output ${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework\n";
+			shellScript = "# Build an xcframework with both device and simulator files for all platforms.\n# Adapted from an answer in\n# https://developer.apple.com/forums/thread/666335?answerId=685927022#685927022\n\nif [ \"$XCODE_VERSION_ACTUAL\" -lt 1100 ]\nthen\n\techo \"error: Building an xcframework requires Xcode 11 minimum.\"\n\texit 1\nfi\n\nSCHEME_NAME=\"Framework-iOS\"\nFRAMEWORK_NAME=\"SDL2\"\nPROJECT_NAME=\"SDL\"\n\nSIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphonesimulator.xcarchive\"\nDEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphoneos.xcarchive\"\n\nOUTPUT_DIR=\"./Products/\"\n\n# Simulator xcarchive (arm64, i386, x86_64)\nxcodebuild archive \\\n\tONLY_ACTIVE_ARCH=NO \\\n\t-scheme ${SCHEME_NAME} \\\n\t-project \"${PROJECT_NAME}.xcodeproj\" \\\n\t-archivePath ${SIMULATOR_ARCHIVE_PATH} \\\n\t-sdk iphonesimulator \\\n\tBUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n\tSKIP_INSTALL=NO\n\n# Device xcarchive (arm64, armv7)\nxcodebuild archive \\\n\t-scheme ${SCHEME_NAME} \\\n\t-project \"${PROJECT_NAME}.xcodeproj\" \\\n\t-archivePath ${DEVICE_ARCHIVE_PATH} \\\n\t-sdk iphoneos \\\n\tBUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n\tSKIP_INSTALL=NO\n\n# Clean-up any existing instance of this xcframework from the Products directory\nrm -rf \"${OUTPUT_DIR}${FRAMEWORK_NAME}.xcframework\"\n\n# Create final xcframework\nxcodebuild -create-xcframework \\\n\t-framework \"${DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n\t-framework \"${SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n\t-output ${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework\n\n# Ensure git doesn't pick up on our Products folder. \nrm -rf ${OUTPUT_DIR}/.gitignore\necho \"*\" >> ${OUTPUT_DIR}/.gitignore\n";
 		};
 		F3ED8106281DB8A500C33C5B /* Convert SDL includes to SDL Framework includes */ = {
 			isa = PBXShellScriptBuildPhase;
