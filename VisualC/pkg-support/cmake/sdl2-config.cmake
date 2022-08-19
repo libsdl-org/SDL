@@ -82,8 +82,8 @@ if(EXISTS "${_sdl2main_library}")
     if(NOT TARGET SDL2::SDL2main)
         add_library(SDL2::SDL2main STATIC IMPORTED)
         set_target_properties(SDL2::SDL2main
-        PROPERTIES
-            IMPORTED_LOCATION "${_sdl2main_library}"
+            PROPERTIES
+                IMPORTED_LOCATION "${_sdl2main_library}"
         )
     endif()
     set(SDL2_SDL2main_FOUND TRUE)

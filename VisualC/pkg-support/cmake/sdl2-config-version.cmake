@@ -4,7 +4,7 @@
 # This file is meant to be placed in a cmake subfolder of SDL2-devel-2.x.y-VC
 
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/../include/SDL_version.h")
-    message(AUTHOR_WARNING "Could not find SDL_version.h. This script is meant to be placed in the root of SDL2-devel-2.x.y-VC")
+    message(AUTHOR_WARNING "Could not find SDL_version.h. This script is meant to be placed in a cmake subfolder of SDL2-devel-2.x.y-VC")
     return()
 endif()
 
