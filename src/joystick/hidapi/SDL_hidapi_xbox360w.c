@@ -26,6 +26,7 @@
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
+#include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -38,7 +39,11 @@
 
 
 typedef struct {
+    SDL_HIDAPI_Device *device;
     SDL_bool connected;
+    SDL_bool opened;
+    int player_index;
+    SDL_bool player_lights;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXbox360W_Context;
 
@@ -87,10 +92,10 @@ HIDAPI_DriverXbox360W_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 p
     return "Xbox 360 Wireless Controller";
 }
 
-static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot)
+static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, SDL_bool on)
 {
     const SDL_bool blink = SDL_FALSE;
-    Uint8 mode = (blink ? 0x02 : 0x06) + slot;
+    Uint8 mode = on ? ((blink ? 0x02 : 0x06) + slot) : 0;
     Uint8 led_packet[] = { 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
     led_packet[3] = 0x40 + (mode % 0x0e);
@@ -98,6 +103,27 @@ static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot)
         return SDL_FALSE;
     }
     return SDL_TRUE;
+}
+
+static void UpdateSlotLED(SDL_DriverXbox360W_Context *ctx)
+{
+    if (ctx->player_lights && ctx->player_lights >= 0) {
+        SetSlotLED(ctx->device->dev, (ctx->player_index % 4), SDL_TRUE);
+    } else {
+        SetSlotLED(ctx->device->dev, 0, SDL_FALSE);
+    }
+}
+
+static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)userdata;
+    SDL_bool player_lights = SDL_GetStringBoolean(hint, SDL_TRUE);
+
+    if (player_lights != ctx->player_lights) {
+        ctx->player_lights = player_lights;
+
+        UpdateSlotLED(ctx);
+    }
 }
 
 static void
@@ -129,6 +155,7 @@ HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+    ctx->device = device;
 
     device->dev = SDL_hid_open_path(device->path, 0);
     if (!device->dev) {
@@ -155,12 +182,15 @@ HIDAPI_DriverXbox360W_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joysti
 static void
 HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
-    if (!device->dev) {
+    SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
+
+    if (!ctx) {
         return;
     }
-    if (player_index >= 0) {
-        SetSlotLED(device->dev, (player_index % 4));
-    }
+
+    ctx->player_index = player_index;
+
+    UpdateSlotLED(ctx);
 }
 
 static SDL_bool
@@ -169,6 +199,16 @@ HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
 
     SDL_zeroa(ctx->last_state);
+
+    ctx->opened = SDL_TRUE;
+
+    /* Initialize player index (needed for setting LEDs) */
+    ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
+    ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED, SDL_TRUE);
+    UpdateSlotLED(ctx);
+
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED,
+                        SDL_PlayerLEDHintChanged, ctx);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 15;
@@ -339,6 +379,12 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXbox360W_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
+
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED,
+                        SDL_PlayerLEDHintChanged, ctx);
+
+    ctx->opened = SDL_FALSE;
 }
 
 static void
