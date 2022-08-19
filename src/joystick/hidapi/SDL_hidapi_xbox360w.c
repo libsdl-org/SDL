@@ -22,7 +22,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_hints.h"
 #include "SDL_events.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
@@ -43,6 +42,32 @@ typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXbox360W_Context;
 
+
+static void
+HIDAPI_DriverXbox360W_RegisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX, callback, userdata);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360, callback, userdata);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS, callback, userdata);
+}
+
+static void
+HIDAPI_DriverXbox360W_UnregisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX, callback, userdata);
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360, callback, userdata);
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS, callback, userdata);
+}
+
+static SDL_bool
+HIDAPI_DriverXbox360W_IsEnabled(void)
+{
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
+               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360,
+                   SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX,
+                       SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                           SDL_HIDAPI_DEFAULT))));
+}
 
 static SDL_bool
 HIDAPI_DriverXbox360W_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -332,9 +357,11 @@ HIDAPI_DriverXbox360W_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W =
 {
-    SDL_HINT_JOYSTICK_HIDAPI_XBOX,
+    SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
     SDL_TRUE,
-    SDL_TRUE,
+    HIDAPI_DriverXbox360W_RegisterHints,
+    HIDAPI_DriverXbox360W_UnregisterHints,
+    HIDAPI_DriverXbox360W_IsEnabled,
     HIDAPI_DriverXbox360W_IsSupportedDevice,
     HIDAPI_DriverXbox360W_GetDeviceName,
     HIDAPI_DriverXbox360W_InitDevice,

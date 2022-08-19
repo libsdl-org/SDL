@@ -23,11 +23,27 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_hints.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
 #include "SDL_hidapijoystick_c.h"
 #include "../SDL_sysjoystick.h"
+
+
+static void
+HIDAPI_DriverCombined_RegisterHints(SDL_HintCallback callback, void *userdata)
+{
+}
+
+static void
+HIDAPI_DriverCombined_UnregisterHints(SDL_HintCallback callback, void *userdata)
+{
+}
+
+static SDL_bool
+HIDAPI_DriverCombined_IsEnabled(void)
+{
+    return SDL_TRUE;
+}
 
 static SDL_bool
 HIDAPI_DriverCombined_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -219,9 +235,11 @@ HIDAPI_DriverCombined_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined =
 {
-    SDL_HINT_JOYSTICK_HIDAPI,
+    "SDL_JOYSTICK_HIDAPI_COMBINED",
     SDL_TRUE,
-    SDL_TRUE,
+    HIDAPI_DriverCombined_RegisterHints,
+    HIDAPI_DriverCombined_UnregisterHints,
+    HIDAPI_DriverCombined_IsEnabled,
     HIDAPI_DriverCombined_IsSupportedDevice,
     HIDAPI_DriverCombined_GetDeviceName,
     HIDAPI_DriverCombined_InitDevice,

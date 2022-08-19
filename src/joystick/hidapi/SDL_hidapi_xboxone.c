@@ -22,7 +22,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_hints.h"
 #include "SDL_events.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
@@ -264,6 +263,29 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
     SetInitState(ctx, XBOX_ONE_INIT_STATE_PREPARE_INPUT);
 
     return SDL_TRUE;
+}
+
+static void
+HIDAPI_DriverXboxOne_RegisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX, callback, userdata);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE, callback, userdata);
+}
+
+static void
+HIDAPI_DriverXboxOne_UnregisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX, callback, userdata);
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE, callback, userdata);
+}
+
+static SDL_bool
+HIDAPI_DriverXboxOne_IsEnabled(void)
+{
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE,
+               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX,
+                   SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                       SDL_HIDAPI_DEFAULT)));
 }
 
 static SDL_bool
@@ -1129,9 +1151,11 @@ HIDAPI_DriverXboxOne_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
 {
-    SDL_HINT_JOYSTICK_HIDAPI_XBOX,
+    SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE,
     SDL_TRUE,
-    SDL_TRUE,
+    HIDAPI_DriverXboxOne_RegisterHints,
+    HIDAPI_DriverXboxOne_UnregisterHints,
+    HIDAPI_DriverXboxOne_IsEnabled,
     HIDAPI_DriverXboxOne_IsSupportedDevice,
     HIDAPI_DriverXboxOne_GetDeviceName,
     HIDAPI_DriverXboxOne_InitDevice,
