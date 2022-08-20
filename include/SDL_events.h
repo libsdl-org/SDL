@@ -295,7 +295,7 @@ typedef struct SDL_MouseButtonEvent
     Uint32 type;        /**< ::SDL_MOUSEBUTTONDOWN or ::SDL_MOUSEBUTTONUP */
     Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The window with mouse focus, if any */
-    Uint32 which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
+    SDL_MouseID which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
     Uint8 clicks;       /**< 1 for single-click, 2 for double-click, etc. */
@@ -312,7 +312,7 @@ typedef struct SDL_MouseWheelEvent
     Uint32 type;        /**< ::SDL_MOUSEWHEEL */
     Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The window with mouse focus, if any */
-    Uint32 which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
+    SDL_MouseID which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Sint32 x;           /**< The amount scrolled horizontally, positive to the right and negative to the left */
     Sint32 y;           /**< The amount scrolled vertically, positive away from the user and negative toward the user */
     Uint32 direction;   /**< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back */
@@ -393,7 +393,7 @@ typedef struct SDL_JoyDeviceEvent
 {
     Uint32 type;        /**< ::SDL_JOYDEVICEADDED or ::SDL_JOYDEVICEREMOVED */
     Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
-    Sint32 which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED event */
+    SDL_JoystickID which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED event */
 } SDL_JoyDeviceEvent;
 
 /**
@@ -446,7 +446,7 @@ typedef struct SDL_ControllerDeviceEvent
 {
     Uint32 type;        /**< ::SDL_CONTROLLERDEVICEADDED, ::SDL_CONTROLLERDEVICEREMOVED, or ::SDL_CONTROLLERDEVICEREMAPPED */
     Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
-    Sint32 which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
+    SDL_JoystickID which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
 } SDL_ControllerDeviceEvent;
 
 /**
@@ -563,7 +563,7 @@ typedef struct SDL_SensorEvent
 {
     Uint32 type;        /**< ::SDL_SENSORUPDATE */
     Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
-    Sint32 which;       /**< The instance ID of the sensor */
+    SDL_SensorID which;       /**< The instance ID of the sensor */
     float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_SensorGetData() */
 } SDL_SensorEvent;
 
