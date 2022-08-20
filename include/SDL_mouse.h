@@ -38,6 +38,8 @@
 extern "C" {
 #endif
 
+typedef Uint32 SDL_MouseID;
+
 typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 
 /**
