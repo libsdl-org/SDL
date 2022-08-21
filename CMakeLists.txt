@@ -688,6 +688,11 @@ if(MSVC)
   target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_SECURE_NO_DEPRECATE")
   target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_NONSTDC_NO_DEPRECATE")
   target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_SECURE_NO_WARNINGS")
+
+  # CET support was added in VS 16.7
+  if(MSVC_VERSION GREATER 1926 AND NOT CMAKE_GENERATOR_PLATFORM MATCHES ARM)
+    list(APPEND EXTRA_LDFLAGS_BUILD "-CETCOMPAT")
+  endif()
 endif()
 
 if(MSVC)

@@ -47,6 +47,11 @@ if(WINDOWS)
         link_libraries(mingw32)
     endif()
 
+    # CET support was added in VS 16.7
+    if(MSVC_VERSION GREATER 1926 AND NOT CMAKE_GENERATOR_PLATFORM MATCHES ARM)
+        link_libraries(-CETCOMPAT)
+    endif()
+
     # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
     # but we need them for VS as well.
     link_libraries(SDL2main)
