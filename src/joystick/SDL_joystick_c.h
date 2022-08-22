@@ -55,7 +55,7 @@ extern SDL_bool SDL_GetDriverAndJoystickIndex(int device_index, struct _SDL_Joys
 extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
 
 /* Function to extract information from an SDL joystick GUID */
-extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version);
+extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16);
 
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed

@@ -501,7 +501,7 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
     guid16 = (Uint16 *)pNewJoystick->guid.data;
     if (vendor && product) {
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(SDL_crc16(0, pNewJoystick->joystickname, SDL_strlen(pNewJoystick->joystickname)));
         *guid16++ = SDL_SwapLE16(vendor);
         *guid16++ = 0;
         *guid16++ = SDL_SwapLE16(product);
@@ -510,7 +510,7 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
         *guid16++ = 0;
     } else {
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
-        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(SDL_crc16(0, pNewJoystick->joystickname, SDL_strlen(pNewJoystick->joystickname)));
         SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
     }
 

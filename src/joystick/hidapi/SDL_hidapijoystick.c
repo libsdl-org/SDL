@@ -603,26 +603,6 @@ HIDAPI_AddDevice(const struct SDL_hid_device_info *info, int num_children, SDL_H
     device->interface_protocol = info->interface_protocol;
     device->usage_page = info->usage_page;
     device->usage = info->usage;
-    {
-        /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
-        const Uint16 vendor = device->vendor_id;
-        const Uint16 product = device->product_id;
-        const Uint16 version = device->version;
-        Uint16 *guid16 = (Uint16 *)device->guid.data;
-
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(version);
-        *guid16++ = 0;
-
-        /* Note that this is a HIDAPI device for special handling elsewhere */
-        device->guid.data[14] = 'h';
-        device->guid.data[15] = 0;
-    }
     device->dev_lock = SDL_CreateMutex();
 
     /* Need the device name before getting the driver to know whether to ignore this device */
@@ -652,6 +632,27 @@ HIDAPI_AddDevice(const struct SDL_hid_device_info *info, int num_children, SDL_H
             SDL_free(device);
             return NULL;
         }
+    }
+
+    {
+        /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
+        const Uint16 vendor = device->vendor_id;
+        const Uint16 product = device->product_id;
+        const Uint16 version = device->version;
+        Uint16 *guid16 = (Uint16 *)device->guid.data;
+
+        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
+        *guid16++ = SDL_SwapLE16(SDL_crc16(0, device->name, SDL_strlen(device->name)));
+        *guid16++ = SDL_SwapLE16(vendor);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(product);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(version);
+        *guid16++ = 0;
+
+        /* Note that this is a HIDAPI device for special handling elsewhere */
+        device->guid.data[14] = 'h';
+        device->guid.data[15] = 0;
     }
 
     if (num_children > 0) {

@@ -198,7 +198,7 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     /* Byteswap so devices get same GUID on little/big endian platforms. */
     guid16 = (Uint16 *)hwdata->guid.data;
     *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_VIRTUAL);
-    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
     *guid16++ = SDL_SwapLE16(hwdata->desc.vendor_id);
     *guid16++ = 0;
     *guid16++ = SDL_SwapLE16(hwdata->desc.product_id);
