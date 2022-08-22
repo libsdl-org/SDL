@@ -3329,6 +3329,7 @@ if(NOT SDL2_DISABLE_INSTALL)
       ${CMAKE_CURRENT_BINARY_DIR}/SDL2ConfigVersion.cmake
       cmake/common.cmake
       cmake/FindDirectFBSDL.cmake
+      cmake/FindSndIOSDL.cmake
     DESTINATION ${PKG_PREFIX}
     COMPONENT Devel
   )

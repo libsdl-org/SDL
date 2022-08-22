@@ -44,6 +44,14 @@ if(_sdl_directfb)
 endif()
 unset(_sdl_directfb)
 
+set(_sdl_sndio @HAVE_SNDIO@)
+set(_sdl_sndio_shared @SDL_SNDIO_SHARED@)
+if(_sdl_sndio AND NOT _sdl_sndio_shared)
+  find_dependency(SndIOSDL COMPONENTS LIBRARY)
+endif()
+unset(_sdl_sndio)
+unset(_sdl_sndio_shared)
+
 set(CMAKE_MODULE_PATH ${_sdl_cmake_module_path})
 
 # Create SDL2::SDL2 alias for static-only builds
