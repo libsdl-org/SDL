@@ -1,5 +1,6 @@
 # sdl2 cmake project-config input for CMakeLists.txt script
 
+include(CMakeFindDependencyMacro)
 include(FeatureSummary)
 set_package_properties(SDL2 PROPERTIES
   URL "https://www.libsdl.org/"
@@ -32,6 +33,19 @@ endif()
 
 check_required_components(SDL2)
 
+# Find dependencies of SDL2
+
+set(_sdl_cmake_module_path ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+set(_sdl_directfb @HAVE_DIRECTFB@)
+if(_sdl_directfb)
+  find_dependency(DirectFBSDL)
+endif()
+unset(_sdl_directfb)
+
+set(CMAKE_MODULE_PATH ${_sdl_cmake_module_path})
+
 # Create SDL2::SDL2 alias for static-only builds
 if(TARGET SDL2::SDL2-static AND NOT TARGET SDL2::SDL2)
   if(CMAKE_VERSION VERSION_LESS "3.18")
@@ -63,3 +77,4 @@ if(TARGET SDL2::SDL2main)
 endif()
 
 set(SDL2TEST_LIBRARY SDL2::SDL2test)
+
