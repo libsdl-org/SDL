@@ -734,6 +734,9 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
     case AXIS_EVENT_VALUE120:
         x = input->pointer_curr_axis_info.x / 120.0f;
         break;
+    default:
+        x = 0.0f;
+        break;
     }
 
     switch(input->pointer_curr_axis_info.y_axis_type) {
@@ -746,15 +749,17 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
     case AXIS_EVENT_VALUE120:
         y = input->pointer_curr_axis_info.y / 120.0f;
         break;
+    default:
+        y = 0.0f;
+        break;
     }
 
     /* clear pointer_curr_axis_info for next frame */
     SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
 
-    if(x == 0.0f && y == 0.0f)
-        return;
-    else
+    if (x != 0.0f || y != 0.0f) {
         SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+    }
 }
 
 static void
