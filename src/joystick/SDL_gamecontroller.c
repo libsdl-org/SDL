@@ -197,48 +197,6 @@ static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID,
 static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
 static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state);
 
-/*
- * If there is an existing add event in the queue, it needs to be modified
- * to have the right value for which, because the number of controllers in
- * the system is now one less.
- */
-static void UpdateEventsForDeviceRemoval(int device_index)
-{
-    int i, num_events;
-    SDL_Event *events;
-    SDL_bool isstack;
-
-    num_events = SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
-    if (num_events <= 0) {
-        return;
-    }
-
-    events = SDL_small_alloc(SDL_Event, num_events, &isstack);
-    if (!events) {
-        return;
-    }
-
-    num_events = SDL_PeepEvents(events, num_events, SDL_GETEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
-    for (i = 0; i < num_events; ++i) {
-        if (events[i].cdevice.which < device_index) {
-            /* No change for index values lower than the removed device */
-        }
-        else if (events[i].cdevice.which == device_index) {
-            /* Drop this event entirely */
-            SDL_memmove(&events[i], &events[i + 1], sizeof(*events) * (num_events - (i + 1)));
-            --i;
-            --num_events;
-        }
-        else {
-            /* Fix up the device index if greater than the removed device */
-            --events[i].cdevice.which;
-        }
-    }
-    SDL_PeepEvents(events, num_events, SDL_ADDEVENT, 0, 0);
-
-    SDL_small_free(events, isstack);
-}
-
 static SDL_bool HasSameOutput(SDL_ExtendedGameControllerBind *a, SDL_ExtendedGameControllerBind *b)
 {
     if (a->outputType != b->outputType) {
@@ -439,22 +397,21 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
     case SDL_JOYDEVICEREMOVED:
         {
             SDL_GameController *controllerlist = SDL_gamecontrollers;
-            int device_index = 0;
             while (controllerlist) {
                 if (controllerlist->joystick->instance_id == event->jdevice.which) {
-                    SDL_Event deviceevent;
-
                     RecenterGameController(controllerlist);
-
-                    deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
-                    deviceevent.cdevice.which = event->jdevice.which;
-                    SDL_PushEvent(&deviceevent);
-
-                    UpdateEventsForDeviceRemoval(device_index);
                     break;
                 }
                 controllerlist = controllerlist->next;
-                ++device_index;
+            }
+
+            /* We don't know if this was a game controller, so go ahead and send an event */
+            {
+                SDL_Event deviceevent;
+
+                deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
+                deviceevent.cdevice.which = event->jdevice.which;
+                SDL_PushEvent(&deviceevent);
             }
         }
         break;
