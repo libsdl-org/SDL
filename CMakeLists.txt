@@ -323,6 +323,24 @@ endif()
 set(SDL_LIBS "-lSDL2")
 set(SDL_CFLAGS )
 
+# (Third-party) libraries
+# List of libraries only used when building SDL
+set(SDL_LINK_LIBRARIES_BUILD_PRIVATE )
+# List of libraries used when building SDL + users of static SDL
+set(SDL_LINK_LIBRARIES_PRIVATE )
+# List of libraries used when building SDL + users of SDL
+set(SDL_LINK_LIBRARIES_PUBLIC )
+
+# Third-party pkg-config module specs
+# Extra module specs when using SDL
+set(SDL_PKGCONFIG_MODULESPECS_PUBLIC )
+# Extra module specs when using static SDL
+set(SDL_PKGCONFIG_MODULESPECS_PRIVATE )
+# Extra include directories specs when using SDL
+set(SDL_PKGCONFIG_INCLUDES_PUBLIC )
+
+# Third-party sdl-config flags
+
 # When building shared lib for Windows with MinGW,
 # avoid the DLL having a "lib" prefix
 if(WINDOWS)
@@ -2863,19 +2881,21 @@ if(NOT WINDOWS OR CYGWIN OR MINGW)
     set(ENABLE_STATIC_FALSE "")
   endif()
   if(SDL_SHARED)
-    set(PKGCONFIG_LIBS_PRIV "
-Libs.private:")
+    set(PKGCONFIG_LIBS_PRIV "\nLibs.private:")
+    set(PKGCONFIG_REQUIRES_PRIV "\nRequires.private:")
     set(ENABLE_SHARED_TRUE "")
     set(ENABLE_SHARED_FALSE "#")
   else()
     set(PKGCONFIG_LIBS_PRIV "")
+    set(PKGCONFIG_REQUIRES_PRIV "")
     set(ENABLE_SHARED_TRUE "#")
     set(ENABLE_SHARED_FALSE "")
   endif()
 
   # Clean up the different lists
   listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-  set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+  listtostr(EXTRA_LDFLAGS _EXTRA_LDFLAGS " ")
+  set(SDL_STATIC_LIBS ${_EXTRA_LDFLAGS} ${_EXTRA_LIBS})
   list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
   listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
   set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
@@ -2883,16 +2903,27 @@ Libs.private:")
   set(SDL_LIBS ${_SDL_LIBS})
   listtostr(SDL_CFLAGS _SDL_CFLAGS "")
   set(SDL_CFLAGS ${_SDL_CFLAGS})
+  listtostr(SDL_PKGCONFIG_MODULESPECS_PUBLIC SDL_REQUIRES "")
+  listtostr(SDL_PKGCONFIG_MODULESPECS_PRIVATE SDL_REQUIRES_PRIVATE "")
 
-  # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
-  # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
+  # sdl2-config shell script needs expanded targets
+  collect_flags_from_target_list(FLAGS_3RD_PRIVATE SDL_LINK_LIBRARIES_PRIVATE)
+  collect_flags_from_target_list(FLAGS_3RD_PUBLIC SDL_LINK_LIBRARIES_PUBLIC)
+  set(sdl_libs_original "${SDL_LIBS}")
+  set(sdl_static_libs_original "${SDL_STATIC_LIBS}")
+  set(SDL_LIBS "${SDL_LIBS} ${FLAGS_3RD_PUBLIC_LDFLAGS}")
+  set(SDL_STATIC_LIBS "${SDL_STATIC_LIBS} ${FLAGS_3RD_PRIVATE_LDFLAGS}")
+
+  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
+      "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
+
+  # sdl2.pc uses standard flags + module specifiers
+  # SDL2Config.cmake uses standard flags + CMake targets + CMake targets
+  set(SDL_LIBS "${sdl_libs_original}")
+  set(SDL_STATIC_LIBS "${sdl_static_libs_original}")
 
   configure_file("${SDL2_SOURCE_DIR}/sdl2.pc.in"
     "${SDL2_BINARY_DIR}/sdl2.pc" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config")
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
   configure_file("${SDL2_SOURCE_DIR}/SDL2.spec.in"
     "${SDL2_BINARY_DIR}/SDL2.spec" @ONLY)
 endif()
@@ -2995,11 +3026,17 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   message(STATUS " CMAKE_C_FLAGS_DEBUG:   ${CMAKE_C_FLAGS_DEBUG}")
   message(STATUS " CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
+
+collect_flags_from_target_list(FLAGS_3RD_BUILD_PRIVATE SDL_LINK_LIBRARIES_BUILD_PRIVATE)
+collect_flags_from_target_list(FLAGS_3RD_PRIVATE SDL_LINK_LIBRARIES_PRIVATE)
+collect_flags_from_target_list(FLAGS_3RD_PUBLIC SDL_LINK_LIBRARIES_PUBLIC)
+set(ldflags_3rdparth "${FLAGS_3RD_BUILD_PRIVATE_LDFLAGS} ${FLAGS_3RD_PRIVATE_LDFLAGS} ${FLAGS_3RD_PUBLIC_LDFLAGS}")
+
 message(STATUS "")
 message(STATUS " CFLAGS:        ${CMAKE_C_FLAGS}")
 message(STATUS " EXTRA_CFLAGS:  ${EXTRA_CFLAGS}")
 message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD}")
-message(STATUS " EXTRA_LIBS:    ${EXTRA_LIBS}")
+message(STATUS " EXTRA_LIBS:    ${_EXTRA_LIBS} ${ldflags_3rdparth}")
 message(STATUS "")
 message(STATUS " Build Shared Library: ${SDL_SHARED}")
 message(STATUS " Build Static Library: ${SDL_STATIC}")
@@ -3112,6 +3149,10 @@ if(SDL_SHARED)
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
   target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
+  target_link_libraries(SDL2 PUBLIC ${SDL_LINK_LIBRARIES_PUBLIC})
+  target_link_libraries(SDL2 PRIVATE ${SDL_LINK_LIBRARIES_PRIVATE})
+  target_link_libraries(SDL2 PRIVATE "$<BUILD_INTERFACE:${SDL_LINK_LIBRARIES_BUILD_PRIVATE}>")
+
   target_include_directories(SDL2 PUBLIC
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
@@ -3148,6 +3189,9 @@ if(SDL_STATIC)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
   target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_link_libraries(SDL2-static PUBLIC ${SDL_LINK_LIBRARIES_PUBLIC})
+  target_link_libraries(SDL2-static PRIVATE ${SDL_LINK_LIBRARIES_PRIVATE})
+  target_link_libraries(SDL2-static PRIVATE "$<BUILD_INTERFACE:${SDL_LINK_LIBRARIES_BUILD_PRIVATE}>")
   target_include_directories(SDL2-static PUBLIC
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
@@ -3283,6 +3327,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     FILES
       ${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/SDL2ConfigVersion.cmake
+      cmake/common.cmake
     DESTINATION ${PKG_PREFIX}
     COMPONENT Devel
   )

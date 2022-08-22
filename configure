@@ -679,6 +679,9 @@ ENABLE_SHARED_TRUE
 PKGCONFIG_LIBS_PRIV
 SDL_RLD_FLAGS
 SDL_STATIC_LIBS
+SDL_REQUIRES_PRIVATE
+PKGCONFIG_REQUIRES_PRIV
+SDL_REQUIRES
 SDL_LIBS
 SDL_CFLAGS
 bin_prefix_relpath
@@ -29619,6 +29622,9 @@ case "$_lcl_notation" in
 esac
   eval $_lcl_result_var='$_lcl_result_tmp'
 done
+
+
+
 
 
 

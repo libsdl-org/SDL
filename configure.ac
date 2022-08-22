@@ -4785,6 +4785,9 @@ AC_SUBST([bin_prefix_relpath])
 dnl Expand the cflags and libraries needed by apps using SDL
 AC_SUBST(SDL_CFLAGS)
 AC_SUBST(SDL_LIBS)
+AC_SUBST(SDL_REQUIRES)
+AC_SUBST(PKGCONFIG_REQUIRES_PRIV)
+AC_SUBST(SDL_REQUIRES_PRIVATE)
 AC_SUBST(SDL_STATIC_LIBS)
 AC_SUBST(SDL_RLD_FLAGS)
 if test x$enable_shared = xyes; then
