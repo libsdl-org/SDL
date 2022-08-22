@@ -83,8 +83,10 @@ SDL_MouseNormalSpeedScaleChanged(void *userdata, const char *name, const char *o
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
     if (hint && *hint) {
+        mouse->enable_normal_speed_scale = SDL_TRUE;
         mouse->normal_speed_scale = (float)SDL_atof(hint);
     } else {
+        mouse->enable_normal_speed_scale = SDL_FALSE;
         mouse->normal_speed_scale = 1.0f;
     }
 }
@@ -95,10 +97,20 @@ SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char 
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
     if (hint && *hint) {
+        mouse->enable_relative_speed_scale = SDL_TRUE;
         mouse->relative_speed_scale = (float)SDL_atof(hint);
     } else {
+        mouse->enable_relative_speed_scale = SDL_FALSE;
         mouse->relative_speed_scale = 1.0f;
     }
+}
+
+static void SDLCALL
+SDL_MouseRelativeSystemScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->enable_relative_system_scale = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
 static void SDLCALL
@@ -188,6 +200,9 @@ SDL_MouseInit(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
                         SDL_MouseRelativeSpeedScaleChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
+                        SDL_MouseRelativeSystemScaleChanged, mouse);
 
     SDL_AddHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
@@ -344,7 +359,10 @@ SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int 
 static int
 GetScaledMouseDelta(float scale, int value, float *accum)
 {
-    if (scale != 1.0f) {
+    if (value && scale != 1.0f) {
+        if ((value > 0) != (*accum > 0)) {
+            *accum = 0.0f;
+        }
         *accum += scale * value;
         if (*accum >= 0.0f) {
             value = (int)SDL_floor(*accum);
@@ -354,6 +372,100 @@ GetScaledMouseDelta(float scale, int value, float *accum)
         *accum -= value;
     }
     return value;
+}
+
+static float
+CalculateSystemScale(SDL_Mouse *mouse, int *x, int *y)
+{
+    int i;
+    int n = mouse->num_system_scale_values;
+    float *v = mouse->system_scale_values;
+    float speed, coef, scale;
+
+    /* If we're using a single scale value, return that */
+    if (n == 1) {
+        return v[0];
+    }
+
+    speed = SDL_sqrtf((float)(*x * *x) + (*y * *y));
+    for (i = 0; i < (n - 2); i += 2) {
+        if (speed < v[i + 2]) {
+            break;
+        }
+    }
+    if (i == (n - 2)) {
+        scale = v[n - 1];
+    } else if (speed <= v[i]) {
+        scale = v[i + 1];
+    } else {
+        coef = (speed - v[i]) / (v[i + 2] - v[i]);
+        scale = v[i + 1] + (coef * (v[i + 3] - v[i + 1]));
+    }
+    SDL_Log("speed = %.2f, scale = %.2f\n", speed, scale);
+    return scale;
+}
+
+/* You can set either a single scale, or a set of {speed, scale} values in ascending order */
+int
+SDL_SetMouseSystemScale(int num_values, const float *values)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    float *v;
+
+    if (num_values == mouse->num_system_scale_values &&
+        SDL_memcmp(values, mouse->system_scale_values, num_values * sizeof(*values)) == 0) {
+        /* Nothing has changed */
+        return 0;
+    }
+
+    if (num_values < 1) {
+        return SDL_SetError("You must have at least one scale value");
+    }
+
+    if (num_values > 1) {
+        /* Validate the values */
+        int i;
+
+        if (num_values < 4 || (num_values % 2) != 0) {
+            return SDL_SetError("You must pass a set of {speed, scale} values");
+        }
+
+        for (i = 0; i < (num_values - 2); i += 2) {
+            if (values[i] >= values[i + 2]) {
+                return SDL_SetError("Speed values must be in ascending order");
+            }
+        }
+    }
+
+    v = (float *)SDL_realloc(mouse->system_scale_values, num_values * sizeof(*values));
+    if (!v) {
+        return SDL_OutOfMemory();
+    }
+    SDL_memcpy(v, values, num_values * sizeof(*values));
+
+    mouse->num_system_scale_values = num_values;
+    mouse->system_scale_values = v;
+    return 0;
+}
+
+static void
+GetScaledMouseDeltas(SDL_Mouse *mouse, int *x, int *y)
+{
+    if (mouse->relative_mode) {
+        if (mouse->enable_relative_speed_scale) {
+            *x = GetScaledMouseDelta(mouse->relative_speed_scale, *x, &mouse->scale_accum_x);
+            *y = GetScaledMouseDelta(mouse->relative_speed_scale, *y, &mouse->scale_accum_y);
+        } else if (mouse->enable_relative_system_scale && mouse->num_system_scale_values > 0) {
+            float relative_system_scale = CalculateSystemScale(mouse, x, y);
+            *x = GetScaledMouseDelta(relative_system_scale, *x, &mouse->scale_accum_x);
+            *y = GetScaledMouseDelta(relative_system_scale, *y, &mouse->scale_accum_y);
+        }
+    } else {
+        if (mouse->enable_normal_speed_scale) {
+            *x = GetScaledMouseDelta(mouse->normal_speed_scale, *x, &mouse->scale_accum_x);
+            *y = GetScaledMouseDelta(mouse->normal_speed_scale, *y, &mouse->scale_accum_y);
+        }
+    }
 }
 
 static int
@@ -405,13 +517,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     }
 
     if (relative) {
-        if (mouse->relative_mode) {
-            x = GetScaledMouseDelta(mouse->relative_speed_scale, x, &mouse->scale_accum_x);
-            y = GetScaledMouseDelta(mouse->relative_speed_scale, y, &mouse->scale_accum_y);
-        } else {
-            x = GetScaledMouseDelta(mouse->normal_speed_scale, x, &mouse->scale_accum_x);
-            y = GetScaledMouseDelta(mouse->normal_speed_scale, y, &mouse->scale_accum_y);
-        }
+        GetScaledMouseDeltas(mouse, &x, &y);
         xrel = x;
         yrel = y;
         x = (mouse->last_x + xrel);
@@ -817,6 +923,9 @@ SDL_MouseQuit(void)
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
                         SDL_MouseRelativeSpeedScaleChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
+                        SDL_MouseRelativeSystemScaleChanged, mouse);
 
     SDL_DelHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
