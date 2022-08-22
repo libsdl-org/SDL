@@ -1628,6 +1628,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+
+    case WM_SETTINGCHANGE:
+        if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
+            WIN_UpdateMouseSystemScale();
+        }
+        break;
+
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     }
 
