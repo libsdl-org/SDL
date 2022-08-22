@@ -538,7 +538,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
     if ((vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
         (vendor == USB_VENDOR_SHENZHEN && product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER)) {
@@ -664,9 +664,17 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
 static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool exact_match)
 {
     ControllerMapping_t *mapping = s_pSupportedControllers;
+    SDL_JoystickGUID zero_crc_guid;
+
+    SDL_memcpy(&zero_crc_guid, &guid, sizeof(guid));
+    zero_crc_guid.data[3] = 0;
+    zero_crc_guid.data[4] = 0;
+    zero_crc_guid.data[5] = 0;
+    zero_crc_guid.data[6] = 0;
 
     while (mapping) {
-        if (SDL_memcmp(&guid, &mapping->guid, sizeof(guid)) == 0) {
+        if (SDL_memcmp(&guid, &mapping->guid, sizeof(guid)) == 0 ||
+            SDL_memcmp(&zero_crc_guid, &mapping->guid, sizeof(guid)) == 0) {
             return mapping;
         }
         mapping = mapping->next;
@@ -1836,7 +1844,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         return SDL_FALSE;
     }
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
 
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
         /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real controllers so it can remap input for the virtual controller */

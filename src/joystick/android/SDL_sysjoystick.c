@@ -360,7 +360,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     /* We only need 16 bits for each of these; space them out to fill 128. */
     /* Byteswap so devices get same GUID on little/big endian platforms. */
     *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
-    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(SDL_crc16(0, desc, SDL_strlen(desc)));
 
     if (vendor_id && product_id) {
         *guid16++ = SDL_SwapLE16(vendor_id);
@@ -368,12 +368,8 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
         *guid16++ = SDL_SwapLE16(product_id);
         *guid16++ = 0;
     } else {
-        Uint32 crc = 0;
-        SDL_crc32(crc, desc, SDL_strlen(desc));
-        SDL_memcpy(guid16, desc, SDL_min(2*sizeof(*guid16), SDL_strlen(desc)));
-        guid16 += 2;
-        *(Uint32 *)guid16 = SDL_SwapLE32(crc);
-        guid16 += 2;
+        SDL_strlcpy((char*)guid16, name, 4*sizeof(Uint16));
+        guid16 += 4;
     }
 
     *guid16++ = SDL_SwapLE16(button_mask);

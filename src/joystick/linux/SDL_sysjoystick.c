@@ -241,7 +241,7 @@ IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
     /* We only need 16 bits for each of these; space them out to fill 128. */
     /* Byteswap so devices get same GUID on little/big endian platforms. */
     *guid16++ = SDL_SwapLE16(inpid.bustype);
-    *guid16++ = 0;
+    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
 
     if (inpid.vendor && inpid.product) {
         *guid16++ = SDL_SwapLE16(inpid.vendor);

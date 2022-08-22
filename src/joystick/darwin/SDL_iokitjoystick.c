@@ -504,7 +504,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 
     if (vendor && product) {
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(SDL_crc16(0, pDevice->product, SDL_strlen(pDevice->product)));
         *guid16++ = SDL_SwapLE16((Uint16)vendor);
         *guid16++ = 0;
         *guid16++ = SDL_SwapLE16((Uint16)product);
@@ -513,7 +513,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         *guid16++ = 0;
     } else {
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
-        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(SDL_crc16(0, pDevice->product, SDL_strlen(pDevice->product)));
         SDL_strlcpy((char*)guid16, pDevice->product, sizeof(pDevice->guid.data) - 4);
     }
 

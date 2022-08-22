@@ -320,7 +320,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 
         /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
         *guid16++ = SDL_SwapLE16(vendor);
         *guid16++ = 0;
         *guid16++ = SDL_SwapLE16(product);
