@@ -361,8 +361,8 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int posted;
-    int xrel;
-    int yrel;
+    int xrel = 0;
+    int yrel = 0;
 
     /* SDL_HINT_MOUSE_TOUCH_EVENTS: controlling whether mouse events should generate synthetic touch events */
     if (mouse->mouse_touch_events) {
@@ -416,7 +416,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         yrel = y;
         x = (mouse->last_x + xrel);
         y = (mouse->last_y + yrel);
-    } else {
+    } else if (mouse->has_position) {
         xrel = x - mouse->last_x;
         yrel = y - mouse->last_y;
     }
