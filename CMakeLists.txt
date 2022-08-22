@@ -11,10 +11,6 @@ else()
   set(SDL3_SUBPROJECT ON)
 endif()
 
-if (HAIKU)
-  set(LINKER_LANGUAGE CXX)
-endif()
-
 set(EXTRA_LIBS)
 set(EXTRA_LDFLAGS)
 
