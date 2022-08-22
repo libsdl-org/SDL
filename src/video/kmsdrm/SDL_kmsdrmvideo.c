@@ -565,7 +565,7 @@ static bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vrr_pr
                                            DRM_MODE_OBJECT_CRTC);
 
     if (!drm_props)
-        return false;
+        return SDL_FALSE;
 
     *vrr_prop_id = KMSDRM_CrtcGetPropId(drm_fd,
                                        drm_props,
@@ -573,7 +573,7 @@ static bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vrr_pr
 
     KMSDRM_drmModeFreeObjectProperties(drm_props);
 
-    return true;
+    return SDL_TRUE;
 }
 
 static SDL_bool 
