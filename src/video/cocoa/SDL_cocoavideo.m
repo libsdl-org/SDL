@@ -100,6 +100,7 @@ Cocoa_CreateDevice(void)
     device->SetWindowMinimumSize = Cocoa_SetWindowMinimumSize;
     device->SetWindowMaximumSize = Cocoa_SetWindowMaximumSize;
     device->SetWindowOpacity = Cocoa_SetWindowOpacity;
+    device->GetWindowSizeInPixels = Cocoa_GetWindowSizeInPixels;
     device->ShowWindow = Cocoa_ShowWindow;
     device->HideWindow = Cocoa_HideWindow;
     device->RaiseWindow = Cocoa_RaiseWindow;

@@ -185,17 +185,7 @@ Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
         }
     } else {
         /* Fall back to the viewport size. */
-        NSRect viewport = [contentView bounds];
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            /* This gives us the correct viewport for a Retina-enabled view. */
-            viewport = [contentView convertRectToBacking:viewport];
-        }
-        if (w) {
-            *w = viewport.size.width;
-        }
-        if (h) {
-            *h = viewport.size.height;
-        }
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }}
 

@@ -389,22 +389,7 @@ void
 Cocoa_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 { @autoreleasepool
 {
-    SDL_WindowData *windata = (__bridge SDL_WindowData *) window->driverdata;
-    NSView *contentView = windata.sdlContentView;
-    NSRect viewport = [contentView bounds];
-
-    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        /* This gives us the correct viewport for a Retina-enabled view. */
-        viewport = [contentView convertRectToBacking:viewport];
-    }
-
-    if (w) {
-        *w = viewport.size.width;
-    }
-
-    if (h) {
-        *h = viewport.size.height;
-    }
+    SDL_GetWindowSizeInPixels(window, w, h);
 }}
 
 int
