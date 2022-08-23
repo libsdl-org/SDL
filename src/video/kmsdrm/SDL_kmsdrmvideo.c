@@ -557,7 +557,7 @@ KMSDRM_CrtcGetPropId(uint32_t drm_fd,
     return prop_id;
 }
 
-static bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vrr_prop_id) {
+static SDL_bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vrr_prop_id) {
     drmModeObjectPropertiesPtr drm_props;
 
     drm_props = KMSDRM_drmModeObjectGetProperties(drm_fd,
