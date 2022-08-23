@@ -341,13 +341,17 @@ void VITA_JoystickQuit(void)
 {
 }
 
-SDL_JoystickGUID VITA_JoystickGetDeviceGUID( int device_index )
+SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
 {
+    /* the GUID is just the name for now */
+    const char *name = VITA_JoystickGetDeviceName(device_index);
     SDL_JoystickGUID guid;
-    /* the GUID is just the first 16 chars of the name for now */
-    const char *name = VITA_JoystickGetDeviceName( device_index );
-    SDL_zero( guid );
-    SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
+    Uint16 *guid16 = (Uint16 *)guid.data;
+
+    SDL_zero(guid);
+    *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_UNKNOWN);
+    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
+    SDL_strlcpy((char*)guid16, name, sizeof(guid.data) - 4);
     return guid;
 }
 
