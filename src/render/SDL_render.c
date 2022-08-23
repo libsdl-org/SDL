@@ -2981,8 +2981,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
                 frect->x += scale_x;
             }
         } else {
-            retval += RenderDrawLineBresenham(renderer, (int)points[i].x, (int)points[i].y,
-                                                        (int)points[i+1].x, (int)points[i+1].y, draw_last);
+            retval += RenderDrawLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
+                                                        (int)SDL_roundf(points[i+1].x), (int)SDL_roundf(points[i+1].y), draw_last);
         }
         drew_line = SDL_TRUE;
     }
