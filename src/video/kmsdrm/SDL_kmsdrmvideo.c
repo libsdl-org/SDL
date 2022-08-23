@@ -583,7 +583,7 @@ KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
                          char const* name)
 {
     uint32_t i;
-    Bool found = SDL_FALSE;
+    SDL_bool found = SDL_FALSE;
     uint64_t prop_value = 0;
 
 
@@ -611,7 +611,7 @@ KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
 }
 
 void
-KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, Bool enabled)
+KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, SDL_bool enabled)
 {
     uint32_t vrr_prop_id = KMSDRM_VrrPropId(drm_fd, crtc_id);
 
