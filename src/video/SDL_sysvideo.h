@@ -227,7 +227,7 @@ struct SDL_VideoDevice
     void (*SetWindowMinimumSize) (_THIS, SDL_Window * window);
     void (*SetWindowMaximumSize) (_THIS, SDL_Window * window);
     int (*GetWindowBordersSize) (_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right);
-    int (*GetWindowSizeInPixels)(_THIS, SDL_Window *window, int *w, int *h);
+    void (*GetWindowSizeInPixels)(_THIS, SDL_Window *window, int *w, int *h);
     int (*SetWindowOpacity) (_THIS, SDL_Window * window, float opacity);
     int (*SetWindowModalFor) (_THIS, SDL_Window * modal_window, SDL_Window * parent_window);
     int (*SetWindowInputFocus) (_THIS, SDL_Window * window);
