@@ -776,18 +776,7 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 void
 WIN_GetWindowDrawableSize(_THIS, SDL_Window * window, int *w, int *h)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-    RECT rcClient;
-
-    GetClientRect(hwnd, &rcClient);
-
-	if (w) {
-    	*w = rcClient.right - rcClient.left;
-	}
-
-	if (h) {
-    	*h = rcClient.bottom - rcClient.top;
-	}
+    WIN_GetDrawableSize(window, w, h);
 }
 
 void
