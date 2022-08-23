@@ -884,4 +884,4 @@
 #define SDL_GetRectDisplayIndex SDL_GetRectDisplayIndex_REAL
 #define SDL_ResetHint SDL_ResetHint_REAL
 #define SDL_crc16 SDL_crc16_REAL
-#define SDL_GetWindowDrawableSize SDL_GetWindowDrawableSize_REAL
+#define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL

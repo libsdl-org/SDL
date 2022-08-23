@@ -2067,19 +2067,13 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     }
 }
 
-void Wayland_GetWindowDrawableSize(_THIS, SDL_Window * window, int *w, int *h)
+void Wayland_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
 {
 	SDL_WindowData *data;
     if (window->driverdata) {
         data = (SDL_WindowData *) window->driverdata;
-
-        if (w) {
-            *w = data->drawable_width;
-        }
-
-        if (h) {
-            *h = data->drawable_height;
-        }
+        *w = data->drawable_width;
+        *h = data->drawable_height;
     }
 }
 

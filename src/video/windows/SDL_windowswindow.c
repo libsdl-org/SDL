@@ -774,7 +774,7 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 }
 
 void
-WIN_GetWindowDrawableSize(_THIS, SDL_Window * window, int *w, int *h)
+WIN_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
 {
     WIN_GetDrawableSize(window, w, h);
 }

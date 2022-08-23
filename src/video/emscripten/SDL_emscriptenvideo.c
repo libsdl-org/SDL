@@ -47,7 +47,7 @@ static int Emscripten_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * d
 
 static int Emscripten_CreateWindow(_THIS, SDL_Window * window);
 static void Emscripten_SetWindowSize(_THIS, SDL_Window * window);
-static void Emscripten_GetWindowDrawableSize(_THIS, SDL_Window * window, int *w, int *h);
+static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h);
 static void Emscripten_DestroyWindow(_THIS, SDL_Window * window);
 static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 static void Emscripten_PumpEvents(_THIS);
@@ -102,7 +102,7 @@ Emscripten_CreateDevice(void)
     device->MinimizeWindow = Emscripten_MinimizeWindow;
     device->RestoreWindow = Emscripten_RestoreWindow;
     device->SetWindowMouseGrab = Emscripten_SetWindowMouseGrab;*/
-    device->GetWindowDrawableSize = Emscripten_GetWindowDrawableSize;
+    device->GetWindowSizeInPixels = Emscripten_GetWindowSizeInPixels;
     device->DestroyWindow = Emscripten_DestroyWindow;
     device->SetWindowFullscreen = Emscripten_SetWindowFullscreen;
 
@@ -311,19 +311,13 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window * window)
 
 
 static void
-Emscripten_GetWindowDrawableSize(_THIS, SDL_Window * window, int *w, int *h)
+Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
 {
     SDL_WindowData *data;
     if (window->driverdata) {
         data = (SDL_WindowData *) window->driverdata;
-
-        if (w) {
-            *w = window->w * data->pixel_ratio;
-        }
-
-        if (h) {
-            *h = window->h * data->pixel_ratio;
-        }
+		*w = window->w * data->pixel_ratio;
+		*h = window->h * data->pixel_ratio;
     }
 }
 

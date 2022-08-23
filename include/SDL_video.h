@@ -1047,7 +1047,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window * window,
                                                      int *bottom, int *right);
 
 /**
- * Get the size of a window's underlying drawable in pixels.
+ * Get the size of a window in pixels.
  *
  * This may differ from SDL_GetWindowSize() if we're rendering to a high-DPI
  * drawable, i.e. the window was created with `SDL_WINDOW_ALLOW_HIGHDPI` on a
@@ -1064,7 +1064,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window * window,
  * \sa SDL_CreateWindow
  * \sa SDL_GetWindowSize
  */
-extern DECLSPEC void SDLCALL SDL_GetWindowDrawableSize(SDL_Window * window, 
+extern DECLSPEC void SDLCALL SDL_GetWindowSizeInPixels(SDL_Window * window, 
                                                        int *w, int *h);
 
 /**

@@ -257,7 +257,7 @@ Wayland_CreateDevice(void)
     device->SetWindowMaximumSize = Wayland_SetWindowMaximumSize;
     device->SetWindowModalFor = Wayland_SetWindowModalFor;
     device->SetWindowTitle = Wayland_SetWindowTitle;
-    device->GetWindowDrawableSize = Wayland_GetWindowDrawableSize;
+    device->GetWindowSizeInPixels = Wayland_GetWindowSizeInPixels;
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
     device->FlashWindow = Wayland_FlashWindow;
