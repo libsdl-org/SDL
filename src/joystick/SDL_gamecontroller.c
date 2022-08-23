@@ -663,21 +663,26 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
  */
 static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool exact_match)
 {
-    ControllerMapping_t *mapping = s_pSupportedControllers;
+    ControllerMapping_t *mapping;
     SDL_JoystickGUID zero_crc_guid;
 
+    /* First check for exact match */
+    for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
+        if (SDL_memcmp(&guid, &mapping->guid, sizeof(guid)) == 0) {
+            return mapping;
+        }
+    }
+
+    /* Now check for match with no CRC */
     SDL_memcpy(&zero_crc_guid, &guid, sizeof(guid));
     zero_crc_guid.data[3] = 0;
     zero_crc_guid.data[4] = 0;
     zero_crc_guid.data[5] = 0;
     zero_crc_guid.data[6] = 0;
-
-    while (mapping) {
-        if (SDL_memcmp(&guid, &mapping->guid, sizeof(guid)) == 0 ||
-            SDL_memcmp(&zero_crc_guid, &mapping->guid, sizeof(guid)) == 0) {
+    for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
+        if (SDL_memcmp(&zero_crc_guid, &mapping->guid, sizeof(guid)) == 0) {
             return mapping;
         }
-        mapping = mapping->next;
     }
 
     if (!exact_match) {
