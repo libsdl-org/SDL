@@ -220,7 +220,6 @@ IsControllerSwitchJoyConPair(GCController *controller)
 static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
-    Uint16 *guid16 = (Uint16 *)device->guid.data;
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint8 subtype = 0;
@@ -472,23 +471,17 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
     }
 #endif /* TARGET_OS_TV */
 
-    /* We only need 16 bits for each of these; space them out to fill 128. */
-    /* Byteswap so devices get same GUID on little/big endian platforms. */
-    *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
-    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
-    *guid16++ = SDL_SwapLE16(vendor);
-    *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16(product);
-    *guid16++ = 0;
-
-    *guid16++ = SDL_SwapLE16(device->button_mask);
-
     if (vendor == USB_VENDOR_APPLE) {
         /* Note that this is an MFI controller and what subtype it is */
-        device->guid.data[14] = 'm';
-        device->guid.data[15] = subtype;
+        device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, 0, name, 'm', subtype);
     } else {
-        device->guid.data[15] = subtype;
+        device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, 0, name, 0, subtype);
+    }
+
+    /* Update the GUID with capability bits */
+    {
+        Uint16 *guid16 = (Uint16 *)device->guid.data;
+        guid16[6] = SDL_SwapLE16(device->button_mask);
     }
 
     /* This will be set when the first button press of the controller is

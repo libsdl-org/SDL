@@ -101,7 +101,6 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     joystick_hwdata *hwdata = NULL;
     int device_index = -1;
     const char *name = NULL;
-    Uint16 *guid16;
     int axis_triggerleft = -1;
     int axis_triggerright = -1;
 
@@ -194,21 +193,7 @@ SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
         }
     }
 
-    /* We only need 16 bits for each of these; space them out to fill 128. */
-    /* Byteswap so devices get same GUID on little/big endian platforms. */
-    guid16 = (Uint16 *)hwdata->guid.data;
-    *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_VIRTUAL);
-    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
-    *guid16++ = SDL_SwapLE16(hwdata->desc.vendor_id);
-    *guid16++ = 0;
-    *guid16++ = SDL_SwapLE16(hwdata->desc.product_id);
-    *guid16++ = 0;
-    *guid16++ = 0;
-    *guid16++ = 0; /* This will be overwritten below with the virtual controller signature */
-
-    /* Note that this is a Virtual device and what subtype it is */
-    hwdata->guid.data[14] = 'v';
-    hwdata->guid.data[15] = (Uint8)hwdata->desc.type;
+    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, name, 'v', (Uint8)hwdata->desc.type);
 
     /* Allocate fields for different control-types */
     if (hwdata->desc.naxes > 0) {

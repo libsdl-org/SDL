@@ -779,25 +779,8 @@ RAWINPUT_AddDevice(HANDLE hDevice)
             SDL_free(product_string);
         }
     }
-    {
-        const Uint16 vendor = device->vendor_id;
-        const Uint16 product = device->product_id;
-        const Uint16 version = device->version;
-        Uint16 *guid16 = (Uint16 *)device->guid.data;
 
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = SDL_SwapLE16(SDL_crc16(0, device->name, SDL_strlen(device->name)));
-        *guid16++ = SDL_SwapLE16(vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(version);
-        *guid16++ = 0;
-
-        /* Note that this is a RAWINPUT device for special handling elsewhere */
-        device->guid.data[14] = 'r';
-        device->guid.data[15] = 0;
-    }
+    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, device->vendor_id, device->product_id, device->version, device->name, 'r', 0);
 
     device->path = SDL_strdup(dev_name);
 

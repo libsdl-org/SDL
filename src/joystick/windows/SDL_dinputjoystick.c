@@ -443,7 +443,6 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 #define CHECK(expression) { if(!(expression)) goto err; }
     JoyStick_DeviceData *pNewJoystick = NULL;
     JoyStick_DeviceData *pPrevJoystick = NULL;
-    Uint16 *guid16;
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
@@ -493,25 +492,14 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
     SDL_zerop(pNewJoystick);
     SDL_strlcpy(pNewJoystick->path, hidPath, SDL_arraysize(pNewJoystick->path));
     SDL_memcpy(&pNewJoystick->dxdevice, pDeviceInstance, sizeof(DIDEVICEINSTANCE));
-    SDL_memset(pNewJoystick->guid.data, 0, sizeof(pNewJoystick->guid.data));
 
     pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
     CHECK(pNewJoystick->joystickname);
 
-    guid16 = (Uint16 *)pNewJoystick->guid.data;
     if (vendor && product) {
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = SDL_SwapLE16(SDL_crc16(0, pNewJoystick->joystickname, SDL_strlen(pNewJoystick->joystickname)));
-        *guid16++ = SDL_SwapLE16(vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(version);
-        *guid16++ = 0;
+        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, pNewJoystick->joystickname, 0, 0);
     } else {
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
-        *guid16++ = SDL_SwapLE16(SDL_crc16(0, pNewJoystick->joystickname, SDL_strlen(pNewJoystick->joystickname)));
-        SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
+        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, version, pNewJoystick->joystickname, 0, 0);
     }
 
     CHECK(!SDL_ShouldIgnoreJoystick(pNewJoystick->joystickname, pNewJoystick->guid));

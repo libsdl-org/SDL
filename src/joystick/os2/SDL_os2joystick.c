@@ -401,14 +401,7 @@ static SDL_JoystickGUID OS2_JoystickGetDeviceGUID(int device_index)
 {
     /* the GUID is just the name for now */
     const char *name = OS2_JoystickGetDeviceName(device_index);
-    SDL_JoystickGUID guid;
-    Uint16 *guid16 = (Uint16 *)guid.data;
-
-    SDL_zero(guid);
-    *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_UNKNOWN);
-    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
-    SDL_strlcpy((char*)guid16, name, sizeof(guid.data) - 4);
-    return guid;
+    return SDL_CreateJoystickGUIDForName(name);
 }
 
 static SDL_JoystickID OS2_JoystickGetDeviceInstanceID(int device_index)

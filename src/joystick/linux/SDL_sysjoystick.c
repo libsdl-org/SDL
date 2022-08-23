@@ -192,7 +192,6 @@ static int
 IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
-    Uint16 *guid16 = (Uint16 *)guid->data;
     char *name;
     char product_string[128];
 
@@ -236,23 +235,7 @@ IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
     SDL_Log("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", name, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
 #endif
 
-    SDL_memset(guid->data, 0, sizeof(guid->data));
-
-    /* We only need 16 bits for each of these; space them out to fill 128. */
-    /* Byteswap so devices get same GUID on little/big endian platforms. */
-    *guid16++ = SDL_SwapLE16(inpid.bustype);
-    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
-
-    if (inpid.vendor && inpid.product) {
-        *guid16++ = SDL_SwapLE16(inpid.vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(inpid.product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(inpid.version);
-        *guid16++ = 0;
-    } else {
-        SDL_strlcpy((char*)guid16, name, sizeof(guid->data) - 4);
-    }
+    *guid = SDL_CreateJoystickGUID(inpid.bustype, inpid.vendor, inpid.product, inpid.version, name, 0, 0);
 
     if (SDL_ShouldIgnoreJoystick(name, *guid)) {
         SDL_free(name);

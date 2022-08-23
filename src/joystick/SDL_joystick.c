@@ -1973,6 +1973,46 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     return name;
 }
 
+SDL_JoystickGUID
+SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *name, Uint8 driver_signature, Uint8 driver_data)
+{
+    SDL_JoystickGUID guid;
+    Uint16 *guid16 = (Uint16 *)guid.data;
+
+    SDL_zero(guid);
+
+    /* We only need 16 bits for each of these; space them out to fill 128. */
+    /* Byteswap so devices get same GUID on little/big endian platforms. */
+    *guid16++ = SDL_SwapLE16(bus);
+    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
+
+    if (vendor && product) {
+        *guid16++ = SDL_SwapLE16(vendor);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(product);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(version);
+        guid.data[14] = driver_signature;
+        guid.data[15] = driver_data;
+    } else {
+        size_t available_space = sizeof(guid.data) - 4;
+
+        if (driver_signature) {
+            available_space -= 2;
+            guid.data[14] = driver_signature;
+            guid.data[15] = driver_data;
+        }
+        SDL_strlcpy((char*)guid16, name, available_space);
+    }
+    return guid;
+}
+
+SDL_JoystickGUID
+SDL_CreateJoystickGUIDForName(const char *name)
+{
+    return SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, 0, 0, 0, name, 0, 0);
+}
+
 SDL_GameControllerType
 SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI)
 {
