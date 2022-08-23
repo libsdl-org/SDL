@@ -99,18 +99,7 @@ Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window)
 void
 Emscripten_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 {
-    SDL_WindowData *data;
-    if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
-
-        if (w) {
-            *w = window->w * data->pixel_ratio;
-        }
-
-        if (h) {
-            *h = window->h * data->pixel_ratio;
-        }
-    }
+    SDL_GetWindowSizeInPixels(window, w, h);
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN && SDL_VIDEO_OPENGL_EGL */
