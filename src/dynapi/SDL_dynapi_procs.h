@@ -632,6 +632,7 @@ SDL_DYNAPI_PROC(SDL_GameController*,SDL_GameControllerFromInstanceID,(SDL_Joysti
 SDL_DYNAPI_PROC(SDL_Joystick*,SDL_JoystickFromInstanceID,(SDL_JoystickID a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetDisplayUsableBounds,(int a, SDL_Rect *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetWindowBordersSize,(SDL_Window *a, int *b, int *c, int *d, int *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(void,SDL_GetWindowDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)
 SDL_DYNAPI_PROC(int,SDL_SetWindowOpacity,(SDL_Window *a, float b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetWindowOpacity,(SDL_Window *a, float *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowInputFocus,(SDL_Window *a),(a),return)

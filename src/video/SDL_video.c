@@ -2367,6 +2367,18 @@ SDL_GetWindowBordersSize(SDL_Window * window, int *top, int *left, int *bottom, 
 }
 
 void
+SDL_GetWindowDrawableSize(SDL_Window * window, int *w, int *h)
+{
+    CHECK_WINDOW_MAGIC(window,);
+
+    if (_this->GetWindowDrawableSize) {
+        _this->GetWindowDrawableSize(_this, window, w, h);
+    } else {
+        SDL_GetWindowSize(window, w, h);
+    }
+}
+
+void
 SDL_SetWindowMinimumSize(SDL_Window * window, int min_w, int min_h)
 {
     CHECK_WINDOW_MAGIC(window,);

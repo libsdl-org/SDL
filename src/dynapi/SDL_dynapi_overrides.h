@@ -592,6 +592,7 @@
 #define SDL_JoystickFromInstanceID SDL_JoystickFromInstanceID_REAL
 #define SDL_GetDisplayUsableBounds SDL_GetDisplayUsableBounds_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
+#define SDL_GetWindowDrawableSize SDL_GetWindowDrawableSize_REAL
 #define SDL_SetWindowOpacity SDL_SetWindowOpacity_REAL
 #define SDL_GetWindowOpacity SDL_GetWindowOpacity_REAL
 #define SDL_SetWindowInputFocus SDL_SetWindowInputFocus_REAL
