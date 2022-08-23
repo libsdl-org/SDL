@@ -835,7 +835,7 @@ WIN_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 void
 WIN_GL_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 {
-    WIN_GetDrawableSize(window, w, h);
+	SDL_GetWindowSizeInPixels(window, w, h);
 }
 
 int
