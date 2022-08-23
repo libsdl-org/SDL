@@ -316,8 +316,8 @@ Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
     SDL_WindowData *data;
     if (window->driverdata) {
         data = (SDL_WindowData *) window->driverdata;
-		*w = window->w * data->pixel_ratio;
-		*h = window->h * data->pixel_ratio;
+        *w = window->w * data->pixel_ratio;
+        *h = window->h * data->pixel_ratio;
     }
 }
 

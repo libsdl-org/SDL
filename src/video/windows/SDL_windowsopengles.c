@@ -105,7 +105,7 @@ SDL_EGL_MakeCurrent_impl(WIN)
 void
 WIN_GLES_GetDrawableSize(_THIS, SDL_Window* window, int* w, int* h)
 {
-	SDL_GetWindowSizeInPixels(window, w, h);
+    SDL_GetWindowSizeInPixels(window, w, h);
 }
 
 int
