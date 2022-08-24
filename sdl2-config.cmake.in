@@ -62,38 +62,39 @@ string(REGEX REPLACE ";-L" ";" _sdl2_static_private_libdirs "${_sdl2_static_priv
 if(_sdl2_libraries MATCHES ".*SDL2main.*")
   list(INSERT SDL2_LIBRARIES 0 SDL2::SDL2main)
   list(INSERT SDL2_STATIC_LIBRARIES 0 SDL2::SDL2main)
-  set(_sdl2main_library ${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2main${CMAKE_STATIC_LIBRARY_SUFFIX})
-  if(EXISTS "${_sdl2main_library}")
-    set(SDL2MAIN_LIBRARY SDL2::SDL2main)
-    if(NOT TARGET SDL2::SDL2main)
-      add_library(SDL2::SDL2main STATIC IMPORTED)
-      set_target_properties(SDL2::SDL2main
-        PROPERTIES
-          IMPORTED_LOCATION "${_sdl2main_library}"
-      )
-      if(WIN32)
-        # INTERFACE_LINK_OPTIONS needs CMake 3.13
-        cmake_minimum_required(VERSION 3.13)
-        # Mark WinMain/WinMain@16 as undefined, such that it will be withheld by the linker.
-        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-          set_target_properties(SDL2::SDL2main
-            PROPERTIES
-              INTERFACE_LINK_OPTIONS "-Wl,--undefined=_WinMain@16"
-          )
-        else()
-          set_target_properties(SDL2::SDL2main
-            PROPERTIES
-              INTERFACE_LINK_OPTIONS "-Wl,--undefined=WinMain"
-          )
-        endif()
+endif()
+
+set(_sdl2main_library ${SDL2_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2main${CMAKE_STATIC_LIBRARY_SUFFIX})
+if(EXISTS "${_sdl2main_library}")
+  set(SDL2MAIN_LIBRARY SDL2::SDL2main)
+  if(NOT TARGET SDL2::SDL2main)
+    add_library(SDL2::SDL2main STATIC IMPORTED)
+    set_target_properties(SDL2::SDL2main
+      PROPERTIES
+        IMPORTED_LOCATION "${_sdl2main_library}"
+    )
+    if(WIN32)
+      # INTERFACE_LINK_OPTIONS needs CMake 3.13
+      cmake_minimum_required(VERSION 3.13)
+      # Mark WinMain/WinMain@16 as undefined, such that it will be withheld by the linker.
+      if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set_target_properties(SDL2::SDL2main
+          PROPERTIES
+            INTERFACE_LINK_OPTIONS "-Wl,--undefined=_WinMain@16"
+        )
+      else()
+        set_target_properties(SDL2::SDL2main
+          PROPERTIES
+            INTERFACE_LINK_OPTIONS "-Wl,--undefined=WinMain"
+        )
       endif()
     endif()
-    set(SDL2_SDL2main_FOUND TRUE)
-  else()
-    set(SDL2_SDL2main_FOUND FALSE)
   endif()
-  unset(_sdl2main_library)
+  set(SDL2_SDL2main_FOUND TRUE)
+else()
+  set(SDL2_SDL2main_FOUND FALSE)
 endif()
+unset(_sdl2main_library)
 
 # Remove SDL2 since this is the "central" library
 # Remove SDL2main since this will be provided by SDL2::SDL2main (if available)
