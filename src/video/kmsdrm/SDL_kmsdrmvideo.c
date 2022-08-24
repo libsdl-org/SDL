@@ -629,8 +629,9 @@ KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, SDL_bool enabled)
 static SDL_bool 
 KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
 {
-    uint32_t vrr_prop_id;
+    uint32_t object_prop_id, vrr_prop_id;
     drmModeObjectPropertiesPtr props;
+    SDL_bool object_prop_value;
     int i;
 
     if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) 
@@ -650,11 +651,14 @@ KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
         if (!drm_prop)
             continue;
 
-        if(drm_prop->prop_id == vrr_prop_id) {
-            return props->prop_values[i] ? SDL_TRUE: SDL_FALSE;
-        }
+        object_prop_id = drm_prop->prop_id;
+        object_prop_value = props->prop_values[i] ? SDL_TRUE: SDL_FALSE;
 
         KMSDRM_drmModeFreeProperty(drm_prop);
+
+        if(object_prop_id == vrr_prop_id) {
+            return object_prop_value;
+        }
     }
     return SDL_FALSE;
 }
