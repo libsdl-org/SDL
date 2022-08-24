@@ -40,7 +40,6 @@
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_PS3_PROTOCOL*/
-//#define DEBUG_PS3_PROTOCOL
 
 #define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
@@ -53,7 +52,6 @@ typedef enum
 typedef struct {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
-    SDL_bool is_bluetooth;
     SDL_bool is_shanwan;
     SDL_bool report_sensors;
     SDL_bool effects_updated;
@@ -203,13 +201,11 @@ HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     {
         Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
 
-        if (SendFeatureReport(device->dev, data, sizeof(data)) == sizeof(data)) {
-            ctx->is_bluetooth = SDL_TRUE;
-        }
+        SendFeatureReport(device->dev, data, sizeof(data));
     }
 
     /* Set the controller into report mode over USB */
-    if (!ctx->is_bluetooth) {
+    {
         Uint8 data[USB_PACKET_LENGTH];
         int size;
 
@@ -278,7 +274,7 @@ HIDAPI_DriverPS3_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 static int
 HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
 {
-    Uint8 data[36];
+    Uint8 data[49];
     int report_size, offset;
 
     SDL_zeroa(data);
