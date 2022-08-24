@@ -4118,7 +4118,7 @@ void SDL_GL_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->GL_GetDrawableSize) {
         _this->GL_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 
@@ -4813,7 +4813,7 @@ void SDL_Vulkan_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->Vulkan_GetDrawableSize) {
         _this->Vulkan_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 
@@ -4866,7 +4866,7 @@ void SDL_Metal_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->Metal_GetDrawableSize) {
         _this->Metal_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 
