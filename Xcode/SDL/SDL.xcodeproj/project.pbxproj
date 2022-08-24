@@ -3502,6 +3502,15 @@
 		F386F6FF2884663E001840AA /* SDL_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F386F6E62884663E001840AA /* SDL_utils.c */; };
 		F386F7002884663E001840AA /* SDL_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F386F6E62884663E001840AA /* SDL_utils.c */; };
 		F386F7012884663E001840AA /* SDL_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F386F6E62884663E001840AA /* SDL_utils.c */; };
+		F388C95528B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95628B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95728B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95828B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95928B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95A28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95B28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95C28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F388C95D28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
 		F3928194258603F1003191A7 /* SDL_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4F252BB2BE005D5928 /* SDL_misc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F392819F25860422003191A7 /* SDL_misc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4F252BB2BE005D5928 /* SDL_misc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3942659253579B400B03694 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -4107,6 +4116,7 @@
 		F386F6E42884663E001840AA /* SDL_log_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_log_c.h; sourceTree = "<group>"; };
 		F386F6E52884663E001840AA /* SDL_utils_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_utils_c.h; sourceTree = "<group>"; };
 		F386F6E62884663E001840AA /* SDL_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_utils.c; sourceTree = "<group>"; };
+		F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps3.c; sourceTree = "<group>"; };
 		F3950CD7212BC88D00F51292 /* SDL_sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sensor.h; sourceTree = "<group>"; };
 		F395BF6425633B2400942BFF /* SDL_crc32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_crc32.c; sourceTree = "<group>"; };
 		F395C1912569C68E00942BFF /* SDL_iokitjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_iokitjoystick_c.h; sourceTree = "<group>"; };
@@ -4958,6 +4968,7 @@
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3F07D59269640160074468B /* SDL_hidapi_luna.c */,
+				F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */,
 				A7D8A7C323E2513E00DCD162 /* SDL_hidapi_ps4.c */,
 				F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */,
 				A75FDBC423EA380300529352 /* SDL_hidapi_rumble.c */,
@@ -7697,6 +7708,7 @@
 				A75FCE2B23E25AB700529352 /* SDL_power.c in Sources */,
 				A75FCE2C23E25AB700529352 /* SDL_cocoakeyboard.m in Sources */,
 				A75FCE2D23E25AB700529352 /* SDL_dynapi.c in Sources */,
+				F388C95C28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A75FCE2E23E25AB700529352 /* SDL_shaders_gl.c in Sources */,
 				560572152473688300B46B66 /* SDL_locale.c in Sources */,
 				A75FCE2F23E25AB700529352 /* e_log.c in Sources */,
@@ -7891,6 +7903,7 @@
 				A75FCFE423E25AC700529352 /* SDL_power.c in Sources */,
 				A75FCFE523E25AC700529352 /* SDL_cocoakeyboard.m in Sources */,
 				A75FCFE623E25AC700529352 /* SDL_dynapi.c in Sources */,
+				F388C95D28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A75FCFE723E25AC700529352 /* SDL_shaders_gl.c in Sources */,
 				560572162473688400B46B66 /* SDL_locale.c in Sources */,
 				A75FCFE823E25AC700529352 /* e_log.c in Sources */,
@@ -8159,6 +8172,7 @@
 				F3820718284F3609004DD584 /* controller_type.c in Sources */,
 				A769B20623E259AE00872273 /* SDL_clipboardevents.c in Sources */,
 				A769B20823E259AE00872273 /* k_cos.c in Sources */,
+				F388C95A28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A769B20923E259AE00872273 /* SDL_hidapijoystick.c in Sources */,
 				A769B20A23E259AE00872273 /* SDL_malloc.c in Sources */,
 				A769B20B23E259AE00872273 /* SDL_audio.c in Sources */,
@@ -8280,6 +8294,7 @@
 				A7D8BA8623E2514400DCD162 /* SDL_shaders_gl.c in Sources */,
 				A7D8BAF223E2514500DCD162 /* e_log.c in Sources */,
 				A7D8AED123E2514100DCD162 /* SDL_cocoamessagebox.m in Sources */,
+				F388C95628B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A7D8BA2C23E2514400DCD162 /* SDL_blendfillrect.c in Sources */,
 				A7D8ACDC23E2514100DCD162 /* SDL_uikitvideo.m in Sources */,
 				A7D8AEE323E2514100DCD162 /* SDL_cocoashape.m in Sources */,
@@ -8474,6 +8489,7 @@
 				A7D8BA8723E2514400DCD162 /* SDL_shaders_gl.c in Sources */,
 				A7D8BAF323E2514500DCD162 /* e_log.c in Sources */,
 				A7D8AED223E2514100DCD162 /* SDL_cocoamessagebox.m in Sources */,
+				F388C95728B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A7D8BA2D23E2514400DCD162 /* SDL_blendfillrect.c in Sources */,
 				A7D8ACDD23E2514100DCD162 /* SDL_uikitvideo.m in Sources */,
 				A7D8AEE423E2514100DCD162 /* SDL_cocoashape.m in Sources */,
@@ -8742,6 +8758,7 @@
 				F3820717284F3609004DD584 /* controller_type.c in Sources */,
 				A7D8BB7923E2514500DCD162 /* SDL_clipboardevents.c in Sources */,
 				A7D8BAB923E2514400DCD162 /* k_cos.c in Sources */,
+				F388C95928B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A7D8B54923E2514300DCD162 /* SDL_hidapijoystick.c in Sources */,
 				A7D8B97823E2514400DCD162 /* SDL_malloc.c in Sources */,
 				A7D8B8CA23E2514400DCD162 /* SDL_audio.c in Sources */,
@@ -8967,6 +8984,7 @@
 				A7D8BAA923E2514400DCD162 /* k_sin.c in Sources */,
 				A7D8AB4923E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8BA2523E2514400DCD162 /* SDL_drawpoint.c in Sources */,
+				F388C95528B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A7D8BAF723E2514500DCD162 /* e_sqrt.c in Sources */,
 				A7D8AEAC23E2514100DCD162 /* SDL_cocoavideo.m in Sources */,
 				A7D8A94B23E2514000DCD162 /* SDL.c in Sources */,
@@ -9159,6 +9177,7 @@
 				A7D8BAAC23E2514400DCD162 /* k_sin.c in Sources */,
 				A7D8AB4C23E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8BA2823E2514400DCD162 /* SDL_drawpoint.c in Sources */,
+				F388C95828B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A7D8BAFA23E2514500DCD162 /* e_sqrt.c in Sources */,
 				A7D8AEAF23E2514100DCD162 /* SDL_cocoavideo.m in Sources */,
 				A7D8A94E23E2514000DCD162 /* SDL.c in Sources */,
@@ -9351,6 +9370,7 @@
 				A7D8BAAE23E2514400DCD162 /* k_sin.c in Sources */,
 				A7D8AB4E23E2514100DCD162 /* SDL_systimer.c in Sources */,
 				A7D8BA2A23E2514400DCD162 /* SDL_drawpoint.c in Sources */,
+				F388C95B28B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */,
 				A7D8BAFC23E2514500DCD162 /* e_sqrt.c in Sources */,
 				A7D8AEB123E2514100DCD162 /* SDL_cocoavideo.m in Sources */,
 				A7D8A95023E2514000DCD162 /* SDL.c in Sources */,
