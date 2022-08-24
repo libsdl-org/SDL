@@ -28,8 +28,16 @@
  */
 
 #include "../../SDL_internal.h"
-#include "SDL_thread.h"
+#include "../../thread/SDL_systhread.h"
 #include "SDL_mutex.h"
+#include "SDL_thread.h"
+
+#define realloc	SDL_realloc
+#define snprintf SDL_snprintf
+#define strdup  SDL_strdup
+#define strncpy SDL_strlcpy
+#define tolower SDL_tolower
+#define wcsncpy SDL_wcslcpy
 
 #ifndef HAVE_WCSDUP
 #ifdef HAVE__WCSDUP
@@ -51,7 +59,10 @@ static wchar_t *_dupwcs(const wchar_t *src)
 #endif /* HAVE_WCSDUP */
 
 #include <libusb.h>
+#ifndef _WIN32
+#define HAVE_SETLOCALE
 #include <locale.h> /* setlocale */
+#endif
 
 #include "../hidapi/hidapi.h"
 
@@ -599,16 +610,18 @@ static char *make_path(libusb_device *dev, int interface_number)
 int HID_API_EXPORT hid_init(void)
 {
 	if (!usb_context) {
-		const char *locale;
-
 		/* Init Libusb */
 		if (libusb_init(&usb_context))
 			return -1;
 
+#ifdef HAVE_SETLOCALE
 		/* Set the locale if it's not set. */
-		locale = setlocale(LC_CTYPE, NULL);
-		if (!locale)
-			setlocale(LC_CTYPE, "");
+		{
+			const char *locale = setlocale(LC_CTYPE, NULL);
+			if (!locale)
+				setlocale(LC_CTYPE, "");
+		}
+#endif
 	}
 
 	return 0;
@@ -1288,7 +1301,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 						calculate_device_quirks(dev, desc.idVendor, desc.idProduct);
 
-						dev->thread = SDL_CreateThread(read_thread, NULL, dev);
+						dev->thread = SDL_CreateThreadInternal(read_thread, "libusb", 0, dev);
 
 						/* Wait here for the read thread to be initialized. */
 						SDL_WaitThreadBarrier(&dev->barrier);
@@ -1767,13 +1780,15 @@ static struct lang_map_entry lang_map[] = {
 
 uint16_t get_usb_code_for_current_locale(void)
 {
-	char *locale;
+	char *locale = NULL;
 	char search_string[64];
 	char *ptr;
 	struct lang_map_entry *lang;
 
 	/* Get the current locale. */
+#ifdef HAVE_SETLOCALE
 	locale = setlocale(0, NULL);
+#endif
 	if (!locale)
 		return 0x0;
 
