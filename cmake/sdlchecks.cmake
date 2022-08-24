@@ -416,42 +416,14 @@ endmacro()
 # - SDL_X11_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckX11)
-  if(SDL_X11)
-    foreach(_LIB X11 Xext Xcursor Xi Xfixes Xrandr Xrender Xss)
-        FindLibraryAndSONAME("${_LIB}")
-    endforeach()
+  find_package(X11SDL)
+  if(X11SDL_FOUND)
+    if(TARGET X11SDL::X11)
 
-    set(X11_dirs)
-    find_path(X_INCLUDEDIR
-      NAMES X11/Xlib.h
-      PATHS
-        /usr/pkg/xorg/include
-        /usr/X11R6/include
-        /usr/X11R7/include
-        /usr/local/include/X11
-        /usr/include/X11
-        /usr/openwin/include
-        /usr/openwin/share/include
-        /opt/graphics/OpenGL/include
-        /opt/X11/include
-    )
+      list(APPEND SDL_PKGCONFIG_INCLUDES_PUBLIC "-I${X11SDL_INCLUDE_PATH}")
+      list(APPEND SDL_LINK_LIBRARIES_PUBLIC X11SDL::X11::Headers)
 
-    if(X_INCLUDEDIR)
-      list(APPEND EXTRA_CFLAGS "-I${X_INCLUDEDIR}")
-    endif()
-
-    find_file(HAVE_XCURSOR_H NAMES "X11/Xcursor/Xcursor.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XINPUT2_H NAMES "X11/extensions/XInput2.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XRANDR_H NAMES "X11/extensions/Xrandr.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XFIXES_H_ NAMES "X11/extensions/Xfixes.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XRENDER_H NAMES "X11/extensions/Xrender.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XSS_H NAMES "X11/extensions/scrnsaver.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XSHAPE_H NAMES "X11/extensions/shape.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XDBE_H NAMES "X11/extensions/Xdbe.h" HINTS "${X_INCLUDEDIR}")
-    find_file(HAVE_XEXT_H NAMES "X11/extensions/Xext.h" HINTS "${X_INCLUDEDIR}")
-
-    if(X11_LIB)
-      if(NOT HAVE_XEXT_H)
+      if(NOT TARGET X11SDL::XEXT::Headers)
         message_error("Missing Xext.h, maybe you need to install the libxext-dev package?")
       endif()
 
@@ -485,25 +457,26 @@ macro(CheckX11)
         else()
           set(HAVE_X11_SHARED TRUE)
         endif()
-        if(X11_LIB)
+        if(TARGET X11SDL::X11)
           if(HAVE_X11_SHARED)
-            set(SDL_VIDEO_DRIVER_X11_DYNAMIC "\"${X11_LIB_SONAME}\"")
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC "\"$<TARGET_SONAME_FILE_NAME:X11SDL::X11>\"")
           else()
-            list(APPEND EXTRA_LIBS ${X11_LIB})
+            list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::X11)
           endif()
         endif()
-        if(XEXT_LIB)
+        if(TARGET X11SDL::XEXT)
           if(HAVE_X11_SHARED)
-            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "\"${XEXT_LIB_SONAME}\"")
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "\"$<TARGET_SONAME_FILE_NAME:X11SDL::XEXT>\"")
           else()
-            list(APPEND EXTRA_LIBS ${XEXT_LIB_SONAME})
+            list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::XEXT)
           endif()
         endif()
       else()
-          list(APPEND EXTRA_LIBS ${X11_LIB} ${XEXT_LIB})
+        list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::X11 X11SDL::XEXT)
+        list(APPEND SDL_PKGCONFIG_MODULESPECS_PRIVATE x11 xext)
       endif()
 
-      set(CMAKE_REQUIRED_LIBRARIES ${X11_LIB} ${X11_LIB})
+      set(CMAKE_REQUIRED_LIBRARIES X11SDL::X11)
 
       check_c_source_compiles("
           #include <X11/Xlib.h>
@@ -521,27 +494,29 @@ macro(CheckX11)
 
       check_symbol_exists(XkbKeycodeToKeysym "X11/Xlib.h;X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM)
 
-      if(SDL_X11_XCURSOR AND HAVE_XCURSOR_H AND XCURSOR_LIB)
+      if(SDL_X11_XCURSOR AND TARGET X11SDL::XCURSOR)
         set(HAVE_X11_XCURSOR TRUE)
         if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR "\"${XCURSOR_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR "\"$<TARGET_SONAME_FILE_NAME:X11SDL::XCURSOR>\"")
         else()
-          list(APPEND EXTRA_LIBS ${XCURSOR_LIB})
+          list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::XCURSOR)
+          list(APPEND SDL_PKGCONFIG_MODULESPECS_PRIVATE xcursor)
         endif()
         set(SDL_VIDEO_DRIVER_X11_XCURSOR 1)
       endif()
 
-      if(SDL_X11_XDBE AND HAVE_XDBE_H)
+      if(SDL_X11_XDBE AND TARGET X11SDL::XDBE::Headers)
         set(HAVE_X11_XDBE TRUE)
         set(SDL_VIDEO_DRIVER_X11_XDBE 1)
       endif()
 
-      if(SDL_X11_XINPUT AND HAVE_XINPUT2_H AND XI_LIB)
+      if(SDL_X11_XINPUT AND TARGET X11SDL::XINPUT)
         set(HAVE_X11_XINPUT TRUE)
         if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "\"${XI_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "\"$<TARGET_SONAME_FILE_NAME:X11SDL::XINPUT>\"")
         else()
-          list(APPEND EXTRA_LIBS ${XI_LIB})
+          list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::XINPUT)
+          list(APPEND SDL_PKGCONFIG_MODULESPECS_PRIVATE xi)
         endif()
         set(SDL_VIDEO_DRIVER_X11_XINPUT2 1)
 
@@ -562,7 +537,7 @@ macro(CheckX11)
       endif()
 
       # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer
-      if(SDL_X11_XFIXES AND HAVE_XFIXES_H_ AND HAVE_XINPUT2_H)
+      if(SDL_X11_XFIXES AND TARGET X11SDL::XFIXES::Headers AND TARGET X11SDL::XINPUT::Headers)
         check_c_source_compiles("
             #include <X11/Xlib.h>
             #include <X11/Xproto.h>
@@ -571,37 +546,40 @@ macro(CheckX11)
             BarrierEventID b;
             int main(int argc, char **argv) { return 0; }" HAVE_XFIXES_H)
       endif()
-      if(SDL_X11_XFIXES AND HAVE_XFIXES_H AND HAVE_XINPUT2_H AND XFIXES_LIB)
+      if(SDL_X11_XFIXES AND HAVE_XFIXES_H AND TARGET X11SDL::XFIXES AND TARGET X11SDL::XINPUT::Headers)
         if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "\"${XFIXES_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "\"$<TARGET_SONAME_FILE_NAME:X11SDL::XFIXES>\"")
         else()
-          list(APPEND EXTRA_LIBS ${XFIXES_LIB})
+          list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::XFIXES)
+          list(APPEND SDL_PKGCONFIG_MODULESPECS_PRIVATE xfixes)
         endif()
         set(SDL_VIDEO_DRIVER_X11_XFIXES 1)
         set(HAVE_X11_XFIXES TRUE)
       endif()
 
-      if(SDL_X11_XRANDR AND HAVE_XRANDR_H AND XRANDR_LIB)
+      if(SDL_X11_XRANDR AND TARGET X11SDL::XRANDR)
         if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR "\"${XRANDR_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR "\"$<TARGET_SONAME_FILE_NAME:X11SDL::XRANDR>\"")
         else()
-          list(APPEND EXTRA_LIBS ${XRANDR_LIB})
+          list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::XRANDR)
+          list(APPEND SDL_PKGCONFIG_MODULESPECS_PRIVATE xrandr)
         endif()
         set(SDL_VIDEO_DRIVER_X11_XRANDR 1)
         set(HAVE_X11_XRANDR TRUE)
       endif()
 
-      if(SDL_X11_XSCRNSAVER AND HAVE_XSS_H AND XSS_LIB)
+      if(SDL_X11_XSCRNSAVER AND TARGET X11SDL::XSS)
         if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS "\"${XSS_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS "\"$<TARGET_SONAME_FILE_NAME:X11SDL::XSS>\"")
         else()
-          list(APPEND EXTRA_LIBS ${XSS_LIB})
+          list(APPEND SDL_LINK_LIBRARIES_PRIVATE X11SDL::XSS)
+          list(APPEND SDL_PKGCONFIG_MODULESPECS_PRIVATE xscrnsaver)
         endif()
         set(SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1)
         set(HAVE_X11_XSCRNSAVER TRUE)
       endif()
 
-      if(SDL_X11_XSHAPE AND HAVE_XSHAPE_H)
+      if(SDL_X11_XSHAPE AND TARGET X11SDL::XSHAPE::Headers)
         set(SDL_VIDEO_DRIVER_X11_XSHAPE 1)
         set(HAVE_X11_XSHAPE TRUE)
       endif()

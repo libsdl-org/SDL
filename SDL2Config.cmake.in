@@ -52,6 +52,12 @@ endif()
 unset(_sdl_sndio)
 unset(_sdl_sndio_shared)
 
+set(_sdl_x11 @HAVE_X11@)
+if(_sdl_x11)
+  find_dependency(X11SDL)
+endif()
+unset(_sdl_x11)
+
 set(CMAKE_MODULE_PATH ${_sdl_cmake_module_path})
 
 # Create SDL2::SDL2 alias for static-only builds
