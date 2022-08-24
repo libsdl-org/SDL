@@ -38,10 +38,10 @@ static void prepare_IOP()
     SifInitRpc(0);
     sbv_patch_enable_lmb();
     sbv_patch_disable_prefix_check();
+    sbv_patch_fileio();
 }
 
 static void init_drivers() {
-    init_fileXio_driver();
     init_memcard_driver(true);
     init_usb_driver(true);
 }
@@ -49,7 +49,6 @@ static void init_drivers() {
 static void deinit_drivers() {
     deinit_usb_driver(true);
     deinit_memcard_driver(true);
-    deinit_fileXio_driver();
 }
 
 static void waitUntilDeviceIsReady(char *path)
