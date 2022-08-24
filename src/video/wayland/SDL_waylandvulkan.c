@@ -132,11 +132,6 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
             extensionsForWayland);
 }
 
-void Wayland_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-{
-    SDL_GetWindowSizeInPixels(window, w, h);
-}
-
 SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,

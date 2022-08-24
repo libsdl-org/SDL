@@ -198,12 +198,6 @@ Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 }
 
 void
-Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
-{
-    SDL_GetWindowSizeInPixels(window, w, h);
-}
-
-void
 Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);

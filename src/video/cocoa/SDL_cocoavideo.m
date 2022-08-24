@@ -134,7 +134,6 @@ Cocoa_CreateDevice(void)
     device->GL_UnloadLibrary = Cocoa_GL_UnloadLibrary;
     device->GL_CreateContext = Cocoa_GL_CreateContext;
     device->GL_MakeCurrent = Cocoa_GL_MakeCurrent;
-    device->GL_GetDrawableSize = Cocoa_GL_GetDrawableSize;
     device->GL_SetSwapInterval = Cocoa_GL_SetSwapInterval;
     device->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
     device->GL_SwapWindow = Cocoa_GL_SwapWindow;

@@ -96,12 +96,6 @@ Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window)
     return ret;
 }
 
-void
-Emscripten_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
-{
-    SDL_GetWindowSizeInPixels(window, w, h);
-}
-
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN && SDL_VIDEO_OPENGL_EGL */
 
 /* vi: set ts=4 sw=4 expandtab: */

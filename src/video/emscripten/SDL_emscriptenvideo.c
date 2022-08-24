@@ -120,7 +120,6 @@ Emscripten_CreateDevice(void)
     device->GL_GetSwapInterval = Emscripten_GLES_GetSwapInterval;
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DeleteContext = Emscripten_GLES_DeleteContext;
-    device->GL_GetDrawableSize = Emscripten_GLES_GetDrawableSize;
 #endif
 
     device->free = Emscripten_DeleteDevice;

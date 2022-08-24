@@ -385,13 +385,6 @@ Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     return 0;
 }}
 
-void
-Cocoa_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
-{ @autoreleasepool
-{
-    SDL_GetWindowSizeInPixels(window, w, h);
-}}
-
 int
 Cocoa_GL_SetSwapInterval(_THIS, int interval)
 { @autoreleasepool
