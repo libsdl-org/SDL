@@ -52,6 +52,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_SHIELD
     &SDL_HIDAPI_DriverShield,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_PS3
+    &SDL_HIDAPI_DriverPS3,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_PS4
     &SDL_HIDAPI_DriverPS4,
 #endif
