@@ -675,10 +675,8 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
 
     /* Now check for match with no CRC */
     SDL_memcpy(&zero_crc_guid, &guid, sizeof(guid));
+    zero_crc_guid.data[2] = 0;
     zero_crc_guid.data[3] = 0;
-    zero_crc_guid.data[4] = 0;
-    zero_crc_guid.data[5] = 0;
-    zero_crc_guid.data[6] = 0;
     for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
         if (SDL_memcmp(&zero_crc_guid, &mapping->guid, sizeof(guid)) == 0) {
             return mapping;
