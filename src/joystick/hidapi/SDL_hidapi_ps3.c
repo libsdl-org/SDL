@@ -79,12 +79,15 @@ HIDAPI_DriverPS3_UnregisterHints(SDL_HintCallback callback, void *userdata)
 static SDL_bool
 HIDAPI_DriverPS3_IsEnabled(void)
 {
-#if 1 /* This is not enabled by default, it needs much more testing */
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
-#else
+#ifdef __MACOSX__
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
                SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
                    SDL_HIDAPI_DEFAULT));
+#else
+    /* Linux already has good PS3 drivers and controller initialization fails on Windows,
+     * so don't bother using this driver on other platforms.
+     */
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
 #endif
 }
 
