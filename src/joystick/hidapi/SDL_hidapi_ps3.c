@@ -318,6 +318,8 @@ HIDAPI_DriverPS3_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joysti
 static float
 HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 {
+    /* Accelerometer values are in big endian order */
+    value = SDL_SwapBE16(value);
     return (float)(value - 511) / 113.0f;
 }
 
