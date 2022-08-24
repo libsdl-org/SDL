@@ -32,11 +32,29 @@
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
 
+#ifdef realloc
+#undef realloc
+#endif
 #define realloc	SDL_realloc
+#ifdef snprintf
+#undef snprintf
+#endif
 #define snprintf SDL_snprintf
+#ifdef strdup
+#undef strdup
+#endif
 #define strdup  SDL_strdup
+#ifdef strncpy
+#undef strncpy
+#endif
 #define strncpy SDL_strlcpy
+#ifdef tolower
+#undef tolower
+#endif
 #define tolower SDL_tolower
+#ifdef wcsncpy
+#undef wcsncpy
+#endif
 #define wcsncpy SDL_wcslcpy
 
 #ifndef HAVE_WCSDUP
