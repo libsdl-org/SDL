@@ -79,14 +79,26 @@ HIDAPI_DriverPS3_UnregisterHints(SDL_HintCallback callback, void *userdata)
 static SDL_bool
 HIDAPI_DriverPS3_IsEnabled(void)
 {
-#ifdef __MACOSX__
+#if defined(__MACOSX__)
+    /* This works well on macOS */
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
                SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
                    SDL_HIDAPI_DEFAULT));
-#else
-    /* Linux already has good PS3 drivers and controller initialization fails on Windows,
-     * so don't bother using this driver on other platforms.
+#elif defined(__WINDOWS__)
+    /* You can't initialize the controller with the stock Windows drivers
+     * See https://github.com/ViGEm/DsHidMini as an alternative driver
      */
+    return SDL_FALSE;
+#elif defined(__LINUX__)
+    /* Linux drivers do a better job of managing the transition between
+     * USB and Bluetooth. There are also some quirks in communicating
+     * with PS3 controllers that have been implemented in SDL's hidapi
+     * for libusb, but are not possible to support using hidraw if the
+     * kernel doesn't already know about them.
+     */
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
+#else
+    /* Untested, default off */
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
 #endif
 }
