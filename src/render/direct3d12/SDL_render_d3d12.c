@@ -513,7 +513,7 @@ D3D12_DestroyRenderer(SDL_Renderer * renderer)
 static int
 D3D12_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 {
-    WIN_GetDrawableSize(renderer->window, w, h);
+    SDL_GetWindowSizeInPixels(renderer->window, w, h);
     return 0;
 }
 
@@ -1267,7 +1267,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
-    WIN_GetDrawableSize(renderer->window, &w, &h);
+    SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
     data->rotation = D3D12_GetCurrentRotation();
     if (D3D12_IsDisplayRotated90Degrees(data->rotation)) {
         int tmp = w;

@@ -71,7 +71,6 @@ extern int WIN_GL_SetupWindow(_THIS, SDL_Window * window);
 extern SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window * window);
 extern int WIN_GL_MakeCurrent(_THIS, SDL_Window * window,
                               SDL_GLContext context);
-extern void WIN_GL_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 extern int WIN_GL_SetSwapInterval(_THIS, int interval);
 extern int WIN_GL_GetSwapInterval(_THIS);
 extern int WIN_GL_SwapWindow(_THIS, SDL_Window * window);

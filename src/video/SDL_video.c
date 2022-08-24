@@ -2367,6 +2367,28 @@ SDL_GetWindowBordersSize(SDL_Window * window, int *top, int *left, int *bottom, 
 }
 
 void
+SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
+{
+    int filter;
+
+    CHECK_WINDOW_MAGIC(window,);
+
+    if (w == NULL) {
+        w = &filter;
+    }
+
+    if (h == NULL) {
+        h = &filter;
+    }
+
+    if (_this->GetWindowSizeInPixels) {
+        _this->GetWindowSizeInPixels(_this, window, w, h);
+    } else {
+        SDL_GetWindowSize(window, w, h);
+    }
+}
+
+void
 SDL_SetWindowMinimumSize(SDL_Window * window, int min_w, int min_h)
 {
     CHECK_WINDOW_MAGIC(window,);
@@ -4096,7 +4118,7 @@ void SDL_GL_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->GL_GetDrawableSize) {
         _this->GL_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 
@@ -4791,7 +4813,7 @@ void SDL_Vulkan_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->Vulkan_GetDrawableSize) {
         _this->Vulkan_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 
@@ -4844,7 +4866,7 @@ void SDL_Metal_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->Metal_GetDrawableSize) {
         _this->Metal_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 

@@ -40,7 +40,6 @@ extern int Emscripten_GLES_LoadLibrary(_THIS, const char *path);
 extern SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window * window);
 extern int Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
-extern void Emscripten_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h);
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN && SDL_VIDEO_OPENGL_EGL */
 

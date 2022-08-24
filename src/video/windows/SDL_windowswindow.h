@@ -81,6 +81,7 @@ extern void WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 extern void WIN_SetWindowPosition(_THIS, SDL_Window * window);
 extern void WIN_SetWindowSize(_THIS, SDL_Window * window);
 extern int WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right);
+extern void WIN_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *width, int *height);
 extern int WIN_SetWindowOpacity(_THIS, SDL_Window * window, float opacity);
 extern void WIN_ShowWindow(_THIS, SDL_Window * window);
 extern void WIN_HideWindow(_THIS, SDL_Window * window);
@@ -105,7 +106,6 @@ extern SDL_bool WIN_GetWindowWMInfo(_THIS, SDL_Window * window,
 extern void WIN_OnWindowEnter(_THIS, SDL_Window * window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
 extern int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
-extern void WIN_GetDrawableSize(const SDL_Window *window, int *w, int *h);
 extern void WIN_ClientPointToSDL(const SDL_Window *window, int *w, int *h);
 extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *w, int *h);
 extern void WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept);

@@ -127,6 +127,7 @@ extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMinimumSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMaximumSize(_THIS, SDL_Window * window);
+extern void Wayland_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h);
 extern int Wayland_SetWindowModalFor(_THIS, SDL_Window * modal_window, SDL_Window * parent_window);
 extern void Wayland_SetWindowTitle(_THIS, SDL_Window * window);
 extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);

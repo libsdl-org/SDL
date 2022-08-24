@@ -916,7 +916,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 #if defined(__WINRT__)
     SDL_GetWindowSize(renderer->window, &w, &h);
 #else
-    WIN_GetDrawableSize(renderer->window, &w, &h);
+    SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
 #endif
     data->rotation = D3D11_GetCurrentRotation();
     /* SDL_Log("%s: windowSize={%d,%d}, orientation=%d\n", __FUNCTION__, w, h, (int)data->rotation); */
@@ -1062,7 +1062,7 @@ D3D11_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 static int
 D3D11_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
-    WIN_GetDrawableSize(renderer->window, w, h);
+    SDL_GetWindowSizeInPixels(renderer->window, w, h);
     return 0;
 }
 #endif
