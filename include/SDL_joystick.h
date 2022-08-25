@@ -425,7 +425,9 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
  * the following: SDL_PollEvent, SDL_PumpEvents, SDL_WaitEventTimeout,
  * SDL_WaitEvent.
  *
- * Note that when sending trigger axes, you should scale the value to the full range of Sint16. For example, a trigger at rest would have the value of `SDL_JOYSTICK_AXIS_MIN`.
+ * Note that when sending trigger axes, you should scale the value to the full
+ * range of Sint16. For example, a trigger at rest would have the value of
+ * `SDL_JOYSTICK_AXIS_MIN`.
  *
  * \param joystick the virtual joystick on which to set state.
  * \param axis the specific axis on the virtual joystick to set.
