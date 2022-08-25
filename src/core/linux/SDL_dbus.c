@@ -287,6 +287,32 @@ SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *node, const ch
     return retval;
 }
 
+static SDL_bool
+SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage *msg, const int expectedtype, void *result)
+{
+    SDL_bool retval = SDL_FALSE;
+
+    DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
+    if (reply) {
+        DBusMessageIter iter, actual_iter;
+        dbus.message_iter_init(reply, &iter);
+        if (dbus.message_iter_get_arg_type(&iter) == DBUS_TYPE_VARIANT) {
+            dbus.message_iter_recurse(&iter, &actual_iter);
+        } else {
+            actual_iter = iter;
+        }
+
+        if (dbus.message_iter_get_arg_type(&actual_iter) == expectedtype) {
+            dbus.message_iter_get_basic(&actual_iter, result);
+            retval = SDL_TRUE;
+        }
+
+        dbus.message_unref(reply);
+    }
+
+    return retval;
+}
+
 SDL_bool
 SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
 {
@@ -318,19 +344,7 @@ SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const
         DBusMessage *msg = dbus.message_new_method_call(node, path, "org.freedesktop.DBus.Properties", "Get");
         if (msg) {
             if (dbus.message_append_args(msg, DBUS_TYPE_STRING, &interface, DBUS_TYPE_STRING, &property, DBUS_TYPE_INVALID)) {
-                DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
-                if (reply) {
-                    DBusMessageIter iter, sub;
-                    dbus.message_iter_init(reply, &iter);
-                    if (dbus.message_iter_get_arg_type(&iter) == DBUS_TYPE_VARIANT) {
-                        dbus.message_iter_recurse(&iter, &sub);
-                        if (dbus.message_iter_get_arg_type(&sub) == expectedtype) {
-                            dbus.message_iter_get_basic(&sub, result);
-                            retval = SDL_TRUE;
-                        }
-                    }
-                    dbus.message_unref(reply);
-                }
+                retval = SDL_DBus_CallWithBasicReply(conn, msg, expectedtype, result);
             }
             dbus.message_unref(msg);
         }
