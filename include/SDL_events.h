@@ -143,7 +143,7 @@ typedef enum
     SDL_MULTIGESTURE,
 
     /* Clipboard events */
-    SDL_CLIPBOARDUPDATE = 0x900, /**< The clipboard changed */
+    SDL_CLIPBOARDUPDATE = 0x900, /**< The clipboard or primary selection changed */
 
     /* Drag and drop events */
     SDL_DROPFILE        = 0x1000, /**< The system requests a file open */

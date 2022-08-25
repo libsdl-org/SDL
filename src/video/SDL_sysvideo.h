@@ -328,6 +328,9 @@ struct SDL_VideoDevice
     int (*SetClipboardText) (_THIS, const char *text);
     char * (*GetClipboardText) (_THIS);
     SDL_bool (*HasClipboardText) (_THIS);
+    int (*SetPrimarySelectionText) (_THIS, const char *text);
+    char * (*GetPrimarySelectionText) (_THIS);
+    SDL_bool (*HasPrimarySelectionText) (_THIS);
 
     /* MessageBox */
     int (*ShowMessageBox) (_THIS, const SDL_MessageBoxData *messageboxdata, int *buttonid);
@@ -353,6 +356,7 @@ struct SDL_VideoDevice
     Uint8 window_magic;
     Uint32 next_object_id;
     char *clipboard_text;
+    char *primary_selection_text;
     SDL_bool setting_display_mode;
     Uint32 quirk_flags;
 
@@ -422,11 +426,11 @@ struct SDL_VideoDevice
     /* Data private to this driver */
     void *driverdata;
     struct SDL_GLDriverData *gl_data;
-    
+
 #if SDL_VIDEO_OPENGL_EGL
     struct SDL_EGL_VideoData *egl_data;
 #endif
-    
+
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
     struct SDL_PrivateGLESData *gles_data;
 #endif
