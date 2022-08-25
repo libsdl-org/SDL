@@ -3331,6 +3331,7 @@ if(NOT SDL2_DISABLE_INSTALL)
       cmake/FindALSASDL.cmake
       cmake/FindDirectFBSDL.cmake
       cmake/FindJackSDL.cmake
+      cmake/FindOpenSoundSystemSDL.cmake
       cmake/FindSndIOSDL.cmake
       cmake/FindX11SDL.cmake
     DESTINATION ${PKG_PREFIX}
