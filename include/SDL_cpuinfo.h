@@ -90,6 +90,7 @@ _m_prefetch(void *__P)
 #      include <arm64intr.h>
 #      include <arm64_neon.h>
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
+#      define __ARM_ARCH 8
 #    endif
 #  endif
 #endif
