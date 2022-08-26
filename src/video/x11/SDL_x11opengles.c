@@ -104,6 +104,13 @@ X11_GLES_CreateContext(_THIS, SDL_Window * window)
     return context;
 }
 
+SDL_EGLSurface
+X11_GLES_GetEGLSurface(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    return data->egl_surface;
+}
+
 SDL_EGL_SwapWindow_impl(X11)
 SDL_EGL_MakeCurrent_impl(X11)
 

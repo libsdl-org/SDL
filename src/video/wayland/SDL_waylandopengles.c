@@ -40,7 +40,7 @@ Wayland_GLES_LoadLibrary(_THIS, const char *path) {
     int ret;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
-    ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
+    ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, _this->gl_config.egl_platform);
 
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);
@@ -202,6 +202,14 @@ Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
     WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+}
+
+EGLSurface
+Wayland_GLES_GetEGLSurface(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
+
+    return windowdata->egl_surface;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */

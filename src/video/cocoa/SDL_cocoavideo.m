@@ -139,6 +139,7 @@ Cocoa_CreateDevice(void)
     device->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
     device->GL_SwapWindow = Cocoa_GL_SwapWindow;
     device->GL_DeleteContext = Cocoa_GL_DeleteContext;
+    device->GL_GetEGLSurface = NULL;
 #endif
 #if SDL_VIDEO_OPENGL_EGL
 #if SDL_VIDEO_OPENGL_CGL
@@ -153,6 +154,7 @@ Cocoa_CreateDevice(void)
         device->GL_GetSwapInterval = Cocoa_GLES_GetSwapInterval;
         device->GL_SwapWindow = Cocoa_GLES_SwapWindow;
         device->GL_DeleteContext = Cocoa_GLES_DeleteContext;
+        device->GL_GetEGLSurface = Cocoa_GLES_GetEGLSurface;
 #if SDL_VIDEO_OPENGL_CGL
     }
 #endif

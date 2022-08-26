@@ -28,7 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
-#define OFFSCREEN_GLES_GetProcAddress  SDL_EGL_GetProcAddress
+#define OFFSCREEN_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define OFFSCREEN_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define OFFSCREEN_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define OFFSCREEN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval

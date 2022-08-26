@@ -44,6 +44,7 @@ Cocoa_GLES_LoadLibrary(_THIS, const char *path)
         _this->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
         _this->GL_SwapWindow = Cocoa_GL_SwapWindow;
         _this->GL_DeleteContext = Cocoa_GL_DeleteContext;
+        _this->GL_GetEGLSurface = NULL;
         return Cocoa_GL_LoadLibrary(_this, path);
 #else
         return SDL_SetError("SDL not configured with OpenGL/CGL support");
@@ -77,6 +78,7 @@ Cocoa_GLES_CreateContext(_THIS, SDL_Window * window)
         _this->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
         _this->GL_SwapWindow = Cocoa_GL_SwapWindow;
         _this->GL_DeleteContext = Cocoa_GL_DeleteContext;
+        _this->GL_GetEGLSurface = NULL;
 
         if (Cocoa_GL_LoadLibrary(_this, NULL) != 0) {
             return NULL;
@@ -144,6 +146,13 @@ Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
 
     return Cocoa_GLES_MakeCurrent(_this, current_win, current_ctx);
 }
+
+SDL_EGLSurface
+Cocoa_GLES_GetEGLSurface(_THIS, SDL_Window * window)
+{ @autoreleasepool
+{
+    return ((__bridge SDL_WindowData *) window->driverdata).egl_surface;
+}}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && SDL_VIDEO_OPENGL_EGL */
 

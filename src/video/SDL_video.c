@@ -25,6 +25,7 @@
 #include "SDL.h"
 #include "SDL_video.h"
 #include "SDL_sysvideo.h"
+#include "SDL_egl_c.h"
 #include "SDL_blit.h"
 #include "SDL_pixels_c.h"
 #include "SDL_rect_c.h"
@@ -3480,6 +3481,31 @@ SDL_GL_GetProcAddress(const char *proc)
     return func;
 }
 
+void *
+SDL_EGL_GetProcAddress(const char *proc)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    void *func;
+
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+    func = NULL;
+
+    if (_this->egl_data) {
+        func = SDL_EGL_GetProcAddressInternal(_this, proc);
+    } else {
+        SDL_SetError("No EGL library has been loaded");
+    }
+
+    return func;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
+}
+
 void
 SDL_GL_UnloadLibrary(void)
 {
@@ -4150,6 +4176,66 @@ SDL_GL_GetCurrentContext(void)
         return NULL;
     }
     return (SDL_GLContext)SDL_TLSGet(_this->current_glctx_tls);
+}
+
+SDL_EGLDisplay
+SDL_EGL_GetCurrentEGLDisplay(void)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return EGL_NO_DISPLAY;
+    }
+    if (!_this->egl_data) {
+        SDL_SetError("There is no current EGL display");
+        return EGL_NO_DISPLAY;
+    }
+    return _this->egl_data->egl_display;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
+}
+
+SDL_EGLConfig
+SDL_EGL_GetCurrentEGLConfig(void)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+    if (!_this->egl_data) {
+        SDL_SetError("There is no current EGL display");
+        return NULL;
+    }
+    return _this->egl_data->egl_config;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
+}
+
+SDL_EGLConfig
+SDL_EGL_GetWindowEGLSurface(SDL_Window * window)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+    if (!_this->egl_data) {
+        SDL_SetError("There is no current EGL display");
+        return NULL;
+    }
+    if (_this->GL_GetEGLSurface) {
+        return _this->GL_GetEGLSurface(_this, window);
+    }
+    return NULL;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
 }
 
 void SDL_GL_GetDrawableSize(SDL_Window * window, int *w, int *h)

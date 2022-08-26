@@ -45,6 +45,7 @@ WIN_GLES_LoadLibrary(_THIS, const char *path) {
         _this->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
         _this->GL_SwapWindow = WIN_GL_SwapWindow;
         _this->GL_DeleteContext = WIN_GL_DeleteContext;
+        _this->GL_GetEGLSurface = NULL;
         return WIN_GL_LoadLibrary(_this, path);
 #else
         return SDL_SetError("SDL not configured with OpenGL/WGL support");
@@ -77,6 +78,7 @@ WIN_GLES_CreateContext(_THIS, SDL_Window * window)
         _this->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
         _this->GL_SwapWindow = WIN_GL_SwapWindow;
         _this->GL_DeleteContext = WIN_GL_DeleteContext;
+        _this->GL_GetEGLSurface = NULL;
 
         if (WIN_GL_LoadLibrary(_this, NULL) != 0) {
             return NULL;
@@ -128,6 +130,14 @@ WIN_GLES_SetupWindow(_THIS, SDL_Window * window)
     }
 
     return WIN_GLES_MakeCurrent(_this, current_win, current_ctx);    
+}
+
+EGLSurface
+WIN_GLES_GetEGLSurface(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
+
+    return windowdata->egl_surface;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL */
