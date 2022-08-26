@@ -391,6 +391,7 @@ struct SDL_VideoDevice
         int framebuffer_srgb_capable;
         int no_error;
         int retained_backing;
+        int egl_platform;
         int driver_loaded;
         char driver_path[256];
         void *dll_handle;
