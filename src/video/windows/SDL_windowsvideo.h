@@ -394,6 +394,7 @@ typedef struct SDL_VideoData
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     SDL_bool dpi_scaling_enabled;
+    SDL_bool cleared;
 
  #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_com_initialized;
