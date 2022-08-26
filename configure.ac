@@ -3952,6 +3952,7 @@ case "$host" in
         # Set up other core UNIX files
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
+        SOURCES="$SOURCES $srcdir/src/core/linux/SDL_sandbox.c"
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;
     *-*-cygwin* | *-*-mingw*)
