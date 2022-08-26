@@ -1572,7 +1572,7 @@ HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joyst
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
     Uint32 result = 0;
 
-    if (!ctx->m_bInputOnly) {
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) {
         /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
         result |= SDL_JOYCAP_RUMBLE;
     }
