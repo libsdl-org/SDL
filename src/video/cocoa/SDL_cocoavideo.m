@@ -32,6 +32,7 @@
 #include "SDL_cocoashape.h"
 #include "SDL_cocoavulkan.h"
 #include "SDL_cocoametalview.h"
+#include "SDL_cocoaopengles.h"
 
 @implementation SDL_VideoData
 
