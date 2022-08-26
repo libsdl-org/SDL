@@ -223,6 +223,14 @@ typedef void *SDL_GLContext;
 typedef void *SDL_EGLDisplay;
 typedef void *SDL_EGLConfig;
 typedef void *SDL_EGLSurface;
+typedef intptr_t SDL_EGLAttrib;
+typedef int SDL_EGLint;
+
+/**
+ *  \brief EGL attribute initialization callback types.
+ */
+typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void);
+typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);
 
 /**
  *  \brief OpenGL configuration attributes
@@ -2088,6 +2096,30 @@ extern DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentEGLConfig(void);
  *          failure.
  */
 extern DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface(SDL_Window * window);
+
+/**
+ * Sets the callbacks for defining custom EGLAttrib arrays for EGL
+ * initialization.
+ *
+ * Each callback should return a pointer to an EGL attribute array terminated
+ * with EGL_NONE. Callbacks may return NULL pointers to signal an error, which
+ * will cause the SDL_CreateWindow process to fail gracefully.
+ *
+ * The arrays returned by each callback will be appended to the existing
+ * attribute arrays defined by SDL.
+ *
+ * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
+ *
+ * \param platformAttribCallback Callback for attributes to pass to
+ *                               eglGetPlatformDisplay.
+ * \param surfaceAttribCallback Callback for attributes to pass to
+ *                              eglCreateSurface.
+ * \param contextAttribCallback Callback for attributes to pass to
+ *                              eglCreateContext.
+ */
+extern DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
+                                                              SDL_EGLIntArrayCallback surfaceAttribCallback,
+                                                              SDL_EGLIntArrayCallback contextAttribCallback);
 
 /**
  * Get the size of a window's underlying drawable in pixels.

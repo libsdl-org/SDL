@@ -398,6 +398,10 @@ struct SDL_VideoDevice
         void *dll_handle;
     } gl_config;
 
+    SDL_EGLAttribArrayCallback egl_platformattrib_callback;
+    SDL_EGLIntArrayCallback egl_surfaceattrib_callback;
+    SDL_EGLIntArrayCallback egl_contextattrib_callback;
+
     /* * * */
     /* Cache current GL context; don't call the OS when it hasn't changed. */
     /* We have the global pointers here so Cocoa continues to work the way

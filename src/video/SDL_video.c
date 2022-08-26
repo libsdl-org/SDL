@@ -3646,12 +3646,28 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 #endif
 }
 
+void SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
+                                      SDL_EGLIntArrayCallback surfaceAttribCallback,
+                                      SDL_EGLIntArrayCallback contextAttribCallback)
+{
+    if (!_this) {
+        return;
+    }
+    _this->egl_platformattrib_callback = platformAttribCallback;
+    _this->egl_surfaceattrib_callback = surfaceAttribCallback;
+    _this->egl_contextattrib_callback = contextAttribCallback;
+}
+
 void
 SDL_GL_ResetAttributes()
 {
     if (!_this) {
         return;
     }
+
+    _this->egl_platformattrib_callback = NULL;
+    _this->egl_surfaceattrib_callback = NULL;
+    _this->egl_contextattrib_callback = NULL;
 
     _this->gl_config.red_size = 3;
     _this->gl_config.green_size = 3;

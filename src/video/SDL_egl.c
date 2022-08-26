@@ -514,7 +514,16 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         }
 
         if (_this->egl_data->eglGetPlatformDisplay) {
-            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(uintptr_t)native_display, NULL);
+            EGLAttrib *attribs = NULL;
+            if (_this->egl_platformattrib_callback) {
+                attribs = _this->egl_platformattrib_callback();
+                if (!attribs) {
+                    _this->gl_config.driver_loaded = 0;
+                    *_this->gl_config.driver_path = '\0';
+                    return SDL_SetError("EGL platform attribute callback returned NULL pointer");
+                }
+            }
+            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(uintptr_t)native_display, attribs);
         } else {
             if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
                 _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddressInternal(_this, "eglGetPlatformDisplayEXT");
@@ -934,8 +943,8 @@ SDL_EGL_ChooseConfig(_THIS)
 SDL_GLContext
 SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
 {
-    /* max 14 values plus terminator. */
-    EGLint attribs[15];
+    /* max 16 key+value pairs plus terminator. */
+    EGLint attribs[33];
     int attr = 0;
 
     EGLContext egl_context, share_context = EGL_NO_CONTEXT;
@@ -1023,6 +1032,29 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         }
     }
 #endif
+
+    if (_this->egl_contextattrib_callback) {
+        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        EGLint *userAttribs, *userAttribP;
+        userAttribs = _this->egl_contextattrib_callback();
+        if (!userAttribs) {
+            _this->gl_config.driver_loaded = 0;
+            *_this->gl_config.driver_path = '\0';
+            SDL_SetError("EGL context attribute callback returned NULL pointer");
+            return NULL;
+        }
+
+        for (userAttribP = userAttribs; *userAttribP != EGL_NONE; ) {
+            if (attr + 3 >= maxAttribs) {
+                _this->gl_config.driver_loaded = 0;
+                *_this->gl_config.driver_path = '\0';
+                SDL_SetError("EGL context attribute callback returned too many attributes");
+                return NULL;
+            }
+            attribs[attr++] = *userAttribP++;
+            attribs[attr++] = *userAttribP++;
+        }
+    }
 
     attribs[attr++] = EGL_NONE;
 
@@ -1190,8 +1222,8 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
     EGLint format_wanted;
     EGLint format_got;
 #endif
-    /* max 2 key+value pairs, plus terminator. */
-    EGLint attribs[5];
+    /* max 16 key+value pairs, plus terminator. */
+    EGLint attribs[33];
     int attr = 0;
 
     EGLSurface * surface;
@@ -1231,6 +1263,29 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         attribs[attr++] = allow_transparent ? EGL_FALSE : EGL_TRUE;
     }
 #endif
+
+    if (_this->egl_surfaceattrib_callback) {
+        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        EGLint *userAttribs, *userAttribP;
+        userAttribs = _this->egl_surfaceattrib_callback();
+        if (!userAttribs) {
+            _this->gl_config.driver_loaded = 0;
+            *_this->gl_config.driver_path = '\0';
+            SDL_SetError("EGL surface attribute callback returned NULL pointer");
+            return EGL_NO_SURFACE;
+        }
+
+        for (userAttribP = userAttribs; *userAttribP != EGL_NONE; ) {
+            if (attr + 3 >= maxAttribs) {
+                _this->gl_config.driver_loaded = 0;
+                *_this->gl_config.driver_path = '\0';
+                SDL_SetError("EGL surface attribute callback returned too many attributes");
+                return EGL_NO_SURFACE;
+            }
+            attribs[attr++] = *userAttribP++;
+            attribs[attr++] = *userAttribP++;
+        }
+    }
 
     attribs[attr++] = EGL_NONE;
     
