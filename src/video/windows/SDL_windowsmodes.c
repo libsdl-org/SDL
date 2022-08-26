@@ -256,6 +256,7 @@ WIN_GetDisplayNameVista(const WCHAR *deviceName)
             sourceName.header.adapterId = paths[i].targetInfo.adapterId;
             sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
             sourceName.header.size = sizeof (sourceName);
+            sourceName.header.id = paths[i].sourceInfo.id;
             rc = pDisplayConfigGetDeviceInfo(&sourceName.header);
             if (rc != ERROR_SUCCESS) {
                 break;
