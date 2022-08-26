@@ -46,7 +46,7 @@ typedef struct SDL_EGL_VideoData
     EGLDisplay(EGLAPIENTRY *eglGetDisplay) (NativeDisplayType display);
     EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplay) (EGLenum platform,
                                 void *native_display,
-                                const EGLint *attrib_list);
+                                const EGLAttrib *attrib_list);
     EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplayEXT) (EGLenum platform,
                                 void *native_display,
                                 const EGLint *attrib_list);
