@@ -2063,6 +2063,20 @@ extern "C" {
 #define SDL_HINT_WINDOWS_DPI_SCALING "SDL_WINDOWS_DPI_SCALING"
 
 /**
+ * \brief Allows windows to use the system light/dark mode configuration.
+ *
+ *  By default, Windows does not opt any applications into adhering to the dark
+ *  mode color scheme for title bars/borders. This hint tells Windows to use
+ *  the appropriate dark/light mode colors for created SDL windows.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Windows will always use the light mode color scheme.
+ *    "1"       - Windows will follow the user light/dark mode preference and use
+ *                dark title bar and window borders when appropriate.
+ */
+#define SDL_HINT_WINDOWS_HONOR_DARK_MODE "SDL_WINDOWS_HONOR_DARK_MODE"
+
+/**
  *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
  *
  *  This variable can be set to the following values:

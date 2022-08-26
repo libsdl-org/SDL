@@ -48,6 +48,12 @@
 #define SWP_NOCOPYBITS 0
 #endif
 
+/* Dark mode support */
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+typedef HRESULT(WINAPI *pfnDwmSetWindowAttribute)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+
 /* #define HIGHDPI_DEBUG */
 
 /* Fake window to help with DirectInput events. */
@@ -516,6 +522,18 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
                      SDL_Instance, NULL);
     if (!hwnd) {
         return WIN_SetError("Couldn't create window");
+    }
+
+    if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_HONOR_DARK_MODE, SDL_FALSE)) {
+        void *pDwmApiDll = SDL_LoadObject("dwmapi.dll");
+        if (pDwmApiDll) {
+            pfnDwmSetWindowAttribute pDwmSetWindowAttribute = SDL_LoadFunction(pDwmApiDll, "DwmSetWindowAttribute");
+            if (pDwmSetWindowAttribute) {
+                BOOL value = TRUE;
+                pDwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+            }
+            SDL_UnloadObject(pDwmApiDll);
+        }
     }
 
     WIN_PumpEvents(_this);
