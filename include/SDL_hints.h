@@ -1644,6 +1644,18 @@ extern "C" {
 #define SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY "SDL_VIDEO_EGL_ALLOW_TRANSPARENCY"
 
 /**
+ * \brief If eglGetPlatformDisplay fails, fall back to calling eglGetDisplay.
+ *
+ * This variable can be set to one of the following values:
+ *   "0"        - Do not fall back to eglGetDisplay
+ *   "1"        - Fall back to eglGetDisplay if eglGetPlatformDisplay fails.
+ *
+ * By default, SDL will fall back to eglGetDisplay if eglGetPlatformDisplay
+ * fails.
+ */
+#define SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK "SDL_VIDEO_EGL_GETDISPLAY_FALLBACK"
+
+/**
  * \brief A variable controlling whether the graphics context is externally managed.
  *
  * This variable can be set to the following values:
