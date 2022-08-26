@@ -218,6 +218,7 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wdata;
     double scaled_w, scaled_h;
     double css_w, css_h;
+    const char *canvasElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_ELEMENT);
 
     /* Allocate window internal data */
     wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
@@ -225,7 +226,11 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
         return SDL_OutOfMemory();
     }
 
-    wdata->canvas_id = SDL_strdup("#canvas");
+    if (canvasElement) {
+        wdata->canvas_id = SDL_strdup(canvasElement);
+    } else {
+        wdata->canvas_id = SDL_strdup("#canvas");
+    }
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();

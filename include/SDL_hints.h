@@ -367,6 +367,18 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_ASYNCIFY   "SDL_EMSCRIPTEN_ASYNCIFY"
 
 /**
+ *  \brief override the canvas element for Emscripten builds
+ *
+ * This hint only applies to the emscripten platform
+ * and must be set before calling SDL_CreateWindow()
+ *
+ * The variable can be set to a string valid for
+ * document.querySelector(), e.g. #canvas
+ *
+ */
+#define SDL_HINT_EMSCRIPTEN_CANVAS_ELEMENT   "SDL_EMSCRIPTEN_CANVAS_ELEMENT"
+
+/**
  *  \brief override the binding element for keyboard inputs for Emscripten builds
  *
  * This hint only applies to the emscripten platform
