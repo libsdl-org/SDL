@@ -1803,6 +1803,18 @@ extern "C" {
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER              "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
+ * \brief A variable controlling whether the OpenGL context should be created
+ * with EGL by default
+ *
+ * This variable can be set to the following values:
+ * "0" - Use platform-specific GL context creation API (GLX, WGL, CGL, etc)
+ * "1" - Use EGL
+ *
+ * By default SDL will use the platform-specific GL context API when both are present.
+ */
+#define SDL_HINT_VIDEO_FORCE_EGL "SDL_VIDEO_FORCE_EGL"
+
+/**
  * \brief A variable controlling whether X11 should use GLX or EGL by default
  *
  * This variable can be set to the following values:
@@ -1810,6 +1822,9 @@ extern "C" {
  * "1" - Use EGL
  *
  * By default SDL will use GLX when both are present.
+ *
+ * \deprecated Use the platform-agnostic SDL_HINT_VIDEO_FORCE_EGL hint instead.
+ *
  */
 #define SDL_HINT_VIDEO_X11_FORCE_EGL "SDL_VIDEO_X11_FORCE_EGL"
 

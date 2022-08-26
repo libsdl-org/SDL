@@ -506,7 +506,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
          * Khronos doc: "EGL_BAD_DISPLAY is generated if display is not an EGL display connection, unless display is EGL_NO_DISPLAY and name is EGL_EXTENSIONS."
          * Therefore SDL_EGL_GetVersion() shouldn't work with uninitialized display.
          * - it actually doesn't work on Android that has 1.5 egl client
-         * - it works on desktop X11 (using SDL_VIDEO_X11_FORCE_EGL=1) */
+         * - it works on desktop X11 (using SDL_VIDEO_FORCE_EGL=1) */
         SDL_EGL_GetVersion(_this);
 
         if (_this->egl_data->egl_version_major == 1 && _this->egl_data->egl_version_minor == 5) {
