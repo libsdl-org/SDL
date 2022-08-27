@@ -1927,7 +1927,7 @@ Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
 void
 Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
 {
-    d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_v1_interface, 1);
+    d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_manager_v1_interface, 1);
 
     if (d->input != NULL) {
         Wayland_create_primary_selection_device(d);

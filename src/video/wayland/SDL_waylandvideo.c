@@ -875,7 +875,6 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_add_data_device_manager(d, id, version);
     } else if (SDL_strcmp(interface, "zwp_primary_selection_device_manager_v1") == 0) {
         Wayland_add_primary_selection_device_manager(d, id, version);
-        //~ d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_tablet_manager_v2") == 0) {
