@@ -55,6 +55,8 @@
 #include "tablet-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
+#include "viewporter-client-protocol.h"
+#include "primary-selection-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -265,6 +267,9 @@ Wayland_CreateDevice(void)
     device->SetClipboardText = Wayland_SetClipboardText;
     device->GetClipboardText = Wayland_GetClipboardText;
     device->HasClipboardText = Wayland_HasClipboardText;
+    device->SetPrimarySelectionText = Wayland_SetPrimarySelectionText;
+    device->GetPrimarySelectionText = Wayland_GetPrimarySelectionText;
+    device->HasPrimarySelectionText = Wayland_HasPrimarySelectionText;
     device->StartTextInput = Wayland_StartTextInput;
     device->StopTextInput = Wayland_StopTextInput;
     device->SetTextInputRect = Wayland_SetTextInputRect;
@@ -868,6 +873,9 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_add_text_input_manager(d, id, version);
     } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
         Wayland_add_data_device_manager(d, id, version);
+    } else if (SDL_strcmp(interface, "zwp_primary_selection_device_manager_v1") == 0) {
+        Wayland_add_primary_selection_device_manager(d, id, version);
+        //~ d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_tablet_manager_v2") == 0) {
@@ -908,7 +916,7 @@ static const struct wl_registry_listener registry_listener = {
     display_handle_global,
     display_remove_global
 };
- 
+
 #ifdef HAVE_LIBDECOR_H
 static SDL_bool should_use_libdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 {
@@ -1105,6 +1113,10 @@ Wayland_VideoQuit(_THIS)
 
     if (data->viewporter) {
         wp_viewporter_destroy(data->viewporter);
+    }
+
+    if (data->primary_selection_device_manager) {
+        zwp_primary_selection_device_manager_v1_destroy(data->primary_selection_device_manager);
     }
 
     if (data->compositor)

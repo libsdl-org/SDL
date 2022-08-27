@@ -85,6 +85,7 @@ struct SDL_WaylandInput {
     struct wl_touch *touch;
     struct wl_keyboard *keyboard;
     SDL_WaylandDataDevice *data_device;
+    SDL_WaylandPrimarySelectionDevice *primary_selection_device;
     SDL_WaylandTextInput *text_input;
     struct zwp_relative_pointer_v1 *relative_pointer;
     SDL_WindowData *pointer_focus;
@@ -137,6 +138,7 @@ extern void Wayland_SendWakeupEvent(_THIS, SDL_Window *window);
 extern int Wayland_WaitEventTimeout(_THIS, int timeout);
 
 extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
+extern void Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
 
 extern void Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version);
