@@ -229,7 +229,7 @@ BSD_JoystickInit(void)
 #if defined(__OpenBSD__) && (OpenBSD >= 202105)
         SDL_snprintf(s, SDL_arraysize(s), "/dev/ujoy/%d", i);
 #else
-        SDL_snprintf(s, SDL_arraysize(s), "/dev/uhid/%d", i);
+        SDL_snprintf(s, SDL_arraysize(s), "/dev/uhid%d", i);
 #endif
 
         joynames[numjoysticks] = SDL_strdup(s);
