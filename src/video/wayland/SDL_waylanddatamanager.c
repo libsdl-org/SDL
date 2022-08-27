@@ -703,6 +703,28 @@ Wayland_data_device_set_serial(SDL_WaylandDataDevice *data_device,
     return status;
 }
 
+int
+Wayland_primary_selection_device_set_serial(SDL_WaylandPrimarySelectionDevice *primary_selection_device,
+                                            uint32_t serial)
+{
+    int status = -1;
+    if (primary_selection_device != NULL) {
+        status = 0;
+
+        /* If there was no serial and there is a pending selection set it now. */
+        if (primary_selection_device->selection_serial == 0
+            && primary_selection_device->selection_source != NULL) {
+            zwp_primary_selection_device_v1_set_selection(primary_selection_device->primary_selection_device,
+                                                          primary_selection_device->selection_source->source,
+                                                          primary_selection_device->selection_serial);
+        }
+
+        primary_selection_device->selection_serial = serial;
+    }
+
+    return status;
+}
+
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
 
 /* vi: set ts=4 sw=4 expandtab: */
