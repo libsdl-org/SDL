@@ -320,12 +320,6 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
         guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, name, 'w', (Uint8)type);
 
-#ifdef SDL_JOYSTICK_HIDAPI
-        if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
-            ignore_joystick = SDL_TRUE;
-        }
-#endif
-
 #ifdef SDL_JOYSTICK_RAWINPUT
         if (!ignore_joystick && RAWINPUT_IsDevicePresent(vendor, product, version, name)) {
             ignore_joystick = SDL_TRUE;
@@ -339,6 +333,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         if (!ignore_joystick && SDL_IsXInputDevice(vendor, product)) {
             ignore_joystick = SDL_TRUE;
         }
+
+#ifdef SDL_JOYSTICK_HIDAPI
+        if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
+            ignore_joystick = SDL_TRUE;
+        }
+#endif
 
         if (!ignore_joystick && SDL_ShouldIgnoreJoystick(name, guid)) {
             ignore_joystick = SDL_TRUE;
