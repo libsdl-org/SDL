@@ -83,6 +83,9 @@
 
 #ifdef __OpenBSD__
 
+#define DEV_USB		3	/* needed to get GUID from USB_GET_DEVICEINFO */
+#define GUID_LEN	32	/* GUID string has length 32 */
+
 #define HUG_DPAD_UP         0x90
 #define HUG_DPAD_DOWN       0x91
 #define HUG_DPAD_RIGHT      0x92
@@ -192,6 +195,9 @@ struct joystick_hwdata
 
 static char *joynames[MAX_JOYS];
 static char *joydevnames[MAX_JOYS];
+#ifdef __OpenBSD__
+static char joyguids[MAX_JOYS][GUID_LEN];
+#endif
 
 static int report_alloc(struct report *, struct report_desc *, int);
 static void report_free(struct report *);
@@ -222,6 +228,9 @@ BSD_JoystickInit(void)
 
     SDL_memset(joynames, 0, sizeof(joynames));
     SDL_memset(joydevnames, 0, sizeof(joydevnames));
+#ifdef __OpenBSD__
+    SDL_memset(joyguids, 0, sizeof(char) * MAX_JOYS * GUID_LEN);
+#endif
 
     for (i = 0; i < MAX_UHID_JOYS; i++) {
         SDL_Joystick nj;
@@ -366,6 +375,9 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
 #endif
     int fd;
     int i;
+#ifdef __OpenBSD__
+    struct usb_device_info di;
+#endif
 
     fd = open(path, O_RDONLY | O_CLOEXEC);
     if (fd == -1) {
@@ -443,6 +455,17 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
         }
     }
 desc_failed:
+#endif
+#if defined(__OpenBSD__)
+    if (ioctl(fd, USB_GET_DEVICEINFO, &di) != -1) {
+        SDL_snprintf(joyguids[numjoysticks],
+                     SDL_arraysize(joyguids[device_index]),
+                     "%02x%02x0000%02x%02x0000%02x%02x0000%02x%02x0000",
+                     DEV_USB & 0xFF, DEV_USB >> 8,
+                     di.udi_vendorNo & 0xFF, di.udi_vendorNo >> 8,
+                     di.udi_productNo & 0xFF, di.udi_productNo >> 8,
+                     di.udi_releaseNo & 0xFF, di.udi_releaseNo >> 8);
+    }
 #endif
     if (report_alloc(rep, hw->repdesc, REPORT_INPUT) < 0) {
         goto usberr;
@@ -554,6 +577,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
     Sint32 v;
 #ifdef __OpenBSD__
     Sint32 dpad[4] = {0, 0, 0, 0};
+    int actualbutton;
 #endif
 
 #if defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
@@ -628,6 +652,18 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                             naxe = joy->hwdata->axis_map[joyaxe];
                             /* scaleaxe */
                             v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
+#ifdef __OpenBSD__
+                            /* XInput controllermapping relies on inverted Y axes.
+                             * These devices have a 16bit signed space, as opposed
+                             * to older DInput devices (8bit unsigned), so
+                             * hitem.logical_maximum can be used to differentiate them.
+                             */
+                            if ((joyaxe == JOYAXE_Y || joyaxe == JOYAXE_RY)
+                                && hitem.logical_maximum > 255) {
+                                if (v != 0)
+                                    v = ~v;
+                            }
+#endif
                             v -= (hitem.logical_maximum +
                                   hitem.logical_minimum + 1) / 2;
                             v *= 32768 /
@@ -662,7 +698,12 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                     }
                 case HUP_BUTTON:
                     v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
+#ifdef __OpenBSD__
+                    actualbutton = HID_USAGE(hitem.usage) - 1;	/* sdl buttons are zero-based */
+                    SDL_PrivateJoystickButton(joy, actualbutton, v);
+#else
                     SDL_PrivateJoystickButton(joy, nbutton, v);
+#endif
                     nbutton++;
                     break;
                 default:
@@ -706,9 +747,15 @@ BSD_JoystickQuit(void)
 static SDL_JoystickGUID
 BSD_JoystickGetDeviceGUID(int device_index)
 {
+#ifdef __OpenBSD__
+    SDL_JoystickGUID guid;
+    guid = SDL_JoystickGetGUIDFromString(joyguids[device_index]);
+    return guid;
+#else
     /* the GUID is just the name for now */
     const char *name = BSD_JoystickGetDeviceName(device_index);
     return SDL_CreateJoystickGUIDForName(name);
+#endif
 }
 
 static int
