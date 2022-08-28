@@ -2320,6 +2320,9 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
     if (d->data_device_manager != NULL) {
         Wayland_create_data_device(d);
     }
+    if (d->primary_selection_device_manager != NULL) {
+        Wayland_create_primary_selection_device(d);
+    }
     if (d->text_input_manager != NULL) {
         Wayland_create_text_input(d);
     }
