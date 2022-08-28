@@ -182,7 +182,6 @@ enum
 struct joystick_hwdata
 {
     int fd;
-    char *path;
     enum
     {
         BSDJOY_UHID,            /* uhid(4) */
@@ -393,8 +392,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     }
     joy->hwdata = hw;
     hw->fd = fd;
-    hw->path = SDL_strdup(path);
-    if (!SDL_strncmp(path, "/dev/joy", 8)) {
+    if (SDL_strncmp(path, "/dev/joy", 8) == 0) {
         hw->type = BSDJOY_JOY;
         joy->naxes = 2;
         joy->nbuttons = 2;
@@ -413,7 +411,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     }
     hw->repdesc = hid_get_report_desc(fd);
     if (hw->repdesc == NULL) {
-        SDL_SetError("%s: USB_GET_REPORT_DESC: %s", hw->path,
+        SDL_SetError("%s: USB_GET_REPORT_DESC: %s", path,
                      strerror(errno));
         goto usberr;
     }
@@ -472,7 +470,7 @@ desc_failed:
     }
     if (rep->size <= 0) {
         SDL_SetError("%s: Input report descriptor has invalid length",
-                     hw->path);
+                     path);
         goto usberr;
     }
 #if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
@@ -481,7 +479,7 @@ desc_failed:
     hdata = hid_start_parse(hw->repdesc, 1 << hid_input);
 #endif
     if (hdata == NULL) {
-        SDL_SetError("%s: Cannot start HID parser", hw->path);
+        SDL_SetError("%s: Cannot start HID parser", path);
         goto usberr;
     }
     joy->naxes = 0;
@@ -544,7 +542,7 @@ desc_failed:
             hw->axis_map[i] = joy->naxes++;
 
     if (joy->naxes == 0 && joy->nbuttons == 0 && joy->nhats == 0 && joy->nballs == 0) {
-        SDL_SetError("%s: Not a joystick, ignoring", hw->path);
+        SDL_SetError("%s: Not a joystick, ignoring", path);
         goto usberr;
     }
 
@@ -562,7 +560,6 @@ desc_failed:
     return (0);
   usberr:
     close(hw->fd);
-    SDL_free(hw->path);
     SDL_free(hw);
     return (-1);
 }
@@ -625,7 +622,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
         }
         return;
     }
-#endif /* defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H */
+#endif /* __FREEBSD__ || SDL_HAVE_MACHINE_JOYSTICK_H || __FreeBSD_kernel__ || __DragonFly_ */
 
     rep = &joy->hwdata->inreport;
 
@@ -722,12 +719,11 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
 static void
 BSD_JoystickClose(SDL_Joystick *joy)
 {
-    if (SDL_strncmp(joy->hwdata->path, "/dev/joy", 8)) {
+    if (joy->hwdata->type == BSDJOY_UHID) {
         report_free(&joy->hwdata->inreport);
         hid_dispose_report_desc(joy->hwdata->repdesc);
     }
     close(joy->hwdata->fd);
-    SDL_free(joy->hwdata->path);
     SDL_free(joy->hwdata);
 }
 
