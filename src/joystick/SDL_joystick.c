@@ -1984,11 +1984,7 @@ SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version
     /* We only need 16 bits for each of these; space them out to fill 128. */
     /* Byteswap so devices get same GUID on little/big endian platforms. */
     *guid16++ = SDL_SwapLE16(bus);
-#if 1
-    *guid16++ = 0;
-#else
     *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
-#endif
 
     if (vendor && product) {
         *guid16++ = SDL_SwapLE16(vendor);
@@ -2015,6 +2011,14 @@ SDL_JoystickGUID
 SDL_CreateJoystickGUIDForName(const char *name)
 {
     return SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, 0, 0, 0, name, 0, 0);
+}
+
+void
+SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc)
+{
+    Uint16 *guid16 = (Uint16 *)guid->data;
+
+    guid16[1] = SDL_SwapLE16(crc);
 }
 
 SDL_GameControllerType

@@ -13,6 +13,7 @@ controllers = []
 controller_guids = {}
 conditionals = []
 split_pattern = re.compile(r'([^"]*")([^,]*,)([^,]*,)([^"]*)(".*)')
+guid_crc_pattern = re.compile(r'^([0-9a-zA-Z]{4})([0-9a-zA-Z]{4})([0-9a-zA-Z]{24},)$')
 
 def find_element(prefix, bindings):
     i=0
@@ -31,38 +32,54 @@ def save_controller(line):
     if (bindings[0] == ""):
         bindings.pop(0)
 
-    pos=find_element("sdk", bindings)
+    crc = ""
+    pos = find_element("crc:", bindings)
+    if pos >= 0:
+        crc = bindings[pos] + ","
+        bindings.pop(pos)
+
+    # Look for CRC embedded in the GUID and convert to crc element
+    crc_match = guid_crc_pattern.match(entry[1])
+    if crc_match and crc_match.group(2) != '0000':
+        print("Extracting CRC from GUID of " + entry[2])
+        entry[1] = crc_match.group(1) + '0000' + crc_match.group(3)
+        crc = "crc:" + crc_match.group(2) + ","
+
+    pos = find_element("sdk", bindings)
     if pos >= 0:
         bindings.append(bindings.pop(pos))
 
-    pos=find_element("hint:", bindings)
+    pos = find_element("hint:", bindings)
     if pos >= 0:
         bindings.append(bindings.pop(pos))
 
+    entry.extend(crc)
     entry.extend(",".join(bindings) + ",")
     entry.append(match.group(5))
     controllers.append(entry)
 
+    entry_id = entry[1] + entry[3]
     if ',sdk' in line or ',hint:' in line:
-        conditionals.append(entry[1])
+        conditionals.append(entry_id)
 
 def write_controllers():
     global controllers
     global controller_guids
     # Check for duplicates
     for entry in controllers:
-        if (entry[1] in controller_guids and entry[1] not in conditionals):
+        entry_id = entry[1] + entry[3]
+        if (entry_id in controller_guids and entry_id not in conditionals):
             current_name = entry[2]
-            existing_name = controller_guids[entry[1]][2]
+            existing_name = controller_guids[entry_id][2]
             print("Warning: entry '%s' is duplicate of entry '%s'" % (current_name, existing_name))
 
             if (not current_name.startswith("(DUPE)")):
                 entry[2] = f"(DUPE) {current_name}"
 
             if (not existing_name.startswith("(DUPE)")):
-                controller_guids[entry[1]][2] = f"(DUPE) {existing_name}"
+                controller_guids[entry_id][2] = f"(DUPE) {existing_name}"
 
-        controller_guids[entry[1]] = entry
+        controller_guids[entry_id] = entry
 
     for entry in sorted(controllers, key=lambda entry: f"{entry[2]}-{entry[1]}"):
         line = "".join(entry) + "\n"

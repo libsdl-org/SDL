@@ -664,21 +664,23 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
 static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool exact_match)
 {
     ControllerMapping_t *mapping;
-    SDL_JoystickGUID zero_crc_guid;
+    Uint16 crc;
 
-    /* First check for exact match */
+    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, NULL, &crc);
+    if (crc) {
+        /* Clear the CRC from the GUID for matching */
+        SDL_SetJoystickGUIDCRC(&guid, 0);
+    }
     for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
         if (SDL_memcmp(&guid, &mapping->guid, sizeof(guid)) == 0) {
-            return mapping;
-        }
-    }
-
-    /* Now check for match with no CRC */
-    SDL_memcpy(&zero_crc_guid, &guid, sizeof(guid));
-    zero_crc_guid.data[2] = 0;
-    zero_crc_guid.data[3] = 0;
-    for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
-        if (SDL_memcmp(&zero_crc_guid, &mapping->guid, sizeof(guid)) == 0) {
+            /* Check to see if the CRC matches */
+            const char *crc_string = SDL_strstr(mapping->mapping, "crc:");
+            if (crc_string) {
+                Uint16 mapping_crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16); 
+                if (crc != mapping_crc) {
+                    continue;
+                }
+            }
             return mapping;
         }
     }
@@ -1098,6 +1100,7 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
     char *pchName;
     char *pchMapping;
     ControllerMapping_t *pControllerMapping;
+    Uint16 crc;
 
     pchName = SDL_PrivateGetControllerNameFromMappingString(mappingString);
     if (!pchName) {
@@ -1110,6 +1113,38 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
         SDL_free(pchName);
         SDL_SetError("Couldn't parse %s", mappingString);
         return NULL;
+    }
+
+    /* Fix up the GUID and the mapping with the CRC, if needed */
+    SDL_GetJoystickGUIDInfo(jGUID, NULL, NULL, NULL, &crc);
+    if (crc) {
+        /* Make sure the mapping has the CRC */
+        char *new_mapping;
+        char *crc_end = "";
+        char *crc_string = SDL_strstr(pchMapping, "crc:");
+        if (crc_string) {
+            crc_end = SDL_strchr(crc_string, ',');
+            if (crc_end) {
+                ++crc_end;
+            } else {
+                crc_end = "";
+            }
+            *crc_string = '\0';
+        }
+
+        if (SDL_asprintf(&new_mapping, "%scrc:%.4x,%s", pchMapping, crc, crc_end) >= 0) {
+            SDL_free(pchMapping);
+            pchMapping = new_mapping;
+        }
+    } else {
+        /* Make sure the GUID has the CRC, for matching purposes */
+        char *crc_string = SDL_strstr(pchMapping, "crc:");
+        if (crc_string) {
+            crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16);
+            if (crc) {
+                SDL_SetJoystickGUIDCRC(&jGUID, crc);
+            }
+        }
     }
 
     pControllerMapping = SDL_PrivateGetControllerMappingForGUID(jGUID, SDL_TRUE);
@@ -1136,6 +1171,10 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
             SDL_free(pchMapping);
             SDL_OutOfMemory();
             return NULL;
+        }
+        /* Clear the CRC, we've already added it to the mapping */
+        if (crc) {
+            SDL_SetJoystickGUIDCRC(&jGUID, 0);
         }
         pControllerMapping->guid = jGUID;
         pControllerMapping->name = pchName;

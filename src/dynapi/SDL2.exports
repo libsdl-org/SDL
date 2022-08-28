@@ -859,3 +859,4 @@
 ++'_SDL_ResetHint'.'SDL2.dll'.'SDL_ResetHint'
 ++'_SDL_crc16'.'SDL2.dll'.'SDL_crc16'
 ++'_SDL_GetWindowSizeInPixels'.'SDL2.dll'.'SDL_GetWindowSizeInPixels'
+++'_SDL_GetJoystickGUIDInfo'.'SDL2.dll'.'SDL_GetJoystickGUIDInfo'
