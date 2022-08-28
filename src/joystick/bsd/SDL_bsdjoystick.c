@@ -77,6 +77,10 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
+#if defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
+#define SUPPORT_JOY_GAMEPORT
+#endif
+
 #define MAX_UHID_JOYS   64
 #define MAX_JOY_JOYS    2
 #define MAX_JOYS    (MAX_UHID_JOYS + MAX_JOY_JOYS)
@@ -250,6 +254,7 @@ BSD_JoystickInit(void)
             joynames[numjoysticks] = NULL;
         }
     }
+#ifdef SUPPORT_JOY_GAMEPORT
     for (i = 0; i < MAX_JOY_JOYS; i++) {
         SDL_snprintf(s, SDL_arraysize(s), "/dev/joy%d", i);
         fd = open(s, O_RDONLY | O_CLOEXEC);
@@ -258,6 +263,7 @@ BSD_JoystickInit(void)
             close(fd);
         }
     }
+#endif /* SUPPORT_JOY_GAMEPORT */
 
     /* Read the default USB HID usage table. */
     hid_init(NULL);
@@ -392,6 +398,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     }
     joy->hwdata = hw;
     hw->fd = fd;
+#ifdef SUPPORT_JOY_GAMEPORT
     if (SDL_strncmp(path, "/dev/joy", 8) == 0) {
         hw->type = BSDJOY_JOY;
         joy->naxes = 2;
@@ -400,7 +407,9 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
         joy->nballs = 0;
         joydevnames[device_index] = SDL_strdup("Gameport joystick");
         goto usbend;
-    } else {
+    } else
+#endif
+    {
         hw->type = BSDJOY_UHID;
     }
 
@@ -577,7 +586,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
     int actualbutton;
 #endif
 
-#if defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
+#ifdef SUPPORT_JOY_GAMEPORT
     struct joystick gameport;
     static int x, y, xmin = 0xffff, ymin = 0xffff, xmax = 0, ymax = 0;
 
@@ -622,7 +631,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
         }
         return;
     }
-#endif /* __FREEBSD__ || SDL_HAVE_MACHINE_JOYSTICK_H || __FreeBSD_kernel__ || __DragonFly_ */
+#endif /* SUPPORT_JOY_GAMEPORT */
 
     rep = &joy->hwdata->inreport;
 
