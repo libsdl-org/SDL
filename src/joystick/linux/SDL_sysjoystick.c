@@ -102,7 +102,7 @@ static int MaybeRemoveDevice(const char *path);
 /* A linked list of available joysticks */
 typedef struct SDL_joylist_item
 {
-    int device_instance;
+    SDL_JoystickID device_instance;
     char *path;   /* "/dev/input/event2" or whatever */
     char *name;   /* "SideWinder 3D Pro" or whatever */
     SDL_JoystickGUID guid;
