@@ -38,7 +38,7 @@
 /* FIXME: This is arbitrary, but we want this to be less than a frame because
  * any longer can potentially spin an infinite loop of PumpEvents (!)
  */
-#define PIPE_MS_TIMEOUT 10
+#define PIPE_MS_TIMEOUT 14
 
 static ssize_t
 write_pipe(int fd, const void* buffer, size_t total_length, size_t *pos)
