@@ -651,10 +651,14 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUIDFromString(const cha
  * Get the device information encoded in a SDL_JoystickGUID structure
  *
  * \param guid the SDL_JoystickGUID you wish to get info about
- * \param vendor A pointer filled in with the device VID, or 0 if not available
- * \param product A pointer filled in with the device PID, or 0 if not available
- * \param version A pointer filled in with the device version, or 0 if not available
- * \param crc A pointer filled in with a CRC used to distinguish different products with the same VID/PID, or 0 if not available
+ * \param vendor A pointer filled in with the device VID, or 0 if not
+ *               available
+ * \param product A pointer filled in with the device PID, or 0 if not
+ *                available
+ * \param version A pointer filled in with the device version, or 0 if not
+ *                available
+ * \param crc A pointer filled in with a CRC used to distinguish different
+ *            products with the same VID/PID, or 0 if not available
  *
  * \since This function is available since SDL 2.26.0.
  *
