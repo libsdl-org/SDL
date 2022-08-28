@@ -560,9 +560,12 @@ WGI_JoystickInit(void)
                     hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &controller);
                     if (SUCCEEDED(hr) && controller) {
                         IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, controller);
+                        __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
                     }
                 }
             }
+
+            __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_Release(controllers);
         }
     }
 
