@@ -774,6 +774,22 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 }
 
 void
+WIN_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
+{
+    const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
+    HWND hwnd = data->hwnd;
+    RECT rect;
+
+    if (GetClientRect(hwnd, &rect)) {
+        *w = rect.right;
+        *h = rect.bottom;
+    } else {
+        *w = 0;
+        *h = 0;
+    }
+}
+
+void
 WIN_ShowWindow(_THIS, SDL_Window * window)
 {
     DWORD style;
@@ -931,11 +947,6 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("WIN_SetWindowFullscreen: %d", (int)fullscreen);
 #endif
-
-    /* Clear the window size, to force SDL_SendWindowEvent to send a SDL_WINDOWEVENT_RESIZED
-       event in WM_WINDOWPOSCHANGED. */
-    data->window->w = 0;
-    data->window->h = 0;
 
     if (SDL_ShouldAllowTopmost() && (window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
         top = HWND_TOPMOST;
@@ -1405,25 +1416,6 @@ WIN_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
 
     return 0;
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
-}
-
-/**
- * Returns the drawable size in pixels (GetClientRect).
- */
-void
-WIN_GetDrawableSize(const SDL_Window *window, int *w, int *h)
-{
-    const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
-    HWND hwnd = data->hwnd;
-    RECT rect;
-
-    if (GetClientRect(hwnd, &rect)) {
-        *w = rect.right;
-        *h = rect.bottom;
-    } else {
-        *w = 0;
-        *h = 0;
-    }
 }
 
 /**

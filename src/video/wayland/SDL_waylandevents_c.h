@@ -29,6 +29,13 @@
 #include "SDL_waylanddatamanager.h"
 #include "SDL_waylandkeyboard.h"
 
+enum SDL_WaylandAxisEvent
+{
+    AXIS_EVENT_CONTINUOUS = 0,
+    AXIS_EVENT_DISCRETE,
+    AXIS_EVENT_VALUE120
+};
+
 struct SDL_WaylandTabletSeat;
 
 struct SDL_WaylandTabletObjectListNode {
@@ -113,10 +120,10 @@ struct SDL_WaylandInput {
 
     /* information about axis events on current frame */
     struct {
-        SDL_bool is_x_discrete;
+        enum SDL_WaylandAxisEvent x_axis_type;
         float x;
 
-        SDL_bool is_y_discrete;
+        enum SDL_WaylandAxisEvent y_axis_type;
         float y;
     } pointer_curr_axis_info;
 

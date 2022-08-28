@@ -303,7 +303,6 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
 {
     SDL_joylist_item *item;
     SDL_JoystickGUID guid;
-    Uint16 *guid16 = (Uint16 *)guid.data;
     int i;
     int axis_mask;
 
@@ -355,29 +354,14 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
         nhats = 0;
     }
 
-    SDL_memset(guid.data, 0, sizeof(guid.data));
+    guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor_id, product_id, 0, desc, 0, 0);
 
-    /* We only need 16 bits for each of these; space them out to fill 128. */
-    /* Byteswap so devices get same GUID on little/big endian platforms. */
-    *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
-    *guid16++ = 0;
-
-    if (vendor_id && product_id) {
-        *guid16++ = SDL_SwapLE16(vendor_id);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product_id);
-        *guid16++ = 0;
-    } else {
-        Uint32 crc = 0;
-        SDL_crc32(crc, desc, SDL_strlen(desc));
-        SDL_memcpy(guid16, desc, SDL_min(2*sizeof(*guid16), SDL_strlen(desc)));
-        guid16 += 2;
-        *(Uint32 *)guid16 = SDL_SwapLE32(crc);
-        guid16 += 2;
+    /* Update the GUID with capability bits */
+    {
+        Uint16 *guid16 = (Uint16 *)guid.data;
+        guid16[6] = SDL_SwapLE16(button_mask);
+        guid16[7] = SDL_SwapLE16(axis_mask);
     }
-
-    *guid16++ = SDL_SwapLE16(button_mask);
-    *guid16++ = SDL_SwapLE16(axis_mask);
 
     item = (SDL_joylist_item *) SDL_malloc(sizeof (SDL_joylist_item));
     if (item == NULL) {

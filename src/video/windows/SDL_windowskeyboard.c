@@ -54,6 +54,7 @@ static SDL_bool IME_IsTextInputShown(SDL_VideoData* videodata);
 void
 WIN_InitKeyboard(_THIS)
 {
+#ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
     data->ime_com_initialized = SDL_FALSE;
@@ -101,6 +102,7 @@ WIN_InitKeyboard(_THIS)
     data->ime_convmodesinkcookie = TF_INVALID_COOKIE;
     data->ime_uielemsink = 0;
     data->ime_ippasink = 0;
+#endif /* !SDL_DISABLE_WINDOWS_IME */
 
     WIN_UpdateKeymap(SDL_FALSE);
 
@@ -162,12 +164,12 @@ WIN_QuitKeyboard(_THIS)
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     IME_Quit(data);
-#endif
 
     if (data->ime_composition) {
         SDL_free(data->ime_composition);
         data->ime_composition = NULL;
     }
+#endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
 void
@@ -252,6 +254,7 @@ WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
         return;
     }
 
+#ifndef SDL_DISABLE_WINDOWS_IME
     videodata->ime_rect = *rect;
 
     himc = ImmGetContext(videodata->ime_hwnd_current);
@@ -281,6 +284,7 @@ WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
+#endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
 
@@ -1555,7 +1559,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
     SIZE candsizes[MAX_CANDLIST];
     SIZE maxcandsize = {0};
     HBITMAP hbm = NULL;
-    const int candcount = SDL_min(SDL_min(MAX_CANDLIST, videodata->ime_candcount), videodata->ime_candpgsize);
+    int candcount = SDL_min(SDL_min(MAX_CANDLIST, videodata->ime_candcount), videodata->ime_candpgsize);
     SDL_bool vertical = videodata->ime_candvertical;
 
     const int listborder = 1;
@@ -1587,8 +1591,10 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
 
     for (i = 0; i < candcount; ++i) {
         const WCHAR *s = &videodata->ime_candidates[i * MAX_CANDLENGTH];
-        if (!*s)
+        if (!*s) {
+            candcount = i;
             break;
+        }
 
         GetTextExtentPoint32W(hdc, s, (int)SDL_wcslen(s), &candsizes[i]);
         maxcandsize.cx = SDL_max(maxcandsize.cx, candsizes[i].cx);
@@ -1650,8 +1656,6 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
     for (i = 0; i < candcount; ++i) {
         const WCHAR *s = &videodata->ime_candidates[i * MAX_CANDLENGTH];
         int left, top, right, bottom;
-        if (!*s)
-            break;
 
         if (vertical) {
             left = listborder + listpadding + candmargin;

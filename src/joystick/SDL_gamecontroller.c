@@ -197,48 +197,6 @@ static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID,
 static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
 static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state);
 
-/*
- * If there is an existing add event in the queue, it needs to be modified
- * to have the right value for which, because the number of controllers in
- * the system is now one less.
- */
-static void UpdateEventsForDeviceRemoval(int device_index)
-{
-    int i, num_events;
-    SDL_Event *events;
-    SDL_bool isstack;
-
-    num_events = SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
-    if (num_events <= 0) {
-        return;
-    }
-
-    events = SDL_small_alloc(SDL_Event, num_events, &isstack);
-    if (!events) {
-        return;
-    }
-
-    num_events = SDL_PeepEvents(events, num_events, SDL_GETEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
-    for (i = 0; i < num_events; ++i) {
-        if (events[i].cdevice.which < device_index) {
-            /* No change for index values lower than the removed device */
-        }
-        else if (events[i].cdevice.which == device_index) {
-            /* Drop this event entirely */
-            SDL_memmove(&events[i], &events[i + 1], sizeof(*events) * (num_events - (i + 1)));
-            --i;
-            --num_events;
-        }
-        else {
-            /* Fix up the device index if greater than the removed device */
-            --events[i].cdevice.which;
-        }
-    }
-    SDL_PeepEvents(events, num_events, SDL_ADDEVENT, 0, 0);
-
-    SDL_small_free(events, isstack);
-}
-
 static SDL_bool HasSameOutput(SDL_ExtendedGameControllerBind *a, SDL_ExtendedGameControllerBind *b)
 {
     if (a->outputType != b->outputType) {
@@ -439,22 +397,21 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
     case SDL_JOYDEVICEREMOVED:
         {
             SDL_GameController *controllerlist = SDL_gamecontrollers;
-            int device_index = 0;
             while (controllerlist) {
                 if (controllerlist->joystick->instance_id == event->jdevice.which) {
-                    SDL_Event deviceevent;
-
                     RecenterGameController(controllerlist);
-
-                    deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
-                    deviceevent.cdevice.which = event->jdevice.which;
-                    SDL_PushEvent(&deviceevent);
-
-                    UpdateEventsForDeviceRemoval(device_index);
                     break;
                 }
                 controllerlist = controllerlist->next;
-                ++device_index;
+            }
+
+            /* We don't know if this was a game controller, so go ahead and send an event */
+            {
+                SDL_Event deviceevent;
+
+                deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
+                deviceevent.cdevice.which = event->jdevice.which;
+                SDL_PushEvent(&deviceevent);
             }
         }
         break;
@@ -581,7 +538,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
     if ((vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
         (vendor == USB_VENDOR_SHENZHEN && product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER)) {
@@ -706,13 +663,26 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
  */
 static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool exact_match)
 {
-    ControllerMapping_t *mapping = s_pSupportedControllers;
+    ControllerMapping_t *mapping;
+    Uint16 crc;
 
-    while (mapping) {
+    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, NULL, &crc);
+    if (crc) {
+        /* Clear the CRC from the GUID for matching */
+        SDL_SetJoystickGUIDCRC(&guid, 0);
+    }
+    for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
         if (SDL_memcmp(&guid, &mapping->guid, sizeof(guid)) == 0) {
+            /* Check to see if the CRC matches */
+            const char *crc_string = SDL_strstr(mapping->mapping, "crc:");
+            if (crc_string) {
+                Uint16 mapping_crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16); 
+                if (crc != mapping_crc) {
+                    continue;
+                }
+            }
             return mapping;
         }
-        mapping = mapping->next;
     }
 
     if (!exact_match) {
@@ -1130,6 +1100,7 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
     char *pchName;
     char *pchMapping;
     ControllerMapping_t *pControllerMapping;
+    Uint16 crc;
 
     pchName = SDL_PrivateGetControllerNameFromMappingString(mappingString);
     if (!pchName) {
@@ -1142,6 +1113,38 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
         SDL_free(pchName);
         SDL_SetError("Couldn't parse %s", mappingString);
         return NULL;
+    }
+
+    /* Fix up the GUID and the mapping with the CRC, if needed */
+    SDL_GetJoystickGUIDInfo(jGUID, NULL, NULL, NULL, &crc);
+    if (crc) {
+        /* Make sure the mapping has the CRC */
+        char *new_mapping;
+        char *crc_end = "";
+        char *crc_string = SDL_strstr(pchMapping, "crc:");
+        if (crc_string) {
+            crc_end = SDL_strchr(crc_string, ',');
+            if (crc_end) {
+                ++crc_end;
+            } else {
+                crc_end = "";
+            }
+            *crc_string = '\0';
+        }
+
+        if (SDL_asprintf(&new_mapping, "%scrc:%.4x,%s", pchMapping, crc, crc_end) >= 0) {
+            SDL_free(pchMapping);
+            pchMapping = new_mapping;
+        }
+    } else {
+        /* Make sure the GUID has the CRC, for matching purposes */
+        char *crc_string = SDL_strstr(pchMapping, "crc:");
+        if (crc_string) {
+            crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16);
+            if (crc) {
+                SDL_SetJoystickGUIDCRC(&jGUID, crc);
+            }
+        }
     }
 
     pControllerMapping = SDL_PrivateGetControllerMappingForGUID(jGUID, SDL_TRUE);
@@ -1168,6 +1171,10 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
             SDL_free(pchMapping);
             SDL_OutOfMemory();
             return NULL;
+        }
+        /* Clear the CRC, we've already added it to the mapping */
+        if (crc) {
+            SDL_SetJoystickGUIDCRC(&jGUID, 0);
         }
         pControllerMapping->guid = jGUID;
         pControllerMapping->name = pchName;
@@ -1615,6 +1622,7 @@ SDL_GameControllerMappingForIndex(int mapping_index)
         }
         --mapping_index;
     }
+    SDL_SetError("Mapping not available");
     return NULL;
 }
 
@@ -1627,6 +1635,8 @@ SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
     ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_FALSE);
     if (mapping) {
         return CreateMappingString(mapping, guid);
+    } else {
+        SDL_SetError("Mapping not available");
     }
     return NULL;
 }
@@ -1876,7 +1886,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         return SDL_FALSE;
     }
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
 
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
         /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real controllers so it can remap input for the virtual controller */

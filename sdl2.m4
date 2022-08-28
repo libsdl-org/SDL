@@ -70,8 +70,8 @@ AC_ARG_VAR(SDL2_FRAMEWORK, [Path to SDL2.framework])
         sdl_framework=$SDL2_FRAMEWORK
       else
         for d in / ~/ /System/; do
-          if test -d "$dLibrary/Frameworks/SDL2.framework"; then
-            sdl_framework="$dLibrary/Frameworks/SDL2.framework"
+          if test -d "${d}Library/Frameworks/SDL2.framework"; then
+            sdl_framework="${d}Library/Frameworks/SDL2.framework"
           fi
         done
       fi

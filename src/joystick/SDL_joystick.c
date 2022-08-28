@@ -1743,7 +1743,8 @@ SDL_JoystickEventState(int state)
 #else
     const Uint32 event_list[] = {
         SDL_JOYAXISMOTION, SDL_JOYBALLMOTION, SDL_JOYHATMOTION,
-        SDL_JOYBUTTONDOWN, SDL_JOYBUTTONUP, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED
+        SDL_JOYBUTTONDOWN, SDL_JOYBUTTONUP, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED,
+        SDL_JOYBATTERYUPDATED
     };
     unsigned int i;
 
@@ -1767,19 +1768,23 @@ SDL_JoystickEventState(int state)
 #endif /* SDL_EVENTS_DISABLED */
 }
 
-void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version)
+void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16)
 {
     Uint16 *guid16 = (Uint16 *)guid.data;
+    Uint16 bus = SDL_SwapLE16(guid16[0]);
 
-    /* If the GUID fits the form of BUS 0000 VENDOR 0000 PRODUCT 0000, return the data */
-    if (/* guid16[0] is device bus type */
-        guid16[1] == 0x0000 &&
-        /* guid16[2] is vendor ID */
-        guid16[3] == 0x0000 &&
-        /* guid16[4] is product ID */
-        guid16[5] == 0x0000
-        /* guid16[6] is product version */
-    ) {
+    if (bus < ' ' && guid16[3] == 0x0000 && guid16[5] == 0x0000) {
+        /* This GUID fits the standard form:
+         * 16-bit bus
+         * 16-bit CRC16 of the joystick name (can be zero)
+         * 16-bit vendor ID
+         * 16-bit zero
+         * 16-bit product ID
+         * 16-bit zero
+         * 16-bit version
+         * 8-bit driver identifier ('h' for HIDAPI, 'x' for XInput, etc.)
+         * 8-bit driver-dependent type info
+         */
         if (vendor) {
             *vendor = SDL_SwapLE16(guid16[2]);
         }
@@ -1788,6 +1793,27 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
         }
         if (version) {
             *version = SDL_SwapLE16(guid16[6]);
+        }
+        if (crc16) {
+            *crc16 = SDL_SwapLE16(guid16[1]);
+        }
+    } else if (bus < ' ') {
+        /* This GUID fits the unknown VID/PID form:
+         * 16-bit bus
+         * 16-bit CRC16 of the joystick name (can be zero)
+         * 11 characters of the joystick name, null terminated
+         */
+        if (vendor) {
+            *vendor = 0;
+        }
+        if (product) {
+            *product = 0;
+        }
+        if (version) {
+            *version = 0;
+        }
+        if (crc16) {
+            *crc16 = SDL_SwapLE16(guid16[1]);
         }
     } else {
         if (vendor) {
@@ -1798,6 +1824,9 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
         }
         if (version) {
             *version = 0;
+        }
+        if (crc16) {
+            *crc16 = 0;
         }
     }
 }
@@ -1944,6 +1973,54 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
     return name;
 }
 
+SDL_JoystickGUID
+SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *name, Uint8 driver_signature, Uint8 driver_data)
+{
+    SDL_JoystickGUID guid;
+    Uint16 *guid16 = (Uint16 *)guid.data;
+
+    SDL_zero(guid);
+
+    /* We only need 16 bits for each of these; space them out to fill 128. */
+    /* Byteswap so devices get same GUID on little/big endian platforms. */
+    *guid16++ = SDL_SwapLE16(bus);
+    *guid16++ = SDL_SwapLE16(SDL_crc16(0, name, SDL_strlen(name)));
+
+    if (vendor && product) {
+        *guid16++ = SDL_SwapLE16(vendor);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(product);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(version);
+        guid.data[14] = driver_signature;
+        guid.data[15] = driver_data;
+    } else {
+        size_t available_space = sizeof(guid.data) - 4;
+
+        if (driver_signature) {
+            available_space -= 2;
+            guid.data[14] = driver_signature;
+            guid.data[15] = driver_data;
+        }
+        SDL_strlcpy((char*)guid16, name, available_space);
+    }
+    return guid;
+}
+
+SDL_JoystickGUID
+SDL_CreateJoystickGUIDForName(const char *name)
+{
+    return SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, 0, 0, 0, name, 0, 0);
+}
+
+void
+SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc)
+{
+    Uint16 *guid16 = (Uint16 *)guid->data;
+
+    guid16[1] = SDL_SwapLE16(crc);
+}
+
 SDL_GameControllerType
 SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI)
 {
@@ -2044,7 +2121,7 @@ SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *nam
     SDL_GameControllerType type;
     Uint16 vendor, product;
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
     type = SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, name, SDL_TRUE);
     if (type == SDL_CONTROLLER_TYPE_UNKNOWN) {
         if (SDL_IsJoystickXInput(guid)) {
@@ -2378,7 +2455,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
         return (SDL_JoystickType)guid.data[15];
     }
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
     vidpid = MAKE_VIDPID(vendor, product);
 
     if (SDL_IsJoystickProductWheel(vidpid)) {
@@ -2549,6 +2626,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         MAKE_VIDPID(0x1532, 0x0266),  /* Razer Huntman V2 Analog, non-functional DInput device */
         MAKE_VIDPID(0x1532, 0x0282),  /* Razer Huntman Mini Analog, non-functional DInput device */
         MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
+        MAKE_VIDPID(0x20d6, 0x0002),  /* PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only) */
     };
 
     static Uint32 rog_chakram_list[] = {
@@ -2566,7 +2644,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
     Uint16 product;
     SDL_GameControllerType type;
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
     /* Check the joystick blacklist */
     id = MAKE_VIDPID(vendor, product);
@@ -2617,7 +2695,7 @@ Uint16 SDL_JoystickGetDeviceVendor(int device_index)
     Uint16 vendor;
     SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL, NULL);
     return vendor;
 }
 
@@ -2626,7 +2704,7 @@ Uint16 SDL_JoystickGetDeviceProduct(int device_index)
     Uint16 product;
     SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
 
-    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL, NULL);
     return product;
 }
 
@@ -2635,7 +2713,7 @@ Uint16 SDL_JoystickGetDeviceProductVersion(int device_index)
     Uint16 version;
     SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
 
-    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version);
+    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
     return version;
 }
 
@@ -2699,7 +2777,7 @@ Uint16 SDL_JoystickGetVendor(SDL_Joystick *joystick)
     Uint16 vendor;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL, NULL);
     return vendor;
 }
 
@@ -2708,7 +2786,7 @@ Uint16 SDL_JoystickGetProduct(SDL_Joystick *joystick)
     Uint16 product;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
 
-    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL, NULL);
     return product;
 }
 
@@ -2717,7 +2795,7 @@ Uint16 SDL_JoystickGetProductVersion(SDL_Joystick *joystick)
     Uint16 version;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
 
-    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version);
+    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
     return version;
 }
 

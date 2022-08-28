@@ -678,9 +678,20 @@ static void
 PS2_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
+    if (data == 0)
+        return;
+
+    if(ps2_texture == 0)
+        return;
+
+    // Free from vram
+    gsKit_TexManager_free(data->gsGlobal, ps2_texture);
+    
     SDL_free(ps2_texture->Mem);
     SDL_free(ps2_texture);
+    texture->driverdata = NULL;
 }
 
 static void

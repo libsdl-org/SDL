@@ -24,6 +24,7 @@
 
 #include "../../events/SDL_events_c.h"
 
+#include "SDL_system.h"
 #include "SDL_uikitevents.h"
 #include "SDL_uikitopengles.h"
 #include "SDL_uikitvideo.h"

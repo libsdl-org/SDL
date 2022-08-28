@@ -534,6 +534,135 @@ KMSDRM_DeinitDisplays (_THIS) {
     }
 }
 
+static uint32_t
+KMSDRM_CrtcGetPropId(uint32_t drm_fd,
+                         drmModeObjectPropertiesPtr props,
+                         char const* name)
+{
+    uint32_t i, prop_id = 0;
+
+    for (i = 0; !prop_id && i < props->count_props; ++i) {
+        drmModePropertyPtr drm_prop =
+                     KMSDRM_drmModeGetProperty(drm_fd, props->props[i]);
+
+        if (!drm_prop)
+            continue;
+
+        if (strcmp(drm_prop->name, name) == 0)
+            prop_id = drm_prop->prop_id;
+
+        KMSDRM_drmModeFreeProperty(drm_prop);
+   }
+
+    return prop_id;
+}
+
+static SDL_bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vrr_prop_id) {
+    drmModeObjectPropertiesPtr drm_props;
+
+    drm_props = KMSDRM_drmModeObjectGetProperties(drm_fd,
+                                           crtc_id,
+                                           DRM_MODE_OBJECT_CRTC);
+
+    if (!drm_props)
+        return SDL_FALSE;
+
+    *vrr_prop_id = KMSDRM_CrtcGetPropId(drm_fd,
+                                       drm_props,
+                                       "VRR_ENABLED");
+
+    KMSDRM_drmModeFreeObjectProperties(drm_props);
+
+    return SDL_TRUE;
+}
+
+static SDL_bool 
+KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
+                         uint32_t output_id,
+                         char const* name)
+{
+    uint32_t i;
+    SDL_bool found = SDL_FALSE;
+    uint64_t prop_value = 0;
+
+
+    drmModeObjectPropertiesPtr props = KMSDRM_drmModeObjectGetProperties(drm_fd,
+                                       output_id,
+                                       DRM_MODE_OBJECT_CONNECTOR);
+
+    if(!props)
+        return SDL_FALSE;
+
+    for (i = 0; !found && i < props->count_props; ++i) {
+        drmModePropertyPtr drm_prop = KMSDRM_drmModeGetProperty(drm_fd, props->props[i]);
+
+        if (!drm_prop)
+            continue;
+
+        if (strcasecmp(drm_prop->name, name) == 0) {
+            prop_value = props->prop_values[i];
+            found = SDL_TRUE;
+        }
+
+        KMSDRM_drmModeFreeProperty(drm_prop);
+    }
+    if(found)
+        return prop_value ? SDL_TRUE: SDL_FALSE;
+
+    return SDL_FALSE;
+}
+
+void
+KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, SDL_bool enabled)
+{
+    uint32_t vrr_prop_id;
+    if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) 
+        return;
+
+    KMSDRM_drmModeObjectSetProperty(drm_fd,
+                             crtc_id,
+                             DRM_MODE_OBJECT_CRTC,
+                             vrr_prop_id,
+                             enabled);
+}
+
+static SDL_bool 
+KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
+{
+    uint32_t object_prop_id, vrr_prop_id;
+    drmModeObjectPropertiesPtr props;
+    SDL_bool object_prop_value;
+    int i;
+
+    if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) 
+        return SDL_FALSE;
+
+
+    props = KMSDRM_drmModeObjectGetProperties(drm_fd,
+                                       crtc_id,
+                                       DRM_MODE_OBJECT_CRTC);
+
+    if(!props)
+        return SDL_FALSE;
+
+    for (i = 0; i < props->count_props; ++i) {
+        drmModePropertyPtr drm_prop = KMSDRM_drmModeGetProperty(drm_fd, props->props[i]);
+
+        if (!drm_prop)
+            continue;
+
+        object_prop_id = drm_prop->prop_id;
+        object_prop_value = props->prop_values[i] ? SDL_TRUE : SDL_FALSE;
+
+        KMSDRM_drmModeFreeProperty(drm_prop);
+
+        if (object_prop_id == vrr_prop_id) {
+            return object_prop_value;
+        }
+    }
+    return SDL_FALSE;
+}
+
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
    list of SDL Displays in _this->displays[]  */
 static void
@@ -674,6 +803,14 @@ KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
     /* Store the connector and crtc for this display. */
     dispdata->connector = connector;
     dispdata->crtc = crtc;
+
+    /* save previous vrr state */
+    dispdata->saved_vrr = KMSDRM_CrtcGetVrr(viddata->drm_fd, crtc->crtc_id);
+    /* try to enable vrr */
+    if(KMSDRM_ConnectorCheckVrrCapable(viddata->drm_fd, connector->connector_id, "VRR_CAPABLE")) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Enabling VRR");
+        KMSDRM_CrtcSetVrr(viddata->drm_fd, crtc->crtc_id, SDL_TRUE);
+    }
 
     /*****************************************/
     /* Part 2: setup the SDL_Display itself. */
@@ -1177,6 +1314,9 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
     if (!windata) {
         return;
     }
+
+    /* restore vrr state */
+    KMSDRM_CrtcSetVrr(windata->viddata->drm_fd, dispdata->crtc->crtc_id, dispdata->saved_vrr);
 
     viddata = windata->viddata;
 

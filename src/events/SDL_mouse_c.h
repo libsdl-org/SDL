@@ -91,8 +91,14 @@ typedef struct
     SDL_bool has_position;
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
+    SDL_bool relative_mode_warp_motion;
+    SDL_bool enable_normal_speed_scale;
     float normal_speed_scale;
+    SDL_bool enable_relative_speed_scale;
     float relative_speed_scale;
+    SDL_bool enable_relative_system_scale;
+    int num_system_scale_values;
+    float *system_scale_values;
     float scale_accum_x;
     float scale_accum_y;
     Uint32 double_click_time;
@@ -139,6 +145,9 @@ extern void SDL_SetMouseFocus(SDL_Window * window);
 
 /* Update the mouse capture window */
 extern int SDL_UpdateMouseCapture(SDL_bool force_release);
+
+/* You can set either a single scale, or a set of {speed, scale} values in sorted order */
+extern int SDL_SetMouseSystemScale(int num_values, const float *values);
 
 /* Send a mouse motion event */
 extern int SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);

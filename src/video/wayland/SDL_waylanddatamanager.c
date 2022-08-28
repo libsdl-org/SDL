@@ -305,14 +305,22 @@ Wayland_data_source_get_data(SDL_WaylandDataSource *source,
     } else {
         mime_data = mime_data_list_find(&source->mimes, mime_type);
         if (mime_data != NULL && mime_data->length > 0) {
-            buffer = SDL_malloc(mime_data->length);
+            size_t buffer_length = mime_data->length;
+
+            if (null_terminate == SDL_TRUE) {
+                ++buffer_length;
+            }
+            buffer = SDL_malloc(buffer_length);
             if (buffer == NULL) {
                 *length = SDL_OutOfMemory();
             } else {
                 *length = mime_data->length;
                 SDL_memcpy(buffer, mime_data->data, mime_data->length);
+                if (null_terminate) {
+                    *((Uint8 *)buffer + mime_data->length) = 0;
+                }
             }
-       }
+        }
     }
 
     return buffer;

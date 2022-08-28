@@ -180,6 +180,7 @@ WIN_CreateDevice(void)
     device->SetWindowPosition = WIN_SetWindowPosition;
     device->SetWindowSize = WIN_SetWindowSize;
     device->GetWindowBordersSize = WIN_GetWindowBordersSize;
+    device->GetWindowSizeInPixels = WIN_GetWindowSizeInPixels;
     device->SetWindowOpacity = WIN_SetWindowOpacity;
     device->ShowWindow = WIN_ShowWindow;
     device->HideWindow = WIN_HideWindow;
@@ -221,7 +222,6 @@ WIN_CreateDevice(void)
     device->GL_UnloadLibrary = WIN_GL_UnloadLibrary;
     device->GL_CreateContext = WIN_GL_CreateContext;
     device->GL_MakeCurrent = WIN_GL_MakeCurrent;
-    device->GL_GetDrawableSize = WIN_GL_GetDrawableSize;
     device->GL_SetSwapInterval = WIN_GL_SetSwapInterval;
     device->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
     device->GL_SwapWindow = WIN_GL_SwapWindow;
@@ -233,7 +233,6 @@ WIN_CreateDevice(void)
     device->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
     device->GL_CreateContext = WIN_GLES_CreateContext;
     device->GL_MakeCurrent = WIN_GLES_MakeCurrent;
-    device->GL_GetDrawableSize = WIN_GLES_GetDrawableSize;
     device->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
     device->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
     device->GL_SwapWindow = WIN_GLES_SwapWindow;
@@ -244,7 +243,6 @@ WIN_CreateDevice(void)
     device->Vulkan_UnloadLibrary = WIN_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = WIN_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = WIN_Vulkan_CreateSurface;
-    device->Vulkan_GetDrawableSize = WIN_GL_GetDrawableSize;
 #endif
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)

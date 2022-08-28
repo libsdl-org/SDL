@@ -254,7 +254,6 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         Uint16 product = 0;
         Uint16 version = 0;
         SDL_JoystickType type = SDL_JOYSTICK_TYPE_UNKNOWN;
-        Uint16 *guid16 = (Uint16 *)guid.data;
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
         __x_ABI_CWindows_CGaming_CInput_CIGameController *gamecontroller = NULL;
         SDL_bool ignore_joystick = SDL_FALSE;
@@ -319,18 +318,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         }
 
         /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(version);
-        *guid16++ = 0;
-
-        /* Note that this is a Windows Gaming Input device for special handling elsewhere */
-        guid.data[14] = 'w';
-        guid.data[15] = (Uint8)type;
+        guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, name, 'w', (Uint8)type);
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {

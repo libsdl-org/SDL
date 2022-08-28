@@ -134,12 +134,9 @@ static void PSP_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 
 static SDL_JoystickGUID PSP_JoystickGetDeviceGUID(int device_index)
 {
-    SDL_JoystickGUID guid;
-    /* the GUID is just the first 16 chars of the name for now */
+    /* the GUID is just the name for now */
     const char *name = PSP_JoystickGetDeviceName(device_index);
-    SDL_zero(guid);
-    SDL_memcpy(&guid, name, SDL_min(sizeof(guid), SDL_strlen(name)));
-    return guid;
+    return SDL_CreateJoystickGUIDForName(name);
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */

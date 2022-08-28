@@ -526,8 +526,14 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                             visual, AllocNone);
     }
 
+    /* Always create this with the window->windowed.* fields; if we're
+       creating a windowed mode window, that's fine. If we're creating a
+       fullscreen window, the window manager will want to know these values
+       so it can use them if we go _back_ to windowed mode. SDL manages
+       migration to fullscreen after CreateSDLWindow returns, which will
+       put all the SDL_Window fields and system state as expected. */
     w = X11_XCreateWindow(display, RootWindow(display, screen),
-                      window->x, window->y, window->w, window->h,
+                      window->windowed.x, window->windowed.y, window->windowed.w, window->windowed.h,
                       0, depth, InputOutput, visual,
                       (CWOverrideRedirect | CWBackPixmap | CWBorderPixel |
                        CWBackingStore | CWColormap), &xattr);
@@ -1600,6 +1606,7 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
     if (data == NULL) {
         return;
     }
+    data->mouse_grabbed = SDL_FALSE;
 
     display = data->videodata->display;
 
@@ -1622,6 +1629,7 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
                 result = X11_XGrabPointer(display, data->xwindow, True, mask, GrabModeAsync,
                                  GrabModeAsync, data->xwindow, None, CurrentTime);
                 if (result == GrabSuccess) {
+                    data->mouse_grabbed = SDL_TRUE;
                     break;
                 }
                 SDL_Delay(50);

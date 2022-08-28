@@ -1168,6 +1168,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             }
 
+            /* When the window is minimized it's resized to the dock icon size, ignore this */
+            if (IsIconic(hwnd)) {
+                break;
+            }
+
             if (!GetClientRect(hwnd, &rect) || IsRectEmpty(&rect)) {
                 break;
             }
@@ -1543,7 +1548,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     data->scaling_dpi = newDPI;
 
                     /* Send a SDL_WINDOWEVENT_SIZE_CHANGED saying that the client size (in dpi-scaled points) is unchanged.
-                       Renderers need to get this to know that the framebuffer size changed. */
+                       Renderers need to get this to know that the framebuffer size changed.
+
+                       We clear the window size to force the event to be delivered, but what we really
+                       want for SDL3 is a new event to notify that the DPI changed and then watch for
+                       that in the renderer directly.
+                     */
+                    data->window->w = 0;
+                    data->window->h = 0;
                     SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SIZE_CHANGED, data->window->w, data->window->h);
                 }
 
@@ -1616,6 +1628,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+
+    case WM_SETTINGCHANGE:
+        if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
+            WIN_UpdateMouseSystemScale();
+        }
+        break;
+
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     }
 

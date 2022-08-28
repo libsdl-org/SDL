@@ -25,7 +25,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_hints.h"
 #include "SDL_events.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
@@ -361,6 +360,26 @@ IsGameCubeFormFactor(int vendor_id, int product_id)
     return SDL_FALSE;
 }
 
+static void
+HIDAPI_DriverNintendoClassic_RegisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC, callback, userdata);
+}
+
+static void
+HIDAPI_DriverNintendoClassic_UnregisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC, callback, userdata);
+}
+
+static SDL_bool
+HIDAPI_DriverNintendoClassic_IsEnabled(void)
+{
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC,
+               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                   SDL_HIDAPI_DEFAULT));
+}
+
 static SDL_bool
 HIDAPI_DriverNintendoClassic_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
@@ -387,6 +406,26 @@ HIDAPI_DriverNintendoClassic_IsSupportedDevice(const char *name, SDL_GameControl
     return SDL_FALSE;
 }
 
+static void
+HIDAPI_DriverJoyCons_RegisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, callback, userdata);
+}
+
+static void
+HIDAPI_DriverJoyCons_UnregisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, callback, userdata);
+}
+
+static SDL_bool
+HIDAPI_DriverJoyCons_IsEnabled(void)
+{
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS,
+               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                   SDL_HIDAPI_DEFAULT));
+}
+
 static SDL_bool
 HIDAPI_DriverJoyCons_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
@@ -398,6 +437,26 @@ HIDAPI_DriverJoyCons_IsSupportedDevice(const char *name, SDL_GameControllerType 
         }
     }
     return SDL_FALSE;
+}
+
+static void
+HIDAPI_DriverSwitch_RegisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH, callback, userdata);
+}
+
+static void
+HIDAPI_DriverSwitch_UnregisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH, callback, userdata);
+}
+
+static SDL_bool
+HIDAPI_DriverSwitch_IsEnabled(void)
+{
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
+               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                   SDL_HIDAPI_DEFAULT));
 }
 
 static SDL_bool
@@ -1513,7 +1572,7 @@ HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joyst
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
     Uint32 result = 0;
 
-    if (!ctx->m_bInputOnly) {
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) {
         /* Doesn't have an RGB LED, so don't return SDL_JOYCAP_LED here */
         result |= SDL_JOYCAP_RUMBLE;
     }
@@ -2147,7 +2206,9 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic =
 {
     SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC,
     SDL_TRUE,
-    SDL_TRUE,
+    HIDAPI_DriverNintendoClassic_RegisterHints,
+    HIDAPI_DriverNintendoClassic_UnregisterHints,
+    HIDAPI_DriverNintendoClassic_IsEnabled,
     HIDAPI_DriverNintendoClassic_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
     HIDAPI_DriverSwitch_InitDevice,
@@ -2169,7 +2230,9 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons =
 {
     SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS,
     SDL_TRUE,
-    SDL_TRUE,
+    HIDAPI_DriverJoyCons_RegisterHints,
+    HIDAPI_DriverJoyCons_UnregisterHints,
+    HIDAPI_DriverJoyCons_IsEnabled,
     HIDAPI_DriverJoyCons_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
     HIDAPI_DriverSwitch_InitDevice,
@@ -2191,7 +2254,9 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
 {
     SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
     SDL_TRUE,
-    SDL_TRUE,
+    HIDAPI_DriverSwitch_RegisterHints,
+    HIDAPI_DriverSwitch_UnregisterHints,
+    HIDAPI_DriverSwitch_IsEnabled,
     HIDAPI_DriverSwitch_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
     HIDAPI_DriverSwitch_InitDevice,

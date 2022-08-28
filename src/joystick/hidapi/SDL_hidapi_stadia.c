@@ -22,7 +22,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_hints.h"
 #include "SDL_events.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
@@ -47,6 +46,26 @@ typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverStadia_Context;
 
+
+static void
+HIDAPI_DriverStadia_RegisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STADIA, callback, userdata);
+}
+
+static void
+HIDAPI_DriverStadia_UnregisterHints(SDL_HintCallback callback, void *userdata)
+{
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STADIA, callback, userdata);
+}
+
+static SDL_bool
+HIDAPI_DriverStadia_IsEnabled(void)
+{
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STADIA,
+               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                   SDL_HIDAPI_DEFAULT));
+}
 
 static SDL_bool
 HIDAPI_DriverStadia_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -306,7 +325,9 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
 {
     SDL_HINT_JOYSTICK_HIDAPI_STADIA,
     SDL_TRUE,
-    SDL_TRUE,
+    HIDAPI_DriverStadia_RegisterHints,
+    HIDAPI_DriverStadia_UnregisterHints,
+    HIDAPI_DriverStadia_IsEnabled,
     HIDAPI_DriverStadia_IsSupportedDevice,
     HIDAPI_DriverStadia_GetDeviceName,
     HIDAPI_DriverStadia_InitDevice,

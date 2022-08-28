@@ -811,6 +811,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	process_pending_events();
 	
 	device_set = IOHIDManagerCopyDevices(hid_mgr);
+	if (!device_set)
+		return NULL;
 	
 	num_devices = CFSetGetCount(device_set);
 	device_array = (IOHIDDeviceRef *)calloc(num_devices, sizeof(IOHIDDeviceRef));

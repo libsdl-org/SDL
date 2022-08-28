@@ -425,6 +425,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
  * the following: SDL_PollEvent, SDL_PumpEvents, SDL_WaitEventTimeout,
  * SDL_WaitEvent.
  *
+ * Note that when sending trigger axes, you should scale the value to the full
+ * range of Sint16. For example, a trigger at rest would have the value of
+ * `SDL_JOYSTICK_AXIS_MIN`.
+ *
  * \param joystick the virtual joystick on which to set state.
  * \param axis the specific axis on the virtual joystick to set.
  * \param value the new value for the specified axis.
@@ -642,6 +646,25 @@ extern DECLSPEC void SDLCALL SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, ch
  * \sa SDL_JoystickGetGUIDString
  */
 extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUIDFromString(const char *pchGUID);
+
+/**
+ * Get the device information encoded in a SDL_JoystickGUID structure
+ *
+ * \param guid the SDL_JoystickGUID you wish to get info about
+ * \param vendor A pointer filled in with the device VID, or 0 if not
+ *               available
+ * \param product A pointer filled in with the device PID, or 0 if not
+ *                available
+ * \param version A pointer filled in with the device version, or 0 if not
+ *                available
+ * \param crc A pointer filled in with a CRC used to distinguish different
+ *            products with the same VID/PID, or 0 if not available
+ *
+ * \since This function is available since SDL 2.26.0.
+ *
+ * \sa SDL_JoystickGetDeviceGUID
+ */
+extern DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16);
 
 /**
  * Get the status of a specified joystick.

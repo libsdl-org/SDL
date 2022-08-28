@@ -558,6 +558,8 @@ WatchJoystick(SDL_Joystick * joystick)
     }
 
     if (s_bBindingComplete) {
+        SDL_JoystickGUID guid;
+        Uint16 crc;
         char mapping[1024];
         char trimmed_name[128];
         char *spot;
@@ -576,13 +578,28 @@ WatchJoystick(SDL_Joystick * joystick)
         }
 
         /* Initialize mapping with GUID and name */
-        SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), mapping, SDL_arraysize(mapping));
+        guid = SDL_JoystickGetGUID(joystick);
+        SDL_GetJoystickGUIDInfo(guid, NULL, NULL, NULL, &crc);
+        if (crc) {
+            /* Clear the CRC from the GUID for the mapping */
+            guid.data[2] = 0;
+            guid.data[3] = 0;
+        }
+        SDL_JoystickGetGUIDString(guid, mapping, SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         SDL_strlcat(mapping, trimmed_name, SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         SDL_strlcat(mapping, "platform:", SDL_arraysize(mapping));
         SDL_strlcat(mapping, SDL_GetPlatform(), SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
+        if (crc) {
+            char crc_string[5];
+
+            SDL_strlcat(mapping, "crc:", SDL_arraysize(mapping));
+            SDL_snprintf(crc_string, sizeof(crc_string), "%.4x", crc);
+            SDL_strlcat(mapping, crc_string, SDL_arraysize(mapping));
+            SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
+        }
 
         for (iIndex = 0; iIndex < SDL_arraysize(s_arrBindings); ++iIndex) {
             SDL_GameControllerExtendedBind *pBinding = &s_arrBindings[iIndex];

@@ -705,16 +705,11 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             }
 
             /* In addition to size changes, we also want to do this block for
-             * moves as well, for two reasons:
-             *
-             * 1. The window could be moved to a new display, which has a new
-             *    DPI and therefore a new window/drawable ratio
-             * 2. For whatever reason, the viewport can get messed up during
-             *    window movement (this has been observed on macOS), so this is
-             *    also a good opportunity to force viewport updates
+             * window display changes as well! If the new display has a new DPI,
+             * we need to update the viewport for the new window/drawable ratio.
              */
             if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-                event->window.event == SDL_WINDOWEVENT_MOVED) {
+                event->window.event == SDL_WINDOWEVENT_DISPLAY_CHANGED) {
                 /* Make sure we're operating on the default render target */
                 SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
                 if (saved_target) {
@@ -2986,8 +2981,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
                 frect->x += scale_x;
             }
         } else {
-            retval += RenderDrawLineBresenham(renderer, (int)points[i].x, (int)points[i].y,
-                                                        (int)points[i+1].x, (int)points[i+1].y, draw_last);
+            retval += RenderDrawLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
+                                                        (int)SDL_roundf(points[i+1].x), (int)SDL_roundf(points[i+1].y), draw_last);
         }
         drew_line = SDL_TRUE;
     }

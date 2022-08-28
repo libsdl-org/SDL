@@ -24,6 +24,7 @@
 #define SDL_JOYSTICK_HIDAPI_H
 
 #include "SDL_atomic.h"
+#include "SDL_hints.h"
 #include "SDL_mutex.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
@@ -33,6 +34,7 @@
 /* This is the full set of HIDAPI drivers available */
 #define SDL_JOYSTICK_HIDAPI_GAMECUBE
 #define SDL_JOYSTICK_HIDAPI_LUNA
+#define SDL_JOYSTICK_HIDAPI_PS3
 #define SDL_JOYSTICK_HIDAPI_PS4
 #define SDL_JOYSTICK_HIDAPI_PS5
 #define SDL_JOYSTICK_HIDAPI_STADIA
@@ -45,6 +47,9 @@
 /* Very basic Steam Controller support on mobile devices */
 #define SDL_JOYSTICK_HIDAPI_STEAM
 #endif
+
+/* Whether HIDAPI is enabled by default */
+#define SDL_HIDAPI_DEFAULT  SDL_TRUE
 
 /* The maximum size of a USB packet for HID devices */
 #define USB_PACKET_LENGTH   64
@@ -91,9 +96,11 @@ typedef struct _SDL_HIDAPI_Device
 
 typedef struct _SDL_HIDAPI_DeviceDriver
 {
-    const char *hint;
+    const char *name;
     SDL_bool enabled;
-    SDL_bool enabled_default;
+    void (*RegisterHints)(SDL_HintCallback callback, void *userdata);
+    void (*UnregisterHints)(SDL_HintCallback callback, void *userdata);
+    SDL_bool (*IsEnabled)(void);
     SDL_bool (*IsSupportedDevice)(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
     const char *(*GetDeviceName)(const char *name, Uint16 vendor_id, Uint16 product_id);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
@@ -119,6 +126,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield;

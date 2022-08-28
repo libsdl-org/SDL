@@ -1063,6 +1063,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_luna.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps3.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
@@ -1251,6 +1254,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c">
       <Filter>thread\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_crc16.c">
+      <Filter>stdlib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\stdlib\SDL_crc32.c">
       <Filter>stdlib</Filter>

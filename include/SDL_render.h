@@ -1765,6 +1765,9 @@ extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture * texture);
 /**
  * Destroy the rendering context for a window and free associated textures.
  *
+ * If `renderer` is NULL, this function will return immediately after setting
+ * the SDL error message to "Invalid renderer". See SDL_GetError().
+ *
  * \param renderer the rendering context
  *
  * \since This function is available since SDL 2.0.0.
