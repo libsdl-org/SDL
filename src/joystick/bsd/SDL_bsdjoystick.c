@@ -229,7 +229,7 @@ static void report_free(struct report *);
 
 
 static int
-usage_to_joyaxe(unsigned usage)
+usage_to_joyaxe(int usage)
 {
     int joyaxe;
     switch (usage) {
@@ -365,7 +365,7 @@ CreateHwData(const char *path)
                 switch (HID_PAGE(hitem.usage)) {
                 case HUP_GENERIC_DESKTOP:
                     {
-                        unsigned usage = HID_USAGE(hitem.usage);
+                        int usage = HID_USAGE(hitem.usage);
                         int joyaxe = usage_to_joyaxe(usage);
                         if (joyaxe >= 0) {
                             hw->axis_map[joyaxe] = 1;
@@ -379,7 +379,12 @@ CreateHwData(const char *path)
                         break;
                     }
                 case HUP_BUTTON:
-                    hw->nbuttons++;
+                    {
+                        int usage = HID_USAGE(hitem.usage);
+                        if (usage > hw->nbuttons) {
+                            hw->nbuttons = usage;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -652,7 +657,6 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
     Sint32 v;
 #ifdef __OpenBSD__
     Sint32 dpad[4] = {0, 0, 0, 0};
-    int actualbutton;
 #endif
 
 #ifdef SUPPORT_JOY_GAMEPORT
@@ -715,13 +719,13 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
             continue;
         }
 
-        for (nbutton = 0; hid_get_item(hdata, &hitem) > 0;) {
+        while (hid_get_item(hdata, &hitem) > 0) {
             switch (hitem.kind) {
             case hid_input:
                 switch (HID_PAGE(hitem.usage)) {
                 case HUP_GENERIC_DESKTOP:
                     {
-                        unsigned usage = HID_USAGE(hitem.usage);
+                        int usage = HID_USAGE(hitem.usage);
                         int joyaxe = usage_to_joyaxe(usage);
                         if (joyaxe >= 0) {
                             naxe = joy->hwdata->axis_map[joyaxe];
@@ -773,13 +777,8 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                     }
                 case HUP_BUTTON:
                     v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-#ifdef __OpenBSD__
-                    actualbutton = HID_USAGE(hitem.usage) - 1;	/* sdl buttons are zero-based */
-                    SDL_PrivateJoystickButton(joy, actualbutton, v);
-#else
+                    nbutton = HID_USAGE(hitem.usage) - 1;	/* SDL buttons are zero-based */
                     SDL_PrivateJoystickButton(joy, nbutton, v);
-#endif
-                    nbutton++;
                     break;
                 default:
                     continue;
