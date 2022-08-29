@@ -1981,6 +1981,10 @@ SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version
 
     SDL_zero(guid);
 
+    if (!name) {
+        name = "";
+    }
+
     /* We only need 16 bits for each of these; space them out to fill 128. */
     /* Byteswap so devices get same GUID on little/big endian platforms. */
     *guid16++ = SDL_SwapLE16(bus);
