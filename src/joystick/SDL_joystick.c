@@ -2017,6 +2017,27 @@ SDL_CreateJoystickGUIDForName(const char *name)
     return SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, 0, 0, 0, name, 0, 0);
 }
 
+void SDL_SetJoystickGUIDVendor(SDL_JoystickGUID *guid, Uint16 vendor)
+{
+    Uint16 *guid16 = (Uint16 *)guid->data;
+
+    guid16[2] = SDL_SwapLE16(vendor);
+}
+
+void SDL_SetJoystickGUIDProduct(SDL_JoystickGUID *guid, Uint16 product)
+{
+    Uint16 *guid16 = (Uint16 *)guid->data;
+
+    guid16[4] = SDL_SwapLE16(product);
+}
+
+void SDL_SetJoystickGUIDVersion(SDL_JoystickGUID *guid, Uint16 version)
+{
+    Uint16 *guid16 = (Uint16 *)guid->data;
+
+    guid16[6] = SDL_SwapLE16(version);
+}
+
 void
 SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc)
 {

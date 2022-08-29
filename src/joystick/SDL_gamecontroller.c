@@ -686,6 +686,38 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
     }
 
     if (!exact_match) {
+        /* Try again, ignoring the version */
+        Uint16 vendor, product;
+
+        SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+        if (vendor && product) {
+            SDL_JoystickGUID match_guid;
+
+            SDL_memcpy(&match_guid, &guid, sizeof(guid));
+            SDL_SetJoystickGUIDVersion(&match_guid, 0);
+
+            for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
+                SDL_JoystickGUID mapping_guid;
+
+                SDL_memcpy(&mapping_guid, &mapping->guid, sizeof(mapping_guid));
+                SDL_SetJoystickGUIDVersion(&mapping_guid, 0);
+
+                if (SDL_memcmp(&match_guid, &mapping_guid, sizeof(match_guid)) == 0) {
+                    /* Check to see if the CRC matches */
+                    const char *crc_string = SDL_strstr(mapping->mapping, "crc:");
+                    if (crc_string) {
+                        Uint16 mapping_crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16); 
+                        if (crc != mapping_crc) {
+                            continue;
+                        }
+                    }
+                    return mapping;
+                }
+            }
+        }
+    }
+
+    if (!exact_match) {
 #if SDL_JOYSTICK_XINPUT
         if (SDL_IsJoystickXInput(guid)) {
             /* This is an XInput device */

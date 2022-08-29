@@ -65,6 +65,15 @@ extern SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16
 /* Function to create a GUID for a joystick based on the name, with no VID/PID information */
 extern SDL_JoystickGUID SDL_CreateJoystickGUIDForName(const char *name);
 
+/* Function to set the vendor field of a joystick GUID */
+extern void SDL_SetJoystickGUIDVendor(SDL_JoystickGUID *guid, Uint16 vendor);
+
+/* Function to set the product field of a joystick GUID */
+extern void SDL_SetJoystickGUIDProduct(SDL_JoystickGUID *guid, Uint16 product);
+
+/* Function to set the version field of a joystick GUID */
+extern void SDL_SetJoystickGUIDVersion(SDL_JoystickGUID *guid, Uint16 version);
+
 /* Function to set the CRC field of a joystick GUID */
 extern void SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc);
 
