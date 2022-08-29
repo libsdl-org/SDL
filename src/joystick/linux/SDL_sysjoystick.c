@@ -331,6 +331,7 @@ MaybeAddDevice(const char *path)
 
     item = (SDL_joylist_item *) SDL_calloc(1, sizeof (SDL_joylist_item));
     if (item == NULL) {
+        SDL_free(name);
         return -1;
     }
 
