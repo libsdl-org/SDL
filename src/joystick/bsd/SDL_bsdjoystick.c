@@ -731,18 +731,6 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                             naxe = joy->hwdata->axis_map[joyaxe];
                             /* scaleaxe */
                             v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-#ifdef __OpenBSD__
-                            /* XInput controllermapping relies on inverted Y axes.
-                             * These devices have a 16bit signed space, as opposed
-                             * to older DInput devices (8bit unsigned), so
-                             * hitem.logical_maximum can be used to differentiate them.
-                             */
-                            if ((joyaxe == JOYAXE_Y || joyaxe == JOYAXE_RY)
-                                && hitem.logical_maximum > 255) {
-                                if (v != 0)
-                                    v = ~v;
-                            }
-#endif
                             v -= (hitem.logical_maximum +
                                   hitem.logical_minimum + 1) / 2;
                             v *= 32768 /
