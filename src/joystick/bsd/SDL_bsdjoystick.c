@@ -63,10 +63,9 @@
 #include <osreldate.h>
 #if __FreeBSD_kernel_version > 800063
 #include <dev/usb/usb_ioctl.h>
-#endif
-#include <sys/joystick.h>
 #elif defined(__DragonFly__)
 #include <bus/u4b/usb_ioctl.h>
+#endif
 #include <sys/joystick.h>
 #endif
 
@@ -77,6 +76,7 @@
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 #if defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
 #define SUPPORT_JOY_GAMEPORT
