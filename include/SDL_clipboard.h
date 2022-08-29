@@ -41,8 +41,6 @@ extern "C" {
 /**
  * Put UTF-8 text into the clipboard.
  *
- * This function may or may not also set the primary selection to the same text.
- *
  * \param text the text to store in the clipboard
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

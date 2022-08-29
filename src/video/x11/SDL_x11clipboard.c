@@ -55,7 +55,8 @@ GetWindow(_THIS)
 /* We use our own cut-buffer for intermediate storage instead of
    XA_CUT_BUFFER0 because their use isn't really defined for holding UTF8. */
 Atom
-X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType mime_type)
+X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType mime_type,
+        Atom selection_type)
 {
     switch (mime_type) {
         case SDL_X11_CLIPBOARD_MIME_TYPE_STRING:
@@ -64,7 +65,9 @@ X11_GetSDLCutBufferClipboardType(Display *display, enum ESDLX11ClipboardMimeType
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8:
         #endif
         case SDL_X11_CLIPBOARD_MIME_TYPE_TEXT:
-            return X11_XInternAtom(display, "SDL_CUTBUFFER", False);
+            return X11_XInternAtom(display, selection_type == XA_PRIMARY ?
+                                   "SDL_CUTBUFFER_PRIMARY_SELECTION" : "SDL_CUTBUFFER",
+                                   False);
         default:
             SDL_SetError("Can't find mime_type.");
             return XA_STRING;
@@ -118,7 +121,7 @@ X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11Clipboa
 }
 
 static int
-SetSelectionText(_THIS, const char *text, Atom selection_type1, Atom selection_type2)
+SetSelectionText(_THIS, const char *text, Atom selection_type)
 {
     Display *display = ((SDL_VideoData *) _this->driverdata)->display;
     Window window;
@@ -131,18 +134,14 @@ SetSelectionText(_THIS, const char *text, Atom selection_type1, Atom selection_t
 
     /* Save the selection on the root window */
     X11_XChangeProperty(display, DefaultRootWindow(display),
-        X11_GetSDLCutBufferClipboardType(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING), X11_GetSDLCutBufferClipboardInternalFormat(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING), 8, PropModeReplace,
+        X11_GetSDLCutBufferClipboardType(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING, selection_type),
+        X11_GetSDLCutBufferClipboardInternalFormat(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING), 8, PropModeReplace,
         (const unsigned char *)text, SDL_strlen(text));
 
-    if (selection_type1 != None &&
-        X11_XGetSelectionOwner(display, selection_type1) != window) {
-        X11_XSetSelectionOwner(display, selection_type1, window, CurrentTime);
+    if (X11_XGetSelectionOwner(display, selection_type) != window) {
+        X11_XSetSelectionOwner(display, selection_type, window, CurrentTime);
     }
 
-    if (selection_type2 != None &&
-        X11_XGetSelectionOwner(display, selection_type2) != window) {
-        X11_XSetSelectionOwner(display, selection_type2, window, CurrentTime);
-    }
     return 0;
 }
 
@@ -177,7 +176,7 @@ GetSlectionText(_THIS, Atom selection_type)
         format = XA_STRING;
     } else if (owner == window) {
         owner = DefaultRootWindow(display);
-        selection = X11_GetSDLCutBufferClipboardType(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING);
+        selection = X11_GetSDLCutBufferClipboardType(display, SDL_X11_CLIPBOARD_MIME_TYPE_STRING, selection_type);
     } else {
         /* Request that the selection owner copy the data to our window */
         owner = window;
@@ -199,7 +198,7 @@ GetSlectionText(_THIS, Atom selection_type)
                 SDL_SetError("Selection timeout");
                 /* We need to set the selection text so that next time we won't
                    timeout, otherwise we will hang on every call to this function. */
-                SetSelectionText(_this, "", selection_type, None);
+                SetSelectionText(_this, "", selection_type);
                 return SDL_strdup("");
             }
         }
@@ -233,14 +232,13 @@ X11_SetClipboardText(_THIS, const char *text)
     if (XA_CLIPBOARD == None) {
         return SDL_SetError("Couldn't access X clipboard");
     }
-    /* Also set primary selection */
-    return SetSelectionText(_this, text, XA_CLIPBOARD, XA_PRIMARY);
+    return SetSelectionText(_this, text, XA_CLIPBOARD);
 }
 
 int
 X11_SetPrimarySelectionText(_THIS, const char *text)
 {
-    return SetSelectionText(_this, text, XA_PRIMARY, None);
+    return SetSelectionText(_this, text, XA_PRIMARY);
 }
 
 char *

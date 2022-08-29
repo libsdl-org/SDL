@@ -620,7 +620,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             int seln_format, mime_formats;
             unsigned long nbytes;
             unsigned long overflow;
-            unsigned char *seln_data;            
+            unsigned char *seln_data;
             Atom supportedFormats[SDL_X11_CLIPBOARD_MIME_TYPE_MAX+1];
             Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
 
@@ -640,11 +640,11 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             /* !!! FIXME: We were probably storing this on the root window
                because an SDL window might go away...? but we don't have to do
                this now (or ever, really). */
-            
+
             if (req->target == XA_TARGETS) {
                 supportedFormats[0] = XA_TARGETS;
                 mime_formats = 1;
-                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) 
+                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i)
                     supportedFormats[mime_formats++] = X11_GetSDLCutBufferClipboardExternalFormat(display, i);
                 X11_XChangeProperty(display, req->requestor, req->property,
                     XA_ATOM, 32, PropModeReplace,
@@ -657,7 +657,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
                     if (X11_GetSDLCutBufferClipboardExternalFormat(display, i) != req->target)
                         continue;
                     if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
-                        X11_GetSDLCutBufferClipboardType(display, i), 0, INT_MAX/4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
+                        X11_GetSDLCutBufferClipboardType(display, i, req->selection), 0, INT_MAX/4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
                         &sevent.xselection.target, &seln_format, &nbytes,
                         &overflow, &seln_data) == Success) {
                             if (seln_format != None) {
@@ -946,7 +946,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             if (xevent->xcrossing.mode != NotifyGrab &&
                 xevent->xcrossing.mode != NotifyUngrab &&
                 xevent->xcrossing.detail != NotifyInferior) {
-                
+
                 /* In order for interaction with the window decorations and menu to work properly
                    on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
                 if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
@@ -1158,7 +1158,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                                         &xevent->xconfigure.x, &xevent->xconfigure.y,
                                         &ChildReturn);
             }
-                
+
             if (xevent->xconfigure.x != data->last_xconfigure.x ||
                 xevent->xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
