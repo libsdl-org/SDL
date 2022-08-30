@@ -798,26 +798,36 @@ WGI_JoystickUpdate(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     HRESULT hr;
-    UINT32 nbuttons = joystick->nbuttons;
-    boolean *buttons = SDL_stack_alloc(boolean, nbuttons);
-    UINT32 nhats = joystick->nhats;
-    __x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition *hats = SDL_stack_alloc(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition, nhats);
-    UINT32 naxes = joystick->naxes;
-    DOUBLE *axes = SDL_stack_alloc(DOUBLE, naxes);
+    UINT32 nbuttons = SDL_min(joystick->nbuttons, SDL_MAX_UINT8);
+    boolean *buttons = NULL;
+    UINT32 nhats = SDL_min(joystick->nhats, SDL_MAX_UINT8);
+    __x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition *hats = NULL;
+    UINT32 naxes = SDL_min(joystick->naxes, SDL_MAX_UINT8);
+    DOUBLE *axes = NULL;
     UINT64 timestamp;
+
+    if (nbuttons > 0) {
+        buttons = SDL_stack_alloc(boolean, nbuttons);
+    }
+    if (nhats > 0) {
+        hats = SDL_stack_alloc(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition, nhats);
+    }
+    if (naxes > 0) {
+        axes = SDL_stack_alloc(DOUBLE, naxes);
+    }
 
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_GetCurrentReading(hwdata->controller, nbuttons, buttons, nhats, hats, naxes, axes, &timestamp);
     if (SUCCEEDED(hr) && timestamp != hwdata->timestamp) {
         UINT32 i;
 
         for (i = 0; i < nbuttons; ++i) {
-            SDL_PrivateJoystickButton(joystick, i, buttons[i]);
+            SDL_PrivateJoystickButton(joystick, (Uint8)i, buttons[i]);
         }
         for (i = 0; i < nhats; ++i) {
-            SDL_PrivateJoystickHat(joystick, i, ConvertHatValue(hats[i]));
+            SDL_PrivateJoystickHat(joystick, (Uint8)i, ConvertHatValue(hats[i]));
         }
         for (i = 0; i < naxes; ++i) {
-            SDL_PrivateJoystickAxis(joystick, i, (int)(axes[i] * 65535) - 32768);
+            SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int) (axes[i] * 65535) - 32768));
         }
         hwdata->timestamp = timestamp;
     }
