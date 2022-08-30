@@ -106,13 +106,21 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
     &SDL_DUMMY_JoystickDriver
 #endif
 };
-static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
+static SDL_bool SDL_joysticks_initialized;
+static SDL_bool SDL_joysticks_quitting = SDL_FALSE;
 static SDL_Joystick *SDL_joysticks = NULL;
-static SDL_bool SDL_updating_joystick = SDL_FALSE;
 static SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
+static int SDL_joysticks_locked;
 static SDL_atomic_t SDL_next_joystick_instance_id;
 static int SDL_joystick_player_count = 0;
 static SDL_JoystickID *SDL_joystick_players = NULL;
+static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
+
+SDL_bool
+SDL_JoysticksInitialized(void)
+{
+    return SDL_joysticks_initialized;
+}
 
 void
 SDL_LockJoysticks(void)
@@ -120,20 +128,75 @@ SDL_LockJoysticks(void)
     if (SDL_joystick_lock) {
         SDL_LockMutex(SDL_joystick_lock);
     }
+
+    ++SDL_joysticks_locked;
 }
 
 void
 SDL_UnlockJoysticks(void)
 {
+    --SDL_joysticks_locked;
+
     if (SDL_joystick_lock) {
         SDL_UnlockMutex(SDL_joystick_lock);
+
+        /* The last unlock after joysticks are uninitialized will cleanup the mutex,
+         * allowing applications to lock joysticks while reinitializing the system.
+         */
+        if (!SDL_joysticks_locked &&
+            !SDL_joysticks_initialized) {
+            SDL_DestroyMutex(SDL_joystick_lock);
+            SDL_joystick_lock = NULL;
+        }
     }
+}
+
+static void
+SDL_AssertJoysticksLocked(void)
+{
+    SDL_assert(SDL_joysticks_locked > 0);
+}
+
+SDL_bool
+SDL_JoysticksQuitting(void)
+{
+    return SDL_joysticks_quitting;
+}
+
+/*
+ * Get the driver and device index for an API device index
+ * This should be called while the joystick lock is held, to prevent another thread from updating the list
+ */
+static SDL_bool
+SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriver **driver, int *driver_index)
+{
+    int i, num_joysticks, total_joysticks = 0;
+
+    SDL_AssertJoysticksLocked();
+
+    if (device_index >= 0) {
+        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+            num_joysticks = SDL_joystick_drivers[i]->GetCount();
+            if (device_index < num_joysticks) {
+                *driver = SDL_joystick_drivers[i];
+                *driver_index = device_index;
+                return SDL_TRUE;
+            }
+            device_index -= num_joysticks;
+            total_joysticks += num_joysticks;
+        }
+    }
+
+    SDL_SetError("There are %d joysticks available", total_joysticks);
+    return SDL_FALSE;
 }
 
 static int
 SDL_FindFreePlayerIndex()
 {
     int player_index;
+
+    SDL_AssertJoysticksLocked();
 
     for (player_index = 0; player_index < SDL_joystick_player_count; ++player_index) {
         if (SDL_joystick_players[player_index] == -1) {
@@ -147,6 +210,8 @@ static int
 SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
 {
     int player_index;
+
+    SDL_AssertJoysticksLocked();
 
     for (player_index = 0; player_index < SDL_joystick_player_count; ++player_index) {
         if (instance_id == SDL_joystick_players[player_index]) {
@@ -162,6 +227,8 @@ SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
 static SDL_JoystickID
 SDL_GetJoystickIDForPlayerIndex(int player_index)
 {
+    SDL_AssertJoysticksLocked();
+
     if (player_index < 0 || player_index >= SDL_joystick_player_count) {
         return -1;
     }
@@ -175,6 +242,8 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
     SDL_JoystickDriver *driver;
     int device_index;
     int existing_player_index;
+
+    SDL_AssertJoysticksLocked();
 
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1)*sizeof(*SDL_joystick_players));
@@ -229,16 +298,10 @@ SDL_JoystickInit(void)
 {
     int i, status;
 
-    SDL_GameControllerInitMappings();
-
     /* Create the joystick list lock */
     if (!SDL_joystick_lock) {
         SDL_joystick_lock = SDL_CreateMutex();
     }
-
-    /* See if we should allow joystick events while in the background */
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
-                        SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
 #if !SDL_EVENTS_DISABLED
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
@@ -246,12 +309,28 @@ SDL_JoystickInit(void)
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
+    SDL_LockJoysticks();
+
+    SDL_joysticks_initialized = SDL_TRUE;
+
+    SDL_GameControllerInitMappings();
+
+    /* See if we should allow joystick events while in the background */
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
+                        SDL_JoystickAllowBackgroundEventsChanged, NULL);
+
     status = -1;
     for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
         if (SDL_joystick_drivers[i]->Init() >= 0) {
             status = 0;
         }
     }
+    SDL_UnlockJoysticks();
+
+    if (status < 0) {
+        SDL_JoystickQuit();
+    }
+
     return status;
 }
 
@@ -277,32 +356,6 @@ SDL_NumJoysticks(void)
 SDL_JoystickID SDL_GetNextJoystickInstanceID()
 {
     return SDL_AtomicIncRef(&SDL_next_joystick_instance_id);
-}
-
-/*
- * Get the driver and device index for an API device index
- * This should be called while the joystick lock is held, to prevent another thread from updating the list
- */
-SDL_bool
-SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriver **driver, int *driver_index)
-{
-    int i, num_joysticks, total_joysticks = 0;
-
-    if (device_index >= 0) {
-        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-            num_joysticks = SDL_joystick_drivers[i]->GetCount();
-            if (device_index < num_joysticks) {
-                *driver = SDL_joystick_drivers[i];
-                *driver_index = device_index;
-                return SDL_TRUE;
-            }
-            device_index -= num_joysticks;
-            total_joysticks += num_joysticks;
-        }
-    }
-
-    SDL_SetError("There are %d joysticks available", total_joysticks);
-    return SDL_FALSE;
 }
 
 /*
@@ -1138,11 +1191,6 @@ SDL_JoystickClose(SDL_Joystick *joystick)
         return;
     }
 
-    if (SDL_updating_joystick) {
-        SDL_UnlockJoysticks();
-        return;
-    }
-
     if (joystick->rumble_expiration) {
         SDL_JoystickRumble(joystick, 0, 0, 0);
     }
@@ -1194,13 +1242,9 @@ SDL_JoystickQuit(void)
 {
     int i;
 
-    /* Make sure we're not getting called in the middle of updating joysticks */
     SDL_LockJoysticks();
-    while (SDL_updating_joystick) {
-        SDL_UnlockJoysticks();
-        SDL_Delay(1);
-        SDL_LockJoysticks();
-    }
+
+    SDL_joysticks_quitting = SDL_TRUE;
 
     /* Stop the event polling */
     while (SDL_joysticks) {
@@ -1218,7 +1262,6 @@ SDL_JoystickQuit(void)
         SDL_joystick_players = NULL;
         SDL_joystick_player_count = 0;
     }
-    SDL_UnlockJoysticks();
 
 #if !SDL_EVENTS_DISABLED
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -1227,13 +1270,12 @@ SDL_JoystickQuit(void)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
-    if (SDL_joystick_lock) {
-        SDL_mutex *mutex = SDL_joystick_lock;
-        SDL_joystick_lock = NULL;
-        SDL_DestroyMutex(mutex);
-    }
-
     SDL_GameControllerQuitMappings();
+
+    SDL_joysticks_quitting = SDL_FALSE;
+    SDL_joysticks_initialized = SDL_FALSE;
+
+    SDL_UnlockJoysticks();
 }
 
 
@@ -1301,7 +1343,12 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
         return;
     }
 
-    SDL_LockJoysticks();
+    SDL_AssertJoysticksLocked();
+
+    if (SDL_JoysticksQuitting()) {
+        return;
+    }
+
     if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &driver_device_index)) {
         player_index = driver->GetDevicePlayerIndex(driver_device_index);
     }
@@ -1311,7 +1358,6 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance)
     if (player_index >= 0) {
         SDL_SetJoystickIDForPlayerIndex(player_index, device_instance);
     }
-    SDL_UnlockJoysticks();
 
 #if !SDL_EVENTS_DISABLED
     {
@@ -1425,6 +1471,8 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
     SDL_Event event;
 #endif
 
+    SDL_AssertJoysticksLocked();
+
     /* Find this joystick... */
     device_index = 0;
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
@@ -1450,12 +1498,10 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
     UpdateEventsForDeviceRemoval(device_index, SDL_CONTROLLERDEVICEADDED);
 #endif /* !SDL_EVENTS_DISABLED */
 
-    SDL_LockJoysticks();
     player_index = SDL_GetPlayerIndexForJoystickID(device_instance);
     if (player_index >= 0) {
         SDL_joystick_players[player_index] = -1;
     }
-    SDL_UnlockJoysticks();
 }
 
 int
@@ -1463,6 +1509,8 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
 {
     int posted;
     SDL_JoystickAxisInfo *info;
+
+    SDL_AssertJoysticksLocked();
 
     /* Make sure we're not getting garbage or duplicate events */
     if (axis >= joystick->naxes) {
@@ -1527,6 +1575,8 @@ SDL_PrivateJoystickHat(SDL_Joystick *joystick, Uint8 hat, Uint8 value)
 {
     int posted;
 
+    SDL_AssertJoysticksLocked();
+
     /* Make sure we're not getting garbage or duplicate events */
     if (hat >= joystick->nhats) {
         return 0;
@@ -1567,6 +1617,8 @@ SDL_PrivateJoystickBall(SDL_Joystick *joystick, Uint8 ball,
                         Sint16 xrel, Sint16 yrel)
 {
     int posted;
+
+    SDL_AssertJoysticksLocked();
 
     /* Make sure we're not getting garbage events */
     if (ball >= joystick->nballs) {
@@ -1618,6 +1670,8 @@ SDL_PrivateJoystickButton(SDL_Joystick *joystick, Uint8 button, Uint8 state)
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
+    SDL_AssertJoysticksLocked();
+
     /* Make sure we're not getting garbage or duplicate events */
     if (button >= joystick->nbuttons) {
         return 0;
@@ -1654,24 +1708,13 @@ void
 SDL_JoystickUpdate(void)
 {
     int i;
-    SDL_Joystick *joystick, *next;
+    SDL_Joystick *joystick;
 
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
         return;
     }
 
     SDL_LockJoysticks();
-
-    if (SDL_updating_joystick) {
-        /* The joysticks are already being updated */
-        SDL_UnlockJoysticks();
-        return;
-    }
-
-    SDL_updating_joystick = SDL_TRUE;
-
-    /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
-    SDL_UnlockJoysticks();
 
 #ifdef SDL_JOYSTICK_HIDAPI
     /* Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks */
@@ -1680,11 +1723,6 @@ SDL_JoystickUpdate(void)
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
-            /* This driver should always be != NULL, but seeing a crash in the wild...? */
-            if (!joystick->driver) {
-                continue;  /* nothing we can do, and other things use joystick->driver below here. */
-            }
-
             joystick->driver->Update(joystick);
 
             if (joystick->delayed_guide_button) {
@@ -1692,36 +1730,14 @@ SDL_JoystickUpdate(void)
             }
         }
 
-        if (joystick->rumble_expiration) {
-            SDL_LockJoysticks();
-            /* Double check now that the lock is held */
-            if (joystick->rumble_expiration &&
-                SDL_TICKS_PASSED(SDL_GetTicks(), joystick->rumble_expiration)) {
-                SDL_JoystickRumble(joystick, 0, 0, 0);
-            }
-            SDL_UnlockJoysticks();
+        if (joystick->rumble_expiration &&
+            SDL_TICKS_PASSED(SDL_GetTicks(), joystick->rumble_expiration)) {
+            SDL_JoystickRumble(joystick, 0, 0, 0);
         }
 
-        if (joystick->trigger_rumble_expiration) {
-            SDL_LockJoysticks();
-            /* Double check now that the lock is held */
-            if (joystick->trigger_rumble_expiration &&
-                SDL_TICKS_PASSED(SDL_GetTicks(), joystick->trigger_rumble_expiration)) {
-                SDL_JoystickRumbleTriggers(joystick, 0, 0, 0);
-            }
-            SDL_UnlockJoysticks();
-        }
-    }
-
-    SDL_LockJoysticks();
-
-    SDL_updating_joystick = SDL_FALSE;
-
-    /* If any joysticks were closed while updating, free them here */
-    for (joystick = SDL_joysticks; joystick; joystick = next) {
-        next = joystick->next;
-        if (joystick->ref_count <= 0) {
-            SDL_JoystickClose(joystick);
+        if (joystick->trigger_rumble_expiration &&
+            SDL_TICKS_PASSED(SDL_GetTicks(), joystick->trigger_rumble_expiration)) {
+            SDL_JoystickRumbleTriggers(joystick, 0, 0, 0);
         }
     }
 
