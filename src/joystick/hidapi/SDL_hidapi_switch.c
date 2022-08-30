@@ -1181,19 +1181,23 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
 }
 
 static void
-UpdateDeviceName(SDL_HIDAPI_Device *device, ESwitchDeviceInfoControllerType eControllerType)
+UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 {
+    ESwitchDeviceInfoControllerType eControllerType = (ESwitchDeviceInfoControllerType)device->guid.data[15];
     const char *name = NULL;
 
     switch (eControllerType) {
     case k_eSwitchDeviceInfoControllerType_JoyConLeft:
         name = "Nintendo Switch Joy-Con (L)";
+        SDL_SetJoystickGUIDProduct(&device->guid, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
         break;
     case k_eSwitchDeviceInfoControllerType_JoyConRight:
         name = "Nintendo Switch Joy-Con (R)";
+        SDL_SetJoystickGUIDProduct(&device->guid, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
         break;
     case k_eSwitchDeviceInfoControllerType_ProController:
         name = "Nintendo Switch Pro Controller";
+        SDL_SetJoystickGUIDProduct(&device->guid, USB_PRODUCT_NINTENDO_SWITCH_PRO);
         break;
     case k_eSwitchDeviceInfoControllerType_NESLeft:
         name = "Nintendo NES Controller (L)";
@@ -1203,12 +1207,15 @@ UpdateDeviceName(SDL_HIDAPI_Device *device, ESwitchDeviceInfoControllerType eCon
         break;
     case k_eSwitchDeviceInfoControllerType_SNES:
         name = "Nintendo SNES Controller";
+        SDL_SetJoystickGUIDProduct(&device->guid, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
         break;
     case k_eSwitchDeviceInfoControllerType_N64:
         name = "Nintendo N64 Controller";
+        device->product_id = USB_PRODUCT_NINTENDO_N64_CONTROLLER;
         break;
     case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
         name = "Nintendo SEGA Genesis Controller";
+        SDL_SetJoystickGUIDProduct(&device->guid, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
         break;
     default:
         break;
@@ -1231,21 +1238,17 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
             /* This might be a Joy-Con that's missing from a charging grip slot */
             if (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
                 if (device->interface_number == 1) {
-                    SDL_free(device->name);
-                    device->name = SDL_strdup("Nintendo Switch Joy-Con (L)");
                     device->guid.data[15] = k_eSwitchDeviceInfoControllerType_JoyConLeft;
                 } else {
-                    SDL_free(device->name);
-                    device->name = SDL_strdup("Nintendo Switch Joy-Con (R)");
                     device->guid.data[15] = k_eSwitchDeviceInfoControllerType_JoyConRight;
                 }
             }
             break;
         default:
-            UpdateDeviceName(device, eControllerType);
             device->guid.data[15] = eControllerType;
             break;
         }
+        UpdateDeviceIdentity(device);
     }
     return HIDAPI_JoystickConnected(device, NULL);
 }

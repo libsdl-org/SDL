@@ -712,6 +712,8 @@ HIDAPI_CreateCombinedJoyCons()
     }
 
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        Uint16 vendor, product;
+
         if (!device->driver) {
             /* Unsupported device */
             continue;
@@ -721,15 +723,17 @@ HIDAPI_CreateCombinedJoyCons()
             continue;
         }
 
+        SDL_GetJoystickGUIDInfo(device->guid, &vendor, &product, NULL, NULL);
+
         if (!joycons[0] &&
-            (SDL_IsJoystickNintendoSwitchJoyConLeft(device->vendor_id, device->product_id) ||
-             (SDL_IsJoystickNintendoSwitchJoyConGrip(device->vendor_id, device->product_id) &&
+            (SDL_IsJoystickNintendoSwitchJoyConLeft(vendor, product) ||
+             (SDL_IsJoystickNintendoSwitchJoyConGrip(vendor, product) &&
               SDL_strstr(device->name, "(L)") != NULL))) {
             joycons[0] = device;
         }
         if (!joycons[1] &&
-            (SDL_IsJoystickNintendoSwitchJoyConRight(device->vendor_id, device->product_id) ||
-             (SDL_IsJoystickNintendoSwitchJoyConGrip(device->vendor_id, device->product_id) &&
+            (SDL_IsJoystickNintendoSwitchJoyConRight(vendor, product) ||
+             (SDL_IsJoystickNintendoSwitchJoyConGrip(vendor, product) &&
               SDL_strstr(device->name, "(R)") != NULL))) {
             joycons[1] = device;
         }
