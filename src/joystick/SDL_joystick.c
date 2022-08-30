@@ -2381,6 +2381,9 @@ static SDL_bool SDL_IsJoystickProductArcadeStick(Uint32 vidpid)
         MAKE_VIDPID(0x0f0d, 0x008a),    /* HORI Real Arcade Pro 4 */
         MAKE_VIDPID(0x0f0d, 0x008c),    /* Hori Real Arcade Pro 4 */
         MAKE_VIDPID(0x0f0d, 0x00aa),    /* HORI Real Arcade Pro V Hayabusa in Switch Mode */
+        MAKE_VIDPID(0x0f0d, 0x011c),    /* Hori Fighting Stick α in PS4 Mode */
+        MAKE_VIDPID(0x0f0d, 0x011e),    /* Hori Fighting Stick α in PC Mode  */
+        MAKE_VIDPID(0x0f0d, 0x0184),    /* Hori Fighting Stick α in PS5 Mode */
         MAKE_VIDPID(0x1532, 0x0a00),    /* Razer Atrox Arcade Stick */
         MAKE_VIDPID(0x1bad, 0xf03d),    /* Street Fighter IV Arcade Stick TE - Chun Li */
         MAKE_VIDPID(0x1bad, 0xf502),    /* Hori Real Arcade Pro.VX SA */

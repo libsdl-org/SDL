@@ -127,8 +127,11 @@ typedef struct {
     SDL_bool official_controller;
     SDL_bool audio_supported;
     SDL_bool effects_supported;
+    SDL_bool sensors_supported;
+    SDL_bool touchpad_supported;
     SDL_bool enhanced_mode;
     SDL_bool report_sensors;
+    SDL_bool report_touchpad;
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
     Uint32 last_packet;
@@ -202,6 +205,26 @@ static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
         return SDL_FALSE;
     }
 
+    /* The Hori Fighting Stick Alpha doesn't have any rumble hardware */
+    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+
+static SDL_bool HIDAPI_DriverPS4_HasSensors(Uint16 vendor_id, Uint16 product_id)
+{
+    /* The Hori Fighting Stick Alpha doesn't have any gyro or accelerometer */
+    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+
+static SDL_bool HIDAPI_DriverPS4_HasTouchpad(Uint16 vendor_id, Uint16 product_id)
+{
     return SDL_TRUE;
 }
 
@@ -456,9 +479,14 @@ HIDAPI_DriverPS4_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     if (!ctx->enhanced_mode) {
         ctx->enhanced_mode = SDL_TRUE;
 
-        SDL_PrivateJoystickAddTouchpad(joystick, 2);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+        if (ctx->touchpad_supported) {
+            SDL_PrivateJoystickAddTouchpad(joystick, 2);
+            ctx->report_touchpad = SDL_TRUE;
+        }
+        if (ctx->sensors_supported) {
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+        }
 
         HIDAPI_DriverPS4_UpdateEffects(device);
     }
@@ -568,6 +596,14 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     if (HIDAPI_DriverPS4_CanRumble(device->vendor_id, device->product_id)) {
         ctx->effects_supported = SDL_TRUE;
+    }
+
+    if (HIDAPI_DriverPS4_HasSensors(device->vendor_id, device->product_id)) {
+        ctx->sensors_supported = SDL_TRUE;
+    }
+
+    if (HIDAPI_DriverPS4_HasTouchpad(device->vendor_id, device->product_id)) {
+        ctx->touchpad_supported = SDL_TRUE;
     }
 
     if (!joystick->serial && device->serial && SDL_strlen(device->serial) == 12) {
@@ -835,15 +871,17 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, 
         }
     }
 
-    touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
-    touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
-    touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
-    SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+    if (ctx->report_touchpad) {
+        touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
+        touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
+        SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
 
-    touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
-    touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
-    touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
-    SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+        touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
+        touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
+        SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+    }
 
     if (ctx->report_sensors) {
         float data[3];
