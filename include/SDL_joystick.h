@@ -126,8 +126,8 @@ typedef enum
  *
  * As of SDL 2.26.0, you can take the joystick lock around reinitializing the
  * joystick subsystem, to prevent other threads from seeing joysticks in an
- * uninitialized state. However, all open joysticks will be closed and calling
- * SDL functions using them will potentially cause a crash.
+ * uninitialized state. However, all open joysticks will be closed and SDL
+ * functions called with them will fail.
  *
  * \since This function is available since SDL 2.0.7.
  */
