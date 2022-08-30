@@ -124,10 +124,10 @@ typedef enum
  * the API functions that take a joystick index will be valid, and joystick
  * and game controller events will not be delivered.
  *
- * As of SDL 2.26.0, you can take the joystick lock around reinitializing
- * the joystick subsystem, to prevent other threads from seeing joysticks
- * in an uninitialized state. However, all open joysticks will be closed
- * and calling SDL functions using them will potentially cause a crash.
+ * As of SDL 2.26.0, you can take the joystick lock around reinitializing the
+ * joystick subsystem, to prevent other threads from seeing joysticks in an
+ * uninitialized state. However, all open joysticks will be closed and calling
+ * SDL functions using them will potentially cause a crash.
  *
  * \since This function is available since SDL 2.0.7.
  */
