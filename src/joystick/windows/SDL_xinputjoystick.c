@@ -127,6 +127,7 @@ GetXInputName(const Uint8 userid, BYTE SubType)
     return name;
 }
 
+#if 0
 /* We can't really tell what device is being used for XInput, but we can guess
    and we'll be correct for the case where only one device is connected.
  */
@@ -134,7 +135,6 @@ static void
 GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
 #if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
-
     PRAWINPUTDEVICELIST devices = NULL;
     UINT i, j, device_count = 0;
 
@@ -239,6 +239,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
     *pPID = 0x02fd; /* XBox One S Bluetooth */
     *pVersion = 0;
 }
+#endif /* #if 0 */
 
 static void
 AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
