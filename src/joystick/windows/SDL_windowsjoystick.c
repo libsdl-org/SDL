@@ -429,7 +429,12 @@ SDL_StopJoystickThread(void)
     SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
     SDL_UnlockMutex(s_mutexJoyStickEnum);
     PostThreadMessage(SDL_GetThreadID(s_joystickThread), WM_QUIT, 0, 0);
+
+    /* Unlock joysticks while the joystick thread finishes processing messages */
+    SDL_AssertJoysticksLocked();
+    SDL_UnlockJoysticks();
     SDL_WaitThread(s_joystickThread, NULL); /* wait for it to bugger off */
+    SDL_LockJoysticks();
 
     SDL_DestroyCond(s_condJoystickThread);
     s_condJoystickThread = NULL;

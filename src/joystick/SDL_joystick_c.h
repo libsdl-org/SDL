@@ -45,6 +45,9 @@ extern SDL_bool SDL_JoysticksInitialized(void);
 /* Return whether the joystick system is shutting down */
 extern SDL_bool SDL_JoysticksQuitting(void);
 
+/* Make sure we currently have the joysticks locked */
+extern void SDL_AssertJoysticksLocked(void);
+
 /* Function to get the next available joystick instance ID */
 extern SDL_JoystickID SDL_GetNextJoystickInstanceID(void);
 

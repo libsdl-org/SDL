@@ -130,6 +130,12 @@ SDL_JoysticksInitialized(void)
     return SDL_joysticks_initialized;
 }
 
+SDL_bool
+SDL_JoysticksQuitting(void)
+{
+    return SDL_joysticks_quitting;
+}
+
 void
 SDL_LockJoysticks(void)
 {
@@ -159,16 +165,10 @@ SDL_UnlockJoysticks(void)
     }
 }
 
-static void
+void
 SDL_AssertJoysticksLocked(void)
 {
     SDL_assert(SDL_joysticks_locked > 0);
-}
-
-SDL_bool
-SDL_JoysticksQuitting(void)
-{
-    return SDL_joysticks_quitting;
 }
 
 /*
