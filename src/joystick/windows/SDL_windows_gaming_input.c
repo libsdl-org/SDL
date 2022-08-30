@@ -22,6 +22,8 @@
 
 #ifdef SDL_JOYSTICK_WGI
 
+#include "SDL_assert.h"
+#include "SDL_atomic.h"
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
@@ -207,6 +209,11 @@ SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     return SDL_FALSE;
 }
 
+typedef struct RawGameControllerDelegate {
+    __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController iface;
+    SDL_atomic_t refcount;
+} RawGameControllerDelegate;
+
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, REFIID riid, void **ppvObject)
 {
     if (!ppvObject) {
@@ -216,9 +223,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
     *ppvObject = NULL;
     if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IAgileObject) || WIN_IsEqualIID(riid, &IID_IEventHandler_RawGameController)) {
         *ppvObject = This;
+        __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_AddRef(This);
         return S_OK;
     } else if (WIN_IsEqualIID(riid, &IID_IMarshal)) {
-        // This seems complicated. Let's hope it doesn't happen.
+        /* This seems complicated. Let's hope it doesn't happen. */
         return E_OUTOFMEMORY;
     } else {
         return E_NOINTERFACE;
@@ -227,12 +235,17 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This)
 {
-    return 1;
+    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
+    return SDL_AtomicAdd(&self->refcount, 1) + 1;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This)
 {
-    return 1;
+    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
+    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
+    /* Should never free the static delegate objects */
+    SDL_assert(rc > 0);
+    return rc;
 }
 
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
@@ -422,8 +435,9 @@ static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl contr
     IEventHandler_CRawGameControllerVtbl_Release,
     IEventHandler_CRawGameControllerVtbl_InvokeAdded
 };
-static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController controller_added = {
-    &controller_added_vtbl
+static RawGameControllerDelegate controller_added = {
+    { &controller_added_vtbl },
+    { 1 }
 };
 
 static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl controller_removed_vtbl = {
@@ -432,8 +446,9 @@ static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl contr
     IEventHandler_CRawGameControllerVtbl_Release,
     IEventHandler_CRawGameControllerVtbl_InvokeRemoved
 };
-static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController controller_removed = {
-    &controller_removed_vtbl
+static RawGameControllerDelegate controller_removed = {
+    { &controller_removed_vtbl },
+    { 1 }
 };
 
 static int
@@ -543,12 +558,12 @@ WGI_JoystickInit(void)
     if (wgi.statics) {
         __FIVectorView_1_Windows__CGaming__CInput__CRawGameController *controllers;
 
-        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerAdded(wgi.statics, &controller_added, &wgi.controller_added_token);
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerAdded(wgi.statics, &controller_added.iface, &wgi.controller_added_token);
         if (!SUCCEEDED(hr)) {
             SDL_SetError("add_RawGameControllerAdded() failed: 0x%lx\n", hr);
         }
 
-        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerRemoved(wgi.statics, &controller_removed, &wgi.controller_removed_token);
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerRemoved(wgi.statics, &controller_removed.iface, &wgi.controller_removed_token);
         if (!SUCCEEDED(hr)) {
             SDL_SetError("add_RawGameControllerRemoved() failed: 0x%lx\n", hr);
         }
@@ -564,7 +579,7 @@ WGI_JoystickInit(void)
 
                     hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &controller);
                     if (SUCCEEDED(hr) && controller) {
-                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, controller);
+                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added.iface, NULL, controller);
                         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
                     }
                 }
@@ -865,7 +880,7 @@ WGI_JoystickQuit(void)
 {
     if (wgi.statics) {
         while (wgi.controller_count > 0) {
-            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, wgi.controllers[wgi.controller_count - 1].controller);
+            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed.iface, NULL, wgi.controllers[wgi.controller_count - 1].controller);
         }
         if (wgi.controllers) {
             SDL_free(wgi.controllers);
