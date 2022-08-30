@@ -102,7 +102,7 @@ HIDAPI_DriverShield_IsEnabled(void)
 }
 
 static SDL_bool
-HIDAPI_DriverShield_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+HIDAPI_DriverShield_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return (type == SDL_CONTROLLER_TYPE_NVIDIA_SHIELD) ? SDL_TRUE : SDL_FALSE;
 }

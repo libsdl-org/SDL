@@ -46,7 +46,7 @@ HIDAPI_DriverCombined_IsEnabled(void)
 }
 
 static SDL_bool
-HIDAPI_DriverCombined_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     /* This is always explicitly created for combined devices */
     return SDL_FALSE;
