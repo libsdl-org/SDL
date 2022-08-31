@@ -208,12 +208,12 @@ typedef struct
 
 typedef struct
 {
-	Uint8 ucPacketType;
-	Uint8 ucCommandID;
-	Uint8 ucFiller;
+    Uint8 ucPacketType;
+    Uint8 ucCommandID;
+    Uint8 ucFiller;
 
-	Uint8 ucDeviceType;
-	Uint8 rgucMACAddress[6];
+    Uint8 ucDeviceType;
+    Uint8 rgucMACAddress[6];
 } SwitchProprietaryStatusPacket_t;
 
 typedef struct
@@ -931,29 +931,42 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
 
         device->dev = SDL_hid_open_path(device->path, 0);
         if (device->dev) {
-            if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
-                SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
+            const int MAX_ATTEMPTS = 20;
+            int attempts = 0;
+            for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
+                if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
+                    SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
 
-                eControllerType = (ESwitchDeviceInfoControllerType) status->ucDeviceType;
+                    eControllerType = (ESwitchDeviceInfoControllerType) status->ucDeviceType;
 
-                /* The N64 controller reports as a Pro controller over USB */
-                if (eControllerType == k_eSwitchDeviceInfoControllerType_ProController &&
-                    device->product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
-                    eControllerType = k_eSwitchDeviceInfoControllerType_N64;
+                    /* The N64 controller reports as a Pro controller over USB */
+                    if (eControllerType == k_eSwitchDeviceInfoControllerType_ProController &&
+                        device->product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+                        eControllerType = k_eSwitchDeviceInfoControllerType_N64;
+                    }
+                } else {
+                    SwitchSubcommandInputPacket_t *reply = NULL;
+
+                    ctx->m_bUsingBluetooth = SDL_TRUE;
+                    if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
+                        eControllerType = (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType;
+                    }
                 }
-            } else {
-                SwitchSubcommandInputPacket_t *reply = NULL;
-
-                ctx->m_bUsingBluetooth = SDL_TRUE;
-                if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
-                    eControllerType = (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType;
+                if (eControllerType == k_eSwitchDeviceInfoControllerType_Unknown) {
+                    /* Wait a bit and try again */
+                    SDL_Delay(100);
+                    continue;
+                } else {
+                    break;
                 }
             }
+printf("Attempts: %d\n", attempts);
             SDL_hid_close(device->dev);
             device->dev = NULL;
         }
         SDL_free(ctx);
     }
+printf("Controller type %d\n", eControllerType);
     return eControllerType;
 }
 
