@@ -127,7 +127,6 @@ GetXInputName(const Uint8 userid, BYTE SubType)
     return name;
 }
 
-#if 0
 /* We can't really tell what device is being used for XInput, but we can guess
    and we'll be correct for the case where only one device is connected.
  */
@@ -239,7 +238,6 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
     *pPID = 0x02fd; /* XBox One S Bluetooth */
     *pVersion = 0;
 }
-#endif /* #if 0 */
 
 static void
 AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
@@ -287,6 +285,8 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
     SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%d", userid);
     if (!SDL_XInputUseOldJoystickMapping()) {
+        GuessXInputDevice(userid, &vendor, &product, &version);
+
         pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, pNewJoystick->joystickname, 'x', SubType);
     }
     pNewJoystick->SubType = SubType;
