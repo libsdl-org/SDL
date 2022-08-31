@@ -960,13 +960,11 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
                     break;
                 }
             }
-printf("Attempts: %d\n", attempts);
             SDL_hid_close(device->dev);
             device->dev = NULL;
         }
         SDL_free(ctx);
     }
-printf("Controller type %d\n", eControllerType);
     return eControllerType;
 }
 
