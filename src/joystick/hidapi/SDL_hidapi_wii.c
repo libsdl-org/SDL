@@ -100,10 +100,11 @@ typedef struct {
     SDL_HIDAPI_Device *device;
     EWiiExtensionControllerType m_eExtensionControllerType;
     SDL_bool m_bUseButtonLabels;
+    SDL_bool m_bPlayerLights;
+    int m_nPlayerIndex;
     SDL_bool m_bRumbleActive;
     Uint8 m_rgucReadBuffer[k_unWiiPacketDataLength];
     Uint32 m_iLastStatus;
-    int m_playerIndex;
 
     struct StickCalibrationData {
         Uint16 min;
@@ -344,7 +345,7 @@ static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryB
 
 static SDL_bool IdentifyController(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
 {
-    static const Uint8 statusRequest[2] = { k_eWiiOutputReportIDs_StatusRequest, 0 };
+    const Uint8 statusRequest[2] = { k_eWiiOutputReportIDs_StatusRequest, 0 };
     SDL_bool hasExtension;
     WriteOutput(ctx, statusRequest, sizeof(statusRequest), SDL_TRUE);
     if (!ReadInputSync(ctx, k_eWiiInputReportIDs_Status, NULL)) {
@@ -354,12 +355,15 @@ static SDL_bool IdentifyController(SDL_DriverWii_Context *ctx, SDL_Joystick *joy
     hasExtension = ctx->m_rgucReadBuffer[3] & 2 ? SDL_TRUE : SDL_FALSE;
     if (hasExtension) {
         /* http://wiibrew.org/wiki/Wiimote/Extension_Controllers#The_New_Way */
-        Uint8 data[2] = {0x55, 0x00};
-        SDL_bool ok = WriteRegister(ctx, 0xA400F0, &data[0], 1, SDL_TRUE)
-                   && WriteRegister(ctx, 0xA400FB, &data[1], 1, SDL_TRUE)
+        Uint8 data_0x55 = 0x55;
+        Uint8 data_0x00 = 0x00;
+        SDL_bool ok = WriteRegister(ctx, 0xA400F0, &data_0x55, sizeof(data_0x55), SDL_TRUE)
+                   && WriteRegister(ctx, 0xA400FB, &data_0x00, sizeof(data_0x00), SDL_TRUE)
                    && ReadRegister(ctx, 0xA400FA, 6, SDL_TRUE)
                    && ParseExtensionResponse(ctx);
-        if (!ok) { return SDL_FALSE; }
+        if (!ok) {
+            return SDL_FALSE;
+        }
     } else {
         ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_None;
     }
@@ -382,13 +386,14 @@ static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
 
 static SDL_bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputReportIDs type)
 {
-    Uint8 tt = ctx->m_bRumbleActive;
     Uint8 data[3];
+    Uint8 tt = ctx->m_bRumbleActive;
+
     /* Continuous reporting off, tt & 4 == 0 */
     data[0] = k_eWiiOutputReportIDs_DataReportingMode;
     data[1] = tt;
     data[2] = type;
-    return WriteOutput(ctx, data, 3, SDL_FALSE);
+    return WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
 }
 
 static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
@@ -428,12 +433,18 @@ static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
 static const char* GetNameFromExtensionInfo(SDL_DriverWii_Context *ctx)
 {
     switch (ctx->m_eExtensionControllerType) {
-        case k_eWiiExtensionControllerType_None:                 return "Nintendo Wii Remote";
-        case k_eWiiExtensionControllerType_Nunchuck:             return "Nintendo Wii Remote with Nunchuck";
-        case k_eWiiExtensionControllerType_ClassicController:    return "Nintendo Wii Remote with Classic Controller";
-        case k_eWiiExtensionControllerType_ClassicControllerPro: return "Nintendo Wii Remote with Classic Controller Pro";
-        case k_eWiiExtensionControllerType_WiiUPro:              return "Nintendo Wii U Pro Controller";
-        default:                                                 return "Nintendo Wii Remote with Unknown Extension";
+        case k_eWiiExtensionControllerType_None:
+            return "Nintendo Wii Remote";
+        case k_eWiiExtensionControllerType_Nunchuck:
+            return "Nintendo Wii Remote with Nunchuck";
+        case k_eWiiExtensionControllerType_ClassicController:
+            return "Nintendo Wii Remote with Classic Controller";
+        case k_eWiiExtensionControllerType_ClassicControllerPro:
+            return "Nintendo Wii Remote with Classic Controller Pro";
+        case k_eWiiExtensionControllerType_WiiUPro:
+            return "Nintendo Wii U Pro Controller";
+        default:
+            return "Nintendo Wii Remote with Unknown Extension";
     }
 }
 
@@ -446,6 +457,7 @@ static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata,
 static Uint8 RemapButton(SDL_DriverWii_Context *ctx, Uint8 button)
 {
     if (!ctx->m_bUseButtonLabels) {
+        /* Use button positions */
         switch (button) {
             case SDL_CONTROLLER_BUTTON_A:
                 return SDL_CONTROLLER_BUTTON_B;
@@ -462,6 +474,51 @@ static Uint8 RemapButton(SDL_DriverWii_Context *ctx, Uint8 button)
     return button;
 }
 
+static void UpdateSlotLED(SDL_DriverWii_Context *ctx)
+{
+    Uint8 leds;
+    Uint8 data[2];
+
+    /* The lowest bit needs to have the rumble status */
+    leds = ctx->m_bRumbleActive;
+
+    if (ctx->m_bPlayerLights) {
+        /* Use the same LED codes as Smash 8-player for 5-7 */
+        if (ctx->m_nPlayerIndex == 0 || ctx->m_nPlayerIndex > 3) {
+            leds |= k_eWiiPlayerLEDs_P1;
+        }
+        if (ctx->m_nPlayerIndex == 1 || ctx->m_nPlayerIndex == 4) {
+            leds |= k_eWiiPlayerLEDs_P2;
+        }
+        if (ctx->m_nPlayerIndex == 2 || ctx->m_nPlayerIndex == 5) {
+            leds |= k_eWiiPlayerLEDs_P3;
+        }
+        if (ctx->m_nPlayerIndex == 3 || ctx->m_nPlayerIndex == 6) {
+            leds |= k_eWiiPlayerLEDs_P4;
+        }
+        /* Turn on all lights for other player indexes */
+        if (ctx->m_nPlayerIndex < 0 || ctx->m_nPlayerIndex > 6) {
+            leds |= k_eWiiPlayerLEDs_P1 | k_eWiiPlayerLEDs_P2 | k_eWiiPlayerLEDs_P3 | k_eWiiPlayerLEDs_P4;
+        }
+    }
+
+    data[0] = k_eWiiOutputReportIDs_LEDs;
+    data[1] = leds;
+    WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
+}
+
+static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
+    SDL_bool bPlayerLights = SDL_GetStringBoolean(hint, SDL_TRUE);
+
+    if (bPlayerLights != ctx->m_bPlayerLights) {
+        ctx->m_bPlayerLights = bPlayerLights;
+
+        UpdateSlotLED(ctx);
+    }
+}
+
 static SDL_bool
 HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 {
@@ -471,9 +528,6 @@ HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 static int
 HIDAPI_DriverWii_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
 {
-    if (device->context) {
-        return ((SDL_DriverWii_Context *)device->context)->m_playerIndex;
-    }
     return -1;
 }
 
@@ -481,37 +535,14 @@ static void
 HIDAPI_DriverWii_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverWii_Context *ctx = device->context;
-    Uint8 leds;
-    Uint8 data[2];
 
     if (!ctx) {
         return;
     }
 
-    ctx->m_playerIndex = player_index;
+    ctx->m_nPlayerIndex = player_index;
 
-    leds = ctx->m_bRumbleActive;
-    /* Use the same LED codes as Smash 8-player for 5-7 */
-    if (player_index == 1 || player_index > 4) {
-        leds |= k_eWiiPlayerLEDs_P1;
-    }
-    if (player_index == 2 || player_index == 5) {
-        leds |= k_eWiiPlayerLEDs_P2;
-    }
-    if (player_index == 3 || player_index == 6) {
-        leds |= k_eWiiPlayerLEDs_P3;
-    }
-    if (player_index == 4 || player_index == 7) {
-        leds |= k_eWiiPlayerLEDs_P4;
-    }
-    /* Turn on all lights for other player indexes */
-    if (player_index < 1 || player_index > 7) {
-        leds |= k_eWiiPlayerLEDs_P1 | k_eWiiPlayerLEDs_P2 | k_eWiiPlayerLEDs_P3 | k_eWiiPlayerLEDs_P4;
-    }
-
-    data[0] = k_eWiiOutputReportIDs_LEDs;
-    data[1] = leds;
-    WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
+    UpdateSlotLED(ctx);
 }
 
 static SDL_bool
@@ -547,6 +578,14 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     SDL_free(device->name);
     device->name = SDL_strdup(GetNameFromExtensionInfo(ctx));
 
+    /* Initialize player index (needed for setting LEDs) */
+    ctx->m_nPlayerIndex = SDL_JoystickGetPlayerIndex(joystick);
+    ctx->m_bPlayerLights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED, SDL_TRUE);
+    UpdateSlotLED(ctx);
+
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
+                        SDL_PlayerLEDHintChanged, ctx);
+
     /* Initialize the joystick capabilities */
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
         joystick->nbuttons = 15;
@@ -556,7 +595,6 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
 
-    HIDAPI_DriverWii_SetDevicePlayerIndex(device, 0, SDL_JoystickGetPlayerIndex(joystick));
     RequestButtonPacketType(ctx, GetButtonPacketType(ctx));
 
     return SDL_TRUE;
@@ -652,6 +690,11 @@ static void PostStickCalibrated(SDL_Joystick *joystick, struct StickCalibrationD
         Uint16 distance = data - zero;
         float fvalue = (float)distance / (float)range;
         value = (Sint16)(fvalue * SDL_MAX_SINT16);
+    }
+    if (axis == SDL_CONTROLLER_AXIS_LEFTY || axis == SDL_CONTROLLER_AXIS_RIGHTY) {
+        if (value) {
+            value = ~value;
+        }
     }
     SDL_PrivateJoystickAxis(joystick, axis, value);
 }
@@ -817,6 +860,7 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
     SDL_Joystick *joystick = NULL;
     int size;
+    Uint32 now;
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -833,12 +877,15 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Request a status update periodically to make sure our battery value is up to date */
-    if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_iLastStatus + FIFTEEN_MINUTES_IN_MS)) {
+    now = SDL_GetTicks();
+    if (SDL_TICKS_PASSED(now, ctx->m_iLastStatus + FIFTEEN_MINUTES_IN_MS)) {
         Uint8 data[2];
-        ctx->m_iLastStatus = SDL_GetTicks();
+
         data[0] = k_eWiiOutputReportIDs_StatusRequest;
         data[1] = ctx->m_bRumbleActive;
-        WriteOutput(ctx, data, 2, SDL_FALSE);
+        WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
+
+        ctx->m_iLastStatus = now;
     }
 
     if (size < 0) {
@@ -855,6 +902,9 @@ HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick
 
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
+
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
+                        SDL_PlayerLEDHintChanged, ctx);
 
     SDL_LockMutex(device->dev_lock);
     {

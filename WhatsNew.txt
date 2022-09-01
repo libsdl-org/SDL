@@ -7,6 +7,8 @@ This is a list of major changes in SDL's version history.
 
 General:
 * Added SDL_GetJoystickGUIDInfo() to get device information encoded in a joystick GUID
+* Added support for Nintendo Wii controllers to the HIDAPI driver, and a hint SDL_HINT_JOYSTICK_HIDAPI_WII to control whether this is used
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED to control whether the player LED should be lit on the Nintendo Wii controllers
 
 
 ---------------------------------------------------------------------------
