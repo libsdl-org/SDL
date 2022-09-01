@@ -204,14 +204,14 @@ static SDL_bool IsWriteMemoryResponse(const Uint8 *data)
 
 static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const Uint8 *data, int size, SDL_bool sync)
 {
-    Uint8 writeRequest[k_unWiiPacketDataLength] = {
-        k_eWiiOutputReportIDs_WriteMemory,
-        0x04 | ctx->m_bRumbleActive,
-        (address >> 16) & 0xff,
-        (address >> 8) & 0xff,
-        address & 0xff,
-        size
-    };
+    Uint8 writeRequest[k_unWiiPacketDataLength];
+
+    writeRequest[0] = k_eWiiOutputReportIDs_WriteMemory;
+    writeRequest[1] = 0x04 | ctx->m_bRumbleActive;
+    writeRequest[2] = (address >> 16) & 0xff;
+    writeRequest[3] = (address >> 8) & 0xff;
+    writeRequest[4] = address & 0xff;
+    writeRequest[5] = size;
     SDL_assert(size > 0 && size <= 16);
     SDL_memcpy(writeRequest + 6, data, size);
 
@@ -233,15 +233,16 @@ static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const 
 
 static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int size, SDL_bool sync)
 {
-    Uint8 readRequest[7] = {
-        k_eWiiOutputReportIDs_ReadMemory,
-        0x04 | ctx->m_bRumbleActive,
-        (address >> 16) & 0xff,
-        (address >> 8) & 0xff,
-        address & 0xff,
-        (size >> 8) & 0xff,
-        size & 0xff
-    };
+    Uint8 readRequest[7];
+
+    readRequest[0] = k_eWiiOutputReportIDs_ReadMemory;
+    readRequest[1] = 0x04 | ctx->m_bRumbleActive;
+    readRequest[2] = (address >> 16) & 0xff;
+    readRequest[3] = (address >> 8) & 0xff;
+    readRequest[4] = address & 0xff;
+    readRequest[5] = (size >> 8) & 0xff;
+    readRequest[6] = size & 0xff;
+
     SDL_assert(size > 0 && size <= 0xffff);
 
     if (!WriteOutput(ctx, readRequest, sizeof(readRequest), sync)) {
@@ -260,6 +261,8 @@ static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int siz
 static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx)
 {
     Uint64 type = 0;
+    int i;
+
     SDL_assert(ctx->m_rgucReadBuffer[0] == k_eWiiInputReportIDs_ReadMemory);
     if (ctx->m_rgucReadBuffer[4] != 0x00 || ctx->m_rgucReadBuffer[5] != 0xFA) {
         SDL_SetError("Unexpected extension response address");
@@ -274,20 +277,30 @@ static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx)
         return SDL_FALSE;
     }
 
-    for (int i = 6; i < 12; i++) {
+    for (i = 6; i < 12; i++) {
         type = type << 8 | ctx->m_rgucReadBuffer[i];
     }
-    switch (type) {
-        case 0x0000A4200000: ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_Nunchuck; break;
-        case 0x0000A4200101: ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_ClassicController; break;
-        case 0x0100A4200101: ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_ClassicControllerPro; break;
-        case 0x0000A4200120: ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_WiiUPro; break;
-        default:
-            ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
-            SDL_SetError("Unrecognized controller type: %012" SDL_PRIx64, type);
-            return SDL_FALSE;
+
+    if (type == 0x0000A4200000) {
+        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_Nunchuck;
+        return SDL_TRUE;
     }
-    return SDL_TRUE;
+    if (type == 0x0000A4200101) {
+        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_ClassicController;
+        return SDL_TRUE;
+    }
+    if (type == 0x0100A4200101) {
+        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_ClassicControllerPro;
+        return SDL_TRUE;
+    }
+    if (type == 0x0000A4200120) {
+        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_WiiUPro;
+        return SDL_TRUE;
+    }
+
+    ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
+    SDL_SetError("Unrecognized controller type: %012" SDL_PRIx64, type);
+    return SDL_FALSE;
 }
 
 
@@ -341,8 +354,9 @@ static SDL_bool IdentifyController(SDL_DriverWii_Context *ctx, SDL_Joystick *joy
     hasExtension = ctx->m_rgucReadBuffer[3] & 2 ? SDL_TRUE : SDL_FALSE;
     if (hasExtension) {
         /* http://wiibrew.org/wiki/Wiimote/Extension_Controllers#The_New_Way */
-        SDL_bool ok = WriteRegister(ctx, 0xA400F0, (Uint8[1]){0x55}, 1, SDL_TRUE)
-                   && WriteRegister(ctx, 0xA400FB, (Uint8[1]){0x00}, 1, SDL_TRUE)
+        Uint8 data[2] = {0x55, 0x00};
+        SDL_bool ok = WriteRegister(ctx, 0xA400F0, &data[0], 1, SDL_TRUE)
+                   && WriteRegister(ctx, 0xA400FB, &data[1], 1, SDL_TRUE)
                    && ReadRegister(ctx, 0xA400FA, 6, SDL_TRUE)
                    && ParseExtensionResponse(ctx);
         if (!ok) { return SDL_FALSE; }
@@ -369,15 +383,20 @@ static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
 static SDL_bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputReportIDs type)
 {
     Uint8 tt = ctx->m_bRumbleActive;
+    Uint8 data[3];
     /* Continuous reporting off, tt & 4 == 0 */
-    return WriteOutput(ctx, (Uint8[3]){ k_eWiiOutputReportIDs_DataReportingMode, tt, type }, 3, SDL_FALSE);
+    data[0] = k_eWiiOutputReportIDs_DataReportingMode;
+    data[1] = tt;
+    data[2] = type;
+    return WriteOutput(ctx, data, 3, SDL_FALSE);
 }
 
 static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
 {
+    int i;
     switch (ctx->m_eExtensionControllerType) {
         case k_eWiiExtensionControllerType_WiiUPro:
-            for (int i = 0; i < 4; i++) {
+            for (i = 0; i < 4; i++) {
                 ctx->m_StickCalibrationData[i].min = 1000;
                 ctx->m_StickCalibrationData[i].max = 3000;
                 ctx->m_StickCalibrationData[i].center = 0;
@@ -386,7 +405,7 @@ static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
             break;
         case k_eWiiExtensionControllerType_ClassicController:
         case k_eWiiExtensionControllerType_ClassicControllerPro:
-            for (int i = 0; i < 4; i++) {
+            for (i = 0; i < 4; i++) {
                 ctx->m_StickCalibrationData[i].min = 0;
                 ctx->m_StickCalibrationData[i].max = i < 2 ? 63 : 31;
                 ctx->m_StickCalibrationData[i].center = 0;
@@ -394,7 +413,7 @@ static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
             }
             break;
         case k_eWiiExtensionControllerType_Nunchuck:
-            for (int i = 0; i < 2; i++) {
+            for (i = 0; i < 2; i++) {
                 ctx->m_StickCalibrationData[i].min = 0;
                 ctx->m_StickCalibrationData[i].max = 255;
                 ctx->m_StickCalibrationData[i].center = 0;
@@ -653,19 +672,21 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
         }
     };
     Uint8 zl, zr;
+    int i, j;
+
     if (data.ucNExtensionBytes < 11) {
         return;
     }
 
     /* Sticks */
-    for (int i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
         Uint16 value = data.rgucExtension[i * 2] | (data.rgucExtension[i * 2 + 1] << 8);
         PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[i], axes[i], value);
     }
 
     /* Buttons */
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 8; j++) {
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 8; j++) {
             Uint8 button = buttons[i][j];
             if (button != 0xFF) {
                 SDL_bool state = (data.rgucExtension[8 + i] >> j) & 1 ? SDL_RELEASED : SDL_PRESSED;
@@ -813,8 +834,11 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
 
     /* Request a status update periodically to make sure our battery value is up to date */
     if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_iLastStatus + FIFTEEN_MINUTES_IN_MS)) {
+        Uint8 data[2];
         ctx->m_iLastStatus = SDL_GetTicks();
-        WriteOutput(ctx, (Uint8[2]){ k_eWiiOutputReportIDs_StatusRequest, ctx->m_bRumbleActive }, 2, SDL_FALSE);
+        data[0] = k_eWiiOutputReportIDs_StatusRequest;
+        data[1] = ctx->m_bRumbleActive;
+        WriteOutput(ctx, data, 2, SDL_FALSE);
     }
 
     if (size < 0) {
