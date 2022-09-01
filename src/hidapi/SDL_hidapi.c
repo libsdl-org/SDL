@@ -817,33 +817,6 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #undef HIDAPI_H__
 #include "libusb/hid.c"
 
-#undef libusb_init
-#undef libusb_exit
-#undef libusb_get_device_list
-#undef libusb_free_device_list
-#undef libusb_get_device_descriptor
-#undef libusb_get_active_config_descriptor
-#undef libusb_get_config_descriptor
-#undef libusb_free_config_descriptor
-#undef libusb_get_bus_number
-#undef libusb_get_device_address
-#undef libusb_open
-#undef libusb_close
-#undef libusb_claim_interface
-#undef libusb_release_interface
-#undef libusb_kernel_driver_active
-#undef libusb_detach_kernel_driver
-#undef libusb_attach_kernel_driver
-#undef libusb_set_interface_alt_setting
-#undef libusb_alloc_transfer
-#undef libusb_submit_transfer
-#undef libusb_cancel_transfer
-#undef libusb_free_transfer
-#undef libusb_control_transfer
-#undef libusb_interrupt_transfer
-#undef libusb_handle_events
-#undef libusb_handle_events_completed
-
 #undef hid_device
 #undef hid_device_
 #undef hid_init
