@@ -39,6 +39,7 @@
 #define SDL_JOYSTICK_HIDAPI_PS5
 #define SDL_JOYSTICK_HIDAPI_STADIA
 #define SDL_JOYSTICK_HIDAPI_SWITCH
+#define SDL_JOYSTICK_HIDAPI_WII
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
 #define SDL_JOYSTICK_HIDAPI_SHIELD
@@ -133,6 +134,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
