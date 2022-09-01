@@ -817,6 +817,33 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #undef HIDAPI_H__
 #include "libusb/hid.c"
 
+#undef libusb_init
+#undef libusb_exit
+#undef libusb_get_device_list
+#undef libusb_free_device_list
+#undef libusb_get_device_descriptor
+#undef libusb_get_active_config_descriptor
+#undef libusb_get_config_descriptor
+#undef libusb_free_config_descriptor
+#undef libusb_get_bus_number
+#undef libusb_get_device_address
+#undef libusb_open
+#undef libusb_close
+#undef libusb_claim_interface
+#undef libusb_release_interface
+#undef libusb_kernel_driver_active
+#undef libusb_detach_kernel_driver
+#undef libusb_attach_kernel_driver
+#undef libusb_set_interface_alt_setting
+#undef libusb_alloc_transfer
+#undef libusb_submit_transfer
+#undef libusb_cancel_transfer
+#undef libusb_free_transfer
+#undef libusb_control_transfer
+#undef libusb_interrupt_transfer
+#undef libusb_handle_events
+#undef libusb_handle_events_completed
+
 #undef hid_device
 #undef hid_device_
 #undef hid_init
@@ -1044,8 +1071,8 @@ int SDL_hid_init(void)
 #endif
         if (libusb_ctx.libhandle != NULL) {
             SDL_bool loaded = SDL_TRUE;
-            #ifdef __OS2__
 #ifdef SDL_LIBUSB_DYNAMIC
+            #ifdef __OS2__
             #define LOAD_LIBUSB_SYMBOL(func) \
                 if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
             #else
@@ -1563,10 +1590,10 @@ void SDL_EnableGameCubeAdaptors(void)
         return;
     }
 
-    if (libusb_init(&context) == 0) {
-        num_devs = libusb_get_device_list(context, &devs);
+    if (libusb_ctx.init(&context) == 0) {
+        num_devs = libusb_ctx.get_device_list(context, &devs);
         for (i = 0; i < num_devs; ++i) {
-            if (libusb_get_device_descriptor(devs[i], &desc) != 0) {
+            if (libusb_ctx.get_device_descriptor(devs[i], &desc) != 0) {
                 continue;
             }
 
@@ -1574,31 +1601,31 @@ void SDL_EnableGameCubeAdaptors(void)
                 continue;
             }
 
-            if (libusb_open(devs[i], &handle) != 0) {
+            if (libusb_ctx.open(devs[i], &handle) != 0) {
                 continue;
             }
 
-            if (libusb_kernel_driver_active(handle, 0)) {
-                if (libusb_detach_kernel_driver(handle, 0) == 0) {
+            if (libusb_ctx.kernel_driver_active(handle, 0)) {
+                if (libusb_ctx.detach_kernel_driver(handle, 0) == 0) {
                     kernel_detached = 1;
                 }
             }
 
-            if (libusb_claim_interface(handle, 0) == 0) {
-                libusb_control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
-                libusb_release_interface(handle, 0);
+            if (libusb_ctx.claim_interface(handle, 0) == 0) {
+                libusb_ctx.control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
+                libusb_ctx.release_interface(handle, 0);
             }
 
             if (kernel_detached) {
-                libusb_attach_kernel_driver(handle, 0);
+                libusb_ctx.attach_kernel_driver(handle, 0);
             }
 
-            libusb_close(handle);
+            libusb_ctx.close(handle);
         }
 
-        libusb_free_device_list(devs, 1);
+        libusb_ctx.free_device_list(devs, 1);
 
-        libusb_exit(context);
+        libusb_ctx.exit(context);
     }
 #endif /* HAVE_LIBUSB */
 }
