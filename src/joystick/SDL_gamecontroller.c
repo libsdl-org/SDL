@@ -43,10 +43,16 @@
 /* Many controllers turn the center button into an instantaneous button press */
 #define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS   250
 
-#define SDL_CONTROLLER_PLATFORM_FIELD   "platform:"
-#define SDL_CONTROLLER_HINT_FIELD       "hint:"
-#define SDL_CONTROLLER_SDKGE_FIELD      "sdk>=:"
-#define SDL_CONTROLLER_SDKLE_FIELD      "sdk<=:"
+#define SDL_CONTROLLER_CRC_FIELD            "crc:"
+#define SDL_CONTROLLER_CRC_FIELD_SIZE       4 /* hard-coded for speed */
+#define SDL_CONTROLLER_PLATFORM_FIELD       "platform:"
+#define SDL_CONTROLLER_PLATFORM_FIELD_SIZE  SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD)
+#define SDL_CONTROLLER_HINT_FIELD           "hint:"
+#define SDL_CONTROLLER_HINT_FIELD_SIZE      SDL_strlen(SDL_CONTROLLER_HINT_FIELD)
+#define SDL_CONTROLLER_SDKGE_FIELD          "sdk>=:"
+#define SDL_CONTROLLER_SDKGE_FIELD_SIZE     SDL_strlen(SDL_CONTROLLER_SDKGE_FIELD)
+#define SDL_CONTROLLER_SDKLE_FIELD          "sdk<=:"
+#define SDL_CONTROLLER_SDKLE_FIELD_SIZE     SDL_strlen(SDL_CONTROLLER_SDKLE_FIELD)
 
 /* a list of currently opened game controllers */
 static SDL_GameController *SDL_gamecontrollers = NULL;
@@ -681,83 +687,101 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
 /*
  * Helper function to scan the mappings database for a controller with the specified GUID
  */
-static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool exact_match)
+static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool match_crc, SDL_bool match_version)
 {
     ControllerMapping_t *mapping;
-    Uint16 crc;
+    Uint16 crc = 0;
 
-    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, NULL, &crc);
-    if (crc) {
-        /* Clear the CRC from the GUID for matching */
-        SDL_SetJoystickGUIDCRC(&guid, 0);
+    if (match_crc) {
+        SDL_GetJoystickGUIDInfo(guid, NULL, NULL, NULL, &crc);
     }
+
+    /* Clear the CRC from the GUID for matching, the mappings never include it in the GUID */
+    SDL_SetJoystickGUIDCRC(&guid, 0);
+
+    if (!match_version) {
+        SDL_SetJoystickGUIDVersion(&guid, 0);
+    }
+
     for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
-        if (SDL_memcmp(&guid, &mapping->guid, sizeof(guid)) == 0) {
-            /* Check to see if the CRC matches */
-            const char *crc_string = SDL_strstr(mapping->mapping, "crc:");
+        SDL_JoystickGUID mapping_guid;
+
+        SDL_memcpy(&mapping_guid, &mapping->guid, sizeof(mapping_guid));
+        if (!match_version) {
+            SDL_SetJoystickGUIDVersion(&mapping_guid, 0);
+        }
+
+        if (SDL_memcmp(&guid, &mapping_guid, sizeof(guid)) == 0) {
+            Uint16 mapping_crc = 0;
+            const char *crc_string = SDL_strstr(mapping->mapping, SDL_CONTROLLER_CRC_FIELD);
             if (crc_string) {
-                Uint16 mapping_crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16); 
-                if (crc != mapping_crc) {
-                    continue;
-                }
+                mapping_crc = (Uint16)SDL_strtol(crc_string + SDL_CONTROLLER_CRC_FIELD_SIZE, NULL, 16); 
             }
+            if (crc == mapping_crc) {
+                return mapping;
+            }
+        }
+    }
+    return NULL;
+}
+
+/*
+ * Helper function to scan the mappings database for a controller with the specified GUID
+ */
+static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID guid)
+{
+    ControllerMapping_t *mapping;
+    Uint16 vendor, product, crc;
+
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, &crc);
+    if (crc) {
+        /* First check for exact CRC matching */
+        mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_TRUE, SDL_TRUE);
+        if (mapping) {
             return mapping;
         }
     }
 
-    if (!exact_match) {
+    /* Now check for a mapping without CRC */
+    mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_FALSE, SDL_TRUE);
+    if (mapping) {
+        return mapping;
+    }
+
+    if (vendor && product) {
         /* Try again, ignoring the version */
-        Uint16 vendor, product;
-
-        SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
-        if (vendor && product) {
-            SDL_JoystickGUID match_guid;
-
-            SDL_memcpy(&match_guid, &guid, sizeof(guid));
-            SDL_SetJoystickGUIDVersion(&match_guid, 0);
-
-            for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
-                SDL_JoystickGUID mapping_guid;
-
-                SDL_memcpy(&mapping_guid, &mapping->guid, sizeof(mapping_guid));
-                SDL_SetJoystickGUIDVersion(&mapping_guid, 0);
-
-                if (SDL_memcmp(&match_guid, &mapping_guid, sizeof(match_guid)) == 0) {
-                    /* Check to see if the CRC matches */
-                    const char *crc_string = SDL_strstr(mapping->mapping, "crc:");
-                    if (crc_string) {
-                        Uint16 mapping_crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16); 
-                        if (crc != mapping_crc) {
-                            continue;
-                        }
-                    }
-                    return mapping;
-                }
+        if (crc) {
+            mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_TRUE, SDL_FALSE);
+            if (mapping) {
+                return mapping;
             }
+        }
+
+        mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_FALSE, SDL_FALSE);
+        if (mapping) {
+            return mapping;
         }
     }
 
-    if (!exact_match) {
 #if SDL_JOYSTICK_XINPUT
-        if (SDL_IsJoystickXInput(guid)) {
-            /* This is an XInput device */
-            return s_pXInputMapping;
-        }
+    if (SDL_IsJoystickXInput(guid)) {
+        /* This is an XInput device */
+        return s_pXInputMapping;
+    }
 #endif
-        if (!mapping) {
-            if (SDL_IsJoystickHIDAPI(guid)) {
-                mapping = SDL_CreateMappingForHIDAPIController(guid);
-            } else if (SDL_IsJoystickRAWINPUT(guid)) {
-                mapping = SDL_CreateMappingForRAWINPUTController(guid);
-            } else if (SDL_IsJoystickWGI(guid)) {
-                mapping = SDL_CreateMappingForWGIController(guid);
-            } else if (SDL_IsJoystickVirtual(guid)) {
-                /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
+    if (!mapping) {
+        if (SDL_IsJoystickHIDAPI(guid)) {
+            mapping = SDL_CreateMappingForHIDAPIController(guid);
+        } else if (SDL_IsJoystickRAWINPUT(guid)) {
+            mapping = SDL_CreateMappingForRAWINPUTController(guid);
+        } else if (SDL_IsJoystickWGI(guid)) {
+            mapping = SDL_CreateMappingForWGIController(guid);
+        } else if (SDL_IsJoystickVirtual(guid)) {
+            /* We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping */
 #ifdef __ANDROID__
-            } else {
-                mapping = SDL_CreateMappingForAndroidController(guid);
+        } else {
+            mapping = SDL_CreateMappingForAndroidController(guid);
 #endif
-            }
         }
     }
     return mapping;
@@ -1179,7 +1203,7 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
         /* Make sure the mapping has the CRC */
         char *new_mapping;
         char *crc_end = "";
-        char *crc_string = SDL_strstr(pchMapping, "crc:");
+        char *crc_string = SDL_strstr(pchMapping, SDL_CONTROLLER_CRC_FIELD);
         if (crc_string) {
             crc_end = SDL_strchr(crc_string, ',');
             if (crc_end) {
@@ -1190,22 +1214,22 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
             *crc_string = '\0';
         }
 
-        if (SDL_asprintf(&new_mapping, "%scrc:%.4x,%s", pchMapping, crc, crc_end) >= 0) {
+        if (SDL_asprintf(&new_mapping, "%s%s%.4x,%s", pchMapping, SDL_CONTROLLER_CRC_FIELD, crc, crc_end) >= 0) {
             SDL_free(pchMapping);
             pchMapping = new_mapping;
         }
     } else {
         /* Make sure the GUID has the CRC, for matching purposes */
-        char *crc_string = SDL_strstr(pchMapping, "crc:");
+        char *crc_string = SDL_strstr(pchMapping, SDL_CONTROLLER_CRC_FIELD);
         if (crc_string) {
-            crc = (Uint16)SDL_strtol(crc_string + 4, NULL, 16);
+            crc = (Uint16)SDL_strtol(crc_string + SDL_CONTROLLER_CRC_FIELD_SIZE, NULL, 16);
             if (crc) {
                 SDL_SetJoystickGUIDCRC(&jGUID, crc);
             }
         }
     }
 
-    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(jGUID, SDL_TRUE);
+    pControllerMapping = SDL_PrivateMatchControllerMappingForGUID(jGUID, SDL_TRUE, SDL_TRUE);
     if (pControllerMapping) {
         /* Only overwrite the mapping if the priority is the same or higher. */
         if (pControllerMapping->priority <= priority) {
@@ -1265,7 +1289,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
 {
     ControllerMapping_t *mapping;
 
-    mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_FALSE);
+    mapping = SDL_PrivateGetControllerMappingForGUID(guid);
 #ifdef __LINUX__
     if (!mapping && name) {
         if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
@@ -1456,7 +1480,7 @@ SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, int freerw)
         /* Extract and verify the platform */
         tmp = SDL_strstr(line, SDL_CONTROLLER_PLATFORM_FIELD);
         if (tmp != NULL) {
-            tmp += SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD);
+            tmp += SDL_CONTROLLER_PLATFORM_FIELD_SIZE;
             comma = SDL_strchr(tmp, ',');
             if (comma != NULL) {
                 platform_len = comma - tmp + 1;
@@ -1503,7 +1527,7 @@ SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMap
             int len;
             char hint[128];
 
-            tmp += SDL_strlen(SDL_CONTROLLER_HINT_FIELD);
+            tmp += SDL_CONTROLLER_HINT_FIELD_SIZE;
 
             if (*tmp == '!') {
                 negate = SDL_TRUE;
@@ -1541,14 +1565,14 @@ SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMap
 
         tmp = SDL_strstr(mappingString, SDL_CONTROLLER_SDKGE_FIELD);
         if (tmp != NULL) {
-            tmp += SDL_strlen(SDL_CONTROLLER_SDKGE_FIELD);
+            tmp += SDL_CONTROLLER_SDKGE_FIELD_SIZE;
             if (!(SDL_GetAndroidSDKVersion() >= SDL_atoi(tmp))) {
                 return SDL_SetError("SDK version %d < minimum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
             }
         }
         tmp = SDL_strstr(mappingString, SDL_CONTROLLER_SDKLE_FIELD);
         if (tmp != NULL) {
-            tmp += SDL_strlen(SDL_CONTROLLER_SDKLE_FIELD);
+            tmp += SDL_CONTROLLER_SDKLE_FIELD_SIZE;
             if (!(SDL_GetAndroidSDKVersion() <= SDL_atoi(tmp))) {
                 return SDL_SetError("SDK version %d > maximum version %d", SDL_GetAndroidSDKVersion(), SDL_atoi(tmp));
             }
@@ -1633,7 +1657,7 @@ CreateMappingString(ControllerMapping_t *mapping, SDL_JoystickGUID guid)
         if (mapping->mapping[SDL_strlen(mapping->mapping) - 1] != ',') {
             needed += 1;
         }
-        needed += SDL_strlen(SDL_CONTROLLER_PLATFORM_FIELD) + SDL_strlen(platform);
+        needed += SDL_CONTROLLER_PLATFORM_FIELD_SIZE + SDL_strlen(platform);
     }
 
     pMappingString = SDL_malloc(needed);
@@ -1690,7 +1714,7 @@ SDL_GameControllerMappingForIndex(int mapping_index)
 char *
 SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
 {
-    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_FALSE);
+    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid);
     if (mapping) {
         return CreateMappingString(mapping, guid);
     } else {
