@@ -2628,7 +2628,7 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
         /* See if the user or application wants to specifically disable the framebuffer */
         const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         if (hint) {
-            if (*hint == '0' || SDL_strcasecmp(hint, "false") == 0) {
+            if ((*hint == '0') || (SDL_strcasecmp(hint, "false") == 0) || (SDL_strcasecmp(hint, "software") == 0)) {
                 attempt_texture_framebuffer = SDL_FALSE;
             }
         }
