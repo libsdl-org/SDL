@@ -43,6 +43,7 @@
 /*#undef SDL_JOYSTICK_HIDAPI */
 #else
 #define SDL_JOYSTICK_HIDAPI 1
+#define HAVE_LIBUSB 1
 /* dynamically loaded libusb-1.0 dll: */
 #define SDL_LIBUSB_DYNAMIC "usb100.dll"
 #endif
