@@ -33,6 +33,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_nintendo.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
@@ -101,18 +102,6 @@ typedef enum {
     k_eSwitchProprietaryCommandIDs_ClearUSB  = 0x05,
     k_eSwitchProprietaryCommandIDs_ResetMCU  = 0x06,
 } ESwitchProprietaryCommandIDs;
-
-typedef enum {
-    k_eSwitchDeviceInfoControllerType_Unknown        = 0,
-    k_eSwitchDeviceInfoControllerType_JoyConLeft     = 1,
-    k_eSwitchDeviceInfoControllerType_JoyConRight    = 2,
-    k_eSwitchDeviceInfoControllerType_ProController  = 3,
-    k_eSwitchDeviceInfoControllerType_NESLeft        = 9,
-    k_eSwitchDeviceInfoControllerType_NESRight       = 10,
-    k_eSwitchDeviceInfoControllerType_SNES           = 11,
-    k_eSwitchDeviceInfoControllerType_N64            = 12,
-    k_eSwitchDeviceInfoControllerType_SEGA_Genesis   = 13,
-} ESwitchDeviceInfoControllerType;
 
 #define k_unSwitchOutputPacketDataLength 49
 #define k_unSwitchMaxOutputPacketLength  64
@@ -1244,6 +1233,7 @@ UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     if (name && (!name || SDL_strcmp(name, device->name) != 0)) {
         SDL_free(device->name);
         device->name = SDL_strdup(name);
+        SDL_SetJoystickGUIDCRC(&device->guid, SDL_crc16(0, name, SDL_strlen(name)));
     }
 }
 

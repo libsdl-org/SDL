@@ -31,13 +31,13 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_nintendo.h"
 
 
 #ifdef SDL_JOYSTICK_HIDAPI_WII
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_WII_PROTOCOL*/
-#define DEBUG_WII_PROTOCOL
 
 #undef clamp
 #define clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
@@ -79,15 +79,6 @@ typedef enum {
     k_eWiiPlayerLEDs_P3 = 0x40,
     k_eWiiPlayerLEDs_P4 = 0x80,
 } EWiiPlayerLEDs;
-
-typedef enum {
-    k_eWiiExtensionControllerType_None,
-    k_eWiiExtensionControllerType_Unknown,
-    k_eWiiExtensionControllerType_Nunchuck,
-    k_eWiiExtensionControllerType_ClassicController,
-    k_eWiiExtensionControllerType_ClassicControllerPro,
-    k_eWiiExtensionControllerType_WiiUPro,
-} EWiiExtensionControllerType;
 
 #define k_unWiiPacketDataLength 22
 
@@ -312,13 +303,13 @@ static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx)
 static void UpdatePowerLevelWii(SDL_Joystick *joystick, Uint8 batteryLevelByte)
 {
     if (batteryLevelByte > 178) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
     } else if (batteryLevelByte > 51) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
     } else if (batteryLevelByte > 13) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
     } else {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
     }
 }
 
@@ -335,43 +326,16 @@ static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryB
      * No value above 4 has been observed.
      */
     if (pluggedIn && !charging) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
     } else if (batteryLevel >= 4) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
     } else if (batteryLevel > 1) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_MEDIUM;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
     } else if (batteryLevel == 1) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_LOW;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
     } else {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_EMPTY;
+        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
     }
-}
-
-static SDL_bool IdentifyController(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
-{
-    const Uint8 statusRequest[2] = { k_eWiiOutputReportIDs_StatusRequest, 0 };
-    SDL_bool hasExtension;
-    WriteOutput(ctx, statusRequest, sizeof(statusRequest), SDL_TRUE);
-    if (!ReadInputSync(ctx, k_eWiiInputReportIDs_Status, NULL)) {
-        return SDL_FALSE;
-    }
-    UpdatePowerLevelWii(joystick, ctx->m_rgucReadBuffer[6]);
-    hasExtension = ctx->m_rgucReadBuffer[3] & 2 ? SDL_TRUE : SDL_FALSE;
-    if (hasExtension) {
-        /* http://wiibrew.org/wiki/Wiimote/Extension_Controllers#The_New_Way */
-        Uint8 data_0x55 = 0x55;
-        Uint8 data_0x00 = 0x00;
-        SDL_bool ok = WriteRegister(ctx, 0xA400F0, &data_0x55, sizeof(data_0x55), SDL_TRUE)
-                   && WriteRegister(ctx, 0xA400FB, &data_0x00, sizeof(data_0x00), SDL_TRUE)
-                   && ReadRegister(ctx, 0xA400FA, 6, SDL_TRUE)
-                   && ParseExtensionResponse(ctx);
-        if (!ok) {
-            return SDL_FALSE;
-        }
-    } else {
-        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_None;
-    }
-    return SDL_TRUE;
 }
 
 static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
@@ -431,24 +395,6 @@ static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
             break;
         default:
             break;
-    }
-}
-
-static const char* GetNameFromExtensionInfo(SDL_DriverWii_Context *ctx)
-{
-    switch (ctx->m_eExtensionControllerType) {
-        case k_eWiiExtensionControllerType_None:
-            return "Nintendo Wii Remote";
-        case k_eWiiExtensionControllerType_Nunchuck:
-            return "Nintendo Wii Remote with Nunchuck";
-        case k_eWiiExtensionControllerType_ClassicController:
-            return "Nintendo Wii Remote with Classic Controller";
-        case k_eWiiExtensionControllerType_ClassicControllerPro:
-            return "Nintendo Wii Remote with Classic Controller Pro";
-        case k_eWiiExtensionControllerType_WiiUPro:
-            return "Nintendo Wii U Pro Controller";
-        default:
-            return "Nintendo Wii Remote with Unknown Extension";
     }
 }
 
@@ -523,9 +469,84 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
     }
 }
 
+static EWiiExtensionControllerType
+ReadControllerType(SDL_HIDAPI_Device *device)
+{
+    EWiiExtensionControllerType eControllerType = k_eWiiExtensionControllerType_Unknown;
+
+    /* Create enough of a context to read the controller type from the device */
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (ctx) {
+        ctx->device = device;
+
+        device->dev = SDL_hid_open_path(device->path, 0);
+        if (device->dev) {
+            const Uint8 statusRequest[2] = { k_eWiiOutputReportIDs_StatusRequest, 0 };
+            WriteOutput(ctx, statusRequest, sizeof(statusRequest), SDL_TRUE);
+            if (ReadInputSync(ctx, k_eWiiInputReportIDs_Status, NULL)) {
+                SDL_bool hasExtension = (ctx->m_rgucReadBuffer[3] & 2) ? SDL_TRUE : SDL_FALSE;
+                if (hasExtension) {
+                    /* http://wiibrew.org/wiki/Wiimote/Extension_Controllers#The_New_Way */
+                    Uint8 data_0x55 = 0x55;
+                    Uint8 data_0x00 = 0x00;
+                    if (WriteRegister(ctx, 0xA400F0, &data_0x55, sizeof(data_0x55), SDL_TRUE) &&
+                        WriteRegister(ctx, 0xA400FB, &data_0x00, sizeof(data_0x00), SDL_TRUE) &&
+                        ReadRegister(ctx, 0xA400FA, 6, SDL_TRUE) && ParseExtensionResponse(ctx)) {
+                        eControllerType = ctx->m_eExtensionControllerType;
+                    }
+                } else {
+                    eControllerType = k_eWiiExtensionControllerType_None;
+                }
+            }
+            SDL_hid_close(device->dev);
+            device->dev = NULL;
+        }
+        SDL_free(ctx);
+    }
+    return eControllerType;
+}
+
+static void
+UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
+{
+    EWiiExtensionControllerType eControllerType = (EWiiExtensionControllerType)device->guid.data[15];
+    const char *name = NULL;
+
+    switch (eControllerType) {
+        case k_eWiiExtensionControllerType_None:
+            name = "Nintendo Wii Remote";
+            break;
+        case k_eWiiExtensionControllerType_Nunchuck:
+            name = "Nintendo Wii Remote with Nunchuck";
+            break;
+        case k_eWiiExtensionControllerType_ClassicController:
+            name = "Nintendo Wii Remote with Classic Controller";
+            break;
+        case k_eWiiExtensionControllerType_ClassicControllerPro:
+            name = "Nintendo Wii Remote with Classic Controller Pro";
+            break;
+        case k_eWiiExtensionControllerType_WiiUPro:
+            name = "Nintendo Wii U Pro Controller";
+            break;
+        default:
+            name = "Nintendo Wii Remote with Unknown Extension";
+            break;
+    }
+    if (name && (!name || SDL_strcmp(name, device->name) != 0)) {
+        SDL_free(device->name);
+        device->name = SDL_strdup(name);
+        SDL_SetJoystickGUIDCRC(&device->guid, SDL_crc16(0, name, SDL_strlen(name)));
+    }
+}
+
 static SDL_bool
 HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 {
+    if (device->vendor_id == USB_VENDOR_NINTENDO) {
+        EWiiExtensionControllerType eControllerType = ReadControllerType(device);
+        device->guid.data[15] = eControllerType;
+        UpdateDeviceIdentity(device);
+    }
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -568,19 +589,12 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         goto error;
     }
 
-    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
-                        SDL_GameControllerButtonReportingHintChanged, ctx);
-
-    if (!IdentifyController(ctx, joystick)) {
-        char msg[512];
-        SDL_GetErrorMsg(msg, sizeof(msg) - 1);
-        SDL_SetError("Couldn't read device info: %s", msg);
-        goto error;
-    }
+    ctx->m_eExtensionControllerType = (EWiiExtensionControllerType)device->guid.data[15];
 
     InitStickCalibrationData(ctx);
-    SDL_free(device->name);
-    device->name = SDL_strdup(GetNameFromExtensionInfo(ctx));
+
+    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
+                        SDL_GameControllerButtonReportingHintChanged, ctx);
 
     /* Initialize player index (needed for setting LEDs) */
     ctx->m_nPlayerIndex = SDL_JoystickGetPlayerIndex(joystick);
@@ -953,7 +967,7 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Request a status update periodically to make sure our battery value is up to date */
-    if (SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS)) {
+    if (!ctx->m_unLastStatus || SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS)) {
         Uint8 data[2];
 
         data[0] = k_eWiiOutputReportIDs_StatusRequest;
