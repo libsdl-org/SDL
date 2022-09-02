@@ -387,8 +387,8 @@ static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
             break;
         case k_eWiiExtensionControllerType_Nunchuck:
             for (i = 0; i < 2; i++) {
-                ctx->m_StickCalibrationData[i].min = 0;
-                ctx->m_StickCalibrationData[i].max = 255;
+                ctx->m_StickCalibrationData[i].min = 128 - 80;
+                ctx->m_StickCalibrationData[i].max = 128 + 80;
                 ctx->m_StickCalibrationData[i].center = 0;
                 ctx->m_StickCalibrationData[i].deadzone = 10;
             }
@@ -593,8 +593,6 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     InitStickCalibrationData(ctx);
 
-    RequestButtonPacketType(ctx, GetButtonPacketType(ctx));
-
     SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
@@ -614,6 +612,8 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         joystick->nbuttons = 25;
     }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
+
+    RequestButtonPacketType(ctx, GetButtonPacketType(ctx));
 
     ctx->m_unLastInput = SDL_GetTicks();
 
@@ -742,14 +742,14 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     }
 
     /* Sticks */
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < SDL_arraysize(axes); i++) {
         Uint16 value = data.rgucExtension[i * 2] | (data.rgucExtension[i * 2 + 1] << 8);
         PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[i], axes[i], value);
     }
 
     /* Buttons */
-    for (i = 0; i < 3; i++) {
-        for (j = 0; j < 8; j++) {
+    for (i = 0; i < SDL_arraysize(buttons); i++) {
+        for (j = 0; j < SDL_arraysize(buttons[i]); j++) {
             Uint8 button = buttons[i][j];
             if (button != 0xFF) {
                 SDL_bool state = (data.rgucExtension[8 + i] >> j) & 1 ? SDL_RELEASED : SDL_PRESSED;
@@ -782,8 +782,8 @@ static void HandleWiiButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joysti
     int i, j;
 
     /* Buttons */
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < 8; j++) {
+    for (i = 0; i < SDL_arraysize(buttons); i++) {
+        for (j = 0; j < SDL_arraysize(buttons[i]); j++) {
             Uint8 button = buttons[i][j];
             if (button != 0xFF) {
                 SDL_bool state = ((data.rgucBaseButtons[i] >> j) & 1) ? SDL_PRESSED : SDL_RELEASED;
@@ -795,29 +795,22 @@ static void HandleWiiButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joysti
 
 static void HandleWiiNunchukData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData data)
 {
-    /* FIXME: What is the actual range of these axes? */
-    const int NUNCHUK_THUMBSTICK_MIN = (128 - 96);
-    const int NUNCHUK_THUMBSTICK_MAX = (128 + 96);
-
-    Sint16 axis;
-    Uint8 value;
+    static const Uint8 axes[] = { SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_LEFTY };
+    int i;
 
     if (data.ucNExtensionBytes < 6) {
         return;
     }
 
-    value = clamp(data.rgucExtension[0], NUNCHUK_THUMBSTICK_MIN, NUNCHUK_THUMBSTICK_MAX);
-    axis = (Sint16)HIDAPI_RemapVal(value, (float)NUNCHUK_THUMBSTICK_MIN, (float)NUNCHUK_THUMBSTICK_MAX, SDL_JOYSTICK_AXIS_MIN, SDL_JOYSTICK_AXIS_MAX);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
+    /* Sticks */
+    for (i = 0; i < SDL_arraysize(axes); i++) {
+        Uint16 value = data.rgucExtension[i];
+        PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[i], axes[i], value);
+    }
 
-    value = clamp(data.rgucExtension[1], NUNCHUK_THUMBSTICK_MIN, NUNCHUK_THUMBSTICK_MAX);
-    axis = (Sint16)HIDAPI_RemapVal(value, (float)NUNCHUK_THUMBSTICK_MIN, (float)NUNCHUK_THUMBSTICK_MAX, SDL_JOYSTICK_AXIS_MIN, SDL_JOYSTICK_AXIS_MAX);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, ~axis);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT,  (data.rgucExtension[5] & 0x01) ? SDL_MIN_SINT16 : SDL_MAX_SINT16);
 
-    value = data.rgucExtension[5];
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT,  (value & 0x01) ? SDL_MIN_SINT16 : SDL_MAX_SINT16);
-
-    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (value & 0x02) ? SDL_RELEASED : SDL_PRESSED);
+    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data.rgucExtension[5] & 0x02) ? SDL_RELEASED : SDL_PRESSED);
 }
 
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData data)
