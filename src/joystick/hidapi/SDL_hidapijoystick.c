@@ -97,7 +97,7 @@ static SDL_bool initialized = SDL_FALSE;
 static SDL_bool shutting_down = SDL_FALSE;
 
 void
-HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size)
+HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size)
 {
     int i;
     char *buffer;
