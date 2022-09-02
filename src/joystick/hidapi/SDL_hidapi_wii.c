@@ -37,6 +37,10 @@
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_WII_PROTOCOL*/
+#define DEBUG_WII_PROTOCOL
+
+#undef clamp
+#define clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
 typedef enum {
     k_eWiiInputReportIDs_Status      = 0x20,
@@ -104,7 +108,8 @@ typedef struct {
     int m_nPlayerIndex;
     SDL_bool m_bRumbleActive;
     Uint8 m_rgucReadBuffer[k_unWiiPacketDataLength];
-    Uint32 m_iLastStatus;
+    Uint32 m_unLastInput;
+    Uint32 m_unLastStatus;
 
     struct StickCalibrationData {
         Uint16 min;
@@ -141,8 +146,7 @@ HIDAPI_DriverWii_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, 
         return SDL_TRUE;
     }
     if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_WII_REMOTE) {
-        /* Technically can be supported, but we don't interpret inputs yet */
-        return SDL_FALSE;
+        return SDL_TRUE;
     }
     return SDL_FALSE;
 }
@@ -597,6 +601,8 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     RequestButtonPacketType(ctx, GetButtonPacketType(ctx));
 
+    ctx->m_unLastInput = SDL_GetTicks();
+
     return SDL_TRUE;
 
 error:
@@ -748,10 +754,67 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     UpdatePowerLevelWiiU(joystick, data.rgucExtension[10]);
 }
 
+static void HandleWiiButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData data)
+{
+    static const Uint8 buttons[2][8] = {
+        {
+            SDL_CONTROLLER_BUTTON_DPAD_LEFT,  SDL_CONTROLLER_BUTTON_DPAD_RIGHT,    SDL_CONTROLLER_BUTTON_DPAD_DOWN, SDL_CONTROLLER_BUTTON_DPAD_UP,
+            SDL_CONTROLLER_BUTTON_START,      0xFF /* Unused */,                   0xFF /* Unused */,               0xFF /* Unused */,
+        }, {
+            SDL_CONTROLLER_BUTTON_X,          SDL_CONTROLLER_BUTTON_Y,             SDL_CONTROLLER_BUTTON_A,         SDL_CONTROLLER_BUTTON_B,
+            SDL_CONTROLLER_BUTTON_BACK,       0xFF /* Unused */,                   0xFF /* Unused */,               SDL_CONTROLLER_BUTTON_GUIDE,
+        }
+    };
+    int i, j;
+
+    /* Buttons */
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 8; j++) {
+            Uint8 button = buttons[i][j];
+            if (button != 0xFF) {
+                SDL_bool state = ((data.rgucBaseButtons[i] >> j) & 1) ? SDL_PRESSED : SDL_RELEASED;
+                SDL_PrivateJoystickButton(joystick, button, state);
+            }
+        }
+    }
+}
+
+static void HandleWiiNunchukData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData data)
+{
+    /* FIXME: What is the actual range of these axes? */
+    const int NUNCHUK_THUMBSTICK_MIN = (128 - 96);
+    const int NUNCHUK_THUMBSTICK_MAX = (128 + 96);
+
+    Sint16 axis;
+    Uint8 value;
+
+    if (data.ucNExtensionBytes < 6) {
+        return;
+    }
+
+    value = clamp(data.rgucExtension[0], NUNCHUK_THUMBSTICK_MIN, NUNCHUK_THUMBSTICK_MAX);
+    axis = (Sint16)HIDAPI_RemapVal(value, (float)NUNCHUK_THUMBSTICK_MIN, (float)NUNCHUK_THUMBSTICK_MAX, SDL_JOYSTICK_AXIS_MIN, SDL_JOYSTICK_AXIS_MAX);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
+
+    value = clamp(data.rgucExtension[1], NUNCHUK_THUMBSTICK_MIN, NUNCHUK_THUMBSTICK_MAX);
+    axis = (Sint16)HIDAPI_RemapVal(value, (float)NUNCHUK_THUMBSTICK_MIN, (float)NUNCHUK_THUMBSTICK_MAX, SDL_JOYSTICK_AXIS_MIN, SDL_JOYSTICK_AXIS_MAX);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, ~axis);
+
+    value = data.rgucExtension[5];
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT,  (value & 0x01) ? SDL_MIN_SINT16 : SDL_MAX_SINT16);
+
+    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (value & 0x02) ? SDL_RELEASED : SDL_PRESSED);
+}
+
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData data)
 {
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
         HandleWiiUProButtonData(ctx, joystick, data);
+    } else if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_None) {
+        HandleWiiButtonData(ctx, joystick, data);
+    } else if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_Nunchuck) {
+        HandleWiiButtonData(ctx, joystick, data);
+        HandleWiiNunchukData(ctx, joystick, data);
     }
 }
 
@@ -869,23 +932,35 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
+    now = SDL_GetTicks();
+
     while ((size = ReadInput(ctx)) > 0) {
 #ifdef DEBUG_WII_PROTOCOL
         HIDAPI_DumpPacket("Wii packet: size = %d", ctx->m_rgucReadBuffer, size);
 #endif
         HandleInput(ctx, joystick);
+
+        ctx->m_unLastInput = now;
+    }
+
+    if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
+        const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
+
+        if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+            /* Bluetooth may have disconnected, try reopening the controller */
+            size = -1;
+        }
     }
 
     /* Request a status update periodically to make sure our battery value is up to date */
-    now = SDL_GetTicks();
-    if (SDL_TICKS_PASSED(now, ctx->m_iLastStatus + FIFTEEN_MINUTES_IN_MS)) {
+    if (SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS)) {
         Uint8 data[2];
 
         data[0] = k_eWiiOutputReportIDs_StatusRequest;
         data[1] = ctx->m_bRumbleActive;
         WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
 
-        ctx->m_iLastStatus = now;
+        ctx->m_unLastStatus = now;
     }
 
     if (size < 0) {
