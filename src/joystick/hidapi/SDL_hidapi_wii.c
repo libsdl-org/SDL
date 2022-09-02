@@ -1163,7 +1163,9 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Request a status update periodically to make sure our battery value is up to date */
-    if (!ctx->m_unLastStatus || SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS)) {
+    if (!ctx->m_unLastStatus ||
+        SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS) ||
+        ctx->m_eCommState == k_eWiiCommunicationState_Error) {
         Uint8 data[2];
 
         data[0] = k_eWiiOutputReportIDs_StatusRequest;
