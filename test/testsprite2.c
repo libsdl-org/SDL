@@ -401,6 +401,7 @@ loop()
     Uint32 now;
     int i;
     SDL_Event event;
+    const char *sdlerror;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
@@ -428,6 +429,12 @@ loop()
         frames = 0;
     }
 
+    /* Check for errors */
+    sdlerror = SDL_GetError();
+    if (sdlerror && *sdlerror) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", sdlerror);
+        quit(3);
+    }
 }
 
 int
