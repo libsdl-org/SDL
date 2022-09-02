@@ -109,14 +109,19 @@ typedef struct
     Uint8 rgucAccelX[2];                /* 21 */
     Uint8 rgucAccelY[2];                /* 23 */
     Uint8 rgucAccelZ[2];                /* 25 */
-    Uint8 rgucUnknown1[4];              /* 27 */
-    Uint8 ucTouchpadCounter1;           /* 31 - high bit clear + counter */
-    Uint8 rgucTouchpadData1[3];         /* 32 - X/Y, 12 bits per axis */
-    Uint8 ucTouchpadCounter2;           /* 35 - high bit clear + counter */
-    Uint8 rgucTouchpadData2[3];         /* 36 - X/Y, 12 bits per axis */
+    Uint8 rgucTimer1[4];                /* 27 - 32 bit little endian */
+    Uint8 ucBatteryTemp;                /* 31 */
+    Uint8 ucTouchpadCounter1;           /* 32 - high bit clear + counter */
+    Uint8 rgucTouchpadData1[3];         /* 33 - X/Y, 12 bits per axis */
+    Uint8 ucTouchpadCounter2;           /* 36 - high bit clear + counter */
+    Uint8 rgucTouchpadData2[3];         /* 37 - X/Y, 12 bits per axis */
+    Uint8 rgucUnknown1[8];              /* 40 */
+    Uint8 rgucTimer2[4];                /* 48 - 32 bit little endian */
+    Uint8 ucBatteryLevel;               /* 52 */
+    Uint8 ucConnectState;               /* 53 - 0x08 = USB, 0x01 = headphone */
 
     /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
-} PS5StatePacketV1_t;
+} PS5StatePacket_t;
 
 typedef struct
 {
@@ -135,19 +140,14 @@ typedef struct
     Uint8 rgucAccelX[2];                /* 21 */
     Uint8 rgucAccelY[2];                /* 23 */
     Uint8 rgucAccelZ[2];                /* 25 */
-    Uint8 rgucTimer1[4];                /* 27 - 32 bit little endian */
-    Uint8 ucBatteryTemp;                /* 31 */
-    Uint8 ucTouchpadCounter1;           /* 32 - high bit clear + counter */
-    Uint8 rgucTouchpadData1[3];         /* 33 - X/Y, 12 bits per axis */
-    Uint8 ucTouchpadCounter2;           /* 36 - high bit clear + counter */
-    Uint8 rgucTouchpadData2[3];         /* 37 - X/Y, 12 bits per axis */
-    Uint8 rgucUnknown1[8];              /* 40 */
-    Uint8 rgucTimer2[4];                /* 48 - 32 bit little endian */
-    Uint8 ucBatteryLevel;               /* 52 */
-    Uint8 ucConnectState;               /* 53 - 0x08 = USB, 0x01 = headphone */
+    Uint8 rgucUnknown1[4];              /* 27 */
+    Uint8 ucTouchpadCounter1;           /* 31 - high bit clear + counter */
+    Uint8 rgucTouchpadData1[3];         /* 32 - X/Y, 12 bits per axis */
+    Uint8 ucTouchpadCounter2;           /* 35 - high bit clear + counter */
+    Uint8 rgucTouchpadData2[3];         /* 36 - X/Y, 12 bits per axis */
 
     /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
-} PS5StatePacketV2_t;
+} PS5StatePacketAlt_t;
 
 typedef struct
 {
@@ -198,6 +198,7 @@ typedef struct {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     SDL_bool is_bluetooth;
+    SDL_bool use_alternate_report;
     SDL_bool effects_supported;
     SDL_bool sensors_supported;
     SDL_bool touchpad_supported;
@@ -221,6 +222,7 @@ typedef struct {
     {
         PS5SimpleStatePacket_t simple;
         PS5StatePacketCommon_t state;
+        PS5StatePacket_t full_state;
         Uint8 data[64];
     } last_state;
 } SDL_DriverPS5_Context;
@@ -248,6 +250,16 @@ static SDL_bool HIDAPI_DriverPS5_HasSensors(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool HIDAPI_DriverPS5_HasTouchpad(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_TRUE;
+}
+
+static SDL_bool HIDAPI_DriverPS5_UseAlternateReport(Uint16 vendor_id, Uint16 product_id)
+{
+    /* The Hori Fighting Stick Alpha reports touchpad at a different offset than the PS5 controller */
+    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5) {
+        return SDL_TRUE;
+    }
+
+    return SDL_FALSE;
 }
 
 static int HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size);
@@ -553,11 +565,11 @@ HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     SDL_bool led_reset_complete = SDL_FALSE;
 
-    if (ctx->firmware_version <= 0x204) {
+    if (ctx->use_alternate_report) {
         /* We don't know how to check the timer, just assume it's complete for now */
         led_reset_complete = SDL_TRUE;
     } else {
-        const PS5StatePacketV2_t *packet = (PS5StatePacketV2_t *)ctx->last_state.data;
+        const PS5StatePacket_t *packet = &ctx->last_state.full_state;
 
         /* Check the timer to make sure the Bluetooth connection LED animation is complete */
         const Uint32 connection_complete = 10200000;
@@ -728,6 +740,10 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
             ctx->firmware_version = (Uint16)data[44] | ((Uint16)data[45] << 8);
             joystick->firmware_version = ctx->firmware_version;
         }
+    }
+
+    if (HIDAPI_DriverPS5_UseAlternateReport(device->vendor_id, device->product_id)) {
+        ctx->use_alternate_report = SDL_TRUE;
     }
 
     if (HIDAPI_DriverPS5_CanRumble(device->vendor_id, device->product_id)) {
@@ -1116,30 +1132,7 @@ HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL_hid_device 
 }
 
 static void
-HIDAPI_DriverPS5_HandleStatePacketV1(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketV1_t *packet)
-{
-    static const float TOUCHPAD_SCALEX = 1.0f / 1920;
-    static const float TOUCHPAD_SCALEY = 1.0f / 1070;
-    Uint8 touchpad_state;
-    int touchpad_x, touchpad_y;
-
-    if (ctx->report_touchpad) {
-        touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
-        touchpad_x = packet->rgucTouchpadData1[0] | (((int)packet->rgucTouchpadData1[1] & 0x0F) << 8);
-        touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int)packet->rgucTouchpadData1[2] << 4);
-        SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
-
-        touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
-        touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
-        touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
-        SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
-    }
-
-    SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
-}
-
-static void
-HIDAPI_DriverPS5_HandleStatePacketV2(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketV2_t *packet)
+HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacket_t *packet)
 {
     static const float TOUCHPAD_SCALEX = 1.0f / 1920;
     static const float TOUCHPAD_SCALEY = 1.0f / 1070;
@@ -1181,6 +1174,29 @@ HIDAPI_DriverPS5_HandleStatePacketV2(SDL_Joystick *joystick, SDL_hid_device *dev
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
 
+static void
+HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketAlt_t *packet)
+{
+    static const float TOUCHPAD_SCALEX = 1.0f / 1920;
+    static const float TOUCHPAD_SCALEY = 1.0f / 1070;
+    Uint8 touchpad_state;
+    int touchpad_x, touchpad_y;
+
+    if (ctx->report_touchpad) {
+        touchpad_state = ((packet->ucTouchpadCounter1 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_x = packet->rgucTouchpadData1[0] | (((int) packet->rgucTouchpadData1[1] & 0x0F) << 8);
+        touchpad_y = (packet->rgucTouchpadData1[1] >> 4) | ((int) packet->rgucTouchpadData1[2] << 4);
+        SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+
+        touchpad_state = ((packet->ucTouchpadCounter2 & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+        touchpad_x = packet->rgucTouchpadData2[0] | (((int) packet->rgucTouchpadData2[1] & 0x0F) << 8);
+        touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int) packet->rgucTouchpadData2[2] << 4);
+        SDL_PrivateJoystickTouchpad(joystick, 0, 1, touchpad_state, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_state ? 1.0f : 0.0f);
+    }
+
+    SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
+}
+
 static SDL_bool
 HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 {
@@ -1210,10 +1226,10 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
                 HIDAPI_DriverPS5_HandleSimpleStatePacket(joystick, device->dev, ctx, (PS5SimpleStatePacket_t *)&data[1]);
             } else {
                 HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[1]);
-                if (ctx->firmware_version <= 0x204) {
-                    HIDAPI_DriverPS5_HandleStatePacketV1(joystick, device->dev, ctx, (PS5StatePacketV1_t *)&data[1]);
+                if (ctx->use_alternate_report) {
+                    HIDAPI_DriverPS5_HandleStatePacketAlt(joystick, device->dev, ctx, (PS5StatePacketAlt_t *)&data[1]);
                 } else {
-                    HIDAPI_DriverPS5_HandleStatePacketV2(joystick, device->dev, ctx, (PS5StatePacketV2_t *)&data[1]);
+                    HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[1]);
                 }
             }
             break;
@@ -1226,10 +1242,10 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
                 HIDAPI_DriverPS5_CheckPendingLEDReset(device);
             }
             HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, device->dev, ctx, (PS5StatePacketCommon_t *)&data[2]);
-            if (ctx->firmware_version <= 0x204) {
-                HIDAPI_DriverPS5_HandleStatePacketV1(joystick, device->dev, ctx, (PS5StatePacketV1_t *)&data[2]);
+            if (ctx->use_alternate_report) {
+                HIDAPI_DriverPS5_HandleStatePacketAlt(joystick, device->dev, ctx, (PS5StatePacketAlt_t *)&data[2]);
             } else {
-                HIDAPI_DriverPS5_HandleStatePacketV2(joystick, device->dev, ctx, (PS5StatePacketV2_t *)&data[2]);
+                HIDAPI_DriverPS5_HandleStatePacket(joystick, device->dev, ctx, (PS5StatePacket_t *)&data[2]);
             }
             break;
         default:
