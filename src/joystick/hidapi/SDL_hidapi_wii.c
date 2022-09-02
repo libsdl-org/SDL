@@ -913,42 +913,12 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, z ? SDL_MAX_SINT16 : SDL_MIN_SINT16);
 }
 
-/* Clear buttons that might have been set by a previously-connected controller that won't be set by the current one */
-static void ClearUnmappedButtons(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
-{
-    switch (ctx->m_eExtensionControllerType) {
-        case k_eWiiExtensionControllerType_None:
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, SDL_RELEASED);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, 0);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, 0);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, 0);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, 0);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_MIN_SINT16);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, SDL_MIN_SINT16);
-            SDL_FALLTHROUGH;
-        case k_eWiiExtensionControllerType_Nunchuck:
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, SDL_RELEASED);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, 0);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, 0);
-            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, SDL_MIN_SINT16);
-            break;
-        case k_eWiiExtensionControllerType_ClassicController:
-        case k_eWiiExtensionControllerType_ClassicControllerPro:
-        case k_eWiiExtensionControllerType_WiiUPro:
-        case k_eWiiExtensionControllerType_Unknown:
-            /* All buttons mapped */
-            break;
-    }
-}
-
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
 {
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
         HandleWiiUProButtonData(ctx, joystick, data);
         return;
     }
-    ClearUnmappedButtons(ctx, joystick);
     HandleWiiRemoteButtonData(ctx, joystick, data);
     switch (ctx->m_eExtensionControllerType) {
         case k_eWiiExtensionControllerType_Nunchuck:
@@ -999,15 +969,12 @@ static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         UpdatePowerLevelWii(joystick, ctx->m_rgucReadBuffer[6]);
     }
 
-    if (hadExtension != hasExtension || ctx->m_eCommState == k_eWiiCommunicationState_Error) {
-        if (hasExtension) {
-            ctx->m_eCommState = k_eWiiCommunicationState_ExtensionIdentify1;
-            SendExtensionIdentify1(ctx, SDL_FALSE);
-        } else {
-            ctx->m_eCommState = k_eWiiCommunicationState_None;
-            ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_None;
-            InitializeExtension(ctx);
-        }
+    if (hasExtension) {
+        ctx->m_eCommState = k_eWiiCommunicationState_ExtensionIdentify1;
+        SendExtensionIdentify1(ctx, SDL_FALSE);
+    } else if (hadExtension) {
+        /* Mark this controller as disconnected so we re-connect with a new identity */
+        HIDAPI_JoystickDisconnected(ctx->device, joystick->instance_id);
     }
 }
 
@@ -1059,8 +1026,10 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
                 EWiiExtensionControllerType type = k_eWiiExtensionControllerType_Unknown;
                 if (ParseExtensionResponse(ctx, &type)) {
                     ctx->m_eCommState = k_eWiiCommunicationState_None;
-                    ctx->m_eExtensionControllerType = type;
-                    InitializeExtension(ctx);
+                    if (type != ctx->m_eExtensionControllerType) {
+                        /* Mark this controller as disconnected so we re-connect with a new identity */
+                        HIDAPI_JoystickDisconnected(ctx->device, joystick->instance_id);
+                    }
                 } else {
                     char msg[512];
                     SDL_GetErrorMsg(msg, sizeof(msg) - 1);
