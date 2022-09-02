@@ -125,6 +125,7 @@ typedef struct {
     Uint8 m_rgucReadBuffer[k_unWiiPacketDataLength];
     Uint32 m_unLastInput;
     Uint32 m_unLastStatus;
+    SDL_bool m_bDisconnected;
 
     struct StickCalibrationData {
         Uint16 min;
@@ -210,7 +211,7 @@ static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int s
 
 static SDL_bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs expectedID, SDL_bool(*isMine)(const Uint8 *))
 {
-    Uint32 TimeoutMs = 100;
+    Uint32 TimeoutMs = 250; /* Seeing successful reads after about 200 ms */
     Uint32 startTicks = SDL_GetTicks();
 
     int nRead = 0;
@@ -1003,7 +1004,7 @@ static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         SendExtensionIdentify1(ctx, SDL_FALSE);
     } else if (hadExtension) {
         /* Mark this controller as disconnected so we re-connect with a new identity */
-        HIDAPI_JoystickDisconnected(ctx->device, joystick->instance_id);
+        ctx->m_bDisconnected = SDL_TRUE;
     }
 }
 
@@ -1057,7 +1058,7 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
                     ctx->m_eCommState = k_eWiiCommunicationState_None;
                     if (exctype != ctx->m_eExtensionControllerType) {
                         /* Mark this controller as disconnected so we re-connect with a new identity */
-                        HIDAPI_JoystickDisconnected(ctx->device, joystick->instance_id);
+                        ctx->m_bDisconnected = SDL_TRUE;
                     }
                 } else {
                     char msg[512];
@@ -1211,7 +1212,7 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (size < 0) {
+    if (size < 0 || ctx->m_bDisconnected) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, joystick->instance_id);
     }
