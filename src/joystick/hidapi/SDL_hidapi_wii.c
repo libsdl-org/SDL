@@ -174,24 +174,37 @@ HIDAPI_DriverWii_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 produc
 
 static int ReadInput(SDL_DriverWii_Context *ctx)
 {
+    int size;
+
     /* Make sure we don't try to read at the same time a write is happening */
     if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
         return 0;
     }
 
-    return SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+    size = SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+#ifdef DEBUG_WII_PROTOCOL
+    if (size > 0) {
+        HIDAPI_DumpPacket("Wii packet: size = %d", ctx->m_rgucReadBuffer, size);
+    }
+#endif
+    return size;
 }
 
-static int WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int size, SDL_bool sync)
+static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int size, SDL_bool sync)
 {
+#ifdef DEBUG_WII_PROTOCOL
+    if (size > 0) {
+        HIDAPI_DumpPacket("Wii write packet: size = %d", data, size);
+    }
+#endif
     if (sync) {
-        return SDL_hid_write(ctx->device->dev, data, size);
+        return (SDL_hid_write(ctx->device->dev, data, size) >= 0);
     } else {
         /* Use the rumble thread for general asynchronous writes */
         if (SDL_HIDAPI_LockRumble() < 0) {
-            return -1;
+            return SDL_FALSE;
         }
-        return SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size);
+        return (SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size) >= 0);
     }
 }
 
@@ -226,6 +239,7 @@ static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const 
 {
     Uint8 writeRequest[k_unWiiPacketDataLength];
 
+    SDL_zeroa(writeRequest);
     writeRequest[0] = k_eWiiOutputReportIDs_WriteMemory;
     writeRequest[1] = 0x04 | ctx->m_bRumbleActive;
     writeRequest[2] = (address >> 16) & 0xff;
@@ -512,19 +526,27 @@ ReadExtensionControllerType(SDL_HIDAPI_Device *device)
 
         device->dev = SDL_hid_open_path(device->path, 0);
         if (device->dev) {
-            const Uint8 statusRequest[2] = { k_eWiiOutputReportIDs_StatusRequest, 0 };
-            WriteOutput(ctx, statusRequest, sizeof(statusRequest), SDL_TRUE);
-            if (ReadInputSync(ctx, k_eWiiInputReportIDs_Status, NULL)) {
-                SDL_bool hasExtension = (ctx->m_rgucReadBuffer[3] & 2) ? SDL_TRUE : SDL_FALSE;
-                if (hasExtension) {
-                    /* http://wiibrew.org/wiki/Wiimote/Extension_Controllers#The_New_Way */
-                    if (SendExtensionIdentify1(ctx, SDL_TRUE) &&
-                        SendExtensionIdentify2(ctx, SDL_TRUE) &&
-                        SendExtensionIdentify3(ctx, SDL_TRUE)) {
-                        ParseExtensionResponse(ctx, &eExtensionControllerType);
+            const int MAX_ATTEMPTS = 20;
+            int attempts = 0;
+            for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
+                const Uint8 statusRequest[2] = { k_eWiiOutputReportIDs_StatusRequest, 0 };
+                WriteOutput(ctx, statusRequest, sizeof(statusRequest), SDL_TRUE);
+                if (ReadInputSync(ctx, k_eWiiInputReportIDs_Status, NULL)) {
+                    SDL_bool hasExtension = (ctx->m_rgucReadBuffer[3] & 2) ? SDL_TRUE : SDL_FALSE;
+                    if (hasExtension) {
+                        /* http://wiibrew.org/wiki/Wiimote/Extension_Controllers#The_New_Way */
+                        if (SendExtensionIdentify1(ctx, SDL_TRUE) &&
+                            SendExtensionIdentify2(ctx, SDL_TRUE) &&
+                            SendExtensionIdentify3(ctx, SDL_TRUE)) {
+                            ParseExtensionResponse(ctx, &eExtensionControllerType);
+                        }
+                    } else {
+                        eExtensionControllerType = k_eWiiExtensionControllerType_None;
                     }
-                } else {
-                    eExtensionControllerType = k_eWiiExtensionControllerType_None;
+                }
+                if (eExtensionControllerType != k_eWiiExtensionControllerType_Unknown) {
+                    /* Got it! */
+                    break;
                 }
             }
             SDL_hid_close(device->dev);
@@ -1048,6 +1070,7 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
             break;
     }
 
+#if 0 /* This happens with the Linux Wiimote driver */
     if (type == k_eWiiInputReportIDs_Acknowledge) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI WII: A mysterious ack has arrived!  Type: %02x, Code: %d",
                      ctx->m_rgucReadBuffer[3], ctx->m_rgucReadBuffer[4]);
@@ -1068,13 +1091,21 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
                      ctx->m_rgucReadBuffer[3] & 0xF,
                      str);
     }
+#endif /* 0 */
 }
 
 static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
 {
+    EWiiInputReportIDs eExpectedReport = GetButtonPacketType(ctx);
     WiiButtonData data;
-    SDL_zero(data);
+
+    if (eExpectedReport != ctx->m_rgucReadBuffer[0]) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI WII: Resetting report mode to %d\n", eExpectedReport);
+        RequestButtonPacketType(ctx, eExpectedReport);
+    }
+
     /* IR camera data is not supported */
+    SDL_zero(data);
     switch (ctx->m_rgucReadBuffer[0]) {
         case k_eWiiInputReportIDs_ButtonData0: /* 30 BB BB */
             GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
@@ -1149,9 +1180,6 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     now = SDL_GetTicks();
 
     while ((size = ReadInput(ctx)) > 0) {
-#ifdef DEBUG_WII_PROTOCOL
-        HIDAPI_DumpPacket("Wii packet: size = %d", ctx->m_rgucReadBuffer, size);
-#endif
         HandleInput(ctx, joystick);
 
         ctx->m_unLastInput = now;
@@ -1178,6 +1206,7 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
             data[1] = ctx->m_bRumbleActive;
             WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
 
+            ctx->m_eCommState = k_eWiiCommunicationState_None;
             ctx->m_unLastStatus = now;
         }
     }
