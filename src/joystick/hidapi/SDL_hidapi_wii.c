@@ -501,7 +501,7 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
 }
 
 static EWiiExtensionControllerType
-ReadControllerType(SDL_HIDAPI_Device *device)
+ReadExtensionControllerType(SDL_HIDAPI_Device *device)
 {
     EWiiExtensionControllerType eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
 
@@ -572,7 +572,13 @@ static SDL_bool
 HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 {
     if (device->vendor_id == USB_VENDOR_NINTENDO) {
-        EWiiExtensionControllerType eExtensionControllerType = ReadControllerType(device);
+        EWiiExtensionControllerType eExtensionControllerType;
+
+        if (device->product_id == USB_PRODUCT_NINTENDO_WII_PRO) {
+            eExtensionControllerType = k_eWiiExtensionControllerType_WiiUPro;
+        } else {
+            eExtensionControllerType = ReadExtensionControllerType(device);
+        }
         device->guid.data[15] = eExtensionControllerType;
         UpdateDeviceIdentity(device);
     }
@@ -1125,8 +1131,6 @@ static void HandleInput(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
     }
 }
 
-static const Uint32 FIFTEEN_MINUTES_IN_MS = 15 * 60 * 1000;
-
 static SDL_bool
 HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
 {
@@ -1160,19 +1164,22 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
             /* Bluetooth may have disconnected, try reopening the controller */
             size = -1;
         }
-    }
 
-    /* Request a status update periodically to make sure our battery value is up to date */
-    if (!ctx->m_unLastStatus ||
-        SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS) ||
-        ctx->m_eCommState == k_eWiiCommunicationState_Error) {
-        Uint8 data[2];
+    } else {
+        const Uint32 FIFTEEN_MINUTES_IN_MS = 15 * 60 * 1000;
 
-        data[0] = k_eWiiOutputReportIDs_StatusRequest;
-        data[1] = ctx->m_bRumbleActive;
-        WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
+        /* Request a status update periodically to make sure our battery value is up to date */
+        if (!ctx->m_unLastStatus ||
+            SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS) ||
+            ctx->m_eCommState == k_eWiiCommunicationState_Error) {
+            Uint8 data[2];
 
-        ctx->m_unLastStatus = now;
+            data[0] = k_eWiiOutputReportIDs_StatusRequest;
+            data[1] = ctx->m_bRumbleActive;
+            WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
+
+            ctx->m_unLastStatus = now;
+        }
     }
 
     if (size < 0) {
