@@ -208,12 +208,14 @@ Android_OnPadDown(int device_id, int keycode)
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
+        SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
             SDL_PrivateJoystickButton(item->joystick, button, SDL_PRESSED);
         } else {
             SDL_SendKeyboardKey(SDL_PRESSED, button_to_scancode(button));
         }
+        SDL_UnlockJoysticks();
         return 0;
     }
     
@@ -226,12 +228,14 @@ Android_OnPadUp(int device_id, int keycode)
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
+        SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
             SDL_PrivateJoystickButton(item->joystick, button, SDL_RELEASED);
         } else {
             SDL_SendKeyboardKey(SDL_RELEASED, button_to_scancode(button));
         }
+        SDL_UnlockJoysticks();
         return 0;
     }
     
@@ -242,10 +246,14 @@ int
 Android_OnJoy(int device_id, int axis, float value)
 {
     /* Android gives joy info normalized as [-1.0, 1.0] or [0.0, 1.0] */
-    SDL_joylist_item *item = JoystickByDeviceId(device_id);
+    SDL_joylist_item *item;
+
+    SDL_LockJoysticks();
+    item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
         SDL_PrivateJoystickAxis(item->joystick, axis, (Sint16) (32767.*value));
     }
+    SDL_UnlockJoysticks();
     
     return 0;
 }
@@ -259,7 +267,10 @@ Android_OnHat(int device_id, int hat_id, int x, int y)
     const int DPAD_RIGHT_MASK = (1 << SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
 
     if (x >= -1 && x <= 1 && y >= -1 && y <= 1) {
-        SDL_joylist_item *item = JoystickByDeviceId(device_id);
+        SDL_joylist_item *item;
+
+        SDL_LockJoysticks();
+        item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
             int dpad_state = 0;
             int dpad_delta;
@@ -291,6 +302,7 @@ Android_OnHat(int device_id, int hat_id, int x, int y)
                 item->dpad_state = dpad_state;
             }
         }
+        SDL_UnlockJoysticks();
         return 0;
     }
 
