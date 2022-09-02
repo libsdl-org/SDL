@@ -1053,10 +1053,10 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
 
         case k_eWiiCommunicationState_ExtensionIdentify3:
             if (type == k_eWiiInputReportIDs_ReadMemory) {
-                EWiiExtensionControllerType exctype = k_eWiiExtensionControllerType_Unknown;
-                if (ParseExtensionResponse(ctx, &exctype)) {
+                EWiiExtensionControllerType eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
+                if (ParseExtensionResponse(ctx, &eExtensionControllerType)) {
                     ctx->m_eCommState = k_eWiiCommunicationState_None;
-                    if (exctype != ctx->m_eExtensionControllerType) {
+                    if (eExtensionControllerType != ctx->m_eExtensionControllerType) {
                         /* Mark this controller as disconnected so we re-connect with a new identity */
                         ctx->m_bDisconnected = SDL_TRUE;
                     }
