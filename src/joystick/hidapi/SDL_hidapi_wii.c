@@ -811,13 +811,14 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     static const Uint8 axes[] = { SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_RIGHTX, SDL_CONTROLLER_AXIS_LEFTY, SDL_CONTROLLER_AXIS_RIGHTY };
     const Uint8 (*buttons)[8] = ctx->m_bUseButtonLabels ? WUP_CLASSIC_BUTTON_DEFS : WUP_CLASSIC_BUTTON_DEFS_POSITIONAL;
     Uint8 zl, zr;
+    int i;
 
     if (data->ucNExtensionBytes < 11) {
         return;
     }
 
     /* Sticks */
-    for (int i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
         Uint16 value = data->rgucExtension[i * 2] | (data->rgucExtension[i * 2 + 1] << 8);
         PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[i], axes[i], value);
     }
@@ -1049,7 +1050,8 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         char str[48];
         Uint32 strpos = 0;
         Uint32 len = (ctx->m_rgucReadBuffer[3] >> 4) + 1;
-        for (Uint32 i = 0; i < len; i++) {
+        Uint32 i;
+        for (i = 0; i < len; i++) {
             str[strpos++] = hextable[ctx->m_rgucReadBuffer[6 + i] >> 4];
             str[strpos++] = hextable[ctx->m_rgucReadBuffer[6 + i] & 0xF];
             str[strpos++] = ' ';
