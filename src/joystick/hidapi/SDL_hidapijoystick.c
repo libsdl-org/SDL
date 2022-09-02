@@ -834,6 +834,9 @@ check_removed:
                 goto check_removed;
             } else {
                 HIDAPI_DelDevice(device);
+
+                /* Update the device list again in case this device comes back */
+                SDL_HIDAPI_change_count = 0;
             }
         }
         device = next;

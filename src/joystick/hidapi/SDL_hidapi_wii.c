@@ -254,7 +254,7 @@ static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int siz
     return SDL_TRUE;
 }
 
-static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx)
+static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx, EWiiExtensionControllerType *controller_type)
 {
     Uint64 type = 0;
     int i;
@@ -278,23 +278,23 @@ static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx)
     }
 
     if (type == 0x0000A4200000) {
-        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_Nunchuck;
+        *controller_type = k_eWiiExtensionControllerType_Nunchuck;
         return SDL_TRUE;
     }
     if (type == 0x0000A4200101) {
-        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_ClassicController;
+        *controller_type = k_eWiiExtensionControllerType_ClassicController;
         return SDL_TRUE;
     }
     if (type == 0x0100A4200101) {
-        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_ClassicControllerPro;
+        *controller_type = k_eWiiExtensionControllerType_ClassicControllerPro;
         return SDL_TRUE;
     }
     if (type == 0x0000A4200120) {
-        ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_WiiUPro;
+        *controller_type = k_eWiiExtensionControllerType_WiiUPro;
         return SDL_TRUE;
     }
 
-    ctx->m_eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
+    *controller_type = k_eWiiExtensionControllerType_Unknown;
     SDL_SetError("Unrecognized controller type: %012" SDL_PRIx64, type);
     return SDL_FALSE;
 }
@@ -472,7 +472,7 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
 static EWiiExtensionControllerType
 ReadControllerType(SDL_HIDAPI_Device *device)
 {
-    EWiiExtensionControllerType eControllerType = k_eWiiExtensionControllerType_Unknown;
+    EWiiExtensionControllerType eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
 
     /* Create enough of a context to read the controller type from the device */
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)SDL_calloc(1, sizeof(*ctx));
@@ -491,11 +491,11 @@ ReadControllerType(SDL_HIDAPI_Device *device)
                     Uint8 data_0x00 = 0x00;
                     if (WriteRegister(ctx, 0xA400F0, &data_0x55, sizeof(data_0x55), SDL_TRUE) &&
                         WriteRegister(ctx, 0xA400FB, &data_0x00, sizeof(data_0x00), SDL_TRUE) &&
-                        ReadRegister(ctx, 0xA400FA, 6, SDL_TRUE) && ParseExtensionResponse(ctx)) {
-                        eControllerType = ctx->m_eExtensionControllerType;
+                        ReadRegister(ctx, 0xA400FA, 6, SDL_TRUE)) {
+                        ParseExtensionResponse(ctx, &eExtensionControllerType);
                     }
                 } else {
-                    eControllerType = k_eWiiExtensionControllerType_None;
+                    eExtensionControllerType = k_eWiiExtensionControllerType_None;
                 }
             }
             SDL_hid_close(device->dev);
@@ -503,16 +503,16 @@ ReadControllerType(SDL_HIDAPI_Device *device)
         }
         SDL_free(ctx);
     }
-    return eControllerType;
+    return eExtensionControllerType;
 }
 
 static void
 UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 {
-    EWiiExtensionControllerType eControllerType = (EWiiExtensionControllerType)device->guid.data[15];
+    EWiiExtensionControllerType eExtensionControllerType = (EWiiExtensionControllerType)device->guid.data[15];
     const char *name = NULL;
 
-    switch (eControllerType) {
+    switch (eExtensionControllerType) {
         case k_eWiiExtensionControllerType_None:
             name = "Nintendo Wii Remote";
             break;
@@ -543,8 +543,8 @@ static SDL_bool
 HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 {
     if (device->vendor_id == USB_VENDOR_NINTENDO) {
-        EWiiExtensionControllerType eControllerType = ReadControllerType(device);
-        device->guid.data[15] = eControllerType;
+        EWiiExtensionControllerType eExtensionControllerType = ReadControllerType(device);
+        device->guid.data[15] = eExtensionControllerType;
         UpdateDeviceIdentity(device);
     }
     return HIDAPI_JoystickConnected(device, NULL);
@@ -593,6 +593,8 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     InitStickCalibrationData(ctx);
 
+    RequestButtonPacketType(ctx, GetButtonPacketType(ctx));
+
     SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
@@ -612,8 +614,6 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         joystick->nbuttons = 25;
     }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
-
-    RequestButtonPacketType(ctx, GetButtonPacketType(ctx));
 
     ctx->m_unLastInput = SDL_GetTicks();
 
@@ -861,7 +861,28 @@ static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         /* Wii U has separate battery level tracking */
         UpdatePowerLevelWii(joystick, ctx->m_rgucReadBuffer[6]);
     }
-    /* TODO: Check Extensions */
+
+    /* Check to see if extensions have changed */
+    {
+        EWiiExtensionControllerType eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
+        SDL_bool hasExtension = (ctx->m_rgucReadBuffer[3] & 2) ? SDL_TRUE : SDL_FALSE;
+        if (hasExtension) {
+            /* http://wiibrew.org/wiki/Wiimote/Extension_Controllers#The_New_Way */
+            Uint8 data_0x55 = 0x55;
+            Uint8 data_0x00 = 0x00;
+            if (WriteRegister(ctx, 0xA400F0, &data_0x55, sizeof(data_0x55), SDL_TRUE) &&
+                WriteRegister(ctx, 0xA400FB, &data_0x00, sizeof(data_0x00), SDL_TRUE) &&
+                ReadRegister(ctx, 0xA400FA, 6, SDL_TRUE)) {
+                ParseExtensionResponse(ctx, &eExtensionControllerType);
+            }
+        } else {
+            eExtensionControllerType = k_eWiiExtensionControllerType_None;
+        }
+        if (eExtensionControllerType != ctx->m_eExtensionControllerType) {
+            /* Mark this controller as disconnected so we re-connect with a new identity */
+            HIDAPI_JoystickDisconnected(ctx->device, joystick->instance_id);
+        }
+    }
 }
 
 static void HandleResponse(SDL_DriverWii_Context *ctx)
