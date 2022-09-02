@@ -132,7 +132,7 @@ FullscreenModeEmulation(SDL_Window *window)
            ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
-SDL_bool
+static SDL_bool
 NeedViewport(SDL_Window *window)
 {
     SDL_WindowData        *wind   = window->driverdata;
@@ -448,7 +448,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
     }
 }
 
-const struct wl_callback_listener surface_damage_frame_listener;
+static const struct wl_callback_listener surface_damage_frame_listener;
 
 static void
 surface_damage_frame_done(void *data, struct wl_callback *cb, uint32_t time)
@@ -466,7 +466,7 @@ surface_damage_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     wl_callback_add_listener(wind->surface_damage_frame_callback, &surface_damage_frame_listener, data);
 }
 
-const struct wl_callback_listener surface_damage_frame_listener = {
+static const struct wl_callback_listener surface_damage_frame_listener = {
     surface_damage_frame_done
 };
 
