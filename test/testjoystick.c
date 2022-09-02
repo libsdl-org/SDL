@@ -259,6 +259,7 @@ loop(void *arg)
         }
     }
 
+    SDL_Delay(16);
     SDL_RenderPresent(screen);
 
 #ifdef __EMSCRIPTEN__
