@@ -259,6 +259,8 @@ static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx, EWiiExtension
     Uint64 type = 0;
     int i;
 
+    *controller_type = k_eWiiExtensionControllerType_Unknown;
+
     SDL_assert(ctx->m_rgucReadBuffer[0] == k_eWiiInputReportIDs_ReadMemory);
     if (ctx->m_rgucReadBuffer[4] != 0x00 || ctx->m_rgucReadBuffer[5] != 0xFA) {
         SDL_SetError("Unexpected extension response address");
@@ -294,7 +296,6 @@ static SDL_bool ParseExtensionResponse(SDL_DriverWii_Context *ctx, EWiiExtension
         return SDL_TRUE;
     }
 
-    *controller_type = k_eWiiExtensionControllerType_Unknown;
     SDL_SetError("Unrecognized controller type: %012" SDL_PRIx64, type);
     return SDL_FALSE;
 }
