@@ -280,13 +280,13 @@ static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int siz
 
 static SDL_bool SendExtensionIdentify1(SDL_DriverWii_Context *ctx, SDL_bool sync)
 {
-    unsigned char data = 0x55;
+    Uint8 data = 0x55;
     return WriteRegister(ctx, 0xA400F0, &data, sizeof(data), sync);
 }
 
 static SDL_bool SendExtensionIdentify2(SDL_DriverWii_Context *ctx, SDL_bool sync)
 {
-    unsigned char data = 0x00;
+    Uint8 data = 0x00;
     return WriteRegister(ctx, 0xA400FB, &data, sizeof(data), sync);
 }
 
