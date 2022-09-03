@@ -107,6 +107,9 @@ typedef struct {
     SDL_Rect viewport_rect;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
+    SDL_bool is_fullscreen;
+    SDL_bool in_fullscreen_transition;
+    Uint32 fullscreen_flags;
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);

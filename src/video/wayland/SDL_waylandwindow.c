@@ -44,6 +44,8 @@
 #include <libdecor.h>
 #endif
 
+#define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
+
 SDL_FORCE_INLINE SDL_bool
 EGLTransparencyEnabled()
 {
@@ -448,6 +450,54 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
     }
 }
 
+static void
+UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
+{
+    SDL_WindowData *wind = (SDL_WindowData*)window->driverdata;
+
+    if (fullscreen) {
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+            /*
+             * If the window was never previously made full screen, check if a particular
+             * fullscreen mode has been set for the window. If one is found, use SDL_WINDOW_FULLSCREEN,
+             * otherwise, use SDL_WINDOW_FULLSCREEN_DESKTOP.
+             *
+             * If the previous flag was SDL_WINDOW_FULLSCREEN, make sure a mode is still set,
+             * otherwise, fall back to SDL_WINDOW_FULLSCREEN_DESKTOP.
+             */
+            if (!wind->fullscreen_flags) {
+                if (window->fullscreen_mode.w && window->fullscreen_mode.h) {
+                    wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN;
+                } else {
+                    wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+                }
+            } else if (wind->fullscreen_flags != SDL_WINDOW_FULLSCREEN_DESKTOP &&
+                       (!window->fullscreen_mode.w || !window->fullscreen_mode.h)) {
+                wind->fullscreen_flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+            }
+
+            wind->is_fullscreen = SDL_TRUE;
+
+            wind->in_fullscreen_transition = SDL_TRUE;
+            SDL_SetWindowFullscreen(window, wind->fullscreen_flags);
+            wind->in_fullscreen_transition = SDL_FALSE;
+            SetMinMaxDimensions(window, SDL_FALSE);
+        }
+    } else {
+        /* Don't change the fullscreen flags if the window is hidden or being hidden. */
+        if (!window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
+            if (window->flags & SDL_WINDOW_FULLSCREEN) {
+                wind->is_fullscreen = SDL_FALSE;
+
+                wind->in_fullscreen_transition = SDL_TRUE;
+                SDL_SetWindowFullscreen(window, 0);
+                wind->in_fullscreen_transition = SDL_FALSE;
+                SetMinMaxDimensions(window, SDL_FALSE);
+            }
+        }
+    }
+}
+
 static const struct wl_callback_listener surface_damage_frame_listener;
 
 static void
@@ -545,30 +595,9 @@ handle_configure_xdg_toplevel(void *data,
 
     driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
 
+    UpdateWindowFullscreen(window, fullscreen);
+
     if (!fullscreen) {
-        if (window->flags & SDL_WINDOW_FULLSCREEN) {
-            /* Foolishly do what the compositor says here. If it's wrong, don't
-             * blame us, we were explicitly instructed to do this.
-             *
-             * UPDATE: Nope, we can't actually do that, the compositor may give
-             * us a completely stateless, sizeless configure, with which we have
-             * to enforce our own state anyway.
-             */
-            if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
-                window->w = width;
-                window->h = height;
-                wind->needs_resize_event = SDL_TRUE;
-            }
-
-            /* This part is good though. */
-            if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) && !FloatEqual(wind->scale_factor, driverdata->scale_factor)) {
-                wind->scale_factor = driverdata->scale_factor;
-                wind->needs_resize_event = SDL_TRUE;
-            }
-
-            return;
-        }
-
         if (width == 0 || height == 0) {
             /* This usually happens when we're being restored from a
              * non-floating state, so use the cached floating size here.
@@ -781,19 +810,19 @@ decoration_frame_configure(struct libdecor_frame *frame,
 
     driverdata = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
 
+    UpdateWindowFullscreen(window, fullscreen);
+
     if (!fullscreen) {
         /* Always send a maximized/restore event; if the event is redundant it will
          * automatically be discarded (see src/events/SDL_windowevents.c)
          *
          * No, we do not get minimize events from libdecor.
          */
-        if (!fullscreen) {
-            SDL_SendWindowEvent(window,
-                                maximized ?
-                                    SDL_WINDOWEVENT_MAXIMIZED :
-                                    SDL_WINDOWEVENT_RESTORED,
-                                0, 0);
-        }
+        SDL_SendWindowEvent(window,
+                            maximized ?
+                                SDL_WINDOWEVENT_MAXIMIZED :
+                                SDL_WINDOWEVENT_RESTORED,
+                            0, 0);
     }
 
     /* Similar to maximized/restore events above, send focus events too! */
@@ -1630,12 +1659,28 @@ void
 Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                             SDL_VideoDisplay * _display, SDL_bool fullscreen)
 {
+    SDL_WindowData *wind = (SDL_WindowData*) window->driverdata;
     struct wl_output *output = ((SDL_WaylandOutputData*) _display->driverdata)->output;
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
-    SetFullscreen(window, fullscreen ? output : NULL, SDL_TRUE);
 
-    /* Roundtrip required to receive the updated window dimensions */
-    WAYLAND_wl_display_roundtrip(viddata->display);
+    /* Called from within a configure event, drop it. */
+    if (wind->in_fullscreen_transition) {
+        return;
+    }
+
+    /* Save the last fullscreen flags for future requests by the compositor. */
+    if (fullscreen) {
+        wind->fullscreen_flags = window->flags & FULLSCREEN_MASK;
+    }
+
+    /* Don't send redundant fullscreen set/unset events. */
+    if (wind->is_fullscreen != fullscreen) {
+        wind->is_fullscreen = fullscreen;
+        SetFullscreen(window, fullscreen ? output : NULL, SDL_TRUE);
+
+        /* Roundtrip required to receive the updated window dimensions */
+        WAYLAND_wl_display_roundtrip(viddata->display);
+    }
 }
 
 void
