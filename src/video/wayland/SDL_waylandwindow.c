@@ -1680,6 +1680,28 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
 
         /* Roundtrip required to receive the updated window dimensions */
         WAYLAND_wl_display_roundtrip(viddata->display);
+    } else if (wind->is_fullscreen) {
+        /*
+         * If the window is already fullscreen, this is likely a request to switch between
+         * fullscreen and fullscreen desktop, or to change the video mode. Update the
+         * geometry and trigger a commit.
+         */
+        ConfigureWindowGeometry(window);
+
+#ifdef HAVE_LIBDECOR_H
+        if (WINDOW_IS_LIBDECOR(data, window) && wind->shell_surface.libdecor.frame) {
+            struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
+            libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
+            libdecor_state_free(state);
+        } else
+#endif
+        if(viddata->shell.xdg && wind->shell_surface.xdg.surface) {
+            xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0,
+                                            GetWindowWidth(window), GetWindowHeight(window));
+        }
+
+        /* Roundtrip required to receive the updated window dimensions */
+        WAYLAND_wl_display_roundtrip(viddata->display);
     }
 }
 
