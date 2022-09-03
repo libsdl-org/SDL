@@ -897,8 +897,15 @@ decoration_frame_configure(struct libdecor_frame *frame,
         height = window->windowed.h;
         wind->floating_resize_pending = SDL_FALSE;
     } else {
+        /*
+         * XXX: When hiding a floating window, libdecor can send bogus content sizes that
+         *      are +/- the height of the title bar, which distorts the window size.
+         *      Ignore any values from libdecor when hiding a floating window.
+         */
+        const SDL_bool use_cached_size = (window->is_hiding || !!(window->flags & SDL_WINDOW_HIDDEN));
+
         /* This will never set 0 for width/height unless the function returns false */
-        if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
+        if (use_cached_size || !libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
             if (floating) {
                 /* This usually happens when we're being restored from a
                  * non-floating state, so use the cached floating size here.
