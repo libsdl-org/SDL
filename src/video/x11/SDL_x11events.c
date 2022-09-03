@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <limits.h> /* For INT_MAX */
 
+#include <X11/XF86keysym.h> /* For XF86XK_WakeUp */
+
 #include "SDL_x11video.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
@@ -1051,10 +1053,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 int min_keycode, max_keycode;
                 X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
                 keysym = X11_KeyCodeToSym(_this, keycode, xevent->xkey.state >> 13);
-                fprintf(stderr,
-                        "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
-                        keycode, keycode - min_keycode, keysym,
-                        X11_XKeysymToString(keysym));
+                /* Some Lenovo keyboards have an Fn key which registers as XF86WakeUp and spams this message... */
+                if (keysym != XF86XK_WakeUp) {
+                    fprintf(stderr,
+                            "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
+                            keycode, keycode - min_keycode, keysym,
+                            X11_XKeysymToString(keysym));
+                }
             }
 #endif
             /* */
