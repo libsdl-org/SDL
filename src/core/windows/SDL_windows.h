@@ -69,6 +69,16 @@
 #include <windows.h>
 #include <basetyps.h>   /* for REFIID with broken mingw.org headers */
 
+/* Older Visual C++ headers don't have the Win64-compatible typedefs... */
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
+#ifndef DWORD_PTR
+#define DWORD_PTR DWORD
+#endif
+#ifndef LONG_PTR
+#define LONG_PTR LONG
+#endif
+#endif
+
 #include "SDL_rect.h"
 
 /* Routines to convert from UTF8 to native Windows text */
