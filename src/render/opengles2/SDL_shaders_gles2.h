@@ -25,6 +25,13 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES2
 
+typedef enum
+{
+    GLES2_SHADER_PROLOGUE_NONE = 0,
+    GLES2_SHADER_FRAGMENT_PROLOGUE_DEFAULT,
+    GLES2_SHADER_FRAGMENT_PROLOGUE_UNDEF_PRECISION,
+    GLES2_SHADER_FRAGMENT_PROLOGUE_COUNT
+} GLES2_ShaderPrologueType;
 
 typedef enum
 {
@@ -52,6 +59,7 @@ typedef enum
 } GLES2_ShaderType;
 
 const Uint8 *GLES2_GetShader(GLES2_ShaderType type);
+const Uint8 *GLES2_GetShaderPrologue(GLES2_ShaderPrologueType type);
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 */
 

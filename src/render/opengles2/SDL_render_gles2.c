@@ -494,16 +494,26 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
 {
     GLuint id;
     GLint compileSuccessful = GL_FALSE;
-    const char *shader_src = (char *)GLES2_GetShader(type);
+    int num_src = 0;
+    const GLchar *shader_src_list[4] = { 0 };
+    const GLchar *shader_body = (const GLchar *)GLES2_GetShader(type);
 
-    if (!shader_src) {
-        SDL_SetError("No shader src");
+    if (!shader_body) {
+        SDL_SetError("No shader body src");
         return 0;
     }
 
+    if (shader_type == GL_FRAGMENT_SHADER) {
+        // FIXME: Check for whatever platform can't handle precision specifiers go here, use _UNDEF_PRECISION instead.
+        shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderPrologue(GLES2_SHADER_FRAGMENT_PROLOGUE_DEFAULT);
+    }
+    shader_src_list[num_src++] = shader_body;
+
+    SDL_assert(num_src < SDL_arraysize(shader_src_list));
+
     /* Compile */
     id = data->glCreateShader(shader_type);
-    data->glShaderSource(id, 1, &shader_src, NULL);
+    data->glShaderSource(id, num_src, shader_src_list, NULL);
     data->glCompileShader(id);
     data->glGetShaderiv(id, GL_COMPILE_STATUS, &compileSuccessful);
 
