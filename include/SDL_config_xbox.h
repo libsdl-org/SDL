@@ -28,40 +28,6 @@
 /* Windows GDK does not need Windows SDK version checks because it requires
  * a recent version of the Windows 10 SDK. */
 
-#if !defined(_STDINT_H_) && (!defined(HAVE_STDINT_H) || !_HAVE_STDINT_H)
-/* At this time, only recent MSVC or clang are supported by Windows GDK */
-#if defined(__clang__)
-#define HAVE_STDINT_H   1
-#elif defined(_MSC_VER)
-typedef signed __int8 int8_t;
-typedef unsigned __int8 uint8_t;
-typedef signed __int16 int16_t;
-typedef unsigned __int16 uint16_t;
-typedef signed __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef signed __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#ifndef _UINTPTR_T_DEFINED
-typedef unsigned __int64 uintptr_t;
-#define _UINTPTR_T_DEFINED
-#endif
-#else /* !__clang__ && !_MSC_VER */
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-typedef signed long long int64_t;
-typedef unsigned long long uint64_t;
-#ifndef _SIZE_T_DEFINED_
-#define _SIZE_T_DEFINED_
-typedef unsigned int size_t;
-#endif
-typedef unsigned int uintptr_t;
-#endif /* __clang__ || _MSC_VER */
-#endif /* !_STDINT_H_ && !HAVE_STDINT_H */
-
 /* GDK only supports 64-bit */
 # define SIZEOF_VOIDP 8
 
@@ -101,6 +67,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
+#define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
 #define HAVE_STRING_H 1
 
@@ -197,6 +164,7 @@ typedef unsigned int uintptr_t;
 #else
 #define HAVE_STDARG_H   1
 #define HAVE_STDDEF_H   1
+#define HAVE_STDINT_H   1
 #endif
 
 /* Enable various audio drivers */
