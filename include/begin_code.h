@@ -189,8 +189,9 @@
 #ifndef SDL_MALLOC
 #if defined(__GNUC__)
 #define SDL_MALLOC __attribute__((malloc))
-#elif defined(_MSC_VER)
-#define SDL_MALLOC __declspec(allocator) __desclspec(restrict)
+// FIXME
+//#elif defined(_MSC_VER)
+//#define SDL_MALLOC __declspec(allocator) __desclspec(restrict)
 #else
 #define SDL_MALLOC
 #endif
