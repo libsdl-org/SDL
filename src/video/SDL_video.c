@@ -1030,6 +1030,11 @@ SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode *
     SDL_DisplayMode current_mode;
     int result;
 
+    /* Mode switching disabled via driver quirk flag, nothing to do and cannot fail. */
+    if (DisableDisplayModeSwitching(_this)) {
+        return 0;
+    }
+
     if (mode) {
         display_mode = *mode;
 
@@ -1430,17 +1435,14 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
                     resized = SDL_FALSE;
                 }
 
-                /* Don't try to change the display mode if the driver doesn't want it. */
-                if (DisableDisplayModeSwitching(_this) == SDL_FALSE) {
-                    /* only do the mode change if we want exclusive fullscreen */
-                    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                        if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
-                            return -1;
-                        }
-                    } else {
-                        if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
-                            return -1;
-                        }
+                /* only do the mode change if we want exclusive fullscreen */
+                if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                    if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
+                        return -1;
+                    }
+                } else {
+                    if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
+                        return -1;
                     }
                 }
 
