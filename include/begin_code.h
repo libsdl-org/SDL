@@ -185,3 +185,33 @@
 #undef _HAS_FALLTHROUGH
 #endif /* C++17 or C2x */
 #endif /* SDL_FALLTHROUGH not defined */
+
+#ifndef SDL_MALLOC
+#if defined(__GNUC__)
+#define SDL_MALLOC __attribute__((malloc))
+#elif defined(_MSC_VER)
+#define SDL_MALLOC __declspec(allocator) __desclspec(restrict)
+#else
+#define SDL_MALLOC
+#endif
+#endif /* SDL_MALLOC not defined */
+
+#ifndef SDL_ALLOC_SIZE
+#if defined(__GNUC__)
+#define SDL_ALLOC_SIZE(p) __attribute__((alloc_size(p)))
+#elif defined(_MSC_VER)
+#define SDL_ALLOC_SIZE(p)
+#else
+#define SDL_ALLOC_SIZE(p)
+#endif
+#endif /* SDL_ALLOC_SIZE not defined */
+
+#ifndef SDL_ALLOC_SIZE2
+#if defined(__GNUC__)
+#define SDL_ALLOC_SIZE2(p1, p2) __attribute__((alloc_size(p1, p2)))
+#elif defined(_MSC_VER)
+#define SDL_ALLOC_SIZE2(p1, p2)
+#else
+#define SDL_ALLOC_SIZE2(p1, p2)
+#endif
+#endif /* SDL_ALLOC_SIZE2 not defined */
