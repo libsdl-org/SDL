@@ -436,9 +436,9 @@ extern "C" {
 #define SDL_stack_free(data)            SDL_free(data)
 #endif
 
-extern SDL_MALLOC DECLSPEC void *SDLCALL SDL_malloc(size_t size);
-extern SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) DECLSPEC void *SDLCALL SDL_calloc(size_t nmemb, size_t size);
-extern SDL_ALLOC_SIZE(2) DECLSPEC void *SDLCALL SDL_realloc(void *mem, size_t size);
+extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_malloc(size_t size);
+extern DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void *SDLCALL SDL_calloc(size_t nmemb, size_t size);
+extern DECLSPEC SDL_ALLOC_SIZE(2) void *SDLCALL SDL_realloc(void *mem, size_t size);
 extern DECLSPEC void SDLCALL SDL_free(void *mem);
 
 typedef void *(SDLCALL *SDL_malloc_func)(size_t size);
@@ -576,7 +576,7 @@ extern DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
 extern DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
 extern DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes);
 extern DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
-extern SDL_MALLOC DECLSPEC char *SDLCALL SDL_strdup(const char *str);
+extern DECLSPEC SDL_MALLOC char *SDLCALL SDL_strdup(const char *str);
 extern DECLSPEC char *SDLCALL SDL_strrev(char *str);
 extern DECLSPEC char *SDLCALL SDL_strupr(char *str);
 extern DECLSPEC char *SDLCALL SDL_strlwr(char *str);
