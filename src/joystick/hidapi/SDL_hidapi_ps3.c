@@ -169,7 +169,7 @@ HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
 
     effects[9] = (0x01 << (1+(ctx->player_index % 4)));
 
-    return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, &effects, sizeof(effects));
+    return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
 }
 
 static void
