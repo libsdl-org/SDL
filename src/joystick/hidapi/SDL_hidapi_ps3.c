@@ -18,9 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-/* This driver supports both simplified reports and the extended input reports enabled by Steam.
-   Code and logic contributed by Valve Corporation under the SDL zlib license.
-*/
 #include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -107,6 +104,9 @@ static SDL_bool
 HIDAPI_DriverPS3_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_SONY && product_id == USB_PRODUCT_SONY_DS3) {
+        return SDL_TRUE;
+    }
+    if (vendor_id == USB_VENDOR_SHANWAN && product_id == USB_PRODUCT_SHANWAN_DS3) {
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -324,6 +324,83 @@ HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 }
 
 static void
+HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
+{
+    Sint16 axis;
+
+    if (ctx->last_state[4] != data[4]) {
+        SDL_bool dpad_up = SDL_FALSE;
+        SDL_bool dpad_down = SDL_FALSE;
+        SDL_bool dpad_left = SDL_FALSE;
+        SDL_bool dpad_right = SDL_FALSE;
+
+        switch (data[4] & 0x0f) {
+        case 0:
+            dpad_up = SDL_TRUE;
+            break;
+        case 1:
+            dpad_up = SDL_TRUE;
+            dpad_right = SDL_TRUE;
+            break;
+        case 2:
+            dpad_right = SDL_TRUE;
+            break;
+        case 3:
+            dpad_right = SDL_TRUE;
+            dpad_down = SDL_TRUE;
+            break;
+        case 4:
+            dpad_down = SDL_TRUE;
+            break;
+        case 5:
+            dpad_left = SDL_TRUE;
+            dpad_down = SDL_TRUE;
+            break;
+        case 6:
+            dpad_left = SDL_TRUE;
+            break;
+        case 7:
+            dpad_up = SDL_TRUE;
+            dpad_left = SDL_TRUE;
+            break;
+        default:
+            break;
+        }
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
+
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_Y, (data[4] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_B, (data[4] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A, (data[4] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_X, (data[4] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+    }
+
+    if (ctx->last_state[5] != data[5]) {
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data[5] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[5] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, (data[5] & 0x04) ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
+        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, (data[5] & 0x08) ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[5] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[5] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[5] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[5] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+    }
+
+    axis = ((int)data[2] * 257) - 32768;
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
+    axis = ((int)data[3] * 257) - 32768;
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
+    axis = ((int)data[0] * 257) - 32768;
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
+    axis = ((int)data[1] * 257) - 32768;
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
+
+static void
 HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
@@ -430,6 +507,12 @@ HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 packet: size = %d", data, size);
 #endif
+
+        if (size == 7) {
+            /* Seen on a ShanWan PS2 -> PS3 USB converter */
+            HIDAPI_DriverPS3_HandleMiniStatePacket(joystick, ctx, data, size);
+            continue;
+        }
 
         switch (data[0]) {
         case k_EPS3ReportIdState:

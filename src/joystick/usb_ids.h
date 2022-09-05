@@ -37,6 +37,7 @@
 #define USB_VENDOR_POWERA       0x24c6
 #define USB_VENDOR_POWERA_ALT   0x20d6
 #define USB_VENDOR_RAZER        0x1532
+#define USB_VENDOR_SHANWAN      0x2563
 #define USB_VENDOR_SHENZHEN     0x0079
 #define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_VALVE        0x28de
@@ -62,6 +63,7 @@
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008
 #define USB_PRODUCT_RAZER_ATROX                             0x0a00
+#define USB_PRODUCT_SHANWAN_DS3                             0x0523
 #define USB_PRODUCT_SONY_DS3                                0x0268
 #define USB_PRODUCT_SONY_DS4                                0x05c4
 #define USB_PRODUCT_SONY_DS4_DONGLE                         0x0ba0
