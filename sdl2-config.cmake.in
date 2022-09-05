@@ -170,7 +170,7 @@ if(EXISTS "${_sdl2test_library}")
     add_library(SDL2::SDL2test STATIC IMPORTED)
     set_target_properties(SDL2::SDL2test
       PROPERTIES
-        IMPORTED_LOCATION "_sdl2test_library"
+        IMPORTED_LOCATION "${_sdl2test_library}"
         INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
         IMPORTED_LINK_INTERFACE_LANGUAGES "C"
     )
