@@ -22,6 +22,7 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
 
+#include "SDL_hints.h"
 #include "SDL_video.h"
 #include "SDL_opengles2.h"
 #include "SDL_shaders_gles2.h"
@@ -31,8 +32,11 @@
  * Vertex/fragment shader source                                                                 *
  *************************************************************************************************/
 
-static const Uint8 GLES2_Fragment_Prologue_Default[] = "\n\
+static const Uint8 GLES2_Fragment_Include_Default[] = "\n\
     precision mediump float;\n\
+";
+
+static const Uint8 GLES2_Fragment_Include_Best_Texture_Precision[] = "\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
     #define SDL_TEXCOORD_PRECISION highp\n\
     #else\n\
@@ -40,7 +44,15 @@ static const Uint8 GLES2_Fragment_Prologue_Default[] = "\n\
     #endif\n\
 ";
 
-static const Uint8 GLES2_Fragment_Prologue_Undef_Precision[] = "\n\
+static const Uint8 GLES2_Fragment_Include_Medium_Texture_Precision[] = "\n\
+    #define SDL_TEXCOORD_PRECISION mediump\n\
+";
+
+static const Uint8 GLES2_Fragment_Include_High_Texture_Precision[] = "\n\
+    #define SDL_TEXCOORD_PRECISION highp\n\
+";
+
+static const Uint8 GLES2_Fragment_Include_Undef_Precision[] = "\n\
     #define mediump\n\
     #define highp\n\
     #define lowp\n\
@@ -333,15 +345,35 @@ static const Uint8 GLES2_Fragment_TextureExternalOES[] = " \
  * Shader selector                                                                               *
  *************************************************************************************************/
 
-const Uint8 *GLES2_GetShaderPrologue(GLES2_ShaderPrologueType type) {
+const Uint8 *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type) {
     switch (type) {
-    case GLES2_SHADER_FRAGMENT_PROLOGUE_DEFAULT:
-        return GLES2_Fragment_Prologue_Default;
-    case GLES2_SHADER_FRAGMENT_PROLOGUE_UNDEF_PRECISION:
-        return GLES2_Fragment_Prologue_Undef_Precision;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_DEFAULT:
+        return GLES2_Fragment_Include_Default;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION:
+        return GLES2_Fragment_Include_Undef_Precision;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION:
+        return GLES2_Fragment_Include_Best_Texture_Precision;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_MEDIUM_TEXCOORD_PRECISION:
+        return GLES2_Fragment_Include_Medium_Texture_Precision;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_HIGH_TEXCOORD_PRECISION:
+        return GLES2_Fragment_Include_High_Texture_Precision;
     default:
         return (Uint8*)"";
     }
+}
+
+GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint() {
+    const char *texcoord_hint = SDL_GetHint("SDL_RENDER_OPENGLES2_TEXCOORD_PRECISION");
+    GLES2_ShaderIncludeType value = GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION; // "best"
+    if (texcoord_hint) {
+        if (SDL_strcmp(texcoord_hint, "undefined") == 0)
+            return GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION;
+        if (SDL_strcmp(texcoord_hint, "high") == 0)
+            return GLES2_SHADER_FRAGMENT_INCLUDE_HIGH_TEXCOORD_PRECISION;
+        if (SDL_strcmp(texcoord_hint, "medium") == 0)
+            return GLES2_SHADER_FRAGMENT_INCLUDE_MEDIUM_TEXCOORD_PRECISION;
+    }
+    return value;
 }
 
 const Uint8 *GLES2_GetShader(GLES2_ShaderType type)

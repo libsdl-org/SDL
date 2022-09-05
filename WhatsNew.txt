@@ -9,7 +9,7 @@ General:
 * Added SDL_GetJoystickGUIDInfo() to get device information encoded in a joystick GUID
 * Added support for Nintendo Wii controllers to the HIDAPI driver, and a hint SDL_HINT_JOYSTICK_HIDAPI_WII to control whether this is used
 * Added the hint SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED to control whether the player LED should be lit on the Nintendo Wii controllers
-
+* Added the hint SDL_RENDER_OPENGLES2_TEXCOORD_PRECISION, which can be set to 'best' (default), 'medium', 'high' or 'undefined'.
 
 ---------------------------------------------------------------------------
 2.24.0:

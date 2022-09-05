@@ -169,6 +169,7 @@ typedef struct GLES2_RenderData
 #endif
 
     GLES2_DrawStateCache drawstate;
+    GLES2_ShaderIncludeType texcoord_precision_hint;
 } GLES2_RenderData;
 
 #define GLES2_MAX_CACHED_PROGRAMS 8
@@ -504,8 +505,8 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
     }
 
     if (shader_type == GL_FRAGMENT_SHADER) {
-        // FIXME: Check for whatever platform can't handle precision specifiers go here, use _UNDEF_PRECISION instead.
-        shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderPrologue(GLES2_SHADER_FRAGMENT_PROLOGUE_DEFAULT);
+        shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderInclude(GLES2_SHADER_FRAGMENT_INCLUDE_DEFAULT);
+        shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderInclude(data->texcoord_precision_hint);
     }
     shader_src_list[num_src++] = shader_body;
 
@@ -2103,6 +2104,8 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         (value & SDL_GL_CONTEXT_DEBUG_FLAG)) {
         data->debug_enabled = SDL_TRUE;
     }
+
+    data->texcoord_precision_hint = GLES2_GetTexCoordPrecisionEnumFromHint();
 
     value = 0;
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
