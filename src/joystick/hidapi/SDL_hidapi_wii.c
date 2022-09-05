@@ -797,18 +797,6 @@ static void PostPackedButtonData(SDL_Joystick *joystick, const Uint8 defs[][8], 
     }
 }
 
-/* Sends axis data to SDL based on an analog digital trigger pair
- * `digital` is zero or nonzero
- * `analog` is a 5-bit number (0-31)
- */
-static void PostClassicControllerTrigger(SDL_Joystick *joystick, Uint8 axis, Uint8 digital, Uint8 analog)
-{
-    SDL_PrivateJoystickAxis(joystick, axis, digital ? SDL_JOYSTICK_AXIS_MAX : (Uint32)analog * SDL_JOYSTICK_AXIS_MAX / 31);
-}
-
-/* Both Wii U Pro Controller and Wii Classic Controller use the same byte layout for the first two bytes
- * Only Wii U Pro Controller has the third byte
- */
 static const Uint8 WUP_CLASSIC_BUTTON_DEFS[3][8] = {
     {
         0xFF /* Unused */,                SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, SDL_CONTROLLER_BUTTON_START,     SDL_CONTROLLER_BUTTON_GUIDE,
@@ -846,12 +834,6 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
         return;
     }
 
-    /* Sticks */
-    for (i = 0; i < 4; i++) {
-        Uint16 value = data->rgucExtension[i * 2] | (data->rgucExtension[i * 2 + 1] << 8);
-        PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[i], axes[i], value);
-    }
-
     /* Buttons */
     PostPackedButtonData(joystick, buttons, data->rgucExtension + 8, 3, SDL_RELEASED, SDL_PRESSED);
 
@@ -861,6 +843,12 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT,  zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
 
+    /* Sticks */
+    for (i = 0; i < 4; i++) {
+        Uint16 value = data->rgucExtension[i * 2] | (data->rgucExtension[i * 2 + 1] << 8);
+        PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[i], axes[i], value);
+    }
+
     /* Power */
     UpdatePowerLevelWiiU(joystick, data->rgucExtension[10]);
 }
@@ -869,24 +857,29 @@ static void HandleClassicControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
 {
     const Uint8 (*buttons)[8] = ctx->m_bUseButtonLabels ? WUP_CLASSIC_BUTTON_DEFS : WUP_CLASSIC_BUTTON_DEFS_POSITIONAL;
     Uint8 lx, ly, rx, ry, zl, zr;
+
     if (data->ucNExtensionBytes < 6) {
         return;
     }
 
+    /* Buttons */
     PostPackedButtonData(joystick, buttons, data->rgucExtension + 4, 2, SDL_RELEASED, SDL_PRESSED);
 
+    /* Triggers */
+    zl = data->rgucExtension[5] & 0x80;
+    zr = data->rgucExtension[5] & 0x04;
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT,  zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
+
+    /* Sticks */
     lx = data->rgucExtension[0] & 0x3F;
     ly = data->rgucExtension[1] & 0x3F;
     rx = (data->rgucExtension[2] >> 7) | ((data->rgucExtension[1] >> 5) & 0x06) | ((data->rgucExtension[0] >> 3) & 0x18);
     ry = data->rgucExtension[2] & 0x1F;
-    zl = (data->rgucExtension[3] >> 5) | ((data->rgucExtension[2] >> 2) & 0x18);
-    zr = data->rgucExtension[3] & 0x1F;
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[0], SDL_CONTROLLER_AXIS_LEFTX, lx);
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[1], SDL_CONTROLLER_AXIS_LEFTY, ly);
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[2], SDL_CONTROLLER_AXIS_RIGHTX, rx);
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[3], SDL_CONTROLLER_AXIS_RIGHTY, ry);
-    PostClassicControllerTrigger(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, data->rgucExtension[5] & 0x80, zl);
-    PostClassicControllerTrigger(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, data->rgucExtension[5] & 0x04, zr);
 }
 
 static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
@@ -933,14 +926,14 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
         return;
     }
 
+    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, c);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, z ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
     if (data->rgucExtension[0] != 0xFF) {
         PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[0], SDL_CONTROLLER_AXIS_LEFTX, data->rgucExtension[0]);
     }
     if (data->rgucExtension[1] != 0xFF) {
         PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[1], SDL_CONTROLLER_AXIS_LEFTY, data->rgucExtension[1]);
     }
-    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, c);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, z ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
 }
 
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)

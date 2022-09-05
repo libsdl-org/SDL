@@ -574,6 +574,8 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
     } else if (vendor == USB_VENDOR_NINTENDO &&
                guid.data[15] != k_eSwitchDeviceInfoControllerType_Unknown &&
                guid.data[15] != k_eSwitchDeviceInfoControllerType_ProController &&
+               guid.data[15] != k_eWiiExtensionControllerType_ClassicController &&
+               guid.data[15] != k_eWiiExtensionControllerType_ClassicControllerPro &&
                guid.data[15] != k_eWiiExtensionControllerType_WiiUPro) {
         switch (guid.data[15]) {
         case k_eSwitchDeviceInfoControllerType_NESLeft:
