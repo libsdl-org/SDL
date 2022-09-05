@@ -59,7 +59,7 @@ static const Uint8 GLES2_Vertex_Default[] = " \
 ";
 
 static const Uint8 GLES2_Fragment_Solid[] = " \
-    varying vec4 v_color; \
+    varying mediump vec4 v_color; \
     \
     void main() \
     { \
@@ -69,11 +69,11 @@ static const Uint8 GLES2_Fragment_Solid[] = " \
 
 static const Uint8 GLES2_Fragment_TextureABGR[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
+    varying mediump vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
     varying highp vec2 v_texCoord;\n\
     #else\n\
-    varying vec2 v_texCoord;\n\
+    varying mediump vec2 v_texCoord;\n\
     #endif\n\
     \
     void main() \
@@ -86,16 +86,16 @@ static const Uint8 GLES2_Fragment_TextureABGR[] = " \
 /* ARGB to ABGR conversion */
 static const Uint8 GLES2_Fragment_TextureARGB[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
+    varying mediump vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
     varying highp vec2 v_texCoord;\n\
     #else\n\
-    varying vec2 v_texCoord;\n\
+    varying mediump vec2 v_texCoord;\n\
     #endif\n\
     \
     void main() \
     { \
-        vec4 abgr = texture2D(u_texture, v_texCoord); \
+        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
         gl_FragColor = abgr; \
         gl_FragColor.r = abgr.b; \
         gl_FragColor.b = abgr.r; \
@@ -106,16 +106,16 @@ static const Uint8 GLES2_Fragment_TextureARGB[] = " \
 /* RGB to ABGR conversion */
 static const Uint8 GLES2_Fragment_TextureRGB[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
+    varying mediump vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
     varying highp vec2 v_texCoord;\n\
     #else\n\
-    varying vec2 v_texCoord;\n\
+    varying mediump vec2 v_texCoord;\n\
     #endif\n\
     \
     void main() \
     { \
-        vec4 abgr = texture2D(u_texture, v_texCoord); \
+        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
         gl_FragColor = abgr; \
         gl_FragColor.r = abgr.b; \
         gl_FragColor.b = abgr.r; \
@@ -127,16 +127,16 @@ static const Uint8 GLES2_Fragment_TextureRGB[] = " \
 /* BGR to ABGR conversion */
 static const Uint8 GLES2_Fragment_TextureBGR[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
+    varying mediump vec4 v_color;\n\
     #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
     varying highp vec2 v_texCoord;\n\
     #else\n\
-    varying vec2 v_texCoord;\n\
+    varying mediump vec2 v_texCoord;\n\
     #endif\n\
     \
     void main() \
     { \
-        vec4 abgr = texture2D(u_texture, v_texCoord); \
+        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
         gl_FragColor = abgr; \
         gl_FragColor.a = 1.0; \
         gl_FragColor *= v_color; \
@@ -177,11 +177,11 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = " \
 "uniform sampler2D u_texture;\n"                                \
 "uniform sampler2D u_texture_u;\n"                              \
 "uniform sampler2D u_texture_v;\n"                              \
-"varying vec4 v_color;\n"                                       \
+"varying mediump vec4 v_color;\n"                               \
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"                           \
 "varying highp vec2 v_texCoord;\n"                              \
 "#else\n"                                                       \
-"varying vec2 v_texCoord;\n"                                    \
+"varying mediump vec2 v_texCoord;\n"                            \
 "#endif\n"                                                      \
 "\n"                                                            \
 
