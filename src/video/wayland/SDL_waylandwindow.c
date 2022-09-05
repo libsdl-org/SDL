@@ -2109,7 +2109,7 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
     int old_w = window->w, old_h = window->h;
-    float old_scale = scale;
+    float old_scale = data->scale_factor;
 
     /* Update the window geometry. */
     window->w = width;
