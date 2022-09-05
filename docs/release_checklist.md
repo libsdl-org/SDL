@@ -17,7 +17,7 @@
 
 * Bump ABI version information
 
-    * `CMakeLists.txt`, `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
+    * `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
         `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
         * set first number in `DYLIB_CURRENT_VERSION` to
             (100 * *minor*) + 1
@@ -42,9 +42,10 @@
 
 * Bump ABI version information
 
-    * `CMakeLists.txt`, `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
+    * `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
         `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
         * set second number in `DYLIB_CURRENT_VERSION` to *patchlevel*
+        * set `DYLIB_COMPATIBILITY_VERSION` to the same value
 
 * Run test/versioning.sh to verify that everything is consistent
 
@@ -75,13 +76,12 @@
 
 * Bump ABI version information
 
-    * `CMakeLists.txt`, `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
+    * `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
         `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
         * set first number in `DYLIB_CURRENT_VERSION` to
             (100 * *minor*) + *patchlevel* + 1
         * set second number in `DYLIB_CURRENT_VERSION` to 0
-        * if backwards compatibility has been broken,
-            increase `DYLIB_COMPATIBILITY_VERSION` (?)
+        * set `DYLIB_COMPATIBILITY_VERSION` to the same value
 
 * Run test/versioning.sh to verify that everything is consistent
 
