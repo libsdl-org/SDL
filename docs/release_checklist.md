@@ -45,7 +45,7 @@
     * `Xcode/SDL/SDL.xcodeproj/project.pbxproj`:
         `DYLIB_CURRENT_VERSION`, `DYLIB_COMPATIBILITY_VERSION`
         * set second number in `DYLIB_CURRENT_VERSION` to *patchlevel*
-        * set `DYLIB_COMPATIBILITY_VERSION` to the same value
+        * Leave `DYLIB_COMPATIBILITY_VERSION` unchanged
 
 * Run test/versioning.sh to verify that everything is consistent
 

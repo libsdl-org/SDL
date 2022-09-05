@@ -130,12 +130,11 @@ fi
 
 # For simplicity this assumes we'll never break ABI before SDL 3.
 dylib_compat=$(sed -Ene 's/.*DYLIB_COMPATIBILITY_VERSION = (.*);$/\1/p' Xcode/SDL/SDL.xcodeproj/project.pbxproj)
-dylib_cur=$(sed -Ene 's/.*DYLIB_CURRENT_VERSION = (.*);$/\1/p' Xcode/SDL/SDL.xcodeproj/project.pbxproj)
 
 case "$ref_minor" in
     (*[02468])
         major="$(( ref_minor * 100 + 1 ))"
-        minor="$ref_micro"
+        minor="0"
         ;;
     (*)
         major="$(( ref_minor * 100 + ref_micro + 1 ))"
@@ -151,6 +150,22 @@ if [ "$ref" = "$dylib_compat" ]; then
 else
     not_ok "project.pbxproj DYLIB_COMPATIBILITY_VERSION is inconsistent, expected $ref, got $dylib_compat"
 fi
+
+dylib_cur=$(sed -Ene 's/.*DYLIB_CURRENT_VERSION = (.*);$/\1/p' Xcode/SDL/SDL.xcodeproj/project.pbxproj)
+
+case "$ref_minor" in
+    (*[02468])
+        major="$(( ref_minor * 100 + 1 ))"
+        minor="$ref_micro"
+        ;;
+    (*)
+        major="$(( ref_minor * 100 + ref_micro + 1 ))"
+        minor="0"
+        ;;
+esac
+
+ref="${major}.${minor}.0
+${major}.${minor}.0"
 
 if [ "$ref" = "$dylib_cur" ]; then
     ok "project.pbxproj DYLIB_CURRENT_VERSION is consistent"
