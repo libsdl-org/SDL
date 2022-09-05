@@ -24,9 +24,9 @@
         * set second number in `DYLIB_CURRENT_VERSION` to 0
         * set `DYLIB_COMPATIBILITY_VERSION` to the same value
 
-* Run test/versioning.sh to verify that everything is consistent
-
 * Regenerate `configure`
+
+* Run test/versioning.sh to verify that everything is consistent
 
 * Do the release
 
@@ -47,9 +47,9 @@
         * set second number in `DYLIB_CURRENT_VERSION` to *patchlevel*
         * Leave `DYLIB_COMPATIBILITY_VERSION` unchanged
 
-* Run test/versioning.sh to verify that everything is consistent
-
 * Regenerate `configure`
+
+* Run test/versioning.sh to verify that everything is consistent
 
 * Do the release
 
@@ -83,8 +83,8 @@
         * set second number in `DYLIB_CURRENT_VERSION` to 0
         * set `DYLIB_COMPATIBILITY_VERSION` to the same value
 
-* Run test/versioning.sh to verify that everything is consistent
-
 * Regenerate `configure`
+
+* Run test/versioning.sh to verify that everything is consistent
 
 * Do the release
