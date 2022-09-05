@@ -122,6 +122,7 @@ typedef struct {
     SDL_bool m_bPlayerLights;
     int m_nPlayerIndex;
     SDL_bool m_bRumbleActive;
+    SDL_bool m_bReportSensors;
     Uint8 m_rgucReadBuffer[k_unWiiPacketDataLength];
     Uint32 m_unLastInput;
     Uint32 m_unLastStatus;
@@ -401,23 +402,32 @@ static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryB
 static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
 {
     switch (ctx->m_eExtensionControllerType) {
-        case k_eWiiExtensionControllerType_WiiUPro:
-            return k_eWiiInputReportIDs_ButtonDataD;
-        case k_eWiiExtensionControllerType_Nunchuck:
-        case k_eWiiExtensionControllerType_ClassicController:
-        case k_eWiiExtensionControllerType_ClassicControllerPro:
-            return k_eWiiInputReportIDs_ButtonData2;
-        default:
+    case k_eWiiExtensionControllerType_WiiUPro:
+        return k_eWiiInputReportIDs_ButtonDataD;
+    case k_eWiiExtensionControllerType_Nunchuck:
+    case k_eWiiExtensionControllerType_ClassicController:
+    case k_eWiiExtensionControllerType_ClassicControllerPro:
+        return k_eWiiInputReportIDs_ButtonData2;
+    default:
+        if (ctx->m_bReportSensors) {
+            return k_eWiiInputReportIDs_ButtonData1;
+        } else {
             return k_eWiiInputReportIDs_ButtonData0;
+        }
     }
 }
 
 static SDL_bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputReportIDs type)
 {
+    const SDL_bool ENABLE_CONTINUOUS_REPORTING = SDL_TRUE;
     Uint8 data[3];
     Uint8 tt = ctx->m_bRumbleActive;
 
     /* Continuous reporting off, tt & 4 == 0 */
+    if (ENABLE_CONTINUOUS_REPORTING) {
+        tt |= 4;
+    }
+
     data[0] = k_eWiiOutputReportIDs_DataReportingMode;
     data[1] = tt;
     data[2] = type;
@@ -651,6 +661,11 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 
     InitializeExtension(ctx);
 
+    if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_None ||
+        ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_Nunchuck) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
+    }
+
     SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
 
@@ -736,8 +751,11 @@ HIDAPI_DriverWii_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 static int
 HIDAPI_DriverWii_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
-    /* TODO: Implement Sensors */
-    return SDL_Unsupported();
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
+
+    ctx->m_bReportSensors = enabled;
+
+    return 0;
 }
 
 static void PostStickCalibrated(SDL_Joystick *joystick, struct StickCalibrationData *calibration, Uint8 axis, Uint16 data)
@@ -934,6 +952,41 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
     if (data->rgucExtension[1] != 0xFF) {
         PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[1], SDL_CONTROLLER_AXIS_LEFTY, data->rgucExtension[1]);
     }
+
+    if (ctx->m_bReportSensors) {
+        const float ACCEL_RES_PER_G = 200.0f;
+        Sint16 x, y, z;
+        float values[3];
+
+        x = (((Sint16)data->rgucExtension[2] << 2) | ((data->rgucBaseButtons[5] >> 2) & 0x03)) - 0x200;
+        y = (((Sint16)data->rgucExtension[3] << 2) | ((data->rgucBaseButtons[5] >> 4) & 0x03)) - 0x200;
+        z = (((Sint16)data->rgucExtension[4] << 2) | ((data->rgucBaseButtons[5] >> 6) & 0x03)) - 0x200;
+
+        values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
+        values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
+        values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, values, 3);
+    }
+}
+
+static void HandleWiiRemoteAccelData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
+{
+    const float ACCEL_RES_PER_G = 100.0f;
+    Sint16 x, y, z;
+    float values[3];
+
+    if (!ctx->m_bReportSensors || ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_None) {
+        return;
+    }
+
+    x = (((Sint16)data->rgucAccelerometer[0] << 2) | ((data->rgucBaseButtons[0] >> 5) & 0x03)) - 0x200;
+    y = (((Sint16)data->rgucAccelerometer[1] << 2) | ((data->rgucBaseButtons[1] >> 4) & 0x02)) - 0x200;
+    z = (((Sint16)data->rgucAccelerometer[2] << 2) | ((data->rgucBaseButtons[1] >> 5) & 0x02)) - 0x200;
+
+    values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
+    values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
+    values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
+    SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, values, 3);
 }
 
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
@@ -942,6 +995,7 @@ static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick,
         HandleWiiUProButtonData(ctx, joystick, data);
         return;
     }
+
     HandleWiiRemoteButtonData(ctx, joystick, data);
     switch (ctx->m_eExtensionControllerType) {
         case k_eWiiExtensionControllerType_Nunchuck:
@@ -954,10 +1008,10 @@ static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick,
         case k_eWiiExtensionControllerType_ClassicControllerPro:
             HandleClassicControllerButtonData(ctx, joystick, data);
             break;
-        case k_eWiiExtensionControllerType_Unknown:
-        case k_eWiiExtensionControllerType_WiiUPro:
+        default:
             break;
     }
+    HandleWiiRemoteAccelData(ctx, joystick, data);
 }
 
 static void GetBaseButtons(WiiButtonData *dst, const Uint8 *src)
@@ -1179,7 +1233,10 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         ctx->m_unLastInput = now;
     }
 
-    if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
+    /* Check to see if we've lost connection to the controller.
+     * We have continous reporting enabled, so this should be reliable now.
+     */
+    {
         const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
 
         if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
@@ -1187,10 +1244,12 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
             size = -1;
         }
 
-    } else {
+    }
+
+    /* Request a status update periodically to make sure our battery value is up to date */
+    {
         const Uint32 FIFTEEN_MINUTES_IN_MS = 15 * 60 * 1000;
 
-        /* Request a status update periodically to make sure our battery value is up to date */
         if (!ctx->m_unLastStatus ||
             SDL_TICKS_PASSED(now, ctx->m_unLastStatus + FIFTEEN_MINUTES_IN_MS) ||
             ctx->m_eCommState == k_eWiiCommunicationState_Error) {
