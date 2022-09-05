@@ -406,6 +406,8 @@ TestCPUInfo(SDL_bool verbose)
         SDL_Log("AVX-512F %s\n", SDL_HasAVX512F()? "detected" : "not detected");
         SDL_Log("ARM SIMD %s\n", SDL_HasARMSIMD()? "detected" : "not detected");
         SDL_Log("NEON %s\n", SDL_HasNEON()? "detected" : "not detected");
+        SDL_Log("LSX %s\n", SDL_HasLSX()? "detected" : "not detected");
+        SDL_Log("LASX %s\n", SDL_HasLASX()? "detected" : "not detected");
         SDL_Log("System RAM %d MB\n", SDL_GetSystemRAM());
     }
     return (0);
