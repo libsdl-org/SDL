@@ -22,8 +22,7 @@
         * set first number in `DYLIB_CURRENT_VERSION` to
             (100 * *minor*) + 1
         * set second number in `DYLIB_CURRENT_VERSION` to 0
-        * if backwards compatibility has been broken,
-            increase `DYLIB_COMPATIBILITY_VERSION` (?)
+        * set `DYLIB_COMPATIBILITY_VERSION` to the same value
 
 * Run test/versioning.sh to verify that everything is consistent
 
