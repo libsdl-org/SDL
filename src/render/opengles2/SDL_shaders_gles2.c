@@ -22,24 +22,44 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
 
+#include "SDL_hints.h"
 #include "SDL_video.h"
 #include "SDL_opengles2.h"
 #include "SDL_shaders_gles2.h"
 #include "SDL_stdinc.h"
 
-#define SHADER_PRELOGUE "\n\
-#if GL_FRAGMENT_PRECISION_HIGH\n\
-     precision mediump float;\n\
-#else\n\
-    #define mediump\n\
-    #define highp\n\
-    #define lowp\n\
-#endif\n\
-"
-
 /*************************************************************************************************
  * Vertex/fragment shader source                                                                 *
  *************************************************************************************************/
+
+static const Uint8 GLES2_Fragment_Include_Default[] = "\n\
+    #version 130\n\
+    precision mediump float;\n\
+";
+
+static const Uint8 GLES2_Fragment_Include_Best_Texture_Precision[] = "\n\
+    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
+    #define SDL_TEXCOORD_PRECISION highp\n\
+    #else\n\
+    #define SDL_TEXCOORD_PRECISION mediump\n\
+    #endif\n\
+";
+
+static const Uint8 GLES2_Fragment_Include_Medium_Texture_Precision[] = "\n\
+    #define SDL_TEXCOORD_PRECISION mediump\n\
+";
+
+static const Uint8 GLES2_Fragment_Include_High_Texture_Precision[] = "\n\
+    #define SDL_TEXCOORD_PRECISION highp\n\
+";
+
+static const Uint8 GLES2_Fragment_Include_Undef_Precision[] = "\n\
+    #define mediump\n\
+    #define highp\n\
+    #define lowp\n\
+    #define SDL_TEXCOORD_PRECISION\n\
+";
+
 static const Uint8 GLES2_Vertex_Default[] = " \
     uniform mat4 u_projection; \
     attribute vec2 a_position; \
@@ -57,8 +77,8 @@ static const Uint8 GLES2_Vertex_Default[] = " \
     } \
 ";
 
-static const Uint8 GLES2_Fragment_Solid[] = SHADER_PRELOGUE" \
-    varying vec4 v_color; \
+static const Uint8 GLES2_Fragment_Solid[] = " \
+    varying mediump vec4 v_color; \
     \
     void main() \
     { \
@@ -66,14 +86,10 @@ static const Uint8 GLES2_Fragment_Solid[] = SHADER_PRELOGUE" \
     } \
 ";
 
-static const Uint8 GLES2_Fragment_TextureABGR[] = SHADER_PRELOGUE" \
+static const Uint8 GLES2_Fragment_TextureABGR[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
-    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
-    varying highp vec2 v_texCoord;\n\
-    #else\n\
-    varying vec2 v_texCoord;\n\
-    #endif\n\
+    varying mediump vec4 v_color;\n\
+    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
     \
     void main() \
     { \
@@ -83,18 +99,14 @@ static const Uint8 GLES2_Fragment_TextureABGR[] = SHADER_PRELOGUE" \
 ";
 
 /* ARGB to ABGR conversion */
-static const Uint8 GLES2_Fragment_TextureARGB[] = SHADER_PRELOGUE" \
+static const Uint8 GLES2_Fragment_TextureARGB[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
-    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
-    varying highp vec2 v_texCoord;\n\
-    #else\n\
-    varying vec2 v_texCoord;\n\
-    #endif\n\
+    varying mediump vec4 v_color;\n\
+    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
     \
     void main() \
     { \
-        vec4 abgr = texture2D(u_texture, v_texCoord); \
+        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
         gl_FragColor = abgr; \
         gl_FragColor.r = abgr.b; \
         gl_FragColor.b = abgr.r; \
@@ -103,18 +115,14 @@ static const Uint8 GLES2_Fragment_TextureARGB[] = SHADER_PRELOGUE" \
 ";
 
 /* RGB to ABGR conversion */
-static const Uint8 GLES2_Fragment_TextureRGB[] = SHADER_PRELOGUE" \
+static const Uint8 GLES2_Fragment_TextureRGB[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
-    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
-    varying highp vec2 v_texCoord;\n\
-    #else\n\
-    varying vec2 v_texCoord;\n\
-    #endif\n\
+    varying mediump vec4 v_color;\n\
+    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
     \
     void main() \
     { \
-        vec4 abgr = texture2D(u_texture, v_texCoord); \
+        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
         gl_FragColor = abgr; \
         gl_FragColor.r = abgr.b; \
         gl_FragColor.b = abgr.r; \
@@ -124,18 +132,14 @@ static const Uint8 GLES2_Fragment_TextureRGB[] = SHADER_PRELOGUE" \
 ";
 
 /* BGR to ABGR conversion */
-static const Uint8 GLES2_Fragment_TextureBGR[] = SHADER_PRELOGUE" \
+static const Uint8 GLES2_Fragment_TextureBGR[] = " \
     uniform sampler2D u_texture; \
-    varying vec4 v_color;\n\
-    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
-    varying highp vec2 v_texCoord;\n\
-    #else\n\
-    varying vec2 v_texCoord;\n\
-    #endif\n\
+    varying mediump vec4 v_color;\n\
+    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
     \
     void main() \
     { \
-        vec4 abgr = texture2D(u_texture, v_texCoord); \
+        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
         gl_FragColor = abgr; \
         gl_FragColor.a = 1.0; \
         gl_FragColor *= v_color; \
@@ -173,16 +177,11 @@ static const Uint8 GLES2_Fragment_TextureBGR[] = SHADER_PRELOGUE" \
 
 
 #define YUV_SHADER_PROLOGUE                                     \
-SHADER_PRELOGUE                                                 \
 "uniform sampler2D u_texture;\n"                                \
 "uniform sampler2D u_texture_u;\n"                              \
 "uniform sampler2D u_texture_v;\n"                              \
-"varying vec4 v_color;\n"                                       \
-"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"                           \
-"varying highp vec2 v_texCoord;\n"                              \
-"#else\n"                                                       \
-"varying vec2 v_texCoord;\n"                                    \
-"#endif\n"                                                      \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
 "\n"                                                            \
 
 #define YUV_SHADER_BODY                                         \
@@ -331,14 +330,9 @@ static const Uint8 GLES2_Fragment_TextureNV21BT709[] = \
 /* Custom Android video format texture */
 static const Uint8 GLES2_Fragment_TextureExternalOES[] = " \
     #extension GL_OES_EGL_image_external : require\n\
-    precision mediump float; \
     uniform samplerExternalOES u_texture; \
-    varying vec4 v_color;\n\
-    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
-    varying highp vec2 v_texCoord;\n\
-    #else\n\
-    varying vec2 v_texCoord;\n\
-    #endif\n\
+    varying mediump vec4 v_color;\n\
+    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
     \
     void main() \
     { \
@@ -351,6 +345,37 @@ static const Uint8 GLES2_Fragment_TextureExternalOES[] = " \
 /*************************************************************************************************
  * Shader selector                                                                               *
  *************************************************************************************************/
+
+const Uint8 *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type) {
+    switch (type) {
+    case GLES2_SHADER_FRAGMENT_INCLUDE_DEFAULT:
+        return GLES2_Fragment_Include_Default;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION:
+        return GLES2_Fragment_Include_Undef_Precision;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION:
+        return GLES2_Fragment_Include_Best_Texture_Precision;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_MEDIUM_TEXCOORD_PRECISION:
+        return GLES2_Fragment_Include_Medium_Texture_Precision;
+    case GLES2_SHADER_FRAGMENT_INCLUDE_HIGH_TEXCOORD_PRECISION:
+        return GLES2_Fragment_Include_High_Texture_Precision;
+    default:
+        return (Uint8*)"";
+    }
+}
+
+GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint() {
+    const char *texcoord_hint = SDL_GetHint("SDL_RENDER_OPENGLES2_TEXCOORD_PRECISION");
+    GLES2_ShaderIncludeType value = GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION; // "best"
+    if (texcoord_hint) {
+        if (SDL_strcmp(texcoord_hint, "undefined") == 0)
+            return GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION;
+        if (SDL_strcmp(texcoord_hint, "high") == 0)
+            return GLES2_SHADER_FRAGMENT_INCLUDE_HIGH_TEXCOORD_PRECISION;
+        if (SDL_strcmp(texcoord_hint, "medium") == 0)
+            return GLES2_SHADER_FRAGMENT_INCLUDE_MEDIUM_TEXCOORD_PRECISION;
+    }
+    return value;
+}
 
 const Uint8 *GLES2_GetShader(GLES2_ShaderType type)
 {
