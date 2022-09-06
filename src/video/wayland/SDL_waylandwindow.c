@@ -385,7 +385,7 @@ SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
 }
 
 static void
-SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
+SetFullscreen(SDL_Window *window, struct wl_output *output)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = wind->waylandData;
@@ -393,9 +393,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
     /* Pop-ups don't get to be fullscreened */
     if (WINDOW_IS_XDG_POPUP(window)) {
         /* ... but we still want to commit, particularly for ShowWindow */
-        if (commit) {
-            wl_surface_commit(wind->surface);
-        }
+        wl_surface_commit(wind->surface);
         return;
     }
 
@@ -416,7 +414,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
                  */
                 libdecor_frame_set_capabilities(wind->shell_surface.libdecor.frame, LIBDECOR_ACTION_RESIZE);
                 wl_surface_commit(wind->surface);
-            } else if (commit) {
+            } else {
                 struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
                 libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
                 libdecor_state_free(state);
@@ -431,7 +429,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
                 /* restore previous RESIZE capability */
                 libdecor_frame_unset_capabilities(wind->shell_surface.libdecor.frame, LIBDECOR_ACTION_RESIZE);
                 wl_surface_commit(wind->surface);
-            } else if (commit) {
+            } else {
                 struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
                 libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
                 libdecor_state_free(state);
@@ -444,9 +442,9 @@ SetFullscreen(SDL_Window *window, struct wl_output *output, SDL_bool commit)
         if (wind->shell_surface.xdg.roleobj.toplevel == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
-        if (commit) {
-            wl_surface_commit(wind->surface);
-        }
+
+        wl_surface_commit(wind->surface);
+
         if (output) {
             xdg_toplevel_set_fullscreen(wind->shell_surface.xdg.roleobj.toplevel, output);
         } else {
@@ -1755,7 +1753,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
     /* Don't send redundant fullscreen set/unset events. */
     if (wind->is_fullscreen != fullscreen) {
         wind->is_fullscreen = fullscreen;
-        SetFullscreen(window, fullscreen ? output : NULL, SDL_TRUE);
+        SetFullscreen(window, fullscreen ? output : NULL);
 
         /* Roundtrip required to receive the updated window dimensions */
         WAYLAND_wl_display_roundtrip(viddata->display);
