@@ -2156,11 +2156,7 @@ Wayland_SetWindowMaximumSize(_THIS, SDL_Window * window)
 
 void Wayland_SetWindowSize(_THIS, SDL_Window * window)
 {
-    SDL_VideoData *data = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
-#ifdef HAVE_LIBDECOR_H
-    struct libdecor_state *state;
-#endif
 
 #ifdef HAVE_LIBDECOR_H
     /* we must not resize the window while we have a static (non-floating) size */
@@ -2175,29 +2171,11 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
 
     /* Update the window geometry. */
     ConfigureWindowGeometry(window);
-
-#ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(data, window) && wind->shell_surface.libdecor.frame) {
-        state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
-        libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
-        libdecor_state_free(state);
-    }
-#endif
+    CommitWindowGeometry(window);
 
     /* windowed is unconditionally set, so we can trust it here */
     wind->floating_width = window->windowed.w;
     wind->floating_height = window->windowed.h;
-
-    /* Update the geometry which may have been set by a hack in Wayland_HandleResize */
-    if (
-#ifdef HAVE_LIBDECOR_H
-        !WINDOW_IS_LIBDECOR(data, window) &&
-#endif
-        data->shell.xdg &&
-        wind->shell_surface.xdg.surface) {
-        xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0,
-                                        GetWindowWidth(window), GetWindowHeight(window));
-    }
 }
 
 void Wayland_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
