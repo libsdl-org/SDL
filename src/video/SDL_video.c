@@ -160,7 +160,7 @@ static VideoBootStrap *bootstrap[] = {
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
 /* Support for Mac OS X fullscreen spaces */
 extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window * window);
 extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state);
@@ -1335,7 +1335,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
         return 0;
     }
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
     /* if the window is going away and no resolution change is necessary,
        do nothing, or else we may trigger an ugly double-transition
      */
@@ -3170,7 +3170,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
         return SDL_FALSE;
     }
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
     if (SDL_strcmp(_this->name, "cocoa") == 0) {  /* don't do this for X11, etc */
         if (Cocoa_IsWindowInFullscreenSpace(window)) {
             return SDL_FALSE;
