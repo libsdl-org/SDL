@@ -64,10 +64,13 @@ FloatEqual(float a, float b)
 static void
 GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawable_width, int *drawable_height)
 {
-    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *)SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
+    SDL_WaylandOutputData *output = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
 
     int fs_width, fs_height;
     int buf_width, buf_height;
+    const int output_width = wind->fs_output_width ? wind->fs_output_width : output->width;
+    const int output_height = wind->fs_output_height ? wind->fs_output_height : output->height;
 
     /*
      * Fullscreen desktop mandates a desktop sized window, so that's what applications will get.
@@ -75,8 +78,8 @@ GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawab
      * differently sized window and backbuffer spaces on its own.
      */
     if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-        fs_width  = output->width;
-        fs_height = output->height;
+        fs_width  = output_width;
+        fs_height = output_height;
 
         /* If the application is DPI aware, we can expose the true backbuffer size */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
@@ -98,8 +101,8 @@ GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawab
             fs_width  = output->native_width;
             fs_height = output->native_height;
         } else {
-            fs_width  = output->width;
-            fs_height = output->height;
+            fs_width  = output_width;
+            fs_height = output_height;
         }
 
         buf_width  = fs_width;
@@ -258,20 +261,22 @@ ConfigureWindowGeometry(SDL_Window *window)
     if (FullscreenModeEmulation(window) && NeedViewport(window)) {
         int fs_width, fs_height;
         int src_width, src_height;
+        const int output_width  = data->fs_output_width ? data->fs_output_width : output->width;
+        const int output_height = data->fs_output_height ? data->fs_output_height : output->height;
 
         GetFullScreenDimensions(window, &fs_width, &fs_height, &src_width, &src_height);
 
         /* Set the buffer scale to 1 since a viewport will be used. */
         wl_surface_set_buffer_scale(data->surface, 1);
-        SetDrawSurfaceViewport(window, src_width, src_height, output->width, output->height);
+        SetDrawSurfaceViewport(window, src_width, src_height, output_width, output_height);
 
         data->viewport_rect.x = 0;
         data->viewport_rect.y = 0;
-        data->viewport_rect.w = output->width;
-        data->viewport_rect.h = output->height;
+        data->viewport_rect.w = output_width;
+        data->viewport_rect.h = output_height;
 
-        data->pointer_scale_x = (float)fs_width / (float)output->width;
-        data->pointer_scale_y = (float)fs_height / (float)output->height;
+        data->pointer_scale_x = (float)fs_width / (float)output_width;
+        data->pointer_scale_y = (float)fs_height / (float)output_height;
 
         if (!EGLTransparencyEnabled()) {
             region = wl_compositor_create_region(viddata->compositor);
@@ -498,6 +503,25 @@ UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
     }
 }
 
+static void
+CommitWindowGeometry(SDL_Window *window)
+{
+    SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
+    SDL_VideoData *viddata = (SDL_VideoData *) wind->waylandData;
+
+#ifdef HAVE_LIBDECOR_H
+    if (WINDOW_IS_LIBDECOR(data, window) && wind->shell_surface.libdecor.frame) {
+        struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
+        libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
+        libdecor_state_free(state);
+    } else
+#endif
+    if (viddata->shell.xdg && wind->shell_surface.xdg.surface) {
+        xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0,
+                                        GetWindowWidth(window), GetWindowHeight(window));
+    }
+}
+
 static const struct wl_callback_listener surface_damage_frame_listener;
 
 static void
@@ -657,6 +681,14 @@ handle_configure_xdg_toplevel(void *data,
          * UPDATE: Nope, sure enough a compositor sends 0,0. This is a known bug:
          * https://bugs.kde.org/show_bug.cgi?id=444962
          */
+        if (width && height) {
+            wind->fs_output_width = width;
+            wind->fs_output_height = height;
+        } else {
+            wind->fs_output_width = 0;
+            wind->fs_output_height = 0;
+        }
+
         if (FullscreenModeEmulation(window)) {
             GetFullScreenDimensions(window, &width, &height, NULL, NULL);
         }
@@ -836,18 +868,23 @@ decoration_frame_configure(struct libdecor_frame *frame,
      * Always assume the configure is wrong.
      */
     if (fullscreen) {
-        if (!FullscreenModeEmulation(window)) {
-            /* FIXME: We have been explicitly told to respect the fullscreen size
-             * parameters here, even though they are known to be wrong on GNOME at
-             * bare minimum. If this is wrong, don't blame us, we were explicitly
-             * told to do this.
-             */
-            if (!libdecor_configuration_get_content_size(configuration, frame,
-                                                         &width, &height)) {
-                width  = window->w;
-                height = window->h;
-            }
+        /* FIXME: We have been explicitly told to respect the fullscreen size
+         * parameters here, even though they are known to be wrong on GNOME at
+         * bare minimum. If this is wrong, don't blame us, we were explicitly
+         * told to do this.
+         */
+        if (libdecor_configuration_get_content_size(configuration, frame,
+                                                     &width, &height)) {
+            wind->fs_output_width = width;
+            wind->fs_output_height = height;
         } else {
+            width = window->w;
+            height = window->h;
+            wind->fs_output_width = 0;
+            wind->fs_output_height = 0;
+        }
+
+        if (FullscreenModeEmulation(window)) {
             GetFullScreenDimensions(window, &width, &height, NULL, NULL);
         }
 
@@ -990,9 +1027,34 @@ static void
 Wayland_move_window(SDL_Window *window,
                     SDL_WaylandOutputData *driverdata)
 {
-    int i, numdisplays = SDL_GetNumVideoDisplays();
+    SDL_WindowData *wind = (SDL_WindowData*)window;
+    SDL_VideoDisplay *display;
+    int i, j;
+    const int numdisplays = SDL_GetNumVideoDisplays();
     for (i = 0; i < numdisplays; i += 1) {
-        if (SDL_GetDisplay(i)->driverdata == driverdata) {
+        display = SDL_GetDisplay(i);
+        if (display->driverdata == driverdata) {
+            SDL_Rect bounds;
+
+            /* If the window is fullscreen and not on the target display, move it. */
+            if ((window->flags & SDL_WINDOW_FULLSCREEN) && display->fullscreen_window != window) {
+                /* If the target display already has a fullscreen window, minimize it. */
+                if (display->fullscreen_window) {
+                    SDL_MinimizeWindow(display->fullscreen_window);
+                }
+
+                /* Find the window and move it to the target display. */
+                for (j = 0; j < numdisplays; ++j) {
+                    SDL_VideoDisplay *v = SDL_GetDisplay(j);
+
+                    if (v->fullscreen_window == window) {
+                        v->fullscreen_window = NULL;
+                    }
+                }
+
+                display->fullscreen_window = window;
+            }
+
             /* We want to send a very very specific combination here:
              *
              * 1. A coordinate that tells the application what display we're on
@@ -1012,9 +1074,18 @@ Wayland_move_window(SDL_Window *window,
              *
              * -flibit
              */
-            SDL_Rect bounds;
             SDL_GetDisplayBounds(i, &bounds);
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, bounds.x, bounds.y);
+
+            /*
+             * We should have gotten the new output size from the compositor, but if not,
+             * commit with the dimensions with the new display.
+             */
+            if (!wind->fs_output_width || !wind->fs_output_height) {
+                ConfigureWindowGeometry(window);
+                CommitWindowGeometry(window);
+            }
+
             break;
         }
     }
@@ -1034,9 +1105,10 @@ handle_surface_enter(void *data, struct wl_surface *surface,
     window->outputs = SDL_realloc(window->outputs,
                                   sizeof(SDL_WaylandOutputData*) * (window->num_outputs + 1));
     window->outputs[window->num_outputs++] = driverdata;
-    update_scale_factor(window);
 
+    /* Update the scale factor after the move so that fullscreen outputs are updated. */
     Wayland_move_window(window->sdlwindow, driverdata);
+    update_scale_factor(window);
 }
 
 static void
@@ -1687,18 +1759,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
          * geometry and trigger a commit.
          */
         ConfigureWindowGeometry(window);
-
-#ifdef HAVE_LIBDECOR_H
-        if (WINDOW_IS_LIBDECOR(data, window) && wind->shell_surface.libdecor.frame) {
-            struct libdecor_state *state = libdecor_state_new(GetWindowWidth(window), GetWindowHeight(window));
-            libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
-            libdecor_state_free(state);
-        } else
-#endif
-        if(viddata->shell.xdg && wind->shell_surface.xdg.surface) {
-            xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0,
-                                            GetWindowWidth(window), GetWindowHeight(window));
-        }
+        CommitWindowGeometry(window);
 
         /* Roundtrip required to receive the updated window dimensions */
         WAYLAND_wl_display_roundtrip(viddata->display);

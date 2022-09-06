@@ -104,6 +104,7 @@ typedef struct {
     float pointer_scale_x;
     float pointer_scale_y;
     int drawable_width, drawable_height;
+    int fs_output_width, fs_output_height;
     SDL_Rect viewport_rect;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
