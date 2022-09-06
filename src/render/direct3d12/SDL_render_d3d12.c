@@ -720,6 +720,13 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc;
     PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
 #endif
+#ifndef __GDK__
+    HMODULE kernel32;
+    typedef HANDLE(WINAPI* PFN_CREATE_EVENT_EX)(LPSECURITY_ATTRIBUTES lpEventAttributes, LPCWSTR lpName, DWORD dwFlags, DWORD dwDesiredAccess);
+    PFN_CREATE_EVENT_EX CreateEventExFunc;
+#else
+#define CreateEventExFunc CreateEventEx
+#endif
     D3D12_RenderData* data = (D3D12_RenderData*)renderer->driverdata;
     ID3D12Device* d3dDevice = NULL;
     HRESULT result = S_OK;
@@ -747,6 +754,21 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
 
     /* See if we need debug interfaces */
     createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
+
+#ifndef __GDK__
+    /* CreateEventEx() arrived in Vista, so we need to load it with GetProcAddress for XP. */
+    kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
+    if (!kernel32) {
+        result = E_FAIL;
+        goto done;
+    }
+
+    CreateEventExFunc = (PFN_CREATE_EVENT_EX) GetProcAddress(kernel32, "CreateEventExW");
+    if (!CreateEventExFunc) {
+        result = E_FAIL;
+        goto done;
+    }
+#endif
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     data->hDXGIMod = SDL_LoadObject("dxgi.dll");
@@ -999,7 +1021,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
 
     data->fenceValue++;
 
-    data->fenceEvent = CreateEventEx(NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
+    data->fenceEvent = CreateEventExFunc(NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
     if (!data->fenceEvent) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateEventEx"), result);
         goto done;
