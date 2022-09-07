@@ -39,6 +39,8 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_WII_PROTOCOL*/
 
+#define ENABLE_CONTINUOUS_REPORTING SDL_TRUE
+
 #define INPUT_WAIT_TIMEOUT_MS       (3 * 1000)
 #define MOTION_PLUS_UPDATE_TIME_MS  (8 * 1000)
 #define STATUS_UPDATE_TIME_MS       (15 * 60 * 1000)
@@ -551,7 +553,6 @@ static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
 
 static SDL_bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputReportIDs type)
 {
-    const SDL_bool ENABLE_CONTINUOUS_REPORTING = SDL_TRUE;
     Uint8 data[3];
     Uint8 tt = ctx->m_bRumbleActive;
 
@@ -1522,8 +1523,9 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Check to see if we've lost connection to the controller.
-     * We have continous reporting enabled, so this should be reliable now.
+     * We have continuous reporting enabled, so this should be reliable now.
      */
+    SDL_COMPILE_TIME_ASSERT(ENABLE_CONTINUOUS_REPORTING, ENABLE_CONTINUOUS_REPORTING);
     if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
         /* Bluetooth may have disconnected, try reopening the controller */
         size = -1;
