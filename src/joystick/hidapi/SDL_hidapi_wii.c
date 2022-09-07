@@ -463,9 +463,15 @@ static void CheckMotionPlusConnection(SDL_DriverWii_Context *ctx)
 
 static void ActivateMotionPlusWithMode(SDL_DriverWii_Context *ctx, Uint8 mode)
 {
+#if defined(__LINUX__)
+    /* Linux drivers maintain a lot of state around the Motion Plus
+     * extension, so don't mess with it here.
+     */
+#else
     WriteRegister(ctx, 0xA600FE, &mode, sizeof(mode), SDL_TRUE);
 
     ctx->m_ucMotionPlusMode = mode;
+#endif /* LINUX */
 }
 
 static void ActivateMotionPlus(SDL_DriverWii_Context *ctx)
