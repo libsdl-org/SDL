@@ -38,7 +38,6 @@
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_WII_PROTOCOL*/
-//#define DEBUG_WII_PROTOCOL
 
 #define INPUT_WAIT_TIMEOUT_MS       (3 * 1000)
 #define MOTION_PLUS_UPDATE_TIME_MS  (8 * 1000)
@@ -1530,27 +1529,31 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         size = -1;
     }
 
-    /* Check to see if the Motion Plus extension status has changed */
-    if (ctx->m_unNextMotionPlusCheck &&
-        SDL_TICKS_PASSED(now, ctx->m_unNextMotionPlusCheck)) {
-        CheckMotionPlusConnection(ctx);
-        if (NeedsPeriodicMotionPlusCheck(ctx, SDL_FALSE)) {
-            SchedulePeriodicMotionPlusCheck(ctx);
-        } else {
-            ctx->m_unNextMotionPlusCheck = 0;
+    /* These checks aren't needed on the Wii U Pro Controller */
+    if (ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_WiiUPro) {
+
+        /* Check to see if the Motion Plus extension status has changed */
+        if (ctx->m_unNextMotionPlusCheck &&
+            SDL_TICKS_PASSED(now, ctx->m_unNextMotionPlusCheck)) {
+            CheckMotionPlusConnection(ctx);
+            if (NeedsPeriodicMotionPlusCheck(ctx, SDL_FALSE)) {
+                SchedulePeriodicMotionPlusCheck(ctx);
+            } else {
+                ctx->m_unNextMotionPlusCheck = 0;
+            }
         }
-    }
 
-    /* Request a status update periodically to make sure our battery value is up to date */
-    if (!ctx->m_unLastStatus ||
-        SDL_TICKS_PASSED(now, ctx->m_unLastStatus + STATUS_UPDATE_TIME_MS)) {
-        Uint8 data[2];
+        /* Request a status update periodically to make sure our battery value is up to date */
+        if (!ctx->m_unLastStatus ||
+            SDL_TICKS_PASSED(now, ctx->m_unLastStatus + STATUS_UPDATE_TIME_MS)) {
+            Uint8 data[2];
 
-        data[0] = k_eWiiOutputReportIDs_StatusRequest;
-        data[1] = ctx->m_bRumbleActive;
-        WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
+            data[0] = k_eWiiOutputReportIDs_StatusRequest;
+            data[1] = ctx->m_bRumbleActive;
+            WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
 
-        ctx->m_unLastStatus = now;
+            ctx->m_unLastStatus = now;
+        }
     }
 
     if (size < 0 || ctx->m_bDisconnected) {
