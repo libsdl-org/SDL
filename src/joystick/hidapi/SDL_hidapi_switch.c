@@ -254,7 +254,6 @@ typedef struct {
     SDL_bool m_bRumblePending;
     SDL_bool m_bRumbleZeroPending;
     Uint32 m_unRumblePending;
-    SDL_bool m_bHasSensors;
     SDL_bool m_bReportSensors;
     SDL_bool m_bHasSensorData;
     Uint32 m_unLastInput;
@@ -1351,7 +1350,16 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 200.0f);
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 200.0f);
-                ctx->m_bHasSensors = SDL_TRUE;
+            }
+            if (device->parent &&
+                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_L, 200.0f);
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_L, 200.0f);
+            }
+            if (device->parent &&
+                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_R, 200.0f);
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_R, 200.0f);
             }
         }
 
@@ -1610,10 +1618,6 @@ HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joy
 {
     SDL_DriverSwitch_Context* ctx = (SDL_DriverSwitch_Context*)device->context;
     
-    if (!ctx->m_bHasSensors) {
-        return SDL_Unsupported();
-    }
-
     SetIMUEnabled(ctx, enabled);
     ctx->m_bReportSensors = enabled;
 
@@ -1816,7 +1820,7 @@ static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *c
      * since that's our de facto standard from already supporting those controllers, and
      * users will want consistent axis mappings across devices.
      */
-    if (type == SDL_SENSOR_GYRO) {
+    if (type == SDL_SENSOR_GYRO || type == SDL_SENSOR_GYRO_L || type == SDL_SENSOR_GYRO_R ) {
         data[0] = -(ctx->m_IMUScaleData.fGyroScaleY * (float)values[1]);
         data[1] = ctx->m_IMUScaleData.fGyroScaleZ * (float)values[2];
         data[2] = -(ctx->m_IMUScaleData.fGyroScaleX * (float)values[0]);
@@ -2068,13 +2072,37 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         if (bHasSensorData) {
             ctx->m_bHasSensorData = SDL_TRUE;
 
-            SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[2].sGyroX);
-            SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[1].sGyroX);
-            SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[0].sGyroX);
+            if (!ctx->device->parent ||
+                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[2].sGyroX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[1].sGyroX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, &packet->imuState[0].sGyroX);
 
-            SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[2].sAccelX);
-            SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[1].sAccelX);
-            SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[0].sAccelX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[2].sAccelX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[1].sAccelX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, &packet->imuState[0].sAccelX);
+            }
+
+            if (ctx->device->parent &&
+                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, &packet->imuState[2].sGyroX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, &packet->imuState[1].sGyroX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, &packet->imuState[0].sGyroX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, &packet->imuState[2].sAccelX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, &packet->imuState[1].sAccelX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, &packet->imuState[0].sAccelX);
+            }
+            if (ctx->device->parent &&
+                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, &packet->imuState[2].sGyroX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, &packet->imuState[1].sGyroX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, &packet->imuState[0].sGyroX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, &packet->imuState[2].sAccelX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, &packet->imuState[1].sAccelX);
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, &packet->imuState[0].sAccelX);
+            }
 
         } else if (ctx->m_bHasSensorData) {
             /* Uh oh, someone turned off the IMU? */

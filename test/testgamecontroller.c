@@ -127,6 +127,26 @@ static void UpdateWindowTitle()
     }
 }
 
+static const char *GetSensorName(SDL_SensorType sensor)
+{
+    switch (sensor) {
+    case SDL_SENSOR_ACCEL:
+        return "accelerometer";
+    case SDL_SENSOR_GYRO:
+        return "gyro";
+    case SDL_SENSOR_ACCEL_L:
+        return "accelerometer (L)";
+    case SDL_SENSOR_GYRO_L:
+        return "gyro (L)";
+    case SDL_SENSOR_ACCEL_R:
+        return "accelerometer (R)";
+    case SDL_SENSOR_GYRO_R:
+        return "gyro (R)";
+    default:
+        return "UNKNOWN";
+    }
+}
+
 static int FindController(SDL_JoystickID controller_id)
 {
     int i;
@@ -145,6 +165,15 @@ static void AddController(int device_index, SDL_bool verbose)
     SDL_GameController *controller;
     SDL_GameController **controllers;
     Uint16 firmware_version;
+    SDL_SensorType sensors[] = {
+        SDL_SENSOR_ACCEL,
+        SDL_SENSOR_GYRO,
+        SDL_SENSOR_ACCEL_L,
+        SDL_SENSOR_GYRO_L,
+        SDL_SENSOR_ACCEL_R,
+        SDL_SENSOR_GYRO_R
+    };
+    unsigned int i;
 
     controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
     if (controller_id < 0) {
@@ -187,18 +216,15 @@ static void AddController(int device_index, SDL_bool verbose)
         }
     }
 
-    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_ACCEL)) {
-        if (verbose) {
-            SDL_Log("Enabling accelerometer at %.2f Hz\n", SDL_GameControllerGetSensorDataRate(gamecontroller, SDL_SENSOR_ACCEL));
-        }
-        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_ACCEL, SDL_TRUE);
-    }
+    for (i = 0; i < SDL_arraysize(sensors); ++i) {
+        SDL_SensorType sensor = sensors[i];
 
-    if (SDL_GameControllerHasSensor(gamecontroller, SDL_SENSOR_GYRO)) {
-        if (verbose) {
-            SDL_Log("Enabling gyro at %.2f Hz\n", SDL_GameControllerGetSensorDataRate(gamecontroller, SDL_SENSOR_GYRO));
+        if (SDL_GameControllerHasSensor(gamecontroller, sensor)) {
+            if (verbose) {
+                SDL_Log("Enabling %s at %.2f Hz\n", GetSensorName(sensor), SDL_GameControllerGetSensorDataRate(gamecontroller, sensor));
+            }
+            SDL_GameControllerSetSensorEnabled(gamecontroller, sensor, SDL_TRUE);
         }
-        SDL_GameControllerSetSensorEnabled(gamecontroller, SDL_SENSOR_GYRO, SDL_TRUE);
     }
 
     if (SDL_GameControllerHasRumble(gamecontroller)) {
@@ -565,8 +591,7 @@ loop(void *arg)
         case SDL_CONTROLLERSENSORUPDATE:
             SDL_Log("Controller %d sensor %s: %.2f, %.2f, %.2f\n",
                 event.csensor.which,
-                event.csensor.sensor == SDL_SENSOR_ACCEL ? "accelerometer" :
-                event.csensor.sensor == SDL_SENSOR_GYRO ? "gyro" : "unknown",
+                GetSensorName((SDL_SensorType)event.csensor.sensor),
                 event.csensor.data[0],
                 event.csensor.data[1],
                 event.csensor.data[2]);

@@ -809,6 +809,9 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_None ||
         ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_Nunchuk) {
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
+        if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_Nunchuk) {
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_L, 100.0f);
+        }
 
         if (ctx->m_bMotionPlusPresent) {
             SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 100.0f);
@@ -1162,7 +1165,6 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[0], SDL_CONTROLLER_AXIS_LEFTX, data->rgucExtension[0]);
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[1], SDL_CONTROLLER_AXIS_LEFTY, data->rgucExtension[1]);
 
-#if 0 /* We'll report this when we have the concept of right/left sensors */
     if (ctx->m_bReportSensors) {
         const float ACCEL_RES_PER_G = 200.0f;
         Sint16 x, y, z;
@@ -1190,9 +1192,8 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
         values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
         values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
         values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, values, 3);
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL_L, values, 3);
     }
-#endif
 }
 
 static void HandleMotionPlusData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
