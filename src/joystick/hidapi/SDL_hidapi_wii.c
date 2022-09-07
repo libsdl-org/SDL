@@ -1525,7 +1525,9 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     /* Check to see if we've lost connection to the controller.
      * We have continuous reporting enabled, so this should be reliable now.
      */
-    SDL_COMPILE_TIME_ASSERT(ENABLE_CONTINUOUS_REPORTING, ENABLE_CONTINUOUS_REPORTING);
+    {
+        SDL_COMPILE_TIME_ASSERT(ENABLE_CONTINUOUS_REPORTING, ENABLE_CONTINUOUS_REPORTING);
+    }
     if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
         /* Bluetooth may have disconnected, try reopening the controller */
         size = -1;
