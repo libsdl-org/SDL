@@ -1954,6 +1954,19 @@ SDL_IsGameController(int device_index)
     return SDL_FALSE;
 }
 
+static SDL_bool SDL_endswith(const char *string, const char *suffix)
+{
+    size_t string_length = string ? SDL_strlen(string) : 0;
+    size_t suffix_length = suffix ? SDL_strlen(suffix) : 0;
+
+    if (suffix_length > 0 && suffix_length <= string_length) {
+        if (SDL_memcmp(string + string_length - suffix_length, suffix, suffix_length) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 /*
  * Return 1 if the game controller should be ignored by SDL
  */
@@ -1966,8 +1979,15 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     Uint32 vidpid;
 
 #if defined(__LINUX__)
-    if (name && SDL_strstr(name, "Motion Sensors")) {
+    if (SDL_endswith(name, " Motion Sensors")) {
         /* Don't treat the PS3 and PS4 motion controls as a separate game controller */
+        return SDL_TRUE;
+    }
+    if (SDL_endswith(name, " Accelerometer") ||
+        SDL_endswith(name, " IR") ||
+        SDL_endswith(name, " Motion Plus") ||
+        SDL_endswith(name, " Nunchuk")) {
+        /* Don't treat the Wii extension controls as a separate game controller */
         return SDL_TRUE;
     }
 #endif
