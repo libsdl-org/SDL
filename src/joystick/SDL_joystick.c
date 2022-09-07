@@ -573,14 +573,14 @@ SDL_JoystickOpen(int device_index)
     joystick->next = SDL_joysticks;
     SDL_joysticks = joystick;
 
-    SDL_UnlockJoysticks();
-
     /* send initial battery event */
     initial_power_level = joystick->epowerlevel;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
     SDL_PrivateJoystickBatteryLevel(joystick, initial_power_level);
 
     driver->Update(joystick);
+
+    SDL_UnlockJoysticks();
 
     return joystick;
 }
