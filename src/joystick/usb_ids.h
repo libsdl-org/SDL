@@ -57,8 +57,8 @@
 #define USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR             0x2008  /* Used by joycond */
 #define USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT            0x2007
 #define USB_PRODUCT_NINTENDO_SWITCH_PRO                     0x2009
-#define USB_PRODUCT_NINTENDO_WII_PRO                        0x0330
 #define USB_PRODUCT_NINTENDO_WII_REMOTE                     0x0306
+#define USB_PRODUCT_NINTENDO_WII_REMOTE2                    0x0330
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER                0x7214
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008

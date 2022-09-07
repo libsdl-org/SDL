@@ -177,10 +177,9 @@ HIDAPI_DriverWii_IsEnabled(void)
 static SDL_bool
 HIDAPI_DriverWii_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_WII_PRO) {
-        return SDL_TRUE;
-    }
-    if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_WII_REMOTE) {
+    if (vendor_id == USB_VENDOR_NINTENDO &&
+        (product_id == USB_PRODUCT_NINTENDO_WII_REMOTE ||
+         product_id == USB_PRODUCT_NINTENDO_WII_REMOTE2)) {
         return SDL_TRUE;
     }
     return SDL_FALSE;
@@ -752,11 +751,7 @@ HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
     if (device->vendor_id == USB_VENDOR_NINTENDO) {
         EWiiExtensionControllerType eExtensionControllerType;
 
-        if (device->product_id == USB_PRODUCT_NINTENDO_WII_PRO) {
-            eExtensionControllerType = k_eWiiExtensionControllerType_WiiUPro;
-        } else {
-            eExtensionControllerType = ReadExtensionControllerType(device);
-        }
+        eExtensionControllerType = ReadExtensionControllerType(device);
         device->guid.data[15] = eExtensionControllerType;
         UpdateDeviceIdentity(device);
     }
