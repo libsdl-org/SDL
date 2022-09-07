@@ -711,6 +711,7 @@ main(int argc, char *argv[])
 {
     const char *name;
     int i;
+    int joystick_index;
     SDL_Joystick *joystick;
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
@@ -787,9 +788,16 @@ main(int argc, char *argv[])
         }
     }
 
-    joystick = SDL_JoystickOpen(0);
+    joystick_index = 0;
+    for (i = 1; i < argc; ++i) {
+        if (argv[i] && *argv[i] != '-') {
+            joystick_index = SDL_atoi(argv[i]);
+            break;
+        }
+    }
+    joystick = SDL_JoystickOpen(joystick_index);
     if (joystick == NULL) {
-        SDL_Log("Couldn't open joystick 0: %s\n", SDL_GetError());
+        SDL_Log("Couldn't open joystick %d: %s\n", joystick_index, SDL_GetError());
     } else {
         WatchJoystick(joystick);
         SDL_JoystickClose(joystick);
