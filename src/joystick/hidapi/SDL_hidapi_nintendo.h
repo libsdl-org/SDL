@@ -38,10 +38,9 @@ typedef enum {
 typedef enum {
     k_eWiiExtensionControllerType_Unknown               = 0,
     k_eWiiExtensionControllerType_None                  = 128,
-    k_eWiiExtensionControllerType_Nunchuck              = 129,
-    k_eWiiExtensionControllerType_ClassicController     = 130,
-    k_eWiiExtensionControllerType_ClassicControllerPro  = 131,
-    k_eWiiExtensionControllerType_WiiUPro               = 132,
+    k_eWiiExtensionControllerType_Nunchuk               = 129,
+    k_eWiiExtensionControllerType_Gamepad               = 130,
+    k_eWiiExtensionControllerType_WiiUPro               = 131,
 } EWiiExtensionControllerType;
 
 /* vi: set ts=4 sw=4 expandtab: */
