@@ -1954,6 +1954,7 @@ SDL_IsGameController(int device_index)
     return SDL_FALSE;
 }
 
+#if defined(__LINUX__)
 static SDL_bool SDL_endswith(const char *string, const char *suffix)
 {
     size_t string_length = string ? SDL_strlen(string) : 0;
@@ -1966,6 +1967,7 @@ static SDL_bool SDL_endswith(const char *string, const char *suffix)
     }
     return SDL_FALSE;
 }
+#endif
 
 /*
  * Return 1 if the game controller should be ignored by SDL
