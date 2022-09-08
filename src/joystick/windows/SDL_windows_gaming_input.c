@@ -401,6 +401,14 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
+    SDL_LockJoysticks();
+
+    /* Can we get delayed calls to InvokeRemoved() after WGI_JoystickQuit()? */
+    if (SDL_JoysticksQuitting() || !SDL_JoysticksInitialized()) {
+        SDL_UnlockJoysticks();
+        return S_OK;
+    }
+
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(e, &IID_IRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
         int i;
@@ -426,6 +434,9 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
 
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
     }
+
+    SDL_UnlockJoysticks();
+
     return S_OK;
 }
 
