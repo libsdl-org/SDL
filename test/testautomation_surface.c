@@ -693,7 +693,7 @@ surface_testOverflow(void *arg)
     SDLTest_AssertCheck(surface != NULL, "17px * 1 bit per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
-    surface = SDL_CreateRGBSurfaceFrom(buf, 7, 1, 1, 3, 0, 0, 0, 0);
+    surface = SDL_CreateRGBSurfaceFrom(buf, 17, 1, 1, 3, 0, 0, 0, 0);
     SDLTest_AssertCheck(surface != NULL, "17px * 1 bit per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
