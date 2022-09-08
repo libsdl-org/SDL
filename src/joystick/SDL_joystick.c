@@ -2517,39 +2517,6 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
     return SDL_JOYSTICK_TYPE_UNKNOWN;
 }
 
-static SDL_bool SDL_IsPS4RemapperRunning(void)
-{
-#if defined(__WIN32__) || defined(__WINGDK__)
-    const char *mapper_processes[] = {
-        "DS4Windows.exe",
-        "InputMapper.exe",
-    };
-    int i;
-    PROCESSENTRY32 pe32;
-    SDL_bool found = SDL_FALSE;
-
-    /* Take a snapshot of all processes in the system */
-    HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hProcessSnap != INVALID_HANDLE_VALUE) {
-        pe32.dwSize = sizeof(PROCESSENTRY32);
-        if (Process32First(hProcessSnap, &pe32)) {
-            do
-            {
-                for (i = 0; i < SDL_arraysize(mapper_processes); ++i) {
-                    if (SDL_strcasecmp(pe32.szExeFile, mapper_processes[i]) == 0) {
-                        found = SDL_TRUE;
-                    }
-                }
-            } while (Process32Next(hProcessSnap, &pe32) && !found);
-        }
-        CloseHandle(hProcessSnap);
-    }
-    return found;
-#else
-    return SDL_FALSE;
-#endif
-}
-
 SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
 {
     /* This list is taken from:
@@ -2678,7 +2645,6 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
     Uint32 id;
     Uint16 vendor;
     Uint16 product;
-    SDL_GameControllerType type;
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
@@ -2695,11 +2661,6 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
                 return SDL_TRUE;
             }
         }
-    }
-
-    type = SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, name, SDL_FALSE);
-    if ((type == SDL_CONTROLLER_TYPE_PS4 || type == SDL_CONTROLLER_TYPE_PS5) && SDL_IsPS4RemapperRunning()) {
-        return SDL_TRUE;
     }
 
     if (SDL_ShouldIgnoreGameController(name, guid)) {
