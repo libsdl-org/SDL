@@ -604,7 +604,12 @@ int
 SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc)
 {
 #if SDL_JOYSTICK_VIRTUAL
-    return SDL_JoystickAttachVirtualInner(desc);
+    int result;
+
+    SDL_LockJoysticks();
+    result = SDL_JoystickAttachVirtualInner(desc);
+    SDL_UnlockJoysticks();
+    return result;
 #else
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
