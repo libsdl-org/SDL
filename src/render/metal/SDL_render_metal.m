@@ -1227,7 +1227,13 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
 
         /* Set Scissor Rect Validation: w/h must be <= render pass */
         SDL_zero(output);
-        METAL_GetOutputSize(renderer, &output.w, &output.h);
+
+        if (renderer->target) {
+            output.w = renderer->target->w;
+            output.h = renderer->target->h;
+        } else {
+            METAL_GetOutputSize(renderer, &output.w, &output.h);
+        }
 
         if (SDL_IntersectRect(&output, &clip, &clip)) {
             MTLScissorRect mtlrect;
