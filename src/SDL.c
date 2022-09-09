@@ -505,6 +505,8 @@ SDL_Quit(void)
      */
     SDL_memset( SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount) );
 
+    SDL_TLSCleanup();
+
     SDL_bInMainQuit = SDL_FALSE;
 }
 
