@@ -1032,8 +1032,9 @@ static void
 Wayland_move_window(SDL_Window *window,
                     SDL_WaylandOutputData *driverdata)
 {
-    SDL_WindowData *wind = (SDL_WindowData*)window;
+    SDL_WindowData *wind = (SDL_WindowData*)window->driverdata;
     SDL_VideoDisplay *display;
+    SDL_bool fs_display_changed = SDL_FALSE;
     int i, j;
     const int numdisplays = SDL_GetNumVideoDisplays();
     for (i = 0; i < numdisplays; i += 1) {
@@ -1058,6 +1059,7 @@ Wayland_move_window(SDL_Window *window,
                 }
 
                 display->fullscreen_window = window;
+                fs_display_changed = SDL_TRUE;
             }
 
             /* We want to send a very very specific combination here:
@@ -1083,10 +1085,11 @@ Wayland_move_window(SDL_Window *window,
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, bounds.x, bounds.y);
 
             /*
-             * We should have gotten the new output size from the compositor, but if not,
-             * commit with the dimensions with the new display.
+             * If the fullscreen output was changed, and we have bad dimensions from
+             * the compositor, commit with the dimensions of the new display.
              */
-            if (!wind->fs_output_width || !wind->fs_output_height) {
+            if (fs_display_changed &&
+                (!wind->fs_output_width || !wind->fs_output_height)) {
                 ConfigureWindowGeometry(window);
                 CommitWindowGeometry(window);
             }
