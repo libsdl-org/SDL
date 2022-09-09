@@ -241,31 +241,31 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "tcross");
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_left_corner");
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_right_corner");
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_h_double_arrow");
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_v_double_arrow");
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "fleur");
         break;
     case SDL_SYSTEM_CURSOR_NO:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "xterm");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "pirate");
         break;
     case SDL_SYSTEM_CURSOR_HAND:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand2");
         break;
     default:
         SDL_assert(0);
