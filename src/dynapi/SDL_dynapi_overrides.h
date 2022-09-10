@@ -886,3 +886,12 @@
 #define SDL_crc16 SDL_crc16_REAL
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
 #define SDL_GetJoystickGUIDInfo SDL_GetJoystickGUIDInfo_REAL
+#define SDL_NumPens SDL_NumPens_REAL
+#define SDL_PenIDForIndex SDL_PenIDForIndex_REAL
+#define SDL_PenStatus SDL_PenStatus_REAL
+#define SDL_PenIDForGUID SDL_PenIDForGUID_REAL
+#define SDL_PenGUIDForPenID SDL_PenGUIDForPenID_REAL
+#define SDL_PenAttached SDL_PenAttached_REAL
+#define SDL_PenName SDL_PenName_REAL
+#define SDL_PenCapabilities SDL_PenCapabilities_REAL
+#define SDL_PenType SDL_PenType_REAL

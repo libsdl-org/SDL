@@ -19,6 +19,7 @@ extern SDLTest_TestSuiteReference keyboardTestSuite;
 extern SDLTest_TestSuiteReference mainTestSuite;
 extern SDLTest_TestSuiteReference mathTestSuite;
 extern SDLTest_TestSuiteReference mouseTestSuite;
+extern SDLTest_TestSuiteReference penTestSuite;
 extern SDLTest_TestSuiteReference pixelsTestSuite;
 extern SDLTest_TestSuiteReference platformTestSuite;
 extern SDLTest_TestSuiteReference rectTestSuite;
@@ -43,6 +44,7 @@ SDLTest_TestSuiteReference *testSuites[] =  {
     &mainTestSuite,
     &mathTestSuite,
     &mouseTestSuite,
+    &penTestSuite,
     &pixelsTestSuite,
     &platformTestSuite,
     &rectTestSuite,

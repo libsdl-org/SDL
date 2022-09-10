@@ -173,14 +173,14 @@ static SDL_bool X11_KeyRepeat(Display *display, XEvent *event)
 }
 
 static SDL_bool
-X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
+X11_IsWheelEvent(Display * display, int button, int * xticks, int * yticks)
 {
     /* according to the xlib docs, no specific mouse wheel events exist.
        However, the defacto standard is that the vertical wheel is X buttons
        4 (up) and 5 (down) and a horizontal wheel is 6 (left) and 7 (right). */
 
     /* Xlib defines "Button1" through 5, so we just use literals here. */
-    switch (event->xbutton.button) {
+    switch (button) {
         case 4: *yticks = 1; return SDL_TRUE;
         case 5: *yticks = -1; return SDL_TRUE;
         case 6: *xticks = 1; return SDL_TRUE;
@@ -303,12 +303,12 @@ static char* X11_URIToLocal(char* uri) {
 }
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
-static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
+static void X11_HandleGenericEvent(_THIS, SDL_VideoData *videodata, XEvent *xev)
 {
     /* event is a union, so cookie == &event, but this is type safe. */
     XGenericEventCookie *cookie = &xev->xcookie;
     if (X11_XGetEventData(videodata->display, cookie)) {
-        X11_HandleXinput2Event(videodata, cookie);
+        X11_HandleXinput2Event(_this, cookie);
 
         /* Send a SDL_SYSWMEVENT if the application wants them.
          * Since event data is only available until XFreeEventData is called,
@@ -549,12 +549,12 @@ InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, 
 }
 
 static SDL_bool
-ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
+ProcessHitTest(_THIS, const SDL_WindowData *data, const int x, const int y)
 {
     SDL_Window *window = data->window;
 
     if (window->hit_test) {
-        const SDL_Point point = { xev->xbutton.x, xev->xbutton.y };
+        const SDL_Point point = { x, y };
         const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
         static const int directions[] = {
             _NET_WM_MOVERESIZE_SIZE_TOPLEFT, _NET_WM_MOVERESIZE_SIZE_TOP,
@@ -620,7 +620,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             int seln_format, mime_formats;
             unsigned long nbytes;
             unsigned long overflow;
-            unsigned char *seln_data;            
+            unsigned char *seln_data;
             Atom supportedFormats[SDL_X11_CLIPBOARD_MIME_TYPE_MAX+1];
             Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
 
@@ -640,7 +640,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             /* !!! FIXME: We were probably storing this on the root window
                because an SDL window might go away...? but we don't have to do
                this now (or ever, really). */
-            
+
             if (req->target == XA_TARGETS) {
                 supportedFormats[0] = XA_TARGETS;
                 mime_formats = 1;
@@ -746,6 +746,80 @@ XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buff
     return result;
 }
 
+void
+X11_HandleButtonPress(_THIS, SDL_WindowData *windowdata, int button, const int x, const int y, const unsigned long time) {
+    SDL_Window *window = windowdata->window;
+    const SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+    Display *display = videodata->display;
+    int xticks = 0, yticks = 0;
+#ifdef DEBUG_XEVENTS
+    printf("window %p: ButtonPress (X11 button = %d)\n", window, button);
+#endif
+    if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
+        SDL_SendMouseWheel(window, 0, (float) -xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
+    } else {
+        SDL_bool ignore_click = SDL_FALSE;
+        if(button == Button1) {
+            if (ProcessHitTest(_this, windowdata, x, y)) {
+                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
+                return;  /* don't pass this event on to app. */
+            }
+        }
+        else if(button > 7) {
+            /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
+               => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
+            button -= (8-SDL_BUTTON_X1);
+        }
+        if (windowdata->last_focus_event_time) {
+            const int X11_FOCUS_CLICK_TIMEOUT = 10;
+            if (!SDL_TICKS_PASSED(SDL_GetTicks(), windowdata->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
+                ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
+            }
+            windowdata->last_focus_event_time = 0;
+        }
+        if (!ignore_click) {
+            SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+        }
+    }
+    X11_UpdateUserTime(windowdata, time);
+}
+
+SDL_WindowData *
+X11_FindWindow(_THIS, Window window)
+{
+    const SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+    int i;
+
+    if (videodata && videodata->windowlist) {
+        for (i = 0; i < videodata->numwindows; ++i) {
+            if ((videodata->windowlist[i] != NULL) &&
+                (videodata->windowlist[i]->xwindow == window)) {
+                return videodata->windowlist[i];
+            }
+        }
+    }
+    return NULL;
+}
+
+void
+X11_HandleButtonRelease(_THIS, SDL_WindowData *windowdata, int button) {
+    SDL_Window *window = windowdata->window;
+    const SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+    Display *display = videodata->display;
+    /* The X server sends a Release event for each Press for wheels. Ignore them. */
+    int xticks = 0, yticks = 0;
+#ifdef DEBUG_XEVENTS
+    printf("window %p: ButtonRelease (X11 button = %d)\n", window, button);
+#endif
+    if (!X11_IsWheelEvent(display, button, &xticks, &yticks)) {
+        if (button > 7) {
+            /* see explanation at case ButtonPress */
+            button -= (8-SDL_BUTTON_X1);
+        }
+        SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+    }
+}
+
 static void
 X11_DispatchEvent(_THIS, XEvent *xevent)
 {
@@ -797,7 +871,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
     if(xevent->type == GenericEvent) {
-        X11_HandleGenericEvent(videodata, xevent);
+        X11_HandleGenericEvent(_this, videodata, xevent);
         return;
     }
 #endif
@@ -829,16 +903,8 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
         return;
     }
 
-    data = NULL;
-    if (videodata && videodata->windowlist) {
-        for (i = 0; i < videodata->numwindows; ++i) {
-            if ((videodata->windowlist[i] != NULL) &&
-                (videodata->windowlist[i]->xwindow == xevent->xany.window)) {
-                data = videodata->windowlist[i];
-                break;
-            }
-        }
-    }
+    data = X11_FindWindow(_this, xevent->xany.window);
+
     if (!data) {
         /* The window for KeymapNotify, etc events is 0 */
         if (xevent->type == KeymapNotify) {
@@ -946,7 +1012,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             if (xevent->xcrossing.mode != NotifyGrab &&
                 xevent->xcrossing.mode != NotifyUngrab &&
                 xevent->xcrossing.detail != NotifyInferior) {
-                
+
                 /* In order for interaction with the window decorations and menu to work properly
                    on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
                 if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
@@ -1158,7 +1224,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                                         &xevent->xconfigure.x, &xevent->xconfigure.y,
                                         &ChildReturn);
             }
-                
+
             if (xevent->xconfigure.x != data->last_xconfigure.x ||
                 xevent->xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
@@ -1302,6 +1368,12 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
         }
         break;
 
+        /* Use XInput2 instead of the xevents API if possible, for:
+           - MotionNotify
+           - ButtonPress
+           - ButtonRelease
+           XInput2 has more precise information, e.g., to distinguish different input devices. */
+#if !SDL_VIDEO_DRIVER_X11_XINPUT2
     case MotionNotify:{
             SDL_Mouse *mouse = SDL_GetMouse();
             if(!mouse->relative_mode || mouse->relative_mode_warp) {
@@ -1314,58 +1386,15 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
         }
         break;
 
-    case ButtonPress:{
-            int xticks = 0, yticks = 0;
-#ifdef DEBUG_XEVENTS
-            printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
-#endif
-            if (X11_IsWheelEvent(display,xevent,&xticks, &yticks)) {
-                SDL_SendMouseWheel(data->window, 0, (float) -xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
-            } else {
-                SDL_bool ignore_click = SDL_FALSE;
-                int button = xevent->xbutton.button;
-                if(button == Button1) {
-                    if (ProcessHitTest(_this, data, xevent)) {
-                        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
-                        break;  /* don't pass this event on to app. */
-                    }
-                }
-                else if(button > 7) {
-                    /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
-                       => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
-                    button -= (8-SDL_BUTTON_X1);
-                }
-                if (data->last_focus_event_time) {
-                    const int X11_FOCUS_CLICK_TIMEOUT = 10;
-                    if (!SDL_TICKS_PASSED(SDL_GetTicks(), data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
-                        ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
-                    }
-                    data->last_focus_event_time = 0;
-                }
-                if (!ignore_click) {
-                    SDL_SendMouseButton(data->window, 0, SDL_PRESSED, button);
-                }
-            }
-            X11_UpdateUserTime(data, xevent->xbutton.time);
-        }
+    case ButtonPress:
+        X11_HandleButtonPress(_this, data, xevent->xbutton.button,
+                              xevent->xbutton.x, xevent->xbutton.y, xevent->xbutton.time);
         break;
 
-    case ButtonRelease:{
-            int button = xevent->xbutton.button;
-            /* The X server sends a Release event for each Press for wheels. Ignore them. */
-            int xticks = 0, yticks = 0;
-#ifdef DEBUG_XEVENTS
-            printf("window %p: ButtonRelease (X11 button = %d)\n", data, xevent->xbutton.button);
-#endif
-            if (!X11_IsWheelEvent(display, xevent, &xticks, &yticks)) {
-                if (button > 7) {
-                    /* see explanation at case ButtonPress */
-                    button -= (8-SDL_BUTTON_X1);
-                }
-                SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
-            }
-        }
+    case ButtonRelease:
+        X11_HandleButtonRelease(_this, data, xevent->xbutton.button);
         break;
+#endif /* !SDL_VIDEO_DRIVER_X11_XINPUT2 */
 
     case PropertyNotify:{
 #ifdef DEBUG_XEVENTS

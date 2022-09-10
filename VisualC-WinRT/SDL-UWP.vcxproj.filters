@@ -111,6 +111,9 @@
     <ClInclude Include="..\include\SDL_opengles2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL_pen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\SDL_pixels.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -523,6 +526,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\events\SDL_mouse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\events\SDL_pen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\events\SDL_quit.c">

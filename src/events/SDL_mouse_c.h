@@ -164,6 +164,9 @@ extern int SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x,
 /* Warp the mouse within the window, potentially overriding relative mode */
 extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode);
 
+/* Check if mouse position is within window or captured by window */
+extern SDL_bool SDL_IsMousePositionInWindow(SDL_Window * window, SDL_MouseID mouseID, int x, int y);
+
 /* Shutdown the mouse subsystem */
 extern void SDL_MouseQuit(void);
 

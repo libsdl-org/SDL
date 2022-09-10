@@ -270,6 +270,7 @@ SDL_X11_SYM(int,XIGrabTouchBegin,(Display *a,int b,Window c,int d,XIEventMask *e
 SDL_X11_SYM(int,XIUngrabTouchBegin, (Display *a,int b,Window c, int d,XIGrabModifiers *e),(a, b, c, d, e),return)
 SDL_X11_SYM(Status,XIQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
 SDL_X11_SYM(XIEventMask*,XIGetSelectedEvents,(Display *a,Window b,int *c),(a,b,c),return)
+SDL_X11_SYM(Status,XIGetProperty,(Display *a,int b,Atom c,long d,long e,Bool f, Atom g, Atom *h, int *i, unsigned long *j, unsigned long *k, unsigned char **l),(a,b,c,d,e,f,g,h,i,j,k,l),return);
 #endif
 
 /* XRandR support */

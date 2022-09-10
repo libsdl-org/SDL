@@ -105,6 +105,7 @@ HDRS = \
 	SDL_opengles2_gl2platform.h \
 	SDL_opengles2.h \
 	SDL_opengles2_khrplatform.h \
+	SDL_pen.h \
 	SDL_pixels.h \
 	SDL_platform.h \
 	SDL_power.h \

@@ -259,6 +259,7 @@
     <ClInclude Include="..\..\include\SDL_opengles2_gl2ext.h" />
     <ClInclude Include="..\..\include\SDL_opengles2_gl2platform.h" />
     <ClInclude Include="..\..\include\SDL_opengles2_khrplatform.h" />
+    <ClInclude Include="..\..\include\SDL_pen.h" />
     <ClInclude Include="..\..\include\SDL_pixels.h" />
     <ClInclude Include="..\..\include\SDL_platform.h" />
     <ClInclude Include="..\..\include\SDL_power.h" />
@@ -469,6 +470,7 @@
     <ClCompile Include="..\..\src\events\SDL_gesture.c" />
     <ClCompile Include="..\..\src\events\SDL_keyboard.c" />
     <ClCompile Include="..\..\src\events\SDL_mouse.c" />
+    <ClCompile Include="..\..\src\events\SDL_pen.c" />
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />

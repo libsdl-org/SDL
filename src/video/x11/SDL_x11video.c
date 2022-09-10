@@ -33,6 +33,7 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11framebuffer.h"
+#include "SDL_x11pen.h"
 #include "SDL_x11shape.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
@@ -470,6 +471,10 @@ X11_VideoInit(_THIS)
     X11_InitMouse(_this);
 
     X11_InitTouch(_this);
+
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
+    X11_InitPen(_this);
+#endif
 
     return 0;
 }

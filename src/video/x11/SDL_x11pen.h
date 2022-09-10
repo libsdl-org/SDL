@@ -20,21 +20,34 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_x11events_h_
-#define SDL_x11events_h_
+#ifndef SDL_x11pen_h_
+#define SDL_x11pen_h_
 
-#include "SDL_x11window.h"
+#if SDL_VIDEO_DRIVER_X11_XINPUT2
 
-extern void X11_PumpEvents(_THIS);
-extern int  X11_WaitEventTimeout(_THIS, int timeout);
-extern void X11_SendWakeupEvent(_THIS, SDL_Window *window);
-extern void X11_SuspendScreenSaver(_THIS);
-extern void X11_ReconcileKeyboardState(_THIS);
-extern void X11_HandleButtonPress(_THIS, SDL_WindowData *wdata, int button, const int x, const int y, const unsigned long time);
-extern void X11_HandleButtonRelease(_THIS, SDL_WindowData *wdata, int button);
-extern SDL_WindowData *X11_FindWindow(_THIS, Window window);
+#include "../../events/SDL_pen_c.h"
 
+/* Pressure-sensitive pen */
 
-#endif /* SDL_x11events_h_ */
+/* Forward definition for SDL_x11video.h */
+struct SDL_VideoData;
+
+/* Function definitions */
+
+/* Detect XINPUT2 devices that are pens / erasers, or update the list after hotplugging */
+extern void X11_InitPen(_THIS);
+
+/* Converts XINPUT2 valuators into pen axis information, including normalisation */
+extern void X11_PenAxesFromValuators(const SDL_Pen *pen,
+                                     const double *input_values, const unsigned char *mask, const int mask_len,
+                                     /* out-mode parameters: */
+                                     float axis_values[SDL_PEN_NUM_AXES]);
+
+/* Map X11 device ID to pen ID */
+extern int X11_PenIDFromDeviceID(int deviceid);
+
+#endif /* SDL_VIDEO_DRIVER_X11_XINPUT2 */
+
+#endif /* SDL_x11pen_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

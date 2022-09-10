@@ -28,6 +28,7 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylanddatamanager.h"
 #include "SDL_waylandkeyboard.h"
+#include "../../events/SDL_pen_c.h"
 
 enum SDL_WaylandAxisEvent
 {
@@ -50,18 +51,23 @@ struct SDL_WaylandTabletInput {
     struct SDL_WaylandTabletObjectListNode* tools;
     struct SDL_WaylandTabletObjectListNode* pads;
 
+    Uint32 id;
+    Uint32 num_pens; /* next pen ID is num_pens+1 */
+    struct SDL_WaylandCurrentPen {
+        SDL_Pen *builder; /* pen that is being defined or receiving updates, if any */
+        SDL_bool builder_guid_complete;  /* have complete/precise GUID information */
+        SDL_PenStatusInfo update_status; /* collects pen update information before sending event */
+        Uint16 buttons_pressed;
+        Uint16 buttons_released;
+        SDL_WindowData *update_window; /* NULL while no event is in progress, otherwise the affected window */
+    } current_pen;
+
     SDL_WindowData *tool_focus;
     uint32_t tool_prox_serial;
 
     /* Last motion location */
     wl_fixed_t sx_w;
     wl_fixed_t sy_w;
-
-    SDL_bool is_down;
-
-    SDL_bool btn_stylus;
-    SDL_bool btn_stylus2;
-    SDL_bool btn_stylus3;
 };
 
 typedef struct {
@@ -129,6 +135,11 @@ struct SDL_WaylandInput {
 
     SDL_WaylandKeyboardRepeat keyboard_repeat;
 
+    struct SDL_WaylandTabletInput* tablet;
+};
+
+struct SDL_WaylandTool {
+    SDL_PenID penid;
     struct SDL_WaylandTabletInput* tablet;
 };
 

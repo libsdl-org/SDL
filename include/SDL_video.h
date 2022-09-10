@@ -176,7 +176,9 @@ typedef enum
     SDL_WINDOWEVENT_TAKE_FOCUS,     /**< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow, or ignore) */
     SDL_WINDOWEVENT_HIT_TEST,       /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL. */
     SDL_WINDOWEVENT_ICCPROF_CHANGED,/**< The ICC profile of the window's display has changed. */
-    SDL_WINDOWEVENT_DISPLAY_CHANGED /**< Window has been moved to display data1. */
+    SDL_WINDOWEVENT_DISPLAY_CHANGED,/**< Window has been moved to display data1. */
+    SDL_WINDOWEVENT_PEN_ENTER,      /**< Window has gained focus of the pressure-sensitive pen with ID "data1" */
+    SDL_WINDOWEVENT_PEN_LEAVE       /**< Window has lost focus of the pressure-sensitive pen with ID "data1" */
 } SDL_WindowEventID;
 
 /**
