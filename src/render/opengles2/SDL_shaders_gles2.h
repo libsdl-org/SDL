@@ -63,7 +63,7 @@ typedef enum
 
 const Uint8 *GLES2_GetShader(GLES2_ShaderType type);
 const Uint8 *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type);
-GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint();
+GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint(void);
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 */
 
