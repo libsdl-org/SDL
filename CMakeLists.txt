@@ -1388,6 +1388,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       check_c_source_compiles("
           #include <linux/kd.h>
           #include <linux/keyboard.h>
+          #include <sys/ioctl.h>
           int main(int argc, char **argv) {
               struct kbentry kbe;
               kbe.kb_table = KG_CTRL;
