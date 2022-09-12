@@ -730,7 +730,6 @@ UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         case k_eWiiExtensionControllerType_Gamepad:
             name = "Nintendo Wii Remote with Classic Controller";
             break;
-            break;
         case k_eWiiExtensionControllerType_WiiUPro:
             name = "Nintendo Wii U Pro Controller";
             break;
