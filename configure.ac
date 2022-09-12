@@ -2728,6 +2728,7 @@ CheckInputKD()
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
       #include <linux/kd.h>
       #include <linux/keyboard.h>
+      #include <sys/ioctl.h>
     ]], [[
         struct kbentry kbe;
         kbe.kb_table = KG_CTRL;
