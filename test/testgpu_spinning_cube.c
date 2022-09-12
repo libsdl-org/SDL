@@ -237,23 +237,17 @@ static const VertexData vertex_data[] = {
     {  0.5, -0.5,  0.5, 1.0, 0.0, 1.0 } /* magenta */
 };
 
-/* !!! FIXME: these shaders need to change. This is just the GLES2 shaders right now. */
 static const char* shader_vert_src =
-" attribute vec4 av4position; "
-" attribute vec3 av3color; "
-" uniform mat4 mvp; "
-" varying vec3 vv3color; "
-" void main() { "
-"    vv3color = av3color; "
-"    gl_Position = mvp * av4position; "
-" } ";
-
-static const char* shader_frag_src =
-" precision lowp float; "
-" varying vec3 vv3color; "
-" void main() { "
-"    gl_FragColor = vec4(vv3color, 1.0); "
-" } ";
+    "struct VertexInputs { float4 position @attribute(0); float3 color @attribute(1); };"
+    "struct VertexOutputs { float4 position @position; float4 color; };"
+    "struct VertexUniforms { float4x4 mvp; };"
+    "function VertexOutputs vertex_main(VertexInputs inputs @inputs, VertexUniforms uniforms @buffer(0)) @vertex {"
+        "return VertexOutputs(mvp * inputs.position, float4(inputs.color, 1.0));"
+    "}"
+    "struct FragmentOutputs { float4 color @color; }"
+    "function FragmentOutputs fragment_main(VertexOutputs inputs @inputs) @fragment {"
+        "return FragmentOutputs(inputs.color);"
+    "}";
 
 static void
 Render(SDL_Window *window, const int windownum)
@@ -402,8 +396,8 @@ init_render_state(void)
     gpu_device = SDL_GpuCreateDevice("The GPU device", NULL);
     CHECK_CREATE(gpu_device, "GPU device");
 
-    vertex_shader = load_shader("Spinning cube vertex shader", shader_vert_src, "vertex");
-    fragment_shader = load_shader("Spinning cube fragment shader", shader_frag_src, "fragment");
+    vertex_shader = load_shader("Spinning cube vertex shader", shader_vert_src, "vertex_main");
+    fragment_shader = load_shader("Spinning cube fragment shader", shader_frag_src, "fragment_main");
 
     /* We just need to upload the static data once. */
     render_state.gpubuf_static = SDL_GpuCreateAndInitBuffer("Static vertex data GPU buffer", gpu_device, sizeof (vertex_data), vertex_data);
