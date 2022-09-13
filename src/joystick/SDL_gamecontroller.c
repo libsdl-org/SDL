@@ -634,7 +634,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 break;
             case SDL_CONTROLLER_TYPE_PS5:
                 /* PS5 controllers have a microphone button and an additional touchpad button */
-                SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16,", sizeof(mapping_string));
                 break;
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
