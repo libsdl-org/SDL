@@ -1309,9 +1309,9 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 cy = (rect.top + rect.bottom) / 2;
 
                 /* Make an absurdly small clip rect */
-                rect.left = cx - 1;
+                rect.left = cx;
                 rect.right = cx + 1;
-                rect.top = cy - 1;
+                rect.top = cy;
                 rect.bottom = cy + 1;
 
                 if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
