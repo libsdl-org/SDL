@@ -2109,8 +2109,9 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
-    int old_w = window->w, old_h = window->h;
-    float old_scale = data->scale_factor;
+    const int old_w = window->w, old_h = window->h;
+    const int old_drawable_width = data->drawable_width;
+    const int old_drawable_height = data->drawable_height;
 
     /* Update the window geometry. */
     window->w = width;
@@ -2118,7 +2119,9 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
     data->scale_factor = scale;
     ConfigureWindowGeometry(window);
 
-    if (data->needs_resize_event || old_w != width || old_h != height || !FloatEqual(data->scale_factor, old_scale)) {
+    if (data->needs_resize_event ||
+        old_w != width || old_h != height ||
+        old_drawable_width != data->drawable_width || old_drawable_height != data->drawable_height) {
         /* We may have already updated window w/h (or only adjusted scale factor),
          * so we must override the deduplication logic in the video core */
         window->w = 0;
