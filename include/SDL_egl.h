@@ -192,6 +192,20 @@ typedef int64_t                 khronos_int64_t;
 typedef uint64_t                khronos_uint64_t;
 #define KHRONOS_SUPPORT_INT64   1
 #define KHRONOS_SUPPORT_FLOAT   1
+/*
+ * To support platform where unsigned long cannot be used interchangeably with
+ * inptr_t (e.g. CHERI-extended ISAs), we can use the stdint.h intptr_t.
+ * Ideally, we could just use (u)intptr_t everywhere, but this could result in
+ * ABI breakage if khronos_uintptr_t is changed from unsigned long to
+ * unsigned long long or similar (this results in different C++ name mangling).
+ * To avoid changes for existing platforms, we restrict usage of intptr_t to
+ * platforms where the size of a pointer is larger than the size of long.
+ */
+#if defined(__SIZEOF_LONG__) && defined(__SIZEOF_POINTER__)
+#if __SIZEOF_POINTER__ > __SIZEOF_LONG__
+#define KHRONOS_USE_INTPTR_T
+#endif
+#endif
 
 #elif defined(__VMS ) || defined(__sgi)
 
@@ -274,14 +288,21 @@ typedef unsigned short int     khronos_uint16_t;
  * pointers are 64 bits, but 'long' is still 32 bits. Win64 appears
  * to be the only LLP64 architecture in current use.
  */
-#ifdef _WIN64
+#ifdef KHRONOS_USE_INTPTR_T
+typedef intptr_t               khronos_intptr_t;
+typedef uintptr_t              khronos_uintptr_t;
+#elif defined(_WIN64)
 typedef signed   long long int khronos_intptr_t;
 typedef unsigned long long int khronos_uintptr_t;
-typedef signed   long long int khronos_ssize_t;
-typedef unsigned long long int khronos_usize_t;
 #else
 typedef signed   long  int     khronos_intptr_t;
 typedef unsigned long  int     khronos_uintptr_t;
+#endif
+
+#if defined(_WIN64)
+typedef signed   long long int khronos_ssize_t;
+typedef unsigned long long int khronos_usize_t;
+#else
 typedef signed   long  int     khronos_ssize_t;
 typedef unsigned long  int     khronos_usize_t;
 #endif
@@ -516,7 +537,7 @@ extern "C" {
 ** used to make the header, and the header can be found at
 **   http://www.khronos.org/registry/egl
 **
-** Khronos $Git commit SHA1: b35e89ca9a $ on $Git commit date: 2021-09-01 09:34:00 +0530 $
+** Khronos $Git commit SHA1: 6fb1daea15 $ on $Git commit date: 2022-05-25 09:41:13 -0600 $
 */
 
 /*#include <EGL/eglplatform.h>*/
@@ -525,7 +546,7 @@ extern "C" {
 #define EGL_EGL_PROTOTYPES 1
 #endif
 
-/* Generated on date 20210901 */
+/* Generated on date 20220525 */
 
 /* Generated C header for:
  * API: egl
@@ -860,12 +881,12 @@ extern "C" {
 ** used to make the header, and the header can be found at
 **   http://www.khronos.org/registry/egl
 **
-** Khronos $Git commit SHA1: b35e89ca9a $ on $Git commit date: 2021-09-01 09:34:00 +0530 $
+** Khronos $Git commit SHA1: 6fb1daea15 $ on $Git commit date: 2022-05-25 09:41:13 -0600 $
 */
 
 /*#include <EGL/eglplatform.h>*/
 
-#define EGL_EGLEXT_VERSION 20210901
+#define EGL_EGLEXT_VERSION 20220525
 
 /* Generated C header for:
  * API: egl
@@ -1569,6 +1590,10 @@ EGLAPI EGLBoolean EGLAPIENTRY eglQueryDeviceBinaryEXT (EGLDeviceEXT device, EGLi
 #define EGL_RENDERER_EXT                  0x335F
 #endif /* EGL_EXT_device_query_name */
 
+#ifndef EGL_EXT_explicit_device
+#define EGL_EXT_explicit_device 1
+#endif /* EGL_EXT_explicit_device */
+
 #ifndef EGL_EXT_gl_colorspace_bt2020_linear
 #define EGL_EXT_gl_colorspace_bt2020_linear 1
 #define EGL_GL_COLORSPACE_BT2020_LINEAR_EXT 0x333F
@@ -1793,6 +1818,31 @@ EGLAPI EGLBoolean EGLAPIENTRY eglStreamConsumerOutputEXT (EGLDisplay dpy, EGLStr
 #define EGL_SMPTE2086_MIN_LUMINANCE_EXT   0x334A
 #define EGL_METADATA_SCALING_EXT          50000
 #endif /* EGL_EXT_surface_SMPTE2086_metadata */
+
+#ifndef EGL_EXT_surface_compression
+#define EGL_EXT_surface_compression 1
+#define EGL_SURFACE_COMPRESSION_EXT       0x34B0
+#define EGL_SURFACE_COMPRESSION_PLANE1_EXT 0x328E
+#define EGL_SURFACE_COMPRESSION_PLANE2_EXT 0x328F
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_NONE_EXT 0x34B1
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_DEFAULT_EXT 0x34B2
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_1BPC_EXT 0x34B4
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_2BPC_EXT 0x34B5
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_3BPC_EXT 0x34B6
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_4BPC_EXT 0x34B7
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_5BPC_EXT 0x34B8
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_6BPC_EXT 0x34B9
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_7BPC_EXT 0x34BA
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_8BPC_EXT 0x34BB
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_9BPC_EXT 0x34BC
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_10BPC_EXT 0x34BD
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_11BPC_EXT 0x34BE
+#define EGL_SURFACE_COMPRESSION_FIXED_RATE_12BPC_EXT 0x34BF
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYSUPPORTEDCOMPRESSIONRATESEXTPROC) (EGLDisplay dpy, EGLConfig config, const EGLAttrib *attrib_list, EGLint *rates, EGLint rate_size, EGLint *num_rates);
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglQuerySupportedCompressionRatesEXT (EGLDisplay dpy, EGLConfig config, const EGLAttrib *attrib_list, EGLint *rates, EGLint rate_size, EGLint *num_rates);
+#endif
+#endif /* EGL_EXT_surface_compression */
 
 #ifndef EGL_EXT_swap_buffers_with_damage
 #define EGL_EXT_swap_buffers_with_damage 1
@@ -2028,12 +2078,12 @@ EGLAPI EGLBoolean EGLAPIENTRY eglPostSubBufferNV (EGLDisplay dpy, EGLSurface sur
 #define EGL_STREAM_IMAGE_ADD_NV           0x3374
 #define EGL_STREAM_IMAGE_REMOVE_NV        0x3375
 #define EGL_STREAM_IMAGE_AVAILABLE_NV     0x3376
-typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMIMAGECONSUMERCONNECTNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLint num_modifiers, EGLuint64KHR *modifiers, EGLAttrib *attrib_list);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMIMAGECONSUMERCONNECTNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLint num_modifiers, const EGLuint64KHR *modifiers, const EGLAttrib *attrib_list);
 typedef EGLint (EGLAPIENTRYP PFNEGLQUERYSTREAMCONSUMEREVENTNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLTime timeout, EGLenum *event, EGLAttrib *aux);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMACQUIREIMAGENVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLImage *pImage, EGLSync sync);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMRELEASEIMAGENVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLImage image, EGLSync sync);
 #ifdef EGL_EGLEXT_PROTOTYPES
-EGLAPI EGLBoolean EGLAPIENTRY eglStreamImageConsumerConnectNV (EGLDisplay dpy, EGLStreamKHR stream, EGLint num_modifiers, EGLuint64KHR *modifiers, EGLAttrib *attrib_list);
+EGLAPI EGLBoolean EGLAPIENTRY eglStreamImageConsumerConnectNV (EGLDisplay dpy, EGLStreamKHR stream, EGLint num_modifiers, const EGLuint64KHR *modifiers, const EGLAttrib *attrib_list);
 EGLAPI EGLint EGLAPIENTRY eglQueryStreamConsumerEventNV (EGLDisplay dpy, EGLStreamKHR stream, EGLTime timeout, EGLenum *event, EGLAttrib *aux);
 EGLAPI EGLBoolean EGLAPIENTRY eglStreamAcquireImageNV (EGLDisplay dpy, EGLStreamKHR stream, EGLImage *pImage, EGLSync sync);
 EGLAPI EGLBoolean EGLAPIENTRY eglStreamReleaseImageNV (EGLDisplay dpy, EGLStreamKHR stream, EGLImage image, EGLSync sync);
