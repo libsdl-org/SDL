@@ -495,30 +495,34 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
 {
     GLuint id;
     GLint compileSuccessful = GL_FALSE;
-    int num_src = 0;
-    const GLchar *shader_src_list[4] = { 0 };
-    const GLchar *shader_body = (const GLchar *)GLES2_GetShader(type);
+    int attempt, num_src;
+    const GLchar *shader_src_list[2];
+    const GLchar *shader_body = GLES2_GetShader(type);
 
     if (!shader_body) {
         SDL_SetError("No shader body src");
         return 0;
     }
 
-    if (shader_type == GL_FRAGMENT_SHADER) {
-        if (data->texcoord_precision_hint != GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION) {
-            shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderInclude(GLES2_SHADER_FRAGMENT_INCLUDE_DEFAULT);
+    for (attempt = 0; attempt < 2 && !compileSuccessful; ++attempt) {
+        num_src = 0;
+        if (shader_type == GL_FRAGMENT_SHADER) {
+            if (attempt == 0) {
+                shader_src_list[num_src++] = GLES2_GetShaderInclude(data->texcoord_precision_hint);
+            } else {
+                shader_src_list[num_src++] = GLES2_GetShaderInclude(GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION);
+            }
         }
-        shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderInclude(data->texcoord_precision_hint);
+        shader_src_list[num_src++] = shader_body;
+
+        SDL_assert(num_src <= SDL_arraysize(shader_src_list));
+
+        /* Compile */
+        id = data->glCreateShader(shader_type);
+        data->glShaderSource(id, num_src, shader_src_list, NULL);
+        data->glCompileShader(id);
+        data->glGetShaderiv(id, GL_COMPILE_STATUS, &compileSuccessful);
     }
-    shader_src_list[num_src++] = shader_body;
-
-    SDL_assert(num_src < SDL_arraysize(shader_src_list));
-
-    /* Compile */
-    id = data->glCreateShader(shader_type);
-    data->glShaderSource(id, num_src, shader_src_list, NULL);
-    data->glCompileShader(id);
-    data->glGetShaderiv(id, GL_COMPILE_STATUS, &compileSuccessful);
 
     if (!compileSuccessful) {
         SDL_bool isstack = SDL_FALSE;
@@ -546,6 +550,27 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
     data->shader_id_cache[(Uint32)type] = id;
 
     return id;
+}
+
+static int GLES2_CacheShaders(GLES2_RenderData * data)
+{
+    int shader;
+
+    data->texcoord_precision_hint = GLES2_GetTexCoordPrecisionEnumFromHint();
+
+    for (shader = 0; shader < GLES2_SHADER_COUNT; ++shader) {
+        GLenum shader_type;
+
+        if (shader == GLES2_SHADER_VERTEX_DEFAULT) {
+            shader_type = GL_VERTEX_SHADER;
+        } else {
+            shader_type = GL_FRAGMENT_SHADER;
+        }
+        if (!GLES2_CacheShader(data, (GLES2_ShaderType) shader, shader_type)) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 static int
@@ -2084,6 +2109,13 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         goto error;
     }
 
+    if (GLES2_CacheShaders(data) < 0) {
+        SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
+        goto error;
+    }
+
 #if __WINRT__
     /* DLudwig, 2013-11-29: ANGLE for WinRT doesn't seem to work unless VSync
      * is turned on.  Not doing so will freeze the screen's contents to that
@@ -2106,8 +2138,6 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         (value & SDL_GL_CONTEXT_DEBUG_FLAG)) {
         data->debug_enabled = SDL_TRUE;
     }
-
-    data->texcoord_precision_hint = GLES2_GetTexCoordPrecisionEnumFromHint();
 
     value = 0;
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);

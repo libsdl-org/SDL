@@ -28,7 +28,6 @@
 typedef enum
 {
     GLES2_SHADER_FRAGMENT_INCLUDE_NONE = 0,
-    GLES2_SHADER_FRAGMENT_INCLUDE_DEFAULT,
     GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION,
     GLES2_SHADER_FRAGMENT_INCLUDE_MEDIUM_TEXCOORD_PRECISION,
     GLES2_SHADER_FRAGMENT_INCLUDE_HIGH_TEXCOORD_PRECISION,
@@ -61,8 +60,8 @@ typedef enum
     GLES2_SHADER_COUNT
 } GLES2_ShaderType;
 
-const Uint8 *GLES2_GetShader(GLES2_ShaderType type);
-const Uint8 *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type);
+const char *GLES2_GetShader(GLES2_ShaderType type);
+const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type);
 GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint(void);
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 */
