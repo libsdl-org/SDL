@@ -68,6 +68,7 @@ typedef struct {
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
     struct wl_data_device_manager *data_device_manager;
+    struct zwp_primary_selection_device_manager_v1 *primary_selection_device_manager;
     struct zxdg_decoration_manager_v1 *decoration_manager;
     struct zwp_keyboard_shortcuts_inhibit_manager_v1 *key_inhibitor_manager;
     struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager;

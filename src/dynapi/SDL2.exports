@@ -860,3 +860,6 @@
 ++'_SDL_crc16'.'SDL2.dll'.'SDL_crc16'
 ++'_SDL_GetWindowSizeInPixels'.'SDL2.dll'.'SDL_GetWindowSizeInPixels'
 ++'_SDL_GetJoystickGUIDInfo'.'SDL2.dll'.'SDL_GetJoystickGUIDInfo'
+++'_SDL_SetPrimarySelectionText'.'SDL2.dll'.'SDL_SetPrimarySelectionText'
+++'_SDL_GetPrimarySelectionText'.'SDL2.dll'.'SDL_GetPrimarySelectionText'
+++'_SDL_HasPrimarySelectionText'.'SDL2.dll'.'SDL_HasPrimarySelectionText'

@@ -886,3 +886,6 @@
 #define SDL_crc16 SDL_crc16_REAL
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
 #define SDL_GetJoystickGUIDInfo SDL_GetJoystickGUIDInfo_REAL
+#define SDL_SetPrimarySelectionText SDL_SetPrimarySelectionText_REAL
+#define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
+#define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL

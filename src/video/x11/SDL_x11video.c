@@ -301,6 +301,9 @@ X11_CreateDevice(void)
     device->SetClipboardText = X11_SetClipboardText;
     device->GetClipboardText = X11_GetClipboardText;
     device->HasClipboardText = X11_HasClipboardText;
+    device->SetPrimarySelectionText = X11_SetPrimarySelectionText;
+    device->GetPrimarySelectionText = X11_GetPrimarySelectionText;
+    device->HasPrimarySelectionText = X11_HasPrimarySelectionText;
     device->StartTextInput = X11_StartTextInput;
     device->StopTextInput = X11_StopTextInput;
     device->SetTextInputRect = X11_SetTextInputRect;

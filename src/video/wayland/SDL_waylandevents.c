@@ -42,6 +42,7 @@
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 #include "tablet-unstable-v2-client-protocol.h"
+#include "primary-selection-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -587,6 +588,7 @@ pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
         }
 
         Wayland_data_device_set_serial(input->data_device, serial);
+        Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
 
         SDL_SendMouseButton(window->sdlwindow, 0,
                             state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
@@ -1106,6 +1108,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         if (has_text && !(SDL_GetModState() & KMOD_CTRL)) {
             Wayland_data_device_set_serial(input->data_device, serial);
+            Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
             if (!handled_by_ime) {
                 SDL_SendKeyboardText(text);
             }
@@ -1319,6 +1322,25 @@ static const struct wl_data_source_listener data_source_listener = {
     data_source_handle_action,             // Version 3
 };
 
+static void
+primary_selection_source_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1,
+		                      const char *mime_type, int32_t fd)
+{
+    Wayland_primary_selection_source_send((SDL_WaylandPrimarySelectionSource *)data,
+                                          mime_type, fd);
+}
+
+static void
+primary_selection_source_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1)
+{
+    Wayland_primary_selection_source_destroy(data);
+}
+
+static const struct zwp_primary_selection_source_v1_listener primary_selection_source_listener = {
+    primary_selection_source_send,
+    primary_selection_source_cancelled,
+};
+
 SDL_WaylandDataSource*
 Wayland_data_source_create(_THIS)
 {
@@ -1355,6 +1377,41 @@ Wayland_data_source_create(_THIS)
     return data_source;
 }
 
+SDL_WaylandPrimarySelectionSource*
+Wayland_primary_selection_source_create(_THIS)
+{
+    SDL_WaylandPrimarySelectionSource *primary_selection_source = NULL;
+    SDL_VideoData *driver_data = NULL;
+    struct zwp_primary_selection_source_v1 *id = NULL;
+
+    if (_this == NULL || _this->driverdata == NULL) {
+        SDL_SetError("Video driver uninitialized");
+    } else {
+        driver_data = _this->driverdata;
+
+        if (driver_data->primary_selection_device_manager != NULL) {
+            id = zwp_primary_selection_device_manager_v1_create_source(
+                     driver_data->primary_selection_device_manager);
+        }
+
+        if (id == NULL) {
+            SDL_SetError("Wayland unable to create primary selection source");
+        } else {
+            primary_selection_source = SDL_calloc(1, sizeof *primary_selection_source);
+            if (primary_selection_source == NULL) {
+                SDL_OutOfMemory();
+                zwp_primary_selection_source_v1_destroy(id);
+            } else {
+                WAYLAND_wl_list_init(&(primary_selection_source->mimes));
+                primary_selection_source->source = id;
+                zwp_primary_selection_source_v1_add_listener(id, &primary_selection_source_listener,
+                        primary_selection_source);
+            }
+        }
+    }
+    return primary_selection_source;
+}
+
 static void
 data_offer_handle_offer(void *data, struct wl_data_offer *wl_data_offer,
                         const char *mime_type)
@@ -1379,6 +1436,18 @@ static const struct wl_data_offer_listener data_offer_listener = {
     data_offer_handle_offer,
     data_offer_handle_source_actions, // Version 3
     data_offer_handle_actions,        // Version 3
+};
+
+static void
+primary_selection_offer_handle_offer(void *data, struct zwp_primary_selection_offer_v1 *zwp_primary_selection_offer_v1,
+                                     const char *mime_type)
+{
+    SDL_WaylandPrimarySelectionOffer *offer = data;
+    Wayland_primary_selection_offer_add_mime(offer, mime_type);
+}
+
+static const struct zwp_primary_selection_offer_v1_listener primary_selection_offer_listener = {
+    primary_selection_offer_handle_offer,
 };
 
 static void
@@ -1621,6 +1690,48 @@ static const struct wl_data_device_listener data_device_listener = {
 };
 
 static void
+primary_selection_device_handle_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
+                                      struct zwp_primary_selection_offer_v1 *id)
+{
+    SDL_WaylandPrimarySelectionOffer *primary_selection_offer = NULL;
+
+    primary_selection_offer = SDL_calloc(1, sizeof *primary_selection_offer);
+    if (primary_selection_offer == NULL) {
+        SDL_OutOfMemory();
+    } else {
+        primary_selection_offer->offer = id;
+        primary_selection_offer->primary_selection_device = data;
+        WAYLAND_wl_list_init(&(primary_selection_offer->mimes));
+        zwp_primary_selection_offer_v1_set_user_data(id, primary_selection_offer);
+        zwp_primary_selection_offer_v1_add_listener(id, &primary_selection_offer_listener, primary_selection_offer);
+    }
+}
+
+static void
+primary_selection_device_handle_selection(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
+                                          struct zwp_primary_selection_offer_v1 *id)
+{
+    SDL_WaylandPrimarySelectionDevice *primary_selection_device = data;
+    SDL_WaylandPrimarySelectionOffer *offer = NULL;
+
+    if (id != NULL) {
+        offer = zwp_primary_selection_offer_v1_get_user_data(id);
+    }
+
+    if (primary_selection_device->selection_offer != offer) {
+        Wayland_primary_selection_offer_destroy(primary_selection_device->selection_offer);
+        primary_selection_device->selection_offer = offer;
+    }
+
+    SDL_SendClipboardUpdate();
+}
+
+static const struct zwp_primary_selection_device_v1_listener primary_selection_device_listener = {
+    primary_selection_device_handle_offer,
+    primary_selection_device_handle_selection
+};
+
+static void
 text_input_enter(void *data,
                  struct zwp_text_input_v3 *zwp_text_input_v3,
                  struct wl_surface *surface)
@@ -1667,9 +1778,9 @@ text_input_preedit_string(void *data,
             do {
                 const int sz = (int)SDL_utf8strlcpy(buf, text+i, sizeof(buf));
                 const int chars = (int)SDL_utf8strlen(buf);
-    
+
                 SDL_SendEditingText(buf, cursor, chars);
-    
+
                 i += sz;
                 cursor += chars;
             } while (i < text_bytes);
@@ -1754,6 +1865,32 @@ Wayland_create_data_device(SDL_VideoData *d)
 }
 
 static void
+Wayland_create_primary_selection_device(SDL_VideoData *d)
+{
+    SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
+
+    primary_selection_device = SDL_calloc(1, sizeof *primary_selection_device);
+    if (primary_selection_device == NULL) {
+        return;
+    }
+
+    primary_selection_device->primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(
+        d->primary_selection_device_manager, d->input->seat
+    );
+    primary_selection_device->video_data = d;
+
+    if (primary_selection_device->primary_selection_device == NULL) {
+        SDL_free(primary_selection_device);
+    } else {
+        zwp_primary_selection_device_v1_set_user_data(primary_selection_device->primary_selection_device,
+                                                      primary_selection_device);
+        zwp_primary_selection_device_v1_add_listener(primary_selection_device->primary_selection_device,
+                                                     &primary_selection_device_listener, primary_selection_device);
+        d->input->primary_selection_device = primary_selection_device;
+    }
+}
+
+static void
 Wayland_create_text_input(SDL_VideoData *d)
 {
     SDL_WaylandTextInput *text_input = NULL;
@@ -1784,6 +1921,16 @@ Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
 
     if (d->input != NULL) {
         Wayland_create_data_device(d);
+    }
+}
+
+void
+Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
+{
+    d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_manager_v1_interface, 1);
+
+    if (d->input != NULL) {
+        Wayland_create_primary_selection_device(d);
     }
 }
 
@@ -2172,6 +2319,9 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
 
     if (d->data_device_manager != NULL) {
         Wayland_create_data_device(d);
+    }
+    if (d->primary_selection_device_manager != NULL) {
+        Wayland_create_primary_selection_device(d);
     }
     if (d->text_input_manager != NULL) {
         Wayland_create_text_input(d);
