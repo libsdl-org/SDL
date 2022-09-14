@@ -89,7 +89,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.25.0.
+ * \since This function is available since SDL 2.26.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_HasPrimarySelectionText
@@ -97,17 +97,18 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
 extern DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
 
 /**
- * Get UTF-8 text from the primary selection, which must be freed with SDL_free().
+ * Get UTF-8 text from the primary selection, which must be freed with
+ * SDL_free().
  *
  * This functions returns empty string if there was not enough memory left for
  * a copy of the primary selection's content.
  *
- * \returns the primary selection text on success or an empty string on failure;
- *          call SDL_GetError() for more information. Caller must call SDL_free()
- *          on the returned pointer when done with it (even if there was an
- *          error).
+ * \returns the primary selection text on success or an empty string on
+ *          failure; call SDL_GetError() for more information. Caller must
+ *          call SDL_free() on the returned pointer when done with it (even if
+ *          there was an error).
  *
- * \since This function is available since SDL 2.25.0.
+ * \since This function is available since SDL 2.26.0.
  *
  * \sa SDL_HasPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
@@ -118,10 +119,10 @@ extern DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  * Query whether the primary selection exists and contains a non-empty text
  * string.
  *
- * \returns SDL_TRUE if the primary selection has text, or SDL_FALSE if it does
- *          not.
+ * \returns SDL_TRUE if the primary selection has text, or SDL_FALSE if it
+ *          does not.
  *
- * \since This function is available since SDL 2.25.0.
+ * \since This function is available since SDL 2.26.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
