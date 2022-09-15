@@ -519,6 +519,8 @@ extern void SDL_ToggleDragAndDropSupport(void);
 
 extern int SDL_GetPointDisplayIndex(const SDL_Point * point);
 
+extern int SDL_GL_SwapWindowWithResult(SDL_Window * window);
+
 #endif /* SDL_sysvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

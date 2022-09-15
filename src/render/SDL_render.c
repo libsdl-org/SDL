@@ -24,6 +24,7 @@
 
 #include "SDL_hints.h"
 #include "SDL_render.h"
+#include "SDL_timer.h"
 #include "SDL_sysrender.h"
 #include "software/SDL_render_sw_c.h"
 #include "../video/SDL_pixels_c.h"
@@ -1013,6 +1014,14 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         }
     }
 
+    if ((flags & SDL_RENDERER_PRESENTVSYNC) != 0) {
+        renderer->wanted_vsync = SDL_TRUE;
+
+        if ((renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) == 0) {
+            renderer->simulate_vsync = SDL_TRUE;
+            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+        }
+    }
 
     VerifyDrawQueueFunctions(renderer);
 
@@ -4260,9 +4269,38 @@ SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                                       format, pixels, pitch);
 }
 
+static void
+SDL_RenderSimulateVSync(SDL_Renderer * renderer)
+{
+    Uint32 now, elapsed;
+    const Uint32 interval = (1000 / 60); /* FIXME: What FPS? */
+
+    if (!interval) {
+        /* We can't do sub-ms delay, so just return here */
+        return;
+    }
+
+    now = SDL_GetTicks();
+    elapsed = (now - renderer->last_present);
+    if (elapsed < interval) {
+        Uint32 duration = (interval - elapsed);
+        SDL_Delay(duration);
+        now = SDL_GetTicks();
+    }
+
+    if (renderer->last_present) {
+        elapsed = (now - renderer->last_present);
+        renderer->last_present += (elapsed / interval) * interval;
+    } else {
+        renderer->last_present = now;
+    }
+}
+
 void
 SDL_RenderPresent(SDL_Renderer * renderer)
 {
+    SDL_bool presented = SDL_TRUE;
+
     CHECK_RENDERER_MAGIC(renderer, );
 
     FlushRenderCommands(renderer);  /* time to send everything to the GPU! */
@@ -4270,11 +4308,17 @@ SDL_RenderPresent(SDL_Renderer * renderer)
 #if DONT_DRAW_WHILE_HIDDEN
     /* Don't present while we're hidden */
     if (renderer->hidden) {
-        return;
-    }
+        presented = SDL_FALSE;
+    } else
 #endif
+    if (renderer->RenderPresent(renderer) < 0) {
+        presented = SDL_FALSE;
+    }
 
-    renderer->RenderPresent(renderer);
+    if (renderer->simulate_vsync || 
+        (!presented && renderer->wanted_vsync)) {
+        SDL_RenderSimulateVSync(renderer);
+    }
 }
 
 void
@@ -4530,10 +4574,15 @@ SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
         return SDL_Unsupported();
     }
 
-    if (renderer->SetVSync) {
-        return renderer->SetVSync(renderer, vsync);
+    renderer->wanted_vsync = vsync ? SDL_TRUE : SDL_FALSE;
+
+    if (!renderer->SetVSync ||
+        renderer->SetVSync(renderer, vsync) < 0) {
+        renderer->simulate_vsync = vsync ? SDL_TRUE : SDL_FALSE;
+    } else {
+        renderer->simulate_vsync = SDL_FALSE;
     }
-    return SDL_Unsupported();
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

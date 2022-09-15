@@ -2931,7 +2931,7 @@ done:
     return status;
 }
 
-static void
+static int
 D3D12_RenderPresent(SDL_Renderer * renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *) renderer->driverdata;
@@ -2981,6 +2981,7 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         }
+        return -1;
     } else {
         /* Wait for the GPU and move to the next frame */
         result = D3D_CALL(data->commandQueue, Signal, data->fence, data->fenceValue);
@@ -3012,6 +3013,7 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
         D3D12_XBOX_StartFrame(data->d3dDevice, &data->frameToken);
 #endif
+        return 0;
     }
 }
 

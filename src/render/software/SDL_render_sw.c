@@ -983,14 +983,15 @@ SW_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                              format, pixels, pitch);
 }
 
-static void
+static int
 SW_RenderPresent(SDL_Renderer * renderer)
 {
     SDL_Window *window = renderer->window;
 
-    if (window) {
-        SDL_UpdateWindowSurface(window);
+    if (!window) {
+        return -1;
     }
+    return SDL_UpdateWindowSurface(window);
 }
 
 static void

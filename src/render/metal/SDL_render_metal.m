@@ -1497,7 +1497,7 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }}
 
-static void
+static int
 METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
@@ -1528,6 +1528,11 @@ METAL_RenderPresent(SDL_Renderer * renderer)
     data.mtlcmdencoder = nil;
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
+
+    if (!ready) {
+        return -1;
+    }
+    return 0;
 }}
 
 static void

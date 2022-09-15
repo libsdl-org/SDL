@@ -1250,12 +1250,13 @@ PSP_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return SDL_Unsupported();
 }
 
-static void
+static int
 PSP_RenderPresent(SDL_Renderer * renderer)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
-    if(!data->displayListAvail)
-        return;
+    if (!data->displayListAvail) {
+        return -1;
+    }
 
     data->displayListAvail = SDL_FALSE;
     sceGuFinish();
@@ -1268,6 +1269,7 @@ PSP_RenderPresent(SDL_Renderer * renderer)
     data->backbuffer = data->frontbuffer;
     data->frontbuffer = vabsptr(sceGuSwapBuffers());
 
+    return 0;
 }
 
 static void
