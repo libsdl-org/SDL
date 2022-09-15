@@ -493,7 +493,7 @@ GLES2_CacheProgram(GLES2_RenderData *data, GLuint vertex, GLuint fragment)
 static GLuint
 GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_type)
 {
-    GLuint id;
+    GLuint id = 0;
     GLint compileSuccessful = GL_FALSE;
     int attempt, num_src;
     const GLchar *shader_src_list[2];
