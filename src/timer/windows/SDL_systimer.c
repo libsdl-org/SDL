@@ -146,18 +146,32 @@ SDL_GetPerformanceFrequency(void)
 void
 SDL_Delay(Uint32 ms)
 {
-    /* Sleep() is not publicly available to apps in early versions of WinRT.
-     *
-     * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
-     * Windows Phone 8.1.
-     *
-     * Use the compiler version to determine availability.
-     *
-     * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
-     * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
-     *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
-     *    apps and libraries.
-     */
+    /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803.
+    * 
+    * Sleep() is not publicly available to apps in early versions of WinRT.
+    *
+    * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
+    * Windows Phone 8.1.
+    *
+    * Use the compiler version to determine availability.
+    *
+    * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
+    * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
+    *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
+    *    apps and libraries.
+    */
+#ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 
+    HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+    if (timer) {
+        LARGE_INTEGER due_time;
+        due_time.QuadPart = -(LONGLONG)(ms * 10000);
+        if (SetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
+            WaitForSingleObject(timer, INFINITE);
+        }
+        CloseHandle(timer);
+        return;
+    }
+#endif
 #if defined(__WINRT__) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
     static HANDLE mutex = 0;
     if (!mutex) {
