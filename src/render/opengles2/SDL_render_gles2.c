@@ -521,6 +521,22 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
 
         SDL_assert(num_src <= SDL_arraysize(shader_src_list));
 
+#ifdef DEBUG_PRINT_SHADERS
+        {
+            int i;
+            char *message = NULL;
+
+            SDL_asprintf(&message, "Compiling shader:\n");
+            for (i = 0; i < num_src; ++i) {
+                char *last_message = message;
+                SDL_asprintf(&message, "%s%s", last_message, shader_src_list[i]);
+                SDL_free(last_message);
+            }
+            SDL_Log("%s\n", message);
+            SDL_free(message);
+        }
+#endif
+
         /* Compile */
         id = data->glCreateShader(shader_type);
         data->glShaderSource(id, num_src, shader_src_list, NULL);
@@ -541,10 +557,10 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
             }
         }
         if (info) {
-            SDL_SetError("Failed to load the shader: %s", info);
+            SDL_SetError("Failed to load the shader %d: %s", type, info);
             SDL_small_free(info, isstack);
         } else {
-            SDL_SetError("Failed to load the shader");
+            SDL_SetError("Failed to load the shader %d", type);
         }
         data->glDeleteShader(id);
         return 0;

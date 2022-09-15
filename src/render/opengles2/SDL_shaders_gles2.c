@@ -32,117 +32,122 @@
  * Vertex/fragment shader source                                                                 *
  *************************************************************************************************/
 
-static const char GLES2_Fragment_Include_Best_Texture_Precision[] = "\n\
-    #ifdef GL_FRAGMENT_PRECISION_HIGH\n\
-    #define SDL_TEXCOORD_PRECISION highp\n\
-    #else\n\
-    #define SDL_TEXCOORD_PRECISION mediump\n\
-    #endif\n\
-    precision mediump float;\n\
-";
+static const char GLES2_Fragment_Include_Best_Texture_Precision[] = \
+"#ifdef GL_FRAGMENT_PRECISION_HIGH\n"                           \
+"#define SDL_TEXCOORD_PRECISION highp\n"                        \
+"#else\n"                                                       \
+"#define SDL_TEXCOORD_PRECISION mediump\n"                      \
+"#endif\n"                                                      \
+"\n"                                                            \
+"precision mediump float;\n"                                    \
+"\n"                                                            \
+;
 
-static const char GLES2_Fragment_Include_Medium_Texture_Precision[] = "\n\
-    #define SDL_TEXCOORD_PRECISION mediump\n\
-    precision mediump float;\n\
-";
+static const char GLES2_Fragment_Include_Medium_Texture_Precision[] = \
+"#define SDL_TEXCOORD_PRECISION mediump\n"                      \
+"precision mediump float;\n"                                    \
+"\n"                                                            \
+;
 
-static const char GLES2_Fragment_Include_High_Texture_Precision[] = "\n\
-    #define SDL_TEXCOORD_PRECISION highp\n\
-    precision mediump float;\n\
-";
+static const char GLES2_Fragment_Include_High_Texture_Precision[] = \
+"#define SDL_TEXCOORD_PRECISION highp\n"                        \
+"precision mediump float;\n"                                    \
+"\n"                                                            \
+;
 
-static const char GLES2_Fragment_Include_Undef_Precision[] = "\n\
-    #define mediump\n\
-    #define highp\n\
-    #define lowp\n\
-    #define SDL_TEXCOORD_PRECISION\n\
-";
+static const char GLES2_Fragment_Include_Undef_Precision[] =    \
+"#define mediump\n"                                             \
+"#define highp\n"                                               \
+"#define lowp\n"                                                \
+"#define SDL_TEXCOORD_PRECISION\n"                              \
+"\n"                                                            \
+;
 
-static const char GLES2_Vertex_Default[] = " \
-    uniform mat4 u_projection; \
-    attribute vec2 a_position; \
-    attribute vec4 a_color; \
-    attribute vec2 a_texCoord; \
-    varying vec2 v_texCoord; \
-    varying vec4 v_color; \
-    \
-    void main() \
-    { \
-        v_texCoord = a_texCoord; \
-        gl_Position = u_projection * vec4(a_position, 0.0, 1.0);\
-        gl_PointSize = 1.0; \
-        v_color = a_color; \
-    } \
-";
+static const char GLES2_Vertex_Default[] =                      \
+"uniform mat4 u_projection;\n"                                  \
+"attribute vec2 a_position;\n"                                  \
+"attribute vec4 a_color;\n"                                     \
+"attribute vec2 a_texCoord;\n"                                  \
+"varying vec2 v_texCoord;\n"                                    \
+"varying vec4 v_color;\n"                                       \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    v_texCoord = a_texCoord;\n"                                \
+"    gl_Position = u_projection * vec4(a_position, 0.0, 1.0);\n" \
+"    gl_PointSize = 1.0;\n"                                     \
+"    v_color = a_color;\n"                                      \
+"}\n"                                                           \
+;
 
-static const char GLES2_Fragment_Solid[] = " \
-    varying mediump vec4 v_color; \
-    \
-    void main() \
-    { \
-        gl_FragColor = v_color; \
-    } \
-";
+static const char GLES2_Fragment_Solid[] =                      \
+"varying mediump vec4 v_color;\n"                               \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    gl_FragColor = v_color;\n"                                 \
+"}\n"                                                           \
+;
 
-static const char GLES2_Fragment_TextureABGR[] = " \
-    uniform sampler2D u_texture; \
-    varying mediump vec4 v_color;\n\
-    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
-    \
-    void main() \
-    { \
-        gl_FragColor = texture2D(u_texture, v_texCoord); \
-        gl_FragColor *= v_color; \
-    } \
-";
+static const char GLES2_Fragment_TextureABGR[] =                \
+"uniform sampler2D u_texture;\n"                                \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    gl_FragColor = texture2D(u_texture, v_texCoord);\n"        \
+"    gl_FragColor *= v_color;\n"                                \
+"}\n"                                                           \
+;
 
 /* ARGB to ABGR conversion */
-static const char GLES2_Fragment_TextureARGB[] = " \
-    uniform sampler2D u_texture; \
-    varying mediump vec4 v_color;\n\
-    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
-    \
-    void main() \
-    { \
-        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
-        gl_FragColor = abgr; \
-        gl_FragColor.r = abgr.b; \
-        gl_FragColor.b = abgr.r; \
-        gl_FragColor *= v_color; \
-    } \
-";
+static const char GLES2_Fragment_TextureARGB[] =                \
+"uniform sampler2D u_texture;\n"                                \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    mediump vec4 abgr = texture2D(u_texture, v_texCoord);\n"   \
+"    gl_FragColor = abgr;\n"                                    \
+"    gl_FragColor.r = abgr.b;\n"                                \
+"    gl_FragColor.b = abgr.r;\n"                                \
+"    gl_FragColor *= v_color;\n"                                \
+"}\n"                                                           \
+;
 
 /* RGB to ABGR conversion */
-static const char GLES2_Fragment_TextureRGB[] = " \
-    uniform sampler2D u_texture; \
-    varying mediump vec4 v_color;\n\
-    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
-    \
-    void main() \
-    { \
-        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
-        gl_FragColor = abgr; \
-        gl_FragColor.r = abgr.b; \
-        gl_FragColor.b = abgr.r; \
-        gl_FragColor.a = 1.0; \
-        gl_FragColor *= v_color; \
-    } \
-";
+static const char GLES2_Fragment_TextureRGB[] =                 \
+"uniform sampler2D u_texture;\n"                                \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    mediump vec4 abgr = texture2D(u_texture, v_texCoord);\n"   \
+"    gl_FragColor = abgr;\n"                                    \
+"    gl_FragColor.r = abgr.b;\n"                                \
+"    gl_FragColor.b = abgr.r;\n"                                \
+"    gl_FragColor.a = 1.0;\n"                                   \
+"    gl_FragColor *= v_color;\n"                                \
+"}\n"                                                           \
+;
 
 /* BGR to ABGR conversion */
-static const char GLES2_Fragment_TextureBGR[] = " \
-    uniform sampler2D u_texture; \
-    varying mediump vec4 v_color;\n\
-    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
-    \
-    void main() \
-    { \
-        mediump vec4 abgr = texture2D(u_texture, v_texCoord); \
-        gl_FragColor = abgr; \
-        gl_FragColor.a = 1.0; \
-        gl_FragColor *= v_color; \
-    } \
-";
+static const char GLES2_Fragment_TextureBGR[] =                 \
+"uniform sampler2D u_texture;\n"                                \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    mediump vec4 abgr = texture2D(u_texture, v_texCoord);\n"   \
+"    gl_FragColor = abgr;\n"                                    \
+"    gl_FragColor.a = 1.0;\n"                                   \
+"    gl_FragColor *= v_color;\n"                                \
+"}\n"                                                           \
+;
 
 #if SDL_HAVE_YUV
 
@@ -154,6 +159,7 @@ static const char GLES2_Fragment_TextureBGR[] = " \
 "const mat3 matrix = mat3( 1,       1,        1,\n"             \
 "                          0,      -0.3441,   1.772,\n"         \
 "                          1.402,  -0.7141,   0);\n"            \
+"\n"                                                            \
 
 #define BT601_SHADER_CONSTANTS                                  \
 "// YUV offset \n"                                              \
@@ -163,6 +169,7 @@ static const char GLES2_Fragment_TextureBGR[] = " \
 "const mat3 matrix = mat3( 1.1644,  1.1644,   1.1644,\n"        \
 "                          0,      -0.3918,   2.0172,\n"        \
 "                          1.596,  -0.813,    0);\n"            \
+"\n"                                                            \
 
 #define BT709_SHADER_CONSTANTS                                  \
 "// YUV offset \n"                                              \
@@ -172,6 +179,7 @@ static const char GLES2_Fragment_TextureBGR[] = " \
 "const mat3 matrix = mat3( 1.1644,  1.1644,   1.1644,\n"        \
 "                          0,      -0.2132,   2.1124,\n"        \
 "                          1.7927, -0.5329,   0);\n"            \
+"\n"                                                            \
 
 
 #define YUV_SHADER_PROLOGUE                                     \
@@ -183,7 +191,6 @@ static const char GLES2_Fragment_TextureBGR[] = " \
 "\n"                                                            \
 
 #define YUV_SHADER_BODY                                         \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
 "    mediump vec3 yuv;\n"                                       \
@@ -204,7 +211,6 @@ static const char GLES2_Fragment_TextureBGR[] = " \
 "}"                                                             \
 
 #define NV12_RA_SHADER_BODY                                     \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
 "    mediump vec3 yuv;\n"                                       \
@@ -224,7 +230,6 @@ static const char GLES2_Fragment_TextureBGR[] = " \
 "}"                                                             \
 
 #define NV12_RG_SHADER_BODY                                     \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
 "    mediump vec3 yuv;\n"                                       \
@@ -244,7 +249,6 @@ static const char GLES2_Fragment_TextureBGR[] = " \
 "}"                                                             \
 
 #define NV21_SHADER_BODY                                        \
-"\n"                                                            \
 "void main()\n"                                                 \
 "{\n"                                                           \
 "    mediump vec3 yuv;\n"                                       \
@@ -326,20 +330,21 @@ static const char GLES2_Fragment_TextureNV21BT709[] = \
 #endif
 
 /* Custom Android video format texture */
-static const char GLES2_Fragment_TextureExternalOES_Prologue[] = " \
-    #extension GL_OES_EGL_image_external : require\n\
-";
-static const char GLES2_Fragment_TextureExternalOES[] = " \
-    uniform samplerExternalOES u_texture; \
-    varying mediump vec4 v_color; \
-    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord; \
-    \
-    void main() \
-    { \
-        gl_FragColor = texture2D(u_texture, v_texCoord); \
-        gl_FragColor *= v_color; \
-    } \
-";
+static const char GLES2_Fragment_TextureExternalOES_Prologue[] = \
+"#extension GL_OES_EGL_image_external : require\n"              \
+"\n"                                                            \
+;
+static const char GLES2_Fragment_TextureExternalOES[] =         \
+"uniform samplerExternalOES u_texture;\n"                       \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    gl_FragColor = texture2D(u_texture, v_texCoord);\n"        \
+"    gl_FragColor *= v_color;\n"                                \
+"}\n"                                                           \
+;
 
 
 /*************************************************************************************************
