@@ -654,7 +654,7 @@ PS2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return SDL_Unsupported();
 }
 
-static void
+static int
 PS2_RenderPresent(SDL_Renderer * renderer)
 {
     PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
@@ -676,6 +676,7 @@ PS2_RenderPresent(SDL_Renderer * renderer)
 	}
 	gsKit_TexManager_nextFrame(data->gsGlobal);
     gsKit_clear(data->gsGlobal, GS_BLACK);
+    return 0;
 }
 
 static void

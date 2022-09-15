@@ -22,6 +22,7 @@
 
 #if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
 #include "SDL_hints.h"
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
 #include "SDL_opengl.h"
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
@@ -1502,12 +1503,12 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }
 
-static void
+static int
 GL_RenderPresent(SDL_Renderer * renderer)
 {
     GL_ActivateRenderer(renderer);
 
-    SDL_GL_SwapWindow(renderer->window);
+    return SDL_GL_SwapWindowWithResult(renderer->window);
 }
 
 static void
