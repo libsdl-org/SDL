@@ -326,11 +326,13 @@ static const char GLES2_Fragment_TextureNV21BT709[] = \
 #endif
 
 /* Custom Android video format texture */
-static const char GLES2_Fragment_TextureExternalOES[] = " \
+static const char GLES2_Fragment_TextureExternalOES_Prologue[] = " \
     #extension GL_OES_EGL_image_external : require\n\
+";
+static const char GLES2_Fragment_TextureExternalOES[] = " \
     uniform samplerExternalOES u_texture; \
-    varying mediump vec4 v_color;\n\
-    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n\
+    varying mediump vec4 v_color; \
+    varying SDL_TEXCOORD_PRECISION vec2 v_texCoord; \
     \
     void main() \
     { \
@@ -344,7 +346,18 @@ static const char GLES2_Fragment_TextureExternalOES[] = " \
  * Shader selector                                                                               *
  *************************************************************************************************/
 
-const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type) {
+const char *GLES2_GetShaderPrologue(GLES2_ShaderType type)
+{
+    switch (type) {
+    case GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES:
+        return GLES2_Fragment_TextureExternalOES_Prologue;
+    default:
+        return "";
+    }
+}
+
+const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type)
+{
     switch (type) {
     case GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION:
         return GLES2_Fragment_Include_Undef_Precision;
@@ -359,7 +372,8 @@ const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type) {
     }
 }
 
-GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint() {
+GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint()
+{
     const char *texcoord_hint = SDL_GetHint("SDL_RENDER_OPENGLES2_TEXCOORD_PRECISION");
     GLES2_ShaderIncludeType value = GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION;
     if (texcoord_hint) {
