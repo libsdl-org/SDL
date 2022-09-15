@@ -496,7 +496,7 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
     GLuint id = 0;
     GLint compileSuccessful = GL_FALSE;
     int attempt, num_src;
-    const GLchar *shader_src_list[2];
+    const GLchar *shader_src_list[3];
     const GLchar *shader_body = GLES2_GetShader(type);
 
     if (!shader_body) {
@@ -506,6 +506,9 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
 
     for (attempt = 0; attempt < 2 && !compileSuccessful; ++attempt) {
         num_src = 0;
+
+        shader_src_list[num_src++] = GLES2_GetShaderPrologue(type);
+
         if (shader_type == GL_FRAGMENT_SHADER) {
             if (attempt == 0) {
                 shader_src_list[num_src++] = GLES2_GetShaderInclude(data->texcoord_precision_hint);
@@ -513,6 +516,7 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
                 shader_src_list[num_src++] = GLES2_GetShaderInclude(GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION);
             }
         }
+
         shader_src_list[num_src++] = shader_body;
 
         SDL_assert(num_src <= SDL_arraysize(shader_src_list));

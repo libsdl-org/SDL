@@ -60,9 +60,10 @@ typedef enum
     GLES2_SHADER_COUNT
 } GLES2_ShaderType;
 
-const char *GLES2_GetShader(GLES2_ShaderType type);
-const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type);
-GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint(void);
+extern const char *GLES2_GetShaderPrologue(GLES2_ShaderType type);
+extern const char *GLES2_GetShaderInclude(GLES2_ShaderIncludeType type);
+extern const char *GLES2_GetShader(GLES2_ShaderType type);
+extern GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint(void);
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 */
 
