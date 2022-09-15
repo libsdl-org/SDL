@@ -933,6 +933,26 @@ static SDL_RenderLineMethod SDL_GetRenderLineMethod()
     }
 }
 
+static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Window *window)
+{
+    /* FIXME: SDL refresh rate API should return numerator/denominator */
+    int refresh_rate = 0;
+    int display_index = SDL_GetWindowDisplayIndex(window);
+    SDL_DisplayMode mode;
+
+    if (display_index < 0) {
+        display_index = 0;
+    }
+    if (SDL_GetDesktopDisplayMode(display_index, &mode) == 0) {
+        refresh_rate = mode.refresh_rate;
+    }
+    if (!refresh_rate) {
+        /* Pick a good default refresh rate */
+        refresh_rate = 60;
+    }
+    renderer->simulate_vsync_interval = (1000 / refresh_rate);
+}
+
 SDL_Renderer *
 SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 {
@@ -1022,6 +1042,7 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
             renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
         }
     }
+    SDL_CalculateSimulatedVSyncInterval(renderer, window);
 
     VerifyDrawQueueFunctions(renderer);
 
@@ -4273,7 +4294,7 @@ static void
 SDL_RenderSimulateVSync(SDL_Renderer * renderer)
 {
     Uint32 now, elapsed;
-    const Uint32 interval = (1000 / 60); /* FIXME: What FPS? */
+    const Uint32 interval = renderer->simulate_vsync_interval;
 
     if (!interval) {
         /* We can't do sub-ms delay, so just return here */
