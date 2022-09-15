@@ -27,6 +27,8 @@ CFLAGS = -bt=nt -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
 CFLAGS+= -wx
 # newer OpenWatcom versions enable W303 by default
 CFLAGS+= -wcd=303
+# new vulkan headers result in lots of W202 warnings
+CFLAGS+= -wcd=202
 # the include paths :
 CFLAGS+= $(INCPATH)
 CFLAGS_STATIC=$(CFLAGS)
