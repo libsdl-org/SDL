@@ -18,48 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_OFFSCREEN
+#if SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL
 
-#include "SDL_offscreenopengl.h"
+#include "SDL_offscreenopengles.h"
+#include "SDL_offscreenvideo.h"
+#include "SDL_offscreenwindow.h"
 
-#include "SDL_opengl.h"
-
-int
-OFFSCREEN_GL_SwapWindow(_THIS, SDL_Window* window)
-{
-    OFFSCREEN_Window* offscreen_wind = window->driverdata;
-
-    SDL_EGL_SwapBuffers(_this, offscreen_wind->egl_surface);
-    return 0;
-}
+/* EGL implementation of SDL OpenGL support */
 
 int
-OFFSCREEN_GL_MakeCurrent(_THIS, SDL_Window* window, SDL_GLContext context)
-{
-  if (window) {
-      EGLSurface egl_surface = ((OFFSCREEN_Window*)window->driverdata)->egl_surface;
-      return SDL_EGL_MakeCurrent(_this, egl_surface, context);
-  }
-
-  return SDL_EGL_MakeCurrent(_this, NULL, NULL);
-}
-
-SDL_GLContext
-OFFSCREEN_GL_CreateContext(_THIS, SDL_Window* window)
-{
-    OFFSCREEN_Window* offscreen_window = window->driverdata;
-
-    SDL_GLContext context;
-    context = SDL_EGL_CreateContext(_this, offscreen_window->egl_surface);
-
-    return context;
-}
-
-int
-OFFSCREEN_GL_LoadLibrary(_THIS, const char* path)
+OFFSCREEN_GLES_LoadLibrary(_THIS, const char* path)
 {
     int ret = SDL_EGL_LoadLibraryOnly(_this, path);
     if (ret != 0) {
@@ -85,24 +55,36 @@ OFFSCREEN_GL_LoadLibrary(_THIS, const char* path)
     return 0;
 }
 
-void
-OFFSCREEN_GL_UnloadLibrary(_THIS)
+SDL_GLContext
+OFFSCREEN_GLES_CreateContext(_THIS, SDL_Window* window)
 {
-    SDL_EGL_UnloadLibrary(_this);
+    OFFSCREEN_Window* offscreen_window = window->driverdata;
+
+    SDL_GLContext context;
+    context = SDL_EGL_CreateContext(_this, offscreen_window->egl_surface);
+
+    return context;
 }
 
-void*
-OFFSCREEN_GL_GetProcAddress(_THIS, const char* proc)
+int
+OFFSCREEN_GLES_MakeCurrent(_THIS, SDL_Window* window, SDL_GLContext context)
 {
-    void* proc_addr = SDL_EGL_GetProcAddress(_this, proc);
-
-    if (!proc_addr) {
-        SDL_SetError("Failed to find proc address!");
+    if (window) {
+        EGLSurface egl_surface = ((OFFSCREEN_Window*)window->driverdata)->egl_surface;
+        return SDL_EGL_MakeCurrent(_this, egl_surface, context);
+    } else {
+        return SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
-
-    return proc_addr;
 }
 
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
+int
+OFFSCREEN_GLES_SwapWindow(_THIS, SDL_Window* window)
+{
+    OFFSCREEN_Window* offscreen_wind = window->driverdata;
+
+    return SDL_EGL_SwapBuffers(_this, offscreen_wind->egl_surface);
+}
+
+#endif /* SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL */
 
 /* vi: set ts=4 sw=4 expandtab: */
