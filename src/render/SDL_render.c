@@ -4288,11 +4288,12 @@ SDL_RenderSimulateVSync(SDL_Renderer * renderer)
         now = SDL_GetTicks();
     }
 
-    if (renderer->last_present) {
-        elapsed = (now - renderer->last_present);
-        renderer->last_present += (elapsed / interval) * interval;
-    } else {
+    elapsed = (now - renderer->last_present);
+    if (!renderer->last_present || elapsed > 1000) {
+        /* It's been too long, reset the presentation timeline */
         renderer->last_present = now;
+    } else {
+        renderer->last_present += (elapsed / interval) * interval;
     }
 }
 
@@ -4575,7 +4576,6 @@ SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
     }
 
     renderer->wanted_vsync = vsync ? SDL_TRUE : SDL_FALSE;
-    renderer->last_present = 0;
 
     if (!renderer->SetVSync ||
         renderer->SetVSync(renderer, vsync) < 0) {
