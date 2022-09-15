@@ -1733,7 +1733,7 @@ Optional Features:
   --enable-kmsdrm-shared  dynamically load kmsdrm support [default=yes]
   --enable-video-dummy    use dummy video driver [default=yes]
   --enable-video-offscreen
-                          use offscreen video driver [default=no]
+                          use offscreen video driver [default=yes]
   --enable-video-opengl   include OpenGL support [default=yes]
   --enable-video-opengles include OpenGL ES support [default=yes]
   --enable-video-opengles1
@@ -25560,7 +25560,7 @@ if test ${enable_video_offscreen+y}
 then :
   enableval=$enable_video_offscreen;
 else $as_nop
-  enable_video_offscreen=no
+  enable_video_offscreen=yes
 fi
 
     if test x$enable_video_offscreen = xyes; then
