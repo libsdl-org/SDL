@@ -2400,7 +2400,11 @@ CheckOffscreenVideo()
     AC_ARG_ENABLE(video-offscreen,
 [AS_HELP_STRING([--enable-video-offscreen], [use offscreen video driver [default=yes]])],
                   , enable_video_offscreen=yes)
-    if test x$enable_video_offscreen = xyes; then
+
+    if  test x$enable_video = xyes && \
+        test x$enable_video_offscreen = xyes && \
+        test x$video_opengl_egl = xyes; then
+
         AC_DEFINE(SDL_VIDEO_DRIVER_OFFSCREEN, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/offscreen/*.c"
         have_video=yes
@@ -3744,7 +3748,6 @@ case "$host" in
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -3766,8 +3769,9 @@ case "$host" in
         CheckRPI
         CheckX11
         CheckDirectFB
-        # Need to check for EGL first because KMSDRM and Wayland depends on it.
+        # Need to check for EGL first because Offscreen, KMSDRM and Wayland depend on it.
         CheckEGL
+        CheckOffscreenVideo
         CheckKMSDRM
         CheckGLX
         CheckOpenGL
@@ -3976,12 +3980,12 @@ case "$host" in
         fi
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckWINDOWS
         CheckWINDOWSGL
         CheckWINDOWSGLES
+        CheckOffscreenVideo
         CheckVulkan
         CheckDIRECTX
         CheckHIDAPI
@@ -4140,7 +4144,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         ARCH=haiku
         ac_default_prefix=/boot/system
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -4200,7 +4203,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -4311,7 +4313,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -4323,6 +4324,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckMacGLES
         CheckGLX
         CheckOpenGL
+        CheckOffscreenVideo
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
@@ -4400,7 +4402,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckNativeClient
         CheckDummyAudio
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckInputEvents
         CheckPTHREAD
         CheckO_CLOEXEC
@@ -4436,13 +4437,13 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckPTHREAD
         CheckDLOPEN
         CheckClockGettime
         CheckEmscriptenGLES
+        CheckOffscreenVideo
 
         # Set up files for the misc library
         if test x$enable_misc = xyes; then
@@ -4487,7 +4488,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN

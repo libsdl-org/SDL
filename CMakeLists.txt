@@ -1115,13 +1115,6 @@ if(SDL_VIDEO)
     set(HAVE_DUMMYVIDEO TRUE)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
-  if(SDL_OFFSCREEN)
-    set(SDL_VIDEO_DRIVER_OFFSCREEN 1)
-    file(GLOB VIDEO_OFFSCREEN_SOURCES ${SDL2_SOURCE_DIR}/src/video/offscreen/*.c)
-    list(APPEND SOURCE_FILES ${VIDEO_OFFSCREEN_SOURCES})
-    set(HAVE_OFFSCREEN TRUE)
-    set(HAVE_SDL_VIDEO TRUE)
-  endif()
 endif()
 
 # Platform-specific options and settings
@@ -2694,6 +2687,16 @@ endif()
 
 # Platform-independent options
 CheckLibSampleRate()
+
+if(SDL_VIDEO)
+  if(SDL_OFFSCREEN AND SDL_VIDEO_OPENGL_EGL)
+    set(SDL_VIDEO_DRIVER_OFFSCREEN 1)
+    file(GLOB VIDEO_OFFSCREEN_SOURCES ${SDL2_SOURCE_DIR}/src/video/offscreen/*.c)
+    list(APPEND SOURCE_FILES ${VIDEO_OFFSCREEN_SOURCES})
+    set(HAVE_OFFSCREEN TRUE)
+    set(HAVE_SDL_VIDEO TRUE)
+  endif()
+endif()
 
 # Dummies
 # configure.ac does it differently:
