@@ -2398,8 +2398,8 @@ CheckDummyVideo()
 CheckOffscreenVideo()
 {
     AC_ARG_ENABLE(video-offscreen,
-[AS_HELP_STRING([--enable-video-offscreen], [use offscreen video driver [default=no]])],
-                  , enable_video_offscreen=no)
+[AS_HELP_STRING([--enable-video-offscreen], [use offscreen video driver [default=yes]])],
+                  , enable_video_offscreen=yes)
     if test x$enable_video_offscreen = xyes; then
         AC_DEFINE(SDL_VIDEO_DRIVER_OFFSCREEN, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/offscreen/*.c"
