@@ -757,6 +757,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     /* CreateEventEx() arrived in Vista, so we need to load it with GetProcAddress for XP. */
     {
         HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
+        CreateEventExFunc = NULL;
         if (kernel32) {
             CreateEventExFunc = (PFN_CREATE_EVENT_EX) GetProcAddress(kernel32, "CreateEventExW");
         }
