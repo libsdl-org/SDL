@@ -523,7 +523,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	if (hid_init() < 0)
 		return NULL;
 
-	/* If we don't have permission do open devices, don't enumerate them */
+	/* If we don't have permission to open devices, don't enumerate them */
 	if (hid_input_monitoring_denied)
 		return NULL;
 
