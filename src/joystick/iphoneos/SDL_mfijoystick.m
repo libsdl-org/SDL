@@ -632,18 +632,13 @@ SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *
 }
 #endif /* TARGET_OS_TV */
 
-#if defined(__MACOSX__)
-static int is_macos11(void)
-{
-    return (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_15);
-}
-#endif
-
 static int
 IOS_JoystickInit(void)
 {
 #if defined(__MACOSX__)
-    if (!is_macos11()) {
+    if (@available(macOS 10.16, *)) {
+        /* Continue with initialization on macOS 11+ */
+    } else {
         return 0;
     }
 #endif
@@ -1654,7 +1649,7 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 #if defined(SDL_JOYSTICK_MFI) && defined(__MACOSX__)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
-    if (is_macos11()) {
+    if (@available(macOS 10.16, *)) {
         if ([GCController supportsHIDDevice:device]) {
             return SDL_TRUE;
         }
