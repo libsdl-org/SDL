@@ -205,8 +205,8 @@ static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
         return SDL_FALSE;
     }
 
-    /* The Hori Fighting Stick Alpha doesn't have any rumble hardware */
-    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4) {
+    /* The Hori controllers don't have any rumble hardware */
+    if (vendor_id == USB_VENDOR_HORI) {
         return SDL_FALSE;
     }
 
@@ -215,8 +215,8 @@ static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
 
 static SDL_bool HIDAPI_DriverPS4_HasSensors(Uint16 vendor_id, Uint16 product_id)
 {
-    /* The Hori Fighting Stick Alpha doesn't have any gyro or accelerometer */
-    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4) {
+    /* The Hori controllers don't have any gyro or accelerometer */
+    if (vendor_id == USB_VENDOR_HORI) {
         return SDL_FALSE;
     }
 

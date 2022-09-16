@@ -229,8 +229,8 @@ typedef struct {
 
 static SDL_bool HIDAPI_DriverPS5_CanRumble(Uint16 vendor_id, Uint16 product_id)
 {
-    /* The Hori Fighting Stick Alpha doesn't have any rumble hardware */
-    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5) {
+    /* The Hori controllers don't have any rumble hardware */
+    if (vendor_id == USB_VENDOR_HORI) {
         return SDL_FALSE;
     }
 
@@ -239,8 +239,8 @@ static SDL_bool HIDAPI_DriverPS5_CanRumble(Uint16 vendor_id, Uint16 product_id)
 
 static SDL_bool HIDAPI_DriverPS5_HasSensors(Uint16 vendor_id, Uint16 product_id)
 {
-    /* The Hori Fighting Stick Alpha doesn't have any gyro or accelerometer */
-    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5) {
+    /* The Hori controllers don't have any gyro or accelerometer */
+    if (vendor_id == USB_VENDOR_HORI) {
         return SDL_FALSE;
     }
 
@@ -254,8 +254,8 @@ static SDL_bool HIDAPI_DriverPS5_HasTouchpad(Uint16 vendor_id, Uint16 product_id
 
 static SDL_bool HIDAPI_DriverPS5_UseAlternateReport(Uint16 vendor_id, Uint16 product_id)
 {
-    /* The Hori Fighting Stick Alpha reports touchpad at a different offset than the PS5 controller */
-    if (vendor_id == USB_VENDOR_HORI && product_id == USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5) {
+    /* The Hori Fighting Stick Alpha and Fighting Commander OCTA report touchpad at a different offset than the PS5 controller */
+    if (vendor_id == USB_VENDOR_HORI) {
         return SDL_TRUE;
     }
 
