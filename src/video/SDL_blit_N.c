@@ -26,6 +26,7 @@
 #include "SDL_endian.h"
 #include "SDL_cpuinfo.h"
 #include "SDL_blit.h"
+#include "SDL_blit_copy.h"
 
 
 /* General optimized routines that write char by char */
@@ -2246,33 +2247,6 @@ Blit4to4MaskAlpha(SDL_BlitInfo * info)
     }
 }
 
-/* blits 32 bit RGBA<->RGBA with both surfaces having the same R,G,B,A fields */
-static void
-Blit4to4CopyAlpha(SDL_BlitInfo * info)
-{
-    int width = info->dst_w;
-    int height = info->dst_h;
-    Uint32 *src = (Uint32 *) info->src;
-    int srcskip = info->src_skip;
-    Uint32 *dst = (Uint32 *) info->dst;
-    int dstskip = info->dst_skip;
-
-    /* RGBA->RGBA, COPY_ALPHA */
-    while (height--) {
-        /* *INDENT-OFF* */ /* clang-format off */
-        DUFFS_LOOP(
-        {
-            *dst = *src;
-            ++dst;
-            ++src;
-        },
-        width);
-        /* *INDENT-ON* */ /* clang-format on */
-        src = (Uint32 *) ((Uint8 *) src + srcskip);
-        dst = (Uint32 *) ((Uint8 *) dst + dstskip);
-    }
-}
-
 /* permutation for mapping srcfmt to dstfmt, overloading or not the alpha channel */
 static void
 get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
@@ -3457,7 +3431,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
                     if (a_need == COPY_ALPHA) {
                         if (srcfmt->Amask == dstfmt->Amask) {
                             /* Fastpath C fallback: 32bit RGBA<->RGBA blit with matching RGBA */
-                            blitfun = Blit4to4CopyAlpha;
+                            blitfun = SDL_BlitCopy;
                         } else {
                             blitfun = BlitNtoNCopyAlpha;
                         }
