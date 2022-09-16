@@ -578,7 +578,7 @@ static int GLES2_CacheShaders(GLES2_RenderData * data)
 
     data->texcoord_precision_hint = GLES2_GetTexCoordPrecisionEnumFromHint();
 
-    for (shader = 0; shader < GLES2_SHADER_COUNT; ++shader) {
+    for (shader = 0; shader < GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES; ++shader) {
         GLenum shader_type;
 
         if (shader == GLES2_SHADER_VERTEX_DEFAULT) {
@@ -2209,7 +2209,9 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
 #endif
 #ifdef GL_TEXTURE_EXTERNAL_OES
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
+    if (GLES2_CacheShader(data, GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES, GL_FRAGMENT_SHADER)) {
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
+    }
 #endif
 
     /* Set up parameters for rendering */

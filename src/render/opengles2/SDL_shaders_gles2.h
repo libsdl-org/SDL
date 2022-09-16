@@ -56,6 +56,7 @@ typedef enum
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709,
 #endif
+    /* Shaders beyond this point are optional and not cached at render creation */
     GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES,
     GLES2_SHADER_COUNT
 } GLES2_ShaderType;
