@@ -672,9 +672,6 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengles.h">
       <Filter>video\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\windows\SDL_windowstaskdialog.h">
-      <Filter>video\windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\timer\SDL_timer_c.h">
       <Filter>timer</Filter>
     </ClInclude>
