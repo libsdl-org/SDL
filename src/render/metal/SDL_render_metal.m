@@ -503,10 +503,6 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, 
 static void
 METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SHOWN ||
-        event->event == SDL_WINDOWEVENT_HIDDEN) {
-        // !!! FIXME: write me
-    }
 }
 
 static int
@@ -1529,7 +1525,7 @@ METAL_RenderPresent(SDL_Renderer * renderer)
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
 
-    if (!ready) {
+    if (renderer->hidden || !ready) {
         return -1;
     }
     return 0;
