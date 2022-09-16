@@ -962,7 +962,7 @@ SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
 }
 
 static void
-SDLTest_PrintRenderer(SDL_RendererInfo * info)
+SDLTest_PrintRenderer(SDL_RendererInfoEx * info)
 {
     int i, count;
     char text[1024];
@@ -1213,7 +1213,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         }
 
         if (state->verbose & VERBOSE_RENDER) {
-            SDL_RendererInfo info;
+            SDL_RendererInfoEx info;
 
             n = SDL_GetNumRenderDrivers();
             if (n == 0) {
@@ -1221,7 +1221,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             } else {
                 SDL_Log("Built-in render drivers:\n");
                 for (i = 0; i < n; ++i) {
-                    SDL_GetRenderDriverInfo(i, &info);
+                    SDL_GetRenderDriverInfoEx(i, &info);
                     SDLTest_PrintRenderer(&info);
                 }
             }
@@ -1331,10 +1331,10 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                     || !(state->window_flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)))) {
                 m = -1;
                 if (state->renderdriver) {
-                    SDL_RendererInfo info;
+                    SDL_RendererInfoEx info;
                     n = SDL_GetNumRenderDrivers();
                     for (j = 0; j < n; ++j) {
-                        SDL_GetRenderDriverInfo(j, &info);
+                        SDL_GetRenderDriverInfoEx(j, &info);
                         if (SDL_strcasecmp(info.name, state->renderdriver) == 0) {
                             m = j;
                             break;
@@ -1359,10 +1359,10 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                     SDL_RenderSetScale(state->renderers[i], state->scale, state->scale);
                 }
                 if (state->verbose & VERBOSE_RENDER) {
-                    SDL_RendererInfo info;
+                    SDL_RendererInfoEx info;
 
                     SDL_Log("Current renderer:\n");
-                    SDL_GetRendererInfo(state->renderers[i], &info);
+                    SDL_GetRendererInfoEx(state->renderers[i], &info);
                     SDLTest_PrintRenderer(&info);
                 }
             }
@@ -2247,7 +2247,7 @@ SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int *
     float scaleX, scaleY;
     Uint32 flags;
     const int windowDisplayIndex = SDL_GetWindowDisplayIndex(window);
-    SDL_RendererInfo info;
+    SDL_RendererInfoEx info;
 
     /* Video */
 
@@ -2269,7 +2269,7 @@ SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int *
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
-    if (0 == SDL_GetRendererInfo(renderer, &info)) {
+    if (0 == SDL_GetRendererInfoEx(renderer, &info)) {
         SDL_snprintf(text, sizeof(text), "SDL_GetRendererInfo: name: %s", info.name);
         SDLTest_DrawString(renderer, 0, textY, text);
         textY += lineHeight;

@@ -1097,22 +1097,24 @@ SW_CreateRenderer(SDL_Window * window, Uint32 flags)
     return SW_CreateRendererForSurface(surface);
 }
 
+static const Uint32 SW_TextureFormats[] = {
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_ABGR8888,
+    SDL_PIXELFORMAT_RGBA8888,
+    SDL_PIXELFORMAT_BGRA8888,
+    SDL_PIXELFORMAT_RGB888,
+    SDL_PIXELFORMAT_BGR888,
+    SDL_PIXELFORMAT_RGB565,
+    SDL_PIXELFORMAT_RGB555
+};
+
 SDL_RenderDriver SW_RenderDriver = {
     SW_CreateRenderer,
     {
      "software",
      SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-     8,
-     {
-      SDL_PIXELFORMAT_ARGB8888,
-      SDL_PIXELFORMAT_ABGR8888,
-      SDL_PIXELFORMAT_RGBA8888,
-      SDL_PIXELFORMAT_BGRA8888,
-      SDL_PIXELFORMAT_RGB888,
-      SDL_PIXELFORMAT_BGR888,
-      SDL_PIXELFORMAT_RGB565,
-      SDL_PIXELFORMAT_RGB555
-     },
+     SDL_arraysize(SW_TextureFormats),
+     SW_TextureFormats,
      0,
      0}
 };

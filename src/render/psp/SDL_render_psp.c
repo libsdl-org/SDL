@@ -1442,17 +1442,20 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     return renderer;
 }
 
+static const Uint32 PSP_TextureFormats[] = {
+    SDL_PIXELFORMAT_BGR565,
+    SDL_PIXELFORMAT_ABGR1555,
+    SDL_PIXELFORMAT_ABGR4444,
+    SDL_PIXELFORMAT_ABGR8888
+};
+
 SDL_RenderDriver PSP_RenderDriver = {
     .CreateRenderer = PSP_CreateRenderer,
     .info = {
         .name = "PSP",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-        .num_texture_formats = 4,
-        .texture_formats = { [0] = SDL_PIXELFORMAT_BGR565,
-                                                 [1] = SDL_PIXELFORMAT_ABGR1555,
-                                                 [2] = SDL_PIXELFORMAT_ABGR4444,
-                                                 [3] = SDL_PIXELFORMAT_ABGR8888,
-        },
+        .num_texture_formats = SDL_arraysize(PSP_TextureFormats),
+        .texture_formats = PSP_TextureFormats,
         .max_texture_width = 512,
         .max_texture_height = 512,
      }

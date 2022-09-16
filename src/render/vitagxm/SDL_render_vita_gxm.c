@@ -104,23 +104,24 @@ static void VITA_GXM_RenderPresent(SDL_Renderer *renderer);
 static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer);
 
+static const Uint32 VITA_GXM_TextureFormats[] = {
+    SDL_PIXELFORMAT_ABGR8888,
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_RGB565,
+    SDL_PIXELFORMAT_BGR565,
+    SDL_PIXELFORMAT_YV12,
+    SDL_PIXELFORMAT_IYUV,
+    SDL_PIXELFORMAT_NV12,
+    SDL_PIXELFORMAT_NV21
+};
 
 SDL_RenderDriver VITA_GXM_RenderDriver = {
     .CreateRenderer = VITA_GXM_CreateRenderer,
     .info = {
         .name = "VITA gxm",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-        .num_texture_formats = 8,
-        .texture_formats = {
-            [0] = SDL_PIXELFORMAT_ABGR8888,
-            [1] = SDL_PIXELFORMAT_ARGB8888,
-            [2] = SDL_PIXELFORMAT_RGB565,
-            [3] = SDL_PIXELFORMAT_BGR565,
-            [4] = SDL_PIXELFORMAT_YV12,
-            [5] = SDL_PIXELFORMAT_IYUV,
-            [6] = SDL_PIXELFORMAT_NV12,
-            [7] = SDL_PIXELFORMAT_NV21,
-        },
+        .num_texture_formats = SDL_arraysize(VITA_GXM_TextureFormats),
+        .texture_formats = VITA_GXM_TextureFormats,
         .max_texture_width = 4096,
         .max_texture_height = 4096,
      }

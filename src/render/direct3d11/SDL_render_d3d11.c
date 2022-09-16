@@ -2448,6 +2448,15 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     return renderer;
 }
 
+static const Uint32 D3D11_TextureFormats[] = {
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_RGB888,
+    SDL_PIXELFORMAT_YV12,
+    SDL_PIXELFORMAT_IYUV,
+    SDL_PIXELFORMAT_NV12,
+    SDL_PIXELFORMAT_NV21
+};
+
 SDL_RenderDriver D3D11_RenderDriver = {
     D3D11_CreateRenderer,
     {
@@ -2456,18 +2465,11 @@ SDL_RenderDriver D3D11_RenderDriver = {
             SDL_RENDERER_ACCELERATED |
             SDL_RENDERER_PRESENTVSYNC |
             SDL_RENDERER_TARGETTEXTURE
-        ),                          /* flags.  see SDL_RendererFlags */
-        6,                          /* num_texture_formats */
-        {                           /* texture_formats */
-            SDL_PIXELFORMAT_ARGB8888,
-            SDL_PIXELFORMAT_RGB888,
-            SDL_PIXELFORMAT_YV12,
-            SDL_PIXELFORMAT_IYUV,
-            SDL_PIXELFORMAT_NV12,
-            SDL_PIXELFORMAT_NV21
-        },
-        0,                          /* max_texture_width: will be filled in later */
-        0                           /* max_texture_height: will be filled in later */
+        ),                                   /* flags.  see SDL_RendererFlags */
+        SDL_arraysize(D3D11_TextureFormats), /* num_texture_formats */
+        D3D11_TextureFormats,                /* texture_formats */
+        0,                                   /* max_texture_width: will be filled in later */
+        0                                    /* max_texture_height: will be filled in later */
     }
 };
 

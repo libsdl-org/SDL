@@ -657,6 +657,35 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd);
 
+#if !SDL_RENDER_DISABLED
+static void
+RenderDriverInfoExToLegacy(SDL_RendererInfo *info_legacy, const SDL_RendererInfoEx *info_ex)
+{
+    Uint32 i;
+
+    info_legacy->name = info_ex->name;
+    info_legacy->flags = info_ex->flags;
+    info_legacy->num_texture_formats = SDL_min(16, info_ex->num_texture_formats);
+
+    for (i = 0; i < info_legacy->num_texture_formats; ++i)
+        info_legacy->texture_formats[i] = info_ex->texture_formats[i];
+
+    info_legacy->max_texture_width = info_ex->max_texture_width;
+    info_legacy->max_texture_height = info_ex->max_texture_height;
+}
+
+static int
+GetRenderDriverInfoEx(int index, const SDL_RendererInfoEx ** info)
+{
+    if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
+        return SDL_SetError("index must be in the range of 0 - %d",
+                            SDL_GetNumRenderDrivers() - 1);
+    }
+    *info = &render_drivers[index]->info;
+    return 0;
+}
+#endif
+
 int
 SDL_GetNumRenderDrivers(void)
 {
@@ -671,12 +700,29 @@ int
 SDL_GetRenderDriverInfo(int index, SDL_RendererInfo * info)
 {
 #if !SDL_RENDER_DISABLED
-    if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
-        return SDL_SetError("index must be in the range of 0 - %d",
-                            SDL_GetNumRenderDrivers() - 1);
-    }
-    *info = render_drivers[index]->info;
-    return 0;
+    const SDL_RendererInfoEx *obtained_info_ex = NULL;
+    const int error_code = GetRenderDriverInfoEx(index, &obtained_info_ex);
+
+    if (obtained_info_ex != NULL)
+        RenderDriverInfoExToLegacy(info, obtained_info_ex);
+
+    return error_code;
+#else
+    return SDL_SetError("SDL not built with rendering support");
+#endif
+}
+
+int
+SDL_GetRenderDriverInfoEx(int index, SDL_RendererInfoEx * info)
+{
+#if !SDL_RENDER_DISABLED
+    const SDL_RendererInfoEx *obtained_info_ex = NULL;
+    const int error_code = GetRenderDriverInfoEx(index, &obtained_info_ex);
+
+    if (obtained_info_ex != NULL)
+        *info = render_drivers[index]->info;
+
+    return error_code;
 #else
     return SDL_SetError("SDL not built with rendering support");
 #endif
@@ -1127,6 +1173,15 @@ SDL_RenderGetWindow(SDL_Renderer *renderer)
 
 int
 SDL_GetRendererInfo(SDL_Renderer * renderer, SDL_RendererInfo * info)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    RenderDriverInfoExToLegacy(info, &renderer->info);
+    return 0;
+}
+
+int
+SDL_GetRendererInfoEx(SDL_Renderer * renderer, SDL_RendererInfoEx * info)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 

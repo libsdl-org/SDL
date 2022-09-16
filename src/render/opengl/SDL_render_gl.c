@@ -1916,19 +1916,12 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
                 data->shaders ? "ENABLED" : "DISABLED");
 #if SDL_HAVE_YUV
     /* We support YV12 textures using 3 textures and a shader */
-    if (data->shaders && data->num_texture_units >= 3) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
-    }
+    if (!data->shaders || data->num_texture_units < 3)
+        renderer->info.num_texture_formats -= 2;
 
     /* We support NV12 textures using 2 textures and a shader */
-    if (data->shaders && data->num_texture_units >= 2) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
-    }
-#endif
-#ifdef __MACOSX__
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
+    if (!data->shaders || data->num_texture_units < 2)
+        renderer->info.num_texture_formats -= 2;
 #endif
 
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
@@ -1977,19 +1970,27 @@ error:
     return NULL;
 }
 
+static const Uint32 GL_TextureFormats[8] = {
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_ABGR8888,
+    SDL_PIXELFORMAT_RGB888,
+    SDL_PIXELFORMAT_BGR888,
+#ifdef __MACOSX__
+    SDL_PIXELFORMAT_UYVY,
+#endif
+    SDL_PIXELFORMAT_NV12,
+    SDL_PIXELFORMAT_NV21,
+    SDL_PIXELFORMAT_YV12,
+    SDL_PIXELFORMAT_IYUV
+};
 
 SDL_RenderDriver GL_RenderDriver = {
     GL_CreateRenderer,
     {
      "opengl",
      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-     4,
-     {
-         SDL_PIXELFORMAT_ARGB8888,
-         SDL_PIXELFORMAT_ABGR8888,
-         SDL_PIXELFORMAT_RGB888,
-         SDL_PIXELFORMAT_BGR888
-     },
+     SDL_arraysize(GL_TextureFormats),
+     GL_TextureFormats,
      0,
      0}
 };

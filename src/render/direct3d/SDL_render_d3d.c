@@ -1749,10 +1749,9 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
                 D3D_SetError("CreatePixelShader()", result);
             }
         }
-        if (data->shaders[SHADER_YUV_JPEG] && data->shaders[SHADER_YUV_BT601] && data->shaders[SHADER_YUV_BT709]) {
-            renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-            renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
-        }
+        /* Disable YUV texture support if the shaders couldn't be compiled */
+        if (!data->shaders[SHADER_YUV_JPEG] || !data->shaders[SHADER_YUV_BT601] || !data->shaders[SHADER_YUV_BT709])
+            renderer->info.num_texture_formats -= 2;
     }
 #endif
     data->drawstate.viewport_dirty = SDL_TRUE;
@@ -1763,13 +1762,19 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     return renderer;
 }
 
+static const Uint32 D3D_TextureFormats[] = {
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_YV12,
+    SDL_PIXELFORMAT_IYUV
+};
+
 SDL_RenderDriver D3D_RenderDriver = {
     D3D_CreateRenderer,
     {
      "direct3d",
      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-     1,
-     {SDL_PIXELFORMAT_ARGB8888},
+     SDL_arraysize(D3D_TextureFormats),
+     D3D_TextureFormats,
      0,
      0}
 };

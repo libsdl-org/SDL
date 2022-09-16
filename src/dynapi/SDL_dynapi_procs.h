@@ -972,3 +972,5 @@ SDL_DYNAPI_PROC(void,SDL_GetJoystickGUIDInfo,(SDL_JoystickGUID a, Uint16 *b, Uin
 SDL_DYNAPI_PROC(int,SDL_SetPrimarySelectionText,(const char *a),(a),return)
 SDL_DYNAPI_PROC(char*,SDL_GetPrimarySelectionText,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasPrimarySelectionText,(void),(),return)
+SDL_DYNAPI_PROC(int,SDL_GetRenderDriverInfoEx,(int a, SDL_RendererInfoEx *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetRendererInfoEx,(SDL_Renderer *a, SDL_RendererInfoEx *b),(a,b),return)

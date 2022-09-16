@@ -195,7 +195,7 @@ typedef struct {
 static int
 SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
-    SDL_RendererInfo info;
+    SDL_RendererInfoEx info;
     SDL_WindowTextureData *data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
     int i;
 
@@ -212,23 +212,23 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
         /* Check to see if there's a specific driver requested */
         if (specific_accelerated_renderer) {
             for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
-                SDL_GetRenderDriverInfo(i, &info);
+                SDL_GetRenderDriverInfoEx(i, &info);
                 if (SDL_strcasecmp(info.name, hint) == 0) {
                     renderer = SDL_CreateRenderer(window, i, 0);
                     break;
                 }
             }
-            if (!renderer || (SDL_GetRendererInfo(renderer, &info) == -1)) {
+            if (!renderer || (SDL_GetRendererInfoEx(renderer, &info) == -1)) {
                 if (renderer) { SDL_DestroyRenderer(renderer); }
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
             }
             /* if it was specifically requested, even if SDL_RENDERER_ACCELERATED isn't set, we'll accept this renderer. */
         } else {
             for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
-                SDL_GetRenderDriverInfo(i, &info);
+                SDL_GetRenderDriverInfoEx(i, &info);
                 if (SDL_strcmp(info.name, "software") != 0) {
                     renderer = SDL_CreateRenderer(window, i, 0);
-                    if (renderer && (SDL_GetRendererInfo(renderer, &info) == 0) && (info.flags & SDL_RENDERER_ACCELERATED)) {
+                    if (renderer && (SDL_GetRendererInfoEx(renderer, &info) == 0) && (info.flags & SDL_RENDERER_ACCELERATED)) {
                         break;  /* this will work. */
                     }
                     if (renderer) {  /* wasn't accelerated, etc, skip it. */
@@ -254,7 +254,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
 
         data->renderer = renderer;
     } else {
-        if (SDL_GetRendererInfo(data->renderer, &info) == -1) {
+        if (SDL_GetRendererInfoEx(data->renderer, &info) == -1) {
             return -1;
         }
     }

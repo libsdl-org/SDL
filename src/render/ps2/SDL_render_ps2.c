@@ -815,16 +815,18 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     return renderer;
 }
 
+static const Uint32 PS2_TextureFormats[] = {
+    SDL_PIXELFORMAT_ABGR1555,
+    SDL_PIXELFORMAT_ABGR8888
+};
+
 SDL_RenderDriver PS2_RenderDriver = {
     .CreateRenderer = PS2_CreateRenderer,
     .info = {
         .name = "PS2 gsKit",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-        .num_texture_formats = 2,
-        .texture_formats = { 
-            [0] = SDL_PIXELFORMAT_ABGR1555,
-            [1] = SDL_PIXELFORMAT_ABGR8888,
-        },
+        .num_texture_formats = SDL_arraysize(PS2_TextureFormats),
+        .texture_formats = PS2_TextureFormats,
         .max_texture_width = 1024,
         .max_texture_height = 1024,
     }

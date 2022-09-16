@@ -405,14 +405,4 @@ DirectFB_SDLToDFBPixelFormat(Uint32 format)
     return DSPF_UNKNOWN;
 }
 
-void DirectFB_SetSupportedPixelFormats(SDL_RendererInfo* ri)
-{
-    int i, j;
-
-    for (i=0, j=0; pixelformat_tab[i].dfb != DSPF_UNKNOWN; i++)
-        if (pixelformat_tab[i].sdl != SDL_PIXELFORMAT_UNKNOWN)
-            ri->texture_formats[j++] = pixelformat_tab[i].sdl;
-    ri->num_texture_formats = j;
-}
-
 #endif /* SDL_VIDEO_DRIVER_DIRECTFB */

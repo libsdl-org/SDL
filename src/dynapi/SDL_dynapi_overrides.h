@@ -889,3 +889,5 @@
 #define SDL_SetPrimarySelectionText SDL_SetPrimarySelectionText_REAL
 #define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
 #define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL
+#define SDL_GetRenderDriverInfoEx SDL_GetRenderDriverInfoEx_REAL
+#define SDL_GetRendererInfoEx SDL_GetRendererInfoEx_REAL

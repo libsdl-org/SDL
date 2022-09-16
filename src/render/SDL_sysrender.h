@@ -202,7 +202,7 @@ struct SDL_Renderer
     void *(*GetMetalCommandEncoder) (SDL_Renderer * renderer);
 
     /* The current renderer info */
-    SDL_RendererInfo info;
+    SDL_RendererInfoEx info;
 
     /* The window associated with the renderer */
     SDL_Window *window;
@@ -281,7 +281,7 @@ struct SDL_RenderDriver
     SDL_Renderer *(*CreateRenderer) (SDL_Window * window, Uint32 flags);
 
     /* Info about the renderer capabilities */
-    SDL_RendererInfo info;
+    SDL_RendererInfoEx info;
 };
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */

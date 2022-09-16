@@ -2202,15 +2202,6 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->SetVSync            = GLES2_SetVSync;
     renderer->GL_BindTexture      = GLES2_BindTexture;
     renderer->GL_UnbindTexture    = GLES2_UnbindTexture;
-#if SDL_HAVE_YUV
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
-#endif
-#ifdef GL_TEXTURE_EXTERNAL_OES
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
-#endif
 
     /* Set up parameters for rendering */
     data->glActiveTexture(GL_TEXTURE0);
@@ -2243,18 +2234,29 @@ error:
     return NULL;
 }
 
+static const Uint32 GLES2_TextureFormats[] = {
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_ABGR8888,
+    SDL_PIXELFORMAT_RGB888,
+    SDL_PIXELFORMAT_BGR888,
+#if SDL_HAVE_YUV
+    SDL_PIXELFORMAT_YV12,
+    SDL_PIXELFORMAT_IYUV,
+    SDL_PIXELFORMAT_NV12,
+    SDL_PIXELFORMAT_NV21,
+#endif
+#ifdef GL_TEXTURE_EXTERNAL_OES
+    SDL_PIXELFORMAT_EXTERNAL_OES,
+#endif
+};
+
 SDL_RenderDriver GLES2_RenderDriver = {
     GLES2_CreateRenderer,
     {
         "opengles2",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-        4,
-        {
-        SDL_PIXELFORMAT_ARGB8888,
-        SDL_PIXELFORMAT_ABGR8888,
-        SDL_PIXELFORMAT_RGB888,
-        SDL_PIXELFORMAT_BGR888
-        },
+        SDL_arraysize(GLES2_TextureFormats),
+        GLES2_TextureFormats,
         0,
         0
     }

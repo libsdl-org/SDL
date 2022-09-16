@@ -159,7 +159,6 @@ struct _DFB_DeviceData
 
 Uint32 DirectFB_DFBToSDLPixelFormat(DFBSurfacePixelFormat pixelformat);
 DFBSurfacePixelFormat DirectFB_SDLToDFBPixelFormat(Uint32 format);
-void DirectFB_SetSupportedPixelFormats(SDL_RendererInfo *ri);
 
 
 #endif /* SDL_DirectFB_video_h_ */

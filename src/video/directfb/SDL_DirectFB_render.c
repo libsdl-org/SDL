@@ -1224,8 +1224,6 @@ DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
         renderer->info.flags |= SDL_RENDERER_SINGLEBUFFER;
 #endif
 
-    DirectFB_SetSupportedPixelFormats(&renderer->info);
-
 #if 0
     /* Set up a palette watch on the display palette */
     if (display-> palette) {
@@ -1241,6 +1239,31 @@ DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
     return NULL;
 }
 
+static const Uint32 DirectFB_TextureFormats[] = {
+    SDL_PIXELFORMAT_RGB888,
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_RGB565,
+    SDL_PIXELFORMAT_RGB332,
+    SDL_PIXELFORMAT_ARGB4444,
+    SDL_PIXELFORMAT_ARGB1555,
+    SDL_PIXELFORMAT_RGB24,
+    SDL_PIXELFORMAT_RGB444,
+    SDL_PIXELFORMAT_YV12,
+    SDL_PIXELFORMAT_IYUV,
+    SDL_PIXELFORMAT_YUY2,
+    SDL_PIXELFORMAT_UYVY,
+    SDL_PIXELFORMAT_RGB555,
+#if (DFB_VERSION_ATLEAST(1,5,0))
+    SDL_PIXELFORMAT_ABGR8888,
+#endif
+#if (ENABLE_LUT8)
+    SDL_PIXELFORMAT_INDEX8,
+#endif
+
+#if (DFB_VERSION_ATLEAST(1,2,0))
+    SDL_PIXELFORMAT_BGR555,
+#endif
+};
 
 SDL_RenderDriver DirectFB_RenderDriver = {
     DirectFB_CreateRenderer,
@@ -1253,10 +1276,8 @@ SDL_RenderDriver DirectFB_RenderDriver = {
       SDL_BLENDMODE_ADD | SDL_BLENDMODE_MOD),
      (SDL_SCALEMODE_NONE | SDL_SCALEMODE_FAST |
       SDL_SCALEMODE_SLOW | SDL_SCALEMODE_BEST), */
-     0,
-     {
-             /* formats filled in later */
-     },
+     SDL_arraysize(DirectFB_TextureFormats),
+     DirectFB_TextureFormats,
      0,
      0}
 };

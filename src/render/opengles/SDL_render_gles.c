@@ -1208,13 +1208,17 @@ error:
     return NULL;
 }
 
+static const Uint32 GLES_TextureFormats[] = {
+    SDL_PIXELFORMAT_ABGR8888
+};
+
 SDL_RenderDriver GLES_RenderDriver = {
     GLES_CreateRenderer,
     {
      "opengles",
      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-     1,
-     {SDL_PIXELFORMAT_ABGR8888},
+     SDL_arraysize(GLES_TextureFormats),
+     GLES_TextureFormats,
      0,
      0
     }

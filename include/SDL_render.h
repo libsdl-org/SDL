@@ -73,7 +73,7 @@ typedef enum
 } SDL_RendererFlags;
 
 /**
- * Information on the capabilities of a render driver or context.
+ * Information on the capabilities of a render driver or context (legacy version).
  */
 typedef struct SDL_RendererInfo
 {
@@ -84,6 +84,19 @@ typedef struct SDL_RendererInfo
     int max_texture_width;      /**< The maximum texture width */
     int max_texture_height;     /**< The maximum texture height */
 } SDL_RendererInfo;
+
+/**
+ * Information on the capabilities of a render driver or context.
+ */
+typedef struct SDL_RendererInfoEx
+{
+    const char *name;              /**< The name of the renderer */
+    Uint32 flags;                  /**< Supported ::SDL_RendererFlags */
+    Uint32 num_texture_formats;    /**< The number of available texture formats */
+    const Uint32 *texture_formats; /**< The available texture formats */
+    int max_texture_width;         /**< The maximum texture width */
+    int max_texture_height;        /**< The maximum texture height */
+} SDL_RendererInfoEx;
 
 /**
  *  Vertex structure
@@ -165,11 +178,15 @@ typedef struct SDL_Texture SDL_Texture;
  *
  * \sa SDL_CreateRenderer
  * \sa SDL_GetRenderDriverInfo
+ * \sa SDL_GetRenderDriverInfoEx
  */
 extern DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
 
 /**
  * Get info about a specific 2D rendering driver for the current display.
+ *
+ * This has been deprecated in favor of SDL_GetRenderDriverInfoEx(), as this
+ * function can only list up to 16 texture formats.
  *
  * \param index the index of the driver to query information about
  * \param info an SDL_RendererInfo structure to be filled with information on
@@ -181,9 +198,31 @@ extern DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
  *
  * \sa SDL_CreateRenderer
  * \sa SDL_GetNumRenderDrivers
+ * \sa SDL_GetRenderDriverInfoEx
  */
 extern DECLSPEC int SDLCALL SDL_GetRenderDriverInfo(int index,
                                                     SDL_RendererInfo * info);
+
+/**
+ * Get info about a specific 2D rendering driver for the current display.
+ *
+ * This function replaces SDL_GetRenderDriverInfo(), allowing more than 16
+ * supported texture formats to be listed.
+ *
+ * \param index the index of the driver to query information about
+ * \param info an SDL_RendererInfoEx structure to be filled with information on
+ *             the rendering driver
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.26.0.
+ *
+ * \sa SDL_CreateRenderer
+ * \sa SDL_GetNumRenderDrivers
+ * \sa SDL_GetRenderDriverInfo
+ */
+extern DECLSPEC int SDLCALL SDL_GetRenderDriverInfoEx(int index,
+                                                      SDL_RendererInfoEx * info);
 
 /**
  * Create a window and default renderer.
@@ -223,6 +262,7 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(
  * \sa SDL_DestroyRenderer
  * \sa SDL_GetNumRenderDrivers
  * \sa SDL_GetRendererInfo
+ * \sa SDL_GetRendererInfoEx
  */
 extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window * window,
                                                int index, Uint32 flags);
@@ -275,6 +315,9 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_RenderGetWindow(SDL_Renderer *renderer)
 /**
  * Get information about a rendering context.
  *
+ * This has been deprecated in favor of SDL_GetRendererInfoEx(), as this
+ * function can only list up to 16 texture formats.
+ *
  * \param renderer the rendering context
  * \param info an SDL_RendererInfo structure filled with information about the
  *             current renderer
@@ -287,6 +330,25 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_RenderGetWindow(SDL_Renderer *renderer)
  */
 extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer * renderer,
                                                 SDL_RendererInfo * info);
+
+/**
+ * Get information about a rendering context.
+ *
+ * This function replaces SDL_GetRendererInfo(), allowing more than 16
+ * supported texture formats to be listed.
+ *
+ * \param renderer the rendering context
+ * \param info an SDL_RendererInfoEx structure filled with information about
+ *             the current renderer
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 2.26.0.
+ *
+ * \sa SDL_CreateRenderer
+ */
+extern DECLSPEC int SDLCALL SDL_GetRendererInfoEx(SDL_Renderer * renderer,
+                                                  SDL_RendererInfoEx * info);
 
 /**
  * Get the output size in pixels of a rendering context.
@@ -758,8 +820,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *rendere
  * Set a texture as the current rendering target.
  *
  * Before using this function, you should check the
- * `SDL_RENDERER_TARGETTEXTURE` bit in the flags of SDL_RendererInfo to see if
- * render targets are supported.
+ * `SDL_RENDERER_TARGETTEXTURE` bit in the flags of SDL_RendererInfoEx to see
+ * if render targets are supported.
  *
  * The default render target is the window for which the renderer was created.
  * To stop rendering to a texture and render to the window again, call this

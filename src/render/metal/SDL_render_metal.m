@@ -1932,20 +1932,22 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     return renderer;
 }}
 
+static const Uint32 METAL_TextureFormats[] = {
+    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_ABGR8888,
+    SDL_PIXELFORMAT_YV12,
+    SDL_PIXELFORMAT_IYUV,
+    SDL_PIXELFORMAT_NV12,
+    SDL_PIXELFORMAT_NV21
+};
+
 SDL_RenderDriver METAL_RenderDriver = {
     METAL_CreateRenderer,
     {
         "metal",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-        6,
-        {
-            SDL_PIXELFORMAT_ARGB8888,
-            SDL_PIXELFORMAT_ABGR8888,
-            SDL_PIXELFORMAT_YV12,
-            SDL_PIXELFORMAT_IYUV,
-            SDL_PIXELFORMAT_NV12,
-            SDL_PIXELFORMAT_NV21
-        },
+        SDL_arraysize(METAL_TextureFormats),
+        METAL_TextureFormats,
     0, 0,
     }
 };
