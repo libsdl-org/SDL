@@ -2495,6 +2495,7 @@ elseif(VITA)
   target_compile_definitions(sdl-build-options INTERFACE "-Dmemcpy=sceClibMemcpy")
   target_compile_definitions(sdl-build-options INTERFACE "-Dmemset=sceClibMemset")
   target_compile_definitions(sdl-build-options INTERFACE "-Dmemmove=sceClibMemmove")
+  target_compile_definitions(sdl-build-options INTERFACE "-Dmemcmp=sceClibMemcmp")
 
 #  CheckPTHREAD()
 

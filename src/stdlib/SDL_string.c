@@ -29,6 +29,10 @@
 #include "SDL_stdinc.h"
 #include "SDL_vacopy.h"
 
+#if defined(__vita__)
+#include <psp2/kernel/clib.h>
+#endif
+
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 #define SDL_isupperhex(X)   (((X) >= 'A') && ((X) <= 'F'))
 #define SDL_islowerhex(X)   (((X) >= 'a') && ((X) <= 'f'))
@@ -306,7 +310,18 @@ SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src,
 int
 SDL_memcmp(const void *s1, const void *s2, size_t len)
 {
-#if defined(HAVE_MEMCMP)
+#if defined(__vita__)
+    /*
+      Using memcmp on NULL is UB per POSIX / C99 7.21.1/2.
+      But, both linux and bsd allow that, with an exception:
+      zero length strings are always identical, so NULLs are never dereferenced.
+      sceClibMemcmp on PSVita doesn't allow that, so we check ourselves.
+    */
+    if (len == 0) {
+        return 0;
+    }
+    return sceClibMemcmp(s1, s2, len);
+#elif defined(HAVE_MEMCMP)
     return memcmp(s1, s2, len);
 #else
     char *s1p = (char *) s1;
