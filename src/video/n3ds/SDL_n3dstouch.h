@@ -18,30 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_N3DS
+#ifndef SDL_n3dstouch_h_
+#define SDL_n3dstouch_h_
 
-#include <3ds.h>
+void N3DS_InitTouch(void);
+void N3DS_QuitTouch(void);
+void N3DS_PollTouch(void);
 
-#include "../../events/SDL_events_c.h"
-#include "SDL_n3dsevents_c.h"
-#include "SDL_n3dstouch.h"
-
-void
-N3DS_PumpEvents(_THIS)
-{
-    hidScanInput();
-    N3DS_PollTouch();
-
-    if (!aptMainLoop()) {
-        SDL_Event ev;
-        ev.type = SDL_QUIT;
-        SDL_PushEvent(&ev);
-        return;
-    }
-}
-
-#endif /* SDL_VIDEO_DRIVER_N3DS */
+#endif /* SDL_n3dstouch_h_ */
 
 /* vi: set sts=4 ts=4 sw=4 expandtab: */
