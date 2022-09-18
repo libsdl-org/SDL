@@ -35,8 +35,14 @@ SDL_FORCE_INLINE void AddN3DSDisplay(gfxScreen_t screen);
 static int N3DS_VideoInit(_THIS);
 static void N3DS_VideoQuit(_THIS);
 static void N3DS_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+static int N3DS_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 static int N3DS_CreateWindow(_THIS, SDL_Window *window);
 static void N3DS_DestroyWindow(_THIS, SDL_Window *window);
+
+typedef struct
+{
+    gfxScreen_t screen;
+} DisplayDriverData;
 
 /* N3DS driver bootstrap functions */
 
@@ -61,6 +67,7 @@ N3DS_CreateDevice(void)
     device->VideoQuit = N3DS_VideoQuit;
 
     device->GetDisplayModes = N3DS_GetDisplayModes;
+    device->GetDisplayBounds = N3DS_GetDisplayBounds;
 
     device->CreateSDLWindow = N3DS_CreateWindow;
     device->DestroyWindow = N3DS_DestroyWindow;
@@ -100,9 +107,16 @@ AddN3DSDisplay(gfxScreen_t screen)
 {
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;
+    DisplayDriverData *display_driver_data = SDL_calloc(1, sizeof(DisplayDriverData));
+    if (display_driver_data == NULL) {
+        SDL_OutOfMemory();
+        return;
+    }
 
     SDL_zero(mode);
     SDL_zero(display);
+
+    display_driver_data->screen = screen;
 
     mode.w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
     mode.h = GSP_SCREEN_WIDTH;
@@ -110,9 +124,10 @@ AddN3DSDisplay(gfxScreen_t screen)
     mode.format = FRAMEBUFFER_FORMAT;
     mode.driverdata = NULL;
 
+    display.name = (screen == GFX_TOP) ? "N3DS top screen" : "N3DS bottom screen";
     display.desktop_mode = mode;
     display.current_mode = mode;
-    display.driverdata = NULL;
+    display.driverdata = display_driver_data;
 
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
@@ -132,20 +147,31 @@ N3DS_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 }
 
 static int
+N3DS_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+{
+    DisplayDriverData *driver_data = (DisplayDriverData *) display->driverdata;
+    if (driver_data == NULL) {
+        return -1;
+    }
+    rect->x = 0;
+    rect->y = (driver_data->screen == GFX_TOP) ? 0 : GSP_SCREEN_WIDTH;
+    rect->w = display->current_mode.w;
+    rect->h = display->current_mode.h;
+
+    return 0;
+}
+
+static int
 N3DS_CreateWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *drv_data = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
-    if (drv_data == NULL) {
+    DisplayDriverData *display_data;
+    SDL_WindowData *window_data = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
+    if (window_data == NULL) {
         return SDL_OutOfMemory();
     }
-
-    if (window->flags & SDL_WINDOW_N3DS_BOTTOM) {
-        drv_data->screen = GFX_BOTTOM;
-    } else {
-        drv_data->screen = GFX_TOP;
-    }
-
-    window->driverdata = drv_data;
+    display_data = (DisplayDriverData *) SDL_GetDisplayDriverData(window->display_index);
+    window_data->screen = display_data->screen;
+    window->driverdata = window_data;
     return 0;
 }
 
