@@ -31,11 +31,7 @@
 #endif
 
 SDL_FORCE_INLINE void N3DS_Init(void);
-SDL_FORCE_INLINE void N3DS_SetCPUSpeed(void);
 SDL_FORCE_INLINE void N3DS_Quit(void);
-
-#define HIGH_CLOCK 1
-#define L2_CACHE   2
 
 int
 main(int argc, char *argv[])
@@ -51,22 +47,10 @@ main(int argc, char *argv[])
 SDL_FORCE_INLINE void
 N3DS_Init(void)
 {
-    N3DS_SetCPUSpeed();
+    osSetSpeedupEnable(true);
     romfsInit();
     gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
     hidInit();
-}
-
-/* If available, enable L2 cache and high CPU clock */
-SDL_FORCE_INLINE void
-N3DS_SetCPUSpeed(void)
-{
-    if (R_SUCCEEDED(ptmSysmInit())) {
-        if (R_SUCCEEDED(PTMSYSM_CheckNew3DS())) {
-            PTMSYSM_ConfigureNew3DSCPU(HIGH_CLOCK | L2_CACHE);
-        }
-        ptmSysmExit();
-    }
 }
 
 SDL_FORCE_INLINE void
