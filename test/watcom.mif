@@ -78,6 +78,10 @@ all: testutils.lib $(TARGETS)
   wcc386 $(CFLAGS) -fo=$^@ $<
 
 # specials
+testvulkan.obj: testvulkan.c
+  # new vulkan headers result in lots of W202 warnings
+  wcc386 $(CFLAGS) -wcd=202 -fo=$^@ $<
+
 testautomation.exe: $(TAOBJS)
   wlink SYS $(SYSTEM) libpath $(LIBPATH) lib {$(LIBS)} op q op el file {$<} name $@
 
