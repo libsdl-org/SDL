@@ -49,15 +49,11 @@ N3DS_Init(void)
 {
     osSetSpeedupEnable(true);
     romfsInit();
-    gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
-    hidInit();
 }
 
 SDL_FORCE_INLINE void
 N3DS_Quit(void)
 {
-    hidExit();
-    gfxExit();
     romfsExit();
 }
 

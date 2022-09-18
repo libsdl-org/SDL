@@ -95,6 +95,9 @@ VideoBootStrap N3DS_bootstrap = { N3DSVID_DRIVER_NAME, "N3DS Video Driver", N3DS
 static int
 N3DS_VideoInit(_THIS)
 {
+    gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
+    hidInit();
+
     AddN3DSDisplay(GFX_TOP);
     AddN3DSDisplay(GFX_BOTTOM);
 
@@ -139,7 +142,9 @@ N3DS_VideoQuit(_THIS)
 {
     N3DS_SwkbQuit();
     N3DS_QuitTouch();
-    return;
+
+    hidExit();
+    gfxExit();
 }
 
 static void
