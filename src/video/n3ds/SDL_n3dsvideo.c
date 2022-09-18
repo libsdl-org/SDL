@@ -26,6 +26,7 @@
 #include "SDL_n3dsevents_c.h"
 #include "SDL_n3dsframebuffer_c.h"
 #include "SDL_n3dsswkb.h"
+#include "SDL_n3dstouch.h"
 #include "SDL_n3dsvideo.h"
 
 #define N3DSVID_DRIVER_NAME "n3ds"
@@ -97,6 +98,7 @@ N3DS_VideoInit(_THIS)
     AddN3DSDisplay(GFX_TOP);
     AddN3DSDisplay(GFX_BOTTOM);
 
+    N3DS_InitTouch();
     N3DS_SwkbInit();
 
     return 0;
@@ -136,6 +138,7 @@ static void
 N3DS_VideoQuit(_THIS)
 {
     N3DS_SwkbQuit();
+    N3DS_QuitTouch();
     return;
 }
 

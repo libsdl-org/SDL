@@ -45,15 +45,6 @@
 */
 #define CORRECTION_FACTOR_Y -CORRECTION_FACTOR_X
 
-/*
-  Factors used to convert touchscreen coordinates to
-  SDL's 0-1 values. Note that the N3DS's screen is
-  internally in a portrait disposition so the
-  GSP_SCREEN constants are flipped.
-*/
-#define TOUCHPAD_SCALE_X 1.0f / GSP_SCREEN_HEIGHT_BOTTOM
-#define TOUCHPAD_SCALE_Y 1.0f / GSP_SCREEN_WIDTH
-
 typedef struct N3DSJoystickState
 {
     u32 kDown;
@@ -67,7 +58,6 @@ typedef struct N3DSJoystickState
 SDL_FORCE_INLINE void UpdateAxis(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
 SDL_FORCE_INLINE void UpdateButtons(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
 SDL_FORCE_INLINE void UpdateSensors(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
-SDL_FORCE_INLINE void UpdateTouch(SDL_Joystick *joystick);
 
 static N3DSJoystickState current_state;
 static SDL_bool sensors_enabled = SDL_FALSE;
@@ -116,7 +106,6 @@ N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
-    SDL_PrivateJoystickAddTouchpad(joystick, 1);
 
     return 0;
 }
@@ -132,11 +121,9 @@ static void
 N3DS_JoystickUpdate(SDL_Joystick *joystick)
 {
     N3DSJoystickState previous_state = current_state;
-    hidScanInput();
 
     UpdateAxis(joystick, &previous_state);
     UpdateButtons(joystick, &previous_state);
-    UpdateTouch(joystick);
 
     if (sensors_enabled) {
         UpdateSensors(joystick, &previous_state);
@@ -195,23 +182,6 @@ UpdateButtons(SDL_Joystick *joystick, N3DSJoystickState *previous_state)
             }
         }
     }
-}
-
-SDL_FORCE_INLINE void
-UpdateTouch(SDL_Joystick *joystick)
-{
-    touchPosition touch;
-    Uint8 state;
-    hidTouchRead(&touch);
-    state = (touch.px == 0 && touch.py == 0) ? SDL_RELEASED : SDL_PRESSED;
-
-    SDL_PrivateJoystickTouchpad(joystick,
-                                0,
-                                0,
-                                state,
-                                touch.px * TOUCHPAD_SCALE_X,
-                                touch.py * TOUCHPAD_SCALE_Y,
-                                state == SDL_PRESSED ? 1.0f : 0.0f);
 }
 
 SDL_FORCE_INLINE void
