@@ -83,8 +83,6 @@ N3DS_CreateDevice(void)
     device->UpdateWindowFramebuffer = SDL_N3DS_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = SDL_N3DS_DestroyWindowFramebuffer;
 
-    device->num_displays = 2;
-
     device->free = N3DS_DeleteDevice;
 
     return device;
