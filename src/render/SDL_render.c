@@ -33,6 +33,10 @@
 #include "../core/android/SDL_android.h"
 #endif
 
+#if defined(__3DS__)
+#  include "../core/n3ds/SDL_n3ds.h"
+#endif
+
 /* as a courtesy to iOS apps, we don't try to draw when in the background, as
 that will crash the app. However, these apps _should_ have used
 SDL_AddEventWatch to catch SDL_APP_WILLENTERBACKGROUND events and stopped
@@ -121,6 +125,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #endif
 #if SDL_VIDEO_RENDER_DIRECTFB
     &DirectFB_RenderDriver,
+#endif
+#if SDL_VIDEO_RENDER_N3DS
+    &N3DS_RenderDriver,
 #endif
 #if SDL_VIDEO_RENDER_PS2
     &PS2_RenderDriver,
@@ -306,7 +313,12 @@ void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, 
             newsize *= 2;
         }
 
+#ifdef __3DS__
+        /* The 3DS GPU expects vertex data to be linear in physical memory. */
+        ptr = N3DS_linearRealloc(renderer->vertex_data, newsize);
+#else
         ptr = SDL_realloc(renderer->vertex_data, newsize);
+#endif
 
         if (!ptr) {
             SDL_OutOfMemory();
@@ -906,7 +918,7 @@ static SDL_INLINE void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
         have to check that they aren't NULL over and over. */
     SDL_assert(renderer->QueueSetViewport != NULL);
     SDL_assert(renderer->QueueSetDrawColor != NULL);
-    SDL_assert(renderer->QueueDrawPoints != NULL);
+    SDL_assert(renderer->QueueDrawPoints != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->QueueDrawLines != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->QueueFillRects != NULL || renderer->QueueGeometry != NULL);
     SDL_assert(renderer->QueueCopy != NULL || renderer->QueueGeometry != NULL);
@@ -2929,7 +2941,7 @@ static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x
         }
     }
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f || renderer->point_method == SDL_RENDERPOINTMETHOD_GEOMETRY) {
         retval = RenderDrawPointsWithRectsF(renderer, points, numpixels);
     } else {
         retval = QueueCmdDrawPoints(renderer, points, numpixels);
@@ -4380,7 +4392,11 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
         cmd = next;
     }
 
+#ifdef __3DS__
+    N3DS_linearFree(renderer->vertex_data);
+#else
     SDL_free(renderer->vertex_data);
+#endif
 
     /* Free existing textures for this renderer */
     while (renderer->textures) {

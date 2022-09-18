@@ -215,7 +215,11 @@ add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
 
 if(N3DS)
-    sdltest_link_librararies(SDL2::SDL2main)
+    sdltest_link_librararies(
+        SDL2::SDL2main
+        SDL2::SDL2-static
+        citro3d
+	)
 endif()
 
 if(PSP)
