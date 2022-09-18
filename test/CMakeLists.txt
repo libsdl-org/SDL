@@ -70,7 +70,11 @@ if(SDL_INSTALL_TESTS)
 endif()
 
 if(N3DS)
-    link_libraries(SDL2::SDL2main)
+    link_libraries(
+        SDL2::SDL2main
+        SDL2::SDL2-static
+        citro3d
+	)
 endif()
 
 if(PSP)

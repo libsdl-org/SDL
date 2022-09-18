@@ -2854,6 +2854,9 @@ elseif(N3DS)
   file(GLOB N3DS_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/n3ds/*.c)
   set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${N3DS_MAIN_SOURCES})
 
+  file(GLOB N3DS_CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/n3ds/*.c)
+  list(APPEND SOURCE_FILES ${N3DS_CORE_SOURCES})
+
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_N3DS 1)
     file(GLOB N3DS_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/n3ds/*.c)
@@ -2907,8 +2910,10 @@ elseif(N3DS)
 
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_N3DS 1)
-    file(GLOB N3DS_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/n3ds/*.c)
+    set(SDL_VIDEO_RENDER_N3DS 1)
+    file(GLOB N3DS_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/n3ds/*.c ${SDL2_SOURCE_DIR}/src/render/n3ds/*.c)
     list(APPEND SOURCE_FILES ${N3DS_VIDEO_SOURCES})
+    set(SDL_VIDEO_OPENGL 0)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
 
