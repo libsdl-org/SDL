@@ -96,8 +96,7 @@ N3DS_JoystickGetCount(void)
 static SDL_JoystickGUID
 N3DS_JoystickGetDeviceGUID(int device_index)
 {
-    /* GUID corresponds to the name "Nintendo 3DS map" */
-    SDL_JoystickGUID guid = { { 0x4e, 0x69, 0x6e, 0x74, 0x65, 0x6e, 0x64, 0x6f, 0x20, 0x33, 0x44, 0x53, 0x20, 0x6d, 0x61, 0x70 } };
+    SDL_JoystickGUID guid = SDL_CreateJoystickGUIDForName("Nintendo 3DS");
     return guid;
 }
 
