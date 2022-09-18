@@ -22,6 +22,5 @@ cmake --install build
 ## Notes
 
 -   Currently only software rendering is supported.
--   Window are created on the top screen by default, use the `SDL_WINDOW_N3DS_BOTTOM` flag to put them on the bottom screen.
--   SDL2main should be used to ensure all the necessary services are initialised.
--   By default, the extra L2 cache and higher clock speeds of the New 2/3DS lineup are enabled. If you wish to turn it off, [use the PTMSYSM service](https://libctru.devkitpro.org/ptmsysm_8h.html#ae3a437bfd0de05fbc5ba9a460d148430) to turn it off in your program.
+-   SDL2main should be used to ensure ROMFS is enabled.
+-   By default, the extra L2 cache and higher clock speeds of the New 2/3DS lineup are enabled. If you wish to turn it off, use `osSetSpeedupEnable(false)` in your main function.
