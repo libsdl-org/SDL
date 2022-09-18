@@ -20,6 +20,7 @@
 */
 
 #include "SDL_rwopsromfs.h"
+#include "SDL_error.h"
 
 /* Nintendo 3DS applications may embed resources in the executable. The
   resources are stored in a special read-only partition prefixed with
@@ -30,7 +31,7 @@ FILE *
 N3DS_FileOpen(const char *file, const char *mode)
 {
     FILE *fp = NULL;
-    char romfs_path[4096];
+    char *romfs_path;
 
     /* romfs are read-only */
     if (SDL_strchr(mode, 'r') == NULL) {
@@ -43,13 +44,17 @@ N3DS_FileOpen(const char *file, const char *mode)
         return fopen(file, mode);
     }
 
-    SDL_snprintf(romfs_path, 4096, "romfs:/%s", file);
+    if (SDL_asprintf(&romfs_path, "romfs:/%s", file) < 0) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
     fp = fopen(romfs_path, mode);
     if (fp == NULL) {
         fp = fopen(file, mode);
     }
 
+    SDL_free(romfs_path);
     return fp;
 }
 

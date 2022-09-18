@@ -52,6 +52,10 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     pref_path = MakePrefPath(app);
+    if (pref_path == NULL) {
+        return NULL;
+    }
+
     if (CreatePrefPathDir(pref_path) < 0) {
         SDL_free(pref_path);
         return NULL;
@@ -63,10 +67,11 @@ SDL_GetPrefPath(const char *org, const char *app)
 SDL_FORCE_INLINE char *
 MakePrefPath(const char *app)
 {
-    static const char *FMT = "/3ds/%s/";
-    size_t length = SDL_snprintf(NULL, 0, FMT, app) + 1;
-    char *pref_path = (char *) SDL_calloc(length, sizeof(char));
-    SDL_snprintf(pref_path, length, FMT, app);
+    char *pref_path;
+    if (SDL_asprintf(&pref_path, "/3ds/%s/", app) < 0) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
     return pref_path;
 }
 
