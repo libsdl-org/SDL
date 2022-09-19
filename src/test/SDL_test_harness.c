@@ -463,7 +463,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         while (testSuites[suiteCounter] && suiteFilter == 0) {
             testSuite = testSuites[suiteCounter];
             suiteCounter++;
-            if (testSuite->name != NULL && SDL_strcmp(filter, testSuite->name) == 0) {
+            if (testSuite->name != NULL && SDL_strcasecmp(filter, testSuite->name) == 0) {
                 /* Matched a suite name */
                 suiteFilter = 1;
                 suiteFilterName = testSuite->name;
@@ -476,7 +476,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             while (testSuite->testCases[testCounter] && testFilter == 0) {
                 testCase = testSuite->testCases[testCounter];
                 testCounter++;
-                if (testCase->name != NULL && SDL_strcmp(filter, testCase->name) == 0) {
+                if (testCase->name != NULL && SDL_strcasecmp(filter, testCase->name) == 0) {
                     /* Matched a test name */
                     suiteFilter = 1;
                     suiteFilterName = testSuite->name;
@@ -517,7 +517,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
         /* Filter suite if flag set and we have a name */
         if (suiteFilter == 1 && suiteFilterName != NULL && testSuite->name != NULL &&
-            SDL_strcmp(suiteFilterName, testSuite->name) != 0) {
+            SDL_strcasecmp(suiteFilterName, testSuite->name) != 0) {
                 /* Skip suite */
                 SDLTest_Log("===== Test Suite %i: '%s' skipped\n",
                     suiteCounter,
@@ -547,7 +547,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
                 /* Filter tests if flag set and we have a name */
                 if (testFilter == 1 && testFilterName != NULL && testCase->name != NULL &&
-                    SDL_strcmp(testFilterName, testCase->name) != 0) {
+                    SDL_strcasecmp(testFilterName, testCase->name) != 0) {
                         /* Skip test */
                         SDLTest_Log("===== Test Case %i.%i: '%s' skipped\n",
                             suiteCounter,
