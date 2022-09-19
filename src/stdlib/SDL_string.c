@@ -1141,7 +1141,8 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                 DO_SHORT,
                 DO_INT,
                 DO_LONG,
-                DO_LONGLONG
+                DO_LONGLONG,
+                DO_SIZE_T
             } inttype = DO_INT;
             size_t advance;
             SDL_bool suppress = SDL_FALSE;
@@ -1205,6 +1206,9 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                         inttype = DO_LONGLONG;
                     }
                     break;
+                case 'z':
+                    inttype = DO_SIZE_T;
+                    break;
                 case 'i':
                     {
                         int index = 0;
@@ -1228,6 +1232,15 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                         if (advance && !suppress) {
                             Sint64 *valuep = va_arg(ap, Sint64 *);
                             *valuep = value;
+                            ++retval;
+                        }
+                    } else if (inttype == DO_SIZE_T) {
+                        Sint64 value = 0;
+                        advance = SDL_ScanLongLong(text, count, radix, &value);
+                        text += advance;
+                        if (advance && !suppress) {
+                            size_t *valuep = va_arg(ap, size_t *);
+                            *valuep = (size_t)value;
                             ++retval;
                         }
                     } else {
@@ -1255,6 +1268,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                                 }
                                 break;
                             case DO_LONGLONG:
+                            case DO_SIZE_T:
                                 /* Handled above */
                                 break;
                             }
@@ -1284,6 +1298,15 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                             *valuep = value;
                             ++retval;
                         }
+                    } else if (inttype == DO_SIZE_T) {
+                        Uint64 value = 0;
+                        advance = SDL_ScanUnsignedLongLong(text, count, radix, &value);
+                        text += advance;
+                        if (advance && !suppress) {
+                            size_t *valuep = va_arg(ap, size_t *);
+                            *valuep = (size_t)value;
+                            ++retval;
+                        }
                     } else {
                         unsigned long value = 0;
                         advance = SDL_ScanUnsignedLong(text, count, radix, &value);
@@ -1309,6 +1332,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                                 }
                                 break;
                             case DO_LONGLONG:
+                            case DO_SIZE_T:
                                 /* Handled above */
                                 break;
                             }
@@ -1652,7 +1676,8 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
             {
                 DO_INT,
                 DO_LONG,
-                DO_LONGLONG
+                DO_LONGLONG,
+                DO_SIZE_T
             } inttype = DO_INT;
 
             SDL_zero(info);
@@ -1735,6 +1760,9 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                         inttype = DO_LONGLONG;
                     }
                     break;
+                case 'z':
+                    inttype = DO_SIZE_T;
+                    break;
                 case 'i':
                 case 'd':
                     if (info.precision >= 0) {
@@ -1752,6 +1780,10 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                     case DO_LONGLONG:
                         length += SDL_PrintLongLong(TEXT_AND_LEN_ARGS, &info,
                                                 va_arg(ap, Sint64));
+                        break;
+                    case DO_SIZE_T:
+                        length += SDL_PrintLongLong(TEXT_AND_LEN_ARGS, &info,
+                                                    va_arg(ap, size_t));
                         break;
                     }
                     done = SDL_TRUE;
@@ -1794,6 +1826,10 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                     case DO_LONGLONG:
                         length += SDL_PrintUnsignedLongLong(TEXT_AND_LEN_ARGS, &info,
                                                         va_arg(ap, Uint64));
+                        break;
+                    case DO_SIZE_T:
+                        length += SDL_PrintUnsignedLongLong(TEXT_AND_LEN_ARGS, &info,
+                                                            va_arg(ap, size_t));
                         break;
                     }
                     done = SDL_TRUE;
