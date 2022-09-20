@@ -1364,7 +1364,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                     break;
                 case 'f':
                     {
-                        double value = 0;
+                        double value = 0.0;
                         advance = SDL_ScanFloat(text, &value);
                         text += advance;
                         if (advance && !suppress) {
