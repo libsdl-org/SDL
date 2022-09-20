@@ -53,7 +53,7 @@ static unsigned UTF8_TrailingBytes(unsigned char c)
         return 0;
 }
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL)
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOD)
 static size_t
 SDL_ScanLong(const char *text, int count, int radix, long *valuep)
 {
