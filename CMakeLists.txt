@@ -2778,8 +2778,8 @@ elseif(N3DS)
 
   if(SDL_TIMERS)
     set(SDL_TIMER_N3DS 1)
-    file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/n3ds/*.c)
-    list(APPEND SOURCE_FILES ${TIMER_SOURCES})
+    file(GLOB N3DS_TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/n3ds/*.c)
+    list(APPEND SOURCE_FILES ${N3DS_TIMER_SOURCES})
     set(HAVE_SDL_TIMERS TRUE)
   endif()
 
