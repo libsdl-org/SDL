@@ -105,6 +105,10 @@ SDL_ScanUnsignedLong(const char *text, int count, int radix, unsigned long *valu
     const char *textstart = text;
     unsigned long value = 0;
 
+    if (*text == '-') {
+        return SDL_ScanLong(text, count, radix, (long *)valuep);
+    }
+
     if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
         text += 2;
     }
@@ -217,6 +221,10 @@ SDL_ScanUnsignedLongLong(const char *text, int count, int radix, Uint64 * valuep
 {
     const char *textstart = text;
     Uint64 value = 0;
+
+    if (*text == '-') {
+        return SDL_ScanLongLong(text, count, radix, (Sint64 *)valuep);
+    }
 
     if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
         text += 2;
