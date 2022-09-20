@@ -53,7 +53,7 @@ static unsigned UTF8_TrailingBytes(unsigned char c)
         return 0;
 }
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOD)
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD)
 static size_t
 SDL_ScanLong(const char *text, int count, int radix, long *valuep)
 {
@@ -170,7 +170,7 @@ SDL_ScanUintPtrT(const char *text, int radix, uintptr_t * valuep)
 }
 #endif
 
-#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOLL)
+#if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 static size_t
 SDL_ScanLongLong(const char *text, int count, int radix, Sint64 * valuep)
 {
