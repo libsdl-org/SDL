@@ -657,6 +657,7 @@ ac_includes_default="\
 
 ac_header_c_list=
 ac_subst_vars='LTLIBOBJS
+LIBOBJS
 WAYLAND_SCANNER_CODE_MODE
 WAYLAND_SCANNER
 EXTRA_LDFLAGS
@@ -718,8 +719,6 @@ JACK_LIBS
 JACK_CFLAGS
 ALSA_LIBS
 ALSA_CFLAGS
-POW_LIB
-LIBOBJS
 ALLOCA
 CPP
 LIBTOOLLINKERTAG
@@ -19118,198 +19117,6 @@ printf "%s\n" "#define STACK_DIRECTION $ac_cv_c_stack_direction" >>confdefs.h
 fi
 
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working memcmp" >&5
-printf %s "checking for working memcmp... " >&6; }
-if test ${ac_cv_func_memcmp_working+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test "$cross_compiling" = yes
-then :
-  ac_cv_func_memcmp_working=no
-else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$ac_includes_default
-int
-main (void)
-{
-
-  /* Some versions of memcmp are not 8-bit clean.  */
-  char c0 = '\100', c1 = '\200', c2 = '\201';
-  if (memcmp(&c0, &c2, 1) >= 0 || memcmp(&c1, &c2, 1) >= 0)
-    return 1;
-
-  /* The Next x86 OpenStep bug shows up only when comparing 16 bytes
-     or more and with at least one buffer not starting on a 4-byte boundary.
-     William Lewis provided this test program.   */
-  {
-    char foo[21];
-    char bar[21];
-    int i;
-    for (i = 0; i < 4; i++)
-      {
-	char *a = foo + i;
-	char *b = bar + i;
-	strcpy (a, "--------01111111");
-	strcpy (b, "--------10000000");
-	if (memcmp (a, b, 16) >= 0)
-	  return 1;
-      }
-    return 0;
-  }
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  ac_cv_func_memcmp_working=yes
-else $as_nop
-  ac_cv_func_memcmp_working=no
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_memcmp_working" >&5
-printf "%s\n" "$ac_cv_func_memcmp_working" >&6; }
-test $ac_cv_func_memcmp_working = no && case " $LIBOBJS " in
-  *" memcmp.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS memcmp.$ac_objext"
- ;;
-esac
-
-
-    if test x$ac_cv_func_memcmp_working = xyes; then
-
-printf "%s\n" "#define HAVE_MEMCMP 1" >>confdefs.h
-
-    fi
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for working strtod" >&5
-printf %s "checking for working strtod... " >&6; }
-if test ${ac_cv_func_strtod+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test "$cross_compiling" = yes
-then :
-  ac_cv_func_strtod=no
-else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-$ac_includes_default
-#ifndef strtod
-double strtod ();
-#endif
-int
-main (void)
-{
-  {
-    /* Some versions of Linux strtod mis-parse strings with leading '+'.  */
-    char *string = " +69";
-    char *term;
-    double value;
-    value = strtod (string, &term);
-    if (value != 69 || term != (string + 4))
-      return 1;
-  }
-
-  {
-    /* Under Solaris 2.4, strtod returns the wrong value for the
-       terminating character under some conditions.  */
-    char *string = "NaN";
-    char *term;
-    strtod (string, &term);
-    if (term != string && *(term - 1) == 0)
-      return 1;
-  }
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  ac_cv_func_strtod=yes
-else $as_nop
-  ac_cv_func_strtod=no
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_strtod" >&5
-printf "%s\n" "$ac_cv_func_strtod" >&6; }
-if test $ac_cv_func_strtod = no; then
-  case " $LIBOBJS " in
-  *" strtod.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS strtod.$ac_objext"
- ;;
-esac
-
-ac_fn_c_check_func "$LINENO" "pow" "ac_cv_func_pow"
-if test "x$ac_cv_func_pow" = xyes
-then :
-
-fi
-
-if test $ac_cv_func_pow = no; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pow in -lm" >&5
-printf %s "checking for pow in -lm... " >&6; }
-if test ${ac_cv_lib_m_pow+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char pow ();
-int
-main (void)
-{
-return pow ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_m_pow=yes
-else $as_nop
-  ac_cv_lib_m_pow=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_pow" >&5
-printf "%s\n" "$ac_cv_lib_m_pow" >&6; }
-if test "x$ac_cv_lib_m_pow" = xyes
-then :
-  POW_LIB=-lm
-else $as_nop
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cannot find library containing definition of pow" >&5
-printf "%s\n" "$as_me: WARNING: cannot find library containing definition of pow" >&2;}
-fi
-
-fi
-
-fi
-
-    if test x$ac_cv_func_strtod = xyes; then
-
-printf "%s\n" "#define HAVE_STRTOD 1" >>confdefs.h
-
-    fi
     ac_fn_c_check_func "$LINENO" "mprotect" "ac_cv_func_mprotect"
 if test "x$ac_cv_func_mprotect" = xyes
 then :
@@ -19414,6 +19221,12 @@ ac_fn_c_check_func "$LINENO" "memset" "ac_cv_func_memset"
 if test "x$ac_cv_func_memset" = xyes
 then :
   printf "%s\n" "#define HAVE_MEMSET 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "memcmp" "ac_cv_func_memcmp"
+if test "x$ac_cv_func_memcmp" = xyes
+then :
+  printf "%s\n" "#define HAVE_MEMCMP 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "memcpy" "ac_cv_func_memcpy"
@@ -19594,6 +19407,12 @@ ac_fn_c_check_func "$LINENO" "_ultoa" "ac_cv_func__ultoa"
 if test "x$ac_cv_func__ultoa" = xyes
 then :
   printf "%s\n" "#define HAVE__ULTOA 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "strtod" "ac_cv_func_strtod"
+if test "x$ac_cv_func_strtod" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRTOD 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "strtol" "ac_cv_func_strtol"
