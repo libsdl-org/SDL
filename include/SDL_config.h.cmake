@@ -365,6 +365,7 @@
 #cmakedefine SDL_SENSOR_WINDOWS @SDL_SENSOR_WINDOWS@
 #cmakedefine SDL_SENSOR_DUMMY @SDL_SENSOR_DUMMY@
 #cmakedefine SDL_SENSOR_VITA @SDL_SENSOR_VITA@
+#cmakedefine SDL_SENSOR_N3DS @SDL_SENSOR_N3DS@
 
 /* Enable various shared object loading systems */
 #cmakedefine SDL_LOADSO_DLOPEN @SDL_LOADSO_DLOPEN@

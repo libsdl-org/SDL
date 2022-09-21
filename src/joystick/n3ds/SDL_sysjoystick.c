@@ -51,23 +51,17 @@ typedef struct N3DSJoystickState
     u32 kUp;
     circlePosition circlePos;
     circlePosition cStickPos;
-    accelVector acceleration;
-    angularRate rate;
 } N3DSJoystickState;
 
 SDL_FORCE_INLINE void UpdateAxis(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
 SDL_FORCE_INLINE void UpdateButtons(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
-SDL_FORCE_INLINE void UpdateSensors(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
 
 static N3DSJoystickState current_state;
-static SDL_bool sensors_enabled = SDL_FALSE;
 
 static int
 N3DS_JoystickInit(void)
 {
     hidInit();
-    HIDUSER_EnableAccelerometer();
-    HIDUSER_EnableGyroscope();
     return 0;
 }
 
@@ -104,17 +98,13 @@ N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nhats = 0;
     joystick->instance_id = device_index;
 
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
-
     return 0;
 }
 
 static int
 N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
-    sensors_enabled = enabled;
-    return 0;
+    return SDL_Unsupported();
 }
 
 static void
@@ -124,10 +114,6 @@ N3DS_JoystickUpdate(SDL_Joystick *joystick)
 
     UpdateAxis(joystick, &previous_state);
     UpdateButtons(joystick, &previous_state);
-
-    if (sensors_enabled) {
-        UpdateSensors(joystick, &previous_state);
-    }
 }
 
 SDL_FORCE_INLINE void
@@ -184,30 +170,6 @@ UpdateButtons(SDL_Joystick *joystick, N3DSJoystickState *previous_state)
     }
 }
 
-SDL_FORCE_INLINE void
-UpdateSensors(SDL_Joystick *joystick, N3DSJoystickState *previous_state)
-{
-    float data[3];
-
-    hidAccelRead(&current_state.acceleration);
-    if (SDL_memcmp(&previous_state->acceleration, &current_state.acceleration, sizeof(accelVector)) != 0) {
-        SDL_memcpy(&previous_state->acceleration, &current_state.acceleration, sizeof(accelVector));
-        data[0] = (float) current_state.acceleration.x * SDL_STANDARD_GRAVITY;
-        data[1] = (float) current_state.acceleration.y * SDL_STANDARD_GRAVITY;
-        data[2] = (float) current_state.acceleration.z * SDL_STANDARD_GRAVITY;
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, sizeof data);
-    }
-
-    hidGyroRead(&current_state.rate);
-    if (SDL_memcmp(&previous_state->rate, &current_state.rate, sizeof(angularRate)) != 0) {
-        SDL_memcpy(&previous_state->rate, &current_state.rate, sizeof(angularRate));
-        data[0] = (float) current_state.rate.y;
-        data[1] = (float) current_state.rate.z;
-        data[2] = (float) current_state.rate.x;
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, sizeof data);
-    }
-}
-
 static void
 N3DS_JoystickClose(SDL_Joystick *joystick)
 {
@@ -216,8 +178,6 @@ N3DS_JoystickClose(SDL_Joystick *joystick)
 static void
 N3DS_JoystickQuit(void)
 {
-    HIDUSER_DisableGyroscope();
-    HIDUSER_DisableAccelerometer();
     hidExit();
 }
 

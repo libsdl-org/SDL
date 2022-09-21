@@ -2783,6 +2783,13 @@ elseif(N3DS)
     set(HAVE_SDL_TIMERS TRUE)
   endif()
 
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_N3DS 1)
+    file(GLOB N3DS_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/n3ds/*.c)
+    list(APPEND SOURCE_FILES ${N3DS_SENSOR_SOURCES})
+    set(HAVE_SDL_SENSORS TRUE)
+  endif()
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_N3DS 1)
     file(GLOB N3DS_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/n3ds/*.c)
