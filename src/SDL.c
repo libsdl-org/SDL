@@ -586,7 +586,7 @@ SDL_GetPlatform(void)
 #elif __XBOXONE__
     return "Xbox One";
 #elif __XBOXSERIES__
-    return "Xbox Series";
+    return "Xbox Series X|S";
 #elif __TVOS__
     return "tvOS";
 #elif __IPHONEOS__
