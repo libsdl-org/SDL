@@ -233,12 +233,13 @@ keyboard_repeat_clear(SDL_WaylandKeyboardRepeat* repeat_info) {
 }
 
 static void
-keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t wl_press_time,
+keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key, uint32_t wl_press_time,
                     uint32_t scancode, SDL_bool has_text, char text[8]) {
     if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
         return;
     }
     repeat_info->is_key_down = SDL_TRUE;
+    repeat_info->key = key;
     repeat_info->wl_press_time = wl_press_time;
     repeat_info->sdl_press_time = SDL_GetTicks();
     repeat_info->next_repeat_ms = repeat_info->repeat_delay;
@@ -252,6 +253,10 @@ keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t wl_press_ti
 
 static SDL_bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat* repeat_info) {
     return repeat_info->is_initialized && repeat_info->is_key_down;
+}
+
+static SDL_bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key) {
+    return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
 
 void
@@ -1085,7 +1090,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
     } else {
-        if (keyboard_repeat_is_set(&input->keyboard_repeat)) {
+        if (keyboard_repeat_key_is_set(&input->keyboard_repeat, key)) {
             // Send any due key repeat events before stopping the repeat and generating the key up event
             // Compute time based on the Wayland time, as it reports when the release event happened
             // Using SDL_GetTicks would be wrong, as it would report when the release event is processed,
@@ -1114,7 +1119,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
             }
         }
         if (input->xkb.keymap && WAYLAND_xkb_keymap_key_repeats(input->xkb.keymap, key + 8)) {
-            keyboard_repeat_set(&input->keyboard_repeat, time, scancode, has_text, text);
+            keyboard_repeat_set(&input->keyboard_repeat, key, time, scancode, has_text, text);
         }
     }
 }
