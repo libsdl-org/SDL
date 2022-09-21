@@ -979,7 +979,7 @@ static const char *s_ControllerMappings [] =
     "0000000050535669746120436f6e7400,PSVita Controller,crc:d598,a:b2,b:b1,back:b10,dpdown:b6,dpleft:b7,dpright:b9,dpup:b8,leftshoulder:b4,leftstick:b14,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b15,righttrigger:a5,rightx:a2,righty:a3,start:b11,x:b3,y:b0,",
 #endif
 #if SDL_JOYSTICK_N3DS
-    "000010324e696e74656e646f20334400,Nintendo 3DS,a:b0,b:b1,back:b2,dpdown:b7,dpleft:b5,dpright:b4,dpup:b6,leftshoulder:b9,leftstick:b14,leftx:a0,lefty:a1,rightshoulder:b8,rightstick:b15,rightx:a2,righty:a3,start:b3,x:b10,y:b11,",
+    "000010324e696e74656e646f20334400,Nintendo 3DS,a:b0,b:b1,back:b2,dpdown:b7,dpleft:b5,dpright:b4,dpup:b6,leftshoulder:b9,lefttrigger:b14,leftx:a0,lefty:a1,rightshoulder:b8,righttrigger:b15,rightx:a2,righty:a3,start:b3,x:b10,y:b11,",
 #endif
     "hidapi,*,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
     NULL
