@@ -45,18 +45,10 @@
 */
 #define CORRECTION_FACTOR_Y -CORRECTION_FACTOR_X
 
-typedef struct N3DSJoystickState
-{
-    u32 kDown;
-    u32 kUp;
-    circlePosition circlePos;
-    circlePosition cStickPos;
-} N3DSJoystickState;
-
-SDL_FORCE_INLINE void UpdateAxis(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
-SDL_FORCE_INLINE void UpdateButtons(SDL_Joystick *joystick, N3DSJoystickState *previous_state);
-
-static N3DSJoystickState current_state;
+SDL_FORCE_INLINE void UpdateN3DSPressedButtons(SDL_Joystick *joystick);
+SDL_FORCE_INLINE void UpdateN3DSReleasedButtons(SDL_Joystick *joystick);
+SDL_FORCE_INLINE void UpdateN3DSCircle(SDL_Joystick *joystick);
+SDL_FORCE_INLINE void UpdateN3DSCStick(SDL_Joystick *joystick);
 
 static int
 N3DS_JoystickInit(void)
@@ -110,64 +102,82 @@ N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 static void
 N3DS_JoystickUpdate(SDL_Joystick *joystick)
 {
-    N3DSJoystickState previous_state = current_state;
-
-    UpdateAxis(joystick, &previous_state);
-    UpdateButtons(joystick, &previous_state);
+    UpdateN3DSPressedButtons(joystick);
+    UpdateN3DSReleasedButtons(joystick);
+    UpdateN3DSCircle(joystick);
+    UpdateN3DSCStick(joystick);
 }
 
 SDL_FORCE_INLINE void
-UpdateAxis(SDL_Joystick *joystick, N3DSJoystickState *previous_state)
+UpdateN3DSPressedButtons(SDL_Joystick *joystick)
 {
-    hidCircleRead(&current_state.circlePos);
-    if (previous_state->circlePos.dx != current_state.circlePos.dx) {
-        SDL_PrivateJoystickAxis(joystick,
-                                0,
-                                current_state.circlePos.dx * CORRECTION_FACTOR_X);
-    }
-    if (previous_state->circlePos.dy != current_state.circlePos.dy) {
-        SDL_PrivateJoystickAxis(joystick,
-                                1,
-                                current_state.circlePos.dy * CORRECTION_FACTOR_Y);
-    }
-
-    hidCstickRead(&current_state.cStickPos);
-    if (previous_state->cStickPos.dx != current_state.cStickPos.dx) {
-        SDL_PrivateJoystickAxis(joystick,
-                                2,
-                                current_state.cStickPos.dx * CORRECTION_FACTOR_X);
-    }
-    if (previous_state->cStickPos.dy != current_state.cStickPos.dy) {
-        SDL_PrivateJoystickAxis(joystick,
-                                3,
-                                current_state.cStickPos.dy * CORRECTION_FACTOR_Y);
-    }
-}
-
-SDL_FORCE_INLINE void
-UpdateButtons(SDL_Joystick *joystick, N3DSJoystickState *previous_state)
-{
-    u32 updated_down, updated_up;
-
-    current_state.kDown = hidKeysDown();
-    updated_down = previous_state->kDown ^ current_state.kDown;
+    static u32 previous_state = 0;
+    u32 updated_down;
+    u32 current_state = hidKeysDown();
+    updated_down = previous_state ^ current_state;
     if (updated_down) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
-            if (current_state.kDown & BIT(i) & updated_down) {
+            if (current_state & BIT(i) & updated_down) {
                 SDL_PrivateJoystickButton(joystick, i, SDL_PRESSED);
             }
         }
     }
+    previous_state = current_state;
+}
 
-    current_state.kUp = hidKeysUp();
-    updated_up = previous_state->kUp ^ current_state.kUp;
+SDL_FORCE_INLINE void
+UpdateN3DSReleasedButtons(SDL_Joystick *joystick)
+{
+    static u32 previous_state = 0;
+    u32 updated_up;
+    u32 current_state = hidKeysUp();
+    updated_up = previous_state ^ current_state;
     if (updated_up) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
-            if (current_state.kUp & BIT(i) & updated_up) {
+            if (current_state & BIT(i) & updated_up) {
                 SDL_PrivateJoystickButton(joystick, i, SDL_RELEASED);
             }
         }
     }
+    previous_state = current_state;
+}
+
+SDL_FORCE_INLINE void
+UpdateN3DSCircle(SDL_Joystick *joystick)
+{
+    static circlePosition previous_state = { 0, 0 };
+    circlePosition current_state;
+    hidCircleRead(&current_state);
+    if (previous_state.dx != current_state.dx) {
+        SDL_PrivateJoystickAxis(joystick,
+                                0,
+                                current_state.dx * CORRECTION_FACTOR_X);
+    }
+    if (previous_state.dy != current_state.dy) {
+        SDL_PrivateJoystickAxis(joystick,
+                                1,
+                                current_state.dy * CORRECTION_FACTOR_Y);
+    }
+    previous_state = current_state;
+}
+
+SDL_FORCE_INLINE void
+UpdateN3DSCStick(SDL_Joystick *joystick)
+{
+    static circlePosition previous_state = { 0, 0 };
+    circlePosition current_state;
+    hidCstickRead(&current_state);
+    if (previous_state.dx != current_state.dx) {
+        SDL_PrivateJoystickAxis(joystick,
+                                2,
+                                current_state.dx * CORRECTION_FACTOR_X);
+    }
+    if (previous_state.dy != current_state.dy) {
+        SDL_PrivateJoystickAxis(joystick,
+                                3,
+                                current_state.dy * CORRECTION_FACTOR_Y);
+    }
+    previous_state = current_state;
 }
 
 static void
