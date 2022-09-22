@@ -130,6 +130,7 @@ struct hid_device_list_node
 
 static 	IOHIDManagerRef hid_mgr = 0x0;
 static 	struct hid_device_list_node *device_list = 0x0;
+static	int hid_input_monitoring_denied = 0;
 
 static hid_device *new_hid_device(void)
 {
@@ -521,7 +522,11 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	/* Set up the HID Manager if it hasn't been done */
 	if (hid_init() < 0)
 		return NULL;
-	
+
+	/* If we don't have permission to open devices, don't enumerate them */
+	if (hid_input_monitoring_denied)
+		return NULL;
+
 	/* give the IOHIDManager a chance to update itself */
 	process_pending_events();
 	
@@ -861,6 +866,11 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				pthread_barrier_wait(&dev->barrier);
 				
 				return dev;
+			}
+			else if (ret == kIOReturnNotPermitted) {
+				/* This application doesn't have input monitoring permissions */
+				hid_input_monitoring_denied = 1;
+				goto return_error;
 			}
 			else {
 				goto return_error;
