@@ -713,7 +713,7 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         ctx->effects_supported = SDL_TRUE;
         ctx->sensors_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
-    } else if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data)) == 48 &&
+    } else if ((size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
                data[2] == 0x28) {
         Uint8 capabilities = data[4];
 
