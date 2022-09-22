@@ -40,6 +40,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf622 ), k_eControllerType_PS3Controller, NULL },	// Cyborg V3
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x3180 ), k_eControllerType_PS3Controller, NULL },	// Mad Catz Alpha PS3 mode
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x3250 ), k_eControllerType_PS3Controller, NULL },	// madcats fightpad pro ps3
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x3481 ), k_eControllerType_PS3Controller, NULL },	// Mad Catz FightStick TE 2+ PS3
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8180 ), k_eControllerType_PS3Controller, NULL },	// Mad Catz Alpha PS4 mode (no touchpad on device)
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8838 ), k_eControllerType_PS3Controller, NULL },	// Madcatz Fightstick Pro
 	{ MAKE_CONTROLLER_ID( 0x0810, 0x0001 ), k_eControllerType_PS3Controller, NULL },	// actually ps2 - maybe break out later
