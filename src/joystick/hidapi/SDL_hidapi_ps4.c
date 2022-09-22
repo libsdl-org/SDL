@@ -69,6 +69,7 @@ typedef enum
 typedef enum 
 {
     k_ePS4FeatureReportIdGyroCalibration_USB = 0x02,
+    k_ePS4FeatureReportIdCapabilities = 0x03,
     k_ePS4FeatureReportIdGyroCalibration_BT = 0x05,
     k_ePS4FeatureReportIdSerialNumber = 0x12,
 } EPS4FeatureReportID;
@@ -125,7 +126,6 @@ typedef struct {
     SDL_bool is_dongle;
     SDL_bool is_bluetooth;
     SDL_bool official_controller;
-    SDL_bool audio_supported;
     SDL_bool effects_supported;
     SDL_bool sensors_supported;
     SDL_bool touchpad_supported;
@@ -190,42 +190,6 @@ static int ReadFeatureReport(SDL_hid_device *dev, Uint8 report_id, Uint8 *report
     SDL_memset(report, 0, length);
     report[0] = report_id;
     return SDL_hid_get_feature_report(dev, report, length);
-}
-
-static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
-{
-    /* The Razer Panthera fight stick hangs when trying to rumble */
-    if (vendor_id == USB_VENDOR_RAZER &&
-        (product_id == USB_PRODUCT_RAZER_PANTHERA || product_id == USB_PRODUCT_RAZER_PANTHERA_EVO)) {
-        return SDL_FALSE;
-    }
-
-    /* The Victrix Pro FS v2 will hang on reboot if we send output reports */
-    if (vendor_id == USB_VENDOR_PDP && product_id == USB_PRODUCT_VICTRIX_FS_PRO_V2) {
-        return SDL_FALSE;
-    }
-
-    /* The Hori controllers don't have any rumble hardware */
-    if (vendor_id == USB_VENDOR_HORI) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-
-static SDL_bool HIDAPI_DriverPS4_HasSensors(Uint16 vendor_id, Uint16 product_id)
-{
-    /* The Hori controllers don't have any gyro or accelerometer */
-    if (vendor_id == USB_VENDOR_HORI) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-
-static SDL_bool HIDAPI_DriverPS4_HasTouchpad(Uint16 vendor_id, Uint16 product_id)
-{
-    return SDL_TRUE;
 }
 
 static void
@@ -521,6 +485,8 @@ static SDL_bool
 HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS4_Context *ctx;
+    Uint8 data[USB_PACKET_LENGTH];
+    int size;
     SDL_bool enhanced_mode = SDL_FALSE;
 
     ctx = (SDL_DriverPS4_Context *)SDL_calloc(1, sizeof(*ctx));
@@ -547,9 +513,6 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         ctx->official_controller = SDL_TRUE;
         enhanced_mode = SDL_TRUE;
     } else if (device->vendor_id == USB_VENDOR_SONY) {
-        Uint8 data[USB_PACKET_LENGTH];
-        int size;
-
         /* This will fail if we're on Bluetooth */
         size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
         if (size >= 7) {
@@ -588,22 +551,27 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     SDL_Log("PS4 dongle = %s, bluetooth = %s\n", ctx->is_dongle ? "TRUE" : "FALSE", ctx->is_bluetooth ? "TRUE" : "FALSE");
 #endif
 
-    /* Check to see if audio is supported */
-    if (device->vendor_id == USB_VENDOR_SONY &&
-        (device->product_id == USB_PRODUCT_SONY_DS4_SLIM || device->product_id == USB_PRODUCT_SONY_DS4_DONGLE)) {
-        ctx->audio_supported = SDL_TRUE;
-    }
-
-    if (HIDAPI_DriverPS4_CanRumble(device->vendor_id, device->product_id)) {
+    /* Get the device capabilities */
+    if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->effects_supported = SDL_TRUE;
-    }
-
-    if (HIDAPI_DriverPS4_HasSensors(device->vendor_id, device->product_id)) {
         ctx->sensors_supported = SDL_TRUE;
-    }
-
-    if (HIDAPI_DriverPS4_HasTouchpad(device->vendor_id, device->product_id)) {
         ctx->touchpad_supported = SDL_TRUE;
+    } else if (ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data)) == 48 &&
+               data[2] == 0x27) {
+        Uint8 capabilities = data[4];
+
+#ifdef DEBUG_PS4_PROTOCOL
+        HIDAPI_DumpPacket("PS4 capabilities: size = %d", data, size);
+#endif
+        if ((capabilities & 0x0C) != 0) {
+            ctx->effects_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x02) != 0) {
+            ctx->sensors_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x40) != 0) {
+            ctx->touchpad_supported = SDL_TRUE;
+        }
     }
 
     if (!joystick->serial && device->serial && SDL_strlen(device->serial) == 12) {

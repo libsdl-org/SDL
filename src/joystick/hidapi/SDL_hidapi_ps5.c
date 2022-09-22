@@ -56,6 +56,7 @@ typedef enum
 
 typedef enum
 {
+    k_EPS5FeatureReportIdCapabilities = 0x03,
     k_EPS5FeatureReportIdCalibration = 0x05,
     k_EPS5FeatureReportIdSerialNumber = 0x09,
     k_EPS5FeatureReportIdFirmwareInfo = 0x20,
@@ -226,41 +227,6 @@ typedef struct {
         Uint8 data[64];
     } last_state;
 } SDL_DriverPS5_Context;
-
-static SDL_bool HIDAPI_DriverPS5_CanRumble(Uint16 vendor_id, Uint16 product_id)
-{
-    /* The Hori controllers don't have any rumble hardware */
-    if (vendor_id == USB_VENDOR_HORI) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-
-static SDL_bool HIDAPI_DriverPS5_HasSensors(Uint16 vendor_id, Uint16 product_id)
-{
-    /* The Hori controllers don't have any gyro or accelerometer */
-    if (vendor_id == USB_VENDOR_HORI) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-
-static SDL_bool HIDAPI_DriverPS5_HasTouchpad(Uint16 vendor_id, Uint16 product_id)
-{
-    return SDL_TRUE;
-}
-
-static SDL_bool HIDAPI_DriverPS5_UseAlternateReport(Uint16 vendor_id, Uint16 product_id)
-{
-    /* The Hori Fighting Stick Alpha and Fighting Commander OCTA report touchpad at a different offset than the PS5 controller */
-    if (vendor_id == USB_VENDOR_HORI) {
-        return SDL_TRUE;
-    }
-
-    return SDL_FALSE;
-}
 
 static int HIDAPI_DriverPS5_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size);
 
@@ -742,20 +708,29 @@ HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
         }
     }
 
-    if (HIDAPI_DriverPS5_UseAlternateReport(device->vendor_id, device->product_id)) {
-        ctx->use_alternate_report = SDL_TRUE;
-    }
-
-    if (HIDAPI_DriverPS5_CanRumble(device->vendor_id, device->product_id)) {
+    /* Get the device capabilities */
+    if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->effects_supported = SDL_TRUE;
-    }
-
-    if (HIDAPI_DriverPS5_HasSensors(device->vendor_id, device->product_id)) {
         ctx->sensors_supported = SDL_TRUE;
-    }
-
-    if (HIDAPI_DriverPS5_HasTouchpad(device->vendor_id, device->product_id)) {
         ctx->touchpad_supported = SDL_TRUE;
+    } else if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data)) == 48 &&
+               data[2] == 0x28) {
+        Uint8 capabilities = data[4];
+
+#ifdef DEBUG_PS5_PROTOCOL
+        HIDAPI_DumpPacket("PS5 capabilities: size = %d", data, size);
+#endif
+        if ((capabilities & 0x0C) != 0) {
+            ctx->effects_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x02) != 0) {
+            ctx->sensors_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x40) != 0) {
+            ctx->touchpad_supported = SDL_TRUE;
+        }
+
+        ctx->use_alternate_report = SDL_TRUE;
     }
 
     if (!joystick->serial && device->serial && SDL_strlen(device->serial) == 12) {
