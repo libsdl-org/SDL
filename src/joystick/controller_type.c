@@ -59,8 +59,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e8f, 0x310d ), k_eControllerType_PS3Controller, NULL },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0009 ), k_eControllerType_PS3Controller, NULL },	// HORI BDA GP1
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x004d ), k_eControllerType_PS3Controller, NULL },	// Horipad 3
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting commander ps4
-	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005f ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting commander ps3
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005f ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Commander 4 PS3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006a ), k_eControllerType_PS3Controller, NULL },	// Real Arcade Pro 4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x006e ), k_eControllerType_PS3Controller, NULL },	// HORI horipad4 ps3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Commander PS3
@@ -101,6 +100,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0e15 ), k_eControllerType_PS4Controller, NULL },	// Game:Pad 4
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0ef6 ), k_eControllerType_PS4Controller, NULL },	// Hitbox Arcade Stick
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0055 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x005e ), k_eControllerType_PS4Controller, NULL },	// HORI Fighting Commander 4 PS4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0066 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS Plus 
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0084 ), k_eControllerType_PS4Controller, NULL },	// HORI Fighting Commander PS4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0087 ), k_eControllerType_PS4Controller, NULL },	// HORI Fighting Stick mini 4
