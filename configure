@@ -1666,7 +1666,7 @@ Optional Features:
   --enable-alsa-shared    dynamically load ALSA audio support [default=yes]
   --enable-jack           use JACK audio [default=yes]
   --enable-jack-shared    dynamically load JACK audio support [default=yes]
-  --enable-esd            support the Enlightened Sound Daemon [default=yes]
+  --enable-esd            support the Enlightened Sound Daemon [default=no]
   --disable-esdtest       Do not try to compile and run a test ESD program
   --enable-esd-shared     dynamically load ESD audio support [default=yes]
   --enable-pipewire       use Pipewire audio [default=yes]
@@ -1676,9 +1676,9 @@ Optional Features:
   --enable-pulseaudio-shared
                           dynamically load PulseAudio support [default=yes]
   --enable-arts           support the Analog Real Time Synthesizer
-                          [default=yes]
+                          [default=no]
   --enable-arts-shared    dynamically load aRts audio support [default=yes]
-  --enable-nas            support the NAS audio API [default=yes]
+  --enable-nas            support the NAS audio API [default=no]
   --enable-nas-shared     dynamically load NAS audio support [default=yes]
   --enable-sndio          support the sndio audio API [default=yes]
   --enable-sndio-shared   dynamically load sndio audio support [default=yes]
@@ -21451,7 +21451,7 @@ if test ${enable_esd+y}
 then :
   enableval=$enable_esd;
 else $as_nop
-  enable_esd=yes
+  enable_esd=no
 fi
 
     if test x$enable_audio = xyes -a x$enable_esd = xyes; then
@@ -21999,7 +21999,7 @@ if test ${enable_arts+y}
 then :
   enableval=$enable_arts;
 else $as_nop
-  enable_arts=yes
+  enable_arts=no
 fi
 
     if test x$enable_audio = xyes -a x$enable_arts = xyes; then
@@ -22126,7 +22126,7 @@ if test ${enable_nas+y}
 then :
   enableval=$enable_nas;
 else $as_nop
-  enable_nas=yes
+  enable_nas=no
 fi
 
     if test x$enable_audio = xyes -a x$enable_nas = xyes; then

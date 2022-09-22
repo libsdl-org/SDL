@@ -1054,8 +1054,8 @@ dnl Find the ESD includes and libraries
 CheckESD()
 {
     AC_ARG_ENABLE(esd,
-[AS_HELP_STRING([--enable-esd], [support the Enlightened Sound Daemon [default=yes]])],
-                  , enable_esd=yes)
+[AS_HELP_STRING([--enable-esd], [support the Enlightened Sound Daemon [default=no]])],
+                  , enable_esd=no)
     if test x$enable_audio = xyes -a x$enable_esd = xyes; then
         AM_PATH_ESD(0.2.8, have_esd=yes, have_esd=no)
         if test x$have_esd = xyes; then
@@ -1168,8 +1168,8 @@ CheckPulseAudio()
 CheckARTSC()
 {
     AC_ARG_ENABLE(arts,
-[AS_HELP_STRING([--enable-arts], [support the Analog Real Time Synthesizer [default=yes]])],
-                  , enable_arts=yes)
+[AS_HELP_STRING([--enable-arts], [support the Analog Real Time Synthesizer [default=no]])],
+                  , enable_arts=no)
     if test x$enable_audio = xyes -a x$enable_arts = xyes; then
         AC_PATH_PROG(ARTSCONFIG, artsc-config)
         if test x$ARTSCONFIG = x -o x$ARTSCONFIG = x'"$ARTSCONFIG"'; then
@@ -1220,8 +1220,8 @@ dnl See if the NAS audio interface is supported
 CheckNAS()
 {
     AC_ARG_ENABLE(nas,
-[AS_HELP_STRING([--enable-nas], [support the NAS audio API [default=yes]])],
-                  , enable_nas=yes)
+[AS_HELP_STRING([--enable-nas], [support the NAS audio API [default=no]])],
+                  , enable_nas=no)
     if test x$enable_audio = xyes -a x$enable_nas = xyes; then
         AC_CHECK_HEADER(audio/audiolib.h, have_nas_hdr=yes)
         AC_CHECK_LIB(audio, AuOpenServer, have_nas_lib=yes)
