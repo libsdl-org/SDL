@@ -253,6 +253,24 @@ keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key, uint32
     }
 }
 
+static uint32_t
+keyboard_repeat_get_key(SDL_WaylandKeyboardRepeat *repeat_info)
+{
+    if (repeat_info->is_initialized && repeat_info->is_key_down) {
+        return repeat_info->key;
+    }
+
+    return 0;
+}
+
+static void
+keyboard_repeat_set_text(SDL_WaylandKeyboardRepeat *repeat_info, const char text[8])
+{
+    if (repeat_info->is_initialized) {
+        SDL_memcpy(repeat_info->text, text, 8);
+    }
+}
+
 static SDL_bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat* repeat_info) {
     return repeat_info->is_initialized && repeat_info->is_key_down;
 }
@@ -1048,7 +1066,9 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
 
 #ifdef SDL_USE_IME
     if (SDL_IME_ProcessKeyEvent(sym, key + 8, state)) {
-        *handled_by_ime = SDL_TRUE;
+        if (handled_by_ime) {
+            *handled_by_ime = SDL_TRUE;
+        }
         return SDL_TRUE;
     }
 #endif
@@ -1060,7 +1080,9 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
     if (input->xkb.compose_state && WAYLAND_xkb_compose_state_feed(input->xkb.compose_state, sym) == XKB_COMPOSE_FEED_ACCEPTED) {
         switch(WAYLAND_xkb_compose_state_get_status(input->xkb.compose_state)) {
             case XKB_COMPOSE_COMPOSING:
-                *handled_by_ime = SDL_TRUE;
+                if (handled_by_ime) {
+                    *handled_by_ime = SDL_TRUE;
+                }
                 return SDL_TRUE;
             case XKB_COMPOSE_CANCELLED:
             default:
@@ -1198,6 +1220,16 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     SDL_ToggleModState(KMOD_GUI, modstate & input->xkb.idx_gui);
     SDL_ToggleModState(KMOD_NUM, modstate & input->xkb.idx_num);
     SDL_ToggleModState(KMOD_CAPS, modstate & input->xkb.idx_caps);
+
+    /* If a key is repeating, update the text to apply the modifier. */
+    if(keyboard_repeat_is_set(&input->keyboard_repeat)) {
+        char text[8];
+        const uint32_t key = keyboard_repeat_get_key(&input->keyboard_repeat);
+
+        if (keyboard_input_get_text(text, input, key, SDL_PRESSED, NULL)) {
+            keyboard_repeat_set_text(&input->keyboard_repeat, text);
+        }
+    }
 
     if (group == input->xkb.current_group) {
         return;
