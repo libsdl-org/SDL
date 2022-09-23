@@ -1972,14 +1972,20 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         }
     }
 
-    /* Remove duplicate manufacturer or product in the name */
+    /* Remove duplicate manufacturer or product in the name
+     * e.g. Razer Razer Raiju Tournament Edition Wired
+     */
     for (i = 1; i < (len - 1); ++i) {
         int matchlen = PrefixMatch(name, &name[i]);
-        if (matchlen > 0 && name[matchlen-1] == ' ') {
-            SDL_memmove(name, name+matchlen, len-matchlen+1);
-            break;
-        } else if (matchlen > 0 && name[matchlen] == ' ') {
-            SDL_memmove(name, name+matchlen+1, len-matchlen);
+        while (matchlen > 0) {
+            if (name[matchlen] == ' ') {
+                SDL_memmove(name, name + matchlen + 1, len - matchlen);
+                break;
+            }
+            --matchlen;
+        }
+        if (matchlen > 0) {
+            /* We matched the manufacturer's name and removed it */
             break;
         }
     }
