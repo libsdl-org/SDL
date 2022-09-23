@@ -1106,21 +1106,21 @@ static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx
 
 static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
 {
-    Uint8 c, z;
+    Uint8 c_button, z_button;
 
     if (data->ucNExtensionBytes < 6) {
         return;
     }
 
     if (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_NUNCHUK) {
-        c = (data->rgucExtension[5] & 0x08) ? SDL_RELEASED : SDL_PRESSED;
-        z = (data->rgucExtension[5] & 0x04) ? SDL_RELEASED : SDL_PRESSED;
+        c_button = (data->rgucExtension[5] & 0x08) ? SDL_RELEASED : SDL_PRESSED;
+        z_button = (data->rgucExtension[5] & 0x04) ? SDL_RELEASED : SDL_PRESSED;
     } else {
-        c = (data->rgucExtension[5] & 0x02) ? SDL_RELEASED : SDL_PRESSED;
-        z = (data->rgucExtension[5] & 0x01) ? SDL_RELEASED : SDL_PRESSED;
+        c_button = (data->rgucExtension[5] & 0x02) ? SDL_RELEASED : SDL_PRESSED;
+        z_button = (data->rgucExtension[5] & 0x01) ? SDL_RELEASED : SDL_PRESSED;
     }
-    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, c);
-    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, z ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
+    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, c_button);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, z_button ? SDL_JOYSTICK_AXIS_MAX : SDL_JOYSTICK_AXIS_MIN);
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[0], SDL_CONTROLLER_AXIS_LEFTX, data->rgucExtension[0]);
     PostStickCalibrated(joystick, &ctx->m_StickCalibrationData[1], SDL_CONTROLLER_AXIS_LEFTY, data->rgucExtension[1]);
 
