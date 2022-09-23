@@ -46,6 +46,7 @@
 #define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_THRUSTMASTER 0x044f
 #define USB_VENDOR_VALVE        0x28de
+#define USB_VENDOR_ZEROPLUS     0x0c12
 
 #define SONY_THIRDPARTY_VENDOR(X)       \
     (X == USB_VENDOR_DRAGONRISE     ||  \
@@ -60,6 +61,7 @@
      X == USB_VENDOR_SHANWAN        ||  \
      X == USB_VENDOR_SHANWAN_ALT    ||  \
      X == USB_VENDOR_THRUSTMASTER   ||  \
+     X == USB_VENDOR_ZEROPLUS       ||  \
      X == 0x7545 /* SZ-MYPOWER */)
 
 #define USB_PRODUCT_8BITDO_XBOX_CONTROLLER                  0x2002
