@@ -125,8 +125,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller, NULL },	// Razer Raiju 2 Tournament edition BT
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1100 ), k_eControllerType_PS4Controller, NULL },	// Razer RAION Fightpad - Trackpad, no gyro, lightbar hardcoded to green
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller, NULL },	// PowerA Fusion Fight Pad
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2300 ), k_eControllerType_PS4Controller, "Qanba Obsidian Arcade Joystick" },	// Qanba Obsidian
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2500 ), k_eControllerType_PS4Controller, "Qanba Dragon Arcade Joystick" },	// Qanba Dragon
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2300 ), k_eControllerType_PS4Controller, NULL },	// Qanba Obsidian
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2500 ), k_eControllerType_PS4Controller, NULL },	// Qanba Dragon
 	{ MAKE_CONTROLLER_ID( 0x7545, 0x0104 ), k_eControllerType_PS4Controller, NULL },	// Armor 3 or Level Up Cobra - At least one variant has gyro
 	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller, NULL },	// Astro C40
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0207 ), k_eControllerType_PS4Controller, NULL },	// Victrix Pro Fightstick w/ Touchpad for PS4
@@ -286,8 +286,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller, NULL },	// Afterglow Gamepad 1
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller, NULL },	// Afterglow Gamepad 3
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller, NULL },	// Rock Candy Gamepad for Xbox 360
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2303 ), k_eControllerType_XInputPS4Controller, "Qanba Obsidian Arcade Joystick" },	// Qanba Obsidian Arcade Joystick
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2503 ), k_eControllerType_XInputPS4Controller, "Qanba Dragon Arcade Joystick" },	// Qanba Dragon Arcade Joystick
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2303 ), k_eControllerType_XInputPS4Controller, NULL },	// Qanba Obsidian Arcade Joystick
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2503 ), k_eControllerType_XInputPS4Controller, NULL },	// Qanba Dragon Arcade Joystick
 
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02d1 ), k_eControllerType_XBoxOneController, "Xbox One Controller" },	// Microsoft X-Box One pad
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02dd ), k_eControllerType_XBoxOneController, "Xbox One Controller" },	// Microsoft X-Box One pad (Firmware 2015)

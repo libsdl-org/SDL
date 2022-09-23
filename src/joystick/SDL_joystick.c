@@ -1867,6 +1867,8 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         { "Performance Designed Products", "PDP" },
         { "HORI CO.,LTD.", "HORI" },
         { "HORI CO.,LTD", "HORI" },
+        { "Mad Catz Inc.", "Mad Catz" },
+        { "QANBA USA, LLC", "Qanba" },
         { "Unknown ", "" },
     };
     const char *custom_name;
