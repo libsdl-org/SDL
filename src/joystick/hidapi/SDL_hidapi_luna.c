@@ -77,14 +77,15 @@ HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverLuna_Context *ctx;
 
-    HIDAPI_SetDeviceName(device, "Amazon Luna Controller");
-
     ctx = (SDL_DriverLuna_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
     device->context = ctx;
+
+    device->type = SDL_CONTROLLER_TYPE_AMAZON_LUNA;
+    HIDAPI_SetDeviceName(device, "Amazon Luna Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);
 }

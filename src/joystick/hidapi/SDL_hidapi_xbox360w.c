@@ -159,6 +159,8 @@ HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
+    device->type = SDL_CONTROLLER_TYPE_XBOX360;
+
     return SDL_TRUE;
 }
 

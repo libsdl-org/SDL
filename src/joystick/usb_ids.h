@@ -27,20 +27,40 @@
 #define USB_VENDOR_8BITDO       0x2dc8
 #define USB_VENDOR_AMAZON       0x1949
 #define USB_VENDOR_APPLE        0x05ac
+#define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_GOOGLE       0x18d1
 #define USB_VENDOR_HORI         0x0f0d
 #define USB_VENDOR_HYPERKIN     0x2e24
+#define USB_VENDOR_MADCATZ      0x0738
 #define USB_VENDOR_MICROSOFT    0x045e
+#define USB_VENDOR_NACON        0x146b
 #define USB_VENDOR_NINTENDO     0x057e
 #define USB_VENDOR_NVIDIA       0x0955
 #define USB_VENDOR_PDP          0x0e6f
 #define USB_VENDOR_POWERA       0x24c6
 #define USB_VENDOR_POWERA_ALT   0x20d6
+#define USB_VENDOR_QANBA        0x2c22
 #define USB_VENDOR_RAZER        0x1532
 #define USB_VENDOR_SHANWAN      0x2563
-#define USB_VENDOR_SHENZHEN     0x0079
+#define USB_VENDOR_SHANWAN_ALT  0x20bc
 #define USB_VENDOR_SONY         0x054c
+#define USB_VENDOR_THRUSTMASTER 0x044f
 #define USB_VENDOR_VALVE        0x28de
+
+#define SONY_THIRDPARTY_VENDOR(X)       \
+    (X == USB_VENDOR_DRAGONRISE     ||  \
+     X == USB_VENDOR_HORI           ||  \
+     X == USB_VENDOR_MADCATZ        ||  \
+     X == USB_VENDOR_NACON          ||  \
+     X == USB_VENDOR_PDP            ||  \
+     X == USB_VENDOR_POWERA         ||  \
+     X == USB_VENDOR_POWERA_ALT     ||  \
+     X == USB_VENDOR_QANBA          ||  \
+     X == USB_VENDOR_RAZER          ||  \
+     X == USB_VENDOR_SHANWAN        ||  \
+     X == USB_VENDOR_SHANWAN_ALT    ||  \
+     X == USB_VENDOR_THRUSTMASTER   ||  \
+     X == 0x7545 /* SZ-MYPOWER */)
 
 #define USB_PRODUCT_8BITDO_XBOX_CONTROLLER                  0x2002
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                  0x0419

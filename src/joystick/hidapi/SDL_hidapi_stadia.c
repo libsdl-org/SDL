@@ -78,14 +78,15 @@ HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverStadia_Context *ctx;
 
-    HIDAPI_SetDeviceName(device, "Google Stadia Controller");
-
     ctx = (SDL_DriverStadia_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
     device->context = ctx;
+
+    device->type = SDL_CONTROLLER_TYPE_GOOGLE_STADIA;
+    HIDAPI_SetDeviceName(device, "Google Stadia Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);
 }

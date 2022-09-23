@@ -1027,14 +1027,14 @@ HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSteam_Context *ctx;
 
-    HIDAPI_SetDeviceName(device, "Steam Controller");
-
     ctx = (SDL_DriverSteam_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
     device->context = ctx;
+
+    HIDAPI_SetDeviceName(device, "Steam Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);
 }

@@ -82,7 +82,7 @@ HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *n
         /* Nintendo Co., Ltd.  Wii U GameCube Controller Adapter */
         return SDL_TRUE;
     }
-    if (vendor_id == USB_VENDOR_SHENZHEN && product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER) {
+    if (vendor_id == USB_VENDOR_DRAGONRISE && product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER) {
         /* EVORETRO GameCube Controller Adapter */
         return SDL_TRUE;
     }
@@ -144,8 +144,6 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 #ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
     SDL_EnableGameCubeAdaptors();
 #endif
-
-    HIDAPI_SetDeviceName(device, "Nintendo GameCube Controller");
 
     ctx = (SDL_DriverGameCube_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -218,6 +216,8 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
                         SDL_JoystickGameCubeRumbleBrakeHintChanged, ctx);
     SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS,
                         SDL_GameControllerButtonReportingHintChanged, ctx);
+
+    HIDAPI_SetDeviceName(device, "Nintendo GameCube Controller");
 
     return SDL_TRUE;
 }

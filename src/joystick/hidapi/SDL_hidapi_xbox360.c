@@ -157,6 +157,8 @@ HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
 
     device->context = ctx;
 
+    device->type = SDL_CONTROLLER_TYPE_XBOX360;
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 

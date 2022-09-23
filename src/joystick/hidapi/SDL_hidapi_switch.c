@@ -1161,32 +1161,40 @@ UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case k_eSwitchDeviceInfoControllerType_JoyConLeft:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
         HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
+        device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
         break;
     case k_eSwitchDeviceInfoControllerType_JoyConRight:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
         HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
+        device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         break;
     case k_eSwitchDeviceInfoControllerType_ProController:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
         HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_PRO);
+        device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
         break;
     case k_eSwitchDeviceInfoControllerType_NESLeft:
         HIDAPI_SetDeviceName(device, "Nintendo NES Controller (L)");
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_NESRight:
         HIDAPI_SetDeviceName(device, "Nintendo NES Controller (R)");
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_SNES:
         HIDAPI_SetDeviceName(device, "Nintendo SNES Controller");
         HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_N64:
         HIDAPI_SetDeviceName(device, "Nintendo N64 Controller");
         HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
         HIDAPI_SetDeviceName(device, "Nintendo SEGA Genesis Controller");
         HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
+        device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     default:
         break;

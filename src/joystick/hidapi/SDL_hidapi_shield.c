@@ -112,14 +112,15 @@ HIDAPI_DriverShield_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverShield_Context *ctx;
 
-    HIDAPI_SetDeviceName(device, "NVIDIA SHIELD Controller");
-
     ctx = (SDL_DriverShield_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
     device->context = ctx;
+
+    device->type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
+    HIDAPI_SetDeviceName(device, "NVIDIA SHIELD Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);
 }

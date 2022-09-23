@@ -168,17 +168,26 @@ HIDAPI_DriverPS4_IsEnabled(void)
                    SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
-HIDAPI_DriverPS4_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
-{
-    return (type == SDL_CONTROLLER_TYPE_PS4) ? SDL_TRUE : SDL_FALSE;
-}
-
 static int ReadFeatureReport(SDL_hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
 {
     SDL_memset(report, 0, length);
     report[0] = report_id;
     return SDL_hid_get_feature_report(dev, report, length);
+}
+
+static SDL_bool
+HIDAPI_DriverPS4_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+{
+    Uint8 data[USB_PACKET_LENGTH];
+    int size;
+
+    if (device && SONY_THIRDPARTY_VENDOR(device->vendor_id) &&
+        (size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
+        data[2] == 0x27) {
+        /* Supported third party controller */
+        return SDL_TRUE;
+    }
+    return (type == SDL_CONTROLLER_TYPE_PS4) ? SDL_TRUE : SDL_FALSE;
 }
 
 static void
@@ -215,10 +224,6 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     Uint8 data[USB_PACKET_LENGTH];
     int size;
     char serial[18];
-
-    if (device->vendor_id == USB_VENDOR_SONY) {
-        HIDAPI_SetDeviceName(device, "PS4 Controller");
-    }
 
     ctx = (SDL_DriverPS4_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -309,6 +314,10 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
 
+    device->type = SDL_CONTROLLER_TYPE_PS4;
+    if (device->vendor_id == USB_VENDOR_SONY) {
+        HIDAPI_SetDeviceName(device, "PS4 Controller");
+    }
     HIDAPI_SetDeviceSerial(device, serial);
 
     return HIDAPI_JoystickConnected(device, NULL);

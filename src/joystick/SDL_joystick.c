@@ -2167,6 +2167,11 @@ SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *nam
         if (SDL_IsJoystickVirtual(guid)) {
             return SDL_CONTROLLER_TYPE_VIRTUAL;
         }
+#ifdef SDL_JOYSTICK_HIDAPI
+        if (SDL_IsJoystickHIDAPI(guid)) {
+            return HIDAPI_GetGameControllerTypeFromGUID(guid);
+        }
+#endif /* SDL_JOYSTICK_HIDAPI */
     }
     return type;
 }

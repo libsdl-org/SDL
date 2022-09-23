@@ -340,6 +340,8 @@ HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     SDL_Log("Controller version: %d (0x%.4x)\n", device->version, device->version);
 #endif
 
+    device->type = SDL_CONTROLLER_TYPE_XBOXONE;
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 

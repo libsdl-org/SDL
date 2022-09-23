@@ -133,13 +133,15 @@ static SDL_bool
 HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx;
+    SDL_bool is_shanwan = SDL_FALSE;
 
-    if (device->vendor_id == USB_VENDOR_SONY) {
-        if (SDL_strncasecmp(device->name, "ShanWan", 7) == 0) {
-            HIDAPI_SetDeviceName(device, "ShanWan PS3 Controller");
-        } else {
-            HIDAPI_SetDeviceName(device, "PS3 Controller");
-        }
+    if (device->vendor_id == USB_VENDOR_SONY &&
+        SDL_strncasecmp(device->name, "ShanWan", 7) == 0) {
+        is_shanwan = SDL_TRUE;
+    }
+    if (device->vendor_id == USB_VENDOR_SHANWAN ||
+        device->vendor_id == USB_VENDOR_SHANWAN_ALT) {
+        is_shanwan = SDL_TRUE;
     }
 
     ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof(*ctx));
@@ -148,12 +150,9 @@ HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
     ctx->device = device;
+    ctx->is_shanwan = is_shanwan;
 
     device->context = ctx;
-
-    if (SDL_strncasecmp(device->name, "ShanWan", 7) == 0) {
-        ctx->is_shanwan = SDL_TRUE;
-    }
 
     /* Set the controller into report mode over Bluetooth */
     {
@@ -188,6 +187,9 @@ HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
             SDL_hid_write(device->dev, data, 1);
         }
     }
+
+    device->type = SDL_CONTROLLER_TYPE_PS3;
+    HIDAPI_SetDeviceName(device, "PS3 Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);
 }
