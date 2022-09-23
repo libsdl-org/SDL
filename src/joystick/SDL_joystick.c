@@ -2525,6 +2525,12 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
         return SDL_JOYSTICK_TYPE_THROTTLE;
     }
 
+#ifdef SDL_JOYSTICK_HIDAPI
+    if (SDL_IsJoystickHIDAPI(guid)) {
+        return HIDAPI_GetJoystickTypeFromGUID(guid);
+    }
+#endif /* SDL_JOYSTICK_HIDAPI */
+
     if (GuessControllerType(vendor, product) != k_eControllerType_UnknownNonSteamController) {
         return SDL_JOYSTICK_TYPE_GAMECONTROLLER;
     }

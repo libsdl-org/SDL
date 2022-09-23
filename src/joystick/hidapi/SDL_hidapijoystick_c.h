@@ -73,6 +73,7 @@ typedef struct _SDL_HIDAPI_Device
     int interface_protocol;
     Uint16 usage_page;      /* Available on Windows and Mac OS X */
     Uint16 usage;           /* Available on Windows and Mac OS X */
+    SDL_JoystickType joystick_type;
     SDL_GameControllerType type;
 
     struct _SDL_HIDAPI_DeviceDriver *driver;
@@ -144,6 +145,9 @@ extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GameControllerType type);
 
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+
+/* Return the type of a joystick if it's present and supported */
+extern SDL_GameControllerType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid);
 
 /* Return the type of a game controller if it's present and supported */
 extern SDL_GameControllerType HIDAPI_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid);
