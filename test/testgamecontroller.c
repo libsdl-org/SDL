@@ -106,14 +106,17 @@ static void UpdateWindowTitle()
         const char *name = SDL_GameControllerName(gamecontroller);
         const char *serial = SDL_GameControllerGetSerial(gamecontroller);
         const char *basetitle = "Game Controller Test: ";
-        const size_t titlelen = SDL_strlen(basetitle) + SDL_strlen(name) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
+        const size_t titlelen = SDL_strlen(basetitle) + (name ? SDL_strlen(name) : 0) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
         char *title = (char *)SDL_malloc(titlelen);
 
         retval = SDL_FALSE;
         done = SDL_FALSE;
 
         if (title) {
-            SDL_snprintf(title, titlelen, "%s%s", basetitle, name);
+            SDL_strlcpy(title, basetitle, titlelen);
+            if (name) {
+                SDL_strlcat(title, name, titlelen);
+            }
             if (serial) {
                 SDL_strlcat(title, " (", titlelen);
                 SDL_strlcat(title, serial, titlelen);
