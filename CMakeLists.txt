@@ -3078,8 +3078,10 @@ if(SDL_SHARED)
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
   if(APPLE)
+    # FIXME: Remove SOVERSION in SDL3
     set_target_properties(SDL2 PROPERTIES
       MACOSX_RPATH 1
+      SOVERSION 0
       OUTPUT_NAME "SDL2-${LT_RELEASE}")
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES
