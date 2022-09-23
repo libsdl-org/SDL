@@ -148,6 +148,10 @@ int32 HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
     case B_RGB16_BIG:
         return SDL_PIXELFORMAT_RGB565;
         break;
+    case B_RGB24:
+    case B_RGB24_BIG:
+        return SDL_PIXELFORMAT_BGR24;
+        break;
     case B_RGB32:
     case B_RGBA32:
     case B_RGB32_BIG:
