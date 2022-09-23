@@ -73,6 +73,8 @@ static const struct {
     xkb_keysym_t keysym;
     SDL_KeyCode keycode;
 } KeySymToSDLKeyCode[] = {
+    { XKB_KEY_Escape, SDLK_ESCAPE },
+    { XKB_KEY_Num_Lock, SDLK_NUMLOCKCLEAR },
     { XKB_KEY_Shift_L, SDLK_LSHIFT },
     { XKB_KEY_Shift_R, SDLK_RSHIFT },
     { XKB_KEY_Control_L, SDLK_LCTRL },
