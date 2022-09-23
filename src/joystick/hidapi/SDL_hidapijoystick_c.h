@@ -147,7 +147,7 @@ extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GameControllerType type);
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 /* Return the type of a joystick if it's present and supported */
-extern SDL_GameControllerType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid);
+extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid);
 
 /* Return the type of a game controller if it's present and supported */
 extern SDL_GameControllerType HIDAPI_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid);
