@@ -185,11 +185,19 @@ HIDAPI_DriverPS4_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, 
         return SDL_TRUE;
     }
 
-    if (device && SONY_THIRDPARTY_VENDOR(device->vendor_id) &&
-        (size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
-        data[2] == 0x27) {
-        /* Supported third party controller */
-        return SDL_TRUE;
+    if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
+        if (device) {
+            if ((size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
+                data[2] == 0x27) {
+                /* Supported third party controller */
+                return SDL_TRUE;
+            } else {
+                return SDL_FALSE;
+            }
+        } else {
+            /* Might be supported by this driver, enumerate and find out */
+            return SDL_TRUE;
+        }
     }
 
     return SDL_FALSE;
