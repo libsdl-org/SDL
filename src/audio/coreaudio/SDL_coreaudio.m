@@ -1145,6 +1145,131 @@ COREAUDIO_OpenDevice(_THIS, const char *devname)
     return (this->hidden->thread != NULL) ? 0 : -1;
 }
 
+static int
+COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    AudioDeviceID devid;
+    AudioBufferList *buflist;
+    OSStatus result;
+    UInt32 size;
+    CFStringRef cfstr;
+    char *devname;
+    int usable;
+    double sampleRate;
+
+    AudioObjectPropertyAddress addr = {
+        iscapture ? kAudioHardwarePropertyDefaultInputDevice
+                  : kAudioHardwarePropertyDefaultOutputDevice,
+        iscapture ? kAudioDevicePropertyScopeInput
+                  : kAudioDevicePropertyScopeOutput,
+        kAudioObjectPropertyElementMaster
+    };
+        
+    AudioObjectPropertyAddress nameaddr = {
+        kAudioObjectPropertyName,
+        iscapture ? kAudioDevicePropertyScopeInput
+                  : kAudioDevicePropertyScopeOutput,
+        kAudioObjectPropertyElementMaster
+    };
+    
+    AudioObjectPropertyAddress freqaddr = {
+        kAudioDevicePropertyNominalSampleRate,
+        iscapture ? kAudioDevicePropertyScopeInput
+                  : kAudioDevicePropertyScopeOutput,
+        kAudioObjectPropertyElementMaster
+    };
+    
+    AudioObjectPropertyAddress bufaddr = {
+        kAudioDevicePropertyStreamConfiguration,
+        iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
+        kAudioObjectPropertyElementMaster
+    };
+    
+    // Get the Device ID
+    cfstr = NULL;
+    size = sizeof (AudioDeviceID);
+    result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr,
+                                        0, NULL, &size, &devid);
+    
+    if (result != noErr) {
+        return SDL_SetError("%s: Default Device ID not found", "coreaudio");
+    }
+    
+    
+    // Use the Device ID to get the name
+    size = sizeof (CFStringRef);
+    result = AudioObjectGetPropertyData(devid, &nameaddr, 0, NULL, &size, &cfstr);
+    
+    if (result != noErr) {
+        return SDL_SetError("%s: Default Device Name not found", "coreaudio");
+    }
+    
+    CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
+                                                    kCFStringEncodingUTF8);
+    
+    devname = (char *) SDL_malloc(len + 1);
+    usable = ((devname != NULL) &&
+              (CFStringGetCString(cfstr, devname, len + 1, kCFStringEncodingUTF8)));
+    CFRelease(cfstr);
+    
+    if (usable) {
+        usable = 0;
+        len = strlen(devname);
+        /* Some devices have whitespace at the end...trim it. */
+        while ((len > 0) && (devname[len - 1] == ' ')) {
+            len--;
+            usable = len;
+        }
+    }
+    
+    if (usable) {
+        devname[len] = '\0';
+    }
+    
+    if (name) {
+        *name = devname;
+    }
+    
+    // Uses the Device ID to get the spec
+    SDL_zero(*spec);
+
+    sampleRate = 0;
+    size = sizeof(sampleRate);
+    result = AudioObjectGetPropertyData(devid, &freqaddr, 0, NULL, &size, &sampleRate);
+
+    if (result != noErr) {
+        return SDL_SetError("%s: Default Device Sample Rate not found", "coreaudio");
+    }
+
+    spec->freq = (int) sampleRate;
+
+    result = AudioObjectGetPropertyDataSize(devid, &bufaddr, 0, NULL, &size);
+    if (result != noErr)
+        return SDL_SetError("%s: Default Device Data Size not found", "coreaudio");
+
+    buflist = (AudioBufferList *) SDL_malloc(size);
+    if (buflist == NULL)
+        return SDL_SetError("%s: Default Device Buffer List not found", "coreaudio");
+
+    result = AudioObjectGetPropertyData(devid, &bufaddr, 0, NULL,
+                                        &size, buflist);
+
+    if (result == noErr) {
+        UInt32 j;
+        for (j = 0; j < buflist->mNumberBuffers; j++) {
+            spec->channels += buflist->mBuffers[j].mNumberChannels;
+        }
+    }
+
+    SDL_free(buflist);
+
+    if (spec->channels == 0) {
+        return SDL_SetError("%s: Default Device has no channels!", "coreaudio");
+    }
+    
+    return 0;
+}
+
 static void
 COREAUDIO_Deinitialize(void)
 {
@@ -1162,6 +1287,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->OpenDevice = COREAUDIO_OpenDevice;
     impl->CloseDevice = COREAUDIO_CloseDevice;
     impl->Deinitialize = COREAUDIO_Deinitialize;
+    impl->GetDefaultAudioInfo = COREAUDIO_GetDefaultAudioInfo;
 
 #if MACOSX_COREAUDIO
     impl->DetectDevices = COREAUDIO_DetectDevices;

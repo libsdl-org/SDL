@@ -135,6 +135,8 @@ fill_buffer(void* unused, Uint8* stream, int len)
 int
 main(int argc, char *argv[])
 {
+    char *deviceName;
+    SDL_AudioSpec spec;
     int i;
 
     /* Enable standard application logging */
@@ -197,6 +199,28 @@ main(int argc, char *argv[])
         }
 
         SDL_CloseAudioDevice(dev);
+    }
+
+    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 0)) {
+        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    } else {
+        SDL_Log("Default audio output info found!\n");
+        SDL_Log("Name: %s\n", deviceName);
+        SDL_Log("Sampling Rate: %d\n", spec.freq);
+        SDL_Log("Number of Channels: %d\n", spec.channels);
+        SDL_Log("Audio Format: %d\n", spec.format);
+        SDL_free(deviceName);
+    }
+    
+    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 1)) {
+        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    } else {
+        SDL_Log("Default audio capture info found!\n");
+        SDL_Log("Name: %s\n", deviceName);
+        SDL_Log("Sampling Rate: %d\n", spec.freq);
+        SDL_Log("Number of Channels: %d\n", spec.channels);
+        SDL_Log("Audio Format: %d\n", spec.format);
+        SDL_free(deviceName);
     }
 
     SDL_Quit();
