@@ -131,6 +131,7 @@ typedef struct {
 
 typedef struct {
     SDL_HIDAPI_Device *device;
+    SDL_Joystick *joystick;
     EWiiCommunicationState m_eCommState;
     EWiiExtensionControllerType m_eExtensionControllerType;
     SDL_bool m_bUseButtonLabels;
@@ -183,12 +184,6 @@ HIDAPI_DriverWii_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, 
         return SDL_TRUE;
     }
     return SDL_FALSE;
-}
-
-static const char *
-HIDAPI_DriverWii_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
-{
-    return NULL;
 }
 
 static int ReadInput(SDL_DriverWii_Context *ctx)
@@ -671,45 +666,35 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
 static EWiiExtensionControllerType
 ReadExtensionControllerType(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
     EWiiExtensionControllerType eExtensionControllerType = k_eWiiExtensionControllerType_Unknown;
+    const int MAX_ATTEMPTS = 20;
+    int attempts = 0;
 
     /* Create enough of a context to read the controller type from the device */
-    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (ctx) {
-        ctx->device = device;
-
-        device->dev = SDL_hid_open_path(device->path, 0);
-        if (device->dev) {
-            const int MAX_ATTEMPTS = 20;
-            int attempts = 0;
-            for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
-                Uint16 extension;
-                if (SendExtensionIdentify(ctx, SDL_TRUE) &&
-                    ParseExtensionIdentifyResponse(ctx, &extension)) {
-                    Uint8 motion_plus_mode = 0;
-                    if ((extension & WII_EXTENSION_MOTIONPLUS_MASK) == WII_EXTENSION_MOTIONPLUS_ID) {
-                        motion_plus_mode = (Uint8)(extension >> 8);
-                    }
-                    if (motion_plus_mode || extension == WII_EXTENSION_UNINITIALIZED) {
-                        SendExtensionReset(ctx, SDL_TRUE);
-                        if (SendExtensionIdentify(ctx, SDL_TRUE)) {
-                            ParseExtensionIdentifyResponse(ctx, &extension);
-                        }
-                    }
-
-                    eExtensionControllerType = GetExtensionType(extension);
-
-                    /* Reset the Motion Plus controller if needed */
-                    if (motion_plus_mode) {
-                        ActivateMotionPlusWithMode(ctx, motion_plus_mode);
-                    }
-                    break;
+    for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
+        Uint16 extension;
+        if (SendExtensionIdentify(ctx, SDL_TRUE) &&
+            ParseExtensionIdentifyResponse(ctx, &extension)) {
+            Uint8 motion_plus_mode = 0;
+            if ((extension & WII_EXTENSION_MOTIONPLUS_MASK) == WII_EXTENSION_MOTIONPLUS_ID) {
+                motion_plus_mode = (Uint8)(extension >> 8);
+            }
+            if (motion_plus_mode || extension == WII_EXTENSION_UNINITIALIZED) {
+                SendExtensionReset(ctx, SDL_TRUE);
+                if (SendExtensionIdentify(ctx, SDL_TRUE)) {
+                    ParseExtensionIdentifyResponse(ctx, &extension);
                 }
             }
-            SDL_hid_close(device->dev);
-            device->dev = NULL;
+
+            eExtensionControllerType = GetExtensionType(extension);
+
+            /* Reset the Motion Plus controller if needed */
+            if (motion_plus_mode) {
+                ActivateMotionPlusWithMode(ctx, motion_plus_mode);
+            }
+            break;
         }
-        SDL_free(ctx);
     }
     return eExtensionControllerType;
 }
@@ -717,41 +702,44 @@ ReadExtensionControllerType(SDL_HIDAPI_Device *device)
 static void
 UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 {
-    EWiiExtensionControllerType eExtensionControllerType = (EWiiExtensionControllerType)device->guid.data[15];
-    const char *name = NULL;
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
 
-    switch (eExtensionControllerType) {
-        case k_eWiiExtensionControllerType_None:
-            name = "Nintendo Wii Remote";
-            break;
-        case k_eWiiExtensionControllerType_Nunchuk:
-            name = "Nintendo Wii Remote with Nunchuk";
-            break;
-        case k_eWiiExtensionControllerType_Gamepad:
-            name = "Nintendo Wii Remote with Classic Controller";
-            break;
-        case k_eWiiExtensionControllerType_WiiUPro:
-            name = "Nintendo Wii U Pro Controller";
-            break;
-        default:
-            name = "Nintendo Wii Remote with Unknown Extension";
-            break;
+    switch (ctx->m_eExtensionControllerType) {
+    case k_eWiiExtensionControllerType_None:
+        HIDAPI_SetDeviceName(device, "Nintendo Wii Remote");
+        break;
+    case k_eWiiExtensionControllerType_Nunchuk:
+        HIDAPI_SetDeviceName(device, "Nintendo Wii Remote with Nunchuk");
+        break;
+    case k_eWiiExtensionControllerType_Gamepad:
+        HIDAPI_SetDeviceName(device, "Nintendo Wii Remote with Classic Controller");
+        break;
+    case k_eWiiExtensionControllerType_WiiUPro:
+        HIDAPI_SetDeviceName(device, "Nintendo Wii U Pro Controller");
+        break;
+    default:
+        HIDAPI_SetDeviceName(device, "Nintendo Wii Remote with Unknown Extension");
+        break;
     }
-    if (name && (!name || SDL_strcmp(name, device->name) != 0)) {
-        SDL_free(device->name);
-        device->name = SDL_strdup(name);
-        SDL_SetJoystickGUIDCRC(&device->guid, SDL_crc16(0, name, SDL_strlen(name)));
-    }
+    device->guid.data[15] = ctx->m_eExtensionControllerType;
 }
 
 static SDL_bool
 HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 {
-    if (device->vendor_id == USB_VENDOR_NINTENDO) {
-        EWiiExtensionControllerType eExtensionControllerType;
+    SDL_DriverWii_Context *ctx;
 
-        eExtensionControllerType = ReadExtensionControllerType(device);
-        device->guid.data[15] = eExtensionControllerType;
+    ctx = (SDL_DriverWii_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (!ctx) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+    ctx->device = device;
+    device->context = ctx;
+
+    if (device->vendor_id == USB_VENDOR_NINTENDO) {
+        ctx->m_eExtensionControllerType = ReadExtensionControllerType(device);
+
         UpdateDeviceIdentity(device);
     }
     return HIDAPI_JoystickConnected(device, NULL);
@@ -766,9 +754,9 @@ HIDAPI_DriverWii_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
 static void
 HIDAPI_DriverWii_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
-    SDL_DriverWii_Context *ctx = device->context;
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
 
-    if (!ctx) {
+    if (!ctx->joystick) {
         return;
     }
 
@@ -780,23 +768,9 @@ HIDAPI_DriverWii_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
 static SDL_bool
 HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverWii_Context *ctx;
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
 
-    ctx = (SDL_DriverWii_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
-        SDL_OutOfMemory();
-        goto error;
-    }
-    ctx->device = device;
-    device->context = ctx;
-
-    device->dev = SDL_hid_open_path(device->path, 0);
-    if (!device->dev) {
-        SDL_SetError("Couldn't open %s", device->path);
-        goto error;
-    }
-
-    ctx->m_eExtensionControllerType = (EWiiExtensionControllerType)device->guid.data[15];
+    ctx->joystick = joystick;
 
     InitializeExtension(ctx);
 
@@ -841,21 +815,6 @@ HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     ctx->m_unLastInput = SDL_GetTicks();
 
     return SDL_TRUE;
-
-error:
-    SDL_LockMutex(device->dev_lock);
-    {
-        if (device->dev) {
-            SDL_hid_close(device->dev);
-            device->dev = NULL;
-        }
-        if (device->context) {
-            SDL_free(device->context);
-            device->context = NULL;
-        }
-    }
-    SDL_UnlockMutex(device->dev_lock);
-    return SDL_FALSE;
 }
 
 static int
@@ -1509,16 +1468,16 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    }
-    if (!joystick) {
+    } else {
         return SDL_FALSE;
     }
 
     now = SDL_GetTicks();
 
     while ((size = ReadInput(ctx)) > 0) {
-        HandleInput(ctx, joystick);
-
+        if (joystick) {
+            HandleInput(ctx, joystick);
+        }
         ctx->m_unLastInput = now;
     }
 
@@ -1533,36 +1492,38 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         size = -1;
     }
 
-    /* These checks aren't needed on the Wii U Pro Controller */
-    if (ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_WiiUPro) {
+    if (joystick) {
+        /* These checks aren't needed on the Wii U Pro Controller */
+        if (ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_WiiUPro) {
 
-        /* Check to see if the Motion Plus extension status has changed */
-        if (ctx->m_unNextMotionPlusCheck &&
-            SDL_TICKS_PASSED(now, ctx->m_unNextMotionPlusCheck)) {
-            CheckMotionPlusConnection(ctx);
-            if (NeedsPeriodicMotionPlusCheck(ctx, SDL_FALSE)) {
-                SchedulePeriodicMotionPlusCheck(ctx);
-            } else {
-                ctx->m_unNextMotionPlusCheck = 0;
+            /* Check to see if the Motion Plus extension status has changed */
+            if (ctx->m_unNextMotionPlusCheck &&
+                SDL_TICKS_PASSED(now, ctx->m_unNextMotionPlusCheck)) {
+                CheckMotionPlusConnection(ctx);
+                if (NeedsPeriodicMotionPlusCheck(ctx, SDL_FALSE)) {
+                    SchedulePeriodicMotionPlusCheck(ctx);
+                } else {
+                    ctx->m_unNextMotionPlusCheck = 0;
+                }
             }
-        }
 
-        /* Request a status update periodically to make sure our battery value is up to date */
-        if (!ctx->m_unLastStatus ||
-            SDL_TICKS_PASSED(now, ctx->m_unLastStatus + STATUS_UPDATE_TIME_MS)) {
-            Uint8 data[2];
+            /* Request a status update periodically to make sure our battery value is up to date */
+            if (!ctx->m_unLastStatus ||
+                SDL_TICKS_PASSED(now, ctx->m_unLastStatus + STATUS_UPDATE_TIME_MS)) {
+                Uint8 data[2];
 
-            data[0] = k_eWiiOutputReportIDs_StatusRequest;
-            data[1] = ctx->m_bRumbleActive;
-            WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
+                data[0] = k_eWiiOutputReportIDs_StatusRequest;
+                data[1] = ctx->m_bRumbleActive;
+                WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
 
-            ctx->m_unLastStatus = now;
+                ctx->m_unLastStatus = now;
+            }
         }
     }
 
     if (size < 0 || ctx->m_bDisconnected) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return (size >= 0);
 }
@@ -1578,15 +1539,7 @@ HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
                         SDL_PlayerLEDHintChanged, ctx);
 
-    SDL_LockMutex(device->dev_lock);
-    {
-        SDL_hid_close(device->dev);
-        device->dev = NULL;
-
-        SDL_free(device->context);
-        device->context = NULL;
-    }
-    SDL_UnlockMutex(device->dev_lock);
+    ctx->joystick = NULL;
 }
 
 static void
@@ -1602,7 +1555,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii =
     HIDAPI_DriverWii_UnregisterHints,
     HIDAPI_DriverWii_IsEnabled,
     HIDAPI_DriverWii_IsSupportedDevice,
-    HIDAPI_DriverWii_GetDeviceName,
     HIDAPI_DriverWii_InitDevice,
     HIDAPI_DriverWii_GetDevicePlayerIndex,
     HIDAPI_DriverWii_SetDevicePlayerIndex,

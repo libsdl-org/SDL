@@ -107,15 +107,20 @@ HIDAPI_DriverShield_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *nam
     return (type == SDL_CONTROLLER_TYPE_NVIDIA_SHIELD) ? SDL_TRUE : SDL_FALSE;
 }
 
-static const char *
-HIDAPI_DriverShield_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
-{
-    return "NVIDIA SHIELD Controller";
-}
-
 static SDL_bool
 HIDAPI_DriverShield_InitDevice(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverShield_Context *ctx;
+
+    HIDAPI_SetDeviceName(device, "NVIDIA SHIELD Controller");
+
+    ctx = (SDL_DriverShield_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (!ctx) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+    device->context = ctx;
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -133,7 +138,7 @@ HIDAPI_DriverShield_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystick
 static int
 HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
 {
-    SDL_DriverShield_Context *ctx = device->context;
+    SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
     ShieldCommandReport_t cmd_pkt;
 
     if (size > sizeof(cmd_pkt.payload)) {
@@ -164,21 +169,14 @@ HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void
 static SDL_bool
 HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverShield_Context *ctx;
+    SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
 
-    ctx = (SDL_DriverShield_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
-        SDL_OutOfMemory();
-        return SDL_FALSE;
-    }
-
-    device->dev = SDL_hid_open_path(device->path, 0);
-    if (!device->dev) {
-        SDL_SetError("Couldn't open %s", device->path);
-        SDL_free(ctx);
-        return SDL_FALSE;
-    }
-    device->context = ctx;
+    ctx->rumble_report_pending = SDL_FALSE;
+    ctx->rumble_update_pending = SDL_FALSE;
+    ctx->left_motor_amplitude = 0;
+    ctx->right_motor_amplitude = 0;
+    ctx->last_rumble_time = 0;
+    SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 16;
@@ -186,7 +184,6 @@ HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     /* Request battery and charging info */
-    ctx->battery_level = SDL_JOYSTICK_POWER_UNKNOWN;
     ctx->last_battery_query_time = SDL_GetTicks();
     HIDAPI_DriverShield_SendCommand(device, CMD_CHARGE_STATE, NULL, 0);
     HIDAPI_DriverShield_SendCommand(device, CMD_BATTERY_STATE, NULL, 0);
@@ -367,8 +364,7 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    }
-    if (!joystick) {
+    } else {
         return SDL_FALSE;
     }
 
@@ -376,9 +372,13 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_SHIELD_PROTOCOL
         HIDAPI_DumpPacket("NVIDIA SHIELD packet: size = %d", data, size);
 #endif
+
         /* Byte 0 is HID report ID */
         switch (data[0]) {
             case k_ShieldReportIdControllerState:
+                if (!joystick) {
+                    break;
+                }
                 HIDAPI_DriverShield_HandleStatePacket(joystick, ctx, data, size);
                 break;
             case k_ShieldReportIdCommandResponse:
@@ -390,7 +390,9 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
                         break;
                     case CMD_CHARGE_STATE:
                         ctx->charging = cmd_resp_report->payload[0] != 0;
-                        SDL_PrivateJoystickBatteryLevel(joystick, ctx->charging ? SDL_JOYSTICK_POWER_WIRED : ctx->battery_level);
+                        if (joystick) {
+                            SDL_PrivateJoystickBatteryLevel(joystick, ctx->charging ? SDL_JOYSTICK_POWER_WIRED : ctx->battery_level);
+                        }
                         break;
                     case CMD_BATTERY_STATE:
                         switch (cmd_resp_report->payload[2]) {
@@ -412,7 +414,9 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
                                 ctx->battery_level = SDL_JOYSTICK_POWER_UNKNOWN;
                                 break;
                         }
-                        SDL_PrivateJoystickBatteryLevel(joystick, ctx->charging ? SDL_JOYSTICK_POWER_WIRED : ctx->battery_level);
+                        if (joystick) {
+                            SDL_PrivateJoystickBatteryLevel(joystick, ctx->charging ? SDL_JOYSTICK_POWER_WIRED : ctx->battery_level);
+                        }
                         break;
                 }
                 break;
@@ -420,7 +424,7 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Ask for battery state again if we're due for an update */
-    if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_battery_query_time + BATTERY_POLL_INTERVAL_MS)) {
+    if (joystick && SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_battery_query_time + BATTERY_POLL_INTERVAL_MS)) {
         ctx->last_battery_query_time = SDL_GetTicks();
         HIDAPI_DriverShield_SendCommand(device, CMD_BATTERY_STATE, NULL, 0);
     }
@@ -434,7 +438,7 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return (size >= 0);
 }
@@ -442,17 +446,6 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverShield_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_LockMutex(device->dev_lock);
-    {
-        if (device->dev) {
-            SDL_hid_close(device->dev);
-            device->dev = NULL;
-        }
-
-        SDL_free(device->context);
-        device->context = NULL;
-    }
-    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void
@@ -468,7 +461,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield =
     HIDAPI_DriverShield_UnregisterHints,
     HIDAPI_DriverShield_IsEnabled,
     HIDAPI_DriverShield_IsSupportedDevice,
-    HIDAPI_DriverShield_GetDeviceName,
     HIDAPI_DriverShield_InitDevice,
     HIDAPI_DriverShield_GetDevicePlayerIndex,
     HIDAPI_DriverShield_SetDevicePlayerIndex,

@@ -73,15 +73,20 @@ HIDAPI_DriverStadia_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *nam
     return (type == SDL_CONTROLLER_TYPE_GOOGLE_STADIA) ? SDL_TRUE : SDL_FALSE;
 }
 
-static const char *
-HIDAPI_DriverStadia_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
-{
-    return "Google Stadia Controller";
-}
-
 static SDL_bool
 HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverStadia_Context *ctx;
+
+    HIDAPI_SetDeviceName(device, "Google Stadia Controller");
+
+    ctx = (SDL_DriverStadia_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (!ctx) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+    device->context = ctx;
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -99,21 +104,9 @@ HIDAPI_DriverStadia_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystick
 static SDL_bool
 HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverStadia_Context *ctx;
+    SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
 
-    ctx = (SDL_DriverStadia_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
-        SDL_OutOfMemory();
-        return SDL_FALSE;
-    }
-
-    device->dev = SDL_hid_open_path(device->path, 0);
-    if (!device->dev) {
-        SDL_SetError("Couldn't open %s", device->path);
-        SDL_free(ctx);
-        return SDL_FALSE;
-    }
-    device->context = ctx;
+    SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_CONTROLLER_NUM_STADIA_BUTTONS;
@@ -281,8 +274,7 @@ HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    }
-    if (!joystick) {
+    } else {
         return SDL_FALSE;
     }
 
@@ -290,12 +282,16 @@ HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_STADIA_PROTOCOL
         HIDAPI_DumpPacket("Google Stadia packet: size = %d", data, size);
 #endif
+        if (!joystick) {
+            continue;
+        }
+
         HIDAPI_DriverStadia_HandleStatePacket(joystick, ctx, data, size);
     }
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return (size >= 0);
 }
@@ -303,17 +299,6 @@ HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverStadia_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_LockMutex(device->dev_lock);
-    {
-        if (device->dev) {
-            SDL_hid_close(device->dev);
-            device->dev = NULL;
-        }
-
-        SDL_free(device->context);
-        device->context = NULL;
-    }
-    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void
@@ -329,7 +314,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
     HIDAPI_DriverStadia_UnregisterHints,
     HIDAPI_DriverStadia_IsEnabled,
     HIDAPI_DriverStadia_IsSupportedDevice,
-    HIDAPI_DriverStadia_GetDeviceName,
     HIDAPI_DriverStadia_InitDevice,
     HIDAPI_DriverStadia_GetDevicePlayerIndex,
     HIDAPI_DriverStadia_SetDevicePlayerIndex,

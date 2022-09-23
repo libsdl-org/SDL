@@ -52,10 +52,10 @@ typedef struct {
     SDL_bool is_shanwan;
     SDL_bool report_sensors;
     SDL_bool effects_updated;
-    Uint8 last_state[USB_PACKET_LENGTH];
     int player_index;
     Uint8 rumble_left;
     Uint8 rumble_right;
+    Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverPS3_Context;
 
 
@@ -76,16 +76,16 @@ HIDAPI_DriverPS3_UnregisterHints(SDL_HintCallback callback, void *userdata)
 static SDL_bool
 HIDAPI_DriverPS3_IsEnabled(void)
 {
+    SDL_bool default_value;
+
 #if defined(__MACOSX__)
     /* This works well on macOS */
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
-               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
-                   SDL_HIDAPI_DEFAULT));
+    default_value = SDL_TRUE;
 #elif defined(__WINDOWS__)
     /* You can't initialize the controller with the stock Windows drivers
      * See https://github.com/ViGEm/DsHidMini as an alternative driver
      */
-    return SDL_FALSE;
+    default_value = SDL_FALSE;
 #elif defined(__LINUX__)
     /* Linux drivers do a better job of managing the transition between
      * USB and Bluetooth. There are also some quirks in communicating
@@ -93,11 +93,16 @@ HIDAPI_DriverPS3_IsEnabled(void)
      * for libusb, but are not possible to support using hidraw if the
      * kernel doesn't already know about them.
      */
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
+    default_value = SDL_FALSE;
 #else
     /* Untested, default off */
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
+    default_value = SDL_FALSE;
 #endif
+
+    if (default_value) {
+        default_value = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT);
+    }
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, default_value);
 }
 
 static SDL_bool
@@ -110,19 +115,6 @@ HIDAPI_DriverPS3_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, 
         return SDL_TRUE;
     }
     return SDL_FALSE;
-}
-
-static const char *
-HIDAPI_DriverPS3_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
-{
-    if (vendor_id == USB_VENDOR_SONY) {
-        if (name && SDL_strncasecmp(name, "ShanWan", 7) == 0) {
-            return "ShanWan PS3 Controller";
-        } else {
-            return "PS3 Controller";
-        }
-    }
-    return NULL;
 }
 
 static int ReadFeatureReport(SDL_hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
@@ -140,6 +132,63 @@ static int SendFeatureReport(SDL_hid_device *dev, Uint8 *report, size_t length)
 static SDL_bool
 HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverPS3_Context *ctx;
+
+    if (device->vendor_id == USB_VENDOR_SONY) {
+        if (SDL_strncasecmp(device->name, "ShanWan", 7) == 0) {
+            HIDAPI_SetDeviceName(device, "ShanWan PS3 Controller");
+        } else {
+            HIDAPI_SetDeviceName(device, "PS3 Controller");
+        }
+    }
+
+    ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (!ctx) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+    ctx->device = device;
+
+    device->context = ctx;
+
+    if (SDL_strncasecmp(device->name, "ShanWan", 7) == 0) {
+        ctx->is_shanwan = SDL_TRUE;
+    }
+
+    /* Set the controller into report mode over Bluetooth */
+    {
+        Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
+
+        SendFeatureReport(device->dev, data, sizeof(data));
+    }
+
+    /* Set the controller into report mode over USB */
+    {
+        Uint8 data[USB_PACKET_LENGTH];
+        int size;
+
+        if ((size = ReadFeatureReport(device->dev, 0xf2, data, 17)) < 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf2");
+            return SDL_FALSE;
+        }
+#ifdef DEBUG_PS3_PROTOCOL
+        HIDAPI_DumpPacket("PS3 0xF2 packet: size = %d", data, size);
+#endif
+        if ((size = ReadFeatureReport(device->dev, 0xf5, data, 8)) < 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf5");
+            return SDL_FALSE;
+        }
+#ifdef DEBUG_PS3_PROTOCOL
+        HIDAPI_DumpPacket("PS3 0xF5 packet: size = %d", data, size);
+#endif
+        if (!ctx->is_shanwan) {
+            /* An output report could cause ShanWan controllers to rumble non-stop */
+            SDL_hid_write(device->dev, data, 1);
+        }
+    }
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -190,59 +239,13 @@ HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
 static SDL_bool
 HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverPS3_Context *ctx;
+    SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
-    ctx = (SDL_DriverPS3_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
-        SDL_OutOfMemory();
-        return SDL_FALSE;
-    }
-    ctx->device = device;
     ctx->joystick = joystick;
-
-    device->dev = SDL_hid_open_path(device->path, 0);
-    if (!device->dev) {
-        SDL_free(ctx);
-        SDL_SetError("Couldn't open %s", device->path);
-        return SDL_FALSE;
-    }
-    device->context = ctx;
-
-    if (SDL_strncasecmp(device->name, "ShanWan", 7) == 0) {
-        ctx->is_shanwan = SDL_TRUE;
-    }
-
-    /* Set the controller into report mode over Bluetooth */
-    {
-        Uint8 data[] = { 0xf4, 0x42, 0x03, 0x00, 0x00 };
-
-        SendFeatureReport(device->dev, data, sizeof(data));
-    }
-
-    /* Set the controller into report mode over USB */
-    {
-        Uint8 data[USB_PACKET_LENGTH];
-        int size;
-
-        if ((size = ReadFeatureReport(device->dev, 0xf2, data, 17)) < 0) {
-            SDL_SetError("Couldn't read feature report 0xf2");
-            return SDL_FALSE;
-        }
-#ifdef DEBUG_PS3_PROTOCOL
-        HIDAPI_DumpPacket("PS3 0xF2 packet: size = %d", data, size);
-#endif
-        if ((size = ReadFeatureReport(device->dev, 0xf5, data, 8)) < 0) {
-            SDL_SetError("Couldn't read feature report 0xf5");
-            return SDL_FALSE;
-        }
-#ifdef DEBUG_PS3_PROTOCOL
-        HIDAPI_DumpPacket("PS3 0xF5 packet: size = %d", data, size);
-#endif
-        if (!ctx->is_shanwan) {
-            /* An output report could cause ShanWan controllers to rumble non-stop */
-            SDL_hid_write(device->dev, data, 1);
-        }
-    }
+    ctx->effects_updated = SDL_FALSE;
+    ctx->rumble_left = 0;
+    ctx->rumble_right = 0;
+    SDL_zeroa(ctx->last_state);
 
     /* Initialize player index (needed for setting LEDs) */
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
@@ -498,8 +501,7 @@ HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    }
-    if (!joystick) {
+    } else {
         return SDL_FALSE;
     }
 
@@ -507,10 +509,19 @@ HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 packet: size = %d", data, size);
 #endif
+        if (!joystick) {
+            continue;
+        }
 
         if (size == 7) {
             /* Seen on a ShanWan PS2 -> PS3 USB converter */
             HIDAPI_DriverPS3_HandleMiniStatePacket(joystick, ctx, data, size);
+
+            /* Wait for the first report to set the LED state after the controller stops blinking */
+            if (!ctx->effects_updated) {
+                HIDAPI_DriverPS3_UpdateEffects(device);
+                ctx->effects_updated = SDL_TRUE;
+            }
             continue;
         }
 
@@ -538,7 +549,7 @@ HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (size < 0) {
         /* Read error, device is disconnected */
-        HIDAPI_JoystickDisconnected(device, joystick->instance_id);
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return (size >= 0);
 }
@@ -546,15 +557,9 @@ HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverPS3_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_LockMutex(device->dev_lock);
-    {
-        SDL_hid_close(device->dev);
-        device->dev = NULL;
+    SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
-        SDL_free(device->context);
-        device->context = NULL;
-    }
-    SDL_UnlockMutex(device->dev_lock);
+    ctx->joystick = NULL;
 }
 
 static void
@@ -570,7 +575,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 =
     HIDAPI_DriverPS3_UnregisterHints,
     HIDAPI_DriverPS3_IsEnabled,
     HIDAPI_DriverPS3_IsSupportedDevice,
-    HIDAPI_DriverPS3_GetDeviceName,
     HIDAPI_DriverPS3_InitDevice,
     HIDAPI_DriverPS3_GetDevicePlayerIndex,
     HIDAPI_DriverPS3_SetDevicePlayerIndex,

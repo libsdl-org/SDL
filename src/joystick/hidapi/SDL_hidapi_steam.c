@@ -1022,15 +1022,20 @@ HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name
     return SDL_IsJoystickSteamController(vendor_id, product_id);
 }
 
-static const char *
-HIDAPI_DriverSteam_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
-{
-    return "Steam Controller";
-}
-
 static SDL_bool
 HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverSteam_Context *ctx;
+
+    HIDAPI_SetDeviceName(device, "Steam Controller");
+
+    ctx = (SDL_DriverSteam_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (!ctx) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+    device->context = ctx;
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -1048,27 +1053,18 @@ HIDAPI_DriverSteam_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickI
 static SDL_bool
 HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverSteam_Context *ctx;
+    SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
     uint32_t update_rate_in_us = 0;
     float update_rate_in_hz = 0.0f;
 
-    ctx = (SDL_DriverSteam_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
-        SDL_OutOfMemory();
-        goto error;
-    }
-    device->context = ctx;
-
-    device->dev = SDL_hid_open_path(device->path, 0);
-    if (!device->dev) {
-        SDL_SetError("Couldn't open %s", device->path);
-        goto error;
-    }
-    SDL_hid_set_nonblocking(device->dev, 1);
+    ctx->report_sensors = SDL_FALSE;
+    SDL_zero(ctx->m_assembler);
+    SDL_zero(ctx->m_state);
+    SDL_zero(ctx->m_last_state);
 
     if (!ResetSteamController(device->dev, false, &update_rate_in_us)) {
         SDL_SetError("Couldn't reset controller");
-        goto error;
+        return SDL_FALSE;
     }
     if (update_rate_in_us > 0) {
         update_rate_in_hz = 1000000.0f / update_rate_in_us;
@@ -1084,21 +1080,6 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
 
     return SDL_TRUE;
-
-error:
-    SDL_LockMutex(device->dev_lock);
-    {
-        if (device->dev) {
-            SDL_hid_close(device->dev);
-            device->dev = NULL;
-        }
-        if (device->context) {
-            SDL_free(device->context);
-            device->context = NULL;
-        }
-    }
-    SDL_UnlockMutex(device->dev_lock);
-    return SDL_FALSE;
 }
 
 static int
@@ -1117,7 +1098,7 @@ HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystic
 static Uint32
 HIDAPI_DriverSteam_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    /* You should use the full Steam Input API for LED support */
+    /* You should use the full Steam Input API for extended capabilities */
     return 0;
 }
 
@@ -1166,8 +1147,7 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    }
-    if (!joystick) {
+    } else {
         return SDL_FALSE;
     }
 
@@ -1178,9 +1158,12 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
         const Uint8 *pPacket;
 
         r = ReadSteamController(device->dev, data, sizeof(data));
-        if (r == 0)
-        {
+        if (r == 0) {
             break;
+        }
+
+        if (!joystick) {
+            continue;
         }
 
         nPacketLength = 0;
@@ -1281,17 +1264,7 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverSteam_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_LockMutex(device->dev_lock);
-    {
-        CloseSteamController(device->dev);
-
-        SDL_hid_close(device->dev);
-        device->dev = NULL;
-
-        SDL_free(device->context);
-        device->context = NULL;
-    }
-    SDL_UnlockMutex(device->dev_lock);
+    CloseSteamController(device->dev);
 }
 
 static void
@@ -1307,7 +1280,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
     HIDAPI_DriverSteam_UnregisterHints,
     HIDAPI_DriverSteam_IsEnabled,
     HIDAPI_DriverSteam_IsSupportedDevice,
-    HIDAPI_DriverSteam_GetDeviceName,
     HIDAPI_DriverSteam_InitDevice,
     HIDAPI_DriverSteam_GetDevicePlayerIndex,
     HIDAPI_DriverSteam_SetDevicePlayerIndex,

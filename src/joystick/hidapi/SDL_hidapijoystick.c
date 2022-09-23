@@ -314,6 +314,20 @@ HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 
     device->driver->FreeDevice(device);
     device->driver = NULL;
+
+    SDL_LockMutex(device->dev_lock);
+    {
+        if (device->dev) {
+            SDL_hid_close(device->dev);
+            device->dev = NULL;
+        }
+
+        if (device->context) {
+            SDL_free(device->context);
+            device->context = NULL;
+        }
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void
@@ -344,18 +358,27 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
         return; /* Already setup */
     }
 
-    device->driver = HIDAPI_GetDeviceDriver(device);
-    if (device->driver) {
-        const char *name = device->driver->GetDeviceName(device->name, device->vendor_id, device->product_id);
-        if (name && name != device->name) {
-            SDL_free(device->name);
-            device->name = SDL_strdup(name);
-        }
+    /* Make sure we can open the device and leave it open for the driver */
+    device->dev = SDL_hid_open_path(device->path, 0);
+    if (!device->dev) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
+                     device->path, SDL_GetError());
+        return;
     }
+    SDL_hid_set_nonblocking(device->dev, 1);
+
+    device->driver = HIDAPI_GetDeviceDriver(device);
 
     /* Initialize the device, which may cause a connected event */
     if (device->driver && !device->driver->InitDevice(device)) {
-        device->driver = NULL;
+        HIDAPI_CleanupDeviceDriver(device);
+    }
+
+    if (!device->driver && device->dev) {
+        /* No driver claimed this device, go ahead and close it */
+        SDL_hid_close(device->dev);
+        device->dev = NULL;
     }
 }
 
@@ -479,6 +502,32 @@ HIDAPI_JoystickInstanceIsUnique(SDL_HIDAPI_Device *device, SDL_JoystickID joysti
         return SDL_FALSE;
     }
     return SDL_TRUE;
+}
+
+void
+HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name)
+{
+    if (name && *name && SDL_strcmp(name, device->name) != 0) {
+        SDL_free(device->name);
+        device->name = SDL_strdup(name);
+        SDL_SetJoystickGUIDCRC(&device->guid, SDL_crc16(0, name, SDL_strlen(name)));
+    }
+}
+
+void
+HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id)
+{
+    /* Don't set the device product ID directly, or we'll constantly re-enumerate this device */
+    SDL_SetJoystickGUIDProduct(&device->guid, product_id);
+}
+
+void
+HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial)
+{
+    if (serial && *serial && (!device->serial || SDL_strcmp(serial, device->serial) != 0)) {
+        SDL_free(device->serial);
+        device->serial = SDL_strdup(serial);
+    }
 }
 
 SDL_bool
@@ -1101,6 +1150,13 @@ HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return SDL_OutOfMemory();
     }
     hwdata->device = device;
+
+    /* Process any pending reports before opening the device */
+    SDL_LockMutex(device->dev_lock);
+    device->updating = SDL_TRUE;
+    device->driver->UpdateDevice(device);
+    device->updating = SDL_FALSE;
+    SDL_UnlockMutex(device->dev_lock);
 
     if (!device->driver->OpenJoystick(device, joystick)) {
         /* The open failed, mark this device as disconnected and update devices */

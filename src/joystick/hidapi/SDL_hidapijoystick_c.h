@@ -103,7 +103,6 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     void (*UnregisterHints)(SDL_HintCallback callback, void *userdata);
     SDL_bool (*IsEnabled)(void);
     SDL_bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
-    const char *(*GetDeviceName)(const char *name, Uint16 vendor_id, Uint16 product_id);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
     int (*GetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id);
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);
@@ -146,6 +145,9 @@ extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GameControllerType type);
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 extern void HIDAPI_UpdateDevices(void);
+extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
+extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id);
+extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);
 extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID);
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID);
 
