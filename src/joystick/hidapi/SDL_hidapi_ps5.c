@@ -200,9 +200,12 @@ typedef struct {
     SDL_Joystick *joystick;
     SDL_bool is_bluetooth;
     SDL_bool use_alternate_report;
-    SDL_bool effects_supported;
     SDL_bool sensors_supported;
+    SDL_bool lightbar_supported;
+    SDL_bool vibration_supported;
+    SDL_bool playerled_supported;
     SDL_bool touchpad_supported;
+    SDL_bool effects_supported;
     SDL_bool enhanced_mode;
     SDL_bool report_sensors;
     SDL_bool report_touchpad;
@@ -410,28 +413,38 @@ HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
 
     /* Get the device capabilities */
     if (device->vendor_id == USB_VENDOR_SONY) {
-        ctx->effects_supported = SDL_TRUE;
         ctx->sensors_supported = SDL_TRUE;
+        ctx->lightbar_supported = SDL_TRUE;
+        ctx->vibration_supported = SDL_TRUE;
+        ctx->playerled_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
     } else if ((size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
                data[2] == 0x28) {
         Uint8 capabilities = data[4];
+        Uint8 capabilities2 = data[20];
 
 #ifdef DEBUG_PS5_PROTOCOL
         HIDAPI_DumpPacket("PS5 capabilities: size = %d", data, size);
 #endif
-        if ((capabilities & 0x0C) != 0) {
-            ctx->effects_supported = SDL_TRUE;
-        }
         if ((capabilities & 0x02) != 0) {
             ctx->sensors_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x04) != 0) {
+            ctx->lightbar_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x08) != 0) {
+            ctx->vibration_supported = SDL_TRUE;
         }
         if ((capabilities & 0x40) != 0) {
             ctx->touchpad_supported = SDL_TRUE;
         }
+        if ((capabilities2 & 0x80) != 0) {
+            ctx->playerled_supported = SDL_TRUE;
+        }
 
         ctx->use_alternate_report = SDL_TRUE;
     }
+    ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
 
     device->type = SDL_CONTROLLER_TYPE_PS5;
     if (device->vendor_id == USB_VENDOR_SONY) {
@@ -571,7 +584,7 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     DS5EffectsState_t effects;
 
-    if (!ctx->enhanced_mode) {
+    if (!ctx->enhanced_mode || !ctx->effects_supported) {
         return SDL_Unsupported();
     }
 
@@ -586,52 +599,58 @@ HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_mask)
         }
     }
 
-    if (ctx->rumble_left || ctx->rumble_right) {
-        if (ctx->firmware_version < 0x0224) {
-            effects.ucEnableBits1 |= 0x01; /* Enable rumble emulation */
+    if (ctx->vibration_supported) {
+        if (ctx->rumble_left || ctx->rumble_right) {
+            if (ctx->firmware_version < 0x0224) {
+                effects.ucEnableBits1 |= 0x01; /* Enable rumble emulation */
 
-            /* Shift to reduce effective rumble strength to match Xbox controllers */
-            effects.ucRumbleLeft = ctx->rumble_left >> 1;
-            effects.ucRumbleRight = ctx->rumble_right >> 1;
+                /* Shift to reduce effective rumble strength to match Xbox controllers */
+                effects.ucRumbleLeft = ctx->rumble_left >> 1;
+                effects.ucRumbleRight = ctx->rumble_right >> 1;
+            } else {
+                effects.ucEnableBits3 |= 0x04; /* Enable improved rumble emulation on 2.24 firmware and newer */
+
+                effects.ucRumbleLeft = ctx->rumble_left;
+                effects.ucRumbleRight = ctx->rumble_right;
+            }
+            effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
         } else {
-            effects.ucEnableBits3 |= 0x04; /* Enable improved rumble emulation on 2.24 firmware and newer */
-
-            effects.ucRumbleLeft = ctx->rumble_left;
-            effects.ucRumbleRight = ctx->rumble_right;
+            /* Leaving emulated rumble bits off will restore audio haptics */
         }
-        effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
-    } else {
-        /* Leaving emulated rumble bits off will restore audio haptics */
-    }
 
-    if ((effect_mask & k_EDS5EffectRumbleStart) != 0) {
-        effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
-    }
-    if ((effect_mask & k_EDS5EffectRumble) != 0) {
-        /* Already handled above */
-    }
-    if ((effect_mask & k_EDS5EffectLEDReset) != 0) {
-        effects.ucEnableBits2 |= 0x08; /* Reset LED state */
-    }
-    if ((effect_mask & k_EDS5EffectLED) != 0) {
-        effects.ucEnableBits2 |= 0x04; /* Enable LED color */
-
-        /* Populate the LED state with the appropriate color from our lookup table */
-        if (ctx->color_set) {
-            effects.ucLedRed = ctx->led_red;
-            effects.ucLedGreen = ctx->led_green;
-            effects.ucLedBlue = ctx->led_blue;
-        } else {
-            SetLedsForPlayerIndex(&effects, ctx->player_index);
+        if ((effect_mask & k_EDS5EffectRumbleStart) != 0) {
+            effects.ucEnableBits1 |= 0x02; /* Disable audio haptics */
+        }
+        if ((effect_mask & k_EDS5EffectRumble) != 0) {
+            /* Already handled above */
         }
     }
-    if ((effect_mask & k_EDS5EffectPadLights) != 0) {
-        effects.ucEnableBits2 |= 0x10; /* Enable touchpad lights */
+    if (ctx->lightbar_supported) {
+        if ((effect_mask & k_EDS5EffectLEDReset) != 0) {
+            effects.ucEnableBits2 |= 0x08; /* Reset LED state */
+        }
+        if ((effect_mask & k_EDS5EffectLED) != 0) {
+            effects.ucEnableBits2 |= 0x04; /* Enable LED color */
 
-        if (ctx->player_lights) {
-            SetLightsForPlayerIndex(&effects, ctx->player_index);
-        } else {
-            effects.ucPadLights = 0x00;
+            /* Populate the LED state with the appropriate color from our lookup table */
+            if (ctx->color_set) {
+                effects.ucLedRed = ctx->led_red;
+                effects.ucLedGreen = ctx->led_green;
+                effects.ucLedBlue = ctx->led_blue;
+            } else {
+                SetLedsForPlayerIndex(&effects, ctx->player_index);
+            }
+        }
+    }
+    if (ctx->playerled_supported) {
+        if ((effect_mask & k_EDS5EffectPadLights) != 0) {
+            effects.ucEnableBits2 |= 0x10; /* Enable touchpad lights */
+
+            if (ctx->player_lights) {
+                SetLightsForPlayerIndex(&effects, ctx->player_index);
+            } else {
+                effects.ucPadLights = 0x00;
+            }
         }
     }
     if ((effect_mask & k_EDS5EffectMicLight) != 0) {
@@ -795,6 +814,10 @@ HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
+    if (!ctx->vibration_supported) {
+        return SDL_Unsupported();
+    }
+
     if (!ctx->rumble_left && !ctx->rumble_right) {
         HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectRumbleStart);
     }
@@ -817,8 +840,13 @@ HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     Uint32 result = 0;
 
-    if (ctx->enhanced_mode && ctx->effects_supported) {
-        result |= SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
+    if (ctx->enhanced_mode) {
+        if (ctx->lightbar_supported) {
+            result |= SDL_JOYCAP_LED;
+        }
+        if (ctx->vibration_supported) {
+            result |= SDL_JOYCAP_RUMBLE;
+        }
     }
 
     return result;
@@ -828,6 +856,10 @@ static int
 HIDAPI_DriverPS5_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
+
+    if (!ctx->lightbar_supported) {
+        return SDL_Unsupported();
+    }
 
     ctx->color_set = SDL_TRUE;
     ctx->led_red = red;

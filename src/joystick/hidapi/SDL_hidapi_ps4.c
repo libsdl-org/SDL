@@ -126,9 +126,11 @@ typedef struct {
     SDL_bool is_dongle;
     SDL_bool is_bluetooth;
     SDL_bool official_controller;
-    SDL_bool effects_supported;
     SDL_bool sensors_supported;
+    SDL_bool lightbar_supported;
+    SDL_bool vibration_supported;
     SDL_bool touchpad_supported;
+    SDL_bool effects_supported;
     SDL_bool enhanced_mode;
     SDL_bool report_sensors;
     SDL_bool report_touchpad;
@@ -306,8 +308,9 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 
     /* Get the device capabilities */
     if (device->vendor_id == USB_VENDOR_SONY) {
-        ctx->effects_supported = SDL_TRUE;
         ctx->sensors_supported = SDL_TRUE;
+        ctx->lightbar_supported = SDL_TRUE;
+        ctx->vibration_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
     } else if ((size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
                data[2] == 0x27) {
@@ -316,20 +319,24 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 capabilities: size = %d", data, size);
 #endif
-        if ((capabilities & 0x0C) != 0) {
-            ctx->effects_supported = SDL_TRUE;
-        }
         if ((capabilities & 0x02) != 0) {
             ctx->sensors_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x04) != 0) {
+            ctx->lightbar_supported = SDL_TRUE;
+        }
+        if ((capabilities & 0x08) != 0) {
+            ctx->vibration_supported = SDL_TRUE;
         }
         if ((capabilities & 0x40) != 0) {
             ctx->touchpad_supported = SDL_TRUE;
         }
     } else if (device->vendor_id == USB_VENDOR_RAZER) {
         /* The Razer Raiju doesn't respond to the detection protocol, but has a touchpad and vibration */
-        ctx->effects_supported = SDL_TRUE;
+        ctx->vibration_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
     }
+    ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported);
 
     device->type = SDL_CONTROLLER_TYPE_PS4;
     if (device->vendor_id == USB_VENDOR_SONY) {
@@ -516,22 +523,26 @@ HIDAPI_DriverPS4_UpdateEffects(SDL_HIDAPI_Device *device)
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
     DS4EffectsState_t effects;
 
-    if (!ctx->enhanced_mode) {
+    if (!ctx->enhanced_mode || !ctx->effects_supported) {
         return SDL_Unsupported();
     }
 
     SDL_zero(effects);
 
-    effects.ucRumbleLeft = ctx->rumble_left;
-    effects.ucRumbleRight = ctx->rumble_right;
+    if (ctx->vibration_supported) {
+        effects.ucRumbleLeft = ctx->rumble_left;
+        effects.ucRumbleRight = ctx->rumble_right;
+    }
 
-    /* Populate the LED state with the appropriate color from our lookup table */
-    if (ctx->color_set) {
-        effects.ucLedRed = ctx->led_red;
-        effects.ucLedGreen = ctx->led_green;
-        effects.ucLedBlue = ctx->led_blue;
-    } else {
-        SetLedsForPlayerIndex(&effects, ctx->player_index);
+    if (ctx->lightbar_supported) {
+        /* Populate the LED state with the appropriate color from our lookup table */
+        if (ctx->color_set) {
+            effects.ucLedRed = ctx->led_red;
+            effects.ucLedGreen = ctx->led_green;
+            effects.ucLedBlue = ctx->led_blue;
+        } else {
+            SetLedsForPlayerIndex(&effects, ctx->player_index);
+        }
     }
     return HIDAPI_DriverPS4_SendJoystickEffect(device, ctx->joystick, &effects, sizeof(effects));
 }
@@ -634,6 +645,10 @@ HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
 
+    if (!ctx->vibration_supported) {
+        return SDL_Unsupported();
+    }
+
     ctx->rumble_left = (low_frequency_rumble >> 8);
     ctx->rumble_right = (high_frequency_rumble >> 8);
 
@@ -652,8 +667,13 @@ HIDAPI_DriverPS4_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
     Uint32 result = 0;
 
-    if (ctx->enhanced_mode && ctx->effects_supported) {
-        result |= SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
+    if (ctx->enhanced_mode) {
+        if (ctx->lightbar_supported) {
+            result |= SDL_JOYCAP_LED;
+        }
+        if (ctx->vibration_supported) {
+            result |= SDL_JOYCAP_RUMBLE;
+        }
     }
 
     return result;
@@ -663,6 +683,10 @@ static int
 HIDAPI_DriverPS4_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
+
+    if (!ctx->lightbar_supported) {
+        return SDL_Unsupported();
+    }
 
     ctx->color_set = SDL_TRUE;
     ctx->led_red = red;
