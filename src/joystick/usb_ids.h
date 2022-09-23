@@ -81,9 +81,10 @@
 #define USB_PRODUCT_NINTENDO_WII_REMOTE                     0x0306
 #define USB_PRODUCT_NINTENDO_WII_REMOTE2                    0x0330
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER                0x7214
+#define USB_PRODUCT_RAZER_ATROX                             0x0a00
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008
-#define USB_PRODUCT_RAZER_ATROX                             0x0a00
+#define USB_PRODUCT_RAZER_RAIJU                             0x1000
 #define USB_PRODUCT_SHANWAN_DS3                             0x0523
 #define USB_PRODUCT_SONY_DS3                                0x0268
 #define USB_PRODUCT_SONY_DS4                                0x05c4
