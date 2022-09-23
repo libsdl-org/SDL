@@ -97,6 +97,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x8481 ), k_eControllerType_PS4Controller, NULL },	// Mad Catz FightStick TE 2+ PS4
 	{ MAKE_CONTROLLER_ID( 0x0C12, 0x0E10 ), k_eControllerType_PS4Controller, NULL },	// Armor Armor 3 Pad PS4
 	{ MAKE_CONTROLLER_ID( 0x0C12, 0x1CF6 ), k_eControllerType_PS4Controller, NULL },	// EMIO PS4 Elite Controller
+	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0e13 ), k_eControllerType_PS4Controller, NULL },	// ZEROPLUS P4 Wired Gamepad
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0e15 ), k_eControllerType_PS4Controller, NULL },	// Game:Pad 4
 	{ MAKE_CONTROLLER_ID( 0x0c12, 0x0ef6 ), k_eControllerType_PS4Controller, NULL },	// Hitbox Arcade Stick
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0055 ), k_eControllerType_PS4Controller, NULL },	// HORIPAD 4 FPS
