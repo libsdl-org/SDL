@@ -309,10 +309,6 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         ctx->effects_supported = SDL_TRUE;
         ctx->sensors_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
-    } else if (device->vendor_id == USB_VENDOR_RAZER && device->product_id == USB_PRODUCT_RAZER_RAIJU) {
-        /* This doesn't respond to the detection protocol, but has a touchpad and vibration */
-        ctx->effects_supported = SDL_TRUE;
-        ctx->touchpad_supported = SDL_TRUE;
     } else if ((size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
                data[2] == 0x27) {
         Uint8 capabilities = data[4];
@@ -329,6 +325,10 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         if ((capabilities & 0x40) != 0) {
             ctx->touchpad_supported = SDL_TRUE;
         }
+    } else if (device->vendor_id == USB_VENDOR_RAZER) {
+        /* The Razer Raiju doesn't respond to the detection protocol, but has a touchpad and vibration */
+        ctx->effects_supported = SDL_TRUE;
+        ctx->touchpad_supported = SDL_TRUE;
     }
 
     device->type = SDL_CONTROLLER_TYPE_PS4;
