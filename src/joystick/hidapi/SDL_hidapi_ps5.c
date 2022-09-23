@@ -263,13 +263,18 @@ HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, 
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
+    if (type == SDL_CONTROLLER_TYPE_PS5) {
+        return SDL_TRUE;
+    }
+
     if (device && SONY_THIRDPARTY_VENDOR(device->vendor_id) &&
         (size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
         data[2] == 0x28) {
         /* Supported third party controller */
         return SDL_TRUE;
     }
-    return (type == SDL_CONTROLLER_TYPE_PS5) ? SDL_TRUE : SDL_FALSE;
+
+    return SDL_FALSE;
 }
 
 static void
