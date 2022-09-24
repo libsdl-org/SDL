@@ -712,9 +712,9 @@ PULSEAUDIO_LIBS
 PULSEAUDIO_CFLAGS
 PIPEWIRE_LIBS
 PIPEWIRE_CFLAGS
+ESD_CONFIG
 ESD_LIBS
 ESD_CFLAGS
-ESD_CONFIG
 JACK_LIBS
 JACK_CFLAGS
 ALSA_LIBS
@@ -970,6 +970,8 @@ PKG_CONFIG_LIBDIR
 CPP
 JACK_CFLAGS
 JACK_LIBS
+ESD_CFLAGS
+ESD_LIBS
 PIPEWIRE_CFLAGS
 PIPEWIRE_LIBS
 PULSEAUDIO_CFLAGS
@@ -1809,6 +1811,8 @@ Some influential environment variables:
   CPP         C preprocessor
   JACK_CFLAGS C compiler flags for JACK, overriding pkg-config
   JACK_LIBS   linker flags for JACK, overriding pkg-config
+  ESD_CFLAGS  C compiler flags for ESD, overriding pkg-config
+  ESD_LIBS    linker flags for ESD, overriding pkg-config
   PIPEWIRE_CFLAGS
               C compiler flags for PIPEWIRE, overriding pkg-config
   PIPEWIRE_LIBS
@@ -21456,6 +21460,78 @@ fi
 
     if test x$enable_audio = xyes -a x$enable_esd = xyes; then
 
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for esound >= 0.2.8" >&5
+printf %s "checking for esound >= 0.2.8... " >&6; }
+
+if test -n "$ESD_CFLAGS"; then
+    pkg_cv_ESD_CFLAGS="$ESD_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"esound >= 0.2.8\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "esound >= 0.2.8") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ESD_CFLAGS=`$PKG_CONFIG --cflags "esound >= 0.2.8" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$ESD_LIBS"; then
+    pkg_cv_ESD_LIBS="$ESD_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"esound >= 0.2.8\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "esound >= 0.2.8") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ESD_LIBS=`$PKG_CONFIG --libs "esound >= 0.2.8" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        ESD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "esound >= 0.2.8" 2>&1`
+        else
+	        ESD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "esound >= 0.2.8" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$ESD_PKG_ERRORS" >&5
+
+	have_esd=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	have_esd=no
+else
+	ESD_CFLAGS=$pkg_cv_ESD_CFLAGS
+	ESD_LIBS=$pkg_cv_ESD_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	have_esd=yes
+fi
+        if test x$have_esd = xno; then
+
 # Check whether --with-esd-prefix was given.
 if test ${with_esd_prefix+y}
 then :
@@ -21639,10 +21715,7 @@ printf "%s\n" "yes" >&6; }
      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
      if test "$ESD_CONFIG" = "no" ; then
-       echo "*** The esd-config script installed by ESD could not be found"
-       echo "*** If ESD was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the ESD_CONFIG environment variable to the"
-       echo "*** full path to esd-config."
+      :
      else
        if test -f conf.esdtest ; then
         :
@@ -21707,6 +21780,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
   rm -f conf.esdtest
 
+        fi
         if test x$have_esd = xyes; then
             # Check whether --enable-esd-shared was given.
 if test ${enable_esd_shared+y}
