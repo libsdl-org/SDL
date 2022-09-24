@@ -1057,7 +1057,10 @@ CheckESD()
 [AS_HELP_STRING([--enable-esd], [support the Enlightened Sound Daemon [default=yes]])],
                   , enable_esd=yes)
     if test x$enable_audio = xyes -a x$enable_esd = xyes; then
-        AM_PATH_ESD(0.2.8, have_esd=yes, have_esd=no)
+        PKG_CHECK_MODULES([ESD], [esound >= 0.2.8], have_esd=yes, have_esd=no)
+        if test x$have_esd = xno; then
+           AM_PATH_ESD(0.2.8, have_esd=yes, have_esd=no)
+        fi
         if test x$have_esd = xyes; then
             AC_ARG_ENABLE(esd-shared,
 [AS_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [default=yes]])],
