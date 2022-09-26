@@ -340,6 +340,7 @@ HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     Uint8 data[USB_PACKET_LENGTH*2];
     int size;
     char serial[18];
+    SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
 
     ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -422,6 +423,7 @@ HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
                data[2] == 0x28) {
         Uint8 capabilities = data[4];
         Uint8 capabilities2 = data[20];
+        Uint8 device_type = data[5];
 
 #ifdef DEBUG_PS5_PROTOCOL
         HIDAPI_DumpPacket("PS5 capabilities: size = %d", data, size);
@@ -442,10 +444,35 @@ HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             ctx->playerled_supported = SDL_TRUE;
         }
 
+        switch (device_type) {
+        case 0x00:
+            joystick_type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+            break;
+        case 0x01:
+            joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+            break;
+        case 0x02:
+            joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+            break;
+        case 0x06:
+            joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+            break;
+        case 0x07:
+            joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+            break;
+        case 0x08:
+            joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+            break;
+        default:
+            joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
+            break;
+        }
+
         ctx->use_alternate_report = SDL_TRUE;
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
 
+    device->joystick_type = joystick_type;
     device->type = SDL_CONTROLLER_TYPE_PS5;
     if (device->vendor_id == USB_VENDOR_SONY) {
         HIDAPI_SetDeviceName(device, "PS5 Controller");
