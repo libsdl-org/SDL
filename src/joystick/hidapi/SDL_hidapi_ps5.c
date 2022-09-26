@@ -1266,8 +1266,8 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     int packet_count = 0;
 
     /* Reconnect the Bluetooth device once the USB device is gone */
-    if (device->is_bluetooth &&
-        device->num_joysticks == 0 &&
+    if (device->num_joysticks == 0 &&
+        device->is_bluetooth &&
         !HIDAPI_HasConnectedUSBDevice(device->serial)) {
         HIDAPI_JoystickConnected(device, NULL);
     }
