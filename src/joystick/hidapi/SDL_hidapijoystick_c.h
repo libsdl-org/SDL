@@ -73,6 +73,7 @@ typedef struct _SDL_HIDAPI_Device
     int interface_protocol;
     Uint16 usage_page;      /* Available on Windows and Mac OS X */
     Uint16 usage;           /* Available on Windows and Mac OS X */
+    SDL_bool is_bluetooth;
     SDL_JoystickType joystick_type;
     SDL_GameControllerType type;
 
@@ -157,6 +158,8 @@ extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
 extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id);
 extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);
+extern SDL_bool HIDAPI_HasConnectedUSBDevice(const char *serial);
+extern void HIDAPI_DisconnectBluetoothDevice(const char *serial);
 extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID);
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID);
 
