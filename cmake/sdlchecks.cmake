@@ -30,28 +30,19 @@ macro(FindLibraryAndSONAME _LIB)
 endmacro()
 
 macro(CheckDLOPEN)
-  check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN)
-  if(NOT HAVE_DLOPEN)
-    check_library_exists(dl dlopen "" DLOPEN_LIB)
-    if(DLOPEN_LIB)
+  cmake_push_check_state(RESET)
+  check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBC)
+  if(NOT HAVE_DLOPEN_IN_LIBC)
+    set(CMAKE_REQUIRED_LIBRARIES dl)
+    check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBDL)
+    if(HAVE_DLOPEN_IN_LIBDL)
       list(APPEND EXTRA_LIBS dl)
-      set(_DLLIB dl)
-      set(HAVE_DLOPEN TRUE)
     endif()
   endif()
-  if(HAVE_DLOPEN)
-    if(_DLLIB)
-      set(CMAKE_REQUIRED_LIBRARIES ${_DLLIB})
-    endif()
-    check_c_source_compiles("
-       #include <dlfcn.h>
-       int main(int argc, char **argv) {
-         void *handle = dlopen(\"\", RTLD_NOW);
-         const char *loaderror = (char *) dlerror();
-         return 0;
-       }" HAVE_DLOPEN)
-    set(CMAKE_REQUIRED_LIBRARIES)
+  if(HAVE_DLOPEN_IN_LIBC OR HAVE_DLOPEN_IN_LIBDL)
+    set(HAVE_DLOPEN TRUE)
   endif()
+  cmake_pop_check_state()
 endmacro()
 
 macro(CheckO_CLOEXEC)
