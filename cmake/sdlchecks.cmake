@@ -56,21 +56,19 @@ endmacro()
 # - n/a
 macro(CheckOSS)
   if(SDL_OSS)
-    set(OSS_HEADER_FILE "sys/soundcard.h")
     check_c_source_compiles("
         #include <sys/soundcard.h>
-        int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" OSS_FOUND)
-    if(NOT OSS_FOUND)
-      set(OSS_HEADER_FILE "soundcard.h")
+        int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" HAVE_OSS_SYS_SOUNDCARD_H)
+    if(NOT HAVE_OSS_SYS_SOUNDCARD_H)
       check_c_source_compiles("
           #include <soundcard.h>
-          int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" OSS_FOUND)
+          int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" HAVE_OSS_SOUNDCARD_H)
     endif()
 
-    if(OSS_FOUND)
+    if(HAVE_OSS_SYS_SOUNDCARD_H OR HAVE_OSS_SOUNDCARD_H)
       set(HAVE_OSS TRUE)
       file(GLOB OSS_SOURCES ${SDL2_SOURCE_DIR}/src/audio/dsp/*.c)
-      if(OSS_HEADER_FILE STREQUAL "soundcard.h")
+      if(HAVE_OSS_SOUNDCARD_H)
         set(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H 1)
       endif()
       set(SDL_AUDIO_DRIVER_OSS 1)
