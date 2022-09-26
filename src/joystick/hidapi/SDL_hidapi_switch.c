@@ -238,7 +238,6 @@ typedef struct {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     SDL_bool m_bInputOnly;
-    SDL_bool m_bUsingBluetooth;
     SDL_bool m_bIsGameCube;
     SDL_bool m_bUseButtonLabels;
     SDL_bool m_bPlayerLights;
@@ -383,7 +382,7 @@ static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
 static SDL_bool WritePacket(SDL_DriverSwitch_Context *ctx, void *pBuf, Uint8 ucLen)
 {
     Uint8 rgucBuf[k_unSwitchMaxOutputPacketLength];
-    const size_t unWriteSize = ctx->m_bUsingBluetooth ? k_unSwitchBluetoothPacketLength : k_unSwitchUSBPacketLength;
+    const size_t unWriteSize = ctx->device->is_bluetooth ? k_unSwitchBluetoothPacketLength : k_unSwitchUSBPacketLength;
 
     if (ucLen > k_unSwitchOutputPacketDataLength) {
         return SDL_FALSE;
@@ -584,7 +583,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 {
     SwitchSubcommandInputPacket_t *reply = NULL;
 
-    ctx->m_bUsingBluetooth = SDL_FALSE;
+    ctx->device->is_bluetooth = SDL_FALSE;
 
     if (WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_Status, NULL, 0, SDL_TRUE)) {
         SwitchProprietaryStatusPacket_t *status = (SwitchProprietaryStatusPacket_t *)&ctx->m_rgucReadBuffer[0];
@@ -598,7 +597,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
         return SDL_TRUE;
     }
 
-    ctx->m_bUsingBluetooth = SDL_TRUE;
+    ctx->device->is_bluetooth = SDL_TRUE;
 
     if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
         // Byte 2: Controller ID (1=LJC, 2=RJC, 3=Pro)
@@ -610,7 +609,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
         return SDL_TRUE;
     }
 
-    ctx->m_bUsingBluetooth = SDL_FALSE;
+    ctx->device->is_bluetooth = SDL_FALSE;
 
     return SDL_FALSE;
 }
@@ -945,7 +944,7 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
             } else {
                 SwitchSubcommandInputPacket_t *reply = NULL;
 
-                ctx->m_bUsingBluetooth = SDL_TRUE;
+                device->is_bluetooth = SDL_TRUE;
                 if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_RequestDeviceInfo, NULL, 0, &reply)) {
                     eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)reply->deviceInfo.ucDeviceType);
                 }
@@ -1244,6 +1243,14 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
         UpdateDeviceIdentity(device);
     }
 
+    /* Prefer the USB device over the Bluetooth device */
+    if (device->is_bluetooth) {
+        if (HIDAPI_HasConnectedUSBDevice(device->serial)) {
+            return SDL_TRUE;
+        }
+    } else {
+        HIDAPI_DisconnectBluetoothDevice(device->serial);
+    }
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -1282,7 +1289,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
         SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
 
-        if (!ctx->m_bUsingBluetooth) {
+        if (!device->is_bluetooth) {
             if (!BTrySetupUSB(ctx)) {
                 SDL_SetError("Couldn't setup USB mode");
                 return SDL_FALSE;
@@ -1290,7 +1297,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         }
 
         /* Determine the desired input mode (needed before loading stick calibration) */
-        if (ctx->m_bUsingBluetooth) {
+        if (device->is_bluetooth) {
             input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
         } else {
             input_mode = k_eSwitchInputReportIDs_FullControllerState;
@@ -1351,7 +1358,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         }
 
         /* Start sending USB reports */
-        if (!ctx->m_bUsingBluetooth) {
+        if (!device->is_bluetooth) {
             /* ForceUSB doesn't generate an ACK, so don't wait for a reply */
             if (!WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE)) {
                 SDL_SetError("Couldn't start USB reports");
@@ -1390,7 +1397,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     /* Initialize the joystick capabilities */
     joystick->nbuttons = 16;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
-    joystick->epowerlevel = ctx->m_bUsingBluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
+    joystick->epowerlevel = device->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
 
     /* Set up for input */
     ctx->m_bSyncWrite = SDL_FALSE;
@@ -2069,6 +2076,13 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
     Uint32 now;
 
+    /* Reconnect the Bluetooth device once the USB device is gone */
+    if (device->is_bluetooth &&
+        device->num_joysticks == 0 &&
+        !HIDAPI_HasConnectedUSBDevice(device->serial)) {
+        HIDAPI_JoystickConnected(device, NULL);
+    }
+
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
     } else {
@@ -2101,14 +2115,14 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (joystick) {
-        if (!ctx->m_bInputOnly && !ctx->m_bUsingBluetooth &&
+        if (!ctx->m_bInputOnly && !device->is_bluetooth &&
             ctx->device->product_id != USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
             const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
             if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
                 /* Steam may have put the controller back into non-reporting mode */
                 WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
             }
-        } else if (ctx->m_bUsingBluetooth) {
+        } else if (device->is_bluetooth) {
             const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
             if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
                 /* Bluetooth may have disconnected, try reopening the controller */

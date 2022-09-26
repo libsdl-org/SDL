@@ -530,6 +530,41 @@ HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial)
 }
 
 SDL_bool
+HIDAPI_HasConnectedUSBDevice(const char *serial)
+{
+    SDL_HIDAPI_Device *device;
+
+    for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (device->is_bluetooth) {
+            continue;
+        }
+
+        if (device->serial && SDL_strcmp(serial, device->serial) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+void
+HIDAPI_DisconnectBluetoothDevice(const char *serial)
+{
+    SDL_HIDAPI_Device *device;
+
+    for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (!device->is_bluetooth) {
+            continue;
+        }
+
+        if (device->serial && SDL_strcmp(serial, device->serial) == 0) {
+            while (device->num_joysticks && device->joysticks) {
+                HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+            }
+        }
+    }
+}
+
+SDL_bool
 HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
 {
     int i, j;
