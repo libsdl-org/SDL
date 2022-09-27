@@ -1302,6 +1302,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint8 data[USB_PACKET_LENGTH*2];
     int size;
     int packet_count = 0;
+    Uint32 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -1316,7 +1317,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         }
 
         ++packet_count;
-        ctx->last_packet = SDL_GetTicks();
+        ctx->last_packet = now;
 
         if (!joystick) {
             continue;
@@ -1361,7 +1362,7 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->is_bluetooth) {
         if (packet_count == 0) {
             /* Check to see if it looks like the device disconnected */
-            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+            if (SDL_TICKS_PASSED(now, ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
                 /* Send an empty output report to tickle the Bluetooth stack */
                 HIDAPI_DriverPS5_TickleBluetooth(device);
             }
