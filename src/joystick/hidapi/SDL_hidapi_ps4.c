@@ -48,6 +48,10 @@
 #define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
 
 #define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+#define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0)    | \
+                            (((Uint32)(B)) << 8)    | \
+                            (((Uint32)(C)) << 16)   | \
+                            (((Uint32)(D)) << 24))
 
 typedef enum
 {
@@ -267,13 +271,17 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     /* Check for type of connection */
     ctx->is_dongle = (device->vendor_id == USB_VENDOR_SONY && device->product_id == USB_PRODUCT_SONY_DS4_DONGLE);
     if (ctx->is_dongle) {
+        size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
+        if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
+            SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                         data[6], data[5], data[4], data[3], data[2], data[1]);
+        }
         device->is_bluetooth = SDL_FALSE;
-        ctx->official_controller = SDL_TRUE;
         ctx->enhanced_mode = SDL_TRUE;
     } else if (device->vendor_id == USB_VENDOR_SONY) {
         /* This will fail if we're on Bluetooth */
         size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
-        if (size >= 7) {
+        if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
             SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                 data[6], data[5], data[4], data[3], data[2], data[1]);
             device->is_bluetooth = SDL_FALSE;
@@ -296,7 +304,6 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->enhanced_mode = SDL_TRUE;
             }
         }
-        ctx->official_controller = SDL_TRUE;
     } else {
         /* Third party controllers appear to all be wired */
         device->is_bluetooth = SDL_FALSE;
@@ -308,6 +315,7 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
 
     /* Get the device capabilities */
     if (device->vendor_id == USB_VENDOR_SONY) {
+        ctx->official_controller = SDL_TRUE;
         ctx->sensors_supported = SDL_TRUE;
         ctx->lightbar_supported = SDL_TRUE;
         ctx->vibration_supported = SDL_TRUE;
@@ -380,6 +388,10 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         }
     } else {
         HIDAPI_DisconnectBluetoothDevice(device->serial);
+    }
+    if (ctx->is_dongle && serial[0] == '\0') {
+        /* Not yet connected */
+        return SDL_TRUE;
     }
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -949,6 +961,56 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, 
 }
 
 static SDL_bool
+VerifyCRC(Uint8 *data, int size)
+{
+    Uint8 ubHdr = 0xA1; /* hidp header is part of the CRC calculation */
+    Uint32 unCRC, unPacketCRC;
+    Uint8 *packetCRC = data + size - sizeof(unPacketCRC);
+    unCRC = SDL_crc32(0, &ubHdr, 1);
+    unCRC = SDL_crc32(unCRC, data, (size_t)(size - sizeof(unCRC)));
+
+    unPacketCRC = LOAD32(packetCRC[0],
+                         packetCRC[1],
+                         packetCRC[2],
+                         packetCRC[3]);
+    return (unCRC == unPacketCRC) ? SDL_TRUE : SDL_FALSE;
+}
+
+static SDL_bool
+HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8 *data, int size)
+{
+    PS4StatePacket_t *packet = NULL;
+
+    switch (data[0]) {
+    case k_EPS4ReportIdUsbState:
+        /* In the case of a DS4 USB dongle, bit[2] of byte 31 indicates if a DS4 is actually connected (indicated by '0').
+         * For non-dongle, this bit is always 0 (connected).
+         */
+        if (size == 64 && (data[31] & 0x04) == 0) {
+            return SDL_TRUE;
+        }
+        break;
+    case k_EPS4ReportIdBluetoothState1:
+    case k_EPS4ReportIdBluetoothState2:
+    case k_EPS4ReportIdBluetoothState3:
+    case k_EPS4ReportIdBluetoothState4:
+    case k_EPS4ReportIdBluetoothState5:
+    case k_EPS4ReportIdBluetoothState6:
+    case k_EPS4ReportIdBluetoothState7:
+    case k_EPS4ReportIdBluetoothState8:
+    case k_EPS4ReportIdBluetoothState9:
+        /* Bluetooth state packets have two additional bytes at the beginning, the first notes if HID data is present */
+        if (size >= 78 && (data[1] & 0x80) && VerifyCRC(data, 78)) {
+            return SDL_TRUE;
+        }
+        break;
+    default:
+        break;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
 HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
@@ -957,25 +1019,18 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
     int packet_count = 0;
 
-    /* Reconnect the Bluetooth device once the USB device is gone */
-    if (device->num_joysticks == 0 &&
-        device->is_bluetooth &&
-        !HIDAPI_HasConnectedUSBDevice(device->serial)) {
-        if (SDL_hid_read_timeout(device->dev, data, sizeof(data), 0) > 0) {
-            HIDAPI_JoystickConnected(device, NULL);
-        }
-    }
-
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    } else {
-        return SDL_FALSE;
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 packet: size = %d", data, size);
 #endif
+        if (!HIDAPI_DriverPS4_IsPacketValid(ctx, data, size)) {
+            continue;
+        }
+
         ++packet_count;
         ctx->last_packet = SDL_GetTicks();
 
@@ -1001,9 +1056,7 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
                 HIDAPI_DriverPS4_SetEnhancedMode(device, joystick);
             }
             /* Bluetooth state packets have two additional bytes at the beginning, the first notes if HID is present */
-            if (data[1] & 0x80) {
-                HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t*)&data[3]);
-            }
+            HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t*)&data[3]);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
@@ -1013,15 +1066,45 @@ HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (device->is_bluetooth && packet_count == 0) {
-        /* Check to see if it looks like the device disconnected */
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
-            /* Send an empty output report to tickle the Bluetooth stack */
-            HIDAPI_DriverPS4_TickleBluetooth(device);
+    if (device->is_bluetooth) {
+        if (packet_count == 0) {
+            /* Check to see if it looks like the device disconnected */
+            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+                /* Send an empty output report to tickle the Bluetooth stack */
+                HIDAPI_DriverPS4_TickleBluetooth(device);
+            }
+        } else {
+            /* Reconnect the Bluetooth device once the USB device is gone */
+            if (device->num_joysticks == 0 &&
+                !HIDAPI_HasConnectedUSBDevice(device->serial)) {
+                HIDAPI_JoystickConnected(device, NULL);
+            }
         }
     }
 
-    if (size < 0) {
+    if (ctx->is_dongle) {
+        if (packet_count == 0) {
+            if (device->num_joysticks > 0) {
+                /* Check to see if it looks like the device disconnected */
+                if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+                    HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+                }
+            }
+        } else {
+            if (device->num_joysticks == 0) {
+                char serial[18];
+                size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
+                if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
+                    SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                                 data[6], data[5], data[4], data[3], data[2], data[1]);
+                    HIDAPI_SetDeviceSerial(device, serial);
+                }
+                HIDAPI_JoystickConnected(device, NULL);
+            }
+        }
+    }
+
+    if (size < 0 && device->num_joysticks > 0) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
