@@ -534,6 +534,10 @@ HIDAPI_HasConnectedUSBDevice(const char *serial)
 {
     SDL_HIDAPI_Device *device;
 
+    if (!serial) {
+        return SDL_FALSE;
+    }
+
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
         if (!device->driver) {
             continue;
@@ -554,6 +558,10 @@ void
 HIDAPI_DisconnectBluetoothDevice(const char *serial)
 {
     SDL_HIDAPI_Device *device;
+
+    if (!serial) {
+        return;
+    }
 
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
         if (!device->driver) {
