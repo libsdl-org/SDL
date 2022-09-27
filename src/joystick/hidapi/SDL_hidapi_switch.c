@@ -2083,76 +2083,76 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
     SDL_Joystick *joystick = NULL;
     int size;
-    Uint32 now;
-
-    /* Reconnect the Bluetooth device once the USB device is gone */
-    if (device->num_joysticks == 0 &&
-        device->is_bluetooth &&
-        !HIDAPI_HasConnectedUSBDevice(device->serial)) {
-        if (ReadInput(ctx) > 0) {
-            HIDAPI_JoystickConnected(device, NULL);
-        }
-    }
+    int packet_count = 0;
+    Uint32 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    } else {
-        return SDL_FALSE;
     }
-
-    now = SDL_GetTicks();
 
     while ((size = ReadInput(ctx)) > 0) {
 #ifdef DEBUG_SWITCH_PROTOCOL
         HIDAPI_DumpPacket("Nintendo Switch packet: size = %d", ctx->m_rgucReadBuffer, size);
 #endif
-        if (joystick) {
-            if (ctx->m_bInputOnly) {
-                HandleInputOnlyControllerState(joystick, ctx, (SwitchInputOnlyControllerStatePacket_t *)&ctx->m_rgucReadBuffer[0]);
-            } else {
-                switch (ctx->m_rgucReadBuffer[0]) {
-                case k_eSwitchInputReportIDs_SimpleControllerState:
-                    HandleSimpleControllerState(joystick, ctx, (SwitchSimpleStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
-                    break;
-                case k_eSwitchInputReportIDs_FullControllerState:
-                    HandleFullControllerState(joystick, ctx, (SwitchStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
-                    break;
-                default:
-                    break;
-                }
+        ++packet_count;
+        ctx->m_unLastInput = now;
+
+        if (!joystick) {
+            continue;
+        }
+
+        if (ctx->m_bInputOnly) {
+            HandleInputOnlyControllerState(joystick, ctx, (SwitchInputOnlyControllerStatePacket_t *)&ctx->m_rgucReadBuffer[0]);
+        } else {
+            switch (ctx->m_rgucReadBuffer[0]) {
+            case k_eSwitchInputReportIDs_SimpleControllerState:
+                HandleSimpleControllerState(joystick, ctx, (SwitchSimpleStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
+                break;
+            case k_eSwitchInputReportIDs_FullControllerState:
+                HandleFullControllerState(joystick, ctx, (SwitchStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
+                break;
+            default:
+                break;
             }
         }
-        ctx->m_unLastInput = now;
     }
 
     if (joystick) {
-        if (!ctx->m_bInputOnly && !device->is_bluetooth &&
-            ctx->device->product_id != USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
-            const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
-            if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
-                /* Steam may have put the controller back into non-reporting mode */
-                WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
+        if (packet_count == 0) {
+            if (!ctx->m_bInputOnly && !device->is_bluetooth &&
+                ctx->device->product_id != USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
+                const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
+                if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+                    /* Steam may have put the controller back into non-reporting mode */
+                    WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
+                }
+            } else if (device->is_bluetooth) {
+                const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
+                if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+                    /* Bluetooth may have disconnected, try reopening the controller */
+                    size = -1;
+                }
             }
-        } else if (device->is_bluetooth) {
-            const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
-            if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
-                /* Bluetooth may have disconnected, try reopening the controller */
-                size = -1;
-            }
+        }
+
+        if (ctx->m_bRumblePending || ctx->m_bRumbleZeroPending) {
+            HIDAPI_DriverSwitch_SendPendingRumble(ctx);
+        } else if (ctx->m_bRumbleActive &&
+                   SDL_TICKS_PASSED(now, ctx->m_unRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
+#ifdef DEBUG_RUMBLE
+            SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", now - ctx->m_unRumbleSent);
+#endif
+            WriteRumble(ctx);
         }
     }
 
-    if (ctx->m_bRumblePending || ctx->m_bRumbleZeroPending) {
-        HIDAPI_DriverSwitch_SendPendingRumble(ctx);
-    } else if (ctx->m_bRumbleActive &&
-               SDL_TICKS_PASSED(now, ctx->m_unRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
-#ifdef DEBUG_RUMBLE
-        SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", now - ctx->m_unRumbleSent);
-#endif
-        WriteRumble(ctx);
+    /* Reconnect the Bluetooth device once the USB device is gone */
+    if (device->num_joysticks == 0 && device->is_bluetooth && packet_count > 0 &&
+        !HIDAPI_HasConnectedUSBDevice(device->serial)) {
+        HIDAPI_JoystickConnected(device, NULL);
     }
 
-    if (size < 0) {
+    if (size < 0 && device->num_joysticks > 0) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
