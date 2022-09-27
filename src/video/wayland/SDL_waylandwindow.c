@@ -777,6 +777,7 @@ handle_configure_zxdg_decoration(void *data,
 {
     SDL_Window *window = (SDL_Window *) data;
     SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
 
     /* If the compositor tries to force CSD anyway, bail on direct XDG support
      * and fall back to libdecor, it will handle these events from then on.
@@ -793,9 +794,13 @@ handle_configure_zxdg_decoration(void *data,
             return;
         }
         WAYLAND_wl_display_roundtrip(driverdata->waylandData->display);
-        SDL_HideWindow(window);
+
+        Wayland_HideWindow(device, window);
         driverdata->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
-        SDL_ShowWindow(window);
+
+        if (!window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
+            Wayland_ShowWindow(device, window);
+        }
     }
 }
 
