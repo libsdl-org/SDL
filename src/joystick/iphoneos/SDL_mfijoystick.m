@@ -678,7 +678,9 @@ IOS_JoystickInit(void)
                                                queue:nil
                                           usingBlock:^(NSNotification *note) {
                                               GCController *controller = note.object;
+                                              SDL_LockJoysticks();
                                               IOS_AddJoystickDevice(controller, SDL_FALSE);
+                                              SDL_UnlockJoysticks();
                                           }];
 
         disconnectObserver = [center addObserverForName:GCControllerDidDisconnectNotification
@@ -686,14 +688,15 @@ IOS_JoystickInit(void)
                                                   queue:nil
                                              usingBlock:^(NSNotification *note) {
                                                  GCController *controller = note.object;
-                                                 SDL_JoystickDeviceItem *device = deviceList;
-                                                 while (device != NULL) {
+                                                 SDL_JoystickDeviceItem *device;
+                                                 SDL_LockJoysticks();
+                                                 for (device = deviceList; device != NULL; device = device->next) {
                                                      if (device->controller == controller) {
                                                          IOS_RemoveJoystickDevice(device);
                                                          break;
                                                      }
-                                                     device = device->next;
                                                  }
+                                                 SDL_UnlockJoysticks();
                                              }];
 #endif /* SDL_JOYSTICK_MFI */
     }
