@@ -299,6 +299,9 @@ GetHintCtrlClickEmulateRightClick()
 static NSUInteger
 GetWindowWindowedStyle(SDL_Window * window)
 {
+    /* IF YOU CHANGE ANY FLAGS IN HERE, PLEASE READ
+       the NSWindowStyleMaskBorderless comments in SetupWindowData()! */
+
     /* always allow miniaturization, otherwise you can't programatically
        minimize the window, whether there's a title bar or not */
     NSUInteger style = NSWindowStyleMaskMiniaturizable;
@@ -1641,7 +1644,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, 
         /* NSWindowStyleMaskBorderless is zero, and it's possible to be
             Resizeable _and_ borderless, so we can't do a simple bitwise AND
             of NSWindowStyleMaskBorderless here. */
-        if ((style & ~NSWindowStyleMaskResizable) == NSWindowStyleMaskBorderless) {
+        if ((style & ~(NSWindowStyleMaskResizable|NSWindowStyleMaskMiniaturizable)) == NSWindowStyleMaskBorderless) {
             window->flags |= SDL_WINDOW_BORDERLESS;
         } else {
             window->flags &= ~SDL_WINDOW_BORDERLESS;
