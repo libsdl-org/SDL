@@ -759,13 +759,13 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     for (stick = 0; stick < 2; ++stick) {
         for (axis = 0; axis < 2; ++axis) {
             if (ctx->m_StickCalData[stick].axis[axis].sCenter == 0xFFF) {
-                ctx->m_StickCalData[stick].axis[axis].sCenter = 0;
+                ctx->m_StickCalData[stick].axis[axis].sCenter = 2048;
             }
             if (ctx->m_StickCalData[stick].axis[axis].sMax == 0xFFF) {
-                ctx->m_StickCalData[stick].axis[axis].sMax = 0;
+                ctx->m_StickCalData[stick].axis[axis].sMax = (Sint16)(ctx->m_StickCalData[stick].axis[axis].sCenter * 0.7f);
             }
             if (ctx->m_StickCalData[stick].axis[axis].sMin == 0xFFF) {
-                ctx->m_StickCalData[stick].axis[axis].sMin = 0;
+                ctx->m_StickCalData[stick].axis[axis].sMin = (Sint16)(ctx->m_StickCalData[stick].axis[axis].sCenter * 0.7f);
             }
         }
     }
