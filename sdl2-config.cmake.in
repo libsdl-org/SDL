@@ -80,12 +80,12 @@ if(EXISTS "${_sdl2main_library}")
       if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set_target_properties(SDL2::SDL2main
           PROPERTIES
-            INTERFACE_LINK_OPTIONS "-Wl,--undefined=_WinMain@16"
+            INTERFACE_LINK_OPTIONS "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=_WinMain@16>"
         )
       else()
         set_target_properties(SDL2::SDL2main
           PROPERTIES
-            INTERFACE_LINK_OPTIONS "-Wl,--undefined=WinMain"
+            INTERFACE_LINK_OPTIONS "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>"
         )
       endif()
     endif()
