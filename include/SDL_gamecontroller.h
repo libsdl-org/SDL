@@ -896,6 +896,23 @@ extern DECLSPEC float SDLCALL SDL_GameControllerGetSensorDataRate(SDL_GameContro
 extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorType type, float *data, int num_values);
 
 /**
+ * Get the current state of a game controller sensor with the timestamp of the last update.
+ *
+ * The number of values and interpretation of the data is sensor dependent.
+ * See SDL_sensor.h for the details for each type of sensor.
+ *
+ * \param gamecontroller The controller to query
+ * \param type The type of sensor to query
+ * \param timestamp A pointer filled with the timestamp in microseconds of the current sensor reading if available, or 0 if not
+ * \param data A pointer filled with the current sensor state
+ * \param num_values The number of values to write to data
+ * \return 0 or -1 if an error occurred.
+ *
+ * \since This function is available since SDL 2.26.0.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorDataWithTimestamp(SDL_GameController *gamecontroller, SDL_SensorType type, Uint64 *timestamp, float *data, int num_values);
+
+/**
  * Start a rumble effect on a game controller.
  *
  * Each call to this function cancels any previous rumble effect, and calling

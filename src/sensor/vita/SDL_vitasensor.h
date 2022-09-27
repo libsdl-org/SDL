@@ -23,8 +23,9 @@
 /* The private structure used to keep track of a sensor */
 struct sensor_hwdata
 {
-    float data[3];
     Uint32 counter;
+    unsigned int last_timestamp;
+    Uint64 timestamp_us;
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

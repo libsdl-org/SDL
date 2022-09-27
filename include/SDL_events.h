@@ -474,6 +474,7 @@ typedef struct SDL_ControllerSensorEvent
     SDL_JoystickID which; /**< The joystick instance id */
     Sint32 sensor;      /**< The type of the sensor, one of the values of ::SDL_SensorType */
     float data[3];      /**< Up to 3 values from the sensor, as defined in SDL_sensor.h */
+    Uint64 timestamp_us; /**< The timestamp of the sensor reading in microseconds, if the hardware provides this information. */
 } SDL_ControllerSensorEvent;
 
 /**
@@ -565,6 +566,7 @@ typedef struct SDL_SensorEvent
     Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Sint32 which;       /**< The instance ID of the sensor */
     float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_SensorGetData() */
+    Uint64 timestamp_us; /**< The timestamp of the sensor reading in microseconds, if the hardware provides this information. */
 } SDL_SensorEvent;
 
 /**

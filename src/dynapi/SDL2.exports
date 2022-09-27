@@ -863,3 +863,5 @@
 ++'_SDL_SetPrimarySelectionText'.'SDL2.dll'.'SDL_SetPrimarySelectionText'
 ++'_SDL_GetPrimarySelectionText'.'SDL2.dll'.'SDL_GetPrimarySelectionText'
 ++'_SDL_HasPrimarySelectionText'.'SDL2.dll'.'SDL_HasPrimarySelectionText'
+++'_SDL_GameControllerGetSensorDataWithTimestamp'.'SDL2.dll'.'SDL_GameControllerGetSensorDataWithTimestamp'
+++'_SDL_SensorGetDataWithTimestamp'.'SDL2.dll'.'SDL_SensorGetDataWithTimestamp'

@@ -37,6 +37,7 @@ struct _SDL_Sensor
     SDL_SensorType type;            /* Type of the sensor */
     int non_portable_type;          /* Platform dependent type of the sensor */
 
+    Uint64 timestamp_us;            /* The timestamp of the last sensor update */
     float data[16];                 /* The current state of the sensor */
 
     struct _SDL_SensorDriver *driver;

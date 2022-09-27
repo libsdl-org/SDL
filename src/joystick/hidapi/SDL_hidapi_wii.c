@@ -1151,7 +1151,7 @@ static void HandleNunchuckButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
         values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
         values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
         values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL_L, values, 3);
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL_L, 0, values, 3);
     }
 }
 
@@ -1191,7 +1191,7 @@ static void HandleMotionPlusData(SDL_DriverWii_Context *ctx, SDL_Joystick *joyst
         values[0] = -((float)z / GYRO_RES_PER_DEGREE) * (float)M_PI / 180.0f;
         values[1] = ((float)x / GYRO_RES_PER_DEGREE) * (float)M_PI / 180.0f;
         values[2] = ((float)y / GYRO_RES_PER_DEGREE) * (float)M_PI / 180.0f;
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, values, 3);
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, 0, values, 3);
     }
 }
 
@@ -1212,7 +1212,7 @@ static void HandleWiiRemoteAccelData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
     values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
-    SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, values, 3);
+    SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, 0, values, 3);
 }
 
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData *data)

@@ -64,6 +64,7 @@ typedef struct _SDL_JoystickSensorInfo
     SDL_bool enabled;
     float rate;
     float data[3];      /* If this needs to expand, update SDL_ControllerSensorEvent */
+    Uint64 timestamp_us;
 } SDL_JoystickSensorInfo;
 
 struct _SDL_Joystick
