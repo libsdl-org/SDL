@@ -1797,7 +1797,7 @@ static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *c
         data[0] = -tmp;
     }
 
-    SDL_PrivateJoystickSensor(joystick, type, data, 3);
+    SDL_PrivateJoystickSensor(joystick, type, 0, data, 3);
 }
 
 static void HandleCombinedControllerStateL(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)

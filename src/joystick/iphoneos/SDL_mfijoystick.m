@@ -1064,14 +1064,14 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                         data[0] = rate.x;
                         data[1] = rate.z;
                         data[2] = -rate.y;
-                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
+                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, 0, data, 3);
                     }
                     if (motion.hasGravityAndUserAcceleration) {
                         GCAcceleration accel = motion.acceleration;
                         data[0] = -accel.x * SDL_STANDARD_GRAVITY;
                         data[1] = -accel.y * SDL_STANDARD_GRAVITY;
                         data[2] = -accel.z * SDL_STANDARD_GRAVITY;
-                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
+                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, 0, data, 3);
                     }
                 }
             }

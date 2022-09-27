@@ -487,7 +487,7 @@ HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context
         sensor_data[0] = HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[41], data[42]));
         sensor_data[1] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[45], data[46]));
         sensor_data[2] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[43], data[44]));
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, sensor_data, SDL_arraysize(sensor_data));
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, 0, sensor_data, SDL_arraysize(sensor_data));
     }
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));

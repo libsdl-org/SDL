@@ -972,3 +972,5 @@ SDL_DYNAPI_PROC(void,SDL_GetJoystickGUIDInfo,(SDL_JoystickGUID a, Uint16 *b, Uin
 SDL_DYNAPI_PROC(int,SDL_SetPrimarySelectionText,(const char *a),(a),return)
 SDL_DYNAPI_PROC(char*,SDL_GetPrimarySelectionText,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasPrimarySelectionText,(void),(),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerGetSensorDataWithTimestamp,(SDL_GameController *a, SDL_SensorType b, Uint64 *c, float *d, int e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_SensorGetDataWithTimestamp,(SDL_Sensor *a, Uint64 *b, float *c, int d),(a,b,c,d),return)

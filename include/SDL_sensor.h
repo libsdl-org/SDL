@@ -267,7 +267,22 @@ extern DECLSPEC SDL_SensorID SDLCALL SDL_SensorGetInstanceID(SDL_Sensor *sensor)
  *
  * \since This function is available since SDL 2.0.9.
  */
-extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor * sensor, float *data, int num_values);
+extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor *sensor, float *data, int num_values);
+
+/**
+ * Get the current state of an opened sensor with the timestamp of the last update.
+ *
+ * The number of values and interpretation of the data is sensor dependent.
+ *
+ * \param sensor The SDL_Sensor object to query
+ * \param timestamp A pointer filled with the timestamp in microseconds of the current sensor reading if available, or 0 if not
+ * \param data A pointer filled with the current sensor state
+ * \param num_values The number of values to write to data
+ * \returns 0 or -1 if an error occurred.
+ *
+ * \since This function is available since SDL 2.0.9.
+ */
+extern DECLSPEC int SDLCALL SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *data, int num_values);
 
 /**
  * Close a sensor previously opened with SDL_SensorOpen().
@@ -276,7 +291,7 @@ extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor * sensor, float *data, 
  *
  * \since This function is available since SDL 2.0.9.
  */
-extern DECLSPEC void SDLCALL SDL_SensorClose(SDL_Sensor * sensor);
+extern DECLSPEC void SDLCALL SDL_SensorClose(SDL_Sensor *sensor);
 
 /**
  * Update the current state of the open sensors.

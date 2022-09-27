@@ -592,12 +592,13 @@ loop(void *arg)
 #define VERBOSE_SENSORS
 #ifdef VERBOSE_SENSORS
         case SDL_CONTROLLERSENSORUPDATE:
-            SDL_Log("Controller %d sensor %s: %.2f, %.2f, %.2f\n",
+            SDL_Log("Controller %d sensor %s: %.2f, %.2f, %.2f (%"SDL_PRIu64")\n",
                 event.csensor.which,
                 GetSensorName((SDL_SensorType)event.csensor.sensor),
                 event.csensor.data[0],
                 event.csensor.data[1],
-                event.csensor.data[2]);
+                event.csensor.data[2],
+                event.csensor.timestamp_us);
             break;
 #endif /* VERBOSE_SENSORS */
 

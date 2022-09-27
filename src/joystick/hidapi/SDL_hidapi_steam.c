@@ -1241,12 +1241,12 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                 values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (M_PI / 180.0f));
                 values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (M_PI / 180.0f));
                 values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (M_PI / 180.0f));
-                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, values, 3);
+                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, 0, values, 3);
 
                 values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
                 values[1] = (ctx->m_state.sAccelZ / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
                 values[2] = (-ctx->m_state.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
-                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, values, 3);
+                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, 0, values, 3);
             }
 
             ctx->m_last_state = ctx->m_state;

@@ -2441,6 +2441,15 @@ SDL_GameControllerGetSensorDataRate(SDL_GameController *gamecontroller, SDL_Sens
 int
 SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorType type, float *data, int num_values)
 {
+    return SDL_GameControllerGetSensorDataWithTimestamp(gamecontroller, type, NULL, data, num_values);
+}
+
+/*
+ *  Get the current state of a game controller sensor.
+ */
+int
+SDL_GameControllerGetSensorDataWithTimestamp(SDL_GameController *gamecontroller, SDL_SensorType type, Uint64 *timestamp, float *data, int num_values)
+{
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
     int i;
 
@@ -2454,6 +2463,9 @@ SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorTy
         if (sensor->type == type) {
             num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
             SDL_memcpy(data, sensor->data, num_values*sizeof(*data));
+            if (timestamp) {
+                *timestamp = sensor->timestamp_us;
+            }
             return 0;
         }
     }

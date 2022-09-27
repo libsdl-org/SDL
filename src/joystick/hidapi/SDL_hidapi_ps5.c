@@ -94,6 +94,7 @@ typedef struct
     Uint8 rgucAccelX[2];                /* 21 */
     Uint8 rgucAccelY[2];                /* 23 */
     Uint8 rgucAccelZ[2];                /* 25 */
+    Uint8 rgucSensorTimestamp[4];       /* 27 - 32 bit little endian */
 
 } PS5StatePacketCommon_t;
 
@@ -114,8 +115,8 @@ typedef struct
     Uint8 rgucAccelX[2];                /* 21 */
     Uint8 rgucAccelY[2];                /* 23 */
     Uint8 rgucAccelZ[2];                /* 25 */
-    Uint8 rgucTimer1[4];                /* 27 - 32 bit little endian */
-    Uint8 ucBatteryTemp;                /* 31 */
+    Uint8 rgucSensorTimestamp[4];       /* 27 - 32 bit little endian */
+    Uint8 ucSensorTemp;                 /* 31 */
     Uint8 ucTouchpadCounter1;           /* 32 - high bit clear + counter */
     Uint8 rgucTouchpadData1[3];         /* 33 - X/Y, 12 bits per axis */
     Uint8 ucTouchpadCounter2;           /* 36 - high bit clear + counter */
@@ -145,7 +146,7 @@ typedef struct
     Uint8 rgucAccelX[2];                /* 21 */
     Uint8 rgucAccelY[2];                /* 23 */
     Uint8 rgucAccelZ[2];                /* 25 */
-    Uint8 rgucUnknown1[4];              /* 27 */
+    Uint8 rgucSensorTimestamp[4];       /* 27 - 32 bit little endian */
     Uint8 ucTouchpadCounter1;           /* 31 - high bit clear + counter */
     Uint8 rgucTouchpadData1[3];         /* 32 - X/Y, 12 bits per axis */
     Uint8 ucTouchpadCounter2;           /* 35 - high bit clear + counter */
@@ -225,6 +226,8 @@ typedef struct {
     Uint8 led_green;
     Uint8 led_blue;
     EDS5LEDResetState led_reset_state;
+    Uint32 last_timestamp;
+    Uint64 timestamp;
     union
     {
         PS5SimpleStatePacket_t simple;
@@ -706,21 +709,21 @@ HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
     SDL_bool led_reset_complete = SDL_FALSE;
 
-    if (ctx->use_alternate_report) {
-        /* We don't know how to check the timer, just assume it's complete for now */
-        led_reset_complete = SDL_TRUE;
-    } else {
-        const PS5StatePacket_t *packet = &ctx->last_state.full_state;
+    if (ctx->sensors_supported) {
+        const PS5StatePacketCommon_t *packet = &ctx->last_state.state;
 
         /* Check the timer to make sure the Bluetooth connection LED animation is complete */
         const Uint32 connection_complete = 10200000;
-        Uint32 timer = ((Uint32)packet->rgucTimer1[0] <<  0) |
-                       ((Uint32)packet->rgucTimer1[1] <<  8) |
-                       ((Uint32)packet->rgucTimer1[2] << 16) |
-                       ((Uint32)packet->rgucTimer1[3] << 24);
-        if (SDL_TICKS_PASSED(timer, connection_complete)) {
+        Uint32 timestamp = LOAD32(packet->rgucSensorTimestamp[0],
+                                  packet->rgucSensorTimestamp[1],
+                                  packet->rgucSensorTimestamp[2],
+                                  packet->rgucSensorTimestamp[3]);
+        if (SDL_TICKS_PASSED(timestamp, connection_complete)) {
             led_reset_complete = SDL_TRUE;
         }
+    } else {
+        /* We don't know how to check the timer, just assume it's complete for now */
+        led_reset_complete = SDL_TRUE;
     }
 
     if (led_reset_complete) {
@@ -759,8 +762,14 @@ HIDAPI_DriverPS5_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
             ctx->report_touchpad = SDL_TRUE;
         }
         if (ctx->sensors_supported) {
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+            if (device->is_bluetooth) {
+                /* Bluetooth sensor update rate appears to be 1000 Hz */
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 1000.0f);
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 1000.0f);
+            } else {
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
+                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+            }
         }
 
         /* Switch into enhanced report mode */
@@ -989,6 +998,7 @@ HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joysti
         HIDAPI_DriverPS5_LoadCalibrationData(device);
     }
     ctx->report_sensors = enabled;
+    ctx->timestamp = 0;
 
     return 0;
 }
@@ -1180,17 +1190,40 @@ HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL_hid_device 
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
     if (ctx->report_sensors) {
+        Uint32 timestamp;
+        Uint64 timestamp_us;
         float data[3];
+
+        timestamp = LOAD32(packet->rgucSensorTimestamp[0],
+                           packet->rgucSensorTimestamp[1],
+                           packet->rgucSensorTimestamp[2],
+                           packet->rgucSensorTimestamp[3]);
+        if (ctx->timestamp) {
+            Uint32 delta;
+
+            if (ctx->last_timestamp > timestamp) {
+                delta = (SDL_MAX_UINT32 - ctx->last_timestamp + timestamp + 1);
+            } else {
+                delta = (timestamp - ctx->last_timestamp);
+            }
+            ctx->timestamp += delta;
+        } else {
+            ctx->timestamp = timestamp;
+        }
+        ctx->last_timestamp = timestamp;
+
+        /* Sensor timestamp is in 0.33us units */
+        timestamp_us = ctx->timestamp / 3;
 
         data[0] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 0, LOAD16(packet->rgucGyroX[0], packet->rgucGyroX[1]));
         data[1] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 1, LOAD16(packet->rgucGyroY[0], packet->rgucGyroY[1]));
         data[2] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 2, LOAD16(packet->rgucGyroZ[0], packet->rgucGyroZ[1]));
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, timestamp_us, data, 3);
 
         data[0] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 3, LOAD16(packet->rgucAccelX[0], packet->rgucAccelX[1]));
         data[1] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 4, LOAD16(packet->rgucAccelY[0], packet->rgucAccelY[1]));
         data[2] = HIDAPI_DriverPS5_ApplyCalibrationData(ctx, 5, LOAD16(packet->rgucAccelZ[0], packet->rgucAccelZ[1]));
-        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
+        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, timestamp_us, data, 3);
     }
 }
 

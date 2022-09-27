@@ -2983,7 +2983,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     return posted;
 }
 
-int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const float *data, int num_values)
+int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values)
 {
     int i;
     int posted = 0;
@@ -3004,6 +3004,7 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
 
                 /* Update internal sensor state */
                 SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+                sensor->timestamp_us = timestamp_us;
 
                 /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED
@@ -3015,6 +3016,7 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, const
                     num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));
                     SDL_memset(event.csensor.data, 0, sizeof(event.csensor.data));
                     SDL_memcpy(event.csensor.data, data, num_values*sizeof(*data));
+                    event.csensor.timestamp_us = timestamp_us;
                     posted = SDL_PushEvent(&event) == 1;
                 }
 #endif /* !SDL_EVENTS_DISABLED */
