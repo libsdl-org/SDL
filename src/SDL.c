@@ -514,7 +514,17 @@ SDL_Quit(void)
 void
 SDL_GetVersion(SDL_version * ver)
 {
+    if (!ver) {
+        return;
+    }
+
     SDL_VERSION(ver);
+
+    if (SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE)) {
+        /* Prior to SDL 2.24.0, the patch version was incremented with every release */
+        ver->patch = ver->minor;
+        ver->minor = 0;
+    }
 }
 
 /* Get the library source revision */
