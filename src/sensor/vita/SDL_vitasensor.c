@@ -161,7 +161,7 @@ SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
             if (sensor->hwdata->timestamp_us) {
                 unsigned int delta;
                 if (sensor->hwdata->last_timestamp > timestamp) {
-                    SDL_COMPILE_TIME_ASSERT(sizeof(timestamp) == sizeof(Uint32));
+                    SDL_COMPILE_TIME_ASSERT(timestamp, sizeof(timestamp) == sizeof(Uint32));
                     delta = (SDL_MAX_UINT32 - sensor->hwdata->last_timestamp + timestamp + 1);
                 } else {
                     delta = (timestamp - sensor->hwdata->last_timestamp);
