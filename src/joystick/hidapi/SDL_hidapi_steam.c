@@ -990,6 +990,9 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
 
 typedef struct {
     SDL_bool report_sensors;
+    uint32_t update_rate_in_us;
+    Uint32 timestamp_us;
+
     SteamControllerPacketAssembler m_assembler;
     SteamControllerStateInternal_t m_state;
     SteamControllerStateInternal_t m_last_state;
@@ -1054,7 +1057,6 @@ static SDL_bool
 HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
-    uint32_t update_rate_in_us = 0;
     float update_rate_in_hz = 0.0f;
 
     ctx->report_sensors = SDL_FALSE;
@@ -1062,12 +1064,12 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     SDL_zero(ctx->m_state);
     SDL_zero(ctx->m_last_state);
 
-    if (!ResetSteamController(device->dev, false, &update_rate_in_us)) {
+    if (!ResetSteamController(device->dev, false, &ctx->update_rate_in_us)) {
         SDL_SetError("Couldn't reset controller");
         return SDL_FALSE;
     }
-    if (update_rate_in_us > 0) {
-        update_rate_in_hz = 1000000.0f / update_rate_in_us;
+    if (ctx->update_rate_in_us > 0) {
+        update_rate_in_hz = 1000000.0f / ctx->update_rate_in_us;
     }
 
     InitializeSteamControllerPacketAssembler(&ctx->m_assembler);
@@ -1238,15 +1240,17 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             if (ctx->report_sensors) {
                 float values[3];
 
+                ctx->timestamp_us += ctx->update_rate_in_us;
+
                 values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (M_PI / 180.0f));
                 values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (M_PI / 180.0f));
                 values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (M_PI / 180.0f));
-                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, 0, values, 3);
+                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, ctx->timestamp_us, values, 3);
 
                 values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
                 values[1] = (ctx->m_state.sAccelZ / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
                 values[2] = (-ctx->m_state.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
-                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, 0, values, 3);
+                SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, ctx->timestamp_us, values, 3);
             }
 
             ctx->m_last_state = ctx->m_state;
