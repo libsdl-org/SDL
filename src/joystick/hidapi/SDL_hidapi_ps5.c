@@ -45,6 +45,10 @@
 #define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
 
 #define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+#define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0)    | \
+                            (((Uint32)(B)) << 8)    | \
+                            (((Uint32)(C)) << 16)   | \
+                            (((Uint32)(D)) << 24))
 
 typedef enum
 {
@@ -1257,6 +1261,40 @@ HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hid_device *de
 }
 
 static SDL_bool
+VerifyCRC(Uint8 *data, int size)
+{
+    Uint8 ubHdr = 0xA1; /* hidp header is part of the CRC calculation */
+    Uint32 unCRC, unPacketCRC;
+    Uint8 *packetCRC = data + size - sizeof(unPacketCRC);
+    unCRC = SDL_crc32(0, &ubHdr, 1);
+    unCRC = SDL_crc32(unCRC, data, (size_t)(size - sizeof(unCRC)));
+
+    unPacketCRC = LOAD32(packetCRC[0],
+                         packetCRC[1],
+                         packetCRC[2],
+                         packetCRC[3]);
+    return (unCRC == unPacketCRC) ? SDL_TRUE : SDL_FALSE;
+}
+
+static SDL_bool
+HIDAPI_DriverPS5_IsPacketValid(SDL_DriverPS5_Context *ctx, Uint8 *data, int size)
+{
+    switch (data[0]) {
+    case k_EPS5ReportIdState:
+        return SDL_TRUE;
+
+    case k_EPS5ReportIdBluetoothState:
+        if (VerifyCRC(data, size)) {
+            return SDL_TRUE;
+        }
+        break;
+    default:
+        break;
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool
 HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
@@ -1265,25 +1303,18 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
     int packet_count = 0;
 
-    /* Reconnect the Bluetooth device once the USB device is gone */
-    if (device->num_joysticks == 0 &&
-        device->is_bluetooth &&
-        !HIDAPI_HasConnectedUSBDevice(device->serial)) {
-        if (SDL_hid_read_timeout(device->dev, data, sizeof(data), 0) > 0) {
-            HIDAPI_JoystickConnected(device, NULL);
-        }
-    }
-
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
-    } else {
-        return SDL_FALSE;
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_PS5_PROTOCOL
         HIDAPI_DumpPacket("PS5 packet: size = %d", data, size);
 #endif
+        if (!HIDAPI_DriverPS5_IsPacketValid(ctx, data, size)) {
+            continue;
+        }
+
         ++packet_count;
         ctx->last_packet = SDL_GetTicks();
 
@@ -1327,15 +1358,23 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (device->is_bluetooth && packet_count == 0) {
-        /* Check to see if it looks like the device disconnected */
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
-            /* Send an empty output report to tickle the Bluetooth stack */
-            HIDAPI_DriverPS5_TickleBluetooth(device);
+    if (device->is_bluetooth) {
+        if (packet_count == 0) {
+            /* Check to see if it looks like the device disconnected */
+            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+                /* Send an empty output report to tickle the Bluetooth stack */
+                HIDAPI_DriverPS5_TickleBluetooth(device);
+            }
+        } else {
+            /* Reconnect the Bluetooth device once the USB device is gone */
+            if (device->num_joysticks == 0 &&
+                !HIDAPI_HasConnectedUSBDevice(device->serial)) {
+                HIDAPI_JoystickConnected(device, NULL);
+            }
         }
     }
 
-    if (size < 0) {
+    if (size < 0 && device->num_joysticks > 0) {
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
