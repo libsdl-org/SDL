@@ -979,8 +979,6 @@ VerifyCRC(Uint8 *data, int size)
 static SDL_bool
 HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8 *data, int size)
 {
-    PS4StatePacket_t *packet = NULL;
-
     switch (data[0]) {
     case k_EPS4ReportIdUsbState:
         /* In the case of a DS4 USB dongle, bit[2] of byte 31 indicates if a DS4 is actually connected (indicated by '0').
