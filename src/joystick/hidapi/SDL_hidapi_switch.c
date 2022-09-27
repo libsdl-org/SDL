@@ -937,7 +937,7 @@ static ESwitchDeviceInfoControllerType
 ReadJoyConControllerType(SDL_HIDAPI_Device *device)
 {
     ESwitchDeviceInfoControllerType eControllerType = k_eSwitchDeviceInfoControllerType_Unknown;
-    const int MAX_ATTEMPTS = 20;
+    const int MAX_ATTEMPTS = 1; /* Don't try too long, in case this is a zombie Bluetooth controller */
     int attempts = 0;
 
     /* Create enough of a context to read the controller type from the device */
