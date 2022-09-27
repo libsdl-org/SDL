@@ -276,7 +276,7 @@ typedef struct {
             Sint16 sMin;
             Sint16 sMax;
         } axis[2];
-    } m_StickExtents[2];
+    } m_StickExtents[2], m_SimpleStickExtents[2];
 
     struct IMUScaleData {
         float fAccelScaleX;
@@ -770,21 +770,20 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
         }
     }
 
-    if (input_mode == k_eSwitchInputReportIDs_SimpleControllerState) {
-        for (stick = 0; stick < 2; ++stick) {
-            for(axis = 0; axis < 2; ++axis) {
-                ctx->m_StickExtents[stick].axis[axis].sMin = (Sint16)(SDL_MIN_SINT16 * 0.5f);
-                ctx->m_StickExtents[stick].axis[axis].sMax = (Sint16)(SDL_MAX_SINT16 * 0.5f);
-            }
-        }
-    } else {
-        for (stick = 0; stick < 2; ++stick) {
-            for(axis = 0; axis < 2; ++axis) {
-                ctx->m_StickExtents[stick].axis[axis].sMin = -(Sint16)(ctx->m_StickCalData[stick].axis[axis].sMin * 0.7f);
-                ctx->m_StickExtents[stick].axis[axis].sMax = (Sint16)(ctx->m_StickCalData[stick].axis[axis].sMax * 0.7f);
-            }
+    for (stick = 0; stick < 2; ++stick) {
+        for(axis = 0; axis < 2; ++axis) {
+            ctx->m_StickExtents[stick].axis[axis].sMin = -(Sint16)(ctx->m_StickCalData[stick].axis[axis].sMin * 0.7f);
+            ctx->m_StickExtents[stick].axis[axis].sMax = (Sint16)(ctx->m_StickCalData[stick].axis[axis].sMax * 0.7f);
         }
     }
+
+    for (stick = 0; stick < 2; ++stick) {
+        for(axis = 0; axis < 2; ++axis) {
+            ctx->m_SimpleStickExtents[stick].axis[axis].sMin = (Sint16)(SDL_MIN_SINT16 * 0.5f);
+            ctx->m_SimpleStickExtents[stick].axis[axis].sMax = (Sint16)(SDL_MAX_SINT16 * 0.5f);
+        }
+    }
+
     return SDL_TRUE;
 }
 
@@ -854,9 +853,9 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
 }
 
 
-static Sint16 ApplyStickCalibrationCentered(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue, Sint16 sCenter)
+static Sint16 ApplyStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue)
 {
-    sRawValue -= sCenter;
+    sRawValue -= ctx->m_StickCalData[nStick].axis[nAxis].sCenter;
 
     if (sRawValue > ctx->m_StickExtents[nStick].axis[nAxis].sMax) {
         ctx->m_StickExtents[nStick].axis[nAxis].sMax = sRawValue;
@@ -868,9 +867,21 @@ static Sint16 ApplyStickCalibrationCentered(SDL_DriverSwitch_Context *ctx, int n
     return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, ctx->m_StickExtents[nStick].axis[nAxis].sMax, SDL_MIN_SINT16, SDL_MAX_SINT16);
 }
 
-static Sint16 ApplyStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue)
+static Sint16 ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue)
 {
-    return ApplyStickCalibrationCentered(ctx, nStick, nAxis, sRawValue, ctx->m_StickCalData[nStick].axis[nAxis].sCenter);
+    /* 0x8000 is the neutral value for all joystick axes */
+    const Uint16 usJoystickCenter = 0x8000;
+
+    sRawValue -= usJoystickCenter;
+
+    if (sRawValue > ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax) {
+        ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax = sRawValue;
+    }
+    if (sRawValue < ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin) {
+        ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin = sRawValue;
+    }
+
+    return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax, SDL_MIN_SINT16, SDL_MAX_SINT16);
 }
 
 static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -1659,8 +1670,6 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
 
 static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchSimpleStatePacket_t *packet)
 {
-    /* 0x8000 is the neutral value for all joystick axes */
-    const Uint16 usJoystickCenter = 0x8000;
     Sint16 axis;
 
     if (packet->rgucButtons[0] != ctx->m_lastSimpleState.rgucButtons[0]) {
@@ -1733,16 +1742,16 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
     }
 
-    axis = ApplyStickCalibrationCentered(ctx, 0, 0, packet->sJoystickLeft[0], (Sint16)usJoystickCenter);
+    axis = ApplySimpleStickCalibration(ctx, 0, 0, packet->sJoystickLeft[0]);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
 
-    axis = ApplyStickCalibrationCentered(ctx, 0, 1, packet->sJoystickLeft[1], (Sint16)usJoystickCenter);
+    axis = ApplySimpleStickCalibration(ctx, 0, 1, packet->sJoystickLeft[1]);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
 
-    axis = ApplyStickCalibrationCentered(ctx, 1, 0, packet->sJoystickRight[0], (Sint16)usJoystickCenter);
+    axis = ApplySimpleStickCalibration(ctx, 1, 0, packet->sJoystickRight[0]);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
 
-    axis = ApplyStickCalibrationCentered(ctx, 1, 1, packet->sJoystickRight[1], (Sint16)usJoystickCenter);
+    axis = ApplySimpleStickCalibration(ctx, 1, 1, packet->sJoystickRight[1]);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
     ctx->m_lastSimpleState = *packet;
@@ -1964,7 +1973,9 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         }
 
         axis = packet->controllerState.rgucJoystickLeft[0] | ((packet->controllerState.rgucJoystickLeft[1] & 0xF) << 8);
+        SDL_Log("Raw: %d\n", axis);
         axis = ApplyStickCalibration(ctx, 0, 0, axis);
+        SDL_Log("Remapped: %d\n", axis);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
 
         axis = ((packet->controllerState.rgucJoystickLeft[1] & 0xF0) >> 4) | (packet->controllerState.rgucJoystickLeft[2] << 4);
