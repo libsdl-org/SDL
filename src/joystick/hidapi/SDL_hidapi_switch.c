@@ -2089,7 +2089,9 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->num_joysticks == 0 &&
         device->is_bluetooth &&
         !HIDAPI_HasConnectedUSBDevice(device->serial)) {
-        HIDAPI_JoystickConnected(device, NULL);
+        if (ReadInput(ctx) > 0) {
+            HIDAPI_JoystickConnected(device, NULL);
+        }
     }
 
     if (device->num_joysticks > 0) {

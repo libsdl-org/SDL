@@ -1269,7 +1269,9 @@ HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->num_joysticks == 0 &&
         device->is_bluetooth &&
         !HIDAPI_HasConnectedUSBDevice(device->serial)) {
-        HIDAPI_JoystickConnected(device, NULL);
+        if (SDL_hid_read_timeout(device->dev, data, sizeof(data), 0) > 0) {
+            HIDAPI_JoystickConnected(device, NULL);
+        }
     }
 
     if (device->num_joysticks > 0) {
