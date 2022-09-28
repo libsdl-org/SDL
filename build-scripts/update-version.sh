@@ -78,8 +78,8 @@ perl -w -pi -e 's/(VALUE "ProductVersion", ")\d+, \d+, \d+/${1}'$MAJOR', '$MINOR
 echo "Regenerating configure script with new version..."
 ./autogen.sh |grep -v 'Now you are ready to run ./configure'
 
-echo "Running test/versioning.sh to verify changes..."
-./test/versioning.sh
+echo "Running build-scripts/test-versioning.sh to verify changes..."
+./build-scripts/test-versioning.sh
 
 echo "All done."
 echo "Run 'git diff' and make sure this looks correct, before 'git commit'."
