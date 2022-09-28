@@ -236,7 +236,7 @@ KMSDRM_CreateDevice(void)
 
     devindex = get_driindex();
     if (devindex < 0) {
-        SDL_SetError("devindex (%d) must be between 0 and 99.", devindex);
+        SDL_SetError("devindex (%d) must not be negative.", devindex);
         return NULL;
     }
 
