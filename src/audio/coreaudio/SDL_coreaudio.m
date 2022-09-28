@@ -1151,10 +1151,19 @@ COREAUDIO_OpenDevice(_THIS, const char *devname)
     return (this->hidden->thread != NULL) ? 0 : -1;
 }
 
+#if !MACOSX_COREAUDIO
 static int
 COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
-#if MACOSX_COREAUDIO
+    AVAudioSession* session = [AVAudioSession sharedInstance];
+    spec->freq = [session sampleRate];
+    spec->channels = [session outputNumberOfChannels];
+    return 0;
+}
+#else /* MACOSX_COREAUDIO */
+static int
+COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
     AudioDeviceID devid;
     AudioBufferList *buflist;
     OSStatus result;
@@ -1163,13 +1172,7 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     char *devname;
     int usable;
     double sampleRate;
-#endif /*MACOSX_COREAUDIO */
-    
-#if !MACOSX_COREAUDIO
-    AVAudioSession* session = [AVAudioSession sharedInstance];
-#endif /* !MACOSX_COREAUDIO */
 
-#if MACOSX_COREAUDIO
     AudioObjectPropertyAddress addr = {
         iscapture ? kAudioHardwarePropertyDefaultInputDevice
                   : kAudioHardwarePropertyDefaultOutputDevice,
@@ -1177,54 +1180,49 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
                   : kAudioDevicePropertyScopeOutput,
         kAudioObjectPropertyElementMaster
     };
-        
     AudioObjectPropertyAddress nameaddr = {
         kAudioObjectPropertyName,
         iscapture ? kAudioDevicePropertyScopeInput
                   : kAudioDevicePropertyScopeOutput,
         kAudioObjectPropertyElementMaster
     };
-    
     AudioObjectPropertyAddress freqaddr = {
         kAudioDevicePropertyNominalSampleRate,
         iscapture ? kAudioDevicePropertyScopeInput
                   : kAudioDevicePropertyScopeOutput,
         kAudioObjectPropertyElementMaster
     };
-    
     AudioObjectPropertyAddress bufaddr = {
         kAudioDevicePropertyStreamConfiguration,
         iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
         kAudioObjectPropertyElementMaster
     };
     
-    // Get the Device ID
+    /* Get the Device ID */
     cfstr = NULL;
     size = sizeof (AudioDeviceID);
     result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr,
                                         0, NULL, &size, &devid);
-    
+
     if (result != noErr) {
         return SDL_SetError("%s: Default Device ID not found", "coreaudio");
     }
-    
-    
-    // Use the Device ID to get the name
+
+    /* Use the Device ID to get the name */
     size = sizeof (CFStringRef);
     result = AudioObjectGetPropertyData(devid, &nameaddr, 0, NULL, &size, &cfstr);
-    
+
     if (result != noErr) {
         return SDL_SetError("%s: Default Device Name not found", "coreaudio");
     }
-    
+
     CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
                                                     kCFStringEncodingUTF8);
-    
     devname = (char *) SDL_malloc(len + 1);
     usable = ((devname != NULL) &&
               (CFStringGetCString(cfstr, devname, len + 1, kCFStringEncodingUTF8)));
     CFRelease(cfstr);
-    
+
     if (usable) {
         usable = 0;
         len = strlen(devname);
@@ -1234,16 +1232,16 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
             usable = len;
         }
     }
-    
+
     if (usable) {
         devname[len] = '\0';
     }
-    
+
     if (name) {
         *name = devname;
     }
-    
-    // Uses the Device ID to get the spec
+
+    /* Uses the Device ID to get the spec */
     SDL_zero(*spec);
 
     sampleRate = 0;
@@ -1279,16 +1277,10 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     if (spec->channels == 0) {
         return SDL_SetError("%s: Default Device has no channels!", "coreaudio");
     }
-    
+
     return 0;
-#endif /* MACOSX_COREAUDIO */
-    
-#if !MACOSX_COREAUDIO
-    spec->freq = [session sampleRate];
-    spec->channels = [session outputNumberOfChannels];
-    return 0;
-#endif /* !MACOSX_COREAUDIO */
 }
+#endif /* MACOSX_COREAUDIO */
 
 static void
 COREAUDIO_Deinitialize(void)
