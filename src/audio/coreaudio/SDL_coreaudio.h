@@ -54,7 +54,6 @@ struct SDL_PrivateAudioData
     AudioStreamBasicDescription strdesc;
     SDL_sem *ready_semaphore;
     char *thread_error;
-    SDL_atomic_t shutdown;
 #if MACOSX_COREAUDIO
     AudioDeviceID deviceID;
     SDL_atomic_t device_change_flag;
