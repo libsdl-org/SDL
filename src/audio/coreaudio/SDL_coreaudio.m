@@ -523,8 +523,16 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) inUserData;
 
+    /* This flag is set before this->mixer_lock is destroyed during
+       shutdown, so check it before grabbing the mutex, and then check it
+       again _after_ in case we blocked waiting on the lock. */
+    if (SDL_AtomicGet(&this->shutdown)) {
+        return;  /* don't do anything, since we don't even want to enqueue this buffer again. */
+    }
+
     SDL_LockMutex(this->mixer_lock);
 
+    /* !!! FIXME: why do we have this->hidden->shutdown when this->shutdown exists? */
     if (SDL_AtomicGet(&this->hidden->shutdown)) {
         SDL_UnlockMutex(this->mixer_lock);
         return;  /* don't do anything, since we don't even want to enqueue this buffer again. */
