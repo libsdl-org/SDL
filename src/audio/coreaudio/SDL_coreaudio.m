@@ -1156,6 +1156,11 @@ static int
 COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     AVAudioSession* session = [AVAudioSession sharedInstance];
+    
+    if (name != NULL) {
+        *name = NULL;
+    }
+    SDL_zerop(spec);
     spec->freq = [session sampleRate];
     spec->channels = [session outputNumberOfChannels];
     return 0;
@@ -1237,12 +1242,12 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
         devname[len] = '\0';
     }
 
-    if (name) {
+    if (name != NULL) {
         *name = devname;
     }
 
     /* Uses the Device ID to get the spec */
-    SDL_zero(*spec);
+    SDL_zerop(spec);
 
     sampleRate = 0;
     size = sizeof(sampleRate);
