@@ -1,5 +1,11 @@
 # Release checklist
 
+When changing the version, run `build-scripts/update-version.sh X Y Z`,
+where `X Y Z` are the major version, minor version, and patch level. So
+`2 28 1` means "change the version to 2.28.1". This script does much of the
+mechanical work.
+
+
 ## New feature release
 
 * Update `WhatsNew.txt`
@@ -7,9 +13,6 @@
 * Bump version number to 2.EVEN.0:
 
     * `./build-scripts/update-version.sh 2 EVEN 0`
-    * (spaces between each component of the version, and `EVEN` will be a real number in real life.
-
-* Run test/versioning.sh to verify that everything is consistent
 
 * Do the release
 
@@ -22,9 +25,6 @@
 * Bump version number from 2.Y.Z to 2.Y.(Z+1) (Y is even)
 
     * `./build-scripts/update-version.sh 2 Y Z+1`
-    * (spaces between each component of the version, and `Y` and `Z+1` will be real numbers in real life.
-
-* Run test/versioning.sh to verify that everything is consistent
 
 * Do the release
 
@@ -35,19 +35,11 @@
 * Bump version number to 2.ODD.0 for next development branch
 
     * `./build-scripts/update-version.sh 2 ODD 0`
-    * (spaces between each component of the version, and `ODD` will be a real number in real life.
-
-* Run test/versioning.sh to verify that everything is consistent
 
 ## New development prerelease
 
 * Bump version number from 2.Y.Z to 2.Y.(Z+1) (Y is odd)
 
     * `./build-scripts/update-version.sh 2 Y Z+1`
-    * (spaces between each component of the version, and `Y` and `Z+1` will be real numbers in real life.
-
-* Regenerate `configure`
-
-* Run test/versioning.sh to verify that everything is consistent
 
 * Do the release
