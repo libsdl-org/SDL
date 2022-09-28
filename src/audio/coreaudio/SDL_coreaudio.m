@@ -1283,9 +1283,11 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     return 0;
 #endif /* MACOSX_COREAUDIO */
     
+#if !MACOSX_COREAUDIO
     spec->freq = [session sampleRate];
     spec->channels = [session outputNumberOfChannels];
     return 0;
+#endif /* !MACOSX_COREAUDIO */
 }
 
 static void

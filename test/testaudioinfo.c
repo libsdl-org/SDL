@@ -40,6 +40,8 @@ print_devices(int iscapture)
 int
 main(int argc, char **argv)
 {
+    char *deviceName;
+    SDL_AudioSpec spec;
     int n;
 
     /* Enable standard application logging */
@@ -68,6 +70,34 @@ main(int argc, char **argv)
 
     print_devices(0);
     print_devices(1);
+    
+    
+    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 0)) {
+        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    } else {
+        SDL_Log("Default audio output info found!\n");
+#if MACOSX_COREAUDIO // Device name is unavailable for iOS/tvOS
+        SDL_Log("Name: %s\n", deviceName);
+        SDL_free(deviceName);
+#endif
+        SDL_Log("Sampling Rate: %d\n", spec.freq);
+        SDL_Log("Number of Channels: %d\n", spec.channels);
+        SDL_Log("Audio Format: %d\n", spec.format);
+    }
+    
+    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 1)) {
+        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    } else {
+        SDL_Log("Default audio capture info found!\n");
+#if MACOSX_COREAUDIO // Device name is unavailable for iOS/tvOS
+        SDL_Log("Name: %s\n", deviceName);
+        SDL_free(deviceName);
+#endif
+        SDL_Log("Sampling Rate: %d\n", spec.freq);
+        SDL_Log("Number of Channels: %d\n", spec.channels);
+        SDL_Log("Audio Format: %d\n", spec.format);
+    }
+
 
     SDL_Quit();
     return 0;
