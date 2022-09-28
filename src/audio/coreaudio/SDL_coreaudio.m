@@ -1242,6 +1242,7 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
         if (usable) {
             devname[len] = '\0';
         }
+        *name = devname;
     }
 
     /* Uses the Device ID to get the spec */
