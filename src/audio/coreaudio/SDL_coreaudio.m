@@ -1148,6 +1148,7 @@ COREAUDIO_OpenDevice(_THIS, const char *devname)
 static int
 COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
+#if MACOSX_COREAUDIO
     AudioDeviceID devid;
     AudioBufferList *buflist;
     OSStatus result;
@@ -1156,7 +1157,13 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     char *devname;
     int usable;
     double sampleRate;
+#endif /*MACOSX_COREAUDIO */
+    
+#if !MACOSX_COREAUDIO
+    AVAudioSession* session = [AVAudioSession sharedInstance];
+#endif /* !MACOSX_COREAUDIO */
 
+#if MACOSX_COREAUDIO
     AudioObjectPropertyAddress addr = {
         iscapture ? kAudioHardwarePropertyDefaultInputDevice
                   : kAudioHardwarePropertyDefaultOutputDevice,
@@ -1267,6 +1274,11 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
         return SDL_SetError("%s: Default Device has no channels!", "coreaudio");
     }
     
+    return 0;
+#endif /* MACOSX_COREAUDIO */
+    
+    spec->freq = [session sampleRate];
+    spec->channels = [session outputNumberOfChannels];
     return 0;
 }
 
