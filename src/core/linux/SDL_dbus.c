@@ -419,6 +419,12 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
         return SDL_TRUE;
     }
 
+    if (!dbus.session_conn) {
+        /* We either lost connection to the session bus or were not able to
+         * load the D-Bus library at all. */
+        return SDL_FALSE;
+    }
+
     if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
         const char *bus_name = "org.freedesktop.portal.Desktop";
         const char *path = "/org/freedesktop/portal/desktop";
