@@ -1213,39 +1213,35 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
         return SDL_SetError("%s: Default Device ID not found", "coreaudio");
     }
 
-    /* Use the Device ID to get the name */
-    size = sizeof (CFStringRef);
-    result = AudioObjectGetPropertyData(devid, &nameaddr, 0, NULL, &size, &cfstr);
-
-    if (result != noErr) {
-        return SDL_SetError("%s: Default Device Name not found", "coreaudio");
-    }
-
-    CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
-                                                    kCFStringEncodingUTF8);
-    devname = (char *) SDL_malloc(len + 1);
-    usable = ((devname != NULL) &&
-              (CFStringGetCString(cfstr, devname, len + 1, kCFStringEncodingUTF8)));
-    CFRelease(cfstr);
-
-    if (usable) {
-        usable = 0;
-        len = strlen(devname);
-        /* Some devices have whitespace at the end...trim it. */
-        while ((len > 0) && (devname[len - 1] == ' ')) {
-            len--;
-            usable = len;
-        }
-    }
-
-    if (usable) {
-        devname[len] = '\0';
-    }
-
     if (name != NULL) {
-        *name = devname;
-    } else {
-        SDL_free(devname);
+        /* Use the Device ID to get the name */
+        size = sizeof (CFStringRef);
+        result = AudioObjectGetPropertyData(devid, &nameaddr, 0, NULL, &size, &cfstr);
+        
+        if (result != noErr) {
+            return SDL_SetError("%s: Default Device Name not found", "coreaudio");
+        }
+        
+        CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
+                                                        kCFStringEncodingUTF8);
+        devname = (char *) SDL_malloc(len + 1);
+        usable = ((devname != NULL) &&
+                  (CFStringGetCString(cfstr, devname, len + 1, kCFStringEncodingUTF8)));
+        CFRelease(cfstr);
+        
+        if (usable) {
+            usable = 0;
+            len = strlen(devname);
+            /* Some devices have whitespace at the end...trim it. */
+            while ((len > 0) && (devname[len - 1] == ' ')) {
+                len--;
+                usable = len;
+            }
+        }
+        
+        if (usable) {
+            devname[len] = '\0';
+        }
     }
 
     /* Uses the Device ID to get the spec */
