@@ -1051,6 +1051,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 
 static int SDLCALL read_thread(void *param)
 {
+	int res;
 	hid_device *dev = (hid_device *)param;
 	uint8_t *buf;
 	const size_t length = dev->input_ep_max_packet_size;
@@ -1069,14 +1070,18 @@ static int SDLCALL read_thread(void *param)
 
 	/* Make the first submission. Further submissions are made
 	   from inside read_callback() */
-	libusb_submit_transfer(dev->transfer);
+	res = libusb_submit_transfer(dev->transfer);
+	if(res < 0) {
+                LOG("libusb_submit_transfer failed: %d %s. Stopping read_thread from running\n", res, libusb_error_name(res));
+                dev->shutdown_thread = 1;
+                dev->transfer_loop_finished = 1;
+	}
 
 	/* Notify the main thread that the read thread is up and running. */
 	SDL_WaitThreadBarrier(&dev->barrier);
 
 	/* Handle all the events. */
 	while (!dev->shutdown_thread) {
-		int res;
 		res = libusb_handle_events(usb_context);
 		if (res < 0) {
 			/* There was an error. */
