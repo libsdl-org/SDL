@@ -532,8 +532,7 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
 
     SDL_LockMutex(this->mixer_lock);
 
-    /* !!! FIXME: why do we have this->hidden->shutdown when this->shutdown exists? */
-    if (SDL_AtomicGet(&this->hidden->shutdown)) {
+    if (SDL_AtomicGet(&this->shutdown)) {
         SDL_UnlockMutex(this->mixer_lock);
         return;  /* don't do anything, since we don't even want to enqueue this buffer again. */
     }
@@ -734,7 +733,7 @@ COREAUDIO_CloseDevice(_THIS)
     }
 
     if (this->hidden->thread) {
-        SDL_AtomicSet(&this->hidden->shutdown, 1);
+        SDL_assert(SDL_AtomicGet(&this->shutdown) != 0);  /* should have been set by SDL_audio.c */
         SDL_WaitThread(this->hidden->thread, NULL);
     }
 
@@ -981,7 +980,7 @@ audioqueue_thread(void *arg)
     /* init was successful, alert parent thread and start running... */
     SDL_SemPost(this->hidden->ready_semaphore);
 
-    while (!SDL_AtomicGet(&this->hidden->shutdown)) {
+    while (!SDL_AtomicGet(&this->shutdown)) {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, 1);
 
         #if MACOSX_COREAUDIO
@@ -1131,7 +1130,6 @@ COREAUDIO_OpenDevice(_THIS, const char *devname)
 #endif
 
     /* This has to init in a new thread so it can get its own CFRunLoop. :/ */
-    SDL_AtomicSet(&this->hidden->shutdown, 0);
     this->hidden->ready_semaphore = SDL_CreateSemaphore(0);
     if (!this->hidden->ready_semaphore) {
         return -1;  /* oh well. */
