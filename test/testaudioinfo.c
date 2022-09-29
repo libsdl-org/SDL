@@ -40,6 +40,8 @@ print_devices(int iscapture)
 int
 main(int argc, char **argv)
 {
+    char *deviceName;
+    SDL_AudioSpec spec;
     int n;
 
     /* Enable standard application logging */
@@ -68,6 +70,27 @@ main(int argc, char **argv)
 
     print_devices(0);
     print_devices(1);
+
+    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 0) < 0) {
+        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    } else {
+        SDL_Log("Default Output Name: %s\n", deviceName != NULL ? deviceName : "unknown");
+        SDL_free(deviceName);
+        SDL_Log("Sampling Rate: %d\n", spec.freq);
+        SDL_Log("Number of Channels: %d\n", spec.channels);
+        SDL_Log("Audio Format: %d\n", spec.format);
+    }
+
+    if (SDL_GetDefaultAudioInfo(&deviceName, &spec, 1) < 0) {
+        SDL_Log("Error when calling SDL_GetDefaultAudioInfo: %s\n", SDL_GetError());
+    } else {
+        SDL_Log("Default Capture Name: %s\n", deviceName != NULL ? deviceName : "unknown");
+        SDL_free(deviceName);
+        SDL_Log("Sampling Rate: %d\n", spec.freq);
+        SDL_Log("Number of Channels: %d\n", spec.channels);
+        SDL_Log("Audio Format: %d\n", spec.format);
+    }
+
 
     SDL_Quit();
     return 0;
