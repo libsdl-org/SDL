@@ -47,7 +47,7 @@ print_devices(int iscapture)
 int
 main(int argc, char **argv)
 {
-    char *deviceName;
+    char *deviceName = NULL;
     SDL_AudioSpec spec;
     int n;
 
