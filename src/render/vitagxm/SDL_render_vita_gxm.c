@@ -269,8 +269,6 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->driverdata = data;
     renderer->window = window;
 
-    if (data->initialized != SDL_FALSE)
-        return 0;
     data->initialized = SDL_TRUE;
 
     if (flags & SDL_RENDERER_PRESENTVSYNC) {
@@ -286,6 +284,8 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     if (gxm_init(renderer) != 0)
     {
+        SDL_free(data);
+        SDL_free(renderer);
         return NULL;
     }
 
