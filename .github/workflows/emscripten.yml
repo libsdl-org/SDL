@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: mymindstorm/setup-emsdk@v10
         with:
-          version: 2.0.31
+          version: 2.0.32
       - name: Configure CMake
         run: |
           emcmake cmake -S . -B build \
