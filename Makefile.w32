@@ -6,7 +6,6 @@ MAJOR_VERSION = 2
 MINOR_VERSION = 25
 MICRO_VERSION = 0
 VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(MICRO_VERSION)
-DESCRIPTION = Simple DirectMedia Layer 2
 
 LIBHOME = .
 DLLFILE = $(LIBHOME)/$(LIBNAME).dll
@@ -20,6 +19,8 @@ INCPATH+= -I"src/video/khronos"
 
 LIBM = SDL2libm.lib
 TLIB = SDL2test.lib
+# user32.lib, gdi32.lib, ole32.lib and oleaut32.lib are actually
+# among the default libraries in wlink.lnk for nt_dll linkage...
 LIBS = user32.lib gdi32.lib winmm.lib imm32.lib ole32.lib oleaut32.lib shell32.lib setupapi.lib version.lib uuid.lib dxguid.lib $(LIBM)
 
 CFLAGS = -bt=nt -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
@@ -255,7 +256,6 @@ $(LNKFILE): Makefile.w32
     @%append $@ OPTION QUIET
     @%append $@ OPTION IMPF=$(EXPFILE)
     @%append $@ OPTION MAP=$(LIBHOME)/$^&.map
-    @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@$(DESCRIPTION)'
     @%append $@ OPTION ELIMINATE
     @%append $@ OPTION SHOWDEAD
 
