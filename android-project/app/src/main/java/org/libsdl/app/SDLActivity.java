@@ -44,6 +44,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -1874,9 +1875,17 @@ class DummyEdit extends View implements View.OnKeyListener {
 
 class SDLInputConnection extends BaseInputConnection {
 
+    protected EditText mEditText;
+    protected int m_nLastContentLength = 0;
+
     public SDLInputConnection(View targetView, boolean fullEditor) {
         super(targetView, fullEditor);
+        mEditText = new EditText(SDL.getContext());
+    }
 
+    @Override
+    public Editable getEditable() {
+        return mEditText.getEditableText();
     }
 
     @Override
@@ -1899,57 +1908,154 @@ class SDLInputConnection extends BaseInputConnection {
             }
         }
 
-
         return super.sendKeyEvent(event);
     }
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
-
-        /* Generate backspaces for the text we're going to replace */
-        final Editable content = getEditable();
-        if (content != null) {
-            int a = getComposingSpanStart(content);
-            int b = getComposingSpanEnd(content);
-            if (a == -1 || b == -1) {
-                a = Selection.getSelectionStart(content);
-                b = Selection.getSelectionEnd(content);
-            }
-            if (a < 0) a = 0;
-            if (b < 0) b = 0;
-            if (b < a) {
-                int tmp = a;
-                a = b;
-                b = tmp;
-            }
-            int backspaces = (b - a);
-
-            for (int i = 0; i < backspaces; i++) {
-                nativeGenerateScancodeForUnichar('\b');
-            }
-        }
-
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '\n') {
-                if (SDLActivity.onNativeSoftReturnKey()) {
-                    return true;
-                }
-            }
-            nativeGenerateScancodeForUnichar(c);
-        }
-
-        SDLInputConnection.nativeCommitText(text.toString(), newCursorPosition);
+        replaceText(text, newCursorPosition, false);
 
         return super.commitText(text, newCursorPosition);
     }
 
     @Override
     public boolean setComposingText(CharSequence text, int newCursorPosition) {
-
-        nativeSetComposingText(text.toString(), newCursorPosition);
+        replaceText(text, newCursorPosition, true);
 
         return super.setComposingText(text, newCursorPosition);
+    }
+
+    @Override
+    public boolean setComposingRegion(int start, int end) {
+        final Editable content = getEditable();
+        if (content != null) {
+            int a = start;
+            int b = end;
+            if (a > b) {
+                int tmp = a;
+                a = b;
+                b = tmp;
+            }
+
+            // Clip the end points to be within the content bounds.
+            final int length = content.length();
+            if (a < 0) {
+                a = 0;
+            }
+            if (b < 0) {
+                b = 0;
+            }
+            if (a > length) {
+                a = length;
+            }
+            if (b > length) {
+                b = length;
+            }
+
+            deleteText(a, b);
+        }
+
+        return super.setComposingRegion(start, end);
+    }
+
+    @Override
+    public boolean deleteSurroundingText(int beforeLength, int afterLength) {
+        final Editable content = getEditable();
+        if (content != null) {
+            int a = Selection.getSelectionStart(content);
+            int b = Selection.getSelectionEnd(content);
+
+            if (a > b) {
+                int tmp = a;
+                a = b;
+                b = tmp;
+            }
+
+            // ignore the composing text.
+            int ca = getComposingSpanStart(content);
+            int cb = getComposingSpanEnd(content);
+            if (cb < ca) {
+                int tmp = ca;
+                ca = cb;
+                cb = tmp;
+            }
+
+            if (ca != -1 && cb != -1) {
+                if (ca < a) {
+                    a = ca;
+                }
+                if (cb > b) {
+                    b = cb;
+                }
+            }
+
+            if (beforeLength > 0) {
+                int start = a - beforeLength;
+                if (start < 0) {
+                    start = 0;
+                }
+                deleteText(start, a);
+            }
+        }
+
+        return super.deleteSurroundingText(beforeLength, afterLength);
+    }
+
+    protected void replaceText(CharSequence text, int newCursorPosition, boolean composing) {
+        final Editable content = getEditable();
+        if (content == null) {
+            return;
+        }
+        
+        // delete composing text set previously.
+        int a = getComposingSpanStart(content);
+        int b = getComposingSpanEnd(content);
+
+        if (b < a) {
+            int tmp = a;
+            a = b;
+            b = tmp;
+        }
+        if (a == -1 || b == -1) {
+            a = Selection.getSelectionStart(content);
+            b = Selection.getSelectionEnd(content);
+            if (a < 0) {
+                a = 0;
+            }
+            if (b < 0) {
+                b = 0;
+            }
+            if (b < a) {
+                int tmp = a;
+                a = b;
+                b = tmp;
+            }
+        }
+
+        deleteText(a, b);
+
+        if (composing) {
+            nativeSetComposingText(text.toString(), newCursorPosition);
+        } else {
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == '\n') {
+                    if (SDLActivity.onNativeSoftReturnKey()) {
+                        return;
+                    }
+                }
+                ++m_nLastContentLength;
+                nativeGenerateScancodeForUnichar(c);
+            }
+            SDLInputConnection.nativeCommitText(text.toString(), newCursorPosition);
+        }
+    }
+
+    protected void deleteText(int start, int end) {
+        while (m_nLastContentLength > start) {
+            --m_nLastContentLength;
+            nativeGenerateScancodeForUnichar('\b');
+        }
     }
 
     public static native void nativeCommitText(String text, int newCursorPosition);
@@ -1958,20 +2064,6 @@ class SDLInputConnection extends BaseInputConnection {
 
     public native void nativeSetComposingText(String text, int newCursorPosition);
 
-    @Override
-    public boolean deleteSurroundingText(int beforeLength, int afterLength) {
-        // Workaround to capture backspace key. Ref: http://stackoverflow.com/questions/14560344/android-backspace-in-webview-baseinputconnection
-        // and https://bugzilla.libsdl.org/show_bug.cgi?id=2265
-        if (beforeLength > 0 && afterLength == 0) {
-            // backspace(s)
-            while (beforeLength-- > 0) {
-                nativeGenerateScancodeForUnichar('\b');
-            }
-            return true;
-        }
-
-        return super.deleteSurroundingText(beforeLength, afterLength);
-    }
 }
 
 class SDLClipboardHandler implements
