@@ -701,6 +701,14 @@ COREAUDIO_CloseDevice(_THIS)
     }
 #endif
 
+    /* if callback fires again, feed silence; don't call into the app. */
+    SDL_AtomicSet(&this->paused, 1);
+
+    if (this->hidden->thread) {
+        SDL_assert(SDL_AtomicGet(&this->shutdown) != 0);  /* should have been set by SDL_audio.c */
+        SDL_WaitThread(this->hidden->thread, NULL);
+    }
+
     if (iscapture) {
         open_capture_devices--;
     } else {
@@ -725,16 +733,8 @@ COREAUDIO_CloseDevice(_THIS)
         open_devices = NULL;
     }
 
-    /* if callback fires again, feed silence; don't call into the app. */
-    SDL_AtomicSet(&this->paused, 1);
-
     if (this->hidden->audioQueue) {
         AudioQueueDispose(this->hidden->audioQueue, 1);
-    }
-
-    if (this->hidden->thread) {
-        SDL_assert(SDL_AtomicGet(&this->shutdown) != 0);  /* should have been set by SDL_audio.c */
-        SDL_WaitThread(this->hidden->thread, NULL);
     }
 
     if (this->hidden->ready_semaphore) {
