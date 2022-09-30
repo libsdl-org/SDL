@@ -1280,20 +1280,9 @@ CheckSNDIO()
 [AS_HELP_STRING([--enable-sndio], [support the sndio audio API [default=yes]])],
                   , enable_sndio=yes)
     if test x$enable_audio = xyes -a x$enable_sndio = xyes; then
-        AC_CHECK_HEADER(sndio.h, have_sndio_hdr=yes)
-        AC_CHECK_LIB(sndio, sio_open, have_sndio_lib=yes)
+        PKG_CHECK_MODULES([SNDIO], [sndio], audio_sndio=yes, audio_sndio=no)
 
-        AC_MSG_CHECKING(for sndio audio support)
-        have_sndio=no
-
-        if test x$have_sndio_hdr = xyes -a x$have_sndio_lib = xyes; then
-            have_sndio=yes
-            SNDIO_LIBS="-lsndio"
-        fi
-
-        AC_MSG_RESULT($have_sndio)
-
-        if test x$have_sndio = xyes; then
+        if test x$audio_sndio = xyes; then
             AC_ARG_ENABLE(sndio-shared,
 [AS_HELP_STRING([--enable-sndio-shared], [dynamically load sndio audio support [default=yes]])],
                           , enable_sndio_shared=yes)
