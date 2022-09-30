@@ -92,66 +92,50 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         var src = pixels >> 2;
         var dst = 0;
         var num;
-        if (typeof CanvasPixelArray !== 'undefined' && data instanceof CanvasPixelArray) {
-            // IE10/IE11: ImageData objects are backed by the deprecated CanvasPixelArray,
-            // not UInt8ClampedArray. These don't have buffers, so we need to revert
-            // to copying a byte at a time. We do the undefined check because modern
-            // browsers do not define CanvasPixelArray anymore.
-            num = data.length;
-            while (dst < num) {
-                var val = HEAP32[src]; // This is optimized. Instead, we could do {{{ makeGetValue('buffer', 'dst', 'i32') }}};
-                data[dst  ] = val & 0xff;
-                data[dst+1] = (val >> 8) & 0xff;
-                data[dst+2] = (val >> 16) & 0xff;
-                data[dst+3] = 0xff;
-                src++;
-                dst += 4;
+
+        if (SDL2.data32Data !== data) {
+            SDL2.data32 = new Int32Array(data.buffer);
+            SDL2.data8 = new Uint8Array(data.buffer);
+            SDL2.data32Data = data;
+        }
+        var data32 = SDL2.data32;
+        num = data32.length;
+        // logically we need to do
+        //      while (dst < num) {
+        //          data32[dst++] = HEAP32[src++] | 0xff000000
+        //      }
+        // the following code is faster though, because
+        // .set() is almost free - easily 10x faster due to
+        // native SDL_memcpy efficiencies, and the remaining loop
+        // just stores, not load + store, so it is faster
+        data32.set(HEAP32.subarray(src, src + num));
+        var data8 = SDL2.data8;
+        var i = 3;
+        var j = i + 4*num;
+        if (num % 8 == 0) {
+            // unrolling gives big speedups
+            while (i < j) {
+              data8[i] = 0xff;
+              i = i + 4 | 0;
+              data8[i] = 0xff;
+              i = i + 4 | 0;
+              data8[i] = 0xff;
+              i = i + 4 | 0;
+              data8[i] = 0xff;
+              i = i + 4 | 0;
+              data8[i] = 0xff;
+              i = i + 4 | 0;
+              data8[i] = 0xff;
+              i = i + 4 | 0;
+              data8[i] = 0xff;
+              i = i + 4 | 0;
+              data8[i] = 0xff;
+              i = i + 4 | 0;
             }
-        } else {
-            if (SDL2.data32Data !== data) {
-                SDL2.data32 = new Int32Array(data.buffer);
-                SDL2.data8 = new Uint8Array(data.buffer);
-                SDL2.data32Data = data;
-            }
-            var data32 = SDL2.data32;
-            num = data32.length;
-            // logically we need to do
-            //      while (dst < num) {
-            //          data32[dst++] = HEAP32[src++] | 0xff000000
-            //      }
-            // the following code is faster though, because
-            // .set() is almost free - easily 10x faster due to
-            // native SDL_memcpy efficiencies, and the remaining loop
-            // just stores, not load + store, so it is faster
-            data32.set(HEAP32.subarray(src, src + num));
-            var data8 = SDL2.data8;
-            var i = 3;
-            var j = i + 4*num;
-            if (num % 8 == 0) {
-                // unrolling gives big speedups
-                while (i < j) {
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                }
-             } else {
-                while (i < j) {
-                  data8[i] = 0xff;
-                  i = i + 4 | 0;
-                }
+         } else {
+            while (i < j) {
+              data8[i] = 0xff;
+              i = i + 4 | 0;
             }
         }
 
