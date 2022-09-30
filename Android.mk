@@ -75,7 +75,6 @@ LOCAL_CFLAGS += \
 	-Wstrict-prototypes \
 	-Wkeyword-macro \
 
-
 # Warnings we haven't fixed (yet)
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
 
@@ -90,6 +89,7 @@ endif
 LOCAL_STATIC_LIBRARIES := cpufeatures
 
 include $(BUILD_SHARED_LIBRARY)
+
 
 ###########################
 #
@@ -108,6 +108,7 @@ LOCAL_LDFLAGS :=
 LOCAL_EXPORT_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 
 include $(BUILD_STATIC_LIBRARY)
+
 
 ###########################
 #
