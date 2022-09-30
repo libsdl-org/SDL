@@ -1,6 +1,10 @@
 Emscripten
 ================================================================================
 
+SDL currently requires at least Emscripten 2.0.32 to build. Newer versions
+are likely to work, as well.
+
+
 Build:
 
     $ mkdir build
