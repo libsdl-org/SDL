@@ -293,16 +293,14 @@ macro(CheckNAS)
 endmacro()
 
 # Requires:
-# - n/a
+# - PkgCheckModules
 # Optional:
 # - SDL_SNDIO_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckSNDIO)
   if(SDL_SNDIO)
-    # TODO: set include paths properly, so the sndio headers are found
-    check_include_file(sndio.h HAVE_SNDIO_H)
-    find_library(D_SNDIO_LIB sndio)
-    if(HAVE_SNDIO_H AND D_SNDIO_LIB)
+    pkg_check_modules(PKG_SNDIO sndio)
+    if(PKG_SNDIO_FOUND)
       set(HAVE_SNDIO TRUE)
       file(GLOB SNDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/sndio/*.c)
       list(APPEND SOURCE_FILES ${SNDIO_SOURCES})
