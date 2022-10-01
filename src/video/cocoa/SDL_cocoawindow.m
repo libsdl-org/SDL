@@ -267,6 +267,8 @@ ScheduleContextUpdates(SDL_WindowData *data)
     }
 
     /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+    #if SDL_VIDEO_OPENGL
+
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -287,6 +289,8 @@ ScheduleContextUpdates(SDL_WindowData *data)
     #ifdef __clang__
     #pragma clang diagnostic pop
     #endif
+
+    #endif /* SDL_VIDEO_OPENGL */
 }
 
 /* !!! FIXME: this should use a hint callback. */
@@ -2350,11 +2354,15 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
             [data.nswindow close];
         }
 
+        #if SDL_VIDEO_OPENGL
+
         contexts = [data.nscontexts copy];
         for (SDLOpenGLContext *context in contexts) {
             /* Calling setWindow:NULL causes the context to remove itself from the context list. */            
             [context setWindow:NULL];
         }
+
+        #endif /* SDL_VIDEO_OPENGL */
     }
     window->driverdata = NULL;
 }}
