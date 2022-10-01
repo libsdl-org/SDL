@@ -1876,7 +1876,7 @@ class DummyEdit extends View implements View.OnKeyListener {
 class SDLInputConnection extends BaseInputConnection {
 
     protected EditText mEditText;
-    protected int m_nLastContentLength = 0;
+    protected String mCommittedText = "";
 
     public SDLInputConnection(View targetView, boolean fullEditor) {
         super(targetView, fullEditor);
@@ -1913,149 +1913,74 @@ class SDLInputConnection extends BaseInputConnection {
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
-        replaceText(text, newCursorPosition, false);
-
-        return super.commitText(text, newCursorPosition);
+        if (!super.commitText(text, newCursorPosition)) {
+            return false;
+        }
+        updateText();
+        return true;
     }
 
     @Override
     public boolean setComposingText(CharSequence text, int newCursorPosition) {
-        replaceText(text, newCursorPosition, true);
-
-        return super.setComposingText(text, newCursorPosition);
-    }
-
-    @Override
-    public boolean setComposingRegion(int start, int end) {
-        final Editable content = getEditable();
-        if (content != null) {
-            int a = start;
-            int b = end;
-            if (a > b) {
-                int tmp = a;
-                a = b;
-                b = tmp;
-            }
-
-            // Clip the end points to be within the content bounds.
-            final int length = content.length();
-            if (a < 0) {
-                a = 0;
-            }
-            if (b < 0) {
-                b = 0;
-            }
-            if (a > length) {
-                a = length;
-            }
-            if (b > length) {
-                b = length;
-            }
-
-            deleteText(a, b);
+        if (!super.setComposingText(text, newCursorPosition)) {
+            return false;
         }
-
-        return super.setComposingRegion(start, end);
+        updateText();
+        return true;
     }
 
     @Override
     public boolean deleteSurroundingText(int beforeLength, int afterLength) {
-        final Editable content = getEditable();
-        if (content != null) {
-            int a = Selection.getSelectionStart(content);
-            int b = Selection.getSelectionEnd(content);
-
-            if (a > b) {
-                int tmp = a;
-                a = b;
-                b = tmp;
-            }
-
-            // ignore the composing text.
-            int ca = getComposingSpanStart(content);
-            int cb = getComposingSpanEnd(content);
-            if (cb < ca) {
-                int tmp = ca;
-                ca = cb;
-                cb = tmp;
-            }
-
-            if (ca != -1 && cb != -1) {
-                if (ca < a) {
-                    a = ca;
-                }
-                if (cb > b) {
-                    b = cb;
-                }
-            }
-
-            if (beforeLength > 0) {
-                int start = a - beforeLength;
-                if (start < 0) {
-                    start = 0;
-                }
-                deleteText(start, a);
-            }
+        if (!super.deleteSurroundingText(beforeLength, afterLength)) {
+            return false;
         }
-
-        return super.deleteSurroundingText(beforeLength, afterLength);
+        updateText();
+        return true;
     }
 
-    protected void replaceText(CharSequence text, int newCursorPosition, boolean composing) {
+    protected void updateText() {
         final Editable content = getEditable();
         if (content == null) {
             return;
         }
-        
-        // delete composing text set previously.
-        int a = getComposingSpanStart(content);
-        int b = getComposingSpanEnd(content);
 
-        if (b < a) {
-            int tmp = a;
-            a = b;
-            b = tmp;
+        String text = content.toString();
+        int compareLength = Math.min(text.length(), mCommittedText.length());
+        int matchLength, offset;
+
+        /* Backspace over characters that are no longer in the string */
+        for (matchLength = 0; matchLength < compareLength; ) {
+            int codePoint = mCommittedText.codePointAt(matchLength);
+            if (codePoint != text.codePointAt(matchLength)) {
+                break;
+            }
+            matchLength += Character.charCount(codePoint);
         }
-        if (a == -1 || b == -1) {
-            a = Selection.getSelectionStart(content);
-            b = Selection.getSelectionEnd(content);
-            if (a < 0) {
-                a = 0;
-            }
-            if (b < 0) {
-                b = 0;
-            }
-            if (b < a) {
-                int tmp = a;
-                a = b;
-                b = tmp;
-            }
+        /* FIXME: This doesn't handle graphemes, like '🌬️' */
+        for (offset = matchLength; offset < mCommittedText.length(); ) {
+            int codePoint = mCommittedText.codePointAt(offset);
+            nativeGenerateScancodeForUnichar('\b');
+            offset += Character.charCount(codePoint);
         }
 
-        deleteText(a, b);
-
-        if (composing) {
-            nativeSetComposingText(text.toString(), newCursorPosition);
-        } else {
-            for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
-                if (c == '\n') {
+        if (matchLength < text.length()) {
+            String pendingText = text.subSequence(matchLength, text.length()).toString();
+            for (offset = 0; offset < pendingText.length(); ) {
+                int codePoint = pendingText.codePointAt(offset);
+                if (codePoint == '\n') {
                     if (SDLActivity.onNativeSoftReturnKey()) {
                         return;
                     }
                 }
-                ++m_nLastContentLength;
-                nativeGenerateScancodeForUnichar(c);
+                /* Higher code points don't generate simulated scancodes */
+                if (codePoint < 128) {
+                    nativeGenerateScancodeForUnichar((char)codePoint);
+                }
+                offset += Character.charCount(codePoint);
             }
-            SDLInputConnection.nativeCommitText(text.toString(), newCursorPosition);
+            SDLInputConnection.nativeCommitText(pendingText, 0);
         }
-    }
-
-    protected void deleteText(int start, int end) {
-        while (m_nLastContentLength > start) {
-            --m_nLastContentLength;
-            nativeGenerateScancodeForUnichar('\b');
-        }
+        mCommittedText = text;
     }
 
     public static native void nativeCommitText(String text, int newCursorPosition);
