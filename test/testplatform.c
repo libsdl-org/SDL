@@ -438,7 +438,25 @@ static int TestAssertions(SDL_bool verbose)
     return 0;
 }
 
+<<<<<<< HEAD
 int main(int argc, char *argv[])
+=======
+int
+TestAssume(SDL_bool verbose)
+{
+    int max, count, i;
+
+    max = 16;
+    srand(time(0));
+    count = rand() % max;
+    SDL_Assume(count <= max);
+    for (i = 0; i < count; i ++);
+    return (0);
+}
+
+int
+main(int argc, char *argv[])
+>>>>>>> bfb4ecda9 (Adding SDL_Assume macro to give hint to the optimiser)
 {
     int i;
     SDL_bool verbose = SDL_TRUE;
@@ -483,6 +501,7 @@ int main(int argc, char *argv[])
     status += Test64Bit(verbose);
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
+    status += TestAssume(verbose);
 
     SDLTest_CommonDestroyState(state);
 
