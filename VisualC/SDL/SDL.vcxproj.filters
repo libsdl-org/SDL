@@ -495,9 +495,6 @@
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h">
       <Filter>haptic</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\hidapi\SDL_hidapi.h">
-      <Filter>hidapi</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h">
       <Filter>joystick</Filter>
     </ClInclude>
@@ -835,6 +832,7 @@
     <ClInclude Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.h">
       <Filter>render\direct3d12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1351,6 +1349,7 @@
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.c">
       <Filter>render\direct3d12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />
