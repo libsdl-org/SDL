@@ -170,6 +170,7 @@ add_executable(testcustomcursor testcustomcursor.c)
 add_executable(controllermap controllermap.c testutils.c)
 add_executable(testvulkan testvulkan.c)
 add_executable(testoffscreen testoffscreen.c)
+add_executable(testdpi testdpi.c)
 
 cmake_push_check_state(RESET)
 

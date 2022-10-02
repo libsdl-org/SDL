@@ -7,7 +7,7 @@ LIBS    = SDL2.lib SDL2test.lib testutils.lib
 
 CFLAGS+= $(INCPATH)
 
-TARGETS = testatomic.exe testdisplayinfo.exe testbounds.exe testdraw2.exe &
+TARGETS = testatomic.exe testdisplayinfo.exe testdpi.exe testbounds.exe testdraw2.exe &
           testdrawchessboard.exe testdropfile.exe testerror.exe testfile.exe &
           testfilesystem.exe testgamecontroller.exe testgeometry.exe testgesture.exe &
           testhittesting.exe testhotplug.exe testiconv.exe testime.exe testlocale.exe &
@@ -44,6 +44,7 @@ needs_audio = &
 
 needs_display = &
 	testbounds.exe &
+  testdpi.exe &
 	testdisplayinfo.exe
 
 TESTS = $(noninteractive) $(needs_audio) $(needs_display)

@@ -80,6 +80,7 @@ TARGETS = \
 	testvulkan$(EXE) \
 	testwm2$(EXE) \
 	testyuv$(EXE) \
+	testdpi$(EXE) \
 	torturethread$(EXE) \
 
 
@@ -353,6 +354,9 @@ testmessage$(EXE): $(srcdir)/testmessage.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testdisplayinfo$(EXE): $(srcdir)/testdisplayinfo.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testdpi$(EXE): $(srcdir)/testdpi.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testqsort$(EXE): $(srcdir)/testqsort.c
