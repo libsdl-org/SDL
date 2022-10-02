@@ -262,6 +262,7 @@ typedef struct {
     Uint32 m_unIMUSamples;
     Uint32 m_unIMUUpdateIntervalUS;
     Uint64 m_ulTimestampUS;
+    SDL_bool m_bVerticalMode;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -1419,6 +1420,9 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     ctx->m_unLastIMUReset = ctx->m_unLastInput = SDL_GetTicks();
     ctx->m_unIMUUpdateIntervalUS = 5 * 1000; /* Start off at 5 ms update rate */
 
+    /* Set up for vertical mode */
+    ctx->m_bVerticalMode = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_FALSE);
+
     return SDL_TRUE;
 }
 
@@ -1941,16 +1945,14 @@ static void HandleMiniControllerStateR(SDL_Joystick *joystick, SDL_DriverSwitch_
 
 static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)
 {
-    extern SDL_bool SDL_HIDAPI_vertical_joycons;
-
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-        if (ctx->device->parent || SDL_HIDAPI_vertical_joycons) {
+        if (ctx->device->parent || ctx->m_bVerticalMode) {
             HandleCombinedControllerStateL(joystick, ctx, packet);
         } else {
             HandleMiniControllerStateL(joystick, ctx, packet);
         }
     } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-        if (ctx->device->parent || SDL_HIDAPI_vertical_joycons) {
+        if (ctx->device->parent || ctx->m_bVerticalMode) {
             HandleCombinedControllerStateR(joystick, ctx, packet);
         } else {
             HandleMiniControllerStateR(joystick, ctx, packet);

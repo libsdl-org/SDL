@@ -31,7 +31,6 @@
 #include "controller_type.h"
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
-#include "../SDL_hints_c.h"
 
 #if !SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
@@ -116,7 +115,6 @@ static ControllerMapping_t *s_pSupportedControllers = NULL;
 static ControllerMapping_t *s_pDefaultMapping = NULL;
 static ControllerMapping_t *s_pXInputMapping = NULL;
 static char gamecontroller_magic;
-SDL_bool SDL_HIDAPI_vertical_joycons = SDL_FALSE;
 
 /* The SDL game controller structure */
 struct _SDL_GameController
@@ -608,21 +606,16 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             }
             break;
         default:
-            if (SDL_HIDAPI_vertical_joycons) {
+            if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_FALSE)) {
                 /* Vertical mode */
                 if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                    SDL_strlcat(mapping_string, "back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b15,leftshoulder:b16,rightshoulder:b17,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b15,", sizeof(mapping_string));
                 } else {
-                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,leftshoulder:b18,rightshoulder:b19,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof(mapping_string));
                 }
             } else {
                 /* Mini gamepad mode */
                 SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,", sizeof(mapping_string));
-                if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                    SDL_strlcat(mapping_string, "lefttrigger:a4,leftshoulder:b16,", sizeof(mapping_string));
-                } else {
-                    SDL_strlcat(mapping_string, "righttrigger:a5,rightshoulder:b19,", sizeof(mapping_string));
-                }
             }
             break;
         }
@@ -641,7 +634,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
             /* The Nintendo Switch Joy-Con combined controller has a share button */
-            SDL_strlcat(mapping_string, "misc1:b15,leftshoulder:b16,rightshoulder:b17,leftshoulder:b18,rightshoulder:b19,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
         } else {
             switch (SDL_GetJoystickGameControllerTypeFromGUID(guid, NULL)) {
             case SDL_CONTROLLER_TYPE_PS4:
@@ -1814,26 +1807,6 @@ static SDL_bool SDL_GetControllerMappingFilePath(char *path, size_t size)
 #endif
 }
 
-static void SDLCALL
-SDL_JoystickHidapiVerticalJoyConsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_HIDAPI_vertical_joycons = SDL_GetStringBoolean(hint, SDL_FALSE);
-
-    Uint16 vendor;
-    Uint16 product;
-    for (SDL_GameController *controller = SDL_gamecontrollers; controller; controller = controller->next) {
-        if (SDL_IsJoystickHIDAPI(controller->joystick->guid)) {
-            SDL_GetJoystickGUIDInfo(controller->joystick->guid, &vendor, &product, NULL, NULL);
-            if (vendor == USB_VENDOR_NINTENDO &&
-                (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT ||
-                 product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT)) {
-                ControllerMapping_t* controllerMapping = SDL_CreateMappingForHIDAPIController(controller->joystick->guid);
-                SDL_PrivateLoadButtonMapping(controller, controllerMapping->name, controllerMapping->mapping);
-            }
-        }
-    }
-}
-
 /*
  * Initialize the game controller system, mostly load our DB of controller config mappings
  */
@@ -1862,8 +1835,6 @@ SDL_GameControllerInitMappings(void)
                         SDL_GameControllerIgnoreDevicesChanged, NULL);
     SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
                         SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS,
-                        SDL_JoystickHidapiVerticalJoyConsChanged, NULL);
 
     return (0);
 }
@@ -2904,8 +2875,6 @@ SDL_GameControllerQuitMappings(void)
                         SDL_GameControllerIgnoreDevicesChanged, NULL);
     SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
                         SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS,
-                        SDL_JoystickHidapiVerticalJoyConsChanged, NULL);
 
     if (SDL_allowed_controllers.entries) {
         SDL_free(SDL_allowed_controllers.entries);
