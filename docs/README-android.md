@@ -377,9 +377,9 @@ Memory debugging
 The best (and slowest) way to debug memory issues on Android is valgrind.
 Valgrind has support for Android out of the box, just grab code using:
 
-    svn co svn://svn.valgrind.org/valgrind/trunk valgrind
+    git clone https://sourceware.org/git/valgrind.git
 
-... and follow the instructions in the file README.android to build it.
+... and follow the instructions in the file `README.android` to build it.
 
 One thing I needed to do on macOS was change the path to the toolchain,
 and add ranlib to the environment variables:

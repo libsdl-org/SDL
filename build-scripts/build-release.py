@@ -4,6 +4,7 @@ import argparse
 import collections
 import contextlib
 import datetime
+import glob
 import io
 import json
 import logging
@@ -25,6 +26,24 @@ logger = logging.getLogger(__name__)
 
 VcArchDevel = collections.namedtuple("VcArchDevel", ("dll", "imp", "test"))
 GIT_HASH_FILENAME = ".git-hash"
+
+ANDROID_AVAILABLE_ABIS = [
+    "armeabi-v7a",
+    "arm64-v8a",
+    "x86",
+    "x86_64",
+]
+ANDROID_MINIMUM_API = 19
+ANDROID_TARGET_API = 29
+ANDROID_MINIMUM_NDK = 21
+ANDROID_LIBRARIES = [
+    "dl",
+    "GLESv1_CM",
+    "GLESv2",
+    "log",
+    "android",
+    "OpenSLES",
+]
 
 
 def itertools_batched(iterator: typing.Iterable, count: int):
@@ -373,6 +392,8 @@ class Releaser:
                 self.executer.run([
                     "cmake", "-S", str(self.root), "-B", str(build_path),
                     "--fresh",
+                    f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                    f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
                     "-DSDL_SHARED=ON",
                     "-DSDL_STATIC=ON",
                     "-DSDL_DISABLE_INSTALL_DOCS=ON",
@@ -507,6 +528,178 @@ class Releaser:
             self._zip_add_git_hash(zip_file=zf, root=archive_prefix)
         self.artifacts["VC-devel"] = zip_path
 
+    def detect_android_api(self, android_home: str) -> typing.Optional[int]:
+        platform_dirs = list(Path(p) for p in glob.glob(f"{android_home}/platforms/android-*"))
+        re_platform = re.compile("android-([0-9]+)")
+        platform_versions = []
+        for platform_dir in platform_dirs:
+            logger.debug("Found Android Platform SDK: %s", platform_dir)
+            if m:= re_platform.match(platform_dir.name):
+                platform_versions.append(int(m.group(1)))
+        platform_versions.sort()
+        logger.info("Available platform versions: %s", platform_versions)
+        platform_versions = list(filter(lambda v: v >= ANDROID_MINIMUM_API, platform_versions))
+        logger.info("Valid platform versions (>=%d): %s", ANDROID_MINIMUM_API, platform_versions)
+        if not platform_versions:
+            return None
+        android_api = platform_versions[0]
+        logger.info("Selected API version %d", android_api)
+        return android_api
+
+    def get_prefab_json_text(self):
+        return textwrap.dedent(f"""\
+            {{
+                "schema_version": 2,
+                "name": "{self.project}",
+                "version": "{self.version}",
+                "dependencies": []
+            }}
+        """)
+
+    def get_prefab_module_json_text(self, library_name: str, extra_libs: list[str]):
+        export_libraries_str = ", ".join(f"\"-l{lib}\"" for lib in extra_libs)
+        return textwrap.dedent(f"""\
+            {{
+                "export_libraries": [{export_libraries_str}],
+                "library_name": "lib{library_name}"
+            }}
+        """)
+
+    def get_prefab_abi_json_text(self, abi: str, cpp: bool, shared: bool):
+        return textwrap.dedent(f"""\
+            {{
+              "abi": "{abi}",
+              "api": {ANDROID_MINIMUM_API},
+              "ndk": {ANDROID_MINIMUM_NDK},
+              "stl": "{'c++_shared' if cpp else 'none'}",
+              "static": {'true' if not shared else 'false'}
+            }}
+        """)
+
+    def get_android_manifest_text(self):
+        return textwrap.dedent(f"""\
+            <manifest
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                package="org.libsdl.android.{self.project}" android:versionCode="1"
+                android:versionName="1.0">
+                <uses-sdk android:minSdkVersion="{ANDROID_MINIMUM_API}"
+                          android:targetSdkVersion="{ANDROID_TARGET_API}" />
+            </manifest>
+        """)
+
+    def create_android_archives(self, android_api: int, android_home: Path, android_ndk_home: Path, android_abis: list[str]):
+        cmake_toolchain_file = Path(android_ndk_home) / "build/cmake/android.toolchain.cmake"
+        if not cmake_toolchain_file.exists():
+            logger.error("CMake toolchain file does not exist (%s)", cmake_toolchain_file)
+            raise SystemExit(1)
+        aar_path =  self.dist_path / f"{self.project}-{self.version}.aar"
+        added_global_files = False
+        with zipfile.ZipFile(aar_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_object:
+            zip_object.writestr("AndroidManifest.xml", self.get_android_manifest_text())
+            zip_object.write(self.root / "android-project/app/proguard-rules.pro", arcname="proguard.txt")
+            zip_object.write(self.root / "LICENSE.txt", arcname="META-INF/LICENSE.txt")
+            zip_object.writestr("prefab/prefab.json", self.get_prefab_json_text())
+            self._zip_add_git_hash(zip_file=zip_object)
+
+            for android_abi in android_abis:
+                with self.section_printer.group(f"Building for Android {android_api} {android_abi}"):
+                    build_dir = self.root / "build-android" / f"{android_abi}-build"
+                    install_dir = self.root / "install-android" / f"{android_abi}-install"
+                    shutil.rmtree(install_dir, ignore_errors=True)
+                    assert not install_dir.is_dir(), f"{install_dir} should not exist prior to build"
+                    cmake_args = [
+                        "cmake",
+                        "-S", str(self.root),
+                        "-B", str(build_dir),
+                        "--fresh",
+                        f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                        f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                        "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                        f"-DCMAKE_TOOLCHAIN_FILE={cmake_toolchain_file}",
+                        f"-DANDROID_PLATFORM={android_api}",
+                        f"-DANDROID_ABI={android_abi}",
+                        f"-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
+                        "-DSDL_SHARED=ON",
+                        "-DSDL_STATIC=ON",
+                        "-DSDL_STATIC_PIC=ON",
+                        "-DSDL_TEST_LIBRARY=ON",
+                        "-DSDL_DISABLE_ANDROID_JAR=OFF",
+                        "-DSDL_TESTS=OFF",
+                        f"-DCMAKE_INSTALL_PREFIX={install_dir}",
+                        "-DSDL_DISABLE_INSTALL=OFF",
+                        "-DSDL_DISABLE_INSTALL_DOCS=OFF",
+                        "-DCMAKE_INSTALL_INCLUDEDIR=include ",
+                        "-DCMAKE_INSTALL_LIBDIR=lib",
+                        "-DCMAKE_INSTALL_DATAROOTDIR=share",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        f"-G{self.cmake_generator}",
+                    ]
+                    build_args = [
+                        "cmake",
+                        "--build", str(build_dir),
+                        "--config", "RelWithDebInfo",
+                    ]
+                    install_args = [
+                        "cmake",
+                        "--install", str(build_dir),
+                        "--config", "RelWithDebInfo",
+                    ]
+                    self.executer.run(cmake_args)
+                    self.executer.run(build_args)
+                    self.executer.run(install_args)
+
+                    main_so_library = install_dir / "lib" / f"lib{self.project}.so"
+                    logger.debug("Expecting library %s", main_so_library)
+                    assert main_so_library.is_file(), "CMake should have built a shared library (e.g. libSDL3.so)"
+
+                    main_static_library = install_dir / "lib" / f"lib{self.project}.a"
+                    logger.debug("Expecting library %s", main_static_library)
+                    assert main_static_library.is_file(), "CMake should have built a static library (e.g. libSDL3.a)"
+
+                    test_library = install_dir / "lib" / f"lib{self.project}_test.a"
+                    logger.debug("Expecting library %s", test_library)
+                    assert test_library.is_file(), "CMake should have built a static test library (e.g. libSDL3_test.a)"
+
+                    java_jar = install_dir / f"share/java/{self.project}/{self.project}-{self.version}.jar"
+                    logger.debug("Expecting java archive: %s", java_jar)
+                    assert java_jar.is_file(), "CMake should have compiled the java sources and archived them into a JAR"
+
+                    javasources_jar = install_dir / f"share/java/{self.project}/{self.project}-{self.version}-sources.jar"
+                    logger.debug("Expecting java sources archive %s", javasources_jar)
+                    assert javasources_jar.is_file(), "CMake should have archived the java sources into a JAR"
+
+                    javadoc_dir = install_dir / "share/javadoc" / self.project
+                    logger.debug("Expecting javadoc archive %s", javadoc_dir)
+                    assert javadoc_dir.is_dir(), "CMake should have built javadoc documentation for the java sources"
+                    if not added_global_files:
+                        zip_object.write(java_jar, arcname="classes.jar")
+                        zip_object.write(javasources_jar, arcname="classes-sources.jar", )
+                        doc_jar_path = install_dir / "classes-doc.jar"
+
+                        javadoc_jar_args = ["jar", "--create", "--file", str(doc_jar_path)]
+                        for fn in javadoc_dir.iterdir():
+                            javadoc_jar_args.extend(["-C", str(javadoc_dir), fn.name])
+                        self.executer.run(javadoc_jar_args)
+                        zip_object.write(doc_jar_path, arcname="classes-doc.jar")
+
+                        for header in (install_dir / "include" / self.project).iterdir():
+                            zip_object.write(header, arcname=f"prefab/modules/{self.project}-shared/include/{self.project}/{header.name}")
+                            zip_object.write(header, arcname=f"prefab/modules/{self.project}-static/include/{self.project}/{header.name}")
+
+                        zip_object.writestr(f"prefab/modules/{self.project}-shared/module.json", self.get_prefab_module_json_text(library_name=self.project, extra_libs=[]))
+                        zip_object.writestr(f"prefab/modules/{self.project}-static/module.json", self.get_prefab_module_json_text(library_name=self.project, extra_libs=list(ANDROID_LIBRARIES)))
+                        zip_object.writestr(f"prefab/modules/{self.project}_test/module.json", self.get_prefab_module_json_text(library_name=f"{self.project}_test", extra_libs=list()))
+                        added_global_files = True
+
+                    zip_object.write(main_so_library, arcname=f"prefab/modules/{self.project}-shared/libs/android.{android_abi}/lib{self.project}.so")
+                    zip_object.writestr(f"prefab/modules/{self.project}-shared/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=True))
+                    zip_object.write(main_static_library, arcname=f"prefab/modules/{self.project}-static/libs/android.{android_abi}/lib{self.project}.a")
+                    zip_object.writestr(f"prefab/modules/{self.project}-static/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=False))
+                    zip_object.write(test_library, arcname=f"prefab/modules/{self.project}_test/libs/android.{android_abi}/lib{self.project}_test.a")
+                    zip_object.writestr(f"prefab/modules/{self.project}_test/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=False))
+
+        self.artifacts[f"android-prefab-aar"] = aar_path
+
     @classmethod
     def extract_sdl_version(cls, root: Path, project: str):
         with open(root / f"include/{project}/SDL_version.h", "r") as f:
@@ -523,10 +716,14 @@ def main(argv=None):
     parser.add_argument("--out", "-o", metavar="DIR", dest="dist_path", type=Path, default="dist", help="Output directory")
     parser.add_argument("--github", action="store_true", help="Script is running on a GitHub runner")
     parser.add_argument("--commit", default="HEAD", help="Git commit/tag of which a release should be created")
-    parser.add_argument("--project", required=True, help="Name of the project")
-    parser.add_argument("--create", choices=["source", "mingw", "win32", "xcframework"], required=True,action="append", dest="actions", help="SDL version")
+    parser.add_argument("--project", required=True, help="Name of the project (e.g. SDL3")
+    parser.add_argument("--create", choices=["source", "mingw", "win32", "xcframework", "android"], required=True, action="append", dest="actions", help="What to do")
     parser.set_defaults(loglevel=logging.INFO)
     parser.add_argument('--vs-year', dest="vs_year", help="Visual Studio year")
+    parser.add_argument('--android-api', type=int, dest="android_api", help="Android API version")
+    parser.add_argument('--android-home', dest="android_home", default=os.environ.get("ANDROID_HOME"), help="Android Home folder")
+    parser.add_argument('--android-ndk-home', dest="android_ndk_home", default=os.environ.get("ANDROID_NDK_HOME"), help="Android NDK Home folder")
+    parser.add_argument('--android-abis', dest="android_abis", nargs="*", choices=ANDROID_AVAILABLE_ABIS, default=list(ANDROID_AVAILABLE_ABIS), help="Android NDK Home folder")
     parser.add_argument('--cmake-generator', dest="cmake_generator", default="Ninja", help="CMake Generator")
     parser.add_argument('--debug', action='store_const', const=logging.DEBUG, dest="loglevel", help="Print script debug information")
     parser.add_argument('--dry-run', action='store_true', dest="dry", help="Don't execute anything")
@@ -581,14 +778,14 @@ def main(argv=None):
                 raise Exception("The git repo contains modified and/or non-committed files. Run with --force to ignore.")
 
     with section_printer.group("Arguments"):
-        print(f"project         = {args.project}")
-        print(f"version         = {releaser.version}")
-        print(f"commit          = {args.commit}")
-        print(f"out             = {args.dist_path}")
-        print(f"actions         = {args.actions}")
-        print(f"dry             = {args.dry}")
-        print(f"force           = {args.force}")
-        print(f"cmake_generator = {args.cmake_generator}")
+        print(f"project          = {args.project}")
+        print(f"version          = {releaser.version}")
+        print(f"commit           = {args.commit}")
+        print(f"out              = {args.dist_path}")
+        print(f"actions          = {args.actions}")
+        print(f"dry              = {args.dry}")
+        print(f"force            = {args.force}")
+        print(f"cmake_generator  = {args.cmake_generator}")
 
     releaser.prepare()
 
@@ -622,6 +819,31 @@ def main(argv=None):
 
     if "mingw" in args.actions:
         releaser.create_mingw_archives()
+
+    if "android" in args.actions:
+        if args.android_home is None or not Path(args.android_home).is_dir():
+            parser.error("Invalid $ANDROID_HOME or --android-home: must be a directory containing the Android SDK")
+        if args.android_ndk_home is None or not Path(args.android_ndk_home).is_dir():
+            parser.error("Invalid $ANDROID_NDK_HOME or --android_ndk_home: must be a directory containing the Android NDK")
+        if args.android_api is None:
+            with section_printer.group("Detect Android APIS"):
+                args.android_api = releaser.detect_android_api(android_home=args.android_home)
+        if args.android_api is None or not (Path(args.android_home) / f"platforms/android-{args.android_api}").is_dir():
+            parser.error("Invalid --android-api, and/or could not be detected")
+        if not args.android_abis:
+            parser.error("Need at least one Android ABI")
+        with section_printer.group("Android arguments"):
+            print(f"android_home     = {args.android_home}")
+            print(f"android_ndk_home = {args.android_ndk_home}")
+            print(f"android_api      = {args.android_api}")
+            print(f"android_abis     = {args.android_abis}")
+        releaser.create_android_archives(
+            android_api=args.android_api,
+            android_home=args.android_home,
+            android_ndk_home=args.android_ndk_home,
+            android_abis=args.android_abis,
+        )
+
 
     with section_printer.group("Summary"):
         print(f"artifacts = {releaser.artifacts}")
