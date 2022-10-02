@@ -176,7 +176,7 @@ SDL_SendPendingSignalEvents(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
     if (send_quit_pending) {
-        SDL_SendQuit();
+        SDL_SendQuit(SDL_WINDOWCLOSETRIGGER_SIGNAL);
         SDL_assert(!send_quit_pending);
     }
 
@@ -198,12 +198,21 @@ SDL_SendPendingSignalEvents(void)
 
 /* This function returns 1 if it's okay to close the application window */
 int
-SDL_SendQuit(void)
+SDL_SendQuit(int quitTrigger)
 {
+    int posted;
 #ifdef HAVE_SIGNAL_SUPPORT
     send_quit_pending = SDL_FALSE;
 #endif
-    return SDL_SendAppEvent(SDL_QUIT);
+
+    posted = 0;
+    if (SDL_GetEventState(SDL_QUIT) == SDL_ENABLE) {
+        SDL_Event event;
+        event.type = SDL_QUIT;
+        event.quit.quitTrigger = quitTrigger;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return (posted);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

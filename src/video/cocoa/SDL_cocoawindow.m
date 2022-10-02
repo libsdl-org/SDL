@@ -724,7 +724,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 
 - (BOOL)windowShouldClose:(id)sender
 {
-    SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
     return NO;
 }
 

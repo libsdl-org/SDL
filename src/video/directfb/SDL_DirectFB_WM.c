@@ -306,7 +306,7 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                 return 0;
             case WM_POS_CLOSE:
                 windata->wm_grab = WM_POS_NONE;
-                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_CLOSE, 0,
+                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE,
                                     0);
                 return 1;
             case WM_POS_MAX:

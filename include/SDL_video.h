@@ -149,6 +149,21 @@ typedef enum
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
 
 /**
+*  \brief Enumerates the possible triggers for the window close event
+*/
+typedef enum
+{
+    SDL_WINDOWCLOSETRIGGER_CLOSE,               /**< The default window close event. Available on all back-ends */
+    SDL_WINDOWCLOSETRIGGER_SIGNAL,              /**< Window has been closed by a signal event such as that triggered 
+                                                     by Ctrl+C from the launching terminal. Available on Unix-like 
+                                                     back-ends*/
+    SDL_WINDOWCLOSETRIGGER_KEYBOARD_SHORTCUT,   /**< Window has been closed with a keyboard shortcut such as Alt+F4. 
+                                                     Available with Windows and os2 back-ends*/
+    SDL_WINDOWCLOSETRIGGER_ERROR_STATE          /**< An error state has necessitated a window close. Available with 
+                                                     Wayland back-end*/
+} SDL_WindowCloseTrigger;
+
+/**
  *  \brief Event subtype for window events
  */
 typedef enum
@@ -178,6 +193,7 @@ typedef enum
     SDL_WINDOWEVENT_ICCPROF_CHANGED,/**< The ICC profile of the window's display has changed. */
     SDL_WINDOWEVENT_DISPLAY_CHANGED /**< Window has been moved to display data1. */
 } SDL_WindowEventID;
+
 
 /**
  *  \brief Event subtype for display events

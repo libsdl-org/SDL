@@ -1184,7 +1184,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
      * events other than SDL_QUIT and SDL_APP_TERMINATING should fire */
     SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
     /* Inject a SDL_QUIT event */
-    SDL_SendQuit();
+    SDL_SendQuit(SDL_WINDOWCLOSETRIGGER_CLOSE);
     SDL_SendAppEvent(SDL_APP_TERMINATING);
     /* Robustness: clear any pending Pause */
     while (SDL_SemTryWait(Android_PauseSem) == 0) {

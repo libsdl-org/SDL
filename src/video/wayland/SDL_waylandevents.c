@@ -437,7 +437,7 @@ Wayland_PumpEvents(_THIS)
             /* Only send a single quit message, as application shutdown might call
              * SDL_PumpEvents
              */
-            SDL_SendQuit();
+            SDL_SendQuit(SDL_WINDOWCLOSETRIGGER_ERROR_STATE);
         }
     }
 }

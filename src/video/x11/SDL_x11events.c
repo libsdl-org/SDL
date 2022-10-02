@@ -1276,7 +1276,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
                 printf("window %p: WM_DELETE_WINDOW\n", data);
 #endif
-                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
                 break;
             }
             else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&

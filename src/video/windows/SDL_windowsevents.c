@@ -955,7 +955,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED) {
                 /* ALT+F4: Close window */
                 if (code == SDL_SCANCODE_F4 && ShouldGenerateWindowCloseOnAltF4()) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_KEYBOARD_SHORTCUT, 0);
                 }
             }
 
@@ -1303,7 +1303,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_CLOSE:
         {
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
         }
         returnCode = 0;
         break;

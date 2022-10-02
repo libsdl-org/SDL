@@ -804,7 +804,7 @@ windowmanager_hints(void *data, struct qt_windowmanager *qt_windowmanager,
 static void
 windowmanager_quit(void *data, struct qt_windowmanager *qt_windowmanager)
 {
-    SDL_SendQuit();
+    SDL_SendQuit(SDL_WINDOWCLOSETRIGGER_ERROR_STATE);
 }
 
 static const struct qt_windowmanager_listener windowmanager_listener = {

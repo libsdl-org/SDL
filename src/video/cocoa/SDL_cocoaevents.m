@@ -68,7 +68,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
 // Override terminate to handle Quit and System Shutdown smoothly.
 - (void)terminate:(id)sender
 {
-    SDL_SendQuit();
+    SDL_SendQuit(SDL_WINDOWCLOSETRIGGER_CLOSE);
 }
 
 static SDL_bool s_bShouldHandleEventsInSDLApplication = SDL_FALSE;

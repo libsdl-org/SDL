@@ -685,7 +685,7 @@ static void
 handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
-    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
 }
 
 static const struct xdg_toplevel_listener toplevel_listener_xdg = {
@@ -708,7 +708,7 @@ static void
 handle_done_xdg_popup(void *data, struct xdg_popup *xdg_popup)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
-    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
 }
 
 static void
@@ -926,7 +926,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
 static void
 decoration_frame_close(struct libdecor_frame *frame, void *user_data)
 {
-    SDL_SendWindowEvent(((SDL_WindowData *)user_data)->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(((SDL_WindowData *)user_data)->sdlwindow, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
 }
 
 static void
@@ -962,7 +962,7 @@ static void
 handle_close(void *data, struct qt_extended_surface *qt_extended_surface)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
-    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
 }
 
 static const struct qt_extended_surface_listener extended_surface_listener = {

@@ -312,7 +312,7 @@ static VOID _wmChar(WINDATA *pWinData, MPARAM mp1, MPARAM mp2)
 
     if (((ulFlags & (KC_VIRTUALKEY | KC_KEYUP | KC_ALT)) == (KC_VIRTUALKEY | KC_ALT)) &&
         (ulVirtualKey == VK_F4)) {
-        SDL_SendWindowEvent(pWinData->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+        SDL_SendWindowEvent(pWinData->window, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_KEYBOARD_SHORTCUT, 0);
     }
 
     if ((ulFlags & KC_SCANCODE) != 0) {
@@ -564,7 +564,7 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (msg) {
     case WM_CLOSE:
     case WM_QUIT:
-        SDL_SendWindowEvent(pWinData->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+        SDL_SendWindowEvent(pWinData->window, SDL_WINDOWEVENT_CLOSE, SDL_WINDOWCLOSETRIGGER_CLOSE, 0);
         if (pWinData->fnUserWndProc == NULL)
             return (MRESULT)FALSE;
         break;
