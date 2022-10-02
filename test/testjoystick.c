@@ -198,19 +198,25 @@ loop(void *arg)
     }
 
     if (joystick) {
+        const int BUTTONS_PER_LINE = ((SCREEN_WIDTH - 4) / 34);
+        int x, y;
 
         /* Update visual joystick state */
         SDL_SetRenderDrawColor(screen, 0x00, 0xFF, 0x00, SDL_ALPHA_OPAQUE);
+        y = SCREEN_HEIGHT - ((((SDL_JoystickNumButtons(joystick) + (BUTTONS_PER_LINE - 1)) / BUTTONS_PER_LINE) + 1) * 34);
         for (i = 0; i < SDL_JoystickNumButtons(joystick); ++i) {
+            if ((i % BUTTONS_PER_LINE) == 0) {
+                y += 34;
+            }
             if (SDL_JoystickGetButton(joystick, i) == SDL_PRESSED) {
-                DrawRect(screen, (i%20) * 34, SCREEN_HEIGHT - 68 + (i/20) * 34, 32, 32);
+                x = 2 + (i % BUTTONS_PER_LINE) * 34;
+                DrawRect(screen, x, y, 32, 32);
             }
         }
 
         SDL_SetRenderDrawColor(screen, 0xFF, 0x00, 0x00, SDL_ALPHA_OPAQUE);
         for (i = 0; i < SDL_JoystickNumAxes(joystick); ++i) {
             /* Draw the X/Y axis */
-            int x, y;
             x = (((int) SDL_JoystickGetAxis(joystick, i)) + 32768);
             x *= SCREEN_WIDTH;
             x /= 65535;
@@ -239,8 +245,8 @@ loop(void *arg)
         SDL_SetRenderDrawColor(screen, 0x00, 0x00, 0xFF, SDL_ALPHA_OPAQUE);
         for (i = 0; i < SDL_JoystickNumHats(joystick); ++i) {
             /* Derive the new position */
-            int x = SCREEN_WIDTH/2;
-            int y = SCREEN_HEIGHT/2;
+            x = SCREEN_WIDTH/2;
+            y = SCREEN_HEIGHT/2;
             const Uint8 hat_pos = SDL_JoystickGetHat(joystick, i);
 
             if (hat_pos & SDL_HAT_UP) {
