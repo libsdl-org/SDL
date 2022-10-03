@@ -265,6 +265,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     if (SUCCEEDED(hr)) {
         char *name = NULL;
         SDL_JoystickGUID guid;
+        Uint16 bus = SDL_HARDWARE_BUS_USB;
         Uint16 vendor = 0;
         Uint16 product = 0;
         Uint16 version = 0;
@@ -315,6 +316,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             __x_ABI_CWindows_CGaming_CInput_CIFlightStick *flight_stick = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIGamepad *gamepad = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIRacingWheel *racing_wheel = NULL;
+            boolean wireless;
 
             if (wgi.gamepad_statics2 && SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2_FromGameController(wgi.gamepad_statics2, gamecontroller, &gamepad)) && gamepad) {
                 type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
@@ -329,11 +331,16 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 type = SDL_JOYSTICK_TYPE_WHEEL;
                 __x_ABI_CWindows_CGaming_CInput_CIRacingWheel_Release(racing_wheel);
             }
+
+            hr = __x_ABI_CWindows_CGaming_CInput_CIGameController_get_IsWireless(gamecontroller, &wireless);
+            if (SUCCEEDED(hr) && wireless) {
+                bus = SDL_HARDWARE_BUS_BLUETOOTH;
+            }
+
             __x_ABI_CWindows_CGaming_CInput_CIGameController_Release(gamecontroller);
         }
 
-        /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
-        guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, name, 'w', (Uint8)type);
+        guid = SDL_CreateJoystickGUID(bus, vendor, product, version, name, 'w', (Uint8) type);
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
