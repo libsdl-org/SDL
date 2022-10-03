@@ -891,3 +891,4 @@
 #define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL
 #define SDL_GameControllerGetSensorDataWithTimestamp SDL_GameControllerGetSensorDataWithTimestamp_REAL
 #define SDL_SensorGetDataWithTimestamp SDL_SensorGetDataWithTimestamp_REAL
+#define SDL_ResetHints SDL_ResetHints_REAL

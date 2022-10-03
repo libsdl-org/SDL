@@ -2424,6 +2424,19 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
 extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
+ * Reset all hints to the default values.
+ *
+ * This will reset all hints to the value of the associated environment variable, or NULL if the environment isn't set. Callbacks will be called normally with this change.
+ *
+ * \since This function is available since SDL 2.26.0.
+ *
+ * \sa SDL_GetHint
+ * \sa SDL_SetHint
+ * \sa SDL_ResetHint
+ */
+extern DECLSPEC void SDLCALL SDL_ResetHints(void);
+
+/**
  * Get the value of a hint.
  *
  * \param name the hint to query
@@ -2496,9 +2509,13 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
 /**
  * Clear all hints.
  *
- * This function is automatically called during SDL_Quit().
+ * This function is automatically called during SDL_Quit(), and deletes all callbacks without calling them and frees all memory associated with hints. If you're calling this from application code you probably want to call SDL_ResetHints() instead.
+ *
+ * This function will be removed from the API the next time we rev the ABI.
  *
  * \since This function is available since SDL 2.0.0.
+ *
+ * \sa SDL_ResetHints
  */
 extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 

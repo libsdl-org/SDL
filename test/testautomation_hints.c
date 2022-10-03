@@ -92,6 +92,11 @@ hints_getHint(void *arg)
   return TEST_COMPLETED;
 }
 
+static void SDLCALL hints_testHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+  *(char **)userdata = hint ? SDL_strdup(hint) : NULL;
+}
+
 /**
  * @brief Call to SDL_SetHint
  */
@@ -102,6 +107,7 @@ hints_setHint(void *arg)
   const char *originalValue;
   char *value;
   const char *testValue;
+  char *callbackValue;
   SDL_bool result;
   int i, j;
 
@@ -191,6 +197,51 @@ hints_setHint(void *arg)
     testValue && SDL_strcmp(testValue, "original") == 0,
     "testValue = %s, expected \"original\"",
     testValue);
+
+  /* Make sure callback functionality works past a reset */
+  SDLTest_AssertPass("Call to SDL_AddHintCallback()");
+  callbackValue = NULL;
+  SDL_AddHintCallback(testHint, hints_testHintChanged, &callbackValue);
+  SDLTest_AssertCheck(
+    callbackValue && SDL_strcmp(callbackValue, "original") == 0,
+    "callbackValue = %s, expected \"original\"",
+    callbackValue);
+  SDL_free(callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback");
+  callbackValue = NULL;
+  SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+  SDLTest_AssertCheck(
+      callbackValue && SDL_strcmp(callbackValue, "temp") == 0,
+      "callbackValue = %s, expected \"temp\"",
+      callbackValue);
+  SDL_free(callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_ResetHint(), using callback");
+  callbackValue = NULL;
+  SDL_ResetHint(testHint);
+  SDLTest_AssertCheck(
+    callbackValue && SDL_strcmp(callbackValue, "original") == 0,
+    "callbackValue = %s, expected \"original\"",
+    callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback after reset");
+  callbackValue = NULL;
+  SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+  SDLTest_AssertCheck(
+      callbackValue && SDL_strcmp(callbackValue, "temp") == 0,
+      "callbackValue = %s, expected \"temp\"",
+      callbackValue);
+  SDL_free(callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_ResetHint(), after clearing callback");
+  callbackValue = NULL;
+  SDL_DelHintCallback(testHint, hints_testHintChanged, &callbackValue);
+  SDL_ResetHint(testHint);
+  SDLTest_AssertCheck(
+    callbackValue == NULL,
+    "callbackValue = %s, expected \"(null)\"",
+    callbackValue);
 
   return TEST_COMPLETED;
 }
