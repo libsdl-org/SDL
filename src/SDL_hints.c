@@ -100,6 +100,7 @@ SDL_bool
 SDL_ResetHint(const char *name)
 {
     const char *env;
+    SDL_Hint *hint;
     SDL_HintWatch *entry;
 
     if (!name) {
@@ -132,6 +133,7 @@ void
 SDL_ResetHints(void)
 {
     const char *env;
+    SDL_Hint *hint;
     SDL_HintWatch *entry;
 
     for (hint = SDL_hints; hint; hint = hint->next) {
@@ -142,7 +144,7 @@ SDL_ResetHints(void)
             for (entry = hint->callbacks; entry; ) {
                 /* Save the next entry in case this one is deleted */
                 SDL_HintWatch *next = entry->next;
-                entry->callback(entry->userdata, name, hint->value, env);
+                entry->callback(entry->userdata, hint->name, hint->value, env);
                 entry = next;
             }
         }
