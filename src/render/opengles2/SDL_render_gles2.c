@@ -64,7 +64,7 @@ struct GLES2_FBOList
 
 typedef struct GLES2_TextureData
 {
-    GLenum texture;
+    GLuint texture;
     GLenum texture_type;
     GLenum pixel_format;
     GLenum pixel_type;
@@ -74,8 +74,8 @@ typedef struct GLES2_TextureData
     /* YUV texture support */
     SDL_bool yuv;
     SDL_bool nv12;
-    GLenum texture_v;
-    GLenum texture_u;
+    GLuint texture_v;
+    GLuint texture_u;
 #endif
     GLES2_FBOList *fbo;
 } GLES2_TextureData;
