@@ -522,7 +522,6 @@ WINDOWS_JoystickGetCount(void)
 static void
 WINDOWS_JoystickDetect(void)
 {
-    int device_index = 0;
     JoyStick_DeviceData *pCurList = NULL;
 
     /* only enum the devices if the joystick thread told us something changed */
@@ -570,7 +569,7 @@ WINDOWS_JoystickDetect(void)
         pCurList = pListNext;
     }
 
-    for (device_index = 0, pCurList = SYS_Joystick; pCurList; ++device_index, pCurList = pCurList->pNext) {
+    for (pCurList = SYS_Joystick; pCurList; pCurList = pCurList->pNext) {
         if (pCurList->send_add_event) {
             if (pCurList->bXInputDevice) {
 #if SDL_HAPTIC_XINPUT
