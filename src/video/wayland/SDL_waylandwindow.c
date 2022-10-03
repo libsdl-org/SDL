@@ -522,9 +522,17 @@ surface_damage_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
 
-    /* Set the damage region. */
-    wl_surface_damage(wind->surface, 0, 0,
-                      wind->window_width, wind->window_height);
+    /*
+     * wl_surface.damage_buffer is the preferred method of setting the damage region
+     * on compositor version 4 and above.
+     */
+    if (wl_compositor_get_version(wind->waylandData->compositor) >= 4) {
+        wl_surface_damage_buffer(wind->surface, 0, 0,
+                                 wind->drawable_width, wind->drawable_height);
+    } else {
+        wl_surface_damage(wind->surface, 0, 0,
+                          wind->window_width, wind->window_height);
+    }
 
     wl_callback_destroy(cb);
     wind->surface_damage_frame_callback = wl_surface_frame(wind->surface);

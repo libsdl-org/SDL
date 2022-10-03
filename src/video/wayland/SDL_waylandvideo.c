@@ -849,7 +849,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     /*printf("WAYLAND INTERFACE: %s\n", interface);*/
 
     if (SDL_strcmp(interface, "wl_compositor") == 0) {
-        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(3, version));
+        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(4, version));
     } else if (SDL_strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id);
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
