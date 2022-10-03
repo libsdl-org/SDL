@@ -141,10 +141,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     NSString *screenname = nibNameOrNil;
     NSBundle *bundle = nibBundleOrNil;
-    BOOL atleastiOS8 = UIKit_IsSystemVersionAtLeast(8.0);
 
-    /* Launch screens were added in iOS 8. Otherwise we use launch images. */
-    if (screenname && atleastiOS8) {
+    /* A launch screen may not exist. Fall back to launch images in that case. */
+    if (screenname) {
         @try {
             self.view = [bundle loadNibNamed:screenname owner:self options:nil][0];
         }
@@ -241,9 +240,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
             UIImageOrientation imageorient = UIImageOrientationUp;
 
 #if !TARGET_OS_TV
-            /* Bugs observed / workaround tested in iOS 8.3, 7.1, and 6.1. */
+            /* Bugs observed / workaround tested in iOS 8.3. */
             if (UIInterfaceOrientationIsLandscape(curorient)) {
-                if (atleastiOS8 && image.size.width < image.size.height) {
+                if (image.size.width < image.size.height) {
                     /* On iOS 8, portrait launch images displayed in forced-
                      * landscape mode (e.g. a standard Default.png on an iPhone
                      * when Info.plist only supports landscape orientations) need
@@ -252,15 +251,6 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                         imageorient = UIImageOrientationRight;
                     } else if (curorient == UIInterfaceOrientationLandscapeRight) {
                         imageorient = UIImageOrientationLeft;
-                    }
-                } else if (!atleastiOS8 && image.size.width > image.size.height) {
-                    /* On iOS 7 and below, landscape launch images displayed in
-                     * landscape mode (e.g. landscape iPad launch images) need
-                     * to be rotated to display in the expected orientation. */
-                    if (curorient == UIInterfaceOrientationLandscapeLeft) {
-                        imageorient = UIImageOrientationLeft;
-                    } else if (curorient == UIInterfaceOrientationLandscapeRight) {
-                        imageorient = UIImageOrientationRight;
                     }
                 }
             }
@@ -378,7 +368,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 #if !TARGET_OS_TV
     screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
 
-    if (screenname && UIKit_IsSystemVersionAtLeast(8.0)) {
+    if (screenname) {
         @try {
             /* The launch storyboard is actually a nib in some older versions of
              * Xcode. We'll try to load it as a storyboard first, as it's more

@@ -286,10 +286,7 @@ UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
             [UIApplication sharedApplication].statusBarHidden = NO;
         }
 
-        /* iOS 7+ won't update the status bar until we tell it to. */
-        if ([viewcontroller respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
-            [viewcontroller setNeedsStatusBarAppearanceUpdate];
-        }
+        [viewcontroller setNeedsStatusBarAppearanceUpdate];
     }
 
     /* Update the view's frame to account for the status bar change. */
@@ -427,7 +424,7 @@ UIKit_GetSupportedOrientations(SDL_Window * window)
          * us, we get the orientations from Info.plist via UIApplication. */
         if ([app.delegate respondsToSelector:@selector(application:supportedInterfaceOrientationsForWindow:)]) {
             validOrientations = [app.delegate application:app supportedInterfaceOrientationsForWindow:data.uiwindow];
-        } else if ([app respondsToSelector:@selector(supportedInterfaceOrientationsForWindow:)]) {
+        } else {
             validOrientations = [app supportedInterfaceOrientationsForWindow:data.uiwindow];
         }
 

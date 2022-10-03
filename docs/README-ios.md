@@ -293,7 +293,7 @@ e.g.
 Deploying to older versions of iOS
 ==============================================================================
 
-SDL supports deploying to older versions of iOS than are supported by the latest version of Xcode, all the way back to iOS 6.1
+SDL supports deploying to older versions of iOS than are supported by the latest version of Xcode, all the way back to iOS 8.0
 
 In order to do that you need to download an older version of Xcode:
 https://developer.apple.com/download/more/?name=Xcode
