@@ -204,13 +204,6 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     return UIKit_GetSupportedOrientations(window);
 }
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient
-{
-    return ([self supportedInterfaceOrientations] & (1 << orient)) != 0;
-}
-#endif
-
 - (BOOL)prefersStatusBarHidden
 {
     BOOL hidden = (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0;
@@ -334,8 +327,6 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     }
 }
 
-/* willRotateToInterfaceOrientation and didRotateFromInterfaceOrientation are deprecated in iOS 8+ in favor of viewWillTransitionToSize */
-#if TARGET_OS_TV || __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
@@ -345,17 +336,6 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
         self->rotatingOrientation = NO;
     }];
 }
-#else
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    rotatingOrientation = YES;
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-    rotatingOrientation = NO;
-}
-#endif /* TARGET_OS_TV || __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000 */
 
 - (void)deinitKeyboard
 {

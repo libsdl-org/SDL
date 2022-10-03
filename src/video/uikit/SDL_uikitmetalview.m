@@ -87,11 +87,7 @@ UIKit_Metal_CreateView(_THIS, SDL_Window * window)
          * dimensions of the screen rather than the dimensions in points
          * yielding high resolution on retine displays.
          */
-        if ([data.uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
-            scale = data.uiwindow.screen.nativeScale;
-        } else {
-            scale = data.uiwindow.screen.scale;
-        }
+        scale = data.uiwindow.screen.nativeScale;
     }
 
     metalview = [[SDL_uikitmetalview alloc] initWithFrame:data.uiwindow.bounds
