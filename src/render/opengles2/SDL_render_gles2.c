@@ -2024,6 +2024,23 @@ static int GLES2_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, flo
     GLES2_TextureData *texturedata = (GLES2_TextureData *)texture->driverdata;
     GLES2_ActivateRenderer(renderer);
 
+#if SDL_HAVE_YUV
+    if (texturedata->yuv) {
+        data->glActiveTexture(GL_TEXTURE2);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_v);
+
+        data->glActiveTexture(GL_TEXTURE1);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
+
+        data->glActiveTexture(GL_TEXTURE0);
+    } else if (texturedata->nv12) {
+        data->glActiveTexture(GL_TEXTURE1);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
+
+        data->glActiveTexture(GL_TEXTURE0);
+    }
+#endif
+
     data->glBindTexture(texturedata->texture_type, texturedata->texture);
     data->drawstate.texture = texture;
 
