@@ -164,7 +164,7 @@ SDL_Delay(Uint32 ms)
     HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
     if (timer) {
         LARGE_INTEGER due_time;
-        due_time.QuadPart = -(LONGLONG)(ms * 10000);
+        due_time.QuadPart = -(ms * 10000LL);
         if (SetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
             WaitForSingleObject(timer, INFINITE);
         }
