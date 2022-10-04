@@ -1239,7 +1239,7 @@ SDL_SetWindowDisplayMode(SDL_Window * window, const SDL_DisplayMode * mode)
         SDL_DisplayMode fullscreen_mode;
         if (SDL_GetWindowDisplayMode(window, &fullscreen_mode) == 0) {
             if (SDL_SetDisplayModeForDisplay(SDL_GetDisplayForWindow(window), &fullscreen_mode) == 0) {
-#ifndef ANDROID
+#ifndef __ANDROID__
                 /* Android may not resize the window to exactly what our fullscreen mode is, especially on
                  * windowed Android environments like the Chromebook or Samsung DeX.  Given this, we shouldn't
                  * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
@@ -1453,7 +1453,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 
                 /* Generate a mode change event here */
                 if (resized) {
-#if !defined(ANDROID) && !defined(WIN32)
+#if !defined(__ANDROID__) && !defined(__WIN32__)
                     /* Android may not resize the window to exactly what our fullscreen mode is, especially on
                      * windowed Android environments like the Chromebook or Samsung DeX.  Given this, we shouldn't
                      * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
@@ -2637,16 +2637,16 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 
-        #if defined(__WIN32__) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
+#if defined(__WIN32__) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
         else if ((_this->CreateWindowFramebuffer != NULL) && (SDL_strcmp(_this->name, "windows") == 0)) {
             attempt_texture_framebuffer = SDL_FALSE;
         }
-        #endif
-        #if defined(__EMSCRIPTEN__)
+#endif
+#if defined(__EMSCRIPTEN__)
         else {
             attempt_texture_framebuffer = SDL_FALSE;
         }
-        #endif
+#endif
 
         if (attempt_texture_framebuffer) {
             if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) == -1) {
