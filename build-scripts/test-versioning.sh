@@ -34,6 +34,17 @@ else
     not_ok "configure.ac $version disagrees with SDL_version.h $ref_version"
 fi
 
+major=$(sed -ne 's/^SDL_MAJOR_VERSION=//p' configure)
+minor=$(sed -ne 's/^SDL_MINOR_VERSION=//p' configure)
+micro=$(sed -ne 's/^SDL_MICRO_VERSION=//p' configure)
+version="${major}.${minor}.${micro}"
+
+if [ "$ref_version" = "$version" ]; then
+    ok "configure $version"
+else
+    not_ok "configure $version disagrees with SDL_version.h $ref_version"
+fi
+
 major=$(sed -ne 's/^set(SDL_MAJOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
 minor=$(sed -ne 's/^set(SDL_MINOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
 micro=$(sed -ne 's/^set(SDL_MICRO_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
@@ -119,13 +130,25 @@ fi
 
 # For simplicity this assumes we'll never break ABI before SDL 3.
 dylib_compat=$(sed -Ene 's/.*DYLIB_COMPATIBILITY_VERSION = (.*);$/\1/p' Xcode/SDL/SDL.xcodeproj/project.pbxproj)
-ref='1.0.0
-1.0.0'
+
+case "$ref_minor" in
+    (*[02468])
+        major="$(( ref_minor * 100 + 1 ))"
+        minor="0"
+        ;;
+    (*)
+        major="$(( ref_minor * 100 + ref_micro + 1 ))"
+        minor="0"
+        ;;
+esac
+
+ref="${major}.${minor}.0
+${major}.${minor}.0"
 
 if [ "$ref" = "$dylib_compat" ]; then
     ok "project.pbxproj DYLIB_COMPATIBILITY_VERSION is consistent"
 else
-    not_ok "project.pbxproj DYLIB_COMPATIBILITY_VERSION is inconsistent"
+    not_ok "project.pbxproj DYLIB_COMPATIBILITY_VERSION is inconsistent, expected $ref, got $dylib_compat"
 fi
 
 dylib_cur=$(sed -Ene 's/.*DYLIB_CURRENT_VERSION = (.*);$/\1/p' Xcode/SDL/SDL.xcodeproj/project.pbxproj)
@@ -147,7 +170,7 @@ ${major}.${minor}.0"
 if [ "$ref" = "$dylib_cur" ]; then
     ok "project.pbxproj DYLIB_CURRENT_VERSION is consistent"
 else
-    not_ok "project.pbxproj DYLIB_CURRENT_VERSION is inconsistent"
+    not_ok "project.pbxproj DYLIB_CURRENT_VERSION is inconsistent, expected $ref, got $dylib_cur"
 fi
 
 echo "1..$tests"
