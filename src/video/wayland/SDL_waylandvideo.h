@@ -95,6 +95,7 @@ typedef struct {
     char *classname;
 
     int relative_mouse_mode;
+    SDL_bool egl_transparency_enabled;
 } SDL_VideoData;
 
 struct SDL_WaylandOutputData {

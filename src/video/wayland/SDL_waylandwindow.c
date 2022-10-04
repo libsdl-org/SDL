@@ -32,6 +32,7 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandtouch.h"
 #include "SDL_hints.h"
+#include "../../SDL_hints_c.h"
 #include "SDL_events.h"
 
 #include "xdg-shell-client-protocol.h"
@@ -45,12 +46,6 @@
 #endif
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
-
-SDL_FORCE_INLINE SDL_bool
-EGLTransparencyEnabled()
-{
-    return SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, SDL_FALSE);
-}
 
 SDL_FORCE_INLINE SDL_bool
 FloatEqual(float a, float b)
@@ -296,7 +291,7 @@ ConfigureWindowGeometry(SDL_Window *window)
      * if the output size has changed.
      */
     if (window_size_changed) {
-        if (!EGLTransparencyEnabled()) {
+        if (!viddata->egl_transparency_enabled) {
             region = wl_compositor_create_region(viddata->compositor);
             wl_region_add(region, 0, 0,
                           data->window_width, data->window_height);
@@ -2308,6 +2303,48 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
         WAYLAND_wl_display_flush(data->display);
     }
     window->driverdata = NULL;
+}
+
+static void
+EGLTransparencyChangedCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    const SDL_bool oldval = SDL_GetStringBoolean(oldValue, SDL_FALSE);
+    const SDL_bool newval = SDL_GetStringBoolean(newValue, SDL_FALSE);
+
+    if (oldval != newval) {
+        SDL_Window      *window;
+        SDL_VideoData   *viddata = (SDL_VideoData *) userdata;
+        SDL_VideoDevice *dev     = SDL_GetVideoDevice();
+
+        viddata->egl_transparency_enabled = newval;
+
+        /* Iterate over all windows and update the surface opaque regions */
+        for (window = dev->windows; window != NULL; window = window->next) {
+            SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
+            
+            if (!newval) {
+                struct wl_region *region = wl_compositor_create_region(wind->waylandData->compositor);
+                wl_region_add(region, 0, 0, wind->window_width, wind->window_height);
+                wl_surface_set_opaque_region(wind->surface, region);
+                wl_region_destroy(region);
+            } else {
+                wl_surface_set_opaque_region(wind->surface, NULL);
+            }
+        }
+    }
+}
+
+void
+Wayland_InitWin(SDL_VideoData *data)
+{
+    data->egl_transparency_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, SDL_FALSE);
+    SDL_AddHintCallback(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, EGLTransparencyChangedCallback, data);
+}
+
+void
+Wayland_QuitWin(SDL_VideoData *data)
+{
+    SDL_DelHintCallback(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, EGLTransparencyChangedCallback, data);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
