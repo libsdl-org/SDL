@@ -2000,10 +2000,7 @@ class SDLInputConnection extends BaseInputConnection {
 
     public static native void nativeCommitText(String text, int newCursorPosition);
 
-    public native void nativeGenerateScancodeForUnichar(char c);
-
-    public native void nativeSetComposingText(String text, int newCursorPosition);
-
+    public static native void nativeGenerateScancodeForUnichar(char c);
 }
 
 class SDLClipboardHandler implements

@@ -212,14 +212,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
         JNIEnv *env, jclass cls,
         jchar chUnicode);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-        JNIEnv *env, jclass cls,
-        jstring text, jint newCursorPosition);
-
 static JNINativeMethod SDLInputConnection_tab[] = {
     { "nativeCommitText",                   "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText) },
-    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) },
-    { "nativeSetComposingText",             "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText) }
+    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) }
 };
 
 /* Java class SDLAudioManager */
@@ -1284,17 +1279,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
                                     jchar chUnicode)
 {
     SDL_SendKeyboardUnicodeKey(chUnicode);
-}
-
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-                                    JNIEnv *env, jclass cls,
-                                    jstring text, jint newCursorPosition)
-{
-    const char *utftext = (*env)->GetStringUTFChars(env, text, NULL);
-
-    SDL_SendEditingText(utftext, 0, 0);
-
-    (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
 
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
