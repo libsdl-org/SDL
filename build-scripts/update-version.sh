@@ -58,6 +58,10 @@ perl -w -pi -e 's/\A(set\(SDL_MAJOR_VERSION\s+)\d+/${1}'$MAJOR'/;' CMakeLists.tx
 perl -w -pi -e 's/\A(set\(SDL_MINOR_VERSION\s+)\d+/${1}'$MINOR'/;' CMakeLists.txt
 perl -w -pi -e 's/\A(set\(SDL_MICRO_VERSION\s+)\d+/${1}'$PATCH'/;' CMakeLists.txt
 
+perl -w -pi -e 's/\A(.* SDL_MAJOR_VERSION = )\d+/${1}'$MAJOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+perl -w -pi -e 's/\A(.* SDL_MINOR_VERSION = )\d+/${1}'$MINOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+perl -w -pi -e 's/\A(.* SDL_MICRO_VERSION = )\d+/${1}'$PATCH'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+
 perl -w -pi -e 's/\A(MAJOR_VERSION\s*=\s*)\d+/${1}'$MAJOR'/;' Makefile.os2
 perl -w -pi -e 's/\A(MINOR_VERSION\s*=\s*)\d+/${1}'$MINOR'/;' Makefile.os2
 perl -w -pi -e 's/\A(MICRO_VERSION\s*=\s*)\d+/${1}'$PATCH'/;' Makefile.os2

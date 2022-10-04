@@ -56,6 +56,17 @@ else
     not_ok "CMakeLists.txt $version disagrees with SDL_version.h $ref_version"
 fi
 
+major=$(sed -ne 's/.*SDL_MAJOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
+minor=$(sed -ne 's/.*SDL_MINOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
+micro=$(sed -ne 's/.*SDL_MICRO_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
+version="${major}.${minor}.${micro}"
+
+if [ "$ref_version" = "$version" ]; then
+    ok "SDLActivity.java $version"
+else
+    not_ok "android-project/app/src/main/java/org/libsdl/app/SDLActivity.java $version disagrees with SDL_version.h $ref_version"
+fi
+
 major=$(sed -ne 's/^MAJOR_VERSION *= *//p' Makefile.os2)
 minor=$(sed -ne 's/^MINOR_VERSION *= *//p' Makefile.os2)
 micro=$(sed -ne 's/^MICRO_VERSION *= *//p' Makefile.os2)
