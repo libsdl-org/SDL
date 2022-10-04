@@ -32,12 +32,6 @@
 
 struct SDL_WaylandInput;
 
-/* TODO: Remove these helpers, they're from before we had shell_surface_type */
-#define WINDOW_IS_XDG_POPUP(window) \
-    (((SDL_WindowData*) window->driverdata)->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)
-#define WINDOW_IS_LIBDECOR(ignoreme, window) \
-    (((SDL_WindowData*) window->driverdata)->shell_surface_type == WAYLAND_SURFACE_LIBDECOR)
-
 typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;

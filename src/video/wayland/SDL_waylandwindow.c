@@ -313,7 +313,7 @@ SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
     int min_width, min_height, max_width, max_height;
 
     /* Pop-ups don't get to change size */
-    if (WINDOW_IS_XDG_POPUP(window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         /* ... but we still want to commit, particularly for ShowWindow */
         if (commit) {
             wl_surface_commit(wind->surface);
@@ -339,7 +339,7 @@ SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
     }
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
@@ -381,7 +381,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
     SDL_VideoData *viddata = wind->waylandData;
 
     /* Pop-ups don't get to be fullscreened */
-    if (WINDOW_IS_XDG_POPUP(window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         /* ... but we still want to commit, particularly for ShowWindow */
         wl_surface_commit(wind->surface);
         return;
@@ -393,7 +393,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
     SetMinMaxDimensions(window, SDL_FALSE);
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
@@ -498,7 +498,7 @@ CommitWindowGeometry(SDL_Window *window)
     SDL_VideoData *viddata = (SDL_VideoData *) wind->waylandData;
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(data, window) && wind->shell_surface.libdecor.frame) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && wind->shell_surface.libdecor.frame) {
         struct libdecor_state *state = libdecor_state_new(wind->window_width, wind->window_height);
         libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
         libdecor_state_free(state);
@@ -1208,7 +1208,7 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
         info->info.wl.egl_window = data->egl_window;
 
 #ifdef HAVE_LIBDECOR_H
-        if (WINDOW_IS_LIBDECOR(viddata, window)) {
+        if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
             if (data->shell_surface.libdecor.frame != NULL) {
                 info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
                 if (version >= SDL_VERSIONNUM(2, 0, 17)) {
@@ -1227,7 +1227,7 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
         if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
             info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
             if (version >= SDL_VERSIONNUM(2, 0, 17)) {
-                SDL_bool popup = WINDOW_IS_XDG_POPUP(window);
+                SDL_bool popup = data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP;
                 info->info.wl.xdg_toplevel = popup ? NULL : data->shell_surface.xdg.roleobj.toplevel;
                 if (version >= SDL_VERSIONNUM(2, 0, 22)) {
                     if (popup) {
@@ -1266,7 +1266,7 @@ Wayland_SetWindowModalFor(_THIS, SDL_Window *modal_window, SDL_Window *parent_wi
     SDL_WindowData *modal_data = modal_window->driverdata;
     SDL_WindowData *parent_data = parent_window->driverdata;
 
-    if (WINDOW_IS_XDG_POPUP(modal_window) || WINDOW_IS_XDG_POPUP(parent_window)) {
+    if (modal_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP || parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return SDL_SetError("Modal/Parent was a popup, not a toplevel");
     }
 
@@ -1323,7 +1323,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 
     /* Create the shell surface and map the toplevel/popup */
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(c, window)) {
+    if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (data->shell_surface.libdecor.frame) {
             /* If the frame already exists, just set the visibility. */
             libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, true);
@@ -1347,7 +1347,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         xdg_surface_set_user_data(data->shell_surface.xdg.surface, data);
         xdg_surface_add_listener(data->shell_surface.xdg.surface, &shell_surface_listener_xdg, data);
 
-        if (WINDOW_IS_XDG_POPUP(window)) {
+        if (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
             SDL_Mouse *mouse = SDL_GetMouse();
             SDL_Window *focused = SDL_GetMouseFocus();
             SDL_WindowData *focuseddata = focused->driverdata;
@@ -1355,7 +1355,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
             /* This popup may be a child of another popup! */
             data->shell_surface.xdg.roleobj.popup.parentID = SDL_GetWindowID(focused);
             data->shell_surface.xdg.roleobj.popup.child = NULL;
-            if (WINDOW_IS_XDG_POPUP(focused)) {
+            if (focuseddata->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
                 SDL_assert(focuseddata->shell_surface.xdg.roleobj.popup.child == NULL);
                 focuseddata->shell_surface.xdg.roleobj.popup.child = window;
             }
@@ -1398,7 +1398,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * this surface will fail. This is a new rule for xdg_shell.
      */
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(c, window)) {
+    if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (data->shell_surface.libdecor.frame) {
             while (!data->shell_surface.libdecor.initial_configure_seen) {
                 WAYLAND_wl_display_flush(c->display);
@@ -1421,7 +1421,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
         }
 
         /* Create the window decorations */
-        if (!WINDOW_IS_XDG_POPUP(window) && data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
+        if (data->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP && data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
             data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
             zxdg_toplevel_decoration_v1_add_listener(data->server_decoration,
                                                      &decoration_listener,
@@ -1437,7 +1437,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * them immediately afterward.
      */
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(c, window)) {
+    if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         /* ... but don't call it redundantly for libdecor, the decorator
          * may not interpret a redundant call nicely and cause weird stuff to happen
          */
@@ -1524,7 +1524,7 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
     wl_surface_commit(wind->surface);
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(data, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame) {
             libdecor_frame_set_visibility(wind->shell_surface.libdecor.frame, false);
             libdecor_frame_set_app_id(wind->shell_surface.libdecor.frame, data->classname);
@@ -1532,7 +1532,7 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
     } else
 #endif
     if (data->shell.xdg) {
-        if (WINDOW_IS_XDG_POPUP(window)) {
+        if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
             Wayland_ReleasePopup(_this, window);
         } else if (wind->shell_surface.xdg.roleobj.toplevel) {
             xdg_toplevel_destroy(wind->shell_surface.xdg.roleobj.toplevel);
@@ -1781,7 +1781,7 @@ Wayland_RestoreWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
 
-    if (WINDOW_IS_XDG_POPUP(window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
     }
 
@@ -1791,7 +1791,7 @@ Wayland_RestoreWindow(_THIS, SDL_Window * window)
     window->flags &= ~SDL_WINDOW_MAXIMIZED;
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
@@ -1815,12 +1815,12 @@ Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
     SDL_WindowData *wind = window->driverdata;
     const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
 
-    if (WINDOW_IS_XDG_POPUP(window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
     }
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame) {
             libdecor_frame_set_visibility(wind->shell_surface.libdecor.frame, bordered);
         }
@@ -1838,7 +1838,7 @@ Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 #ifdef HAVE_LIBDECOR_H
     const SDL_WindowData *wind = window->driverdata;
 
-    if (WINDOW_IS_LIBDECOR(data, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
@@ -1860,7 +1860,7 @@ Wayland_MaximizeWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
 
-    if (WINDOW_IS_XDG_POPUP(window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
     }
 
@@ -1874,7 +1874,7 @@ Wayland_MaximizeWindow(_THIS, SDL_Window * window)
     window->flags |= SDL_WINDOW_MAXIMIZED;
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
@@ -1897,12 +1897,12 @@ Wayland_MinimizeWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
 
-    if (WINDOW_IS_XDG_POPUP(window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
     }
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
@@ -2130,7 +2130,7 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
      * Can be removed once SDL's resize logic becomes compliant. */
     if (
 #ifdef HAVE_LIBDECOR_H
-        !WINDOW_IS_LIBDECOR(viddata, window) &&
+        data->shell_surface_type != WAYLAND_SURFACE_LIBDECOR &&
 #endif
         viddata->shell.xdg &&
         data->shell_surface.xdg.surface) {
@@ -2157,7 +2157,7 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
 
 #ifdef HAVE_LIBDECOR_H
     /* we must not resize the window while we have a static (non-floating) size */
-    if (WINDOW_IS_LIBDECOR(data, window) &&
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR &&
         wind->shell_surface.libdecor.frame &&
         !libdecor_frame_is_floating(wind->shell_surface.libdecor.frame)) {
             /* Commit the resize when we re-enter floating state */
@@ -2191,12 +2191,12 @@ void Wayland_SetWindowTitle(_THIS, SDL_Window * window)
     SDL_VideoData *viddata = _this->driverdata;
     const char *title = window->title ? window->title : "";
 
-    if (WINDOW_IS_XDG_POPUP(window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
     }
 
 #ifdef HAVE_LIBDECOR_H
-    if (WINDOW_IS_LIBDECOR(viddata, window)) {
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame == NULL) {
             return; /* Can't do anything yet, wait for ShowWindow */
         }
