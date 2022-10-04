@@ -22773,6 +22773,41 @@ printf "%s\n" "$have_clang_objc_arc" >&6; }
     fi
 }
 
+CheckGDwarf4()
+{
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -gdwarf-4 option" >&5
+printf %s "checking for GCC -gdwarf-4 option... " >&6; }
+    have_gcc_gdwarf4=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -gdwarf-4"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    int x = 0;
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_gcc_gdwarf4=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_gdwarf4" >&5
+printf "%s\n" "$have_gcc_gdwarf4" >&6; }
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_gdwarf4 = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -gdwarf-4"
+    fi
+}
+
 CheckVisibilityHidden()
 {
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -fvisibility=hidden option" >&5
@@ -28503,6 +28538,7 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
         if test x$enable_loadso = xyes; then
             have_loadso=yes
         fi
+        CheckGDwarf4
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
