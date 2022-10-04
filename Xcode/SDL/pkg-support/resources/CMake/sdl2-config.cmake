@@ -58,10 +58,12 @@ if(NOT TARGET SDL2::SDL2)
             COMPATIBLE_INTERFACE_BOOL "SDL2_SHARED"
             INTERFACE_SDL2_SHARED "ON"
     )
-    set(SDL2_SDL2_FOUND TRUE)
 endif()
+set(SDL2_SDL2_FOUND TRUE)
 
-add_library(SDL2::SDL2main INTERFACE IMPORTED)
+if(NOT TARGET SDL2::SDL2main)
+    add_library(SDL2::SDL2main INTERFACE IMPORTED)
+endif()
 set(SDL2_SDL2main_FOUND TRUE)
 
 check_required_components(SDL2)
