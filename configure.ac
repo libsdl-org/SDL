@@ -1515,6 +1515,26 @@ CheckObjectiveCARC()
     fi
 }
 
+dnl See if GCC's -gdwarf-4 is supported
+dnl See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101377 for why this is needed on Windows
+CheckGDwarf4()
+{
+    AC_MSG_CHECKING(for GCC -gdwarf-4 option)
+    have_gcc_gdwarf4=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -gdwarf-4"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    int x = 0;
+    ]],[])], [have_gcc_gdwarf4=yes],[])
+    AC_MSG_RESULT($have_gcc_gdwarf4)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_gdwarf4 = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -gdwarf-4"
+    fi
+}
+
 dnl See if GCC's -fvisibility=hidden is supported (gcc4 and later, usually).
 dnl  Details of this flag are here: http://gcc.gnu.org/wiki/Visibility
 CheckVisibilityHidden()
@@ -3968,6 +3988,7 @@ case "$host" in
         if test x$enable_loadso = xyes; then
             have_loadso=yes
         fi
+        CheckGDwarf4
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
