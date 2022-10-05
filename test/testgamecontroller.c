@@ -86,7 +86,7 @@ static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
 static int trigger_effect = 0;
-static SDL_Texture *background_front, *background_back, *button, *axis;
+static SDL_Texture *background_front, *background_back, *button_texture, *axis_texture;
 static SDL_GameController *gamecontroller;
 static SDL_GameController **gamecontrollers;
 static int num_controllers = 0;
@@ -696,7 +696,7 @@ loop(void *arg)
                     dst.y = button_positions[i].y;
                     dst.w = BUTTON_SIZE;
                     dst.h = BUTTON_SIZE;
-                    SDL_RenderCopyEx(screen, button, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyEx(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
                 }
             }
         }
@@ -712,7 +712,7 @@ loop(void *arg)
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 } else if (value > deadzone) {
                     const double angle = axis_positions[i].angle + 180.0;
                     SDL_Rect dst;
@@ -720,7 +720,7 @@ loop(void *arg)
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 }
             }
         }
@@ -910,16 +910,16 @@ main(int argc, char *argv[])
 
     background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE, NULL, NULL);
     background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE, NULL, NULL);
-    button = LoadTexture(screen, "button.bmp", SDL_TRUE, NULL, NULL);
-    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE, NULL, NULL);
+    button_texture = LoadTexture(screen, "button.bmp", SDL_TRUE, NULL, NULL);
+    axis_texture = LoadTexture(screen, "axis.bmp", SDL_TRUE, NULL, NULL);
 
-    if (!background_front || !background_back || !button || !axis) {
+    if (!background_front || !background_back || !button_texture || !axis_texture) {
         SDL_DestroyRenderer(screen);
         SDL_DestroyWindow(window);
         return 2;
     }
-    SDL_SetTextureColorMod(button, 10, 255, 21);
-    SDL_SetTextureColorMod(axis, 10, 255, 21);
+    SDL_SetTextureColorMod(button_texture, 10, 255, 21);
+    SDL_SetTextureColorMod(axis_texture, 10, 255, 21);
 
     /* !!! FIXME: */
     /*SDL_RenderSetLogicalSize(screen, background->w, background->h);*/
