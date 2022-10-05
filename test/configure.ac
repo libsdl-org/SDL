@@ -184,6 +184,42 @@ if test x$have_opengl = xyes; then
     OPENGL_TARGETS="TARGETS"
 fi
 
+AC_MSG_CHECKING(for GCC -Wformat)
+have_wformat=no
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS -Wformat"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[int x = 0;]],[])],
+    [have_wformat=yes], [])
+AC_MSG_RESULT($have_wformat)
+CFLAGS="$save_CFLAGS"
+if test x$have_wformat = xyes; then
+    CFLAGS="$CFLAGS -DHAVE_WFORMAT"
+fi
+
+AC_MSG_CHECKING(for GCC -Wformat-overflow)
+have_wformat_overflow=no
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS -Wformat-overflow"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[int x = 0;]],[])],
+    [have_wformat_overflow=yes], [])
+AC_MSG_RESULT($have_wformat_overflow)
+CFLAGS="$save_CFLAGS"
+if test x$have_wformat_overflow = xyes; then
+    CFLAGS="$CFLAGS -DHAVE_WFORMAT_OVERFLOW"
+fi
+
+AC_MSG_CHECKING(for GCC -Wformat-extra-args)
+have_wformat_extra_args=no
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS -Wformat-extra-args"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[int x = 0;]],[])],
+    [have_wformat_extra_args=yes], [])
+AC_MSG_RESULT($have_wformat_extra_args)
+CFLAGS="$save_CFLAGS"
+if test x$have_wformat_extra_args = xyes; then
+    CFLAGS="$CFLAGS -DHAVE_WFORMAT_EXTRA_ARGS"
+fi
+
 AC_ARG_ENABLE(werror,
 [AS_HELP_STRING([--enable-werror], [treat warnings as errors [default=no]])],
               enable_werror=$enableval, enable_werror=no)

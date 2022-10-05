@@ -160,6 +160,25 @@ add_executable(controllermap controllermap.c testutils.c)
 add_executable(testvulkan testvulkan.c)
 add_executable(testoffscreen testoffscreen.c)
 
+cmake_push_check_state(RESET)
+
+check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
+if(HAVE_WFORMAT_OVERFLOW)
+    target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_OVERFLOW)
+endif()
+
+check_c_compiler_flag(-Wformat HAVE_WFORMAT)
+if(HAVE_WFORMAT)
+    target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT)
+endif()
+
+check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
+if(HAVE_WFORMAT_EXTRA_ARGS)
+    target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_EXTRA_ARGS)
+endif()
+
+cmake_pop_check_state()
+
 SET(ALL_TESTS
     checkkeys
     checkkeysthreads

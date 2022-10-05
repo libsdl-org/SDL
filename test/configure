@@ -4664,6 +4664,90 @@ if test x$have_opengl = xyes; then
     OPENGL_TARGETS="TARGETS"
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Wformat" >&5
+printf %s "checking for GCC -Wformat... " >&6; }
+have_wformat=no
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS -Wformat"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int x = 0;
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_wformat=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_wformat" >&5
+printf "%s\n" "$have_wformat" >&6; }
+CFLAGS="$save_CFLAGS"
+if test x$have_wformat = xyes; then
+    CFLAGS="$CFLAGS -DHAVE_WFORMAT"
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Wformat-overflow" >&5
+printf %s "checking for GCC -Wformat-overflow... " >&6; }
+have_wformat_overflow=no
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS -Wformat-overflow"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int x = 0;
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_wformat_overflow=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_wformat_overflow" >&5
+printf "%s\n" "$have_wformat_overflow" >&6; }
+CFLAGS="$save_CFLAGS"
+if test x$have_wformat_overflow = xyes; then
+    CFLAGS="$CFLAGS -DHAVE_WFORMAT_OVERFLOW"
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Wformat-extra-args" >&5
+printf %s "checking for GCC -Wformat-extra-args... " >&6; }
+have_wformat_extra_args=no
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS -Wformat-extra-args"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int x = 0;
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_wformat_extra_args=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_wformat_extra_args" >&5
+printf "%s\n" "$have_wformat_extra_args" >&6; }
+CFLAGS="$save_CFLAGS"
+if test x$have_wformat_extra_args = xyes; then
+    CFLAGS="$CFLAGS -DHAVE_WFORMAT_EXTRA_ARGS"
+fi
+
 # Check whether --enable-werror was given.
 if test ${enable_werror+y}
 then :
