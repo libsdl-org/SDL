@@ -1177,6 +1177,7 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     char *devname;
     int usable;
     double sampleRate;
+    CFIndex len;
 
     AudioObjectPropertyAddress addr = {
         iscapture ? kAudioHardwarePropertyDefaultInputDevice
@@ -1222,7 +1223,7 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
             return SDL_SetError("%s: Default Device Name not found", "coreaudio");
         }
 
-        CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
+        len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
                                                         kCFStringEncodingUTF8);
         devname = (char *) SDL_malloc(len + 1);
         usable = ((devname != NULL) &&
