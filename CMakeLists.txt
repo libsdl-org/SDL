@@ -1187,10 +1187,13 @@ if(ANDROID)
   # There seems to be no better way currently to set the ARM mode.
   # see: https://issuetracker.google.com/issues/62264618
   # Another option would be to set ARM mode to all compiled files
+  cmake_push_check_state(RESET)
+  set(CMAKE_REQUIRED_FLAGS "-Werror=unused-command-line-argument")
   check_c_compiler_flag(-marm HAVE_ARM_MODE)
   if(HAVE_ARM_MODE)
-    set_source_files_properties(${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c PROPERTIES COMPILE_FLAGS -marm)
+    set_property(SOURCE "${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -marm")
   endif()
+  cmake_pop_check_state()
 
   file(GLOB ANDROID_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/android/*.c)
   list(APPEND SDLMAIN_SOURCES ${ANDROID_MAIN_SOURCES})
@@ -2373,10 +2376,13 @@ elseif(RISCOS)
 
 elseif(VITA)
   # SDL_spinlock.c Needs to be compiled in ARM mode.
+  cmake_push_check_state(RESET)
+  set(CMAKE_REQUIRED_FLAGS "-Werror=unused-command-line-argument")
   check_c_compiler_flag(-marm HAVE_ARM_MODE)
   if(HAVE_ARM_MODE)
-    set_source_files_properties(${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c PROPERTIES COMPILE_FLAGS -marm)
+    set_property(SOURCE "${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -marm")
   endif()
+  cmake_pop_check_state()
 
   if(SDL_MISC)
     file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/vita/*.c)
