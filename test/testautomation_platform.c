@@ -376,6 +376,11 @@ int platform_testSetErrorEmptyInput(void *arg)
    return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT_OVERFLOW)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow"
+#endif
+
 /* !
  * \brief Tests SDL_SetError with invalid input
  * \sa
@@ -451,13 +456,17 @@ int platform_testSetErrorInvalidInput(void *arg)
              probeError,
              lastError);
    }
-   
+
    /* Clean up */
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
 
    return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT_OVERFLOW)
+#pragma GCC diagnostic pop
+#endif
 
 /* !
  * \brief Tests SDL_GetPowerInfo
