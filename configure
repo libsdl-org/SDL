@@ -1632,7 +1632,7 @@ Optional Features:
   --enable-dependency-tracking
                           Use gcc -MMD -MT dependency tracking [default=yes]
   --enable-libc           Use the system C library [default=yes]
-  --enable-iconv          Enable character set conversion through iconv
+  --enable-iconv          Use iconv() from system-installed libraries
                           [default=yes]
   --enable-gcc-atomics    Use gcc builtin atomics [default=yes]
   --enable-atomic         Enable the atomic operations subsystem [default=yes]

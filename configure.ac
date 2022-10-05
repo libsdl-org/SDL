@@ -320,7 +320,7 @@ AC_ARG_ENABLE(libc,
 
 dnl See whether we are allowed to use libiconv
 AC_ARG_ENABLE(iconv,
-[AS_HELP_STRING([--enable-iconv], [Enable character set conversion through iconv [default=yes]])],
+[AS_HELP_STRING([--enable-iconv], [Use iconv() from system-installed libraries [default=yes]])],
               , enable_iconv=yes)
 
 if test x$enable_libc = xyes; then
