@@ -13,7 +13,7 @@ controllers = []
 controller_guids = {}
 conditionals = []
 split_pattern = re.compile(r'([^"]*")([^,]*,)([^,]*,)([^"]*)(".*)')
-guid_crc_pattern = re.compile(r'^([0-9a-zA-Z]{4})([0-9a-zA-Z]{4})([0-9a-zA-Z]{24},)$')
+guid_crc_pattern = re.compile(r'^([0-9a-zA-Z]{4})([0-9a-zA-Z]{2})([0-9a-zA-Z]{2})([0-9a-zA-Z]{24},)$')
 
 def find_element(prefix, bindings):
     i=0
@@ -40,10 +40,10 @@ def save_controller(line):
 
     # Look for CRC embedded in the GUID and convert to crc element
     crc_match = guid_crc_pattern.match(entry[1])
-    if crc_match and crc_match.group(2) != '0000':
+    if crc_match and crc_match.group(2) != '00' and crc_match.group(3) != '00':
         print("Extracting CRC from GUID of " + entry[2])
-        entry[1] = crc_match.group(1) + '0000' + crc_match.group(3)
-        crc = "crc:" + crc_match.group(2) + ","
+        entry[1] = crc_match.group(1) + '0000' + crc_match.group(4)
+        crc = "crc:" + crc_match.group(3) + crc_match.group(2) + ","
 
     pos = find_element("sdk", bindings)
     if pos >= 0:
