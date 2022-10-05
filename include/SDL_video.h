@@ -1059,7 +1059,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window * window,
  * \param h a pointer to variable for storing the height in pixels, may be
  *          NULL
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 2.26.1.
  *
  * \sa SDL_CreateWindow
  * \sa SDL_GetWindowSize
