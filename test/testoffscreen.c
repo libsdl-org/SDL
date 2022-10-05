@@ -30,7 +30,7 @@ static int done = SDL_FALSE;
 static int frame_number = 0;
 static int width = 640;
 static int height = 480;
-static int max_frames = 200;
+static unsigned int max_frames = 200;
 
 void
 draw()
@@ -140,7 +140,7 @@ main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
 
-    SDL_Log("Rendering %i frames offscreen\n", max_frames);
+    SDL_Log("Rendering %u frames offscreen\n", max_frames);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
