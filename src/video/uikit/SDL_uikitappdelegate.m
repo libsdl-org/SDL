@@ -33,6 +33,14 @@
 
 #include "../../events/SDL_events_c.h"
 
+#if !TARGET_OS_TV
+#include <AvailabilityVersions.h>
+
+# ifndef __IPHONE_13_0
+# define __IPHONE_13_0 130000
+# endif
+#endif
+
 #ifdef main
 #undef main
 #endif
@@ -116,6 +124,53 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     return image;
 }
+
+@interface SDLLaunchStoryboardViewController : UIViewController
+@property (nonatomic, strong) UIViewController *storyboardViewController;
+- (instancetype)initWithStoryboardViewController:(UIViewController *)storyboardViewController;
+@end
+
+@implementation SDLLaunchStoryboardViewController
+
+- (instancetype)initWithStoryboardViewController:(UIViewController *)storyboardViewController {
+    self = [super init];
+    self.storyboardViewController = storyboardViewController;
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self addChildViewController:self.storyboardViewController];
+    [self.view addSubview:self.storyboardViewController.view];
+    self.storyboardViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.storyboardViewController.view.frame = self.view.bounds;
+    [self.storyboardViewController didMoveToParentViewController:self];
+
+    UIApplication.sharedApplication.statusBarHidden = self.prefersStatusBarHidden;
+    UIApplication.sharedApplication.statusBarStyle = self.preferredStatusBarStyle;
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return [[NSBundle.mainBundle objectForInfoDictionaryKey:@"UIStatusBarHidden"] boolValue];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    NSString *statusBarStyle = [NSBundle.mainBundle objectForInfoDictionaryKey:@"UIStatusBarStyle"];
+    if ([statusBarStyle isEqualToString:@"UIStatusBarStyleLightContent"]) {
+        return UIStatusBarStyleLightContent;
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
+    if (@available(iOS 13.0, *)) {
+        if ([statusBarStyle isEqualToString:@"UIStatusBarStyleDarkContent"]) {
+            return UIStatusBarStyleDarkContent;
+        }
+    }
+#endif
+    return UIStatusBarStyleDefault;
+}
+
+@end
 #endif /* !TARGET_OS_TV */
 
 @interface SDLLaunchScreenController ()
@@ -374,7 +429,8 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
              * Xcode. We'll try to load it as a storyboard first, as it's more
              * modern. */
             UIStoryboard *storyboard = [UIStoryboard storyboardWithName:screenname bundle:bundle];
-            vc = [storyboard instantiateInitialViewController];
+            __auto_type storyboardVc = [storyboard instantiateInitialViewController];
+            vc = [[SDLLaunchStoryboardViewController alloc] initWithStoryboardViewController:storyboardVc];
         }
         @catch (NSException *exception) {
             /* Do nothing (there's more code to execute below). */
