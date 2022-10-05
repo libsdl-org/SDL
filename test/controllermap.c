@@ -28,8 +28,10 @@
 #define SCREEN_WIDTH    512
 #define SCREEN_HEIGHT   320
 
-#define MARKER_BUTTON 1
-#define MARKER_AXIS 2
+enum marker_type {
+    MARKER_BUTTON,
+    MARKER_AXIS,
+};
 
 enum
 {
@@ -48,11 +50,11 @@ enum
 
 #define BINDING_COUNT (SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_MAX)
 
-static struct 
+static struct
 {
     int x, y;
     double angle;
-    int marker;
+    enum marker_type marker;
 
 } s_arrBindingDisplay[] = {
     { 387, 167, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_A */
@@ -352,7 +354,7 @@ BMergeAxisBindings(int iIndex)
 static void
 WatchJoystick(SDL_Joystick * joystick)
 {
-    SDL_Texture *background_front, *background_back, *button, *axis, *marker;
+    SDL_Texture *background_front, *background_back, *button, *axis, *marker=NULL;
     const char *name = NULL;
     SDL_Event event;
     SDL_Rect dst;
@@ -406,8 +408,6 @@ WatchJoystick(SDL_Joystick * joystick)
                 break;
             case MARKER_BUTTON:
                 marker = button;
-                break;
-            default:
                 break;
         }
         
