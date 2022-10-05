@@ -674,6 +674,18 @@ if(USE_GCC OR USE_CLANG)
     endif()
   endif()
 
+  if(MINGW)
+    # See if GCC's -gdwarf-4 is supported
+    # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101377 for why this is needed on Windows
+    cmake_push_check_state(RESET)
+    check_c_compiler_flag("-gdwarf-4" HAVE_GDWARF_4)
+    if(HAVE_GDWARF_4)
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -gdwarf-4")
+      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-4")
+    endif()
+    cmake_pop_check_state()
+  endif()
+
   # Force color diagnostics when one of these conditions are met
   if(DEFINED ENV{CI} OR DEFINED ENV{USE_CCACHE} OR CMAKE_GENERATOR MATCHES Ninja)
     if(EMSCRIPTEN OR (USE_GCC AND NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 4.9))
