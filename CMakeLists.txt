@@ -686,6 +686,14 @@ if(USE_GCC OR USE_CLANG)
   endif()
 
   if(APPLE)
+    cmake_push_check_state(RESET)
+    # FIXME: don't use deprecated declarations
+    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+      target_compile_options(sdl-build-options INTERFACE "-Wno-error=deprecated-declarations")
+    endif()
+    cmake_pop_check_state()
+
     # FIXME: use generator expression instead of appending to EXTRA_LDFLAGS_BUILD
     list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-undefined,error")
     list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")

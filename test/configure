@@ -4790,8 +4790,8 @@ fi
 
 case "$host" in
     *-ios-*|*-*-darwin* )
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Werror option" >&5
-printf %s "checking for GCC -Werror option... " >&6; }
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Wno-error=deprecated-declarations option" >&5
+printf %s "checking for GCC -Wno-error=deprecated-declarations option... " >&6; }
         have_gcc_wno_error_deprecated_declarations=no
 
         save_CFLAGS="$CFLAGS"

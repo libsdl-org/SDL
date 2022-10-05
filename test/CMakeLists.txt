@@ -123,6 +123,13 @@ if(APPLE)
                               testnativecocoa.m
                               testnativex11.c
                               testutils.c)
+
+    cmake_push_check_state(RESET)
+    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+    cmake_pop_check_state()
+    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+        set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
+    endif()
 elseif(WINDOWS)
     add_executable(testnative testnative.c testnativew32.c testutils.c)
 elseif(HAVE_X11)

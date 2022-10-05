@@ -1622,7 +1622,7 @@ CheckWerror()
 dnl See if GCC's -Wno-error=deprecated-declarations is supported.
 CheckNoErrorDeprecatedDeclarationsWerror()
 {
-    AC_MSG_CHECKING(for GCC -Werror option)
+    AC_MSG_CHECKING(for GCC -Wno-error=deprecated-declarations option)
     have_gcc_no_werror_deprecated_declarations=no
 
     save_CFLAGS="$CFLAGS"
