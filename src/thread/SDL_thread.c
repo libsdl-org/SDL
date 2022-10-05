@@ -211,6 +211,7 @@ SDL_GetStaticErrBuf()
     return &SDL_global_error;
 }
 
+#if !SDL_THREADS_DISABLED
 static void SDLCALL
 SDL_FreeErrBuf(void *data)
 {
@@ -221,6 +222,7 @@ SDL_FreeErrBuf(void *data)
     }
     errbuf->free_func(errbuf);
 }
+#endif
 
 /* Routine to get the thread-specific error variable */
 SDL_error *
