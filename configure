@@ -840,6 +840,7 @@ enable_largefile
 enable_assertions
 enable_dependency_tracking
 enable_libc
+enable_iconv
 enable_gcc_atomics
 enable_atomic
 enable_audio
@@ -1631,6 +1632,8 @@ Optional Features:
   --enable-dependency-tracking
                           Use gcc -MMD -MT dependency tracking [default=yes]
   --enable-libc           Use the system C library [default=yes]
+  --enable-iconv          Enable character set conversion through iconv
+                          [default=yes]
   --enable-gcc-atomics    Use gcc builtin atomics [default=yes]
   --enable-atomic         Enable the atomic operations subsystem [default=yes]
   --enable-audio          Enable the audio subsystem [default=yes]
@@ -18676,6 +18679,16 @@ else $as_nop
   enable_libc=yes
 fi
 
+
+# Check whether --enable-iconv was given.
+if test ${enable_iconv+y}
+then :
+  enableval=$enable_iconv;
+else $as_nop
+  enable_iconv=yes
+fi
+
+
 if test x$enable_libc = xyes; then
 
 printf "%s\n" "#define HAVE_LIBC 1" >>confdefs.h
@@ -19883,7 +19896,8 @@ then :
 fi
 
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for iconv_open in -liconv" >&5
+    if test x$enable_iconv = xyes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for iconv_open in -liconv" >&5
 printf %s "checking for iconv_open in -liconv... " >&6; }
 if test ${ac_cv_lib_iconv_iconv_open+y}
 then :
@@ -19923,13 +19937,14 @@ then :
   LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
 fi
 
-    ac_fn_c_check_func "$LINENO" "iconv" "ac_cv_func_iconv"
+        ac_fn_c_check_func "$LINENO" "iconv" "ac_cv_func_iconv"
 if test "x$ac_cv_func_iconv" = xyes
 then :
   printf "%s\n" "#define HAVE_ICONV 1" >>confdefs.h
 
 fi
 
+    fi
 
     ac_fn_c_check_member "$LINENO" "struct sigaction" "sa_sigaction" "ac_cv_member_struct_sigaction_sa_sigaction" "#include <signal.h>
 "
@@ -28967,7 +28982,11 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         SOURCES="$SOURCES $srcdir/src/video/uikit/*.m"
         SUMMARY_video="${SUMMARY_video} uikit"
         have_video=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm -liconv -lobjc"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"
+        if test x$enable_iconv = xyes; then
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
+        fi
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lobjc"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AudioToolbox"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio"
@@ -29263,8 +29282,10 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
-        if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
-            SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
+        if test x$enable_iconv = xyes; then
+            if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
+                SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
+            fi
         fi
         # Use the Unix locale APIs.
         if test x$enable_locale = xyes; then
