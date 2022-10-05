@@ -241,7 +241,7 @@ fi
 
 case "$host" in
     *-ios-*|*-*-darwin* )
-        AC_MSG_CHECKING(for GCC -Werror option)
+        AC_MSG_CHECKING(for GCC -Wno-error=deprecated-declarations option)
         have_gcc_wno_error_deprecated_declarations=no
 
         save_CFLAGS="$CFLAGS"
