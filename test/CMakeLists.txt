@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(SDL2_test)
 
+include(CheckCCompilerFlag)
+include(CMakePushCheckState)
+
 if(NOT TARGET SDL2::SDL2-static)
     find_package(SDL2 2.0.23 REQUIRED COMPONENTS SDL2-static SDL2test)
 endif()
@@ -79,7 +82,6 @@ add_executable(testaudioinfo testaudioinfo.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
 add_executable(testautomation ${TESTAUTOMATION_SOURCE_FILES})
-
 add_executable(testmultiaudio testmultiaudio.c testutils.c)
 add_executable(testaudiohotplug testaudiohotplug.c testutils.c)
 add_executable(testaudiocapture testaudiocapture.c)
