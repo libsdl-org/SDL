@@ -34,6 +34,7 @@ jobs:
         run: |
           cmake -B build \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
+            -DSDL_WERROR=ON \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DSDL_STATIC_PIC=ON \

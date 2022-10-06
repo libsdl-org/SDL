@@ -70,6 +70,7 @@ jobs:
       run: |
         cmake -S . -B build -G Ninja \
         -DSDL_TESTS=ON \
+        -DSDL_WERROR=ON \
         -DSDL_INSTALL_TESTS=ON \
         -DCMAKE_INSTALL_PREFIX=cmake_prefix \
         -DCMAKE_BUILD_TYPE=Release \
@@ -101,6 +102,7 @@ jobs:
         (
           cd build-autotools
           ${{ github.workspace }}/configure \
+            --enable-werror \
             --prefix=${{ github.workspace }}/autotools_prefix \
         )
         if test "${{ runner.os }}" != "macOS" ; then
@@ -110,6 +112,7 @@ jobs:
             mkdir -p build-autotools/test
             cd build-autotools/test
             ${{ github.workspace }}/test/configure \
+              --enable-werror \
               --x-includes=/usr/include \
               --x-libraries="/usr/lib/${multiarch}" \
               --prefix=${{ github.workspace }}/autotools_prefix \

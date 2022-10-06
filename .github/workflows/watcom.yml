@@ -18,10 +18,10 @@ jobs:
       - uses: open-watcom/setup-watcom@v0
       - name: Build SDL2
         run: |
-          wmake -f ${{ matrix.platform.makefile }}
+          wmake -f ${{ matrix.platform.makefile }} ENABLE_WERROR=1
       - name: Build tests
         run: |
-          cd test && wmake -f ${{ matrix.platform.makefile }}
+          cd test && wmake -f ${{ matrix.platform.makefile }} ENABLE_WERROR=1
           cd ..
       - name: Run tests
         if: "matrix.platform.makefile == 'Makefile.w32'"

@@ -19,7 +19,7 @@ jobs:
         - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32 }
         - { name: Windows (ARM),          flags: -A ARM }
         - { name: Windows (ARM64),        flags: -A ARM64 }
-        - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TESTS=OFF,
+        - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TESTS=OFF, nowerror: true,
             project: VisualC-WinRT/SDL-UWP.sln, projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0' }
 
     steps:
@@ -40,6 +40,7 @@ jobs:
           """))
     - name: Configure (CMake)
       run: cmake -S build -B build `
+        -DSDL_WERROR=${{ !matrix.platform.nowerror }} `
         -DSDL_TESTS=ON `
         -DSDL_INSTALL_TESTS=ON `
         -DSDL2_DISABLE_INSTALL=OFF `
