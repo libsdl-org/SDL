@@ -389,13 +389,21 @@ WIN_ShouldShowNativeUI()
 static void
 IME_Init(SDL_VideoData *videodata, HWND hwnd)
 {
+    HRESULT hResult = S_OK;
+
     if (videodata->ime_initialized)
         return;
 
     videodata->ime_hwnd_main = hwnd;
     if (SUCCEEDED(WIN_CoInitialize())) {
         videodata->ime_com_initialized = SDL_TRUE;
-        CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgr, (LPVOID *)&videodata->ime_threadmgr);
+        hResult = CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgr, (LPVOID *)&videodata->ime_threadmgr);
+        if (hResult != S_OK)
+        {
+            videodata->ime_available = SDL_FALSE;
+            SDL_SetError("CoCreateInstance() failed, HRESULT is %08X", (unsigned int)hResult);
+            return;
+        }
     }
     videodata->ime_initialized = SDL_TRUE;
     videodata->ime_himm32 = SDL_LoadObject("imm32.dll");

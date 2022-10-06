@@ -739,15 +739,18 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 
     /* rcClient stores the size of the inner window, while rcWindow stores the outer size relative to the top-left
      * screen position; so the top/left values of rcClient are always {0,0} and bottom/right are {height,width} */
-    GetClientRect(hwnd, &rcClient);
-    GetWindowRect(hwnd, &rcWindow);
+    if (!GetClientRect(hwnd, &rcClient))
+        SDL_SetError("GetClientRect() failed, error %08X", (unsigned int)GetLastError());
+    if (!GetWindowRect(hwnd, &rcWindow))
+        SDL_SetError("GetWindowRect() failed, error %08X", (unsigned int)GetLastError());
 
     /* convert the top/left values to make them relative to
      * the window; they will end up being slightly negative */
     ptDiff.y = rcWindow.top;
     ptDiff.x = rcWindow.left;
 
-    ScreenToClient(hwnd, &ptDiff);
+    if (!ScreenToClient(hwnd, &ptDiff))
+        SDL_SetError("ScreenToClient() failed, error %08X", (unsigned int)GetLastError());
 
     rcWindow.top  = ptDiff.y;
     rcWindow.left = ptDiff.x;
@@ -757,7 +760,8 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
     ptDiff.y = rcWindow.bottom;
     ptDiff.x = rcWindow.right;
 
-    ScreenToClient(hwnd, &ptDiff);
+    if (!ScreenToClient(hwnd, &ptDiff))
+        SDL_SetError("ScreenToClient() failed, error %08X", (unsigned int)GetLastError());
 
     rcWindow.bottom = ptDiff.y;
     rcWindow.right  = ptDiff.x;

@@ -112,7 +112,7 @@ SDL_ResetHint(const char *name)
         if (SDL_strcmp(name, hint->name) == 0) {
             if ((env == NULL && hint->value != NULL) ||
                 (env != NULL && hint->value == NULL) ||
-                (env && SDL_strcmp(env, hint->value) != 0)) {
+                (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
                 for (entry = hint->callbacks; entry; ) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
@@ -140,7 +140,7 @@ SDL_ResetHints(void)
         env = SDL_getenv(hint->name);
         if ((env == NULL && hint->value != NULL) ||
             (env != NULL && hint->value == NULL) ||
-            (env && SDL_strcmp(env, hint->value) != 0)) {
+            (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
             for (entry = hint->callbacks; entry; ) {
                 /* Save the next entry in case this one is deleted */
                 SDL_HintWatch *next = entry->next;
@@ -169,7 +169,7 @@ SDL_GetHint(const char *name)
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
-            if (!env || hint->priority == SDL_HINT_OVERRIDE) {
+            if (env == NULL || hint->priority == SDL_HINT_OVERRIDE) {
                 return hint->value;
             }
             break;
