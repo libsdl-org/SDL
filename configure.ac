@@ -1595,6 +1595,49 @@ CheckStackBoundary()
     fi
 }
 
+dnl See if GCC's -Werror is supported.
+CheckWerror()
+{
+    AC_ARG_ENABLE(werror,
+[AS_HELP_STRING([--enable-werror], [treat warnings as errors [default=no]])],
+                  enable_werror=$enableval, enable_werror=no)
+    if test x$enable_werror = xyes; then
+        AC_MSG_CHECKING(for GCC -Werror option)
+        have_gcc_werror=no
+
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS -Werror"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        int x = 0;
+        ]],[])], [have_gcc_werror=yes],[])
+        AC_MSG_RESULT($have_gcc_werror)
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_werror = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -Werror"
+        fi
+    fi
+}
+
+dnl See if GCC's -Wno-error=deprecated-declarations is supported.
+CheckNoErrorDeprecatedDeclarationsWerror()
+{
+    AC_MSG_CHECKING(for GCC -Werror option)
+    have_gcc_no_werror_deprecated_declarations=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wno-error=deprecated-declarations"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    int x = 0;
+    ]],[])], [have_gcc_no_werror_deprecated_declarations=yes],[])
+    AC_MSG_RESULT($have_gcc_werror)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_no_werror_deprecated_declarations = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-error=deprecated-declarations"
+    fi
+}
+
 dnl See if GCC's -Wdeclaration-after-statement is supported.
 dnl  This lets us catch things that would fail on a C89 compiler when using
 dnl  a modern GCC.
@@ -3761,6 +3804,7 @@ case "$host" in
                 ;;
         esac
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -3994,6 +4038,7 @@ case "$host" in
             have_loadso=yes
         fi
         CheckGDwarf4
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4218,6 +4263,8 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         ARCH=ios
 
         CheckVisibilityHidden
+        CheckWerror
+        CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4333,6 +4380,8 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
 
         CheckObjectiveCARC
         CheckVisibilityHidden
+        CheckWerror
+        CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4458,6 +4507,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         fi
 
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4509,6 +4559,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
     *-*-riscos*)
         ARCH=riscos
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4559,6 +4610,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         enable_static=no # disable static builds
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DBUILD_SDL -DOS2EMX_PLAIN_CHAR"
         CheckOS2
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio

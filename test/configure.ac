@@ -184,6 +184,44 @@ if test x$have_opengl = xyes; then
     OPENGL_TARGETS="TARGETS"
 fi
 
+AC_ARG_ENABLE(werror,
+[AS_HELP_STRING([--enable-werror], [treat warnings as errors [default=no]])],
+              enable_werror=$enableval, enable_werror=no)
+if test x$enable_werror = xyes; then
+    AC_MSG_CHECKING(for GCC -Werror option)
+    have_gcc_werror=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Werror"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[int x = 0;]],[])],
+        [have_gcc_werror=yes], [])
+    AC_MSG_RESULT($have_gcc_werror)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_werror = xyes; then
+        CFLAGS="$CFLAGS -Werror"
+    fi
+fi
+
+case "$host" in
+    *-ios-*|*-*-darwin* )
+        AC_MSG_CHECKING(for GCC -Werror option)
+        have_gcc_wno_error_deprecated_declarations=no
+
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS -Wno-error=deprecated-declarations"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        int x = 0;
+        ]],[])], [have_gcc_wno_error_deprecated_declarations=yes],[])
+        AC_MSG_RESULT($have_gcc_werror)
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_wno_error_deprecated_declarations = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-error=deprecated-declarations"
+        fi
+    	;;
+esac
+
 AC_SUBST(OPENGLES1_TARGETS)
 AC_SUBST(OPENGLES2_TARGETS)
 AC_SUBST(OPENGL_TARGETS)

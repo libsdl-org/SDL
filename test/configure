@@ -701,6 +701,7 @@ with_sdl_prefix
 with_sdl_exec_prefix
 enable_sdltest
 with_x
+enable_werror
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1344,6 +1345,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-sdltest       Do not try to compile and run a test SDL program
+  --enable-werror         treat warnings as errors [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4661,6 +4663,82 @@ if test x$have_opengl = xyes; then
     GLLIB="$XPATH $SYS_GL_LIBS"
     OPENGL_TARGETS="TARGETS"
 fi
+
+# Check whether --enable-werror was given.
+if test ${enable_werror+y}
+then :
+  enableval=$enable_werror; enable_werror=$enableval
+else $as_nop
+  enable_werror=no
+fi
+
+if test x$enable_werror = xyes; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Werror option" >&5
+printf %s "checking for GCC -Werror option... " >&6; }
+    have_gcc_werror=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Werror"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int x = 0;
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_gcc_werror=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_werror" >&5
+printf "%s\n" "$have_gcc_werror" >&6; }
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_werror = xyes; then
+        CFLAGS="$CFLAGS -Werror"
+    fi
+fi
+
+case "$host" in
+    *-ios-*|*-*-darwin* )
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Werror option" >&5
+printf %s "checking for GCC -Werror option... " >&6; }
+        have_gcc_wno_error_deprecated_declarations=no
+
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS -Wno-error=deprecated-declarations"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        int x = 0;
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_gcc_wno_error_deprecated_declarations=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_werror" >&5
+printf "%s\n" "$have_gcc_werror" >&6; }
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_wno_error_deprecated_declarations = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-error=deprecated-declarations"
+        fi
+    	;;
+esac
 
 
 

@@ -902,6 +902,7 @@ enable_libsamplerate
 enable_libsamplerate_shared
 enable_arm_simd
 enable_arm_neon
+enable_werror
 enable_video_wayland
 enable_video_wayland_qt_touch
 enable_wayland_shared
@@ -1703,6 +1704,7 @@ Optional Features:
                           dynamically load libsamplerate [default=yes]
   --enable-arm-simd       use SIMD assembly blitters on ARM [default=no]
   --enable-arm-neon       use NEON assembly blitters on ARM [default=no]
+  --enable-werror         treat warnings as errors [default=no]
   --enable-video-wayland  use Wayland video driver [default=yes]
   --enable-video-wayland-qt-touch
                           QtWayland server support for Wayland video driver
@@ -22952,6 +22954,86 @@ printf "%s\n" "$have_gcc_preferred_stack_boundary" >&6; }
     fi
 }
 
+CheckWerror()
+{
+    # Check whether --enable-werror was given.
+if test ${enable_werror+y}
+then :
+  enableval=$enable_werror; enable_werror=$enableval
+else $as_nop
+  enable_werror=no
+fi
+
+    if test x$enable_werror = xyes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Werror option" >&5
+printf %s "checking for GCC -Werror option... " >&6; }
+        have_gcc_werror=no
+
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS -Werror"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        int x = 0;
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_gcc_werror=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_werror" >&5
+printf "%s\n" "$have_gcc_werror" >&6; }
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_werror = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -Werror"
+        fi
+    fi
+}
+
+CheckNoErrorDeprecatedDeclarationsWerror()
+{
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Werror option" >&5
+printf %s "checking for GCC -Werror option... " >&6; }
+    have_gcc_no_werror_deprecated_declarations=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wno-error=deprecated-declarations"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    int x = 0;
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_gcc_no_werror_deprecated_declarations=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_werror" >&5
+printf "%s\n" "$have_gcc_werror" >&6; }
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_no_werror_deprecated_declarations = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-error=deprecated-declarations"
+    fi
+}
+
 CheckDeclarationAfterStatement()
 {
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -Wdeclaration-after-statement option" >&5
@@ -28315,6 +28397,7 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
                 ;;
         esac
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -28582,6 +28665,7 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
             have_loadso=yes
         fi
         CheckGDwarf4
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -28905,6 +28989,8 @@ printf "%s\n" "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         ARCH=ios
 
         CheckVisibilityHidden
+        CheckWerror
+        CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -29042,6 +29128,8 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 
         CheckObjectiveCARC
         CheckVisibilityHidden
+        CheckWerror
+        CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -29187,6 +29275,7 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
         fi
 
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -29246,6 +29335,7 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
     *-*-riscos*)
         ARCH=riscos
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -29302,6 +29392,7 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
         enable_static=no # disable static builds
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DBUILD_SDL -DOS2EMX_PLAIN_CHAR"
         CheckOS2
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
