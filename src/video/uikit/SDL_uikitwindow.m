@@ -369,6 +369,25 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
     window->driverdata = NULL;
 }
 
+void
+UIKit_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
+{ @autoreleasepool
+{
+    SDL_WindowData *windata = (__bridge SDL_WindowData *) window->driverdata;
+    UIView *view = windata.viewcontroller.view;
+    CGSize size = view.bounds.size;
+    CGFloat scale = 1.0;
+
+    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        scale = windata.uiwindow.screen.nativeScale;
+    }
+
+    /* Integer truncation of fractional values matches SDL_uikitmetalview and
+     * SDL_uikitopenglview. */
+    *w = size.width * scale;
+    *h = size.height * scale;
+}}
+
 SDL_bool
 UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
