@@ -1713,7 +1713,7 @@ Optional Features:
   --enable-libdecor-shared
                           dynamically load libdecor [default=yes]
   --enable-video-rpi      use Raspberry Pi 2/3 video driver [default=yes]
-  --enable-video-x11      use X11 video driver [default=yes]
+  --enable-video-x11      use X11 video driver [default=maybe]
   --enable-x11-shared     dynamically load X11 support [default=maybe]
   --enable-video-x11-xcursor
                           enable X11 Xcursor support [default=yes]
@@ -23478,8 +23478,15 @@ if test ${enable_video_x11+y}
 then :
   enableval=$enable_video_x11;
 else $as_nop
-  enable_video_x11=yes
+
+    enable_video_x11=yes
+    case "$host" in
+        *-*-darwin*|*-ios-*)
+            enable_video_x11=no
+            ;;
+    esac
 fi
+
 
     if test x$enable_video = xyes -a x$enable_video_x11 = xyes; then
         case "$host" in

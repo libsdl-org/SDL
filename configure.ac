@@ -1849,8 +1849,15 @@ dnl Find the X11 include and library directories
 CheckX11()
 {
     AC_ARG_ENABLE(video-x11,
-[AS_HELP_STRING([--enable-video-x11], [use X11 video driver [default=yes]])],
-                  , enable_video_x11=yes)
+[AS_HELP_STRING([--enable-video-x11], [use X11 video driver [default=maybe]])],
+                  ,[
+    enable_video_x11=yes
+    case "$host" in
+        *-*-darwin*|*-ios-*)
+            enable_video_x11=no
+            ;;
+    esac])
+
     if test x$enable_video = xyes -a x$enable_video_x11 = xyes; then
         case "$host" in
             *-*-darwin*)
