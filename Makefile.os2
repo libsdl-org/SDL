@@ -9,6 +9,8 @@
 # can compile hidapi joystick support against it (experimental)
 # by specifying HIDAPI=1, e.g.:
 # wmake -f Makefile.os2 HIDAPI=1
+#
+# To error out upon warnings: wmake -f Makefile.os2 ENABLE_WERROR=1
 
 LIBNAME = SDL2
 MAJOR_VERSION = 2
@@ -40,6 +42,9 @@ CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
 
 # max warnings:
 CFLAGS+= -wx
+!ifeq ENABLE_WERROR 1
+CFLAGS+= -we
+!endif
 # newer OpenWatcom versions enable W303 by default
 CFLAGS+= -wcd=303
 # the include paths :
