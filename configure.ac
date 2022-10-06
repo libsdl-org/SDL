@@ -319,9 +319,9 @@ AC_ARG_ENABLE(libc,
               , enable_libc=yes)
 
 dnl See whether we are allowed to use libiconv
-AC_ARG_ENABLE(iconv,
-[AS_HELP_STRING([--enable-iconv], [Use iconv() from system-installed libraries [default=yes]])],
-              , enable_iconv=yes)
+AC_ARG_ENABLE(system-iconv,
+[AS_HELP_STRING([--enable-system-iconv], [Use iconv() from system-installed libraries [default=yes]])],
+              , enable_system_iconv=yes)
 
 if test x$enable_libc = xyes; then
     AC_DEFINE(HAVE_LIBC, 1, [ ])
@@ -353,7 +353,7 @@ dnl Checks for library functions.
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
 
-    if test x$enable_iconv = xyes; then
+    if test x$enable_system_iconv = xyes; then
         AC_CHECK_LIB(iconv, iconv_open, [LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
         AC_CHECK_FUNCS(iconv)
     fi
@@ -4306,7 +4306,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         SUMMARY_video="${SUMMARY_video} uikit"
         have_video=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"
-        if test x$enable_iconv = xyes; then
+        if test x$enable_system_iconv = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
         fi
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lobjc"
@@ -4571,7 +4571,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
-        if test x$enable_iconv = xyes; then
+        if test x$enable_system_iconv = xyes; then
             if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
                 SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
             fi

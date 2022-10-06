@@ -840,7 +840,7 @@ enable_largefile
 enable_assertions
 enable_dependency_tracking
 enable_libc
-enable_iconv
+enable_system_iconv
 enable_gcc_atomics
 enable_atomic
 enable_audio
@@ -1632,7 +1632,7 @@ Optional Features:
   --enable-dependency-tracking
                           Use gcc -MMD -MT dependency tracking [default=yes]
   --enable-libc           Use the system C library [default=yes]
-  --enable-iconv          Use iconv() from system-installed libraries
+  --enable-system-iconv   Use iconv() from system-installed libraries
                           [default=yes]
   --enable-gcc-atomics    Use gcc builtin atomics [default=yes]
   --enable-atomic         Enable the atomic operations subsystem [default=yes]
@@ -18680,12 +18680,12 @@ else $as_nop
 fi
 
 
-# Check whether --enable-iconv was given.
-if test ${enable_iconv+y}
+# Check whether --enable-system-iconv was given.
+if test ${enable_system_iconv+y}
 then :
-  enableval=$enable_iconv;
+  enableval=$enable_system_iconv;
 else $as_nop
-  enable_iconv=yes
+  enable_system_iconv=yes
 fi
 
 
@@ -19896,7 +19896,7 @@ then :
 fi
 
 
-    if test x$enable_iconv = xyes; then
+    if test x$enable_system_iconv = xyes; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for iconv_open in -liconv" >&5
 printf %s "checking for iconv_open in -liconv... " >&6; }
 if test ${ac_cv_lib_iconv_iconv_open+y}
@@ -28983,7 +28983,7 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         SUMMARY_video="${SUMMARY_video} uikit"
         have_video=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"
-        if test x$enable_iconv = xyes; then
+        if test x$enable_system_iconv = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
         fi
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lobjc"
@@ -29282,7 +29282,7 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
-        if test x$enable_iconv = xyes; then
+        if test x$enable_system_iconv = xyes; then
             if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
                 SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
             fi
