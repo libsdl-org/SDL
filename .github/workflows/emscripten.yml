@@ -13,6 +13,7 @@ jobs:
       - name: Configure CMake
         run: |
           emcmake cmake -S . -B build \
+            -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
             -DCMAKE_BUILD_TYPE=Release \
