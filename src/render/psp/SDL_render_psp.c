@@ -404,14 +404,14 @@ TextureSpillToSram(PSP_RenderData* data, PSP_TextureData* psp_texture)
     // Assumes the texture is in VRAM
     if(psp_texture->swizzled) {
         //Texture was swizzled in vram, just copy to system memory
-        void* data = SDL_malloc(psp_texture->size);
-        if(!data) {
+        void* sdata = SDL_malloc(psp_texture->size);
+        if(!sdata) {
             return SDL_OutOfMemory();
         }
 
-        SDL_memcpy(data, psp_texture->data, psp_texture->size);
+        SDL_memcpy(sdata, psp_texture->data, psp_texture->size);
         vfree(psp_texture->data);
-        psp_texture->data = data;
+        psp_texture->data = sdata;
         return 0;
     } else {
         return TextureSwizzle(psp_texture, NULL); //Will realloc in sysram
