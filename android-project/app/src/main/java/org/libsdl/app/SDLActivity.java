@@ -1556,11 +1556,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 // see SDL_messagebox.h
                 if ((buttonFlags[i] & 0x00000001) != 0) {
                     mapping.put(KeyEvent.KEYCODE_ENTER, button);
-                    mapping.put(KeyEvent.KEYCODE_BUTTON_A, button);
                 }
                 if ((buttonFlags[i] & 0x00000002) != 0) {
                     mapping.put(KeyEvent.KEYCODE_ESCAPE, button); /* API 11 */
-                    mapping.put(KeyEvent.KEYCODE_BUTTON_B, button);
                 }
             }
             button.setText(buttonTexts[i]);
