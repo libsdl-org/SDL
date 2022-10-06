@@ -1,5 +1,7 @@
 # Open Watcom makefile to build SDL2.dll for Win32
 # wmake -f Makefile.w32
+#
+# To error out upon warnings: wmake -f Makefile.w32 ENABLE_WERROR=1
 
 LIBNAME = SDL2
 MAJOR_VERSION = 2
@@ -26,6 +28,9 @@ LIBS = user32.lib gdi32.lib winmm.lib imm32.lib ole32.lib oleaut32.lib shell32.l
 CFLAGS = -bt=nt -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
 # max warnings:
 CFLAGS+= -wx
+!ifeq ENABLE_WERROR 1
+CFLAGS+= -we
+!endif
 # newer OpenWatcom versions enable W303 by default
 CFLAGS+= -wcd=303
 # new vulkan headers result in lots of W202 warnings
