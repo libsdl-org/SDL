@@ -3017,6 +3017,8 @@ internal_malloc_stats(mstate m)
                 (unsigned long) (maxfp));
         fprintf(stderr, "system bytes     = %10lu\n", (unsigned long) (fp));
         fprintf(stderr, "in use bytes     = %10lu\n", (unsigned long) (used));
+#else
+        (void)used;
 #endif
 
         POSTACTION(m);
