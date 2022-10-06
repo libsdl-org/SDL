@@ -474,7 +474,6 @@ UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
             wind->in_fullscreen_transition = SDL_TRUE;
             SDL_SetWindowFullscreen(window, wind->fullscreen_flags);
             wind->in_fullscreen_transition = SDL_FALSE;
-            SetMinMaxDimensions(window, SDL_FALSE);
         }
     } else {
         /* Don't change the fullscreen flags if the window is hidden or being hidden. */
