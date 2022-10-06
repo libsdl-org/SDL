@@ -17952,7 +17952,8 @@ test -n "$SORT" || SORT="false"
 
 if ! "$SORT" -V </dev/null >/dev/null
 then :
-  as_fn_error $? "GNU sort(1) is required" "$LINENO" 5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: GNU sort(1) is required to find dynamic libraries" >&5
+printf "%s\n" "$as_me: WARNING: GNU sort(1) is required to find dynamic libraries" >&2;}
 fi
 
 # Check whether --enable-largefile was given.

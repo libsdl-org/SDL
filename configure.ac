@@ -71,7 +71,7 @@ if [ test -z "$AWK" ]; then
 fi
 
 AC_CHECK_PROGS([SORT], [gsort sort], [false])
-AS_IF([! "$SORT" -V </dev/null >/dev/null], [AC_MSG_ERROR([GNU sort(1) is required])])
+AS_IF([! "$SORT" -V </dev/null >/dev/null], [AC_MSG_WARN([GNU sort(1) is required to find dynamic libraries])])
 
 dnl 64-bit file offsets if possible unless --disable-largefile is specified
 AC_SYS_LARGEFILE
