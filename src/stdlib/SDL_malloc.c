@@ -2580,7 +2580,7 @@ init_mparams(void)
 #else /* (FOOTERS && !INSECURE) */
         s = (size_t) 0x58585858U;
 #endif /* (FOOTERS && !INSECURE) */
-        ACQUIRE_MAGIC_INIT_LOCK();
+        (void)ACQUIRE_MAGIC_INIT_LOCK();
         if (mparams.magic == 0) {
             mparams.magic = s;
             /* Set up lock for main malloc area */

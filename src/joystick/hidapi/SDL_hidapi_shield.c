@@ -158,7 +158,8 @@ HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void
     }
 
     /* Zero unused data in the payload */
-    SDL_memset(&cmd_pkt.payload[size], 0, sizeof(cmd_pkt.payload) - size);
+    if (size != sizeof(cmd_pkt.payload))
+        SDL_memset(&cmd_pkt.payload[size], 0, sizeof(cmd_pkt.payload) - size);
 
     if (SDL_HIDAPI_SendRumbleAndUnlock(device, (Uint8*)&cmd_pkt, sizeof(cmd_pkt)) != sizeof(cmd_pkt)) {
         return SDL_SetError("Couldn't send command packet");

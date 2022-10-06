@@ -733,7 +733,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 SetDrawState(surface, &drawstate);
 
                 /* Apply viewport */
-                if (drawstate.viewport->x || drawstate.viewport->y) {
+                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
                     int i;
                     for (i = 0; i < count; i++) {
                         verts[i].x += drawstate.viewport->x;
@@ -760,7 +760,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 SetDrawState(surface, &drawstate);
 
                 /* Apply viewport */
-                if (drawstate.viewport->x || drawstate.viewport->y) {
+                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
                     int i;
                     for (i = 0; i < count; i++) {
                         verts[i].x += drawstate.viewport->x;
@@ -787,7 +787,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 SetDrawState(surface, &drawstate);
 
                 /* Apply viewport */
-                if (drawstate.viewport->x || drawstate.viewport->y) {
+                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
                     int i;
                     for (i = 0; i < count; i++) {
                         verts[i].x += drawstate.viewport->x;
@@ -815,7 +815,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 PrepTextureForCopy(cmd);
 
                 /* Apply viewport */
-                if (drawstate.viewport->x || drawstate.viewport->y) {
+                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
                     dstrect->x += drawstate.viewport->x;
                     dstrect->y += drawstate.viewport->y;
                 }
@@ -873,7 +873,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 PrepTextureForCopy(cmd);
 
                 /* Apply viewport */
-                if (drawstate.viewport->x || drawstate.viewport->y) {
+                if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
                     copydata->dstrect.x += drawstate.viewport->x;
                     copydata->dstrect.y += drawstate.viewport->y;
                 }
@@ -901,7 +901,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     PrepTextureForCopy(cmd);
 
                     /* Apply viewport */
-                    if (drawstate.viewport->x || drawstate.viewport->y) {
+                    if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
                         SDL_Point vp;
                         vp.x = drawstate.viewport->x;
                         vp.y = drawstate.viewport->y;
@@ -924,7 +924,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     GeometryFillData *ptr = (GeometryFillData *) verts;
 
                     /* Apply viewport */
-                    if (drawstate.viewport->x || drawstate.viewport->y) {
+                    if (drawstate.viewport != NULL && (drawstate.viewport->x || drawstate.viewport->y)) {
                         SDL_Point vp;
                         vp.x = drawstate.viewport->x;
                         vp.y = drawstate.viewport->y;

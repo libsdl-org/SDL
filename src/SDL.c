@@ -125,8 +125,9 @@ static void
 SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
 {
     int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    SDL_assert(SDL_SubsystemRefCount[subsystem_index] < 255);
-    ++SDL_SubsystemRefCount[subsystem_index];
+    SDL_assert(subsystem_index < 0 || SDL_SubsystemRefCount[subsystem_index] < 255);
+    if (subsystem_index >= 0)
+        ++SDL_SubsystemRefCount[subsystem_index];
 }
 
 /* Private helper to decrement a subsystem's ref counter. */
@@ -134,7 +135,7 @@ static void
 SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 {
     int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    if (SDL_SubsystemRefCount[subsystem_index] > 0) {
+    if (subsystem_index >= 0 && SDL_SubsystemRefCount[subsystem_index] > 0) {
         --SDL_SubsystemRefCount[subsystem_index];
     }
 }
@@ -144,22 +145,22 @@ static SDL_bool
 SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 {
     int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    SDL_assert(SDL_SubsystemRefCount[subsystem_index] < 255);
-    return (SDL_SubsystemRefCount[subsystem_index] == 0) ? SDL_TRUE : SDL_FALSE;
+    SDL_assert(subsystem_index < 0 || SDL_SubsystemRefCount[subsystem_index] < 255);
+    return (subsystem_index >= 0 && SDL_SubsystemRefCount[subsystem_index] == 0) ? SDL_TRUE : SDL_FALSE;
 }
 
 /* Private helper to check if a system needs to be quit. */
 static SDL_bool
 SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
     int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    if (SDL_SubsystemRefCount[subsystem_index] == 0) {
+    if (subsystem_index >= 0 && SDL_SubsystemRefCount[subsystem_index] == 0) {
       return SDL_FALSE;
     }
 
     /* If we're in SDL_Quit, we shut down every subsystem, even if refcount
      * isn't zero.
      */
-    return (SDL_SubsystemRefCount[subsystem_index] == 1 || SDL_bInMainQuit) ? SDL_TRUE : SDL_FALSE;
+    return ((subsystem_index >= 0 && SDL_SubsystemRefCount[subsystem_index] == 1) || SDL_bInMainQuit) ? SDL_TRUE : SDL_FALSE;
 }
 
 void

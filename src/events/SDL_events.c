@@ -147,7 +147,7 @@ SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldVa
 static void SDLCALL
 SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
+    (void)SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
 /**
@@ -564,12 +564,12 @@ SDL_StartEventLoop(void)
 #endif /* !SDL_THREADS_DISABLED */
 
     /* Process most event types */
-    SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
-    SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
-    SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
+    (void)SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
 #if 0 /* Leave these events enabled so apps can respond to items being dragged onto them at startup */
-    SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
-    SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
+    (void)SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
 #endif
 
     SDL_AtomicSet(&SDL_EventQ.active, 1);

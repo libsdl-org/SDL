@@ -403,7 +403,8 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
             cvt->len_mult *= mult;
             cvt->len_ratio *= mult;
         } else if (src_bitsize > dst_bitsize) {
-            cvt->len_ratio /= (src_bitsize / dst_bitsize);
+            const int div = (src_bitsize / dst_bitsize);
+            cvt->len_ratio /= div;
         }
         retval = 1;  /* added a converter. */
     }
