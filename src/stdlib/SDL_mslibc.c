@@ -44,7 +44,9 @@ __declspec(selectany) int _fltused = 1;
 extern void *memcpy(void* dst, const void* src, size_t len);
 #pragma intrinsic(memcpy)
 
+#if !defined(__clang__)
 #pragma function(memcpy)
+#endif
 void *
 memcpy(void *dst, const void *src, size_t len)
 {
@@ -54,7 +56,9 @@ memcpy(void *dst, const void *src, size_t len)
 extern void *memset(void* dst, int c, size_t len);
 #pragma intrinsic(memset)
 
+#if !defined(__clang__)
 #pragma function(memset)
+#endif
 void *
 memset(void *dst, int c, size_t len)
 {
