@@ -189,72 +189,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
     // Key events
     @Override
-    public boolean onKey(View  v, int keyCode, KeyEvent event) {
-
-        int deviceId = event.getDeviceId();
-        int source = event.getSource();
-
-        if (source == InputDevice.SOURCE_UNKNOWN) {
-            InputDevice device = InputDevice.getDevice(deviceId);
-            if (device != null) {
-                source = device.getSources();
-            }
-        }
-
-//        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-//            Log.v("SDL", "key down: " + keyCode + ", deviceId = " + deviceId + ", source = " + source);
-//        } else if (event.getAction() == KeyEvent.ACTION_UP) {
-//            Log.v("SDL", "key up: " + keyCode + ", deviceId = " + deviceId + ", source = " + source);
-//        }
-
-        // Dispatch the different events depending on where they come from
-        // Some SOURCE_JOYSTICK, SOURCE_DPAD or SOURCE_GAMEPAD are also SOURCE_KEYBOARD
-        // So, we try to process them as JOYSTICK/DPAD/GAMEPAD events first, if that fails we try them as KEYBOARD
-        //
-        // Furthermore, it's possible a game controller has SOURCE_KEYBOARD and
-        // SOURCE_JOYSTICK, while its key events arrive from the keyboard source
-        // So, retrieve the device itself and check all of its sources
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
-            // Note that we process events with specific key codes here
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (SDLControllerManager.onNativePadDown(deviceId, keyCode) == 0) {
-                    return true;
-                }
-            } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                if (SDLControllerManager.onNativePadUp(deviceId, keyCode) == 0) {
-                    return true;
-                }
-            }
-        }
-
-        if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (SDLActivity.isTextInputEvent(event)) {
-                    SDLInputConnection.nativeCommitText(String.valueOf((char) event.getUnicodeChar()), 1);
-                }
-                SDLActivity.onNativeKeyDown(keyCode);
-                return true;
-            } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                SDLActivity.onNativeKeyUp(keyCode);
-                return true;
-            }
-        }
-
-        if ((source & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
-            // on some devices key events are sent for mouse BUTTON_BACK/FORWARD presses
-            // they are ignored here because sending them as mouse input to SDL is messy
-            if ((keyCode == KeyEvent.KEYCODE_BACK) || (keyCode == KeyEvent.KEYCODE_FORWARD)) {
-                switch (event.getAction()) {
-                case KeyEvent.ACTION_DOWN:
-                case KeyEvent.ACTION_UP:
-                    // mark the event as handled or it will be handled by system
-                    // handling KEYCODE_BACK by system will call onBackPressed()
-                    return true;
-                }
-            }
-        }
-
-        return false;
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
+        return SDLActivity.handleKeyEvent(v, keyCode, event, null);
     }
 
     // Touch events
