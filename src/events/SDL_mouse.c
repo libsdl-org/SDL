@@ -868,6 +868,8 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         event.wheel.preciseX = x;
         event.wheel.preciseY = y;
         event.wheel.direction = (Uint32)direction;
+        event.wheel.x_cursor = mouse->x;
+        event.wheel.y_cursor = mouse->y;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
