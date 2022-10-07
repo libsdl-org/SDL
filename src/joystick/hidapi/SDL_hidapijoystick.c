@@ -359,59 +359,61 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed)
         return; /* Already setup */
     }
 
-    /* Make sure we can open the device and leave it open for the driver */
-    if (device->num_children == 0) {
-        /* On Android we need to leave joysticks unlocked because it calls
-         * out to the main thread for permissions and the main thread can
-         * be in the process of handling controller input.
-         *
-         * See https://github.com/libsdl-org/SDL/issues/6347 for details
-         */
-        SDL_HIDAPI_Device *curr;
-        SDL_hid_device *dev;
-        char *path;
+    if (HIDAPI_GetDeviceDriver(device)) {
+        /* We might have a device driver for this device, try opening it and see */
+        if (device->num_children == 0) {
+            /* On Android we need to leave joysticks unlocked because it calls
+             * out to the main thread for permissions and the main thread can
+             * be in the process of handling controller input.
+             *
+             * See https://github.com/libsdl-org/SDL/issues/6347 for details
+             */
+            SDL_HIDAPI_Device *curr;
+            SDL_hid_device *dev;
+            char *path;
 
-        SDL_AssertJoysticksLocked();
-        path = SDL_strdup(device->path);
-        SDL_UnlockJoysticks();
-        dev = SDL_hid_open_path(path, 0);
-        SDL_LockJoysticks();
-        SDL_free(path);
+            SDL_AssertJoysticksLocked();
+            path = SDL_strdup(device->path);
+            SDL_UnlockJoysticks();
+            dev = SDL_hid_open_path(path, 0);
+            SDL_LockJoysticks();
+            SDL_free(path);
 
-        /* Make sure the device didn't get removed while opening the HID path */
-        for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
-            continue;
-        }
-        if (!curr) {
-            *removed = SDL_TRUE;
-            if (dev) {
-                SDL_hid_close(dev);
+            /* Make sure the device didn't get removed while opening the HID path */
+            for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
+                continue;
             }
-            return;
+            if (!curr) {
+                *removed = SDL_TRUE;
+                if (dev) {
+                    SDL_hid_close(dev);
+                }
+                return;
+            }
+
+            if (!dev) {
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
+                             device->path, SDL_GetError());
+                return;
+            }
+            SDL_hid_set_nonblocking(dev, 1);
+
+            device->dev = dev;
         }
 
-        if (!dev) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
-                         device->path, SDL_GetError());
-            return;
+        device->driver = HIDAPI_GetDeviceDriver(device);
+
+        /* Initialize the device, which may cause a connected event */
+        if (device->driver && !device->driver->InitDevice(device)) {
+            HIDAPI_CleanupDeviceDriver(device);
         }
-        SDL_hid_set_nonblocking(dev, 1);
 
-        device->dev = dev;
-    }
-
-    device->driver = HIDAPI_GetDeviceDriver(device);
-
-    /* Initialize the device, which may cause a connected event */
-    if (device->driver && !device->driver->InitDevice(device)) {
-        HIDAPI_CleanupDeviceDriver(device);
-    }
-
-    if (!device->driver && device->dev) {
-        /* No driver claimed this device, go ahead and close it */
-        SDL_hid_close(device->dev);
-        device->dev = NULL;
+        if (!device->driver && device->dev) {
+            /* No driver claimed this device, go ahead and close it */
+            SDL_hid_close(device->dev);
+            device->dev = NULL;
+        }
     }
 }
 

@@ -1106,7 +1106,7 @@ static SDL_bool
 HIDAPI_DriverJoyCons_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO && device) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO && device && device->dev) {
             /* This might be a Kinvoca Joy-Con that reports VID/PID as a Switch Pro controller */
             ESwitchDeviceInfoControllerType eControllerType = ReadJoyConControllerType(device);
             if (eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
