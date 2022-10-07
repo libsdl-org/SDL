@@ -707,6 +707,8 @@ DECOR_LIBS
 DECOR_CFLAGS
 FUSIONSOUND_LIBS
 FUSIONSOUND_CFLAGS
+SNDIO_LIBS
+SNDIO_CFLAGS
 ARTSCONFIG
 PULSEAUDIO_LIBS
 PULSEAUDIO_CFLAGS
@@ -977,6 +979,8 @@ PIPEWIRE_CFLAGS
 PIPEWIRE_LIBS
 PULSEAUDIO_CFLAGS
 PULSEAUDIO_LIBS
+SNDIO_CFLAGS
+SNDIO_LIBS
 FUSIONSOUND_CFLAGS
 FUSIONSOUND_LIBS
 DECOR_CFLAGS
@@ -1824,6 +1828,9 @@ Some influential environment variables:
               C compiler flags for PULSEAUDIO, overriding pkg-config
   PULSEAUDIO_LIBS
               linker flags for PULSEAUDIO, overriding pkg-config
+  SNDIO_CFLAGS
+              C compiler flags for SNDIO, overriding pkg-config
+  SNDIO_LIBS  linker flags for SNDIO, overriding pkg-config
   FUSIONSOUND_CFLAGS
               C compiler flags for FUSIONSOUND, overriding pkg-config
   FUSIONSOUND_LIBS
@@ -22334,66 +22341,79 @@ else $as_nop
 fi
 
     if test x$enable_audio = xyes -a x$enable_sndio = xyes; then
-        ac_fn_c_check_header_compile "$LINENO" "sndio.h" "ac_cv_header_sndio_h" "$ac_includes_default"
-if test "x$ac_cv_header_sndio_h" = xyes
-then :
-  have_sndio_hdr=yes
-fi
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sio_open in -lsndio" >&5
-printf %s "checking for sio_open in -lsndio... " >&6; }
-if test ${ac_cv_lib_sndio_sio_open+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsndio  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sndio" >&5
+printf %s "checking for sndio... " >&6; }
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char sio_open ();
-int
-main (void)
-{
-return sio_open ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_sndio_sio_open=yes
-else $as_nop
-  ac_cv_lib_sndio_sio_open=no
+if test -n "$SNDIO_CFLAGS"; then
+    pkg_cv_SNDIO_CFLAGS="$SNDIO_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sndio\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sndio") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SNDIO_CFLAGS=`$PKG_CONFIG --cflags "sndio" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
+ else
+    pkg_failed=untried
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_sndio_sio_open" >&5
-printf "%s\n" "$ac_cv_lib_sndio_sio_open" >&6; }
-if test "x$ac_cv_lib_sndio_sio_open" = xyes
-then :
-  have_sndio_lib=yes
+if test -n "$SNDIO_LIBS"; then
+    pkg_cv_SNDIO_LIBS="$SNDIO_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sndio\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sndio") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SNDIO_LIBS=`$PKG_CONFIG --libs "sndio" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
 fi
 
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sndio audio support" >&5
-printf %s "checking for sndio audio support... " >&6; }
-        have_sndio=no
 
-        if test x$have_sndio_hdr = xyes -a x$have_sndio_lib = xyes; then
-            have_sndio=yes
-            SNDIO_LIBS="-lsndio"
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        SNDIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sndio" 2>&1`
+        else
+	        SNDIO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sndio" 2>&1`
         fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$SNDIO_PKG_ERRORS" >&5
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_sndio" >&5
-printf "%s\n" "$have_sndio" >&6; }
+	audio_sndio=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	audio_sndio=no
+else
+	SNDIO_CFLAGS=$pkg_cv_SNDIO_CFLAGS
+	SNDIO_LIBS=$pkg_cv_SNDIO_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	audio_sndio=yes
+fi
 
-        if test x$have_sndio = xyes; then
+        if test x$audio_sndio = xyes; then
             # Check whether --enable-sndio-shared was given.
 if test ${enable_sndio_shared+y}
 then :
