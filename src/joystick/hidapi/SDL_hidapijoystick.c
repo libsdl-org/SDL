@@ -330,8 +330,10 @@ HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
 }
 
 static void
-HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
+HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed)
 {
+    *removed = SDL_FALSE;
+
     if (device->driver) {
         SDL_bool enabled;
 
@@ -359,14 +361,44 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
 
     /* Make sure we can open the device and leave it open for the driver */
     if (device->num_children == 0) {
-        device->dev = SDL_hid_open_path(device->path, 0);
-        if (!device->dev) {
+        /* On Android we need to leave joysticks unlocked because it calls
+         * out to the main thread for permissions and the main thread can
+         * be in the process of handling controller input.
+         *
+         * See https://github.com/libsdl-org/SDL/issues/6347 for details
+         */
+        SDL_HIDAPI_Device *curr;
+        SDL_hid_device *dev;
+        char *path;
+
+        SDL_AssertJoysticksLocked();
+        path = SDL_strdup(device->path);
+        SDL_UnlockJoysticks();
+        dev = SDL_hid_open_path(path, 0);
+        SDL_LockJoysticks();
+        SDL_free(path);
+
+        /* Make sure the device didn't get removed while opening the HID path */
+        for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
+            continue;
+        }
+        if (!curr) {
+            *removed = SDL_TRUE;
+            if (dev) {
+                SDL_hid_close(dev);
+            }
+            return;
+        }
+
+        if (!dev) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
                          device->path, SDL_GetError());
             return;
         }
-        SDL_hid_set_nonblocking(device->dev, 1);
+        SDL_hid_set_nonblocking(dev, 1);
+
+        device->dev = dev;
     }
 
     device->driver = HIDAPI_GetDeviceDriver(device);
@@ -388,6 +420,7 @@ SDL_HIDAPI_UpdateDrivers(void)
 {
     int i;
     SDL_HIDAPI_Device *device;
+    SDL_bool removed;
 
     SDL_HIDAPI_numdrivers = 0;
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
@@ -398,9 +431,15 @@ SDL_HIDAPI_UpdateDrivers(void)
         }
     }
 
-    for (device = SDL_HIDAPI_devices; device; device = device->next) {
-        HIDAPI_SetupDeviceDriver(device);
-    }
+    removed = SDL_FALSE;
+    do {
+        for (device = SDL_HIDAPI_devices; device; device = device->next) {
+            HIDAPI_SetupDeviceDriver(device, &removed);
+            if (removed) {
+                break;
+            }
+        }
+    } while (removed);
 }
 
 static void SDLCALL
@@ -685,6 +724,7 @@ HIDAPI_AddDevice(const struct SDL_hid_device_info *info, int num_children, SDL_H
 {
     SDL_HIDAPI_Device *device;
     SDL_HIDAPI_Device *curr, *last = NULL;
+    SDL_bool removed;
 
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
         continue;
@@ -762,7 +802,11 @@ HIDAPI_AddDevice(const struct SDL_hid_device_info *info, int num_children, SDL_H
         SDL_HIDAPI_devices = device;
     }
 
-    HIDAPI_SetupDeviceDriver(device);
+    removed = SDL_FALSE;
+    HIDAPI_SetupDeviceDriver(device, &removed);
+    if (removed) {
+        return NULL;
+    }
 
 #ifdef DEBUG_HIDAPI
     SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
