@@ -82,7 +82,7 @@ extern DECLSPEC void SDLCALL SDL_Metal_DestroyView(SDL_MetalView view);
  *
  * \since This function is available since SDL 2.0.14.
  *
- * \sa SDL_MetalCreateView
+ * \sa SDL_Metal_CreateView
  */
 extern DECLSPEC void *SDLCALL SDL_Metal_GetLayer(SDL_MetalView view);
 
