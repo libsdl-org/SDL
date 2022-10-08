@@ -1408,10 +1408,16 @@ WIN_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
 void
 WIN_GetDrawableSize(const SDL_Window *window, int *w, int *h)
 {
-    const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
-    HWND hwnd = data->hwnd;
+    HWND hwnd;
     RECT rect;
 
+    if (!window || !(window->driverdata)) {
+        *w = 0;
+        *h = 0;
+        return;
+    }
+
+    hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
     if (GetClientRect(hwnd, &rect)) {
         *w = rect.right;
         *h = rect.bottom;
