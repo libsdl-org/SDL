@@ -16,6 +16,8 @@ mechanical work.
 
 * Do the release
 
+* Update the website file include/header.inc.php to reflect the new version
+
 ## New bugfix release
 
 * Check that no new API/ABI was added
@@ -27,6 +29,8 @@ mechanical work.
     * `./build-scripts/update-version.sh 2 Y Z+1`
 
 * Do the release
+
+* Update the website file include/header.inc.php to reflect the new version
 
 ## After a feature release
 
