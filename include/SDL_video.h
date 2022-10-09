@@ -1811,6 +1811,9 @@ extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
  * If you disable the screensaver, it is automatically re-enabled when SDL
  * quits.
  *
+ * The screensaver is disabled by default since SDL 2.0.2. Before SDL 2.0.2
+ * the screensaver was enabled by default.
+ *
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_EnableScreenSaver
