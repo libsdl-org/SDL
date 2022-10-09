@@ -818,7 +818,7 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
     }
 
     if (scancode != SDL_SCANCODE_UNKNOWN) {
-        SDL_SendKeyboardKeyComplete(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED, scancode, keycode);
+        SDL_SendKeyboardKeyAndKeycode(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED, scancode, keycode);
     }
 
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
