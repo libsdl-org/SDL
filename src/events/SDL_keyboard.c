@@ -865,7 +865,7 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
 }
 
 int
-SDL_SendKeyboardKeyComplete(Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+SDL_SendKeyboardKeyAndKeycode(Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
     return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode, keycode);
 }
