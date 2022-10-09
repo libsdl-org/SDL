@@ -306,6 +306,20 @@ ConfigureWindowGeometry(SDL_Window *window)
 }
 
 static void
+CommitLibdecorFrame(SDL_Window *window)
+{
+#ifdef HAVE_LIBDECOR_H
+    SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
+
+    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && wind->shell_surface.libdecor.frame) {
+        struct libdecor_state *state = libdecor_state_new(wind->window_width, wind->window_height);
+        libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
+        libdecor_state_free(state);
+    }
+#endif
+}
+
+static void
 SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
 {
     SDL_WindowData *wind = window->driverdata;
@@ -351,9 +365,7 @@ SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
                                             max_height);
 
         if (commit) {
-            struct libdecor_state *state = libdecor_state_new(wind->window_width, wind->window_height);
-            libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
-            libdecor_state_free(state);
+            CommitLibdecorFrame(window);
             wl_surface_commit(wind->surface);
         }
     } else
@@ -405,9 +417,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
                 libdecor_frame_set_capabilities(wind->shell_surface.libdecor.frame, LIBDECOR_ACTION_RESIZE);
                 wl_surface_commit(wind->surface);
             } else {
-                struct libdecor_state *state = libdecor_state_new(wind->window_width, wind->window_height);
-                libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
-                libdecor_state_free(state);
+                CommitLibdecorFrame(window);
                 wl_surface_commit(wind->surface);
             }
 
@@ -420,9 +430,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
                 libdecor_frame_unset_capabilities(wind->shell_surface.libdecor.frame, LIBDECOR_ACTION_RESIZE);
                 wl_surface_commit(wind->surface);
             } else {
-                struct libdecor_state *state = libdecor_state_new(wind->window_width, wind->window_height);
-                libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
-                libdecor_state_free(state);
+                CommitLibdecorFrame(window);
                 wl_surface_commit(wind->surface);
             }
         }
@@ -488,20 +496,6 @@ UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
             }
         }
     }
-}
-
-static void
-CommitWindowGeometry(SDL_Window *window)
-{
-#ifdef HAVE_LIBDECOR_H
-    SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
-
-    if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && wind->shell_surface.libdecor.frame) {
-        struct libdecor_state *state = libdecor_state_new(wind->window_width, wind->window_height);
-        libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
-        libdecor_state_free(state);
-    }
-#endif
 }
 
 static const struct wl_callback_listener surface_damage_frame_listener;
@@ -1086,7 +1080,7 @@ Wayland_move_window(SDL_Window *window,
             if (fs_display_changed &&
                 (!wind->fs_output_width || !wind->fs_output_height)) {
                 ConfigureWindowGeometry(window);
-                CommitWindowGeometry(window);
+                CommitLibdecorFrame(window);
             }
 
             break;
@@ -1762,7 +1756,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
          * geometry and trigger a commit.
          */
         ConfigureWindowGeometry(window);
-        CommitWindowGeometry(window);
+        CommitLibdecorFrame(window);
 
         /* Roundtrip required to receive the updated window dimensions */
         WAYLAND_wl_display_roundtrip(viddata->display);
@@ -2146,7 +2140,7 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
 
     /* Update the window geometry. */
     ConfigureWindowGeometry(window);
-    CommitWindowGeometry(window);
+    CommitLibdecorFrame(window);
 
     /* windowed is unconditionally set, so we can trust it here */
     wind->floating_width = window->windowed.w;
