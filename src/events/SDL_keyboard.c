@@ -689,12 +689,11 @@ SDL_SetKeyboardFocus(SDL_Window * window)
 }
 
 static int
-SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
+SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
     SDL_Keymod modifier;
-    SDL_Keycode keycode;
     Uint32 type;
     Uint8 repeat = SDL_FALSE;
 
@@ -740,7 +739,9 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode)
     /* Update internal keyboard state */
     keyboard->keystate[scancode] = state;
 
-    keycode = keyboard->keymap[scancode];
+    if (keycode == SDLK_UNKNOWN) {
+        keycode = keyboard->keymap[scancode];
+    }
 
     if (source == KEYBOARD_AUTORELEASE) {
         keyboard->autorelease_pending = SDL_TRUE;
@@ -860,13 +861,19 @@ SDL_SendKeyboardUnicodeKey(Uint32 ch)
 int
 SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
 {
-    return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode);
+    return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode, SDLK_UNKNOWN);
+}
+
+int
+SDL_SendKeyboardKeyComplete(Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+{
+    return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode, keycode);
 }
 
 int
 SDL_SendKeyboardKeyAutoRelease(SDL_Scancode scancode)
 {
-    return SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode);
+    return SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
 }
 
 void
@@ -878,7 +885,7 @@ SDL_ReleaseAutoReleaseKeys(void)
     if (keyboard->autorelease_pending) {
         for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
             if (keyboard->keysource[scancode] == KEYBOARD_AUTORELEASE) {
-                SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_RELEASED, scancode);
+                SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_RELEASED, scancode, SDLK_UNKNOWN);
             }
         }
         keyboard->autorelease_pending = SDL_FALSE;
