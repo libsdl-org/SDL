@@ -106,7 +106,7 @@ main(int argc, char **argv)
     SDL_ClearError();
 
     /* Create effects. */
-    SDL_memset(&efx, 0, sizeof(efx));
+    SDL_memset(efx, 0, sizeof(efx));
     nefx = 0;
     supported = SDL_HapticQuery(haptic);
 
