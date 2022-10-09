@@ -1683,7 +1683,7 @@ data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
         /* TODO: SDL Support more mime types */
         size_t length;
         void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                  &length, FILE_MIME, SDL_FALSE);
+                                                  &length, FILE_MIME, SDL_TRUE);
         if (buffer) {
             char *saveptr = NULL;
             char *token = SDL_strtokr((char *) buffer, "\r\n", &saveptr);
