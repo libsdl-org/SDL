@@ -493,20 +493,15 @@ UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
 static void
 CommitWindowGeometry(SDL_Window *window)
 {
-    SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
-    SDL_VideoData *viddata = (SDL_VideoData *) wind->waylandData;
-
 #ifdef HAVE_LIBDECOR_H
+    SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
+
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && wind->shell_surface.libdecor.frame) {
         struct libdecor_state *state = libdecor_state_new(wind->window_width, wind->window_height);
         libdecor_frame_commit(wind->shell_surface.libdecor.frame, state, NULL);
         libdecor_state_free(state);
-    } else
-#endif
-    if (viddata->shell.xdg && wind->shell_surface.xdg.surface) {
-        xdg_surface_set_window_geometry(wind->shell_surface.xdg.surface, 0, 0,
-                                        wind->window_width, wind->window_height);
     }
+#endif
 }
 
 static const struct wl_callback_listener surface_damage_frame_listener;
@@ -2098,7 +2093,6 @@ static void
 Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    SDL_VideoData *viddata = data->waylandData;
     const int old_w = window->w, old_h = window->h;
     const int old_drawable_width = data->drawable_width;
     const int old_drawable_height = data->drawable_height;
@@ -2120,21 +2114,6 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
         window->w = width;
         window->h = height;
         data->needs_resize_event = SDL_FALSE;
-    }
-
-    /* XXX: This workarounds issues with commiting buffers with old size after
-     * already acknowledging the new size, which can cause protocol violations.
-     * It doesn't fix the first frames after resize being glitched visually,
-     * but at least lets us not be terminated by the compositor.
-     * Can be removed once SDL's resize logic becomes compliant. */
-    if (
-#ifdef HAVE_LIBDECOR_H
-        data->shell_surface_type != WAYLAND_SURFACE_LIBDECOR &&
-#endif
-        viddata->shell.xdg &&
-        data->shell_surface.xdg.surface) {
-        xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0,
-                                        data->window_width, data->window_height);
     }
 }
 
