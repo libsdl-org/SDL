@@ -935,12 +935,8 @@ static const GuessTest guess_tests[] =
     }
 };
 
-#if ULONG_MAX == 0xFFFFFFFFUL
-#   define SwapLongLE(X) SDL_SwapLE32(X)
-#else
-    /* assume 64-bit */
-#   define SwapLongLE(X) SDL_SwapLE64(X)
-#endif
+#define SwapLongLE(X) \
+	((sizeof(unsigned long) == 4) ? SDL_SwapLE32(X) : SDL_SwapLE64(X))
 
 static int
 run_test(void)
