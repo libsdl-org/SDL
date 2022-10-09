@@ -173,6 +173,7 @@ typedef struct
     ID3D12CommandQueue *commandQueue;
     ID3D12GraphicsCommandList2 *commandList;
     DXGI_SWAP_EFFECT swapEffect;
+    UINT swapFlags;
 
     /* Descriptor heaps */
     ID3D12DescriptorHeap* rtvDescriptorHeap;
@@ -356,6 +357,7 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
         }
         
         data->swapEffect = (DXGI_SWAP_EFFECT) 0;
+        data->swapFlags = 0;
         data->currentRenderTargetView.ptr = 0;
         data->currentSampler.ptr = 0;
 
@@ -1231,6 +1233,7 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     }
 
     data->swapEffect = swapChainDesc.SwapEffect;
+    data->swapFlags = swapChainDesc.Flags;
 
 done:
     SAFE_RELEASE(swapChain);
@@ -1281,10 +1284,16 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc;
     D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor;
 
+    /* Release resources in the current command list */
+    D3D_CALL(data->commandList, Close);
+    D3D12_ResetCommandList(data);
+    D3D_CALL(data->commandList, OMSetRenderTargets, 0, NULL, FALSE, NULL);
+
     /* Release render targets */
     for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
         SAFE_RELEASE(data->renderTargets[i]);
     }
+
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
@@ -1303,7 +1312,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             0,
             w, h,
             DXGI_FORMAT_UNKNOWN,
-            0
+            data->swapFlags
             );
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
             /* If the device was removed for any reason, a new device and swap chain will need to be created. */
