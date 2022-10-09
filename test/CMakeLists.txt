@@ -51,7 +51,7 @@ if(WINDOWS)
     endif()
 
     # CET support was added in VS 16.7
-    if(MSVC_VERSION GREATER 1926 AND NOT CMAKE_GENERATOR_PLATFORM MATCHES ARM)
+    if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
         link_libraries(-CETCOMPAT)
     endif()
 
