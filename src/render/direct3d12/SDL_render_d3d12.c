@@ -352,6 +352,7 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
 
         for (i = 0; i < SDL_D3D12_NUM_VERTEX_BUFFERS; ++i) {
             SAFE_RELEASE(data->vertexBuffers[i].resource);
+            data->vertexBuffers[i].size = 0;
         }
         
         data->swapEffect = (DXGI_SWAP_EFFECT) 0;
