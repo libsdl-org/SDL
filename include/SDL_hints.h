@@ -872,7 +872,7 @@ extern "C" {
  *    "0"       - HIDAPI driver is not used
  *    "1"       - HIDAPI driver is used
  *
- *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ *  This driver doesn't work with the dolphinbar, so the default is SDL_FALSE for now.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_WII "SDL_JOYSTICK_HIDAPI_WII"
 
