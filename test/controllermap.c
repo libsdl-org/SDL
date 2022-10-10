@@ -373,8 +373,8 @@ WatchJoystick(SDL_Joystick * joystick)
 
     /* Print info about the joystick we are watching */
     name = SDL_JoystickName(joystick);
-    SDL_Log("Watching joystick %d: (%s)\n", SDL_JoystickInstanceID(joystick),
-           name ? name : "Unknown Joystick");
+    SDL_Log("Watching joystick %" SDL_PRIs32 ": (%s)\n", SDL_JoystickInstanceID(joystick),
+            name ? name : "Unknown Joystick");
     SDL_Log("Joystick has %d axes, %d hats, %d balls, and %d buttons\n",
            SDL_JoystickNumAxes(joystick), SDL_JoystickNumHats(joystick),
            SDL_JoystickNumBalls(joystick), SDL_JoystickNumButtons(joystick));
@@ -781,7 +781,7 @@ main(int argc, char *argv[])
             SDL_Log("      balls: %d\n", SDL_JoystickNumBalls(joystick));
             SDL_Log("       hats: %d\n", SDL_JoystickNumHats(joystick));
             SDL_Log("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
-            SDL_Log("instance id: %d\n", SDL_JoystickInstanceID(joystick));
+            SDL_Log("instance id: %" SDL_PRIu32 "\n", SDL_JoystickInstanceID(joystick));
             SDL_Log("       guid: %s\n", guid);
             SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
             SDL_JoystickClose(joystick);

@@ -346,7 +346,7 @@ video_getWindowFlags(void *arg)
   if (window != NULL) {
       actualFlags = SDL_GetWindowFlags(window);
       SDLTest_AssertPass("Call to SDL_GetWindowFlags()");
-      SDLTest_AssertCheck((flags & actualFlags) == flags, "Verify returned value has flags %d set, got: %d", flags, actualFlags);
+      SDLTest_AssertCheck((flags & actualFlags) == flags, "Verify returned value has flags %d set, got: %" SDL_PRIu32, flags, actualFlags);
   }
 
   /* Clean up */
@@ -985,13 +985,13 @@ video_getWindowId(void *arg)
 
   /* Get window from ID */
   result = SDL_GetWindowFromID(id);
-  SDLTest_AssertPass("Call to SDL_GetWindowID(%d)", id);
+  SDLTest_AssertPass("Call to SDL_GetWindowID(%" SDL_PRIu32 ")", id);
   SDLTest_AssertCheck(result == window, "Verify result matches window pointer");
 
   /* Get window from random large ID, no result check */
   randomId = SDLTest_RandomIntegerInRange(UINT8_MAX,UINT16_MAX);
   result = SDL_GetWindowFromID(randomId);
-  SDLTest_AssertPass("Call to SDL_GetWindowID(%d/random_large)", randomId);
+  SDLTest_AssertPass("Call to SDL_GetWindowID(%" SDL_PRIu32 "/random_large)", randomId);
 
   /* Get window from 0 and Uint32 max ID, no result check */
   result = SDL_GetWindowFromID(0);
@@ -1004,7 +1004,7 @@ video_getWindowId(void *arg)
 
   /* Get window from ID for closed window */
   result = SDL_GetWindowFromID(id);
-  SDLTest_AssertPass("Call to SDL_GetWindowID(%d/closed_window)", id);
+  SDLTest_AssertPass("Call to SDL_GetWindowID(%" SDL_PRIu32 "/closed_window)", id);
   SDLTest_AssertCheck(result == NULL, "Verify result is NULL");
 
   /* Negative test */
@@ -1036,7 +1036,7 @@ video_getWindowPixelFormat(void *arg)
   /* Get format */
   format = SDL_GetWindowPixelFormat(window);
   SDLTest_AssertPass("Call to SDL_GetWindowPixelFormat()");
-  SDLTest_AssertCheck(format != SDL_PIXELFORMAT_UNKNOWN, "Verify that returned format is valid; expected: != %d, got: %d", SDL_PIXELFORMAT_UNKNOWN, format);
+  SDLTest_AssertCheck(format != SDL_PIXELFORMAT_UNKNOWN, "Verify that returned format is valid; expected: != %d, got: %" SDL_PRIu32, SDL_PIXELFORMAT_UNKNOWN, format);
 
   /* Clean up */
   _destroyVideoSuiteTestWindow(window);

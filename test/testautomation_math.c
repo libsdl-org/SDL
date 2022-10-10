@@ -183,7 +183,7 @@ helper_range(const char *func_name, d_to_d_func func)
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("%s: Testing a range of %u values with steps of %u",
+    SDLTest_AssertPass("%s: Testing a range of %u values with steps of %" SDL_PRIu32,
                        func_name,
                        RANGE_TEST_ITERATIONS,
                        RANGE_TEST_STEP);
@@ -770,7 +770,7 @@ copysign_rangeTest(void *args)
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("Copysign: Testing a range of %u values with steps of %u",
+    SDLTest_AssertPass("Copysign: Testing a range of %u values with steps of %" SDL_PRIu32,
                        RANGE_TEST_ITERATIONS,
                        RANGE_TEST_STEP);
 
@@ -973,7 +973,7 @@ fmod_rangeTest(void *args)
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("Fmod: Testing a range of %u values with steps of %u",
+    SDLTest_AssertPass("Fmod: Testing a range of %u values with steps of %" SDL_PRIu32,
                        RANGE_TEST_ITERATIONS,
                        RANGE_TEST_STEP);
 
@@ -1684,7 +1684,7 @@ pow_rangeTest(void *args)
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("Pow: Testing a range of %u values with steps of %u",
+    SDLTest_AssertPass("Pow: Testing a range of %u values with steps of %" SDL_PRIu32,
                        RANGE_TEST_ITERATIONS,
                        RANGE_TEST_STEP);
 
@@ -2011,7 +2011,7 @@ cos_rangeTest(void *args)
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("Cos: Testing a range of %u values with steps of %u",
+    SDLTest_AssertPass("Cos: Testing a range of %u values with steps of %" SDL_PRIu32,
                        RANGE_TEST_ITERATIONS,
                        RANGE_TEST_STEP);
 
@@ -2129,7 +2129,7 @@ sin_rangeTest(void *args)
     Uint32 i;
     double test_value = 0.0;
 
-    SDLTest_AssertPass("Sin: Testing a range of %u values with steps of %u",
+    SDLTest_AssertPass("Sin: Testing a range of %u values with steps of %" SDL_PRIu32,
                        RANGE_TEST_ITERATIONS,
                        RANGE_TEST_STEP);
 

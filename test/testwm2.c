@@ -156,20 +156,20 @@ loop()
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
                     SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
                     if (window) {
-                        SDL_Log("Window %d resized to %dx%d\n",
-                            event.window.windowID,
-                            event.window.data1,
-                            event.window.data2);
+                        SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
+                                event.window.windowID,
+                                event.window.data1,
+                                event.window.data2);
                     }
                 }
                 if (event.window.event == SDL_WINDOWEVENT_MOVED) {
                     SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
                     if (window) {
-                        SDL_Log("Window %d moved to %d,%d (display %s)\n",
-                            event.window.windowID,
-                            event.window.data1,
-                            event.window.data2,
-                            SDL_GetDisplayName(SDL_GetWindowDisplayIndex(window)));
+                        SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
+                                event.window.windowID,
+                                event.window.data1,
+                                event.window.data2,
+                                SDL_GetDisplayName(SDL_GetWindowDisplayIndex(window)));
                     }
                 }
                 if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {

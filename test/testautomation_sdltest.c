@@ -891,8 +891,8 @@ sdltest_randomBoundaryNumberSint32(void *arg)
   sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min + 1, long_max, SDL_FALSE);
   SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
   SDLTest_AssertCheck(
-    sresult == long_min,
-    "Validate result value for parameters (LONG_MIN+1,LONG_MAX,SDL_FALSE); expected: %d, got: %"SDL_PRIs64, long_min, sresult);
+      sresult == long_min,
+      "Validate result value for parameters (LONG_MIN+1,LONG_MAX,SDL_FALSE); expected: %" SDL_PRIs32 ", got: %" SDL_PRIs64, long_min, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
   SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -901,8 +901,8 @@ sdltest_randomBoundaryNumberSint32(void *arg)
   sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min, long_max - 1, SDL_FALSE);
   SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
   SDLTest_AssertCheck(
-    sresult == long_max,
-    "Validate result value for parameters (LONG_MIN,LONG_MAX - 1,SDL_FALSE); expected: %d, got: %"SDL_PRIs64, long_max, sresult);
+      sresult == long_max,
+      "Validate result value for parameters (LONG_MIN,LONG_MAX - 1,SDL_FALSE); expected: %" SDL_PRIs32 ", got: %" SDL_PRIs64, long_max, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
   SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -911,8 +911,8 @@ sdltest_randomBoundaryNumberSint32(void *arg)
   sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min, long_max, SDL_FALSE);
   SDLTest_AssertPass("Call to SDLTest_RandomSint32BoundaryValue");
   SDLTest_AssertCheck(
-    sresult == long_min,
-    "Validate result value for parameters(LONG_MIN,LONG_MAX,SDL_FALSE); expected: %d, got: %"SDL_PRIs64, long_min, sresult);
+      sresult == long_min,
+      "Validate result value for parameters(LONG_MIN,LONG_MAX,SDL_FALSE); expected: %" SDL_PRIs32 ", got: %" SDL_PRIs64, long_min, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
   SDLTest_AssertCheck(lastError != NULL && SDL_strcmp(lastError, expectedError) == 0,
@@ -1058,56 +1058,56 @@ sdltest_randomIntegerInRange(void *arg)
   max = min + (Sint32)SDLTest_RandomUint8() + 2;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(min,max)");
-  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%d,%d], got: %d", min, max, result);
+  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
   /* One Range */
   min = (Sint32)SDLTest_RandomSint16();
   max = min + 1;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(min,min+1)");
-  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%d,%d], got: %d", min, max, result);
+  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
   /* Zero range */
   min = (Sint32)SDLTest_RandomSint16();
   max = min;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(min,min)");
-  SDLTest_AssertCheck(min == result, "Validated returned value; expected: %d, got: %d", min, result);
+  SDLTest_AssertCheck(min == result, "Validated returned value; expected: %" SDL_PRIs32 ", got: %" SDL_PRIs32, min, result);
 
   /* Zero range at zero */
   min = 0;
   max = 0;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(0,0)");
-  SDLTest_AssertCheck(result == 0, "Validated returned value; expected: 0, got: %d", result);
+  SDLTest_AssertCheck(result == 0, "Validated returned value; expected: 0, got: %" SDL_PRIs32, result);
 
   /* Swapped min-max */
   min = (Sint32)SDLTest_RandomSint16();
   max = min + (Sint32)SDLTest_RandomUint8() + 2;
   result = SDLTest_RandomIntegerInRange(max, min);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(max,min)");
-  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%d,%d], got: %d", min, max, result);
+  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
   /* Range with min at integer limit */
   min = long_min;
   max = long_max + (Sint32)SDLTest_RandomSint16();
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(SINT32_MIN,...)");
-  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%d,%d], got: %d", min, max, result);
+  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
   /* Range with max at integer limit */
   min = long_min - (Sint32)SDLTest_RandomSint16();
   max = long_max;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(...,SINT32_MAX)");
-  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%d,%d], got: %d", min, max, result);
+  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
   /* Full integer range */
   min = long_min;
   max = long_max;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(SINT32_MIN,SINT32_MAX)");
-  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%d,%d], got: %d", min, max, result);
+  SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
   return TEST_COMPLETED;
 }

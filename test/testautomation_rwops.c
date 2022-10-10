@@ -239,7 +239,7 @@ rwops_testMem (void)
    if (rw == NULL) return TEST_ABORTED;
 
    /* Check type */
-   SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY, "Verify RWops type is SDL_RWOPS_MEMORY; expected: %d, got: %d", SDL_RWOPS_MEMORY, rw->type);
+   SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY, "Verify RWops type is SDL_RWOPS_MEMORY; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY, rw->type);
 
    /* Run generic tests */
    _testGenericRWopsValidations(rw, 1);
@@ -275,7 +275,7 @@ rwops_testConstMem (void)
    if (rw == NULL) return TEST_ABORTED;
 
    /* Check type */
-   SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY_RO, "Verify RWops type is SDL_RWOPS_MEMORY_RO; expected: %d, got: %d", SDL_RWOPS_MEMORY_RO, rw->type);
+   SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY_RO, "Verify RWops type is SDL_RWOPS_MEMORY_RO; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY_RO, rw->type);
 
    /* Run generic tests */
    _testGenericRWopsValidations( rw, 0 );
@@ -321,8 +321,8 @@ rwops_testFileRead(void)
       "Verify RWops type is SDL_RWOPS_WINFILE; expected: %d, got: %d", SDL_RWOPS_WINFILE, rw->type);
 #else
    SDLTest_AssertCheck(
-      rw->type == SDL_RWOPS_STDFILE,
-      "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %d", SDL_RWOPS_STDFILE, rw->type);
+       rw->type == SDL_RWOPS_STDFILE,
+       "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_STDFILE, rw->type);
 #endif
 
    /* Run generic tests */
@@ -368,8 +368,8 @@ rwops_testFileWrite(void)
       "Verify RWops type is SDL_RWOPS_WINFILE; expected: %d, got: %d", SDL_RWOPS_WINFILE, rw->type);
 #else
    SDLTest_AssertCheck(
-      rw->type == SDL_RWOPS_STDFILE,
-      "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %d", SDL_RWOPS_STDFILE, rw->type);
+       rw->type == SDL_RWOPS_STDFILE,
+       "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_STDFILE, rw->type);
 #endif
 
    /* Run generic tests */
@@ -420,8 +420,8 @@ rwops_testFPRead(void)
 
    /* Check type */
    SDLTest_AssertCheck(
-      rw->type == SDL_RWOPS_STDFILE,
-      "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %d", SDL_RWOPS_STDFILE, rw->type);
+       rw->type == SDL_RWOPS_STDFILE,
+       "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_STDFILE, rw->type);
 
    /* Run generic tests */
    _testGenericRWopsValidations( rw, 0 );
@@ -473,8 +473,8 @@ rwops_testFPWrite(void)
 
    /* Check type */
    SDLTest_AssertCheck(
-      rw->type == SDL_RWOPS_STDFILE,
-      "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %d", SDL_RWOPS_STDFILE, rw->type);
+       rw->type == SDL_RWOPS_STDFILE,
+       "Verify RWops type is SDL_RWOPS_STDFILE; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_STDFILE, rw->type);
 
    /* Run generic tests */
    _testGenericRWopsValidations( rw, 1 );
@@ -506,8 +506,8 @@ rwops_testAllocFree (void)
 
    /* Check type */
    SDLTest_AssertCheck(
-      rw->type == SDL_RWOPS_UNKNOWN,
-      "Verify RWops type is SDL_RWOPS_UNKNOWN; expected: %d, got: %d", SDL_RWOPS_UNKNOWN, rw->type);
+       rw->type == SDL_RWOPS_UNKNOWN,
+       "Verify RWops type is SDL_RWOPS_UNKNOWN; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_UNKNOWN, rw->type);
 
    /* Free context again */
    SDL_FreeRW(rw);
@@ -684,7 +684,7 @@ rwops_testFileWriteReadEndian(void)
      SDLTest_AssertCheck(BE16test == BE16value, "Validate return value from SDL_ReadBE16, expected: %hu, got: %hu", BE16value, BE16test);
      BE32test = SDL_ReadBE32(rw);
      SDLTest_AssertPass("Call to SDL_ReadBE32()");
-     SDLTest_AssertCheck(BE32test == BE32value, "Validate return value from SDL_ReadBE32, expected: %u, got: %u", BE32value, BE32test);
+     SDLTest_AssertCheck(BE32test == BE32value, "Validate return value from SDL_ReadBE32, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, BE32value, BE32test);
      BE64test = SDL_ReadBE64(rw);
      SDLTest_AssertPass("Call to SDL_ReadBE64()");
      SDLTest_AssertCheck(BE64test == BE64value, "Validate return value from SDL_ReadBE64, expected: %"SDL_PRIu64", got: %"SDL_PRIu64, BE64value, BE64test);
@@ -693,7 +693,7 @@ rwops_testFileWriteReadEndian(void)
      SDLTest_AssertCheck(LE16test == LE16value, "Validate return value from SDL_ReadLE16, expected: %hu, got: %hu", LE16value, LE16test);
      LE32test = SDL_ReadLE32(rw);
      SDLTest_AssertPass("Call to SDL_ReadLE32()");
-     SDLTest_AssertCheck(LE32test == LE32value, "Validate return value from SDL_ReadLE32, expected: %u, got: %u", LE32value, LE32test);
+     SDLTest_AssertCheck(LE32test == LE32value, "Validate return value from SDL_ReadLE32, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, LE32value, LE32test);
      LE64test = SDL_ReadLE64(rw);
      SDLTest_AssertPass("Call to SDL_ReadLE64()");
      SDLTest_AssertCheck(LE64test == LE64value, "Validate return value from SDL_ReadLE64, expected: %"SDL_PRIu64", got: %"SDL_PRIu64, LE64value, LE64test);
