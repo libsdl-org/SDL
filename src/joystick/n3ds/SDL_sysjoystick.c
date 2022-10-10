@@ -34,16 +34,16 @@
 /*
   N3DS sticks values are roughly within +/-160
   which is too small to pass the jitter tolerance.
-  This correction factor is applied to axis values
+  This correction is applied to axis values
   so they fit better in SDL's value range.
 */
-#define CORRECTION_FACTOR_X SDL_JOYSTICK_AXIS_MAX / 160
+#define CORRECT_AXIS_X(X) ((X * SDL_JOYSTICK_AXIS_MAX) / 160)
 
 /*
   The Y axis needs to be flipped because SDL's "up"
   is reversed compared to libctru's "up"
 */
-#define CORRECTION_FACTOR_Y -CORRECTION_FACTOR_X
+#define CORRECT_AXIS_Y(Y) CORRECT_AXIS_X(-Y)
 
 SDL_FORCE_INLINE void UpdateN3DSPressedButtons(SDL_Joystick *joystick);
 SDL_FORCE_INLINE void UpdateN3DSReleasedButtons(SDL_Joystick *joystick);
@@ -151,12 +151,12 @@ UpdateN3DSCircle(SDL_Joystick *joystick)
     if (previous_state.dx != current_state.dx) {
         SDL_PrivateJoystickAxis(joystick,
                                 0,
-                                current_state.dx * CORRECTION_FACTOR_X);
+                                CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
         SDL_PrivateJoystickAxis(joystick,
                                 1,
-                                current_state.dy * CORRECTION_FACTOR_Y);
+                                CORRECT_AXIS_Y(current_state.dy));
     }
     previous_state = current_state;
 }
@@ -170,12 +170,12 @@ UpdateN3DSCStick(SDL_Joystick *joystick)
     if (previous_state.dx != current_state.dx) {
         SDL_PrivateJoystickAxis(joystick,
                                 2,
-                                current_state.dx * CORRECTION_FACTOR_X);
+                                CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
         SDL_PrivateJoystickAxis(joystick,
                                 3,
-                                current_state.dy * CORRECTION_FACTOR_Y);
+                                CORRECT_AXIS_Y(current_state.dy));
     }
     previous_state = current_state;
 }
