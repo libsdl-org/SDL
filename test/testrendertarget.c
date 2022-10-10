@@ -72,7 +72,7 @@ DrawComposite(DrawState *s)
         SDL_RenderCopy(s->renderer, A, NULL, NULL);
         SDL_RenderReadPixels(s->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, &P, sizeof(P));
 
-        SDL_Log("Blended pixel: 0x%8.8X\n", P);
+        SDL_Log("Blended pixel: 0x%8.8" SDL_PRIX32 "\n", P);
 
         SDL_DestroyTexture(A);
         SDL_DestroyTexture(B);

@@ -87,7 +87,7 @@ PrintJoystick(SDL_Joystick *joy)
     SDL_Log("         balls: %d\n", SDL_JoystickNumBalls(joy));
     SDL_Log("          hats: %d\n", SDL_JoystickNumHats(joy));
     SDL_Log("       buttons: %d\n", SDL_JoystickNumButtons(joy));
-    SDL_Log("   instance id: %d\n", SDL_JoystickInstanceID(joy));
+    SDL_Log("   instance id: %" SDL_PRIs32 "\n", SDL_JoystickInstanceID(joy));
     SDL_Log("          guid: %s\n", guid);
     SDL_Log("       VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joy), SDL_JoystickGetProduct(joy));
 }
@@ -137,13 +137,13 @@ loop(void *arg)
             break;
 
         case SDL_JOYAXISMOTION:
-            SDL_Log("Joystick %d axis %d value: %d\n",
-                   event.jaxis.which,
-                   event.jaxis.axis, event.jaxis.value);
+            SDL_Log("Joystick %" SDL_PRIs32 " axis %d value: %d\n",
+                    event.jaxis.which,
+                    event.jaxis.axis, event.jaxis.value);
             break;
         case SDL_JOYHATMOTION:
-            SDL_Log("Joystick %d hat %d value:",
-                   event.jhat.which, event.jhat.hat);
+            SDL_Log("Joystick %" SDL_PRIs32 " hat %d value:",
+                    event.jhat.which, event.jhat.hat);
             if (event.jhat.value == SDL_HAT_CENTERED)
                 SDL_Log(" centered");
             if (event.jhat.value & SDL_HAT_UP)
@@ -157,21 +157,21 @@ loop(void *arg)
             SDL_Log("\n");
             break;
         case SDL_JOYBALLMOTION:
-            SDL_Log("Joystick %d ball %d delta: (%d,%d)\n",
-                   event.jball.which,
-                   event.jball.ball, event.jball.xrel, event.jball.yrel);
+            SDL_Log("Joystick %" SDL_PRIs32 " ball %d delta: (%d,%d)\n",
+                    event.jball.which,
+                    event.jball.ball, event.jball.xrel, event.jball.yrel);
             break;
         case SDL_JOYBUTTONDOWN:
-            SDL_Log("Joystick %d button %d down\n",
-                   event.jbutton.which, event.jbutton.button);
+            SDL_Log("Joystick %" SDL_PRIs32 " button %d down\n",
+                    event.jbutton.which, event.jbutton.button);
             /* First button triggers a 0.5 second full strength rumble */
             if (event.jbutton.button == 0) {
                 SDL_JoystickRumble(joystick, 0xFFFF, 0xFFFF, 500);
             }
             break;
         case SDL_JOYBUTTONUP:
-            SDL_Log("Joystick %d button %d up\n",
-                   event.jbutton.which, event.jbutton.button);
+            SDL_Log("Joystick %" SDL_PRIs32 " button %d up\n",
+                    event.jbutton.which, event.jbutton.button);
             break;
         case SDL_KEYDOWN:
             /* Press the L key to lag for 3 seconds, to see what happens

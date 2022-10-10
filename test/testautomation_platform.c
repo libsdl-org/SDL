@@ -106,7 +106,7 @@ int platform_testEndianessAndSwap(void *arg)
 
     /* Test 32 swap. */
     SDLTest_AssertCheck( SDL_Swap32(value32) == swapped32,
-             "SDL_Swap32(): 32 bit swapped: 0x%X => 0x%X",
+             "SDL_Swap32(): 32 bit swapped: 0x%" SDL_PRIX32 " => 0x%" SDL_PRIX32,
              value32, SDL_Swap32(value32) );
 
     /* Test 64 swap. */

@@ -66,8 +66,8 @@ save_surface_to_bmp()
     surface = SDL_CreateRGBSurface(0, width, height, bbp, r_mask, g_mask, b_mask, a_mask);
     SDL_RenderReadPixels(renderer, NULL, pixel_format, (void*)surface->pixels, surface->pitch);
 
-    SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-        SDL_GetWindowID(window), ++frame_number);
+    SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
+                 SDL_GetWindowID(window), ++frame_number);
 
     SDL_SaveBMP(surface, file);
     SDL_FreeSurface(surface);
@@ -154,7 +154,7 @@ main(int argc, char *argv[])
             now = SDL_GetTicks();
             if (now > then) {
                 double fps = ((double) frames * 1000) / (now - then);
-                SDL_Log("Frames remaining: %i rendering at %2.2f frames per second\n", max_frames - frames, fps);
+                SDL_Log("Frames remaining: %" SDL_PRIu32 " rendering at %2.2f frames per second\n", max_frames - frames, fps);
             }
         }
     }

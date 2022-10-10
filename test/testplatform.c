@@ -149,8 +149,9 @@ TestEndian(SDL_bool verbose)
         ++error;
     }
     if (verbose) {
-        SDL_Log("Value 32 = 0x%X, swapped = 0x%X\n", value32,
-               SDL_Swap32(value32));
+        SDL_Log("Value 32 = 0x%" SDL_PRIX32 ", swapped = 0x%" SDL_PRIX32 "\n",
+                value32,
+                SDL_Swap32(value32));
     }
     if (SDL_Swap32(value32) != swapped32) {
         if (verbose) {

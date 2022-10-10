@@ -79,7 +79,7 @@ main(int argc, char *argv[])
                     {
                         joystick = SDL_JoystickOpen(event.jdevice.which);
                         instance = SDL_JoystickInstanceID(joystick);
-                        SDL_Log("Joy Added  : %d : %s\n", event.jdevice.which, SDL_JoystickName(joystick));
+                        SDL_Log("Joy Added  : %" SDL_PRIs32 " : %s\n", event.jdevice.which, SDL_JoystickName(joystick));
                         if (enable_haptic)
                         {
                             if (SDL_JoystickIsHaptic(joystick))
@@ -108,7 +108,7 @@ main(int argc, char *argv[])
                 case SDL_JOYDEVICEREMOVED:
                     if (instance == event.jdevice.which)
                     {
-                        SDL_Log("Joy Removed: %d\n", event.jdevice.which);
+                        SDL_Log("Joy Removed: %" SDL_PRIs32 "\n", event.jdevice.which);
                         instance = -1;
                         if(enable_haptic && haptic)
                         {
