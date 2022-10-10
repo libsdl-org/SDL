@@ -695,7 +695,6 @@ if(USE_GCC OR USE_CLANG)
     cmake_pop_check_state()
 
     # FIXME: use generator expression instead of appending to EXTRA_LDFLAGS_BUILD
-    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-undefined,error")
     list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
     list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${DYLIB_CURRENT_VERSION}")
   elseif(NOT OPENBSD)
