@@ -445,6 +445,7 @@ WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
         SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
         SDL_ToggleModState(KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) != 0);
 
+        WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
     } else {
         RECT rect;
 
@@ -693,7 +694,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                actually being the foreground window, but this appears to get called in all cases where
                the global foreground window changes to and from this window. */
             WIN_UpdateFocus(data->window, !!wParam);
-            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }
         break;
 
@@ -1163,6 +1163,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             int x, y;
             int w, h;
+            int display_index = data->window->display_index;
 
             if (data->initializing || data->in_border_change) {
                 break;
@@ -1203,7 +1204,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Forces a WM_PAINT event */
             InvalidateRect(hwnd, NULL, FALSE);
 
-            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
+            if (data->window->display_index != display_index) {
+                /* Display changed, check ICC profile */
+                WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
+            }
         }
         break;
 
