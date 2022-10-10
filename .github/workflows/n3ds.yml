@@ -17,6 +17,7 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
+            -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
             -DCMAKE_BUILD_TYPE=Release \
