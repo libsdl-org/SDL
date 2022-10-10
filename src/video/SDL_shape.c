@@ -288,12 +288,11 @@ SDL_SetWindowShape(SDL_Window *window,SDL_Surface *shape,SDL_WindowShapeMode *sh
                 if (displayIndex >= _this->num_displays) {
                     displayIndex = 0;
                 }
-            } else if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
+            } else {
                 displayIndex = (y & 0xFFFF);
                 if (displayIndex >= _this->num_displays) {
                     displayIndex = 0;
                 }
-                return displayIndex;
             }
 
             SDL_GetDisplayBounds(displayIndex, &bounds);
