@@ -145,8 +145,9 @@ Wayland_HasScreenKeyboardSupport(_THIS)
      * input protocol, make sure we don't have any physical keyboards either.
      */
     SDL_VideoData *driverdata = _this->driverdata;
-    return (driverdata->input->keyboard == NULL &&
-            driverdata->text_input_manager != NULL);
+    SDL_bool haskeyboard = (driverdata->input != NULL) && (driverdata->input->keyboard != NULL);
+    SDL_bool hastextmanager = (driverdata->text_input_manager != NULL);
+    return (!haskeyboard && hastextmanager);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
