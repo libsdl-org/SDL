@@ -92,14 +92,6 @@ void PSP_PumpEvents(_THIS)
     if(changed) {
         for(i=0; i<sizeof(keymap_psp)/sizeof(keymap_psp[0]); i++) {
             if(changed & keymap_psp[i].id) {
-                sym.scancode = keymap_psp[i].id;
-                sym.sym = keymap_psp[i].sym;
-
-                /* out of date
-                SDL_PrivateKeyboard((keys & keymap_psp[i].id) ?
-                            SDL_PRESSED : SDL_RELEASED,
-                            &sym);
-        */
                 SDL_SendKeyboardKey((keys & keymap_psp[i].id) ?
                                     SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap_psp[i].sym));
             }
