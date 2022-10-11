@@ -62,16 +62,17 @@ static struct {
     { PSP_HPRM_HOLD,      SDLK_F15 }
 };
 
-int EventUpdate(void *data)
+int
+EventUpdate(void *data)
 {
     while (running) {
-                SDL_SemWait(event_sem);
-                                sceHprmPeekCurrentKey(&hprm);
-                SDL_SemPost(event_sem);
-                /* Delay 1/60th of a second */
-                sceKernelDelayThread(1000000 / 60);
-        }
-        return 0;
+        SDL_SemWait(event_sem);
+        sceHprmPeekCurrentKey((u32 *) &hprm);
+        SDL_SemPost(event_sem);
+        /* Delay 1/60th of a second */
+        sceKernelDelayThread(1000000 / 60);
+    }
+    return 0;
 }
 
 void PSP_PumpEvents(_THIS)
@@ -80,7 +81,6 @@ void PSP_PumpEvents(_THIS)
     enum PspHprmKeys keys;
     enum PspHprmKeys changed;
     static enum PspHprmKeys old_keys = 0;
-    SDL_Keysym sym;
 
     SDL_SemWait(event_sem);
     keys = hprm;
