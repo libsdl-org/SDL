@@ -21,7 +21,7 @@ jobs:
       run: |
         cmake -S . -B build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake \
-          -DSDL_ERRORS=ON \
+          -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
           -DCMAKE_BUILD_TYPE=Release \
