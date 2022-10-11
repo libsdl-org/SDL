@@ -1287,8 +1287,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor;
 
     /* Release resources in the current command list */
-    D3D_CALL(data->commandList, Close);
-    D3D12_ResetCommandList(data);
+    D3D12_IssueBatch(data);
     D3D_CALL(data->commandList, OMSetRenderTargets, 0, NULL, FALSE, NULL);
 
     /* Release render targets */
