@@ -16,6 +16,7 @@ jobs:
       run: |
         cmake -S . -B build \
           -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake \
+          -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
           -DCMAKE_BUILD_TYPE=Release \
