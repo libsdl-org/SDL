@@ -16,7 +16,7 @@ jobs:
     - name: Install build requirements
       run: |
         apk update 
-        apk add cmake ninja pkgconf
+        apk add cmake ninja pkgconf bash
     - name: Configure CMake
       run: |
         cmake -S . -B build -G Ninja \
