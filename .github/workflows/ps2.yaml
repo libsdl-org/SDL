@@ -24,8 +24,9 @@ jobs:
 
     - name: Configure (CMake)
       run: |
-        cmake -S . -B build -G Ninja\
+        cmake -S . -B build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
+          -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release
