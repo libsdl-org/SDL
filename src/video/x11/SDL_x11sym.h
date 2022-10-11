@@ -166,7 +166,7 @@ SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), re
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b),(a,b),return)
-SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b),(a,b),)    
+SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b),(a,b),)
 #endif
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
@@ -270,6 +270,8 @@ SDL_X11_SYM(int,XIGrabTouchBegin,(Display *a,int b,Window c,int d,XIEventMask *e
 SDL_X11_SYM(int,XIUngrabTouchBegin, (Display *a,int b,Window c, int d,XIGrabModifiers *e),(a, b, c, d, e),return)
 SDL_X11_SYM(Status,XIQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
 SDL_X11_SYM(XIEventMask*,XIGetSelectedEvents,(Display *a,Window b,int *c),(a,b,c),return)
+SDL_X11_SYM(Bool,XIGetClientPointer,(Display *a,Window b,int *c),(a,b,c),return)
+SDL_X11_SYM(Bool,XIWarpPointer,(Display *a,int b,Window c,Window d,double e,double f,int g,int h,double i,double j),(a,b,c,d,e,f,g,h,i,j),return)
 #endif
 
 /* XRandR support */
