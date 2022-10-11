@@ -30,7 +30,11 @@
 #include <gsKit.h>
 #include <dmaKit.h>
 #include <gsToolkit.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
 #include <gsInline.h>
+#pragma GCC diagnostic pop
 
 /* turn black GS Screen */
 #define GS_BLACK GS_SETREG_RGBA(0x00, 0x00, 0x00, 0x80)

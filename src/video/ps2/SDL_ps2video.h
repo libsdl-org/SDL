@@ -31,7 +31,11 @@
 #include <dmaKit.h>
 
 #include <gsToolkit.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
 #include <gsInline.h>
+#pragma GCC diagnostic pop
 
 #endif /* SDL_ps2video_h_ */
 
