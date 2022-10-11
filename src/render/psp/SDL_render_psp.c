@@ -525,6 +525,7 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             break;
 
         default:
+            SDL_free(psp_texture);
             return -1;
     }
 
@@ -532,6 +533,7 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     psp_texture->size = psp_texture->textureHeight*psp_texture->pitch;
     if(texture->access & SDL_TEXTUREACCESS_TARGET) {
         if(TextureSpillTargetsForSpace(renderer->driverdata, psp_texture->size) < 0){
+            SDL_free(psp_texture);
             return -1;
         }
         psp_texture->data = valloc(psp_texture->size);
@@ -1372,10 +1374,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->driverdata = data;
     renderer->window = window;
 
-    if (data->initialized != SDL_FALSE)
-        return 0;
     data->initialized = SDL_TRUE;
-
     data->most_recent_target = NULL;
     data->least_recent_target = NULL;
 
