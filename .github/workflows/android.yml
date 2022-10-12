@@ -15,7 +15,7 @@ jobs:
           - { name: CMake, cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64" }
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: nttld/setup-ndk@v1
         id: setup_ndk
         with:
