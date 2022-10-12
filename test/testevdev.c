@@ -935,6 +935,7 @@ static const GuessTest guess_tests[] =
     }
 };
 
+SDL_COMPILE_TIME_ASSERT(sizeof_long, sizeof(unsigned long) == 4 || sizeof(unsigned long) == 8);
 #define SwapLongLE(X) \
 	((sizeof(unsigned long) == 4) ? SDL_SwapLE32(X) : SDL_SwapLE64(X))
 
