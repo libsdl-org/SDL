@@ -18,7 +18,7 @@ jobs:
     steps:
     - name: Setup dependencies
       run: apt-get update && apt-get install -y cmake ninja-build
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configure (autotools)
       if: ${{ contains(matrix.platform.name, 'autotools') }}
       run: |

@@ -60,7 +60,7 @@ jobs:
       run: |
         brew install \
           ninja
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Check that versioning is consistent
       # We only need to run this once: arbitrarily use the Linux/CMake build
       if: "runner.os == 'Linux' && ! matrix.platform.autotools"
