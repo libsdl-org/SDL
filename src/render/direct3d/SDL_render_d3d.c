@@ -41,13 +41,6 @@
 
 #include "SDL_shaders_d3d.h"
 
-#ifdef __WATCOMC__
-/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/868 is merged */
-#define D3DBLENDOP_REVSUBTRACT 3
-/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/869 is merged */
-#define D3DERR_UNSUPPORTEDCOLOROPERATION MAKE_D3DHRESULT( 2073 )
-#endif
-
 typedef struct
 {
     SDL_Rect viewport;
