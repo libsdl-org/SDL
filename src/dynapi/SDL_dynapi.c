@@ -190,7 +190,7 @@ SDL_DYNAPI_VARARGS(,,)
 #error Write me.
 #endif
 
-#define ENABLE_SDL_CALL_LOGGING 1
+#define ENABLE_SDL_CALL_LOGGING 0
 #if ENABLE_SDL_CALL_LOGGING
 static int SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) {
     char buf[512]; /* !!! FIXME: dynamic allocation */ \
