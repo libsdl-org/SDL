@@ -289,6 +289,25 @@ Wayland_SendWakeupEvent(_THIS, SDL_Window *window)
     WAYLAND_wl_display_flush(d->display);
 }
 
+static int
+dispatch_queued_events(SDL_VideoData *viddata)
+{
+    int ret;
+
+    /*
+     * NOTE: When reconnection is implemented, check if libdecor needs to be
+     *       involved in the reconnection process.
+     */
+#ifdef HAVE_LIBDECOR_H
+    if (viddata->shell.libdecor) {
+        libdecor_dispatch(viddata->shell.libdecor, 0);
+    }
+#endif
+
+    ret = WAYLAND_wl_display_dispatch_pending(viddata->display);
+    return ret >= 0 ? 1 : ret;
+}
+
 int
 Wayland_WaitEventTimeout(_THIS, int timeout)
 {
@@ -321,12 +340,6 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
         }
     }
 
-#ifdef HAVE_LIBDECOR_H
-    if (d->shell.libdecor) {
-        libdecor_dispatch(d->shell.libdecor, timeout);
-    }
-#endif
-
     /* wl_display_prepare_read() will return -1 if the default queue is not empty.
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
@@ -335,8 +348,7 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
         if (err > 0) {
             /* There are new events available to read */
             WAYLAND_wl_display_read_events(d->display);
-            WAYLAND_wl_display_dispatch_pending(d->display);
-            return 1;
+            return dispatch_queued_events(d);
         } else if (err == 0) {
             /* No events available within the timeout */
             WAYLAND_wl_display_cancel_read(d->display);
@@ -364,8 +376,7 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
         }
     } else {
         /* We already had pending events */
-        WAYLAND_wl_display_dispatch_pending(d->display);
-        return 1;
+        return dispatch_queued_events(d);
     }
 }
 
@@ -376,13 +387,19 @@ Wayland_PumpEvents(_THIS)
     struct SDL_WaylandInput *input = d->input;
     int err;
 
-    WAYLAND_wl_display_flush(d->display);
-
 #ifdef SDL_USE_IME
     if (d->text_input_manager == NULL && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
 #endif
+
+#ifdef HAVE_LIBDECOR_H
+    if (d->shell.libdecor) {
+        libdecor_dispatch(d->shell.libdecor, 0);
+    }
+#endif
+
+    WAYLAND_wl_display_flush(d->display);
 
     /* wl_display_prepare_read() will return -1 if the default queue is not empty.
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
@@ -402,7 +419,7 @@ Wayland_PumpEvents(_THIS)
         keyboard_repeat_handle(&input->keyboard_repeat, elapsed);
     }
 
-    if (err == -1 && !d->display_disconnected) {
+    if (err < 0 && !d->display_disconnected) {
         /* Something has failed with the Wayland connection -- for example,
          * the compositor may have shut down and closed its end of the socket,
          * or there is a library-specific error. No recovery is possible. */
