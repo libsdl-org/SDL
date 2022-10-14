@@ -29,7 +29,7 @@
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
-#include "../../events/scancodes_xfree86.h"
+#include "../../events/SDL_scancode_tables_c.h"
 #include "../SDL_sysvideo.h"
 
 #include "SDL_waylandvideo.h"
@@ -1125,9 +1125,8 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         keyboard_input_get_text(text, input, key, SDL_RELEASED, &handled_by_ime);
     }
 
-    if (!handled_by_ime && key < SDL_arraysize(xfree86_scancode_table2)) {
-        scancode = xfree86_scancode_table2[key];
-
+    if (!handled_by_ime) {
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, key);
         if (scancode != SDL_SCANCODE_UNKNOWN) {
             SDL_SendKeyboardKey(state == WL_KEYBOARD_KEY_STATE_PRESSED ?
                                 SDL_PRESSED : SDL_RELEASED, scancode);
@@ -1159,43 +1158,42 @@ Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
     const xkb_keysym_t *syms;
     Wayland_Keymap *sdlKeymap = (Wayland_Keymap *)data;
+    SDL_Scancode scancode;
 
-    if ((key - 8) < SDL_arraysize(xfree86_scancode_table2)) {
-        SDL_Scancode scancode = xfree86_scancode_table2[key - 8];
-        if (scancode == SDL_SCANCODE_UNKNOWN) {
-            return;
+    scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, (key - 8));
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
+        return;
+    }
+
+    if (WAYLAND_xkb_keymap_key_get_syms_by_level(keymap, key, sdlKeymap->layout, 0, &syms) > 0) {
+        uint32_t keycode = SDL_KeySymToUcs4(syms[0]);
+
+        if (!keycode) {
+            keycode = Wayland_KeySymToSDLKeyCode(syms[0]);
         }
 
-        if (WAYLAND_xkb_keymap_key_get_syms_by_level(keymap, key, sdlKeymap->layout, 0, &syms) > 0) {
-            uint32_t keycode = SDL_KeySymToUcs4(syms[0]);
-
-            if (!keycode) {
-                keycode = Wayland_KeySymToSDLKeyCode(syms[0]);
-            }
-
-            if (keycode) {
-                sdlKeymap->keymap[scancode] = keycode;
-            } else {
-                switch (scancode) {
-                    case SDL_SCANCODE_RETURN:
-                        sdlKeymap->keymap[scancode] = SDLK_RETURN;
-                        break;
-                    case SDL_SCANCODE_ESCAPE:
-                        sdlKeymap->keymap[scancode] = SDLK_ESCAPE;
-                        break;
-                    case SDL_SCANCODE_BACKSPACE:
-                        sdlKeymap->keymap[scancode] = SDLK_BACKSPACE;
-                        break;
-                    case SDL_SCANCODE_TAB:
-                        sdlKeymap->keymap[scancode] = SDLK_TAB;
-                        break;
-                    case SDL_SCANCODE_DELETE:
-                        sdlKeymap->keymap[scancode] = SDLK_DELETE;
-                        break;
-                    default:
-                        sdlKeymap->keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(scancode);
-                        break;
-                }
+        if (keycode) {
+            sdlKeymap->keymap[scancode] = keycode;
+        } else {
+            switch (scancode) {
+                case SDL_SCANCODE_RETURN:
+                    sdlKeymap->keymap[scancode] = SDLK_RETURN;
+                    break;
+                case SDL_SCANCODE_ESCAPE:
+                    sdlKeymap->keymap[scancode] = SDLK_ESCAPE;
+                    break;
+                case SDL_SCANCODE_BACKSPACE:
+                    sdlKeymap->keymap[scancode] = SDLK_BACKSPACE;
+                    break;
+                case SDL_SCANCODE_TAB:
+                    sdlKeymap->keymap[scancode] = SDLK_TAB;
+                    break;
+                case SDL_SCANCODE_DELETE:
+                    sdlKeymap->keymap[scancode] = SDLK_DELETE;
+                    break;
+                default:
+                    sdlKeymap->keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(scancode);
+                    break;
             }
         }
     }

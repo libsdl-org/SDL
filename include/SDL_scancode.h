@@ -345,6 +345,11 @@ typedef enum
      *  \name Usage page 0x0C
      *
      *  These values are mapped from usage page 0x0C (USB consumer page).
+     *  See https://usb.org/sites/default/files/hut1_2.pdf
+     *
+     *  There are way more keys in the spec than we can represent in the
+     *  current scancode range, so pick the ones that commonly come up in
+     *  real world usage.
      */
     /* @{ */
 

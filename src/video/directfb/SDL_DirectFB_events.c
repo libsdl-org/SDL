@@ -34,8 +34,7 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "../../events/SDL_events_c.h"
-#include "../../events/scancodes_linux.h"
-#include "../../events/scancodes_xfree86.h"
+#include "../../events/SDL_scancode_tables_c.h"
 
 #include "SDL_DirectFB_events.h"
 
@@ -684,12 +683,10 @@ EnumKeyboards(DFBInputDeviceID device_id,
         devdata->keyboard[devdata->num_keyboard].is_generic = 0;
         if (!SDL_strncmp("X11", desc.name, 3))
         {
-            devdata->keyboard[devdata->num_keyboard].map = xfree86_scancode_table2;
-            devdata->keyboard[devdata->num_keyboard].map_size = SDL_arraysize(xfree86_scancode_table2);
+            devdata->keyboard[devdata->num_keyboard].map = SDL_GetScancodeTable(SDL_SCANCODE_TABLE_XFREE86_2, &devdata->keyboard[devdata->num_keyboard].map_size);
             devdata->keyboard[devdata->num_keyboard].map_adjust = 8;
         } else {
-            devdata->keyboard[devdata->num_keyboard].map = linux_scancode_table;
-            devdata->keyboard[devdata->num_keyboard].map_size = SDL_arraysize(linux_scancode_table);
+            devdata->keyboard[devdata->num_keyboard].map = SDL_GetScancodeTable(SDL_SCANCODE_TABLE_EVDEV, &devdata->keyboard[devdata->num_keyboard].map_size);
             devdata->keyboard[devdata->num_keyboard].map_adjust = 0;
         }
 
