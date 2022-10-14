@@ -825,6 +825,26 @@ fgrep SDL_SCANCODE scancodes_linux.h | while read line; do
 done
 #endif /* end script */
 
+#if 0 /* A shell script to get comments from the Linux header for these keys */
+#!/bin/bash
+
+function get_comment
+{   
+    name=$(echo "$1" | awk '{print $7}')
+    if [ "$name" != "" ]; then
+        egrep "$name\s" /usr/include/linux/input-event-codes.h | fgrep "/*" | sed 's,[^/]*/,/,'
+    fi
+}
+
+fgrep SDL_SCANCODE scancodes_linux.h | while read line; do
+    comment=$(get_comment "$line")
+    if [ "$comment" != "" ]; then
+        echo "    $line $comment"
+    fi
+done
+#endif /* end script */
+
+
 /* *INDENT-ON* */ /* clang-format on */
 
 /* vi: set ts=4 sw=4 expandtab: */
