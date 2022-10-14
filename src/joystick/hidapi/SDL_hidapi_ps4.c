@@ -919,19 +919,21 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, 
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
-    if (packet->ucBatteryLevel & 0x10) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
-    } else {
-        /* Battery level ranges from 0 to 10 */
-        int level = (packet->ucBatteryLevel & 0xF);
-        if (level == 0) {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
-        } else if (level <= 2) {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-        } else if (level <= 7) {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+    if (ctx->device->is_bluetooth) {
+        if (packet->ucBatteryLevel & 0x10) {
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
         } else {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            /* Battery level ranges from 0 to 10 */
+            int level = (packet->ucBatteryLevel & 0xF);
+            if (level == 0) {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
+            } else if (level <= 2) {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+            } else if (level <= 7) {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+            } else {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            }
         }
     }
 
