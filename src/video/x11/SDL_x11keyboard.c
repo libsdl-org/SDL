@@ -605,10 +605,6 @@ X11_InitKeyboard(_THIS)
         int table_size;
         const SDL_Scancode *table = SDL_GetScancodeTable(scancode_set[i], &table_size);
 
-        /* Make sure the scancode set isn't too big */
-        if (table_size > (max_keycode - min_keycode + 1)) {
-            continue;
-        }
         distance = 0;
         for (j = 0; j < SDL_arraysize(fingerprint); ++j) {
             if (fingerprint[j].value < 0 || fingerprint[j].value >= table_size) {
@@ -620,6 +616,19 @@ X11_InitKeyboard(_THIS)
         if (distance < best_distance) {
             best_distance = distance;
             best_index = i;
+        }
+    }
+    if (best_index < 0 || best_distance > 2) {
+        /* This is likely to be SDL_SCANCODE_TABLE_XFREE86_2 with remapped keys, double check a rarely remapped value */
+        int fingerprint_value = X11_XKeysymToKeycode(data->display, 0x1008FF5B /* XF86Documents */) - min_keycode;
+        if (fingerprint_value == 235) {
+            for (i = 0; i < SDL_arraysize(scancode_set); ++i) {
+                if (scancode_set[i] == SDL_SCANCODE_TABLE_XFREE86_2) {
+                    best_index = i;
+                    best_distance = 0;
+                    break;
+                }
+            }
         }
     }
     if (best_index >= 0 && best_distance <= 2) {
