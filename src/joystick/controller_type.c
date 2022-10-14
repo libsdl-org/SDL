@@ -79,8 +79,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller, NULL },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0x83c3 ), k_eControllerType_PS3Controller, NULL },	// gioteck vx2
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0xc121 ), k_eControllerType_PS3Controller, NULL },	//
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2000 ), k_eControllerType_PS3Controller, NULL },	// Qanba Drone
-	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller, NULL },	// From SDL
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller, NULL },	// Qanba Drone
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2302 ), k_eControllerType_PS3Controller, NULL },	// Qanba Obsidian
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2502 ), k_eControllerType_PS3Controller, NULL },	// Qanba Dragon
 	{ MAKE_CONTROLLER_ID( 0x8380, 0x0003 ), k_eControllerType_PS3Controller, NULL },	// BTP 2163
@@ -128,6 +127,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100A ), k_eControllerType_PS4Controller, NULL },	// Razer Raiju 2 Tournament edition BT
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1100 ), k_eControllerType_PS4Controller, NULL },	// Razer RAION Fightpad - Trackpad, no gyro, lightbar hardcoded to green
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x792a ), k_eControllerType_PS4Controller, NULL },	// PowerA Fusion Fight Pad
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2000 ), k_eControllerType_PS4Controller, NULL },	// Qanba Drone
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2300 ), k_eControllerType_PS4Controller, NULL },	// Qanba Obsidian
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2303 ), k_eControllerType_XInputPS4Controller, NULL },	// Qanba Obsidian Arcade Joystick
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2500 ), k_eControllerType_PS4Controller, NULL },	// Qanba Dragon
