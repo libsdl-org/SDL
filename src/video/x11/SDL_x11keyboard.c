@@ -655,7 +655,7 @@ X11_InitKeyboard(_THIS)
             if (scancode == data->key_layout[i]) {
                 continue;
             }
-            if (scancode == SDL_SCANCODE_UNKNOWN || default_keymap[scancode] >= SDLK_SCANCODE_MASK) {
+            if (default_keymap[scancode] >= SDLK_SCANCODE_MASK) {
                 /* Not a character key, safe to remap */
 #ifdef DEBUG_KEYBOARD
                 SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
