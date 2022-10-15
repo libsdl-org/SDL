@@ -57,9 +57,7 @@
 #define BTN_SIDE    (0x113)
 #define BTN_EXTRA   (0x114)
 #endif
-#include <sys/select.h>
 #include <sys/mman.h>
-#include <poll.h>
 #include <unistd.h>
 #include <errno.h>
 #include <xkbcommon/xkbcommon.h>
@@ -844,11 +842,11 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_motion,
     pointer_handle_button,
     pointer_handle_axis,
-    pointer_handle_frame,           // Version 5
-    pointer_handle_axis_source,     // Version 5
-    pointer_handle_axis_stop,       // Version 5
-    pointer_handle_axis_discrete,   // Version 5
-    pointer_handle_axis_value120    // Version 8
+    pointer_handle_frame,           /* Version 5 */
+    pointer_handle_axis_source,     /* Version 5 */
+    pointer_handle_axis_stop,       /* Version 5 */
+    pointer_handle_axis_discrete,   /* Version 5 */
+    pointer_handle_axis_value120    /* Version 8 */
 };
 
 static void
@@ -953,7 +951,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     close(fd);
 
     if (!input->xkb.keymap) {
-        fprintf(stderr, "failed to compile keymap\n");
+        SDL_SetError("failed to compile keymap\n");
         return;
     }
 
@@ -969,7 +967,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 
     input->xkb.state = WAYLAND_xkb_state_new(input->xkb.keymap);
     if (!input->xkb.state) {
-        fprintf(stderr, "failed to create XKB state\n");
+        SDL_SetError("failed to create XKB state\n");
         WAYLAND_xkb_keymap_unref(input->xkb.keymap);
         input->xkb.keymap = NULL;
         return;
@@ -997,7 +995,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         input->xkb.compose_state = WAYLAND_xkb_compose_state_new(input->xkb.compose_table,
                                               XKB_COMPOSE_STATE_NO_FLAGS);
         if (!input->xkb.compose_state) {
-            fprintf(stderr, "could not create XKB compose state\n");
+            SDL_SetError("could not create XKB compose state\n");
             WAYLAND_xkb_compose_table_unref(input->xkb.compose_table);
             input->xkb.compose_table = NULL;
         }
@@ -1075,7 +1073,7 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
         return SDL_FALSE;
     }
 
-    // TODO can this happen?
+    /* TODO: Can this happen? */
     if (WAYLAND_xkb_state_key_get_syms(input->xkb.state, key + 8, &syms) != 1) {
         return SDL_FALSE;
     }
@@ -1132,10 +1130,11 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
     } else {
         if (keyboard_repeat_key_is_set(&input->keyboard_repeat, key)) {
-            // Send any due key repeat events before stopping the repeat and generating the key up event
-            // Compute time based on the Wayland time, as it reports when the release event happened
-            // Using SDL_GetTicks would be wrong, as it would report when the release event is processed,
-            // which may be off if the application hasn't pumped events for a while
+            /* Send any due key repeat events before stopping the repeat and generating the key up event.
+             * Compute time based on the Wayland time, as it reports when the release event happened.
+             * Using SDL_GetTicks would be wrong, as it would report when the release event is processed,
+             * which may be off if the application hasn't pumped events for a while.
+             */
             keyboard_repeat_handle(&input->keyboard_repeat, time - input->keyboard_repeat.wl_press_time);
             keyboard_repeat_clear(&input->keyboard_repeat);
         }
@@ -1276,7 +1275,7 @@ static const struct wl_keyboard_listener keyboard_listener = {
     keyboard_handle_leave,
     keyboard_handle_key,
     keyboard_handle_modifiers,
-    keyboard_handle_repeat_info,    // Version 4
+    keyboard_handle_repeat_info,    /* Version 4 */
 };
 
 static void
@@ -1329,7 +1328,7 @@ seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name)
 
 static const struct wl_seat_listener seat_listener = {
     seat_handle_capabilities,
-    seat_handle_name,           // Version 2
+    seat_handle_name,           /* Version 2 */
 };
 
 static void
@@ -1371,9 +1370,9 @@ static const struct wl_data_source_listener data_source_listener = {
     data_source_handle_target,
     data_source_handle_send,
     data_source_handle_cancelled,
-    data_source_handle_dnd_drop_performed, // Version 3
-    data_source_handle_dnd_finished,       // Version 3
-    data_source_handle_action,             // Version 3
+    data_source_handle_dnd_drop_performed, /* Version 3 */
+    data_source_handle_dnd_finished,       /* Version 3 */
+    data_source_handle_action,             /* Version 3 */
 };
 
 static void
@@ -1488,8 +1487,8 @@ data_offer_handle_actions(void *data, struct wl_data_offer *wl_data_offer,
 
 static const struct wl_data_offer_listener data_offer_listener = {
     data_offer_handle_offer,
-    data_offer_handle_source_actions, // Version 3
-    data_offer_handle_actions,        // Version 3
+    data_offer_handle_source_actions, /* Version 3 */
+    data_offer_handle_actions,        /* Version 3 */
 };
 
 static void
@@ -1574,19 +1573,19 @@ data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
 }
 
 /* Decodes URI escape sequences in string buf of len bytes
-   (excluding the terminating NULL byte) in-place. Since
-   URI-encoded characters take three times the space of
-   normal characters, this should not be an issue.
-
-   Returns the number of decoded bytes that wound up in
-   the buffer, excluding the terminating NULL byte.
-
-   The buffer is guaranteed to be NULL-terminated but
-   may contain embedded NULL bytes.
-
-   On error, -1 is returned.
-
-   FIXME: This was shamelessly copied from SDL_x11events.c
+ * (excluding the terminating NULL byte) in-place. Since
+ * URI-encoded characters take three times the space of
+ * normal characters, this should not be an issue.
+ *
+ * Returns the number of decoded bytes that wound up in
+ * the buffer, excluding the terminating NULL byte.
+ *
+ * The buffer is guaranteed to be NULL-terminated but
+ * may contain embedded NULL bytes.
+ *
+ * On error, -1 is returned.
+ *
+ * FIXME: This was shamelessly copied from SDL_x11events.c
  */
 static int Wayland_URIDecode(char *buf, int len) {
     int ri, wi, di;
@@ -1649,10 +1648,10 @@ static int Wayland_URIDecode(char *buf, int len) {
 }
 
 /* Convert URI to local filename
-   return filename if possible, else NULL
-
-   FIXME: This was shamelessly copied from SDL_x11events.c
-*/
+ * return filename if possible, else NULL
+ *
+ *  FIXME: This was shamelessly copied from SDL_x11events.c
+ */
 static char* Wayland_URIToLocal(char* uri) {
     char *file = NULL;
     SDL_bool local;
@@ -2582,7 +2581,8 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
         return -1;
 
     /* If we have a pointer confine active, we must destroy it here because
-     * creating a locked pointer otherwise would be a protocol error. */
+     * creating a locked pointer otherwise would be a protocol error.
+     */
     for (window = vd->windows; window; window = window->next)
         pointer_confine_destroy(window);
 
@@ -2661,11 +2661,13 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
         return -1;
 
     /* A confine may already be active, in which case we should destroy it and
-     * create a new one. */
+     * create a new one.
+     */
     pointer_confine_destroy(window);
 
     /* We cannot create a confine if the pointer is already locked. Defer until
-     * the pointer is unlocked. */
+     * the pointer is unlocked.
+     */
     if (d->relative_mouse_mode)
         return 0;
 
