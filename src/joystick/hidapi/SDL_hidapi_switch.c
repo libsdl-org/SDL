@@ -821,13 +821,13 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
     /* IMU scale gives us multipliers for converting raw values to real world values */
     pIMUScale = reply->spiReadData.rgucReadData;
 
-    sAccelRawX = ((pIMUScale[1] << 8) & 0xFF00) | pIMUScale[0];
-    sAccelRawY = ((pIMUScale[3] << 8) & 0xFF00) | pIMUScale[2];
-    sAccelRawZ = ((pIMUScale[5] << 8) & 0xFF00) | pIMUScale[4];
+    sAccelRawX = (pIMUScale[1] << 8) | pIMUScale[0];
+    sAccelRawY = (pIMUScale[3] << 8) | pIMUScale[2];
+    sAccelRawZ = (pIMUScale[5] << 8) | pIMUScale[4];
 
-    sGyroRawX = ((pIMUScale[13] << 8) & 0xFF00) | pIMUScale[12];
-    sGyroRawY = ((pIMUScale[15] << 8) & 0xFF00) | pIMUScale[14];
-    sGyroRawZ = ((pIMUScale[17] << 8) & 0xFF00) | pIMUScale[16];
+    sGyroRawX = (pIMUScale[13] << 8) | pIMUScale[12];
+    sGyroRawY = (pIMUScale[15] << 8) | pIMUScale[14];
+    sGyroRawZ = (pIMUScale[17] << 8) | pIMUScale[16];
 
     /* Check for user calibration data. If it's present and set, it'll override the factory settings */
     readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
@@ -835,13 +835,13 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
     if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t*)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
         pIMUScale = reply->spiReadData.rgucReadData;
         
-        sAccelRawX = ((pIMUScale[3] << 8) & 0xFF00) | pIMUScale[2];
-        sAccelRawY = ((pIMUScale[5] << 8) & 0xFF00) | pIMUScale[4];
-        sAccelRawZ = ((pIMUScale[7] << 8) & 0xFF00) | pIMUScale[6];
+        sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
+        sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
+        sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
 
-        sGyroRawX = ((pIMUScale[15] << 8) & 0xFF00) | pIMUScale[14];
-        sGyroRawY = ((pIMUScale[17] << 8) & 0xFF00) | pIMUScale[16];
-        sGyroRawZ = ((pIMUScale[19] << 8) & 0xFF00) | pIMUScale[18];
+        sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
+        sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
+        sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
     }
 
     /* Accelerometer scale */
