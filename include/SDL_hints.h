@@ -278,10 +278,7 @@ extern "C" {
  *  If this hint isn't specified to a valid setting, or libsamplerate isn't
  *  available, SDL will use the default, internal resampling algorithm.
  *
- *  Note that this is currently only applicable to resampling audio that is
- *  being written to a device for playback or audio being read from a device
- *  for capture. SDL_AudioCVT always uses the default resampler (although this
- *  might change for SDL 2.1).
+ *  As of SDL 2.26, SDL_AudioCVT now respects this hint.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *

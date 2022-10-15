@@ -144,6 +144,7 @@ int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data) = NULL;
 int (*SRC_src_reset)(SRC_STATE *state) = NULL;
 SRC_STATE* (*SRC_src_delete)(SRC_STATE *state) = NULL;
 const char* (*SRC_src_strerror)(int error) = NULL;
+int (*SRC_src_simple)(SRC_DATA *data, int converter_type, int channels) = NULL;
 
 static SDL_bool
 LoadLibSampleRate(void)
@@ -178,8 +179,9 @@ LoadLibSampleRate(void)
     SRC_src_reset = (int(*)(SRC_STATE *state))SDL_LoadFunction(SRC_lib, "src_reset");
     SRC_src_delete = (SRC_STATE* (*)(SRC_STATE *state))SDL_LoadFunction(SRC_lib, "src_delete");
     SRC_src_strerror = (const char* (*)(int error))SDL_LoadFunction(SRC_lib, "src_strerror");
+    SRC_src_simple = (int(*)(SRC_DATA *data, int converter_type, int channels))SDL_LoadFunction(SRC_lib, "src_simple");
 
-    if (!SRC_src_new || !SRC_src_process || !SRC_src_reset || !SRC_src_delete || !SRC_src_strerror) {
+    if (!SRC_src_new || !SRC_src_process || !SRC_src_reset || !SRC_src_delete || !SRC_src_strerror || !SRC_src_simple) {
         SDL_UnloadObject(SRC_lib);
         SRC_lib = NULL;
         return SDL_FALSE;
@@ -190,6 +192,7 @@ LoadLibSampleRate(void)
     SRC_src_reset = src_reset;
     SRC_src_delete = src_delete;
     SRC_src_strerror = src_strerror;
+    SRC_src_simple = src_simple;
 #endif
 
     SRC_available = SDL_TRUE;

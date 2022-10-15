@@ -418,6 +418,48 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
     return retval;
 }
 
+#ifdef HAVE_LIBSAMPLERATE_H
+
+static void
+SDL_ResampleCVT_SRC(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
+{
+    const float *src = (const float *) cvt->buf;
+    const int srclen = cvt->len_cvt;
+    float *dst = (float *) (cvt->buf + srclen);
+    const int dstlen = (cvt->len * cvt->len_mult) - srclen;
+    const int framelen = sizeof(float) * chans;
+    int result = 0;
+    SRC_DATA data;
+
+    SDL_zero(data);
+
+    data.data_in = (float *)src; /* Older versions of libsamplerate had a non-const pointer, but didn't write to it */
+    data.input_frames = srclen / framelen;
+
+    data.data_out = dst;
+    data.output_frames = dstlen / framelen;
+
+    data.src_ratio = cvt->rate_incr;
+
+    result = SRC_src_simple(&data, SRC_converter, chans); /* Simple API converts the whole buffer at once.  No need for initialization. */
+    /* !!! FIXME: Handle library failures? */
+    #ifdef DEBUG_CONVERT
+    if (result != 0) {
+        SDL_Log("src_simple() failed: %s", SRC_src_strerror(result));
+    }
+    #endif
+
+    cvt->len_cvt = data.output_frames_gen * framelen;
+
+    SDL_memmove(cvt->buf, dst, cvt->len_cvt);
+
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index](cvt, format);
+    }
+}
+
+#endif /* HAVE_LIBSAMPLERATE_H */
+
 static void
 SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
 {
@@ -478,9 +520,36 @@ RESAMPLER_FUNCS(6)
 RESAMPLER_FUNCS(8)
 #undef RESAMPLER_FUNCS
 
+#ifdef HAVE_LIBSAMPLERATE_H
+#define RESAMPLER_FUNCS(chans) \
+    static void SDLCALL \
+    SDL_ResampleCVT_SRC_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
+        SDL_ResampleCVT_SRC(cvt, chans, format); \
+    }
+RESAMPLER_FUNCS(1)
+RESAMPLER_FUNCS(2)
+RESAMPLER_FUNCS(4)
+RESAMPLER_FUNCS(6)
+RESAMPLER_FUNCS(8)
+#undef RESAMPLER_FUNCS
+#endif /* HAVE_LIBSAMPLERATE_H */
+
 static SDL_AudioFilter
 ChooseCVTResampler(const int dst_channels)
 {
+    #ifdef HAVE_LIBSAMPLERATE_H
+    if (SRC_available) {
+        switch (dst_channels) {
+            case 1: return SDL_ResampleCVT_SRC_c1;
+            case 2: return SDL_ResampleCVT_SRC_c2;
+            case 4: return SDL_ResampleCVT_SRC_c4;
+            case 6: return SDL_ResampleCVT_SRC_c6;
+            case 8: return SDL_ResampleCVT_SRC_c8;
+            default: break;
+        }
+    }
+    #endif /* HAVE_LIBSAMPLERATE_H */
+
     switch (dst_channels) {
         case 1: return SDL_ResampleCVT_c1;
         case 2: return SDL_ResampleCVT_c2;
