@@ -874,6 +874,11 @@ RAWINPUT_JoystickInit(void)
 
     SDL_assert(!SDL_RAWINPUT_inited);
 
+    if (!WIN_IsWindowsVistaOrGreater()) {
+        /* According to bug 6400, this doesn't work on Windows XP */
+        return -1;
+    }
+
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
         return -1;
     }
