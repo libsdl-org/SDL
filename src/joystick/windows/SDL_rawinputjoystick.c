@@ -860,7 +860,7 @@ RAWINPUT_JoystickInit(void)
         return -1;
     }
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_FALSE)) {
         return -1;
     }
 

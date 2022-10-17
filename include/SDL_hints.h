@@ -938,9 +938,11 @@ extern "C" {
 /**
   *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
   *
+  *  Enabling this hint allows for more than 4 Xbox controllers on Windows, but adds significant complexity to the joystick processing. If you enable this hint and do not use an SDL window in your application, you may need to set the hint SDL_HINT_JOYSTICK_THREAD to "1" to handle joystick input messages.
+  *
   *  This variable can be set to the following values:
-  *    "0"       - RAWINPUT drivers are not used
-  *    "1"       - RAWINPUT drivers are used (the default)
+  *    "0"       - RAWINPUT drivers are not used (the default)
+  *    "1"       - RAWINPUT drivers are used
   */
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
 
