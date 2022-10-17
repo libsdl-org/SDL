@@ -955,16 +955,6 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         return;
     }
 
-    #define GET_MOD_INDEX(mod) \
-        WAYLAND_xkb_keymap_mod_get_index(input->xkb.keymap, XKB_MOD_NAME_##mod)
-    input->xkb.idx_shift = 1 << GET_MOD_INDEX(SHIFT);
-    input->xkb.idx_ctrl = 1 << GET_MOD_INDEX(CTRL);
-    input->xkb.idx_alt = 1 << GET_MOD_INDEX(ALT);
-    input->xkb.idx_gui = 1 << GET_MOD_INDEX(LOGO);
-    input->xkb.idx_num = 1 << GET_MOD_INDEX(NUM);
-    input->xkb.idx_caps = 1 << GET_MOD_INDEX(CAPS);
-    #undef GET_MOD_INDEX
-
     input->xkb.state = WAYLAND_xkb_state_new(input->xkb.keymap);
     if (!input->xkb.state) {
         SDL_SetError("failed to create XKB state\n");
@@ -1002,13 +992,30 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     }
 }
 
+
 static void
 keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface,
                       struct wl_array *keys)
 {
+    // Caps Lock not included because it only makes sense to consider modifiers
+    // that get held down, for the case where a user clicks on an unfocused
+    // window with a modifier key like Shift pressed, in a situation where the
+    // application handles Shift+click differently from a click
+    const SDL_Scancode mod_scancodes[] = {
+        SDL_SCANCODE_LSHIFT,
+        SDL_SCANCODE_RSHIFT,
+        SDL_SCANCODE_LCTRL,
+        SDL_SCANCODE_RCTRL,
+        SDL_SCANCODE_LALT,
+        SDL_SCANCODE_RALT,
+        SDL_SCANCODE_LGUI,
+        SDL_SCANCODE_RGUI,
+    };
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window;
+    uint32_t *key;
+    SDL_Scancode scancode;
 
     if (!surface) {
         /* enter event for a window we've just destroyed */
@@ -1031,6 +1038,16 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         SDL_IME_SetFocus(SDL_TRUE);
     }
 #endif
+
+    wl_array_for_each(key, keys) {
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, *key);
+        for (uint32_t i = 0; i < sizeof mod_scancodes / sizeof *mod_scancodes; ++i) {
+            if (mod_scancodes[i] == scancode) {
+                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                break;
+            }
+        }
+    }
 }
 
 static void
@@ -1223,17 +1240,9 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 {
     struct SDL_WaylandInput *input = data;
     Wayland_Keymap keymap;
-    uint32_t modstate = (mods_depressed | mods_latched | mods_locked);
 
     WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                           mods_locked, 0, 0, group);
-
-    SDL_ToggleModState(KMOD_SHIFT, modstate & input->xkb.idx_shift);
-    SDL_ToggleModState(KMOD_CTRL, modstate & input->xkb.idx_ctrl);
-    SDL_ToggleModState(KMOD_ALT, modstate & input->xkb.idx_alt);
-    SDL_ToggleModState(KMOD_GUI, modstate & input->xkb.idx_gui);
-    SDL_ToggleModState(KMOD_NUM, modstate & input->xkb.idx_num);
-    SDL_ToggleModState(KMOD_CAPS, modstate & input->xkb.idx_caps);
 
     /* If a key is repeating, update the text to apply the modifier. */
     if(keyboard_repeat_is_set(&input->keyboard_repeat)) {
