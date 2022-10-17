@@ -933,10 +933,6 @@ CheckOSS()
     #  it on if you really want, though.
     if test x$enable_oss = xmaybe; then
         enable_oss=yes
-        case "$host" in
-            *-*-openbsd*)
-                enable_oss=no;;
-        esac
     fi
 
     if test x$enable_audio = xyes -a x$enable_oss = xyes; then
@@ -949,16 +945,6 @@ CheckOSS()
               int arg = SNDCTL_DSP_SETFRAGMENT;
             ]])], [have_oss=yes],[])
         fi
-        if test x$have_oss != xyes; then
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-              #include <soundcard.h>
-            ]], [[
-              int arg = SNDCTL_DSP_SETFRAGMENT;
-            ]])], [
-            have_oss=yes
-            AC_DEFINE(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H, 1, [ ])
-            ],[])
-        fi
         AC_MSG_RESULT($have_oss)
         if test x$have_oss = xyes; then
             SUMMARY_audio="${SUMMARY_audio} oss"
@@ -968,7 +954,7 @@ CheckOSS()
 
             # We may need to link with ossaudio emulation library
             case "$host" in
-                *-*-openbsd*|*-*-netbsd*)
+                *-*-netbsd*)
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lossaudio";;
             esac
         fi

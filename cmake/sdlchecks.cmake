@@ -59,21 +59,13 @@ macro(CheckOSS)
     check_c_source_compiles("
         #include <sys/soundcard.h>
         int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" HAVE_OSS_SYS_SOUNDCARD_H)
-    if(NOT HAVE_OSS_SYS_SOUNDCARD_H)
-      check_c_source_compiles("
-          #include <soundcard.h>
-          int main(int argc, char **argv) { int arg = SNDCTL_DSP_SETFRAGMENT; return 0; }" HAVE_OSS_SOUNDCARD_H)
-    endif()
 
-    if(HAVE_OSS_SYS_SOUNDCARD_H OR HAVE_OSS_SOUNDCARD_H)
+    if(HAVE_OSS_SYS_SOUNDCARD_H)
       set(HAVE_OSS TRUE)
       file(GLOB OSS_SOURCES ${SDL2_SOURCE_DIR}/src/audio/dsp/*.c)
-      if(HAVE_OSS_SOUNDCARD_H)
-        set(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H 1)
-      endif()
       set(SDL_AUDIO_DRIVER_OSS 1)
       list(APPEND SOURCE_FILES ${OSS_SOURCES})
-      if(NETBSD OR OPENBSD)
+      if(NETBSD)
         list(APPEND EXTRA_LIBS ossaudio)
       endif()
       set(HAVE_SDL_AUDIO TRUE)

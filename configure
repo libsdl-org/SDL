@@ -21007,10 +21007,6 @@ fi
     #  it on if you really want, though.
     if test x$enable_oss = xmaybe; then
         enable_oss=yes
-        case "$host" in
-            *-*-openbsd*)
-                enable_oss=no;;
-        esac
     fi
 
     if test x$enable_audio = xyes -a x$enable_oss = xyes; then
@@ -21039,33 +21035,6 @@ then :
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
         fi
-        if test x$have_oss != xyes; then
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-              #include <soundcard.h>
-
-int
-main (void)
-{
-
-              int arg = SNDCTL_DSP_SETFRAGMENT;
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-
-            have_oss=yes
-
-printf "%s\n" "#define SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H 1" >>confdefs.h
-
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-        fi
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_oss" >&5
 printf "%s\n" "$have_oss" >&6; }
         if test x$have_oss = xyes; then
@@ -21078,7 +21047,7 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_OSS 1" >>confdefs.h
 
             # We may need to link with ossaudio emulation library
             case "$host" in
-                *-*-openbsd*|*-*-netbsd*)
+                *-*-netbsd*)
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lossaudio";;
             esac
         fi
@@ -32563,5 +32532,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
 
