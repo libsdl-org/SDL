@@ -168,10 +168,16 @@ SDL_UnlockJoysticks(void)
     }
 }
 
+SDL_bool
+SDL_JoysticksLocked(void)
+{
+    return (SDL_joysticks_locked > 0) ? SDL_TRUE : SDL_FALSE;
+}
+
 void
 SDL_AssertJoysticksLocked(void)
 {
-    SDL_assert(SDL_joysticks_locked > 0);
+    SDL_assert(SDL_JoysticksLocked());
 }
 
 /*

@@ -368,15 +368,21 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed)
              *
              * See https://github.com/libsdl-org/SDL/issues/6347 for details
              */
+            int lock_count = 0;
             SDL_HIDAPI_Device *curr;
             SDL_hid_device *dev;
-            char *path;
+            char *path = SDL_strdup(device->path);
 
             SDL_AssertJoysticksLocked();
-            path = SDL_strdup(device->path);
-            SDL_UnlockJoysticks();
+            while (SDL_JoysticksLocked()) {
+                ++lock_count;
+                SDL_UnlockJoysticks();
+            }
             dev = SDL_hid_open_path(path, 0);
-            SDL_LockJoysticks();
+            while (lock_count > 0) {
+                --lock_count;
+                SDL_LockJoysticks();
+            }
             SDL_free(path);
 
             /* Make sure the device didn't get removed while opening the HID path */
