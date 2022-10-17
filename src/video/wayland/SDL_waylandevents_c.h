@@ -110,14 +110,6 @@ struct SDL_WaylandInput {
 
         /* Keyboard layout "group" */
         uint32_t current_group;
-
-        /* Modifier bitshift values */
-        uint32_t idx_shift;
-        uint32_t idx_ctrl;
-        uint32_t idx_alt;
-        uint32_t idx_gui;
-        uint32_t idx_num;
-        uint32_t idx_caps;
     } xkb;
 
     /* information about axis events on current frame */
