@@ -422,7 +422,7 @@ static int
 TexturePromoteToVram(PSP_RenderData* data, PSP_TextureData* psp_texture, SDL_bool target)
 {
     // Assumes texture in sram and a large enough continuous block in vram
-    void* tdata = valloc(psp_texture->size);
+    void* tdata = vramalloc(psp_texture->size);
     if(psp_texture->swizzled && target) {
         return TextureUnswizzle(psp_texture, tdata);
     } else {
@@ -536,7 +536,7 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             SDL_free(psp_texture);
             return -1;
         }
-        psp_texture->data = valloc(psp_texture->size);
+        psp_texture->data = vramalloc(psp_texture->size);
         if(psp_texture->data) {
             LRUTargetPushFront(data, psp_texture);
         }
@@ -1399,7 +1399,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
             break;
     }
 
-    doublebuffer = valloc(PSP_FRAME_BUFFER_SIZE*data->bpp*2);
+    doublebuffer = vramalloc(PSP_FRAME_BUFFER_SIZE*data->bpp*2);
     data->backbuffer = doublebuffer;
     data->frontbuffer = ((uint8_t*)doublebuffer)+PSP_FRAME_BUFFER_SIZE*data->bpp;
 
