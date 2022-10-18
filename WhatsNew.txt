@@ -10,9 +10,6 @@ General:
 * Added support for Nintendo Wii controllers to the HIDAPI driver, and a hint SDL_HINT_JOYSTICK_HIDAPI_WII to control whether this is used
 * Added the hint SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED to control whether the player LED should be lit on the Nintendo Wii controllers
 
-Windows:
-* The RAWINPUT joystick driver is disabled by default, since it's only needed to support more than 4 Xbox controllers, and adds significant complexity to the joystick processing.
-
 
 ---------------------------------------------------------------------------
 2.24.0:
