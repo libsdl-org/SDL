@@ -249,7 +249,7 @@ struct SDL_Renderer
     SDL_RenderLineMethod line_method;
 
     /* List of triangle indices to draw rects */
-    int rect_indice_list[6];
+    int rect_index_order[6];
 
     /* Remainder from scaled relative motion */
     float xrel;
