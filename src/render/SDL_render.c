@@ -572,10 +572,10 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
 
                     *ptr_indices++ = cur_indice + 0;
                     *ptr_indices++ = cur_indice + 1;
-                    *ptr_indices++ = cur_indice + 3;
-                    *ptr_indices++ = cur_indice + 1;
-                    *ptr_indices++ = cur_indice + 3;
                     *ptr_indices++ = cur_indice + 2;
+                    *ptr_indices++ = cur_indice + 0;
+                    *ptr_indices++ = cur_indice + 2;
+                    *ptr_indices++ = cur_indice + 3;
                     cur_indice += 4;
                 }
 
@@ -3523,7 +3523,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
-        const int indices[6] = {0, 1, 3, 1, 3, 2};
+        const int indices[6] = {0, 1, 2, 0, 2, 3};
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
@@ -3671,7 +3671,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
-        const int indices[6] = {0, 1, 3, 1, 3, 2};
+        const int indices[6] = {0, 1, 2, 0, 2, 3};
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
