@@ -552,6 +552,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
                 int cur_indice = 0;
+                const int *rect_indice_list = renderer->rect_indice_list;
 
                 for (i = 0; i < count; ++i) {
                     float minx, miny, maxx, maxy;
@@ -570,12 +571,12 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                     *ptr_xy++ = minx;
                     *ptr_xy++ = maxy;
 
-                    *ptr_indices++ = cur_indice + 0;
-                    *ptr_indices++ = cur_indice + 1;
-                    *ptr_indices++ = cur_indice + 2;
-                    *ptr_indices++ = cur_indice + 0;
-                    *ptr_indices++ = cur_indice + 2;
-                    *ptr_indices++ = cur_indice + 3;
+                    *ptr_indices++ = cur_indice + rect_indice_list[0];
+                    *ptr_indices++ = cur_indice + rect_indice_list[1];
+                    *ptr_indices++ = cur_indice + rect_indice_list[2];
+                    *ptr_indices++ = cur_indice + rect_indice_list[3];
+                    *ptr_indices++ = cur_indice + rect_indice_list[4];
+                    *ptr_indices++ = cur_indice + rect_indice_list[5];
                     cur_indice += 4;
                 }
 
@@ -1061,6 +1062,16 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
     renderer->scale.y = 1.0f;
     renderer->dpi_scale.x = 1.0f;
     renderer->dpi_scale.y = 1.0f;
+
+    /* Default value, if not specified by the renderer back-end */
+    if (renderer->rect_indice_list[0] == 0 && renderer->rect_indice_list[1] == 0) {
+        renderer->rect_indice_list[0] = 0;
+        renderer->rect_indice_list[1] = 1;
+        renderer->rect_indice_list[2] = 2;
+        renderer->rect_indice_list[3] = 0;
+        renderer->rect_indice_list[4] = 2;
+        renderer->rect_indice_list[5] = 3;
+    }
 
     /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
     renderer->render_command_generation = 1;
@@ -3523,7 +3534,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
-        const int indices[6] = {0, 1, 2, 0, 2, 3};
+        const int *indices = renderer->rect_indice_list;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
@@ -3671,7 +3682,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
-        const int indices[6] = {0, 1, 2, 0, 2, 3};
+        const int *indices = renderer->rect_indice_list;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
