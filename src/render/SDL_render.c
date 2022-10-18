@@ -1206,9 +1206,6 @@ IsSupportedBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     case SDL_BLENDMODE_MUL:
         return SDL_TRUE;
 
-    case SDL_BLENDMODE_INVALID:
-        return SDL_FALSE;
-
     default:
         return renderer->SupportsBlendMode && renderer->SupportsBlendMode(renderer, blendMode);
     }
