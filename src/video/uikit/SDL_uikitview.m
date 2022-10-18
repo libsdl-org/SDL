@@ -455,25 +455,36 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 #endif /* TARGET_OS_TV || defined(__IPHONE_9_1) */
 
+static CGPoint translation_old = (CGPoint){ 0.0, 0.0 };
+
 -(void)mouseWheelGesture:(UIPanGestureRecognizer *)gesture
 {
     if (gesture.state == UIGestureRecognizerStateBegan ||
-        gesture.state == UIGestureRecognizerStateChanged ||
-        gesture.state == UIGestureRecognizerStateEnded) {
-        CGPoint velocity = [gesture velocityInView:self];
+        gesture.state == UIGestureRecognizerStateChanged) {
 
-        if (velocity.x > 0.0f) {
-            velocity.x = -1.0;
-        } else if (velocity.x < 0.0f) {
-            velocity.x = 1.0f;
+        CGPoint translation = [gesture translationInView:self];
+        CGPoint mouse_wheel = translation;
+
+        if (gesture.state == UIGestureRecognizerStateChanged) {
+            mouse_wheel.x -= translation_old.x;
+            mouse_wheel.y -= translation_old.y;
         }
-        if (velocity.y > 0.0f) {
-            velocity.y = -1.0;
-        } else if (velocity.y < 0.0f) {
-            velocity.y = 1.0f;
+
+        translation_old = translation;
+
+        if (mouse_wheel.x > 0.0f) {
+            mouse_wheel.x = 1.0;
+        } else if (mouse_wheel.x < 0.0f) {
+            mouse_wheel.x = -1.0f;
         }
-        if (velocity.x != 0.0f || velocity.y != 0.0f) {
-            SDL_SendMouseWheel(sdlwindow, 0, velocity.x, velocity.y, SDL_MOUSEWHEEL_NORMAL);
+        if (mouse_wheel.y > 0.0f) {
+            mouse_wheel.y = 1.0;
+        } else if (mouse_wheel.y < 0.0f) {
+            mouse_wheel.y = -1.0f;
+        }
+
+        if (mouse_wheel.x != 0.0f || mouse_wheel.y != 0.0f) {
+            SDL_SendMouseWheel(sdlwindow, 0, mouse_wheel.x, mouse_wheel.y, SDL_MOUSEWHEEL_NORMAL);
         }
     }
 }
