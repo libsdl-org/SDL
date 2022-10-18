@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../SDL_internal.h"
+#include "../render/SDL_sysrender.h"
 
 /* The high-level video driver subsystem */
 
@@ -183,18 +184,6 @@ DisableUnsetFullscreenOnMinimize(_THIS)
 }
 
 /* Support for framebuffer emulation using an accelerated renderer */
-
-#define SDL_WINDOWTEXTUREDATA   "_SDL_WindowTextureData"
-
-typedef struct {
-    SDL_Renderer *renderer;
-    SDL_Texture *texture;
-    void *pixels;
-    int pitch;
-    int bytes_per_pixel;
-} SDL_WindowTextureData;
-
-
 static int
 SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {

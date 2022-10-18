@@ -1118,7 +1118,7 @@ SDL_CreateSoftwareRenderer(SDL_Surface * surface)
 #if !SDL_RENDER_DISABLED && SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
-    renderer = SW_CreateRendererForSurface(surface);
+    renderer = SW_CreateRendererForSurface(surface, SDL_FALSE);
 
     if (renderer) {
         VerifyDrawQueueFunctions(renderer);

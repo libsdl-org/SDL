@@ -1012,7 +1012,7 @@ SW_DestroyRenderer(SDL_Renderer * renderer)
 }
 
 SDL_Renderer *
-SW_CreateRendererForSurface(SDL_Surface * surface)
+SW_CreateRendererForSurface(SDL_Surface * surface, SDL_bool simulate_vsync)
 {
     SDL_Renderer *renderer;
     SW_RenderData *data;
@@ -1060,6 +1060,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     renderer->DestroyRenderer = SW_DestroyRenderer;
     renderer->info = SW_RenderDriver.info;
     renderer->driverdata = data;
+    renderer->simulate_vsync = simulate_vsync;
 
     SW_ActivateRenderer(renderer);
 
@@ -1072,6 +1073,8 @@ SW_CreateRenderer(SDL_Window * window, Uint32 flags)
     const char *hint;
     SDL_Surface *surface;
     SDL_bool no_hint_set;
+    SDL_bool simulate_vsync;
+    SDL_WindowTextureData *texture_data;
 
     /* Set the vsync hint based on our flags, if it's not already set */
     hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
@@ -1095,7 +1098,22 @@ SW_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (!surface) {
         return NULL;
     }
-    return SW_CreateRendererForSurface(surface);
+
+    /*
+     * The SDL_GetWindowSurface call above will create a framebuffer if one doesn't already exist.
+     * Potentially, it can be hardware accelerated (using a 2nd renderer created from SDL_CreateWindowTexture).
+     * The hint set above is to let this potential hardware renderer know that it should enable real VSync if it can.
+     * Check if there is an underlying VSync support. If not, we should simulate VSync if it was requested.
+     */
+    simulate_vsync = SDL_FALSE;
+    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+        texture_data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
+        if (!texture_data || !texture_data->renderer || (texture_data->renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) == 0) {
+            simulate_vsync = SDL_TRUE;
+        }
+    }
+
+    return SW_CreateRendererForSurface(surface, simulate_vsync);
 }
 
 SDL_RenderDriver SW_RenderDriver = {

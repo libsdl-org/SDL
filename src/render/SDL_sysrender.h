@@ -290,6 +290,18 @@ struct SDL_RenderDriver
     SDL_RendererInfo info;
 };
 
+/* Support for framebuffer emulation using an accelerated renderer */
+
+#define SDL_WINDOWTEXTUREDATA   "_SDL_WindowTextureData"
+
+typedef struct {
+    SDL_Renderer *renderer;
+    SDL_Texture *texture;
+    void *pixels;
+    int pitch;
+    int bytes_per_pixel;
+} SDL_WindowTextureData;
+
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
 extern SDL_RenderDriver D3D_RenderDriver;
 extern SDL_RenderDriver D3D11_RenderDriver;
