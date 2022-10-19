@@ -704,6 +704,11 @@ COREAUDIO_CloseDevice(_THIS)
     /* if callback fires again, feed silence; don't call into the app. */
     SDL_AtomicSet(&this->paused, 1);
 
+    /* dispose of the audio queue before waiting on the thread, or it might stall for a long time! */
+    if (this->hidden->audioQueue) {
+        AudioQueueDispose(this->hidden->audioQueue, 0);
+    }
+
     if (this->hidden->thread) {
         SDL_assert(SDL_AtomicGet(&this->shutdown) != 0);  /* should have been set by SDL_audio.c */
         SDL_WaitThread(this->hidden->thread, NULL);
@@ -731,10 +736,6 @@ COREAUDIO_CloseDevice(_THIS)
     if (num_open_devices == 0) {
         SDL_free(open_devices);
         open_devices = NULL;
-    }
-
-    if (this->hidden->audioQueue) {
-        AudioQueueDispose(this->hidden->audioQueue, 1);
     }
 
     if (this->hidden->ready_semaphore) {
