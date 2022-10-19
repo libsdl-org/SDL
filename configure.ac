@@ -927,10 +927,6 @@ CheckOSS()
     AC_ARG_ENABLE(oss,
 [AS_HELP_STRING([--enable-oss], [support the OSS audio API [default=maybe]])],
                   , enable_oss=maybe)
-
-    # OpenBSD "has" OSS, but it's not really for app use. They want you to
-    #  use sndio instead. So on there, we default to disabled. You can force
-    #  it on if you really want, though.
     if test x$enable_oss = xmaybe; then
         enable_oss=yes
     fi
