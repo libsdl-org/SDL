@@ -683,6 +683,7 @@ SDL_LIBS
 SDL_CFLAGS
 bin_prefix_relpath
 cmake_prefix_relpath
+SDL_VENDOR_INFO
 INSTALL_SDL2_CONFIG
 LIBUSB_LIBS
 LIBUSB_CFLAGS
@@ -954,6 +955,7 @@ enable_foregrounding_signal
 enable_joystick_virtual
 enable_render_d3d
 enable_sdl2_config
+enable_vendor_info
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1781,6 +1783,8 @@ Optional Features:
                           enable virtual joystick APIs [default=yes]
   --enable-render-d3d     enable the Direct3D render driver [default=yes]
   --enable-sdl2-config    Install sdl2-config [default=yes]
+  --enable-vendor-info=STRING
+                          Add vendor info to SDL_REVISION
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -29469,6 +29473,21 @@ else
 printf "%s\n" "no" >&6; }
 fi
 INSTALL_SDL2_CONFIG=$enable_sdl2_config
+
+
+# Check whether --enable-vendor-info was given.
+if test ${enable_vendor_info+y}
+then :
+  enableval=$enable_vendor_info; enable_vendor_info="$enableval"
+else $as_nop
+  enable_vendor_info=
+fi
+
+if test "$enable_vendor_info" = no
+then :
+  enable_vendor_info=
+fi
+SDL_VENDOR_INFO=$enable_vendor_info
 
 
 # Verify that we have all the platform specific files we need
