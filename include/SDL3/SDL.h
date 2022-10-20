@@ -64,7 +64,6 @@
 #include <SDL3/SDL_quit.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_revision.h>
 #include <SDL3/SDL_rwops.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_sensor.h>

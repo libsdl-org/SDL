@@ -1,5 +1,5 @@
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
- message(FATAL_ERROR "Prevented in-tree build. Please create a build directory outside of the SDL source code and run \"cmake -S ${CMAKE_SOURCE_DIR} -B .\" from there")
+  message(FATAL_ERROR "Prevented in-tree build. Please create a build directory outside of the SDL source code and run \"cmake -S ${CMAKE_SOURCE_DIR} -B .\" from there")
 endif()
 
 cmake_minimum_required(VERSION 3.0.0)
@@ -74,6 +74,7 @@ include(${SDL3_SOURCE_DIR}/cmake/macros.cmake)
 include(${SDL3_SOURCE_DIR}/cmake/sdlchecks.cmake)
 include(${SDL3_SOURCE_DIR}/cmake/sdlplatform.cmake)
 include(${SDL3_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake)
+include(${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake)
 
 # Enable large file support on 32-bit glibc, so that we can access files
 # with large inode numbers
@@ -2843,39 +2844,19 @@ foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
   endif()
 endforeach()
 
-# Compat helpers for the configuration files
-
-if(EXISTS "${PROJECT_SOURCE_DIR}/VERSION.txt")
-  file(READ "${PROJECT_SOURCE_DIR}/VERSION.txt" SDL_SOURCE_VERSION)
-  string(STRIP "${SDL_SOURCE_VERSION}" SDL_SOURCE_VERSION)
-endif()
-
-find_package(Git)
-if(Git_FOUND)
-  execute_process(COMMAND
-    "${GIT_EXECUTABLE}" describe --always --tags --long
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    RESULT_VARIABLE GIT_REVISION_STATUS
-    OUTPUT_VARIABLE GIT_REVISION
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(SDL_REVISION_SUFFIX "" CACHE STRING "Suffix for the SDL revision")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt")
+  # If VERSION exists, it contains the SDL version
+  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt" SDL_REVISION_CENTER)
+  string(STRIP "${SDL_REVISION_CENTER}" SDL_REVISION_CENTER)
 else()
-  set(GIT_REVISION_STATUS 1)
-  set(GIT_REVISION "")
-endif()
-
-if(SDL_SOURCE_VERSION)
-  set(SDL_REVISION "SDL-${SDL_SOURCE_VERSION}")
-elseif(GIT_REVISION_STATUS EQUAL 0)
-  if(GIT_REVISION MATCHES "^[0-9a-f]+$")
-    # Just a truncated sha1, so prefix it with the version number
-    set(SDL_REVISION "SDL-${SDL_VERSION}-g${GIT_REVISION}")
-  else()
-    # e.g. release-2.24.0-542-g96361fc47
-    set(SDL_REVISION "SDL-${GIT_REVISION}")
+  # If VERSION does not exist, use git to calculate a version
+  git_describe(SDL_REVISION_CENTER)
+  if(NOT SDL_REVISION_CENTER)
+    set(SDL_REVISION_CENTER "${SDL_VERSION}-no-vcs")
   endif()
-else()
-  set(SDL_REVISION "SDL-${SDL_VERSION}-no-vcs")
 endif()
+set(SDL_REVISION "SDL-${SDL_REVISION_CENTER}${SDL_REVISION_SUFFIX}")
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${SDL3_BINARY_DIR}/include/SDL3")
 configure_file("${SDL3_SOURCE_DIR}/include/build_config/SDL_revision.h.cmake"
@@ -2887,6 +2868,8 @@ if(CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQ
 else()
   set(sdl_static_libname "SDL3")
 endif()
+
+# Clean up variables for sdl3.pc
 
 if(SDL_SHARED)
   set(PKGCONFIG_LIBS_PRIV "\nLibs.private:")
