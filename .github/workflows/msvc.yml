@@ -43,6 +43,7 @@ jobs:
         -DSDL_WERROR=${{ !matrix.platform.nowerror }} `
         -DSDL_TESTS=ON `
         -DSDL_INSTALL_TESTS=ON `
+        -DSDL_VENDOR_INFO="Github Workflow" `
         -DSDL2_DISABLE_INSTALL=OFF `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix

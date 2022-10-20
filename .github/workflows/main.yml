@@ -72,6 +72,7 @@ jobs:
         -DSDL_TESTS=ON \
         -DSDL_WERROR=ON \
         -DSDL_INSTALL_TESTS=ON \
+        -DSDL_VENDOR_INFO="Github Workflow" \
         -DCMAKE_INSTALL_PREFIX=cmake_prefix \
         -DCMAKE_BUILD_TYPE=Release \
         ${{ matrix.platform.cmake }}
@@ -102,6 +103,7 @@ jobs:
         (
           cd build-autotools
           ${{ github.workspace }}/configure \
+            --enable-vendor-info="Github Workflow" \
             --enable-werror \
             --prefix=${{ github.workspace }}/autotools_prefix \
         )
