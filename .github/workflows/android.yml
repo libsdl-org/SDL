@@ -38,6 +38,7 @@ jobs:
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DSDL_STATIC_PIC=ON \
+            -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_INSTALL_PREFIX=prefix \
             -DCMAKE_BUILD_TYPE=Release \
             -GNinja
