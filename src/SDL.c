@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "SDL3/SDL_revision.h"
 
 #if defined(__WIN32__) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
