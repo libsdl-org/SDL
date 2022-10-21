@@ -126,6 +126,12 @@ _ftol2_sse()
     _ftol();
 }
 
+void
+_ftol2()
+{
+    _ftol();
+}
+
 /* 64-bit math operators for 32-bit systems */
 void
 __declspec(naked)

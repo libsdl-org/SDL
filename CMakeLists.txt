@@ -72,6 +72,7 @@ include(GNUInstallDirs)
 list(APPEND CMAKE_MODULE_PATH "${SDL2_SOURCE_DIR}/cmake")
 include(${SDL2_SOURCE_DIR}/cmake/macros.cmake)
 include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
+include(${SDL2_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake)
 
 # Enable large file support on 32-bit glibc, so that we can access files
 # with large inode numbers
@@ -3221,6 +3222,13 @@ if(SDL_SHARED)
   # alias target for in-tree builds
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  if(NOT SDL_LIBC)
+    check_cpu_architecture(x86 HAS_X86)
+    if(HAS_X86)
+      # FIXME: should be added for all architectures (missing symbols for ARM)
+      target_link_libraries(SDL2 PRIVATE "-nodefaultlib:MSVCRT")
+    endif()
+  endif()
   if(APPLE)
     # FIXME: Remove SOVERSION in SDL3
     set_target_properties(SDL2 PROPERTIES
