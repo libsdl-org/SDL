@@ -3102,6 +3102,10 @@ if (SDL_ASAN)
   endif()
 endif()
 
+if(SDL_TESTS)
+  set(HAVE_TESTS ON)
+endif()
+
 # Create target that collects all all generated include files.
 add_custom_target(sdl_headers_copy
     DEPENDS ${SDL_GENERATED_HEADERS})
@@ -3483,6 +3487,7 @@ endif()
 ##### Tests subproject (must appear after the install/uninstall targets) #####
 
 if(SDL_TESTS)
+  set(HAVE_TESTS ON)
   enable_testing()
   add_subdirectory(test)
 endif()
