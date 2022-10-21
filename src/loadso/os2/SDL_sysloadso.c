@@ -49,7 +49,7 @@ SDL_LoadObject(const char *sofile)
     ulRC = DosLoadModule(acError, sizeof(acError), pszModName, &hModule);
     SDL_free(pszModName);
     if (ulRC != NO_ERROR) {
-        SDL_SetError("Failed loading %s (E%u)", acError, ulRC);
+        SDL_SetError("Failed loading %s: %s (E%u)", sofile, acError, ulRC);
         return NULL;
     }
 
