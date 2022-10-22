@@ -1078,13 +1078,8 @@ int SDL_hid_init(void)
         if (libusb_ctx.libhandle != NULL) {
             SDL_bool loaded = SDL_TRUE;
 #ifdef SDL_LIBUSB_DYNAMIC
-            #ifdef __OS2__
-            #define LOAD_LIBUSB_SYMBOL(func) \
-                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
-            #else
             #define LOAD_LIBUSB_SYMBOL(func) \
                 if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
-            #endif
 #else
             #define LOAD_LIBUSB_SYMBOL(func) \
                 libusb_ctx.func = libusb_##func;
