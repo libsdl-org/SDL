@@ -69,16 +69,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
         [self addGestureRecognizer:swipeRight];
-#elif defined(__IPHONE_13_4)
-        if (@available(iOS 13.4, *)) {
-            UIPanGestureRecognizer *mouseWheelRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(mouseWheelGesture:)];
-            mouseWheelRecognizer.allowedScrollTypesMask = UIScrollTypeMaskDiscrete;
-            mouseWheelRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirectPointer) ];
-            mouseWheelRecognizer.cancelsTouchesInView = NO;
-            mouseWheelRecognizer.delaysTouchesBegan = NO;
-            mouseWheelRecognizer.delaysTouchesEnded = NO;
-            [self addGestureRecognizer:mouseWheelRecognizer];
-        }
 #endif
 
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -454,40 +444,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 }
 
 #endif /* TARGET_OS_TV || defined(__IPHONE_9_1) */
-
-static CGPoint translation_old = (CGPoint){ 0.0, 0.0 };
-
--(void)mouseWheelGesture:(UIPanGestureRecognizer *)gesture
-{
-    if (gesture.state == UIGestureRecognizerStateBegan ||
-        gesture.state == UIGestureRecognizerStateChanged) {
-
-        CGPoint translation = [gesture translationInView:self];
-        CGPoint mouse_wheel = translation;
-
-        if (gesture.state == UIGestureRecognizerStateChanged) {
-            mouse_wheel.x -= translation_old.x;
-            mouse_wheel.y -= translation_old.y;
-        }
-
-        translation_old = translation;
-
-        if (mouse_wheel.x > 0.0f) {
-            mouse_wheel.x = 1.0;
-        } else if (mouse_wheel.x < 0.0f) {
-            mouse_wheel.x = -1.0f;
-        }
-        if (mouse_wheel.y > 0.0f) {
-            mouse_wheel.y = 1.0;
-        } else if (mouse_wheel.y < 0.0f) {
-            mouse_wheel.y = -1.0f;
-        }
-
-        if (mouse_wheel.x != 0.0f || mouse_wheel.y != 0.0f) {
-            SDL_SendMouseWheel(sdlwindow, 0, mouse_wheel.x, mouse_wheel.y, SDL_MOUSEWHEEL_NORMAL);
-        }
-    }
-}
 
 #if TARGET_OS_TV
 -(void)swipeGesture:(UISwipeGestureRecognizer *)gesture
