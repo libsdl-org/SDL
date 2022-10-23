@@ -21001,10 +21001,6 @@ else $as_nop
   enable_oss=maybe
 fi
 
-
-    # OpenBSD "has" OSS, but it's not really for app use. They want you to
-    #  use sndio instead. So on there, we default to disabled. You can force
-    #  it on if you really want, though.
     if test x$enable_oss = xmaybe; then
         enable_oss=yes
     fi
