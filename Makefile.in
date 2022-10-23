@@ -252,7 +252,7 @@ dist $(distfile):
 	    -name '.#*' \) \
 	    -exec rm -f {} \;
 	if test -f $(distdir)/test/Makefile; then (cd $(distdir)/test && make distclean); fi
-	(cd $(distdir); build-scripts/updaterev.sh)
+	(cd $(distdir); $(srcdir)/build-scripts/updaterev.sh --dist)
 	tar cvf - $(distdir) | gzip --best >$(distfile)
 	rm -rf $(distdir)
 

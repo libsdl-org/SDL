@@ -15,6 +15,7 @@ build
 gen
 Build
 buildbot
+/VERSION
 
 *.so
 *.so.*

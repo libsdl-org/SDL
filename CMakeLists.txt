@@ -2930,29 +2930,36 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/VERSION")
+  file(READ "${PROJECT_SOURCE_DIR}/VERSION" SDL_SOURCE_VERSION)
+endif()
+
 find_package(Git)
 if(Git_FOUND)
   execute_process(COMMAND
-    "${GIT_EXECUTABLE}" remote get-url origin
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    RESULT_VARIABLE GIT_URL_STATUS
-    OUTPUT_VARIABLE GIT_URL
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  execute_process(COMMAND
-    "${GIT_EXECUTABLE}" rev-list --max-count=1 HEAD~..
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    "${GIT_EXECUTABLE}" describe --always --tags --long
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE GIT_REVISION_STATUS
     OUTPUT_VARIABLE GIT_REVISION
     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+else()
+  set(GIT_REVISION_STATUS 1)
+  set(GIT_REVISION "")
+endif()
 
-  if(GIT_URL_STATUS EQUAL 0 OR GIT_REVISION_STATUS EQUAL 0)
-    set(SDL_REVISION "${GIT_URL}@${GIT_REVISION}")
+if(SDL_SOURCE_VERSION)
+  set(SDL_REVISION "SDL-${SDL_SOURCE_VERSION}")
+elseif(GIT_REVISION_STATUS EQUAL 0)
+  if(GIT_REVISION MATCHES "^[0-9a-f]+$")
+    # Just a truncated sha1, so prefix it with the version number
+    set(SDL_REVISION "SDL-${SDL_VERSION}-g${GIT_REVISION}")
   else()
-    set(SDL_REVISION "")
+    # e.g. release-2.24.0-542-g96361fc47
+    set(SDL_REVISION "SDL-${GIT_REVISION}")
   endif()
 else()
-  set(SDL_REVISION "")
+  set(SDL_REVISION "SDL-${SDL_VERSION}-no-vcs")
 endif()
 
 configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
