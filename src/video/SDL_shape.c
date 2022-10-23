@@ -77,8 +77,12 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
     int bytes_per_scanline = (shape->w + (ppb - 1)) / ppb;
     Uint8 *bitmap_scanline;
     SDL_Color key;
+
     if(SDL_MUSTLOCK(shape))
         SDL_LockSurface(shape);
+
+	SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
+
     for(y = 0;y<shape->h;y++) {
         bitmap_scanline = bitmap + y * bytes_per_scanline;
         for(x=0;x<shape->w;x++) {
@@ -118,6 +122,7 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
             bitmap_scanline[x / ppb] |= mask_value << (x % ppb);
         }
     }
+
     if(SDL_MUSTLOCK(shape))
         SDL_UnlockSurface(shape);
 }
