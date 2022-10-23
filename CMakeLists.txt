@@ -2976,56 +2976,66 @@ foreach(_hdr IN LISTS SDL2_INCLUDE_FILES)
 endforeach()
 list(APPEND SDL_GENERATED_HEADERS ${SDL2_COPIED_INCLUDE_FILES})
 
-if(NOT WINDOWS OR CYGWIN OR MINGW)
-
-  set(prefix ${CMAKE_INSTALL_PREFIX})
-  file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
-
-  set(exec_prefix "\${prefix}")
-  set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
-  set(bindir "\${exec_prefix}/${CMAKE_INSTALL_BINDIR}")
-  set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
-  if(SDL_STATIC)
-    set(ENABLE_STATIC_TRUE "")
-    set(ENABLE_STATIC_FALSE "#")
-  else()
-    set(ENABLE_STATIC_TRUE "#")
-    set(ENABLE_STATIC_FALSE "")
-  endif()
-  if(SDL_SHARED)
-    set(PKGCONFIG_LIBS_PRIV "
-Libs.private:")
-    set(ENABLE_SHARED_TRUE "")
-    set(ENABLE_SHARED_FALSE "#")
-  else()
-    set(PKGCONFIG_LIBS_PRIV "")
-    set(ENABLE_SHARED_TRUE "#")
-    set(ENABLE_SHARED_FALSE "")
-  endif()
-
-  # Clean up the different lists
-  listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-  set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
-  list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
-  listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
-  set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
-  listtostr(SDL_LIBS _SDL_LIBS)
-  set(SDL_LIBS ${_SDL_LIBS})
-  listtostr(SDL_CFLAGS _SDL_CFLAGS "")
-  set(SDL_CFLAGS ${_SDL_CFLAGS})
-
-  # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
-  # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
-
-  configure_file("${SDL2_SOURCE_DIR}/sdl2.pc.in"
-    "${SDL2_BINARY_DIR}/sdl2.pc" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config")
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/SDL2.spec.in"
-    "${SDL2_BINARY_DIR}/SDL2.spec" @ONLY)
+if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
+  # Avoid conflict between the dll import library and the static library
+  set(sdl_static_libname "SDL2-static")
+else()
+  set(sdl_static_libname "SDL2")
 endif()
+
+set(prefix ${CMAKE_INSTALL_PREFIX})
+file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
+
+set(exec_prefix "\${prefix}")
+set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+set(bindir "\${exec_prefix}/${CMAKE_INSTALL_BINDIR}")
+set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+if(SDL_STATIC)
+  set(ENABLE_STATIC_TRUE "")
+  set(ENABLE_STATIC_FALSE "#")
+else()
+  set(ENABLE_STATIC_TRUE "#")
+  set(ENABLE_STATIC_FALSE "")
+endif()
+if(SDL_SHARED)
+  set(PKGCONFIG_LIBS_PRIV "
+Libs.private:")
+  set(ENABLE_SHARED_TRUE "")
+  set(ENABLE_SHARED_FALSE "#")
+else()
+  set(PKGCONFIG_LIBS_PRIV "")
+  set(ENABLE_SHARED_TRUE "#")
+  set(ENABLE_SHARED_FALSE "")
+endif()
+
+# Clean up the different lists
+listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
+set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
+listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
+set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
+listtostr(SDL_LIBS _SDL_LIBS)
+set(SDL_LIBS ${_SDL_LIBS})
+listtostr(SDL_CFLAGS _SDL_CFLAGS "")
+set(SDL_CFLAGS ${_SDL_CFLAGS})
+string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_STATIC_LIBS "${SDL_STATIC_LIBS}")
+if(NOT SDL_SHARED)
+  string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_LIBS "${SDL_LIBS}")
+endif()
+
+if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL2")
+  message(STATUS "\"pkg-config --static --libs sdl2\" will return invalid information")
+endif()
+
+# MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
+# MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
+
+configure_file("${SDL2_SOURCE_DIR}/sdl2.pc.in"
+  "${SDL2_BINARY_DIR}/sdl2.pc" @ONLY)
+configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
+  "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
+configure_file("${SDL2_SOURCE_DIR}/SDL2.spec.in"
+  "${SDL2_BINARY_DIR}/SDL2.spec" @ONLY)
 
 macro(check_add_debug_flag FLAG SUFFIX)
     check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
@@ -3267,13 +3277,9 @@ if(SDL_STATIC)
   add_dependencies(SDL2-static sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
-  if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
-    # Avoid conflict between the dll import library and the static library
-    set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2-static")
-  else()
-    set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
-  endif()
-  set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}")
+  set_target_properties(SDL2-static PROPERTIES
+    OUTPUT_NAME "${sdl_static_libname}"
+    POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}")
   target_compile_definitions(SDL2-static PRIVATE SDL_STATIC_LIB)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
@@ -3347,8 +3353,10 @@ if(NOT SDL2_DISABLE_INSTALL)
   ##### Export files #####
   if (WINDOWS AND NOT MINGW)
     set(SDL_INSTALL_CMAKEDIR_DEFAULT "cmake")
+    set(LICENSES_PREFIX "licenses/SDL2")
   else ()
     set(SDL_INSTALL_CMAKEDIR_DEFAULT "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
+    set(LICENSES_PREFIX "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
   endif ()
   set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_DEFAULT}" CACHE STRING "Location where to install SDL2Config.cmake")
 
@@ -3432,6 +3440,14 @@ if(NOT SDL2_DISABLE_INSTALL)
     set(SOPOSTFIX "")
   endif()
 
+  install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
+  if(FREEBSD)
+    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
+  else()
+    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+  endif()
   if(NOT (WINDOWS OR CYGWIN) OR MINGW)
     if(SDL_SHARED)
       set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
@@ -3444,17 +3460,9 @@ if(NOT SDL2_DISABLE_INSTALL)
           install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
       endif()
     endif()
-    if(FREEBSD)
-      # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-      install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
-    else()
-      install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-    endif()
     install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
     # TODO: what about the .spec file? Is it only needed for RPM creation?
     install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
-    install(FILES "LICENSE.txt" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
   endif()
 endif()
 
