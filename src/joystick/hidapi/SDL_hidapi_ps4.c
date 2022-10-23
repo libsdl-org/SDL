@@ -1010,8 +1010,10 @@ HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8 *data, int size
     case k_EPS4ReportIdUsbState:
         /* In the case of a DS4 USB dongle, bit[2] of byte 31 indicates if a DS4 is actually connected (indicated by '0').
          * For non-dongle, this bit is always 0 (connected).
+		 * This is usually the ID over USB, but the DS4v2 that started shipping with the PS4 Slim will also send this
+		 * packet over BT with a size of 128
          */
-        if (size == 64 && (data[31] & 0x04) == 0) {
+        if (size >= 64 && (data[31] & 0x04) == 0) {
             return SDL_TRUE;
         }
         break;
