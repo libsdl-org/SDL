@@ -81,7 +81,7 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
     if(SDL_MUSTLOCK(shape))
         SDL_LockSurface(shape);
 
-	SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
+    SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
 
     for(y = 0;y<shape->h;y++) {
         bitmap_scanline = bitmap + y * bytes_per_scanline;
