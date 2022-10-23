@@ -33,6 +33,7 @@ jobs:
         run: |
           emcmake cmake -S cmake/test -B cmake_config_build \
             -DCMAKE_BUILD_TYPE=Release \
+            -DSDL_VENDOR_INFO="Github Workflow" \
             -DTEST_SHARED=FALSE \
             -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
           cmake --build cmake_config_build --verbose

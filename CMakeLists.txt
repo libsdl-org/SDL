@@ -510,6 +510,7 @@ dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" O
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
+option_string(SDL_VENDOR_INFO      "Vendor name and/or version to add to SDL_REVISION" "")
 
 option(SDL_WERROR "Enable -Werror" OFF)
 

@@ -32,6 +32,7 @@ RANLIB	= @RANLIB@
 RC	= @RC@
 LINKER = @LINKER@
 LIBTOOLLINKERTAG = @LIBTOOLLINKERTAG@
+SDL_VENDOR_INFO = @SDL_VENDOR_INFO@
 
 TARGET  = libSDL2.la
 OBJECTS = @OBJECTS@
@@ -152,7 +153,7 @@ $(objects)/.created:
 	touch $@
 
 update-revision:
-	$(SHELL) $(auxdir)/updaterev.sh
+	$(SHELL) $(auxdir)/updaterev.sh --vendor "$(SDL_VENDOR_INFO)"
 
 .PHONY: all update-revision install install-bin install-hdrs install-lib install-data uninstall uninstall-bin uninstall-hdrs uninstall-lib uninstall-data clean distclean dist $(OBJECTS:.lo=.d)
 
@@ -252,6 +253,7 @@ dist $(distfile):
 	    -name '.#*' \) \
 	    -exec rm -f {} \;
 	if test -f $(distdir)/test/Makefile; then (cd $(distdir)/test && make distclean); fi
+	# Intentionally no vendor suffix: that's a property of the build, not the source
 	(cd $(distdir); $(srcdir)/build-scripts/updaterev.sh --dist)
 	tar cvf - $(distdir) | gzip --best >$(distfile)
 	rm -rf $(distdir)

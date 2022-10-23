@@ -4684,6 +4684,12 @@ else
 fi
 AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
 
+AC_ARG_ENABLE([vendor-info],
+    [AS_HELP_STRING([--enable-vendor-info=STRING], [Add vendor info to SDL_REVISION])],
+    [enable_vendor_info="$enableval"], [enable_vendor_info=])
+AS_IF([test "$enable_vendor_info" = no], [enable_vendor_info=])
+AC_SUBST([SDL_VENDOR_INFO], [$enable_vendor_info])
+
 # Verify that we have all the platform specific files we need
 
 if test x$have_audio != xyes; then

@@ -46,6 +46,7 @@ jobs:
           -DSDL_GCC_ATOMICS=OFF \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
+          -DSDL_VENDOR_INFO="Github Workflow" \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/prefix_cmake
     - name: Build (CMake)
