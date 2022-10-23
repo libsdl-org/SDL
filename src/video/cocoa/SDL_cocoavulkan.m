@@ -183,37 +183,15 @@ SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
             extensionsForCocoa);
 }
 
-SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface)
+
+static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(_THIS,
+                                                    SDL_Window *window,
+                                                    VkInstance instance,
+                                                    VkSurfaceKHR *surface,
+                                                    PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT,
+                                                    PFN_vkCreateMacOSSurfaceMVK vkCreateMacOSSurfaceMVK)
 {
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
-        (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
-    PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT =
-        (PFN_vkCreateMetalSurfaceEXT)vkGetInstanceProcAddr(
-                                            (VkInstance)instance,
-                                            "vkCreateMetalSurfaceEXT");
-    PFN_vkCreateMacOSSurfaceMVK vkCreateMacOSSurfaceMVK =
-        (PFN_vkCreateMacOSSurfaceMVK)vkGetInstanceProcAddr(
-                                            (VkInstance)instance,
-                                            "vkCreateMacOSSurfaceMVK");
-    VkResult result;
-    SDL_MetalView metalview;
-
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
-    }
-
-    if (!vkCreateMetalSurfaceEXT && !vkCreateMacOSSurfaceMVK) {
-        SDL_SetError(VK_EXT_METAL_SURFACE_EXTENSION_NAME " or "
-                     VK_MVK_MACOS_SURFACE_EXTENSION_NAME
-                     " extensions are not enabled in the Vulkan instance.");
-        return SDL_FALSE;
-    }
-
-    metalview = Cocoa_Metal_CreateView(_this, window);
+    SDL_MetalView metalview = Cocoa_Metal_CreateView(_this, window);
     if (metalview == NULL) {
         return SDL_FALSE;
     }
@@ -254,6 +232,78 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
      * a subview of the window.) If we release the view here to make it +1, it
      * will be destroyed when the window is destroyed. */
     CFBridgingRelease(metalview);
+}
+
+SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR *surface)
+{
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+        (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
+    PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT =
+        (PFN_vkCreateMetalSurfaceEXT)vkGetInstanceProcAddr(
+                                            (VkInstance)instance,
+                                            "vkCreateMetalSurfaceEXT");
+    PFN_vkCreateMacOSSurfaceMVK vkCreateMacOSSurfaceMVK =
+        (PFN_vkCreateMacOSSurfaceMVK)vkGetInstanceProcAddr(
+                                            (VkInstance)instance,
+                                            "vkCreateMacOSSurfaceMVK");
+    VkResult result;
+
+    if (!_this->vulkan_config.loader_handle) {
+        SDL_SetError("Vulkan is not loaded");
+        return SDL_FALSE;
+    }
+
+    if (!vkCreateMetalSurfaceEXT && !vkCreateMacOSSurfaceMVK) {
+        SDL_SetError(VK_EXT_METAL_SURFACE_EXTENSION_NAME " or "
+                     VK_MVK_MACOS_SURFACE_EXTENSION_NAME
+                     " extensions are not enabled in the Vulkan instance.");
+        return SDL_FALSE;
+    }
+
+    if (mWindow->flags & SDL_WINDOW_FOREIGN) {
+        @autoreleasepool {
+            SDL_WindowData* data = (__bridge SDL_WindowData *)window->driverdata;
+            if () {
+                if (vkCreateMetalSurfaceEXT) {
+                    VkMetalSurfaceCreateInfoEXT createInfo = {};
+                    createInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+                    createInfo.pNext = NULL;
+                    createInfo.flags = 0;
+                    createInfo.pLayer = (__bridge const CAMetalLayer *)
+                                        Cocoa_Metal_GetLayer(_this, metalview);
+                    result = vkCreateMetalSurfaceEXT(instance, &createInfo, NULL, surface);
+                    if (result != VK_SUCCESS) {
+                        SDL_SetError("vkCreateMetalSurfaceEXT failed: %s",
+                                    SDL_Vulkan_GetResultString(result));
+                        return SDL_FALSE;
+                    }
+                } else {
+                    VkMacOSSurfaceCreateInfoMVK createInfo = {};
+                    createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+                    createInfo.pNext = NULL;
+                    createInfo.flags = 0;
+                    createInfo.pView = (const void *)metalview;
+                    result = vkCreateMacOSSurfaceMVK(instance, &createInfo,
+                                                    NULL, surface);
+                    if (result != VK_SUCCESS) {
+                        SDL_SetError("vkCreateMacOSSurfaceMVK failed: %s",
+                                    SDL_Vulkan_GetResultString(result));
+                        return SDL_FALSE;
+                    }
+                }
+            }
+            else {
+                return Cocoa_Vulkan_CreateSurfaceViaMetalView(_this, windows, instance, surface);
+            }
+        }
+    }
+    else
+    {
+        return Cocoa_Vulkan_CreateSurfaceViaMetalView(_this, windows, instance, surface);
+    }
 
     return SDL_TRUE;
 }
