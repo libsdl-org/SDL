@@ -233,6 +233,8 @@ static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(_THIS,
      * a subview of the window.) If we release the view here to make it +1, it
      * will be destroyed when the window is destroyed. */
     CFBridgingRelease(metalview);
+    
+    return SDL_TRUE;
 }
 
 SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
