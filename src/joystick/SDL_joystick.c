@@ -1530,7 +1530,8 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
     if (!info->sent_initial_value) {
         /* Make sure we don't send motion until there's real activity on this axis */
         const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80;  /* ShanWan PS3 controller needed 96 */
-        if (SDL_abs(value - info->value) <= MAX_ALLOWED_JITTER) {
+        if (SDL_abs(value - info->value) <= MAX_ALLOWED_JITTER &&
+            !SDL_IsJoystickVirtual(joystick->guid)) {
             return 0;
         }
         info->sent_initial_value = SDL_TRUE;
