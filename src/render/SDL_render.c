@@ -954,7 +954,7 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
     }
     renderer->simulate_vsync_interval = (1000 / refresh_rate);
 }
-#endif
+#endif /* !SDL_RENDER_DISABLED */
 
 SDL_Renderer *
 SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
