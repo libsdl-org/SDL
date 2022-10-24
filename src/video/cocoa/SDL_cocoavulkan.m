@@ -269,36 +269,35 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
     if (window->flags & SDL_WINDOW_FOREIGN) {
         @autoreleasepool {
             SDL_WindowData* data = (__bridge SDL_WindowData *)window->driverdata;
-            if ([data.sdlContentView.layer isKindOfClass:[CAMetalLayer class]]) {
-                if (vkCreateMetalSurfaceEXT) {
-                    VkMetalSurfaceCreateInfoEXT createInfo = {};
-                    createInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
-                    createInfo.pNext = NULL;
-                    createInfo.flags = 0;
-                    createInfo.pLayer = (CAMetalLayer*)data.sdlContentView.layer;
-                    result = vkCreateMetalSurfaceEXT(instance, &createInfo, NULL, surface);
-                    if (result != VK_SUCCESS) {
-                        SDL_SetError("vkCreateMetalSurfaceEXT failed: %s",
-                                    SDL_Vulkan_GetResultString(result));
-                        return SDL_FALSE;
-                    }
-                } else {
-                    VkMacOSSurfaceCreateInfoMVK createInfo = {};
-                    createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-                    createInfo.pNext = NULL;
-                    createInfo.flags = 0;
-                    createInfo.pView = (__bridge const void*)data.sdlContentView;
-                    result = vkCreateMacOSSurfaceMVK(instance, &createInfo,
-                                                    NULL, surface);
-                    if (result != VK_SUCCESS) {
-                        SDL_SetError("vkCreateMacOSSurfaceMVK failed: %s",
-                                    SDL_Vulkan_GetResultString(result));
-                        return SDL_FALSE;
-                    }
-                }
+            if (![data.sdlContentView.layer isKindOfClass:[CAMetalLayer class]]) {
+                [data.sdlContentView setLayer:[CAMetalLayer layer]];
             }
-            else {
-                return Cocoa_Vulkan_CreateSurfaceViaMetalView(_this, window, instance, surface, vkCreateMetalSurfaceEXT, vkCreateMacOSSurfaceMVK);
+            
+            if (vkCreateMetalSurfaceEXT) {
+                VkMetalSurfaceCreateInfoEXT createInfo = {};
+                createInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+                createInfo.pNext = NULL;
+                createInfo.flags = 0;
+                createInfo.pLayer = (CAMetalLayer*)data.sdlContentView.layer;
+                result = vkCreateMetalSurfaceEXT(instance, &createInfo, NULL, surface);
+                if (result != VK_SUCCESS) {
+                    SDL_SetError("vkCreateMetalSurfaceEXT failed: %s",
+                                SDL_Vulkan_GetResultString(result));
+                    return SDL_FALSE;
+                }
+            } else {
+                VkMacOSSurfaceCreateInfoMVK createInfo = {};
+                createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+                createInfo.pNext = NULL;
+                createInfo.flags = 0;
+                createInfo.pView = (__bridge const void*)data.sdlContentView;
+                result = vkCreateMacOSSurfaceMVK(instance, &createInfo,
+                                                NULL, surface);
+                if (result != VK_SUCCESS) {
+                    SDL_SetError("vkCreateMacOSSurfaceMVK failed: %s",
+                                SDL_Vulkan_GetResultString(result));
+                    return SDL_FALSE;
+                }
             }
         }
     }
