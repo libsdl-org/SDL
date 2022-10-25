@@ -320,7 +320,7 @@ WarpMouseInternal(Window xwindow, const int x, const int y)
     /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
      * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
      */
-    if (SDL_GetNumVideoDisplays() == 1) {
+    if (ScreenCount(display) == 1) {
         X11_XIGetClientPointer(display, None, &deviceid);
     }
     if (deviceid != 0) {
