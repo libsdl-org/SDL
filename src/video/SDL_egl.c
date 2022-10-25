@@ -256,23 +256,13 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
     #if !defined(__EMSCRIPTEN__) && !defined(SDL_VIDEO_DRIVER_VITA)  /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
     /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
     if (!retval) {
-        static char procname[64];
         retval = SDL_LoadFunction(_this->egl_data->opengl_dll_handle, proc);
-        /* just in case you need an underscore prepended... */
-        if (!retval && (SDL_strlen(proc) < (sizeof (procname) - 1))) {
-            procname[0] = '_';
-            SDL_strlcpy(procname + 1, proc, sizeof (procname) - 1);
-            retval = SDL_LoadFunction(_this->egl_data->opengl_dll_handle, procname);
-        }
     }
     #endif
 
     /* Try eglGetProcAddress if we're on <= 1.4 and still searching... */
     if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
-        if (retval) {
-            return retval;
-        }
     }
 
     return retval;
