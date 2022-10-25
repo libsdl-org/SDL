@@ -19,7 +19,15 @@ open(PIPEFH, '-|', 'git tag -l') or die "Failed to read git release tags: $!\n";
 while (<PIPEFH>) {
     chomp;
     if (/\Arelease\-(.*?)\Z/) {
-        push @unsorted_releases, $1;
+        # After 2.24.x, ignore anything that isn't a x.y.0 release.
+        # We moved to bugfix-only point releases there, so make sure new APIs
+        #  are assigned to the next minor version and ignore the patch versions.
+        my $ver = $1;
+        my @versplit = split /\./, $ver;
+        next if (scalar(@versplit) > 2) && (($versplit[0] > 2) || (($versplit[0] == 2) && ($versplit[1] >= 24))) && ($versplit[2] != 0);
+
+        # Consider this release version.
+        push @unsorted_releases, $ver;
     }
 
 }
