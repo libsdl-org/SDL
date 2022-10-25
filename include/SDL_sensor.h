@@ -282,7 +282,7 @@ extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor *sensor, float *data, i
  * \param num_values The number of values to write to data
  * \returns 0 or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.26.1.
+ * \since This function is available since SDL 2.26.0.
  */
 extern DECLSPEC int SDLCALL SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *data, int num_values);
 

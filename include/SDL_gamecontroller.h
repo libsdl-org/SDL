@@ -910,7 +910,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *
  * \param num_values The number of values to write to data
  * \return 0 or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.26.1.
+ * \since This function is available since SDL 2.26.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorDataWithTimestamp(SDL_GameController *gamecontroller, SDL_SensorType type, Uint64 *timestamp, float *data, int num_values);
 

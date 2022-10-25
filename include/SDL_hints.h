@@ -2444,7 +2444,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  * variable, or NULL if the environment isn't set. Callbacks will be called
  * normally with this change.
  *
- * \since This function is available since SDL 2.26.1.
+ * \since This function is available since SDL 2.26.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
