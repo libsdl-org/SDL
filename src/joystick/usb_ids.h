@@ -88,6 +88,10 @@
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008
 #define USB_PRODUCT_RAZER_RAIJU                             0x1000
+#define USB_PRODUCT_RAZER_TOURNAMENT_EDITION_USB            0x1007
+#define USB_PRODUCT_RAZER_TOURNAMENT_EDITION_BLUETOOTH      0x100a
+#define USB_PRODUCT_RAZER_ULTIMATE_EDITION_USB              0x1004
+#define USB_PRODUCT_RAZER_ULTIMATE_EDITION_BLUETOOTH        0x1009
 #define USB_PRODUCT_SHANWAN_DS3                             0x0523
 #define USB_PRODUCT_SONY_DS3                                0x0268
 #define USB_PRODUCT_SONY_DS4                                0x05c4

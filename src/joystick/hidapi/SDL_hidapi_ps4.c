@@ -374,6 +374,11 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         /* The Razer Raiju doesn't respond to the detection protocol, but has a touchpad and vibration */
         ctx->vibration_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
+
+        if (device->product_id == USB_PRODUCT_RAZER_TOURNAMENT_EDITION_BLUETOOTH ||
+            device->product_id == USB_PRODUCT_RAZER_ULTIMATE_EDITION_BLUETOOTH) {
+            device->is_bluetooth = SDL_TRUE;
+        }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported);
 
@@ -679,7 +684,14 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     /* Initialize the joystick capabilities */
     joystick->nbuttons = ctx->touchpad_supported ? 16 : 15;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
-    joystick->epowerlevel = device->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
+    if (device->is_bluetooth && ctx->official_controller) {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    } else if (device->is_bluetooth) {
+        /* We can't get the power status, assume it's full */
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
+    } else {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    }
 
     if (ctx->enhanced_mode) {
         /* Force initialization when opening the joystick */
@@ -765,7 +777,7 @@ HIDAPI_DriverPS4_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 
     SDL_zeroa(data);
 
-    if (device->is_bluetooth) {
+    if (device->is_bluetooth && ctx->official_controller) {
         data[0] = k_EPS4ReportIdBluetoothEffects;
         data[1] = 0xC0 | 0x04;  /* Magic value HID + CRC, also sets interval to 4ms for samples */
         data[3] = 0x03;  /* 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval */
@@ -919,7 +931,7 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, 
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
-    if (ctx->device->is_bluetooth) {
+    if (ctx->device->is_bluetooth && ctx->official_controller) {
         if (packet->ucBatteryLevel & 0x10) {
             SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
         } else {
