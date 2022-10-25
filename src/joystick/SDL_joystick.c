@@ -2126,7 +2126,9 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
         type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
-    } else if (vendor == USB_VENDOR_NVIDIA && product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER) {
+    } else if (vendor == USB_VENDOR_NVIDIA &&
+               (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103 ||
+                product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104)) {
         type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
 
     } else {

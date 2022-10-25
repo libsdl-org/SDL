@@ -49,8 +49,19 @@
 /* Reports that are too small are dropped over Bluetooth */
 #define HID_REPORT_SIZE 33
 
+enum
+{
+    SDL_CONTROLLER_BUTTON_SHIELD_V103_TOUCHPAD = SDL_CONTROLLER_BUTTON_MISC1 + 1,
+    SDL_CONTROLLER_BUTTON_SHIELD_V103_MINUS,
+    SDL_CONTROLLER_BUTTON_SHIELD_V103_PLUS,
+    SDL_CONTROLLER_NUM_SHIELD_V103_BUTTONS,
+
+    SDL_CONTROLLER_NUM_SHIELD_V104_BUTTONS = SDL_CONTROLLER_BUTTON_MISC1 + 1,
+};
+
 typedef enum {
     k_ShieldReportIdControllerState = 0x01,
+    k_ShieldReportIdControllerTouch = 0x02,
     k_ShieldReportIdCommandResponse = 0x03,
     k_ShieldReportIdCommandRequest = 0x04,
 } EShieldReportId;
@@ -180,9 +191,17 @@ HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = 16;
-    joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    if (device->product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
+        joystick->nbuttons = SDL_CONTROLLER_NUM_SHIELD_V103_BUTTONS;
+        joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+
+        SDL_PrivateJoystickAddTouchpad(joystick, 1);
+    } else {
+        joystick->nbuttons = SDL_CONTROLLER_NUM_SHIELD_V104_BUTTONS;
+        joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    }
 
     /* Request battery and charging info */
     ctx->last_battery_query_time = SDL_GetTicks();
@@ -215,19 +234,32 @@ HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
 static int
 HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    SDL_DriverShield_Context *ctx = device->context;
+    if (device->product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
+        Uint8 rumble_packet[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-    /* The rumble motors are quite intense, so tone down the intensity like the official driver does */
-    ctx->left_motor_amplitude = low_frequency_rumble >> 11;
-    ctx->right_motor_amplitude = high_frequency_rumble >> 11;
-    ctx->rumble_update_pending = SDL_TRUE;
+        rumble_packet[2] = (low_frequency_rumble >> 8);
+        rumble_packet[4] = (high_frequency_rumble >> 8);
 
-    if (ctx->rumble_report_pending) {
-        /* We will service this after the hardware acknowledges the previous request */
+        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+            return SDL_SetError("Couldn't send rumble packet");
+        }
         return 0;
-    }
 
-    return HIDAPI_DriverShield_SendNextRumble(device);
+    } else {
+        SDL_DriverShield_Context *ctx = device->context;
+
+        /* The rumble motors are quite intense, so tone down the intensity like the official driver does */
+        ctx->left_motor_amplitude = low_frequency_rumble >> 11;
+        ctx->right_motor_amplitude = high_frequency_rumble >> 11;
+        ctx->rumble_update_pending = SDL_TRUE;
+
+        if (ctx->rumble_report_pending) {
+            /* We will service this after the hardware acknowledges the previous request */
+            return 0;
+        }
+
+        return HIDAPI_DriverShield_SendNextRumble(device);
+    }
 }
 
 static int
@@ -271,7 +303,104 @@ HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joy
 }
 
 static void
-HIDAPI_DriverShield_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
+HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
+{
+    if (ctx->last_state[3] != data[3]) {
+        SDL_bool dpad_up = SDL_FALSE;
+        SDL_bool dpad_down = SDL_FALSE;
+        SDL_bool dpad_left = SDL_FALSE;
+        SDL_bool dpad_right = SDL_FALSE;
+
+        switch (data[3]) {
+        case 0:
+            dpad_up = SDL_TRUE;
+            break;
+        case 1:
+            dpad_up = SDL_TRUE;
+            dpad_right = SDL_TRUE;
+            break;
+        case 2:
+            dpad_right = SDL_TRUE;
+            break;
+        case 3:
+            dpad_right = SDL_TRUE;
+            dpad_down = SDL_TRUE;
+            break;
+        case 4:
+            dpad_down = SDL_TRUE;
+            break;
+        case 5:
+            dpad_left = SDL_TRUE;
+            dpad_down = SDL_TRUE;
+            break;
+        case 6:
+            dpad_left = SDL_TRUE;
+            break;
+        case 7:
+            dpad_up = SDL_TRUE;
+            dpad_left = SDL_TRUE;
+            break;
+        default:
+            break;
+        }
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
+    }
+
+    if (ctx->last_state[1] != data[1]) {
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_B, (data[1] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_X, (data[1] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_Y, (data[1] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[1] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[1] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[1] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+    }
+
+    if (ctx->last_state[2] != data[2]) {
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[2] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_SHIELD_V103_PLUS, (data[2] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_SHIELD_V103_MINUS, (data[2] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[2] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[2] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[2] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+    }
+
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, SDL_SwapLE16(*(Sint16*)&data[4]) - 0x8000);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, SDL_SwapLE16(*(Sint16*)&data[6]) - 0x8000);
+
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, SDL_SwapLE16(*(Sint16*)&data[8]) - 0x8000);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, SDL_SwapLE16(*(Sint16*)&data[10]) - 0x8000);
+
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_SwapLE16(*(Sint16*)&data[12]) - 0x8000);
+    SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, SDL_SwapLE16(*(Sint16*)&data[14]) - 0x8000);
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
+
+#undef clamp
+#define clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
+
+static void
+HIDAPI_DriverShield_HandleTouchPacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
+{
+    Uint8 touchpad_state;
+    float touchpad_x, touchpad_y;
+
+    SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_SHIELD_V103_TOUCHPAD, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+
+    /* It's a triangular pad, but just use the center as the usable touch area */
+    touchpad_state = ((data[1] & 0x80) == 0) ? SDL_PRESSED : SDL_RELEASED;
+    touchpad_x = clamp((float)(data[2] - 0x70) / 0x50, 0.0f, 1.0f);
+    touchpad_y = clamp((float)(data[4] - 0x40) / 0x15, 0.0f, 1.0f);
+    SDL_PrivateJoystickTouchpad(joystick, 0, 0, touchpad_state, touchpad_x, touchpad_y, touchpad_state ? 1.0f : 0.0f);
+}
+
+static void
+HIDAPI_DriverShield_HandleStatePacketV104(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
 {
     if (size < 23) {
         return;
@@ -380,7 +509,17 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
                 if (!joystick) {
                     break;
                 }
-                HIDAPI_DriverShield_HandleStatePacket(joystick, ctx, data, size);
+                if (size == 16) {
+                    HIDAPI_DriverShield_HandleStatePacketV103(joystick, ctx, data, size);
+                } else {
+                    HIDAPI_DriverShield_HandleStatePacketV104(joystick, ctx, data, size);
+                }
+                break;
+            case k_ShieldReportIdControllerTouch:
+                if (!joystick) {
+                    break;
+                }
+                HIDAPI_DriverShield_HandleTouchPacketV103(joystick, ctx, data, size);
                 break;
             case k_ShieldReportIdCommandResponse:
                 cmd_resp_report = (ShieldCommandReport_t*)data;

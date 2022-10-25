@@ -1038,6 +1038,14 @@ HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL_HIDAPI_Devi
             }
         }
     }
+
+    if (vendor_id == USB_VENDOR_NVIDIA) {
+        /* If we're looking for the NVIDIA SHIELD controller Xbox interface, match it against any NVIDIA SHIELD controller */
+        if (product_id == 0xb400 &&
+            device->type == SDL_CONTROLLER_TYPE_NVIDIA_SHIELD) {
+            return SDL_TRUE;
+        }
+    }
     return SDL_FALSE;
 }
 

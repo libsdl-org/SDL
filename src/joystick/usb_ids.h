@@ -82,7 +82,8 @@
 #define USB_PRODUCT_NINTENDO_SWITCH_PRO                     0x2009
 #define USB_PRODUCT_NINTENDO_WII_REMOTE                     0x0306
 #define USB_PRODUCT_NINTENDO_WII_REMOTE2                    0x0330
-#define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER                0x7214
+#define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103           0x7210
+#define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104           0x7214
 #define USB_PRODUCT_RAZER_ATROX                             0x0a00
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008

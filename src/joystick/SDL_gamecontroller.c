@@ -664,6 +664,11 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD:
                 /* The NVIDIA SHIELD controller has a share button between back and start buttons */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+
+                if (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
+                    /* The original SHIELD controller has a touchpad as well */
+                    SDL_strlcat(mapping_string, "touchpad:b16,", sizeof(mapping_string));
+                }
                 break;
             default:
                 if (vendor == 0 && product == 0) {
