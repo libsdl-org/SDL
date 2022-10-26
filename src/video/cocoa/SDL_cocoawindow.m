@@ -2370,6 +2370,12 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
         }
 
         #endif /* SDL_VIDEO_OPENGL */
+
+        if (window->shaper) {
+            CFBridgingRelease(window->shaper->driverdata);
+            SDL_free(window->shaper);
+            window->shaper = NULL;
+        }
     }
     window->driverdata = NULL;
 }}

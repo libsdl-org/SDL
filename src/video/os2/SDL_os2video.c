@@ -914,6 +914,17 @@ static void OS2_DestroyWindow(_THIS, SDL_Window * window)
     if (pWinData == NULL)
         return;
 
+    if (pWinData->hrgnShape != NULLHANDLE) {
+        HPS hps = WinGetPS(pWinData->hwnd);
+        GpiDestroyRegion(hps, pWinData->hrgnShape);
+        WinReleasePS(hps);
+    }
+
+    if (window->shaper) {
+        SDL_free(window->shaper);
+        window->shaper = NULL;
+    }
+
     if (pWinData->fnUserWndProc == NULL) {
         /* Window was created by SDL (OS2_CreateWindow()),
          * not by user (OS2_CreateWindowFrom()) */
