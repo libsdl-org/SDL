@@ -43,25 +43,6 @@
 /* Size of Oneshot drawbuffer (Double Buffered, so it uses this size * 2) */
 #define RENDER_QUEUE_OS_POOLSIZE 1024 * 1024 * 2 // 2048K of oneshot renderqueue
 
-typedef struct clear_vertex {
-    float x;
-    float y;
-} clear_vertex;
-
-typedef struct texture_vertex {
-    float x;
-    float y;
-    float u;
-    float v;
-    uint64_t color;
-} texture_vertex;
-
-typedef struct color_vertex {
-    float x;
-    float y;
-    uint64_t color;
-} color_vertex;
-
 typedef struct
 {
     GSGLOBAL *gsGlobal;
@@ -264,17 +245,13 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        texture_vertex *vertices;
-
-        vertices = (texture_vertex *)SDL_AllocateRenderVertices(renderer, 
-                                                                count * sizeof(texture_vertex), 
-                                                                4, 
-                                                                &cmd->data.draw.first);
-
+        GSPRIMUVPOINT *vertices = (GSPRIMUVPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMUVPOINT), 4, &cmd->data.draw.first);
+        PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+        GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->driverdata;
+        
         if (!vertices) {
             return -1;
         }
-
 
         for (i = 0; i < count; i++) {
             int j;
@@ -295,15 +272,13 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             col_ = *(SDL_Color *)((char*)color + j * color_stride);
             uv_ = (float *)((char*)uv + j * uv_stride);
 
-            vertices->x = xy_[0] * scale_x;
-            vertices->y = xy_[1] * scale_y;
-            vertices->u = uv_[0];
-            vertices->v = uv_[1];
-            vertices->color = GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);
+            vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
+            vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
+            vertices->rgbaq = color_to_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1);
 
             vertices++;
         }
-
+        
     } else {
         PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
         GSPRIMPOINT *vertices = (GSPRIMPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMPOINT), 4, &cmd->data.draw.first);
@@ -311,7 +286,6 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
         if (!vertices) {
             return -1;
         }
-
 
         for (i = 0; i < count; i++) {
             int j;
@@ -339,7 +313,6 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     }
 
     return 0;
-
 }
 
 static int
@@ -441,56 +414,18 @@ PS2_SetBlendMode(PS2_RenderData *data, int blendMode)
 static int
 PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
-
-    int i;
-    uint64_t c1, c2, c3;
-    float x1, y1, x2, y2, x3, y3;
-    float u1, v1, u2, v2, u3, v3;
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    const PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
     
     const size_t count = cmd->data.draw.count;
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     if (cmd->data.draw.texture) {
-        const texture_vertex *verts = (texture_vertex *) (vertices + cmd->data.draw.first);
+        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *) cmd->data.draw.texture->driverdata;
-        
-        for (i = 0; i < count/3; i++) {
-            x1 = verts->x;
-            y1 = verts->y;
 
-            u1 = verts->u * ps2_tex->Width;
-            v1 = verts->v * ps2_tex->Height;
-
-            c1 = verts->color;
-
-            verts++;
-
-            x2 = verts->x;
-            y2 = verts->y;
-
-            u2 = verts->u * ps2_tex->Width;
-            v2 = verts->v * ps2_tex->Height;
-
-            c2 = verts->color;
-
-            verts++;
-
-            x3 = verts->x;
-            y3 = verts->y;
-
-            u3 = verts->u * ps2_tex->Width;
-            v3 = verts->v * ps2_tex->Height;
-
-            c3 = verts->color;
-
-            verts++;
-
-	        gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
-
-            gsKit_prim_triangle_goraud_texture(data->gsGlobal, ps2_tex, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3, 0, c1, c2, c3);
-        }
+        gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
+        gsKit_prim_list_triangle_goraud_texture_uv_3d(data->gsGlobal, ps2_tex, count, verts);
     } else {
         const GSPRIMPOINT *verts = (GSPRIMPOINT *) (vertices + cmd->data.draw.first);
         gsKit_prim_list_triangle_gouraud_3d(data->gsGlobal, count, verts);
