@@ -754,7 +754,7 @@ extern DECLSPEC SDL_GameControllerButton SDLCALL SDL_GameControllerGetButtonFrom
  * The caller should not SDL_free() the returned string.
  *
  * \param button an enum value for a given SDL_GameControllerButton
- * \returns a string for the given button, or NULL if an invalid axis is
+ * \returns a string for the given button, or NULL if an invalid button is
  *          specified. The string returned is of the format used by
  *          SDL_GameController mapping strings.
  *
