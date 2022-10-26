@@ -36,11 +36,15 @@ Win32_CreateShaper(SDL_Window * window) {
     result->hasshape = SDL_FALSE;
     result->driverdata = (SDL_ShapeData*)SDL_malloc(sizeof(SDL_ShapeData));
     ((SDL_ShapeData*)result->driverdata)->mask_tree = NULL;
-    /* Put some driver-data here. */
     window->shaper = result;
+    /* Put some driver-data here. */
     resized_properly = Win32_ResizeWindowShape(window);
-    if (resized_properly != 0)
-            return NULL;
+    if (resized_properly != 0) {
+        SDL_free(result->driverdata);
+        SDL_free(result);
+        window->shaper = NULL;
+        return NULL;
+    }
 
     return result;
 }

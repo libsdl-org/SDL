@@ -1686,6 +1686,16 @@ X11_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
+    if (window->shaper) {
+        SDL_ShapeData *shapedata = (SDL_ShapeData *) window->shaper->driverdata;
+        if (shapedata) {
+            SDL_free(shapedata->bitmap);
+            SDL_free(shapedata);
+        }
+        SDL_free(window->shaper);
+        window->shaper = NULL;
+    }
+
     if (data) {
         SDL_VideoData *videodata = (SDL_VideoData *) data->videodata;
         Display *display = videodata->display;
