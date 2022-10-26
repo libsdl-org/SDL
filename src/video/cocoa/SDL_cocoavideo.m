@@ -223,8 +223,7 @@ void Cocoa_VideoQuit(_THIS)
 }
 
 /* This function assumes that it's called from within an autorelease pool */
-NSImage *
-Cocoa_CreateImage(SDL_Surface *surface)
+NSImage *Cocoa_CreateImage(SDL_Surface *surface)
 {
     SDL_Surface *converted;
     NSBitmapImageRep *imgrep;
@@ -254,7 +253,7 @@ Cocoa_CreateImage(SDL_Surface *surface)
 
     /* Copy the pixels */
     pixels = [imgrep bitmapData];
-    SDL_memcpy(pixels, converted->pixels, converted->h * converted->pitch);
+    SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
     SDL_DestroySurface(converted);
 
     /* Premultiply the alpha channel */
