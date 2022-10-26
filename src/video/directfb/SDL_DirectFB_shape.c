@@ -35,11 +35,20 @@ DirectFB_CreateShaper(SDL_Window* window) {
     int resized_properly;
 
     result = SDL_malloc(sizeof(SDL_WindowShaper));
+    if (!result) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
     data = SDL_malloc(sizeof(SDL_ShapeData));
+    if (!data) {
+        SDL_free(result);
+        SDL_OutOfMemory();
+        return NULL;
+    }
     result->driverdata = data;
     data->surface = NULL;
     window->shaper = result;

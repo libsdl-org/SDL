@@ -29,13 +29,21 @@ SDL_WindowShaper*
 Win32_CreateShaper(SDL_Window * window) {
     int resized_properly;
     SDL_WindowShaper* result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
+    if (!result) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
     result->hasshape = SDL_FALSE;
-    result->driverdata = (SDL_ShapeData*)SDL_malloc(sizeof(SDL_ShapeData));
-    ((SDL_ShapeData*)result->driverdata)->mask_tree = NULL;
+    result->driverdata = (SDL_ShapeData*)SDL_calloc(1, sizeof(SDL_ShapeData));
+    if (!result->driverdata) {
+        SDL_free(result);
+        SDL_OutOfMemory();
+        return NULL;
+    }
     window->shaper = result;
     /* Put some driver-data here. */
     resized_properly = Win32_ResizeWindowShape(window);
