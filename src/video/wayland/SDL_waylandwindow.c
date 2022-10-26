@@ -392,13 +392,6 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = wind->waylandData;
 
-    /* Pop-ups don't get to be fullscreened */
-    if (wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-        /* ... but we still want to commit, particularly for ShowWindow */
-        wl_surface_commit(wind->surface);
-        return;
-    }
-
     /* The desktop may try to enforce min/max sizes here, so turn them off for
      * fullscreen and on (if applicable) for windowed
      */
@@ -1732,8 +1725,8 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
     struct wl_output *output = ((SDL_WaylandOutputData*) _display->driverdata)->output;
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
 
-    /* Called from within a configure event, drop it. */
-    if (wind->in_fullscreen_transition) {
+    /* Called from within a configure event or the window is a popup, drop it. */
+    if (wind->in_fullscreen_transition || wind->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
         return;
     }
 
