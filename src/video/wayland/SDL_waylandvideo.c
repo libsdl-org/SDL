@@ -55,7 +55,6 @@
 #include "tablet-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
-#include "viewporter-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
