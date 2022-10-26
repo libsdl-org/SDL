@@ -220,10 +220,9 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
 
     TInt i;
 
-    //const TInt   sourceNumBytesPerPixel = ((screen->format->BitsPerPixel-1) >> 3) + 1;
     TDisplayMode displayMode            = phdata->NGAGE_DisplayMode;
     const TInt   sourceNumBytesPerPixel = ((GetBpp(displayMode)-1) / 8) + 1;
-    //
+
     const TPoint fixedOffset            = phdata->NGAGE_ScreenOffset;
     const TInt   screenW                = screen->w;
     const TInt   screenH                = screen->h;
@@ -383,7 +382,6 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
         DirectDraw(_this, numrects, rects, screenBuffer);
     }
 
-    //TRect rect2 = TRect(phdata->NGAGE_WsWindow.Size());
     for (int i = 0; i < numrects; ++i)
     {
         TInt  aAx   = rects[i].x;
