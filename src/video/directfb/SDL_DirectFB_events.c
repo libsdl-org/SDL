@@ -686,7 +686,7 @@ EnumKeyboards(DFBInputDeviceID device_id,
             devdata->keyboard[devdata->num_keyboard].map = SDL_GetScancodeTable(SDL_SCANCODE_TABLE_XFREE86_2, &devdata->keyboard[devdata->num_keyboard].map_size);
             devdata->keyboard[devdata->num_keyboard].map_adjust = 8;
         } else {
-            devdata->keyboard[devdata->num_keyboard].map = SDL_GetScancodeTable(SDL_SCANCODE_TABLE_EVDEV, &devdata->keyboard[devdata->num_keyboard].map_size);
+            devdata->keyboard[devdata->num_keyboard].map = SDL_GetScancodeTable(SDL_SCANCODE_TABLE_LINUX, &devdata->keyboard[devdata->num_keyboard].map_size);
             devdata->keyboard[devdata->num_keyboard].map_adjust = 0;
         }
 
