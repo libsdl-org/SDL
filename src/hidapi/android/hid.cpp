@@ -1089,8 +1089,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next )
 	{
 		const hid_device_info *info = pDevice->GetDeviceInfo();
-		if ( ( vendor_id == 0 && product_id == 0 ) ||
-			 ( vendor_id == info->vendor_id && product_id == info->product_id ) )
+		if ( ( vendor_id == 0x0 || info->vendor_id == vendor_id ) &&
+		     ( product_id == 0x0 || info->product_id == product_id ) )
 		{
 			hid_device_info *dev = CopyHIDDeviceInfo( info );
 			dev->next = root;
