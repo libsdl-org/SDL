@@ -92,7 +92,11 @@ macro(LISTTOSTRREV _LIST _OUTPUT)
   endforeach()
 endmacro()
 
-if(${CMAKE_VERSION} VERSION_LESS "3.16.0")
+if(CMAKE_VERSION VERSION_LESS 3.16.0 OR SDL2_SUBPROJECT)
+  # - CMake versions <3.16 do not support the OBJC language
+  # - When SDL is built as a subproject and when the main project does not enable OBJC,
+  #   CMake fails due to missing internal CMake variables (CMAKE_OBJC_COMPILE_OBJECT)
+  #   (reproduced with CMake 3.24.2)
   macro(CHECK_OBJC_SOURCE_COMPILES SOURCE VAR)
     set(PREV_REQUIRED_DEFS "${CMAKE_REQUIRED_DEFINITIONS}")
     set(CMAKE_REQUIRED_DEFINITIONS "-x objective-c ${PREV_REQUIRED_DEFS}")
