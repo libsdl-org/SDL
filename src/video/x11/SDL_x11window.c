@@ -1388,13 +1388,17 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
 
         /* Fullscreen windows sometimes end up being marked maximized by
             window managers. Force it back to how we expect it to be. */
-        if (!fullscreen && ((window->flags & SDL_WINDOW_MAXIMIZED) == 0)) {
+        if (!fullscreen) {
             SDL_zero(e);
             e.xany.type = ClientMessage;
             e.xclient.message_type = _NET_WM_STATE;
             e.xclient.format = 32;
             e.xclient.window = data->xwindow;
-            e.xclient.data.l[0] = _NET_WM_STATE_REMOVE;
+            if ((window->flags & SDL_WINDOW_MAXIMIZED) != 0) {
+                e.xclient.data.l[0] = _NET_WM_STATE_ADD;
+            } else {
+                e.xclient.data.l[0] = _NET_WM_STATE_REMOVE;
+            }
             e.xclient.data.l[1] = data->videodata->_NET_WM_STATE_MAXIMIZED_VERT;
             e.xclient.data.l[2] = data->videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
             e.xclient.data.l[3] = 0l;
