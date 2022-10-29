@@ -173,7 +173,7 @@ X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
 }
 
 Uint32
-X11_GetNetWMState(_THIS, Window xwindow)
+X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display = videodata->display;
@@ -211,13 +211,27 @@ X11_GetNetWMState(_THIS, Window xwindow)
                 fullscreen = 1;
             }
         }
-        if (maximized == 3) {
-            flags |= SDL_WINDOW_MAXIMIZED;
-        }
 
         if (fullscreen == 1) {
             flags |= SDL_WINDOW_FULLSCREEN;
         }
+
+        if (maximized == 3) {
+            /* Fullscreen windows are maximized on some window managers,
+               and this is functional behavior - if maximized is removed,
+               the windows remain floating centered and not covering the
+               rest of the desktop. So we just won't change the maximize
+               state for fullscreen windows here, otherwise SDL would think
+               we're always maximized when fullscreen and not restore the
+               correct state when leaving fullscreen.
+            */
+            if (fullscreen) {
+                flags |= (window->flags & SDL_WINDOW_MAXIMIZED);
+            } else {
+                flags |= SDL_WINDOW_MAXIMIZED;
+            }
+        }
+
 
         /* If the window is unmapped, numItems will be zero and _NET_WM_STATE_HIDDEN
          * will not be set. Do an additional check to see if the window is unmapped
@@ -306,7 +320,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
         data->colormap = attrib.colormap;
     }
 
-    window->flags |= X11_GetNetWMState(_this, w);
+    window->flags |= X11_GetNetWMState(_this, window, w);
 
     {
         Window FocalWindow;
@@ -1252,6 +1266,14 @@ SetWindowMaximized(_THIS, SDL_Window * window, SDL_bool maximized)
         window->flags |= SDL_WINDOW_MAXIMIZED;
     } else {
         window->flags &= ~SDL_WINDOW_MAXIMIZED;
+
+        if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+            /* Fullscreen windows are maximized on some window managers,
+               and this is functional behavior, so don't remove that state
+               now, we'll take care of it when we leave fullscreen mode.
+             */
+            return;
+        }
     }
 
     if (X11_IsWindowMapped(_this, window)) {

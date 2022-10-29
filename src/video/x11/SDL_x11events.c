@@ -1460,7 +1460,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                    without ever mapping / unmapping them, so we handle that here,
                    because they use the NETWM protocol to notify us of changes.
                  */
-                const Uint32 flags = X11_GetNetWMState(_this, xevent->xproperty.window);
+                const Uint32 flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
                 const Uint32 changed = flags ^ data->window->flags;
 
                 if ((changed & SDL_WINDOW_HIDDEN) || (changed & SDL_WINDOW_FULLSCREEN)) {
