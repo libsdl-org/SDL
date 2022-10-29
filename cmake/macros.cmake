@@ -110,6 +110,13 @@ else()
   endif()
 endif()
 
+if(APPLE)
+  check_language(OBJC)
+  if(NOT CMAKE_OBJC_COMPILER)
+    message(WARNING "Cannot find working OBJC compiler.")
+  endif()
+endif()
+
 if(CMAKE_VERSION VERSION_LESS 3.13.0)
   macro(target_link_directories _TARGET _SCOPE)
     link_directories(${ARGN})
