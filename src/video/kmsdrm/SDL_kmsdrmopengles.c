@@ -180,11 +180,11 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         }
 
         /* Wait immediately for vsync (as if we only had two buffers).
-           Even if we are already doing a WaitPageflip at the begining of this
+           Even if we are already doing a WaitPageflip at the beginning of this
            function, this is NOT redundant because here we wait immediately
            after submitting the image to the screen, reducing lag, and if
            we have waited here, there won't be a pending pageflip so the
-           WaitPageflip at the beggining of this function will be a no-op.
+           WaitPageflip at the beginning of this function will be a no-op.
            Just leave it here and don't worry.
            Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
            to enable this. */
