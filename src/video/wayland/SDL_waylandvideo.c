@@ -1028,7 +1028,7 @@ Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float
 }
 
 void
-Wayland_VideoQuit(_THIS)
+Wayland_VideoCleanup(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
     int i, j;
@@ -1036,7 +1036,7 @@ Wayland_VideoQuit(_THIS)
     Wayland_QuitWin(data);
     Wayland_FiniMouse(data);
 
-    for (i = 0; i < _this->num_displays; ++i) {
+    for (i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = &_this->displays[i];
 
         if (((SDL_WaylandOutputData*)display->driverdata)->xdg_output) {
@@ -1051,54 +1051,158 @@ Wayland_VideoQuit(_THIS)
             display->display_modes[j].driverdata = NULL;
         }
         display->desktop_mode.driverdata = NULL;
+        SDL_DelVideoDisplay(i);
     }
 
     Wayland_display_destroy_input(data);
     Wayland_display_destroy_pointer_constraints(data);
     Wayland_display_destroy_relative_pointer_manager(data);
 
-    if (data->activation_manager)
+    if (data->activation_manager) {
         xdg_activation_v1_destroy(data->activation_manager);
+        data->activation_manager = NULL;
+    }
 
-    if (data->idle_inhibit_manager)
+    if (data->idle_inhibit_manager) {
         zwp_idle_inhibit_manager_v1_destroy(data->idle_inhibit_manager);
+        data->idle_inhibit_manager = NULL;
+    }
 
-    if (data->key_inhibitor_manager)
+    if (data->key_inhibitor_manager) {
         zwp_keyboard_shortcuts_inhibit_manager_v1_destroy(data->key_inhibitor_manager);
+        data->key_inhibitor_manager = NULL;
+    }
 
     Wayland_QuitKeyboard(_this);
 
-    if (data->text_input_manager)
+    if (data->text_input_manager) {
         zwp_text_input_manager_v3_destroy(data->text_input_manager);
+        data->text_input_manager = NULL;
+    }
 
     if (data->xkb_context) {
         WAYLAND_xkb_context_unref(data->xkb_context);
         data->xkb_context = NULL;
     }
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-    if (data->windowmanager)
+    if (data->windowmanager) {
         qt_windowmanager_destroy(data->windowmanager);
+        data->windowmanager = NULL;
+    }
 
-    if (data->surface_extension)
+    if (data->surface_extension) {
         qt_surface_extension_destroy(data->surface_extension);
+        data->surface_extension = NULL;
+    }
 
     Wayland_touch_destroy(data);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    if (data->tablet_manager)
+    if (data->tablet_manager) {
         zwp_tablet_manager_v2_destroy((struct zwp_tablet_manager_v2*)data->tablet_manager);
+        data->tablet_manager = NULL;
+    }
 
-    if (data->data_device_manager)
+    if (data->data_device_manager) {
         wl_data_device_manager_destroy(data->data_device_manager);
+        data->data_device_manager = NULL;
+    }
 
-    if (data->shm)
+    if (data->shm) {
         wl_shm_destroy(data->shm);
+        data->shm = NULL;
+    }
 
-    if (data->shell.xdg)
+    if (data->shell.xdg) {
         xdg_wm_base_destroy(data->shell.xdg);
+        data->shell.xdg = NULL;
+    }
 
-    if (data->decoration_manager)
+    if (data->decoration_manager) {
         zxdg_decoration_manager_v1_destroy(data->decoration_manager);
+        data->decoration_manager = NULL;
+    }
+
+    if (data->xdg_output_manager) {
+        zxdg_output_manager_v1_destroy(data->xdg_output_manager);
+        data->xdg_output_manager = NULL;
+    }
+
+    if (data->viewporter) {
+        wp_viewporter_destroy(data->viewporter);
+        data->viewporter = NULL;
+    }
+
+    if (data->primary_selection_device_manager) {
+        zwp_primary_selection_device_manager_v1_destroy(data->primary_selection_device_manager);
+        data->primary_selection_device_manager = NULL;
+    }
+
+    if (data->compositor) {
+        wl_compositor_destroy(data->compositor);
+        data->compositor = NULL;
+    }
+
+    if (data->registry) {
+        wl_registry_destroy(data->registry);
+        data->registry = NULL;
+    }
+}
+
+SDL_bool
+Wayland_VideoReconnect(_THIS)
+{
+#if 0 /* TODO RECONNECT: Uncomment all when https://invent.kde.org/plasma/kwin/-/wikis/Restarting is completed */
+    SDL_VideoData *data = _this->driverdata;
+
+    SDL_Window *window = NULL;
+
+    SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
+    SDL_Window *current_window = SDL_GL_GetCurrentWindow();
+
+    Wayland_FiniMouse(data);
+
+    SDL_GL_MakeCurrent(NULL, NULL);
+    Wayland_VideoCleanup(_this);
+
+    SDL_ResetKeyboard();
+    SDL_ResetMouse();
+    if (WAYLAND_wl_display_reconnect(data->display) < 0) {
+        return SDL_FALSE;
+    }
+
+    Wayland_VideoInit(_this);
+
+    window = _this->windows;
+    while (window) {
+        /* We're going to cheat _just_ for a second and strip the OpenGL flag.
+         * The Wayland driver actually forces it in CreateWindow, and
+         * RecreateWindow does a bunch of unloading/loading of libGL, so just
+         * strip the flag so RecreateWindow doesn't mess with the GL context,
+         * and CreateWindow will add it right back!
+         * -flibit
+         */
+        window->flags &= ~SDL_WINDOW_OPENGL;
+
+        SDL_RecreateWindow(window, window->flags);
+        window = window->next;
+    }
+
+    if (current_window && current_ctx) {
+        SDL_GL_MakeCurrent (current_window, current_ctx);
+    }
+    return SDL_TRUE;
+#else
+    return SDL_FALSE;
+#endif /* 0 */
+}
+
+void
+Wayland_VideoQuit(_THIS)
+{
+    SDL_VideoData *data = _this->driverdata;
+
+    Wayland_VideoCleanup(_this);
 
 #ifdef HAVE_LIBDECOR_H
     if (data->shell.libdecor) {
@@ -1106,24 +1210,6 @@ Wayland_VideoQuit(_THIS)
         data->shell.libdecor = NULL;
     }
 #endif
-
-    if (data->xdg_output_manager) {
-        zxdg_output_manager_v1_destroy(data->xdg_output_manager);
-    }
-
-    if (data->viewporter) {
-        wp_viewporter_destroy(data->viewporter);
-    }
-
-    if (data->primary_selection_device_manager) {
-        zwp_primary_selection_device_manager_v1_destroy(data->primary_selection_device_manager);
-    }
-
-    if (data->compositor)
-        wl_compositor_destroy(data->compositor);
-
-    if (data->registry)
-        wl_registry_destroy(data->registry);
 
     SDL_free(data->classname);
 }

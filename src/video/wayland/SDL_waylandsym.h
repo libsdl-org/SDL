@@ -86,6 +86,12 @@ SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_flags, (struct wl_proxy *prox
 SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
 #endif
 
+#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
+#if SDL_WAYLAND_CHECK_VERSION(broken, on, purpose)
+SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display*));
+#endif
+#endif /* 0 */
+
 SDL_WAYLAND_INTERFACE(wl_seat_interface)
 SDL_WAYLAND_INTERFACE(wl_surface_interface)
 SDL_WAYLAND_INTERFACE(wl_shm_pool_interface)

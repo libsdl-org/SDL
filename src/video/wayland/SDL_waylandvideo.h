@@ -126,6 +126,8 @@ extern SDL_bool SDL_WAYLAND_own_output(struct wl_output *output);
 
 extern SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg);
 
+extern SDL_bool Wayland_VideoReconnect(_THIS);
+
 #endif /* SDL_waylandvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

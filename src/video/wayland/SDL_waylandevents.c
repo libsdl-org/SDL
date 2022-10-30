@@ -420,11 +420,18 @@ Wayland_PumpEvents(_THIS)
     if (err < 0 && !d->display_disconnected) {
         /* Something has failed with the Wayland connection -- for example,
          * the compositor may have shut down and closed its end of the socket,
-         * or there is a library-specific error. No recovery is possible. */
-        d->display_disconnected = 1;
-        /* Only send a single quit message, as application shutdown might call
-         * SDL_PumpEvents */
-        SDL_SendQuit();
+         * or there is a library-specific error.
+         *
+         * Try to recover once, then quit.
+         */
+        if (!Wayland_VideoReconnect(_this)) {
+            d->display_disconnected = 1;
+
+            /* Only send a single quit message, as application shutdown might call
+             * SDL_PumpEvents
+             */
+            SDL_SendQuit();
+        }
     }
 }
 
