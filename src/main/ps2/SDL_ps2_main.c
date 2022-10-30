@@ -59,7 +59,7 @@ static void waitUntilDeviceIsReady(char *path)
 
     while(ret != 0 && retries > 0) {
         ret = stat(path, &buffer);
-        /* Wait untill the device is ready */
+        /* Wait until the device is ready */
         nopdelay();
 
         retries--;
