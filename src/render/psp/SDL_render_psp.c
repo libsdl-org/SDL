@@ -96,12 +96,12 @@ typedef struct
     unsigned int       psm;                                 /**< format of the display buffers */
     unsigned int       bpp;                                 /**< bits per pixel of the main display */
 
-    SDL_bool           vsync;                               /**< wether we do vsync */
+    SDL_bool           vsync;                               /**< whether we do vsync */
     PSP_BlendState     blendState;                          /**< current blend mode */
     PSP_TextureData*   most_recent_target;                  /**< start of render target LRU double linked list */
     PSP_TextureData*   least_recent_target;                 /**< end of the LRU list */
 
-    SDL_bool           vblank_not_reached;                  /**< wether vblank wasn't reached */
+    SDL_bool           vblank_not_reached;                  /**< whether vblank wasn't reached */
 } PSP_RenderData;
 
 
