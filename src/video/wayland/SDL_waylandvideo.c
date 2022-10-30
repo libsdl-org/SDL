@@ -1027,7 +1027,7 @@ Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float
     return driverdata->ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
-void
+static void
 Wayland_VideoCleanup(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
@@ -1160,8 +1160,6 @@ Wayland_VideoReconnect(_THIS)
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
     SDL_Window *current_window = SDL_GL_GetCurrentWindow();
 
-    Wayland_FiniMouse(data);
-
     SDL_GL_MakeCurrent(NULL, NULL);
     Wayland_VideoCleanup(_this);
 
@@ -1187,6 +1185,8 @@ Wayland_VideoReconnect(_THIS)
         SDL_RecreateWindow(window, window->flags);
         window = window->next;
     }
+
+    Wayland_RecreateCursors();
 
     if (current_window && current_ctx) {
         SDL_GL_MakeCurrent (current_window, current_ctx);

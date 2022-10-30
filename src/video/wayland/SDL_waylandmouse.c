@@ -459,24 +459,34 @@ Wayland_CreateDefaultCursor()
 }
 
 static void
+Wayland_FreeCursorData(Wayland_CursorData *d)
+{
+    if (d->buffer) {
+        if (d->shm_data) {
+            wl_buffer_destroy(d->buffer);
+        }
+        d->buffer = NULL;
+    }
+
+    if (d->surface) {
+        wl_surface_destroy(d->surface);
+        d->surface = NULL;
+    }
+}
+
+static void
 Wayland_FreeCursor(SDL_Cursor *cursor)
 {
-    Wayland_CursorData *d;
-
-    if (!cursor)
+    if (!cursor) {
         return;
-
-    d = cursor->driverdata;
+    }
 
     /* Probably not a cursor we own */
-    if (!d)
+    if (!cursor->driverdata) {
         return;
+    }
 
-    if (d->buffer && d->shm_data)
-        wl_buffer_destroy(d->buffer);
-
-    if (d->surface)
-        wl_surface_destroy(d->surface);
+    Wayland_FreeCursorData((Wayland_CursorData *) cursor->driverdata);
 
     /* Not sure what's meant to happen to shm_data */
     SDL_free(cursor->driverdata);
@@ -588,6 +598,65 @@ Wayland_EmulateMouseWarpChanged(void *userdata, const char *name, const char *ol
 
     input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
 }
+
+#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
+static void
+Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
+{
+    Wayland_CursorData *cdata = (Wayland_CursorData *) cursor->driverdata;
+
+    /* Probably not a cursor we own */
+    if (cdata == NULL) {
+        return;
+    }
+
+    Wayland_FreeCursorData(cdata);
+
+    /* We're not currently freeing this, so... yolo? */
+    if (cdata->shm_data != NULL) {
+        void *old_data_pointer = cdata->shm_data;
+        int stride = cdata->w * 4;
+
+        create_buffer_from_shm(cdata, cdata->w, cdata->h, WL_SHM_FORMAT_ARGB8888);
+
+        SDL_memcpy(cdata->shm_data, old_data_pointer, stride * cdata->h);
+
+        cdata->surface = wl_compositor_create_surface(vdata->compositor);
+        wl_surface_set_user_data(cdata->surface, NULL);
+    }
+}
+
+void
+Wayland_RecreateCursors(void)
+{
+    SDL_Cursor *cursor;
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_VideoData *vdata = SDL_GetVideoDevice()->driverdata;
+
+    if (vdata && vdata->cursor_themes) {
+        SDL_free(vdata->cursor_themes);
+        vdata->cursor_themes = NULL;
+        vdata->num_cursor_themes = 0;
+    }
+
+    if (mouse == NULL) {
+        return;
+    }
+
+    for (cursor = mouse->cursors; cursor != NULL; cursor = cursor->next) {
+        Wayland_RecreateCursor(cursor, vdata);
+    }
+    if (mouse->def_cursor) {
+        Wayland_RecreateCursor(mouse->def_cursor, vdata);
+    }
+    if (mouse->cur_cursor) {
+        Wayland_RecreateCursor(mouse->cur_cursor, vdata);
+        if (mouse->cursor_shown) {
+            Wayland_ShowCursor(mouse->cur_cursor);
+        }
+    }
+}
+#endif /* 0 */
 
 void
 Wayland_InitMouse(void)
