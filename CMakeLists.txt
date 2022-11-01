@@ -35,7 +35,7 @@ endif()
 # Build in parallel under Visual Studio. Not enabled by default.
 if(MSVC)
   target_compile_options(sdl-build-options INTERFACE "/MP")
-endif(MSVC)
+endif()
 
 # CMake 3.0 expands the "if(${A})" in "set(OFF 1);set(A OFF);if(${A})" to "if(1)"
 # CMake 3.24+ emits a warning when not set.
@@ -2985,7 +2985,7 @@ foreach(_hdr IN LISTS SDL2_INCLUDE_FILES)
 endforeach()
 list(APPEND SDL_GENERATED_HEADERS ${SDL2_COPIED_INCLUDE_FILES})
 
-if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
+if(CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQUAL ".lib")
   # Avoid conflict between the dll import library and the static library
   set(sdl_static_libname "SDL2-static")
 else()
