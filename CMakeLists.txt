@@ -2,8 +2,14 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
   message(FATAL_ERROR "Prevented in-tree build. Please create a build directory outside of the SDL source code and run \"cmake -S ${CMAKE_SOURCE_DIR} -B .\" from there")
 endif()
 
+# See docs/release_checklist.md
+set(SDL_MAJOR_VERSION 2)
+set(SDL_MINOR_VERSION 25)
+set(SDL_MICRO_VERSION 0)
+set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
+
 cmake_minimum_required(VERSION 3.0.0)
-project(SDL2 LANGUAGES C CXX VERSION 2.24.2)
+project(SDL2 LANGUAGES C CXX VERSION "${SDL_VERSION}")
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL2_SUBPROJECT OFF)
@@ -80,12 +86,6 @@ check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
 if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     add_definitions(-D_FILE_OFFSET_BITS=64)
 endif()
-
-# See docs/release_checklist.md
-set(SDL_MAJOR_VERSION 2)
-set(SDL_MINOR_VERSION 25)
-set(SDL_MICRO_VERSION 0)
-set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
 # Set defaults preventing destination file conflicts
 set(SDL_CMAKE_DEBUG_POSTFIX "d"
