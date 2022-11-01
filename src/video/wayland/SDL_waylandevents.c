@@ -590,11 +590,11 @@ pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
                              uint32_t time, uint32_t button, uint32_t state_w)
 {
     SDL_WindowData *window = input->pointer_focus;
-    SDL_VideoData *viddata = window->waylandData;
     enum wl_pointer_button_state state = state_w;
     uint32_t sdl_button;
 
     if (window) {
+        SDL_VideoData *viddata = window->waylandData;
         switch (button) {
             case BTN_LEFT:
                 sdl_button = SDL_BUTTON_LEFT;
