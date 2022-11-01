@@ -472,6 +472,7 @@ render_window(int index)
     ++frames;
 }
 
+#ifndef __EMSCRIPTEN__
 static int SDLCALL
 render_thread_fn(void* render_ctx)
 {
@@ -512,6 +513,7 @@ loop_threaded()
         SDLTest_CommonEvent(state, &event, &done);
     }
 }
+#endif
 
 static void
 loop()
