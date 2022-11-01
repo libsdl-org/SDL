@@ -1004,12 +1004,30 @@ if(SDL_LIBC)
     set(STDC_HEADERS 1)
   else()
     set(HAVE_LIBC TRUE)
-    check_include_file(sys/types.h HAVE_SYS_TYPES_H)
-    foreach(_HEADER
-            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h limits.h float.h
-            strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h libunwind.h)
+    set(headers_to_check
+        ctype.h
+        float.h
+        iconv.h
+        inttypes.h
+        libunwind
+        limits.h
+        malloc.h
+        math.h
+        memory.h
+        signal.h
+        stdarg.h
+        stddef.h
+        stdint.h
+        stdio.h
+        stdlib.h
+        string.h
+        strings.h
+        sys/types.h
+        wchar.h
+    )
+    foreach(_HEADER ${headers_to_check})
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
-      string(REPLACE "." "_" _HAVE_H ${_UPPER})
+      string(REGEX REPLACE "[./]" "_" _HAVE_H ${_UPPER})
       check_include_file("${_HEADER}" ${_HAVE_H})
     endforeach()
     check_include_file(linux/input.h HAVE_LINUX_INPUT_H)
