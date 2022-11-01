@@ -226,8 +226,14 @@ if(SDL_DUMMYVIDEO)
 endif()
 
 if(OPENGL_FOUND)
-    target_link_libraries(testshader OpenGL::GL)
-    target_link_libraries(testgl2 OpenGL::GL)
+    if(TARGET OpenGL::GL)
+        target_link_libraries(testshader OpenGL::GL)
+        target_link_libraries(testgl2 OpenGL::GL)
+    else()
+        # emscripten's FindOpenGL.cmake does not create OpenGL::GL
+        target_link_libraries(testshader ${OPENGL_gl_LIBRARY})
+        target_link_libraries(testgl2 ${OPENGL_gl_LIBRARY})
+    endif()
 endif()
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
