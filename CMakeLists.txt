@@ -67,8 +67,9 @@ include(CheckCXXCompilerFlag)
 include(CheckStructHasMember)
 include(CMakeDependentOption)
 include(CMakePushCheckState)
-include(FindPkgConfig)
 include(GNUInstallDirs)
+
+find_package(PkgConfig)
 
 list(APPEND CMAKE_MODULE_PATH "${SDL2_SOURCE_DIR}/cmake")
 include(${SDL2_SOURCE_DIR}/cmake/macros.cmake)
