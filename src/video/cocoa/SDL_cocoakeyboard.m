@@ -66,6 +66,11 @@
         str = [aString UTF8String];
     }
 
+    /* We're likely sending the composed text, so we reset the IME status. */
+    if ([self hasMarkedText]) {
+        [self unmarkText];
+    }
+
     SDL_SendKeyboardText(str);
 }
 
@@ -114,7 +119,7 @@
                         (int) selectedRange.location, (int) selectedRange.length);
 
     DEBUG_IME(@"setMarkedText: %@, (%d, %d)", _markedText,
-          selRange.location, selRange.length);
+          selectedRange.location, selectedRange.length);
 }
 
 - (void)unmarkText
