@@ -405,9 +405,10 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
         COMMAND ${TESTCASE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-    set_tests_properties(
-        ${TESTCASE}
-        PROPERTIES ENVIRONMENT "${TESTS_ENVIRONMENT}"
+    set_tests_properties(${TESTCASE}
+        PROPERTIES
+            ENVIRONMENT "${TESTS_ENVIRONMENT}"
+            TIMEOUT 10
     )
     if(SDL_INSTALL_TESTS)
         set(exe ${TESTCASE})
@@ -419,6 +420,9 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
         )
     endif()
 endforeach()
+
+set_tests_properties(testthread PROPERTIES TIMEOUT 40)
+set_tests_properties(testtimer PROPERTIES TIMEOUT 60)
 
 if(SDL_INSTALL_TESTS)
     if(RISCOS)
