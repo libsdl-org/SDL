@@ -1009,7 +1009,6 @@ if(SDL_LIBC)
         float.h
         iconv.h
         inttypes.h
-        libunwind
         limits.h
         malloc.h
         math.h
@@ -1025,6 +1024,9 @@ if(SDL_LIBC)
         sys/types.h
         wchar.h
     )
+    if(NOT EMSCRIPTEN)
+      list(APPEND headers_to_check libunwind.h)
+    endif()
     foreach(_HEADER ${headers_to_check})
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REGEX REPLACE "[./]" "_" _HAVE_H ${_UPPER})
@@ -1398,6 +1400,10 @@ elseif(EMSCRIPTEN)
   endif()
 
   CheckPTHREAD()
+
+  if(HAVE_LIBUNWIND_H)
+    list(APPEND EXTRA_TEST_LIBS unwind)
+  endif()
 
 elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   if(SDL_AUDIO)
