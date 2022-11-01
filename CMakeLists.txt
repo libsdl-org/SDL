@@ -3,7 +3,7 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 cmake_minimum_required(VERSION 3.0.0)
-project(SDL2 C CXX)
+project(SDL2 LANGUAGES C CXX VERSION 2.24.2)
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL2_SUBPROJECT OFF)
@@ -2933,36 +2933,7 @@ set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
 
-if(EXISTS "${PROJECT_SOURCE_DIR}/VERSION")
-  file(READ "${PROJECT_SOURCE_DIR}/VERSION" SDL_SOURCE_VERSION)
-endif()
-
-find_package(Git)
-if(Git_FOUND)
-  execute_process(COMMAND
-    "${GIT_EXECUTABLE}" describe --always --tags --long
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    RESULT_VARIABLE GIT_REVISION_STATUS
-    OUTPUT_VARIABLE GIT_REVISION
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-else()
-  set(GIT_REVISION_STATUS 1)
-  set(GIT_REVISION "")
-endif()
-
-if(SDL_SOURCE_VERSION)
-  set(SDL_REVISION "SDL-${SDL_SOURCE_VERSION}")
-elseif(GIT_REVISION_STATUS EQUAL 0)
-  if(GIT_REVISION MATCHES "^[0-9a-f]+$")
-    # Just a truncated sha1, so prefix it with the version number
-    set(SDL_REVISION "SDL-${SDL_VERSION}-g${GIT_REVISION}")
-  else()
-    # e.g. release-2.24.0-542-g96361fc47
-    set(SDL_REVISION "SDL-${GIT_REVISION}")
-  endif()
-else()
-  set(SDL_REVISION "SDL-${SDL_VERSION}-no-vcs")
-endif()
+set(SDL_REVISION "SDL-${PROJECT_VERSION}")
 
 configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
   "${SDL2_BINARY_DIR}/include/SDL_revision.h")
