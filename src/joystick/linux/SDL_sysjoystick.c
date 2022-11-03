@@ -267,6 +267,10 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
                     return;
                 }
             }
+
+            /* Wait a bit for the hidraw udev node to initialize */
+            SDL_Delay(10);
+
             MaybeAddDevice(devpath);
             break;
             

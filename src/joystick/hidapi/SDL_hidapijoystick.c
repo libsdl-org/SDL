@@ -368,26 +368,22 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed)
              *
              * See https://github.com/libsdl-org/SDL/issues/6347 for details
              */
-            const int MAX_ATTEMPTS = 3;
-            int attempt;
             int lock_count = 0;
             SDL_HIDAPI_Device *curr;
             SDL_hid_device *dev;
             char *path = SDL_strdup(device->path);
+
+            /* Wait a little bit for the device to initialize */
+            SDL_Delay(10);
 
             SDL_AssertJoysticksLocked();
             while (SDL_JoysticksLocked()) {
                 ++lock_count;
                 SDL_UnlockJoysticks();
             }
-            for (attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
-                dev = SDL_hid_open_path(path, 0);
-                if (dev != NULL) {
-                    break;
-                }
-                /* Wait a bit and try again */
-                SDL_Delay(30);
-            }
+
+            dev = SDL_hid_open_path(path, 0);
+
             while (lock_count > 0) {
                 --lock_count;
                 SDL_LockJoysticks();
