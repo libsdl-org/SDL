@@ -110,6 +110,14 @@ struct SDL_WaylandInput {
 
         /* Keyboard layout "group" */
         uint32_t current_group;
+
+        /* Modifier bitshift values */
+        uint32_t idx_shift;
+        uint32_t idx_ctrl;
+        uint32_t idx_alt;
+        uint32_t idx_gui;
+        uint32_t idx_num;
+        uint32_t idx_caps;
     } xkb;
 
     /* information about axis events on current frame */
@@ -129,6 +137,7 @@ struct SDL_WaylandInput {
     SDL_bool cursor_visible;
     SDL_bool relative_mode_override;
     SDL_bool warp_emulation_prohibited;
+    SDL_bool keyboard_is_virtual;
 };
 
 extern void Wayland_PumpEvents(_THIS);
