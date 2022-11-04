@@ -32,6 +32,9 @@ extern int SDL_KeyboardInit(void);
 /* Get the default keymap */
 extern void SDL_GetDefaultKeymap(SDL_Keycode * keymap);
 
+/* Get the default key code for a scancode */
+extern SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode);
+
 /* Set the mapping of scancode to key codes */
 extern void SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_bool send_event);
 

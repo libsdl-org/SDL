@@ -1137,6 +1137,17 @@ SDL_GetKeyFromScancode(SDL_Scancode scancode)
     return keyboard->keymap[scancode];
 }
 
+SDL_Keycode
+SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
+{
+    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
+        SDL_InvalidParamError("scancode");
+        return 0;
+    }
+
+    return SDL_default_keymap[scancode];
+}
+
 SDL_Scancode
 SDL_GetScancodeFromKey(SDL_Keycode key)
 {
