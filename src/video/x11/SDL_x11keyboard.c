@@ -45,7 +45,6 @@ static SDL_ScancodeTable scancode_set[] = {
     SDL_SCANCODE_TABLE_XFREE86_2,
     SDL_SCANCODE_TABLE_XVNC,
 };
-/* *INDENT-ON* */ /* clang-format on */
 
 /* This function only correctly maps letters and numbers for keyboards in US QWERTY layout */
 static SDL_Scancode
