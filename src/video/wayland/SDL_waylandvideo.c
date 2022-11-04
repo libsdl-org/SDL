@@ -1053,6 +1053,7 @@ Wayland_VideoCleanup(_THIS)
         display->desktop_mode.driverdata = NULL;
         SDL_DelVideoDisplay(i);
     }
+    data->output_list = NULL;
 
     Wayland_display_destroy_input(data);
     Wayland_display_destroy_pointer_constraints(data);
