@@ -866,3 +866,4 @@
 ++'_SDL_GameControllerGetSensorDataWithTimestamp'.'SDL2.dll'.'SDL_GameControllerGetSensorDataWithTimestamp'
 ++'_SDL_SensorGetDataWithTimestamp'.'SDL2.dll'.'SDL_SensorGetDataWithTimestamp'
 ++'_SDL_ResetHints'.'SDL2.dll'.'SDL_ResetHints'
+++'_SDL_strcasestr'.'SDL2.dll'.'SDL_strcasestr'

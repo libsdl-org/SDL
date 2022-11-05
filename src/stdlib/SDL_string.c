@@ -761,6 +761,23 @@ SDL_strstr(const char *haystack, const char *needle)
 #endif /* HAVE_STRSTR */
 }
 
+char *
+SDL_strcasestr(const char *haystack, const char *needle)
+{
+#if defined(HAVE_STRCASESTR)
+    return SDL_const_cast(char*,strcasestr(haystack, needle));
+#else
+    size_t length = SDL_strlen(needle);
+    while (*haystack) {
+        if (SDL_strncasecmp(haystack, needle, length) == 0) {
+            return (char *) haystack;
+        }
+        ++haystack;
+    }
+    return NULL;
+#endif /* HAVE_STRCASESTR */
+}
+
 #if !defined(HAVE__LTOA) || !defined(HAVE__I64TOA) || \
     !defined(HAVE__ULTOA) || !defined(HAVE__UI64TOA)
 static const char ntoa_table[] = {
