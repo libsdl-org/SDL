@@ -29,6 +29,7 @@
 
 #include "../../SDL_internal.h"
 #include "../../thread/SDL_systhread.h"
+#include "SDL_hints.h"
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
 
@@ -761,6 +762,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 	struct hid_device_info *root = NULL; /* return object */
 	struct hid_device_info *cur_dev = NULL;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
 	if(hid_init() < 0)
 		return NULL;
@@ -778,10 +780,21 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		unsigned short dev_vid = desc.idVendor;
 		unsigned short dev_pid = desc.idProduct;
 
+		/* See if there are any devices we should skip in enumeration */
+		if (hint) {
+			char vendor_match[16], product_match[16];
+			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", dev_vid);
+			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", dev_vid, dev_pid);
+			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+				continue;
+			}
+		}
+
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)
 			libusb_get_config_descriptor(dev, 0, &conf_desc);
 		if (conf_desc) {
+
 			for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 				const struct libusb_interface *intf = &conf_desc->interface[j];
 				for (k = 0; k < intf->num_altsetting; k++) {

@@ -21,6 +21,8 @@
  ********************************************************/
 #include "../../SDL_internal.h"
 
+#include "SDL_hints.h"
+
 /* See Apple Technical Note TN2187 for details on IOHidManager. */
 
 #include <IOKit/hid/IOHIDManager.h>
@@ -517,6 +519,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	CFSetRef device_set;
 	IOHIDDeviceRef *device_array;
 	int i;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 	
 	/* Set up the HID Manager if it hasn't been done */
 	if (hid_init() < 0)
@@ -567,6 +570,16 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		dev_vid = get_vendor_id(dev);
 		dev_pid = get_product_id(dev);
 		
+		/* See if there are any devices we should skip in enumeration */
+		if (hint) {
+			char vendor_match[16], product_match[16];
+			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", dev_vid);
+			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", dev_vid, dev_pid);
+			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+				continue;
+			}
+		}
+
 		/* Check the VID/PID against the arguments */
 		if ((vendor_id == 0x0 || dev_vid == vendor_id) &&
 		    (product_id == 0x0 || dev_pid == product_id)) {
