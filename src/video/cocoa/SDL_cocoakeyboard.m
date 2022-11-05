@@ -180,6 +180,13 @@
     return [NSArray array];
 }
 
+// Discard the IME Candidate Window
+- (void)cancelOperation:(id)sender
+{
+    [[self inputContext] discardMarkedText];
+    [self unmarkText];
+}
+
 @end
 
 static void
@@ -408,6 +415,11 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
         }
 #endif
+        /* Discard the IME Candidate Window immediately */
+        if (code == SDL_SCANCODE_ESCAPE) {
+            [data.fieldEdit cancelOperation:NULL];
+        }
+
         if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
