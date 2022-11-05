@@ -26,6 +26,7 @@
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
+#include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -98,6 +99,7 @@ typedef enum {
 } SDL_XboxOneInitState;
 
 typedef struct {
+    SDL_HIDAPI_Device *device;
     Uint16 vendor_id;
     Uint16 product_id;
     SDL_bool bluetooth;
@@ -141,6 +143,41 @@ static SDL_bool
 ControllerHasShareButton(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_IsJoystickXboxSeriesX(vendor_id, product_id);
+}
+
+static int GetHomeLEDBrightness(const char *hint)
+{
+    const int MAX_VALUE = 50;
+    int value = 20;
+
+    if (hint && *hint) {
+        if (SDL_strchr(hint, '.') != NULL) {
+            value = (int)(MAX_VALUE * SDL_atof(hint));
+        } else if (!SDL_GetStringBoolean(hint, SDL_TRUE)) {
+            value = 0;
+        }
+    }
+    return value;
+}
+
+static void SetHomeLED(SDL_DriverXboxOne_Context *ctx, int value)
+{
+    Uint8 led_packet[] = { 0x0A, 0x20, 0x00, 0x03, 0x00, 0x00, 0x00 };
+
+    if (value > 0) {
+        led_packet[5] = 0x01;
+        led_packet[6] = (Uint8)value;
+    }
+    SDL_HIDAPI_SendRumble(ctx->device, led_packet, sizeof(led_packet));
+}
+
+static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)userdata;
+
+    if (hint && *hint) {
+        SetHomeLED(ctx, GetHomeLEDBrightness(hint));
+    }
 }
 
 static void
@@ -243,6 +280,12 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
         if (init_packet[0] != 0x01) {
             init_packet[2] = ctx->sequence++;
         }
+        if (init_packet[0] == 0x0A) {
+            /* Get the initial brightness value */
+            int brightness = GetHomeLEDBrightness(SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED));
+            init_packet[5] = (brightness > 0) ? 0x01 : 0x00;
+            init_packet[6] = (Uint8)brightness;
+        }
 #ifdef DEBUG_XBOX_PROTOCOL
         HIDAPI_DumpPacket("Xbox One sending INIT packet: size = %d", init_packet, packet->size);
 #endif
@@ -316,6 +359,7 @@ HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+    ctx->device = device;
 
     device->context = ctx;
 
@@ -381,6 +425,8 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
         joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
     }
 
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED,
+                        SDL_HomeLEDHintChanged, ctx);
     return SDL_TRUE;
 }
 
@@ -1143,6 +1189,10 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED,
+                        SDL_HomeLEDHintChanged, ctx);
 }
 
 static void

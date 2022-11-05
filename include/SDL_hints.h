@@ -936,6 +936,17 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE   "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
 
 /**
+ *  \brief  A variable controlling whether the Home button LED should be turned on when an Xbox One controller is opened
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed. This hint can also be set to a floating point value between 0.0 and 1.0 which controls the brightness of the Home button LED. The default brightness is 0.4.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
+
+/**
   *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
   *
   *  This variable can be set to the following values:
