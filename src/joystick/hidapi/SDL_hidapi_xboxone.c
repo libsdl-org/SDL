@@ -317,6 +317,11 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
         if (packet->response[0]) {
             return SDL_TRUE;
         }
+
+        /* Wait to process the rumble packet */
+        if (packet->data == xboxone_powera_rumble_init) {
+            SDL_Delay(10);
+        }
     }
 
     /* All done with the negotiation, prepare for input! */
