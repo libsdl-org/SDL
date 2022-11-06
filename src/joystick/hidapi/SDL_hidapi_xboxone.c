@@ -100,11 +100,17 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
 };
 
 typedef enum {
-    XBOX_ONE_INIT_STATE_START_NEGOTIATING = 0,
-    XBOX_ONE_INIT_STATE_NEGOTIATING = 1,
-    XBOX_ONE_INIT_STATE_PREPARE_INPUT = 2,
-    XBOX_ONE_INIT_STATE_COMPLETE = 3
+    XBOX_ONE_INIT_STATE_START_NEGOTIATING,
+    XBOX_ONE_INIT_STATE_NEGOTIATING,
+    XBOX_ONE_INIT_STATE_PREPARE_INPUT,
+    XBOX_ONE_INIT_STATE_COMPLETE,
 } SDL_XboxOneInitState;
+
+typedef enum {
+    XBOX_ONE_RUMBLE_STATE_IDLE,
+    XBOX_ONE_RUMBLE_STATE_QUEUED,
+    XBOX_ONE_RUMBLE_STATE_BUSY
+} SDL_XboxOneRumbleState;
 
 typedef struct {
     SDL_HIDAPI_Device *device;
@@ -125,6 +131,9 @@ typedef struct {
     Uint8 high_frequency_rumble;
     Uint8 left_trigger_rumble;
     Uint8 right_trigger_rumble;
+    SDL_XboxOneRumbleState rumble_state;
+    Uint32 rumble_time;
+    SDL_bool rumble_pending;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXboxOne_Context;
 
@@ -411,6 +420,9 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->high_frequency_rumble = 0;
     ctx->left_trigger_rumble = 0;
     ctx->right_trigger_rumble = 0;
+    ctx->rumble_state = XBOX_ONE_RUMBLE_STATE_IDLE;
+    ctx->rumble_time = 0;
+    ctx->rumble_pending = SDL_FALSE;
     SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */
@@ -432,10 +444,46 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     return SDL_TRUE;
 }
 
+static void
+HIDAPI_DriverXboxOne_RumbleSent(void *userdata)
+{
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)userdata;
+    ctx->rumble_time = SDL_GetTicks();
+}
+
 static int
 HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    if (ctx->rumble_state == XBOX_ONE_RUMBLE_STATE_QUEUED) {
+        if (ctx->rumble_time) {
+            ctx->rumble_state = XBOX_ONE_RUMBLE_STATE_BUSY;
+        }
+    }
+
+    if (ctx->rumble_state == XBOX_ONE_RUMBLE_STATE_BUSY) {
+        const Uint32 RUMBLE_BUSY_TIME_MS = ctx->bluetooth ? 50 : 10;
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->rumble_time + RUMBLE_BUSY_TIME_MS)) {
+            ctx->rumble_time = 0;
+            ctx->rumble_state = XBOX_ONE_RUMBLE_STATE_IDLE;
+        }
+    }
+
+    if (!ctx->rumble_pending) {
+        return 0;
+    }
+
+    if (ctx->rumble_state != XBOX_ONE_RUMBLE_STATE_IDLE) {
+        return 0;
+    }
+
+    /* We're no longer pending, even if we fail to send the rumble below */
+    ctx->rumble_pending = SDL_FALSE;
+
+    if (SDL_HIDAPI_LockRumble() < 0) {
+        return -1;
+    }
 
     if (ctx->bluetooth) {
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xEB };
@@ -445,7 +493,7 @@ HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
         rumble_packet[4] = ctx->low_frequency_rumble;
         rumble_packet[5] = ctx->high_frequency_rumble;
 
-        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        if (SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(device, rumble_packet, sizeof(rumble_packet), HIDAPI_DriverXboxOne_RumbleSent, ctx) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
         }
     } else {
@@ -456,10 +504,13 @@ HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
         rumble_packet[8] = ctx->low_frequency_rumble;
         rumble_packet[9] = ctx->high_frequency_rumble;
 
-        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        if (SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(device, rumble_packet, sizeof(rumble_packet), HIDAPI_DriverXboxOne_RumbleSent, ctx) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
         }
     }
+
+    ctx->rumble_state = XBOX_ONE_RUMBLE_STATE_QUEUED;
+
     return 0;
 }
 
@@ -471,6 +522,7 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     /* Magnitude is 1..100 so scale the 16-bit input here */
     ctx->low_frequency_rumble = low_frequency_rumble / 655;
     ctx->high_frequency_rumble = high_frequency_rumble / 655;
+    ctx->rumble_pending = SDL_TRUE;
 
     return HIDAPI_DriverXboxOne_UpdateRumble(device);
 }
@@ -487,6 +539,7 @@ HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joyst
     /* Magnitude is 1..100 so scale the 16-bit input here */
     ctx->left_trigger_rumble = left_rumble / 655;
     ctx->right_trigger_rumble = right_rumble / 655;
+    ctx->rumble_pending = SDL_TRUE;
 
     return HIDAPI_DriverXboxOne_UpdateRumble(device);
 }
@@ -1180,6 +1233,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     HIDAPI_DriverXboxOne_UpdateInitState(device, ctx);
+    HIDAPI_DriverXboxOne_UpdateRumble(device);
 
     if (size < 0) {
         /* Read error, device is disconnected */
