@@ -24,7 +24,7 @@ include(FeatureSummary)
 option(TEST_SHARED "Test linking to shared SDL2 library" ON)
 add_feature_info("TEST_SHARED" TEST_SHARED "Test linking with shared library")
 
-option(TEST_STATIC "Test linking to static SDL2 libary" ON)
+option(TEST_STATIC "Test linking to static SDL2 library" ON)
 add_feature_info("TEST_STATIC" TEST_STATIC "Test linking with static library")
 
 if(TEST_SHARED)
