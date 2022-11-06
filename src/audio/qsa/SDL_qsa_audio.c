@@ -128,7 +128,7 @@ QSA_WaitDevice(_THIS)
         SDL_SetError("QSA: SDL_IOReady() failed: %s", strerror(errno));
         break;
     case 0:
-        SDL_SetError("QSA: timeout on buffer waiting occured");
+        SDL_SetError("QSA: timeout on buffer waiting occurred");
         this->hidden->timeout_on_wait = 1;
         break;
     default:
