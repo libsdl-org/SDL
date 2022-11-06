@@ -916,7 +916,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
 
     /* Update the resize capability. Since this will change the capabilities and
      * commit a new frame state with the last known content dimension, this has
-     * to be called after the new state has been commited and the new content
+     * to be called after the new state has been committed and the new content
      * dimensions were updated.
      */
     Wayland_SetWindowResizable(SDL_GetVideoDevice(), window,
