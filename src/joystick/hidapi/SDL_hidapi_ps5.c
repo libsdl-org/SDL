@@ -746,7 +746,9 @@ HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
     data[0] = k_EPS5ReportIdBluetoothEffects;
     data[1] = 0x02;  /* Magic value */
 
-    SDL_HIDAPI_SendRumble(device, data, sizeof(data));
+    if (SDL_HIDAPI_LockRumble() == 0) {
+        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
+    }
 }
 
 static void

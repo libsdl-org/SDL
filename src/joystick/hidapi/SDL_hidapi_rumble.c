@@ -240,19 +240,18 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
     int *pending_size;
     int maximum_size;
 
+    if (size <= 0) {
+        return SDL_SetError("Tried to send rumble with invalid size");
+    }
+
     if (SDL_HIDAPI_LockRumble() < 0) {
         return -1;
     }
 
     /* check if there is a pending request for the device and update it */
-    if (SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_data, &pending_size, &maximum_size)) {
-        if (size > maximum_size) {
-            SDL_HIDAPI_UnlockRumble();
-            return SDL_SetError("Couldn't send rumble, size %d is greater than %d", size, maximum_size);
-        }
-
+    if (SDL_HIDAPI_GetPendingRumbleLocked(device, &pending_data, &pending_size, &maximum_size) &&
+        size == *pending_size && data[0] == pending_data[0]) {
         SDL_memcpy(pending_data, data, size);
-        *pending_size = size;
         SDL_HIDAPI_UnlockRumble();
         return size;
     }
