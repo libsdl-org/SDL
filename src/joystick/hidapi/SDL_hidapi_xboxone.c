@@ -56,6 +56,11 @@ static const Uint8 xboxone_init0[] = {
 static const Uint8 xboxone_init1[] = {
     0x0A, 0x20, 0x00, 0x03, 0x00, 0x01, 0x14
 };
+/* Some PowerA controllers need to actually start the rumble motors */
+static const Uint8 xboxone_powera_rumble_init[] = {
+    0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00,
+    0x1D, 0x1D, 0xFF, 0x00, 0x00
+};
 /* Setup rumble (not needed for Microsoft controllers, but it doesn't hurt) */
 static const Uint8 xboxone_init2[] = {
     0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00,
@@ -88,6 +93,9 @@ static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init1, sizeof(xboxone_init1), { 0x00, 0x00 } },
     /* The PDP Rock Candy and Victrix Gambit controllers don't start sending input until they get this packet */
     { 0x0e6f, 0x0000, 0x0000, 0x0000, security_passed_packet, sizeof(security_passed_packet), { 0x00, 0x00 } },
+    { 0x24c6, 0x541a, 0x0000, 0x0000, xboxone_powera_rumble_init, sizeof(xboxone_powera_rumble_init), { 0x00, 0x00 } },
+    { 0x24c6, 0x542a, 0x0000, 0x0000, xboxone_powera_rumble_init, sizeof(xboxone_powera_rumble_init), { 0x00, 0x00 } },
+    { 0x24c6, 0x543a, 0x0000, 0x0000, xboxone_powera_rumble_init, sizeof(xboxone_powera_rumble_init), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init2, sizeof(xboxone_init2), { 0x00, 0x00 } },
 };
 
