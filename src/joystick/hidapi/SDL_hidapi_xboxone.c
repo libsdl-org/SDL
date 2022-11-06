@@ -153,7 +153,16 @@ static SDL_bool
 ControllerHasTriggerRumble(Uint16 vendor_id, Uint16 product_id)
 {
     /* All the Microsoft Xbox One controllers have trigger rumble */
-    return (vendor_id == USB_VENDOR_MICROSOFT);
+    if (vendor_id == USB_VENDOR_MICROSOFT) {
+        return SDL_TRUE;
+    }
+
+    /* It turns out other controllers a mixed bag as to whether they support
+       trigger rumble or not, and when they do it's often a buzz rather than
+       the vibration of the Microsoft trigger rumble, so for now just pretend
+       that it is not available.
+     */
+    return SDL_FALSE;
 }
 
 static SDL_bool
