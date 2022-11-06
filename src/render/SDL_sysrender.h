@@ -231,7 +231,7 @@ struct SDL_Renderer
     SDL_DRect clip_rect;
     SDL_DRect clip_rect_backup;
 
-    /* Wether or not the clipping rectangle is used. */
+    /* Whether or not the clipping rectangle is used. */
     SDL_bool clipping_enabled;
     SDL_bool clipping_enabled_backup;
 
