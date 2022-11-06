@@ -627,7 +627,6 @@ OPENGLES2_TARGETS
 OPENGLES1_TARGETS
 CPP
 XMKMF
-SDL2_CONFIG
 SDL_LIBS
 SDL_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -697,9 +696,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_sdl_prefix
-with_sdl_exec_prefix
-enable_sdltest
 with_x
 enable_werror
 '
@@ -1344,14 +1340,11 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --disable-sdltest       Do not try to compile and run a test SDL program
   --enable-werror         treat warnings as errors [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-sdl-prefix=PFX   Prefix where SDL is installed (optional)
-  --with-sdl-exec-prefix=PFX Exec prefix where SDL is installed (optional)
   --with-x                use the X Window System
 
 Some influential environment variables:
@@ -1542,49 +1535,6 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_try_link
-
-# ac_fn_c_try_run LINENO
-# ----------------------
-# Try to run conftest.$ac_ext, and return whether this succeeded. Assumes that
-# executables *can* be run.
-ac_fn_c_try_run ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  if { { ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
-printf "%s\n" "$ac_try_echo"; } >&5
-  (eval "$ac_link") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; } && { ac_try='./conftest$ac_exeext'
-  { { case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
-printf "%s\n" "$ac_try_echo"; } >&5
-  (eval "$ac_try") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-then :
-  ac_retval=0
-else $as_nop
-  printf "%s\n" "$as_me: program exited with status $ac_status" >&5
-       printf "%s\n" "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-       ac_retval=$ac_status
-fi
-  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-  as_fn_set_status $ac_retval
-
-} # ac_fn_c_try_run
 
 # ac_fn_c_try_cpp LINENO
 # ----------------------
@@ -3850,50 +3800,20 @@ printf "%s\n" "no" >&6; }
 	fi
 fi
 
-# Check whether --with-sdl-prefix was given.
-if test ${with_sdl_prefix+y}
-then :
-  withval=$with_sdl_prefix; sdl_prefix="$withval"
-else $as_nop
-  sdl_prefix=""
-fi
-
-
-# Check whether --with-sdl-exec-prefix was given.
-if test ${with_sdl_exec_prefix+y}
-then :
-  withval=$with_sdl_exec_prefix; sdl_exec_prefix="$withval"
-else $as_nop
-  sdl_exec_prefix=""
-fi
-
-# Check whether --enable-sdltest was given.
-if test ${enable_sdltest+y}
-then :
-  enableval=$enable_sdltest;
-else $as_nop
-  enable_sdltest=yes
-fi
-
-
-  min_sdl_version=$SDL_VERSION
-
-  if test "x$sdl_prefix$sdl_exec_prefix" = x ; then
-
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sdl2 >= $min_sdl_version" >&5
-printf %s "checking for sdl2 >= $min_sdl_version... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sdl2 >= $SDL_VERSION" >&5
+printf %s "checking for sdl2 >= $SDL_VERSION... " >&6; }
 
 if test -n "$SDL_CFLAGS"; then
     pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2 >= \$min_sdl_version\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sdl2 >= $min_sdl_version") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2 >= \$SDL_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sdl2 >= $SDL_VERSION") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_SDL_CFLAGS=`$PKG_CONFIG --cflags "sdl2 >= $min_sdl_version" 2>/dev/null`
+  pkg_cv_SDL_CFLAGS=`$PKG_CONFIG --cflags "sdl2 >= $SDL_VERSION" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -3904,12 +3824,12 @@ if test -n "$SDL_LIBS"; then
     pkg_cv_SDL_LIBS="$SDL_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2 >= \$min_sdl_version\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sdl2 >= $min_sdl_version") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2 >= \$SDL_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sdl2 >= $SDL_VERSION") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_SDL_LIBS=`$PKG_CONFIG --libs "sdl2 >= $min_sdl_version" 2>/dev/null`
+  pkg_cv_SDL_LIBS=`$PKG_CONFIG --libs "sdl2 >= $SDL_VERSION" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -3929,254 +3849,25 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "sdl2 >= $min_sdl_version" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "sdl2 >= $SDL_VERSION" 2>&1`
         else
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors "sdl2 >= $min_sdl_version" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors "sdl2 >= $SDL_VERSION" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$SDL_PKG_ERRORS" >&5
 
-	sdl_pc=no
+	as_fn_error $? "*** SDL version $SDL_VERSION not found!" "$LINENO" 5
 elif test $pkg_failed = untried; then
      	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	sdl_pc=no
+	as_fn_error $? "*** SDL version $SDL_VERSION not found!" "$LINENO" 5
 else
 	SDL_CFLAGS=$pkg_cv_SDL_CFLAGS
 	SDL_LIBS=$pkg_cv_SDL_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-	sdl_pc=yes
+
 fi
-  else
-    sdl_pc=no
-    if test x$sdl_exec_prefix != x ; then
-      sdl_config_args="$sdl_config_args --exec-prefix=$sdl_exec_prefix"
-      if test x${SDL2_CONFIG+set} != xset ; then
-        SDL2_CONFIG=$sdl_exec_prefix/bin/sdl2-config
-      fi
-    fi
-    if test x$sdl_prefix != x ; then
-      sdl_config_args="$sdl_config_args --prefix=$sdl_prefix"
-      if test x${SDL2_CONFIG+set} != xset ; then
-        SDL2_CONFIG=$sdl_prefix/bin/sdl2-config
-      fi
-    fi
-  fi
-
-  if test "x$sdl_pc" = xyes ; then
-    no_sdl=""
-    SDL2_CONFIG="pkg-config sdl2"
-  else
-    as_save_PATH="$PATH"
-    if test "x$prefix" != xNONE && test "$cross_compiling" != yes; then
-      PATH="$prefix/bin:$prefix/usr/bin:$PATH"
-    fi
-    # Extract the first word of "sdl2-config", so it can be a program name with args.
-set dummy sdl2-config; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_SDL2_CONFIG+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  case $SDL2_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_SDL2_CONFIG="$SDL2_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_SDL2_CONFIG="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_path_SDL2_CONFIG" && ac_cv_path_SDL2_CONFIG="no"
-  ;;
-esac
-fi
-SDL2_CONFIG=$ac_cv_path_SDL2_CONFIG
-if test -n "$SDL2_CONFIG"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SDL2_CONFIG" >&5
-printf "%s\n" "$SDL2_CONFIG" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-    PATH="$as_save_PATH"
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for SDL - version >= $min_sdl_version" >&5
-printf %s "checking for SDL - version >= $min_sdl_version... " >&6; }
-    no_sdl=""
-
-    if test "$SDL2_CONFIG" = "no" ; then
-      no_sdl=yes
-    else
-      SDL_CFLAGS=`$SDL2_CONFIG $sdl_config_args --cflags`
-      SDL_LIBS=`$SDL2_CONFIG $sdl_config_args --libs`
-
-      sdl_major_version=`$SDL2_CONFIG $sdl_config_args --version | \
-             sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
-      sdl_minor_version=`$SDL2_CONFIG $sdl_config_args --version | \
-             sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
-      sdl_micro_version=`$SDL2_CONFIG $sdl_config_args --version | \
-             sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
-      if test "x$enable_sdltest" = "xyes" ; then
-        ac_save_CFLAGS="$CFLAGS"
-        ac_save_CXXFLAGS="$CXXFLAGS"
-        ac_save_LIBS="$LIBS"
-        CFLAGS="$CFLAGS $SDL_CFLAGS"
-        CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
-        LIBS="$LIBS $SDL_LIBS"
-      rm -f conf.sdltest
-      if test "$cross_compiling" = yes
-then :
-  echo $ac_n "cross compiling; assumed OK... $ac_c"
-else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "SDL.h"
-
-int main (int argc, char *argv[])
-{
-  int major, minor, micro;
-  FILE *fp = fopen("conf.sdltest", "w");
-
-  if (fp) fclose(fp);
-
-  if (sscanf("$min_sdl_version", "%d.%d.%d", &major, &minor, &micro) != 3) {
-     printf("%s, bad version string\n", "$min_sdl_version");
-     exit(1);
-   }
-
-   if (($sdl_major_version > major) ||
-      (($sdl_major_version == major) && ($sdl_minor_version > minor)) ||
-      (($sdl_major_version == major) && ($sdl_minor_version == minor) && ($sdl_micro_version >= micro)))
-    {
-      return 0;
-    }
-  else
-    {
-      printf("\n*** 'sdl2-config --version' returned %d.%d.%d, but the minimum version\n", $sdl_major_version, $sdl_minor_version, $sdl_micro_version);
-      printf("*** of SDL required is %d.%d.%d. If sdl2-config is correct, then it is\n", major, minor, micro);
-      printf("*** best to upgrade to the required version.\n");
-      printf("*** If sdl2-config was wrong, set the environment variable SDL2_CONFIG\n");
-      printf("*** to point to the correct copy of sdl2-config, and remove the file\n");
-      printf("*** config.cache before re-running configure\n");
-      return 1;
-    }
-}
-
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-
-else $as_nop
-  no_sdl=yes
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-        CFLAGS="$ac_save_CFLAGS"
-        CXXFLAGS="$ac_save_CXXFLAGS"
-        LIBS="$ac_save_LIBS"
-      fi
-    fi
-    if test "x$no_sdl" = x ; then
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-    else
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-    fi
-  fi
-  if test "x$no_sdl" = x ; then
-     :
-  else
-     if test "$SDL2_CONFIG" = "no" ; then
-       echo "*** The sdl2-config script installed by SDL could not be found"
-       echo "*** If SDL was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the SDL2_CONFIG environment variable to the"
-       echo "*** full path to sdl2-config."
-     else
-       if test -f conf.sdltest ; then
-        :
-       else
-          echo "*** Could not run SDL test program, checking why..."
-          CFLAGS="$CFLAGS $SDL_CFLAGS"
-          CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
-          LIBS="$LIBS $SDL_LIBS"
-          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdio.h>
-#include "SDL.h"
-
-int main(int argc, char *argv[])
-{ return 0; }
-#undef  main
-#define main K_and_R_C_main
-
-int
-main (void)
-{
- return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-   echo "*** The test program compiled, but did not run. This usually means"
-          echo "*** that the run-time linker is not finding SDL or finding the wrong"
-          echo "*** version of SDL. If it is not finding SDL, you'll need to set your"
-          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
-          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
-          echo "*** is required on your system"
-	  echo "***"
-          echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"
-else $as_nop
-   echo "*** The test program failed to compile or link. See the file config.log for the"
-          echo "*** exact error that occured. This usually means SDL was incorrectly installed"
-          echo "*** or that you have moved SDL since it was installed. In the latter case, you"
-          echo "*** may want to edit the sdl2-config script: $SDL2_CONFIG"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-          CFLAGS="$ac_save_CFLAGS"
-          CXXFLAGS="$ac_save_CXXFLAGS"
-          LIBS="$ac_save_LIBS"
-       fi
-     fi
-     SDL_CFLAGS=""
-     SDL_LIBS=""
-     as_fn_error $? "*** SDL version $SDL_VERSION not found!" "$LINENO" 5
-
-  fi
-
-
-  rm -f conf.sdltest
-
 CFLAGS="$CFLAGS $SDL_CFLAGS"
 LIBS="$LIBS -lSDL2_test $SDL_LIBS"
 
