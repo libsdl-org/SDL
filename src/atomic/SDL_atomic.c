@@ -264,6 +264,17 @@ SDL_AtomicGet(SDL_atomic_t *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(int));
+    return _InterlockedOr((long *)&a->value, 0);
+#elif defined(HAVE_WATCOM_ATOMICS)
+    return _SDL_xadd_watcom(&a->value, 0);
+#elif defined(HAVE_GCC_ATOMICS)
+    return __sync_or_and_fetch(&a->value, 0);
+#elif defined(__MACOSX__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+    return sizeof(int) == sizeof(uint32_t) ? OSAtomicOr32Barrier(0, (volatile uint32_t *)&a->value) : OSAtomicAdd64Barrier(0, (volatile int64_t *)&a->value);
+#elif defined(__SOLARIS__)
+    return atomic_or_uint((volatile uint_t *)&a->value, 0);
 #else
     int value;
     do {
@@ -278,6 +289,12 @@ SDL_AtomicGetPtr(void **a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(a, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
+    return _InterlockedCompareExchangePointer(a, NULL, NULL);
+#elif defined(HAVE_GCC_ATOMICS)
+    return __sync_val_compare_and_swap(a, (void *)0, (void *)0);
+#elif defined(__SOLARIS__)
+    return atomic_cas_ptr(a, (void *)0, (void *)0);
 #else
     void *value;
     do {
