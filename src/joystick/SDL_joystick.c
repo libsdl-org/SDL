@@ -1874,6 +1874,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         const char *replacement;
     } replacements[] = {
         { "ASTRO Gaming", "ASTRO" },
+        { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
         { "NVIDIA Corporation ", "" },
         { "Performance Designed Products", "PDP" },
         { "HORI CO.,LTD.", "HORI" },
