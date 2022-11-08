@@ -1999,6 +1999,10 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         /* Don't treat the PS3 and PS4 motion controls as a separate game controller */
         return SDL_TRUE;
     }
+    if (SDL_strncmp(name, "Nintendo ", 9) == 0 && SDL_strstr(name, " IMU") != NULL) {
+        /* Don't treat the Nintendo IMU as a separate game controller */
+        return SDL_TRUE;
+    }
     if (SDL_endswith(name, " Accelerometer") ||
         SDL_endswith(name, " IR") ||
         SDL_endswith(name, " Motion Plus") ||
