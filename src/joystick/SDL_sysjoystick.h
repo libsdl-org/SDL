@@ -103,6 +103,7 @@ struct _SDL_Joystick
     Uint16 low_frequency_rumble;
     Uint16 high_frequency_rumble;
     Uint32 rumble_expiration;
+    Uint32 rumble_resend;
 
     Uint16 left_trigger_rumble;
     Uint16 right_trigger_rumble;
@@ -216,6 +217,10 @@ typedef struct _SDL_JoystickDriver
 
 /* Windows and Mac OSX has a limit of MAX_DWORD / 1000, Linux kernel has a limit of 0xFFFF */
 #define SDL_MAX_RUMBLE_DURATION_MS  0xFFFF
+
+/* Dualshock4 only rumbles for about 5 seconds max, resend rumble command every 2 seconds 
+ * to make long rumble work. */
+#define SDL_RUMBLE_RESEND_MS  2000
 
 #define SDL_LED_MIN_REPEAT_MS  5000
 
