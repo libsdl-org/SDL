@@ -35,6 +35,11 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_LUNA_PROTOCOL*/
 
+/* Sending rumble on macOS blocks for a long time and eventually fails */
+#if !defined(__MACOSX__)
+#define ENABLE_LUNA_BLUETOOTH_RUMBLE
+#endif
+
 enum
 {
     SDL_CONTROLLER_BUTTON_LUNA_MIC = 15,
@@ -119,6 +124,7 @@ HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick
 static int
 HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+#ifdef ENABLE_LUNA_BLUETOOTH_RUMBLE
     if (device->product_id == BLUETOOTH_PRODUCT_LUNA_CONTROLLER) {
         /* Same packet as on Xbox One controllers connected via Bluetooth */
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xEB };
@@ -132,10 +138,11 @@ HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
         }
 
         return 0;
-    } else {
-        /* FIXME: Is there a rumble packet over USB? */
-        return SDL_Unsupported();
     }
+#endif /* ENABLE_LUNA_BLUETOOTH_RUMBLE */
+
+	/* There is currently no rumble packet over USB */
+	return SDL_Unsupported();
 }
 
 static int
@@ -149,9 +156,11 @@ HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystic
 {
     Uint32 result = 0;
 
+#ifdef ENABLE_LUNA_BLUETOOTH_RUMBLE
     if (device->product_id == BLUETOOTH_PRODUCT_LUNA_CONTROLLER) {
         result |= SDL_JOYCAP_RUMBLE;
     }
+#endif
 
     return result;
 }
