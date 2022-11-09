@@ -698,8 +698,9 @@ SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect)
 
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (!rect)
+    if (!rect) {
         return SDL_InvalidParamError("rect");
+    }
 
     display = &_this->displays[displayIndex];
 
@@ -736,8 +737,9 @@ SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
 
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (!rect)
+    if (!rect) {
         return SDL_InvalidParamError("rect");
+    }
 
     display = &_this->displays[displayIndex];
 
