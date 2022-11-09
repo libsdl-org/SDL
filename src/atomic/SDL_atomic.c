@@ -136,10 +136,8 @@ SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
     return (SDL_bool) __sync_bool_compare_and_swap(&a->value, oldval, newval);
 #elif defined(__MACOSX__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return (SDL_bool) OSAtomicCompareAndSwap32Barrier(oldval, newval, &a->value);
-#elif defined(__SOLARIS__) && defined(_LP64)
-    return (SDL_bool) ((int) atomic_cas_64((volatile uint64_t*)&a->value, (uint64_t)oldval, (uint64_t)newval) == oldval);
-#elif defined(__SOLARIS__) && !defined(_LP64)
-    return (SDL_bool) ((int) atomic_cas_32((volatile uint32_t*)&a->value, (uint32_t)oldval, (uint32_t)newval) == oldval);
+#elif defined(__SOLARIS__)
+    return (SDL_bool) ((int) atomic_cas_uint((volatile uint_t*)&a->value, (uint_t)oldval, (uint_t)newval) == oldval);
 #elif EMULATE_CAS
     SDL_bool retval = SDL_FALSE;
 
@@ -197,10 +195,8 @@ SDL_AtomicSet(SDL_atomic_t *a, int v)
     return _SDL_xchg_watcom(&a->value, v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_lock_test_and_set(&a->value, v);
-#elif defined(__SOLARIS__) && defined(_LP64)
-    return (int) atomic_swap_64((volatile uint64_t*)&a->value, (uint64_t)v);
-#elif defined(__SOLARIS__) && !defined(_LP64)
-    return (int) atomic_swap_32((volatile uint32_t*)&a->value, (uint32_t)v);
+#elif defined(__SOLARIS__)
+    return (int) atomic_swap_uint((volatile uint_t*)&a->value, v);
 #else
     int value;
     do {
@@ -243,11 +239,7 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 #elif defined(__SOLARIS__)
     int pv = a->value;
     membar_consumer();
-#if defined(_LP64)
-    atomic_add_64((volatile uint64_t*)&a->value, v);
-#elif !defined(_LP64)
-    atomic_add_32((volatile uint32_t*)&a->value, v);
-#endif
+    atomic_add_int((volatile uint_t*)&a->value, v);
     return pv;
 #else
     int value;
