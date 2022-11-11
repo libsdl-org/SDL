@@ -72,6 +72,7 @@
 #cmakedefine HAVE_STRING_H 1
 #cmakedefine HAVE_SYS_TYPES_H 1
 #cmakedefine HAVE_WCHAR_H 1
+#cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_PTHREAD_NP_H 1
 #cmakedefine HAVE_LIBUNWIND_H 1
 
