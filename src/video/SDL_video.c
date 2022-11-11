@@ -4867,12 +4867,7 @@ SDL_Metal_CreateView(SDL_Window * window)
         return NULL;
     }
 
-    if (_this->Metal_CreateView) {
-        return _this->Metal_CreateView(_this, window);
-    } else {
-        SDL_SetError("Metal is not supported.");
-        return NULL;
-    }
+    return _this->Metal_CreateView(_this, window);
 }
 
 void
