@@ -3393,6 +3393,9 @@
 		F323060528939F6400E66D30 /* SDL_hidapi_combined.c in Sources */ = {isa = PBXBuildFile; fileRef = F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */; };
 		F323060628939F6400E66D30 /* SDL_hidapi_combined.c in Sources */ = {isa = PBXBuildFile; fileRef = F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */; };
 		F323060728939F6400E66D30 /* SDL_hidapi_combined.c in Sources */ = {isa = PBXBuildFile; fileRef = F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */; };
+		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
+		F34B9896291DEFF700AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
+		F34B9897291DEFFA00AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		F3631C6424884ACF004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3631C652488534E004F28EA /* SDL_locale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26792462701100718109 /* SDL_locale.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F376F6192559B29300CFC0BC /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F376F6182559B29300CFC0BC /* OpenGLES.framework */; platformFilter = ios; };
@@ -8909,6 +8912,7 @@
 				A7D8BBD923E2574800DCD162 /* SDL_uikitmessagebox.m in Sources */,
 				A7D8AD2923E2514100DCD162 /* SDL_vulkan_utils.c in Sources */,
 				A7D8A95123E2514000DCD162 /* SDL_spinlock.c in Sources */,
+				F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */,
 				A7D8BAAF23E2514400DCD162 /* s_atan.c in Sources */,
 				A7D8B75223E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				A7D8BBE123E2574800DCD162 /* SDL_uikitopenglview.m in Sources */,
@@ -9103,6 +9107,7 @@
 				A7D8B41F23E2514300DCD162 /* SDL_systls.c in Sources */,
 				A7D8AD2C23E2514100DCD162 /* SDL_vulkan_utils.c in Sources */,
 				A7D8A95423E2514000DCD162 /* SDL_spinlock.c in Sources */,
+				F34B9896291DEFF700AAC96E /* SDL_hidapi_steam.c in Sources */,
 				A7D8BAB223E2514400DCD162 /* s_atan.c in Sources */,
 				F3A490A12554D38600E92A8B /* SDL_hidapi_ps5.c in Sources */,
 				A7D8B75523E2514300DCD162 /* SDL_sysloadso.c in Sources */,
@@ -9297,6 +9302,7 @@
 				A7D8AD2E23E2514100DCD162 /* SDL_vulkan_utils.c in Sources */,
 				A7D8A95623E2514000DCD162 /* SDL_spinlock.c in Sources */,
 				A7D8BAB423E2514400DCD162 /* s_atan.c in Sources */,
+				F34B9897291DEFFA00AAC96E /* SDL_hidapi_steam.c in Sources */,
 				A7D8B75723E2514300DCD162 /* SDL_sysloadso.c in Sources */,
 				F3A490A42554D38600E92A8B /* SDL_hidapi_ps5.c in Sources */,
 				A7D8B98B23E2514400DCD162 /* SDL_render_metal.m in Sources */,
