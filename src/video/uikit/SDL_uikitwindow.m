@@ -136,8 +136,10 @@ SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
     }
 #endif /* !TARGET_OS_TV */
 
+#if 0 /* Don't set the x/y position, it's already placed on a display */
     window->x = 0;
     window->y = 0;
+#endif
     window->w = width;
     window->h = height;
 
