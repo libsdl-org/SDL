@@ -4067,6 +4067,8 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 #endif /* SDL_VIDEO_OPENGL */
 }
 
+#define NOT_AN_OPENGL_WINDOW "The specified window isn't an OpenGL window"
+
 SDL_GLContext
 SDL_GL_CreateContext(SDL_Window * window)
 {
@@ -4074,7 +4076,7 @@ SDL_GL_CreateContext(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, NULL);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("The specified window isn't an OpenGL window");
+        SDL_SetError(NOT_AN_OPENGL_WINDOW);
         return NULL;
     }
 
@@ -4111,7 +4113,7 @@ SDL_GL_MakeCurrent(SDL_Window * window, SDL_GLContext ctx)
         CHECK_WINDOW_MAGIC(window, -1);
 
         if (!(window->flags & SDL_WINDOW_OPENGL)) {
-            return SDL_SetError("The specified window isn't an OpenGL window");
+            return SDL_SetError(NOT_AN_OPENGL_WINDOW);
         }
     } else if (!_this->gl_allow_no_surface) {
         return SDL_SetError("Use of OpenGL without a window is not supported on this platform");
@@ -4192,7 +4194,7 @@ SDL_GL_SwapWindowWithResult(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("The specified window isn't an OpenGL window");
+        return SDL_SetError(NOT_AN_OPENGL_WINDOW);
     }
 
     if (SDL_GL_GetCurrentWindow() != window) {
