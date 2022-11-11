@@ -852,15 +852,27 @@ WGI_JoystickUpdate(SDL_Joystick *joystick)
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_GetCurrentReading(hwdata->controller, nbuttons, buttons, nhats, hats, naxes, axes, &timestamp);
     if (SUCCEEDED(hr) && timestamp != hwdata->timestamp) {
         UINT32 i;
+        SDL_bool all_zero = SDL_TRUE;
 
-        for (i = 0; i < nbuttons; ++i) {
-            SDL_PrivateJoystickButton(joystick, (Uint8)i, buttons[i]);
-        }
-        for (i = 0; i < nhats; ++i) {
-            SDL_PrivateJoystickHat(joystick, (Uint8)i, ConvertHatValue(hats[i]));
-        }
+        /* The axes are all zero when the application loses focus */
         for (i = 0; i < naxes; ++i) {
-            SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int) (axes[i] * 65535) - 32768));
+            if (axes[i] != 0.0f) {
+                all_zero = SDL_FALSE;
+                break;
+            }
+        }
+        if (all_zero) {
+            SDL_PrivateJoystickForceRecentering(joystick);
+        } else {
+            for (i = 0; i < nbuttons; ++i) {
+                SDL_PrivateJoystickButton(joystick, (Uint8) i, buttons[i]);
+            }
+            for (i = 0; i < nhats; ++i) {
+                SDL_PrivateJoystickHat(joystick, (Uint8) i, ConvertHatValue(hats[i]));
+            }
+            for (i = 0; i < naxes; ++i) {
+                SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int) (axes[i] * 65535) - 32768));
+            }
         }
         hwdata->timestamp = timestamp;
     }
