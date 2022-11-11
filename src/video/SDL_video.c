@@ -1587,6 +1587,12 @@ SDL_ContextNotSupported(const char *name)
                  "(%s) or platform", name, _this->name);
 }
 
+static int
+SDL_DllNotSupported(const char *name)
+{
+    return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
+}
+
 SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
@@ -3444,7 +3450,7 @@ SDL_GL_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->GL_LoadLibrary) {
-            return SDL_SetError("No dynamic GL support in current SDL video driver (%s)", _this->name);
+            return SDL_DllNotSupported("OpenGL");
         }
         retval = _this->GL_LoadLibrary(_this, path);
     }
@@ -4755,7 +4761,7 @@ int SDL_Vulkan_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->Vulkan_LoadLibrary) {
-            return SDL_ContextNotSupported("Vulkan");
+            return SDL_DllNotSupported("Vulkan");
         }
         retval = _this->Vulkan_LoadLibrary(_this, path);
     }
