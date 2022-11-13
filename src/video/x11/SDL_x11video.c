@@ -212,6 +212,11 @@ X11_CreateDevice(void)
     safety_net_triggered = SDL_FALSE;
     orig_x11_errhandler = X11_XSetErrorHandler(X11_SafetyNetErrHandler);
 
+    /* Steam Deck will have an on-screen keyboard, so check their environment
+     * variable so we can make use of SDL_StartTextInput.
+     */
+    data->is_steam_deck = SDL_GetHintBoolean("SteamDeck", SDL_FALSE);
+
     /* Set the function pointers */
     device->VideoInit = X11_VideoInit;
     device->VideoQuit = X11_VideoQuit;
@@ -307,6 +312,10 @@ X11_CreateDevice(void)
     device->StartTextInput = X11_StartTextInput;
     device->StopTextInput = X11_StopTextInput;
     device->SetTextInputRect = X11_SetTextInputRect;
+    device->HasScreenKeyboardSupport = X11_HasScreenKeyboardSupport;
+    device->ShowScreenKeyboard = X11_ShowScreenKeyboard;
+    device->HideScreenKeyboard = X11_HideScreenKeyboard;
+    device->IsScreenKeyboardShown = X11_IsScreenKeyboardShown;
 
     device->free = X11_DeleteDevice;
 
