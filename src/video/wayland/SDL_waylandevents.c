@@ -64,6 +64,13 @@
 #include <xkbcommon/xkbcommon-compose.h>
 #include "../../events/imKStoUCS.h"
 
+/* Clamp the wl_seat version on older versions of libwayland. */
+#if SDL_WAYLAND_CHECK_VERSION(1, 21, 0)
+#define SDL_WL_SEAT_VERSION 8
+#else
+#define SDL_WL_SEAT_VERSION 5
+#endif
+
 /* Weston uses a ratio of 10 units per scroll tick */
 #define WAYLAND_WHEEL_AXIS_UNIT 10
 
@@ -2384,7 +2391,7 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
         return;
 
     input->display = d;
-    input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(8, version));
+    input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(SDL_WL_SEAT_VERSION, version));
     input->sx_w = wl_fixed_from_int(0);
     input->sy_w = wl_fixed_from_int(0);
     input->xkb.current_group = ~0;
