@@ -1597,7 +1597,7 @@ SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
-    Uint32 type_flags, graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    Uint32 type_flags, graphics_flags;
 
     if (!_this) {
         /* Initialize the video system if needed */
@@ -1624,6 +1624,13 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     /* Some platforms blow up if the windows are too large. Raise it later? */
     if ((w > 16384) || (h > 16384)) {
         SDL_SetError("Window is too large.");
+        return NULL;
+    }
+
+    /* ensure no more than one of these flags is set */
+    graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+        SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
 
@@ -1656,10 +1663,6 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
             SDL_ContextNotSupported("Vulkan");
             return NULL;
         }
-        if (graphics_flags & SDL_WINDOW_OPENGL) {
-            SDL_SetError("Vulkan and OpenGL not supported on same window");
-            return NULL;
-        }
         if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
             return NULL;
         }
@@ -1668,16 +1671,6 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     if (flags & SDL_WINDOW_METAL) {
         if (!_this->Metal_CreateView) {
             SDL_ContextNotSupported("Metal");
-            return NULL;
-        }
-        /* 'flags' may have default flags appended, don't check against that. */
-        if (graphics_flags & SDL_WINDOW_OPENGL) {
-            SDL_SetError("Metal and OpenGL not supported on same window");
-            return NULL;
-        }
-        if (graphics_flags & SDL_WINDOW_VULKAN) {
-            SDL_SetError("Metal and Vulkan not supported on same window. "
-                         "To use MoltenVK, set SDL_WINDOW_VULKAN only.");
             return NULL;
         }
     }
