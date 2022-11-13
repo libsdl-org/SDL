@@ -22,6 +22,8 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
+#include "SDL_hints.h"
+#include "SDL_misc.h"
 #include "SDL_x11video.h"
 
 #include "../../events/SDL_keyboard_c.h"
@@ -839,6 +841,48 @@ X11_SetTextInputRect(_THIS, const SDL_Rect *rect)
 #ifdef SDL_USE_IME
     SDL_IME_UpdateTextRect(rect);
 #endif
+}
+
+SDL_bool
+X11_HasScreenKeyboardSupport(_THIS)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+    return videodata->is_steam_deck;
+}
+
+void
+X11_ShowScreenKeyboard(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+
+    if (videodata->is_steam_deck) {
+        /* For more documentation of the URL parameters, see:
+         * https://partner.steamgames.com/doc/api/ISteamUtils#ShowFloatingGamepadTextInput
+         */
+        char deeplink[128];
+        SDL_snprintf(deeplink, sizeof(deeplink),
+                     "steam://open/keyboard?XPosition=0&YPosition=0&Width=0&Height=0&Mode=%d",
+                     SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
+        SDL_OpenURL(deeplink);
+        videodata->steam_keyboard_open = SDL_TRUE;
+    }
+}
+
+void X11_HideScreenKeyboard(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+
+    if (videodata->is_steam_deck) {
+        SDL_OpenURL("steam://close/keyboard");
+        videodata->steam_keyboard_open = SDL_FALSE;
+    }
+}
+
+SDL_bool X11_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+
+    return videodata->steam_keyboard_open;
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
