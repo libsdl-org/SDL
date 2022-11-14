@@ -120,6 +120,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         [data.uiwindow layoutIfNeeded];
     }
 
+    sdlwindow = window;
+
     /* Add ourself to the new window. */
     if (window) {
         data = (__bridge SDL_WindowData *) window->driverdata;
@@ -144,8 +146,29 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
          * layout now to immediately update the bounds. */
         [data.uiwindow layoutIfNeeded];
     }
+}
 
-    sdlwindow = window;
+- (BOOL)shouldSwapDimensions:(BOOL)landscape
+{
+#if !TARGET_OS_TV
+    if (sdlwindow) {
+        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(sdlwindow);
+        SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
+
+        if (displaydata.uiscreen == [UIScreen mainScreen]) {
+            NSUInteger orients = UIKit_GetSupportedOrientations(sdlwindow);
+            BOOL supportsLandscape = (orients & UIInterfaceOrientationMaskLandscape) != 0;
+            BOOL supportsPortrait = (orients & (UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskPortraitUpsideDown)) != 0;
+
+            /* Make sure the width/height are oriented correctly */
+            if ((landscape && !supportsLandscape) || (!landscape && !supportsPortrait)) {
+                return YES;
+            }
+        }
+    }
+#endif /* !TARGET_OS_TV */
+
+    return NO;
 }
 
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
