@@ -611,7 +611,7 @@ WatchJoystick(SDL_Joystick * joystick)
                 SDL_GameControllerButton eButton = (SDL_GameControllerButton)iIndex;
                 SDL_strlcat(mapping, SDL_GameControllerGetStringForButton(eButton), SDL_arraysize(mapping));
             } else {
-                const char *pszAxisName;
+                const char *pszAxisName = NULL;
                 switch (iIndex - SDL_CONTROLLER_BUTTON_MAX) {
                 case SDL_CONTROLLER_BINDING_AXIS_LEFTX_NEGATIVE:
                     if (!BMergeAxisBindings(iIndex)) {
@@ -660,7 +660,9 @@ WatchJoystick(SDL_Joystick * joystick)
                     pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
                     break;
                 }
-                SDL_strlcat(mapping, pszAxisName, SDL_arraysize(mapping));
+                if (pszAxisName) {
+                    SDL_strlcat(mapping, pszAxisName, SDL_arraysize(mapping));
+                }
             }
             SDL_strlcat(mapping, ":", SDL_arraysize(mapping));
 
