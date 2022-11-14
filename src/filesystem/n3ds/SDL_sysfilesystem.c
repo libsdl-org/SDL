@@ -68,7 +68,7 @@ SDL_FORCE_INLINE char *
 MakePrefPath(const char *app)
 {
     char *pref_path;
-    if (SDL_asprintf(&pref_path, "/3ds/%s/", app) < 0) {
+    if (SDL_asprintf(&pref_path, "sdmc:/3ds/%s/", app) < 0) {
         SDL_OutOfMemory();
         return NULL;
     }
