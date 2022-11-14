@@ -200,17 +200,17 @@ N3DS_SensorQuit(void)
 }
 
 SDL_SensorDriver SDL_N3DS_SensorDriver = {
-    N3DS_SensorInit,
-    N3DS_SensorGetCount,
-    N3DS_SensorDetect,
-    N3DS_SensorGetDeviceName,
-    N3DS_SensorGetDeviceType,
-    N3DS_SensorGetDeviceNonPortableType,
-    N3DS_SensorGetDeviceInstanceID,
-    N3DS_SensorOpen,
-    N3DS_SensorUpdate,
-    N3DS_SensorClose,
-    N3DS_SensorQuit,
+    .Init = N3DS_SensorInit,
+    .GetCount = N3DS_SensorGetCount,
+    .Detect = N3DS_SensorDetect,
+    .GetDeviceName = N3DS_SensorGetDeviceName,
+    .GetDeviceType = N3DS_SensorGetDeviceType,
+    .GetDeviceNonPortableType = N3DS_SensorGetDeviceNonPortableType,
+    .GetDeviceInstanceID = N3DS_SensorGetDeviceInstanceID,
+    .Open = N3DS_SensorOpen,
+    .Update = N3DS_SensorUpdate,
+    .Close = N3DS_SensorClose,
+    .Quit = N3DS_SensorQuit,
 };
 
 #endif /* SDL_SENSOR_N3DS */
