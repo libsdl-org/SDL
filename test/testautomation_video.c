@@ -123,6 +123,7 @@ video_createWindowVariousPositions(void *arg)
   for (xVariation = 0; xVariation < 6; xVariation++) {
    for (yVariation = 0; yVariation < 6; yVariation++) {
     switch(xVariation) {
+     default:
      case 0:
       /* Zero X Position */
       x = 0;
@@ -150,6 +151,7 @@ video_createWindowVariousPositions(void *arg)
     }
 
     switch(yVariation) {
+     default:
      case 0:
       /* Zero X Position */
       y = 0;
@@ -267,6 +269,7 @@ video_createWindowVariousFlags(void *arg)
 
   for (fVariation = 0; fVariation < 14; fVariation++) {
     switch(fVariation) {
+     default:
      case 0:
       flags = SDL_WINDOW_FULLSCREEN;
       /* Skip - blanks screen; comment out next line to run test */
@@ -1074,6 +1077,7 @@ video_getSetWindowPosition(void *arg)
   for (xVariation = 0; xVariation < 4; xVariation++) {
    for (yVariation = 0; yVariation < 4; yVariation++) {
     switch(xVariation) {
+     default:
      case 0:
       /* Zero X Position */
       desiredX = 0;
@@ -1093,6 +1097,7 @@ video_getSetWindowPosition(void *arg)
     }
 
     switch(yVariation) {
+     default:
      case 0:
       /* Zero X Position */
       desiredY = 0;
@@ -1236,6 +1241,7 @@ video_getSetWindowSize(void *arg)
   for (wVariation = 0; wVariation < maxwVariation; wVariation++) {
    for (hVariation = 0; hVariation < maxhVariation; hVariation++) {
     switch(wVariation) {
+     default:
      case 0:
       /* 1 Pixel Wide */
       desiredW = 1;
@@ -1259,6 +1265,7 @@ video_getSetWindowSize(void *arg)
     }
 
     switch(hVariation) {
+     default:
      case 0:
       /* 1 Pixel High */
       desiredH = 1;

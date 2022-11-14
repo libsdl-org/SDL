@@ -616,6 +616,7 @@ rwops_testFileWriteReadEndian(void)
 
      /* Create test data */
      switch (mode) {
+       default:
        case 0:
         SDLTest_Log("All 0 values");
         BE16value = 0;
