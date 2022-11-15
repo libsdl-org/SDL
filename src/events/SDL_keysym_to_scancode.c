@@ -26,7 +26,6 @@
 #include "SDL_keyboard_c.h"
 #include "SDL_scancode_tables_c.h"
 
-#include <xkbcommon/xkbcommon-keysyms.h>
 #include <xkbcommon/xkbcommon.h>
 
 /* *INDENT-OFF* */ /* clang-format off */
