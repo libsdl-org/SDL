@@ -178,6 +178,7 @@ N3DS_CreateWindow(_THIS, SDL_Window *window)
     display_data = (DisplayDriverData *) SDL_GetDisplayDriverData(window->display_index);
     window_data->screen = display_data->screen;
     window->driverdata = window_data;
+    SDL_SetKeyboardFocus(window);
     return 0;
 }
 
