@@ -868,7 +868,8 @@ X11_ShowScreenKeyboard(_THIS, SDL_Window *window)
     }
 }
 
-void X11_HideScreenKeyboard(_THIS, SDL_Window *window)
+void
+X11_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
 
@@ -878,7 +879,8 @@ void X11_HideScreenKeyboard(_THIS, SDL_Window *window)
     }
 }
 
-SDL_bool X11_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+SDL_bool
+X11_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
 
