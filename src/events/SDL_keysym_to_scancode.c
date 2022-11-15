@@ -26,13 +26,24 @@
 #include "SDL_keyboard_c.h"
 #include "SDL_scancode_tables_c.h"
 
+#if SDL_VIDEO_DRIVER_WAYLAND
 #include <xkbcommon/xkbcommon.h>
+
+typedef xkb_keysym_t SDL_xkb_keysym_t;
+#else
+#include <X11/keysym.h>
+#include <X11/XKBlib.h>
+
+typedef KeySym SDL_xkb_keysym_t;
+#endif
+
 
 /* *INDENT-OFF* */ /* clang-format off */
 static const struct {
-    xkb_keysym_t  keysym;
+    SDL_xkb_keysym_t  keysym;
     SDL_Scancode scancode;
 } KeySymToSDLScancode[] = {
+#if SDL_VIDEO_DRIVER_WAYLAND
     { XKB_KEY_KP_End, SDL_SCANCODE_KP_1 },
     { XKB_KEY_KP_Down, SDL_SCANCODE_KP_2 },
     { XKB_KEY_KP_Next, SDL_SCANCODE_KP_3 },
@@ -50,6 +61,25 @@ static const struct {
     { XKB_KEY_Super_L, SDL_SCANCODE_LGUI },
     { XKB_KEY_Super_R, SDL_SCANCODE_RGUI },
     { XKB_KEY_Mode_switch, SDL_SCANCODE_MODE },
+#else
+    { XK_KP_End, SDL_SCANCODE_KP_1 },
+    { XK_KP_Down, SDL_SCANCODE_KP_2 },
+    { XK_KP_Next, SDL_SCANCODE_KP_3 },
+    { XK_KP_Left, SDL_SCANCODE_KP_4 },
+    { XK_KP_Begin, SDL_SCANCODE_KP_5 },
+    { XK_KP_Right, SDL_SCANCODE_KP_6 },
+    { XK_KP_Home, SDL_SCANCODE_KP_7 },
+    { XK_KP_Up, SDL_SCANCODE_KP_8 },
+    { XK_KP_Prior, SDL_SCANCODE_KP_9 },
+    { XK_KP_Insert, SDL_SCANCODE_KP_0 },
+    { XK_KP_Delete, SDL_SCANCODE_KP_PERIOD },
+    { XK_Execute, SDL_SCANCODE_EXECUTE },
+    { XK_Hyper_R, SDL_SCANCODE_APPLICATION },
+    { XK_ISO_Level3_Shift, SDL_SCANCODE_RALT },
+    { XK_Super_L, SDL_SCANCODE_LGUI },
+    { XK_Super_R, SDL_SCANCODE_RGUI },
+    { XK_Mode_switch, SDL_SCANCODE_MODE },
+#endif
     { 0x1008FF65, SDL_SCANCODE_MENU },  /* XF86MenuKB */
     { 0x1008FF81, SDL_SCANCODE_F13 },   /* XF86Tools */
     { 0x1008FF45, SDL_SCANCODE_F14 },   /* XF86Launch5 */
@@ -60,7 +90,7 @@ static const struct {
 };
 
 /* This is a mapping from X keysym to Linux keycode */
-static const xkb_keysym_t LinuxKeycodeKeysyms[] = {
+static const SDL_xkb_keysym_t LinuxKeycodeKeysyms[] = {
     /*   0, 0x000 */    0x0, /* NoSymbol */
     /*   1, 0x001 */    0xFF1B, /* Escape */
     /*   2, 0x002 */    0x31, /* 1 */
@@ -328,7 +358,7 @@ done
 #endif
 
 static const struct {
-    xkb_keysym_t keysym;
+    SDL_xkb_keysym_t keysym;
     int linux_keycode;
 } ExtendedLinuxKeycodeKeysyms[] = {
     { 0x1008FF2C, 0x0a2 },    /* XF86XK_Eject */
