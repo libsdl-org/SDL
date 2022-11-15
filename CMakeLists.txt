@@ -513,6 +513,7 @@ dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" O
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 option_string(SDL_VENDOR_INFO      "Vendor name and/or version to add to SDL_REVISION" "")
+set_option(SDL_CCACHE              "Use Ccache to speed up build" ON)
 
 option(SDL_WERROR "Enable -Werror" OFF)
 
@@ -3110,6 +3111,19 @@ if (SDL_ASAN)
   # but causes warnings.
   if((NOT USE_CLANG) OR ("${CMAKE_BUILD_TYPE}" STREQUAL ""))
     asan_check_add_debug_flag("object-size")
+  endif()
+endif()
+
+if(SDL_CCACHE)
+  cmake_minimum_required(VERSION 3.4)
+  find_program(CCACHE_BINARY ccache)
+  if(CCACHE_BINARY)
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_BINARY})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_BINARY})
+    set(CMAKE_OBJC_COMPILER_LAUNCHER ${CCACHE_BINARY})
+    set(HAVE_CCACHE ON)
+  else()
+    set(HAVE_CCACHE OFF)
   endif()
 endif()
 
