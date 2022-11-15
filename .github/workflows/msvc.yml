@@ -68,7 +68,7 @@ jobs:
 
     - name: Add msbuild to PATH
       if: ${{ matrix.platform.project != '' }}
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1.3
     - name: Build msbuild
       if: ${{ matrix.platform.project != '' }}
       run: msbuild ${{ matrix.platform.project }} /m /p:BuildInParallel=true /p:Configuration=Release ${{ matrix.platform.projectflags }}
