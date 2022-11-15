@@ -61,8 +61,8 @@ extern "C" {
  *   `/Applications/SDLApp/`
  *
  * **Nintendo 3DS Specific Functionality**: This function returns "romfs"
- * directory of the application as it is uncommon to store resources
- * outside the executable. As such it is not a writable directory.
+ * directory of the application as it is uncommon to store resources outside
+ * the executable. As such it is not a writable directory.
  *
  * The returned path is guaranteed to end with a path separator ('\' on
  * Windows, '/' on most other platforms).
