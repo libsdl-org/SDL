@@ -69,18 +69,6 @@
     CGSize size = self.bounds.size;
     size.width *= self.layer.contentsScale;
     size.height *= self.layer.contentsScale;
-
-    /* Make sure the width/height are oriented correctly
-     *
-     * This works around an issue in iOS 16 where the bounds come back in portrait mode
-     * instead of landscape until the event loop runs.
-     */
-    if ([self shouldSwapDimensions:(size.width >= size.height)]) {
-        CGFloat temp = size.width;
-        size.width = size.height;
-        size.height = temp;
-    }
-
     ((CAMetalLayer *)self.layer).drawableSize = size;
 }
 
