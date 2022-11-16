@@ -630,7 +630,13 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     paattr.prebuf = -1;
     paattr.maxlength = -1;
     paattr.minreq = -1;
-    flags |= PA_STREAM_ADJUST_LATENCY;
+
+    /* don't let this change the global device's latency if the number is
+       extremely small, as it will affect other applications. Without this
+       flag, it only affects this specific stream. */
+    if (this->spec.samples >= 512) {
+        flags |= PA_STREAM_ADJUST_LATENCY;
+    }
 
     if (ConnectToPulseServer(&h->mainloop, &h->context) < 0) {
         return SDL_SetError("Could not connect to PulseAudio server");
