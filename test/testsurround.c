@@ -19,6 +19,7 @@ static int total_channels;
 static int active_channel;
 
 #define SAMPLE_RATE_HZ 48000
+#define QUICK_TEST_TIME_MSEC 100
 #define CHANNEL_TEST_TIME_SEC 5
 #define MAX_AMPLITUDE SDL_MAX_SINT16
 
@@ -188,7 +189,11 @@ main(int argc, char *argv[])
             SDL_Log("Playing %d Hz test tone on channel: %s\n", sine_freq, get_channel_name(j, total_channels));
 
             /* fill_buffer() will increment the active channel */
-            SDL_Delay(CHANNEL_TEST_TIME_SEC * 1000);
+            if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+                SDL_Delay(QUICK_TEST_TIME_MSEC);
+            } else {
+                SDL_Delay(CHANNEL_TEST_TIME_SEC * 1000);
+            }
         }
 
         SDL_CloseAudioDevice(dev);

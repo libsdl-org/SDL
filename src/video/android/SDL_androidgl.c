@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#if SDL_VIDEO_DRIVER_ANDROID && SDL_VIDEO_OPENGL_EGL
 
 /* Android SDL video driver implementation */
 

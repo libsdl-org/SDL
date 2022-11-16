@@ -13,7 +13,7 @@ supported, but you can use the "android-project-ant" directory as a template.
 Requirements
 ================================================================================
 
-Android SDK (version 26 or later)
+Android SDK (version 31 or later)
 https://developer.android.com/sdk/index.html
 
 Android NDK r15c or later
@@ -205,6 +205,9 @@ You should not use the SDL renderer API while the app going in background:
 - SDL_APP_WILLENTERBACKGROUND:
     after you read this message, GL context gets backed-up and you should not
     use the SDL renderer API.
+
+    When this event is received, you have to set the render target to NULL, if you're using it.
+    (eg call SDL_SetRenderTarget(renderer, NULL))
 
 - SDL_APP_DIDENTERFOREGROUND:
    GL context is restored, and the SDL renderer API is available (unless you

@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
 #include "SDL_ime.h"
 #include "SDL_ibus.h"
@@ -27,8 +28,8 @@ typedef SDL_bool (*_SDL_IME_Init)(void);
 typedef void (*_SDL_IME_Quit)(void);
 typedef void (*_SDL_IME_SetFocus)(SDL_bool);
 typedef void (*_SDL_IME_Reset)(void);
-typedef SDL_bool (*_SDL_IME_ProcessKeyEvent)(Uint32, Uint32);
-typedef void (*_SDL_IME_UpdateTextRect)(SDL_Rect *);
+typedef SDL_bool (*_SDL_IME_ProcessKeyEvent)(Uint32, Uint32, Uint8 state);
+typedef void (*_SDL_IME_UpdateTextRect)(const SDL_Rect *);
 typedef void (*_SDL_IME_PumpEvents)(void);
 
 static _SDL_IME_Init SDL_IME_Init_Real = NULL;
@@ -127,16 +128,16 @@ SDL_IME_Reset(void)
 }
 
 SDL_bool
-SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
+SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     if (SDL_IME_ProcessKeyEvent_Real)
-        return SDL_IME_ProcessKeyEvent_Real(keysym, keycode);
+        return SDL_IME_ProcessKeyEvent_Real(keysym, keycode, state);
 
     return SDL_FALSE;
 }
 
 void
-SDL_IME_UpdateTextRect(SDL_Rect *rect)
+SDL_IME_UpdateTextRect(const SDL_Rect *rect)
 {
     if (SDL_IME_UpdateTextRect_Real)
         SDL_IME_UpdateTextRect_Real(rect);

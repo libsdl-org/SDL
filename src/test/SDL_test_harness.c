@@ -169,7 +169,7 @@ SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName, const char *
 * \return Timer id or -1 on failure.
 */
 static SDL_TimerID
-SDLTest_SetTestTimeout(int timeout, void (*callback)(void))
+SDLTest_SetTestTimeout(int timeout, void (SDLCALL *callback)(void))
 {
     Uint32 timeoutInMilliseconds;
     SDL_TimerID timerID;
@@ -209,7 +209,7 @@ SDLTest_SetTestTimeout(int timeout, void (*callback)(void))
 #if defined(__WATCOMC__)
 #pragma aux SDLTest_BailOut aborts;
 #endif
-static SDL_NORETURN void
+static SDL_NORETURN void SDLCALL
 SDLTest_BailOut(void)
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
@@ -349,7 +349,7 @@ static void SDLTest_LogTestSuiteSummary(SDLTest_TestSuiteReference *testSuites)
 /* Gets a timer value in seconds */
 static float GetClock()
 {
-    float currentClock = clock() / (float) CLOCKS_PER_SEC;
+    float currentClock = SDL_GetPerformanceCounter() / (float) SDL_GetPerformanceFrequency();
     return currentClock;
 }
 
@@ -443,6 +443,11 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         }
     }
 
+    if (totalNumberOfTests == 0) {
+        SDLTest_LogError("No tests to run?");
+        return -1;
+    }
+
     /* Pre-allocate an array for tracking failed tests (potentially all test cases) */
     failedTests = (const SDLTest_TestCaseReference **)SDL_malloc(totalNumberOfTests * sizeof(SDLTest_TestCaseReference *));
     if (failedTests == NULL) {    
@@ -458,7 +463,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         while (testSuites[suiteCounter] && suiteFilter == 0) {
             testSuite = testSuites[suiteCounter];
             suiteCounter++;
-            if (testSuite->name != NULL && SDL_strcmp(filter, testSuite->name) == 0) {
+            if (testSuite->name != NULL && SDL_strcasecmp(filter, testSuite->name) == 0) {
                 /* Matched a suite name */
                 suiteFilter = 1;
                 suiteFilterName = testSuite->name;
@@ -468,11 +473,10 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
             /* Within each suite, loop over all test cases to check if we have a filter match */
             testCounter = 0;
-            while (testSuite->testCases[testCounter] && testFilter == 0)
-            {
+            while (testSuite->testCases[testCounter] && testFilter == 0) {
                 testCase = testSuite->testCases[testCounter];
                 testCounter++;
-                if (testCase->name != NULL && SDL_strcmp(filter, testCase->name) == 0) {
+                if (testCase->name != NULL && SDL_strcasecmp(filter, testCase->name) == 0) {
                     /* Matched a test name */
                     suiteFilter = 1;
                     suiteFilterName = testSuite->name;
@@ -486,6 +490,18 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
         if (suiteFilter == 0 && testFilter == 0) {
             SDLTest_LogError("Filter '%s' did not match any test suite/case.", filter);
+            for (suiteCounter = 0; testSuites[suiteCounter]; ++suiteCounter) {
+                testSuite = testSuites[suiteCounter];
+                if (testSuite->name != NULL) {
+                    SDLTest_Log("Test suite: %s", testSuite->name);
+                }
+
+                /* Within each suite, loop over all test cases to check if we have a filter match */
+                for (testCounter = 0; testSuite->testCases[testCounter]; ++testCounter) {
+                    testCase = testSuite->testCases[testCounter];
+                    SDLTest_Log("      test: %s", testCase->name);
+                }
+            }
             SDLTest_Log("Exit code: 2");
             SDL_free((void *) failedTests);
             return 2;
@@ -501,7 +517,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
         /* Filter suite if flag set and we have a name */
         if (suiteFilter == 1 && suiteFilterName != NULL && testSuite->name != NULL &&
-            SDL_strcmp(suiteFilterName, testSuite->name) != 0) {
+            SDL_strcasecmp(suiteFilterName, testSuite->name) != 0) {
                 /* Skip suite */
                 SDLTest_Log("===== Test Suite %i: '%s' skipped\n",
                     suiteCounter,
@@ -531,7 +547,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
                 /* Filter tests if flag set and we have a name */
                 if (testFilter == 1 && testFilterName != NULL && testCase->name != NULL &&
-                    SDL_strcmp(testFilterName, testCase->name) != 0) {
+                    SDL_strcasecmp(testFilterName, testCase->name) != 0) {
                         /* Skip test */
                         SDLTest_Log("===== Test Case %i.%i: '%s' skipped\n",
                             suiteCounter,

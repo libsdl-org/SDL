@@ -47,11 +47,11 @@ ThreadFuncRealWorld(void *data)
     Thread_State *state = (Thread_State *) data;
     while (alive) {
         SDL_SemWait(sem);
-        SDL_Log("Thread number %d has got the semaphore (value = %d)!\n",
+        SDL_Log("Thread number %d has got the semaphore (value = %" SDL_PRIu32 ")!\n",
                 state->number, SDL_SemValue(sem));
         SDL_Delay(200);
         SDL_SemPost(sem);
-        SDL_Log("Thread number %d has released the semaphore (value = %d)!\n",
+        SDL_Log("Thread number %d has released the semaphore (value = %" SDL_PRIu32 ")!\n",
                 state->number, SDL_SemValue(sem));
         ++state->loop_count;
         SDL_Delay(1);           /* For the scheduler */
@@ -114,7 +114,7 @@ TestWaitTimeout(void)
 
     /* Accept a little offset in the effective wait */
     SDL_assert(duration > 1900 && duration < 2050);
-    SDL_Log("Wait took %d milliseconds\n\n", duration);
+    SDL_Log("Wait took %" SDL_PRIu32 " milliseconds\n\n", duration);
 
     /* Check to make sure the return value indicates timed out */
     if (retval != SDL_MUTEX_TIMEDOUT)
@@ -146,7 +146,7 @@ TestOverheadUncontended(void)
     end_ticks = SDL_GetTicks();
 
     duration = end_ticks - start_ticks;
-    SDL_Log("Took %d milliseconds\n\n", duration);
+    SDL_Log("Took %" SDL_PRIu32 " milliseconds\n\n", duration);
 
     SDL_DestroySemaphore(sem);
 }
@@ -221,9 +221,9 @@ TestOverheadContended(SDL_bool try_wait)
     SDL_assert_release((loop_count - content_count) == NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT);
 
     duration = end_ticks - start_ticks;
-    SDL_Log("Took %d milliseconds, threads %s %d out of %d times in total (%.2f%%)\n",
+    SDL_Log("Took %" SDL_PRIu32 " milliseconds, threads %s %d out of %d times in total (%.2f%%)\n",
             duration, try_wait ? "where contended" : "timed out", content_count,
-            loop_count, ((float)content_count * 100) / loop_count);
+            loop_count, ((float) content_count * 100) / loop_count);
     /* Print how many semaphores where consumed per thread */
     SDL_snprintf(textBuffer, sizeof(textBuffer), "{ ");
     for (i = 0; i < NUM_THREADS; ++i) {

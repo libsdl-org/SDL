@@ -328,15 +328,15 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         goto done;
     }
 
-    /* Expand 1 and 4 bit bitmaps to 8 bits per pixel */
+    /* Expand 1, 2 and 4 bit bitmaps to 8 bits per pixel */
     switch (biBitCount) {
     case 1:
+    case 2:
     case 4:
         ExpandBMP = biBitCount;
         biBitCount = 8;
         break;
     case 0:
-    case 2:
     case 3:
     case 5:
     case 6:
@@ -412,6 +412,12 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             goto done;
         }
 
+        if (biBitCount >= 32) {  /* we shift biClrUsed by this value later. */
+            SDL_SetError("Unsupported or incorrect biBitCount field");
+            was_error = SDL_TRUE;
+            goto done;
+        }
+
         if (biClrUsed == 0) {
             biClrUsed = 1 << biBitCount;
         }
@@ -467,6 +473,10 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         bmpPitch = (biWidth + 7) >> 3;
         pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
         break;
+    case 2:
+        bmpPitch = (biWidth + 3) >> 2;
+        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
+        break;
     case 4:
         bmpPitch = (biWidth + 1) >> 1;
         pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
@@ -483,6 +493,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     while (bits >= top && bits < end) {
         switch (ExpandBMP) {
         case 1:
+        case 2:
         case 4:{
                 Uint8 pixel = 0;
                 int shift = (8 - ExpandBMP);

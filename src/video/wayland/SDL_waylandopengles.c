@@ -140,9 +140,9 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
             /* wl_display_prepare_read_queue() will return -1 if the event queue is not empty.
              * If the event queue is empty, it will prepare us for our SDL_IOReady() call. */
-            if (WAYLAND_wl_display_prepare_read_queue(display, data->frame_event_queue) != 0) {
+            if (WAYLAND_wl_display_prepare_read_queue(display, data->gles_swap_frame_event_queue) != 0) {
                 /* We have some pending events. Check if the frame callback happened. */
-                WAYLAND_wl_display_dispatch_queue_pending(display, data->frame_event_queue);
+                WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
                 continue;
             }
 
@@ -163,7 +163,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
             /* We have events. Read and dispatch them. */
             WAYLAND_wl_display_read_events(display);
-            WAYLAND_wl_display_dispatch_queue_pending(display, data->frame_event_queue);
+            WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
         }
         SDL_AtomicSet(&data->swap_interval_ready, 0);
     }
@@ -195,23 +195,6 @@ Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0);  /* see comments on Wayland_GLES_SetSwapInterval. */
 
     return ret;
-}
-
-void
-Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
-{
-    SDL_WindowData *data;
-    if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
-
-        if (w) {
-            *w = window->w * data->scale_factor;
-        }
-
-        if (h) {
-            *h = window->h * data->scale_factor;
-        }
-    }
 }
 
 void

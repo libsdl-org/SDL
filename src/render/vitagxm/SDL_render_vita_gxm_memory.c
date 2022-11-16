@@ -26,7 +26,7 @@
 #include "SDL_render_vita_gxm_memory.h"
 
 void *
-mem_gpu_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
+vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
 {
     void *mem;
 
@@ -51,7 +51,7 @@ mem_gpu_alloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignm
 }
 
 void
-mem_gpu_free(SceUID uid)
+vita_mem_free(SceUID uid)
 {
     void *mem = NULL;
     if (sceKernelGetMemBlockBase(uid, &mem) < 0)
@@ -61,7 +61,71 @@ mem_gpu_free(SceUID uid)
 }
 
 void *
-mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
+{
+    void *mem;
+
+    if (data->texturePool == NULL) {
+        int poolsize;
+        int ret;
+        SceKernelFreeMemorySizeInfo info;
+        info.size = sizeof(SceKernelFreeMemorySizeInfo);
+        sceKernelGetFreeMemorySize(&info);
+
+        poolsize = ALIGN(info.size_cdram, 256*1024);
+        if (poolsize > info.size_cdram) {
+            poolsize = ALIGN(info.size_cdram - 256*1024, 256*1024);
+        }
+        data->texturePoolUID = sceKernelAllocMemBlock("gpu_texture_pool", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, poolsize, NULL);
+        if (data->texturePoolUID < 0) {
+            return NULL;
+        }
+
+        ret = sceKernelGetMemBlockBase(data->texturePoolUID, &mem);
+        if ( ret < 0)
+        {
+            return NULL;
+        }
+        data->texturePool = sceClibMspaceCreate(mem, poolsize);
+
+        if (data->texturePool == NULL) {
+            return NULL;
+        }
+        ret = sceGxmMapMemory(mem, poolsize, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE);
+        if (ret < 0)
+        {
+            return NULL;
+        }
+    }
+    return sceClibMspaceMemalign(data->texturePool, SCE_GXM_TEXTURE_ALIGNMENT, size);
+}
+
+void
+vita_gpu_mem_free(VITA_GXM_RenderData *data, void* ptr)
+{
+    if (data->texturePool != NULL)
+    {
+        sceClibMspaceFree(data->texturePool, ptr);
+    }
+}
+
+void
+vita_gpu_mem_destroy(VITA_GXM_RenderData *data)
+{
+    void *mem = NULL;
+    if (data->texturePool != NULL)
+    {
+        sceClibMspaceDestroy(data->texturePool);
+        data->texturePool = NULL;
+        if (sceKernelGetMemBlockBase(data->texturePoolUID, &mem) < 0)
+            return;
+        sceGxmUnmapMemory(mem);
+        sceKernelFreeMemBlock(data->texturePoolUID);
+    }
+}
+
+void *
+vita_mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 
@@ -77,7 +141,7 @@ mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 }
 
 void
-mem_vertex_usse_free(SceUID uid)
+vita_mem_vertex_usse_free(SceUID uid)
 {
     void *mem = NULL;
     if (sceKernelGetMemBlockBase(uid, &mem) < 0)
@@ -87,7 +151,7 @@ mem_vertex_usse_free(SceUID uid)
 }
 
 void *
-mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
+vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset)
 {
     void *mem = NULL;
 
@@ -103,7 +167,7 @@ mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offse
 }
 
 void
-mem_fragment_usse_free(SceUID uid)
+vita_mem_fragment_usse_free(SceUID uid)
 {
     void *mem = NULL;
     if (sceKernelGetMemBlockBase(uid, &mem) < 0)

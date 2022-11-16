@@ -40,9 +40,11 @@ SDL_RISCOS_translate_keycode(int keycode)
     if (keycode < SDL_arraysize(riscos_scancode_table)) {
         scancode = riscos_scancode_table[keycode];
 
+#ifdef DEBUG_SCANCODES
         if (scancode == SDL_SCANCODE_UNKNOWN) {
             SDL_Log("The key you just pressed is not recognized by SDL: %d", keycode);
         }
+#endif
     }
 
     return scancode;
@@ -143,6 +145,7 @@ int
 RISCOS_InitEvents(_THIS)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
+    _kernel_swi_regs regs;
     int i, status;
 
     for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++)
@@ -152,6 +155,9 @@ RISCOS_InitEvents(_THIS)
     SDL_ToggleModState(KMOD_NUM,    (status & (1 << 2)) == 0);
     SDL_ToggleModState(KMOD_CAPS,   (status & (1 << 4)) == 0);
     SDL_ToggleModState(KMOD_SCROLL, (status & (1 << 1)) != 0);
+
+    _kernel_swi(OS_Mouse, &regs, &regs);
+    driverdata->last_mouse_buttons = regs.r[2];
 
     /* Disable escape. */
     _kernel_osbyte(229, 1, 0);

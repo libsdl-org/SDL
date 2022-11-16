@@ -29,7 +29,7 @@
 #endif
 
 #if DEBUG_CONVERT
-#define LOG_DEBUG_CONVERT(from, to) fprintf(stderr, "Converting %s to %s.\n", from, to);
+#define LOG_DEBUG_CONVERT(from, to) SDL_Log("SDL_AUDIO_CONVERT: Converting %s to %s.\n", from, to);
 #else
 #define LOG_DEBUG_CONVERT(from, to)
 #endif
@@ -45,6 +45,7 @@ extern int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data);
 extern int (*SRC_src_reset)(SRC_STATE *state);
 extern SRC_STATE* (*SRC_src_delete)(SRC_STATE *state);
 extern const char* (*SRC_src_strerror)(int error);
+extern int (*SRC_src_simple)(SRC_DATA *data, int converter_type, int channels);
 #endif
 
 /* Functions to get a list of "close" audio formats */
@@ -69,11 +70,6 @@ extern SDL_AudioFilter SDL_Convert_F32_to_U8;
 extern SDL_AudioFilter SDL_Convert_F32_to_S16;
 extern SDL_AudioFilter SDL_Convert_F32_to_U16;
 extern SDL_AudioFilter SDL_Convert_F32_to_S32;
-
-/* You need to call SDL_PrepareResampleFilter() before using the internal resampler.
-   SDL_AudioQuit() calls SDL_FreeResamplerFilter(), you should never call it yourself. */
-extern int SDL_PrepareResampleFilter(void);
-extern void SDL_FreeResampleFilter(void);
 
 #endif /* SDL_audio_c_h_ */
 

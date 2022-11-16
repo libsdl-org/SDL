@@ -52,6 +52,12 @@ DUMMY_JoystickGetDeviceName(int device_index)
     return NULL;
 }
 
+static const char *
+DUMMY_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
+}
+
 static int
 DUMMY_JoystickGetDevicePlayerIndex(int device_index)
 {
@@ -146,6 +152,7 @@ SDL_JoystickDriver SDL_DUMMY_JoystickDriver =
     DUMMY_JoystickGetCount,
     DUMMY_JoystickDetect,
     DUMMY_JoystickGetDeviceName,
+    DUMMY_JoystickGetDevicePath,
     DUMMY_JoystickGetDevicePlayerIndex,
     DUMMY_JoystickSetDevicePlayerIndex,
     DUMMY_JoystickGetDeviceGUID,

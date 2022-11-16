@@ -223,6 +223,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\test\testsprite2.c" />
+    <ClCompile Include="..\..\..\test\testutils.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

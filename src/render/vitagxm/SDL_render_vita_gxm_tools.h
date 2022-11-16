@@ -48,15 +48,12 @@ void unset_clip_rectangle(VITA_GXM_RenderData *data);
 int gxm_init(SDL_Renderer *renderer);
 void gxm_finish(SDL_Renderer *renderer);
 
-gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget);
-void free_gxm_texture(gxm_texture *texture);
+gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, SceGxmTextureFormat format, unsigned int isRenderTarget, unsigned int *return_w, unsigned int *return_h, unsigned int *return_pitch, float *return_wscale);
+void free_gxm_texture(VITA_GXM_RenderData *data, gxm_texture *texture);
 
 void gxm_texture_set_filters(gxm_texture *texture, SceGxmTextureFilter min_filter, SceGxmTextureFilter mag_filter);
 SceGxmTextureFormat gxm_texture_get_format(const gxm_texture *texture);
 
-unsigned int gxm_texture_get_width(const gxm_texture *texture);
-unsigned int gxm_texture_get_height(const gxm_texture *texture);
-unsigned int gxm_texture_get_stride(const gxm_texture *texture);
 void *gxm_texture_get_datap(const gxm_texture *texture);
 
 void gxm_minimal_init_for_common_dialog(void);

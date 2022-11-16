@@ -34,8 +34,7 @@
 #define private _this->hidden
 
 typedef struct SDL_PrivateAudioData {
-  SDL_mutex* mutex;
-  PP_Resource audio;
+    PP_Resource audio;
 } SDL_PrivateAudioData;
 
 #endif /* SDL_naclaudio_h_ */

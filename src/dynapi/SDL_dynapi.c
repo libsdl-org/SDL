@@ -50,7 +50,6 @@
 
 static void SDL_InitDynamicAPI(void);
 
-
 /* BE CAREFUL CALLING ANY SDL CODE IN HERE, IT WILL BLOW UP.
    Even self-contained stuff might call SDL_Error and break everything. */
 
@@ -71,11 +70,28 @@ static void SDL_InitDynamicAPI(void);
 
 #define SDL_DYNAPI_VARARGS(_static, name, initcall) \
     _static int SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
-        char buf[512]; /* !!! FIXME: dynamic allocation */ \
-        va_list ap; initcall; va_start(ap, fmt); \
-        jump_table.SDL_vsnprintf(buf, sizeof (buf), fmt, ap); \
+        char buf[128], *str = buf; \
+        int result; \
+        va_list ap; initcall; \
+        va_start(ap, fmt); \
+        result = jump_table.SDL_vsnprintf(buf, sizeof(buf), fmt, ap); \
         va_end(ap); \
-        return jump_table.SDL_SetError("%s", buf); \
+        if (result >= 0 && (size_t)result >= sizeof(buf)) { \
+            size_t len = (size_t)result + 1; \
+            str = (char *)jump_table.SDL_malloc(len); \
+            if (str) { \
+                va_start(ap, fmt); \
+                result = jump_table.SDL_vsnprintf(str, len, fmt, ap); \
+                va_end(ap); \
+            } \
+        } \
+        if (result >= 0) { \
+            result = jump_table.SDL_SetError("%s", str); \
+        } \
+        if (str != buf) { \
+            jump_table.SDL_free(str); \
+        } \
+        return result; \
     } \
     _static int SDLCALL SDL_sscanf##name(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...) { \
         int retval; va_list ap; initcall; va_start(ap, fmt); \
@@ -174,6 +190,79 @@ SDL_DYNAPI_VARARGS(,,)
 #error Write me.
 #endif
 
+#define ENABLE_SDL_CALL_LOGGING 0
+#if ENABLE_SDL_CALL_LOGGING
+static int SDLCALL SDL_SetError_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) {
+    char buf[512]; /* !!! FIXME: dynamic allocation */ \
+    va_list ap;
+    SDL_Log_REAL("SDL2CALL SDL_SetError");
+    va_start(ap, fmt);
+    SDL_vsnprintf_REAL(buf, sizeof (buf), fmt, ap);
+    va_end(ap);
+    return SDL_SetError_REAL("%s", buf);
+}
+static int SDLCALL SDL_sscanf_LOGSDLCALLS(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...) {
+    int retval;
+    va_list ap;
+    SDL_Log_REAL("SDL2CALL SDL_sscanf");
+    va_start(ap, fmt);
+    retval = SDL_vsscanf_REAL(buf, fmt, ap);
+    va_end(ap);
+    return retval;
+}
+static int SDLCALL SDL_snprintf_LOGSDLCALLS(SDL_OUT_Z_CAP(maxlen) char *buf, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) {
+    int retval;
+    va_list ap;
+    SDL_Log_REAL("SDL2CALL SDL_snprintf");
+    va_start(ap, fmt);
+    retval = SDL_vsnprintf_REAL(buf, maxlen, fmt, ap);
+    va_end(ap);
+    return retval;
+}
+static int SDLCALL SDL_asprintf_LOGSDLCALLS(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) {
+    int retval;
+    va_list ap;
+    SDL_Log_REAL("SDL2CALL SDL_asprintf");
+    va_start(ap, fmt);
+    retval = SDL_vasprintf_REAL(strp, fmt, ap);
+    va_end(ap);
+    return retval;
+}
+static void SDLCALL SDL_Log_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) {
+    va_list ap;
+    SDL_Log_REAL("SDL2CALL SDL_Log");
+    va_start(ap, fmt);
+    SDL_LogMessageV_REAL(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, ap); \
+    va_end(ap);
+}
+static void SDLCALL SDL_LogMessage_LOGSDLCALLS(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) {
+    va_list ap;
+    SDL_Log_REAL("SDL2CALL SDL_LogMessage");
+    va_start(ap, fmt);
+    SDL_LogMessageV_REAL(category, priority, fmt, ap);
+    va_end(ap);
+}
+#define SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(logname, prio) \
+    static void SDLCALL SDL_Log##logname##_LOGSDLCALLS(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) { \
+        va_list ap; va_start(ap, fmt); \
+        SDL_Log_REAL("SDL2CALL SDL_Log%s", #logname); \
+        SDL_LogMessageV_REAL(category, SDL_LOG_PRIORITY_##prio, fmt, ap); \
+        va_end(ap); \
+    }
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Verbose, VERBOSE)
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Debug, DEBUG)
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Info, INFO)
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Warn, WARN)
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Error, ERROR)
+SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Critical, CRITICAL)
+#define SDL_DYNAPI_PROC(rc,fn,params,args,ret) \
+    rc SDLCALL fn##_LOGSDLCALLS params { SDL_Log_REAL("SDL2CALL %s", #fn); ret fn##_REAL args; }
+#define SDL_DYNAPI_PROC_NO_VARARGS 1
+#include "SDL_dynapi_procs.h"
+#undef SDL_DYNAPI_PROC
+#undef SDL_DYNAPI_PROC_NO_VARARGS
+#endif
+
 /* we make this a static function so we can call the correct one without the
    system's dynamic linker resolving to the wrong version of this. */
 static Sint32
@@ -189,9 +278,25 @@ initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
     }
 
     /* Init our jump table first. */
-    #define SDL_DYNAPI_PROC(rc,fn,params,args,ret) jump_table.fn = fn##_REAL;
-    #include "SDL_dynapi_procs.h"
-    #undef SDL_DYNAPI_PROC
+    #if ENABLE_SDL_CALL_LOGGING
+    {
+        const char *env = SDL_getenv_REAL("SDL_DYNAPI_LOG_CALLS");
+        const SDL_bool log_calls = (env && SDL_atoi_REAL(env));
+        if (log_calls) {
+            #define SDL_DYNAPI_PROC(rc,fn,params,args,ret) jump_table.fn = fn##_LOGSDLCALLS;
+            #include "SDL_dynapi_procs.h"
+            #undef SDL_DYNAPI_PROC
+        } else {
+            #define SDL_DYNAPI_PROC(rc,fn,params,args,ret) jump_table.fn = fn##_REAL;
+            #include "SDL_dynapi_procs.h"
+            #undef SDL_DYNAPI_PROC
+        }
+    }
+    #else
+        #define SDL_DYNAPI_PROC(rc,fn,params,args,ret) jump_table.fn = fn##_REAL;
+        #include "SDL_dynapi_procs.h"
+        #undef SDL_DYNAPI_PROC
+    #endif
 
     /* Then the external table... */
     if (output_jump_table != &jump_table) {
@@ -274,7 +379,7 @@ static void dynapi_warn(const char *msg)
 {
     const char *caption = "SDL Dynamic API Failure!";
     /* SDL_ShowSimpleMessageBox() is a too heavy for here. */
-    #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+    #if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
     #elif defined(HAVE_STDIO_H)
     fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);

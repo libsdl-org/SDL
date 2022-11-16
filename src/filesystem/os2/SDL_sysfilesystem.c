@@ -31,6 +31,7 @@
 
 #define INCL_DOSFILEMGR
 #define INCL_DOSPROCESS
+#define INCL_DOSMODULEMGR
 #define INCL_DOSERRORS
 #include <os2.h>
 
@@ -42,29 +43,30 @@ SDL_GetBasePath(void)
     PPIB    pib;
     ULONG   ulRC = DosGetInfoBlocks(&tib, &pib);
     PCHAR   pcEnd;
-    ULONG   cbResult;
     CHAR    acBuf[CCHMAXPATH];
 
     if (ulRC != NO_ERROR) {
-        debug_os2("DosGetInfoBlocks() failed, rc = %u", ulRC);
+        SDL_SetError("Can't get process information block (E%lu)", ulRC);
         return NULL;
     }
 
-    pcEnd = SDL_strrchr(pib->pib_pchcmd, '\\');
+    ulRC = DosQueryModuleName(pib->pib_hmte, sizeof(acBuf), acBuf);
+    if (ulRC != NO_ERROR) {
+        SDL_SetError("Can't query the module name (E%lu)", ulRC);
+        return NULL;
+    }
+
+    pcEnd = SDL_strrchr(acBuf, '\\');
     if (pcEnd != NULL)
-        pcEnd++;
+        pcEnd[1] = '\0';
     else {
-        if (pib->pib_pchcmd[1] == ':')
-            pcEnd = &pib->pib_pchcmd[2];
+        if (acBuf[1] == ':') /* e.g. "C:FOO" */
+            acBuf[2] = '\0';
         else {
-            SDL_SetError("No path in pib->pib_pchcmd");
+            SDL_SetError("No path in module name");
             return NULL;
         }
     }
-
-    cbResult = pcEnd - pib->pib_pchcmd;
-    SDL_memcpy(acBuf, pib->pib_pchcmd, cbResult);
-    acBuf[cbResult] = '\0';
 
     return OS2_SysToUTF8(acBuf);
 }

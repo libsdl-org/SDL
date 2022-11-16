@@ -63,7 +63,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
     }
 
     /* Load ANGLE/WinRT-specific functions */
-    CreateWinrtEglWindow_Old_Function CreateWinrtEglWindow = (CreateWinrtEglWindow_Old_Function) SDL_LoadFunction(_this->egl_data->egl_dll_handle, "CreateWinrtEglWindow");
+    CreateWinrtEglWindow_Old_Function CreateWinrtEglWindow = (CreateWinrtEglWindow_Old_Function) SDL_LoadFunction(_this->egl_data->opengl_dll_handle, "CreateWinrtEglWindow");
     if (CreateWinrtEglWindow) {
         /* 'CreateWinrtEglWindow' was found, which means that an an older
          * version of ANGLE/WinRT is being used.  Continue setting up EGL,

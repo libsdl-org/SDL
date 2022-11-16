@@ -1,0 +1,42 @@
+name: Build (Nintendo 3DS)
+
+on: [push, pull_request]
+
+jobs:
+  n3ds:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install build requirements
+        run: |
+          apt update
+          apt install ninja-build
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
+            -DSDL_WERROR=ON \
+            -DSDL_TESTS=ON \
+            -DSDL_INSTALL_TESTS=ON \
+            -DSDL_VENDOR_INFO="Github Workflow" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=prefix
+      - name: Build
+        run: cmake --build build --verbose
+      - name: Install CMake
+        run: |
+          echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+          cmake --install build/
+          ( cd prefix; find ) | LC_ALL=C sort -u
+      - name: Verify CMake configuration files
+        run: |
+          cmake -S cmake/test -B cmake_config_build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
+            -DTEST_SHARED=FALSE \
+            -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build cmake_config_build --verbose
+      # Not running test_pkgconfig.sh and test_sdlconfig.sh
+      # as invoking the compiler manually is not supported

@@ -431,8 +431,8 @@ RPI_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
     if (info->version.major <= SDL_MAJOR_VERSION) {
         return SDL_TRUE;
     } else {
-        SDL_SetError("application not compiled with SDL %d.%d",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("application not compiled with SDL %d",
+                     SDL_MAJOR_VERSION);
         return SDL_FALSE;
     }
 

@@ -104,10 +104,11 @@ int main (void)
   else
      AC_MSG_RESULT(no)
      if test "$ESD_CONFIG" = "no" ; then
-       echo "*** The esd-config script installed by ESD could not be found"
-       echo "*** If ESD was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the ESD_CONFIG environment variable to the"
-       echo "*** full path to esd-config."
+dnl       echo "*** The esd-config script installed by ESD could not be found"
+dnl       echo "*** If ESD was installed in PREFIX, make sure PREFIX/bin is in"
+dnl       echo "*** your path, or set the ESD_CONFIG environment variable to the"
+dnl       echo "*** full path to esd-config."
+      :
      else
        if test -f conf.esdtest ; then
         :

@@ -31,7 +31,7 @@
 #define ALIGN(x, a)     (((x) + ((a) - 1)) & ~((a) - 1))
 #define DISPLAY_PIXEL_FORMAT SCE_DISPLAY_PIXELFORMAT_A8B8G8R8
 
-void *vita_gpu_alloc(SceKernelMemBlockType type, unsigned int size, SceUID *uid)
+void *vita_gpu_alloc(unsigned int type, unsigned int size, SceUID *uid)
 {
     void *mem;
 

@@ -31,6 +31,11 @@
 #include "SDL_rawinputjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Internal stuff.
  */
@@ -45,6 +50,8 @@ SDL_XInputUseOldJoystickMapping()
     /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
     /* FIXME: Why are Win8/10 different here? -flibit */
     return (NTDDI_VERSION < NTDDI_WIN10);
+#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    return SDL_FALSE;
 #else
     static int s_XInputUseOldJoystickMapping = -1;
     if (s_XInputUseOldJoystickMapping < 0) {
@@ -126,8 +133,7 @@ GetXInputName(const Uint8 userid, BYTE SubType)
 static void
 GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
-#ifndef __WINRT__   /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
-
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
     PRAWINPUTDEVICELIST devices = NULL;
     UINT i, j, device_count = 0;
 
@@ -272,31 +278,19 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
 
     pNewJoystick->bXInputDevice = SDL_TRUE;
-    if (!SDL_XInputUseOldJoystickMapping()) {
-        Uint16 *guid16 = (Uint16 *)pNewJoystick->guid.data;
-
-        GuessXInputDevice(userid, &vendor, &product, &version);
-
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(version);
-        *guid16++ = 0;
-
-        /* Note that this is an XInput device and what subtype it is */
-        pNewJoystick->guid.data[14] = 'x';
-        pNewJoystick->guid.data[15] = SubType;
-    }
-    pNewJoystick->SubType = SubType;
-    pNewJoystick->XInputUserId = userid;
     pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, GetXInputName(userid, SubType));
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
         return; /* better luck next time? */
     }
+    SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%d", userid);
+    if (!SDL_XInputUseOldJoystickMapping()) {
+        GuessXInputDevice(userid, &vendor, &product, &version);
+
+        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, pNewJoystick->joystickname, 'x', SubType);
+    }
+    pNewJoystick->SubType = SubType;
+    pNewJoystick->XInputUserId = userid;
 
     if (SDL_ShouldIgnoreJoystick(pNewJoystick->joystickname, pNewJoystick->guid)) {
         SDL_free(pNewJoystick);
@@ -385,7 +379,7 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
         return SDL_SetError("Failed to obtain XInput device capabilities. Device disconnected?");
     }
     SDL_zero(state);
-    joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS);
+    joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS) ? SDL_TRUE : SDL_FALSE;
     joystick->hwdata->userid = userId;
 
     /* The XInput API has a hard coded button/axis mapping, so we just match it */
@@ -540,6 +534,10 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
         result = XINPUTGETBATTERYINFORMATION(joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation);
     }
 
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    /* XInputOnGameInput doesn't ever change dwPacketNumber, so have to just update every frame */
+    UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
+#else
     /* only fire events if the data changed from last time */
     if (XInputState.dwPacketNumber && XInputState.dwPacketNumber != joystick->hwdata->dwPacketNumber) {
         if (SDL_XInputUseOldJoystickMapping()) {
@@ -549,6 +547,7 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
         }
         joystick->hwdata->dwPacketNumber = XInputState.dwPacketNumber;
     }
+#endif
 }
 
 void
@@ -563,6 +562,11 @@ SDL_XINPUT_JoystickQuit(void)
         WIN_UnloadXInputDLL();
     }
 }
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #else /* !SDL_JOYSTICK_XINPUT */
 

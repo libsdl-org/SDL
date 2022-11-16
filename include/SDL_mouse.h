@@ -154,7 +154,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
 /**
  * Move the mouse cursor to the given position within the window.
  *
- * This function generates a mouse motion event.
+ * This function generates a mouse motion event if relative mode is not
+ * enabled. If relative mode is enabled, you can force mouse events for the
+ * warp by setting the SDL_HINT_MOUSE_RELATIVE_WARP_MOTION hint.
  *
  * Note that this function will appear to succeed, but not actually move the
  * mouse when used over Microsoft Remote Desktop.
@@ -244,6 +246,15 @@ extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
  *
  * While capturing is enabled, the current window will have the
  * `SDL_WINDOW_MOUSE_CAPTURE` flag set.
+ *
+ * Please note that as of SDL 2.0.22, SDL will attempt to "auto capture" the
+ * mouse while the user is pressing a button; this is to try and make mouse
+ * behavior more consistent between platforms, and deal with the common case
+ * of a user dragging the mouse outside of the window. This means that if you
+ * are calling SDL_CaptureMouse() only to deal with this situation, you no
+ * longer have to (although it is safe to do so). If this causes problems for
+ * your app, you can disable auto capture by setting the
+ * `SDL_HINT_MOUSE_AUTO_CAPTURE` hint to zero.
  *
  * \param enabled SDL_TRUE to enable capturing, SDL_FALSE to disable.
  * \returns 0 on success or -1 if not supported; call SDL_GetError() for more

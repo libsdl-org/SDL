@@ -830,10 +830,11 @@ X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         int exitcode = 0;
         close(fds[0]);
         status = X11_ShowMessageBoxImpl(messageboxdata, buttonid);
-        if (write(fds[1], &status, sizeof (int)) != sizeof (int))
+        if (write(fds[1], &status, sizeof (int)) != sizeof (int)) {
             exitcode = 1;
-        else if (write(fds[1], buttonid, sizeof (int)) != sizeof (int))
+        } else if (write(fds[1], buttonid, sizeof (int)) != sizeof (int)) {
             exitcode = 1;
+        }
         close(fds[1]);
         _exit(exitcode);  /* don't run atexit() stuff, static destructors, etc. */
     } else {  /* we're the parent */
@@ -846,13 +847,12 @@ X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         SDL_assert(rc == pid);  /* not sure what to do if this fails. */
 
         if ((rc == -1) || (!WIFEXITED(status)) || (WEXITSTATUS(status) != 0)) {
-            return SDL_SetError("msgbox child process failed");
+            status = SDL_SetError("msgbox child process failed");
+        } else if ( (read(fds[0], &status, sizeof (int)) != sizeof (int)) ||
+                    (read(fds[0], buttonid, sizeof (int)) != sizeof (int)) ) {
+            status = SDL_SetError("read from msgbox child process failed");
+            *buttonid = 0;
         }
-
-        if (read(fds[0], &status, sizeof (int)) != sizeof (int))
-            status = -1;
-        else if (read(fds[0], buttonid, sizeof (int)) != sizeof (int))
-            status = -1;
         close(fds[0]);
 
         return status;

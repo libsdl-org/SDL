@@ -430,7 +430,6 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     char product_string[256];
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
-    Uint16 *guid16 = (Uint16 *)pDevice->guid.data;
 
     /* get usage page and usage */
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
@@ -496,26 +495,11 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 #ifdef SDL_JOYSTICK_HIDAPI
     if (HIDAPI_IsDevicePresent(vendor, product, version, pDevice->product)) {
         /* The HIDAPI driver is taking care of this device */
-        return 0;
+        return SDL_FALSE;
     }
 #endif
 
-    SDL_memset(pDevice->guid.data, 0, sizeof(pDevice->guid.data));
-
-    if (vendor && product) {
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16((Uint16)vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16((Uint16)product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16((Uint16)version);
-        *guid16++ = 0;
-    } else {
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
-        *guid16++ = 0;
-        SDL_strlcpy((char*)guid16, pDevice->product, sizeof(pDevice->guid.data) - 4);
-    }
+    pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, pDevice->product, 0, 0);
 
     array = IOHIDDeviceCopyMatchingElements(hidDevice, NULL, kIOHIDOptionsTypeNone);
     if (array) {
@@ -744,12 +728,17 @@ DARWIN_JoystickDetect(void)
     }
 }
 
-/* Function to get the device-dependent name of a joystick */
 const char *
 DARWIN_JoystickGetDeviceName(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->product : "UNKNOWN";
+}
+
+const char *
+DARWIN_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
 }
 
 static int
@@ -980,7 +969,7 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     recDevice *device = joystick->hwdata;
     recElement *element;
     SInt32 value, range;
-    int i;
+    int i, goodRead = SDL_FALSE;
 
     if (!device) {
         return;
@@ -996,7 +985,6 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     element = device->firstAxis;
     i = 0;
 
-    int goodRead = SDL_FALSE;
     while (element) {
         goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
         if (goodRead) {
@@ -1115,6 +1103,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickGetCount,
     DARWIN_JoystickDetect,
     DARWIN_JoystickGetDeviceName,
+    DARWIN_JoystickGetDevicePath,
     DARWIN_JoystickGetDevicePlayerIndex,
     DARWIN_JoystickSetDevicePlayerIndex,
     DARWIN_JoystickGetDeviceGUID,

@@ -380,7 +380,7 @@ X11_GetScrollLockModifierMask(_THIS)
     return num_mask;
 }
 
-static void
+void
 X11_ReconcileKeyboardState(_THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
@@ -402,13 +402,28 @@ X11_ReconcileKeyboardState(_THIS)
     }
 
     keyboardState = SDL_GetKeyboardState(0);
-    for (keycode = 0; keycode < 256; ++keycode) {
+    for (keycode = 0; keycode < SDL_arraysize(viddata->key_layout); ++keycode) {
         SDL_Scancode scancode = viddata->key_layout[keycode];
         SDL_bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
         SDL_bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
 
         if (x11KeyPressed && !sdlKeyPressed) {
-            SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+            /* Only update modifier state for keys that are pressed in another application */
+            switch (SDL_GetKeyFromScancode(scancode)) {
+            case SDLK_LCTRL:
+            case SDLK_RCTRL:
+            case SDLK_LSHIFT:
+            case SDLK_RSHIFT:
+            case SDLK_LALT:
+            case SDLK_RALT:
+            case SDLK_LGUI:
+            case SDLK_RGUI:
+            case SDLK_MODE:
+                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                break;
+            default:
+                break;
+            }
         } else if (!x11KeyPressed && sdlKeyPressed) {
             SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
@@ -605,7 +620,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             int seln_format, mime_formats;
             unsigned long nbytes;
             unsigned long overflow;
-            unsigned char *seln_data;            
+            unsigned char *seln_data;
             Atom supportedFormats[SDL_X11_CLIPBOARD_MIME_TYPE_MAX+1];
             Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
 
@@ -625,11 +640,11 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             /* !!! FIXME: We were probably storing this on the root window
                because an SDL window might go away...? but we don't have to do
                this now (or ever, really). */
-            
+
             if (req->target == XA_TARGETS) {
                 supportedFormats[0] = XA_TARGETS;
                 mime_formats = 1;
-                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) 
+                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i)
                     supportedFormats[mime_formats++] = X11_GetSDLCutBufferClipboardExternalFormat(display, i);
                 X11_XChangeProperty(display, req->requestor, req->property,
                     XA_ATOM, 32, PropModeReplace,
@@ -642,7 +657,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
                     if (X11_GetSDLCutBufferClipboardExternalFormat(display, i) != req->target)
                         continue;
                     if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
-                        X11_GetSDLCutBufferClipboardType(display, i), 0, INT_MAX/4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
+                        X11_GetSDLCutBufferClipboardType(display, i, req->selection), 0, INT_MAX/4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
                         &sevent.xselection.target, &seln_format, &nbytes,
                         &overflow, &seln_data) == Success) {
                             if (seln_format != None) {
@@ -714,11 +729,27 @@ isReparentNotify(Display *display, XEvent *ev, XPointer arg)
         ev->xreparent.serial == unmap->serial;
 }
 
+static int
+XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out)
+{
+    int result = X11_XLookupString(event_struct, buffer_return, bytes_buffer, keysym_return, status_in_out);
+    if (result > 0) {
+        char *utf8_text = SDL_iconv_string("UTF-8", "ISO-8859-1", buffer_return, result);
+        if (utf8_text) {
+            SDL_strlcpy(buffer_return, utf8_text, bytes_buffer);
+            SDL_free(utf8_text);
+            return SDL_strlen(buffer_return);
+        } else {
+            return 0;
+        }
+    }
+    return result;
+}
+
 static void
 X11_DispatchEvent(_THIS, XEvent *xevent)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
-    XkbEvent* xkbEvent = (XkbEvent*) xevent;
     Display *display;
     SDL_WindowData *data;
     int orig_event_type;
@@ -771,6 +802,12 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     }
 #endif
 
+#if SDL_VIDEO_DRIVER_X11_XRANDR
+    if (videodata->xrandr_event_base && (xevent->type == (videodata->xrandr_event_base + RRNotify))) {
+        X11_HandleXRandREvent(_this, xevent);
+    }
+#endif
+
     /* Send a SDL_SYSWMEVENT if the application wants them */
     if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
@@ -805,11 +842,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     if (!data) {
         /* The window for KeymapNotify, etc events is 0 */
         if (xevent->type == KeymapNotify) {
+#ifdef DEBUG_XEVENTS
+            printf("window %p: KeymapNotify!\n", data);
+#endif
             if (SDL_GetKeyboardFocus() != NULL) {
                 X11_ReconcileKeyboardState(_this);
             }
-        } else if (xevent->type == MappingNotify ||
-                   (xevent->type == videodata->xkb_event && xkbEvent->any.xkb_type == XkbStateNotify)) {
+        } else if (xevent->type == MappingNotify) {
             /* Has the keyboard layout changed? */
             const int request = xevent->xmapping.request;
 
@@ -820,8 +859,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 X11_XRefreshKeyboardMapping(&xevent->xmapping);
             }
 
-            X11_UpdateKeymap(_this);
-            SDL_SendKeymapChangedEvent();
+            X11_UpdateKeymap(_this, SDL_TRUE);
         } else if (xevent->type == PropertyNotify && videodata && videodata->windowlist) {
             char* name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
 
@@ -908,7 +946,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             if (xevent->xcrossing.mode != NotifyGrab &&
                 xevent->xcrossing.mode != NotifyUngrab &&
                 xevent->xcrossing.detail != NotifyInferior) {
-                
+
                 /* In order for interaction with the window decorations and menu to work properly
                    on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
                 if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
@@ -996,8 +1034,9 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
         }
         break;
 
-        /* Key press? */
-    case KeyPress:{
+        /* Key press/release? */
+    case KeyPress:
+    case KeyRelease: {
             KeyCode keycode = xevent->xkey.keycode;
             KeySym keysym = NoSymbol;
             char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
@@ -1005,63 +1044,57 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             SDL_bool handled_by_ime = SDL_FALSE;
 
 #ifdef DEBUG_XEVENTS
-            printf("window %p: KeyPress (X11 keycode = 0x%X)\n", data, xevent->xkey.keycode);
+            printf("window %p: %s (X11 keycode = 0x%X)\n", data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
 #endif
-#if 1
+#ifdef DEBUG_SCANCODES
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
                 int min_keycode, max_keycode;
                 X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
                 keysym = X11_KeyCodeToSym(_this, keycode, xevent->xkey.state >> 13);
-                fprintf(stderr,
-                        "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
+                SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
                         keycode, keycode - min_keycode, keysym,
                         X11_XKeysymToString(keysym));
             }
-#endif
-            /* */
+#endif /* DEBUG SCANCODES */
+
             SDL_zeroa(text);
 #ifdef X_HAVE_UTF8_STRING
-            if (data->ic) {
+            if (data->ic && xevent->type == KeyPress) {
                 X11_Xutf8LookupString(data->ic, &xevent->xkey, text, sizeof(text),
                                   &keysym, &status);
             } else {
-                X11_XLookupString(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+                XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
             }
 #else
-            X11_XLookupString(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+            XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
 #endif
 
 #ifdef SDL_USE_IME
             if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode);
+                handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
             }
 #endif
             if (!handled_by_ime) {
-                /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
-                if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
-                }
-                if(*text) {
-                    SDL_SendKeyboardText(text);
+                if (xevent->type == KeyPress) {
+                    /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
+                    if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
+                        SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+                    }
+                    if (*text) {
+                        SDL_SendKeyboardText(text);
+                    }
+                } else {
+                    if (X11_KeyRepeat(display, xevent)) {
+                        /* We're about to get a repeated key down, ignore the key up */
+                        break;
+                    }
+                    SDL_SendKeyboardKey(SDL_RELEASED, videodata->key_layout[keycode]);
                 }
             }
 
-            X11_UpdateUserTime(data, xevent->xkey.time);
-        }
-        break;
-
-        /* Key release? */
-    case KeyRelease:{
-            KeyCode keycode = xevent->xkey.keycode;
-
-#ifdef DEBUG_XEVENTS
-            printf("window %p: KeyRelease (X11 keycode = 0x%X)\n", data, xevent->xkey.keycode);
-#endif
-            if (X11_KeyRepeat(display, xevent)) {
-                /* We're about to get a repeated key down, ignore the key up */
-                break;
+            if (xevent->type == KeyPress) {
+                X11_UpdateUserTime(data, xevent->xkey.time);
             }
-            SDL_SendKeyboardKey(SDL_RELEASED, videodata->key_layout[keycode]);
         }
         break;
 
@@ -1124,7 +1157,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                                         &xevent->xconfigure.x, &xevent->xconfigure.y,
                                         &ChildReturn);
             }
-                
+
             if (xevent->xconfigure.x != data->last_xconfigure.x ||
                 xevent->xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
@@ -1435,7 +1468,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                    without ever mapping / unmapping them, so we handle that here,
                    because they use the NETWM protocol to notify us of changes.
                  */
-                const Uint32 flags = X11_GetNetWMState(_this, xevent->xproperty.window);
+                const Uint32 flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
                 const Uint32 changed = flags ^ data->window->flags;
 
                 if ((changed & SDL_WINDOW_HIDDEN) || (changed & SDL_WINDOW_FULLSCREEN)) {
@@ -1460,8 +1493,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                    icon). Since it changes the XKLAVIER_STATE property, we
                    notice and reinit our keymap here. This might not be the
                    right approach, but it seems to work. */
-                X11_UpdateKeymap(_this);
-                SDL_SendKeymapChangedEvent();
+                X11_UpdateKeymap(_this, SDL_TRUE);
             } else if (xevent->xproperty.atom == videodata->_NET_FRAME_EXTENTS) {
                 Atom type;
                 int format;

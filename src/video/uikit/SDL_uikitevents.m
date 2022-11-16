@@ -24,6 +24,7 @@
 
 #include "../../events/SDL_events_c.h"
 
+#include "SDL_system.h"
 #include "SDL_uikitevents.h"
 #include "SDL_uikitopengles.h"
 #include "SDL_uikitvideo.h"
@@ -40,10 +41,84 @@
 
 static BOOL UIKit_EventPumpEnabled = YES;
 
+
+@interface SDL_LifecycleObserver : NSObject
+@property (nonatomic, assign) BOOL isObservingNotifications;
+@end
+
+@implementation SDL_LifecycleObserver
+
+- (void)eventPumpChanged
+{
+    NSNotificationCenter *notificationCenter = NSNotificationCenter.defaultCenter;
+    if (UIKit_EventPumpEnabled && !self.isObservingNotifications) {
+        self.isObservingNotifications = YES;
+        [notificationCenter addObserver:self selector:@selector(applicationDidBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillResignActive) name:UIApplicationWillResignActiveNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationDidEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationWillTerminate) name:UIApplicationWillTerminateNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationDidReceiveMemoryWarning) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+#if !TARGET_OS_TV
+        [notificationCenter addObserver:self selector:@selector(applicationDidChangeStatusBarOrientation) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+#endif
+    } else if (!UIKit_EventPumpEnabled && self.isObservingNotifications) {
+        self.isObservingNotifications = NO;
+        [notificationCenter removeObserver:self];
+    }
+}
+
+- (void)applicationDidBecomeActive
+{
+    SDL_OnApplicationDidBecomeActive();
+}
+
+- (void)applicationWillResignActive
+{
+    SDL_OnApplicationWillResignActive();
+}
+
+- (void)applicationDidEnterBackground
+{
+    SDL_OnApplicationDidEnterBackground();
+}
+
+- (void)applicationWillEnterForeground
+{
+    SDL_OnApplicationWillEnterForeground();
+}
+
+- (void)applicationWillTerminate
+{
+    SDL_OnApplicationWillTerminate();
+}
+
+- (void)applicationDidReceiveMemoryWarning
+{
+    SDL_OnApplicationDidReceiveMemoryWarning();
+}
+
+#if !TARGET_OS_TV
+- (void)applicationDidChangeStatusBarOrientation
+{
+    SDL_OnApplicationDidChangeStatusBarOrientation();
+}
+#endif
+
+@end
+
+
 void
 SDL_iPhoneSetEventPump(SDL_bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
+
+    static SDL_LifecycleObserver *lifecycleObserver;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        lifecycleObserver = [SDL_LifecycleObserver new];
+    });
+    [lifecycleObserver eventPumpChanged];
 }
 
 void
@@ -238,6 +313,11 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
         if (SDL_GCMouseRelativeMode()) {
             SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
         }
+    };
+
+    mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue)
+    {
+        SDL_SendMouseWheel(SDL_GetMouseFocus(), 0, xValue, yValue, SDL_MOUSEWHEEL_NORMAL);
     };
 
     dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );

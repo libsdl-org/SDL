@@ -108,7 +108,7 @@ Wayland_StopTextInput(_THIS)
 }
 
 void
-Wayland_SetTextInputRect(_THIS, SDL_Rect *rect)
+Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
@@ -120,7 +120,7 @@ Wayland_SetTextInputRect(_THIS, SDL_Rect *rect)
     if (driverdata->text_input_manager) {
         struct SDL_WaylandInput *input = driverdata->input;
         if (input != NULL && input->text_input) {
-            SDL_memcpy(&input->text_input->cursor_rect, rect, sizeof(SDL_Rect));
+            SDL_copyp(&input->text_input->cursor_rect, rect);
             zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,
                                                    rect->x,
                                                    rect->y,
@@ -145,8 +145,9 @@ Wayland_HasScreenKeyboardSupport(_THIS)
      * input protocol, make sure we don't have any physical keyboards either.
      */
     SDL_VideoData *driverdata = _this->driverdata;
-    return (driverdata->input->keyboard == NULL &&
-            driverdata->text_input_manager != NULL);
+    SDL_bool haskeyboard = (driverdata->input != NULL) && (driverdata->input->keyboard != NULL);
+    SDL_bool hastextmanager = (driverdata->text_input_manager != NULL);
+    return (!haskeyboard && hastextmanager);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

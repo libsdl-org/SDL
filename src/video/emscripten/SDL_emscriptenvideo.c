@@ -43,9 +43,11 @@ static int Emscripten_VideoInit(_THIS);
 static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
 static void Emscripten_VideoQuit(_THIS);
 static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
+static int Emscripten_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
 
 static int Emscripten_CreateWindow(_THIS, SDL_Window * window);
 static void Emscripten_SetWindowSize(_THIS, SDL_Window * window);
+static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h);
 static void Emscripten_DestroyWindow(_THIS, SDL_Window * window);
 static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 static void Emscripten_PumpEvents(_THIS);
@@ -61,7 +63,7 @@ Emscripten_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-Emscripten_CreateDevice(int devindex)
+Emscripten_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
@@ -82,6 +84,7 @@ Emscripten_CreateDevice(int devindex)
     device->VideoInit = Emscripten_VideoInit;
     device->VideoQuit = Emscripten_VideoQuit;
     device->GetDisplayUsableBounds = Emscripten_GetDisplayUsableBounds;
+    device->GetDisplayDPI = Emscripten_GetDisplayDPI;
     device->SetDisplayMode = Emscripten_SetDisplayMode;
 
 
@@ -99,6 +102,7 @@ Emscripten_CreateDevice(int devindex)
     device->MinimizeWindow = Emscripten_MinimizeWindow;
     device->RestoreWindow = Emscripten_RestoreWindow;
     device->SetWindowMouseGrab = Emscripten_SetWindowMouseGrab;*/
+    device->GetWindowSizeInPixels = Emscripten_GetWindowSizeInPixels;
     device->DestroyWindow = Emscripten_DestroyWindow;
     device->SetWindowFullscreen = Emscripten_SetWindowFullscreen;
 
@@ -116,7 +120,6 @@ Emscripten_CreateDevice(int devindex)
     device->GL_GetSwapInterval = Emscripten_GLES_GetSwapInterval;
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DeleteContext = Emscripten_GLES_DeleteContext;
-    device->GL_GetDrawableSize = Emscripten_GLES_GetDrawableSize;
 #endif
 
     device->free = Emscripten_DeleteDevice;
@@ -172,13 +175,34 @@ Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * 
     if (rect) {
         rect->x = 0;
         rect->y = 0;
-        rect->w = EM_ASM_INT_V({
+        rect->w = MAIN_THREAD_EM_ASM_INT({
             return window.innerWidth;
         });
-        rect->h = EM_ASM_INT_V({
+        rect->h = MAIN_THREAD_EM_ASM_INT({
             return window.innerHeight;
         });
     }
+    return 0;
+}
+
+static int
+Emscripten_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi_out, float * hdpi_out, float * vdpi_out)
+{
+    const float dpi_reference = 96.0f;
+    float dpi;
+
+    dpi = (float)emscripten_get_device_pixel_ratio() * dpi_reference;
+
+    if (ddpi_out) {
+        *ddpi_out = dpi;
+    }
+    if (hdpi_out) {
+        *hdpi_out = dpi;
+    }
+    if (vdpi_out) {
+        *vdpi_out = dpi;
+    }
+
     return 0;
 }
 
@@ -281,6 +305,18 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window * window)
         if (!data->external_size && data->pixel_ratio != 1.0f) {
             emscripten_set_element_css_size(data->canvas_id, window->w, window->h);
         }
+    }
+}
+
+
+static void
+Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
+{
+    SDL_WindowData *data;
+    if (window->driverdata) {
+        data = (SDL_WindowData *) window->driverdata;
+        *w = window->w * data->pixel_ratio;
+        *h = window->h * data->pixel_ratio;
     }
 }
 

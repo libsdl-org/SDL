@@ -69,6 +69,7 @@
 #define HAVE_PUTENV 1
 #define HAVE_UNSETENV 1
 #define HAVE_QSORT 1
+#define HAVE_BSEARCH 1
 #define HAVE_ABS 1
 #define HAVE_BCOPY 1
 #define HAVE_MEMSET 1
@@ -185,6 +186,7 @@
 /* Enable various threading systems */
 #ifdef __EMSCRIPTEN_PTHREADS__
 #define SDL_THREAD_PTHREAD 1
+#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
 #endif
 
 /* Enable various timer systems */

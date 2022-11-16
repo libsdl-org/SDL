@@ -24,6 +24,30 @@
 //
 //          This layer glues the hidapi API to Android's USB and BLE stack.
 
+
+// Common to stub version and non-stub version of functions
+#include <jni.h>
+#include <android/log.h>
+
+#define TAG "hidapi"
+
+// Have error log always available
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+
+#ifdef DEBUG
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
+#else
+#define LOGV(...)
+#define LOGD(...)
+#endif
+
+#define SDL_JAVA_PREFIX                                 org_libsdl_app
+#define CONCAT1(prefix, class, function)                CONCAT2(prefix, class, function)
+#define CONCAT2(prefix, class, function)                Java_ ## prefix ## _ ## class ## _ ## function
+#define HID_DEVICE_MANAGER_JAVA_INTERFACE(function)     CONCAT1(SDL_JAVA_PREFIX, HIDDeviceManager, function)
+
+
 #if !SDL_HIDAPI_DISABLED
 
 #include "SDL_hints.h"
@@ -48,29 +72,9 @@
 #define hid_get_indexed_string          PLATFORM_hid_get_indexed_string
 #define hid_error                       PLATFORM_hid_error
 
-#include <jni.h>
-#include <android/log.h>
 #include <pthread.h>
 #include <errno.h>	// For ETIMEDOUT and ECONNRESET
 #include <stdlib.h> // For malloc() and free()
-
-#define TAG "hidapi"
-
-// Have error log always available
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
-
-#ifdef DEBUG
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
-#else
-#define LOGV(...)
-#define LOGD(...)
-#endif
-
-#define SDL_JAVA_PREFIX                                 org_libsdl_app
-#define CONCAT1(prefix, class, function)                CONCAT2(prefix, class, function)
-#define CONCAT2(prefix, class, function)                Java_ ## prefix ## _ ## class ## _ ## function
-#define HID_DEVICE_MANAGER_JAVA_INTERFACE(function)     CONCAT1(SDL_JAVA_PREFIX, HIDDeviceManager, function)
 
 #include "../hidapi/hidapi.h"
 
@@ -1081,12 +1085,25 @@ int hid_init(void)
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	struct hid_device_info *root = NULL;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
+
 	hid_mutex_guard l( &g_DevicesMutex );
 	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next )
 	{
 		const hid_device_info *info = pDevice->GetDeviceInfo();
-		if ( ( vendor_id == 0 && product_id == 0 ) ||
-			 ( vendor_id == info->vendor_id && product_id == info->product_id ) )
+
+		/* See if there are any devices we should skip in enumeration */
+		if (hint) {
+			char vendor_match[16], product_match[16];
+			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", info->vendor_id);
+			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", info->vendor_id, info->product_id);
+			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+				continue;
+			}
+		}
+
+		if ( ( vendor_id == 0x0 || info->vendor_id == vendor_id ) &&
+		     ( product_id == 0x0 || info->product_id == product_id ) )
 		{
 			hid_device_info *dev = CopyHIDDeviceInfo( info );
 			dev->next = root;
@@ -1334,6 +1351,81 @@ int hid_exit(void)
 	return 0;
 }
 
+}
+
+#else
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback)(JNIEnv *env, jobject thiz);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReleaseCallback)(JNIEnv *env, jobject thiz);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected)(JNIEnv *env, jobject thiz, int nDeviceID, jstring sIdentifier, int nVendorId, int nProductId, jstring sSerialNumber, int nReleaseNumber, jstring sManufacturer, jstring sProduct, int nInterface, int nInterfaceClass, int nInterfaceSubclass, int nInterfaceProtocol );
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenPending)(JNIEnv *env, jobject thiz, int nDeviceID);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenResult)(JNIEnv *env, jobject thiz, int nDeviceID, bool bOpened);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected)(JNIEnv *env, jobject thiz, int nDeviceID);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceInputReport)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value);
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceFeatureReport)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value);
+
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceRegisterCallback)(JNIEnv *env, jobject thiz )
+{
+	LOGV("Stub HIDDeviceRegisterCallback()");
+}
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReleaseCallback)(JNIEnv *env, jobject thiz)
+{
+	LOGV("Stub HIDDeviceReleaseCallback()");
+}
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected)(JNIEnv *env, jobject thiz, int nDeviceID, jstring sIdentifier, int nVendorId, int nProductId, jstring sSerialNumber, int nReleaseNumber, jstring sManufacturer, jstring sProduct, int nInterface, int nInterfaceClass, int nInterfaceSubclass, int nInterfaceProtocol )
+{
+	LOGV("Stub HIDDeviceConnected() id=%d VID/PID = %.4x/%.4x, interface %d\n", nDeviceID, nVendorId, nProductId, nInterface);
+}
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenPending)(JNIEnv *env, jobject thiz, int nDeviceID)
+{
+	LOGV("Stub HIDDeviceOpenPending() id=%d\n", nDeviceID);
+}
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenResult)(JNIEnv *env, jobject thiz, int nDeviceID, bool bOpened)
+{
+	LOGV("Stub HIDDeviceOpenResult() id=%d, result=%s\n", nDeviceID, bOpened ? "true" : "false");
+}
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected)(JNIEnv *env, jobject thiz, int nDeviceID)
+{
+	LOGV("Stub HIDDeviceDisconnected() id=%d\n", nDeviceID);
+}
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceInputReport)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value)
+{
+	LOGV("Stub HIDDeviceInput() id=%d len=%u\n", nDeviceID, nBufSize);
+}
+
+extern "C"
+JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceFeatureReport)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value)
+{
+	LOGV("Stub HIDDeviceFeatureReport() id=%d len=%u\n", nDeviceID, nBufSize);
 }
 
 #endif /* SDL_HIDAPI_DISABLED */

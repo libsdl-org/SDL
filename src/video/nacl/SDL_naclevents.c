@@ -23,8 +23,8 @@
 #if SDL_VIDEO_DRIVER_NACL
 
 #include "SDL.h"
-#include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_naclevents_c.h"
 #include "SDL_naclvideo.h"
 #include "ppapi_simple/ps_event.h"
@@ -313,9 +313,11 @@ SDL_NACL_translate_keycode(int keycode)
     if (keycode < SDL_arraysize(NACL_Keycodes)) {
         scancode = NACL_Keycodes[keycode];
     }
+#ifdef DEBUG_SCANCODES
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> NACL KeyCode %d", keycode);
     }
+#endif
     return scancode;
 }
 

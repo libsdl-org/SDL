@@ -29,6 +29,7 @@ extern HCURSOR SDL_cursor;
 extern void WIN_InitMouse(_THIS);
 extern void WIN_QuitMouse(_THIS);
 extern void WIN_SetCursorPos(int x, int y);
+extern void WIN_UpdateMouseSystemScale();
 
 #endif /* SDL_windowsmouse_h_ */
 

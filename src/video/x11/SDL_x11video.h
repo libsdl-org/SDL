@@ -37,9 +37,6 @@
 #if SDL_VIDEO_DRIVER_X11_XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
-#if SDL_VIDEO_DRIVER_X11_XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
 #include <X11/extensions/XInput2.h>
 #endif
@@ -51,9 +48,6 @@
 #endif
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
 #include <X11/extensions/shape.h>
-#endif
-#if SDL_VIDEO_DRIVER_X11_XVIDMODE
-#include <X11/extensions/xf86vmode.h>
 #endif
 
 #include "../../core/linux/SDL_dbus.h"
@@ -144,6 +138,10 @@ typedef struct SDL_VideoData
     SDL_bool xinput_scrolling;
 #endif
 
+    SDL_XInput2DeviceInfo *mouse_device_info;
+
+    int xrandr_event_base;
+
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbDescPtr xkb;
 #endif
@@ -157,6 +155,10 @@ typedef struct SDL_VideoData
     void *vulkan_xlib_xcb_library;
     PFN_XGetXCBConnection vulkan_XGetXCBConnection;
 #endif
+
+    /* Used to interact with the on-screen keyboard */
+    SDL_bool is_steam_deck;
+    SDL_bool steam_keyboard_open;
 
 } SDL_VideoData;
 

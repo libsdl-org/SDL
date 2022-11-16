@@ -97,10 +97,13 @@ void STD_FUNCTION_NAME(
 	for(y=0; y<(height-(uv_y_sample_interval-1)); y+=uv_y_sample_interval)
 	{
 		const uint8_t *y_ptr1=Y+y*Y_stride,
-			*y_ptr2=Y+(y+1)*Y_stride,
 			*u_ptr=U+(y/uv_y_sample_interval)*UV_stride,
 			*v_ptr=V+(y/uv_y_sample_interval)*UV_stride;
-		
+
+		#if uv_y_sample_interval > 1
+		const uint8_t *y_ptr2=Y+(y+1)*Y_stride;
+		#endif
+
 		uint8_t *rgb_ptr1=RGB+y*RGB_stride;
 
 		#if uv_y_sample_interval > 1
@@ -135,7 +138,9 @@ void STD_FUNCTION_NAME(
 			#endif
 
 			y_ptr1+=2*y_pixel_stride;
+			#if uv_y_sample_interval > 1
 			y_ptr2+=2*y_pixel_stride;
+			#endif
 			u_ptr+=2*uv_pixel_stride/uv_x_sample_interval;
 			v_ptr+=2*uv_pixel_stride/uv_x_sample_interval;
 		}

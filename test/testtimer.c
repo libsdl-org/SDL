@@ -33,7 +33,7 @@ ticktock(Uint32 interval, void *param)
 static Uint32 SDLCALL
 callback(Uint32 interval, void *param)
 {
-    SDL_Log("Timer %d : param = %d\n", interval, (int) (uintptr_t) param);
+    SDL_Log("Timer %" SDL_PRIu32 " : param = %d\n", interval, (int) (uintptr_t) param);
     return interval;
 }
 
@@ -52,6 +52,12 @@ main(int argc, char *argv[])
     if (SDL_Init(SDL_INIT_TIMER) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
+    }
+
+    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+        SDL_Log("Not running slower tests");
+        SDL_Quit();
+        return 0;
     }
 
     /* Verify SDL_GetTicks* acts monotonically increasing, and not erratic. */

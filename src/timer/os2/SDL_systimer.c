@@ -39,6 +39,7 @@
 
 typedef unsigned long long  ULLONG;
 
+static SDL_bool ticks_started = SDL_FALSE;
 static ULONG    ulTmrFreq = 0;
 static ULLONG   ullTmrStart = 0;
 
@@ -46,7 +47,14 @@ void
 SDL_TicksInit(void)
 {
     ULONG ulTmrStart;  /* for 32-bit fallback. */
-    ULONG ulRC = DosTmrQueryFreq(&ulTmrFreq);
+    ULONG ulRC;
+
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+
+    ulRC = DosTmrQueryFreq(&ulTmrFreq);
     if (ulRC != NO_ERROR) {
         debug_os2("DosTmrQueryFreq() failed, rc = %u", ulRC);
     } else {
@@ -65,6 +73,7 @@ SDL_TicksInit(void)
 void
 SDL_TicksQuit(void)
 {
+    ticks_started = SDL_FALSE;
 }
 
 Uint64
@@ -73,7 +82,7 @@ SDL_GetTicks64(void)
     Uint64 ui64Result;
     ULLONG ullTmrNow;
 
-    if (ulTmrFreq == 0) { /* Was not initialized. */
+    if (!ticks_started) {
         SDL_TicksInit();
     }
 

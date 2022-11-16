@@ -386,6 +386,30 @@ WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArg
 
 #if NTDDI_VERSION >= NTDDI_WIN10
 
+static bool WINRT_InputPaneVisible = false;
+
+void WINTRT_OnInputPaneShowing(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
+{
+    WINRT_InputPaneVisible = true;
+}
+
+void WINTRT_OnInputPaneHiding(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
+{
+    WINRT_InputPaneVisible = false;
+}
+
+void WINTRT_InitialiseInputPaneEvents(_THIS)
+{
+    using namespace Windows::UI::ViewManagement;
+    InputPane ^ inputPane = InputPane::GetForCurrentView();
+    if (inputPane) {
+        inputPane->Showing += ref new Windows::Foundation::TypedEventHandler<Windows::UI::ViewManagement::InputPane ^, 
+            Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^>(&WINTRT_OnInputPaneShowing);
+        inputPane->Hiding += ref new Windows::Foundation::TypedEventHandler<Windows::UI::ViewManagement::InputPane ^, 
+            Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^>(&WINTRT_OnInputPaneHiding);
+    }
+}
+
 SDL_bool WINRT_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
@@ -414,12 +438,24 @@ SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window)
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
     if (inputPane) {
-        // dludwig@pobox.com: checking inputPane->Visible doesn't seem to detect visibility,
-        //   at least not on the Windows Phone 10.0.10240.0 emulator.  Checking
-        //   the size of inputPane->OccludedRect, however, does seem to work.
-        Windows::Foundation::Rect rect = inputPane->OccludedRect;
-        if (rect.Width > 0 && rect.Height > 0) {
-            return SDL_TRUE;
+        switch (SDL_WinRTGetDeviceFamily()) {
+        case SDL_WINRT_DEVICEFAMILY_XBOX:
+            //Documentation recommends using inputPane->Visible 
+            //https://learn.microsoft.com/en-us/uwp/api/windows.ui.viewmanagement.inputpane.visible?view=winrt-22621
+            //This does not seem to work on latest UWP/Xbox.
+            //Workaround: Listen to Showing/Hiding events
+            if (WINRT_InputPaneVisible) {
+                return SDL_TRUE;
+            }
+            break;
+        default:
+            //OccludedRect is recommend on universal apps per docs
+            //https://learn.microsoft.com/en-us/uwp/api/windows.ui.viewmanagement.inputpane.visible?view=winrt-22621
+            Windows::Foundation::Rect rect = inputPane->OccludedRect;
+            if (rect.Width > 0 && rect.Height > 0) {
+                return SDL_TRUE;
+            }
+            break;
         }
     }
     return SDL_FALSE;

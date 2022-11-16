@@ -26,9 +26,9 @@
    most of the API. */
 
 #include "SDL.h"
-#include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"
 #include "SDL_keyboard.h"
@@ -62,16 +62,17 @@ static struct {
     { PSP_HPRM_HOLD,      SDLK_F15 }
 };
 
-int EventUpdate(void *data)
+int
+EventUpdate(void *data)
 {
     while (running) {
-                SDL_SemWait(event_sem);
-                                sceHprmPeekCurrentKey(&hprm);
-                SDL_SemPost(event_sem);
-                /* Delay 1/60th of a second */
-                sceKernelDelayThread(1000000 / 60);
-        }
-        return 0;
+        SDL_SemWait(event_sem);
+        sceHprmPeekCurrentKey((u32 *) &hprm);
+        SDL_SemPost(event_sem);
+        /* Delay 1/60th of a second */
+        sceKernelDelayThread(1000000 / 60);
+    }
+    return 0;
 }
 
 void PSP_PumpEvents(_THIS)
@@ -80,7 +81,6 @@ void PSP_PumpEvents(_THIS)
     enum PspHprmKeys keys;
     enum PspHprmKeys changed;
     static enum PspHprmKeys old_keys = 0;
-    SDL_Keysym sym;
 
     SDL_SemWait(event_sem);
     keys = hprm;
@@ -92,14 +92,6 @@ void PSP_PumpEvents(_THIS)
     if(changed) {
         for(i=0; i<sizeof(keymap_psp)/sizeof(keymap_psp[0]); i++) {
             if(changed & keymap_psp[i].id) {
-                sym.scancode = keymap_psp[i].id;
-                sym.sym = keymap_psp[i].sym;
-
-                /* out of date
-                SDL_PrivateKeyboard((keys & keymap_psp[i].id) ?
-                            SDL_PRESSED : SDL_RELEASED,
-                            &sym);
-        */
                 SDL_SendKeyboardKey((keys & keymap_psp[i].id) ?
                                     SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap_psp[i].sym));
             }

@@ -25,6 +25,7 @@
 #endif
 
 #include "SDL.h"
+#include "testutils.h"
 
 static struct
 {
@@ -114,7 +115,7 @@ int
 main(int argc, char *argv[])
 {
     int i;
-    char filename[4096];
+    char *filename = NULL;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -125,11 +126,13 @@ main(int argc, char *argv[])
         return (1);
     }
 
-    if (argc > 1) {
-        SDL_strlcpy(filename, argv[1], sizeof(filename));
-    } else {
-        SDL_strlcpy(filename, "sample.wav", sizeof(filename));
+    filename = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
+
+    if (filename == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        quit(1);
     }
+
     /* Load the wave file into memory */
     if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
@@ -172,6 +175,7 @@ main(int argc, char *argv[])
     /* Clean up on signal */
     close_audio();
     SDL_FreeWAV(wave.sound);
+    SDL_free(filename);
     SDL_Quit();
     return (0);
 }

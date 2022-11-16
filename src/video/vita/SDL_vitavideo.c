@@ -41,15 +41,17 @@
 #include "SDL_vitaframebuffer.h"
 
 #if defined(SDL_VIDEO_VITA_PIB)
-  #include "SDL_vitagl_c.h"
+  #include "SDL_vitagles_c.h"
 #elif defined(SDL_VIDEO_VITA_PVR)
+  #include "SDL_vitagles_pvr_c.h"
+#if defined(SDL_VIDEO_VITA_PVR_OGL)
   #include "SDL_vitagl_pvr_c.h"
-  #include "../SDL_egl_c.h"
-  #define VITA_GL_GetProcAddress SDL_EGL_GetProcAddress
-  #define VITA_GL_UnloadLibrary SDL_EGL_UnloadLibrary
-  #define VITA_GL_SetSwapInterval SDL_EGL_SetSwapInterval
-  #define VITA_GL_GetSwapInterval SDL_EGL_GetSwapInterval
-  #define VITA_GL_DeleteContext SDL_EGL_DeleteContext
+#endif
+  #define VITA_GLES_GetProcAddress SDL_EGL_GetProcAddress
+  #define VITA_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
+  #define VITA_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
+  #define VITA_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
+  #define VITA_GLES_DeleteContext SDL_EGL_DeleteContext
 #endif
 
 SDL_Window *Vita_Window;
@@ -140,15 +142,26 @@ VITA_Create()
 */
 
 #if defined(SDL_VIDEO_VITA_PIB) || defined(SDL_VIDEO_VITA_PVR)
+#if defined(SDL_VIDEO_VITA_PVR_OGL)
+if(SDL_getenv("VITA_PVR_OGL") != NULL) {
     device->GL_LoadLibrary = VITA_GL_LoadLibrary;
-    device->GL_GetProcAddress = VITA_GL_GetProcAddress;
-    device->GL_UnloadLibrary = VITA_GL_UnloadLibrary;
     device->GL_CreateContext = VITA_GL_CreateContext;
-    device->GL_MakeCurrent = VITA_GL_MakeCurrent;
-    device->GL_SetSwapInterval = VITA_GL_SetSwapInterval;
-    device->GL_GetSwapInterval = VITA_GL_GetSwapInterval;
-    device->GL_SwapWindow = VITA_GL_SwapWindow;
-    device->GL_DeleteContext = VITA_GL_DeleteContext;
+    device->GL_GetProcAddress = VITA_GL_GetProcAddress;
+} else {
+#endif
+    device->GL_LoadLibrary = VITA_GLES_LoadLibrary;
+    device->GL_CreateContext = VITA_GLES_CreateContext;
+    device->GL_GetProcAddress = VITA_GLES_GetProcAddress;
+#if defined(SDL_VIDEO_VITA_PVR_OGL)
+}
+#endif
+
+    device->GL_UnloadLibrary = VITA_GLES_UnloadLibrary;
+    device->GL_MakeCurrent = VITA_GLES_MakeCurrent;
+    device->GL_SetSwapInterval = VITA_GLES_SetSwapInterval;
+    device->GL_GetSwapInterval = VITA_GLES_GetSwapInterval;
+    device->GL_SwapWindow = VITA_GLES_SwapWindow;
+    device->GL_DeleteContext = VITA_GLES_DeleteContext;
 #endif
 
     device->HasScreenKeyboardSupport = VITA_HasScreenKeyboardSupport;
@@ -245,6 +258,9 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wdata;
 #if defined(SDL_VIDEO_VITA_PVR)
     Psp2NativeWindow win;
+    int temp_major = 2;
+    int temp_minor = 1;
+    int temp_profile = 0;
 #endif
 
     /* Allocate window internal data */
@@ -282,10 +298,25 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
         win.windowSize = PSP2_WINDOW_960X544;
     }
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
-      wdata->egl_surface = SDL_EGL_CreateSurface(_this, &win);
+      if(SDL_getenv("VITA_PVR_OGL") != NULL) {
+        /* Set version to 2.1 and PROFILE to ES */
+        temp_major = _this->gl_config.major_version;
+        temp_minor = _this->gl_config.minor_version;
+        temp_profile = _this->gl_config.profile_mask;
 
+        _this->gl_config.major_version = 2;
+        _this->gl_config.minor_version = 1;
+        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+      }
+      wdata->egl_surface = SDL_EGL_CreateSurface(_this, &win);
       if (wdata->egl_surface == EGL_NO_SURFACE) {
           return SDL_SetError("Could not create GLES window surface");
+      }
+      if(SDL_getenv("VITA_PVR_OGL") != NULL) {
+        /* Revert */
+        _this->gl_config.major_version = temp_major;
+        _this->gl_config.minor_version = temp_minor;
+        _this->gl_config.profile_mask = temp_profile;
       }
     }
 #endif
@@ -373,8 +404,8 @@ VITA_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
     if (info->version.major <= SDL_MAJOR_VERSION) {
         return SDL_TRUE;
     } else {
-        SDL_SetError("application not compiled with SDL %d.%d\n",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("application not compiled with SDL %d\n",
+                     SDL_MAJOR_VERSION);
         return SDL_FALSE;
     }
 

@@ -22,6 +22,8 @@
 
 #ifdef SDL_JOYSTICK_WGI
 
+#include "SDL_assert.h"
+#include "SDL_atomic.h"
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
@@ -32,8 +34,16 @@
 #define COBJMACROS
 #include "windows.gaming.input.h"
 #include <cfgmgr32.h>
+#include <objidlbase.h>
 #include <roapi.h>
 
+
+#ifdef ____FIReference_1_INT32_INTERFACE_DEFINED__
+/* MinGW-64 uses __FIReference_1_INT32 instead of Microsoft's __FIReference_1_int */
+#define __FIReference_1_int __FIReference_1_INT32
+#define __FIReference_1_int_get_Value __FIReference_1_INT32_get_Value
+#define __FIReference_1_int_Release __FIReference_1_INT32_Release
+#endif
 
 struct joystick_hwdata
 {
@@ -68,6 +78,7 @@ static struct {
     EventRegistrationToken controller_added_token;
     EventRegistrationToken controller_removed_token;
     int controller_count;
+    SDL_bool ro_initialized;
     WindowsGamingInputControllerState *controllers;
 } wgi;
 
@@ -198,6 +209,11 @@ SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     return SDL_FALSE;
 }
 
+typedef struct RawGameControllerDelegate {
+    __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController iface;
+    SDL_atomic_t refcount;
+} RawGameControllerDelegate;
+
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, REFIID riid, void **ppvObject)
 {
     if (!ppvObject) {
@@ -205,21 +221,31 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
     }
 
     *ppvObject = NULL;
-    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IEventHandler_RawGameController)) {
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) || WIN_IsEqualIID(riid, &IID_IAgileObject) || WIN_IsEqualIID(riid, &IID_IEventHandler_RawGameController)) {
         *ppvObject = This;
+        __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_AddRef(This);
         return S_OK;
+    } else if (WIN_IsEqualIID(riid, &IID_IMarshal)) {
+        /* This seems complicated. Let's hope it doesn't happen. */
+        return E_OUTOFMEMORY;
+    } else {
+        return E_NOINTERFACE;
     }
-    return E_NOINTERFACE;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This)
 {
-    return 1;
+    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
+    return SDL_AtomicAdd(&self->refcount, 1) + 1;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This)
 {
-    return 1;
+    RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
+    int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
+    /* Should never free the static delegate objects */
+    SDL_assert(rc > 0);
+    return rc;
 }
 
 static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
@@ -227,9 +253,11 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
 
-    /* We can get delayed calls to InvokeAdded() after WGI_JoystickQuit(). Do nothing if WGI is deinitialized.
-     * FIXME: Can we tell if WGI has been quit and reinitialized prior to a delayed callback? */
-    if (wgi.statics == NULL) {
+    SDL_LockJoysticks();
+
+    /* We can get delayed calls to InvokeAdded() after WGI_JoystickQuit() */
+    if (SDL_JoysticksQuitting() || !SDL_JoysticksInitialized()) {
+        SDL_UnlockJoysticks();
         return S_OK;
     }
 
@@ -237,11 +265,11 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     if (SUCCEEDED(hr)) {
         char *name = NULL;
         SDL_JoystickGUID guid;
+        Uint16 bus = SDL_HARDWARE_BUS_USB;
         Uint16 vendor = 0;
         Uint16 product = 0;
         Uint16 version = 0;
         SDL_JoystickType type = SDL_JOYSTICK_TYPE_UNKNOWN;
-        Uint16 *guid16 = (Uint16 *)guid.data;
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
         __x_ABI_CWindows_CGaming_CInput_CIGameController *gamecontroller = NULL;
         SDL_bool ignore_joystick = SDL_FALSE;
@@ -260,10 +288,9 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             WindowsGetStringRawBufferFunc = WindowsGetStringRawBuffer;
             WindowsDeleteStringFunc = WindowsDeleteString;
 #else
-            HMODULE hModule = LoadLibraryA("combase.dll");
-            if (hModule != NULL) {
-                WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)GetProcAddress(hModule, "WindowsGetStringRawBuffer");
-                WindowsDeleteStringFunc = (WindowsDeleteString_t)GetProcAddress(hModule, "WindowsDeleteString");
+            {
+                WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)WIN_LoadComBaseFunction("WindowsGetStringRawBuffer");
+                WindowsDeleteStringFunc = (WindowsDeleteString_t)WIN_LoadComBaseFunction("WindowsDeleteString");
             }
 #endif /* __WINRT__ */
             if (WindowsGetStringRawBufferFunc && WindowsDeleteStringFunc) {
@@ -277,15 +304,10 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                     WindowsDeleteStringFunc(hString);
                 }
             }
-#ifndef __WINRT__
-            if (hModule != NULL) {
-                FreeLibrary(hModule);
-            }
-#endif
             __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_Release(controller2);
         }
         if (!name) {
-            name = "";
+            name = SDL_strdup("");
         }
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IGameController, (void **)&gamecontroller);
@@ -294,6 +316,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             __x_ABI_CWindows_CGaming_CInput_CIFlightStick *flight_stick = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIGamepad *gamepad = NULL;
             __x_ABI_CWindows_CGaming_CInput_CIRacingWheel *racing_wheel = NULL;
+            boolean wireless;
 
             if (wgi.gamepad_statics2 && SUCCEEDED(__x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2_FromGameController(wgi.gamepad_statics2, gamecontroller, &gamepad)) && gamepad) {
                 type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
@@ -308,22 +331,16 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 type = SDL_JOYSTICK_TYPE_WHEEL;
                 __x_ABI_CWindows_CGaming_CInput_CIRacingWheel_Release(racing_wheel);
             }
+
+            hr = __x_ABI_CWindows_CGaming_CInput_CIGameController_get_IsWireless(gamecontroller, &wireless);
+            if (SUCCEEDED(hr) && wireless) {
+                bus = SDL_HARDWARE_BUS_BLUETOOTH;
+            }
+
             __x_ABI_CWindows_CGaming_CInput_CIGameController_Release(gamecontroller);
         }
 
-        /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
-        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(vendor);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product);
-        *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(version);
-        *guid16++ = 0;
-
-        /* Note that this is a Windows Gaming Input device for special handling elsewhere */
-        guid.data[14] = 'w';
-        guid.data[15] = (Uint8)type;
+        guid = SDL_CreateJoystickGUID(bus, vendor, product, version, name, 'w', (Uint8) type);
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
@@ -380,6 +397,9 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
     }
+
+    SDL_UnlockJoysticks();
+
     return S_OK;
 }
 
@@ -387,6 +407,14 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
+
+    SDL_LockJoysticks();
+
+    /* Can we get delayed calls to InvokeRemoved() after WGI_JoystickQuit()? */
+    if (SDL_JoysticksQuitting() || !SDL_JoysticksInitialized()) {
+        SDL_UnlockJoysticks();
+        return S_OK;
+    }
 
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(e, &IID_IRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
@@ -413,6 +441,9 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
 
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
     }
+
+    SDL_UnlockJoysticks();
+
     return S_OK;
 }
 
@@ -422,8 +453,9 @@ static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl contr
     IEventHandler_CRawGameControllerVtbl_Release,
     IEventHandler_CRawGameControllerVtbl_InvokeAdded
 };
-static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController controller_added = {
-    &controller_added_vtbl
+static RawGameControllerDelegate controller_added = {
+    { &controller_added_vtbl },
+    { 1 }
 };
 
 static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl controller_removed_vtbl = {
@@ -432,8 +464,9 @@ static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl contr
     IEventHandler_CRawGameControllerVtbl_Release,
     IEventHandler_CRawGameControllerVtbl_InvokeRemoved
 };
-static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController controller_removed = {
-    &controller_removed_vtbl
+static RawGameControllerDelegate controller_removed = {
+    { &controller_removed_vtbl },
+    { 1 }
 };
 
 static int
@@ -444,23 +477,43 @@ WGI_JoystickInit(void)
 
     WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = NULL;
     RoGetActivationFactory_t RoGetActivationFactoryFunc = NULL;
-#ifndef __WINRT__
-    HMODULE hModule;
-#endif
     HRESULT hr;
 
-    if (FAILED(WIN_CoInitialize())) {
-        return SDL_SetError("CoInitialize() failed");
+    if (FAILED(WIN_RoInitialize())) {
+        return SDL_SetError("RoInitialize() failed");
     }
+    wgi.ro_initialized = SDL_TRUE;
+
+#ifndef __WINRT__
+    {
+        /* There seems to be a bug in Windows where a dependency of WGI can be unloaded from memory prior to WGI itself.
+         * This results in Windows_Gaming_Input!GameController::~GameController() invoking an unloaded DLL and crashing.
+         * As a workaround, we will keep a reference to the MTA to prevent COM from unloading DLLs later.
+         * See https://github.com/libsdl-org/SDL/issues/5552 for more details.
+         */
+        static PVOID cookie = NULL;
+        if (!cookie) {
+            typedef HRESULT (WINAPI *CoIncrementMTAUsage_t)(PVOID* pCookie);
+            CoIncrementMTAUsage_t CoIncrementMTAUsageFunc = (CoIncrementMTAUsage_t)WIN_LoadComBaseFunction("CoIncrementMTAUsage");
+            if (CoIncrementMTAUsageFunc) {
+                if (FAILED(CoIncrementMTAUsageFunc(&cookie))) {
+                    return SDL_SetError("CoIncrementMTAUsage() failed");
+                }
+            } else {
+                /* CoIncrementMTAUsage() is present since Win8, so we should never make it here. */
+                return SDL_SetError("CoIncrementMTAUsage() not found");
+            }
+        }
+    }
+#endif
 
 #ifdef __WINRT__
     WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
     RoGetActivationFactoryFunc = RoGetActivationFactory;
 #else
-    hModule = LoadLibraryA("combase.dll");
-    if (hModule != NULL) {
-        WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)GetProcAddress(hModule, "WindowsCreateStringReference");
-        RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
+    {
+        WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)WIN_LoadComBaseFunction("WindowsCreateStringReference");
+        RoGetActivationFactoryFunc = (RoGetActivationFactory_t)WIN_LoadComBaseFunction("RoGetActivationFactory");
     }
 #endif /* __WINRT__ */
     if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
@@ -519,21 +572,16 @@ WGI_JoystickInit(void)
             }
         }
     }
-#ifndef __WINRT__
-    if (hModule != NULL) {
-        FreeLibrary(hModule);
-    }
-#endif
 
     if (wgi.statics) {
         __FIVectorView_1_Windows__CGaming__CInput__CRawGameController *controllers;
 
-        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerAdded(wgi.statics, &controller_added, &wgi.controller_added_token);
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerAdded(wgi.statics, &controller_added.iface, &wgi.controller_added_token);
         if (!SUCCEEDED(hr)) {
             SDL_SetError("add_RawGameControllerAdded() failed: 0x%lx\n", hr);
         }
 
-        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerRemoved(wgi.statics, &controller_removed, &wgi.controller_removed_token);
+        hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_add_RawGameControllerRemoved(wgi.statics, &controller_removed.iface, &wgi.controller_removed_token);
         if (!SUCCEEDED(hr)) {
             SDL_SetError("add_RawGameControllerRemoved() failed: 0x%lx\n", hr);
         }
@@ -549,10 +597,13 @@ WGI_JoystickInit(void)
 
                     hr = __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_GetAt(controllers, i, &controller);
                     if (SUCCEEDED(hr) && controller) {
-                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added, NULL, controller);
+                        IEventHandler_CRawGameControllerVtbl_InvokeAdded(&controller_added.iface, NULL, controller);
+                        __x_ABI_CWindows_CGaming_CInput_CIRawGameController_Release(controller);
                     }
                 }
             }
+
+            __FIVectorView_1_Windows__CGaming__CInput__CRawGameController_Release(controllers);
         }
     }
 
@@ -574,6 +625,12 @@ static const char *
 WGI_JoystickGetDeviceName(int device_index)
 {
     return wgi.controllers[device_index].name;
+}
+
+static const char *
+WGI_JoystickGetDevicePath(int device_index)
+{
+    return NULL;
 }
 
 static int
@@ -774,26 +831,48 @@ WGI_JoystickUpdate(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     HRESULT hr;
-    UINT32 nbuttons = joystick->nbuttons;
-    boolean *buttons = SDL_stack_alloc(boolean, nbuttons);
-    UINT32 nhats = joystick->nhats;
-    __x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition *hats = SDL_stack_alloc(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition, nhats);
-    UINT32 naxes = joystick->naxes;
-    DOUBLE *axes = SDL_stack_alloc(DOUBLE, naxes);
+    UINT32 nbuttons = SDL_min(joystick->nbuttons, SDL_MAX_UINT8);
+    boolean *buttons = NULL;
+    UINT32 nhats = SDL_min(joystick->nhats, SDL_MAX_UINT8);
+    __x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition *hats = NULL;
+    UINT32 naxes = SDL_min(joystick->naxes, SDL_MAX_UINT8);
+    DOUBLE *axes = NULL;
     UINT64 timestamp;
+
+    if (nbuttons > 0) {
+        buttons = SDL_stack_alloc(boolean, nbuttons);
+    }
+    if (nhats > 0) {
+        hats = SDL_stack_alloc(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition, nhats);
+    }
+    if (naxes > 0) {
+        axes = SDL_stack_alloc(DOUBLE, naxes);
+    }
 
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_GetCurrentReading(hwdata->controller, nbuttons, buttons, nhats, hats, naxes, axes, &timestamp);
     if (SUCCEEDED(hr) && timestamp != hwdata->timestamp) {
         UINT32 i;
+        SDL_bool all_zero = SDL_TRUE;
 
-        for (i = 0; i < nbuttons; ++i) {
-            SDL_PrivateJoystickButton(joystick, i, buttons[i]);
-        }
-        for (i = 0; i < nhats; ++i) {
-            SDL_PrivateJoystickHat(joystick, i, ConvertHatValue(hats[i]));
-        }
+        /* The axes are all zero when the application loses focus */
         for (i = 0; i < naxes; ++i) {
-            SDL_PrivateJoystickAxis(joystick, i, (int)(axes[i] * 65535) - 32768);
+            if (axes[i] != 0.0f) {
+                all_zero = SDL_FALSE;
+                break;
+            }
+        }
+        if (all_zero) {
+            SDL_PrivateJoystickForceRecentering(joystick);
+        } else {
+            for (i = 0; i < nbuttons; ++i) {
+                SDL_PrivateJoystickButton(joystick, (Uint8) i, buttons[i]);
+            }
+            for (i = 0; i < nhats; ++i) {
+                SDL_PrivateJoystickHat(joystick, (Uint8) i, ConvertHatValue(hats[i]));
+            }
+            for (i = 0; i < naxes; ++i) {
+                SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int) (axes[i] * 65535) - 32768));
+            }
         }
         hwdata->timestamp = timestamp;
     }
@@ -831,7 +910,7 @@ WGI_JoystickQuit(void)
 {
     if (wgi.statics) {
         while (wgi.controller_count > 0) {
-            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed, NULL, wgi.controllers[wgi.controller_count - 1].controller);
+            IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed.iface, NULL, wgi.controllers[wgi.controller_count - 1].controller);
         }
         if (wgi.controllers) {
             SDL_free(wgi.controllers);
@@ -863,53 +942,12 @@ WGI_JoystickQuit(void)
         __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_remove_RawGameControllerRemoved(wgi.statics, wgi.controller_removed_token);
         __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_Release(wgi.statics);
     }
+
+    if (wgi.ro_initialized) {
+        WIN_RoUninitialize();
+    }
+
     SDL_zero(wgi);
-
-    /* Don't uninitialize COM because of what appears to be a bug in Microsoft WGI reference counting.
-     *
-     * If you plug in a non-Xbox controller and let the application run for 30 seconds, then it crashes in CoUninitialize()
-     * with this stack trace:
-
-        Windows.Gaming.Input.dll!GameController::~GameController(void)	Unknown
-        Windows.Gaming.Input.dll!GameController::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::RuntimeClassImpl<struct Microsoft::WRL::RuntimeClassFlags<1>,1,1,0,struct Windows::Gaming::Input::IGameController,struct Windows::Gaming::Input::IGameControllerBatteryInfo,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Internal::IGameControllerPrivate>,class Microsoft::WRL::FtmBase>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::AggregableRuntimeClass<struct Windows::Gaming::Input::IGamepad,struct Windows::Gaming::Input::IGamepad2,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IGameControllerInputSink>,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IGipGameControllerInputSink>,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IHidGameControllerInputSink>,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::IXusbGameControllerInputSink>,class Microsoft::WRL::Details::Nil,class Microsoft::WRL::Details::Nil,class Microsoft::WRL::Details::Nil>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>::~ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>()	Unknown
-        Windows.Gaming.Input.dll!`eh vector destructor iterator'(void *,unsigned int,int,void (*)(void *))	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::GameControllerCollection<class Windows::Gaming::Input::RawGameController,struct Windows::Gaming::Input::IRawGameController>::~GameControllerCollection<class Windows::Gaming::Input::RawGameController,struct Windows::Gaming::Input::IRawGameController>(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::GameControllerCollection<class Windows::Gaming::Input::RawGameController,struct Windows::Gaming::Input::IRawGameController>::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::RuntimeClassImpl<struct Microsoft::WRL::RuntimeClassFlags<1>,1,1,0,struct Windows::Foundation::Collections::IIterable<class Windows::Gaming::Input::ArcadeStick *>,struct Windows::Foundation::Collections::IVectorView<class Windows::Gaming::Input::ArcadeStick *>,class Microsoft::WRL::FtmBase>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::CustomGameControllerFactoryBase<class Windows::Gaming::Input::FlightStick,class Windows::Gaming::Input::FlightStick,struct Windows::Gaming::Input::IFlightStick,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil>::~CustomGameControllerFactoryBase<class Windows::Gaming::Input::FlightStick,class Windows::Gaming::Input::FlightStick,struct Windows::Gaming::Input::IFlightStick,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil>(void)	Unknown
-        Windows.Gaming.Input.dll!Windows::Gaming::Input::Custom::Details::CustomGameControllerFactoryBase<class Windows::Gaming::Input::FlightStick,class Windows::Gaming::Input::FlightStick,struct Windows::Gaming::Input::IFlightStick,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil>::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ActivationFactory<struct Microsoft::WRL::Implements<class Microsoft::WRL::FtmBase,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Custom::ICustomGameControllerFactory> >,struct Windows::Gaming::Input::IFlightStickStatics,class Microsoft::WRL::Details::Nil,0>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>::~ComPtr<`WaitForCompletion<Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<Windows::Storage::Streams::IBuffer *,unsigned int>,Windows::Foundation::IAsyncOperationWithProgress<Windows::Storage::Streams::IBuffer *,unsigned int>>'::`2'::FTMEventDelegate>()	Unknown
-        Windows.Gaming.Input.dll!NtList<struct FactoryManager::FactoryListEntry>::~NtList<struct FactoryManager::FactoryListEntry>(void)	Unknown
-        Windows.Gaming.Input.dll!FactoryManager::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::ActivationFactory<struct Microsoft::WRL::Implements<class Microsoft::WRL::FtmBase,struct Windows::Gaming::Input::Custom::IGameControllerFactoryManagerStatics>,struct Windows::Gaming::Input::Custom::IGameControllerFactoryManagerStatics2,struct Microsoft::WRL::CloakedIid<struct Windows::Gaming::Input::Internal::IGameControllerFactoryManagerStaticsPrivate>,0>::Release(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::TerminateMap(class Microsoft::WRL::Details::ModuleBase *,unsigned short const *,bool)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Module<1,class Microsoft::WRL::Details::DefaultModule<1> >::~Module<1,class Microsoft::WRL::Details::DefaultModule<1> >(void)	Unknown
-        Windows.Gaming.Input.dll!Microsoft::WRL::Details::DefaultModule<1>::`vector deleting destructor'(unsigned int)	Unknown
-        Windows.Gaming.Input.dll!`dynamic atexit destructor for 'Microsoft::WRL::Details::StaticStorage<Microsoft::WRL::Details::DefaultModule<1>,0,int>::instance_''()	Unknown
-        Windows.Gaming.Input.dll!__CRT_INIT@12()	Unknown
-        Windows.Gaming.Input.dll!__DllMainCRTStartup()	Unknown
-        ntdll.dll!_LdrxCallInitRoutine@16()	Unknown
-        ntdll.dll!LdrpCallInitRoutine()	Unknown
-        ntdll.dll!LdrpProcessDetachNode()	Unknown
-        ntdll.dll!LdrpUnloadNode()	Unknown
-        ntdll.dll!LdrpDecrementModuleLoadCountEx()	Unknown
-        ntdll.dll!LdrUnloadDll()	Unknown
-        KernelBase.dll!FreeLibrary()	Unknown
-        combase.dll!FreeLibraryWithLogging(LoadOrFreeWhy why, HINSTANCE__ * hMod, const wchar_t * pswzOptionalFileName) Line 193	C++
-        combase.dll!CClassCache::CDllPathEntry::CFinishObject::Finish() Line 3311	C++
-        combase.dll!CClassCache::CFinishComposite::Finish() Line 3421	C++
-        combase.dll!CClassCache::CleanUpDllsForProcess() Line 7009	C++
-        [Inline Frame] combase.dll!CCCleanUpDllsForProcess() Line 8773	C++
-        combase.dll!ProcessUninitialize() Line 2243	C++
-        combase.dll!DecrementProcessInitializeCount() Line 993	C++
-        combase.dll!wCoUninitialize(COleTls & Tls, int fHostThread) Line 4126	C++
-        combase.dll!CoUninitialize() Line 3945	C++
-    */
-    /* WIN_CoUninitialize(); */
 }
 
 static SDL_bool
@@ -924,6 +962,7 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver =
     WGI_JoystickGetCount,
     WGI_JoystickDetect,
     WGI_JoystickGetDeviceName,
+    WGI_JoystickGetDevicePath,
     WGI_JoystickGetDevicePlayerIndex,
     WGI_JoystickSetDevicePlayerIndex,
     WGI_JoystickGetDeviceGUID,

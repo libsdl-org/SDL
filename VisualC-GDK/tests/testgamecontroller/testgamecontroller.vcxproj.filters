@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\test\testgamecontroller.c" />
+    <ClCompile Include="..\..\..\test\testutils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\test\controllermap_back.bmp" />
+    <CopyFileToFolders Include="..\..\..\test\axis.bmp" />
+    <CopyFileToFolders Include="..\..\..\test\button.bmp" />
+    <CopyFileToFolders Include="..\..\..\test\controllermap.bmp" />
+    <CopyFileToFolders Include="..\..\logos\Logo44x44.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo100x100.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo150x150.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\Logo480x480.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(Console_GRDKExtLibRoot)Xbox.Services.API.C\DesignTime\CommonConfiguration\Neutral\Lib\Release\Microsoft.Xbox.Services.141.GDK.C.Thunks.dll">
+      <Filter>wingdk</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="wingdk\MicrosoftGame.config">
+      <Filter>wingdk</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="xboxseries\MicrosoftGame.config">
+      <Filter>xboxseries</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="xboxone\MicrosoftGame.config">
+      <Filter>xboxone</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\logos\SplashScreenImage.png">
+      <Filter>logos</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="PackageLayout.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="logos">
+      <UniqueIdentifier>{5e858cf0-6fba-498d-b33d-11c8ecbb79c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xboxseries">
+      <UniqueIdentifier>{5790a250-283e-4f51-8f28-6a977d3c7a6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wingdk">
+      <UniqueIdentifier>{a4d235e4-4017-4193-af62-ecb2ac249be4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="xboxone">
+      <UniqueIdentifier>{e704dcb9-c83c-4c94-a139-b0f3e3f428f2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

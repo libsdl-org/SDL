@@ -482,16 +482,15 @@ DirectFB_GetWindowWMInfo(_THIS, SDL_Window * window,
         return SDL_FALSE;
     }
 
-    if (info->version.major == SDL_MAJOR_VERSION &&
-        info->version.minor == SDL_MINOR_VERSION) {
+    if (info->version.major == SDL_MAJOR_VERSION) {
         info->subsystem = SDL_SYSWM_DIRECTFB;
         info->info.dfb.dfb = devdata->dfb;
         info->info.dfb.window = windata->dfbwin;
         info->info.dfb.surface = windata->surface;
         return SDL_TRUE;
     } else {
-        SDL_SetError("Application not compiled with SDL %d.%d",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("Application not compiled with SDL %d",
+                     SDL_MAJOR_VERSION);
         return SDL_FALSE;
     }
 }

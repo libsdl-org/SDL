@@ -1,0 +1,35 @@
+name: Build (OpenWatcom)
+
+on: [push, pull_request]
+
+jobs:
+  os2:
+    name: ${{ matrix.platform.name }}
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        platform:
+        - { name: Windows, makefile: Makefile.w32 }
+        - { name: OS/2,    makefile: Makefile.os2 }
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: open-watcom/setup-watcom@v0
+      - name: Build SDL2
+        run: |
+          wmake -f ${{ matrix.platform.makefile }} ENABLE_WERROR=1
+      - name: Build tests
+        run: |
+          cd test && wmake -f ${{ matrix.platform.makefile }} ENABLE_WERROR=1
+          cd ..
+      - name: Run tests
+        if: "matrix.platform.makefile == 'Makefile.w32'"
+        run: |
+          cd test && wmake -f ${{ matrix.platform.makefile }} check-quick
+          cd ..
+      - name: distclean
+        run: |
+          wmake -f ${{ matrix.platform.makefile }} distclean
+          cd test && wmake -f ${{ matrix.platform.makefile }} distclean
+          cd ..

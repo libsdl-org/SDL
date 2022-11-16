@@ -23,6 +23,10 @@
 #include "SDL_haptic.h"
 #include "SDL_windowshaptic_c.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern int SDL_XINPUT_HapticInit(void);
 extern int SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid);
@@ -43,5 +47,10 @@ extern int SDL_XINPUT_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter);
 extern int SDL_XINPUT_HapticPause(SDL_Haptic * haptic);
 extern int SDL_XINPUT_HapticUnpause(SDL_Haptic * haptic);
 extern int SDL_XINPUT_HapticStopAll(SDL_Haptic * haptic);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

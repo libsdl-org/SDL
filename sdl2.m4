@@ -10,7 +10,7 @@
 # * removed HP/UX 9 support.
 # * updated for newer autoconf.
 
-# serial 2
+# serial 3
 
 dnl AM_PATH_SDL2([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 dnl Test for SDL, and define SDL_CFLAGS and SDL_LIBS
@@ -19,6 +19,7 @@ AC_DEFUN([AM_PATH_SDL2],
 [dnl
 dnl Get the cflags and libraries from the sdl2-config script
 dnl
+AC_MSG_WARN([[$0 is deprecated, please use PKG_CHECK_MODULES([SDL], [sdl2 >= MINIMUM_VERSION]) instead]])
 AC_ARG_WITH(sdl-prefix,[  --with-sdl-prefix=PFX   Prefix where SDL is installed (optional)],
             sdl_prefix="$withval", sdl_prefix="")
 AC_ARG_WITH(sdl-exec-prefix,[  --with-sdl-exec-prefix=PFX Exec prefix where SDL is installed (optional)],
@@ -70,8 +71,8 @@ AC_ARG_VAR(SDL2_FRAMEWORK, [Path to SDL2.framework])
         sdl_framework=$SDL2_FRAMEWORK
       else
         for d in / ~/ /System/; do
-          if test -d "$dLibrary/Frameworks/SDL2.framework"; then
-            sdl_framework="$dLibrary/Frameworks/SDL2.framework"
+          if test -d "${d}Library/Frameworks/SDL2.framework"; then
+            sdl_framework="${d}Library/Frameworks/SDL2.framework"
           fi
         done
       fi

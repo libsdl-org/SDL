@@ -8,7 +8,6 @@
 #include "SDL_test.h"
 
 
-const int _numHintsEnum = 25;
 const char* _HintsEnum[] =
   {
     SDL_HINT_ACCELEROMETER_AS_JOYSTICK,
@@ -32,9 +31,7 @@ const char* _HintsEnum[] =
     SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS,
     SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
     SDL_HINT_VIDEO_WIN_D3DCOMPILER,
-    SDL_HINT_VIDEO_X11_XINERAMA,
     SDL_HINT_VIDEO_X11_XRANDR,
-    SDL_HINT_VIDEO_X11_XVIDMODE,
     SDL_HINT_XINPUT_ENABLED,
   };
 const char* _HintsVerbose[] =
@@ -60,12 +57,13 @@ const char* _HintsVerbose[] =
     "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS",
     "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT",
     "SDL_VIDEO_WIN_D3DCOMPILER",
-    "SDL_VIDEO_X11_XINERAMA",
     "SDL_VIDEO_X11_XRANDR",
-    "SDL_VIDEO_X11_XVIDMODE",
     "SDL_XINPUT_ENABLED"
   };
 
+SDL_COMPILE_TIME_ASSERT(HintsEnum, SDL_arraysize(_HintsEnum) == SDL_arraysize(_HintsVerbose));
+
+const int _numHintsEnum = SDL_arraysize(_HintsEnum);
 
 /* Test case functions */
 
@@ -94,15 +92,22 @@ hints_getHint(void *arg)
   return TEST_COMPLETED;
 }
 
+static void SDLCALL hints_testHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+  *(char **)userdata = hint ? SDL_strdup(hint) : NULL;
+}
+
 /**
  * @brief Call to SDL_SetHint
  */
 int
 hints_setHint(void *arg)
 {
+  const char *testHint = "SDL_AUTOMATED_TEST_HINT";
   const char *originalValue;
-  const char *value;
+  char *value;
   const char *testValue;
+  char *callbackValue;
   SDL_bool result;
   int i, j;
 
@@ -144,7 +149,99 @@ hints_setHint(void *arg)
     SDL_free((void *)originalValue);
   }
 
-  SDL_free((void *)value);
+  SDL_free(value);
+
+  /* Set default value in environment */
+  SDL_setenv(testHint, "original", 1);
+
+  SDLTest_AssertPass("Call to SDL_GetHint() after saving and restoring hint");
+  originalValue = SDL_GetHint(testHint);
+  value = (originalValue == NULL) ? NULL : SDL_strdup(originalValue);
+  SDL_SetHint(testHint, "temp");
+  SDL_SetHint(testHint, value);
+  SDL_free(value);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "original") == 0,
+    "testValue = %s, expected \"original\"",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(NULL, SDL_HINT_DEFAULT)");
+  SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_DEFAULT);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "original") == 0,
+    "testValue = %s, expected \"original\"",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE)");
+  SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "temp") == 0,
+    "testValue = %s, expected \"temp\"",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(NULL, SDL_HINT_OVERRIDE)");
+  SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_OVERRIDE);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue == NULL,
+    "testValue = %s, expected NULL",
+    testValue);
+
+  SDLTest_AssertPass("Call to SDL_ResetHint()");
+  SDL_ResetHint(testHint);
+  testValue = SDL_GetHint(testHint);
+  SDLTest_AssertCheck(
+    testValue && SDL_strcmp(testValue, "original") == 0,
+    "testValue = %s, expected \"original\"",
+    testValue);
+
+  /* Make sure callback functionality works past a reset */
+  SDLTest_AssertPass("Call to SDL_AddHintCallback()");
+  callbackValue = NULL;
+  SDL_AddHintCallback(testHint, hints_testHintChanged, &callbackValue);
+  SDLTest_AssertCheck(
+    callbackValue && SDL_strcmp(callbackValue, "original") == 0,
+    "callbackValue = %s, expected \"original\"",
+    callbackValue);
+  SDL_free(callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback");
+  callbackValue = NULL;
+  SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+  SDLTest_AssertCheck(
+      callbackValue && SDL_strcmp(callbackValue, "temp") == 0,
+      "callbackValue = %s, expected \"temp\"",
+      callbackValue);
+  SDL_free(callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_ResetHint(), using callback");
+  callbackValue = NULL;
+  SDL_ResetHint(testHint);
+  SDLTest_AssertCheck(
+    callbackValue && SDL_strcmp(callbackValue, "original") == 0,
+    "callbackValue = %s, expected \"original\"",
+    callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback after reset");
+  callbackValue = NULL;
+  SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+  SDLTest_AssertCheck(
+      callbackValue && SDL_strcmp(callbackValue, "temp") == 0,
+      "callbackValue = %s, expected \"temp\"",
+      callbackValue);
+  SDL_free(callbackValue);
+
+  SDLTest_AssertPass("Call to SDL_ResetHint(), after clearing callback");
+  callbackValue = NULL;
+  SDL_DelHintCallback(testHint, hints_testHintChanged, &callbackValue);
+  SDL_ResetHint(testHint);
+  SDLTest_AssertCheck(
+    callbackValue == NULL,
+    "callbackValue = %s, expected \"(null)\"",
+    callbackValue);
 
   return TEST_COMPLETED;
 }

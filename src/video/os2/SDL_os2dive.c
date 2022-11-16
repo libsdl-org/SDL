@@ -67,10 +67,12 @@ OS2VIDEOOUTPUT voDive = {
 
 static BOOL voQueryInfo(VIDEOOUTPUTINFO *pInfo)
 {
-    DIVE_CAPS sDiveCaps = { 0 };
-    FOURCC fccFormats[100] = { 0 };
+    DIVE_CAPS sDiveCaps;
+    FOURCC fccFormats[100];
 
     /* Query information about display hardware from DIVE. */
+    SDL_zeroa(fccFormats);
+    SDL_zero(sDiveCaps);
     sDiveCaps.pFormatData    = fccFormats;
     sDiveCaps.ulFormatLength = 100;
     sDiveCaps.ulStructLen    = sizeof(DIVE_CAPS);
@@ -172,7 +174,7 @@ static BOOL voSetVisibleRegion(PVODATA pVOData, HWND hwnd,
             /* Setup DIVE blitter. */
             SETUP_BLITTER   sSetupBlitter;
             SWP             swp;
-            POINTL          pointl = { 0 };
+            POINTL          pointl = { 0,0 };
 
             WinQueryWindowPos(hwnd, &swp);
             WinMapWindowPoints(hwnd, HWND_DESKTOP, &pointl, 1);

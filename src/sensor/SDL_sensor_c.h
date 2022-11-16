@@ -37,7 +37,7 @@ extern int SDL_SensorInit(void);
 extern void SDL_SensorQuit(void);
 
 /* Internal event queueing functions */
-extern int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, float *data, int num_values);
+extern int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, int num_values);
 
 #endif /* SDL_sensor_c_h_ */
 

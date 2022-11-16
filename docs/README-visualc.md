@@ -1,7 +1,7 @@
 Using SDL with Microsoft Visual C++
 ===================================
 
-### by [Lion Kimbro](mailto:snowlion@sprynet.com) with additions by [James Turk](mailto:james@conceptofzero.net)
+### by Lion Kimbro with additions by James Turk
 
 You can either use the precompiled libraries from the [SDL](https://www.libsdl.org/download.php) web site, or you can build SDL
 yourself.

@@ -426,9 +426,17 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 	const int fix_read_nv12 = 0;
 #endif
 
+#if YUV_FORMAT == YUV_FORMAT_422
+	/* Avoid invalid read on last line */
+	const int fix_read_422 = 1;
+#else
+	const int fix_read_422 = 0;
+#endif
+
+
 	if (width >= 32) {
 		uint32_t xpos, ypos;
-		for(ypos=0; ypos<(height-(uv_y_sample_interval-1)); ypos+=uv_y_sample_interval)
+		for(ypos=0; ypos<(height-(uv_y_sample_interval-1)) - fix_read_422; ypos+=uv_y_sample_interval)
 		{
 			const uint8_t *y_ptr1=Y+ypos*Y_stride,
 				*y_ptr2=Y+(ypos+1)*Y_stride,
@@ -457,6 +465,15 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 				rgb_ptr1+=32*rgb_pixel_stride;
 				rgb_ptr2+=32*rgb_pixel_stride;
 			}
+		}
+
+		if (fix_read_422) {
+			const uint8_t *y_ptr=Y+ypos*Y_stride,
+				*u_ptr=U+(ypos/uv_y_sample_interval)*UV_stride,
+				*v_ptr=V+(ypos/uv_y_sample_interval)*UV_stride;
+			uint8_t *rgb_ptr=RGB+ypos*RGB_stride;
+			STD_FUNCTION_NAME(width, 1, y_ptr, u_ptr, v_ptr, Y_stride, UV_stride, rgb_ptr, RGB_stride, yuv_type);
+			ypos += uv_y_sample_interval;
 		}
 
 		/* Catch the last line, if needed */

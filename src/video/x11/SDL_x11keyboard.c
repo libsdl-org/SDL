@@ -22,178 +22,41 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
+#include "SDL_hints.h"
+#include "SDL_misc.h"
 #include "SDL_x11video.h"
 
 #include "../../events/SDL_keyboard_c.h"
-#include "../../events/scancodes_darwin.h"
-#include "../../events/scancodes_xfree86.h"
+#include "../../events/SDL_scancode_tables_c.h"
 
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 
 #include "../../events/imKStoUCS.h"
+#include "../../events/SDL_keysym_to_scancode_c.h"
 
 #ifdef X_HAVE_UTF8_STRING
 #include <locale.h>
 #endif
 
-/* *INDENT-OFF* */
-static const struct {
-    KeySym keysym;
-    SDL_Scancode scancode;
-} KeySymToSDLScancode[] = {
-    { XK_Return, SDL_SCANCODE_RETURN },
-    { XK_Escape, SDL_SCANCODE_ESCAPE },
-    { XK_BackSpace, SDL_SCANCODE_BACKSPACE },
-    { XK_Tab, SDL_SCANCODE_TAB },
-    { XK_Caps_Lock, SDL_SCANCODE_CAPSLOCK },
-    { XK_F1, SDL_SCANCODE_F1 },
-    { XK_F2, SDL_SCANCODE_F2 },
-    { XK_F3, SDL_SCANCODE_F3 },
-    { XK_F4, SDL_SCANCODE_F4 },
-    { XK_F5, SDL_SCANCODE_F5 },
-    { XK_F6, SDL_SCANCODE_F6 },
-    { XK_F7, SDL_SCANCODE_F7 },
-    { XK_F8, SDL_SCANCODE_F8 },
-    { XK_F9, SDL_SCANCODE_F9 },
-    { XK_F10, SDL_SCANCODE_F10 },
-    { XK_F11, SDL_SCANCODE_F11 },
-    { XK_F12, SDL_SCANCODE_F12 },
-    { XK_Print, SDL_SCANCODE_PRINTSCREEN },
-    { XK_Scroll_Lock, SDL_SCANCODE_SCROLLLOCK },
-    { XK_Pause, SDL_SCANCODE_PAUSE },
-    { XK_Insert, SDL_SCANCODE_INSERT },
-    { XK_Home, SDL_SCANCODE_HOME },
-    { XK_Prior, SDL_SCANCODE_PAGEUP },
-    { XK_Delete, SDL_SCANCODE_DELETE },
-    { XK_End, SDL_SCANCODE_END },
-    { XK_Next, SDL_SCANCODE_PAGEDOWN },
-    { XK_Right, SDL_SCANCODE_RIGHT },
-    { XK_Left, SDL_SCANCODE_LEFT },
-    { XK_Down, SDL_SCANCODE_DOWN },
-    { XK_Up, SDL_SCANCODE_UP },
-    { XK_Num_Lock, SDL_SCANCODE_NUMLOCKCLEAR },
-    { XK_KP_Divide, SDL_SCANCODE_KP_DIVIDE },
-    { XK_KP_Multiply, SDL_SCANCODE_KP_MULTIPLY },
-    { XK_KP_Subtract, SDL_SCANCODE_KP_MINUS },
-    { XK_KP_Add, SDL_SCANCODE_KP_PLUS },
-    { XK_KP_Enter, SDL_SCANCODE_KP_ENTER },
-    { XK_KP_Delete, SDL_SCANCODE_KP_PERIOD },
-    { XK_KP_End, SDL_SCANCODE_KP_1 },
-    { XK_KP_Down, SDL_SCANCODE_KP_2 },
-    { XK_KP_Next, SDL_SCANCODE_KP_3 },
-    { XK_KP_Left, SDL_SCANCODE_KP_4 },
-    { XK_KP_Begin, SDL_SCANCODE_KP_5 },
-    { XK_KP_Right, SDL_SCANCODE_KP_6 },
-    { XK_KP_Home, SDL_SCANCODE_KP_7 },
-    { XK_KP_Up, SDL_SCANCODE_KP_8 },
-    { XK_KP_Prior, SDL_SCANCODE_KP_9 },
-    { XK_KP_Insert, SDL_SCANCODE_KP_0 },
-    { XK_KP_Decimal, SDL_SCANCODE_KP_PERIOD },
-    { XK_KP_1, SDL_SCANCODE_KP_1 },
-    { XK_KP_2, SDL_SCANCODE_KP_2 },
-    { XK_KP_3, SDL_SCANCODE_KP_3 },
-    { XK_KP_4, SDL_SCANCODE_KP_4 },
-    { XK_KP_5, SDL_SCANCODE_KP_5 },
-    { XK_KP_6, SDL_SCANCODE_KP_6 },
-    { XK_KP_7, SDL_SCANCODE_KP_7 },
-    { XK_KP_8, SDL_SCANCODE_KP_8 },
-    { XK_KP_9, SDL_SCANCODE_KP_9 },
-    { XK_KP_0, SDL_SCANCODE_KP_0 },
-    { XK_KP_Decimal, SDL_SCANCODE_KP_PERIOD },
-    { XK_Hyper_R, SDL_SCANCODE_APPLICATION },
-    { XK_KP_Equal, SDL_SCANCODE_KP_EQUALS },
-    { XK_F13, SDL_SCANCODE_F13 },
-    { XK_F14, SDL_SCANCODE_F14 },
-    { XK_F15, SDL_SCANCODE_F15 },
-    { XK_F16, SDL_SCANCODE_F16 },
-    { XK_F17, SDL_SCANCODE_F17 },
-    { XK_F18, SDL_SCANCODE_F18 },
-    { XK_F19, SDL_SCANCODE_F19 },
-    { XK_F20, SDL_SCANCODE_F20 },
-    { XK_F21, SDL_SCANCODE_F21 },
-    { XK_F22, SDL_SCANCODE_F22 },
-    { XK_F23, SDL_SCANCODE_F23 },
-    { XK_F24, SDL_SCANCODE_F24 },
-    { XK_Execute, SDL_SCANCODE_EXECUTE },
-    { XK_Help, SDL_SCANCODE_HELP },
-    { XK_Menu, SDL_SCANCODE_MENU },
-    { XK_Select, SDL_SCANCODE_SELECT },
-    { XK_Cancel, SDL_SCANCODE_STOP },
-    { XK_Redo, SDL_SCANCODE_AGAIN },
-    { XK_Undo, SDL_SCANCODE_UNDO },
-    { XK_Find, SDL_SCANCODE_FIND },
-    { XK_KP_Separator, SDL_SCANCODE_KP_COMMA },
-    { XK_Sys_Req, SDL_SCANCODE_SYSREQ },
-    { XK_Control_L, SDL_SCANCODE_LCTRL },
-    { XK_Shift_L, SDL_SCANCODE_LSHIFT },
-    { XK_Alt_L, SDL_SCANCODE_LALT },
-    { XK_Meta_L, SDL_SCANCODE_LGUI },
-    { XK_Super_L, SDL_SCANCODE_LGUI },
-    { XK_Control_R, SDL_SCANCODE_RCTRL },
-    { XK_Shift_R, SDL_SCANCODE_RSHIFT },
-    { XK_Alt_R, SDL_SCANCODE_RALT },
-    { XK_ISO_Level3_Shift, SDL_SCANCODE_RALT },
-    { XK_Meta_R, SDL_SCANCODE_RGUI },
-    { XK_Super_R, SDL_SCANCODE_RGUI },
-    { XK_Mode_switch, SDL_SCANCODE_MODE },
-    { XK_period, SDL_SCANCODE_PERIOD },
-    { XK_comma, SDL_SCANCODE_COMMA },
-    { XK_slash, SDL_SCANCODE_SLASH },
-    { XK_backslash, SDL_SCANCODE_BACKSLASH },
-    { XK_minus, SDL_SCANCODE_MINUS },
-    { XK_equal, SDL_SCANCODE_EQUALS },
-    { XK_space, SDL_SCANCODE_SPACE },
-    { XK_grave, SDL_SCANCODE_GRAVE },
-    { XK_apostrophe, SDL_SCANCODE_APOSTROPHE },
-    { XK_bracketleft, SDL_SCANCODE_LEFTBRACKET },
-    { XK_bracketright, SDL_SCANCODE_RIGHTBRACKET },
+static SDL_ScancodeTable scancode_set[] = {
+    SDL_SCANCODE_TABLE_DARWIN,
+    SDL_SCANCODE_TABLE_XFREE86_1,
+    SDL_SCANCODE_TABLE_XFREE86_2,
+    SDL_SCANCODE_TABLE_XVNC,
 };
 
-static const struct
-{
-    SDL_Scancode const *table;
-    int table_size;
-} scancode_set[] = {
-    { darwin_scancode_table, SDL_arraysize(darwin_scancode_table) },
-    { xfree86_scancode_table, SDL_arraysize(xfree86_scancode_table) },
-    { xfree86_scancode_table2, SDL_arraysize(xfree86_scancode_table2) },
-    { xvnc_scancode_table, SDL_arraysize(xvnc_scancode_table) },
-};
-/* *INDENT-OFF* */
-
-/* This function only works for keyboards in US QWERTY layout */
+/* This function only correctly maps letters and numbers for keyboards in US QWERTY layout */
 static SDL_Scancode
 X11_KeyCodeToSDLScancode(_THIS, KeyCode keycode)
 {
-    KeySym keysym;
-    int i;
+    const KeySym keysym = X11_KeyCodeToSym(_this, keycode, 0);
 
-    keysym = X11_KeyCodeToSym(_this, keycode, 0);
     if (keysym == NoSymbol) {
         return SDL_SCANCODE_UNKNOWN;
     }
 
-    if (keysym >= XK_a && keysym <= XK_z) {
-        return SDL_SCANCODE_A + (keysym - XK_a);
-    }
-    if (keysym >= XK_A && keysym <= XK_Z) {
-        return SDL_SCANCODE_A + (keysym - XK_A);
-    }
-
-    if (keysym == XK_0) {
-        return SDL_SCANCODE_0;
-    }
-    if (keysym >= XK_1 && keysym <= XK_9) {
-        return SDL_SCANCODE_1 + (keysym - XK_1);
-    }
-
-    for (i = 0; i < SDL_arraysize(KeySymToSDLScancode); ++i) {
-        if (keysym == KeySymToSDLScancode[i].keysym) {
-            return KeySymToSDLScancode[i].scancode;
-        }
-    }
-    return SDL_SCANCODE_UNKNOWN;
+    return SDL_GetScancodeFromKeySym(keysym, keycode);
 }
 
 static Uint32
@@ -267,13 +130,6 @@ X11_InitKeyboard(_THIS)
     int best_index;
     int distance;
     Bool xkb_repeat = 0;
-    XKeyboardState values;
-    SDL_zero(values);
-    values.global_auto_repeat = AutoRepeatModeOff;
-    
-    X11_XGetKeyboardControl(data->display, &values);
-    if (values.global_auto_repeat != AutoRepeatModeOn)
-        X11_XAutoRepeatOn(data->display);
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     {
@@ -346,21 +202,17 @@ X11_InitKeyboard(_THIS)
     best_index = -1;
     X11_XDisplayKeycodes(data->display, &min_keycode, &max_keycode);
     for (i = 0; i < SDL_arraysize(fingerprint); ++i) {
-        fingerprint[i].value =
-            X11_XKeysymToKeycode(data->display, fingerprint[i].keysym) -
-            min_keycode;
+        fingerprint[i].value = X11_XKeysymToKeycode(data->display, fingerprint[i].keysym) - min_keycode;
     }
     for (i = 0; i < SDL_arraysize(scancode_set); ++i) {
-        /* Make sure the scancode set isn't too big */
-        if ((max_keycode - min_keycode + 1) <= scancode_set[i].table_size) {
-            continue;
-        }
+        int table_size;
+        const SDL_Scancode *table = SDL_GetScancodeTable(scancode_set[i], &table_size);
+
         distance = 0;
         for (j = 0; j < SDL_arraysize(fingerprint); ++j) {
-            if (fingerprint[j].value < 0
-                || fingerprint[j].value >= scancode_set[i].table_size) {
+            if (fingerprint[j].value < 0 || fingerprint[j].value >= table_size) {
                 distance += 1;
-            } else if (scancode_set[i].table[fingerprint[j].value] != fingerprint[j].scancode) {
+            } else if (table[fingerprint[j].value] != fingerprint[j].scancode) {
                 distance += 1;
             }
         }
@@ -369,39 +221,86 @@ X11_InitKeyboard(_THIS)
             best_index = i;
         }
     }
-    if (best_index >= 0 && best_distance <= 2) {
-#ifdef DEBUG_KEYBOARD
-        printf("Using scancode set %d, min_keycode = %d, max_keycode = %d, table_size = %d\n", best_index, min_keycode, max_keycode, scancode_set[best_index].table_size);
-#endif
-        SDL_memcpy(&data->key_layout[min_keycode], scancode_set[best_index].table,
-                   sizeof(SDL_Scancode) * scancode_set[best_index].table_size);
-    } else {
-        SDL_Keycode keymap[SDL_NUM_SCANCODES];
-
-        printf
-            ("Keyboard layout unknown, please report the following to the SDL forums/mailing list (https://discourse.libsdl.org/):\n");
-
-        /* Determine key_layout - only works on US QWERTY layout */
-        SDL_GetDefaultKeymap(keymap);
-        for (i = min_keycode; i <= max_keycode; ++i) {
-            KeySym sym;
-            sym = X11_KeyCodeToSym(_this, (KeyCode) i, 0);
-            if (sym != NoSymbol) {
-                SDL_Scancode scancode;
-                printf("code = %d, sym = 0x%X (%s) ", i - min_keycode,
-                       (unsigned int) sym, X11_XKeysymToString(sym));
-                scancode = X11_KeyCodeToSDLScancode(_this, i);
-                data->key_layout[i] = scancode;
-                if (scancode == SDL_SCANCODE_UNKNOWN) {
-                    printf("scancode not found\n");
-                } else {
-                    printf("scancode = %d (%s)\n", scancode, SDL_GetScancodeName(scancode));
+    if (best_index < 0 || best_distance > 2) {
+        /* This is likely to be SDL_SCANCODE_TABLE_XFREE86_2 with remapped keys, double check a rarely remapped value */
+        int fingerprint_value = X11_XKeysymToKeycode(data->display, 0x1008FF5B /* XF86Documents */) - min_keycode;
+        if (fingerprint_value == 235) {
+            for (i = 0; i < SDL_arraysize(scancode_set); ++i) {
+                if (scancode_set[i] == SDL_SCANCODE_TABLE_XFREE86_2) {
+                    best_index = i;
+                    best_distance = 0;
+                    break;
                 }
             }
         }
     }
+    if (best_index >= 0 && best_distance <= 2) {
+        SDL_Keycode default_keymap[SDL_NUM_SCANCODES];
+        int table_size;
+        const SDL_Scancode *table = SDL_GetScancodeTable(scancode_set[best_index], &table_size);
 
-    X11_UpdateKeymap(_this);
+#ifdef DEBUG_KEYBOARD
+        SDL_Log("Using scancode set %d, min_keycode = %d, max_keycode = %d, table_size = %d\n", best_index, min_keycode, max_keycode, table_size);
+#endif
+        /* This should never happen, but just in case... */
+        if (table_size > (SDL_arraysize(data->key_layout) - min_keycode)) {
+            table_size = (SDL_arraysize(data->key_layout) - min_keycode);
+        }
+        SDL_memcpy(&data->key_layout[min_keycode], table, sizeof(SDL_Scancode) * table_size);
+
+        /* Scancodes represent physical locations on the keyboard, unaffected by keyboard mapping.
+           However, there are a number of extended scancodes that have no standard location, so use
+           the X11 mapping for all non-character keys.
+         */
+        SDL_GetDefaultKeymap(default_keymap);
+
+        for (i = min_keycode; i <= max_keycode; ++i) {
+            SDL_Scancode scancode = X11_KeyCodeToSDLScancode(_this, i);
+#ifdef DEBUG_KEYBOARD
+            {
+                KeySym sym;
+                sym = X11_KeyCodeToSym(_this, (KeyCode)i, 0);
+                SDL_Log("code = %d, sym = 0x%X (%s) ", i - min_keycode,
+                       (unsigned int)sym, sym == NoSymbol ? "NoSymbol" : X11_XKeysymToString(sym));
+            }
+#endif
+            if (scancode == data->key_layout[i]) {
+                continue;
+            }
+            if (default_keymap[scancode] >= SDLK_SCANCODE_MASK) {
+                /* Not a character key, safe to remap */
+#ifdef DEBUG_KEYBOARD
+                SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
+#endif
+                data->key_layout[i] = scancode;
+            }
+        }
+    } else {
+#ifdef DEBUG_SCANCODES
+        SDL_Log("Keyboard layout unknown, please report the following to the SDL forums/mailing list (https://discourse.libsdl.org/):\n");
+#endif
+
+        /* Determine key_layout - only works on US QWERTY layout */
+        for (i = min_keycode; i <= max_keycode; ++i) {
+            SDL_Scancode scancode = X11_KeyCodeToSDLScancode(_this, i);
+#ifdef DEBUG_SCANCODES
+            {
+                KeySym sym;
+                sym = X11_KeyCodeToSym(_this, (KeyCode)i, 0);
+                SDL_Log("code = %d, sym = 0x%X (%s) ", i - min_keycode,
+                       (unsigned int)sym, sym == NoSymbol ? "NoSymbol" : X11_XKeysymToString(sym));
+            }
+            if (scancode == SDL_SCANCODE_UNKNOWN) {
+                SDL_Log("scancode not found\n");
+            } else {
+                SDL_Log("scancode = %d (%s)\n", scancode, SDL_GetScancodeName(scancode));
+            }
+#endif
+            data->key_layout[i] = scancode;
+        }
+    }
+
+    X11_UpdateKeymap(_this, SDL_FALSE);
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
@@ -409,11 +308,13 @@ X11_InitKeyboard(_THIS)
     SDL_IME_Init();
 #endif
 
+    X11_ReconcileKeyboardState(_this);
+
     return 0;
 }
 
 void
-X11_UpdateKeymap(_THIS)
+X11_UpdateKeymap(_THIS, SDL_bool send_event)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     int i;
@@ -473,7 +374,7 @@ X11_UpdateKeymap(_THIS)
             }
         }
     }
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
+    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
 void
@@ -531,7 +432,7 @@ X11_StopTextInput(_THIS)
 }
 
 void
-X11_SetTextInputRect(_THIS, SDL_Rect *rect)
+X11_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     if (!rect) {
         SDL_InvalidParamError("rect");
@@ -541,6 +442,50 @@ X11_SetTextInputRect(_THIS, SDL_Rect *rect)
 #ifdef SDL_USE_IME
     SDL_IME_UpdateTextRect(rect);
 #endif
+}
+
+SDL_bool
+X11_HasScreenKeyboardSupport(_THIS)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+    return videodata->is_steam_deck;
+}
+
+void
+X11_ShowScreenKeyboard(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+
+    if (videodata->is_steam_deck) {
+        /* For more documentation of the URL parameters, see:
+         * https://partner.steamgames.com/doc/api/ISteamUtils#ShowFloatingGamepadTextInput
+         */
+        char deeplink[128];
+        SDL_snprintf(deeplink, sizeof(deeplink),
+                     "steam://open/keyboard?XPosition=0&YPosition=0&Width=0&Height=0&Mode=%d",
+                     SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
+        SDL_OpenURL(deeplink);
+        videodata->steam_keyboard_open = SDL_TRUE;
+    }
+}
+
+void
+X11_HideScreenKeyboard(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+
+    if (videodata->is_steam_deck) {
+        SDL_OpenURL("steam://close/keyboard");
+        videodata->steam_keyboard_open = SDL_FALSE;
+    }
+}
+
+SDL_bool
+X11_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+
+    return videodata->steam_keyboard_open;
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

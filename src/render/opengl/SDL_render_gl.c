@@ -22,12 +22,19 @@
 
 #if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
 #include "SDL_hints.h"
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
 #include "SDL_opengl.h"
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
+#include "../../SDL_utils_c.h"
 
 #ifdef __MACOSX__
 #include <OpenGL/OpenGL.h>
+#endif
+
+#ifdef SDL_VIDEO_VITA_PVR_OGL
+#include <GL/gl.h>
+#include <GL/glext.h>
 #endif
 
 /* To prevent unnecessary window recreation, 
@@ -319,6 +326,20 @@ GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
     return result;
 }
 
+static void
+GL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
+{
+    /* If the window x/y/w/h changed at all, assume the viewport has been
+     * changed behind our backs. x/y changes might seem weird but viewport
+     * resets have been observed on macOS at minimum!
+     */
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED ||
+        event->event == SDL_WINDOWEVENT_MOVED) {
+        GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+        data->drawstate.viewport_dirty = SDL_TRUE;
+    }
+}
+
 static int
 GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
@@ -390,17 +411,6 @@ GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
         return SDL_FALSE;
     }
     return SDL_TRUE;
-}
-
-SDL_FORCE_INLINE int
-power_of_2(int input)
-{
-    int value = 1;
-
-    while (value < input) {
-        value <<= 1;
-    }
-    return value;
 }
 
 SDL_FORCE_INLINE SDL_bool
@@ -521,8 +531,8 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         data->texw = (GLfloat) texture_w;
         data->texh = (GLfloat) texture_h;
     } else {
-        texture_w = power_of_2(texture->w);
-        texture_h = power_of_2(texture->h);
+        texture_w = SDL_powerof2(texture->w);
+        texture_h = SDL_powerof2(texture->h);
         data->texw = (GLfloat) (texture->w) / texture_w;
         data->texh = (GLfloat) texture->h / texture_h;
     }
@@ -1212,9 +1222,9 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
     }
 
 #ifdef __MACOSX__
-    // On macOS, moving the window seems to invalidate the OpenGL viewport state,
-    // so don't bother trying to persist it across frames; always reset it.
-    // Workaround for: https://github.com/libsdl-org/SDL/issues/1504
+    // On macOS on older systems, the OpenGL view change and resize events aren't
+    // necessarily synchronized, so just always reset it.
+    // Workaround for: https://discourse.libsdl.org/t/sdl-2-0-22-prerelease/35306/6
     data->drawstate.viewport_dirty = SDL_TRUE;
 #endif
 
@@ -1235,8 +1245,8 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &data->drawstate.viewport;
-                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
+                    SDL_copyp(viewport, &cmd->data.viewport.rect);
                     data->drawstate.viewport_dirty = SDL_TRUE;
                 }
                 break;
@@ -1249,8 +1259,8 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
                 }
 
-                if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
+                    SDL_copyp(&data->drawstate.cliprect, rect);
                     data->drawstate.cliprect_dirty = SDL_TRUE;
                 }
                 break;
@@ -1493,12 +1503,12 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }
 
-static void
+static int
 GL_RenderPresent(SDL_Renderer * renderer)
 {
     GL_ActivateRenderer(renderer);
 
-    SDL_GL_SwapWindow(renderer->window);
+    return SDL_GL_SwapWindowWithResult(renderer->window);
 }
 
 static void
@@ -1696,7 +1706,7 @@ GL_IsProbablyAccelerated(const GL_RenderData *data)
     /*const char *vendor = (const char *) data->glGetString(GL_VENDOR);*/
     const char *renderer = (const char *) data->glGetString(GL_RENDERER);
 
-#ifdef __WINDOWS__
+#if defined(__WINDOWS__) || defined(__WINGDK__)
     if (SDL_strcmp(renderer, "GDI Generic") == 0) {
         return SDL_FALSE;  /* Microsoft's fallback software renderer. Fix your system! */
     }
@@ -1726,13 +1736,14 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
     SDL_bool changed_window = SDL_FALSE;
-    SDL_bool isGL2 = SDL_FALSE;
-    const char *verstr = NULL;
+    const char *hint;
+    SDL_bool non_power_of_two_supported = SDL_FALSE;
 
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 
+#ifndef SDL_VIDEO_VITA_PVR_OGL
     window_flags = SDL_GetWindowFlags(window);
     if (!(window_flags & SDL_WINDOW_OPENGL) ||
         profile_mask == SDL_GL_CONTEXT_PROFILE_ES || major != RENDERER_CONTEXT_MAJOR || minor != RENDERER_CONTEXT_MINOR) {
@@ -1746,6 +1757,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
             goto error;
         }
     }
+#endif
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
@@ -1760,6 +1772,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         goto error;
     }
 
+    renderer->WindowEvent = GL_WindowEvent;
     renderer->GetOutputSize = GL_GetOutputSize;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
     renderer->CreateTexture = GL_CreateTexture;
@@ -1847,22 +1860,29 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
 
-    verstr = (const char *) data->glGetString(GL_VERSION);
-    if (verstr) {
-        char verbuf[16];
-        char *ptr;
-        SDL_strlcpy(verbuf, verstr, sizeof (verbuf));
-        ptr = SDL_strchr(verbuf, '.');
-        if (ptr) {
-            *ptr = '\0';
-            if (SDL_atoi(verbuf) >= 2) {
-                isGL2 = SDL_TRUE;
+    hint = SDL_getenv("GL_ARB_texture_non_power_of_two");
+    if (!hint || *hint != '0') {
+        SDL_bool isGL2 = SDL_FALSE;
+        const char *verstr = (const char *)data->glGetString(GL_VERSION);
+        if (verstr) {
+            char verbuf[16];
+            char *ptr;
+            SDL_strlcpy(verbuf, verstr, sizeof (verbuf));
+            ptr = SDL_strchr(verbuf, '.');
+            if (ptr) {
+                *ptr = '\0';
+                if (SDL_atoi(verbuf) >= 2) {
+                    isGL2 = SDL_TRUE;
+                }
             }
+        }
+        if (isGL2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+            non_power_of_two_supported = SDL_TRUE;
         }
     }
 
     data->textype = GL_TEXTURE_2D;
-    if (isGL2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+    if (non_power_of_two_supported) {
         data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
         data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
         renderer->info.max_texture_width = value;
@@ -1895,18 +1915,29 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
-
+#if SDL_HAVE_YUV
     /* We support YV12 textures using 3 textures and a shader */
     if (data->shaders && data->num_texture_units >= 3) {
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+    }
+
+    /* We support NV12 textures using 2 textures and a shader */
+    if (data->shaders && data->num_texture_units >= 2) {
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
     }
-
+#endif
 #ifdef __MACOSX__
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
 #endif
+
+    renderer->rect_index_order[0] = 0;
+    renderer->rect_index_order[1] = 1;
+    renderer->rect_index_order[2] = 3;
+    renderer->rect_index_order[3] = 1;
+    renderer->rect_index_order[4] = 3;
+    renderer->rect_index_order[5] = 2;
 
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         data->GL_EXT_framebuffer_object_supported = SDL_TRUE;

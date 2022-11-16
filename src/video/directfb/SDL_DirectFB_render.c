@@ -1025,7 +1025,7 @@ DirectFB_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
 }
 
 
-static void
+static int
 DirectFB_RenderPresent(SDL_Renderer * renderer)
 {
     DirectFB_RenderData *data = (DirectFB_RenderData *) renderer->driverdata;
@@ -1056,6 +1056,7 @@ DirectFB_RenderPresent(SDL_Renderer * renderer)
     /* Send the data to the display */
     SDL_DFB_CHECK(windata->window_surface->Flip(windata->window_surface, NULL,
                                                 data->flipflags));
+    return 0;
 }
 
 static void

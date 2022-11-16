@@ -4,7 +4,9 @@
  */
 
 /* quiet windows compiler warnings */
-#define _CRT_SECURE_NO_WARNINGS
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+# define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -723,7 +725,7 @@ int audio_openCloseAndGetAudioStatus()
        /* Open device */
        id = SDL_OpenAudioDevice(device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
        SDLTest_AssertPass("SDL_OpenAudioDevice('%s',...)", device);
-       SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >=2, got: %i", id);
+       SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >=2, got: %" SDL_PRIu32, id);
        if (id > 1) {
 
          /* Check device audio status */
@@ -781,11 +783,11 @@ int audio_lockUnlockOpenAudioDevice()
        /* Open device */
        id = SDL_OpenAudioDevice(device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
        SDLTest_AssertPass("SDL_OpenAudioDevice('%s',...)", device);
-       SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >=2, got: %i", id);
+       SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >=2, got: %" SDL_PRIu32, id);
        if (id > 1) {
          /* Lock to protect callback */
          SDL_LockAudioDevice(id);
-         SDLTest_AssertPass("SDL_LockAudioDevice(%i)", id);
+         SDLTest_AssertPass("SDL_LockAudioDevice(%" SDL_PRIu32 ")", id);
 
          /* Simulate callback processing */
          SDL_Delay(10);
@@ -793,7 +795,7 @@ int audio_lockUnlockOpenAudioDevice()
 
          /* Unlock again */
          SDL_UnlockAudioDevice(id);
-         SDLTest_AssertPass("SDL_UnlockAudioDevice(%i)", id);
+         SDLTest_AssertPass("SDL_UnlockAudioDevice(%" SDL_PRIu32 ")", id);
 
          /* Close device again */
          SDL_CloseAudioDevice(id);
@@ -943,7 +945,7 @@ int audio_openCloseAudioDeviceConnected()
        /* Open device */
        id = SDL_OpenAudioDevice(device, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
        SDLTest_AssertPass("SDL_OpenAudioDevice('%s',...)", device);
-       SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >1, got: %i", id);
+       SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >1, got: %" SDL_PRIu32, id);
        if (id > 1) {
 
 /* TODO: enable test code when function is available in SDL2 */

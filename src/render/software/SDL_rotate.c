@@ -32,7 +32,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 #if SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__GDK__)
 #include "../../core/windows/SDL_windows.h"
 #endif
 
@@ -60,11 +60,6 @@ typedef struct tColorRGBA {
 typedef struct tColorY {
     Uint8 y;
 } tColorY;
-
-/* !
-\brief Returns maximum of two numbers a and b.
-*/
-#define MAX(a,b)    (((a) > (b)) ? (a) : (b))
 
 /* !
 \brief Number of guard rows added to destination surfaces.

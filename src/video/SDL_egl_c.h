@@ -33,7 +33,7 @@
 
 typedef struct SDL_EGL_VideoData
 {
-    void *egl_dll_handle, *dll_handle;
+    void *opengl_dll_handle, *egl_dll_handle;
     EGLDisplay egl_display;
     EGLConfig egl_config;
     int egl_swapinterval;

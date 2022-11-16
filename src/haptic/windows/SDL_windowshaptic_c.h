@@ -28,6 +28,11 @@
 #include "../../core/windows/SDL_directx.h"
 #include "../../core/windows/SDL_xinput.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Haptic system hardware data.
  */
@@ -83,6 +88,11 @@ extern SDL_hapticlist_item *SDL_hapticlist;
 
 extern int SDL_SYS_AddHapticDevice(SDL_hapticlist_item *item);
 extern int SDL_SYS_RemoveHapticDevice(SDL_hapticlist_item *prev, SDL_hapticlist_item *item);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_windowshaptic_c_h_ */
 

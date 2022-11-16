@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */
+/* *INDENT-OFF* */ /* clang-format off */
 
 #ifndef SDL_KMSDRM_MODULE
 #define SDL_KMSDRM_MODULE(modname)
@@ -80,6 +80,9 @@ SDL_KMSDRM_SYM(int,drmSetClientCap,(int fd, uint64_t capability, uint64_t value)
 SDL_KMSDRM_SYM(drmModePlaneResPtr,drmModeGetPlaneResources,(int fd))
 SDL_KMSDRM_SYM(drmModePlanePtr,drmModeGetPlane,(int fd, uint32_t plane_id))
 SDL_KMSDRM_SYM(drmModeObjectPropertiesPtr,drmModeObjectGetProperties,(int fd,uint32_t object_id,uint32_t object_type))
+SDL_KMSDRM_SYM(int,drmModeObjectSetProperty,(int fd, uint32_t object_id,
+                                             uint32_t object_type, uint32_t property_id,
+                                             uint64_t value))
 SDL_KMSDRM_SYM(drmModePropertyPtr,drmModeGetProperty,(int fd, uint32_t propertyId))
 
 SDL_KMSDRM_SYM(void,drmModeFreeProperty,(drmModePropertyPtr ptr))
@@ -125,6 +128,6 @@ SDL_KMSDRM_SYM(void,gbm_surface_release_buffer,(struct gbm_surface *surf, struct
 #undef SDL_KMSDRM_SYM
 #undef SDL_KMSDRM_SYM_CONST
 
-/* *INDENT-ON* */
+/* *INDENT-ON* */ /* clang-format on */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -33,25 +33,43 @@
 SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
     sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
 
+SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
+
 /* Public routines */
 
 /*
- * Calculate the pad-aligned scanline width of a surface
+ * Calculate the pad-aligned scanline width of a surface.
+ * Return SDL_SIZE_MAX on overflow.
  */
-static Sint64
-SDL_CalculatePitch(Uint32 format, int width)
+static size_t
+SDL_CalculatePitch(Uint32 format, size_t width, SDL_bool minimal)
 {
-    Sint64 pitch;
+    size_t pitch;
 
     if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_BITSPERPIXEL(format) >= 8) {
-        pitch = ((Sint64)width * SDL_BYTESPERPIXEL(format));
+        if (SDL_size_mul_overflow(width, SDL_BYTESPERPIXEL(format), &pitch)) {
+            return SDL_SIZE_MAX;
+        }
     } else {
-        pitch = (((Sint64)width * SDL_BITSPERPIXEL(format)) + 7) / 8;
+        if (SDL_size_mul_overflow(width, SDL_BITSPERPIXEL(format), &pitch)) {
+            return SDL_SIZE_MAX;
+        }
+        if (SDL_size_add_overflow(pitch, 7, &pitch)) {
+            return SDL_SIZE_MAX;
+        }
+        pitch /= 8;
     }
-    pitch = (pitch + 3) & ~3;   /* 4-byte aligning for speed */
+    if (!minimal) {
+        /* 4-byte aligning for speed */
+        if (SDL_size_add_overflow(pitch, 3, &pitch)) {
+            return SDL_SIZE_MAX;
+        }
+        pitch &= ~3;
+    }
     return pitch;
 }
 
+/* TODO: In SDL 3, drop the unused flags and depth parameters */
 /*
  * Create an empty RGB surface of the appropriate depth using the given
  * enum SDL_PIXELFORMAT_* format
@@ -60,14 +78,24 @@ SDL_Surface *
 SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
                                Uint32 format)
 {
-    Sint64 pitch;
+    size_t pitch;
     SDL_Surface *surface;
 
     /* The flags are no longer used, make the compiler happy */
     (void)flags;
 
-    pitch = SDL_CalculatePitch(format, width);
-    if (pitch < 0 || pitch > SDL_MAX_SINT32) {
+    if (width < 0) {
+        SDL_InvalidParamError("width");
+        return NULL;
+    }
+
+    if (height < 0) {
+        SDL_InvalidParamError("height");
+        return NULL;
+    }
+
+    pitch = SDL_CalculatePitch(format, width, SDL_FALSE);
+    if (pitch > SDL_MAX_SINT32) {
         /* Overflow... */
         SDL_OutOfMemory();
         return NULL;
@@ -113,15 +141,15 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
     /* Get the pixels */
     if (surface->w && surface->h) {
         /* Assumptions checked in surface_size_assumptions assert above */
-        Sint64 size = ((Sint64)surface->h * surface->pitch);
-        if (size < 0 || size > SDL_MAX_SINT32) {
+        size_t size;
+        if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
             /* Overflow... */
             SDL_FreeSurface(surface);
             SDL_OutOfMemory();
             return NULL;
         }
 
-        surface->pixels = SDL_SIMDAlloc((size_t)size);
+        surface->pixels = SDL_SIMDAlloc(size);
         if (!surface->pixels) {
             SDL_FreeSurface(surface);
             SDL_OutOfMemory();
@@ -129,7 +157,7 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
         }
         surface->flags |= SDL_SIMD_ALIGNED;
         /* This is important for bitmaps */
-        SDL_memset(surface->pixels, 0, surface->h * surface->pitch);
+        SDL_memset(surface->pixels, 0, size);
     }
 
     /* Allocate an empty mapping */
@@ -149,6 +177,7 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
     return surface;
 }
 
+/* TODO: In SDL 3, drop the unused flags parameter */
 /*
  * Create an empty RGB surface of the appropriate depth
  */
@@ -179,8 +208,34 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
                          Uint32 Amask)
 {
     SDL_Surface *surface;
+    Uint32 format;
+    size_t minimalPitch;
 
-    surface = SDL_CreateRGBSurface(0, 0, 0, depth, Rmask, Gmask, Bmask, Amask);
+    if (width < 0) {
+        SDL_InvalidParamError("width");
+        return NULL;
+    }
+
+    if (height < 0) {
+        SDL_InvalidParamError("height");
+        return NULL;
+    }
+
+    format = SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
+
+    if (format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_SetError("Unknown pixel format");
+        return NULL;
+    }
+
+    minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+
+    if (pitch < 0 || ((size_t) pitch) < minimalPitch) {
+        SDL_InvalidParamError("pitch");
+        return NULL;
+    }
+
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, depth, format);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
@@ -192,6 +247,7 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
     return surface;
 }
 
+/* TODO: In SDL 3, drop the unused depth parameter */
 /*
  * Create an RGB surface from an existing memory buffer using the given given
  * enum SDL_PIXELFORMAT_* format
@@ -202,6 +258,24 @@ SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
                          Uint32 format)
 {
     SDL_Surface *surface;
+    size_t minimalPitch;
+
+    if (width < 0) {
+        SDL_InvalidParamError("width");
+        return NULL;
+    }
+
+    if (height < 0) {
+        SDL_InvalidParamError("height");
+        return NULL;
+    }
+
+    minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+
+    if (pitch < 0 || ((size_t) pitch) < minimalPitch) {
+        SDL_InvalidParamError("pitch");
+        return NULL;
+    }
 
     surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, depth, format);
     if (surface != NULL) {

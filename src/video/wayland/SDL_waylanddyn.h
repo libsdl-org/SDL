@@ -52,6 +52,14 @@ enum libdecor_window_state;
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 
+/* Must be included before our #defines, see Bugzilla #4957 */
+#include "wayland-client-core.h"
+
+#define SDL_WAYLAND_CHECK_VERSION(x, y, z) \
+  (WAYLAND_VERSION_MAJOR > x || \
+   (WAYLAND_VERSION_MAJOR == x && WAYLAND_VERSION_MINOR > y) || \
+   (WAYLAND_VERSION_MAJOR == x && WAYLAND_VERSION_MINOR == y && WAYLAND_VERSION_MICRO >= z))
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -70,9 +78,6 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #ifdef __cplusplus
 }
 #endif
-
-/* Must be included before our #defines, see Bugzilla #4957 */
-#include "wayland-client-core.h"
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
@@ -97,6 +102,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define wl_proxy_get_tag (*WAYLAND_wl_proxy_get_tag)
 #define wl_proxy_marshal_flags (*WAYLAND_wl_proxy_marshal_flags)
 #define wl_proxy_marshal_array_flags (*WAYLAND_wl_proxy_marshal_array_flags)
+#define wl_display_reconnect (*WAYLAND_wl_display_reconnect)
 
 #define wl_seat_interface (*WAYLAND_wl_seat_interface)
 #define wl_surface_interface (*WAYLAND_wl_surface_interface)
@@ -113,6 +119,13 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define wl_data_offer_interface (*WAYLAND_wl_data_offer_interface)
 #define wl_data_source_interface (*WAYLAND_wl_data_source_interface)
 #define wl_data_device_manager_interface (*WAYLAND_wl_data_device_manager_interface)
+
+/*
+ * These must be included before libdecor.h, otherwise the libdecor header
+ * pulls in the system Wayland protocol headers instead of ours.
+ */
+#include "wayland-client-protocol.h"
+#include "wayland-egl.h"
 
 #ifdef HAVE_LIBDECOR_H
 /* Must be included before our defines */
@@ -148,6 +161,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_state_free (*WAYLAND_libdecor_state_free)
 #define libdecor_configuration_get_content_size (*WAYLAND_libdecor_configuration_get_content_size)
 #define libdecor_configuration_get_window_state (*WAYLAND_libdecor_configuration_get_window_state)
+#define libdecor_dispatch (*WAYLAND_libdecor_dispatch)
 #endif
 
 #else /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
@@ -157,9 +171,6 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
-
-#include "wayland-client-protocol.h"
-#include "wayland-egl.h"
 
 #endif /* SDL_waylanddyn_h_ */
 

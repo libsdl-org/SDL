@@ -117,7 +117,7 @@ WINRT_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-WINRT_CreateDevice(int devindex)
+WINRT_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -154,6 +154,8 @@ WINRT_CreateDevice(int devindex)
     device->ShowScreenKeyboard = WINRT_ShowScreenKeyboard;
     device->HideScreenKeyboard = WINRT_HideScreenKeyboard;
     device->IsScreenKeyboardShown = WINRT_IsScreenKeyboardShown;
+
+    WINTRT_InitialiseInputPaneEvents(device);
 #endif
 
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -524,7 +526,7 @@ WINRT_DetectWindowFlags(SDL_Window * window)
 
 #if SDL_WINRT_USE_APPLICATIONVIEW
     if (data->appView) {
-        is_fullscreen = data->appView->IsFullScreen;
+        is_fullscreen = data->appView->IsFullScreenMode;
     }
 #elif (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION == NTDDI_WIN8)
     is_fullscreen = true;
@@ -834,8 +836,8 @@ WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
         info->info.winrt.window = reinterpret_cast<IInspectable *>(data->coreWindow.Get());
         return SDL_TRUE;
     } else {
-        SDL_SetError("Application not compiled with SDL %d.%d",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("Application not compiled with SDL %d",
+                     SDL_MAJOR_VERSION);
         return SDL_FALSE;
     }
     return SDL_FALSE;

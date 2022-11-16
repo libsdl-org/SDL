@@ -85,6 +85,10 @@ WAYLAND_GetSym(const char *fnname, int *pHasModule)
     return fn;
 }
 
+#else
+
+#include <wayland-egl.h>
+
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
 
 /* Define all the function pointers and wrappers... */

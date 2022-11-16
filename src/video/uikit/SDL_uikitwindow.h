@@ -36,6 +36,7 @@ extern void UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDispl
 extern void UIKit_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void UIKit_UpdatePointerLock(_THIS, SDL_Window * window);
 extern void UIKit_DestroyWindow(_THIS, SDL_Window * window);
+extern void UIKit_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h);
 extern SDL_bool UIKit_GetWindowWMInfo(_THIS, SDL_Window * window,
                                       struct SDL_SysWMinfo * info);
 

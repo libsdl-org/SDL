@@ -19,7 +19,15 @@ open(PIPEFH, '-|', 'git tag -l') or die "Failed to read git release tags: $!\n";
 while (<PIPEFH>) {
     chomp;
     if (/\Arelease\-(.*?)\Z/) {
-        push @unsorted_releases, $1;
+        # After 2.24.x, ignore anything that isn't a x.y.0 release.
+        # We moved to bugfix-only point releases there, so make sure new APIs
+        #  are assigned to the next minor version and ignore the patch versions.
+        my $ver = $1;
+        my @versplit = split /\./, $ver;
+        next if (scalar(@versplit) > 2) && (($versplit[0] > 2) || (($versplit[0] == 2) && ($versplit[1] >= 24))) && ($versplit[2] != 0);
+
+        # Consider this release version.
+        push @unsorted_releases, $ver;
     }
 
 }
@@ -46,9 +54,15 @@ my @releases = sort {
 
 # this happens to work for how SDL versions things at the moment.
 my $current_release = $releases[-1];
-my @current_release_segments = split /\./, $current_release;
-@current_release_segments[2] = '' . ($current_release_segments[2] + 2);
-my $next_release = join('.', @current_release_segments);
+my $next_release;
+
+if ($current_release eq '2.0.22') {  # Hack for our jump from 2.0.22 to 2.24.0...
+    $next_release = '2.24.0';
+} else {
+    my @current_release_segments = split /\./, $current_release;
+    @current_release_segments[1] = '' . ($current_release_segments[1] + 2);
+    $next_release = join('.', @current_release_segments);
+}
 
 #print("\n\nSORTED\n");
 #foreach (@releases) {

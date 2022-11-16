@@ -72,16 +72,16 @@ main(int argc, char **argv)
 
     SDL_Log("There are %d sensors available\n", num_sensors);
     for (i = 0; i < num_sensors; ++i) {
-        SDL_Log("Sensor %d: %s, type %s, platform type %d\n",
-            SDL_SensorGetDeviceInstanceID(i),
-            SDL_SensorGetDeviceName(i),
-            GetSensorTypeString(SDL_SensorGetDeviceType(i)),
-            SDL_SensorGetDeviceNonPortableType(i));
+        SDL_Log("Sensor %" SDL_PRIs32 ": %s, type %s, platform type %d\n",
+                SDL_SensorGetDeviceInstanceID(i),
+                SDL_SensorGetDeviceName(i),
+                GetSensorTypeString(SDL_SensorGetDeviceType(i)),
+                SDL_SensorGetDeviceNonPortableType(i));
 
         if (SDL_SensorGetDeviceType(i) != SDL_SENSOR_UNKNOWN) {
             SDL_Sensor *sensor = SDL_SensorOpen(i);
             if (sensor == NULL) {
-                SDL_Log("Couldn't open sensor %d: %s\n", SDL_SensorGetDeviceInstanceID(i), SDL_GetError());
+                SDL_Log("Couldn't open sensor %" SDL_PRIs32 ": %s\n", SDL_SensorGetDeviceInstanceID(i), SDL_GetError());
             } else {
                 ++num_opened;
             }

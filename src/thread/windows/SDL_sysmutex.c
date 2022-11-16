@@ -287,7 +287,7 @@ SDL_CreateMutex(void)
         }
 
         /* Copy instead of using pointer to save one level of indirection */
-        SDL_memcpy(&SDL_mutex_impl_active, impl, sizeof(SDL_mutex_impl_active));
+        SDL_copyp(&SDL_mutex_impl_active, impl);
     }
     return SDL_mutex_impl_active.Create();
 }

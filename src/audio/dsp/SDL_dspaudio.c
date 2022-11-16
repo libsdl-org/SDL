@@ -34,13 +34,7 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
-#if SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H
-/* This is installed on some systems */
-#include <soundcard.h>
-#else
-/* This is recommended by OSS */
 #include <sys/soundcard.h>
-#endif
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
@@ -308,6 +302,7 @@ DSP_Init(SDL_AudioDriverImpl * impl)
     InitTimeDevicesExist = SDL_FALSE;
     SDL_EnumUnixAudioDevices(0, look_for_devices_test);
     if (!InitTimeDevicesExist) {
+        SDL_SetError("dsp: No such audio device");
         return SDL_FALSE;  /* maybe try a different backend. */
     }
 

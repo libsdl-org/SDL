@@ -409,6 +409,32 @@ void _validateRectEqualsResults(
 }
 
 /* !
+ * \brief Private helper to check SDL_FRectEquals results
+ */
+void _validateFRectEqualsResults(
+    SDL_bool equals, SDL_bool expectedEquals,
+    SDL_FRect *rectA, SDL_FRect *rectB, SDL_FRect *refRectA, SDL_FRect *refRectB)
+{
+    int cmpRes;
+    SDLTest_AssertCheck(equals == expectedEquals,
+        "Check for correct equals result: expected %s, got %s testing (%f,%f,%f,%f) and (%f,%f,%f,%f)",
+        (expectedEquals == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+        (equals == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+        rectA->x, rectA->y, rectA->w, rectA->h,
+        rectB->x, rectB->y, rectB->w, rectB->h);
+    cmpRes = SDL_memcmp(rectA, refRectA, sizeof(*rectA));
+    SDLTest_AssertCheck(cmpRes == 0,
+        "Check that source rectangle A was not modified: got (%f,%f,%f,%f) expected (%f,%f,%f,%f)",
+        rectA->x, rectA->y, rectA->w, rectA->h,
+        refRectA->x, refRectA->y, refRectA->w, refRectA->h);
+    cmpRes = SDL_memcmp(rectB, refRectB, sizeof(*rectB));
+    SDLTest_AssertCheck(cmpRes == 0,
+        "Check that source rectangle B was not modified: got (%f,%f,%f,%f) expected (%f,%f,%f,%f)",
+        rectB->x, rectB->y, rectB->w, rectB->h,
+        refRectB->x, refRectB->y, refRectB->w, refRectB->h);
+}
+
+/* !
  * \brief Tests SDL_IntersectRect() with B fully inside A
  *
  * \sa
@@ -681,7 +707,7 @@ int rect_testIntersectRectEmpty (void *arg)
 int rect_testIntersectRectParam(void *arg)
 {
     SDL_Rect rectA;
-    SDL_Rect rectB;
+    SDL_Rect rectB = {0};
     SDL_Rect result;
     SDL_bool intersection;
 
@@ -936,7 +962,7 @@ int rect_testHasIntersectionEmpty (void *arg)
 int rect_testHasIntersectionParam(void *arg)
 {
     SDL_Rect rectA;
-    SDL_Rect rectB;
+    SDL_Rect rectB = {0};
     SDL_bool intersection;
 
     /* invalid parameter combinations */
@@ -1205,7 +1231,7 @@ int rect_testEnclosePointsParam(void *arg)
 {
     SDL_Point points[1];
     int count;
-    SDL_Rect clip;
+    SDL_Rect clip = { 0 };
     SDL_Rect result;
     SDL_bool anyEnclosed;
 
@@ -1431,7 +1457,7 @@ int rect_testUnionRectInside(void *arg)
  */
 int rect_testUnionRectParam(void *arg)
 {
-    SDL_Rect rectA, rectB;
+    SDL_Rect rectA, rectB = { 0 };
     SDL_Rect result;
 
     /* invalid parameter combinations */
@@ -1574,6 +1600,69 @@ int rect_testRectEqualsParam(void *arg)
     return TEST_COMPLETED;
 }
 
+/* !
+ * \brief Tests SDL_FRectEquals() with various inputs
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL_FRectEquals
+ */
+int rect_testFRectEquals(void *arg)
+{
+    SDL_FRect refRectA;
+    SDL_FRect refRectB;
+    SDL_FRect rectA;
+    SDL_FRect rectB;
+    SDL_bool expectedResult;
+    SDL_bool result;
+
+    /* Equals */
+    refRectA.x=(float)SDLTest_RandomIntegerInRange(-1024, 1024);
+    refRectA.y=(float)SDLTest_RandomIntegerInRange(-1024, 1024);
+    refRectA.w=(float)SDLTest_RandomIntegerInRange(1, 1024);
+    refRectA.h=(float)SDLTest_RandomIntegerInRange(1, 1024);
+    refRectB = refRectA;
+    expectedResult = SDL_TRUE;
+    rectA = refRectA;
+    rectB = refRectB;
+    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)&rectA, (const SDL_FRect *)&rectB);
+    _validateFRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
+
+    return TEST_COMPLETED;
+}
+
+/* !
+ * \brief Negative tests against SDL_FRectEquals() with invalid parameters
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL_FRectEquals
+ */
+int rect_testFRectEqualsParam(void *arg)
+{
+    SDL_FRect rectA;
+    SDL_FRect rectB;
+    SDL_bool result;
+
+    /* data setup -- For the purpose of this test, the values don't matter. */
+    rectA.x=SDLTest_RandomFloat();
+    rectA.y=SDLTest_RandomFloat();
+    rectA.w=SDLTest_RandomFloat();
+    rectA.h=SDLTest_RandomFloat();
+    rectB.x=SDLTest_RandomFloat();
+    rectB.y=SDLTest_RandomFloat();
+    rectB.w=SDLTest_RandomFloat();
+    rectB.h=SDLTest_RandomFloat();
+
+    /* invalid parameter combinations */
+    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)NULL, (const SDL_FRect *)&rectB);
+    SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
+    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)&rectA, (const SDL_FRect *)NULL);
+    SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
+    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)NULL, (const SDL_FRect *)NULL);
+    SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st and 2nd parameter are NULL");
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Rect test cases */
@@ -1673,6 +1762,13 @@ static const SDLTest_TestCaseReference rectTest28 =
 static const SDLTest_TestCaseReference rectTest29 =
         { (SDLTest_TestCaseFp)rect_testRectEqualsParam, "rect_testRectEqualsParam", "Negative tests against SDL_RectEquals with invalid parameters", TEST_ENABLED };
 
+/* SDL_FRectEquals */
+
+static const SDLTest_TestCaseReference rectTest30 =
+        { (SDLTest_TestCaseFp)rect_testFRectEquals, "rect_testFRectEquals", "Tests SDL_FRectEquals with various inputs", TEST_ENABLED };
+
+static const SDLTest_TestCaseReference rectTest31 =
+        { (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_FRectEquals with invalid parameters", TEST_ENABLED };
 
 /* !
  * \brief Sequence of Rect test cases; functions that handle simple rectangles including overlaps and merges.
@@ -1683,7 +1779,7 @@ static const SDLTest_TestCaseReference rectTest29 =
 static const SDLTest_TestCaseReference *rectTests[] =  {
     &rectTest1, &rectTest2, &rectTest3, &rectTest4, &rectTest5, &rectTest6, &rectTest7, &rectTest8, &rectTest9, &rectTest10, &rectTest11, &rectTest12, &rectTest13, &rectTest14,
     &rectTest15, &rectTest16, &rectTest17, &rectTest18, &rectTest19, &rectTest20, &rectTest21, &rectTest22, &rectTest23, &rectTest24, &rectTest25, &rectTest26, &rectTest27,
-    &rectTest28, &rectTest29, NULL
+    &rectTest28, &rectTest29, &rectTest30, &rectTest31, NULL
 };
 
 

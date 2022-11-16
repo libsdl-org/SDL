@@ -44,7 +44,6 @@ typedef struct
 {
     SDL_Window *window;
     Window xwindow;
-    Window fswindow;  /* used if we can't have the WM handle fullscreen. */
     Visual *visual;
     Colormap colormap;
 #ifndef NO_SHARED_MEMORY
@@ -60,6 +59,7 @@ typedef struct
     int border_right;
     int border_top;
     int border_bottom;
+    SDL_bool mouse_grabbed;
     Uint32 last_focus_event_time;
     PendingFocusEnum pending_focus;
     Uint32 pending_focus_time;
@@ -81,7 +81,7 @@ typedef struct
 } SDL_WindowData;
 
 extern void X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags);
-extern Uint32 X11_GetNetWMState(_THIS, Window xwindow);
+extern Uint32 X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow);
 
 extern int X11_CreateWindow(_THIS, SDL_Window * window);
 extern int X11_CreateWindowFrom(_THIS, SDL_Window * window, const void *data);

@@ -7,7 +7,6 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
-
 /* Test case functions */
 
 /**
@@ -36,6 +35,16 @@ stdlib_strlcpy(void *arg)
   return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic push
+#if defined(HAVE_WFORMAT)
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+#endif
+
 /**
  * @brief Call to SDL_snprintf
  */
@@ -47,6 +56,7 @@ stdlib_snprintf(void *arg)
   int predicted;
   char text[1024];
   const char *expected;
+  size_t size;
 
   result = SDL_snprintf(text, sizeof(text), "%s", "foo");
   expected = "foo";
@@ -148,8 +158,19 @@ stdlib_snprintf(void *arg)
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
   SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
 
+  size = 64;
+  result = SDL_snprintf(text, sizeof(text), "%zu %s", size, "test"); 
+  expected = "64 test";
+  SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"%%zu %%s\", size, \"test\")");
+  SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+  SDLTest_AssertCheck(result == 7, "Check result value, expected: 7, got: %d", result);
+
   return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic pop
+#endif
 
 /**
  * @brief Call to SDL_getenv and SDL_setenv
@@ -285,6 +306,16 @@ stdlib_getsetenv(void *arg)
   return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic push
+#if defined(HAVE_WFORMAT)
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+#endif
+
 /**
  * @brief Call to SDL_sscanf
  */
@@ -296,6 +327,11 @@ stdlib_sscanf(void *arg)
   int result;
   int expected_output;
   int expected_result;
+  short short_output, expected_short_output;
+  long long_output, expected_long_output;
+  long long long_long_output, expected_long_long_output;
+  size_t size_output, expected_size_output;
+  char text[128];
 
   expected_output = output = 123;
   expected_result = -1;
@@ -319,6 +355,212 @@ stdlib_sscanf(void *arg)
   SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
   SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
 
+  output = 123;
+  expected_output = 0xa;
+  expected_result = 1;
+  result = SDL_sscanf("aa", "%1x", &output);
+  SDLTest_AssertPass("Call to SDL_sscanf(\"aa\", \"%%1x\", &output)");
+  SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
+#define SIZED_TEST_CASE(type, var, format_specifier) \
+  var##_output = 123; \
+  expected_##var##_output = (type)(((unsigned type)(~0)) >> 1); \
+  expected_result = 1; \
+  result = SDL_snprintf(text, sizeof(text), format_specifier, expected_##var##_output); \
+  result = SDL_sscanf(text, format_specifier, &var##_output); \
+  SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%s\", &output)", text, #format_specifier); \
+  SDLTest_AssertCheck(expected_##var##_output == var##_output, "Check output, expected: " format_specifier ", got: " format_specifier, expected_##var##_output, var##_output); \
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result); \
+ \
+  var##_output = 123; \
+  expected_##var##_output = ~(type)(((unsigned type)(~0)) >> 1); \
+  expected_result = 1; \
+  result = SDL_snprintf(text, sizeof(text), format_specifier, expected_##var##_output); \
+  result = SDL_sscanf(text, format_specifier, &var##_output); \
+  SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%s\", &output)", text, #format_specifier); \
+  SDLTest_AssertCheck(expected_##var##_output == var##_output, "Check output, expected: " format_specifier ", got: " format_specifier, expected_##var##_output, var##_output); \
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result); \
+
+  SIZED_TEST_CASE(short, short, "%hd")
+  SIZED_TEST_CASE(long, long, "%ld")
+  SIZED_TEST_CASE(long long, long_long, "%lld")
+
+  size_output = 123;
+  expected_size_output = (size_t)~0;
+  expected_result = 1;
+  result = SDL_snprintf(text, sizeof(text), "%zu", expected_size_output);
+  result = SDL_sscanf(text, "%zu", &size_output);
+  SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%%zu\", &output)", text);
+  SDLTest_AssertCheck(expected_size_output == size_output, "Check output, expected: %zu, got: %zu", expected_size_output, size_output);
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
+  return TEST_COMPLETED;
+}
+
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic pop
+#endif
+
+#if defined(_WIN64)
+# define SIZE_FORMAT "I64u"
+#elif defined(__WIN32__)
+# define SIZE_FORMAT "I32u"
+#else
+# define SIZE_FORMAT "zu"
+#endif
+
+typedef struct
+{
+    size_t a;
+    size_t b;
+    size_t result;
+    int status;
+} overflow_test;
+
+static const overflow_test multiplications[] =
+{
+    { 1, 1, 1, 0 },
+    { 0, 0, 0, 0 },
+    { SDL_SIZE_MAX, 0, 0, 0 },
+    { SDL_SIZE_MAX, 1, SDL_SIZE_MAX, 0 },
+    { SDL_SIZE_MAX / 2, 2, SDL_SIZE_MAX - (SDL_SIZE_MAX % 2), 0 },
+    { SDL_SIZE_MAX / 23, 23, SDL_SIZE_MAX - (SDL_SIZE_MAX % 23), 0 },
+
+    { (SDL_SIZE_MAX / 2) + 1, 2, 0, -1 },
+    { (SDL_SIZE_MAX / 23) + 42, 23, 0, -1 },
+    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, -1 },
+};
+
+static const overflow_test additions[] =
+{
+    { 1, 1, 2, 0 },
+    { 0, 0, 0, 0 },
+    { SDL_SIZE_MAX, 0, SDL_SIZE_MAX, 0 },
+    { SDL_SIZE_MAX - 1, 1, SDL_SIZE_MAX, 0 },
+    { SDL_SIZE_MAX - 42, 23, SDL_SIZE_MAX - (42 - 23), 0 },
+
+    { SDL_SIZE_MAX, 1, 0, -1 },
+    { SDL_SIZE_MAX, 23, 0, -1 },
+    { SDL_SIZE_MAX, SDL_SIZE_MAX, 0, -1 },
+};
+
+static int
+stdlib_overflow(void *arg)
+{
+  size_t i;
+  size_t useBuiltin;
+
+  for (useBuiltin = 0; useBuiltin < 2; useBuiltin++) {
+      if (useBuiltin) {
+          SDLTest_Log("Using gcc/clang builtins if possible");
+      } else {
+          SDLTest_Log("Not using gcc/clang builtins");
+      }
+
+      for (i = 0; i < SDL_arraysize(multiplications); i++) {
+          const overflow_test *t = &multiplications[i];
+          int status;
+          size_t result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_mul_overflow(t->a, t->b, &result);
+          } else {
+              /* This disables the macro that tries to use a gcc/clang
+               * builtin, so we test the fallback implementation instead. */
+              status = (SDL_size_mul_overflow)(t->a, t->b, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should succeed",
+                                  t->a, t->b);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->a, t->b, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should fail",
+                                  t->a, t->b);
+          }
+
+          if (t->a == t->b) {
+              continue;
+          }
+
+          result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_mul_overflow(t->b, t->a, &result);
+          } else {
+              status = (SDL_size_mul_overflow)(t->b, t->a, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should succeed",
+                                  t->b, t->a);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->b, t->a, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should fail",
+                                  t->b, t->a);
+          }
+      }
+
+      for (i = 0; i < SDL_arraysize(additions); i++) {
+          const overflow_test *t = &additions[i];
+          int status;
+          size_t result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_add_overflow(t->a, t->b, &result);
+          } else {
+              status = (SDL_size_add_overflow)(t->a, t->b, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should succeed",
+                                  t->a, t->b);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->a, t->b, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should fail",
+                                  t->a, t->b);
+          }
+
+          if (t->a == t->b) {
+              continue;
+          }
+
+          result = ~t->result;
+
+          if (useBuiltin) {
+              status = SDL_size_add_overflow(t->b, t->a, &result);
+          } else {
+              status = (SDL_size_add_overflow)(t->b, t->a, &result);
+          }
+
+          if (t->status == 0) {
+              SDLTest_AssertCheck(status == 0,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should succeed",
+                                  t->b, t->a);
+              SDLTest_AssertCheck(result == t->result,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                  t->b, t->a, t->result, result);
+          } else {
+              SDLTest_AssertCheck(status == -1,
+                                  "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should fail",
+                                  t->b, t->a);
+          }
+      }
+  }
+
   return TEST_COMPLETED;
 }
 
@@ -337,9 +579,17 @@ static const SDLTest_TestCaseReference stdlibTest3 =
 static const SDLTest_TestCaseReference stdlibTest4 =
         { (SDLTest_TestCaseFp)stdlib_sscanf, "stdlib_sscanf", "Call to SDL_sscanf", TEST_ENABLED };
 
+static const SDLTest_TestCaseReference stdlibTestOverflow =
+        { stdlib_overflow, "stdlib_overflow", "Overflow detection", TEST_ENABLED };
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] =  {
-    &stdlibTest1, &stdlibTest2, &stdlibTest3, &stdlibTest4, NULL
+    &stdlibTest1,
+    &stdlibTest2,
+    &stdlibTest3,
+    &stdlibTest4,
+    &stdlibTestOverflow,
+    NULL
 };
 
 /* Standard C routine test suite (global) */

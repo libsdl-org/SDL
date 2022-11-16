@@ -162,7 +162,7 @@ SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
                 data[1] = -acceleration.y * SDL_STANDARD_GRAVITY;
                 data[2] = -acceleration.z * SDL_STANDARD_GRAVITY;
                 if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                    SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
+                    SDL_PrivateSensorUpdate(sensor, 0, data, SDL_arraysize(data));
                     SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
                 }
             }
@@ -178,7 +178,7 @@ SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
                 data[1] = rotationRate.y;
                 data[2] = rotationRate.z;
                 if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                    SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
+                    SDL_PrivateSensorUpdate(sensor, 0, data, SDL_arraysize(data));
                     SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
                 }
             }

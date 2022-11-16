@@ -33,34 +33,42 @@
 struct SDL_WaylandInput;
 
 typedef struct {
-    struct xdg_surface *surface;
-    union {
-        struct xdg_toplevel *toplevel;
-        struct xdg_popup *popup;
-    } roleobj;
-    SDL_bool initial_configure_seen;
-} SDL_xdg_shell_surface;
-
-#ifdef HAVE_LIBDECOR_H
-typedef struct {
-    struct libdecor_frame *frame;
-    SDL_bool initial_configure_seen;
-} SDL_libdecor_surface;
-#endif
-
-typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
-    struct wl_callback *frame_callback;
-    struct wl_event_queue *frame_event_queue;
-    struct wl_surface *frame_surface_wrapper;
+    struct wl_callback *gles_swap_frame_callback;
+    struct wl_event_queue *gles_swap_frame_event_queue;
+    struct wl_surface *gles_swap_frame_surface_wrapper;
+    struct wl_callback *surface_damage_frame_callback;
+
     union {
 #ifdef HAVE_LIBDECOR_H
-        SDL_libdecor_surface libdecor;
+        struct {
+            struct libdecor_frame *frame;
+            SDL_bool initial_configure_seen;
+        } libdecor;
 #endif
-        SDL_xdg_shell_surface xdg;
+        struct {
+            struct xdg_surface *surface;
+            union {
+                struct xdg_toplevel *toplevel;
+                struct {
+                    struct xdg_popup *popup;
+                    struct xdg_positioner *positioner;
+                    Uint32 parentID;
+                    SDL_Window *child;
+                } popup;
+            } roleobj;
+            SDL_bool initial_configure_seen;
+        } xdg;
     } shell_surface;
+    enum {
+        WAYLAND_SURFACE_UNKNOWN = 0,
+        WAYLAND_SURFACE_XDG_TOPLEVEL,
+        WAYLAND_SURFACE_XDG_POPUP,
+        WAYLAND_SURFACE_LIBDECOR
+    } shell_surface_type;
+
     struct wl_egl_window *egl_window;
     struct SDL_WaylandInput *keyboard_device;
 #if SDL_VIDEO_OPENGL_EGL
@@ -72,6 +80,7 @@ typedef struct {
     struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
     struct xdg_activation_token_v1 *activation_token;
+    struct wp_viewport *draw_viewport;
 
     /* floating dimensions for restoring from maximized and fullscreen */
     int floating_width, floating_height;
@@ -86,8 +95,16 @@ typedef struct {
     int num_outputs;
 
     float scale_factor;
+    float pointer_scale_x;
+    float pointer_scale_y;
+    int drawable_width, drawable_height;
+    int fs_output_width, fs_output_height;
+    int window_width, window_height;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
+    SDL_bool is_fullscreen;
+    SDL_bool in_fullscreen_transition;
+    Uint32 fullscreen_flags;
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
@@ -108,6 +125,7 @@ extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMinimumSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMaximumSize(_THIS, SDL_Window * window);
+extern void Wayland_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h);
 extern int Wayland_SetWindowModalFor(_THIS, SDL_Window * modal_window, SDL_Window * parent_window);
 extern void Wayland_SetWindowTitle(_THIS, SDL_Window * window);
 extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);
@@ -117,6 +135,9 @@ extern SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
 extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern int Wayland_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
+
+extern void Wayland_InitWin(SDL_VideoData *data);
+extern void Wayland_QuitWin(SDL_VideoData *data);
 
 #endif /* SDL_waylandwindow_h_ */
 

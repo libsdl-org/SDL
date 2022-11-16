@@ -458,6 +458,7 @@ main(int argc, char *argv[])
     Uint32 then, now;
     int status;
     shader_data *data;
+    char *path = NULL;
 
     /* Initialize parameters */
     fsaa = 0;
@@ -561,14 +562,25 @@ main(int argc, char *argv[])
 
         /* Load SDF BMP image */
 #if 1
-        tmp = SDL_LoadBMP(f);
-        if  (tmp == NULL) {
-            SDL_Log("missing image file: %s", f);
+        path = GetNearbyFilename(f);
+
+        if (path == NULL)
+            path = SDL_strdup(f);
+
+        if (path == NULL) {
+            SDL_Log("out of memory\n");
             exit(-1);
-        } else {
-            SDL_Log("Load image file: %s", f);
         }
 
+        tmp = SDL_LoadBMP(path);
+        if  (tmp == NULL) {
+            SDL_Log("missing image file: %s", path);
+            exit(-1);
+        } else {
+            SDL_Log("Load image file: %s", path);
+        }
+
+        SDL_free(path);
 #else
         /* Generate SDF image using SDL_ttf */
 

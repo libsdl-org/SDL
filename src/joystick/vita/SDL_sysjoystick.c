@@ -45,25 +45,9 @@ static SceCtrlData pad1 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0
 static SceCtrlData pad2 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
 static SceCtrlData pad3 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };
 
-static int port_map[4]= { 0, 2, 3, 4 }; //index: SDL joy number, entry: Vita port number
 static int ext_port_map[4]= { 1, 2, 3, 4 }; //index: SDL joy number, entry: Vita port number. For external controllers
 
 static int SDL_numjoysticks = 1;
-
-static const unsigned int button_map[] = {
-    SCE_CTRL_TRIANGLE,
-    SCE_CTRL_CIRCLE,
-    SCE_CTRL_CROSS,
-    SCE_CTRL_SQUARE,
-    SCE_CTRL_LTRIGGER,
-    SCE_CTRL_RTRIGGER,
-    SCE_CTRL_DOWN,
-    SCE_CTRL_LEFT,
-    SCE_CTRL_UP,
-    SCE_CTRL_RIGHT,
-    SCE_CTRL_SELECT,
-    SCE_CTRL_START
-};
 
 static const unsigned int ext_button_map[] = {
     SCE_CTRL_TRIANGLE,
@@ -179,7 +163,6 @@ SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
     return device_index;
 }
 
-/* Function to get the device-dependent name of a joystick */
 const char *VITA_JoystickGetDeviceName(int index)
 {
     if (index == 0)
@@ -195,7 +178,12 @@ const char *VITA_JoystickGetDeviceName(int index)
         return "PSVita Controller";
 
     SDL_SetError("No joystick available with that index");
-    return(NULL);
+    return NULL;
+}
+
+const char *VITA_JoystickGetDevicePath(int index)
+{
+    return NULL;
 }
 
 static int
@@ -243,7 +231,6 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     static unsigned char old_lt[] = { 0, 0, 0, 0 };
     static unsigned char old_rt[] = { 0, 0, 0, 0 };
     SceCtrlData *pad = NULL;
-    SDL_bool fallback = SDL_FALSE;
 
     int index = (int) SDL_JoystickInstanceID(joystick);
 
@@ -254,13 +241,12 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     else return;
 
     if (index == 0) {
-        if (sceCtrlPeekBufferPositiveExt2(ext_port_map[index], pad, 1) < 0) {
+        if (sceCtrlPeekBufferPositive2(ext_port_map[index], pad, 1) < 0) {
             // on vita fallback to port 0
-            sceCtrlPeekBufferPositive(port_map[index], pad, 1);
-            fallback = SDL_TRUE;
+            sceCtrlPeekBufferPositive2(0, pad, 1);
         }
     } else {
-        sceCtrlPeekBufferPositiveExt2(ext_port_map[index], pad, 1);
+        sceCtrlPeekBufferPositive2(ext_port_map[index], pad, 1);
     }
 
     buttons = pad->buttons;
@@ -305,23 +291,12 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     old_buttons[index] = buttons;
 
     if (changed) {
-        if (fallback) {
-            for (i = 0; i < SDL_arraysize(button_map); i++) {
-                if (changed & button_map[i]) {
-                    SDL_PrivateJoystickButton(
-                        joystick, i,
-                        (buttons & button_map[i]) ?
-                        SDL_PRESSED : SDL_RELEASED);
-                }
-            }
-        } else {
-            for (i = 0; i < SDL_arraysize(ext_button_map); i++) {
-                if (changed & ext_button_map[i]) {
-                    SDL_PrivateJoystickButton(
-                        joystick, i,
-                        (buttons & ext_button_map[i]) ?
-                        SDL_PRESSED : SDL_RELEASED);
-                }
+        for (i = 0; i < SDL_arraysize(ext_button_map); i++) {
+            if (changed & ext_button_map[i]) {
+                SDL_PrivateJoystickButton(
+                    joystick, i,
+                    (buttons & ext_button_map[i]) ?
+                    SDL_PRESSED : SDL_RELEASED);
             }
         }
     }
@@ -337,14 +312,11 @@ void VITA_JoystickQuit(void)
 {
 }
 
-SDL_JoystickGUID VITA_JoystickGetDeviceGUID( int device_index )
+SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
 {
-    SDL_JoystickGUID guid;
-    /* the GUID is just the first 16 chars of the name for now */
-    const char *name = VITA_JoystickGetDeviceName( device_index );
-    SDL_zero( guid );
-    SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
-    return guid;
+    /* the GUID is just the name for now */
+    const char *name = VITA_JoystickGetDeviceName(device_index);
+    return SDL_CreateJoystickGUIDForName(name);
 }
 
 static int
@@ -356,7 +328,9 @@ VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 
 
     act.small = high_frequency_rumble / 256;
     act.large = low_frequency_rumble / 256;
-    sceCtrlSetActuator(ext_port_map[index], &act);
+    if (sceCtrlSetActuator(ext_port_map[index], &act) < 0) {
+        return SDL_Unsupported();
+    }
     return 0;
 }
 
@@ -378,7 +352,9 @@ static int
 VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int) SDL_JoystickInstanceID(joystick);
-    sceCtrlSetLightBar(ext_port_map[index], red, green, blue);
+    if (sceCtrlSetLightBar(ext_port_map[index], red, green, blue) < 0) {
+        return SDL_Unsupported();
+    }
     return 0;
 }
 
@@ -394,12 +370,19 @@ VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
     return SDL_Unsupported();
 }
 
+static SDL_bool
+VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+{
+    return SDL_FALSE;
+}
+
 SDL_JoystickDriver SDL_VITA_JoystickDriver =
 {
     VITA_JoystickInit,
     VITA_JoystickGetCount,
     VITA_JoystickDetect,
     VITA_JoystickGetDeviceName,
+    VITA_JoystickGetDevicePath,
     VITA_JoystickGetDevicePlayerIndex,
     VITA_JoystickSetDevicePlayerIndex,
     VITA_JoystickGetDeviceGUID,
@@ -418,6 +401,7 @@ SDL_JoystickDriver SDL_VITA_JoystickDriver =
     VITA_JoystickUpdate,
     VITA_JoystickClose,
     VITA_JoystickQuit,
+    VITA_JoystickGetGamepadMapping,
 };
 
 #endif /* SDL_JOYSTICK_VITA */

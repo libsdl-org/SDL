@@ -20,12 +20,20 @@
 */
 #include "../../SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINRT__)
+#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 
 #include "SDL_windows.h"
 #include "SDL_error.h"
 
-#include <objbase.h>  /* for CoInitialize/CoUninitialize (Win32 only) */
+#include <objbase.h>    /* for CoInitialize/CoUninitialize (Win32 only) */
+#if defined(HAVE_ROAPI_H)
+#include <roapi.h>      /* For RoInitialize/RoUninitialize (Win32 only) */
+#else
+typedef enum RO_INIT_TYPE {
+  RO_INIT_SINGLETHREADED = 0,
+  RO_INIT_MULTITHREADED  = 1
+} RO_INIT_TYPE;
+#endif
 
 #ifndef _WIN32_WINNT_VISTA
 #define _WIN32_WINNT_VISTA  0x0600
@@ -35,6 +43,10 @@
 #endif
 #ifndef _WIN32_WINNT_WIN8
 #define _WIN32_WINNT_WIN8   0x0602
+#endif
+
+#ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
+#define LOAD_LIBRARY_SEARCH_SYSTEM32 0x00000800
 #endif
 
 
@@ -84,6 +96,9 @@ WIN_CoInitialize(void)
        attribute, which, AFAIK, should initialize COM.
     */
     return S_OK;
+#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    /* On Xbox, there's no need to call CoInitializeEx (and it's not implemented) */
+    return S_OK;
 #else
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     if (hr == RPC_E_CHANGED_MODE) {
@@ -109,6 +124,65 @@ WIN_CoUninitialize(void)
 }
 
 #ifndef __WINRT__
+void *
+WIN_LoadComBaseFunction(const char *name)
+{
+    static SDL_bool s_bLoaded;
+    static HMODULE s_hComBase;
+   
+    if (!s_bLoaded) {
+       s_hComBase = LoadLibraryEx(TEXT("combase.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+       s_bLoaded = SDL_TRUE;
+    }
+    if (s_hComBase) {
+        return GetProcAddress(s_hComBase, name);
+    } else {
+        return NULL;
+    }
+}
+#endif
+
+HRESULT
+WIN_RoInitialize(void)
+{
+#ifdef __WINRT__
+    return S_OK;
+#else
+    typedef HRESULT (WINAPI *RoInitialize_t)(RO_INIT_TYPE initType);
+    RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
+    if (RoInitializeFunc) {
+        /* RO_INIT_SINGLETHREADED is equivalent to COINIT_APARTMENTTHREADED */
+        HRESULT hr = RoInitializeFunc(RO_INIT_SINGLETHREADED);
+        if (hr == RPC_E_CHANGED_MODE) {
+            hr = RoInitializeFunc(RO_INIT_MULTITHREADED);
+        }
+
+        /* S_FALSE means success, but someone else already initialized. */
+        /* You still need to call RoUninitialize in this case! */
+        if (hr == S_FALSE) {
+            return S_OK;
+        }
+
+        return hr;
+    } else {
+        return E_NOINTERFACE;
+    }
+#endif
+}
+
+void
+WIN_RoUninitialize(void)
+{
+#ifndef __WINRT__
+    typedef void (WINAPI *RoUninitialize_t)(void);
+    RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
+    if (RoUninitializeFunc) {
+        RoUninitializeFunc();
+    }
+#endif
+}
+
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static BOOL
 IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
@@ -132,7 +206,7 @@ IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServiceP
 
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
-#ifdef __WINRT__
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
@@ -141,7 +215,7 @@ BOOL WIN_IsWindowsVistaOrGreater(void)
 
 BOOL WIN_IsWindows7OrGreater(void)
 {
-#ifdef __WINRT__
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
@@ -150,7 +224,7 @@ BOOL WIN_IsWindows7OrGreater(void)
 
 BOOL WIN_IsWindows8OrGreater(void)
 {
-#ifdef __WINRT__
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
@@ -181,8 +255,8 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 char *
 WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
-#if __WINRT__
-    return WIN_StringToUTF8(name);  /* No registry access on WinRT/UWP, go with what we've got. */
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    return WIN_StringToUTF8(name);  /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
 #else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;
@@ -267,6 +341,6 @@ WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
     winrect->bottom = sdlrect->y + sdlrect->h - 1;
 }
 
-#endif /* __WIN32__ || __WINRT__ */
+#endif /* defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__) */
 
 /* vi: set ts=4 sw=4 expandtab: */

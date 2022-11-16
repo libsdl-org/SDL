@@ -64,15 +64,15 @@ extern "C"
         char name[B_OS_NAME_LENGTH];
 
         /* Search for attached joysticks */
-          nports = joystick.CountDevices();
-          numjoysticks = 0;
-          SDL_memset(SDL_joyport, 0, (sizeof SDL_joyport));
-          SDL_memset(SDL_joyname, 0, (sizeof SDL_joyname));
+        nports = joystick.CountDevices();
+        numjoysticks = 0;
+        SDL_memset(SDL_joyport, 0, (sizeof SDL_joyport));
+        SDL_memset(SDL_joyname, 0, (sizeof SDL_joyname));
         for (i = 0; (numjoysticks < MAX_JOYSTICKS) && (i < nports); ++i)
         {
             if (joystick.GetDeviceName(i, name) == B_OK) {
                 if (joystick.Open(name) != B_ERROR) {
-                    BString stick_name;
+                      BString stick_name;
                       joystick.GetControllerName(&stick_name);
                       SDL_joyport[numjoysticks] = SDL_strdup(name);
                       SDL_joyname[numjoysticks] = SDL_CreateJoystickName(0, 0, NULL, stick_name.String());
@@ -93,10 +93,14 @@ extern "C"
     {
     }
 
-/* Function to get the device-dependent name of a joystick */
     static const char *HAIKU_JoystickGetDeviceName(int device_index)
     {
         return SDL_joyname[device_index];
+    }
+
+    static const char *HAIKU_JoystickGetDevicePath(int device_index)
+    {
+        return SDL_joyport[device_index];
     }
 
     static int HAIKU_JoystickGetDevicePlayerIndex(int device_index)
@@ -244,14 +248,11 @@ extern "C"
         SDL_joyname[0] = NULL;
     }
 
-    static SDL_JoystickGUID HAIKU_JoystickGetDeviceGUID( int device_index )
+    static SDL_JoystickGUID HAIKU_JoystickGetDeviceGUID(int device_index)
     {
-        SDL_JoystickGUID guid;
-        /* the GUID is just the first 16 chars of the name for now */
-        const char *name = HAIKU_JoystickGetDeviceName( device_index );
-        SDL_zero( guid );
-        SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
-        return guid;
+        /* the GUID is just the name for now */
+        const char *name = HAIKU_JoystickGetDeviceName(device_index);
+        return SDL_CreateJoystickGUIDForName(name);
     }
 
     static int HAIKU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
@@ -298,6 +299,7 @@ extern "C"
         HAIKU_JoystickGetCount,
         HAIKU_JoystickDetect,
         HAIKU_JoystickGetDeviceName,
+        HAIKU_JoystickGetDevicePath,
         HAIKU_JoystickGetDevicePlayerIndex,
         HAIKU_JoystickSetDevicePlayerIndex,
         HAIKU_JoystickGetDeviceGUID,

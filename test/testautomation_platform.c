@@ -54,11 +54,17 @@ int platform_testTypes(void *arg)
 int platform_testEndianessAndSwap(void *arg)
 {
     int real_byteorder;
+    int real_floatwordorder = 0;
     Uint16 value = 0x1234;
     Uint16 value16 = 0xCDAB;
     Uint16 swapped16 = 0xABCD;
     Uint32 value32 = 0xEFBEADDE;
     Uint32 swapped32 = 0xDEADBEEF;
+
+    union {
+       double d;
+       Uint32 ui32[2];
+    } value_double;
 
     Uint64 value64, swapped64;
     value64 = 0xEFBEADDE;
@@ -67,6 +73,7 @@ int platform_testEndianessAndSwap(void *arg)
     swapped64 = 0x1234ABCD;
     swapped64 <<= 32;
     swapped64 |= 0xDEADBEEF;
+    value_double.d = 3.141593;
 
     if ((*((char *) &value) >> 4) == 0x1) {
         real_byteorder = SDL_BIG_ENDIAN;
@@ -80,6 +87,18 @@ int platform_testEndianessAndSwap(void *arg)
              (SDL_BYTEORDER == SDL_LIL_ENDIAN) ? "little" : "big",
              (real_byteorder == SDL_LIL_ENDIAN) ? "little" : "big" );
 
+    if (value_double.ui32[0] == 0x82c2bd7f && value_double.ui32[1] == 0x400921fb) {
+        real_floatwordorder = SDL_LIL_ENDIAN;
+    } else if (value_double.ui32[0] == 0x400921fb && value_double.ui32[1] == 0x82c2bd7f) {
+        real_floatwordorder = SDL_BIG_ENDIAN;
+    }
+
+    /* Test endianness. */
+    SDLTest_AssertCheck( real_floatwordorder == SDL_FLOATWORDORDER,
+             "Machine detected as having %s endian float word order, appears to be %s endian.",
+             (SDL_FLOATWORDORDER == SDL_LIL_ENDIAN) ? "little" : "big",
+             (real_floatwordorder == SDL_LIL_ENDIAN) ? "little" : (real_floatwordorder == SDL_BIG_ENDIAN) ? "big" : "unknown" );
+
     /* Test 16 swap. */
     SDLTest_AssertCheck( SDL_Swap16(value16) == swapped16,
              "SDL_Swap16(): 16 bit swapped: 0x%X => 0x%X",
@@ -87,7 +106,7 @@ int platform_testEndianessAndSwap(void *arg)
 
     /* Test 32 swap. */
     SDLTest_AssertCheck( SDL_Swap32(value32) == swapped32,
-             "SDL_Swap32(): 32 bit swapped: 0x%X => 0x%X",
+             "SDL_Swap32(): 32 bit swapped: 0x%" SDL_PRIX32 " => 0x%" SDL_PRIX32,
              value32, SDL_Swap32(value32) );
 
     /* Test 64 swap. */
@@ -357,6 +376,11 @@ int platform_testSetErrorEmptyInput(void *arg)
    return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT_OVERFLOW)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow"
+#endif
+
 /* !
  * \brief Tests SDL_SetError with invalid input
  * \sa
@@ -432,13 +456,17 @@ int platform_testSetErrorInvalidInput(void *arg)
              probeError,
              lastError);
    }
-   
+
    /* Clean up */
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
 
    return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT_OVERFLOW)
+#pragma GCC diagnostic pop
+#endif
 
 /* !
  * \brief Tests SDL_GetPowerInfo
@@ -525,7 +553,7 @@ static const SDLTest_TestCaseReference platformTest1 =
         { (SDLTest_TestCaseFp)platform_testTypes, "platform_testTypes", "Tests predefined types", TEST_ENABLED};
 
 static const SDLTest_TestCaseReference platformTest2 =
-        { (SDLTest_TestCaseFp)platform_testEndianessAndSwap, "platform_testEndianessAndSwap", "Tests endianess and swap functions", TEST_ENABLED};
+        { (SDLTest_TestCaseFp)platform_testEndianessAndSwap, "platform_testEndianessAndSwap", "Tests endianness and swap functions", TEST_ENABLED};
 
 static const SDLTest_TestCaseReference platformTest3 =
         { (SDLTest_TestCaseFp)platform_testGetFunctions, "platform_testGetFunctions", "Tests various SDL_GetXYZ functions", TEST_ENABLED};

@@ -17,8 +17,8 @@ macro(SET_OPTION _NAME _DESC)
 endmacro()
 
 macro(DEP_OPTION _NAME _DESC _DEFLT _DEPTEST _FAILDFLT)
-  add_to_alloptions(${_NAME})
-  cmake_dependent_option(${_NAME} ${_DESC} ${_DEFLT} ${_DEPTEST} ${_FAILDFLT})
+  add_to_alloptions("${_NAME}")
+  cmake_dependent_option("${_NAME}" "${_DESC}" "${_DEFLT}" "${_DEPTEST}" "${_FAILDFLT}")
 endmacro()
 
 macro(OPTION_STRING _NAME _DESC _VALUE)
@@ -74,7 +74,7 @@ macro(LISTTOSTR _LIST _OUTPUT)
   # Do not use string(REPLACE ";" " ") here to avoid messing up list
   # entries
   foreach(_ITEM ${${_LIST}})
-    set(${_OUTPUT} "${_LPREFIX}${_ITEM} ${${_OUTPUT}}")
+    set(${_OUTPUT} "${${_OUTPUT}} ${_LPREFIX}${_ITEM}")
   endforeach()
 endmacro()
 
@@ -88,21 +88,32 @@ macro(LISTTOSTRREV _LIST _OUTPUT)
   # Do not use string(REPLACE ";" " ") here to avoid messing up list
   # entries
   foreach(_ITEM ${${_LIST}})
-    set(${_OUTPUT} "${${_OUTPUT}} ${_LPREFIX}${_ITEM}")
+    set(${_OUTPUT} "${_LPREFIX}${_ITEM} ${${_OUTPUT}}")
   endforeach()
 endmacro()
 
-if(${CMAKE_VERSION} VERSION_LESS "3.16.0")
+if(CMAKE_VERSION VERSION_LESS 3.16.0 OR SDL2_SUBPROJECT)
+  # - CMake versions <3.16 do not support the OBJC language
+  # - When SDL is built as a subproject and when the main project does not enable OBJC,
+  #   CMake fails due to missing internal CMake variables (CMAKE_OBJC_COMPILE_OBJECT)
+  #   (reproduced with CMake 3.24.2)
   macro(CHECK_OBJC_SOURCE_COMPILES SOURCE VAR)
     set(PREV_REQUIRED_DEFS "${CMAKE_REQUIRED_DEFINITIONS}")
     set(CMAKE_REQUIRED_DEFINITIONS "-x objective-c ${PREV_REQUIRED_DEFS}")
-    CHECK_C_SOURCE_COMPILES(${SOURCE} ${VAR})
+    CHECK_C_SOURCE_COMPILES("${SOURCE}" ${VAR})
     set(CMAKE_REQUIRED_DEFINITIONS "${PREV_REQUIRED_DEFS}")
   endmacro()
 else()
   include(CheckOBJCSourceCompiles)
   if (APPLE)
       enable_language(OBJC)
+  endif()
+endif()
+
+if(APPLE)
+  check_language(OBJC)
+  if(NOT CMAKE_OBJC_COMPILER)
+    message(WARNING "Cannot find working OBJC compiler.")
   endif()
 endif()
 

@@ -25,13 +25,12 @@
 #include "SDL_hints.h"
 #include "SDL_main.h"
 #include "SDL_timer.h"
+#include "SDL_version.h"
 
 #ifdef __ANDROID__
 
 #include "SDL_system.h"
 #include "SDL_android.h"
-
-#include "keyinfotable.h"
 
 #include "../../events/SDL_events_c.h"
 #include "../../video/android/SDL_androidkeyboard.h"
@@ -65,6 +64,9 @@
 #define ENCODING_PCM_FLOAT  4
 
 /* Java class SDLActivity */
+JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(
+        JNIEnv *env, jclass cls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(
         JNIEnv *env, jclass cls);
 
@@ -169,6 +171,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         jint requestCode, jboolean result);
 
 static JNINativeMethod SDLActivity_tab[] = {
+    { "nativeGetVersion",           "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI",             "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeRunMain",              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile",           "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
@@ -209,14 +212,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
         JNIEnv *env, jclass cls,
         jchar chUnicode);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-        JNIEnv *env, jclass cls,
-        jstring text, jint newCursorPosition);
-
 static JNINativeMethod SDLInputConnection_tab[] = {
     { "nativeCommitText",                   "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText) },
-    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) },
-    { "nativeSetComposingText",             "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText) }
+    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) }
 };
 
 /* Java class SDLAudioManager */
@@ -511,8 +509,9 @@ register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, i
 /* Library init */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    mJavaVM = vm;
     JNIEnv *env = NULL;
+
+    mJavaVM = vm;
 
     if ((*mJavaVM)->GetEnv(mJavaVM, (void **)&env, JNI_VERSION_1_4) != JNI_OK) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to get JNI Env");
@@ -535,6 +534,16 @@ void checkJNIReady(void)
     }
 
     SDL_SetMainReady();
+}
+
+/* Get SDL version -- called before SDL_main() to verify JNI bindings */
+JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jclass cls)
+{
+    char version[128];
+
+    SDL_snprintf(version, sizeof(version), "%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+
+    return (*env)->NewStringUTF(env, version);
 }
 
 /* Activity initialization -- called before SDL_main() to initialize JNI bindings */
@@ -1009,6 +1018,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 {
     SDL_LockMutex(Android_ActivityMutex);
 
+#if SDL_VIDEO_OPENGL_EGL
     if (Android_Window)
     {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1021,6 +1031,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 
         /* GL Context handling is done in the event loop because this function is run from the Java thread */
     }
+#endif
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1051,10 +1062,12 @@ retry:
             }
         }
 
+#if SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;
         }
+#endif
 
         if (data->native_window) {
             ANativeWindow_release(data->native_window);
@@ -1265,40 +1278,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
                                     JNIEnv *env, jclass cls,
                                     jchar chUnicode)
 {
-    SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
-    uint16_t mod = 0;
-
-    /* We do not care about bigger than 127. */
-    if (chUnicode < 127) {
-        AndroidKeyInfo info = unicharToAndroidKeyInfoTable[chUnicode];
-        code = info.code;
-        mod = info.mod;
-    }
-
-    if (mod & KMOD_SHIFT) {
-        /* If character uses shift, press shift down */
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
-    }
-
-    /* send a keydown and keyup even for the character */
-    SDL_SendKeyboardKey(SDL_PRESSED, code);
-    SDL_SendKeyboardKey(SDL_RELEASED, code);
-
-    if (mod & KMOD_SHIFT) {
-        /* If character uses shift, press shift back up */
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
-    }
-}
-
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-                                    JNIEnv *env, jclass cls,
-                                    jstring text, jint newCursorPosition)
-{
-    const char *utftext = (*env)->GetStringUTFChars(env, text, NULL);
-
-    SDL_SendEditingText(utftext, 0, 0);
-
-    (*env)->ReleaseStringUTFChars(env, text, utftext);
+    SDL_SendKeyboardUnicodeKey(chUnicode);
 }
 
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
@@ -2549,6 +2529,7 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
 SDL_bool Android_JNI_RequestPermission(const char *permission)
 {
     JNIEnv *env = Android_JNI_GetEnv();
+    jstring jpermission;
     const int requestCode = 1;
 
     /* Wait for any pending request on another thread */
@@ -2557,7 +2538,7 @@ SDL_bool Android_JNI_RequestPermission(const char *permission)
     }
     SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
 
-    jstring jpermission = (*env)->NewStringUTF(env, permission);
+    jpermission = (*env)->NewStringUTF(env, permission);
     (*env)->CallStaticVoidMethod(env, mActivityClass, midRequestPermission, jpermission, requestCode);
     (*env)->DeleteLocalRef(env, jpermission);
 

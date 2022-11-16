@@ -271,6 +271,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\test\testgamecontroller.c" />
+    <ClCompile Include="..\..\..\test\testutils.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

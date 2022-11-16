@@ -58,6 +58,12 @@ main(int argc, char *argv[])
     /* Set the error value for the main thread */
     SDL_SetError("No worries");
 
+    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+        SDL_Log("Not running slower tests");
+        SDL_Quit();
+        return 0;
+    }
+
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, NULL, "#1");
     if (thread == NULL) {

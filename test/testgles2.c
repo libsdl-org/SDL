@@ -38,6 +38,25 @@ typedef struct GLES2_Context
 #undef SDL_PROC
 } GLES2_Context;
 
+typedef struct shader_data
+{
+    GLuint shader_program, shader_frag, shader_vert;
+
+    GLint attr_position;
+    GLint attr_color, attr_mvp;
+
+    int angle_x, angle_y, angle_z;
+
+    GLuint position_buffer;
+    GLuint color_buffer;
+} shader_data;
+
+typedef struct thread_data
+{
+    SDL_Thread *thread;
+    int done;
+    int index;
+} thread_data;
 
 static SDLTest_CommonState *state;
 static SDL_GLContext *context = NULL;
@@ -197,13 +216,13 @@ multiply_matrix(float *lhs, float *rhs, float *r)
  * source: Passed-in shader source code.
  * shader_type: Passed to GL, e.g. GL_VERTEX_SHADER.
  */
-void 
+static void
 process_shader(GLuint *shader, const char * source, GLint shader_type)
 {
     GLint status = GL_FALSE;
     const char *shaders[1] = { NULL };
     char buffer[1024];
-    GLsizei length;
+    GLsizei length = 0;
 
     /* Create shader and load into GL. */
     *shader = GL_CHECK(ctx.glCreateShader(shader_type));
@@ -221,10 +240,32 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
 
     /* Dump debug info (source and log) if compilation failed. */
     if(status != GL_TRUE) {
-        ctx.glGetProgramInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
+        ctx.glGetShaderInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
         buffer[length] = '\0';
-        SDL_Log("Shader compilation failed: %s", buffer);fflush(stderr);
+        SDL_Log("Shader compilation failed: %s", buffer);
+        fflush(stderr);
         quit(-1);
+    }
+}
+
+static void
+link_program(struct shader_data *data)
+{
+    GLint status = GL_FALSE;
+    char buffer[1024];
+    GLsizei length = 0;
+
+    GL_CHECK(ctx.glAttachShader(data->shader_program, data->shader_vert));
+    GL_CHECK(ctx.glAttachShader(data->shader_program, data->shader_frag));
+    GL_CHECK(ctx.glLinkProgram(data->shader_program));
+    GL_CHECK(ctx.glGetProgramiv(data->shader_program, GL_LINK_STATUS, &status));
+
+    if(status != GL_TRUE) {
+         ctx.glGetProgramInfoLog(data->shader_program, sizeof(buffer), &length, &buffer[0]);
+         buffer[length] = '\0';
+         SDL_Log("Program linking failed: %s", buffer);
+         fflush(stderr);
+         quit(-1);
     }
 }
 
@@ -363,19 +404,6 @@ const char* _shader_frag_src =
 "    gl_FragColor = vec4(vv3color, 1.0); "
 " } ";
 
-typedef struct shader_data
-{
-    GLuint shader_program, shader_frag, shader_vert;
-
-    GLint attr_position;
-    GLint attr_color, attr_mvp;
-
-    int angle_x, angle_y, angle_z;
-
-    GLuint position_buffer;
-    GLuint color_buffer;
-} shader_data;
-
 static void
 Render(unsigned int width, unsigned int height, shader_data* data)
 {
@@ -413,6 +441,7 @@ Render(unsigned int width, unsigned int height, shader_data* data)
     if(data->angle_z >= 360) data->angle_z -= 360;
     if(data->angle_z < 0) data->angle_z += 360;
 
+    GL_CHECK(ctx.glViewport(0, 0, width, height));
     GL_CHECK(ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
     GL_CHECK(ctx.glDrawArrays(GL_TRIANGLES, 0, 36));
 }
@@ -420,56 +449,84 @@ Render(unsigned int width, unsigned int height, shader_data* data)
 int done;
 Uint32 frames;
 shader_data *datas;
+thread_data *threads;
 
-void loop()
+static void
+render_window(int index)
+{
+    int w, h, status;
+
+    if (!state->windows[index]) {
+        return;
+    }
+
+    status = SDL_GL_MakeCurrent(state->windows[index], context[index]);
+    if (status) {
+        SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_GL_GetDrawableSize(state->windows[index], &w, &h);
+    Render(w, h, &datas[index]);
+    SDL_GL_SwapWindow(state->windows[index]);
+    ++frames;
+}
+
+static int SDLCALL
+render_thread_fn(void* render_ctx)
+{
+    thread_data *thread = render_ctx;
+
+    while (!done && !thread->done && state->windows[thread->index]) {
+        render_window(thread->index);
+    }
+
+    SDL_GL_MakeCurrent(state->windows[thread->index], NULL);
+    return 0;
+}
+
+static void
+loop_threaded()
 {
     SDL_Event event;
     int i;
-    int status;
 
-    /* Check for events */
-    ++frames;
-    while (SDL_PollEvent(&event) && !done) {
-        switch (event.type) {
-        case SDL_WINDOWEVENT:
-            switch (event.window.event) {
-                case SDL_WINDOWEVENT_RESIZED:
-                    for (i = 0; i < state->num_windows; ++i) {
-                        if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
-                            int w, h;
-                            status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-                            if (status) {
-                                SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
-                                break;
-                            }
-                            /* Change view port to the new window dimensions */
-                            SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
-                            ctx.glViewport(0, 0, w, h);
-                            state->window_w = event.window.data1;
-                            state->window_h = event.window.data2;
-                            /* Update window content */
-                            Render(event.window.data1, event.window.data2, &datas[i]);
-                            SDL_GL_SwapWindow(state->windows[i]);
-                            break;
+    /* Wait for events */
+    while (SDL_WaitEvent(&event) && !done) {
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE) {
+            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            if (window) {
+                for (i = 0; i < state->num_windows; ++i) {
+                    if (window == state->windows[i]) {
+                        /* Stop the render thread when the window is closed */
+                        threads[i].done = 1;
+                        if (threads[i].thread) {
+                            SDL_WaitThread(threads[i].thread, NULL);
+                            threads[i].thread = NULL;
                         }
+                        break;
                     }
-                    break;
+                }
             }
         }
         SDLTest_CommonEvent(state, &event, &done);
     }
-    if (!done) {
-      for (i = 0; i < state->num_windows; ++i) {
-          status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-          if (status) {
-              SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+}
 
-              /* Continue for next window */
-              continue;
-          }
-          Render(state->window_w, state->window_h, &datas[i]);
-          SDL_GL_SwapWindow(state->windows[i]);
-      }
+static void
+loop()
+{
+    SDL_Event event;
+    int i;
+
+    /* Check for events */
+    while (SDL_PollEvent(&event) && !done) {
+        SDLTest_CommonEvent(state, &event, &done);
+    }
+    if (!done) {
+        for (i = 0; i < state->num_windows; ++i) {
+            render_window(i);
+        }
     }
 #ifdef __EMSCRIPTEN__
     else {
@@ -481,7 +538,7 @@ void loop()
 int
 main(int argc, char *argv[])
 {
-    int fsaa, accel;
+    int fsaa, accel, threaded;
     int value;
     int i;
     SDL_DisplayMode mode;
@@ -492,6 +549,7 @@ main(int argc, char *argv[])
     /* Initialize parameters */
     fsaa = 0;
     accel = 0;
+    threaded = 0;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -509,6 +567,9 @@ main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--accel") == 0) {
                 ++accel;
                 consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--threaded") == 0) {
+                ++threaded;
+                consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--zdepth") == 0) {
                 i++;
                 if (!argv[i]) {
@@ -522,7 +583,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d]", NULL };
+            static const char *options[] = { "[--fsaa]", "[--accel]", "[--zdepth %d]", "[--threaded]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
@@ -530,7 +591,7 @@ main(int argc, char *argv[])
     }
 
     /* Set OpenGL parameters */
-    state->window_flags |= SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
+    state->window_flags |= SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
     state->gl_red_size = 5;
     state->gl_green_size = 5;
     state->gl_blue_size = 5;
@@ -582,6 +643,7 @@ main(int argc, char *argv[])
     }
 
     SDL_GetCurrentDisplayMode(0, &mode);
+    SDL_Log("Threaded  : %s\n", threaded ? "yes" : "no");
     SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
     SDL_Log("\n");
     SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
@@ -672,9 +734,7 @@ main(int argc, char *argv[])
         data->shader_program = GL_CHECK(ctx.glCreateProgram());
 
         /* Attach shaders and link shader_program */
-        GL_CHECK(ctx.glAttachShader(data->shader_program, data->shader_vert));
-        GL_CHECK(ctx.glAttachShader(data->shader_program, data->shader_frag));
-        GL_CHECK(ctx.glLinkProgram(data->shader_program));
+        link_program(data);
 
         /* Get attribute locations of non-fixed attributes like color and texture coordinates. */
         data->attr_position = GL_CHECK(ctx.glGetAttribLocation(data->shader_program, "av4position"));
@@ -693,18 +753,20 @@ main(int argc, char *argv[])
 
         GL_CHECK(ctx.glGenBuffers(1, &data->position_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->position_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices) * 4, _vertices, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_position, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 
         GL_CHECK(ctx.glGenBuffers(1, &data->color_buffer));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, data->color_buffer));
-        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_colors) * 4, _colors, GL_STATIC_DRAW));
+        GL_CHECK(ctx.glBufferData(GL_ARRAY_BUFFER, sizeof(_colors), _colors, GL_STATIC_DRAW));
         GL_CHECK(ctx.glVertexAttribPointer(data->attr_color, 3, GL_FLOAT, GL_FALSE, 0, 0));
         GL_CHECK(ctx.glBindBuffer(GL_ARRAY_BUFFER, 0));
 
         GL_CHECK(ctx.glEnable(GL_CULL_FACE));
         GL_CHECK(ctx.glEnable(GL_DEPTH_TEST));
+
+        SDL_GL_MakeCurrent(state->windows[i], NULL);
     }
 
     /* Main render loop */
@@ -715,8 +777,30 @@ main(int argc, char *argv[])
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (!done) {
-        loop();
+    if (threaded) {
+        threads = (thread_data*)SDL_calloc(state->num_windows, sizeof(thread_data));
+
+        /* Start a render thread for each window */
+        for (i = 0; i < state->num_windows; ++i) {
+            threads[i].index = i;
+            threads[i].thread = SDL_CreateThread(render_thread_fn, "RenderThread", &threads[i]);
+        }
+
+        while (!done) {
+            loop_threaded();
+        }
+
+        /* Join the remaining render threads (if any) */
+        for (i = 0; i < state->num_windows; ++i) {
+            threads[i].done = 1;
+            if (threads[i].thread) {
+                SDL_WaitThread(threads[i].thread, NULL);
+            }
+        }
+    } else {
+        while (!done) {
+            loop();
+        }
     }
 #endif
 

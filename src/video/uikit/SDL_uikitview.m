@@ -69,16 +69,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
         [self addGestureRecognizer:swipeRight];
-#elif defined(__IPHONE_13_4)
-        if (@available(iOS 13.4, *)) {
-            UIPanGestureRecognizer *mouseWheelRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(mouseWheelGesture:)];
-            mouseWheelRecognizer.allowedScrollTypesMask = UIScrollTypeMaskDiscrete;
-            mouseWheelRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirectPointer) ];
-            mouseWheelRecognizer.cancelsTouchesInView = NO;
-            mouseWheelRecognizer.delaysTouchesBegan = NO;
-            mouseWheelRecognizer.delaysTouchesEnded = NO;
-            [self addGestureRecognizer:mouseWheelRecognizer];
-        }
 #endif
 
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -454,29 +444,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 }
 
 #endif /* TARGET_OS_TV || defined(__IPHONE_9_1) */
-
--(void)mouseWheelGesture:(UIPanGestureRecognizer *)gesture
-{
-    if (gesture.state == UIGestureRecognizerStateBegan ||
-        gesture.state == UIGestureRecognizerStateChanged ||
-        gesture.state == UIGestureRecognizerStateEnded) {
-        CGPoint velocity = [gesture velocityInView:self];
-
-        if (velocity.x > 0.0f) {
-            velocity.x = -1.0;
-        } else if (velocity.x < 0.0f) {
-            velocity.x = 1.0f;
-        }
-        if (velocity.y > 0.0f) {
-            velocity.y = -1.0;
-        } else if (velocity.y < 0.0f) {
-            velocity.y = 1.0f;
-        }
-        if (velocity.x != 0.0f || velocity.y != 0.0f) {
-            SDL_SendMouseWheel(sdlwindow, 0, velocity.x, velocity.y, SDL_MOUSEWHEEL_NORMAL);
-        }
-    }
-}
 
 #if TARGET_OS_TV
 -(void)swipeGesture:(UISwipeGestureRecognizer *)gesture

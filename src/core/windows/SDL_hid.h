@@ -183,8 +183,6 @@ extern int WIN_LoadHIDDLL(void);
 extern void WIN_UnloadHIDDLL(void);
 
 typedef BOOLEAN (WINAPI *HidD_GetString_t)(HANDLE HidDeviceObject, PVOID Buffer, ULONG BufferLength);
-typedef BOOLEAN (WINAPI *HidD_GetPreparsedData_t)(HANDLE HidDeviceObject, PHIDP_PREPARSED_DATA *PreparsedData);
-typedef BOOLEAN (WINAPI *HidD_FreePreparsedData_t)(PHIDP_PREPARSED_DATA PreparsedData);
 typedef NTSTATUS (WINAPI *HidP_GetCaps_t)(PHIDP_PREPARSED_DATA PreparsedData, PHIDP_CAPS Capabilities);
 typedef NTSTATUS (WINAPI *HidP_GetButtonCaps_t)(HIDP_REPORT_TYPE ReportType, PHIDP_BUTTON_CAPS ButtonCaps, PUSHORT ButtonCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
 typedef NTSTATUS (WINAPI *HidP_GetValueCaps_t)(HIDP_REPORT_TYPE ReportType, PHIDP_VALUE_CAPS ValueCaps, PUSHORT ValueCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
@@ -193,8 +191,6 @@ typedef NTSTATUS (WINAPI *HidP_GetData_t)(HIDP_REPORT_TYPE ReportType, PHIDP_DAT
 
 extern HidD_GetString_t SDL_HidD_GetManufacturerString;
 extern HidD_GetString_t SDL_HidD_GetProductString;
-extern HidD_GetPreparsedData_t SDL_HidD_GetPreparsedData;
-extern HidD_FreePreparsedData_t SDL_HidD_FreePreparsedData;
 extern HidP_GetCaps_t SDL_HidP_GetCaps;
 extern HidP_GetButtonCaps_t SDL_HidP_GetButtonCaps;
 extern HidP_GetValueCaps_t SDL_HidP_GetValueCaps;

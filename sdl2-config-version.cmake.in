@@ -1,3 +1,5 @@
+# sdl2 cmake project-config-version input for ./configure scripts
+
 set(PACKAGE_VERSION "@SDL_VERSION@")
 
 if(PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION)
@@ -8,4 +10,3 @@ else()
     set(PACKAGE_VERSION_EXACT TRUE)
   endif()
 endif()
-

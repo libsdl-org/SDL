@@ -71,6 +71,7 @@ typedef struct SDL_DisplayData
     drmModeModeInfo fullscreen_mode;
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
+    SDL_bool saved_vrr;
 
     /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
        because setting/unsetting up these is done on window creation/destruction,

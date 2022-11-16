@@ -90,7 +90,8 @@ typedef struct
 } SDL_BlitFuncEntry;
 
 /* Blit mapping definition */
-typedef struct SDL_BlitMap
+/* typedef'ed in SDL_surface.h */
+struct SDL_BlitMap
 {
     SDL_Surface *dst;
     int identity;
@@ -102,7 +103,7 @@ typedef struct SDL_BlitMap
        an invalid mapping */
     Uint32 dst_palette_version;
     Uint32 src_palette_version;
-} SDL_BlitMap;
+};
 
 /* Functions found in SDL_blit.c */
 extern int SDL_CalculateBlit(SDL_Surface * surface);
@@ -269,18 +270,18 @@ do {                                                                    \
 {                                                                       \
     switch (bpp) {                                                      \
         case 1: {                                                       \
-            Uint8 _Pixel;                                               \
+            Uint8 _pixel;                                               \
                                                                         \
-            PIXEL_FROM_RGB(_Pixel, fmt, r, g, b);                       \
-            *((Uint8 *)(buf)) = _Pixel;                                 \
+            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);                       \
+            *((Uint8 *)(buf)) = _pixel;                                 \
         }                                                               \
         break;                                                          \
                                                                         \
         case 2: {                                                       \
-            Uint16 _Pixel;                                              \
+            Uint16 _pixel;                                              \
                                                                         \
-            PIXEL_FROM_RGB(_Pixel, fmt, r, g, b);                       \
-            *((Uint16 *)(buf)) = _Pixel;                                \
+            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);                       \
+            *((Uint16 *)(buf)) = _pixel;                                \
         }                                                               \
         break;                                                          \
                                                                         \
@@ -298,10 +299,10 @@ do {                                                                    \
         break;                                                          \
                                                                         \
         case 4: {                                                       \
-            Uint32 _Pixel;                                              \
+            Uint32 _pixel;                                              \
                                                                         \
-            PIXEL_FROM_RGB(_Pixel, fmt, r, g, b);                       \
-            *((Uint32 *)(buf)) = _Pixel;                                \
+            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);                       \
+            *((Uint32 *)(buf)) = _pixel;                                \
         }                                                               \
         break;                                                          \
     }                                                                   \

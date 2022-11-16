@@ -26,6 +26,10 @@
 
 #include "SDL_haptic.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct haptic_effect
 {
@@ -202,6 +206,11 @@ extern int SDL_SYS_HapticUnpause(SDL_Haptic * haptic);
  * Returns 0 on success, -1 on error.
  */
 extern int SDL_SYS_HapticStopAll(SDL_Haptic * haptic);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_syshaptic_h_ */
 

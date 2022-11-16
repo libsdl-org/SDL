@@ -37,6 +37,10 @@
 #include "SDL_dinputhaptic_c.h"
 #include "SDL_xinputhaptic_c.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Internal stuff.
@@ -465,6 +469,11 @@ SDL_SYS_HapticStopAll(SDL_Haptic * haptic)
         return SDL_DINPUT_HapticStopAll(haptic);
     }
 }
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_HAPTIC_DINPUT || SDL_HAPTIC_XINPUT */
 

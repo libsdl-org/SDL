@@ -1068,7 +1068,7 @@ _LT_EOF
     darwin1.*)
       _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
     darwin*)
-      case ${MACOSX_DEPLOYMENT_TARGET},$host in
+      case $MACOSX_DEPLOYMENT_TARGET,$host in
         10.[[012]],*|,*powerpc*-darwin[[5-8]]*)
           _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
         *)
