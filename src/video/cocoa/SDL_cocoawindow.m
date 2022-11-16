@@ -500,6 +500,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         [center addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:window];
         [center addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
         [center addObserver:self selector:@selector(windowDidChangeScreenProfile:) name:NSWindowDidChangeScreenProfileNotification object:window];
+        [center addObserver:self selector:@selector(windowDidChangeScreen:) name:NSWindowDidChangeScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillEnterFullScreen:) name:NSWindowWillEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillExitFullScreen:) name:NSWindowWillExitFullScreenNotification object:window];
@@ -632,6 +633,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         [center removeObserver:self name:NSWindowDidResignKeyNotification object:window];
         [center removeObserver:self name:NSWindowDidChangeBackingPropertiesNotification object:window];
         [center removeObserver:self name:NSWindowDidChangeScreenProfileNotification object:window];
+        [center removeObserver:self name:NSWindowDidChangeScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillExitFullScreenNotification object:window];
@@ -918,6 +920,16 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 - (void)windowDidChangeScreenProfile:(NSNotification *)aNotification
 {
     SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+}
+
+- (void)windowDidChangeScreen:(NSNotification *)aNotification
+{
+    /*printf("WINDOWDIDCHANGESCREEN\n");*/
+    if (_data && _data.nscontexts) {
+        for (SDLOpenGLContext *context in _data.nscontexts) {
+            [context movedToNewScreen];
+        }
+    }
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification *)aNotification

@@ -53,6 +53,7 @@ struct SDL_GLDriverData
         shareContext:(NSOpenGLContext *)share;
 - (void)scheduleUpdate;
 - (void)updateIfNeeded;
+- (void)movedToNewScreen;
 - (void)setWindow:(SDL_Window *)window;
 - (SDL_Window*)window;
 - (void)explicitUpdate;
