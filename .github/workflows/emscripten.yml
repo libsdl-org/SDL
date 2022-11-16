@@ -29,7 +29,8 @@ jobs:
         run: |
           set -eu
           export SDL_TESTS_QUICK=1
-          ctest -VV --test-dir build/
+          # FIXME: enable Emscripten build time tests
+          # ctest -VV --test-dir build/
       - name: Install
         run: |
           echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
