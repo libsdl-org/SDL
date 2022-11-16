@@ -19,6 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
+#if MACOSX_COREAUDIO
+#include <AvailabilityMacros.h>
+#ifndef MAC_OS_VERSION_12_0
+#define kIOMainPortDefault kIOMasterPortDefault
+#endif
+#endif
+
 extern int MacHaptic_MaybeAddDevice( io_object_t device );
 extern int MacHaptic_MaybeRemoveDevice( io_object_t device );
 
