@@ -260,12 +260,6 @@ static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 static void
 ScheduleContextUpdates(SDL_WindowData *data)
 {
-    NSOpenGLContext *currentContext;
-    NSMutableArray *contexts;
-    if (!data || !data.nscontexts) {
-        return;
-    }
-
     /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
     #if SDL_VIDEO_OPENGL
 
@@ -273,6 +267,12 @@ ScheduleContextUpdates(SDL_WindowData *data)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     #endif
+
+    NSOpenGLContext *currentContext;
+    NSMutableArray *contexts;
+    if (!data || !data.nscontexts) {
+        return;
+    }
 
     currentContext = [NSOpenGLContext currentContext];
     contexts = data.nscontexts;
