@@ -1302,9 +1302,8 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
         return SDL_SetError("Couldn't find display mode match");
     }
 
-    if (mode) {
-        *mode = fullscreen_mode;
-    }
+    *mode = fullscreen_mode;
+
     return 0;
 }
 

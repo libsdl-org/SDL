@@ -1078,7 +1078,7 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
     /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
     renderer->render_command_generation = 1;
 
-    if (window && renderer->GetOutputSize) {
+    if (renderer->GetOutputSize) {
         int window_w, window_h;
         int output_w, output_h;
         if (renderer->GetOutputSize(renderer, &output_w, &output_h) == 0) {
