@@ -42,6 +42,11 @@ struct SDL_GLDriverData
 @interface SDLOpenGLContext : NSOpenGLContext {
     SDL_atomic_t dirty;
     SDL_Window *window;
+    CVDisplayLinkRef displayLink;
+    @public SDL_mutex *swapIntervalMutex;
+    @public SDL_cond *swapIntervalCond;
+    @public SDL_atomic_t swapIntervalSetting;
+    @public SDL_atomic_t swapIntervalsPassed;
 }
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format
@@ -51,7 +56,7 @@ struct SDL_GLDriverData
 - (void)setWindow:(SDL_Window *)window;
 - (SDL_Window*)window;
 - (void)explicitUpdate;
-
+- (void)dealloc;
 @end
 
 /* OpenGL functions */
