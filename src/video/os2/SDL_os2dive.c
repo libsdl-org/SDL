@@ -296,7 +296,7 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
         return FALSE;
     }
 
-    if (pSDLRects != 0) {
+    if (pSDLRects != NULL) {
         PBYTE   pbLineMask;
 
         pbLineMask = SDL_stack_alloc(BYTE, pVOData->ulHeight);

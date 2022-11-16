@@ -1280,10 +1280,10 @@ PSP_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     PSP_RenderData *renderdata = (PSP_RenderData *) renderer->driverdata;
     PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata;
 
-    if (renderdata == 0)
+    if (renderdata == NULL)
         return;
 
-    if(psp_texture == 0)
+    if(psp_texture == NULL)
         return;
 
     LRUTargetRemove(renderdata, psp_texture);
