@@ -522,7 +522,7 @@ main(int argc, char *argv[])
         return 0;
     }
 
-    context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(context));
+    context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(*context));
     if (context == NULL) {
         SDL_Log("Out of memory!\n");
         quit(2);
