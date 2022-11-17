@@ -1064,7 +1064,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window * window,
  * \sa SDL_CreateWindow
  * \sa SDL_GetWindowSize
  */
-extern DECLSPEC void SDLCALL SDL_GetWindowSizeInPixels(SDL_Window * window, 
+extern DECLSPEC void SDLCALL SDL_GetWindowSizeInPixels(SDL_Window * window,
                                                        int *w, int *h);
 
 /**

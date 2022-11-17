@@ -278,7 +278,7 @@ extern "C" {
  *  If this hint isn't specified to a valid setting, or libsamplerate isn't
  *  available, SDL will use the default, internal resampling algorithm.
  *
- *  As of SDL 2.26, SDL_AudioCVT now respects this hint.
+ *  As of SDL 2.26, SDL_ConvertAudio() respects this hint when libsamplerate is available.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *
@@ -933,7 +933,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS   "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox One should be used.
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox One controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
