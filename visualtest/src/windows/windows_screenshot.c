@@ -261,7 +261,7 @@ screenshotwindow_cleanup_windowdc:
     if(!ReleaseDC(hwnd, windowdc))
     {
         SDLTest_LogError("ReleaseDC() failed");
-        return_code = 0;;
+        return_code = 0;
     }
 
 screenshotwindow_cleanup_generic:

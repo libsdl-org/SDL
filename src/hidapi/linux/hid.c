@@ -200,7 +200,7 @@ static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
 				/* Can't ever happen since size_code is & 0x3 */
 				data_len = 0;
 				break;
-			};
+			}
 			key_size = 1;
 		}
 

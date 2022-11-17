@@ -1634,7 +1634,6 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             (candcount * candborder * 2) +
             (candcount * candpadding * 2) +
             ((candcount - 1) * horzcandspacing);
-        ;
 
         for (i = 0; i < candcount; ++i)
             size.cx += candsizes[i].cx;
