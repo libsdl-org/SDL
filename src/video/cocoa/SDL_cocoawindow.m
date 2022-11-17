@@ -2274,7 +2274,9 @@ Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window * window)
 
     /* Not recognized via CHECK_WINDOW_MAGIC */
     if (data == nil) {
-        return SDL_SetError("Window data not set");
+        /* Don't set the error here, it hides other errors and is ignored anyway */
+        /*return SDL_SetError("Window data not set");*/
+        return -1;
     }
 
     /* NSWindow.screen may be nil when the window is off-screen. */
