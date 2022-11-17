@@ -20,11 +20,9 @@
 */
 
 /* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
-#if MACOSX_COREAUDIO
 #include <AvailabilityMacros.h>
-#ifndef MAC_OS_VERSION_12_0
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 #define kIOMainPortDefault kIOMasterPortDefault
-#endif
 #endif
 
 extern int MacHaptic_MaybeAddDevice( io_object_t device );
