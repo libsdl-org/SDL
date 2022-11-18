@@ -292,8 +292,8 @@ SDL_EGL_UnloadLibrary(_THIS)
     }
 }
 
-int
-SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
+static int
+SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 {
     void *egl_dll_handle = NULL, *opengl_dll_handle = NULL;
     const char *path = NULL;
@@ -303,15 +303,6 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
 #if SDL_VIDEO_DRIVER_RPI
     SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
 #endif
-
-    if (_this->egl_data) {
-        return SDL_SetError("EGL context already created");
-    }
-
-    _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
-    if (!_this->egl_data) {
-        return SDL_OutOfMemory();
-    }
 
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
     d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
@@ -470,6 +461,26 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
         *_this->gl_config.driver_path = '\0';
     }
 
+    return 0;
+}
+
+int
+SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
+{
+    if (_this->egl_data) {
+        return SDL_SetError("EGL context already created");
+    }
+
+    _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
+    if (!_this->egl_data) {
+        return SDL_OutOfMemory();
+    }
+
+    if (SDL_EGL_LoadLibraryInternal(_this, egl_path) < 0) {
+        SDL_free(_this->egl_data);
+        _this->egl_data = NULL;
+        return -1;
+    }
     return 0;
 }
 

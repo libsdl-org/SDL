@@ -1456,28 +1456,34 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             }
         }
 
-	/* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
-	   been called by SDL_CreateWindow() but we don't do anything there,
-	   out KMSDRM_EGL_LoadLibrary() is a dummy precisely to be able to load it here.
-	   If we let SDL_CreateWindow() load the lib, it would be loaded
-	   before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
-	if (!_this->egl_data) {
-	    egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
-	    if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
-                return (SDL_SetError("Can't load EGL/GL library on window creation."));
-	    }
+        /* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
+           been called by SDL_CreateWindow() but we don't do anything there,
+           our KMSDRM_EGL_LoadLibrary() is a dummy precisely to be able to load it here.
+           If we let SDL_CreateWindow() load the lib, it would be loaded
+           before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
+        if (!_this->egl_data) {
+            egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
+            if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA) < 0) {
+                /* Try again with OpenGL ES 2.0 */
+                _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+                _this->gl_config.major_version = 2;
+                _this->gl_config.minor_version = 0;
+                if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA) < 0) {
+                    return (SDL_SetError("Can't load EGL/GL library on window creation."));
+                }
+            }
 
-	    _this->gl_config.driver_loaded = 1;
+            _this->gl_config.driver_loaded = 1;
 
-	}
+        }
 
-	/* Create the cursor BO for the display of this window,
-	   now that we know this is not a VK window. */
-	KMSDRM_CreateCursorBO(display);
+        /* Create the cursor BO for the display of this window,
+           now that we know this is not a VK window. */
+        KMSDRM_CreateCursorBO(display);
 
-	/* Create and set the default cursor for the display
+        /* Create and set the default cursor for the display
            of this window, now that we know this is not a VK window. */
-	KMSDRM_InitMouse(_this, display);
+        KMSDRM_InitMouse(_this, display);
 
         /* The FULLSCREEN flags are cut out from window->flags at this point,
            so we can't know if a window is fullscreen or not, hence all windows
