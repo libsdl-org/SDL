@@ -85,10 +85,10 @@ static SDL_hapticlist_item *SDL_hapticlist = NULL;
 static SDL_hapticlist_item *SDL_hapticlist_tail = NULL;
 static int numhaptics = 0;
 
-#define EV_TEST(ev,f) \
-   if (test_bit((ev), features)) {
-    ret |= (f);
-}
+#define EV_TEST(ev,f)                \
+   if (test_bit((ev), features)) {   \
+       ret |= (f);                   \
+   }
 /*
  * Test whether a device has haptic properties.
  * Returns available properties or 0 if there are none.
