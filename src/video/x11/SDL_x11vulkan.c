@@ -69,20 +69,23 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     SDL_strlcpy(_this->vulkan_config.loader_path, path, SDL_arraysize(_this->vulkan_config.loader_path));
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
-    if(!vkGetInstanceProcAddr)
+    if (!vkGetInstanceProcAddr) {
         goto fail;
+    }
     _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
         (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
-    if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
+    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
         goto fail;
+    }
     extensions = SDL_Vulkan_CreateInstanceExtensionsList(
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
-    if(!extensions)
+    if (!extensions) {
         goto fail;
+    }
     for(i = 0; i < extensionCount; i++)
     {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -118,8 +121,9 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
             libX11XCBLibraryName = "libX11-xcb.so";
         }
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);
-        if(!videoData->vulkan_xlib_xcb_library)
+        if (!videoData->vulkan_xlib_xcb_library) {
             goto fail;
+        }
         videoData->vulkan_XGetXCBConnection =
             SDL_LoadFunction(videoData->vulkan_xlib_xcb_library, "XGetXCBConnection");
         if(!videoData->vulkan_XGetXCBConnection)

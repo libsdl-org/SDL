@@ -379,20 +379,25 @@ SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, cons
 {
     DBusMessageIter iterDict, iterEntry, iterValue;
 
-    if (!dbus.message_iter_open_container(iterInit, DBUS_TYPE_ARRAY, "{sv}", &iterDict))
+    if (!dbus.message_iter_open_container(iterInit, DBUS_TYPE_ARRAY, "{sv}", &iterDict)) {
         goto failed;
+    }
 
-    if (!dbus.message_iter_open_container(&iterDict, DBUS_TYPE_DICT_ENTRY, NULL, &iterEntry))
+    if (!dbus.message_iter_open_container(&iterDict, DBUS_TYPE_DICT_ENTRY, NULL, &iterEntry)) {
         goto failed;
+    }
 
-    if (!dbus.message_iter_append_basic(&iterEntry, DBUS_TYPE_STRING, &key))
+    if (!dbus.message_iter_append_basic(&iterEntry, DBUS_TYPE_STRING, &key)) {
         goto failed;
+    }
 
-    if (!dbus.message_iter_open_container(&iterEntry, DBUS_TYPE_VARIANT, DBUS_TYPE_STRING_AS_STRING, &iterValue))
+    if (!dbus.message_iter_open_container(&iterEntry, DBUS_TYPE_VARIANT, DBUS_TYPE_STRING_AS_STRING, &iterValue)) {
         goto failed;
+    }
 
-    if (!dbus.message_iter_append_basic(&iterValue, DBUS_TYPE_STRING, &value))
+    if (!dbus.message_iter_append_basic(&iterValue, DBUS_TYPE_STRING, &value)) {
         goto failed;
+    }
 
     if (!dbus.message_iter_close_container(&iterEntry, &iterValue)
         || !dbus.message_iter_close_container(&iterDict, &iterEntry)
