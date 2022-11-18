@@ -111,8 +111,9 @@ static void PSP_JoystickDetect(void)
 /* Function to get the device-dependent name of a joystick */
 static const char *PSP_JoystickGetDeviceName(int device_index)
 {
-    if (device_index == 0)
+    if (device_index == 0) {
         return "PSP builtin joypad";
+    }
 
     SDL_SetError("No joystick available with that index");
     return(NULL);

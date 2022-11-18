@@ -254,8 +254,9 @@ static void register_error(hid_device *dev, const char *op)
 static uint32_t get_bytes(uint8_t *rpt, size_t len, size_t num_bytes, size_t cur)
 {
 	/* Return if there aren't enough bytes. */
-	if (cur + num_bytes >= len)
+	if (cur + num_bytes >= len) {
 		return 0;
+	}
 
 	if (num_bytes == 0)
 		return 0;
@@ -339,8 +340,9 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 			//printf("Usage: %x\n", (uint32_t)*usage);
 		}
 
-		if (usage_page_found && usage_found)
-			return 0; /* success */
+		if (usage_page_found && usage_found) {
+			return 0;
+		} /* success */
 
 		/* Skip over this key and it's associated data */
 		i += data_len + key_size;
@@ -384,8 +386,9 @@ static uint16_t get_first_language(libusb_device_handle *dev)
 			0x0, /* Language */
 			(unsigned char*)buf,
 			sizeof(buf));
-	if (len < 4)
+	if (len < 4) {
 		return 0x0;
+	}
 
 	return buf[1]; /* First two bytes are len and descriptor type. */
 }
@@ -402,15 +405,17 @@ static int is_language_supported(libusb_device_handle *dev, uint16_t lang)
 			0x0, /* Language */
 			(unsigned char*)buf,
 			sizeof(buf));
-	if (len < 4)
+	if (len < 4) {
 		return 0x0;
+	}
 
 
 	len /= 2; /* language IDs are two-bytes each. */
 	/* Start at index 1 because there are two bytes of protocol data. */
 	for (i = 1; i < len; i++) {
-		if (buf[i] == lang)
+		if (buf[i] == lang) {
 			return 1;
+		}
 	}
 
 	return 0;
@@ -454,8 +459,9 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 			lang,
 			(unsigned char*)buf,
 			sizeof(buf));
-	if (len < 0)
+	if (len < 0) {
 		return NULL;
+	}
 
 #if defined(NO_ICONV) /* original hidapi code for NO_ICONV : */
 
@@ -532,8 +538,9 @@ static int usb_string_cache_grow()
 	new_cache_size = usb_string_cache_size + 8;
 	allocSize = sizeof(struct usb_string_cache_entry) * new_cache_size;
 	new_cache = (struct usb_string_cache_entry *)realloc(usb_string_cache, allocSize);
-	if (!new_cache)
+	if (!new_cache) {
 		return -1;
+	}
 
 	usb_string_cache = new_cache;
 	usb_string_cache_size = new_cache_size;
@@ -559,8 +566,9 @@ static struct usb_string_cache_entry *usb_string_cache_insert()
 {
 	struct usb_string_cache_entry *new_entry = NULL;
 	if (usb_string_cache_insert_pos >= usb_string_cache_size) {
-		if (usb_string_cache_grow() < 0)
+		if (usb_string_cache_grow() < 0) {
 			return NULL;
+		}
 	}
 	new_entry = &usb_string_cache[usb_string_cache_insert_pos];
 	usb_string_cache_insert_pos++;
@@ -600,8 +608,9 @@ static const struct usb_string_cache_entry *usb_string_cache_find(struct libusb_
 
 	/* Not found, create one. */
 	entry = usb_string_cache_insert();
-	if (!entry)
+	if (!entry) {
 		return NULL;
+	}
 
 	entry->vid = desc->idVendor;
 	entry->pid = desc->idProduct;
@@ -634,8 +643,9 @@ int HID_API_EXPORT hid_init(void)
 {
 	if (!usb_context) {
 		/* Init Libusb */
-		if (libusb_init(&usb_context))
+		if (libusb_init(&usb_context)) {
 			return -1;
+		}
 
 #ifdef HAVE_SETLOCALE
 		/* Set the locale if it's not set. */
@@ -743,16 +753,19 @@ static int should_enumerate_interface(unsigned short vendor_id, const struct lib
 {
 	//printf("Checking interface 0x%x %d/%d/%d/%d\n", vendor_id, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
 
-	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID)
+	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID) {
 		return 1;
+	}
 
 	/* Also enumerate Xbox 360 controllers */
-	if (is_xbox360(vendor_id, intf_desc))
+	if (is_xbox360(vendor_id, intf_desc)) {
 		return 1;
+	}
 
 	/* Also enumerate Xbox One controllers */
-	if (is_xboxone(vendor_id, intf_desc))
+	if (is_xboxone(vendor_id, intf_desc)) {
 		return 1;
+	}
 
 	return 0;
 }
@@ -1225,8 +1238,9 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	int d = 0;
 	int good_open = 0;
 
-	if(hid_init() < 0)
+	if (hid_init() < 0) {
 		return NULL;
+	}
 
 	dev = new_hid_device();
 
@@ -1394,8 +1408,9 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 			(unsigned char *)data, length,
 			1000/*timeout millis*/);
 
-		if (res < 0)
+		if (res < 0) {
 			return -1;
+		}
 
 		if (skipped_report_id) {
 			length++;
@@ -1412,8 +1427,9 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 			length,
 			&actual_length, 1000);
 
-		if (res < 0)
+		if (res < 0) {
 			return -1;
+		}
 
 		return actual_length;
 	}
@@ -1555,8 +1571,9 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 		(unsigned char *)data, length,
 		1000/*timeout millis*/);
 
-	if (res < 0)
+	if (res < 0) {
 		return -1;
+	}
 
 	/* Account for the report ID */
 	if (skipped_report_id) {
@@ -1587,8 +1604,9 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 		(unsigned char *)data, length,
 		1000/*timeout millis*/);
 
-	if (res < 0)
+	if (res < 0) {
 		return -1;
+	}
 
 	if (skipped_report_id) {
 		res++;
@@ -1835,8 +1853,9 @@ uint16_t get_usb_code_for_current_locale(void)
 #ifdef HAVE_SETLOCALE
 	locale = setlocale(0, NULL);
 #endif
-	if (!locale)
+	if (!locale) {
 		return 0x0;
+	}
 
 	/* Make a copy of the current locale string. */
 	strncpy(search_string, locale, sizeof(search_string));

@@ -222,18 +222,22 @@ MainWindow::create()
 long
 MainWindow::onConnect(FXObject *sender, FXSelector sel, void *ptr)
 {
-	if (connected_device != NULL)
+	if (connected_device != NULL) {
 		return 1;
+	}
 	
 	FXint cur_item = device_list->getCurrentItem();
-	if (cur_item < 0)
+	if (cur_item < 0) {
 		return -1;
+	}
 	FXListItem *item = device_list->getItem(cur_item);
-	if (!item)
+	if (!item) {
 		return -1;
+	}
 	struct hid_device_info *device_info = (struct hid_device_info*) item->getData();
-	if (!device_info)
+	if (!device_info) {
 		return -1;
+	}
 	
 	connected_device =  hid_open_path(device_info->path);
 	

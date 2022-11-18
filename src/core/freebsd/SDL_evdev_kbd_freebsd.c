@@ -386,8 +386,9 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
             for (j = 0; j < NUM_ACCENTCHARS; ++j) {
                     if (kbd->accents->acc[i].map[j][0] == 0)        /* end of table */
                             break;
-                    if (kbd->accents->acc[i].map[j][0] == ch)
+                    if (kbd->accents->acc[i].map[j][0] == ch) {
                             return kbd->accents->acc[i].map[j][1];
+                    }
             }
         }
     }

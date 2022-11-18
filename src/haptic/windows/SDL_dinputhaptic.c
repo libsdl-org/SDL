@@ -1102,8 +1102,9 @@ SDL_DINPUT_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect *effe
         return DI_SetError("Getting effect status", ret);
     }
 
-    if (status == 0)
+    if (status == 0) {
         return SDL_FALSE;
+    }
     return SDL_TRUE;
 }
 

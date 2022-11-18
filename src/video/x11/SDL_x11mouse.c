@@ -360,8 +360,9 @@ static int
 X11_SetRelativeMouseMode(SDL_bool enabled)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
-    if(X11_Xinput2IsInitialized())
+    if (X11_Xinput2IsInitialized()) {
         return 0;
+    }
 #else
     SDL_Unsupported();
 #endif

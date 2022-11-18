@@ -220,8 +220,9 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
 
-	if (!mouse)
+	if (!mouse) {
 		return 0;
+	}
 
 	if (cursor) {
 		BCursor *hCursor = (BCursor*)cursor->driverdata;

@@ -246,10 +246,12 @@ WMIsClient(DFB_WindowData * p, int x, int y)
 {
     x -= p->client.x;
     y -= p->client.y;
-    if (x < 0 || y < 0)
+    if (x < 0 || y < 0) {
         return 0;
-    if (x >= p->client.w || y >= p->client.h)
+    }
+    if (x >= p->client.w || y >= p->client.h) {
         return 0;
+    }
     return 1;
 }
 
@@ -292,8 +294,9 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
     IDirectFBWindow *dfbwin = windata->dfbwin;
     DFBWindowOptions wopts;
 
-    if (!windata->is_managed)
+    if (!windata->is_managed) {
         return 0;
+    }
 
     SDL_DFB_CHECK(dfbwin->GetOptions(dfbwin, &wopts));
 
@@ -321,8 +324,9 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                 if (!(wopts & DWOP_KEEP_STACKING)) {
                     DirectFB_RaiseWindow(_this, window);
                 }
-                if (window->flags & SDL_WINDOW_MAXIMIZED)
+                if (window->flags & SDL_WINDOW_MAXIMIZED) {
                     return 1;
+                }
                 SDL_FALLTHROUGH;
             default:
                 windata->wm_grab = pos;
@@ -336,8 +340,9 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
         }
         return 1;
     case DWET_BUTTONUP:
-        if (!windata->wm_grab)
+        if (!windata->wm_grab) {
             return 0;
+        }
         if (!(evt->buttons & DIBM_LEFT)) {
             if (windata->wm_grab & (WM_POS_RIGHT | WM_POS_BOTTOM)) {
                 int dx = evt->cx - windata->wm_lastx;
@@ -370,8 +375,9 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
         }
         break;
     case DWET_MOTION:
-        if (!windata->wm_grab)
+        if (!windata->wm_grab) {
             return 0;
+        }
         if (evt->buttons & DIBM_LEFT) {
             int dx = evt->cx - windata->wm_lastx;
             int dy = evt->cy - windata->wm_lasty;

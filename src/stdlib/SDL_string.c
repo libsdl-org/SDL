@@ -1943,8 +1943,9 @@ SDL_vasprintf(char **strp, const char *fmt, va_list ap)
     *strp = NULL;
 
     p = (char *)SDL_malloc(size);
-    if (p == NULL)
+    if (p == NULL) {
         return -1;
+    }
 
     while (1) {
         /* Try to print in the allocated space */
@@ -1953,8 +1954,9 @@ SDL_vasprintf(char **strp, const char *fmt, va_list ap)
         va_end(aq);
 
         /* Check error code */
-        if (retval < 0)
+        if (retval < 0) {
             return retval;
+        }
 
         /* If that worked, return the string */
         if (retval < size) {

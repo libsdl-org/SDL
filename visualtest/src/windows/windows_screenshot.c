@@ -286,11 +286,13 @@ ScreenshotHwnd(HWND hwnd, LPARAM lparam)
     char* filename;
 
     GetWindowThreadProcessId(hwnd, &pid);
-    if(pid != screenshot_pinfo.pi.dwProcessId)
+    if (pid != screenshot_pinfo.pi.dwProcessId) {
         return TRUE;
+    }
 
-    if(!IsWindowVisible(hwnd))
+    if (!IsWindowVisible(hwnd)) {
         return TRUE;
+    }
 
     prefix = (char*)lparam;
     len = SDL_strlen(prefix) + 100;

@@ -35,10 +35,12 @@ NextVariation(SDLVisualTest_Variation* variation,
             break;
     }
 
-    if(carry == 1) /* we're done, we've tried all possible variations */
+    if (carry == 1) {
         return 0;
-    if(carry == 0)
+    } /* we're done, we've tried all possible variations */
+    if (carry == 0) {
         return 1;
+    }
 
     SDLTest_LogError("NextVariation() failed");
     return -1;

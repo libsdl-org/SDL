@@ -477,8 +477,9 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
     double sangleinv, cangleinv;
 
     /* Sanity check */
-    if (src == NULL)
+    if (src == NULL) {
         return NULL;
+    }
 
     if (SDL_HasColorKey(src)) {
         if (SDL_GetColorKey(src, &colorkey) == 0) {
@@ -487,8 +488,9 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
     }
     /* This function requires a 32-bit surface or 8-bit surface with a colorkey */
     is8bit = src->format->BitsPerPixel == 8 && colorKeyAvailable;
-    if (!(is8bit || (src->format->BitsPerPixel == 32 && src->format->Amask)))
+    if (!(is8bit || (src->format->BitsPerPixel == 32 && src->format->Amask))) {
         return NULL;
+    }
 
     /* Calculate target factors from sine/cosine and zoom */
     sangleinv = sangle*65536.0;
@@ -515,8 +517,9 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
     }
 
     /* Check target */
-    if (rz_dst == NULL)
+    if (rz_dst == NULL) {
         return NULL;
+    }
 
     /* Adjust for guard rows */
     rz_dst->h = rect_dest->h;

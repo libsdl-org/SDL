@@ -519,7 +519,9 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 static SDL_bool
 IBus_CheckConnection(SDL_DBusContext *dbus)
 {
-    if (!dbus) return SDL_FALSE;
+    if (!dbus) {
+        return SDL_FALSE;
+    }
     
     if (ibus_conn && dbus->connection_get_is_connected(ibus_conn)) {
         return SDL_TRUE;
@@ -537,7 +539,9 @@ IBus_CheckConnection(SDL_DBusContext *dbus)
                 struct inotify_event *event = (struct inotify_event*) p;
                 if (event->len > 0) {
                     char *addr_file_no_path = SDL_strrchr(ibus_addr_file, '/');
-                    if (!addr_file_no_path) return SDL_FALSE;
+                    if (!addr_file_no_path) {
+                        return SDL_FALSE;
+                    }
                  
                     if (SDL_strcmp(addr_file_no_path + 1, event->name) == 0) {
                         file_updated = SDL_TRUE;

@@ -63,8 +63,9 @@ GetL3CacheSize(void)
 
 
     int err = sysctlbyname(key, &result, &typeSize, NULL, 0);
-    if (0 != err)
+    if (0 != err) {
         return 0;
+    }
 
     return result;
 }

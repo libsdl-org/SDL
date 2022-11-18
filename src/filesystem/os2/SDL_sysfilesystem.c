@@ -104,8 +104,9 @@ SDL_GetPrefPath(const char *org, const char *app)
         lPosApp = SDL_snprintf(acBuf, sizeof(acBuf) - 1, "%s\\%s", pszPath, pszOrg);
         SDL_free(pszOrg);
     }
-    if (lPosApp < 0)
+    if (lPosApp < 0) {
         return NULL;
+    }
 
     DosCreateDir(acBuf, NULL);
 
@@ -117,8 +118,9 @@ SDL_GetPrefPath(const char *org, const char *app)
 
     lPosOrg = SDL_snprintf(&acBuf[lPosApp], sizeof(acBuf) - lPosApp - 1, "\\%s", pszApp);
     SDL_free(pszApp);
-    if (lPosOrg < 0)
+    if (lPosOrg < 0) {
         return NULL;
+    }
 
     DosCreateDir(acBuf, NULL);
     *((PUSHORT)&acBuf[lPosApp + lPosOrg]) = (USHORT)'\0\\';

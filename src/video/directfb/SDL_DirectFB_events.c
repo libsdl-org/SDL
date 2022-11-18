@@ -143,8 +143,9 @@ KbdIndex(_THIS, int id)
     int index;
 
     for (index = 0; index < devdata->num_keyboard; index++) {
-        if (devdata->keyboard[index].id == id)
+        if (devdata->keyboard[index].id == id) {
             return index;
+        }
     }
     return -1;
 }
@@ -160,10 +161,12 @@ ClientXY(DFB_WindowData * p, int *x, int *y)
     cx -= p->client.x;
     cy -= p->client.y;
 
-    if (cx < 0 || cy < 0)
+    if (cx < 0 || cy < 0) {
         return 0;
-    if (cx >= p->client.w || cy >= p->client.h)
+    }
+    if (cx >= p->client.w || cy >= p->client.h) {
         return 0;
+    }
     *x = cx;
     *y = cy;
     return 1;
@@ -670,15 +673,18 @@ EnumKeyboards(DFBInputDeviceID device_id,
 
     if (!cb->sys_kbd) {
         if (cb->sys_ids) {
-            if (device_id >= 0x10)
+            if (device_id >= 0x10) {
                 return DFENUM_OK;
+            }
         } else {
-            if (device_id < 0x10)
+            if (device_id < 0x10) {
                 return DFENUM_OK;
+            }
         }
     } else {
-        if (device_id != DIDID_KEYBOARD)
+        if (device_id != DIDID_KEYBOARD) {
             return DFENUM_OK;
+        }
     }
 
     if ((desc.caps & DIDTF_KEYBOARD)) {
@@ -701,8 +707,9 @@ EnumKeyboards(DFBInputDeviceID device_id,
 
         devdata->num_keyboard++;
 
-        if (cb->sys_kbd)
+        if (cb->sys_kbd) {
             return DFENUM_CANCEL;
+        }
     }
     return DFENUM_OK;
 }

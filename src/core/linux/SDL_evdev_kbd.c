@@ -499,8 +499,9 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
         }
     }
 
-    if (ch == ' ' || ch == d)
+    if (ch == ' ' || ch == d) {
         return d;
+    }
 
     put_utf8(kbd, d);
 

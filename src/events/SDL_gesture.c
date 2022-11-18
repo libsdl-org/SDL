@@ -98,8 +98,9 @@ int SDL_RecordGesture(SDL_TouchID touchId)
     for (i = 0; i < SDL_numGestureTouches; i++) {
         if ((touchId < 0) || (SDL_gestureTouch[i].id == touchId)) {
             SDL_gestureTouch[i].recording = SDL_TRUE;
-            if (touchId >= 0)
+            if (touchId >= 0) {
                 return 1;
+            }
         }
     }
     return (touchId < 0);
@@ -215,12 +216,15 @@ static int SDL_AddDollarGesture(SDL_GestureTouch* inTouch, SDL_FloatPoint* path)
     int index = -1;
     int i = 0;
     if (inTouch == NULL) {
-        if (SDL_numGestureTouches == 0) return SDL_SetError("no gesture touch devices registered");
+        if (SDL_numGestureTouches == 0) {
+            return SDL_SetError("no gesture touch devices registered");
+        }
         for (i = 0; i < SDL_numGestureTouches; i++) {
             inTouch = &SDL_gestureTouch[i];
             index = SDL_AddDollarGesture_one(inTouch, path);
-            if (index < 0)
+            if (index < 0) {
                 return -1;
+            }
         }
         /* Use the index of the last one added. */
         return index;
@@ -232,7 +236,9 @@ int SDL_LoadDollarTemplates(SDL_TouchID touchId, SDL_RWops *src)
 {
     int i,loaded = 0;
     SDL_GestureTouch *touch = NULL;
-    if (src == NULL) return 0;
+    if (src == NULL) {
+        return 0;
+    }
     if (touchId >= 0) {
         for (i = 0; i < SDL_numGestureTouches; i++) {
             if (SDL_gestureTouch[i].id == touchId) {
@@ -509,8 +515,9 @@ static SDL_GestureTouch * SDL_GetGestureTouch(SDL_TouchID id)
     int i;
     for (i = 0; i < SDL_numGestureTouches; i++) {
         /* printf("%i ?= %i\n",SDL_gestureTouch[i].id,id); */
-        if (SDL_gestureTouch[i].id == id)
+        if (SDL_gestureTouch[i].id == id) {
             return &SDL_gestureTouch[i];
+        }
     }
     return NULL;
 }

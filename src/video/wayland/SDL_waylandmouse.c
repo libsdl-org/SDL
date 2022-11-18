@@ -305,8 +305,9 @@ wayland_create_tmp_file(off_t size)
     SDL_strlcat(tmp_path, template, PATH_MAX);
 
     fd = mkostemp(tmp_path, O_CLOEXEC);
-    if (fd < 0)
+    if (fd < 0) {
         return -1;
+    }
 
     if (ftruncate(fd, size) < 0) {
         close(fd);
@@ -504,8 +505,9 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
     struct wl_pointer *pointer = d->pointer;
     float scale = 1.0f;
 
-    if (!pointer)
+    if (!pointer) {
         return -1;
+    }
 
     if (cursor)
     {

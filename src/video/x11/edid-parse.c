@@ -50,8 +50,9 @@ get_bits (int in, int begin, int end)
 static int
 decode_header (const uchar *edid)
 {
-    if (SDL_memcmp (edid, "\x00\xff\xff\xff\xff\xff\xff\x00", 8) == 0)
+    if (SDL_memcmp(edid, "\x00\xff\xff\xff\xff\xff\xff\x00", 8) == 0) {
 	return TRUE;
+    }
     return FALSE;
 }
 

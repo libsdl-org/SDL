@@ -404,16 +404,19 @@ CPU_haveARMSIMD(void)
 {
     _kernel_swi_regs regs;
     regs.r[0] = 0;
-    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL) {
         return 0;
+    }
 
-    if (!(regs.r[0] & (1<<31)))
+    if (!(regs.r[0] & (1 << 31))) {
         return 0;
+    }
 
     regs.r[0] = 34;
     regs.r[1] = 29;
-    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL) {
         return 0;
+    }
 
     return regs.r[0];
 }
@@ -482,8 +485,9 @@ CPU_haveNEON(void)
     return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
-    if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
+    if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0) {
         return 0;
+    }
     return ((hasneon & HWCAP_NEON) == HWCAP_NEON);
 #elif defined(__QNXNTO__)
     return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;

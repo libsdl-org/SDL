@@ -263,7 +263,9 @@ done:
 
 int _System os2_iconv_close(iconv_t cd)
 {
-    if (!cd) return 0;
+    if (!cd) {
+        return 0;
+    }
 
 #ifdef ICONV_THREAD_SAFE
     DosCloseMutexSem(((iuconv_obj *)cd)->hMtx);

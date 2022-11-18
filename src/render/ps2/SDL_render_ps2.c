@@ -113,8 +113,9 @@ PS2_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GSTEXTURE* ps2_tex = (GSTEXTURE*) SDL_calloc(1, sizeof(GSTEXTURE));
 
-    if (!ps2_tex)
+    if (!ps2_tex) {
         return SDL_OutOfMemory();
+    }
 
     ps2_tex->Width = texture->w;
     ps2_tex->Height = texture->h;

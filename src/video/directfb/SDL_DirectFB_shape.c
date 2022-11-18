@@ -76,12 +76,15 @@ DirectFB_ResizeWindowShape(SDL_Window* window) {
 int
 DirectFB_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode) {
 
-    if(shaper == NULL || shape == NULL || shaper->driverdata == NULL)
+    if (shaper == NULL || shape == NULL || shaper->driverdata == NULL) {
         return -1;
-    if(shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode))
+    }
+    if (shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode)) {
         return -2;
-    if(shape->w != shaper->window->w || shape->h != shaper->window->h)
+    }
+    if (shape->w != shaper->window->w || shape->h != shaper->window->h) {
         return -3;
+    }
 
     {
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(shaper->window);

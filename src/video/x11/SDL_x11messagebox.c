@@ -764,8 +764,9 @@ X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     SDL_zero(data);
 
-    if ( !SDL_X11_LoadSymbols() )
+    if (!SDL_X11_LoadSymbols()) {
         return -1;
+    }
 
 #if SDL_SET_LOCALE
     origlocale = setlocale(LC_ALL, NULL);

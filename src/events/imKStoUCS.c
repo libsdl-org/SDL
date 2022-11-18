@@ -296,8 +296,9 @@ unsigned int
 SDL_KeySymToUcs4(Uint32 keysym)
 {
     /* 'Unicode keysym' */
-    if ((keysym & 0xff000000) == 0x01000000)
+    if ((keysym & 0xff000000) == 0x01000000) {
         return (keysym & 0x00ffffff);
+    }
 
     if (keysym > 0 && keysym < 0x100)
 	return keysym;

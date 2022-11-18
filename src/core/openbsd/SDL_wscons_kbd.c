@@ -233,12 +233,13 @@ static struct SDL_wscons_compose_tab_s {
 
 static keysym_t ksym_upcase(keysym_t ksym)
 {
-    if (ksym >= KS_f1 && ksym <= KS_f20)
-        return(KS_F1 - KS_f1 + ksym);
+    if (ksym >= KS_f1 && ksym <= KS_f20) {
+        return (KS_F1 - KS_f1 + ksym);
+    }
 
-    if (KS_GROUP(ksym) == KS_GROUP_Ascii && ksym <= 0xff &&
-            latin1_to_upper[ksym] != 0x00)
-        return(latin1_to_upper[ksym]);
+    if (KS_GROUP(ksym) == KS_GROUP_Ascii && ksym <= 0xff && latin1_to_upper[ksym] != 0x00) {
+        return (latin1_to_upper[ksym]);
+    }
 
     return(ksym);
 }

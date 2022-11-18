@@ -17,8 +17,9 @@ CountTokens(char* args)
     int index, num_tokens;
     int state; /* current state of the DFA */
 
-    if(!args)
+    if (!args) {
         return -1;
+    }
 
     index = 0;
     state = 0;
@@ -189,8 +190,9 @@ SDLVisualTest_Tokenize(char* str, int max_token_len)
     }
 
     num_tokens = CountTokens(str);
-    if(num_tokens == 0)
+    if (num_tokens == 0) {
         return NULL;
+    }
 
     tokens = (char**)SDL_malloc(sizeof(char*) * (num_tokens + 1));
     if(!TokenizeHelper(str, tokens, num_tokens, max_token_len))
@@ -209,8 +211,9 @@ SDLVisualTest_ParseArgsToArgv(char* args)
     int num_tokens;
 
     num_tokens = CountTokens(args);
-    if(num_tokens == 0)
+    if (num_tokens == 0) {
         return NULL;
+    }
 
     /* allocate space for arguments */
     argv = (char**)SDL_malloc((num_tokens + 2) * sizeof(char*));

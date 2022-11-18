@@ -24,15 +24,17 @@ SDLVisualTest_RWHelperResetBuffer(SDLVisualTest_RWHelperBuffer* buffer)
 char
 SDLVisualTest_RWHelperReadChar(SDL_RWops* rw, SDLVisualTest_RWHelperBuffer* buffer)
 {
-    if(!rw || !buffer)
+    if (!rw || !buffer) {
         return 0;
+    }
     /* if the buffer has been consumed, we fill it up again */
     if(buffer->buffer_pos == buffer->buffer_width)
     {
         buffer->buffer_width = SDL_RWread(rw, buffer->buffer, 1, RWOPS_BUFFER_LEN);
         buffer->buffer_pos = 0;
-        if(buffer->buffer_width == 0)
+        if (buffer->buffer_width == 0) {
             return 0;
+        }
     }
     buffer->buffer_pos++;
     return buffer->buffer[buffer->buffer_pos - 1];
@@ -100,8 +102,9 @@ SDLVisualTest_RWHelperReadLine(SDL_RWops* rw, char* str, int size,
             }
         }
     }
-    if(current_pos == 0)
+    if (current_pos == 0) {
         return NULL;
+    }
 
     str[current_pos] = '\0';
     return str;

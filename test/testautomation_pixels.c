@@ -421,7 +421,9 @@ pixels_calcGammaRamp(void *arg)
   /* Allocate temp ramp array and fill with some value */
   ramp = (Uint16 *)SDL_malloc(256 * sizeof(Uint16));
   SDLTest_AssertCheck(ramp != NULL, "Validate temp ramp array could be allocated");
-  if (ramp == NULL) return TEST_ABORTED;
+  if (ramp == NULL) {
+    return TEST_ABORTED;
+  }
 
   /* Make call with different gamma values */
   for (variation = 0; variation < 4; variation++) {

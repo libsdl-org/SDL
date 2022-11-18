@@ -88,8 +88,9 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     ULONG ulTimeout;
     ULONG cPost;
 
-    if (sem == NULL)
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
+    }
 
     if (timeout != SEM_INDEFINITE_WAIT) {
         DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulStartTime, sizeof(ULONG));
@@ -97,8 +98,9 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 
     while (TRUE) {
         ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
-        if (ulRC != NO_ERROR)
+        if (ulRC != NO_ERROR) {
             return SDL_SetError("DosRequestMutexSem() failed, rc = %u", ulRC);
+        }
 
         cPost = sem->cPost;
         if (sem->cPost != 0) {
@@ -115,17 +117,20 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
         else {
             DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulCurTime, sizeof(ULONG));
             ulTimeout = ulCurTime - ulStartTime;
-            if (timeout < ulTimeout)
+            if (timeout < ulTimeout) {
                 return SDL_MUTEX_TIMEDOUT;
+            }
             ulTimeout = timeout - ulTimeout;
         }
 
         ulRC = DosWaitEventSem(sem->hEv, ulTimeout);
-        if (ulRC == ERROR_TIMEOUT)
+        if (ulRC == ERROR_TIMEOUT) {
             return SDL_MUTEX_TIMEDOUT;
+        }
 
-        if (ulRC != NO_ERROR)
+        if (ulRC != NO_ERROR) {
             return SDL_SetError("DosWaitEventSem() failed, rc = %u", ulRC);
+        }
     }
 
     return 0;
@@ -154,8 +159,9 @@ SDL_SemValue(SDL_sem * sem)
     }
 
     ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
-    if (ulRC != NO_ERROR)
+    if (ulRC != NO_ERROR) {
         return SDL_SetError("DosRequestMutexSem() failed, rc = %u", ulRC);
+    }
 
     ulRC = sem->cPost;
     DosReleaseMutexSem(sem->hMtx);
@@ -168,12 +174,14 @@ SDL_SemPost(SDL_sem * sem)
 {
     ULONG ulRC;
 
-    if (sem == NULL)
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
+    }
 
     ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
-    if (ulRC != NO_ERROR)
+    if (ulRC != NO_ERROR) {
         return SDL_SetError("DosRequestMutexSem() failed, rc = %u", ulRC);
+    }
 
     sem->cPost++;
 

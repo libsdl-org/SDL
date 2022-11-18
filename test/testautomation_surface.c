@@ -239,7 +239,9 @@ surface_testSaveLoadBitmap(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) return TEST_ABORTED;
+    if (face == NULL) {
+        return TEST_ABORTED;
+    }
 
     /* Delete test file; ignore errors */
     unlink(sampleFilename);
@@ -283,8 +285,9 @@ surface_testSurfaceConversion(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL)
+    if (face == NULL) {
         return TEST_ABORTED;
+    }
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (face->format->palette) {
@@ -354,8 +357,9 @@ surface_testCompleteSurfaceConversion(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL)
+    if (face == NULL) {
         return TEST_ABORTED;
+    }
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (face->format->palette) {

@@ -323,8 +323,9 @@ SDL_SetWindowShape(SDL_Window *window,SDL_Surface *shape,SDL_WindowShapeMode *sh
 static SDL_bool
 SDL_WindowHasAShape(SDL_Window *window)
 {
-    if (window == NULL || !SDL_IsShapedWindow(window))
+    if (window == NULL || !SDL_IsShapedWindow(window)) {
         return SDL_FALSE;
+    }
     return window->shaper->hasshape;
 }
 

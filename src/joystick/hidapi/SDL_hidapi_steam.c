@@ -318,8 +318,9 @@ static int SetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65], int
         uint8_t uPacketBuffer[ MAX_REPORT_SEGMENT_SIZE ];
         unsigned char *pBufferPtr = uBuffer + 1;
 
-        if ( nActualDataLen < 1 )
+        if (nActualDataLen < 1) {
             return -1;
+        }
         
         // Skip report number in data
         nActualDataLen--;
@@ -417,14 +418,16 @@ static int ReadResponse( SDL_hid_device *dev, uint8_t uBuffer[65], int nExpected
 
     DPRINTF("ReadResponse( %p %p %d )\n", dev, uBuffer, nExpectedResponse );
 
-    if ( nRet < 0 )
+    if (nRet < 0) {
         return nRet;
+    }
     
     DPRINTF("ReadResponse got %d bytes of data: ", nRet );
     HEXDUMP( uBuffer, nRet );
     
-    if ( uBuffer[1] != nExpectedResponse )
+    if (uBuffer[1] != nExpectedResponse) {
         return -1;
+    }
     
     return nRet;
 }
@@ -948,8 +951,9 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
         ValveControllerStatePacket_t *pStatePacket = &pInReport->payload.controllerState;
 
         // No new data to process; indicate that we received a state packet, but otherwise do nothing.
-        if ( pState->unPacketNum == pStatePacket->unPacketNum )
+        if (pState->unPacketNum == pStatePacket->unPacketNum) {
             return true;
+        }
 
         FormatStatePacketUntilGyro( pState, pStatePacket );
 
@@ -973,8 +977,9 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
         ValveControllerStatePacket_t *pStatePacket = &pInReport->payload.controllerState;
 
         // No new data to process; indicate that we received a state packet, but otherwise do nothing.
-        if ( pState->unPacketNum == pStatePacket->unPacketNum )
+        if (pState->unPacketNum == pStatePacket->unPacketNum) {
             return true;
+        }
 
         FormatStatePacketUntilGyro( pState, pStatePacket );
 

@@ -125,8 +125,9 @@ KillTimerCallback(Uint32 interval, void* param)
 static int
 ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
 {
-    if(!action || !sut_running)
+    if (!action || !sut_running) {
         return TEST_ERROR;
+    }
 
     switch(action->type)
     {

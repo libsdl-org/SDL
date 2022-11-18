@@ -77,8 +77,9 @@ SDL_SYS_CreateThread(SDL_Thread * thread,
                             _beginthread(RunThread, NULL, thread->stacksize, thread);
     }
 
-    if (thread->handle == -1)
+    if (thread->handle == -1) {
         return SDL_SetError("Not enough resources to create thread");
+    }
 
     return 0;
 }
@@ -109,8 +110,9 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
                            (priority > SDL_THREAD_PRIORITY_NORMAL)? PRTYC_TIMECRITICAL :
                             PRTYC_REGULAR,
                           0, 0);
-    if (ulRC != NO_ERROR)
+    if (ulRC != NO_ERROR) {
         return SDL_SetError("DosSetPriority() failed, rc = %u", ulRC);
+    }
 
     return 0;
 }

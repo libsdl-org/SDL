@@ -566,8 +566,9 @@ static SDL_bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vr
                                            crtc_id,
                                            DRM_MODE_OBJECT_CRTC);
 
-    if (!drm_props)
+    if (!drm_props) {
         return SDL_FALSE;
+    }
 
     *vrr_prop_id = KMSDRM_CrtcGetPropId(drm_fd,
                                        drm_props,
@@ -592,8 +593,9 @@ KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
                                        output_id,
                                        DRM_MODE_OBJECT_CONNECTOR);
 
-    if(!props)
+    if (!props) {
         return SDL_FALSE;
+    }
 
     for (i = 0; !found && i < props->count_props; ++i) {
         drmModePropertyPtr drm_prop = KMSDRM_drmModeGetProperty(drm_fd, props->props[i]);
@@ -608,8 +610,9 @@ KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
 
         KMSDRM_drmModeFreeProperty(drm_prop);
     }
-    if(found)
-        return prop_value ? SDL_TRUE: SDL_FALSE;
+    if (found) {
+        return prop_value ? SDL_TRUE : SDL_FALSE;
+    }
 
     return SDL_FALSE;
 }
@@ -636,16 +639,18 @@ KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
     SDL_bool object_prop_value;
     int i;
 
-    if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) 
+    if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) {
         return SDL_FALSE;
+    }
 
 
     props = KMSDRM_drmModeObjectGetProperties(drm_fd,
                                        crtc_id,
                                        DRM_MODE_OBJECT_CRTC);
 
-    if(!props)
+    if (!props) {
         return SDL_FALSE;
+    }
 
     for (i = 0; i < props->count_props; ++i) {
         drmModePropertyPtr drm_prop = KMSDRM_drmModeGetProperty(drm_fd, props->props[i]);

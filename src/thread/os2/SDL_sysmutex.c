@@ -72,8 +72,9 @@ SDL_LockMutex(SDL_mutex * mutex)
     ULONG ulRC;
     HMTX  hMtx = (HMTX)mutex;
 
-    if (hMtx == NULLHANDLE)
+    if (hMtx == NULLHANDLE) {
         return SDL_InvalidParamError("mutex");
+    }
 
     ulRC = DosRequestMutexSem(hMtx, SEM_INDEFINITE_WAIT);
     if (ulRC != NO_ERROR) {
@@ -91,13 +92,15 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     ULONG ulRC;
     HMTX  hMtx = (HMTX)mutex;
 
-    if (hMtx == NULLHANDLE)
+    if (hMtx == NULLHANDLE) {
         return SDL_InvalidParamError("mutex");
+    }
 
     ulRC = DosRequestMutexSem(hMtx, SEM_IMMEDIATE_RETURN);
 
-    if (ulRC == ERROR_TIMEOUT)
+    if (ulRC == ERROR_TIMEOUT) {
         return SDL_MUTEX_TIMEDOUT;
+    }
 
     if (ulRC != NO_ERROR) {
         debug_os2("DosRequestMutexSem(), rc = %u", ulRC);
@@ -114,12 +117,14 @@ SDL_UnlockMutex(SDL_mutex * mutex)
     ULONG ulRC;
     HMTX  hMtx = (HMTX)mutex;
 
-    if (hMtx == NULLHANDLE)
+    if (hMtx == NULLHANDLE) {
         return SDL_InvalidParamError("mutex");
+    }
 
     ulRC = DosReleaseMutexSem(hMtx);
-    if (ulRC != NO_ERROR)
+    if (ulRC != NO_ERROR) {
         return SDL_SetError("DosReleaseMutexSem(), rc = %u", ulRC);
+    }
 
     return 0;
 }

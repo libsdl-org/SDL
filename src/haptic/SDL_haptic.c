@@ -218,8 +218,9 @@ SDL_HapticIndex(SDL_Haptic * haptic)
 int
 SDL_MouseIsHaptic(void)
 {
-    if (SDL_SYS_HapticMouse() < 0)
+    if (SDL_SYS_HapticMouse() < 0) {
         return SDL_FALSE;
+    }
     return SDL_TRUE;
 }
 
@@ -466,8 +467,9 @@ SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect)
         return -1;
     }
 
-    if ((haptic->supported & effect->type) != 0)
+    if ((haptic->supported & effect->type) != 0) {
         return SDL_TRUE;
+    }
     return SDL_FALSE;
 }
 

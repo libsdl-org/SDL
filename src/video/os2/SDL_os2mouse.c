@@ -42,8 +42,9 @@ static SDL_Cursor* OS2_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     }
 
     hptr = utilCreatePointer(surface, hot_x, ulMaxH - hot_y - 1);
-    if (hptr == NULLHANDLE)
+    if (hptr == NULLHANDLE) {
         return NULL;
+    }
 
     pSDLCursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (pSDLCursor == NULL) {

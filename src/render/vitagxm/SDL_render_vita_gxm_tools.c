@@ -1050,8 +1050,9 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         tex_size += (((aligned_w + 1) / 2) * ((h + 1) / 2)) * 2;
     }
 
-    if (!texture)
+    if (!texture) {
         return NULL;
+    }
 
     *return_w = w;
     *return_h = h;

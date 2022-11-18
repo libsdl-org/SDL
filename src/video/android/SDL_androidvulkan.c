@@ -42,8 +42,9 @@ int Android_Vulkan_LoadLibrary(_THIS, const char *path)
     SDL_bool hasSurfaceExtension = SDL_FALSE;
     SDL_bool hasAndroidSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
-    if(_this->vulkan_config.loader_handle)
+    if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
+    }
 
     /* Load the Vulkan loader library */
     if (!path) {
@@ -53,8 +54,9 @@ int Android_Vulkan_LoadLibrary(_THIS, const char *path)
         path = "libvulkan.so";
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-    if(!_this->vulkan_config.loader_handle)
+    if (!_this->vulkan_config.loader_handle) {
         return -1;
+    }
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(

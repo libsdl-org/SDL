@@ -100,9 +100,11 @@ double attribute_hidden __ieee754_sqrt(double x)
 	}
     /* take care of zero */
 	if(ix0<=0) {
-	    if(((ix0&(~sign))|ix1)==0) return x;/* sqrt(+-0) = +-0 */
-	    else if(ix0<0)
-		return (x-x)/(x-x);		/* sqrt(-ve) = sNaN */
+	    if(((ix0&(~sign))|ix1)==0) {
+          return x;/* sqrt(+-0) = +-0 */
+       } else if (ix0 < 0) {
+          return (x - x) / (x - x);
+       }		/* sqrt(-ve) = sNaN */
 	}
     /* normalize x */
 	m = (ix0>>20);
@@ -195,10 +197,12 @@ double attribute_hidden __ieee754_sqrt(double x)
 double sqrt(double x)
 {
 	double z = __ieee754_sqrt(x);
-	if (_LIB_VERSION == _IEEE_ || isnan(x))
+	if (_LIB_VERSION == _IEEE_ || isnan(x)) {
 		return z;
-	if (x < 0.0)
-		return __kernel_standard(x, x, 26); /* sqrt(negative) */
+	}
+	if (x < 0.0) {
+		return __kernel_standard(x, x, 26);
+	} /* sqrt(negative) */
 	return z;
 }
 #else

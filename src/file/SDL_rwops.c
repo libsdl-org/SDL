@@ -87,8 +87,9 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
     DWORD must_exist, truncate;
     int a_mode;
 
-    if (!context)
-        return -1;              /* failed (invalid call) */
+    if (!context) {
+        return -1;
+    }              /* failed (invalid call) */
 
     context->hidden.windowsio.h = INVALID_HANDLE_VALUE;   /* mark this as unusable */
     context->hidden.windowsio.buffer.data = NULL;
@@ -110,8 +111,10 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
     w_right = (a_mode || SDL_strchr(mode, '+')
                || truncate) ? GENERIC_WRITE : 0;
 
-    if (!r_right && !w_right)   /* inconsistent mode */
-        return -1;              /* failed (invalid call) */
+    if (!r_right && !w_right) {
+        return -1;
+    }   /* inconsistent mode */
+                  /* failed (invalid call) */
 
     context->hidden.windowsio.buffer.data =
         (char *) SDL_malloc(READAHEAD_BUFFER_SIZE);
@@ -571,8 +574,9 @@ SDL_RWFromFile(const char *file, const char *mode)
 
     /* Try to open the file from the asset system */
     rwops = SDL_AllocRW();
-    if (!rwops)
-        return NULL;            /* SDL_SetError already setup by SDL_AllocRW() */
+    if (!rwops) {
+        return NULL;
+    }            /* SDL_SetError already setup by SDL_AllocRW() */
     if (Android_JNI_FileOpen(rwops, file, mode) < 0) {
         SDL_FreeRW(rwops);
         return NULL;
@@ -586,8 +590,9 @@ SDL_RWFromFile(const char *file, const char *mode)
 
 #elif defined(__WIN32__) || defined(__GDK__)
     rwops = SDL_AllocRW();
-    if (!rwops)
-        return NULL;            /* SDL_SetError already setup by SDL_AllocRW() */
+    if (!rwops) {
+        return NULL;
+    }            /* SDL_SetError already setup by SDL_AllocRW() */
     if (windows_file_open(rwops, file, mode) < 0) {
         SDL_FreeRW(rwops);
         return NULL;

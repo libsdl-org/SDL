@@ -627,8 +627,9 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
     SDL_assert(uIndex < sizeof(dwRet) / sizeof(dwRet[0]));
 
     hkl = videodata->ime_hkl;
-    if (hklprev == hkl)
+    if (hklprev == hkl) {
         return dwRet[uIndex];
+    }
     hklprev = hkl;
 
     SDL_assert(uIndex == 0);
@@ -783,8 +784,9 @@ IME_ClearComposition(SDL_VideoData *videodata)
 static SDL_bool
 IME_IsTextInputShown(SDL_VideoData* videodata)
 {
-    if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled)
+    if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
         return SDL_FALSE;
+    }
 
     return videodata->ime_uicontext != 0 ? SDL_TRUE : SDL_FALSE;
 }
@@ -997,8 +999,9 @@ IME_ShowCandidateList(SDL_VideoData *videodata)
         videodata->ime_candidates = (WCHAR *)candidates;
     }
 
-    if (videodata->ime_candidates == NULL)
+    if (videodata->ime_candidates == NULL) {
         return -1;
+    }
 
     SDL_memset(videodata->ime_candidates, 0, MAX_CANDSIZE);
 
@@ -1023,8 +1026,9 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
 {
     SDL_bool trap = SDL_FALSE;
     HIMC himc = 0;
-    if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled)
+    if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
         return SDL_FALSE;
+    }
 
     switch (msg) {
     case WM_KEYDOWN:
@@ -1211,8 +1215,9 @@ STDMETHODIMP_(ULONG) TSFSink_Release(TSFSink *sink)
 
 STDMETHODIMP UIElementSink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 {
-    if (!ppv)
+    if (!ppv) {
         return E_INVALIDARG;
+    }
 
     *ppv = 0;
     if (WIN_IsEqualIID(riid, &IID_IUnknown)) {
@@ -1247,8 +1252,9 @@ STDMETHODIMP UIElementSink_BeginUIElement(TSFSink *sink, DWORD dwUIElementId, BO
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element)
+    if (!element) {
         return E_INVALIDARG;
+    }
 
     *pbShow = FALSE;
     if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfReadingInformationUIElement, (LPVOID *)&preading))) {
@@ -1272,8 +1278,9 @@ STDMETHODIMP UIElementSink_UpdateUIElement(TSFSink *sink, DWORD dwUIElementId)
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element)
+    if (!element) {
         return E_INVALIDARG;
+    }
 
     if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfReadingInformationUIElement, (LPVOID *)&preading))) {
         BSTR bstr;
@@ -1298,8 +1305,9 @@ STDMETHODIMP UIElementSink_EndUIElement(TSFSink *sink, DWORD dwUIElementId)
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element)
+    if (!element) {
         return E_INVALIDARG;
+    }
 
     if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfReadingInformationUIElement, (LPVOID *)&preading))) {
         videodata->ime_readingstring[0] = 0;
@@ -1319,8 +1327,9 @@ STDMETHODIMP UIElementSink_EndUIElement(TSFSink *sink, DWORD dwUIElementId)
 
 STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 {
-    if (!ppv)
+    if (!ppv) {
         return E_INVALIDARG;
+    }
 
     *ppv = 0;
     if (WIN_IsEqualIID(riid, &IID_IUnknown)) {
@@ -1398,11 +1407,13 @@ UILess_SetupSinks(SDL_VideoData *videodata)
     TfClientId clientid = 0;
     SDL_bool result = SDL_FALSE;
     ITfSource *source = 0;
-    if (FAILED(CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgrEx, (LPVOID *)&videodata->ime_threadmgrex)))
+    if (FAILED(CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgrEx, (LPVOID *)&videodata->ime_threadmgrex))) {
         return SDL_FALSE;
+    }
 
-    if (FAILED(videodata->ime_threadmgrex->lpVtbl->ActivateEx(videodata->ime_threadmgrex, &clientid, TF_TMAE_UIELEMENTENABLEDONLY)))
+    if (FAILED(videodata->ime_threadmgrex->lpVtbl->ActivateEx(videodata->ime_threadmgrex, &clientid, TF_TMAE_UIELEMENTENABLEDONLY))) {
         return SDL_FALSE;
+    }
 
     videodata->ime_uielemsink = SDL_malloc(sizeof(TSFSink));
     videodata->ime_ippasink = SDL_malloc(sizeof(TSFSink));

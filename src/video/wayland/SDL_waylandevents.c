@@ -1712,8 +1712,11 @@ static char* Wayland_URIToLocal(char* uri) {
     char *file = NULL;
     SDL_bool local;
 
-    if (SDL_memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
-    else if (SDL_strstr(uri,":/") != NULL) return file; /* wrong scheme */
+    if (SDL_memcmp(uri,"file:/",6) == 0) {
+        uri += 6;      /* local file? */
+    } else if (SDL_strstr(uri, ":/") != NULL) {
+        return file;
+    } /* wrong scheme */
 
     local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');
 
@@ -2636,14 +2639,17 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
     SDL_Window *window;
     struct zwp_relative_pointer_v1 *relative_pointer;
 
-    if (!d->relative_pointer_manager)
+    if (!d->relative_pointer_manager) {
         return -1;
+    }
 
-    if (!d->pointer_constraints)
+    if (!d->pointer_constraints) {
         return -1;
+    }
 
-    if (!input->pointer)
+    if (!input->pointer) {
         return -1;
+    }
 
     /* If we have a pointer confine active, we must destroy it here because
      * creating a locked pointer otherwise would be a protocol error.
@@ -2720,11 +2726,13 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
     struct zwp_confined_pointer_v1 *confined_pointer;
     struct wl_region *confine_rect;
 
-    if (!d->pointer_constraints)
+    if (!d->pointer_constraints) {
         return -1;
+    }
 
-    if (!input->pointer)
+    if (!input->pointer) {
         return -1;
+    }
 
     /* A confine may already be active, in which case we should destroy it and
      * create a new one.
@@ -2734,12 +2742,14 @@ int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *wi
     /* We cannot create a confine if the pointer is already locked. Defer until
      * the pointer is unlocked.
      */
-    if (d->relative_mouse_mode)
+    if (d->relative_mouse_mode) {
         return 0;
+    }
 
     /* Don't confine the pointer if it shouldn't be confined. */
-    if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED))
+    if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
         return 0;
+    }
 
     if (SDL_RectEmpty(&window->mouse_rect)) {
         confine_rect = NULL;
@@ -2788,11 +2798,13 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
     SDL_WindowData *w = window->driverdata;
     SDL_VideoData *d = input->display;
 
-    if (!d->key_inhibitor_manager)
+    if (!d->key_inhibitor_manager) {
         return -1;
+    }
 
-    if (w->key_inhibitor)
+    if (w->key_inhibitor) {
         return 0;
+    }
 
     w->key_inhibitor =
         zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts(d->key_inhibitor_manager,

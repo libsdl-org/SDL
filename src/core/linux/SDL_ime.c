@@ -133,8 +133,9 @@ SDL_IME_Reset(void)
 SDL_bool
 SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
-    if (SDL_IME_ProcessKeyEvent_Real)
+    if (SDL_IME_ProcessKeyEvent_Real) {
         return SDL_IME_ProcessKeyEvent_Real(keysym, keycode, state);
+    }
 
     return SDL_FALSE;
 }

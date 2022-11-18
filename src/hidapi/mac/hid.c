@@ -254,11 +254,13 @@ static int get_string_property(IOHIDDeviceRef device, CFStringRef prop, wchar_t 
 {
 	CFStringRef str;
 	
-	if (!len)
+	if (!len) {
 		return 0;
+	}
 
-	if (CFGetTypeID(prop) != CFStringGetTypeID())
+	if (CFGetTypeID(prop) != CFStringGetTypeID()) {
 		return 0;
+	}
 
 	str = (CFStringRef)IOHIDDeviceGetProperty(device, prop);
 	
@@ -291,11 +293,13 @@ static int get_string_property(IOHIDDeviceRef device, CFStringRef prop, wchar_t 
 static int get_string_property_utf8(IOHIDDeviceRef device, CFStringRef prop, char *buf, size_t len)
 {
 	CFStringRef str;
-	if (!len)
+	if (!len) {
 		return 0;
+	}
 	
-	if (CFGetTypeID(prop) != CFStringGetTypeID())
+	if (CFGetTypeID(prop) != CFStringGetTypeID()) {
 		return 0;
+	}
 
 	str = (CFStringRef)IOHIDDeviceGetProperty(device, prop);
 	
@@ -364,8 +368,9 @@ static int make_path(IOHIDDeviceRef device, char *buf, size_t len)
 								   device, CFSTR(kIOHIDTransportKey),
 								   transport, sizeof(transport));
 	
-	if (!res)
+	if (!res) {
 		return -1;
+	}
 	
 	vid = get_vendor_id(device);
 	pid = get_product_id(device);
@@ -819,15 +824,17 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	dev = new_hid_device();
 	
 	/* Set up the HID Manager if it hasn't been done */
-	if (hid_init() < 0)
+	if (hid_init() < 0) {
 		return NULL;
+	}
 	
 	/* give the IOHIDManager a chance to update itself */
 	process_pending_events();
 	
 	device_set = IOHIDManagerCopyDevices(hid_mgr);
-	if (!device_set)
+	if (!device_set) {
 		return NULL;
+	}
 	
 	num_devices = CFSetGetCount(device_set);
 	device_array = (IOHIDDeviceRef *)calloc(num_devices, sizeof(IOHIDDeviceRef));
@@ -900,8 +907,9 @@ static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char
 	IOReturn res;
 	
 	/* Return if the device has been disconnected. */
-   	if (dev->disconnected)
+   	if (dev->disconnected) {
    		return -1;
+   	}
 	
 	if (report_id == 0x0) {
 		/* Not using numbered Reports.
@@ -969,8 +977,9 @@ static int cond_wait(const hid_device *dev, pthread_cond_t *cond, pthread_mutex_
 {
 	while (!dev->input_reports) {
 		int res = pthread_cond_wait(cond, mutex);
-		if (res != 0)
+		if (res != 0) {
 			return res;
+		}
 		
 		/* A res of 0 means we may have been signaled or it may
 		 be a spurious wakeup. Check to see that there's acutally
@@ -978,8 +987,9 @@ static int cond_wait(const hid_device *dev, pthread_cond_t *cond, pthread_mutex_
 		 to sleep. See the pthread_cond_timedwait() man page for
 		 details. */
 		
-		if (dev->shutdown_thread || dev->disconnected)
+		if (dev->shutdown_thread || dev->disconnected) {
 			return -1;
+		}
 	}
 	
 	return 0;
@@ -989,8 +999,9 @@ static int cond_timedwait(const hid_device *dev, pthread_cond_t *cond, pthread_m
 {
 	while (!dev->input_reports) {
 		int res = pthread_cond_timedwait(cond, mutex, abstime);
-		if (res != 0)
+		if (res != 0) {
 			return res;
+		}
 		
 		/* A res of 0 means we may have been signaled or it may
 		 be a spurious wakeup. Check to see that there's acutally
@@ -998,8 +1009,9 @@ static int cond_timedwait(const hid_device *dev, pthread_cond_t *cond, pthread_m
 		 to sleep. See the pthread_cond_timedwait() man page for
 		 details. */
 		
-		if (dev->shutdown_thread || dev->disconnected)
+		if (dev->shutdown_thread || dev->disconnected) {
 			return -1;
+		}
 	}
 	
 	return 0;
@@ -1105,8 +1117,9 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	int skipped_report_id = 0, report_number;
 
 	/* Return if the device has been unplugged. */
-	if (dev->disconnected)
+	if (dev->disconnected) {
 		return -1;
+	}
 	
 	report_number = data[0];
 	if (report_number == 0x0) {
@@ -1121,8 +1134,9 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	                           kIOHIDReportTypeFeature,
 	                           report_number, /* Report ID */
 	                           data, &len);
-	if (res != kIOReturnSuccess)
+	if (res != kIOReturnSuccess) {
 		return -1;
+	}
 
 	if (skipped_report_id) {
 		len++;

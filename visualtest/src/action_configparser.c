@@ -145,8 +145,9 @@ SDLVisualTest_IsActionQueueEmpty(SDLVisualTest_ActionQueue* queue)
         return 1;
     }
 
-    if(queue->size > 0)
+    if (queue->size > 0) {
         return 0;
+    }
     return 1;
 }
 

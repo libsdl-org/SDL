@@ -43,8 +43,9 @@ int main(int argc, char* argv[])
 
 	struct hid_device_info *devs, *cur_dev;
 	
-	if (hid_init())
+	if (hid_init()) {
 		return -1;
+	}
 
 	devs = hid_enumerate(0x0, 0x0);
 	cur_dev = devs;	

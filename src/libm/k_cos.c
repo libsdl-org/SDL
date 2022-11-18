@@ -63,7 +63,9 @@ double attribute_hidden __kernel_cos(double x, double y)
 	GET_HIGH_WORD(ix,x);
 	ix &= 0x7fffffff;			/* ix = |x|'s high word*/
 	if(ix<0x3e400000) {			/* if x < 2**27 */
-	    if(((int)x)==0) return one;		/* generate inexact */
+	    if (((int)x) == 0) {
+		return one;
+	    }		/* generate inexact */
 	}
 	z  = x*x;
 	r  = z*(C1+z*(C2+z*(C3+z*(C4+z*(C5+z*C6)))));

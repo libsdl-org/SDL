@@ -48,8 +48,9 @@ static ULONG _getEnvULong(const char *name, ULONG ulMax, ULONG ulDefault)
     char*   end;
     char*   envval = SDL_getenv(name);
 
-    if (envval == NULL)
+    if (envval == NULL) {
         return ulDefault;
+    }
 
     ulValue = SDL_strtoul(envval, &end, 10);
     return (end == envval) || (ulValue > ulMax)? ulDefault : ulMax;
@@ -274,8 +275,9 @@ static int OS2_OpenDevice(_THIS, const char *devname)
     }
 
     pAData = (SDL_PrivateAudioData *) SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
-    if (pAData == NULL)
+    if (pAData == NULL) {
         return SDL_OutOfMemory();
+    }
     _this->hidden = pAData;
 
     ulRC = DosCreateEventSem(NULL, &pAData->hevBuf, DCE_AUTORESET, TRUE);

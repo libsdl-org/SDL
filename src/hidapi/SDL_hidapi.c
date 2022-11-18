@@ -185,7 +185,9 @@ static int SDL_inotify_init1(void) {
 #else
 static int SDL_inotify_init1(void) {
     int fd = inotify_init();
-    if (fd  < 0) return -1;
+    if (fd < 0) {
+        return -1;
+    }
     fcntl(fd, F_SETFL, O_NONBLOCK);
     fcntl(fd, F_SETFD, FD_CLOEXEC);
     return fd;

@@ -52,7 +52,9 @@ char *SDL_strtokr(char *s1, const char *s2, char **ptr)
  */
     const char *p = s2;
 
-    if (!s2 || !ptr || (!s1 && !*ptr)) return NULL;
+    if (!s2 || !ptr || (!s1 && !*ptr)) {
+        return NULL;
+    }
 
     if (s1 != NULL) {  /* new string */
         *ptr = s1;

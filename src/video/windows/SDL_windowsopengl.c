@@ -352,11 +352,13 @@ HasExtension(const char *extension, const char *extensions)
 
     /* Extension names should not have spaces. */
     where = SDL_strchr(extension, ' ');
-    if (where || *extension == '\0')
+    if (where || *extension == '\0') {
         return SDL_FALSE;
+    }
 
-    if (!extensions)
+    if (!extensions) {
         return SDL_FALSE;
+    }
 
     /* It takes a bit of care to be fool-proof about parsing the
      * OpenGL extensions string. Don't be fooled by sub-strings,
@@ -370,9 +372,11 @@ HasExtension(const char *extension, const char *extensions)
             break;
 
         terminator = where + SDL_strlen(extension);
-        if (where == start || *(where - 1) == ' ')
-            if (*terminator == ' ' || *terminator == '\0')
+        if (where == start || *(where - 1) == ' ') {
+            if (*terminator == ' ' || *terminator == '\0') {
                 return SDL_TRUE;
+            }
+        }
 
         start = terminator;
     }

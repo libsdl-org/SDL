@@ -543,12 +543,14 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
     char name[64];
     struct input_absinfo abs_info;
 
-    if (!item->is_touchscreen)
+    if (!item->is_touchscreen) {
         return 0;
+    }
 
     item->touchscreen_data = SDL_calloc(1, sizeof(*item->touchscreen_data));
-    if (item->touchscreen_data == NULL)
+    if (item->touchscreen_data == NULL) {
         return SDL_OutOfMemory();
+    }
 
     ret = ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
     if (ret < 0) {

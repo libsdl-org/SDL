@@ -98,14 +98,17 @@ X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMo
     SDL_WindowData *windowdata = NULL;
     Pixmap shapemask;
     
-    if(shaper == NULL || shape == NULL || shaper->driverdata == NULL)
+    if (shaper == NULL || shape == NULL || shaper->driverdata == NULL) {
         return -1;
+    }
 
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
-    if(shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode))
+    if (shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode)) {
         return -2;
-    if(shape->w != shaper->window->w || shape->h != shaper->window->h)
+    }
+    if (shape->w != shaper->window->w || shape->h != shaper->window->h) {
         return -3;
+    }
     data = shaper->driverdata;
 
     /* Assume that shaper->alphacutoff already has a value, because SDL_SetWindowShape() should have given it one. */

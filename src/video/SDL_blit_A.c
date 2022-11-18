@@ -1412,12 +1412,14 @@ SDL_CalculateBlitA(SDL_Surface * surface)
                     || (sf->Bmask == 0xff && df->Bmask == 0x1f)))
                 {
 #if SDL_ARM_NEON_BLITTERS
-                    if (SDL_HasNEON())
+                    if (SDL_HasNEON()) {
                         return BlitARGBto565PixelAlphaARMNEON;
+                    }
 #endif
 #if SDL_ARM_SIMD_BLITTERS
-                    if (SDL_HasARMSIMD())
+                    if (SDL_HasARMSIMD()) {
                         return BlitARGBto565PixelAlphaARMSIMD;
+                    }
 #endif
                 }
 #endif
@@ -1425,10 +1427,11 @@ SDL_CalculateBlitA(SDL_Surface * surface)
                     && sf->Gmask == 0xff00
                     && ((sf->Rmask == 0xff && df->Rmask == 0x1f)
                         || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
-                if (df->Gmask == 0x7e0)
+                if (df->Gmask == 0x7e0) {
                     return BlitARGBto565PixelAlpha;
-                else if (df->Gmask == 0x3e0)
+                } else if (df->Gmask == 0x3e0) {
                     return BlitARGBto555PixelAlpha;
+                }
             }
             return BlitNtoNPixelAlpha;
 
@@ -1442,23 +1445,27 @@ SDL_CalculateBlitA(SDL_Surface * surface)
                     && sf->Bshift % 8 == 0
                     && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
 #ifdef __3dNOW__
-                    if (SDL_Has3DNow())
+                    if (SDL_Has3DNow()) {
                         return BlitRGBtoRGBPixelAlphaMMX3DNOW;
+                    }
 #endif
 #ifdef __MMX__
-                    if (SDL_HasMMX())
+                    if (SDL_HasMMX()) {
                         return BlitRGBtoRGBPixelAlphaMMX;
+                    }
 #endif
                 }
 #endif /* __MMX__ || __3dNOW__ */
                 if (sf->Amask == 0xff000000) {
 #if SDL_ARM_NEON_BLITTERS
-                    if (SDL_HasNEON())
+                    if (SDL_HasNEON()) {
                         return BlitRGBtoRGBPixelAlphaARMNEON;
+                    }
 #endif
 #if SDL_ARM_SIMD_BLITTERS
-                    if (SDL_HasARMSIMD())
+                    if (SDL_HasARMSIMD()) {
                         return BlitRGBtoRGBPixelAlphaARMSIMD;
+                    }
 #endif
                     return BlitRGBtoRGBPixelAlpha;
                 }
@@ -1514,10 +1521,9 @@ SDL_CalculateBlitA(SDL_Surface * surface)
                     && sf->Gmask == df->Gmask
                     && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
 #ifdef __MMX__
-                    if (sf->Rshift % 8 == 0
-                        && sf->Gshift % 8 == 0
-                        && sf->Bshift % 8 == 0 && SDL_HasMMX())
+                    if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && SDL_HasMMX()) {
                         return BlitRGBtoRGBSurfaceAlphaMMX;
+                    }
 #endif
                     if ((sf->Rmask | sf->Gmask | sf->Bmask) == 0xffffff) {
                         return BlitRGBtoRGBSurfaceAlpha;

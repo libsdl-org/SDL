@@ -692,10 +692,12 @@ SortDevFunc(const void *a, const void *b)
     const input_t *inputA = (const input_t*)a;
     const input_t *inputB = (const input_t*)b;
 
-    if (inputA->ofs < inputB->ofs)
+    if (inputA->ofs < inputB->ofs) {
         return -1;
-    if (inputA->ofs > inputB->ofs)
+    }
+    if (inputA->ofs > inputB->ofs) {
         return 1;
+    }
     return 0;
 }
 
@@ -967,16 +969,18 @@ TranslatePOV(DWORD value)
         SDL_HAT_UP | SDL_HAT_LEFT
     };
 
-    if (LOWORD(value) == 0xFFFF)
+    if (LOWORD(value) == 0xFFFF) {
         return SDL_HAT_CENTERED;
+    }
 
     /* Round the value up: */
     value += 4500 / 2;
     value %= 36000;
     value /= 4500;
 
-    if (value >= 8)
-        return SDL_HAT_CENTERED;        /* shouldn't happen */
+    if (value >= 8) {
+        return SDL_HAT_CENTERED;
+    }        /* shouldn't happen */
 
     return HAT_VALS[value];
 }

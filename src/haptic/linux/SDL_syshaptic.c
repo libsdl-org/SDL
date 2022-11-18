@@ -762,8 +762,9 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
         /* Header */
         dest->type = FF_CONSTANT;
-        if (SDL_SYS_ToDirection(&dest->direction, &constant->direction) == -1)
+        if (SDL_SYS_ToDirection(&dest->direction, &constant->direction) == -1) {
             return -1;
+        }
 
         /* Replay */
         dest->replay.length = (constant->length == SDL_HAPTIC_INFINITY) ?
@@ -797,8 +798,9 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
         /* Header */
         dest->type = FF_PERIODIC;
-        if (SDL_SYS_ToDirection(&dest->direction, &periodic->direction) == -1)
+        if (SDL_SYS_ToDirection(&dest->direction, &periodic->direction) == -1) {
             return -1;
+        }
 
         /* Replay */
         dest->replay.length = (periodic->length == SDL_HAPTIC_INFINITY) ?
@@ -893,8 +895,9 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
         /* Header */
         dest->type = FF_RAMP;
-        if (SDL_SYS_ToDirection(&dest->direction, &ramp->direction) == -1)
+        if (SDL_SYS_ToDirection(&dest->direction, &ramp->direction) == -1) {
             return -1;
+        }
 
         /* Replay */
         dest->replay.length = (ramp->length == SDL_HAPTIC_INFINITY) ?

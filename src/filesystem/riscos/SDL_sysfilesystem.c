@@ -124,8 +124,9 @@ createDirectoryRecursive(char *path)
             *ptr = '\0';
             error = _kernel_swi(OS_File, &regs, &regs);
             *ptr = '.';
-            if (error != NULL)
+            if (error != NULL) {
                 return error;
+            }
         }
     }
     return _kernel_swi(OS_File, &regs, &regs);

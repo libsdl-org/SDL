@@ -71,12 +71,13 @@ static Uint8 unifontTextureLoaded[UNIFONT_NUM_TEXTURES] = {0};
 
 static Uint8 dehex(char c)
 {
-    if (c >= '0' && c <= '9')
+    if (c >= '0' && c <= '9') {
         return c - '0';
-    else if (c >= 'a' && c <= 'f')
+    } else if (c >= 'a' && c <= 'f') {
         return c - 'a' + 10;
-    else if (c >= 'A' && c <= 'F')
+    } else if (c >= 'A' && c <= 'F') {
         return c - 'A' + 10;
+    }
     return 255;
 }
 
@@ -91,8 +92,9 @@ static Uint8 validate_hex(const char *cp, size_t len, Uint32 *np)
     for (; len > 0; cp++, len--)
     {
         Uint8 c = dehex(*cp);
-        if (c == 255)
+        if (c == 255) {
             return 0;
+        }
         n = (n << 4) | c;
     }
     if (np != NULL) {
@@ -399,14 +401,16 @@ char *utf8_next(char *p)
 {
     size_t len = utf8_length(*p);
     size_t i = 0;
-    if (!len)
+    if (!len) {
         return 0;
+    }
 
     for (; i < len; ++i)
     {
         ++p;
-        if (!*p)
+        if (!*p) {
             return 0;
+        }
     }
     return p;
 }
@@ -425,8 +429,9 @@ Uint32 utf8_decode(char *p, size_t len)
 {
     Uint32 codepoint = 0;
     size_t i = 0;
-    if (!len)
+    if (!len) {
         return 0;
+    }
 
     for (; i < len; ++i)
     {
@@ -437,8 +442,9 @@ Uint32 utf8_decode(char *p, size_t len)
             codepoint <<= 6;
             codepoint |= 0x3f & *p;
         }
-        if (!*p)
+        if (!*p) {
             return 0;
+        }
         p++;
     }
 

@@ -814,8 +814,9 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 		else {
 			/* Check for errors on the file descriptor. This will
 			   indicate a device disconnection. */
-			if (fds.revents & (POLLERR | POLLHUP | POLLNVAL))
+			if (fds.revents & (POLLERR | POLLHUP | POLLNVAL)) {
 				return -1;
+			}
 		}
 	}
 

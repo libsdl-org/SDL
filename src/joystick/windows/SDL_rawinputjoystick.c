@@ -704,8 +704,9 @@ RAWINPUT_DeviceFromHandle(HANDLE hDevice)
     SDL_RAWINPUT_Device *curr;
 
     for (curr = SDL_RAWINPUT_devices; curr; curr = curr->next) {
-        if (curr->hDevice == hDevice)
+        if (curr->hDevice == hDevice) {
             return curr;
+        }
     }
     return NULL;
 }

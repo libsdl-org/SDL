@@ -86,10 +86,12 @@ SDL_Rect lines[MAX_LINES];
 static int
 add_line(int x1, int y1, int x2, int y2)
 {
-    if (num_lines >= MAX_LINES)
+    if (num_lines >= MAX_LINES) {
         return 0;
-    if ((x1 == x2) && (y1 == y2))
+    }
+    if ((x1 == x2) && (y1 == y2)) {
         return 0;
+    }
 
     SDL_Log("adding line (%d, %d), (%d, %d)\n", x1, y1, x2, y2);
     lines[num_lines].x = x1;
@@ -130,10 +132,12 @@ SDL_Rect rects[MAX_RECTS];
 static int
 add_rect(int x1, int y1, int x2, int y2)
 {
-    if (num_rects >= MAX_RECTS)
+    if (num_rects >= MAX_RECTS) {
         return 0;
-    if ((x1 == x2) || (y1 == y2))
+    }
+    if ((x1 == x2) || (y1 == y2)) {
         return 0;
+    }
 
     if (x1 > x2) {
         SWAP(int, x1, x2);

@@ -548,7 +548,9 @@ static int SDL_inotify_init1(void) {
 #else
 static int SDL_inotify_init1(void) {
     int fd = inotify_init();
-    if (fd  < 0) return -1;
+    if (fd < 0) {
+        return -1;
+    }
     fcntl(fd, F_SETFL, O_NONBLOCK);
     fcntl(fd, F_SETFD, FD_CLOEXEC);
     return fd;
@@ -924,22 +926,24 @@ GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *
      * other continuous analog axis, so we have to guess. */
 
     /* If both axes are missing, they're not anything. */
-    if (!absinfo_x && !absinfo_y)
+    if (!absinfo_x && !absinfo_y) {
         return SDL_FALSE;
+    }
 
     /* If the hint says so, treat all hats as digital. */
-    if (SDL_GetHintBoolean(SDL_HINT_LINUX_DIGITAL_HATS, SDL_FALSE))
+    if (SDL_GetHintBoolean(SDL_HINT_LINUX_DIGITAL_HATS, SDL_FALSE)) {
         return SDL_TRUE;
+    }
 
     /* If both axes have ranges constrained between -1 and 1, they're definitely digital. */
-    if ((!absinfo_x || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) &&
-        (!absinfo_y || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1)))
+    if ((!absinfo_x || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) && (!absinfo_y || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1))) {
         return SDL_TRUE;
+    }
 
     /* If both axes lack fuzz, flat, and resolution values, they're probably digital. */
-    if ((!absinfo_x || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) &&
-        (!absinfo_y || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution)))
+    if ((!absinfo_x || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) && (!absinfo_y || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution))) {
         return SDL_TRUE;
+    }
 
     /* Otherwise, treat them as analog. */
     return SDL_FALSE;

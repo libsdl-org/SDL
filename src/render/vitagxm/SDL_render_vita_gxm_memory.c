@@ -38,14 +38,17 @@ vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, uns
 
     *uid = sceKernelAllocMemBlock("gpu_mem", type, size, NULL);
 
-    if (*uid < 0)
+    if (*uid < 0) {
         return NULL;
+    }
 
-    if (sceKernelGetMemBlockBase(*uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(*uid, &mem) < 0) {
         return NULL;
+    }
 
-    if (sceGxmMapMemory(mem, size, attribs) < 0)
+    if (sceGxmMapMemory(mem, size, attribs) < 0) {
         return NULL;
+    }
 
     return mem;
 }
@@ -132,10 +135,12 @@ vita_mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_of
     size = ALIGN(size, 4096);
     *uid = sceKernelAllocMemBlock("vertex_usse", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE, size, NULL);
 
-    if (sceKernelGetMemBlockBase(*uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(*uid, &mem) < 0) {
         return NULL;
-    if (sceGxmMapVertexUsseMemory(mem, size, usse_offset) < 0)
+    }
+    if (sceGxmMapVertexUsseMemory(mem, size, usse_offset) < 0) {
         return NULL;
+    }
 
     return mem;
 }
@@ -158,10 +163,12 @@ vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_
     size = ALIGN(size, 4096);
     *uid = sceKernelAllocMemBlock("fragment_usse", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE, size, NULL);
 
-    if (sceKernelGetMemBlockBase(*uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(*uid, &mem) < 0) {
         return NULL;
-    if (sceGxmMapFragmentUsseMemory(mem, size, usse_offset) < 0)
+    }
+    if (sceGxmMapFragmentUsseMemory(mem, size, usse_offset) < 0) {
         return NULL;
+    }
 
     return mem;
 }

@@ -159,8 +159,9 @@ SDL_IsProcessRunning(SDL_ProcessInfo* pinfo)
         return -1;
     }
     
-    if(exit_status == STILL_ACTIVE)
+    if (exit_status == STILL_ACTIVE) {
         return 1;
+    }
     return 0;
 }
 

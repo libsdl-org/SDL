@@ -712,7 +712,9 @@ int audio_openCloseAndGetAudioStatus()
        device = SDL_GetAudioDeviceName(i, 0);
        SDLTest_AssertPass("SDL_GetAudioDeviceName(%i,0)", i);
        SDLTest_AssertCheck(device != NULL, "Validate device name is not NULL; got: %s", (device != NULL) ? device : "NULL");
-       if (device == NULL) return TEST_ABORTED;
+       if (device == NULL) {
+         return TEST_ABORTED;
+       }
 
        /* Set standard desired spec */
        desired.freq=22050;
@@ -770,7 +772,9 @@ int audio_lockUnlockOpenAudioDevice()
        device = SDL_GetAudioDeviceName(i, 0);
        SDLTest_AssertPass("SDL_GetAudioDeviceName(%i,0)", i);
        SDLTest_AssertCheck(device != NULL, "Validate device name is not NULL; got: %s", (device != NULL) ? device : "NULL");
-       if (device == NULL) return TEST_ABORTED;
+       if (device == NULL) {
+         return TEST_ABORTED;
+       }
 
        /* Set standard desired spec */
        desired.freq=22050;
@@ -878,7 +882,9 @@ int audio_convertAudio()
             SDLTest_LogError("%s", SDL_GetError());
           } else {
             SDLTest_AssertCheck(cvt.len_mult > 0, "Verify that cvt.len_mult value; expected: >0, got: %i", cvt.len_mult);
-            if (cvt.len_mult < 1) return TEST_ABORTED;
+            if (cvt.len_mult < 1) {
+              return TEST_ABORTED;
+            }
 
             /* Create some random data to convert */
             l = 64;
@@ -887,7 +893,9 @@ int audio_convertAudio()
             cvt.len = l;
             cvt.buf = (Uint8 *)SDL_malloc(ll);
             SDLTest_AssertCheck(cvt.buf != NULL, "Check data buffer to convert is not NULL");
-            if (cvt.buf == NULL) return TEST_ABORTED;
+            if (cvt.buf == NULL) {
+              return TEST_ABORTED;
+            }
 
             /* Convert the data */
             result = SDL_ConvertAudio(&cvt);
@@ -932,7 +940,9 @@ int audio_openCloseAudioDeviceConnected()
        device = SDL_GetAudioDeviceName(i, 0);
        SDLTest_AssertPass("SDL_GetAudioDeviceName(%i,0)", i);
        SDLTest_AssertCheck(device != NULL, "Validate device name is not NULL; got: %s", (device != NULL) ? device : "NULL");
-       if (device == NULL) return TEST_ABORTED;
+       if (device == NULL) {
+         return TEST_ABORTED;
+       }
 
        /* Set standard desired spec */
        desired.freq=22050;

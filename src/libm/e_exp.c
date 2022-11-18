@@ -122,12 +122,16 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 		else return (xsb==0)? x:0.0;	/* exp(+-inf)={inf,0} */
 	    }
 		#if 1
-		if(x > o_threshold) return huge*huge; /* overflow */
+		if (x > o_threshold) {
+		return huge * huge;
+		} /* overflow */
 		#else  /* !!! FIXME: check this: "huge * huge" is a compiler warning, maybe they wanted +Inf? */
 		if(x > o_threshold) return INFINITY; /* overflow */
 		#endif
 
-	    if(x < u_threshold) return twom1000*twom1000; /* underflow */
+	    if (x < u_threshold) {
+		return twom1000 * twom1000;
+	    } /* underflow */
 	}
 
     /* argument reduction */
@@ -143,7 +147,9 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	    x  = hi - lo;
 	}
 	else if(hx < 0x3e300000)  {	/* when |x|<2**-28 */
-	    if(huge+x>one) return one+x;/* trigger inexact */
+	    if (huge + x > one) {
+		return one + x;
+	    }/* trigger inexact */
 	}
 	else k = 0;
 
@@ -175,13 +181,16 @@ double exp(double x)
 	static const double u_threshold = -7.45133219101941108420e+02; /* 0xc0874910, 0xD52D3051 */
 
 	double z = __ieee754_exp(x);
-	if (_LIB_VERSION == _IEEE_)
+	if (_LIB_VERSION == _IEEE_) {
 		return z;
+	}
 	if (isfinite(x)) {
-		if (x > o_threshold)
-			return __kernel_standard(x, x, 6); /* exp overflow */
-		if (x < u_threshold)
-			return __kernel_standard(x, x, 7); /* exp underflow */
+		if (x > o_threshold) {
+			return __kernel_standard(x, x, 6);
+		} /* exp overflow */
+		if (x < u_threshold) {
+			return __kernel_standard(x, x, 7);
+		} /* exp underflow */
 	}
 	return z;
 }

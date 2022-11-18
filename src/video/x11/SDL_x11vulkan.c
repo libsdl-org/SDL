@@ -51,8 +51,9 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     SDL_bool hasXCBSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     Uint32 i;
-    if(_this->vulkan_config.loader_handle)
+    if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
+    }
 
     /* Load the Vulkan loader library */
     if (!path) {
@@ -62,8 +63,9 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
         path = DEFAULT_VULKAN;
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-    if(!_this->vulkan_config.loader_handle)
+    if (!_this->vulkan_config.loader_handle) {
         return -1;
+    }
     SDL_strlcpy(_this->vulkan_config.loader_path, path, SDL_arraysize(_this->vulkan_config.loader_path));
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");

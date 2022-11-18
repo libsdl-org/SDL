@@ -94,8 +94,9 @@ static BOOL _vmanInit(void)
     CHAR        acBuf[256];
     INITPROCOUT stInitProcOut;
 
-    if (hmodVMan != NULLHANDLE) /* already initialized */
+    if (hmodVMan != NULLHANDLE) {
         return TRUE;
+    } /* already initialized */
 
     /* Load vman.dll */
     ulRC = DosLoadModule(acBuf, sizeof(acBuf), "VMAN", &hmodVMan);
@@ -139,12 +140,14 @@ static PRECTL _getRectlArray(PVODATA pVOData, ULONG cRects)
 {
     PRECTL  pRectl;
 
-    if (pVOData->cRectl >= cRects)
+    if (pVOData->cRectl >= cRects) {
         return pVOData->pRectl;
+    }
 
     pRectl = SDL_realloc(pVOData->pRectl, cRects * sizeof(RECTL));
-    if (pRectl == NULL)
+    if (pRectl == NULL) {
         return NULL;
+    }
 
     pVOData->pRectl = pRectl;
     pVOData->cRectl = cRects;
@@ -155,12 +158,14 @@ static PBLTRECT _getBltRectArray(PVODATA pVOData, ULONG cRects)
 {
     PBLTRECT    pBltRect;
 
-    if (pVOData->cBltRect >= cRects)
+    if (pVOData->cBltRect >= cRects) {
         return pVOData->pBltRect;
+    }
 
     pBltRect = SDL_realloc(pVOData->pBltRect, cRects * sizeof(BLTRECT));
-    if (pBltRect == NULL)
+    if (pBltRect == NULL) {
         return NULL;
+    }
 
     pVOData->pBltRect = pBltRect;
     pVOData->cBltRect = cRects;
@@ -173,8 +178,9 @@ static BOOL voQueryInfo(VIDEOOUTPUTINFO *pInfo)
     ULONG       ulRC;
     GDDMODEINFO sCurModeInfo;
 
-    if (!_vmanInit())
+    if (!_vmanInit()) {
         return FALSE;
+    }
 
     /* Query current (desktop) mode */
     ulRC = pfnVMIEntry(0, VMI_CMD_QUERYCURRENTMODE, NULL, &sCurModeInfo);
@@ -196,8 +202,9 @@ static PVODATA voOpen(void)
 {
     PVODATA pVOData;
 
-    if (!_vmanInit())
+    if (!_vmanInit()) {
         return NULL;
+    }
 
     pVOData = SDL_calloc(1, sizeof(VODATA));
     if (pVOData == NULL) {
@@ -277,8 +284,9 @@ static PVOID voVideoBufAlloc(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
     /* Destroy previous buffer */
     voVideoBufFree(pVOData);
 
-    if (ulWidth == 0 || ulHeight == 0 || ulBPP == 0)
+    if (ulWidth == 0 || ulHeight == 0 || ulBPP == 0) {
         return NULL;
+    }
 
     /* Bytes per line */
     ulScanLineSize  = (ulScanLineSize + 3) & ~3; /* 4-byte aligning */
@@ -331,11 +339,13 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
     BITBLTINFO  sBitbltInfo;
     ULONG       ulIdx;
 
-    if (pVOData->pBuffer == NULL)
+    if (pVOData->pBuffer == NULL) {
         return FALSE;
+    }
 
-    if (pVOData->hrgnVisible == NULLHANDLE)
+    if (pVOData->hrgnVisible == NULLHANDLE) {
         return TRUE;
+    }
 
     bmiSrc.ulLength = sizeof(BMAPINFO);
     bmiSrc.ulType = BMAP_MEMORY;
@@ -381,8 +391,9 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
     }
 
     hps = WinGetPS(hwnd);
-    if (hps == NULLHANDLE)
+    if (hps == NULLHANDLE) {
         return FALSE;
+    }
 
     /* Make destination region to update */
     hrgnUpdate = GpiCreateRegion(hps, cSDLRects, prectlDst);

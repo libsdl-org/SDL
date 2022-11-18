@@ -236,7 +236,9 @@ rwops_testMem (void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromMem does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
    SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY, "Verify RWops type is SDL_RWOPS_MEMORY; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY, rw->type);
@@ -272,7 +274,9 @@ rwops_testConstMem (void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromConstMem does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
    SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY_RO, "Verify RWops type is SDL_RWOPS_MEMORY_RO; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY_RO, rw->type);
@@ -308,7 +312,9 @@ rwops_testFileRead(void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in read mode does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
 #if defined(__ANDROID__)
@@ -355,7 +361,9 @@ rwops_testFileWrite(void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
 #if defined(__ANDROID__)
@@ -405,7 +413,9 @@ rwops_testFPRead(void)
    SDLTest_AssertCheck(fp != NULL, "Verify handle from opening file '%s' in read mode is not NULL", RWopsReadTestFilename);
 
    /* Bail out if NULL */
-   if (fp == NULL) return TEST_ABORTED;
+   if (fp == NULL) {
+     return TEST_ABORTED;
+   }
 
    /* Open */
    rw = SDL_RWFromFP( fp, SDL_TRUE );
@@ -458,7 +468,9 @@ rwops_testFPWrite(void)
    SDLTest_AssertCheck(fp != NULL, "Verify handle from opening file '%s' in write mode is not NULL", RWopsWriteTestFilename);
 
    /* Bail out if NULL */
-   if (fp == NULL) return TEST_ABORTED;
+   if (fp == NULL) {
+     return TEST_ABORTED;
+   }
 
    /* Open */
    rw = SDL_RWFromFP( fp, SDL_TRUE );
@@ -502,7 +514,9 @@ rwops_testAllocFree (void)
    SDL_RWops *rw = SDL_AllocRW();
    SDLTest_AssertPass("Call to SDL_AllocRW() succeeded");
    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_AllocRW() is not NULL");
-   if (rw==NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
    SDLTest_AssertCheck(
@@ -652,7 +666,9 @@ rwops_testFileWriteReadEndian(void)
      SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
      /* Bail out if NULL */
-     if (rw == NULL) return TEST_ABORTED;
+     if (rw == NULL) {
+        return TEST_ABORTED;
+     }
 
      /* Write test data */
      objectsWritten = SDL_WriteBE16(rw, BE16value);

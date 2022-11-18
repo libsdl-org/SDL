@@ -42,8 +42,9 @@ StrCaseCmpIgnoreHyphen(const char* s1, const char* s2)
 static int
 ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
 {
-    if(!argv || !argv[index] || !state)
+    if (!argv || !argv[index] || !state) {
         return 0;
+    }
 
     if(StrCaseCmpIgnoreHyphen("sutapp", argv[index]) == 0)
     {
@@ -258,8 +259,9 @@ ParseConfig(const char* file, SDLVisualTest_HarnessState* state)
     }
     SDL_RWclose(rw);
 
-    if(!state->sutapp[0])
+    if (!state->sutapp[0]) {
         return 0;
+    }
     return 1;
 }
 

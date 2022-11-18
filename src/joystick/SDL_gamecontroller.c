@@ -852,8 +852,9 @@ SDL_GameControllerAxis SDL_GameControllerGetAxisFromString(const char *pchString
     }
 
     for (entry = 0; map_StringForControllerAxis[entry]; ++entry) {
-        if (!SDL_strcasecmp(pchString, map_StringForControllerAxis[entry]))
-            return (SDL_GameControllerAxis) entry;
+        if (!SDL_strcasecmp(pchString, map_StringForControllerAxis[entry])) {
+            return (SDL_GameControllerAxis)entry;
+        }
     }
     return SDL_CONTROLLER_AXIS_INVALID;
 }
@@ -900,12 +901,14 @@ static const char* map_StringForControllerButton[] = {
 SDL_GameControllerButton SDL_GameControllerGetButtonFromString(const char *pchString)
 {
     int entry;
-    if (!pchString || !pchString[0])
+    if (!pchString || !pchString[0]) {
         return SDL_CONTROLLER_BUTTON_INVALID;
+    }
 
     for (entry = 0; map_StringForControllerButton[entry]; ++entry) {
-        if (SDL_strcasecmp(pchString, map_StringForControllerButton[entry]) == 0)
-            return (SDL_GameControllerButton) entry;
+        if (SDL_strcasecmp(pchString, map_StringForControllerButton[entry]) == 0) {
+            return (SDL_GameControllerButton)entry;
+        }
     }
     return SDL_CONTROLLER_BUTTON_INVALID;
 }
@@ -1154,12 +1157,14 @@ static char *SDL_PrivateGetControllerNameFromMappingString(const char *pMapping)
     char *pchName;
 
     pFirstComma = SDL_strchr(pMapping, ',');
-    if (!pFirstComma)
+    if (!pFirstComma) {
         return NULL;
+    }
 
     pSecondComma = SDL_strchr(pFirstComma + 1, ',');
-    if (!pSecondComma)
+    if (!pSecondComma) {
         return NULL;
+    }
 
     pchName = SDL_malloc(pSecondComma - pFirstComma);
     if (!pchName) {
@@ -1180,12 +1185,14 @@ static char *SDL_PrivateGetControllerMappingFromMappingString(const char *pMappi
     const char *pFirstComma, *pSecondComma;
 
     pFirstComma = SDL_strchr(pMapping, ',');
-    if (!pFirstComma)
+    if (!pFirstComma) {
         return NULL;
+    }
 
     pSecondComma = SDL_strchr(pFirstComma + 1, ',');
-    if (!pSecondComma)
+    if (!pSecondComma) {
         return NULL;
+    }
 
     return SDL_strdup(pSecondComma + 1); /* mapping is everything after the 3rd comma */
 }
@@ -2675,8 +2682,9 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForAxis(SDL_GameController
 
     CHECK_GAMECONTROLLER_MAGIC(gamecontroller, bind);
 
-    if (axis == SDL_CONTROLLER_AXIS_INVALID)
+    if (axis == SDL_CONTROLLER_AXIS_INVALID) {
         return bind;
+    }
 
     for (i = 0; i < gamecontroller->num_bindings; ++i) {
         SDL_ExtendedGameControllerBind *binding = &gamecontroller->bindings[i];
@@ -2709,8 +2717,9 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForButton(SDL_GameControll
 
     CHECK_GAMECONTROLLER_MAGIC(gamecontroller, bind);
 
-    if (button == SDL_CONTROLLER_BUTTON_INVALID)
+    if (button == SDL_CONTROLLER_BUTTON_INVALID) {
         return bind;
+    }
 
     for (i = 0; i < gamecontroller->num_bindings; ++i) {
         SDL_ExtendedGameControllerBind *binding = &gamecontroller->bindings[i];

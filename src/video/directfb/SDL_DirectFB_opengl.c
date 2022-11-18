@@ -180,8 +180,9 @@ DirectFB_GL_CreateContext(_THIS, SDL_Window * window)
     SDL_DFB_CHECKERR(windata->surface->GetGL(windata->surface,
                                              &context->context));
 
-    if (!context->context)
+    if (!context->context) {
         return NULL;
+    }
 
     context->is_locked = 0;
     context->sdl_window = window;

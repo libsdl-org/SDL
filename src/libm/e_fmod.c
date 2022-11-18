@@ -32,13 +32,17 @@ double attribute_hidden __ieee754_fmod(double x, double y)
 	hy &= 0x7fffffff;	/* |y| */
 
     /* purge off exception values */
-	if((hy|ly)==0||(hx>=0x7ff00000)||	/* y=0,or x not finite */
-	  ((hy|((ly|-(int32_t)ly)>>31))>0x7ff00000))	/* or y is NaN */
-	    return (x*y)/(x*y);
+	if ((hy | ly) == 0 || (hx >= 0x7ff00000) || ((hy | ((ly | -(int32_t)ly) >> 31)) > 0x7ff00000)) {
+	    return (x * y) / (x * y);
+	}	/* y=0,or x not finite */
+	  /* or y is NaN */
 	if(hx<=hy) {
-	    if((hx<hy)||(lx<ly)) return x;	/* |x|<|y| return x */
-	    if(lx==ly)
-		return Zero[(u_int32_t)sx>>31];	/* |x|=|y| return x*0*/
+	    if ((hx < hy) || (lx < ly)) {
+		return x;
+	    }	/* |x|<|y| return x */
+	    if (lx == ly) {
+		return Zero[(u_int32_t)sx >> 31];
+	    }	/* |x|=|y| return x*0*/
 	}
 
     /* determine ix = ilogb(x) */
@@ -93,8 +97,9 @@ double attribute_hidden __ieee754_fmod(double x, double y)
 	    }
 	    if(hz<0){hx = hx+hx+(lx>>31); lx = lx+lx;}
 	    else {
-	    	if((hz|lz)==0) 		/* return sign(x)*0 */
-		    return Zero[(u_int32_t)sx>>31];
+	    	if ((hz | lz) == 0) {
+		    return Zero[(u_int32_t)sx >> 31];
+	    	} 		/* return sign(x)*0 */
 	    	hx = hz+hz+(lz>>31); lx = lz+lz;
 	    }
 	}
@@ -104,8 +109,9 @@ double attribute_hidden __ieee754_fmod(double x, double y)
 	if(hz>=0) {hx=hz;lx=lz;}
 
     /* convert back to floating value and restore the sign */
-	if((hx|lx)==0) 			/* return sign(x)*0 */
-	    return Zero[(u_int32_t)sx>>31];
+	if ((hx | lx) == 0) {
+	    return Zero[(u_int32_t)sx >> 31];
+	} 			/* return sign(x)*0 */
 	while(hx<0x00100000) {		/* normalize x */
 	    hx = hx+hx+(lx>>31); lx = lx+lx;
 	    iy -= 1;
@@ -136,10 +142,12 @@ double attribute_hidden __ieee754_fmod(double x, double y)
 double fmod(double x, double y)
 {
 	double z = __ieee754_fmod(x, y);
-	if (_LIB_VERSION == _IEEE_ || isnan(y) || isnan(x))
+	if (_LIB_VERSION == _IEEE_ || isnan(y) || isnan(x)) {
 		return z;
-	if (y == 0.0)
-		return __kernel_standard(x, y, 27); /* fmod(x,0) */
+	}
+	if (y == 0.0) {
+		return __kernel_standard(x, y, 27);
+	} /* fmod(x,0) */
 	return z;
 }
 #else

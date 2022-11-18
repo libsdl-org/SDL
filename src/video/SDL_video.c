@@ -1377,8 +1377,9 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
        do nothing, or else we may trigger an ugly double-transition
      */
     if (SDL_strcmp(_this->name, "cocoa") == 0) {  /* don't do this for X11, etc */
-        if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
+        if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
             return 0;
+        }
     
         /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
         if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
@@ -3579,9 +3580,11 @@ SDL_GL_ExtensionSupported(const char *extension)
             break;
 
         terminator = where + SDL_strlen(extension);
-        if (where == extensions || *(where - 1) == ' ')
-            if (*terminator == ' ' || *terminator == '\0')
+        if (where == extensions || *(where - 1) == ' ') {
+            if (*terminator == ' ' || *terminator == '\0') {
                 return SDL_TRUE;
+            }
+        }
 
         start = terminator;
     }

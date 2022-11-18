@@ -986,8 +986,9 @@ _hasTexColor (void)
 
    /* Get test face. */
    tface = _loadTestFace();
-   if (tface == NULL)
+   if (tface == NULL) {
       return 0;
+   }
 
    /* See if supported. */
    fail = 0;
@@ -1029,8 +1030,9 @@ _hasTexAlpha(void)
 
    /* Get test face. */
    tface = _loadTestFace();
-   if (tface == NULL)
+   if (tface == NULL) {
       return 0;
+   }
 
    /* See if supported. */
    fail = 0;

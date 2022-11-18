@@ -42,7 +42,9 @@ SDL_WSCONS_mouse_input_data* SDL_WSCONS_Init_Mouse()
 #endif
     SDL_WSCONS_mouse_input_data* mouseInputData = SDL_calloc(1, sizeof(SDL_WSCONS_mouse_input_data));
 
-    if (!mouseInputData) return NULL;
+    if (!mouseInputData) {
+        return NULL;
+    }
     mouseInputData->fd = open("/dev/wsmouse",O_RDWR | O_NONBLOCK | O_CLOEXEC);
     if (mouseInputData->fd == -1) {free(mouseInputData); return NULL; }
 #ifdef WSMOUSEIO_SETMODE

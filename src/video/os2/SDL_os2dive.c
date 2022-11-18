@@ -228,8 +228,9 @@ static PVOID voVideoBufAlloc(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
     /* Destroy previous buffer. */
     voVideoBufFree(pVOData);
 
-    if (ulWidth == 0 || ulHeight == 0 || ulBPP == 0)
+    if (ulWidth == 0 || ulHeight == 0 || ulBPP == 0) {
         return NULL;
+    }
 
     /* Bytes per line. */
     ulScanLineSize  = (ulScanLineSize + 3) & ~3; /* 4-byte aligning */

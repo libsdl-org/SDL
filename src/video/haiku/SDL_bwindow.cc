@@ -67,8 +67,9 @@ static int _InitWindow(_THIS, SDL_Window *window) {
     }
 
     SDL_BWin *bwin = new(std::nothrow) SDL_BWin(bounds, look, flags);
-    if(bwin == NULL)
+    if (bwin == NULL) {
         return -1;
+    }
 
     window->driverdata = bwin;
     int32 winID = _GetBeApp()->GetID(window);
@@ -90,8 +91,9 @@ int HAIKU_CreateWindow(_THIS, SDL_Window *window) {
 int HAIKU_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
 
     SDL_BWin *otherBWin = (SDL_BWin*)data;
-    if(!otherBWin->LockLooper())
+    if (!otherBWin->LockLooper()) {
         return -1;
+    }
     
     /* Create the new window and initialize its members */
     window->x = (int)otherBWin->Frame().left;

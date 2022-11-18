@@ -70,14 +70,18 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
 #define COPY_PIXEL(x)   spot = &bits[ofs++]; if(spot >= start && spot < end) *spot = (x)
 
     for (;;) {
-        if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+        if (!SDL_RWread(src, &ch, 1, 1)) {
+            return SDL_TRUE;
+        }
         /*
         | encoded mode starts with a run length, and then a byte
         | with two colour indexes to alternate between for the run
         */
         if (ch) {
             Uint8 pixel;
-            if (!SDL_RWread(src, &pixel, 1, 1)) return SDL_TRUE;
+            if (!SDL_RWread(src, &pixel, 1, 1)) {
+                return SDL_TRUE;
+            }
             if (isRle8) {                   /* 256-color bitmap, compressed */
                 do {
                     COPY_PIXEL(pixel);
@@ -98,7 +102,9 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
             | a cursor move, or some absolute data.
             | zero tag may be absolute mode or an escape
             */
-            if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+            if (!SDL_RWread(src, &ch, 1, 1)) {
+                return SDL_TRUE;
+            }
             switch (ch) {
             case 0:                         /* end of line */
                 ofs = 0;
@@ -107,9 +113,13 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
             case 1:                         /* end of bitmap */
                 return SDL_FALSE;           /* success! */
             case 2:                         /* delta */
-                if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+                if (!SDL_RWread(src, &ch, 1, 1)) {
+                    return SDL_TRUE;
+                }
                 ofs += ch;
-                if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+                if (!SDL_RWread(src, &ch, 1, 1)) {
+                    return SDL_TRUE;
+                }
                 bits -= (ch * pitch);
                 break;
             default:                        /* no compression */
@@ -117,14 +127,18 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
                     needsPad = (ch & 1);
                     do {
                         Uint8 pixel;
-                        if (!SDL_RWread(src, &pixel, 1, 1)) return SDL_TRUE;
+                        if (!SDL_RWread(src, &pixel, 1, 1)) {
+                            return SDL_TRUE;
+                        }
                         COPY_PIXEL(pixel);
                     } while (--ch);
                 } else {
                     needsPad = (((ch+1)>>1) & 1); /* (ch+1)>>1: bytes size */
                     for (;;) {
                         Uint8 pixel;
-                        if (!SDL_RWread(src, &pixel, 1, 1)) return SDL_TRUE;
+                        if (!SDL_RWread(src, &pixel, 1, 1)) {
+                            return SDL_TRUE;
+                        }
                         COPY_PIXEL(pixel >> 4);
                         if (!--ch) break;
                         COPY_PIXEL(pixel & 0x0F);
@@ -132,7 +146,9 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
                     }
                 }
                 /* pad at even boundary */
-                if (needsPad && !SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+                if (needsPad && !SDL_RWread(src, &ch, 1, 1)) {
+                    return SDL_TRUE;
+                }
                 break;
             }
         }

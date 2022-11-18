@@ -60,8 +60,9 @@ static struct JoyInfo joyInfo[MAX_CONTROLLERS];
 
 static inline int16_t convert_u8_to_s16(uint8_t val)
 {
-   if (val == 0)
+   if (val == 0) {
       return -0x7fff;
+   }
    return val * 0x0101 - 0x8000;
 }
 
@@ -95,8 +96,9 @@ static int PS2_JoystickInit(void)
     uint32_t port = 0;
     uint32_t slot = 0;
 
-    if(init_joystick_driver(true) < 0)
+    if (init_joystick_driver(true) < 0) {
         return -1;
+   }
 
    for (port = 0; port < PS2_MAX_PORT; port++)
         mtapPortOpen(port);
@@ -142,8 +144,9 @@ static void PS2_JoystickDetect()
 /* Function to get the device-dependent name of a joystick */
 static const char *PS2_JoystickGetDeviceName(int index)
 {
-    if (index >= 0 && index < enabled_pads)
+    if (index >= 0 && index < enabled_pads) {
         return "PS2 Controller";
+    }
 
     SDL_SetError("No joystick available with that index");
     return NULL;

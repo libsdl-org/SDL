@@ -45,7 +45,9 @@ double floor(double x)
 		}
 	    } else {
 		i = (0x000fffff)>>j0;
-		if(((i0&i)|i1)==0) return x; /* x is integral */
+		if (((i0 & i) | i1) == 0) {
+		    return x;
+		} /* x is integral */
 		if(huge+x>0.0) {	/* raise inexact flag */
 		    if (i0 < 0) {
 			i0 += (0x00100000) >> j0;
@@ -58,7 +60,9 @@ double floor(double x)
 	    else return x;		/* x is integral */
 	} else {
 	    i = ((u_int32_t)(0xffffffff))>>(j0-20);
-	    if((i1&i)==0) return x;	/* x is integral */
+	    if ((i1 & i) == 0) {
+		return x;
+	    }	/* x is integral */
 	    if(huge+x>0.0) { 		/* raise inexact flag */
 		if(i0<0) {
 		    if(j0==20) i0+=1;

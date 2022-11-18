@@ -101,8 +101,9 @@ static int
 TextureHasAlpha(DirectFB_TextureData * data)
 {
     /* Drawing primitive ? */
-    if (!data)
+    if (!data) {
         return 0;
+    }
 
     return (DFB_PIXELFORMAT_HAS_ALPHA(DirectFB_SDLToDFBPixelFormat(data->format)) ? 1 : 0);
 #if 0

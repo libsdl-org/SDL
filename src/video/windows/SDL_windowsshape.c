@@ -103,11 +103,13 @@ int
 Win32_ResizeWindowShape(SDL_Window *window) {
     SDL_ShapeData* data;
 
-    if (window == NULL)
+    if (window == NULL) {
         return -1;
+    }
     data = (SDL_ShapeData *)window->shaper->driverdata;
-    if (data == NULL)
+    if (data == NULL) {
         return -1;
+    }
 
     if (data->mask_tree != NULL) {
         SDL_FreeShapeTree(&data->mask_tree);

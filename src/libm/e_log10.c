@@ -68,13 +68,18 @@ double attribute_hidden __ieee754_log10(double x)
 
         k=0;
         if (hx < 0x00100000) {                  /* x < 2**-1022  */
-            if (((hx&0x7fffffff)|lx)==0)
-                return -two54/zero;             /* log(+-0)=-inf */
-            if (hx<0) return (x-x)/zero;        /* log(-#) = NaN */
+            if (((hx & 0x7fffffff) | lx) == 0) {
+                return -two54 / zero;
+            }             /* log(+-0)=-inf */
+            if (hx < 0) {
+                return (x - x) / zero;
+            }        /* log(-#) = NaN */
             k -= 54; x *= two54; /* subnormal number, scale up x */
 	    GET_HIGH_WORD(hx,x);
         }
-	if (hx >= 0x7ff00000) return x+x;
+	if (hx >= 0x7ff00000) {
+	    return x + x;
+	}
 	k += (hx>>20)-1023;
 	i  = ((u_int32_t)k&0x80000000)>>31;
         hx = (hx&0x000fffff)|((0x3ff-i)<<20);
@@ -91,11 +96,13 @@ double attribute_hidden __ieee754_log10(double x)
 double log10(double x)
 {
 	double z = __ieee754_log10(x);
-	if (_LIB_VERSION == _IEEE_ || isnan(x))
+	if (_LIB_VERSION == _IEEE_ || isnan(x)) {
 		return z;
+	}
 	if (x <= 0.0) {
-		if(x == 0.0)
-			return __kernel_standard(x, x, 18); /* log10(0) */
+		if (x == 0.0) {
+			return __kernel_standard(x, x, 18);
+		} /* log10(0) */
 		return __kernel_standard(x, x, 19); /* log10(x<0) */
 	}
 	return z;

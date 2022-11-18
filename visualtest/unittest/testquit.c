@@ -26,8 +26,9 @@ main(int argc, char** argv)
     SDL_Event event;
 
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if(!state)
+    if (!state) {
         return 1;
+    }
 
     state->window_flags |= SDL_WINDOW_RESIZABLE;
     

@@ -165,17 +165,21 @@ SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
 
 const char *VITA_JoystickGetDeviceName(int index)
 {
-    if (index == 0)
+    if (index == 0) {
         return "PSVita Controller";
+    }
 
-    if (index == 1)
+    if (index == 1) {
         return "PSVita Controller";
+    }
 
-    if (index == 2)
+    if (index == 2) {
         return "PSVita Controller";
+    }
 
-    if (index == 3)
+    if (index == 3) {
         return "PSVita Controller";
+    }
 
     SDL_SetError("No joystick available with that index");
     return NULL;

@@ -174,7 +174,9 @@ static int OS2_JoystickInit(void)
 	struct _joycfg joycfg;					/* Joy Configuration from envvar */
 
 	/* Open GAME$ port */
-	if (joyPortOpen(&hJoyPort) < 0) return 0;	/* Cannot open... report no joystick */
+	if (joyPortOpen(&hJoyPort) < 0) {
+		return 0;
+	}	/* Cannot open... report no joystick */
 	/* Get Max Number of Devices */
 	ulDataLen = sizeof(stGameParms);
 	rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_GET_PARMS,
@@ -694,7 +696,9 @@ static int joyPortOpen(HFILE * hGame)
 	ULONG		ulDataLen;		/* Size of version data */
 
 	/* Verifies if joyport is not already open... */
-	if (*hGame != NULLHANDLE) return 0;
+	if (*hGame != NULLHANDLE) {
+		return 0;
+	}
 
 	/* Open GAME$ for read */
 	rc = DosOpen("GAME$   ", hGame, &ulAction, 0, FILE_READONLY,
@@ -742,7 +746,9 @@ static int joyGetEnv(struct _joycfg * joydata)
 	char tempnumber[5];		/* Temporary place to put numeric texts */
 
 	joyenv = SDL_getenv("SDL_OS2_JOYSTICK");
-	if (joyenv == NULL) return 0;
+	if (joyenv == NULL) {
+		return 0;
+	}
 
 	/* Joystick Environment is defined! */
 	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */

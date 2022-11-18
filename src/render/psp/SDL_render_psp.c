@@ -182,8 +182,9 @@ static int
 TextureNextPow2(unsigned int w)
 {
     unsigned int n = 2;
-    if(w == 0)
+    if (w == 0) {
         return 0;
+    }
 
     while(w > n)
         n <<= 1;
@@ -280,8 +281,9 @@ TextureSwizzle(PSP_TextureData *psp_texture, void* dst)
     unsigned int *src = NULL;
     unsigned char *data = NULL;
 
-    if(psp_texture->swizzled)
+    if (psp_texture->swizzled) {
         return 1;
+    }
 
     bytewidth = psp_texture->textureWidth*(psp_texture->bits>>3);
     height = psp_texture->size / bytewidth;
@@ -340,8 +342,9 @@ TextureUnswizzle(PSP_TextureData *psp_texture, void* dst)
     unsigned char *data = NULL;
     unsigned char *ydst = NULL;
 
-    if(!psp_texture->swizzled)
+    if (!psp_texture->swizzled) {
         return 1;
+    }
 
     bytewidth = psp_texture->textureWidth*(psp_texture->bits>>3);
     height = psp_texture->size / bytewidth;
@@ -360,8 +363,9 @@ TextureUnswizzle(PSP_TextureData *psp_texture, void* dst)
         data = SDL_malloc(psp_texture->size);
     }
 
-    if(!data)
+    if (!data) {
         return SDL_OutOfMemory();
+    }
 
     ydst = (unsigned char *)data;
 
@@ -504,8 +508,9 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     PSP_RenderData *data = renderer->driverdata;
     PSP_TextureData* psp_texture = (PSP_TextureData*) SDL_calloc(1, sizeof(*psp_texture));
 
-    if(!psp_texture)
+    if (!psp_texture) {
         return SDL_OutOfMemory();
+    }
 
     psp_texture->swizzled = SDL_FALSE;
     psp_texture->width = texture->w;
