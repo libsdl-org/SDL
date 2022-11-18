@@ -827,8 +827,9 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
         // Traditional Chinese IMEs add a placeholder U+3000
         // Simplified Chinese IMEs seem to add a placeholder U+0020 sometimes
         int i;
-        for (i = videodata->ime_cursor + 1; i < length; ++i)
+        for(i = videodata->ime_cursor + 1; i < length; ++i) {
             videodata->ime_composition[i - 1] = videodata->ime_composition[i];
+        }
 
         --length;
     }
@@ -1667,8 +1668,9 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             (candcount * candpadding * 2) +
             ((candcount - 1) * horzcandspacing);
 
-        for (i = 0; i < candcount; ++i)
+        for(i = 0; i < candcount; ++i) {
             size.cx += candsizes[i].cx;
+        }
 
         size.cy =
             (listborder * 2) +
@@ -1704,8 +1706,9 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
         else {
             left = listborder + listpadding + (i * candborder * 2) + (i * candpadding * 2) + ((i + 1) * candmargin) + (i * horzcandspacing);
 
-            for (j = 0; j < i; ++j)
+            for(j = 0; j < i; ++j) {
                 left += candsizes[j].cx;
+            }
 
             top = listborder + listpadding + candmargin;
             right = left + candsizes[i].cx + (candpadding * 2) + (candborder * 2);

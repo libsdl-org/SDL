@@ -213,8 +213,9 @@ static uint8_t GetSegmentHeader( int nSegmentNumber, bool bLastPacket )
 static void hexdump( const uint8_t *ptr, int len )
 {
     int i;
-    for ( i = 0; i < len ; ++i )
+    for(i = 0; i < len; ++i) {
         printf("%02x ", ptr[i]);
+    }
     printf("\n");
 }
 

@@ -48,18 +48,26 @@ double attribute_hidden __ieee754_fmod(double x, double y)
     /* determine ix = ilogb(x) */
 	if(hx<0x00100000) {	/* subnormal x */
 	    if(hx==0) {
-		for (ix = -1043, i=lx; i>0; i<<=1) ix -=1;
+		for(ix = -1043, i = lx; i > 0; i <<= 1) {
+		    ix -= 1;
+		}
 	    } else {
-		for (ix = -1022,i=(hx<<11); i>0; i<<=1) ix -=1;
+		for(ix = -1022, i = (hx << 11); i > 0; i <<= 1) {
+		    ix -= 1;
+		}
 	    }
 	} else ix = (hx>>20)-1023;
 
     /* determine iy = ilogb(y) */
 	if(hy<0x00100000) {	/* subnormal y */
 	    if(hy==0) {
-		for (iy = -1043, i=ly; i>0; i<<=1) iy -=1;
+		for(iy = -1043, i = ly; i > 0; i <<= 1) {
+		    iy -= 1;
+		}
 	    } else {
-		for (iy = -1022,i=(hy<<11); i>0; i<<=1) iy -=1;
+		for(iy = -1022, i = (hy << 11); i > 0; i <<= 1) {
+		    iy -= 1;
+		}
 	    }
 	} else iy = (hy>>20)-1023;
 

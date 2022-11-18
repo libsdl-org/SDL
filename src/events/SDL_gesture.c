@@ -609,8 +609,9 @@ void SDL_GestureProcessEvent(SDL_Event* event)
                 /* PrintPath(path); */
                 if (recordAll) {
                     index = SDL_AddDollarGesture(NULL,path);
-                    for (i = 0; i < SDL_numGestureTouches; i++)
+                    for(i = 0; i < SDL_numGestureTouches; i++) {
                         SDL_gestureTouch[i].recording = SDL_FALSE;
+                    }
                 }
                 else {
                     index = SDL_AddDollarGesture(inTouch,path);

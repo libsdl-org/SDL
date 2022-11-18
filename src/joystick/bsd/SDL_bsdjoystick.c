@@ -321,8 +321,9 @@ CreateHwData(const char *path)
         hw->type = BSDJOY_UHID;
         {
             int ax;
-            for (ax = 0; ax < JOYAXE_count; ax++)
+            for(ax = 0; ax < JOYAXE_count; ax++) {
                 hw->axis_map[ax] = -1;
+            }
         }
         hw->repdesc = hid_get_report_desc(fd);
         if (hw->repdesc == NULL) {
@@ -356,8 +357,9 @@ CreateHwData(const char *path)
             SDL_SetError("%s: Cannot start HID parser", path);
             goto usberr;
         }
-        for (i = 0; i < JOYAXE_count; i++)
+        for(i = 0; i < JOYAXE_count; i++) {
             hw->axis_map[i] = -1;
+        }
 
         while (hid_get_item(hdata, &hitem) > 0) {
             switch (hitem.kind) {

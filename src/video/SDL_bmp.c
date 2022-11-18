@@ -556,15 +556,17 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             case 15:
             case 16:{
                     Uint16 *pix = (Uint16 *) bits;
-                    for (i = 0; i < surface->w; i++)
+                    for(i = 0; i < surface->w; i++) {
                         pix[i] = SDL_Swap16(pix[i]);
+                    }
                     break;
                 }
 
             case 32:{
                     Uint32 *pix = (Uint32 *) bits;
-                    for (i = 0; i < surface->w; i++)
+                    for(i = 0; i < surface->w; i++) {
                         pix[i] = SDL_Swap32(pix[i]);
+                    }
                     break;
                 }
             }

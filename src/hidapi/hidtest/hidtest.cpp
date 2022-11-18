@@ -139,8 +139,9 @@ int main(int argc, char* argv[])
 	else {
 		// Print out the returned buffer.
 		printf("Feature Report\n   ");
-		for (i = 0; i < res; i++)
+		for(i = 0; i < res; i++) {
 			printf("%02hhx ", buf[i]);
+		}
 		printf("\n");
 	}
 
@@ -185,8 +186,9 @@ int main(int argc, char* argv[])
 
 	printf("Data read:\n   ");
 	// Print out the returned buffer.
-	for (i = 0; i < res; i++)
+	for(i = 0; i < res; i++) {
 		printf("%02hhx ", buf[i]);
+	}
 	printf("\n");
 
 	hid_close(handle);

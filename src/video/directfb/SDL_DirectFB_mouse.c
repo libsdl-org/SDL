@@ -163,9 +163,9 @@ DirectFB_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
                                          (void *) &dest, &pitch));
 
     p = surface->pixels;
-    for (i = 0; i < surface->h; i++)
-        SDL_memcpy((char *) dest + i * pitch,
-               (char *) p + i * surface->pitch, 4 * surface->w);
+    for(i = 0; i < surface->h; i++) {
+        SDL_memcpy((char *)dest + i * pitch, (char *)p + i * surface->pitch, 4 * surface->w);
+    }
 
     curdata->surf->Unlock(curdata->surf);
     return cursor;

@@ -865,8 +865,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
 void SDL_WSCONS_PumpEvents()
 {
     int i = 0;
-    for (i = 0; i < 4; i++)
+    for(i = 0; i < 4; i++) {
         updateKeyboard(inputs[i]);
+    }
     if (mouseInputData != NULL) {
         updateMouse(mouseInputData);
     }

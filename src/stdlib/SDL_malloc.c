@@ -2926,10 +2926,12 @@ do_check_malloc_state(mstate m)
     bindex_t i;
     size_t total;
     /* check bins */
-    for (i = 0; i < NSMALLBINS; ++i)
+    for(i = 0; i < NSMALLBINS; ++i) {
         do_check_smallbin(m, i);
-    for (i = 0; i < NTREEBINS; ++i)
+    }
+    for(i = 0; i < NTREEBINS; ++i) {
         do_check_treebin(m, i);
+    }
 
     if (m->dvsize != 0) {       /* check dv chunk */
         do_check_any_chunk(m, m->dv);
@@ -3411,8 +3413,9 @@ reset_on_error(mstate m)
     m->seg.size = 0;
     m->seg.next = 0;
     m->top = m->dv = 0;
-    for (i = 0; i < NTREEBINS; ++i)
+    for(i = 0; i < NTREEBINS; ++i) {
         *treebin_at(m, i) = 0;
+    }
     init_bins(m);
 }
 #endif /* PROCEED_ON_ERROR */
@@ -4160,8 +4163,9 @@ ialloc(mstate m, size_t n_elements, size_t * sizes, int opts, void *chunks[])
     } else {                    /* add up all the sizes */
         element_size = 0;
         contents_size = 0;
-        for (i = 0; i != n_elements; ++i)
+        for(i = 0; i != n_elements; ++i) {
             contents_size += request2size(sizes[i]);
+        }
     }
 
     size = contents_size + array_size;
@@ -4229,8 +4233,9 @@ ialloc(mstate m, size_t n_elements, size_t * sizes, int opts, void *chunks[])
         }
         check_inuse_chunk(m, mem2chunk(marray));
     }
-    for (i = 0; i != n_elements; ++i)
+    for(i = 0; i != n_elements; ++i) {
         check_inuse_chunk(m, mem2chunk(marray[i]));
+    }
 
 #endif /* DEBUG */
 

@@ -223,8 +223,9 @@ static int unifont_init(const char *fontname)
             {
                 unifontGlyph[codepoint].width = glyphWidth;
                 /* Pack the hex data into a more compact form. */
-                for (i = 0; i < glyphWidth * 2; i++)
+                for(i = 0; i < glyphWidth * 2; i++) {
                     unifontGlyph[codepoint].data[i] = dehex2(hexBuffer[i * 2], hexBuffer[i * 2 + 1]);
+                }
                 numGlyphs++;
             }
         }
@@ -372,8 +373,9 @@ static void unifont_cleanup()
         }
     }
 
-    for (j = 0; j < UNIFONT_NUM_TEXTURES; j++)
-          unifontTextureLoaded[j] = 0;
+    for(j = 0; j < UNIFONT_NUM_TEXTURES; j++) {
+        unifontTextureLoaded[j] = 0;
+    }
 
     SDL_free(unifontTexture);
     SDL_free(unifontGlyph);

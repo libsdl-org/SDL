@@ -448,7 +448,9 @@ pixels_calcGammaRamp(void *arg)
     }
 
     /* Make call and check that values were updated */
-    for (i = 0; i < 256; i++) ramp[i] = magic;
+    for(i = 0; i < 256; i++) {
+        ramp[i] = magic;
+    }
     SDL_CalculateGammaRamp(gamma, ramp);
     SDLTest_AssertPass("Call to SDL_CalculateGammaRamp(%f)", gamma);
     changed = 0;
@@ -478,7 +480,9 @@ pixels_calcGammaRamp(void *arg)
   SDL_ClearError();
   SDLTest_AssertPass("Call to SDL_ClearError()");
   gamma = -1;
-  for (i=0; i<256; i++) ramp[i] = magic;
+  for(i = 0; i < 256; i++) {
+    ramp[i] = magic;
+  }
   SDL_CalculateGammaRamp(gamma, ramp);
   SDLTest_AssertPass("Call to SDL_CalculateGammaRamp(%f)", gamma);
   error = SDL_GetError();

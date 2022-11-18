@@ -74,14 +74,16 @@ int main(int argc,char** argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not allocate memory.");
         exit(1);
     }
-    for(i=0;i<num_pictures;i++)
+    for(i = 0; i < num_pictures; i++) {
         pictures[i].surface = NULL;
+    }
     for(i=0;i<num_pictures;i++) {
         pictures[i].surface = SDL_LoadBMP(argv[i+1]);
         pictures[i].name = argv[i+1];
         if(pictures[i].surface == NULL) {
-            for(j=0;j<num_pictures;j++)
+            for(j = 0; j < num_pictures; j++) {
                 SDL_FreeSurface(pictures[j].surface);
+            }
             SDL_free(pictures);
             SDL_VideoQuit();
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load surface from named bitmap file: %s", argv[i+1]);
@@ -105,8 +107,9 @@ int main(int argc,char** argv)
         0);
     SDL_SetWindowPosition(window, SHAPED_WINDOW_X, SHAPED_WINDOW_Y);
     if(window == NULL) {
-        for(i=0;i<num_pictures;i++)
+        for(i = 0; i < num_pictures; i++) {
             SDL_FreeSurface(pictures[i].surface);
+        }
         SDL_free(pictures);
         SDL_VideoQuit();
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create shaped window for SDL_Shape.");
@@ -115,16 +118,18 @@ int main(int argc,char** argv)
     renderer = SDL_CreateRenderer(window,-1,0);
     if (!renderer) {
         SDL_DestroyWindow(window);
-        for(i=0;i<num_pictures;i++)
+        for(i = 0; i < num_pictures; i++) {
             SDL_FreeSurface(pictures[i].surface);
+        }
         SDL_free(pictures);
         SDL_VideoQuit();
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create rendering context for SDL_Shape window.");
         exit(-5);
     }
 
-    for(i=0;i<num_pictures;i++)
+    for(i = 0; i < num_pictures; i++) {
         pictures[i].texture = NULL;
+    }
     for(i=0;i<num_pictures;i++) {
         pictures[i].texture = SDL_CreateTextureFromSurface(renderer,pictures[i].surface);
         if(pictures[i].texture == NULL) {
@@ -133,8 +138,9 @@ int main(int argc,char** argv)
                     SDL_DestroyTexture(pictures[i].texture);
                 }
             }
-            for(i=0;i<num_pictures;i++)
+            for(i = 0; i < num_pictures; i++) {
                 SDL_FreeSurface(pictures[i].surface);
+            }
             SDL_free(pictures);
             SDL_DestroyRenderer(renderer);
             SDL_DestroyWindow(window);
@@ -185,14 +191,16 @@ int main(int argc,char** argv)
     }
 
     /* Free the textures. */
-    for(i=0;i<num_pictures;i++)
+    for(i = 0; i < num_pictures; i++) {
         SDL_DestroyTexture(pictures[i].texture);
+    }
     SDL_DestroyRenderer(renderer);
     /* Destroy the window. */
     SDL_DestroyWindow(window);
     /* Free the original surfaces backing the textures. */
-    for(i=0;i<num_pictures;i++)
+    for(i = 0; i < num_pictures; i++) {
         SDL_FreeSurface(pictures[i].surface);
+    }
     SDL_free(pictures);
     /* Call SDL_VideoQuit() before quitting. */
     SDL_VideoQuit();

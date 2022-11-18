@@ -654,8 +654,9 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             if (req->target == XA_TARGETS) {
                 supportedFormats[0] = XA_TARGETS;
                 mime_formats = 1;
-                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i)
+                for(i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
                     supportedFormats[mime_formats++] = X11_GetSDLCutBufferClipboardExternalFormat(display, i);
+                }
                 X11_XChangeProperty(display, req->requestor, req->property,
                     XA_ATOM, 32, PropModeReplace,
                     (unsigned char*)supportedFormats,

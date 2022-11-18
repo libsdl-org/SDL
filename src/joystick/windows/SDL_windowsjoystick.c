@@ -596,8 +596,9 @@ WINDOWS_JoystickGetDeviceName(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for (index = device_index; index > 0; index--)
+    for(index = device_index; index > 0; index--) {
         device = device->pNext;
+    }
 
     return device->joystickname;
 }
@@ -608,8 +609,9 @@ WINDOWS_JoystickGetDevicePath(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for (index = device_index; index > 0; index--)
+    for(index = device_index; index > 0; index--) {
         device = device->pNext;
+    }
 
     return device->path;
 }
@@ -620,8 +622,9 @@ WINDOWS_JoystickGetDevicePlayerIndex(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for (index = device_index; index > 0; index--)
+    for(index = device_index; index > 0; index--) {
         device = device->pNext;
+    }
 
     return device->bXInputDevice ? (int)device->XInputUserId : -1;
 }
@@ -638,8 +641,9 @@ WINDOWS_JoystickGetDeviceGUID(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for (index = device_index; index > 0; index--)
+    for(index = device_index; index > 0; index--) {
         device = device->pNext;
+    }
 
     return device->guid;
 }
@@ -651,8 +655,9 @@ WINDOWS_JoystickGetDeviceInstanceID(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for (index = device_index; index > 0; index--)
+    for(index = device_index; index > 0; index--) {
         device = device->pNext;
+    }
 
     return device->nInstanceID;
 }
@@ -668,8 +673,9 @@ WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for (index = device_index; index > 0; index--)
+    for(index = device_index; index > 0; index--) {
         device = device->pNext;
+    }
 
     /* allocate memory for system specific hardware data */
     joystick->instance_id = device->nInstanceID;

@@ -98,8 +98,9 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
         {
             int i;
             SDLTest_LogError("SDL_malloc() failed.");
-            for(i = 0; i < index; i++)
+            for(i = 0; i < index; i++) {
                 SDL_free(tokens[i]);
+            }
             return 0;
         }
         tokens[index][0] = '\0';

@@ -113,7 +113,9 @@ double attribute_hidden __ieee754_sqrt(double x)
 		m -= 21;
 		ix0 |= (ix1>>11); ix1 <<= 21;
 	    }
-	    for(i=0;(ix0&0x00100000)==0;i++) ix0<<=1;
+	    for(i = 0; (ix0 & 0x00100000) == 0; i++) {
+		ix0 <<= 1;
+	    }
 	    m -= i-1;
 	    ix0 |= (ix1>>(32-i));
 	    ix1 <<= i;

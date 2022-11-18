@@ -173,14 +173,18 @@ int32_t attribute_hidden __kernel_rem_pio2(const double *x, double *y, int e0, i
 
     /* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
 	j = jv-jx; m = jx+jk;
-	for(i=0;i<=m;i++,j++) f[i] = (j<0)? zero : (double) ipio2[j];
+	for(i = 0; i <= m; i++, j++) {
+		f[i] = (j < 0) ? zero : (double)ipio2[j];
+	}
 	if ((m+1) < SDL_arraysize(f)) {
 	    SDL_memset(&f[m+1], 0, sizeof (f) - ((m+1) * sizeof (f[0])));
 	}
 
     /* compute q[0],q[1],...q[jk] */
 	for (i=0;i<=jk;i++) {
-	    for(j=0,fw=0.0;j<=jx;j++) fw += x[j]*f[jx+i-j];
+	    for(j = 0, fw = 0.0; j <= jx; j++) {
+		fw += x[j] * f[jx + i - j];
+	    }
 	    q[i] = fw;
 	}
 
@@ -241,13 +245,17 @@ recompute:
     /* check if recomputation is needed */
 	if(z==zero) {
 	    j = 0;
-	    for (i=jz-1;i>=jk;i--) j |= iq[i];
+	    for (i = jz-1; i >= jk; i--) {
+		j |= iq[i];
+	    }
 	    if(j==0) { /* need recomputation */
 		for(k=1;iq[jk-k]==0;k++);   /* k = no. of terms needed */
 
 		for(i=jz+1;i<=jz+k;i++) {   /* add q[jz+1] to q[jz+k] */
 		    f[jx+i] = (double) ipio2[jv+i];
-		    for(j=0,fw=0.0;j<=jx;j++) fw += x[j]*f[jx+i-j];
+		    for ( j=0, fw=0.0; j <= jx; j++) { 
+                       fw += x[j]*f[jx+i-j];
+		    }
 		    q[i] = fw;
 		}
 		jz += k;
@@ -278,7 +286,9 @@ recompute:
 
     /* compute PIo2[0,...,jp]*q[jz,...,0] */
 	for(i=jz;i>=0;i--) {
-	    for(fw=0.0,k=0;k<=jp&&k<=jz-i;k++) fw += PIo2[k]*q[i+k];
+	    for(fw = 0.0, k = 0; k <= jp && k <= jz - i; k++) {
+		fw += PIo2[k] * q[i + k];
+	    }
 	    fq[jz-i] = fw;
 	}
 	if ((jz+1) < SDL_arraysize(f)) {
@@ -289,16 +299,22 @@ recompute:
 	switch(prec) {
 	    case 0:
 		fw = 0.0;
-		for (i=jz;i>=0;i--) fw += fq[i];
+		for(i = jz; i >= 0; i--) {
+		    fw += fq[i];
+		}
 		y[0] = (ih==0)? fw: -fw;
 		break;
 	    case 1:
 	    case 2:
 		fw = 0.0;
-		for (i=jz;i>=0;i--) fw += fq[i];
+		for(i = jz; i >= 0; i--) {
+		    fw += fq[i];
+		}
 		y[0] = (ih==0)? fw: -fw;
 		fw = fq[0]-fw;
-		for (i=1;i<=jz;i++) fw += fq[i];
+		for(i = 1; i <= jz; i++) {
+		    fw += fq[i];
+		}
 		y[1] = (ih==0)? fw: -fw;
 		break;
 	    case 3:	/* painful */
@@ -312,7 +328,9 @@ recompute:
 		    fq[i]  += fq[i-1]-fw;
 		    fq[i-1] = fw;
 		}
-		for (fw=0.0,i=jz;i>=2;i--) fw += fq[i];
+		for(fw = 0.0, i = jz; i >= 2; i--) {
+		    fw += fq[i];
+		}
 		if(ih==0) {
 		    y[0] =  fq[0]; y[1] =  fq[1]; y[2] =  fw;
 		} else {

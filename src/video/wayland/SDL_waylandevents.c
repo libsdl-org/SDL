@@ -2654,8 +2654,9 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
     /* If we have a pointer confine active, we must destroy it here because
      * creating a locked pointer otherwise would be a protocol error.
      */
-    for (window = vd->windows; window; window = window->next)
+    for(window = vd->windows; window; window = window->next) {
         pointer_confine_destroy(window);
+    }
 
     if (!input->relative_pointer) {
         relative_pointer =
@@ -2668,8 +2669,9 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
         input->relative_pointer = relative_pointer;
     }
 
-    for (window = vd->windows; window; window = window->next)
+    for(window = vd->windows; window; window = window->next) {
         lock_pointer_to_window(window, input);
+    }
 
     d->relative_mouse_mode = 1;
 
@@ -2696,8 +2698,9 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
 
     d->relative_mouse_mode = 0;
 
-    for (window = vd->windows; window; window = window->next)
+    for(window = vd->windows; window; window = window->next) {
         Wayland_input_confine_pointer(input, window);
+    }
 
     return 0;
 }

@@ -596,8 +596,9 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 
         ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
 
-        for (i = 0; i < sizeof (ctx->m_rgucMACAddress); ++i)
-            ctx->m_rgucMACAddress[i] = status->rgucMACAddress[ sizeof(ctx->m_rgucMACAddress) - i - 1 ];
+        for(i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
+            ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof(ctx->m_rgucMACAddress) - i - 1];
+        }
 
         return SDL_TRUE;
     }

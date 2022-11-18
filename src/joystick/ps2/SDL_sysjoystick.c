@@ -100,8 +100,9 @@ static int PS2_JoystickInit(void)
         return -1;
    }
 
-   for (port = 0; port < PS2_MAX_PORT; port++)
+   for(port = 0; port < PS2_MAX_PORT; port++) {
         mtapPortOpen(port);
+   }
     /* it can fail - we dont care, we will check it more strictly when padPortOpen */
 
     for (slot = 0; slot < PS2_MAX_SLOT; slot++) {

@@ -133,8 +133,9 @@ void PSP_InitOSKeymap(_THIS)
 {
 #ifdef PSPIRKEYB
     int i;
-    for (i=0; i<SDL_TABLESIZE(keymap); ++i)
+    for(i = 0; i < SDL_TABLESIZE(keymap); ++i) {
         keymap[i] = SDLK_UNKNOWN;
+    }
 
     keymap[KEY_ESC] = SDLK_ESCAPE;
 
