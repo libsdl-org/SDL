@@ -128,8 +128,8 @@ SDLVisualTest_RWHelperCountNonEmptyLines(SDL_RWops* rw,
         SDLTest_LogError("buffer argument cannot be NULL");
         return -1;
     }
-    while(SDLVisualTest_RWHelperReadLine(rw, str, MAX_SUTOPTION_LINE_LENGTH,
-                                         buffer, comment_char))
+    while (SDLVisualTest_RWHelperReadLine(rw, str, MAX_SUTOPTION_LINE_LENGTH, buffer, comment_char)) {
         num_lines++;
+    }
     return num_lines;
 }

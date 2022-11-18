@@ -1133,8 +1133,9 @@ static int SDLCALL read_thread(void *param)
 	   if no transfers are pending, but that's OK. */
 	libusb_cancel_transfer(dev->transfer);
 
-	while (!dev->transfer_loop_finished)
+	while (!dev->transfer_loop_finished) {
 		libusb_handle_events_completed(usb_context, &dev->transfer_loop_finished);
+	}
 
 	/* Now that the read thread is stopping, Wake any threads which are
 	   waiting on data (in hid_read_timeout()). Do this under a mutex to

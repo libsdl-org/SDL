@@ -71,8 +71,9 @@ SDLVisualTest_GetNextRandomVariation(SDLVisualTest_RandomVariator* variator)
             case SDL_SUT_OPTIONTYPE_ENUM:
             {
                 int emx = 0;
-                while(options[i].data.enum_values[emx])
+                while (options[i].data.enum_values[emx]) {
                     emx++;
+                }
                 vars[i].enumerated.index = SDLTest_RandomIntegerInRange(0, emx - 1);
             }
             break;

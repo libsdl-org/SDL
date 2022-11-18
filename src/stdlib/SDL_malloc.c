@@ -3682,8 +3682,9 @@ sys_alloc(mstate m, size_t nb)
         else {
             /* Try to merge with an existing segment */
             msegmentptr sp = &m->seg;
-            while (sp != 0 && tbase != sp->base + sp->size)
+            while (sp != 0 && tbase != sp->base + sp->size) {
                 sp = sp->next;
+            }
             if (sp != 0 && !is_extern_segment(sp) && (sp->sflags & IS_MMAPPED_BIT) == mmap_flag && segment_holds(sp, m->top)) { /* append */
                 sp->size += tsize;
                 init_top(m, m->top, m->topsize + tsize);
@@ -3691,8 +3692,9 @@ sys_alloc(mstate m, size_t nb)
                 if (tbase < m->least_addr)
                     m->least_addr = tbase;
                 sp = &m->seg;
-                while (sp != 0 && sp->base != tbase + tsize)
+                while (sp != 0 && sp->base != tbase + tsize) {
                     sp = sp->next;
+                }
                 if (sp != 0 &&
                     !is_extern_segment(sp) &&
                     (sp->sflags & IS_MMAPPED_BIT) == mmap_flag) {
@@ -4028,8 +4030,9 @@ internal_memalign(mstate m, size_t alignment, size_t bytes)
         alignment = MIN_CHUNK_SIZE;
     if ((alignment & (alignment - SIZE_T_ONE)) != 0) {  /* Ensure a power of 2 */
         size_t a = MALLOC_ALIGNMENT << 1;
-        while (a < alignment)
+        while (a < alignment) {
             a <<= 1;
+        }
         alignment = a;
     }
 

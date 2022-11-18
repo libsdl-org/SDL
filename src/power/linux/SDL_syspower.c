@@ -303,8 +303,9 @@ next_string(char **_ptr, char **_str)
     }
 
     str = ptr;
-    while ((*ptr != ' ') && (*ptr != '\n') && (*ptr != '\0'))
+    while ((*ptr != ' ') && (*ptr != '\n') && (*ptr != '\0')) {
         ptr++;
+    }
 
     if (*ptr != '\0') {
         *(ptr++) = '\0';

@@ -450,8 +450,9 @@ DirectFB_DestroyWindow(_THIS, SDL_Window * window)
 
     p = devdata->firstwin->driverdata;
 
-    while (p && p->next != window)
+    while (p && p->next != window) {
         p = (p->next ? p->next->driverdata : NULL);
+    }
     if (p)
         p->next = windata->next;
     else

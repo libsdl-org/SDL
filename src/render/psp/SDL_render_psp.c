@@ -186,8 +186,9 @@ TextureNextPow2(unsigned int w)
         return 0;
     }
 
-    while(w > n)
+    while (w > n) {
         n <<= 1;
+    }
 
     return n;
 }

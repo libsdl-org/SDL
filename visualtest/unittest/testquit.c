@@ -80,8 +80,9 @@ main(int argc, char** argv)
     }
 
     /* infinite loop to hang the process */
-    while(hang)
+    while (hang) {
         SDL_Delay(10);
+    }
 
     /* dereference NULL pointer to crash process */
     if(crash)
@@ -94,8 +95,9 @@ main(int argc, char** argv)
     done = 0;
     while(!done)
     {
-        while(SDL_PollEvent(&event))
+        while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
+        }
         SDL_Delay(10);
     }
 

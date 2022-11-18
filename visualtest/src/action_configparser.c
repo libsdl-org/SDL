@@ -156,8 +156,9 @@ SDLVisualTest_EmptyActionQueue(SDLVisualTest_ActionQueue* queue)
 {
     if(queue)
     {
-        while(!SDLVisualTest_IsActionQueueEmpty(queue))
+        while (!SDLVisualTest_IsActionQueueEmpty(queue)) {
             SDLVisualTest_DequeueAction(queue);
+        }
     }
 }
 

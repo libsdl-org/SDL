@@ -303,8 +303,12 @@ typedef struct { char * first; char * last; } stack_entry;
 /* and so is the partitioning logic: */
 #define Partition(swapper,sz) {			\
   do {						\
-    while (compare(first,pivot)<0) first+=sz;	\
-    while (compare(pivot,last)<0) last-=sz;	\
+    while (compare(first, pivot) < 0) {         \
+            first += sz;                        \
+    }                                           \
+    while (compare(pivot, last) < 0) {          \
+            last -= sz;                         \
+    }	                                        \
     if (first<last) {				\
       swapper(first,last);			\
       first+=sz; last-=sz; }			\

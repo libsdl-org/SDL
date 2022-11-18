@@ -922,8 +922,9 @@ IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
         *dst++ = TEXT(' ');
     }
 
-    while (*candidate && dst < end)
+    while (*candidate && dst < end) {
         *dst++ = *candidate++;
+    }
 
     *dst = (WCHAR)'\0';
 }

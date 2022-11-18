@@ -751,7 +751,9 @@ static int joyGetEnv(struct _joycfg * joydata)
 	}
 
 	/* Joystick Environment is defined! */
-	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
+	while (*joyenv == ' ' && *joyenv != 0) {
+		joyenv++;
+	} /* jump spaces... */
 
 	/* If the string name starts with '... get if fully */
 	if (*joyenv == '\'') {
@@ -768,22 +770,30 @@ static int joyGetEnv(struct _joycfg * joydata)
 	}
 
 	/* Now get the number of axes */
-	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
+	while (*joyenv == ' ' && *joyenv != 0) {
+		joyenv++;
+	} /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
 	joydata->axes = SDL_atoi(tempnumber);
 
 	/* Now get the number of buttons */
-	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
+	while (*joyenv == ' ' && *joyenv != 0) {
+		joyenv++;
+	} /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
 	joydata->buttons = SDL_atoi(tempnumber);
 
 	/* Now get the number of hats */
-	while (*joyenv == ' ' && *joyenv != 0) joyenv++; /* jump spaces... */
+	while (*joyenv == ' ' && *joyenv != 0) {
+		joyenv++;
+	} /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
 	joydata->hats = SDL_atoi(tempnumber);
 
 	/* Now get the number of balls */
-	while (*joyenv==' ' && *joyenv != 0) joyenv++; /* jump spaces... */
+	while (*joyenv == ' ' && *joyenv != 0) {
+		joyenv++;
+	} /* jump spaces... */
 	joyenv += joyGetData(joyenv,tempnumber,' ',sizeof(tempnumber));
 	joydata->balls = SDL_atoi(tempnumber);
 	return 1;
