@@ -666,8 +666,8 @@ KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
    list of SDL Displays in _this->displays[]  */
 static void
-KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
-
+KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources)
+{
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = NULL;
     SDL_VideoDisplay display = {0};
@@ -770,14 +770,37 @@ KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
         drmModeModeInfo *mode = &connector->modes[i];
 
         if (!SDL_memcmp(mode, &crtc->mode, sizeof(crtc->mode))) {
-          mode_index = i;
-          break;
+            mode_index = i;
+            break;
         }
     }
 
     if (mode_index == -1) {
-      ret = SDL_SetError("Failed to find index of mode attached to the CRTC.");
-      goto cleanup;
+        int current_area, largest_area = 0;
+
+        /* Find the preferred mode or the highest resolution mode */
+        for (i = 0; i < connector->count_modes; i++) {
+            drmModeModeInfo *mode = &connector->modes[i];
+
+            if (mode->type & DRM_MODE_TYPE_PREFERRED) {
+                mode_index = i;
+                break;
+            }
+
+            current_area = mode->hdisplay * mode->vdisplay;
+            if (current_area > largest_area) {
+                mode_index = i;
+                largest_area = current_area;
+            }
+        }
+        if (mode_index != -1) {
+            crtc->mode = connector->modes[mode_index];
+        }
+    }
+
+    if (mode_index == -1) {
+        ret = SDL_SetError("Failed to find index of mode attached to the CRTC.");
+        goto cleanup;
     }
 
     /*********************************************/
