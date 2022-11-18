@@ -544,6 +544,10 @@ SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
     SDL_UDEV_CallbackList *item;
     SDL_UDEV_CallbackList *prev = NULL;
 
+    if (_this == NULL) {
+        return;
+    }
+
     for (item = _this->first; item != NULL; item = item->next) {
         /* found it, remove it. */
         if (item->callback == cb) {
