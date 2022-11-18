@@ -142,8 +142,9 @@ SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     int row;
     size_t length;
 
-    if(SDL_MUSTLOCK(surface))
+    if (SDL_MUSTLOCK(surface)) {
         SDL_LockSurface(surface);
+    }
     src = (Uint8 *) pixels;
     dst = (Uint8 *) surface->pixels +
                         rect->y * surface->pitch +
@@ -154,8 +155,9 @@ SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         src += pitch;
         dst += surface->pitch;
     }
-    if(SDL_MUSTLOCK(surface))
+    if (SDL_MUSTLOCK(surface)) {
         SDL_UnlockSurface(surface);
+    }
     return 0;
 }
 

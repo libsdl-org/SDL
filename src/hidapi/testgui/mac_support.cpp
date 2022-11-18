@@ -56,8 +56,9 @@ OSStatus AEHandler(EventHandlerCallRef inCaller, EventRef inEvent, void* inRefco
     // Convert the event ref to the type AEProcessAppleEvent expects. 
     ConvertEventRefToEventRecord(inEvent, &eventRecord); 
     ignoreErrForThisSample = AEProcessAppleEvent(&eventRecord); 
-    if (release) 
-        ReleaseEvent(inEvent); 
+    if (release) {
+        ReleaseEvent(inEvent);
+    } 
     // This Carbon event has been handled, even if no AppleEvent handlers 
     //  were installed for the Apple event. 
     return noErr; 

@@ -459,8 +459,9 @@ int HID_API_EXPORT hid_init(void)
 
 	/* Set the locale if it's not set. */
 	locale = setlocale(LC_CTYPE, NULL);
-	if (!locale)
+	if (!locale) {
 		setlocale(LC_CTYPE, "");
+	}
 
 	kernel_version = detect_kernel_version();
 
@@ -749,8 +750,9 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 		/* Get Report Descriptor Size */
 		res = ioctl(dev->device_handle, HIDIOCGRDESCSIZE, &desc_size);
-		if (res < 0)
+		if (res < 0) {
 			perror("HIDIOCGRDESCSIZE");
+		}
 
 
 		/* Get Report Descriptor */
@@ -818,8 +820,9 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 	}
 
 	bytes_read = read(dev->device_handle, data, length);
-	if (bytes_read < 0 && (errno == EAGAIN || errno == EINPROGRESS))
+	if (bytes_read < 0 && (errno == EAGAIN || errno == EINPROGRESS)) {
 		bytes_read = 0;
+	}
 
 	if (bytes_read >= 0 &&
 	    kernel_version != 0 &&
@@ -861,8 +864,9 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 			continue;
 		}
 
-		if (res < 0)
+		if (res < 0) {
 			perror("ioctl (SFEATURE)");
+		}
 		break;
 	}
 	return res;

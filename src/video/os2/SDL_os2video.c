@@ -159,10 +159,9 @@ static Uint32 _getSDLPixelFormat(ULONG ulBPP, FOURCC fccColorEncoding)
     SDL_PixelFormat stSDLPixelFormat;
     Uint32          uiResult = SDL_PIXELFORMAT_UNKNOWN;
 
-    if (_getSDLPixelFormatData(&stSDLPixelFormat, ulBPP, fccColorEncoding))
-        uiResult = SDL_MasksToPixelFormatEnum(ulBPP, stSDLPixelFormat.Rmask,
-                                              stSDLPixelFormat.Gmask,
-                                              stSDLPixelFormat.Bmask, 0);
+    if (_getSDLPixelFormatData(&stSDLPixelFormat, ulBPP, fccColorEncoding)) {
+        uiResult = SDL_MasksToPixelFormatEnum(ulBPP, stSDLPixelFormat.Rmask, stSDLPixelFormat.Gmask, stSDLPixelFormat.Bmask, 0);
+    }
 
     return uiResult;
 }
@@ -238,15 +237,17 @@ static VOID _wmMouseMove(WINDATA *pWinData, SHORT lX, SHORT lY)
             pointl.x = lX;
             pointl.y = lY;
 
-            if (lX < 0)
+            if (lX < 0) {
                 lX = 0;
-            else if (lX >= pWinData->window->w)
+            } else if (lX >= pWinData->window->w) {
                 lX = pWinData->window->w - 1;
+            }
 
-            if (lY < 0)
+            if (lY < 0) {
                 lY = 0;
-            else if (lY >= pWinData->window->h)
+            } else if (lY >= pWinData->window->h) {
                 lY = pWinData->window->h - 1;
+            }
 
             if (lX != pointl.x || lY != pointl.x) {
                 pointl.x = lX;
@@ -418,10 +419,9 @@ static MRESULT _wmDrop(WINDATA *pWinData, PDRAGINFO pDragInfo)
             SDL_free(pcFName);
 
             /* Notify a source that a drag operation is complete. */
-            if (pDragItem->hwndItem)
-                DrgSendTransferMsg(pDragItem->hwndItem, DM_ENDCONVERSATION,
-                                   (MPARAM)pDragItem->ulItemID,
-                                   (MPARAM)DMFL_TARGETSUCCESSFUL);
+            if (pDragItem->hwndItem) {
+                DrgSendTransferMsg(pDragItem->hwndItem, DM_ENDCONVERSATION, (MPARAM)pDragItem->ulItemID, (MPARAM)DMFL_TARGETSUCCESSFUL);
+            }
         }
     }
 
@@ -494,8 +494,9 @@ static MRESULT EXPENTRY wndFrameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
         if ((((PSWP)mp1)->fl & (SWP_SIZE | SWP_MINIMIZE)) == SWP_SIZE) {
             if ((pWinData->window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
                 /* SDL_WINDOW_FULLSCREEN_DESKTOP have flag SDL_WINDOW_FULLSCREEN... */
-                if (SDL_IsShapedWindow(pWinData->window))
+                if (SDL_IsShapedWindow(pWinData->window)) {
                     OS2_ResizeWindowShape(pWinData->window);
+                }
                 break;
             }
             if ((SDL_GetWindowFlags(pWinData->window) & SDL_WINDOW_RESIZABLE) != 0) {
@@ -513,19 +514,22 @@ static MRESULT EXPENTRY wndFrameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
                 SDL_GetWindowMinimumSize(pWinData->window, &iMinW, &iMinH);
                 SDL_GetWindowMaximumSize(pWinData->window, &iMaxW, &iMaxH);
 
-                if (iWinW < iMinW)
+                if (iWinW < iMinW) {
                     rectl.xRight = iMinW;
-                else if (iMaxW != 0 && iWinW > iMaxW)
+                } else if (iMaxW != 0 && iWinW > iMaxW) {
                     rectl.xRight = iMaxW;
+                }
 
-                if (iWinH < iMinH)
+                if (iWinH < iMinH) {
                     rectl.yTop = iMinW;
-                else if (iMaxH != 0 && iWinH > iMaxH)
+                } else if (iMaxH != 0 && iWinH > iMaxH) {
                     rectl.yTop = iMaxH;
+                }
 
                 if (rectl.xRight == iWinW && rectl.yTop == iWinH) {
-                    if (SDL_IsShapedWindow(pWinData->window))
+                    if (SDL_IsShapedWindow(pWinData->window)) {
                         OS2_ResizeWindowShape(pWinData->window);
+                    }
                     break;
                 }
 
@@ -588,16 +592,18 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         if ((BOOL)mp1) {
             POINTL  pointl;
 
-            if (SDL_GetKeyboardFocus() != pWinData->window)
+            if (SDL_GetKeyboardFocus() != pWinData->window) {
                 SDL_SetKeyboardFocus(pWinData->window);
+            }
 
             WinQueryPointerPos(HWND_DESKTOP, &pointl);
             WinMapWindowPoints(HWND_DESKTOP, pWinData->hwnd, &pointl, 1);
             SDL_SendMouseMotion(pWinData->window, 0, 0,
                                 pointl.x, pWinData->window->h - pointl.y - 1);
         } else {
-            if (SDL_GetKeyboardFocus() == pWinData->window)
+            if (SDL_GetKeyboardFocus() == pWinData->window) {
                 SDL_SetKeyboardFocus(NULL);
+            }
 
             WinSetCapture(HWND_DESKTOP,  NULLHANDLE);
         }
@@ -705,8 +711,9 @@ static void OS2_PumpEvents(_THIS)
     SDL_VideoData *pVData = (SDL_VideoData *)_this->driverdata;
     QMSG  qmsg;
 
-    if (WinPeekMsg(pVData->hab, &qmsg, NULLHANDLE, 0, 0, PM_REMOVE))
+    if (WinPeekMsg(pVData->hab, &qmsg, NULLHANDLE, 0, 0, PM_REMOVE)) {
         WinDispatchMsg(pVData->hab, &qmsg);
+    }
 }
 
 static WINDATA *_setupWindow(_THIS, SDL_Window *window, HWND hwndFrame,
@@ -749,15 +756,17 @@ static int OS2_CreateWindow(_THIS, SDL_Window *window)
         return -1;
 
     /* Create a PM window */
-    if ((window->flags & SDL_WINDOW_RESIZABLE) != 0)
+    if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
         ulFrameFlags |= FCF_SIZEBORDER | FCF_DLGBORDER | FCF_MAXBUTTON;
-    else if ((window->flags & SDL_WINDOW_BORDERLESS) == 0)
+    } else if ((window->flags & SDL_WINDOW_BORDERLESS) == 0) {
         ulFrameFlags |= FCF_DLGBORDER;
+    }
 
-    if ((window->flags & SDL_WINDOW_MAXIMIZED) != 0)
+    if ((window->flags & SDL_WINDOW_MAXIMIZED) != 0) {
         ulSWPFlags |= SWP_MAXIMIZE;
-    else if ((window->flags & SDL_WINDOW_MINIMIZED) != 0)
+    } else if ((window->flags & SDL_WINDOW_MINIMIZED) != 0) {
         ulSWPFlags |= SWP_MINIMIZE;
+    }
 
     hwndFrame = WinCreateStdWindow(HWND_DESKTOP, 0, &ulFrameFlags,
                                    WIN_CLIENT_CLASS, "SDL2", 0, 0, 0, &hwnd);
@@ -849,11 +858,13 @@ static int OS2_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
     cbText = WinQueryWindowTextLength(hwndFrame);
     pszText = SDL_stack_alloc(CHAR, cbText + 1);
 
-    if (pszText != NULL)
-        cbText = (pszText != NULL)? WinQueryWindowText(hwndFrame, cbText, pszText) : 0;
+    if (pszText != NULL) {
+        cbText = (pszText != NULL) ? WinQueryWindowText(hwndFrame, cbText, pszText) : 0;
+    }
 
-    if (cbText != 0)
+    if (cbText != 0) {
         window->title = OS2_SysToUTF8(pszText);
+    }
 
     if (pszText != NULL) {
         SDL_stack_free(pszText);
@@ -864,21 +875,25 @@ static int OS2_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
                        SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED  |
                        SDL_WINDOW_MINIMIZED | SDL_WINDOW_INPUT_FOCUS);
 
-    if (WinIsWindowVisible(hwnd))
+    if (WinIsWindowVisible(hwnd)) {
         window->flags |= SDL_WINDOW_SHOWN;
+    }
 
     WinSendMsg(hwndFrame, WM_QUERYBORDERSIZE, MPFROMP(&pointl), 0);
-    if (pointl.y == WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER))
+    if (pointl.y == WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER)) {
         window->flags |= SDL_WINDOW_RESIZABLE;
-    else if (pointl.y <= WinQuerySysValue(HWND_DESKTOP, SV_CYBORDER))
+    } else if (pointl.y <= WinQuerySysValue(HWND_DESKTOP, SV_CYBORDER)) {
         window->flags |= SDL_WINDOW_BORDERLESS;
+    }
 
     WinQueryWindowPos(hwndFrame, &swp);
 
-    if ((swp.fl & SWP_MAXIMIZE) != 0)
+    if ((swp.fl & SWP_MAXIMIZE) != 0) {
         window->flags |= SDL_WINDOW_MAXIMIZED;
-    if ((swp.fl & SWP_MINIMIZE) != 0)
+    }
+    if ((swp.fl & SWP_MINIMIZE) != 0) {
         window->flags |= SDL_WINDOW_MINIMIZED;
+    }
 
     pointl.x = 0;
     pointl.y = 0;
@@ -899,8 +914,9 @@ static int OS2_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
     }
     pWinData->fnUserWndProc = WinSubclassWindow(hwnd, wndProc);
 
-    if (WinQueryActiveWindow(HWND_DESKTOP) == hwndFrame)
+    if (WinQueryActiveWindow(HWND_DESKTOP) == hwndFrame) {
         SDL_SetKeyboardFocus(window);
+    }
 
     return 0;
 }
@@ -964,8 +980,9 @@ static void OS2_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
         return;
 
     /* Destroy old icon */
-    if (pWinData->hptrIcon != NULLHANDLE)
+    if (pWinData->hptrIcon != NULLHANDLE) {
         WinDestroyPointer(pWinData->hptrIcon);
+    }
 
     /* Set new window icon */
     pWinData->hptrIcon = hptr;
@@ -1241,8 +1258,9 @@ static int OS2_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape,
         return SDL_INVALID_SHAPE_ARGUMENT;
     }
 
-    if (shaper->driverdata != NULL)
+    if (shaper->driverdata != NULL) {
         SDL_FreeShapeTree((SDL_ShapeTree **)&shaper->driverdata);
+    }
 
     pShapeTree = SDL_CalculateShapeTree(*shape_mode, shape);
     shaper->driverdata = pShapeTree;
@@ -1254,8 +1272,9 @@ static int OS2_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape,
     pWinData = (WINDATA *)shaper->window->driverdata;
     hps = WinGetPS(pWinData->hwnd);
 
-    if (pWinData->hrgnShape != NULLHANDLE)
+    if (pWinData->hrgnShape != NULLHANDLE) {
         GpiDestroyRegion(hps, pWinData->hrgnShape);
+    }
 
     pWinData->hrgnShape = (stShapeRects.pRects == NULL) ? NULLHANDLE :
                                 GpiCreateRegion(hps, stShapeRects.cRects, stShapeRects.pRects);
@@ -1274,8 +1293,9 @@ static int OS2_ResizeWindowShape(SDL_Window *window)
         return -1;
 
     if (window->x != -1000) {
-        if (window->shaper->driverdata != NULL)
+        if (window->shaper->driverdata != NULL) {
             SDL_FreeShapeTree((SDL_ShapeTree **)window->shaper->driverdata);
+        }
 
         if (window->shaper->hasshape == SDL_TRUE) {
             window->shaper->userx = window->x;
@@ -1295,8 +1315,9 @@ static void OS2_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
     WINDATA *pWinData = (WINDATA *)window->driverdata;
 
     debug_os2("Enter");
-    if (pWinData != NULL && pWinData->pVOData != NULL)
+    if (pWinData != NULL && pWinData->pVOData != NULL) {
         pWinData->pOutput->VideoBufFree(pWinData->pVOData);
+    }
 }
 
 static int OS2_CreateWindowFramebuffer(_THIS, SDL_Window *window,
@@ -1403,8 +1424,9 @@ static char *OS2_GetClipboardText(_THIS)
         debug_os2("WinOpenClipbrd() failed");
     } else {
         pszClipboard = (PSZ)WinQueryClipbrdData(pVData->hab, CF_TEXT);
-        if (pszClipboard != NULL)
+        if (pszClipboard != NULL) {
             pszClipboard = OS2_SysToUTF8(pszClipboard);
+        }
         WinCloseClipbrd(pVData->hab);
     }
 
@@ -1569,12 +1591,15 @@ static int OS2_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi,
     if (pDisplayData == NULL)
         return -1;
 
-    if (ddpi != NULL)
+    if (ddpi != NULL) {
         *hdpi = pDisplayData->ulDPIDiag;
-    if (hdpi != NULL)
+    }
+    if (hdpi != NULL) {
         *hdpi = pDisplayData->ulDPIHor;
-    if (vdpi != NULL)
+    }
+    if (vdpi != NULL) {
         *vdpi = pDisplayData->ulDPIVer;
+    }
 
     return 0;
 }

@@ -214,10 +214,12 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
     if (info->is_digital)
     {
 	info->ad.digital.rgb444 = TRUE;
-	if (get_bit (edid[0x18], 3))
+	if (get_bit(edid[0x18], 3)) {
 	    info->ad.digital.ycrcb444 = 1;
-	if (get_bit (edid[0x18], 4))
+	}
+	if (get_bit(edid[0x18], 4)) {
 	    info->ad.digital.ycrcb422 = 1;
+	}
     }
     else
     {
@@ -315,8 +317,9 @@ decode_established_timings (const uchar *edid, MonitorInfo *info)
 	{
 	    int byte = edid[0x23 + i];
 
-	    if (get_bit (byte, j) && established[i][j].frequency != 0)
+	    if (get_bit(byte, j) && established[i][j].frequency != 0) {
 		info->established[idx++] = established[i][j];
+	    }
 	}
     }
     return TRUE;

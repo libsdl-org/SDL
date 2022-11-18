@@ -22,10 +22,12 @@ static int
 StrCaseCmpIgnoreHyphen(const char* s1, const char* s2)
 {
     /* treat NULL pointer as empty strings */
-    if(!s1)
+    if (!s1) {
         s1 = "";
-    if(!s2)
+    }
+    if (!s2) {
         s2 = "";
+    }
 
     while(*s1 == '-')
         s1++;
@@ -321,8 +323,9 @@ SDLVisualTest_ParseHarnessArgs(char** argv, SDLVisualTest_HarnessState* state)
         i += consumed;
     }
 
-    if(state->variator_type == SDL_VARIATOR_RANDOM && state->num_variations == -1)
+    if (state->variator_type == SDL_VARIATOR_RANDOM && state->num_variations == -1) {
         state->num_variations = 1;
+    }
 
     /* check to see if required options have been passed */
     if(!state->sutapp[0])

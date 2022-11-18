@@ -570,8 +570,9 @@ static void fn_caps_on(SDL_EVDEV_keyboard_state *kbd)
 
 static void fn_num(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (!kbd->rep)
+    if (!kbd->rep) {
         chg_vc_kbd_led(kbd, K_NUMLOCK);
+    }
 }
 
 static void fn_compose(SDL_EVDEV_keyboard_state *kbd)
@@ -593,8 +594,9 @@ static void k_spec(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_f
         return;
     if (value >= SDL_arraysize(fn_handler))
         return;
-    if (fn_handler[value])
+    if (fn_handler[value]) {
         fn_handler[value](kbd);
+    }
 }
 
 static void k_lowercase(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
@@ -606,8 +608,9 @@ static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_f
     if (up_flag)
         return;        /* no action, if this is a key release */
 
-    if (kbd->diacr)
+    if (kbd->diacr) {
         value = handle_diacr(kbd, value);
+    }
 
     if (kbd->dead_key_next) {
         kbd->dead_key_next = SDL_FALSE;
@@ -676,8 +679,9 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
      */
     if (value == KVAL(K_CAPSSHIFT)) {
         value = KVAL(K_SHIFT);
-        if (!up_flag)
+        if (!up_flag) {
             clr_vc_kbd_led(kbd, K_CAPSLOCK);
+        }
     }
 
     if (up_flag) {
@@ -685,8 +689,9 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
          * handle the case that two shift or control
          * keys are depressed simultaneously
          */
-        if (kbd->shift_down[value])
+        if (kbd->shift_down[value]) {
             kbd->shift_down[value]--;
+        }
     } else
         kbd->shift_down[value]++;
 

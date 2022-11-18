@@ -78,8 +78,9 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
     Uint8 *bitmap_scanline;
     SDL_Color key;
 
-    if(SDL_MUSTLOCK(shape))
+    if (SDL_MUSTLOCK(shape)) {
         SDL_LockSurface(shape);
+    }
 
     SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
 
@@ -123,8 +124,9 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
         }
     }
 
-    if(SDL_MUSTLOCK(shape))
+    if (SDL_MUSTLOCK(shape)) {
         SDL_UnlockSurface(shape);
+    }
 }
 
 static SDL_ShapeTree*
@@ -173,8 +175,9 @@ RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode,SDL_Surface* mask,SDL_Rec
                     pixel_opaque = ((key.r != r || key.g != g || key.b != b) ? SDL_TRUE : SDL_FALSE);
                     break;
             }
-            if(last_opaque == -1)
+            if (last_opaque == -1) {
                 last_opaque = pixel_opaque;
+            }
             if(last_opaque != pixel_opaque) {
                 const int halfwidth = dimensions.w / 2;
                 const int halfheight = dimensions.h / 2;
@@ -224,11 +227,13 @@ SDL_CalculateShapeTree(SDL_WindowShapeMode mode,SDL_Surface* shape)
     dimensions.w = shape->w;
     dimensions.h = shape->h;
 
-    if(SDL_MUSTLOCK(shape))
+    if (SDL_MUSTLOCK(shape)) {
         SDL_LockSurface(shape);
+    }
     result = RecursivelyCalculateShapeTree(mode,shape,dimensions);
-    if(SDL_MUSTLOCK(shape))
+    if (SDL_MUSTLOCK(shape)) {
         SDL_UnlockSurface(shape);
+    }
     return result;
 }
 

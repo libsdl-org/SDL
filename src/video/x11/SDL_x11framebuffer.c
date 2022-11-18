@@ -95,8 +95,9 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
                 X11_XShmAttach(display, shminfo);
                 X11_XSync(display, False);
                 X11_XSetErrorHandler(X_handler);
-                if ( shm_error )
+                if (shm_error) {
                     shmdt(shminfo->shmaddr);
+                }
             } else {
                 shm_error = True;
             }
@@ -170,10 +171,12 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
                 y += h;
                 h += rects[i].y;
             }
-            if (x + w > window->w)
+            if (x + w > window->w) {
                 w = window->w - x;
-            if (y + h > window->h)
+            }
+            if (y + h > window->h) {
                 h = window->h - y;
+            }
 
             X11_XShmPutImage(display, data->xwindow, data->gc, data->ximage,
                 x, y, x, y, w, h, False);
@@ -202,10 +205,12 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
                 y += h;
                 h += rects[i].y;
             }
-            if (x + w > window->w)
+            if (x + w > window->w) {
                 w = window->w - x;
-            if (y + h > window->h)
+            }
+            if (y + h > window->h) {
                 h = window->h - y;
+            }
 
             X11_XPutImage(display, data->xwindow, data->gc, data->ximage,
                 x, y, x, y, w, h);

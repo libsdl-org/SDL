@@ -55,10 +55,12 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("Vulkan already loaded");
 
     /* Load the Vulkan library */
-    if(!path)
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
-    if(!path)
+    }
+    if (!path) {
         path = DEFAULT_VULKAN;
+    }
 
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
 
@@ -92,10 +94,11 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
 
     for(i = 0; i < extensionCount; i++)
     {
-        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasDisplayExtension = SDL_TRUE;
+        }
     }
 
     SDL_free(extensions);
@@ -510,16 +513,21 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     ret = SDL_TRUE;
 
 clean:
-    if (physical_devices)
-        SDL_free (physical_devices);
-    if (display_props)
-        SDL_free (display_props);
-    if (device_props)
-        SDL_free (device_props);
-    if (plane_props)
-        SDL_free (plane_props);
-    if (mode_props)
-        SDL_free (mode_props);
+    if (physical_devices) {
+        SDL_free(physical_devices);
+    }
+    if (display_props) {
+        SDL_free(display_props);
+    }
+    if (device_props) {
+        SDL_free(device_props);
+    }
+    if (plane_props) {
+        SDL_free(plane_props);
+    }
+    if (mode_props) {
+        SDL_free(mode_props);
+    }
 
     return ret;
 }

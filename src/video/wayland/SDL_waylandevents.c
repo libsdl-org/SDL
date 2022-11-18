@@ -2472,11 +2472,13 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         SDL_free(input->text_input);
     }
 
-    if (input->keyboard)
+    if (input->keyboard) {
         wl_keyboard_destroy(input->keyboard);
+    }
 
-    if (input->pointer)
+    if (input->pointer) {
         wl_pointer_destroy(input->pointer);
+    }
 
     if (input->touch) {
         SDL_DelTouch(1);
@@ -2487,20 +2489,25 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         Wayland_input_destroy_tablet(input);
     }
 
-    if (input->seat)
+    if (input->seat) {
         wl_seat_destroy(input->seat);
+    }
 
-    if (input->xkb.compose_state)
+    if (input->xkb.compose_state) {
         WAYLAND_xkb_compose_state_unref(input->xkb.compose_state);
+    }
 
-    if (input->xkb.compose_table)
+    if (input->xkb.compose_table) {
         WAYLAND_xkb_compose_table_unref(input->xkb.compose_table);
+    }
 
-    if (input->xkb.state)
+    if (input->xkb.state) {
         WAYLAND_xkb_state_unref(input->xkb.state);
+    }
 
-    if (input->xkb.keymap)
+    if (input->xkb.keymap) {
         WAYLAND_xkb_keymap_unref(input->xkb.keymap);
+    }
 
     SDL_free(input);
     d->input = NULL;
@@ -2516,8 +2523,9 @@ void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id)
 
 void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d)
 {
-    if (d->relative_pointer_manager)
+    if (d->relative_pointer_manager) {
         zwp_relative_pointer_manager_v1_destroy(d->relative_pointer_manager);
+    }
 }
 
 void Wayland_display_add_pointer_constraints(SDL_VideoData *d, uint32_t id)
@@ -2529,8 +2537,9 @@ void Wayland_display_add_pointer_constraints(SDL_VideoData *d, uint32_t id)
 
 void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d)
 {
-    if (d->pointer_constraints)
+    if (d->pointer_constraints) {
         zwp_pointer_constraints_v1_destroy(d->pointer_constraints);
+    }
 }
 
 static void
@@ -2670,8 +2679,9 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
 
     for (window = vd->windows; window; window = window->next) {
         w = window->driverdata;
-        if (w->locked_pointer)
+        if (w->locked_pointer) {
             zwp_locked_pointer_v1_destroy(w->locked_pointer);
+        }
         w->locked_pointer = NULL;
     }
 

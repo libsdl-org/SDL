@@ -450,7 +450,10 @@ pixels_calcGammaRamp(void *arg)
     SDL_CalculateGammaRamp(gamma, ramp);
     SDLTest_AssertPass("Call to SDL_CalculateGammaRamp(%f)", gamma);
     changed = 0;
-    for (i = 0; i < 256; i++) if (ramp[i] != magic) changed++;
+    for (i = 0; i < 256; i++) {if (ramp[i] != magic) {
+            changed++;
+        }
+    }
     SDLTest_AssertCheck(changed > 250, "Validate that ramp was calculated; expected: >250 values changed, got: %d values changed", changed);
 
     /* Additional value checks for some cases */
@@ -484,7 +487,10 @@ pixels_calcGammaRamp(void *arg)
           "Validate error message, expected: '%s', got: '%s'", expectedError1, error);
   }
   changed = 0;
-  for (i = 0; i < 256; i++) if (ramp[i] != magic) changed++;
+  for (i = 0; i < 256; i++) {if (ramp[i] != magic) {
+        changed++;
+      }
+  }
   SDLTest_AssertCheck(changed ==0, "Validate that ramp unchanged; expected: 0 values changed got: %d values changed", changed);
 
   SDL_CalculateGammaRamp(0.5f, NULL);

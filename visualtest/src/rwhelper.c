@@ -95,8 +95,9 @@ SDLVisualTest_RWHelperReadLine(SDL_RWops* rw, char* str, int size,
                 ch = SDLVisualTest_RWHelperReadChar(rw, buffer);
             }while(ch && ch != '\n' && ch != '\r');
 
-            if(current_pos == 0)
+            if (current_pos == 0) {
                 done = 0;
+            }
         }
     }
     if(current_pos == 0)

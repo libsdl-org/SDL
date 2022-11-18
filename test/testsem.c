@@ -117,8 +117,9 @@ TestWaitTimeout(void)
     SDL_Log("Wait took %" SDL_PRIu32 " milliseconds\n\n", duration);
 
     /* Check to make sure the return value indicates timed out */
-    if (retval != SDL_MUTEX_TIMEDOUT)
+    if (retval != SDL_MUTEX_TIMEDOUT) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_SemWaitTimeout returned: %d; expected: %d\n\n", retval, SDL_MUTEX_TIMEDOUT);
+    }
 
     SDL_DestroySemaphore(sem);
 }

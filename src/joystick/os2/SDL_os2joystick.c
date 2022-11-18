@@ -185,9 +185,15 @@ static int OS2_JoystickInit(void)
 		return SDL_SetError("Could not read joystick port.");
 	}
 	maxdevs = 0;
-	if (stGameParms.useA != 0) maxdevs++;
-	if (stGameParms.useB != 0) maxdevs++;
-	if (maxdevs > MAX_JOYSTICKS) maxdevs = MAX_JOYSTICKS;
+	if (stGameParms.useA != 0) {
+		maxdevs++;
+	}
+	if (stGameParms.useB != 0) {
+		maxdevs++;
+	}
+	if (maxdevs > MAX_JOYSTICKS) {
+		maxdevs = MAX_JOYSTICKS;
+	}
 
 	/* Defines min/max axes values (callibration) */
 	ulDataLen = sizeof(stGameCalib);
@@ -221,11 +227,17 @@ static int OS2_JoystickInit(void)
 			rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_PORT_GET,
 					 NULL, 0, NULL, &stJoyStatus, ulDataLen, &ulDataLen);
 		}
-		if ((stJoyStatus.ucJs_JoyStickMask & 0x03) > 0) numdevs++;
-		if (((stJoyStatus.ucJs_JoyStickMask >> 2) & 0x03) > 0) numdevs++;
+		if ((stJoyStatus.ucJs_JoyStickMask & 0x03) > 0) {
+			numdevs++;
+		}
+		if (((stJoyStatus.ucJs_JoyStickMask >> 2) & 0x03) > 0) {
+			numdevs++;
+		}
 	}
 
-	if (numdevs > maxdevs) numdevs = maxdevs;
+	if (numdevs > maxdevs) {
+		numdevs = maxdevs;
+	}
 
 	/* If *any* joystick was detected... Let's configure SDL for them */
 	if (numdevs > 0)
@@ -246,21 +258,31 @@ static int OS2_JoystickInit(void)
 			SYS_JoyData[0].id = 0;
 
 			/* Define Number of Axes... up to 4 */
-			if (joycfg.axes>MAX_AXES) joycfg.axes = MAX_AXES;
+			if (joycfg.axes > MAX_AXES) {
+				joycfg.axes = MAX_AXES;
+			}
 			SYS_JoyData[0].axes = joycfg.axes;
 
 			/* Define number of buttons... 8 if 2 axes, 6 if 3 axes and 4 if 4 axes */
 			maxbut = MAX_BUTTONS;
-			if (joycfg.axes>2) maxbut -= ((joycfg.axes - 2)<<1); /* MAX_BUTTONS - 2*(axes-2) */
-			if (joycfg.buttons > maxbut) joycfg.buttons = maxbut;
+			if (joycfg.axes > 2) {
+				maxbut -= ((joycfg.axes - 2) << 1);
+			} /* MAX_BUTTONS - 2*(axes-2) */
+			if (joycfg.buttons > maxbut) {
+				joycfg.buttons = maxbut;
+			}
 			SYS_JoyData[0].buttons = joycfg.buttons;
 
 			/* Define number of hats */
-			if (joycfg.hats > MAX_HATS) joycfg.hats = MAX_HATS;
+			if (joycfg.hats > MAX_HATS) {
+				joycfg.hats = MAX_HATS;
+			}
 			SYS_JoyData[0].hats = joycfg.hats;
 
 			/* Define number of balls */
-			if (joycfg.balls > MAX_BALLS) joycfg.balls = MAX_BALLS;
+			if (joycfg.balls > MAX_BALLS) {
+				joycfg.balls = MAX_BALLS;
+			}
 			SYS_JoyData[0].balls = joycfg.balls;
 
 			/* Initialize Axes Callibration Values */
@@ -271,10 +293,18 @@ static int OS2_JoystickInit(void)
 				SYS_JoyData[0].axes_max[i] = axis[i]->upper;
 			}
 			/* Initialize Buttons 5 to 8 structures */
-			if (joycfg.buttons>=5) SYS_JoyData[0].buttoncalc[0] = ((axis[2]->lower+axis[3]->centre)>>1);
-			if (joycfg.buttons>=6) SYS_JoyData[0].buttoncalc[1] = ((axis[3]->lower+axis[3]->centre)>>1);
-			if (joycfg.buttons>=7) SYS_JoyData[0].buttoncalc[2] = ((axis[2]->upper+axis[3]->centre)>>1);
-			if (joycfg.buttons>=8) SYS_JoyData[0].buttoncalc[3] = ((axis[3]->upper+axis[3]->centre)>>1);
+			if (joycfg.buttons >= 5) {
+				SYS_JoyData[0].buttoncalc[0] = ((axis[2]->lower + axis[3]->centre) >> 1);
+			}
+			if (joycfg.buttons >= 6) {
+				SYS_JoyData[0].buttoncalc[1] = ((axis[3]->lower + axis[3]->centre) >> 1);
+			}
+			if (joycfg.buttons >= 7) {
+				SYS_JoyData[0].buttoncalc[2] = ((axis[2]->upper + axis[3]->centre) >> 1);
+			}
+			if (joycfg.buttons >= 8) {
+				SYS_JoyData[0].buttoncalc[3] = ((axis[3]->upper + axis[3]->centre) >> 1);
+			}
 			/* Intialize Joystick Name */
 			SDL_strlcpy (SYS_JoyData[0].szDeviceName,joycfg.name, SDL_arraysize(SYS_JoyData[0].szDeviceName));
 		}
@@ -353,7 +383,9 @@ static int OS2_JoystickInit(void)
 			}
 
 			/* Hack to define Joystick Port Names */
-			if (numdevs > maxdevs) numdevs = maxdevs;
+			if (numdevs > maxdevs) {
+				numdevs = maxdevs;
+			}
 
 			for (i = 0; i < numdevs; i++)
 			{
@@ -551,12 +583,16 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 		if (value < 0)
 		{
 			value *= transaxes[i].scale1;
-			if (value > 0) value = SDL_JOYSTICK_AXIS_MIN;
+			if (value > 0) {
+				value = SDL_JOYSTICK_AXIS_MIN;
+			}
 		}
 		else
 		{
 			value *= transaxes[i].scale2;
-			if (value < 0) value = SDL_JOYSTICK_AXIS_MAX;
+			if (value < 0) {
+				value = SDL_JOYSTICK_AXIS_MAX;
+			}
 		}
 		SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)value);
 	}
@@ -565,7 +601,9 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 	if (SYS_JoyData[index].id == 1) corr = 2;
 	else corr = 0;
 	normbut = 4;	/* Number of normal buttons */
-	if (joystick->nbuttons < normbut) normbut = joystick->nbuttons;
+	if (joystick->nbuttons < normbut) {
+		normbut = joystick->nbuttons;
+	}
 	for (i = corr; (i-corr) < normbut; ++i)
 	{
 		/*
@@ -689,7 +727,9 @@ static int joyPortOpen(HFILE * hGame)
 /****************************/
 static void joyPortClose(HFILE * hGame)
 {
-	if (*hGame != NULLHANDLE) DosClose(*hGame);
+	if (*hGame != NULLHANDLE) {
+		DosClose(*hGame);
+	}
 	*hGame = NULLHANDLE;
 }
 

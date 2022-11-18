@@ -332,26 +332,36 @@ WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mou
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-        if ((rawButtons & RI_MOUSE_BUTTON_1_DOWN))
+        if ((rawButtons & RI_MOUSE_BUTTON_1_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_1_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_1_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_1_UP), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_2_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_2_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_2_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_2_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_2_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_2_UP), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_3_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_3_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_3_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_3_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_3_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_3_UP), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_4_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_4_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_4_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_4_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_4_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_4_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_5_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_5_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_5_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_5_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_5_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_5_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
+        }
         data->mouse_button_flags = rawButtons;
     }
 }
@@ -1869,8 +1879,12 @@ HINSTANCE SDL_Instance = NULL;
 static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    if (wcex.hIcon) DestroyIcon(wcex.hIcon);
-    if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
+    if (wcex.hIcon) {
+        DestroyIcon(wcex.hIcon);
+    }
+    if (wcex.hIconSm) {
+        DestroyIcon(wcex.hIconSm);
+    }
 #endif
     SDL_free(SDL_Appname);
     SDL_Appname = NULL;

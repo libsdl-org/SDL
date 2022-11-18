@@ -86,8 +86,9 @@ Win32_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShape
     }
 
     data = (SDL_ShapeData*)shaper->driverdata;
-    if(data->mask_tree != NULL)
+    if (data->mask_tree != NULL) {
         SDL_FreeShapeTree(&data->mask_tree);
+    }
     data->mask_tree = SDL_CalculateShapeTree(*shape_mode,shape);
 
     SDL_TraverseShapeTree(data->mask_tree,&CombineRectRegions,&mask_region);
@@ -108,8 +109,9 @@ Win32_ResizeWindowShape(SDL_Window *window) {
     if (data == NULL)
         return -1;
 
-    if(data->mask_tree != NULL)
+    if (data->mask_tree != NULL) {
         SDL_FreeShapeTree(&data->mask_tree);
+    }
     if(window->shaper->hasshape == SDL_TRUE) {
         window->shaper->userx = window->x;
         window->shaper->usery = window->y;

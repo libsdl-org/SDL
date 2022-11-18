@@ -90,8 +90,9 @@ X11_GetSym(const char *fnname, int *pHasModule)
         printf("X11: Symbol '%s' NOT FOUND!\n", fnname);
 #endif
 
-    if (fn == NULL)
-        *pHasModule = 0;  /* kill this module. */
+    if (fn == NULL) {
+        *pHasModule = 0;
+    }  /* kill this module. */
 
     return fn;
 }

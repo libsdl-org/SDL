@@ -130,8 +130,9 @@ main(int argc, char **argv)
     SDL_Delay(2000);
 
     /* Quit */
-    if (haptic != NULL)
+    if (haptic != NULL) {
         SDL_HapticClose(haptic);
+    }
     SDL_Quit();
 
     return 0;

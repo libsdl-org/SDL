@@ -84,14 +84,16 @@ stepParticles(double deltaTime)
         /* is the particle actually active, or is it marked for deletion? */
         if (curr->isActive) {
             /* is the particle off the screen? */
-            if (curr->y > screen_h)
+            if (curr->y > screen_h) {
                 curr->isActive = 0;
-            else if (curr->y < 0)
+            } else if (curr->y < 0) {
                 curr->isActive = 0;
-            if (curr->x > screen_w)
+            }
+            if (curr->x > screen_w) {
                 curr->isActive = 0;
-            else if (curr->x < 0)
+            } else if (curr->x < 0) {
                 curr->isActive = 0;
+            }
 
             /* step velocity, then step position */
             curr->yvel += ACCEL * deltaMilliseconds;
@@ -133,15 +135,17 @@ stepParticles(double deltaTime)
                 }
 
                 /* if we're a dust particle, shrink our size */
-                if (curr->type == dust)
+                if (curr->type == dust) {
                     curr->size -= deltaMilliseconds * 0.010f;
+                }
 
             }
 
             /* if we're still active, pack ourselves in the array next
                to the last active guy (pack the array tightly) */
-            if (curr->isActive)
+            if (curr->isActive) {
                 *(slot++) = *curr;
+            }
         }                       /* endif (curr->isActive) */
         curr++;
     }

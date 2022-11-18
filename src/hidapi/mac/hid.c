@@ -174,10 +174,12 @@ static void free_hid_device(hid_device *dev)
 	/* Free the string and the report buffer. The check for NULL
 	 is necessary here as CFRelease() doesn't handle NULL like
 	 free() and others do. */
-	if (dev->run_loop_mode)
+	if (dev->run_loop_mode) {
 		CFRelease(dev->run_loop_mode);
-	if (dev->source)
+	}
+	if (dev->source) {
 		CFRelease(dev->source);
+	}
 	free(dev->input_report_buf);
 
 	if (device_list) {
@@ -1122,8 +1124,9 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	if (res != kIOReturnSuccess)
 		return -1;
 
-	if (skipped_report_id)
+	if (skipped_report_id) {
 		len++;
+	}
 
 	return (int)len;
 }

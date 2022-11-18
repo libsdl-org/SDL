@@ -511,7 +511,9 @@ static void put_utf8(SDL_WSCONS_input_data* input, uint c)
 static void Translate_to_text(SDL_WSCONS_input_data* input, keysym_t ksym)
 {
     if (KS_GROUP(ksym) == KS_GROUP_Keypad) {
-        if (SDL_isprint(ksym & 0xFF)) ksym &= 0xFF;
+        if (SDL_isprint(ksym & 0xFF)) {
+            ksym &= 0xFF;
+        }
     }
     switch(ksym) {
     case KS_Escape:
@@ -662,60 +664,84 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
             case WSCONS_EVENT_KEY_UP: {
                 switch(input->keymap.map[events[i].value].group1[0]) {
                 case KS_Hold_Screen: {
-                    if (input->lockheldstate[0]) input->lockheldstate[0] = 0;
+                    if (input->lockheldstate[0]) {
+                                input->lockheldstate[0] = 0;
+                    }
                 }
                 break;
                 case KS_Num_Lock: {
-                    if (input->lockheldstate[1]) input->lockheldstate[1] = 0;
+                    if (input->lockheldstate[1]) {
+                                input->lockheldstate[1] = 0;
+                    }
                 }
                 break;
                 case KS_Caps_Lock: {
-                    if (input->lockheldstate[2]) input->lockheldstate[2] = 0;
+                    if (input->lockheldstate[2]) {
+                                input->lockheldstate[2] = 0;
+                    }
                 }
                 break;
 #ifndef __NetBSD__
                 case KS_Mode_Lock: {
-                    if (input->lockheldstate[3]) input->lockheldstate[3] = 0;
+                    if (input->lockheldstate[3]) {
+                                input->lockheldstate[3] = 0;
+                    }
                 }
                 break;
 #endif
                 case KS_Shift_Lock: {
-                    if (input->lockheldstate[4]) input->lockheldstate[4] = 0;
+                    if (input->lockheldstate[4]) {
+                                input->lockheldstate[4] = 0;
+                    }
                 }
                 break;
                 case KS_Shift_L: {
                     input->shiftheldstate[0] = 0;
-                    if (input->shiftstate[0]) input->shiftstate[0]--;
+                    if (input->shiftstate[0]) {
+                                input->shiftstate[0]--;
+                    }
                     break;
                 }
                 case KS_Shift_R: {
                     input->shiftheldstate[1] = 0;
-                    if (input->shiftstate[0]) input->shiftstate[0]--;
+                    if (input->shiftstate[0]) {
+                                input->shiftstate[0]--;
+                    }
                     break;
                 }
                 case KS_Alt_L: {
                     input->shiftheldstate[2] = 0;
-                    if (input->shiftstate[1]) input->shiftstate[1]--;
+                    if (input->shiftstate[1]) {
+                                input->shiftstate[1]--;
+                    }
                     break;
                 }
                 case KS_Alt_R: {
                     input->shiftheldstate[3] = 0;
-                    if (input->shiftstate[1]) input->shiftstate[1]--;
+                    if (input->shiftstate[1]) {
+                                input->shiftstate[1]--;
+                    }
                     break;
                 }
                 case KS_Control_L: {
                     input->shiftheldstate[4] = 0;
-                    if (input->shiftstate[2]) input->shiftstate[2]--;
+                    if (input->shiftstate[2]) {
+                                input->shiftstate[2]--;
+                    }
                     break;
                 }
                 case KS_Control_R: {
                     input->shiftheldstate[5] = 0;
-                    if (input->shiftstate[2]) input->shiftstate[2]--;
+                    if (input->shiftstate[2]) {
+                                input->shiftstate[2]--;
+                    }
                     break;
                 }
                 case KS_Mode_switch: {
                     input->shiftheldstate[6] = 0;
-                    if (input->shiftstate[3]) input->shiftstate[3]--;
+                    if (input->shiftstate[3]) {
+                                input->shiftstate[3]--;
+                    }
                     break;
                 }
                 }
@@ -809,21 +835,24 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
 
             if (KS_GROUP(result) == KS_GROUP_Ascii) {
                 if (IS_CONTROL_HELD) {
-                    if ((result >= KS_at && result <= KS_z) || result == KS_space)
+                    if ((result >= KS_at && result <= KS_z) || result == KS_space) {
                         result = result & 0x1f;
-                    else if (result == KS_2)
+                    } else if (result == KS_2) {
                         result = 0x00;
-                    else if (result >= KS_3 && result <= KS_7)
+                    } else if (result >= KS_3 && result <= KS_7) {
                         result = KS_Escape + (result - KS_3);
-                    else if (result == KS_8)
-                        result = KS_Delete;
+                    } else if (result == KS_8) {
+                       result = KS_Delete;
+                    }
                 }
                 if (IS_ALT_HELD) {
                     if (input->encoding & KB_METAESC) {
                         Translate_to_keycode(input, WSCONS_EVENT_KEY_DOWN, KS_Escape);
                         Translate_to_text(input, result);
                         continue;
-                    } else result |= 0x80;
+                    } else {
+                       result |= 0x80;
+                    }
                 }
             }
             Translate_to_text(input,result);
@@ -837,5 +866,7 @@ void SDL_WSCONS_PumpEvents()
     int i = 0;
     for (i = 0; i < 4; i++)
         updateKeyboard(inputs[i]);
-    if (mouseInputData != NULL) updateMouse(mouseInputData);
+    if (mouseInputData != NULL) {
+        updateMouse(mouseInputData);
+    }
 }

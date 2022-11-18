@@ -92,7 +92,9 @@ static void PrintPath(SDL_FloatPoint *path)
 int SDL_RecordGesture(SDL_TouchID touchId)
 {
     int i;
-    if (touchId < 0) recordAll = SDL_TRUE;
+    if (touchId < 0) {
+        recordAll = SDL_TRUE;
+    }
     for (i = 0; i < SDL_numGestureTouches; i++) {
         if ((touchId < 0) || (SDL_gestureTouch[i].id == touchId)) {
             SDL_gestureTouch[i].recording = SDL_TRUE;
@@ -262,8 +264,9 @@ int SDL_LoadDollarTemplates(SDL_TouchID touchId, SDL_RWops *src)
 
         if (touchId >= 0) {
             /* printf("Adding loaded gesture to 1 touch\n"); */
-            if (SDL_AddDollarGesture(touch, templ.path) >= 0)
+            if (SDL_AddDollarGesture(touch, templ.path) >= 0) {
                 loaded++;
+            }
         }
         else {
             /* printf("Adding to: %i touches\n",SDL_numGestureTouches); */
@@ -414,10 +417,18 @@ static int dollarNormalize(const SDL_DollarPath *path,SDL_FloatPoint *points, SD
                               (py - centroid.y)*SDL_cos(ang) + centroid.y);
 
 
-        if (points[i].x < xmin) xmin = points[i].x;
-        if (points[i].x > xmax) xmax = points[i].x;
-        if (points[i].y < ymin) ymin = points[i].y;
-        if (points[i].y > ymax) ymax = points[i].y;
+        if (points[i].x < xmin) {
+            xmin = points[i].x;
+        }
+        if (points[i].x > xmax) {
+            xmax = points[i].x;
+        }
+        if (points[i].y < ymin) {
+            ymin = points[i].y;
+        }
+        if (points[i].y > ymax) {
+            ymax = points[i].y;
+        }
     }
 
     /* Scale points to DOLLARSIZE, and translate to the origin */

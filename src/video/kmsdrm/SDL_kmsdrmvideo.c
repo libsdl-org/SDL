@@ -310,8 +310,9 @@ KMSDRM_CreateDevice(void)
 cleanup:
     SDL_free(device);
 
-    if (viddata)
+    if (viddata) {
         SDL_free(viddata);
+    }
     return NULL;
 }
 
@@ -548,8 +549,9 @@ KMSDRM_CrtcGetPropId(uint32_t drm_fd,
         if (!drm_prop)
             continue;
 
-        if (strcmp(drm_prop->name, name) == 0)
+        if (strcmp(drm_prop->name, name) == 0) {
             prop_id = drm_prop->prop_id;
+        }
 
         KMSDRM_drmModeFreeProperty(drm_prop);
    }
@@ -839,8 +841,9 @@ KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 
 cleanup:
-    if (encoder)
+    if (encoder) {
         KMSDRM_drmModeFreeEncoder(encoder);
+    }
     if (ret) {
         /* Error (complete) cleanup */
         if (dispdata) {
@@ -940,8 +943,9 @@ KMSDRM_InitDisplays (_THIS) {
     viddata->drm_fd = -1;
 
 cleanup:
-    if (resources)
+    if (resources) {
         KMSDRM_drmModeFreeResources(resources);
+    }
     if (ret) {
         if (viddata->drm_fd >= 0) {
             close(viddata->drm_fd);

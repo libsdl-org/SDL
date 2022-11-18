@@ -299,8 +299,9 @@ DirectFB_AcquireVidLayer(SDL_Renderer * renderer, SDL_Texture * texture)
 
         if (devdata->use_yuv_underlays) {
             ret = dispdata->vidlayer->SetLevel(dispdata->vidlayer, -1);
-            if (ret != DFB_OK)
+            if (ret != DFB_OK) {
                 SDL_DFB_DEBUG("Underlay Setlevel not supported\n");
+            }
         }
         SDL_DFB_CHECKERR(dispdata->
                          vidlayer->SetConfiguration(dispdata->vidlayer,

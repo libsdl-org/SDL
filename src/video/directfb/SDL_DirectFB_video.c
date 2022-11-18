@@ -149,8 +149,9 @@ DirectFB_CreateDevice(void)
 
     return device;
   error:
-    if (device)
+    if (device) {
         SDL_free(device);
+    }
     return (0);
 }
 
@@ -175,21 +176,24 @@ DirectFB_DeviceInformation(IDirectFB * dfb)
 
     SDL_DFB_LOG( "Blitting flags:");
     for (n = 0; blitting_flags[n].flag; n++) {
-        if (desc.blitting_flags & blitting_flags[n].flag)
-            SDL_DFB_LOG( "    %s", blitting_flags[n].name);
+        if (desc.blitting_flags & blitting_flags[n].flag) {
+            SDL_DFB_LOG("    %s", blitting_flags[n].name);
+        }
     }
 
     SDL_DFB_LOG( "Drawing flags:");
     for (n = 0; drawing_flags[n].flag; n++) {
-        if (desc.drawing_flags & drawing_flags[n].flag)
-            SDL_DFB_LOG( "    %s", drawing_flags[n].name);
+        if (desc.drawing_flags & drawing_flags[n].flag) {
+            SDL_DFB_LOG("    %s", drawing_flags[n].name);
+        }
     }
 
 
     SDL_DFB_LOG( "Acceleration flags:");
     for (n = 0; acceleration_mask[n].mask; n++) {
-        if (desc.acceleration_mask & acceleration_mask[n].mask)
-            SDL_DFB_LOG( "    %s", acceleration_mask[n].name);
+        if (desc.acceleration_mask & acceleration_mask[n].mask) {
+            SDL_DFB_LOG("    %s", acceleration_mask[n].name);
+        }
     }
 
 
@@ -409,9 +413,11 @@ void DirectFB_SetSupportedPixelFormats(SDL_RendererInfo* ri)
 {
     int i, j;
 
-    for (i=0, j=0; pixelformat_tab[i].dfb != DSPF_UNKNOWN; i++)
-        if (pixelformat_tab[i].sdl != SDL_PIXELFORMAT_UNKNOWN)
+    for (i=0, j=0; pixelformat_tab[i].dfb != DSPF_UNKNOWN; i++) {
+        if (pixelformat_tab[i].sdl != SDL_PIXELFORMAT_UNKNOWN) {
             ri->texture_formats[j++] = pixelformat_tab[i].sdl;
+        }
+    }
     ri->num_texture_formats = j;
 }
 

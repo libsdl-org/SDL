@@ -101,14 +101,17 @@ main(int argc, char *argv[])
     /* Test multiple timers */
     SDL_Log("Testing multiple timers...\n");
     t1 = SDL_AddTimer(100, callback, (void *) 1);
-    if (!t1)
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,"Could not create timer 1: %s\n", SDL_GetError());
+    if (!t1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 1: %s\n", SDL_GetError());
+    }
     t2 = SDL_AddTimer(50, callback, (void *) 2);
-    if (!t2)
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,"Could not create timer 2: %s\n", SDL_GetError());
+    if (!t2) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 2: %s\n", SDL_GetError());
+    }
     t3 = SDL_AddTimer(233, callback, (void *) 3);
-    if (!t3)
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,"Could not create timer 3: %s\n", SDL_GetError());
+    if (!t3) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 3: %s\n", SDL_GetError());
+    }
 
     /* Wait 10 seconds */
     SDL_Log("Waiting 10 seconds\n");

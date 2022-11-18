@@ -1194,8 +1194,9 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
 
     if (maxputbytes) {
         const int maxbytes = *maxputbytes;
-        if (buflen > maxbytes)
+        if (buflen > maxbytes) {
             buflen = maxbytes;
+        }
         *maxputbytes -= buflen;
     }
 
@@ -1291,8 +1292,9 @@ int SDL_AudioStreamFlush(SDL_AudioStream *stream)
         const SDL_bool first_run = stream->first_run;
         const int filled = stream->staging_buffer_filled;
         int actual_input_frames = filled / stream->src_sample_frame_size;
-        if (!first_run)
+        if (!first_run) {
             actual_input_frames += stream->resampler_padding_samples / stream->pre_resample_channels;
+        }
 
         if (actual_input_frames > 0) {  /* don't bother if nothing to flush. */
             /* This is how many bytes we're expecting without silence appended. */

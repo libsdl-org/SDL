@@ -566,8 +566,9 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
         {
             HDC ScreenDC = GetDC(NULL);
             int LogicalPixelsY = GetDeviceCaps(ScreenDC, LOGPIXELSY);
-            if (!LogicalPixelsY) /* This can happen if the application runs out of GDI handles */
+            if (!LogicalPixelsY) {
                 LogicalPixelsY = 72;
+            } /* This can happen if the application runs out of GDI handles */
             WordToPass = (WORD)(-72 * NCM.lfMessageFont.lfHeight / LogicalPixelsY);
             ReleaseDC(NULL, ScreenDC);
         }
@@ -805,8 +806,9 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 
     /* Ensure the size is wide enough for all of the buttons. */
-    if (Size.cx < messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin)
+    if (Size.cx < messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin) {
         Size.cx = messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin;
+    }
 
     /* Reset the height to the icon size if it is actually bigger than the text. */
     if (icon && Size.cy < IconMargin * 2 + IconHeight) {

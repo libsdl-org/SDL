@@ -1000,8 +1000,9 @@ static SDL_bool render(void)
 
     if (!vulkanContext->swapchain) {
         SDL_bool retval = createNewSwapchainAndSwapchainSpecificStuff();
-        if(!retval)
+        if (!retval) {
             SDL_Delay(100);
+        }
         return retval;
     }
     result = vkAcquireNextImageKHR(vulkanContext->device,

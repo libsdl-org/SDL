@@ -58,10 +58,18 @@ loop(){
 
         /* Wrap the cursor rectangle at the screen edges to keep it visible */
         SDL_RenderGetViewport(renderer, &viewport);
-        if (rect.x < viewport.x) rect.x += viewport.w;
-        if (rect.y < viewport.y) rect.y += viewport.h;
-        if (rect.x > viewport.x + viewport.w) rect.x -= viewport.w;
-        if (rect.y > viewport.y + viewport.h) rect.y -= viewport.h;
+        if (rect.x < viewport.x) {
+            rect.x += viewport.w;
+        }
+        if (rect.y < viewport.y) {
+            rect.y += viewport.h;
+        }
+        if (rect.x > viewport.x + viewport.w) {
+            rect.x -= viewport.w;
+        }
+        if (rect.y > viewport.y + viewport.h) {
+            rect.y -= viewport.h;
+        }
 
         DrawRects(renderer);
 

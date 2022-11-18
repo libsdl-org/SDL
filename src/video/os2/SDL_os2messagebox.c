@@ -102,8 +102,9 @@ static VOID _wmInitDlg(HWND hwnd, MSGBOXDLGDATA *pDlgData)
         aButtons[ulIdx].ulCX = aptText[TXTBOX_TOPRIGHT].x; /* Store button width   */
         ulButtonsCX += aptText[TXTBOX_TOPRIGHT].x + 2;     /* Add total btn. width */
         /* Get max. height for buttons. */
-        if (ulButtonsCY < aptText[TXTBOX_TOPRIGHT].y)
+        if (ulButtonsCY < aptText[TXTBOX_TOPRIGHT].y) {
             ulButtonsCY = aptText[TXTBOX_TOPRIGHT].y + 1;
+        }
     }
 
     WinReleasePS(hps);
@@ -116,8 +117,9 @@ static VOID _wmInitDlg(HWND hwnd, MSGBOXDLGDATA *pDlgData)
     WinMapDlgPoints(hwnd, &aptText[0], 1, TRUE);
     /* Check width of the window and expand as needed. */
     WinQueryWindowRect(hwnd, &rectlItem);
-    if (rectlItem.xRight <= aptText[0].x)
+    if (rectlItem.xRight <= aptText[0].x) {
         rectlItem.xRight = aptText[0].x;
+    }
 
     /* Move window rectangle to the center of owner window. */
     WinQueryWindowRect(pDlgData->hwndUnder, &rectl);

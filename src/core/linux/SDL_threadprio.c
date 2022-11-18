@@ -213,8 +213,9 @@ rtkit_setpriority_nice(pid_t thread, int nice_level)
     pthread_once(&rtkit_initialize_once, rtkit_initialize);
     dbus_conn = get_rtkit_dbus_connection();
 
-    if (nice < rtkit_min_nice_level)
+    if (nice < rtkit_min_nice_level) {
         nice = rtkit_min_nice_level;
+    }
 
     if (!dbus_conn || !SDL_DBus_CallMethodOnConnection(dbus_conn,
             rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MakeThreadHighPriorityWithPID",
@@ -236,8 +237,9 @@ rtkit_setpriority_realtime(pid_t thread, int rt_priority)
     pthread_once(&rtkit_initialize_once, rtkit_initialize);
     dbus_conn = get_rtkit_dbus_connection();
 
-    if (priority > rtkit_max_realtime_priority)
+    if (priority > rtkit_max_realtime_priority) {
         priority = rtkit_max_realtime_priority;
+    }
 
     // We always perform the thread state changes necessary for rtkit.
     // This wastes some system calls if the state is already set but

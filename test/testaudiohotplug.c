@@ -90,8 +90,9 @@ iteration()
         if (e.type == SDL_QUIT) {
             done = 1;
         } else if (e.type == SDL_KEYUP) {
-            if (e.key.keysym.sym == SDLK_ESCAPE)
+            if (e.key.keysym.sym == SDLK_ESCAPE) {
                 done = 1;
+            }
         } else if (e.type == SDL_AUDIODEVICEADDED) {
             int index = e.adevice.which;
             int iscapture = e.adevice.iscapture;

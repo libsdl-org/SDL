@@ -45,13 +45,15 @@ static void RunThread(void *data)
     SDL_Thread *thread = (SDL_Thread *) data;
     pfnSDL_CurrentEndThread pfnEndThread = (pfnSDL_CurrentEndThread) thread->endfunc;
 
-    if (ppSDLTLSData != NULL)
+    if (ppSDLTLSData != NULL) {
         *ppSDLTLSData = NULL;
+    }
 
     SDL_RunThread(thread);
 
-    if (pfnEndThread != NULL)
+    if (pfnEndThread != NULL) {
         pfnEndThread();
+    }
 }
 
 int
@@ -59,8 +61,9 @@ SDL_SYS_CreateThread(SDL_Thread * thread,
                      pfnSDL_CurrentBeginThread pfnBeginThread,
                      pfnSDL_CurrentEndThread pfnEndThread)
 {
-    if (thread->stacksize == 0)
+    if (thread->stacksize == 0) {
         thread->stacksize = 65536;
+    }
 
     if (pfnBeginThread) {
         /* Save the function which we will have to call to clear the RTL of calling app! */

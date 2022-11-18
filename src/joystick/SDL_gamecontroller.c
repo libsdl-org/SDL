@@ -1778,8 +1778,9 @@ SDL_GameControllerLoadHints()
             char *pchNewLine = NULL;
 
             pchNewLine = SDL_strchr(pUserMappings, '\n');
-            if (pchNewLine)
+            if (pchNewLine) {
                 *pchNewLine = '\0';
+            }
 
             SDL_PrivateGameControllerAddMapping(pUserMappings, SDL_CONTROLLER_MAPPING_PRIORITY_USER);
 

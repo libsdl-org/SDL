@@ -57,8 +57,9 @@ main(int argc, char *argv[])
     */
 
     SDL_Log("There are %d joysticks at startup\n", SDL_NumJoysticks());
-    if (enable_haptic)
+    if (enable_haptic) {
         SDL_Log("There are %d haptic devices at startup\n", SDL_NumHaptics());
+    }
 
     while(keepGoing)
     {
@@ -125,8 +126,9 @@ main(int argc, char *argv[])
 /*
 //                    SDL_Log("Axis Move: %d\n", event.jaxis.axis);
 */
-                    if (enable_haptic)
+                    if (enable_haptic) {
                         SDL_HapticRumblePlay(haptic, 0.25, 250);
+                    }
                     break;
                 case SDL_JOYBUTTONDOWN:
                     SDL_Log("Button Press: %d\n", event.jbutton.button);

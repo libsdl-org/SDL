@@ -474,7 +474,9 @@ main(int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--iterations") == 0) {
                 if (argv[i + 1]) {
                     iterations = SDL_atoi(argv[i + 1]);
-                    if (iterations < -1) iterations = -1;
+                    if (iterations < -1) {
+                        iterations = -1;
+                    }
                     consumed = 2;
                 }
             } else if (SDL_strcasecmp(argv[i], "--cyclecolor") == 0) {

@@ -481,8 +481,9 @@ HIDAPI_ShutdownDiscovery()
     }
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-    if (SDL_HIDAPI_discovery.m_hNotify)
+    if (SDL_HIDAPI_discovery.m_hNotify) {
         UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
+    }
 
     if (SDL_HIDAPI_discovery.m_hwndMsg) {
         DestroyWindow(SDL_HIDAPI_discovery.m_hwndMsg);

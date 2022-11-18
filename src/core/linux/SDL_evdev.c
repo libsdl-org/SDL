@@ -191,8 +191,9 @@ SDL_EVDEV_Init(void)
                 while ((spec = strtok_r(rest, ",", &rest))) {
                     char* endofcls = 0;
                     long cls = strtol(spec, &endofcls, 0);
-                    if (endofcls)
+                    if (endofcls) {
                         SDL_EVDEV_device_added(endofcls + 1, cls);
+                    }
                 }
             }
             else {
@@ -406,24 +407,28 @@ SDL_EVDEV_Poll(void)
                 case EV_REL:
                     switch(events[i].code) {
                     case REL_X:
-                        if (item->relative_mouse)
+                        if (item->relative_mouse) {
                             item->mouse_x += events[i].value;
+                        }
                         break;
                     case REL_Y:
-                        if (item->relative_mouse)
+                        if (item->relative_mouse) {
                             item->mouse_y += events[i].value;
+                        }
                         break;
                     case REL_WHEEL:
-                        if (!item->high_res_wheel)
+                        if (!item->high_res_wheel) {
                             item->mouse_wheel += events[i].value;
+                        }
                         break;
                     case REL_WHEEL_HI_RES:
                         SDL_assert(item->high_res_wheel);
                         item->mouse_wheel += events[i].value;
                         break;
                     case REL_HWHEEL:
-                        if (!item->high_res_hwheel)
+                        if (!item->high_res_hwheel) {
                             item->mouse_hwheel += events[i].value;
+                        }
                         break;
                     case REL_HWHEEL_HI_RES:
                         SDL_assert(item->high_res_hwheel);
@@ -488,12 +493,14 @@ SDL_EVDEV_Poll(void)
                             }
                         }
 
-                        if (item->out_of_sync)
+                        if (item->out_of_sync) {
                             item->out_of_sync = SDL_FALSE;
+                        }
                         break;
                     case SYN_DROPPED:
-                        if (item->is_touchscreen)
+                        if (item->is_touchscreen) {
                             item->out_of_sync = SDL_TRUE;
+                        }
                         SDL_EVDEV_sync_device(item);
                         break;
                     default:

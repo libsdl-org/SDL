@@ -79,11 +79,13 @@ EnumLayersCallback(DFBDisplayLayerID layer_id, DFBDisplayLayerDescription desc,
 
     if (desc.caps & DLCAPS_SURFACE) {
         if ((desc.type & DLTF_GRAPHICS) && (desc.type & DLTF_VIDEO)) {
-            if (devdata->vidlayer[devdata->aux] == -1)
+            if (devdata->vidlayer[devdata->aux] == -1) {
                 devdata->vidlayer[devdata->aux] = layer_id;
+            }
         } else if (desc.type & DLTF_GRAPHICS) {
-            if (devdata->gralayer[devdata->aux] == -1)
+            if (devdata->gralayer[devdata->aux] == -1) {
                 devdata->gralayer[devdata->aux] = layer_id;
+            }
         }
     }
     return DFENUM_OK;
@@ -138,9 +140,9 @@ DirectFB_SetContext(_THIS, SDL_Window *window)
     DFB_DisplayData *dispdata = (DFB_DisplayData *) display->driverdata;
 
     /* FIXME: should we handle the error */
-    if (dispdata->vidIDinuse)
-        SDL_DFB_CHECK(dispdata->vidlayer->SwitchContext(dispdata->vidlayer,
-                                                           DFB_TRUE));
+    if (dispdata->vidIDinuse) {
+        SDL_DFB_CHECK(dispdata->vidlayer->SwitchContext(dispdata->vidlayer, DFB_TRUE));
+    }
 #endif
 }
 

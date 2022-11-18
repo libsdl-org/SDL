@@ -68,8 +68,9 @@ static void RGBtoYUV(Uint8 * rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, int mo
 
     if (luminance != 100) {
         yuv[0] = yuv[0] * luminance / 100;
-        if (yuv[0] > 255)
+        if (yuv[0] > 255) {
             yuv[0] = 255;
+        }
     }
 }
 

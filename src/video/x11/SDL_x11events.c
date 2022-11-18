@@ -100,7 +100,9 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != NULL) X11_XFree(ret);
+        if (ret != NULL) {
+            X11_XFree(ret);
+        }
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
         bytes_fetch += bytes_left;
     } while (bytes_left != 0);
@@ -134,9 +136,15 @@ static Atom X11_PickTargetFromAtoms(Display *disp, Atom a0, Atom a1, Atom a2)
 {
     int count=0;
     Atom atom[3];
-    if (a0 != None) atom[count++] = a0;
-    if (a1 != None) atom[count++] = a1;
-    if (a2 != None) atom[count++] = a2;
+    if (a0 != None) {
+        atom[count++] = a0;
+    }
+    if (a1 != None) {
+        atom[count++] = a1;
+    }
+    if (a2 != None) {
+        atom[count++] = a2;
+    }
     return X11_PickTarget(disp, atom, count);
 }
 
@@ -150,10 +158,9 @@ static Bool X11_KeyRepeatCheckIfEvent(Display *display, XEvent *chkev,
     XPointer arg)
 {
     struct KeyRepeatCheckData *d = (struct KeyRepeatCheckData *) arg;
-    if (chkev->type == KeyPress &&
-        chkev->xkey.keycode == d->event->xkey.keycode &&
-        chkev->xkey.time - d->event->xkey.time < 2)
+    if (chkev->type == KeyPress && chkev->xkey.keycode == d->event->xkey.keycode && chkev->xkey.time - d->event->xkey.time < 2) {
         d->found = SDL_TRUE;
+    }
     return False;
 }
 
@@ -166,9 +173,9 @@ static SDL_bool X11_KeyRepeat(Display *display, XEvent *event)
     struct KeyRepeatCheckData d;
     d.event = event;
     d.found = SDL_FALSE;
-    if (X11_XPending(display))
-        X11_XCheckIfEvent(display, &dummyev, X11_KeyRepeatCheckIfEvent,
-            (XPointer) &d);
+    if (X11_XPending(display)) {
+        X11_XCheckIfEvent(display, &dummyev, X11_KeyRepeatCheckIfEvent, (XPointer)&d);
+    }
     return d.found;
 }
 
@@ -884,7 +891,9 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 }
             }
 
-            if (name_of_atom) X11_XFree(name_of_atom);
+            if (name_of_atom) {
+                X11_XFree(name_of_atom);
+            }
         }
         return;
     }
@@ -899,10 +908,12 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                    xevent->xcrossing.x,
                    xevent->xcrossing.y,
                    xevent->xcrossing.mode);
-            if (xevent->xcrossing.mode == NotifyGrab)
+            if (xevent->xcrossing.mode == NotifyGrab) {
                 printf("Mode: NotifyGrab\n");
-            if (xevent->xcrossing.mode == NotifyUngrab)
+            }
+            if (xevent->xcrossing.mode == NotifyUngrab) {
                 printf("Mode: NotifyUngrab\n");
+            }
 #endif
             SDL_SetMouseFocus(data->window);
 
@@ -934,10 +945,12 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                    xevent->xcrossing.x,
                    xevent->xcrossing.y,
                    xevent->xcrossing.mode);
-            if (xevent->xcrossing.mode == NotifyGrab)
+            if (xevent->xcrossing.mode == NotifyGrab) {
                 printf("Mode: NotifyGrab\n");
-            if (xevent->xcrossing.mode == NotifyUngrab)
+            }
+            if (xevent->xcrossing.mode == NotifyUngrab) {
                 printf("Mode: NotifyUngrab\n");
+            }
 #endif
             if (!SDL_GetMouse()->relative_mode) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);

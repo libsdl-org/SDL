@@ -191,11 +191,9 @@ DirectFB_ShowCursor(SDL_Cursor * cursor)
                 (DFB_DisplayData *) display->driverdata;
             DFB_WindowData *windata = (DFB_WindowData *) window->driverdata;
 
-            if (cursor)
-                SDL_DFB_CHECKERR(windata->dfbwin->
-                                 SetCursorShape(windata->dfbwin,
-                                                curdata->surf, curdata->hotx,
-                                                curdata->hoty));
+            if (cursor) {
+                SDL_DFB_CHECKERR(windata->dfbwin->SetCursorShape(windata->dfbwin, curdata->surf, curdata->hotx, curdata->hoty));
+            }
 
             SDL_DFB_CHECKERR(dispdata->layer->
                              SetCooperativeLevel(dispdata->layer,

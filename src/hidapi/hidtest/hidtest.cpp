@@ -78,30 +78,34 @@ int main(int argc, char* argv[])
 	// Read the Manufacturer String
 	wstr[0] = 0x0000;
 	res = hid_get_manufacturer_string(handle, wstr, MAX_STR);
-	if (res < 0)
+	if (res < 0) {
 		printf("Unable to read manufacturer string\n");
+	}
 	printf("Manufacturer String: %ls\n", wstr);
 
 	// Read the Product String
 	wstr[0] = 0x0000;
 	res = hid_get_product_string(handle, wstr, MAX_STR);
-	if (res < 0)
+	if (res < 0) {
 		printf("Unable to read product string\n");
+	}
 	printf("Product String: %ls\n", wstr);
 
 	// Read the Serial Number String
 	wstr[0] = 0x0000;
 	res = hid_get_serial_number_string(handle, wstr, MAX_STR);
-	if (res < 0)
+	if (res < 0) {
 		printf("Unable to read serial number string\n");
+	}
 	printf("Serial Number String: (%d) %ls", wstr[0], wstr);
 	printf("\n");
 
 	// Read Indexed String 1
 	wstr[0] = 0x0000;
 	res = hid_get_indexed_string(handle, 1, wstr, MAX_STR);
-	if (res < 0)
+	if (res < 0) {
 		printf("Unable to read indexed string 1\n");
+	}
 	printf("Indexed String 1: %ls\n", wstr);
 
 	// Set the hid_read() function to be non-blocking.
@@ -155,8 +159,9 @@ int main(int argc, char* argv[])
 	buf[0] = 0x1;
 	buf[1] = 0x81;
 	hid_write(handle, buf, 17);
-	if (res < 0)
+	if (res < 0) {
 		printf("Unable to write() (2)\n");
+	}
 
 	// Read requested state. hid_read() has been set to be
 	// non-blocking by the call to hid_set_nonblocking() above.
@@ -164,10 +169,12 @@ int main(int argc, char* argv[])
 	res = 0;
 	while (res == 0) {
 		res = hid_read(handle, buf, sizeof(buf));
-		if (res == 0)
+		if (res == 0) {
 			printf("waiting...\n");
-		if (res < 0)
+		}
+		if (res < 0) {
 			printf("Unable to read()\n");
+		}
 		#ifdef WIN32
 		Sleep(500);
 		#else

@@ -55,10 +55,12 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("Vulkan already loaded");
 
     /* Load the Vulkan loader library */
-    if(!path)
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
-    if(!path)
+    }
+    if (!path) {
         path = DEFAULT_VULKAN;
+    }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
     if(!_this->vulkan_config.loader_handle)
         return -1;
@@ -81,12 +83,13 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
         goto fail;
     for(i = 0; i < extensionCount; i++)
     {
-        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        } else if(SDL_strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasXCBSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        } else if (SDL_strcmp(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasXlibSurfaceExtension = SDL_TRUE;
+        }
     }
     SDL_free(extensions);
     if(!hasSurfaceExtension)
@@ -109,8 +112,9 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     else
     {
         const char *libX11XCBLibraryName = SDL_getenv("SDL_X11_XCB_LIBRARY");
-        if(!libX11XCBLibraryName)
+        if (!libX11XCBLibraryName) {
             libX11XCBLibraryName = "libX11-xcb.so";
+        }
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);
         if(!videoData->vulkan_xlib_xcb_library)
             goto fail;
@@ -135,8 +139,9 @@ void X11_Vulkan_UnloadLibrary(_THIS)
     SDL_VideoData *videoData = (SDL_VideoData *)_this->driverdata;
     if(_this->vulkan_config.loader_handle)
     {
-        if(videoData->vulkan_xlib_xcb_library)
+        if (videoData->vulkan_xlib_xcb_library) {
             SDL_UnloadObject(videoData->vulkan_xlib_xcb_library);
+        }
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
     }

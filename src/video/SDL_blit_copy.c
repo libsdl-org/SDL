@@ -47,8 +47,9 @@ SDL_memcpySSE(Uint8 * dst, const Uint8 * src, int len)
         dst += 64;
     }
 
-    if (len & 63)
+    if (len & 63) {
         SDL_memcpy(dst, src, len & 63);
+    }
 }
 #endif /* __SSE__ */
 

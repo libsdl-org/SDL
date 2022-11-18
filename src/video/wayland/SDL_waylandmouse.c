@@ -579,8 +579,9 @@ Wayland_SetRelativeMouseMode(SDL_bool enabled)
 
     if (enabled) {
         /* Disable mouse warp emulation if it's enabled. */
-        if (data->input->relative_mode_override)
+        if (data->input->relative_mode_override) {
             data->input->relative_mode_override = SDL_FALSE;
+        }
 
         /* If the app has used relative mode before, it probably shouldn't
          * also be emulating it using repeated mouse warps, so disable

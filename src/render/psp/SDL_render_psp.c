@@ -193,8 +193,9 @@ TextureNextPow2(unsigned int w)
 
 static void psp_on_vblank(u32 sub, PSP_RenderData *data)
 {
-   if (data)
+   if (data) {
       data->vblank_not_reached = SDL_FALSE;
+   }
 }
 
 
@@ -314,8 +315,9 @@ TextureSwizzle(PSP_TextureData *psp_texture, void* dst)
             block += 28;
         }
 
-        if((j & 0x7) == 0x7)
+        if ((j & 0x7) == 0x7) {
             blockaddress += rowblocksadd;
+        }
     }
 
     TextureStorageFree(psp_texture->data);
@@ -840,8 +842,9 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
         size_t i;
         float ustep = (u1 - u0)/width * slice;
 
-        if(ustep < 0.0f)
+        if (ustep < 0.0f) {
             ustep = -ustep;
+        }
 
         cmd->data.draw.count = count;
 
@@ -1264,8 +1267,9 @@ PSP_RenderPresent(SDL_Renderer * renderer)
     sceGuFinish();
     sceGuSync(0,0);
 
-    if ((data->vsync) && (data->vblank_not_reached))
+    if ((data->vsync) && (data->vblank_not_reached)) {
         sceDisplayWaitVblankStart();
+    }
     data->vblank_not_reached = SDL_TRUE;
 
     data->backbuffer = data->frontbuffer;

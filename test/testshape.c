@@ -128,9 +128,11 @@ int main(int argc,char** argv)
     for(i=0;i<num_pictures;i++) {
         pictures[i].texture = SDL_CreateTextureFromSurface(renderer,pictures[i].surface);
         if(pictures[i].texture == NULL) {
-            for(i=0;i<num_pictures;i++)
-                if(pictures[i].texture != NULL)
+            for(i=0;i<num_pictures;i++) {
+                if (pictures[i].texture != NULL) {
                     SDL_DestroyTexture(pictures[i].texture);
+                }
+            }
             for(i=0;i<num_pictures;i++)
                 SDL_FreeSurface(pictures[i].surface);
             SDL_free(pictures);
@@ -165,8 +167,9 @@ int main(int argc,char** argv)
             if(button_down && event.type == SDL_KEYUP) {
                 button_down = 0;
                 current_picture += 1;
-                if(current_picture >= num_pictures)
+                if (current_picture >= num_pictures) {
                     current_picture = 0;
+                }
                 SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture].name);
                 SDL_QueryTexture(pictures[current_picture].texture,(Uint32 *)&pixelFormat,(int *)&access,&texture_dimensions.w,&texture_dimensions.h);
                 SDL_SetWindowSize(window,texture_dimensions.w,texture_dimensions.h);

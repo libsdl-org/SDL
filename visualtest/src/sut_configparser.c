@@ -220,10 +220,12 @@ SDLVisualTest_FreeSUTConfig(SDLVisualTest_SUTConfig* config)
         for(option = config->options;
             option != config->options + config->num_options; option++)
         {
-            if(option->categories)
+            if (option->categories) {
                 SDL_free(option->categories);
-            if(option->type == SDL_SUT_OPTIONTYPE_ENUM && option->data.enum_values)
+            }
+            if (option->type == SDL_SUT_OPTIONTYPE_ENUM && option->data.enum_values) {
                 SDL_free(option->data.enum_values);
+            }
         }
         SDL_free(config->options);
         config->options = NULL;

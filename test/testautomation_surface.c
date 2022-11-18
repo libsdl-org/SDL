@@ -160,12 +160,16 @@ void _testBlitBlendMode(int mode)
         if (mode == -2) {
             /* Set color mod. */
             ret = SDL_SetSurfaceColorMod( face, (255/nj)*j, (255/ni)*i, (255/nj)*j );
-            if (ret != 0) checkFailCount2++;
+            if (ret != 0) {
+                checkFailCount2++;
+            }
         }
         else if (mode == -3) {
             /* Set alpha mod. */
             ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
-            if (ret != 0) checkFailCount3++;
+            if (ret != 0) {
+                checkFailCount3++;
+            }
         }
         else if (mode == -4) {
             /* Crazy blending mode magic. */
@@ -184,14 +188,18 @@ void _testBlitBlendMode(int mode)
                 return;
             }
             ret = SDL_SetSurfaceBlendMode( face, bmode );
-            if (ret != 0) checkFailCount4++;
+            if (ret != 0) {
+                checkFailCount4++;
+            }
         }
 
          /* Blitting. */
          rect.x = i;
          rect.y = j;
          ret = SDL_BlitSurface( face, NULL, testSurface, &rect );
-         if (ret != 0) checkFailCount1++;
+         if (ret != 0) {
+            checkFailCount1++;
+         }
       }
     }
     SDLTest_AssertCheck(checkFailCount1 == 0, "Validate results from calls to SDL_BlitSurface, expected: 0, got: %i", checkFailCount1);

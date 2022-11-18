@@ -203,8 +203,9 @@ static uint8_t GetSegmentHeader( int nSegmentNumber, bool bLastPacket )
 {
     uint8_t header = REPORT_SEGMENT_DATA_FLAG;
     header |= nSegmentNumber;
-    if ( bLastPacket )
+    if (bLastPacket) {
         header |= REPORT_SEGMENT_LAST_FLAG;
+    }
     
     return header;
 }
@@ -449,8 +450,9 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     res = SetFeatureReport( dev, buf, 2 );
     if ( res < 0 )
     {
-        if ( !bSuppressErrorSpew )
-            printf( "GET_ATTRIBUTES_VALUES failed for controller %p\n", dev );
+        if (!bSuppressErrorSpew) {
+            printf("GET_ATTRIBUTES_VALUES failed for controller %p\n", dev);
+        }
         return false;
     }
     
@@ -460,16 +462,18 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     if ( res < 0 || buf[1] != ID_GET_ATTRIBUTES_VALUES )
     {
         HEXDUMP(buf, res);
-        if ( !bSuppressErrorSpew )
-            printf( "Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev );
+        if (!bSuppressErrorSpew) {
+            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
+        }
         return false;
     }
     
     nAttributesLength = buf[ 2 ];
     if ( nAttributesLength > res )
     {
-        if ( !bSuppressErrorSpew )
-            printf( "Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev );
+        if (!bSuppressErrorSpew) {
+            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
+        }
         return false;
     }
 
@@ -505,8 +509,9 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     res = SetFeatureReport( dev, buf, 2 );
     if ( res < 0 )
     {
-        if ( !bSuppressErrorSpew )
-            printf( "CLEAR_DIGITAL_MAPPINGS failed for controller %p\n", dev );
+        if (!bSuppressErrorSpew) {
+            printf("CLEAR_DIGITAL_MAPPINGS failed for controller %p\n", dev);
+        }
         return false;
     }
     
@@ -517,8 +522,9 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     res = SetFeatureReport( dev, buf, 3 );
     if ( res < 0 )
     {
-        if ( !bSuppressErrorSpew )
-            printf( "LOAD_DEFAULT_SETTINGS failed for controller %p\n", dev );
+        if (!bSuppressErrorSpew) {
+            printf("LOAD_DEFAULT_SETTINGS failed for controller %p\n", dev);
+        }
         return false;
     }
     
@@ -547,8 +553,9 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
     res = SetFeatureReport( dev, buf, 3+nSettings*3 );
     if ( res < 0 )
     {
-        if ( !bSuppressErrorSpew )
-            printf( "SET_SETTINGS failed for controller %p\n", dev );
+        if (!bSuppressErrorSpew) {
+            printf("SET_SETTINGS failed for controller %p\n", dev);
+        }
         return false;
     }
     
@@ -604,8 +611,9 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
     res = SetFeatureReport( dev, buf, 9 );
     if ( res < 0 )
     {
-        if ( !bSuppressErrorSpew )
-            printf( "SET_DIGITAL_MAPPINGS failed for controller %p\n", dev );
+        if (!bSuppressErrorSpew) {
+            printf("SET_DIGITAL_MAPPINGS failed for controller %p\n", dev);
+        }
         return false;
     }
 #endif // ENABLE_MOUSE_MODE
@@ -784,8 +792,9 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
 
     // Fingerdown bit indicates if the packed left axis data was joystick or pad,
     // but if we are interleaving both, the left finger is definitely on the pad.
-    if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_AND_JOYSTICK_MASK)
+    if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_AND_JOYSTICK_MASK) {
         pState->ulButtons |= STEAM_LEFTPAD_FINGERDOWN_MASK;
+    }
 
     pState->sRightPadX = pStatePacket->sRightPadX;
     pState->sRightPadY = pStatePacket->sRightPadY;

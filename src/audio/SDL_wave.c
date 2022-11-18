@@ -901,14 +901,18 @@ IMA_ADPCM_ProcessNibble(Sint8 *cindex, Sint16 lastsample, Uint8 nybble)
      * (nybble & 0x8 ? -1 : 1) * ((nybble & 0x7) * step / 4 + step / 8)
      */
     delta = step >> 3;
-    if (nybble & 0x04)
+    if (nybble & 0x04) {
         delta += step;
-    if (nybble & 0x02)
+    }
+    if (nybble & 0x02) {
         delta += step >> 1;
-    if (nybble & 0x01)
+    }
+    if (nybble & 0x01) {
         delta += step >> 2;
-    if (nybble & 0x08)
+    }
+    if (nybble & 0x08) {
         delta = -delta;
+    }
 
     sample = lastsample + delta;
 

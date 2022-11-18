@@ -151,10 +151,12 @@ static Uint32 OS2_GetGlobalMouseState(int *x, int *y)
     *y = WinQuerySysValue(HWND_DESKTOP, SV_CYSCREEN) - pointl.y - 1;
 
     ulRes = (WinGetKeyState(HWND_DESKTOP, VK_BUTTON1) & 0x8000)? SDL_BUTTON_LMASK : 0;
-    if (WinGetKeyState(HWND_DESKTOP, VK_BUTTON2) & 0x8000)
+    if (WinGetKeyState(HWND_DESKTOP, VK_BUTTON2) & 0x8000) {
         ulRes |= SDL_BUTTON_RMASK;
-    if (WinGetKeyState(HWND_DESKTOP, VK_BUTTON3) & 0x8000)
+    }
+    if (WinGetKeyState(HWND_DESKTOP, VK_BUTTON3) & 0x8000) {
         ulRes |= SDL_BUTTON_MMASK;
+    }
 
     return ulRes;
 }
@@ -174,8 +176,9 @@ void OS2_InitMouse(_THIS, ULONG hab)
     pSDLMouse->GetGlobalMouseState  = OS2_GetGlobalMouseState;
 
     SDL_SetDefaultCursor(OS2_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
-    if (hptrCursor == NULLHANDLE)
+    if (hptrCursor == NULLHANDLE) {
         hptrCursor = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, TRUE);
+    }
 }
 
 void OS2_QuitMouse(_THIS)

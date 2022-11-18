@@ -2307,10 +2307,18 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #else
     if (srcbpp == 3 && dstbpp == 4) {
-        if (p0 != 1) p0--;
-        if (p1 != 1) p1--;
-        if (p2 != 1) p2--;
-        if (p3 != 1) p3--;
+        if (p0 != 1) {
+            p0--;
+        }
+        if (p1 != 1) {
+            p1--;
+        }
+        if (p2 != 1) {
+            p2--;
+        }
+        if (p3 != 1) {
+            p3--;
+        }
     } else if (srcbpp == 4 && dstbpp == 3) {
         p0 = p1;
         p1 = p2;
@@ -3400,8 +3408,9 @@ SDL_CalculateBlitN(SDL_Surface * surface)
         } else {
             /* Now the meat, choose the blitter we want */
             Uint32 a_need = NO_ALPHA;
-            if (dstfmt->Amask)
+            if (dstfmt->Amask) {
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
+            }
             table = normal_blit[srcfmt->BytesPerPixel - 1];
             for (which = 0; table[which].dstbpp; ++which) {
                 if (MASKOK(srcfmt->Rmask, table[which].srcR) &&

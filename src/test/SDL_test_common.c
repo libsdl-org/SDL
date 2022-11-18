@@ -1169,8 +1169,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                     SDL_Log("      Red Mask   = 0x%.8" SDL_PRIx32 "\n", Rmask);
                     SDL_Log("      Green Mask = 0x%.8" SDL_PRIx32 "\n", Gmask);
                     SDL_Log("      Blue Mask  = 0x%.8" SDL_PRIx32 "\n", Bmask);
-                    if (Amask)
+                    if (Amask) {
                         SDL_Log("      Alpha Mask = 0x%.8" SDL_PRIx32 "\n", Amask);
+                    }
                 }
 
                 /* Print available fullscreen video modes */
@@ -1193,9 +1194,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                                     Gmask);
                             SDL_Log("        Blue Mask  = 0x%.8" SDL_PRIx32 "\n",
                                     Bmask);
-                            if (Amask)
-                                SDL_Log("        Alpha Mask = 0x%.8" SDL_PRIx32 "\n",
-                                        Amask);
+                            if (Amask) {
+                                SDL_Log("        Alpha Mask = 0x%.8" SDL_PRIx32 "\n", Amask);
+                            }
                         }
                     }
                 }
@@ -1940,10 +1941,18 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                     int x, y;
                     SDL_GetWindowPosition(window, &x, &y);
 
-                    if (event->key.keysym.sym == SDLK_UP)    y -= delta;
-                    if (event->key.keysym.sym == SDLK_DOWN)  y += delta;
-                    if (event->key.keysym.sym == SDLK_LEFT)  x -= delta;
-                    if (event->key.keysym.sym == SDLK_RIGHT) x += delta;
+                    if (event->key.keysym.sym == SDLK_UP) {
+                        y -= delta;
+                    }
+                    if (event->key.keysym.sym == SDLK_DOWN) {
+                        y += delta;
+                    }
+                    if (event->key.keysym.sym == SDLK_LEFT) {
+                        x -= delta;
+                    }
+                    if (event->key.keysym.sym == SDLK_RIGHT) {
+                        x += delta;
+                    }
 
                     SDL_Log("Setting position to (%d, %d)\n", x, y);
                     SDL_SetWindowPosition(window, x, y);

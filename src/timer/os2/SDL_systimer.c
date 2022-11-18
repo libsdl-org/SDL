@@ -163,8 +163,9 @@ SDL_Delay(Uint32 ms)
 
 #ifdef _SWITCH_PRIORITY
     if (fSetPriority) {
-        if (DosSetPriority(PRTYS_THREAD, (ulSavePriority >> 8) & 0xFF, 0, 0) == NO_ERROR)
+        if (DosSetPriority(PRTYS_THREAD, (ulSavePriority >> 8) & 0xFF, 0, 0) == NO_ERROR) {
             DosSetPriority(PRTYS_THREAD, 0, ulSavePriority & 0xFF, 0);
+        }
         DosExitMustComplete(&ulNesting);
     }
 #endif
@@ -175,8 +176,9 @@ SDL_Delay(Uint32 ms)
         DosWaitEventSem(hevTimer, SEM_INDEFINITE_WAIT);
     }
 
-    if (ulRC != NO_ERROR)
+    if (ulRC != NO_ERROR) {
         DosSleep(ms);
+    }
 
     DosCloseEventSem(hevTimer);
 }

@@ -513,7 +513,9 @@ fprintf(stderr, "after partitioning first=#%lu last=#%lu\n", (first-(char*)base)
     *(int*)pivot=*(int*)first;
     for (;compare(pl,pivot)>0;pr=pl,--pl) {
       *pr=*pl; }
-    if (pr!=(int*)first) *pr=*(int*)pivot;
+    if (pr != (int *)first) {
+      *pr = *(int *)pivot;
+    }
   }
   free(pivot);
 }

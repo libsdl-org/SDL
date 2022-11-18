@@ -581,8 +581,9 @@ SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_
                 c = (unsigned char)src[i];
                 trailing_bytes = UTF8_TrailingBytes(c);
                 if (trailing_bytes) {
-                    if (bytes - i != trailing_bytes + 1)
+                    if (bytes - i != trailing_bytes + 1) {
                         bytes = i;
+                    }
 
                     break;
                 }
@@ -1116,8 +1117,9 @@ SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen)
         ++str2;
         --maxlen;
     }
-    if (maxlen == 0)
+    if (maxlen == 0) {
         result = 0;
+    }
     return result;
 #endif /* HAVE_STRNCASECMP */
 }
@@ -1456,10 +1458,16 @@ SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
     int retval;
-    if (!fmt) fmt = "";
+    if (!fmt) {
+        fmt = "";
+    }
     retval = _vsnprintf(text, maxlen, fmt, ap);
-    if (maxlen > 0) text[maxlen-1] = '\0';
-    if (retval < 0) retval = (int) maxlen;
+    if (maxlen > 0) {
+        text[maxlen - 1] = '\0';
+    }
+    if (retval < 0) {
+        retval = (int)maxlen;
+    }
     return retval;
 }
 #elif defined(HAVE_VSNPRINTF)
@@ -1509,8 +1517,9 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
         size_t width = info->width - sz;
         size_t filllen;
 
-        if (info->precision >= 0 && (size_t)info->precision < sz)
+        if (info->precision >= 0 && (size_t)info->precision < sz) {
             width += sz - (size_t)info->precision;
+        }
 
         filllen = SDL_min(width, maxlen);
         SDL_memset(text, fill, filllen);

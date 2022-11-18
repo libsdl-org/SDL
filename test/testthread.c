@@ -57,8 +57,9 @@ ThreadFunc(void *data)
 
         if (testprio) {
             SDL_Log("SDL_SetThreadPriority(%s):%d\n", getprioritystr(prio), SDL_SetThreadPriority(prio));
-            if (++prio > SDL_THREAD_PRIORITY_TIME_CRITICAL)
+            if (++prio > SDL_THREAD_PRIORITY_TIME_CRITICAL) {
                 prio = SDL_THREAD_PRIORITY_LOW;
+            }
         }
 
         SDL_Delay(1 * 1000);

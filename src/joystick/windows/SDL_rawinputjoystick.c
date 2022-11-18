@@ -258,8 +258,9 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint64 match_state
         ((match_state & (1<<SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) ? XINPUT_GAMEPAD_DPAD_RIGHT : 0);
     */
 
-    if (state->xinput_buttons)
+    if (state->xinput_buttons) {
         state->any_data = SDL_TRUE;
+    }
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
@@ -296,8 +297,9 @@ static void RAWINPUT_FillMatchState(WindowsMatchState *state, Uint64 match_state
         ((match_state & (1<<SDL_CONTROLLER_BUTTON_DPAD_LEFT)) ? GamepadButtons_DPadLeft : 0) |
         ((match_state & (1<<SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) ? GamepadButtons_DPadRight : 0); */
 
-    if (state->wgi_buttons)
+    if (state->wgi_buttons) {
         state->any_data = SDL_TRUE;
+    }
 #endif
 
 }
@@ -1638,10 +1640,12 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                             correlated = SDL_TRUE;
                             RAWINPUT_MarkWindowsGamingInputSlotUsed(ctx->wgi_slot, ctx);
                             /* If the generalized Guide button was using us, it doesn't need to anymore */
-                            if (guide_button_candidate.joystick == joystick)
+                            if (guide_button_candidate.joystick == joystick) {
                                 guide_button_candidate.joystick = NULL;
-                            if (guide_button_candidate.last_joystick == joystick)
+                            }
+                            if (guide_button_candidate.last_joystick == joystick) {
                                 guide_button_candidate.last_joystick = NULL;
+                            }
                         }
                     } else {
                         /* someone else also possibly correlated to this device, start over */
@@ -1732,10 +1736,12 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                                 correlated = SDL_TRUE;
                                 RAWINPUT_MarkXInputSlotUsed(ctx->xinput_slot);
                                 /* If the generalized Guide button was using us, it doesn't need to anymore */
-                                if (guide_button_candidate.joystick == joystick)
+                                if (guide_button_candidate.joystick == joystick) {
                                     guide_button_candidate.joystick = NULL;
-                                if (guide_button_candidate.last_joystick == joystick)
+                                }
+                                if (guide_button_candidate.last_joystick == joystick) {
                                     guide_button_candidate.last_joystick = NULL;
+                                }
                             }
                         } else {
                             /* someone else also possibly correlated to this device, start over */
@@ -1846,10 +1852,12 @@ RAWINPUT_JoystickClose(SDL_Joystick *joystick)
     RAWINPUT_DeviceContext *ctx = joystick->hwdata;
 
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
-    if (guide_button_candidate.joystick == joystick)
+    if (guide_button_candidate.joystick == joystick) {
         guide_button_candidate.joystick = NULL;
-    if (guide_button_candidate.last_joystick == joystick)
+    }
+    if (guide_button_candidate.last_joystick == joystick) {
         guide_button_candidate.last_joystick = NULL;
+    }
 #endif
 
     if (ctx) {

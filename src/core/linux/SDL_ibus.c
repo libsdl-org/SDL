@@ -65,14 +65,30 @@ IBus_ModState(void)
     SDL_Keymod sdl_mods = SDL_GetModState();
     
     /* Not sure about MOD3, MOD4 and HYPER mappings */
-    if (sdl_mods & KMOD_LSHIFT) ibus_mods |= IBUS_SHIFT_MASK;
-    if (sdl_mods & KMOD_CAPS)   ibus_mods |= IBUS_LOCK_MASK;
-    if (sdl_mods & KMOD_LCTRL)  ibus_mods |= IBUS_CONTROL_MASK;
-    if (sdl_mods & KMOD_LALT)   ibus_mods |= IBUS_MOD1_MASK;
-    if (sdl_mods & KMOD_NUM)    ibus_mods |= IBUS_MOD2_MASK;
-    if (sdl_mods & KMOD_MODE)   ibus_mods |= IBUS_MOD5_MASK;
-    if (sdl_mods & KMOD_LGUI)   ibus_mods |= IBUS_SUPER_MASK;
-    if (sdl_mods & KMOD_RGUI)   ibus_mods |= IBUS_META_MASK;
+    if (sdl_mods & KMOD_LSHIFT) {
+        ibus_mods |= IBUS_SHIFT_MASK;
+    }
+    if (sdl_mods & KMOD_CAPS) {
+        ibus_mods |= IBUS_LOCK_MASK;
+    }
+    if (sdl_mods & KMOD_LCTRL) {
+        ibus_mods |= IBUS_CONTROL_MASK;
+    }
+    if (sdl_mods & KMOD_LALT) {
+        ibus_mods |= IBUS_MOD1_MASK;
+    }
+    if (sdl_mods & KMOD_NUM) {
+        ibus_mods |= IBUS_MOD2_MASK;
+    }
+    if (sdl_mods & KMOD_MODE) {
+        ibus_mods |= IBUS_MOD5_MASK;
+    }
+    if (sdl_mods & KMOD_LGUI) {
+        ibus_mods |= IBUS_SUPER_MASK;
+    }
+    if (sdl_mods & KMOD_RGUI) {
+        ibus_mods |= IBUS_META_MASK;
+    }
 
     return ibus_mods;
 }
@@ -306,8 +322,12 @@ IBus_ReadAddressFromFile(const char *file_path)
     while (fgets(addr_buf, sizeof(addr_buf), addr_file)) {
         if (SDL_strncmp(addr_buf, "IBUS_ADDRESS=", sizeof("IBUS_ADDRESS=")-1) == 0) {
             size_t sz = SDL_strlen(addr_buf);
-            if (addr_buf[sz-1] == '\n') addr_buf[sz-1] = 0;
-            if (addr_buf[sz-2] == '\r') addr_buf[sz-2] = 0;
+            if (addr_buf[sz - 1] == '\n') {
+                addr_buf[sz - 1] = 0;
+            }
+            if (addr_buf[sz - 2] == '\r') {
+                addr_buf[sz - 2] = 0;
+            }
             success = SDL_TRUE;
             break;
         }

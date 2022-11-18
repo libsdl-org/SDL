@@ -46,8 +46,9 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("Vulkan already loaded");
 
     /* Load the Vulkan loader library */
-    if(!path)
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
+    }
     if(!path)
     {
         /* If no path set, try Vivante fb vulkan driver explicitly */
@@ -85,10 +86,11 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
         goto fail;
     for(i = 0; i < extensionCount; i++)
     {
-        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasDisplayExtension = SDL_TRUE;
+        }
     }
     SDL_free(extensions);
     if(!hasSurfaceExtension)

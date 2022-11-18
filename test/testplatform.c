@@ -51,31 +51,32 @@ TestTypes(SDL_bool verbose)
     int error = 0;
 
     if (badsize(sizeof(Uint8), 1)) {
-        if (verbose)
-            SDL_Log("sizeof(Uint8) != 1, instead = %u\n",
-                   (unsigned int)sizeof(Uint8));
+        if (verbose) {
+            SDL_Log("sizeof(Uint8) != 1, instead = %u\n", (unsigned int)sizeof(Uint8));
+        }
         ++error;
     }
     if (badsize(sizeof(Uint16), 2)) {
-        if (verbose)
-            SDL_Log("sizeof(Uint16) != 2, instead = %u\n",
-                   (unsigned int)sizeof(Uint16));
+        if (verbose) {
+            SDL_Log("sizeof(Uint16) != 2, instead = %u\n", (unsigned int)sizeof(Uint16));
+        }
         ++error;
     }
     if (badsize(sizeof(Uint32), 4)) {
-        if (verbose)
-            SDL_Log("sizeof(Uint32) != 4, instead = %u\n",
-                   (unsigned int)sizeof(Uint32));
+        if (verbose) {
+            SDL_Log("sizeof(Uint32) != 4, instead = %u\n", (unsigned int)sizeof(Uint32));
+        }
         ++error;
     }
     if (badsize(sizeof(Uint64), 8)) {
-        if (verbose)
-            SDL_Log("sizeof(Uint64) != 8, instead = %u\n",
-                   (unsigned int)sizeof(Uint64));
+        if (verbose) {
+            SDL_Log("sizeof(Uint64) != 8, instead = %u\n", (unsigned int)sizeof(Uint64));
+        }
         ++error;
     }
-    if (verbose && !error)
+    if (verbose && !error) {
         SDL_Log("All data types are the expected size.\n");
+    }
 
     return (error ? 1 : 0);
 }
@@ -376,14 +377,16 @@ Test64Bit (SDL_bool verbose)
         unsigned int *rl = (unsigned int *)&result;
 
         if (!t->routine(&t->a, &t->b, t->arg, &result, &t->expected_result)) {
-            if (verbose)
-                SDL_Log("%s(0x%08X%08X, 0x%08X%08X, %3d, produced: 0x%08X%08X, expected: 0x%08X%08X\n",
-                        t->operation, al[1], al[0], bl[1], bl[0], t->arg, rl[1], rl[0], el[1], el[0]);
+            if (verbose) {
+                SDL_Log("%s(0x%08X%08X, 0x%08X%08X, %3d, produced: 0x%08X%08X, expected: 0x%08X%08X\n", t->operation, al[1], al[0], bl[1], bl[0],
+                        t->arg, rl[1], rl[0], el[1], el[0]);
+            }
             ++failed;
         }
     }
-    if (verbose && (failed == 0))
+    if (verbose && (failed == 0)) {
         SDL_Log("All 64bit instrinsic tests passed\n");
+    }
     return (failed ? 1 : 0);
 }
 

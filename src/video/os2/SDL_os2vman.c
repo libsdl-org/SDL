@@ -210,11 +210,13 @@ static PVODATA voOpen(void)
 
 static VOID voClose(PVODATA pVOData)
 {
-    if (pVOData->pRectl != NULL)
+    if (pVOData->pRectl != NULL) {
         SDL_free(pVOData->pRectl);
+    }
 
-    if (pVOData->pBltRect != NULL)
+    if (pVOData->pBltRect != NULL) {
         SDL_free(pVOData->pBltRect);
+    }
 
     voVideoBufFree(pVOData);
 }
@@ -243,9 +245,9 @@ static BOOL voSetVisibleRegion(PVODATA pVOData, HWND hwnd,
                 GpiDestroyRegion(hps, pVOData->hrgnVisible);
                 pVOData->hrgnVisible = NULLHANDLE;
             } else {
-                if (hrgnShape != NULLHANDLE)
-                    GpiCombineRegion(hps, pVOData->hrgnVisible, pVOData->hrgnVisible,
-                                     hrgnShape, CRGN_AND);
+                if (hrgnShape != NULLHANDLE) {
+                    GpiCombineRegion(hps, pVOData->hrgnVisible, pVOData->hrgnVisible, hrgnShape, CRGN_AND);
+                }
                 fSuccess = TRUE;
             }
         }

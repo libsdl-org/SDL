@@ -70,8 +70,9 @@ KMSDRM_GetSym(const char *fnname, int *pHasModule)
         SDL_Log("KMSDRM: Symbol '%s' NOT FOUND!\n", fnname);
 #endif
 
-    if (fn == NULL)
-        *pHasModule = 0;  /* kill this module. */
+    if (fn == NULL) {
+        *pHasModule = 0;
+    }  /* kill this module. */
 
     return fn;
 }

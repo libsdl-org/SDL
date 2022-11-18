@@ -146,8 +146,9 @@ void SDLTest_Md5Update(SDLTest_Md5Context * mdContext, unsigned char *inBuf,
   /*
    * update number of bits
    */
-  if ((mdContext->i[0] + ((MD5UINT4) inLen << 3)) < mdContext->i[0])
+  if ((mdContext->i[0] + ((MD5UINT4)inLen << 3)) < mdContext->i[0]) {
     mdContext->i[1]++;
+  }
   mdContext->i[0] += ((MD5UINT4) inLen << 3);
   mdContext->i[1] += ((MD5UINT4) inLen >> 29);
 

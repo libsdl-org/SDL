@@ -603,7 +603,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                     /* Take time - test end */
                     testEndSeconds = GetClock();
                     runtime = testEndSeconds - testStartSeconds;
-                    if (runtime < 0.0f) runtime = 0.0f;
+                    if (runtime < 0.0f) {
+                        runtime = 0.0f;
+                    }
 
                     if (testIterations > 1) {
                         /* Log test runtime */
@@ -638,7 +640,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             /* Take time - suite end */
             suiteEndSeconds = GetClock();
             runtime = suiteEndSeconds - suiteStartSeconds;
-            if (runtime < 0.0f) runtime = 0.0f;
+            if (runtime < 0.0f) {
+                runtime = 0.0f;
+            }
 
             /* Log suite runtime */
             SDLTest_Log("Total Suite runtime: %.1f sec", runtime);
@@ -662,7 +666,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     /* Take time - run end */
     runEndSeconds = GetClock();
     runtime = runEndSeconds - runStartSeconds;
-    if (runtime < 0.0f) runtime = 0.0f;
+    if (runtime < 0.0f) {
+        runtime = 0.0f;
+    }
 
     /* Log total runtime */
     SDLTest_Log("Total Run runtime: %.1f sec", runtime);

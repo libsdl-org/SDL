@@ -154,7 +154,9 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FP
         int angle90 = (int)(angle/90);
         if(angle90 == angle/90) { /* if the angle is a multiple of 90 degrees */
             angle90 %= 4;
-            if(angle90 < 0) angle90 += 4; /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
+            if (angle90 < 0) {
+                angle90 += 4;
+            } /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
             if(angle90 & 1) {
                 rect_dest->w  = height;
                 rect_dest->h = width;
@@ -284,8 +286,12 @@ transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int isin, int icos,
             for (x = 0; x < dst->w; x++) {
                 int dx = (sdx >> 16);
                 int dy = (sdy >> 16);
-                if (flipx) dx = sw - dx;
-                if (flipy) dy = sh - dy;
+                if (flipx) {
+                    dx = sw - dx;
+                }
+                if (flipy) {
+                    dy = sh - dy;
+                }
                 if ((dx > -1) && (dy > -1) && (dx < (src->w-1)) && (dy < (src->h-1))) {
                     int ex, ey;
                     int t1, t2;
@@ -341,8 +347,12 @@ transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int isin, int icos,
                 int dx = (sdx >> 16);
                 int dy = (sdy >> 16);
                 if ((unsigned)dx < (unsigned)src->w && (unsigned)dy < (unsigned)src->h) {
-                    if(flipx) dx = sw - dx;
-                    if(flipy) dy = sh - dy;
+                    if (flipx) {
+                        dx = sw - dx;
+                    }
+                    if (flipy) {
+                        dy = sh - dy;
+                    }
                     *pc = *((tColorRGBA *)((Uint8 *)src->pixels + src->pitch * dy) + dx);
                 }
                 sdx += icos;
@@ -411,8 +421,12 @@ transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int isin, int icos, int 
             int dx = (sdx >> 16);
             int dy = (sdy >> 16);
             if ((unsigned)dx < (unsigned)src->w && (unsigned)dy < (unsigned)src->h) {
-                if (flipx) dx = sw - dx;
-                if (flipy) dy = sh- dy;
+                if (flipx) {
+                    dx = sw - dx;
+                }
+                if (flipy) {
+                    dy = sh - dy;
+                }
                 *pc = *((tColorY *)src->pixels + src->pitch * dy + dx);
             }
             sdx += icos;
@@ -542,7 +556,9 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
     angle90 = (int)(angle/90);
     if (angle90 == angle/90) {
         angle90 %= 4;
-        if (angle90 < 0) angle90 += 4; /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
+        if (angle90 < 0) {
+            angle90 += 4;
+        } /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
     } else {
         angle90 = -1;
     }

@@ -395,9 +395,11 @@ CreateHwData(const char *path)
             }
         }
         hid_end_parse(hdata);
-        for (i = 0; i < JOYAXE_count; i++)
-            if (hw->axis_map[i] > 0)
+        for (i = 0; i < JOYAXE_count; i++) {
+            if (hw->axis_map[i] > 0) {
                 hw->axis_map[i] = hw->naxes++;
+            }
+        }
 
         if (hw->naxes == 0 && hw->nbuttons == 0 && hw->nhats == 0) {
             SDL_SetError("%s: Not a joystick, ignoring", path);

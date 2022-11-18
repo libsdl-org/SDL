@@ -71,8 +71,9 @@ X11_ResizeWindowShape(SDL_Window* window) {
     unsigned int bitmapsize = window->w / 8;
     SDL_assert(data != NULL);
 
-    if(window->w % 8 > 0)
+    if (window->w % 8 > 0) {
         bitmapsize += 1;
+    }
     bitmapsize *= window->h;
     if(data->bitmapsize != bitmapsize || data->bitmap == NULL) {
         data->bitmapsize = bitmapsize;

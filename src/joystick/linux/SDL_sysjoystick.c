@@ -988,10 +988,12 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
             int hat_y = -1;
             struct input_absinfo absinfo_x;
             struct input_absinfo absinfo_y;
-            if (test_bit(i, absbit))
+            if (test_bit(i, absbit)) {
                 hat_x = ioctl(fd, EVIOCGABS(i), &absinfo_x);
-            if (test_bit(i + 1, absbit))
+            }
+            if (test_bit(i + 1, absbit)) {
                 hat_y = ioctl(fd, EVIOCGABS(i + 1), &absinfo_y);
+            }
             if (GuessIfAxesAreDigitalHat((hat_x < 0 ? (void*)0 : &absinfo_x),
                                          (hat_y < 0 ? (void*)0 : &absinfo_y))) {
                 const int hat_index = (i - ABS_HAT0X) / 2;

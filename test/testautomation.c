@@ -56,7 +56,9 @@ main(int argc, char *argv[])
             if (SDL_strcasecmp(argv[i], "--iterations") == 0) {
                 if (argv[i + 1]) {
                     testIterations = SDL_atoi(argv[i + 1]);
-                    if (testIterations < 1) testIterations = 1;
+                    if (testIterations < 1) {
+                        testIterations = 1;
+                    }
                     consumed = 2;
                 }
             }

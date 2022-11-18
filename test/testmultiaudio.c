@@ -39,8 +39,9 @@ play_through_once(void *arg, Uint8 * stream, int len)
     Uint8 *waveptr = sound + cbdata->soundpos;
     int waveleft = soundlen - cbdata->soundpos;
     int cpy = len;
-    if (cpy > waveleft)
+    if (cpy > waveleft) {
         cpy = waveleft;
+    }
 
     SDL_memcpy(stream, waveptr, cpy);
     len -= cpy;

@@ -66,7 +66,9 @@ static int vsync_handler()
 /* Copy of gsKit_sync_flip, but without the 'flip' */
 static void gsKit_sync(GSGLOBAL *gsGlobal)
 {
-   if (!gsGlobal->FirstFrame) WaitSema(vsync_sema_id);
+   if (!gsGlobal->FirstFrame) {
+      WaitSema(vsync_sema_id);
+   }
    while (PollSema(vsync_sema_id) >= 0)
    	;
 }
@@ -521,18 +523,20 @@ PS2_RenderPresent(SDL_Renderer * renderer)
     PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
 
     if (data->gsGlobal->DoubleBuffering == GS_SETTING_OFF) {
-		if (data->vsync == 2) // Dynamic
+		if (data->vsync == 2) { // Dynamic
             gsKit_sync(data->gsGlobal);
-        else if (data->vsync == 1)
+        } else if (data->vsync == 1) {
             gsKit_vsync_wait();
+        }
 		gsKit_queue_exec(data->gsGlobal);
     } else {
 		gsKit_queue_exec(data->gsGlobal);
 		gsKit_finish();
-		if (data->vsync == 2) // Dynamic
+		if (data->vsync == 2) { // Dynamic
             gsKit_sync(data->gsGlobal);
-        else if (data->vsync == 1)
+        } else if (data->vsync == 1) {
             gsKit_vsync_wait();
+        }
 		gsKit_flip(data->gsGlobal);
 	}
 	gsKit_TexManager_nextFrame(data->gsGlobal);
@@ -574,8 +578,9 @@ PS2_DestroyRenderer(SDL_Renderer * renderer)
         SDL_free(data);
     }
 
-    if (vsync_sema_id >= 0)
+    if (vsync_sema_id >= 0) {
         DeleteSema(vsync_sema_id);
+    }
 
     SDL_free(renderer);
 }

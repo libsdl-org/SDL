@@ -285,8 +285,9 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
                     mask = (1 << i);
                     previous = info->btns & mask;
                     current = pressed_buttons & mask;
-                    if (previous != current)
+                    if (previous != current) {
                         SDL_PrivateJoystickButton(joystick, i, current ? SDL_PRESSED : SDL_RELEASED);
+                    }
                 }
             }
             info->btns = pressed_buttons;
@@ -300,8 +301,9 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
             for (i = 0; i < PS2_TOTAL_AXIS; i++) {
                 previous_axis = info->analog_state[i];
                 current_axis = all_axis[i];
-                if (previous_axis != current_axis)
+                if (previous_axis != current_axis) {
                     SDL_PrivateJoystickAxis(joystick, i, convert_u8_to_s16(current_axis));
+                }
                 
                 info->analog_state[i] = current_axis;
             }

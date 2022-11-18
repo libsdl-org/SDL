@@ -91,8 +91,9 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     if (sem == NULL)
         return SDL_InvalidParamError("sem");
 
-    if (timeout != SEM_INDEFINITE_WAIT)
+    if (timeout != SEM_INDEFINITE_WAIT) {
         DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &ulStartTime, sizeof(ULONG));
+    }
 
     while (TRUE) {
         ulRC = DosRequestMutexSem(sem->hMtx, SEM_INDEFINITE_WAIT);
@@ -100,8 +101,9 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
             return SDL_SetError("DosRequestMutexSem() failed, rc = %u", ulRC);
 
         cPost = sem->cPost;
-        if (sem->cPost != 0)
+        if (sem->cPost != 0) {
             sem->cPost--;
+        }
 
         DosReleaseMutexSem(sem->hMtx);
 

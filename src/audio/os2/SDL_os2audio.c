@@ -242,8 +242,9 @@ static void OS2_CloseDevice(_THIS)
         }
     }
 
-    if (pAData->hevBuf != NULLHANDLE)
+    if (pAData->hevBuf != NULLHANDLE) {
         DosCloseEventSem(pAData->hevBuf);
+    }
 
     SDL_free(pAData);
 }

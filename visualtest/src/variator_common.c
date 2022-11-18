@@ -53,8 +53,9 @@ SDLVisualTest_NextValue(SDLVisualTest_SUTOptionValue* var,
             int increment = (opt->data.range.max - opt->data.range.min) /
                             SDL_SUT_INTEGER_OPTION_TEST_STEPS;
             /* prevents infinite loop when rounding */
-            if(increment == 0)
+            if (increment == 0) {
                 increment = 1;
+            }
             var->integer.value += increment;
             if(var->integer.value > opt->data.range.max)
             {

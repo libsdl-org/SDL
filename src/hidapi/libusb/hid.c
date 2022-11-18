@@ -70,7 +70,9 @@ static wchar_t *_dupwcs(const wchar_t *src)
         size_t len = SDL_wcslen(src) + 1;
         len *= sizeof(wchar_t);
         dst = (wchar_t *) malloc(len);
-        if (dst) memcpy(dst, src, len);
+        if (dst) {
+            memcpy(dst, src, len);
+        }
     }
     return dst;
 }
@@ -442,8 +444,9 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	/* Determine which language to use. */
 	uint16_t lang;
 	lang = get_usb_code_for_current_locale();
-	if (!is_language_supported(dev, lang))
+	if (!is_language_supported(dev, lang)) {
 		lang = get_first_language(dev);
+	}
 
 	/* Get the string from libusb. */
 	len = libusb_get_string_descriptor(dev,
@@ -495,8 +498,9 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 
 	/* Write the terminating NULL. */
 	wbuf[sizeof(wbuf)/sizeof(wbuf[0])-1] = 0x00000000;
-	if (outbytes >= sizeof(wbuf[0]))
-		*((wchar_t*)outptr) = 0x00000000;
+	if (outbytes >= sizeof(wbuf[0])) {
+		*((wchar_t *)outptr) = 0x00000000;
+	}
 
 	/* Allocate and copy the string. */
 	str = wcsdup(wbuf);
@@ -637,8 +641,9 @@ int HID_API_EXPORT hid_init(void)
 		/* Set the locale if it's not set. */
 		{
 			const char *locale = setlocale(LC_CTYPE, NULL);
-			if (!locale)
+			if (!locale) {
 				setlocale(LC_CTYPE, "");
+			}
 		}
 #endif
 	}
@@ -1234,8 +1239,9 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		libusb_get_device_descriptor(usb_dev, &desc);
 
 		res = libusb_get_active_config_descriptor(usb_dev, &conf_desc);
-		if (res < 0)
+		if (res < 0) {
 			libusb_get_config_descriptor(usb_dev, 0, &conf_desc);
+		}
 		if (!conf_desc)
 			continue;
 		for (j = 0; j < conf_desc->bNumInterfaces && !good_open; j++) {
@@ -1391,8 +1397,9 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 		if (res < 0)
 			return -1;
 
-		if (skipped_report_id)
+		if (skipped_report_id) {
 			length++;
+		}
 
 		return length;
 	}
@@ -1420,8 +1427,9 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	   return buffer (data), and delete the liked list item. */
 	struct input_report *rpt = dev->input_reports;
 	size_t len = (length < rpt->len)? length: rpt->len;
-	if (data && len > 0)
+	if (data && len > 0) {
 		memcpy(data, rpt->data, len);
+	}
 	dev->input_reports = rpt->next;
 	free(rpt->data);
 	free(rpt);
@@ -1551,8 +1559,9 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 		return -1;
 
 	/* Account for the report ID */
-	if (skipped_report_id)
+	if (skipped_report_id) {
 		length++;
+	}
 
 	return length;
 }
@@ -1581,8 +1590,9 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	if (res < 0)
 		return -1;
 
-	if (skipped_report_id)
+	if (skipped_report_id) {
 		res++;
+	}
 
 	return res;
 }

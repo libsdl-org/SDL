@@ -138,10 +138,14 @@ double attribute_hidden __ieee754_pow(double x, double y)
 		k = (iy>>20)-0x3ff;	   /* exponent */
 		if(k>20) {
 		    j = ly>>(52-k);
-		    if((j<<(52-k))==ly) yisint = 2-(j&1);
+		    if ((j << (52 - k)) == ly) {
+			yisint = 2 - (j & 1);
+		    }
 		} else if(ly==0) {
 		    j = iy>>(20-k);
-		    if((j<<(20-k))==iy) yisint = 2-(j&1);
+		    if ((j << (20 - k)) == iy) {
+			yisint = 2 - (j & 1);
+		    }
 		}
 	    }
 	}
@@ -171,12 +175,15 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	if(lx==0) {
 	    if(ix==0x7ff00000||ix==0||ix==0x3ff00000){
 		z = ax;			/*x is +-0,+-inf,+-1*/
-		if(hy<0) z = one/z;	/* z = (1/|x|) */
+		if (hy < 0) {
+		    z = one / z;
+		}	/* z = (1/|x|) */
 		if(hx<0) {
 		    if(((ix-0x3ff00000)|yisint)==0) {
 			z = (z-z)/(z-z); /* (-1)**non-int is NaN */
-		    } else if(yisint==1)
-			z = -z;		/* (x<0)**odd = -(|x|**odd) */
+		    } else if (yisint == 1) {
+			    z = -z;
+		    }		/* (x<0)**odd = -(|x|**odd) */
 		}
 		return z;
 	    }
@@ -254,8 +261,9 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	}
 
 	s = one; /* s (sign of result -ve**odd) = -1 else = 1 */
-	if(((((u_int32_t)hx>>31)-1)|(yisint-1))==0)
-	    s = -one;/* (-ve)**(odd int) */
+	if (((((u_int32_t)hx >> 31) - 1) | (yisint - 1)) == 0) {
+	    s = -one;
+	}/* (-ve)**(odd int) */
 
     /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
 	y1  = y;
@@ -289,7 +297,9 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	    t = zero;
 	    SET_HIGH_WORD(t,n&~(0x000fffff>>k));
 	    n = ((n&0x000fffff)|0x00100000)>>(20-k);
-	    if(j<0) n = -n;
+	    if (j < 0) {
+		n = -n;
+	    }
 	    p_h -= t;
 	}
 	t = p_l+p_h;

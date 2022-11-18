@@ -210,8 +210,9 @@ loop(void *arg)
 
     /* Objects from mouse clicks */
     DrawObjects(renderer);
-    if (active)
+    if (active) {
         DrawObject(renderer, active);
+    }
 
     SDL_RenderPresent(renderer);
 

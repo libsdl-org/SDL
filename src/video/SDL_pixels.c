@@ -1089,8 +1089,9 @@ SDL_MapSurface(SDL_Surface * src, SDL_Surface * dst)
                     return (-1);
                 }
             }
-            if (srcfmt->BitsPerPixel != dstfmt->BitsPerPixel)
+            if (srcfmt->BitsPerPixel != dstfmt->BitsPerPixel) {
                 map->identity = 0;
+            }
         } else {
             /* Palette --> BitField */
             map->info.table =

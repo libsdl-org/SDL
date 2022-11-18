@@ -150,8 +150,9 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
             break;
 
             case 2:
-            if(!ch)
+            if (!ch) {
                 done = 1;
+            }
             if(SDL_isspace(ch) || !ch)
             {
                 int i;

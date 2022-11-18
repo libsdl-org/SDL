@@ -4518,8 +4518,12 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 
     SDL_memcpy(&mbdata, messageboxdata, sizeof(*messageboxdata));
-    if (!mbdata.title) mbdata.title = "";
-    if (!mbdata.message) mbdata.message = "";
+    if (!mbdata.title) {
+        mbdata.title = "";
+    }
+    if (!mbdata.message) {
+        mbdata.message = "";
+    }
     messageboxdata = &mbdata;
 
     SDL_ClearError();
@@ -4633,8 +4637,12 @@ SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, S
     /* Web browsers don't (currently) have an API for a custom message box
        that can block, but for the most common case (SDL_ShowSimpleMessageBox),
        we can use the standard Javascript alert() function. */
-    if (!title) title = "";
-    if (!message) message = "";
+    if (!title) {
+        title = "";
+    }
+    if (!message) {
+        message = "";
+    }
     EM_ASM_({
         alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
     }, title, message);

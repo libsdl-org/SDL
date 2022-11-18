@@ -88,7 +88,9 @@ double attribute_hidden __ieee754_fmod(double x, double y)
     /* fix point fmod */
 	n = ix - iy;
 	while(n--) {
-	    hz=hx-hy;lz=lx-ly; if(lx<ly) hz -= 1;
+	    hz=hx-hy;lz=lx-ly; if (lx < ly) {
+		hz -= 1;
+	    }
 	    if(hz<0){hx = hx+hx+(lx>>31); lx = lx+lx;}
 	    else {
 	    	if((hz|lz)==0) 		/* return sign(x)*0 */
@@ -96,7 +98,9 @@ double attribute_hidden __ieee754_fmod(double x, double y)
 	    	hx = hz+hz+(lz>>31); lx = lz+lz;
 	    }
 	}
-	hz=hx-hy;lz=lx-ly; if(lx<ly) hz -= 1;
+	hz=hx-hy;lz=lx-ly; if (lx < ly) {
+	    hz -= 1;
+	}
 	if(hz>=0) {hx=hz;lx=lz;}
 
     /* convert back to floating value and restore the sign */

@@ -261,8 +261,9 @@ SDL_GetBasePath(void)
     if (retval != NULL) {
         /* try to shrink buffer... */
         char *ptr = (char *) SDL_realloc(retval, SDL_strlen(retval) + 1);
-        if (ptr != NULL)
-            retval = ptr;  /* oh well if it failed. */
+        if (ptr != NULL) {
+            retval = ptr;
+        }  /* oh well if it failed. */
     }
 
     return retval;
@@ -306,8 +307,9 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     len = SDL_strlen(envr);
-    if (envr[len - 1] == '/')
+    if (envr[len - 1] == '/') {
         append += 1;
+    }
 
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *) SDL_malloc(len);

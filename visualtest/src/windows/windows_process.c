@@ -73,8 +73,9 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     }
 
     /* join the file path and the args string together */
-    if(!args)
+    if (!args) {
         args = "";
+    }
     args_length = SDL_strlen(args);
     command_line = (char*)SDL_malloc(path_length + args_length + 2);
     if(!command_line)

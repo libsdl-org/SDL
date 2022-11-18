@@ -149,8 +149,9 @@ static BOOL voSetVisibleRegion(PVODATA pVOData, HWND hwnd,
         SDL_SetError("GpiCreateRegion() failed");
     } else {
         WinQueryVisibleRegion(hwnd, hrgn);
-        if (hrgnShape != NULLHANDLE)
+        if (hrgnShape != NULLHANDLE) {
             GpiCombineRegion(hps, hrgn, hrgn, hrgnShape, CRGN_AND);
+        }
 
         rgnCtl.ircStart     = 1;
         rgnCtl.crc          = 0;

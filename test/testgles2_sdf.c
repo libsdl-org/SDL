@@ -357,10 +357,18 @@ void loop()
                 }
 
 
-                if (sym == SDLK_LEFT)  g_val -= 0.05;
-                if (sym == SDLK_RIGHT) g_val += 0.05;
-                if (sym == SDLK_UP)    g_angle -= 1;
-                if (sym == SDLK_DOWN)  g_angle += 1;
+                if (sym == SDLK_LEFT) {
+                    g_val -= 0.05;
+                }
+                if (sym == SDLK_RIGHT) {
+                    g_val += 0.05;
+                }
+                if (sym == SDLK_UP) {
+                    g_angle -= 1;
+                }
+                if (sym == SDLK_DOWN) {
+                        g_angle += 1;
+                }
  
 
                 break;
@@ -564,8 +572,9 @@ main(int argc, char *argv[])
 #if 1
         path = GetNearbyFilename(f);
 
-        if (path == NULL)
+        if (path == NULL) {
             path = SDL_strdup(f);
+        }
 
         if (path == NULL) {
             SDL_Log("out of memory\n");

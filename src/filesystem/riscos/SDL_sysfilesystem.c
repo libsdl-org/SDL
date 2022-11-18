@@ -53,8 +53,9 @@ SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
     }
 
     if (!__unixify_std(ro_path, buffer, buf_len, filetype)) {
-        if (!in_buf)
+        if (!in_buf) {
             SDL_free(buffer);
+        }
 
         SDL_SetError("Could not convert '%s' to a Unix-style path", ro_path);
         return NULL;
@@ -149,8 +150,9 @@ SDL_GetBasePath(void)
 
     /* chop off filename. */
     ptr = SDL_strrchr(canon, '.');
-    if (ptr != NULL)
+    if (ptr != NULL) {
         *ptr = '\0';
+    }
 
     retval = SDL_unixify_std(canon, NULL, 0, __RISCOSIFY_FILETYPE_NOTSPECIFIED);
     SDL_free(canon);

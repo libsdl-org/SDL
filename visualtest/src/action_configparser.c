@@ -27,10 +27,12 @@ FreeAction(SDLVisualTest_Action* action)
             path = action->extra.process.path;
             args = action->extra.process.args;
 
-            if(path)
+            if (path) {
                 SDL_free(path);
-            if(args)
+            }
+            if (args) {
                 SDL_free(args);
+            }
 
             action->extra.process.path = NULL;
             action->extra.process.args = NULL;
@@ -383,8 +385,9 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
             if(action.type == SDL_ACTION_LAUNCH)
             {
                 SDL_free(action.extra.process.path);
-                if(action.extra.process.args)
+                if (action.extra.process.args) {
                     SDL_free(action.extra.process.args);
+                }
             }
             SDLVisualTest_EmptyActionQueue(queue);
             SDL_RWclose(rw);

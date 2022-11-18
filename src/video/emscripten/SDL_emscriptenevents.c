@@ -987,7 +987,9 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
     /* Keyboard events are awkward */
     keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!keyElement) keyElement = EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    if (!keyElement) {
+        keyElement = EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    }
 
     emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
     emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);

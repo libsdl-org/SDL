@@ -186,9 +186,13 @@ loop()
         if (state->windows[i] == NULL)
             continue;
         if (test_composite) {
-            if (!DrawComposite(&drawstates[i])) done = 1;
+            if (!DrawComposite(&drawstates[i])) {
+                done = 1;
+            }
         } else {
-            if (!Draw(&drawstates[i])) done = 1;
+            if (!Draw(&drawstates[i])) {
+                done = 1;
+            }
         }
     }
 #ifdef __EMSCRIPTEN__

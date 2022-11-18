@@ -46,8 +46,9 @@ static void parse_valuators(const double *input_values, const unsigned char *mas
                             double *output_values,int output_values_len) {
     int i = 0,z = 0;
     int top = mask_len * 8;
-    if (top > MAX_AXIS)
+    if (top > MAX_AXIS) {
         top = MAX_AXIS;
+    }
 
     SDL_memset(output_values,0,output_values_len * sizeof(double));
     for (; i < top && z < output_values_len; i++) {

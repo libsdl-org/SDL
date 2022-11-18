@@ -271,8 +271,9 @@ DirectFB_GL_DeleteContext(_THIS, SDL_GLContext context)
     DirectFB_GLContext *ctx = (DirectFB_GLContext *) context;
     DirectFB_GLContext *p;
 
-    if (ctx->is_locked)
+    if (ctx->is_locked) {
         SDL_DFB_CHECK(ctx->context->Unlock(ctx->context));
+    }
     SDL_DFB_RELEASE(ctx->context);
 
     for (p = _this->gl_data->firstgl; p && p->next != ctx; p = p->next)
@@ -293,8 +294,9 @@ DirectFB_GL_FreeWindowContexts(_THIS, SDL_Window * window)
     for (p = _this->gl_data->firstgl; p != NULL; p = p->next)
         if (p->sdl_window == window)
         {
-            if (p->is_locked)
+            if (p->is_locked) {
                 SDL_DFB_CHECK(p->context->Unlock(p->context));
+            }
             SDL_DFB_RELEASE(p->context);
         }
 }
@@ -310,8 +312,9 @@ DirectFB_GL_ReAllocWindowContexts(_THIS, SDL_Window * window)
             SDL_DFB_WINDOWDATA(window);
             SDL_DFB_CHECK(windata->surface->GetGL(windata->surface,
                                              &p->context));
-            if (p->is_locked)
+            if (p->is_locked) {
                 SDL_DFB_CHECK(p->context->Lock(p->context));
+            }
             }
 }
 
@@ -320,9 +323,11 @@ DirectFB_GL_DestroyWindowContexts(_THIS, SDL_Window * window)
 {
     DirectFB_GLContext *p;
 
-    for (p = _this->gl_data->firstgl; p != NULL; p = p->next)
-        if (p->sdl_window == window)
+    for (p = _this->gl_data->firstgl; p != NULL; p = p->next) {
+        if (p->sdl_window == window) {
             DirectFB_GL_DeleteContext(_this, p);
+        }
+    }
 }
 
 #endif

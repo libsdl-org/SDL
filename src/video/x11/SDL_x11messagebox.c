@@ -696,10 +696,11 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
             if ( key != last_key_pressed )
                 break;
 
-            if ( key == XK_Escape )
+            if ( key == XK_Escape ) {
                 mask = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-            else if ( ( key == XK_Return ) || ( key == XK_KP_Enter ) )
+            } else if ((key == XK_Return) || (key == XK_KP_Enter)) {
                 mask = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+            }
 
             if ( mask ) {
                 int i;

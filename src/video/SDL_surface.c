@@ -746,8 +746,9 @@ SDL_UpperBlit(SDL_Surface * src, const SDL_Rect * srcrect,
             srcx = 0;
         }
         maxw = src->w - srcx;
-        if (maxw < w)
+        if (maxw < w) {
             w = maxw;
+        }
 
         srcy = srcrect->y;
         h = srcrect->h;
@@ -757,8 +758,9 @@ SDL_UpperBlit(SDL_Surface * src, const SDL_Rect * srcrect,
             srcy = 0;
         }
         maxh = src->h - srcy;
-        if (maxh < h)
+        if (maxh < h) {
             h = maxh;
+        }
 
     } else {
         srcx = srcy = 0;
@@ -778,8 +780,9 @@ SDL_UpperBlit(SDL_Surface * src, const SDL_Rect * srcrect,
             srcx += dx;
         }
         dx = dstrect->x + w - clip->x - clip->w;
-        if (dx > 0)
+        if (dx > 0) {
             w -= dx;
+        }
 
         dy = clip->y - dstrect->y;
         if (dy > 0) {
@@ -788,8 +791,9 @@ SDL_UpperBlit(SDL_Surface * src, const SDL_Rect * srcrect,
             srcy += dy;
         }
         dy = dstrect->y + h - clip->y - clip->h;
-        if (dy > 0)
+        if (dy > 0) {
             h -= dy;
+        }
     }
 
     /* Switch back to a fast blit if we were previously stretching */

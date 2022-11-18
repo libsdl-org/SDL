@@ -89,8 +89,9 @@ unsigned int SDLTest_Random(SDLTest_RandomContext * rndContext)
   rndContext->c =
     xh * rndContext->ah + ((xh * rndContext->al) >> 16) +
     ((xl * rndContext->ah) >> 16);
-  if (xl * rndContext->al >= (~rndContext->c + 1))
+  if (xl * rndContext->al >= (~rndContext->c + 1)) {
     rndContext->c++;
+  }
   return (rndContext->x);
 }
 

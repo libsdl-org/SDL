@@ -1180,8 +1180,9 @@ X11_ShowWindow(_THIS, SDL_Window * window)
         /* Blocking wait for "MapNotify" event.
          * We use X11_XIfEvent because pXWindowEvent takes a mask rather than a type,
          * and XCheckTypedWindowEvent doesn't block */
-        if(!(window->flags & SDL_WINDOW_FOREIGN))
+        if (!(window->flags & SDL_WINDOW_FOREIGN)) {
             X11_XIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
+        }
         X11_XFlush(display);
     }
 
@@ -1204,8 +1205,9 @@ X11_HideWindow(_THIS, SDL_Window * window)
     if (X11_IsWindowMapped(_this, window)) {
         X11_XWithdrawWindow(display, data->xwindow, displaydata->screen);
         /* Blocking wait for "UnmapNotify" event */
-        if(!(window->flags & SDL_WINDOW_FOREIGN))
+        if (!(window->flags & SDL_WINDOW_FOREIGN)) {
             X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
+        }
         X11_XFlush(display);
     }
 }
@@ -1562,7 +1564,9 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != NULL) X11_XFree(ret);
+        if (ret != NULL) {
+            X11_XFree(ret);
+        }
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
         bytes_fetch += bytes_left;
     } while (bytes_left != 0);

@@ -195,8 +195,9 @@ MainWindow::MainWindow(FXApp *app)
 
 MainWindow::~MainWindow()
 {
-	if (connected_device)
+	if (connected_device) {
 		hid_close(connected_device);
+	}
 	hid_exit();
 	delete title_font;
 }
@@ -456,10 +457,12 @@ MainWindow::onGetFeatureReport(FXObject *sender, FXSelector sel, void *ptr)
 			FXString t;
 			t.format("%02hhx ", buf[i]);
 			s += t;
-			if ((i+1) % 4 == 0)
+			if ((i + 1) % 4 == 0) {
 				s += " ";
-			if ((i+1) % 16 == 0)
+			}
+			if ((i + 1) % 16 == 0) {
 				s += "\n";
+			}
 		}
 		s += "\n";
 		input_text->appendText(s);
@@ -489,10 +492,12 @@ MainWindow::onTimeout(FXObject *sender, FXSelector sel, void *ptr)
 			FXString t;
 			t.format("%02hhx ", buf[i]);
 			s += t;
-			if ((i+1) % 4 == 0)
+			if ((i + 1) % 4 == 0) {
 				s += " ";
-			if ((i+1) % 16 == 0)
+			}
+			if ((i + 1) % 16 == 0) {
 				s += "\n";
+			}
 		}
 		s += "\n";
 		input_text->appendText(s);

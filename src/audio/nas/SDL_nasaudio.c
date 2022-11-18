@@ -369,11 +369,13 @@ NAS_OpenDevice(_THIS, const char *devname)
     }
 
     buffer_size = this->spec.freq;
-    if (buffer_size < 4096)
+    if (buffer_size < 4096) {
         buffer_size = 4096;
+    }
 
-    if (buffer_size > 32768)
-        buffer_size = 32768;    /* So that the buffer won't get unmanageably big. */
+    if (buffer_size > 32768) {
+        buffer_size = 32768;
+    }    /* So that the buffer won't get unmanageably big. */
 
     /* Calculate the final parameters for this audio specification */
     SDL_CalculateAudioSpec(&this->spec);

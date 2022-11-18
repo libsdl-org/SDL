@@ -95,8 +95,9 @@ static Uint8 validate_hex(const char *cp, size_t len, Uint32 *np)
             return 0;
         n = (n << 4) | c;
     }
-    if (np != NULL)
+    if (np != NULL) {
         *np = n;
+    }
     return 1;
 }
 
@@ -178,13 +179,15 @@ static int unifont_init(const char *fontname)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Malformed hexadecimal number in hex file on line %d.\n", lineNumber);
             return -1;
         }
-        if (codepoint > UNIFONT_MAX_CODEPOINT)
+        if (codepoint > UNIFONT_MAX_CODEPOINT) {
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Codepoint on line %d exceeded limit of 0x%x.\n", lineNumber, UNIFONT_MAX_CODEPOINT);
+        }
 
         /* If there was glyph data read in the last file read, move it to the front of the buffer. */
         bytesOverread = 8 - codepointHexSize;
-        if (codepointHexSize < 8)
+        if (codepointHexSize < 8) {
             SDL_memmove(hexBuffer, hexBuffer + codepointHexSize + 1, bytesOverread);
+        }
         bytesRead = SDL_RWread(hexFile, hexBuffer + bytesOverread, 1, 33 - bytesOverread);
         if (bytesRead < (33 - bytesOverread))
         {
@@ -361,8 +364,9 @@ static void unifont_cleanup()
         for (j = 0; j < UNIFONT_NUM_TEXTURES; j++)
         {
             SDL_Texture *tex = unifontTexture[UNIFONT_NUM_TEXTURES * i + j];
-            if (tex != NULL)
+            if (tex != NULL) {
                 SDL_DestroyTexture(tex);
+            }
         }
     }
 
@@ -553,8 +557,9 @@ void _Redraw(int rendererID)
         {
             char *p = utf8_advance(markedText, cursor);
             char c = 0;
-            if (!p)
+            if (!p) {
                 p = &markedText[SDL_strlen(markedText)];
+            }
 
             c = *p;
             *p = 0;
@@ -592,8 +597,9 @@ void _Redraw(int rendererID)
             Sint32 advance = unifont_draw_glyph(codepoint, rendererID, &dstrect) * UNIFONT_DRAW_SCALE;
             dstrect.x += advance;
             drawnTextRect.w += advance;
-            if (i < cursor)
+            if (i < cursor) {
                 cursorRect.x += advance;
+            }
             i++;
             utext += len;
         }
@@ -776,8 +782,9 @@ int main(int argc, char *argv[])
 
                     SDL_Log("Keyboard: text input \"%s\"\n", event.text.text);
 
-                    if (SDL_strlen(text) + SDL_strlen(event.text.text) < sizeof(text))
+                    if (SDL_strlen(text) + SDL_strlen(event.text.text) < sizeof(text)) {
                         SDL_strlcat(text, event.text.text, sizeof(text));
+                    }
 
                     SDL_Log("text inputed: %s\n", text);
 

@@ -86,7 +86,9 @@ static SDL_hapticlist_item *SDL_hapticlist_tail = NULL;
 static int numhaptics = 0;
 
 #define EV_TEST(ev,f) \
-   if (test_bit((ev), features)) ret |= (f);
+   if (test_bit((ev), features)) {
+    ret |= (f);
+}
 /*
  * Test whether a device has haptic properties.
  * Returns available properties or 0 if there are none.
@@ -808,17 +810,18 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
         dest->trigger.interval = CLAMP(periodic->interval);
 
         /* Periodic */
-        if (periodic->type == SDL_HAPTIC_SINE)
+        if (periodic->type == SDL_HAPTIC_SINE) {
             dest->u.periodic.waveform = FF_SINE;
         /* !!! FIXME: put this back when we have more bits in 2.1 */
         /* else if (periodic->type == SDL_HAPTIC_SQUARE)
             dest->u.periodic.waveform = FF_SQUARE; */
-        else if (periodic->type == SDL_HAPTIC_TRIANGLE)
+        } else if (periodic->type == SDL_HAPTIC_TRIANGLE) {
             dest->u.periodic.waveform = FF_TRIANGLE;
-        else if (periodic->type == SDL_HAPTIC_SAWTOOTHUP)
+        } else if (periodic->type == SDL_HAPTIC_SAWTOOTHUP) {
             dest->u.periodic.waveform = FF_SAW_UP;
-        else if (periodic->type == SDL_HAPTIC_SAWTOOTHDOWN)
+        } else if (periodic->type == SDL_HAPTIC_SAWTOOTHDOWN) {
             dest->u.periodic.waveform = FF_SAW_DOWN;
+        }
         dest->u.periodic.period = CLAMP(periodic->period);
         dest->u.periodic.magnitude = periodic->magnitude;
         dest->u.periodic.offset = periodic->offset;
@@ -842,14 +845,16 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
         condition = &src->condition;
 
         /* Header */
-        if (condition->type == SDL_HAPTIC_SPRING)
+        if (condition->type == SDL_HAPTIC_SPRING) {
             dest->type = FF_SPRING;
-        else if (condition->type == SDL_HAPTIC_DAMPER)
+        } else if (condition->type == SDL_HAPTIC_DAMPER) {
             dest->type = FF_DAMPER;
-        else if (condition->type == SDL_HAPTIC_INERTIA)
+        } else if (condition->type == SDL_HAPTIC_INERTIA) {
             dest->type = FF_INERTIA;
-        else if (condition->type == SDL_HAPTIC_FRICTION)
+        } else if (condition->type == SDL_HAPTIC_FRICTION) {
             dest->type = FF_FRICTION;
+        }
+        
         dest->direction = 0;    /* Handled by the condition-specifics. */
 
         /* Replay */

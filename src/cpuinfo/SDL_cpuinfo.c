@@ -336,8 +336,9 @@ CPU_haveAltiVec(void)
     int hasVectorUnit = 0;
     size_t length = sizeof(hasVectorUnit);
     int error = sysctl(selectors, 2, &hasVectorUnit, &length, NULL, 0);
-    if (0 == error)
+    if (0 == error) {
         altivec = (hasVectorUnit != 0);
+    }
 #elif defined(__FreeBSD__) && defined(__powerpc__)
     unsigned long cpufeatures = 0;
     elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));

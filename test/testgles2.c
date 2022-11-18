@@ -434,12 +434,24 @@ Render(unsigned int width, unsigned int height, shader_data* data)
     data->angle_y += 2;
     data->angle_z += 1;
 
-    if(data->angle_x >= 360) data->angle_x -= 360;
-    if(data->angle_x < 0) data->angle_x += 360;
-    if(data->angle_y >= 360) data->angle_y -= 360;
-    if(data->angle_y < 0) data->angle_y += 360;
-    if(data->angle_z >= 360) data->angle_z -= 360;
-    if(data->angle_z < 0) data->angle_z += 360;
+    if (data->angle_x >= 360) {
+        data->angle_x -= 360;
+    }
+    if (data->angle_x < 0) {
+        data->angle_x += 360;
+    }
+    if (data->angle_y >= 360) {
+        data->angle_y -= 360;
+    }
+    if (data->angle_y < 0) {
+        data->angle_y += 360;
+    }
+    if (data->angle_z >= 360) {
+        data->angle_z -= 360;
+    }
+    if (data->angle_z < 0) {
+        data->angle_z += 360;
+    }
 
     GL_CHECK(ctx.glViewport(0, 0, width, height));
     GL_CHECK(ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));

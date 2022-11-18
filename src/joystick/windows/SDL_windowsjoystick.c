@@ -252,11 +252,13 @@ SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
     RAWINPUT_UnregisterNotifications();
 #endif
 
-    if (data->hNotify)
+    if (data->hNotify) {
         UnregisterDeviceNotification(data->hNotify);
+    }
 
-    if (data->messageWindow)
+    if (data->messageWindow) {
         DestroyWindow(data->messageWindow);
+    }
 
     UnregisterClass(data->wincl.lpszClassName, data->wincl.hInstance);
 

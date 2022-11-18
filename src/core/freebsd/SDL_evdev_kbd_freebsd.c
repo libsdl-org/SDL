@@ -96,7 +96,9 @@ static void kbd_cleanup(void)
     SDL_zero(mData);
     mData.operation = MOUSE_SHOW;
     ioctl(kbd->keyboard_fd, KDSKBMODE, kbd->old_kbd_mode);
-    if (kbd->keyboard_fd != kbd->console_fd) close(kbd->keyboard_fd);
+    if (kbd->keyboard_fd != kbd->console_fd) {
+        close(kbd->keyboard_fd);
+    }
     ioctl(kbd->console_fd, CONS_SETKBD, (unsigned long)(kbd->kbInfo->kb_index));
     ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
 }
@@ -419,8 +421,9 @@ static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned int value, char up_fl
     if (up_flag)
         return;        /* no action, if this is a key release */
 
-    if (kbd->diacr)
+    if (kbd->diacr) {
         value = handle_diacr(kbd, value);
+    }
 
     if (kbd->dead_key_next) {
         kbd->dead_key_next = SDL_FALSE;
@@ -450,8 +453,9 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
          * handle the case that two shift or control
          * keys are depressed simultaneously
          */
-        if (kbd->shift_down[value])
+        if (kbd->shift_down[value]) {
             kbd->shift_down[value]--;
+        }
     } else
         kbd->shift_down[value]++;
 
@@ -488,8 +492,9 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
             /* These constitute unprintable language-related keys, so ignore them. */
             return;
         }
-        if (keycode > 95)
+        if (keycode > 95) {
             keycode -= 7;
+        }
         if (vc_kbd_led(kbd, ALKED) || (kbd->shift_state & 0x8))
         {
             keycode += ALTGR_OFFSET;
@@ -500,18 +505,21 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
     }
 
     final_key_state = kbd->shift_state & 0x7;
-    if ((keysym.flgs & FLAG_LOCK_C) && vc_kbd_led(kbd, LED_CAP))
+    if ((keysym.flgs & FLAG_LOCK_C) && vc_kbd_led(kbd, LED_CAP)) {
         final_key_state ^= 0x1;
-    if ((keysym.flgs & FLAG_LOCK_N) && vc_kbd_led(kbd, LED_NUM))
+    }
+    if ((keysym.flgs & FLAG_LOCK_N) && vc_kbd_led(kbd, LED_NUM)) {
         final_key_state ^= 0x1;
+    }
 
     map_from_key_sym = keysym.map[final_key_state];
     if ((keysym.spcl & (0x80 >> final_key_state)) || (map_from_key_sym & SPCLKEY)) {
         /* Special function.*/
         if (map_from_key_sym == 0)
             return; /* Nothing to do. */
-        if (map_from_key_sym & SPCLKEY)
+        if (map_from_key_sym & SPCLKEY) {
             map_from_key_sym &= ~SPCLKEY;
+        }
         if (map_from_key_sym >= F_ACC && map_from_key_sym <= L_ACC) {
             /* Accent function.*/
             unsigned int accent_index = map_from_key_sym - F_ACC;
@@ -525,36 +533,50 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
                 break;
             case LSHA: /* left shift + alt lock */
             case RSHA: /* right shift + alt lock */
-                if (down == 0) chg_vc_kbd_led(kbd, ALKED);
+                if (down == 0) {
+                    chg_vc_kbd_led(kbd, ALKED);
+                }
             case LSH: /* left shift */
             case RSH: /* right shift */
                 k_shift(kbd, 0, down == 0);
                 break;
             case LCTRA: /* left ctrl + alt lock */
             case RCTRA: /* right ctrl + alt lock */
-                if (down == 0) chg_vc_kbd_led(kbd, ALKED);
+                if (down == 0) {
+                    chg_vc_kbd_led(kbd, ALKED);
+                }
             case LCTR: /* left ctrl */
             case RCTR: /* right ctrl */
                 k_shift(kbd, 1, down == 0);
                 break;
             case LALTA: /* left alt + alt lock */
             case RALTA: /* right alt + alt lock */
-                if (down == 0) chg_vc_kbd_led(kbd, ALKED);
+                if (down == 0) {
+                    chg_vc_kbd_led(kbd, ALKED);
+                }
             case LALT: /* left alt */
             case RALT: /* right alt */
                 k_shift(kbd, 2, down == 0);
                 break;
             case ALK: /* alt lock */
-                if (down == 1) chg_vc_kbd_led(kbd, ALKED);
+                if (down == 1) {
+                    chg_vc_kbd_led(kbd, ALKED);
+                }
                 break;
             case CLK: /* caps lock*/
-                if (down == 1) chg_vc_kbd_led(kbd, CLKED);
+                if (down == 1) {
+                    chg_vc_kbd_led(kbd, CLKED);
+                }
                 break;
             case NLK: /* num lock */
-                if (down == 1) chg_vc_kbd_led(kbd, NLKED);
+                if (down == 1) {
+                    chg_vc_kbd_led(kbd, NLKED);
+                }
                 break;
             case SLK: /* scroll lock */
-                if (down == 1) chg_vc_kbd_led(kbd, SLKED);
+                if (down == 1) {
+                    chg_vc_kbd_led(kbd, SLKED);
+                }
                 break;
             default:
                 return;

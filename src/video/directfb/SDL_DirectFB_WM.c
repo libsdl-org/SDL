@@ -326,8 +326,9 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                 SDL_FALLTHROUGH;
             default:
                 windata->wm_grab = pos;
-                if (grabbed_window != NULL)
+                if (grabbed_window != NULL) {
                     DirectFB_SetWindowMouseGrab(_this, grabbed_window, SDL_FALSE);
+                }
                 DirectFB_SetWindowMouseGrab(_this, window, SDL_TRUE);
                 windata->wm_lastx = evt->cx;
                 windata->wm_lasty = evt->cy;
@@ -344,10 +345,12 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
 
                 if (!(wopts & DWOP_KEEP_SIZE)) {
                     int cw, ch;
-                    if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_BOTTOM)
+                    if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_BOTTOM) {
                         dx = 0;
-                    else if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_RIGHT)
-                        dy = 0;
+                    } else if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_RIGHT) {
+                       dy = 0;
+                    }
+                    
                     SDL_DFB_CHECK(dfbwin->GetSize(dfbwin, &cw, &ch));
 
                     /* necessary to trigger an event - ugly */
@@ -359,8 +362,9 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                 }
             }
             DirectFB_SetWindowMouseGrab(_this, window, SDL_FALSE);
-            if (grabbed_window != NULL)
+            if (grabbed_window != NULL) {
                 DirectFB_SetWindowMouseGrab(_this, grabbed_window, SDL_TRUE);
+            }
             windata->wm_grab = WM_POS_NONE;
             return 1;
         }
@@ -373,8 +377,9 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
             int dy = evt->cy - windata->wm_lasty;
 
             if (windata->wm_grab & WM_POS_CAPTION) {
-                if (!(wopts & DWOP_KEEP_POSITION))
+                if (!(wopts & DWOP_KEEP_POSITION)) {
                     SDL_DFB_CHECK(dfbwin->Move(dfbwin, dx, dy));
+                }
             }
             if (windata->wm_grab & (WM_POS_RIGHT | WM_POS_BOTTOM)) {
                 if (!(wopts & DWOP_KEEP_SIZE)) {
@@ -383,10 +388,11 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                     /* Make sure all events are disabled for this operation ! */
                     SDL_DFB_CHECK(dfbwin->DisableEvents(dfbwin, DWET_ALL));
 
-                    if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_BOTTOM)
-                        dx = 0;
-                    else if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_RIGHT)
-                        dy = 0;
+                    if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_BOTTOM) {
+                       dx = 0;
+                    } else if ((windata->wm_grab & (WM_POS_BOTTOM | WM_POS_RIGHT)) == WM_POS_RIGHT) {
+                       dy = 0;
+                    }
 
                     SDL_DFB_CHECK(dfbwin->GetSize(dfbwin, &cw, &ch));
                     SDL_DFB_CHECK(dfbwin->Resize(dfbwin, cw + dx, ch + dy));

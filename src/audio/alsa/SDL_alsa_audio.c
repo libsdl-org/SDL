@@ -792,8 +792,9 @@ add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSee
      * enumeration time
      */
     SDL_AddAudioDevice(iscapture, desc, NULL, handle);
-    if (hint)
+    if (hint) {
         free(desc);
+    }
     dev->name = handle;
     dev->iscapture = iscapture;
     dev->next = *pSeen;
@@ -896,8 +897,12 @@ ALSA_HotplugIteration(void)
                         }
                         dev->next = seen;
                         seen = dev;
-                        if (isinput) have_input = SDL_TRUE;
-                        if (isoutput) have_output = SDL_TRUE;
+                        if (isinput) {
+                            have_input = SDL_TRUE;
+                        }
+                        if (isoutput) {
+                            have_output = SDL_TRUE;
+                        }
                     } else {
                         prev = dev;
                     }

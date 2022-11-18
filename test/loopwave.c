@@ -107,8 +107,9 @@ static int done = 0;
 void
 loop()
 {
-    if(done || (SDL_GetAudioDeviceStatus(device) != SDL_AUDIO_PLAYING))
+    if (done || (SDL_GetAudioDeviceStatus(device) != SDL_AUDIO_PLAYING)) {
         emscripten_cancel_main_loop();
+    }
 }
 #endif
 

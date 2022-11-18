@@ -56,8 +56,9 @@ void SDL_OS2TLSFree(void)
 {
     ULONG ulRC;
 
-    if (cTLSAlloc != 0)
+    if (cTLSAlloc != 0) {
         cTLSAlloc--;
+    }
 
     if (cTLSAlloc == 0 && ppSDLTLSData != NULL) {
         /* Last call - free the thread local memory */

@@ -463,7 +463,9 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     }
     if ((biCompression == BI_RLE4) || (biCompression == BI_RLE8)) {
         was_error = readRlePixels(surface, src, biCompression == BI_RLE8);
-        if (was_error) SDL_Error(SDL_EFREAD);
+        if (was_error) {
+            SDL_Error(SDL_EFREAD);
+        }
         goto done;
     }
     top = (Uint8 *)surface->pixels;

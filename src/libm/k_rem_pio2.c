@@ -166,7 +166,9 @@ int32_t attribute_hidden __kernel_rem_pio2(const double *x, double *y, int e0, i
 
     /* determine jx,jv,q0, note that 3>q0 */
 	jx =  nx-1;
-	jv = (e0-3)/24; if(jv<0) jv=0;
+	jv = (e0-3)/24; if (jv < 0) {
+		jv = 0;
+	}
 	q0 =  e0-24*(jv+1);
 
     /* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
@@ -206,7 +208,9 @@ recompute:
 	    ih = iq[jz-1]>>(23-q0);
 	}
 	else if(q0==0) ih = iq[jz-1]>>23;
-	else if(z>=0.5) ih=2;
+	else if (z >= 0.5) {
+		ih = 2;
+   }
 
 	if(ih>0) {	/* q > 0.5 */
 	    n += 1; carry = 0;
@@ -228,7 +232,9 @@ recompute:
 	    }
 	    if(ih==2) {
 		z = one - z;
-		if(carry!=0) z -= scalbn(one,q0);
+		if (carry != 0) {
+	    	   z -= scalbn(one, q0);
+		}
 	    }
 	}
 

@@ -148,9 +148,13 @@ double attribute_hidden __ieee754_sqrt(double x)
 	    t  = s0;
 	    if((t<ix0)||((t==ix0)&&(t1<=ix1))) {
 		s1  = t1+r;
-		if(((t1&sign)==sign)&&(s1&sign)==0) s0 += 1;
+		if (((t1 & sign) == sign) && (s1 & sign) == 0) {
+		    s0 += 1;
+		}
 		ix0 -= t;
-		if (ix1 < t1) ix0 -= 1;
+		if (ix1 < t1) {
+		    ix0 -= 1;
+		}
 		ix1 -= t1;
 		q1  += r;
 	    }
@@ -166,7 +170,9 @@ double attribute_hidden __ieee754_sqrt(double x)
 	        z = one+tiny;
 	        if (q1==(u_int32_t)0xffffffff) { q1=0; q += 1;}
 		else if (z>one) {
-		    if (q1==(u_int32_t)0xfffffffe) q+=1;
+		    if (q1 == (u_int32_t)0xfffffffe) {
+		        q += 1;
+		    }
 		    q1+=2;
 		} else
 	            q1 += (q1&1);
@@ -174,7 +180,9 @@ double attribute_hidden __ieee754_sqrt(double x)
 	}
 	ix0 = (q>>1)+0x3fe00000;
 	ix1 =  q1>>1;
-	if ((q&1)==1) ix1 |= sign;
+	if ((q & 1) == 1) {
+	    ix1 |= sign;
+	}
 	ix0 += (m <<20);
 	INSERT_WORDS(z,ix0,ix1);
 	return z;

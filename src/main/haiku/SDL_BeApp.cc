@@ -65,8 +65,9 @@ StartBeApp(void *unused)
             BAppFileInfo app_info(&f);
             if (app_info.InitCheck() == B_OK) {
                 char sig[B_MIME_TYPE_LENGTH];
-                if (app_info.GetSignature(sig) == B_OK)
+                if (app_info.GetSignature(sig) == B_OK) {
                     signature = strndup(sig, B_MIME_TYPE_LENGTH);
+                }
             }
         }
     }

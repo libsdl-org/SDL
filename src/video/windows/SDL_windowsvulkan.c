@@ -47,10 +47,12 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("Vulkan already loaded");
 
     /* Load the Vulkan loader library */
-    if(!path)
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
-    if(!path)
+    }
+    if (!path) {
         path = "vulkan-1.dll";
+    }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
     if(!_this->vulkan_config.loader_handle)
         return -1;
@@ -74,10 +76,11 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
         goto fail;
     for(i = 0; i < extensionCount; i++)
     {
-        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        } else if (SDL_strcmp(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasWin32SurfaceExtension = SDL_TRUE;
+        }
     }
     SDL_free(extensions);
     if(!hasSurfaceExtension)
