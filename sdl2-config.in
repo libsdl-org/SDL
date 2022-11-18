@@ -19,11 +19,6 @@ if test $# -eq 0; then
       exit 1
 fi
 
-echo "sdl2-config: This script is deprecated" >&2
-echo "sdl2-config: In Autotools builds, use PKG_CHECK_MODULES([SDL], [sdl2 >= 2.x.y])" >&2
-echo "sdl2-config: In CMake builds, use find_package(SDL2 CONFIG)" >&2
-echo "sdl2-config: In other build systems, look for 'sdl2' with pkg-config(1) or pkgconf(1)" >&2
-
 while test $# -gt 0; do
   case "$1" in
   -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
