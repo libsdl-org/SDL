@@ -61,6 +61,10 @@ Wayland_StartTextInput(_THIS)
         if (input != NULL && input->text_input) {
             const SDL_Rect *rect = &input->text_input->cursor_rect;
 
+            /* Don't re-enable if we're already enabled. */
+            if (input->text_input->is_enabled)
+                return;
+
             /* For some reason this has to be done twice, it appears to be a
              * bug in mutter? Maybe?
              * -flibit
@@ -83,6 +87,7 @@ Wayland_StartTextInput(_THIS)
                                                        rect->h);
             }
             zwp_text_input_v3_commit(input->text_input->text_input);
+            input->text_input->is_enabled = SDL_TRUE;
         }
     }
 }
@@ -97,6 +102,7 @@ Wayland_StopTextInput(_THIS)
         if (input != NULL && input->text_input) {
             zwp_text_input_v3_disable(input->text_input->text_input);
             zwp_text_input_v3_commit(input->text_input->text_input);
+            input->text_input->is_enabled = SDL_FALSE;
         }
     }
 
@@ -120,13 +126,16 @@ Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
     if (driverdata->text_input_manager) {
         struct SDL_WaylandInput *input = driverdata->input;
         if (input != NULL && input->text_input) {
-            SDL_copyp(&input->text_input->cursor_rect, rect);
-            zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,
-                                                   rect->x,
-                                                   rect->y,
-                                                   rect->w,
-                                                   rect->h);
-            zwp_text_input_v3_commit(input->text_input->text_input);
+            if (!SDL_RectEquals(rect, &input->text_input->cursor_rect))
+            {
+                SDL_copyp(&input->text_input->cursor_rect, rect);
+                zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,
+                                                       rect->x,
+                                                       rect->y,
+                                                       rect->w,
+                                                       rect->h);
+                zwp_text_input_v3_commit(input->text_input->text_input);
+            }
         }
     }
 
