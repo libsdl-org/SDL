@@ -58,7 +58,7 @@ int
 SDL_CondSignal(SDL_cond *cond)
 {
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     CondVar_Signal(&cond->cond_variable);
@@ -70,7 +70,7 @@ int
 SDL_CondBroadcast(SDL_cond *cond)
 {
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
 
     CondVar_Broadcast(&cond->cond_variable);
@@ -104,10 +104,10 @@ SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
     Result res;
 
     if (!cond) {
-        return SDL_SetError("Passed a NULL condition variable");
+        return SDL_InvalidParamError("cond");
     }
     if (!mutex) {
-        return SDL_SetError("Passed a NULL mutex");
+        return SDL_InvalidParamError("mutex");
     }
 
     res = 0;

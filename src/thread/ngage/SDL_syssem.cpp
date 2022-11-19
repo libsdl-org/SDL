@@ -119,7 +119,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
     if (! sem)
     {
-        return SDL_SetError("Passed a NULL sem");
+        return SDL_InvalidParamError("sem");
     }
 
     if (timeout == SDL_MUTEX_MAXWAIT)
@@ -152,6 +152,11 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 int
 SDL_SemTryWait(SDL_sem *sem)
 {
+    if (! sem)
+    {
+        return SDL_InvalidParamError("sem");
+    }
+
     if(sem->count > 0)
     {
         sem->count--;
@@ -170,7 +175,7 @@ SDL_SemValue(SDL_sem * sem)
 {
     if (! sem)
     {
-        SDL_SetError("Passed a NULL sem.");
+        SDL_InvalidParamError("sem");
         return 0;
     }
     return sem->count;
@@ -181,7 +186,7 @@ SDL_SemPost(SDL_sem * sem)
 {
     if (! sem)
     {
-        return SDL_SetError("Passed a NULL sem.");
+        return SDL_InvalidParamError("sem");
     }
     sem->count++;
     RSemaphore sema;
