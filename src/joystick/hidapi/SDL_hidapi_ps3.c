@@ -596,9 +596,13 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 =
 static SDL_bool
 HIDAPI_DriverPS3ThirdParty_IsEnabled(void)
 {
+#if 1 /* Not enabled by default, we don't know what the L3/R3 buttons are */
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
+#else
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
                SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
                    SDL_HIDAPI_DEFAULT));
+#endif
 }
 
 static SDL_bool
