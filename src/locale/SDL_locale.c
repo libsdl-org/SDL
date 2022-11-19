@@ -58,8 +58,9 @@ build_locales_from_csv_string(char *csv)
 
     while (SDL_TRUE) {  /* parse out the string */
         while (*ptr == ' ') {
-            ptr++;
-        }  /* skip whitespace. */
+            ptr++; /* skip whitespace. */
+        }
+
         if (*ptr == '\0') {
             break;
         }

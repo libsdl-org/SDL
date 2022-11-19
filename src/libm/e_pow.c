@@ -159,8 +159,9 @@ double attribute_hidden __ieee754_pow(double x, double y)
 		    return one;
 	        }	        /* +-1**+-inf is 1 (yes, weird rule) */
 	        if (ix >= 0x3ff00000) {
-		    return (hy >= 0) ? y : zero;
-		}   /* (|x|>1)**+-inf = inf,0 */
+		    return (hy >= 0) ? y : zero; /* (|x|>1)**+-inf = inf,0 */
+		}
+
 	        /* (|x|<1)**-,+inf = inf,0 */
 		return (hy<0) ? -y : zero;
 	    }
@@ -168,8 +169,9 @@ double attribute_hidden __ieee754_pow(double x, double y)
 		if(hy<0) return one/x; else return x;
 	    }
 	    if (hy == 0x40000000) {
-		return x * x;
-	    } /* y is  2 */
+		return x * x; /* y is  2 */
+	    }
+
 	    if(hy==0x3fe00000) {	/* y is  0.5 */
 		if (hx >= 0) {
 		    return __ieee754_sqrt(x);
@@ -279,8 +281,9 @@ double attribute_hidden __ieee754_pow(double x, double y)
 
 	s = one; /* s (sign of result -ve**odd) = -1 else = 1 */
 	if (((((u_int32_t)hx >> 31) - 1) | (yisint - 1)) == 0) {
-	    s = -one;
-	}/* (-ve)**(odd int) */
+	    s = -one; /* (-ve)**(odd int) */
+	}
+
 
     /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
 	y1  = y;
@@ -352,30 +355,35 @@ double pow(double x, double y)
 	}
 	if (isnan(x)) {
 		if (y == 0.0) {
-			return __kernel_standard(x, y, 42);
-		} /* pow(NaN,0.0) */
+			return __kernel_standard(x, y, 42); /* pow(NaN,0.0) */
+		}
+
 		return z;
 	}
 	if (x == 0.0) {
 		if (y == 0.0) {
-	    		return __kernel_standard(x, y, 20);
-		} /* pow(0.0,0.0) */
+	    		return __kernel_standard(x, y, 20); /* pow(0.0,0.0) */
+		}
+
 		if (isfinite(y) && y < 0.0) {
-			return __kernel_standard(x, y, 23);
-		} /* pow(0.0,negative) */
+			return __kernel_standard(x, y, 23); /* pow(0.0,negative) */
+		}
+
 		return z;
 	}
 	if (!isfinite(z)) {
 		if (isfinite(x) && isfinite(y)) {
 			if (isnan(z)) {
-				return __kernel_standard(x, y, 24);
-			} /* pow neg**non-int */
+				return __kernel_standard(x, y, 24); /* pow neg**non-int */
+			}
+
 			return __kernel_standard(x, y, 21); /* pow overflow */
 		}
 	}
 	if (z == 0.0 && isfinite(x) && isfinite(y)) {
-		return __kernel_standard(x, y, 22);
-	} /* pow underflow */
+		return __kernel_standard(x, y, 22); /* pow underflow */
+	}
+
 	return z;
 }
 #else

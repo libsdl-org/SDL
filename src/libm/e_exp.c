@@ -123,15 +123,17 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	    }
 		#if 1
 		if (x > o_threshold) {
-		return huge * huge;
-		} /* overflow */
+		return huge * huge; /* overflow */
+		} 
+
 		#else  /* !!! FIXME: check this: "huge * huge" is a compiler warning, maybe they wanted +Inf? */
 		if(x > o_threshold) return INFINITY; /* overflow */
 		#endif
 
 	    if (x < u_threshold) {
-		return twom1000 * twom1000;
-	    } /* underflow */
+		return twom1000 * twom1000; /* underflow */
+	    }
+
 	}
 
     /* argument reduction */
@@ -148,8 +150,9 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	}
 	else if(hx < 0x3e300000)  {	/* when |x|<2**-28 */
 	    if (huge + x > one) {
-		return one + x;
-	    }/* trigger inexact */
+		return one + x; /* trigger inexact */
+	    }
+
 	}
 	else k = 0;
 
@@ -186,11 +189,13 @@ double exp(double x)
 	}
 	if (isfinite(x)) {
 		if (x > o_threshold) {
-			return __kernel_standard(x, x, 6);
-		} /* exp overflow */
+			return __kernel_standard(x, x, 6); /* exp overflow */
+		}
+
 		if (x < u_threshold) {
-			return __kernel_standard(x, x, 7);
-		} /* exp underflow */
+			return __kernel_standard(x, x, 7); /* exp underflow */
+		}
+
 	}
 	return z;
 }

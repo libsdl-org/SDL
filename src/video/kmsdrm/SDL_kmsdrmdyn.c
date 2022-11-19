@@ -71,8 +71,8 @@ KMSDRM_GetSym(const char *fnname, int *pHasModule)
 #endif
 
     if (fn == NULL) {
-        *pHasModule = 0;
-    }  /* kill this module. */
+        *pHasModule = 0; /* kill this module. */
+    } 
 
     return fn;
 }

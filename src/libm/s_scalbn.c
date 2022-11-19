@@ -38,30 +38,35 @@ double scalbln(double x, long n)
 	k = (hx & 0x7ff00000) >> 20; /* extract exponent */
 	if (k == 0) { /* 0 or subnormal x */
 		if ((lx | (hx & 0x7fffffff)) == 0) {
-			return x;
-		} /* +-0 */
+			return x; /* +-0 */
+		} 
+
 		x *= two54;
 		GET_HIGH_WORD(hx, x);
 		k = ((hx & 0x7ff00000) >> 20) - 54;
 	}
 	if (k == 0x7ff) {
-		return x + x;
-	} /* NaN or Inf */
+		return x + x; /* NaN or Inf */
+	}
+
 	k = (int32_t)(k + n);
 	if (k > 0x7fe) {
-		return huge * copysign(huge, x);
-	} /* overflow */
+		return huge * copysign(huge, x); /* overflow */
+	}
+
 	if (n < -50000) {
-		return tiny * copysign(tiny, x);
-	} /* underflow */
+		return tiny * copysign(tiny, x); /* underflow */
+	}
+
 	if (k > 0) { /* normal result */
 		SET_HIGH_WORD(x, (hx & 0x800fffff) | (k << 20));
 		return x;
 	}
 	if (k <= -54) {
 		if (n > 50000) {
-			return huge * copysign(huge, x);
-		} /* in case integer overflow in n+k */
+			return huge * copysign(huge, x); /* in case integer overflow in n+k */
+		}
+
 		 /* overflow */
 		return tiny * copysign(tiny, x); /* underflow */
 	}

@@ -149,8 +149,9 @@ double log(double x)
 		return z;
 	}
 	if (x == 0.0) {
-		return __kernel_standard(x, x, 16);
-	} /* log(0) */
+		return __kernel_standard(x, x, 16); /* log(0) */
+	}
+
 	return __kernel_standard(x, x, 17); /* log(x<0) */
 }
 #else

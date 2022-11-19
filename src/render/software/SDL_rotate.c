@@ -155,8 +155,9 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FP
         if(angle90 == angle/90) { /* if the angle is a multiple of 90 degrees */
             angle90 %= 4;
             if (angle90 < 0) {
-                angle90 += 4;
-            } /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
+                angle90 += 4; /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
+            }
+
             if(angle90 & 1) {
                 rect_dest->w  = height;
                 rect_dest->h = width;
@@ -560,8 +561,9 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
     if (angle90 == angle/90) {
         angle90 %= 4;
         if (angle90 < 0) {
-            angle90 += 4;
-        } /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
+            angle90 += 4; /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
+        }
+
     } else {
         angle90 = -1;
     }

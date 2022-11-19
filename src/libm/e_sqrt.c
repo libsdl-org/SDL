@@ -203,8 +203,9 @@ double sqrt(double x)
 		return z;
 	}
 	if (x < 0.0) {
-		return __kernel_standard(x, x, 26);
-	} /* sqrt(negative) */
+		return __kernel_standard(x, x, 26); /* sqrt(negative) */
+	}
+
 	return z;
 }
 #else

@@ -3335,8 +3335,9 @@ mmap_resize(mstate m, mchunkptr oldp, size_t nb)
 {
     size_t oldsize = chunksize(oldp);
     if (is_small(nb)) {
-        return 0;
-    }           /* Can't shrink mmap regions below small size */
+        return 0; /* Can't shrink mmap regions below small size */
+    } 
+
     /* Keep old chunk if big enough but not too big */
     if (oldsize >= nb + SIZE_T_SIZE &&
         (oldsize - nb) <= (mparams.granularity << 1))
@@ -4027,8 +4028,9 @@ static void *
 internal_memalign(mstate m, size_t alignment, size_t bytes)
 {
     if (alignment <= MALLOC_ALIGNMENT) {
-        return internal_malloc(m, bytes);
-    }  /* Can just use malloc */
+        return internal_malloc(m, bytes); /* Can just use malloc */
+    }
+
     if (alignment < MIN_CHUNK_SIZE)     /* must be at least a minimum chunk size */
         alignment = MIN_CHUNK_SIZE;
     if ((alignment & (alignment - SIZE_T_ONE)) != 0) {  /* Ensure a power of 2 */
@@ -4143,8 +4145,9 @@ ialloc(mstate m, size_t n_elements, size_t * sizes, int opts, void *chunks[])
     /* compute array length, if needed */
     if (chunks != 0) {
         if (n_elements == 0) {
-            return chunks;
-        }      /* nothing to do */
+            return chunks; /* nothing to do */
+        }
+
         marray = chunks;
         array_size = 0;
     } else {

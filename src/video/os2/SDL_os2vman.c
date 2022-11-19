@@ -95,8 +95,8 @@ static BOOL _vmanInit(void)
     INITPROCOUT stInitProcOut;
 
     if (hmodVMan != NULLHANDLE) {
-        return TRUE;
-    } /* already initialized */
+        return TRUE; /* already initialized */
+    }
 
     /* Load vman.dll */
     ulRC = DosLoadModule(acBuf, sizeof(acBuf), "VMAN", &hmodVMan);

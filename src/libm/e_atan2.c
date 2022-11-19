@@ -61,8 +61,9 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	   return x + y;
 	}	/* x or y is NaN */
 	if (((hx - 0x3ff00000) | lx) == 0) {
-	   return atan(y);
-	}   /* x=1.0 */
+	   return atan(y); /* x=1.0 */
+	}
+
 	m = ((hy>>31)&1)|((hx>>30)&2);	/* 2*sign(x)+sign(y) */
 
     /* when y = 0 */
@@ -132,8 +133,9 @@ double atan2(double y, double x)
 		return z;
 	}
 	if (x == 0.0 && y == 0.0) {
-		return __kernel_standard(y, x, 3);
-	} /* atan2(+-0,+-0) */
+		return __kernel_standard(y, x, 3); /* atan2(+-0,+-0) */
+	}
+
 	return z;
 }
 #else

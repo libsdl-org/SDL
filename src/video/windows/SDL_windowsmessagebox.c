@@ -567,8 +567,9 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
             HDC ScreenDC = GetDC(NULL);
             int LogicalPixelsY = GetDeviceCaps(ScreenDC, LOGPIXELSY);
             if (!LogicalPixelsY) {
-                LogicalPixelsY = 72;
-            } /* This can happen if the application runs out of GDI handles */
+                LogicalPixelsY = 72; /* This can happen if the application runs out of GDI handles */
+            }
+
             WordToPass = (WORD)(-72 * NCM.lfMessageFont.lfHeight / LogicalPixelsY);
             ReleaseDC(NULL, ScreenDC);
         }

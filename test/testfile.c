@@ -156,8 +156,9 @@ main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->read(rwops, test_buf, 1, 1)) {
-        RWOP_ERR_QUIT(rwops);
-    }   /* we are in write only mode */
+        RWOP_ERR_QUIT(rwops); /* we are in write only mode */
+    } 
+
     rwops->close(rwops);
 
     rwops = SDL_RWFromFile(FBASENAME1, "rb");   /* read mode, file must exists */
@@ -192,8 +193,9 @@ main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->write(rwops, test_buf, 1, 1)) {
-        RWOP_ERR_QUIT(rwops);
-    }   /* readonly mode */
+        RWOP_ERR_QUIT(rwops); /* readonly mode */
+    }
+
     rwops->close(rwops);
 
 /* test 3: same with w+ mode */
@@ -214,8 +216,9 @@ main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
     if (1 != rwops->read(rwops, test_buf, 1, 1)) {
-        RWOP_ERR_QUIT(rwops);
-    }   /* we are in read/write mode */
+        RWOP_ERR_QUIT(rwops); /* we are in read/write mode */
+    }
+
     if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }
@@ -264,8 +267,9 @@ main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
     if (1 != rwops->read(rwops, test_buf, 1, 1)) {
-        RWOP_ERR_QUIT(rwops);
-    }   /* we are in read/write mode */
+        RWOP_ERR_QUIT(rwops); /* we are in read/write mode */
+    }
+
     if (0 != rwops->seek(rwops, 0L, RW_SEEK_SET)) {
         RWOP_ERR_QUIT(rwops);
     }

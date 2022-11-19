@@ -979,8 +979,8 @@ TranslatePOV(DWORD value)
     value /= 4500;
 
     if (value >= 8) {
-        return SDL_HAT_CENTERED;
-    }        /* shouldn't happen */
+        return SDL_HAT_CENTERED; /* shouldn't happen */
+    }
 
     return HAT_VALS[value];
 }

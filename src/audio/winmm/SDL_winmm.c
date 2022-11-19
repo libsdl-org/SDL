@@ -313,8 +313,8 @@ WINMM_OpenDevice(_THIS, const char *devname)
     }
 
     if (this->spec.channels > 2) {
-        this->spec.channels = 2;
-    }        /* !!! FIXME: is this right? */
+        this->spec.channels = 2; /* !!! FIXME: is this right? */
+    }
 
     for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
         switch (test_format) {

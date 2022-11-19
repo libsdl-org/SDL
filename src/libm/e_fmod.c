@@ -154,8 +154,9 @@ double fmod(double x, double y)
 		return z;
 	}
 	if (y == 0.0) {
-		return __kernel_standard(x, y, 27);
-	} /* fmod(x,0) */
+		return __kernel_standard(x, y, 27); /* fmod(x,0) */
+	}
+
 	return z;
 }
 #else

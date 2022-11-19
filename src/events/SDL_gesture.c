@@ -690,7 +690,12 @@ void SDL_GestureProcessEvent(SDL_Event* event)
                 dtheta = (float)SDL_atan2(lv.x*v.y - lv.y*v.x,lv.x*v.x + lv.y*v.y);
 
                 dDist = (Dist - lDist);
-                if (lDist == 0) {dDist = 0;dtheta = 0;} /* To avoid impossible values */
+                if (lDist == 0) {
+                    /* To avoid impossible values */
+                    dDist = 0;
+                    dtheta = 0;
+                }
+
 
                 /* inTouch->gestureLast[j].dDist = dDist;
                 inTouch->gestureLast[j].dtheta = dtheta;

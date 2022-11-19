@@ -374,8 +374,8 @@ NAS_OpenDevice(_THIS, const char *devname)
     }
 
     if (buffer_size > 32768) {
-        buffer_size = 32768;
-    }    /* So that the buffer won't get unmanageably big. */
+        buffer_size = 32768; /* So that the buffer won't get unmanageably big. */
+    }
 
     /* Calculate the final parameters for this audio specification */
     SDL_CalculateAudioSpec(&this->spec);

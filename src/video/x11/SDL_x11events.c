@@ -280,8 +280,8 @@ static char* X11_URIToLocal(char* uri) {
     if (SDL_memcmp(uri,"file:/",6) == 0) {
         uri += 6;      /* local file? */
     } else if (SDL_strstr(uri, ":/") != NULL) {
-        return file;
-    } /* wrong scheme */
+        return file; /* wrong scheme */
+    }
 
     local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');
 
