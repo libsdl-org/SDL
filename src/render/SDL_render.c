@@ -4306,7 +4306,8 @@ SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 static void
 SDL_RenderSimulateVSync(SDL_Renderer * renderer)
 {
-    Uint32 now, elapsed;
+    Uint32 now;
+    Sint32 duration;
     const Uint32 interval = renderer->simulate_vsync_interval;
 
     if (!interval) {
@@ -4315,19 +4316,14 @@ SDL_RenderSimulateVSync(SDL_Renderer * renderer)
     }
 
     now = SDL_GetTicks();
-    elapsed = (now - renderer->last_present);
-    if (elapsed < interval) {
-        Uint32 duration = (interval - elapsed);
+    duration = (renderer->next_present - now);
+    if (duration > 0 && (Uint32)duration <= interval) {
+        // We have time and there was no overflow
         SDL_Delay(duration);
-        now = SDL_GetTicks();
-    }
 
-    elapsed = (now - renderer->last_present);
-    if (!renderer->last_present || elapsed > 1000) {
-        /* It's been too long, reset the presentation timeline */
-        renderer->last_present = now;
+        renderer->next_present += interval;
     } else {
-        renderer->last_present += (elapsed / interval) * interval;
+        renderer->next_present = now + interval;
     }
 }
 

@@ -212,7 +212,7 @@ struct SDL_Renderer
     SDL_bool wanted_vsync;
     SDL_bool simulate_vsync;
     Uint32 simulate_vsync_interval;
-    Uint32 last_present;
+    Uint32 next_present;
 
     /* The logical resolution for rendering */
     int logical_w;
