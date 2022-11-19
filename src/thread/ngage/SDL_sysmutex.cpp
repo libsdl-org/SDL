@@ -77,8 +77,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 {
     if (mutex == NULL)
     {
-        SDL_SetError("Passed a NULL mutex.");
-        return -1;
+        return SDL_InvalidParamError("mutex");
     }
 
     // Not yet implemented.
@@ -92,7 +91,7 @@ SDL_LockMutex(SDL_mutex * mutex)
 {
     if (mutex == NULL)
     {
-        return SDL_SetError("Passed a NULL mutex.");
+        return SDL_InvalidParamError("mutex");
     }
 
     RMutex rmutex;
@@ -108,7 +107,7 @@ SDL_UnlockMutex(SDL_mutex * mutex)
 {
     if ( mutex == NULL )
     {
-        return SDL_SetError("Passed a NULL mutex.");
+        return SDL_InvalidParamError("mutex");
     }
 
     RMutex rmutex;
