@@ -102,6 +102,7 @@ typedef struct {
     int window_width, window_height;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
+    SDL_bool was_floating;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
     Uint32 fullscreen_flags;
