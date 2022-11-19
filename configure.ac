@@ -2690,6 +2690,8 @@ dnl     Work around that we don't have Objective-C support in autoconf
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[
           #include <AvailabilityMacros.h>
           #include <TargetConditionals.h>
+          #import <Foundation/Foundation.h>
+          #import <CoreHaptics/CoreHaptics.h>
           #import <GameController/GameController.h>
         ]], [[
           #if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
@@ -4001,6 +4003,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AudioToolbox"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreGraphics"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreHaptics"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreMotion"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Foundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,GameController"
