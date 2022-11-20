@@ -88,6 +88,7 @@
 #define HAVE_STRNCMP    1
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
+#define HAVE_STRCASESTR 1
 #define HAVE_VSSCANF 1
 #define HAVE_VSNPRINTF  1
 #define HAVE_M_PI   1
