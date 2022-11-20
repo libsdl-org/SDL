@@ -19536,6 +19536,12 @@ then :
   printf "%s\n" "#define HAVE_STRNCASECMP 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "strcasestr" "ac_cv_func_strcasestr"
+if test "x$ac_cv_func_strcasestr" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRCASESTR 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "vsscanf" "ac_cv_func_vsscanf"
 if test "x$ac_cv_func_vsscanf" = xyes
 then :
