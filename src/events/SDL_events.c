@@ -597,7 +597,7 @@ SDL_AddEvent(SDL_Event * event)
 
     if (SDL_EventQ.free == NULL) {
         entry = (SDL_EventEntry *)SDL_malloc(sizeof(*entry));
-        if (!entry) {
+        if (entry == NULL) {
             return 0;
         }
     } else {
@@ -672,7 +672,7 @@ static int
 SDL_SendWakeupEvent()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (!_this || !_this->SendWakeupEvent) {
+    if (_this == NULL || !_this->SendWakeupEvent) {
         return 0;
     }
     if (!_this->wakeup_lock || SDL_LockMutex(_this->wakeup_lock) == 0) {
@@ -731,7 +731,7 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
                 SDL_EventQ.wmmsg_used = NULL;
             }
 
-            for (entry = SDL_EventQ.head; entry && (!events || used < numevents); entry = next) {
+            for (entry = SDL_EventQ.head; entry && (events == NULL || used < numevents); entry = next) {
                 next = entry->next;
                 type = entry->event.type;
                 if (minType <= type && type <= maxType) {
@@ -764,7 +764,7 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
                             /* Skip it, we don't want to include it */
                             continue;
                         }
-                        if (!events || action != SDL_GETEVENT) {
+                        if (events == NULL || action != SDL_GETEVENT) {
                             ++sentinels_expected;
                         }
                         if (SDL_AtomicGet(&SDL_sentinel_pending) > sentinels_expected) {

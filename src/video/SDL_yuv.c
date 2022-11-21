@@ -957,7 +957,7 @@ SDL_ConvertPixels_SwapUVPlanes(int width, int height, const void *src, int src_p
 
         /* Allocate a temporary row for the swap */
         tmp = (Uint8 *)SDL_malloc(UVwidth);
-        if (!tmp) {
+        if (tmp == NULL) {
             return SDL_OutOfMemory();
         }
         for (y = 0; y < UVheight; ++y) {
@@ -1018,7 +1018,7 @@ SDL_ConvertPixels_PackUVPlanes_to_NV(int width, int height, const void *src, int
     if (src == dst) {
         /* Need to make a copy of the buffer so we don't clobber it while converting */
         tmp = (Uint8 *)SDL_malloc(2*UVheight*srcUVPitch);
-        if (!tmp) {
+        if (tmp == NULL) {
             return SDL_OutOfMemory();
         }
         SDL_memcpy(tmp, src, 2*UVheight*srcUVPitch);
@@ -1092,7 +1092,7 @@ SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const void *src, in
     if (src == dst) {
         /* Need to make a copy of the buffer so we don't clobber it while converting */
         tmp = (Uint8 *)SDL_malloc(UVheight*srcUVPitch);
-        if (!tmp) {
+        if (tmp == NULL) {
             return SDL_OutOfMemory();
         }
         SDL_memcpy(tmp, src, UVheight*srcUVPitch);

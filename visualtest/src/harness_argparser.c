@@ -22,10 +22,10 @@ static int
 StrCaseCmpIgnoreHyphen(const char* s1, const char* s2)
 {
     /* treat NULL pointer as empty strings */
-    if (!s1) {
+    if (s1 == NULL) {
         s1 = "";
     }
-    if (!s2) {
+    if (s2 == NULL) {
         s2 = "";
     }
 
@@ -44,7 +44,7 @@ StrCaseCmpIgnoreHyphen(const char* s1, const char* s2)
 static int
 ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
 {
-    if (!argv || !argv[index] || !state) {
+    if (argv == NULL || !argv[index] || state == NULL) {
         return 0;
     }
 
@@ -211,7 +211,7 @@ ParseConfig(const char* file, SDLVisualTest_HarnessState* state)
     char line[MAX_CONFIG_LINE_LEN];
 
     rw = SDL_RWFromFile(file, "r");
-    if(!rw)
+    if(rw == NULL)
     {
         SDLTest_LogError("SDL_RWFromFile() failed");
         return 0;
@@ -237,7 +237,7 @@ ParseConfig(const char* file, SDLVisualTest_HarnessState* state)
 
         /* populate argv */
         argv = (char**)SDL_malloc((num_params + 1) * sizeof(char*));
-        if(!argv)
+        if(argv == NULL)
         {
             SDLTest_LogError("SDL_malloc() failed.");
             SDL_RWclose(rw);
@@ -274,12 +274,12 @@ SDLVisualTest_ParseHarnessArgs(char** argv, SDLVisualTest_HarnessState* state)
 
     SDLTest_Log("Parsing commandline arguments..");
 
-    if(!argv)
+    if(argv == NULL)
     {
         SDLTest_LogError("argv is NULL");
         return 0;
     }
-    if(!state)
+    if(state == NULL)
     {
         SDLTest_LogError("state is NULL");
         return 0;

@@ -5475,12 +5475,12 @@ void *SDL_realloc(void *ptr, size_t size)
 {
     void *mem;
 
-    if (!ptr && !size) {
+    if (ptr == NULL && !size) {
         size = 1;
     }
 
     mem = s_mem.realloc_func(ptr, size);
-    if (mem && !ptr) {
+    if (mem && ptr == NULL) {
         SDL_AtomicIncRef(&s_mem.num_allocations);
     }
     return mem;
@@ -5488,7 +5488,7 @@ void *SDL_realloc(void *ptr, size_t size)
 
 void SDL_free(void *ptr)
 {
-    if (!ptr) {
+    if (ptr == NULL) {
         return;
     }
 

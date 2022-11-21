@@ -23,7 +23,7 @@ static void
 LogLastError(const char* str)
 {
     const char* error = strerror(errno);
-    if(!str || !error)
+    if(str == NULL || error == NULL)
         return;
     SDLTest_LogError("%s: %s", str, error);
 }
@@ -34,12 +34,12 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     pid_t pid;
     char** argv;
 
-    if(!file)
+    if(file == NULL)
     {
         SDLTest_LogError("file argument cannot be NULL");
         return 0;
     }
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo cannot be NULL");
         return 0;
@@ -73,12 +73,12 @@ int
 SDL_GetProcessExitStatus(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     int success, status;
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(!ps)
+    if(ps == NULL)
     {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
@@ -107,7 +107,7 @@ SDL_IsProcessRunning(SDL_ProcessInfo* pinfo)
 {
     int success;
 
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo cannot be NULL");
         return -1;
@@ -132,12 +132,12 @@ SDL_QuitProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     int success, status;
 
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(!ps)
+    if(ps == NULL)
     {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
@@ -167,12 +167,12 @@ SDL_KillProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     int success, status;
 
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(!ps)
+    if(ps == NULL)
     {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;

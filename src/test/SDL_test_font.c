@@ -3359,7 +3359,7 @@ SDLTest_TextWindow *SDLTest_TextWindowCreate(int x, int y, int w, int h)
 {
     SDLTest_TextWindow *textwin = (SDLTest_TextWindow *)SDL_malloc(sizeof(*textwin));
 
-    if ( !textwin ) {
+    if (textwin == NULL) {
         return NULL;
     }
 

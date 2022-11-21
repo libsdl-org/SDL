@@ -444,12 +444,12 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
             const char *key = "reason";
             const char *reply = NULL;
             const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
-            if (!reason || !reason[0]) {
+            if (reason == NULL || !reason[0]) {
                 reason = default_inhibit_reason;
             }
 
             msg = dbus.message_new_method_call(bus_name, path, interface, "Inhibit");
-            if (!msg) {
+            if (msg == NULL) {
                 return SDL_FALSE;
             }
 
@@ -486,10 +486,10 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
         if (inhibit) {
             const char *app = SDL_GetHint(SDL_HINT_APP_NAME);
             const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
-            if (!app || !app[0]) {
+            if (app == NULL || !app[0]) {
                app  = "My SDL application";
             }
-            if (!reason || !reason[0]) {
+            if (reason == NULL || !reason[0]) {
                 reason = default_inhibit_reason;
             }
 

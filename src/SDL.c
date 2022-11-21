@@ -519,7 +519,7 @@ SDL_Quit(void)
 void
 SDL_GetVersion(SDL_version * ver)
 {
-    if (!ver) {
+    if (ver == NULL) {
         return;
     }
 

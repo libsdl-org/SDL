@@ -741,7 +741,7 @@ add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSee
     char *handle = NULL;
     char *ptr;
 
-    if (!dev) {
+    if (dev == NULL) {
         return;
     }
 
@@ -751,7 +751,7 @@ add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSee
        Make sure not to free the storage associated with desc in this case */
     if (hint) {
         desc = ALSA_snd_device_name_get_hint(hint, "DESC");
-        if (!desc) {
+        if (desc == NULL) {
             SDL_free(dev);
             return;
         }
@@ -771,7 +771,7 @@ add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSee
     /*printf("ALSA: adding %s device '%s' (%s)\n", iscapture ? "capture" : "output", name, desc);*/
 
     handle = SDL_strdup(name);
-    if (!handle) {
+    if (handle == NULL) {
         if (hint) {
             free(desc);
         }
@@ -825,7 +825,7 @@ ALSA_HotplugIteration(void)
            if we can find a preferred prefix for the system. */
         for (i = 0; hints[i]; i++) {
             char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
-            if (!name) {
+            if (name == NULL) {
                 continue;
             }
 
@@ -854,17 +854,17 @@ ALSA_HotplugIteration(void)
             char *name;
 
             /* if we didn't find a device name prefix we like at all... */
-            if ((!match) && (defaultdev != i)) {
+            if ((match == NULL) && (defaultdev != i)) {
                 continue;  /* ...skip anything that isn't the default device. */
             }
 
             name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
-            if (!name) {
+            if (name == NULL) {
                 continue;
             }
 
             /* only want physical hardware interfaces */
-            if (!match || (SDL_strncmp(name, match, match_len) == 0)) {
+            if (match == NULL || (SDL_strncmp(name, match, match_len) == 0)) {
                 char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
                 const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
                 const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);

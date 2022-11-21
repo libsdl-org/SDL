@@ -273,7 +273,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
 
     pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
-    if (!pNewJoystick) {
+    if (pNewJoystick == NULL) {
         return; /* better luck next time? */
     }
 

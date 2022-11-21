@@ -55,11 +55,11 @@ SDL_GetPrefPath(const char *org, const char *app)
     char *ptr = NULL;
     size_t len = 0;
 
-    if (!app) {
+    if (app == NULL) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (!org) {
+    if (org == NULL) {
         org = "";
     }
 
@@ -67,7 +67,7 @@ SDL_GetPrefPath(const char *org, const char *app)
 
     len += SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *) SDL_malloc(len);
-    if (!retval) {
+    if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }

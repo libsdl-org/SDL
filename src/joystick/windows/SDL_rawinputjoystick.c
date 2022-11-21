@@ -521,7 +521,7 @@ RAWINPUT_UpdateWindowsGamingInput()
                                 return;
                             }
                             gamepad_state = SDL_calloc(1, sizeof(*gamepad_state));
-                            if (!gamepad_state) {
+                            if (gamepad_state == NULL) {
                                 SDL_OutOfMemory();
                                 return;
                             }
@@ -1079,7 +1079,7 @@ RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     ULONG i;
 
     ctx = (RAWINPUT_DeviceContext *)SDL_calloc(1, sizeof(RAWINPUT_DeviceContext));
-    if (!ctx) {
+    if (ctx == NULL) {
         return SDL_OutOfMemory();
     }
     joystick->hwdata = ctx;

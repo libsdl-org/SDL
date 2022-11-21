@@ -121,7 +121,7 @@ WINRT_HandleGameBarIsInputRedirected_MainThread()
         return;
     }
     gameBar = WINRT_GetGameBar();
-    if (!gameBar) {
+    if (gameBar == NULL) {
         /* Shouldn't happen, but just in case... */
         return;
     }
@@ -179,7 +179,7 @@ WINRT_QuitGameBar(_THIS)
         return;
     }
     gameBar = WINRT_GetGameBar();
-    if (!gameBar) {
+    if (gameBar == NULL) {
         return;
     }
     driverdata = (SDL_VideoData *)_this->driverdata;

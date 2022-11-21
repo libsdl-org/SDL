@@ -850,7 +850,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             }
         }
     }
-    if (!data) {
+    if (data == NULL) {
         /* The window for KeymapNotify, etc events is 0 */
         if (xevent->type == KeymapNotify) {
 #ifdef DEBUG_XEVENTS

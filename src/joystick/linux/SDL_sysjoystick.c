@@ -217,7 +217,7 @@ IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
     }
 
     name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
-    if (!name) {
+    if (name == NULL) {
         return 0;
     }
 
@@ -926,7 +926,7 @@ GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *
      * other continuous analog axis, so we have to guess. */
 
     /* If both axes are missing, they're not anything. */
-    if (!absinfo_x && !absinfo_y) {
+    if (absinfo_x == NULL && absinfo_y == NULL) {
         return SDL_FALSE;
     }
 
@@ -936,12 +936,12 @@ GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *
     }
 
     /* If both axes have ranges constrained between -1 and 1, they're definitely digital. */
-    if ((!absinfo_x || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) && (!absinfo_y || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1))) {
+    if ((absinfo_x == NULL || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) && (absinfo_y == NULL || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1))) {
         return SDL_TRUE;
     }
 
     /* If both axes lack fuzz, flat, and resolution values, they're probably digital. */
-    if ((!absinfo_x || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) && (!absinfo_y || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution))) {
+    if ((absinfo_x == NULL || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) && (absinfo_y == NULL || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution))) {
         return SDL_TRUE;
     }
 

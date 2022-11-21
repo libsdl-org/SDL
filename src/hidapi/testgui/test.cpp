@@ -231,11 +231,11 @@ MainWindow::onConnect(FXObject *sender, FXSelector sel, void *ptr)
 		return -1;
 	}
 	FXListItem *item = device_list->getItem(cur_item);
-	if (!item) {
+	if (item == NULL) {
 		return -1;
 	}
 	struct hid_device_info *device_info = (struct hid_device_info*) item->getData();
-	if (!device_info) {
+	if (device_info == NULL) {
 		return -1;
 	}
 	

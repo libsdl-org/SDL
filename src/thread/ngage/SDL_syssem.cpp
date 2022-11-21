@@ -112,7 +112,7 @@ SDL_DestroySemaphore(SDL_sem * sem)
 int
 SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
-    if (! sem)
+    if (sem == NULL)
     {
         return SDL_SetError("Passed a NULL sem");
     }
@@ -163,7 +163,7 @@ SDL_SemWait(SDL_sem * sem)
 Uint32
 SDL_SemValue(SDL_sem * sem)
 {
-    if (! sem)
+    if (sem == NULL)
     {
         SDL_SetError("Passed a NULL sem.");
         return 0;
@@ -174,7 +174,7 @@ SDL_SemValue(SDL_sem * sem)
 int
 SDL_SemPost(SDL_sem * sem)
 {
-    if (! sem)
+    if (sem == NULL)
     {
         return SDL_SetError("Passed a NULL sem.");
     }

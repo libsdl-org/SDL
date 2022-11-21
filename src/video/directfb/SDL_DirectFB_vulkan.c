@@ -40,10 +40,10 @@ int DirectFB_Vulkan_LoadLibrary(_THIS, const char *path)
     }
 
     /* Load the Vulkan loader library */
-    if (!path) {
+    if (path == NULL) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
-    if (!path) {
+    if (path == NULL) {
         path = "libvulkan.so.1";
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
@@ -68,7 +68,7 @@ int DirectFB_Vulkan_LoadLibrary(_THIS, const char *path)
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
-    if (!extensions) {
+    if (extensions == NULL) {
         goto fail;
     }
     for(i = 0; i < extensionCount; i++)

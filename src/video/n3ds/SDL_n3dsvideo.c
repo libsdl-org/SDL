@@ -59,7 +59,7 @@ static SDL_VideoDevice *
 N3DS_CreateDevice(void)
 {
     SDL_VideoDevice *device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_OutOfMemory();
         return 0;
     }

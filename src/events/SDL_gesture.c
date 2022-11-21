@@ -198,7 +198,7 @@ static int SDL_AddDollarGesture_one(SDL_GestureTouch* inTouch, SDL_FloatPoint* p
         (SDL_DollarTemplate *)SDL_realloc(inTouch->dollarTemplate,
                                           (index + 1) *
                                           sizeof(SDL_DollarTemplate));
-    if (!dollarTemplate) {
+    if (dollarTemplate == NULL) {
         return SDL_OutOfMemory();
     }
     inTouch->dollarTemplate = dollarTemplate;
@@ -474,7 +474,7 @@ int SDL_GestureAddTouch(SDL_TouchID touchId)
                                                                      (SDL_numGestureTouches + 1) *
                                                                      sizeof(SDL_GestureTouch));
 
-    if (!gestureTouch) {
+    if (gestureTouch == NULL) {
         return SDL_OutOfMemory();
     }
 

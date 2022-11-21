@@ -533,7 +533,7 @@ static int usb_string_cache_grow()
 	new_cache_size = usb_string_cache_size + 8;
 	allocSize = sizeof(struct usb_string_cache_entry) * new_cache_size;
 	new_cache = (struct usb_string_cache_entry *)realloc(usb_string_cache, allocSize);
-	if (!new_cache) {
+	if (new_cache == NULL) {
 		return -1;
 	}
 
@@ -603,7 +603,7 @@ static const struct usb_string_cache_entry *usb_string_cache_find(struct libusb_
 
 	/* Not found, create one. */
 	entry = usb_string_cache_insert();
-	if (!entry) {
+	if (entry == NULL) {
 		return NULL;
 	}
 
@@ -646,7 +646,7 @@ int HID_API_EXPORT hid_init(void)
 		/* Set the locale if it's not set. */
 		{
 			const char *locale = setlocale(LC_CTYPE, NULL);
-			if (!locale) {
+			if (locale == NULL) {
 				setlocale(LC_CTYPE, "");
 			}
 		}
@@ -1252,7 +1252,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		if (res < 0) {
 			libusb_get_config_descriptor(usb_dev, 0, &conf_desc);
 		}
-		if (!conf_desc)
+		if (conf_desc == NULL)
 			continue;
 		for (j = 0; j < conf_desc->bNumInterfaces && !good_open; j++) {
 			const struct libusb_interface *intf = &conf_desc->interface[j];
@@ -1616,7 +1616,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 {
 	int status;
 
-	if (!dev)
+	if (dev == NULL)
 		return;
 
 	/* Cause read_thread() to stop. */
@@ -1849,7 +1849,7 @@ uint16_t get_usb_code_for_current_locale(void)
 #ifdef HAVE_SETLOCALE
 	locale = setlocale(0, NULL);
 #endif
-	if (!locale) {
+	if (locale == NULL) {
 		return 0x0;
 	}
 

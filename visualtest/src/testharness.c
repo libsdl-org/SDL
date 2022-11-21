@@ -125,7 +125,7 @@ KillTimerCallback(Uint32 interval, void* param)
 static int
 ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
 {
-    if (!action || !sut_running) {
+    if (action == NULL || sut_running == NULL) {
         return TEST_ERROR;
     }
 
@@ -261,7 +261,7 @@ RunSUTAndTest(char* sutargs, int variation_num)
 
     return_code = TEST_PASSED;
 
-    if(!sutargs)
+    if(sutargs == NULL)
     {
         SDLTest_LogError("sutargs argument cannot be NULL");
         return_code = TEST_ERROR;
@@ -486,7 +486,7 @@ main(int argc, char* argv[])
         for(i = 0; state.num_variations > 0 ? (i < state.num_variations) : 1; i++)
         {
             char* args = SDLVisualTest_GetNextVariation(&variator);
-            if(!args)
+            if(args == NULL)
                 break;
             SDLTest_Log("\nVariation number: %d\nArguments: %s", i + 1, args);
 

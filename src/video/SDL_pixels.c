@@ -619,7 +619,7 @@ SDL_FreeFormat(SDL_PixelFormat *format)
 {
     SDL_PixelFormat *prev;
 
-    if (!format) {
+    if (format == NULL) {
         SDL_InvalidParamError("format");
         return;
     }
@@ -663,7 +663,7 @@ SDL_AllocPalette(int ncolors)
     }
 
     palette = (SDL_Palette *) SDL_malloc(sizeof(*palette));
-    if (!palette) {
+    if (palette == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -685,7 +685,7 @@ SDL_AllocPalette(int ncolors)
 int
 SDL_SetPixelFormatPalette(SDL_PixelFormat * format, SDL_Palette *palette)
 {
-    if (!format) {
+    if (format == NULL) {
         return SDL_InvalidParamError("SDL_SetPixelFormatPalette(): format");
     }
 
@@ -717,7 +717,7 @@ SDL_SetPaletteColors(SDL_Palette * palette, const SDL_Color * colors,
     int status = 0;
 
     /* Verify the parameters */
-    if (!palette) {
+    if (palette == NULL) {
         return -1;
     }
     if (ncolors > (palette->ncolors - firstcolor)) {
@@ -740,7 +740,7 @@ SDL_SetPaletteColors(SDL_Palette * palette, const SDL_Color * colors,
 void
 SDL_FreePalette(SDL_Palette * palette)
 {
-    if (!palette) {
+    if (palette == NULL) {
         SDL_InvalidParamError("palette");
         return;
     }
@@ -1046,7 +1046,7 @@ SDL_InvalidateAllBlitMap(SDL_Surface *surface)
 void
 SDL_InvalidateMap(SDL_BlitMap * map)
 {
-    if (!map) {
+    if (map == NULL) {
         return;
     }
     if (map->dst) {

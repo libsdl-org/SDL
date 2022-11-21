@@ -43,7 +43,7 @@ SaveBitmapToFile(HDC hdc, HBITMAP hbitmap, char* filename)
         SDLTest_LogError("hbitmap argument is NULL");
         return 0;
     }
-    if(!filename)
+    if(filename == NULL)
     {
         SDLTest_LogError("filename argument is NULL");
         return 0;
@@ -78,7 +78,7 @@ SaveBitmapToFile(HDC hdc, HBITMAP hbitmap, char* filename)
         goto savebitmaptofile_cleanup_generic;
     }
     bmpdata = (char*)GlobalLock(hdib);
-    if(!bmpdata)
+    if(bmpdata == NULL)
     {
         LogLastError("GlobalLock() failed");
         return_code = 0;
@@ -150,7 +150,7 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
     BOOL blt_success;
     int return_code = 1;
 
-    if(!filename)
+    if(filename == NULL)
     {
         SDLTest_LogError("filename argument cannot be NULL");
         return_code = 0;
@@ -297,7 +297,7 @@ ScreenshotHwnd(HWND hwnd, LPARAM lparam)
     prefix = (char*)lparam;
     len = SDL_strlen(prefix) + 100;
     filename = (char*)SDL_malloc(len * sizeof(char));
-    if(!filename)
+    if(filename == NULL)
     {
         SDLTest_LogError("SDL_malloc() failed");
         return FALSE;
@@ -326,12 +326,12 @@ ScreenshotHwnd(HWND hwnd, LPARAM lparam)
 int
 SDLVisualTest_ScreenshotProcess(SDL_ProcessInfo* pinfo, char* prefix)
 {
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(!prefix)
+    if(prefix == NULL)
     {
         SDLTest_LogError("prefix argument cannot be NULL");
         return 0;

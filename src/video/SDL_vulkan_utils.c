@@ -149,7 +149,7 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
         retval = SDL_calloc(count, sizeof(VkExtensionProperties));
     }
 
-    if (!retval) {
+    if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -249,7 +249,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
     }
 
     physicalDevices = SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
-    if (!physicalDevices) {
+    if (physicalDevices == NULL) {
         SDL_OutOfMemory();
         goto error;
     }
@@ -292,7 +292,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         }
 
         displayProperties = SDL_malloc(sizeof(VkDisplayPropertiesKHR) * displayPropertiesCount);
-        if (!displayProperties) {
+        if (displayProperties == NULL) {
             SDL_OutOfMemory();
             goto error;
         }
@@ -322,7 +322,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Number of display modes: %u", displayModePropertiesCount);
 
         displayModeProperties = SDL_malloc(sizeof(VkDisplayModePropertiesKHR) * displayModePropertiesCount);
-        if (!displayModeProperties) {
+        if (displayModeProperties == NULL) {
             SDL_OutOfMemory();
             goto error;
         }
@@ -369,7 +369,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Number of display planes: %u", displayPlanePropertiesCount);
 
         displayPlaneProperties = SDL_malloc(sizeof(VkDisplayPlanePropertiesKHR) * displayPlanePropertiesCount);
-        if (!displayPlaneProperties) {
+        if (displayPlaneProperties == NULL) {
             SDL_OutOfMemory();
             goto error;
         }
@@ -400,7 +400,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Number of supported displays for plane %u: %u", i, planeSupportedDisplaysCount);
 
             planeSupportedDisplays = SDL_malloc(sizeof(VkDisplayKHR) * planeSupportedDisplaysCount);
-            if (!planeSupportedDisplays) {
+            if (planeSupportedDisplays == NULL) {
                 SDL_free(displayPlaneProperties);
                 SDL_OutOfMemory();
                 goto error;

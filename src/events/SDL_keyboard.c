@@ -754,7 +754,7 @@ SDL_SetKeyboardFocus(SDL_Window * window)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (keyboard->focus && !window) {
+    if (keyboard->focus && window == NULL) {
         /* We won't get anymore keyboard messages, so reset keyboard state */
         SDL_ResetKeyboard();
     }
@@ -763,7 +763,7 @@ SDL_SetKeyboardFocus(SDL_Window * window)
     if (keyboard->focus && keyboard->focus != window) {
 
         /* new window shouldn't think it has mouse captured. */
-        SDL_assert(!window || !(window->flags & SDL_WINDOW_MOUSE_CAPTURE));
+        SDL_assert(window == NULL || !(window->flags & SDL_WINDOW_MOUSE_CAPTURE));
 
         /* old window must lose an existing mouse capture. */
         if (keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE) {
@@ -1183,7 +1183,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
 {
     int i;
 
-    if (!name || !*name) {
+    if (name == NULL || !*name) {
             SDL_InvalidParamError("name");
         return SDL_SCANCODE_UNKNOWN;
     }

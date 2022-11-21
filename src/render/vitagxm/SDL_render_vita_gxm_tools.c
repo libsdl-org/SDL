@@ -1050,7 +1050,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         tex_size += (((aligned_w + 1) / 2) * ((h + 1) / 2)) * 2;
     }
 
-    if (!texture) {
+    if (texture == NULL) {
         return NULL;
     }
 
@@ -1065,7 +1065,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
     );
 
     /* Try SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE in case we're out of VRAM */
-    if (!texture_data) {
+    if (texture_data == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "CDRAM texture allocation failed\n");
         texture_data = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
@@ -1079,7 +1079,7 @@ create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsigned int h, Sc
         texture->cdram = 1;
     }
 
-    if (!texture_data) {
+    if (texture_data == NULL) {
         SDL_free(texture);
         return NULL;
     }

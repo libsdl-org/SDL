@@ -211,7 +211,7 @@ DirectFB_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
         /* Convert the icon to ARGB for modern window managers */
         SDL_InitFormat(&format, SDL_PIXELFORMAT_ARGB8888);
         surface = SDL_ConvertSurface(icon, &format, 0);
-        if (!surface) {
+        if (surface == NULL) {
             return;
         }
         dsc.flags =

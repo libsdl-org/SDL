@@ -79,7 +79,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     int     lPosApp, lPosOrg;
     PSZ     pszApp, pszOrg;
 
-    if (!app) {
+    if (app == NULL) {
         SDL_InvalidParamError("app");
         return NULL;
     }
@@ -93,7 +93,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         }
     }
 
-    if (!org) {
+    if (org == NULL) {
         lPosApp = SDL_snprintf(acBuf, sizeof(acBuf) - 1, "%s", pszPath);
     } else {
         pszOrg = OS2_UTF8ToSys(org);

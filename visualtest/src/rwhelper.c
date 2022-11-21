@@ -12,7 +12,7 @@
 void
 SDLVisualTest_RWHelperResetBuffer(SDLVisualTest_RWHelperBuffer* buffer)
 {
-    if(!buffer)
+    if(buffer == NULL)
     {
         SDLTest_LogError("buffer argument cannot be NULL");
         return;
@@ -24,7 +24,7 @@ SDLVisualTest_RWHelperResetBuffer(SDLVisualTest_RWHelperBuffer* buffer)
 char
 SDLVisualTest_RWHelperReadChar(SDL_RWops* rw, SDLVisualTest_RWHelperBuffer* buffer)
 {
-    if (!rw || !buffer) {
+    if (rw == NULL || buffer == NULL) {
         return 0;
     }
     /* if the buffer has been consumed, we fill it up again */
@@ -48,17 +48,17 @@ SDLVisualTest_RWHelperReadLine(SDL_RWops* rw, char* str, int size,
 {
     char ch;
     int current_pos, done;
-    if(!rw)
+    if(rw == NULL)
     {
         SDLTest_LogError("rw argument cannot be NULL");
         return NULL;
     }
-    if(!str)
+    if(str == NULL)
     {
         SDLTest_LogError("str argument cannot be NULL");
         return NULL;
     }
-    if(!buffer)
+    if(buffer == NULL)
     {
         SDLTest_LogError("buffer argument cannot be NULL");
         return NULL;
@@ -118,12 +118,12 @@ SDLVisualTest_RWHelperCountNonEmptyLines(SDL_RWops* rw,
 {
     int num_lines = 0;
     char str[MAX_SUTOPTION_LINE_LENGTH];
-    if(!rw)
+    if(rw == NULL)
     {
         SDLTest_LogError("rw argument cannot be NULL");
         return -1;
     }
-    if(!buffer)
+    if(buffer == NULL)
     {
         SDLTest_LogError("buffer argument cannot be NULL");
         return -1;

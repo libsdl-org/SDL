@@ -136,7 +136,7 @@ SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTEN
     }
 
     devidlist = (DevIdList *)SDL_malloc(sizeof(*devidlist));
-    if (!devidlist) {
+    if (devidlist == NULL) {
         return;  /* oh well. */
     }
 
@@ -442,7 +442,7 @@ EnumerateEndpointsForFlow(const SDL_bool iscapture)
     }
 
     items = (EndpointItem *)SDL_calloc(total, sizeof(EndpointItem));
-    if (!items) {
+    if (items == NULL) {
         return;  /* oh well. */
     }
 

@@ -77,7 +77,7 @@ HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverStadia_Context *ctx;
 
     ctx = (SDL_DriverStadia_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -281,7 +281,7 @@ HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_STADIA_PROTOCOL
         HIDAPI_DumpPacket("Google Stadia packet: size = %d", data, size);
 #endif
-        if (!joystick) {
+        if (joystick == NULL) {
             continue;
         }
 

@@ -206,7 +206,7 @@ static VOID _setVisibleRegion(WINDATA *pWinData, BOOL fVisible)
      pSDLDisplay = (fVisible)? SDL_GetDisplayForWindow(pWinData->window) : NULL;
      pWinData->pOutput->SetVisibleRegion(pWinData->pVOData, pWinData->hwnd,
                                          (pSDLDisplay == NULL) ?
-                                            NULL : &pSDLDisplay->current_mode,
+                                         NULL : &pSDLDisplay->current_mode,
                                          pWinData->hrgnShape, fVisible);
 }
 
@@ -1655,7 +1655,7 @@ static SDL_VideoDevice *OS2_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }

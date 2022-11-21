@@ -40,7 +40,7 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * f
     /* Create a new one */
     SDL_GetWindowSize(window, &w, &h);
     surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
-    if (!surface) {
+    if (surface == NULL) {
         return -1;
     }
 
@@ -58,7 +58,7 @@ int SDL_OFFSCREEN_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_
     SDL_Surface *surface;
 
     surface = (SDL_Surface *) SDL_GetWindowData(window, OFFSCREEN_SURFACE);
-    if (!surface) {
+    if (surface == NULL) {
         return SDL_SetError("Couldn't find offscreen surface for window");
     }
 

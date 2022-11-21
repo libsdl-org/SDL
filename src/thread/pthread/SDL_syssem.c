@@ -72,7 +72,7 @@ SDL_SemTryWait(SDL_sem * sem)
 {
     int retval;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
     retval = SDL_MUTEX_TIMEDOUT;
@@ -87,7 +87,7 @@ SDL_SemWait(SDL_sem * sem)
 {
     int retval;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -114,7 +114,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     Uint32 end;
 #endif
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -194,7 +194,7 @@ SDL_SemPost(SDL_sem * sem)
 {
     int retval;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 

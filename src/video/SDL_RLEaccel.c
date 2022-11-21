@@ -1035,7 +1035,7 @@ RLEAlphaSurface(SDL_Surface * surface)
                         SDL_PixelFormat *, SDL_PixelFormat *);
 
     dest = surface->map->dst;
-    if (!dest)
+    if (dest == NULL)
         return -1;
     df = dest->format;
     if (surface->format->BitsPerPixel != 32)
@@ -1089,7 +1089,7 @@ RLEAlphaSurface(SDL_Surface * surface)
 
     maxsize += sizeof(RLEDestFormat);
     rlebuf = (Uint8 *) SDL_malloc(maxsize);
-    if (!rlebuf) {
+    if (rlebuf == NULL) {
         return SDL_OutOfMemory();
     }
     {
@@ -1229,7 +1229,7 @@ RLEAlphaSurface(SDL_Surface * surface)
     /* reallocate the buffer to release unused memory */
     {
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (!p)
+        if (p == NULL)
             p = rlebuf;
         surface->map->data = p;
     }
@@ -1398,7 +1398,7 @@ RLEColorkeySurface(SDL_Surface * surface)
     {
         /* If SDL_realloc returns NULL, the original block is left intact */
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (!p)
+        if (p == NULL)
             p = rlebuf;
         surface->map->data = p;
     }

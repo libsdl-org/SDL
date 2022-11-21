@@ -225,7 +225,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
     SDL_WindowTextureData *data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
     int i;
 
-    if (!data) {
+    if (data == NULL) {
         SDL_Renderer *renderer = NULL;
         const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         const SDL_bool specific_accelerated_renderer = (
@@ -244,7 +244,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
                     break;
                 }
             }
-            if (!renderer || (SDL_GetRendererInfo(renderer, &info) == -1)) {
+            if (renderer == NULL || (SDL_GetRendererInfo(renderer, &info) == -1)) {
                 if (renderer) { SDL_DestroyRenderer(renderer); }
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
             }
@@ -263,7 +263,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
                     }
                 }
             }
-            if (!renderer) {
+            if (renderer == NULL) {
                 return SDL_SetError("No hardware accelerated renderers available");
             }
         }
@@ -272,7 +272,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
 
         /* Create the data after we successfully create the renderer (bug #1116) */
         data = (SDL_WindowTextureData *)SDL_calloc(1, sizeof(*data));
-        if (!data) {
+        if (data == NULL) {
             SDL_DestroyRenderer(renderer);
             return SDL_OutOfMemory();
         }
@@ -345,7 +345,7 @@ SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, const SDL_
     void *src;
 
     data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
-    if (!data || !data->texture) {
+    if (data == NULL || !data->texture) {
         return SDL_SetError("No window texture data");
     }
 
@@ -373,7 +373,7 @@ SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window * window)
     SDL_WindowTextureData *data;
 
     data = SDL_SetWindowData(window, SDL_WINDOWTEXTUREDATA, NULL);
-    if (!data) {
+    if (data == NULL) {
         return;
     }
     if (data->texture) {
@@ -714,7 +714,7 @@ SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect)
 
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (!rect) {
+    if (rect == NULL) {
         return SDL_InvalidParamError("rect");
     }
 
@@ -753,7 +753,7 @@ SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
 
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (!rect) {
+    if (rect == NULL) {
         return SDL_InvalidParamError("rect");
     }
 
@@ -824,7 +824,7 @@ SDL_AddDisplayMode(SDL_VideoDisplay * display, const SDL_DisplayMode * mode)
         modes =
             SDL_realloc(modes,
                         (display->max_display_modes + 32) * sizeof(*modes));
-        if (!modes) {
+        if (modes == NULL) {
             return SDL_FALSE;
         }
         display->display_modes = modes;
@@ -945,7 +945,7 @@ SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay * display,
     int i;
     SDL_DisplayMode *current, *match;
 
-    if (!mode || !closest) {
+    if (mode == NULL || closest == NULL) {
         SDL_InvalidParamError("mode/closest");
         return NULL;
     }
@@ -982,7 +982,7 @@ SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay * display,
                modes may still follow. */
             continue;
         }
-        if (!match || current->w < match->w || current->h < match->h) {
+        if (match == NULL || current->w < match->w || current->h < match->h) {
             match = current;
             continue;
         }
@@ -1292,7 +1292,7 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
 
     CHECK_WINDOW_MAGIC(window, -1);
 
-    if (!mode) {
+    if (mode == NULL) {
         return SDL_InvalidParamError("mode");
     }
 
@@ -1689,7 +1689,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     }
 
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
-    if (!window) {
+    if (window == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1841,7 +1841,7 @@ SDL_CreateWindowFrom(const void *data)
     }
 
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
-    if (!window) {
+    if (window == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -2077,7 +2077,7 @@ SDL_SetWindowIcon(SDL_Window * window, SDL_Surface * icon)
 {
     CHECK_WINDOW_MAGIC(window,);
 
-    if (!icon) {
+    if (icon == NULL) {
         return;
     }
 
@@ -2370,10 +2370,10 @@ SDL_GetWindowBordersSize(SDL_Window * window, int *top, int *left, int *bottom, 
 {
     int dummy = 0;
 
-    if (!top) { top = &dummy; }
-    if (!left) { left = &dummy; }
-    if (!right) { right = &dummy; }
-    if (!bottom) { bottom = &dummy; }
+    if (top == NULL) { top = &dummy; }
+    if (left == NULL) { left = &dummy; }
+    if (right == NULL) { right = &dummy; }
+    if (bottom == NULL) { bottom = &dummy; }
 
     /* Always initialize, so applications don't have to care */
     *top = *left = *bottom = *right = 0;
@@ -3217,7 +3217,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
 
     /* Real fullscreen windows should minimize on focus loss so the desktop video mode is restored */
     hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
-    if (!hint || !*hint || SDL_strcasecmp(hint, "auto") == 0) {
+    if (hint == NULL || !*hint || SDL_strcasecmp(hint, "auto") == 0) {
         if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP ||
             DisableDisplayModeSwitching(_this) == SDL_TRUE) {
             return SDL_FALSE;
@@ -3526,7 +3526,7 @@ SDL_GL_ExtensionSupported(const char *extension)
     /* Lookup the available extensions */
 
     glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
-    if (!glGetStringFunc) {
+    if (glGetStringFunc == NULL) {
         return SDL_FALSE;
     }
 
@@ -3538,7 +3538,7 @@ SDL_GL_ExtensionSupported(const char *extension)
 
         glGetStringiFunc = SDL_GL_GetProcAddress("glGetStringi");
         glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
-        if ((!glGetStringiFunc) || (!glGetIntegervFunc)) {
+        if ((glGetStringiFunc == NULL) || (glGetIntegervFunc == NULL)) {
             return SDL_FALSE;
         }
 
@@ -3559,7 +3559,7 @@ SDL_GL_ExtensionSupported(const char *extension)
     /* Try the old way with glGetString(GL_EXTENSIONS) ... */
 
     extensions = (const char *) glGetStringFunc(GL_EXTENSIONS);
-    if (!extensions) {
+    if (extensions == NULL) {
         return SDL_FALSE;
     }
     /*
@@ -3571,7 +3571,7 @@ SDL_GL_ExtensionSupported(const char *extension)
 
     for (;;) {
         where = SDL_strstr(start, extension);
-        if (!where)
+        if (where == NULL)
             break;
 
         terminator = where + SDL_strlen(extension);
@@ -3820,7 +3820,7 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     GLenum attachmentattrib = 0;
 #endif
 
-    if (!value) {
+    if (value == NULL) {
         return SDL_InvalidParamError("value");
     }
 
@@ -4004,7 +4004,7 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 
 #if SDL_VIDEO_OPENGL
     glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
-    if (!glGetStringFunc) {
+    if (glGetStringFunc == NULL) {
         return -1;
     }
 
@@ -4042,7 +4042,7 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     }
 
     glGetErrorFunc = SDL_GL_GetProcAddress("glGetError");
-    if (!glGetErrorFunc) {
+    if (glGetErrorFunc == NULL) {
         return -1;
     }
 
@@ -4322,7 +4322,7 @@ SDL_GetWindowWMInfo(SDL_Window * window, struct SDL_SysWMinfo *info)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
 
-    if (!info) {
+    if (info == NULL) {
         SDL_InvalidParamError("info");
         return SDL_FALSE;
     }
@@ -4473,7 +4473,7 @@ static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messagebo
     SDL_SysWMinfo info;
     SDL_Window *window = messageboxdata->window;
 
-    if (!window) {
+    if (window == NULL) {
         return SDL_TRUE;
     }
 
@@ -4496,7 +4496,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_Window *current_window;
     SDL_MessageBoxData mbdata;
 
-    if (!messageboxdata) {
+    if (messageboxdata == NULL) {
         return SDL_InvalidParamError("messageboxdata");
     } else if (messageboxdata->numbuttons < 0) {
         return SDL_SetError("Invalid number of buttons");
@@ -4511,7 +4511,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     show_cursor_prev = SDL_ShowCursor(1);
     SDL_ResetKeyboard();
 
-    if (!buttonid) {
+    if (buttonid == NULL) {
         buttonid = &dummybutton;
     }
 
@@ -4635,10 +4635,10 @@ SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, S
     /* Web browsers don't (currently) have an API for a custom message box
        that can block, but for the most common case (SDL_ShowSimpleMessageBox),
        we can use the standard Javascript alert() function. */
-    if (!title) {
+    if (title == NULL) {
         title = "";
     }
-    if (!message) {
+    if (message == NULL) {
         message = "";
     }
     EM_ASM_({
@@ -4815,7 +4815,7 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window *window, unsigned *count, c
         }
     }
 
-    if (!count) {
+    if (count == NULL) {
         SDL_InvalidParamError("count");
         return SDL_FALSE;
     }
@@ -4839,7 +4839,7 @@ SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
         return SDL_FALSE;
     }
 
-    if (!surface) {
+    if (surface == NULL) {
         SDL_InvalidParamError("surface");
         return SDL_FALSE;
     }

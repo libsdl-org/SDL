@@ -423,7 +423,7 @@ HIDAPI_UpdateDiscovery()
                 if (pUdevDevice) {
                     const char *action = NULL;
                     action = usyms->udev_device_get_action(pUdevDevice);
-                    if (!action || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
+                    if (action == NULL || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
                         ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
                     }
                     usyms->udev_device_unref(pUdevDevice);
@@ -1237,7 +1237,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #endif
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
             new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
-            if (!new_dev) {
+            if (new_dev == NULL) {
                 LIBUSB_hid_free_enumeration(usb_devs);
                 SDL_hid_free_enumeration(devs);
                 SDL_OutOfMemory();
@@ -1310,7 +1310,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #endif
             if (!bFound) {
                 new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
-                if (!new_dev) {
+                if (new_dev == NULL) {
 #ifdef HAVE_LIBUSB
                     if (libusb_ctx.libhandle) {
                         LIBUSB_hid_free_enumeration(usb_devs);

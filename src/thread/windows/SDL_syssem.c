@@ -121,7 +121,7 @@ SDL_SemTryWait_atom(SDL_sem * _sem)
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -143,7 +143,7 @@ SDL_SemWait_atom(SDL_sem * _sem)
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -175,7 +175,7 @@ SDL_SemWaitTimeout_atom(SDL_sem * _sem, Uint32 timeout)
         return SDL_SemWait_atom(_sem);
     }
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -218,7 +218,7 @@ SDL_SemValue_atom(SDL_sem * _sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
-    if (!sem) {
+    if (sem == NULL) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -231,7 +231,7 @@ SDL_SemPost_atom(SDL_sem * _sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -312,7 +312,7 @@ SDL_SemWaitTimeout_kern(SDL_sem * _sem, Uint32 timeout)
     int retval;
     DWORD dwMilliseconds;
 
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
@@ -353,7 +353,7 @@ static Uint32
 SDL_SemValue_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (!sem) {
+    if (sem == NULL) {
         SDL_InvalidParamError("sem");
         return 0;
     }
@@ -364,7 +364,7 @@ static int
 SDL_SemPost_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (!sem) {
+    if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
     /* Increase the counter in the first place, because

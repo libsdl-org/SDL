@@ -58,7 +58,7 @@ InitIME()
 #ifdef HAVE_FCITX
     if (!SDL_IME_Init_Real &&
         ((im_module && SDL_strcmp(im_module, "fcitx") == 0) ||
-         (!im_module && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
+         (im_module == NULL && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
         SDL_IME_Init_Real = SDL_Fcitx_Init;
         SDL_IME_Quit_Real = SDL_Fcitx_Quit;
         SDL_IME_SetFocus_Real = SDL_Fcitx_SetFocus;

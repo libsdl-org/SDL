@@ -265,7 +265,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
 
     /* Allocate the window data */
     data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         return SDL_OutOfMemory();
     }
     data->window = window;
@@ -292,7 +292,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
             (SDL_WindowData **) SDL_realloc(windowlist,
                                             (numwindows +
                                              1) * sizeof(*windowlist));
-        if (!windowlist) {
+        if (windowlist == NULL) {
             SDL_free(data);
             return SDL_OutOfMemory();
         }
@@ -443,7 +443,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 #endif
         }
 
-        if (!vinfo) {
+        if (vinfo == NULL) {
             return -1;
         }
         visual = vinfo->visual;
@@ -480,7 +480,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 
         /* OK, we got a colormap, now fill it in as best as we can */
         colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
-        if (!colorcells) {
+        if (colorcells == NULL) {
             return SDL_OutOfMemory();
         }
         ncolors = visual->map_entries;
@@ -1497,7 +1497,7 @@ X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
 
     ncolors = visual->map_entries;
     colorcells = SDL_malloc(ncolors * sizeof(XColor));
-    if (!colorcells) {
+    if (colorcells == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -1615,7 +1615,7 @@ X11_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
     }
 
     ret_icc_profile_data = SDL_malloc(real_nitems);
-    if (!ret_icc_profile_data) {
+    if (ret_icc_profile_data == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1770,7 +1770,7 @@ X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display;
 
-    if (!data) {
+    if (data == NULL) {
         /* This sometimes happens in SDL_IBus_UpdateTextRect() while creating the window */
         SDL_SetError("Window not initialized");
         return SDL_FALSE;
@@ -1820,7 +1820,7 @@ X11_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation)
     XWMHints *wmhints;
 
     wmhints = X11_XGetWMHints(display, data->xwindow);
-    if (!wmhints) {
+    if (wmhints == NULL) {
         return SDL_SetError("Couldn't get WM hints");
     }
 

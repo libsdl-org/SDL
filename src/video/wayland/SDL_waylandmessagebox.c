@@ -140,14 +140,14 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                         }
                     }
                     output = SDL_malloc(output_len + 1);
-                    if (!output) {
+                    if (output == NULL) {
                         close(fd_pipe[0]);
                         return SDL_OutOfMemory();
                     }
                     output[0] = '\0';
 
                     outputfp = fdopen(fd_pipe[0], "r");
-                    if (!outputfp) {
+                    if (outputfp == NULL) {
                         SDL_free(output);
                         close(fd_pipe[0]);
                         return SDL_SetError("Couldn't open pipe for reading: %s", strerror(errno));

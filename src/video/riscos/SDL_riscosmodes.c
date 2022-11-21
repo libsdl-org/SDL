@@ -169,7 +169,7 @@ convert_mode_block(const int *block)
     }
 
     dst = SDL_malloc(40);
-    if (!dst) {
+    if (dst == NULL) {
         return NULL;
     }
 
@@ -249,7 +249,7 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     }
 
     block = SDL_malloc(-regs.r[7]);
-    if (!block) {
+    if (block == NULL) {
         SDL_OutOfMemory();
         return;
     }

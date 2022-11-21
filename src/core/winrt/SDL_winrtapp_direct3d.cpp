@@ -359,7 +359,7 @@ void SDL_WinRTApp::Run()
         // representation of command line arguments.
         int argc = 1;
         char **argv = (char **)SDL_malloc(2 * sizeof(*argv));
-        if (!argv) {
+        if (argv == NULL) {
             return;
         }
         argv[0] = SDL_strdup("WinRTApp");

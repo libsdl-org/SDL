@@ -451,7 +451,7 @@ MaybeAddDevice(const char *path)
     }
 
     hw = CreateHwData(path);
-    if (!hw) {
+    if (hw == NULL) {
         return -1;
     }
 
@@ -481,7 +481,7 @@ MaybeAddDevice(const char *path)
         }
 #endif /* USB_GET_DEVICEINFO */
     }
-    if (!name) {
+    if (name == NULL) {
         name = SDL_strdup(path);
         guid = SDL_CreateJoystickGUIDForName(name);
     }
@@ -638,7 +638,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     }
 
     hw = CreateHwData(item->path);
-    if (!hw) {
+    if (hw == NULL) {
         return -1;
     }
 

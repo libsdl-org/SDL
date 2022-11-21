@@ -313,7 +313,7 @@ JACK_OpenDevice(_THIS, const char *devname)
     }
 
     devports = JACK_jack_get_ports(client, NULL, NULL, JackPortIsPhysical | sysportflags);
-    if (!devports || !devports[0]) {
+    if (devports == NULL || !devports[0]) {
         return SDL_SetError("No physical JACK ports available");
     }
 

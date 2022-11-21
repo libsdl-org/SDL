@@ -39,21 +39,21 @@ SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
 {
     const char *const in_buf = buffer; /* = NULL if we allocate the buffer.  */
 
-    if (!buffer) {
+    if (buffer == NULL) {
         /* This matches the logic in __unixify, with an additional byte for the
          * extra path separator.
          */
         buf_len = SDL_strlen(ro_path) + 14 + 1;
         buffer = SDL_malloc(buf_len);
 
-        if (!buffer) {
+        if (buffer == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
     }
 
     if (!__unixify_std(ro_path, buffer, buf_len, filetype)) {
-        if (!in_buf) {
+        if (in_buf == NULL) {
             SDL_free(buffer);
         }
 
@@ -94,7 +94,7 @@ canonicalisePath(const char *path, const char *pathVar)
 
     regs.r[5] = 1 - regs.r[5];
     buf = SDL_malloc(regs.r[5]);
-    if (!buf) {
+    if (buf == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -145,7 +145,7 @@ SDL_GetBasePath(void)
     }
 
     canon = canonicalisePath((const char *)regs.r[0], "Run$Path");
-    if (!canon) {
+    if (canon == NULL) {
         return NULL;
     }
 
@@ -167,22 +167,22 @@ SDL_GetPrefPath(const char *org, const char *app)
     size_t len;
     _kernel_oserror *error;
 
-    if (!app) {
+    if (app == NULL) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (!org) {
+    if (org == NULL) {
         org = "";
     }
 
     canon = canonicalisePath("<Choices$Write>", "Run$Path");
-    if (!canon) {
+    if (canon == NULL) {
         return NULL;
     }
 
     len = SDL_strlen(canon) + SDL_strlen(org) + SDL_strlen(app) + 4;
     dir = (char *) SDL_malloc(len);
-    if (!dir) {
+    if (dir == NULL) {
         SDL_OutOfMemory();
         SDL_free(canon);
         return NULL;

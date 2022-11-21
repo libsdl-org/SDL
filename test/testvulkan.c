@@ -233,7 +233,7 @@ static void createInstance(void)
         quit(2);
     }
     extensions = (const char **) SDL_malloc(sizeof(const char *) * extensionCount);
-    if (!extensions) {
+    if (extensions == NULL) {
         SDL_OutOfMemory();
         quit(2);
     }
@@ -309,7 +309,7 @@ static void findPhysicalDevice(void)
         quit(2);
     }
     physicalDevices = (VkPhysicalDevice *) SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
-    if (!physicalDevices) {
+    if (physicalDevices == NULL) {
         SDL_OutOfMemory();
         quit(2);
     }
@@ -343,7 +343,7 @@ static void findPhysicalDevice(void)
             SDL_free(queueFamiliesProperties);
             queueFamiliesPropertiesAllocatedSize = queueFamiliesCount;
             queueFamiliesProperties = (VkQueueFamilyProperties *) SDL_malloc(sizeof(VkQueueFamilyProperties) * queueFamiliesPropertiesAllocatedSize);
-            if (!queueFamiliesProperties) {
+            if (queueFamiliesProperties == NULL) {
                 SDL_free(physicalDevices);
                 SDL_free(deviceExtensions);
                 SDL_OutOfMemory();
@@ -406,7 +406,7 @@ static void findPhysicalDevice(void)
             SDL_free(deviceExtensions);
             deviceExtensionsAllocatedSize = deviceExtensionCount;
             deviceExtensions = SDL_malloc(sizeof(VkExtensionProperties) * deviceExtensionsAllocatedSize);
-            if (!deviceExtensions) {
+            if (deviceExtensions == NULL) {
                 SDL_free(physicalDevices);
                 SDL_free(queueFamiliesProperties);
                 SDL_OutOfMemory();

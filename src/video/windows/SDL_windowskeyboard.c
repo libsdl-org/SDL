@@ -249,7 +249,7 @@ WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     HIMC himc = 0;
 
-    if (!rect) {
+    if (rect == NULL) {
         SDL_InvalidParamError("rect");
         return;
     }
@@ -717,7 +717,7 @@ IME_SetupAPI(SDL_VideoData *videodata)
         return;
 
     hime = SDL_LoadObject(ime_file);
-    if (!hime)
+    if (hime == NULL)
         return;
 
     videodata->GetReadingString = (UINT (WINAPI *)(HIMC, UINT, LPWSTR, PINT, BOOL*, PUINT))
@@ -1217,7 +1217,7 @@ STDMETHODIMP_(ULONG) TSFSink_Release(TSFSink *sink)
 
 STDMETHODIMP UIElementSink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 {
-    if (!ppv) {
+    if (ppv == NULL) {
         return E_INVALIDARG;
     }
 
@@ -1254,7 +1254,7 @@ STDMETHODIMP UIElementSink_BeginUIElement(TSFSink *sink, DWORD dwUIElementId, BO
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element) {
+    if (element == NULL) {
         return E_INVALIDARG;
     }
 
@@ -1280,7 +1280,7 @@ STDMETHODIMP UIElementSink_UpdateUIElement(TSFSink *sink, DWORD dwUIElementId)
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element) {
+    if (element == NULL) {
         return E_INVALIDARG;
     }
 
@@ -1307,7 +1307,7 @@ STDMETHODIMP UIElementSink_EndUIElement(TSFSink *sink, DWORD dwUIElementId)
     ITfReadingInformationUIElement *preading = 0;
     ITfCandidateListUIElement *pcandlist = 0;
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element) {
+    if (element == NULL) {
         return E_INVALIDARG;
     }
 
@@ -1329,7 +1329,7 @@ STDMETHODIMP UIElementSink_EndUIElement(TSFSink *sink, DWORD dwUIElementId)
 
 STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
 {
-    if (!ppv) {
+    if (ppv == NULL) {
         return E_INVALIDARG;
     }
 

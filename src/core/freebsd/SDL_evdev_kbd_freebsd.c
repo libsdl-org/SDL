@@ -233,7 +233,7 @@ SDL_EVDEV_kbd_init(void)
     SDL_zero(mData);
     mData.operation = MOUSE_HIDE;
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(SDL_EVDEV_keyboard_state));
-    if (!kbd) {
+    if (kbd == NULL) {
         return NULL;
     }
 
@@ -303,7 +303,7 @@ SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 {
     struct mouse_info mData;
 
-    if (!kbd) {
+    if (kbd == NULL) {
         return;
     }
     SDL_zero(mData);
@@ -482,7 +482,7 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
 
     key_map = *kbd->key_map;
 
-    if (!kbd) {
+    if (kbd == NULL) {
         return;
     }
 

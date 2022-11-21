@@ -31,7 +31,7 @@ SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1)
 {
     int posted;
 
-    if (!display) {
+    if (display == NULL) {
         return 0;
     }
     switch (displayevent) {

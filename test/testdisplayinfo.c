@@ -20,7 +20,7 @@
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)
 {
-    if (!mode)
+    if (mode == NULL)
         return;
 
     SDL_Log("%s: fmt=%s w=%d h=%d refresh=%d\n",

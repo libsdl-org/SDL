@@ -73,7 +73,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
 void
 SDL_DestroySemaphore(SDL_sem * sem)
 {
-    if (!sem) return;
+    if (sem == NULL) return;
 
     DosCloseMutexSem(sem->hMtx);
     DosCloseEventSem(sem->hEv);

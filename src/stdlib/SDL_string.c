@@ -1147,7 +1147,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
 {
     int retval = 0;
 
-    if (!text || !*text) {
+    if (text == NULL || !*text) {
         return -1;
     }
 
@@ -1555,7 +1555,7 @@ SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
 {/* left-pad num with zeroes. */
     size_t sz, pad, have_sign;
 
-    if (!info)
+    if (info == NULL)
         return;
 
     have_sign = 0;

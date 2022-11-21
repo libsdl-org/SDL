@@ -600,7 +600,7 @@ static const char *GetControllerTypeOverride( int nVID, int nPID )
 
 		SDL_snprintf(key, sizeof(key), "0x%.4x/0x%.4x=", nVID, nPID);
 		spot = SDL_strstr(hint, key);
-		if (!spot) {
+		if (spot == NULL) {
 			SDL_snprintf(key, sizeof(key), "0x%.4X/0x%.4X=", nVID, nPID);
 			spot = SDL_strstr(hint, key);
 		}

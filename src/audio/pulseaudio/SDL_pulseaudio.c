@@ -306,7 +306,7 @@ ConnectToPulseServer_Internal(pa_mainloop **_mainloop, pa_context **_context)
     SDL_assert(mainloop_api);  /* this never fails, right? */
 
     context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
-    if (!context) {
+    if (context == NULL) {
         PULSEAUDIO_pa_mainloop_free(mainloop);
         return SDL_SetError("pa_context_new() failed");
     }

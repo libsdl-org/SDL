@@ -118,7 +118,7 @@ Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
-    if (!rect) {
+    if (rect == NULL) {
         SDL_InvalidParamError("rect");
         return;
     }

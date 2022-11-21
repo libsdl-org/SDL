@@ -264,7 +264,7 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
 
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1)*sizeof(*SDL_joystick_players));
-        if (!new_players) {
+        if (new_players == NULL) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
@@ -410,7 +410,7 @@ SDL_JoystickPathForIndex(int device_index)
     SDL_UnlockJoysticks();
 
     /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
-    if (!path) {
+    if (path == NULL) {
         SDL_Unsupported();
     }
     return path;
@@ -1389,7 +1389,7 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
     }
 
     events = SDL_small_alloc(SDL_Event, num_events, &isstack);
-    if (!events) {
+    if (events == NULL) {
         return;
     }
 
@@ -1910,10 +1910,10 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         return SDL_strdup(custom_name);
     }
 
-    if (!vendor_name) {
+    if (vendor_name == NULL) {
         vendor_name = "";
     }
-    if (!product_name) {
+    if (product_name == NULL) {
         product_name = "";
     }
 
@@ -1965,7 +1965,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         name = SDL_strdup("Controller");
     }
 
-    if (!name) {
+    if (name == NULL) {
         return NULL;
     }
 
@@ -2030,7 +2030,7 @@ SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version
 
     SDL_zero(guid);
 
-    if (!name) {
+    if (name == NULL) {
         name = "";
     }
 

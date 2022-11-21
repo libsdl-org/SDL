@@ -489,7 +489,7 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
 
     /* we keep no streaming state here, so pad with silence on both ends. */
     padding = (float *) SDL_calloc(paddingsamples ? paddingsamples : 1, sizeof (float));
-    if (!padding) {
+    if (padding == NULL) {
         SDL_OutOfMemory();
         return;
     }
@@ -836,7 +836,7 @@ EnsureStreamBufferSize(SDL_AudioStream *stream, const int newlen)
         ptr = stream->work_buffer_base;
     } else {
         ptr = (Uint8 *) SDL_realloc(stream->work_buffer_base, newlen + 32);
-        if (!ptr) {
+        if (ptr == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -912,12 +912,12 @@ SetupLibSampleRateResampling(SDL_AudioStream *stream)
 
     if (SRC_available) {
         state = SRC_src_new(SRC_converter, stream->pre_resample_channels, &result);
-        if (!state) {
+        if (state == NULL) {
             SDL_SetError("src_new() failed: %s", SRC_src_strerror(result));
         }
     }
 
-    if (!state) {
+    if (state == NULL) {
         SDL_CleanupAudioStreamResampler_SRC(stream);
         return SDL_FALSE;
     }
@@ -984,7 +984,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
     SDL_AudioStream *retval;
 
     retval = (SDL_AudioStream *) SDL_calloc(1, sizeof (SDL_AudioStream));
-    if (!retval) {
+    if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1127,7 +1127,7 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
     #endif
 
     workbuf = EnsureStreamBufferSize(stream, workbuflen);
-    if (!workbuf) {
+    if (workbuf == NULL) {
         return -1;  /* probably out of memory. */
     }
 
@@ -1219,10 +1219,10 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
     SDL_Log("AUDIOSTREAM: wants to put %d preconverted bytes\n", buflen);
     #endif
 
-    if (!stream) {
+    if (stream == NULL) {
         return SDL_InvalidParamError("stream");
     }
-    if (!buf) {
+    if (buf == NULL) {
         return SDL_InvalidParamError("buf");
     }
     if (len == 0) {
@@ -1274,7 +1274,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
 
 int SDL_AudioStreamFlush(SDL_AudioStream *stream)
 {
-    if (!stream) {
+    if (stream == NULL) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -1333,10 +1333,10 @@ SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
     SDL_Log("AUDIOSTREAM: want to get %d converted bytes\n", len);
     #endif
 
-    if (!stream) {
+    if (stream == NULL) {
         return SDL_InvalidParamError("stream");
     }
-    if (!buf) {
+    if (buf == NULL) {
         return SDL_InvalidParamError("buf");
     }
     if (len <= 0) {
@@ -1359,7 +1359,7 @@ SDL_AudioStreamAvailable(SDL_AudioStream *stream)
 void
 SDL_AudioStreamClear(SDL_AudioStream *stream)
 {
-    if (!stream) {
+    if (stream == NULL) {
         SDL_InvalidParamError("stream");
     } else {
         SDL_ClearDataQueue(stream->queue, stream->packetlen * 2);

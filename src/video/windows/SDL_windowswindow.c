@@ -305,7 +305,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
 
     /* Allocate the window data */
     data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         return SDL_OutOfMemory();
     }
     data->window = window;
@@ -1079,7 +1079,7 @@ WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
     filename_utf8 = WIN_StringToUTF8(data->ICMFileName);
     if (filename_utf8) {
         iccProfileData = SDL_LoadFile(filename_utf8, size);
-        if (!iccProfileData) {
+        if (iccProfileData == NULL) {
             SDL_SetError("Could not open ICC profile");
         }
         SDL_free(filename_utf8);
@@ -1293,7 +1293,7 @@ void WIN_OnWindowEnter(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (!data || !data->hwnd) {
+    if (data == NULL || !data->hwnd) {
         /* The window wasn't fully initialized */
         return;
     }

@@ -190,13 +190,13 @@ static void AddController(int device_index, SDL_bool verbose)
     }
 
     controller = SDL_GameControllerOpen(device_index);
-    if (!controller) {
+    if (controller == NULL) {
         SDL_Log("Couldn't open controller: %s\n", SDL_GetError());
         return;
     }
 
     controllers = (SDL_GameController **)SDL_realloc(gamecontrollers, (num_controllers + 1) * sizeof(*controllers));
-    if (!controllers) {
+    if (controllers == NULL) {
         SDL_GameControllerClose(controller);
         return;
     }

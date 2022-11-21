@@ -118,7 +118,7 @@ wayland_dbus_read_cursor_size(int *size)
     DBusMessage *reply;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-    if (!dbus || !size) {
+    if (dbus == NULL || size == NULL) {
         return SDL_FALSE;
     }
 
@@ -141,7 +141,7 @@ wayland_dbus_read_cursor_theme(char **theme)
     DBusMessage *reply;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
-    if (!dbus || !theme) {
+    if (dbus == NULL || theme == NULL) {
         return SDL_FALSE;
     }
 
@@ -297,7 +297,7 @@ wayland_create_tmp_file(off_t size)
     int fd;
 
     xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
-    if (!xdg_path) {
+    if (xdg_path == NULL) {
         return -1;
     }
 
@@ -388,7 +388,7 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         SDL_VideoDevice *vd = SDL_GetVideoDevice ();
         SDL_VideoData *wd = (SDL_VideoData *) vd->driverdata;
         Wayland_CursorData *data = SDL_calloc (1, sizeof (Wayland_CursorData));
-        if (!data) {
+        if (data == NULL) {
             SDL_OutOfMemory();
             SDL_free(cursor);
             return NULL;
@@ -434,7 +434,7 @@ Wayland_CreateSystemCursor(SDL_SystemCursor id)
     cursor = SDL_calloc(1, sizeof (*cursor));
     if (cursor) {
         Wayland_CursorData *cdata = SDL_calloc (1, sizeof (Wayland_CursorData));
-        if (!cdata) {
+        if (cdata == NULL) {
             SDL_OutOfMemory();
             SDL_free(cursor);
             return NULL;
@@ -480,7 +480,7 @@ Wayland_FreeCursorData(Wayland_CursorData *d)
 static void
 Wayland_FreeCursor(SDL_Cursor *cursor)
 {
-    if (!cursor) {
+    if (cursor == NULL) {
         return;
     }
 
@@ -505,7 +505,7 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
     struct wl_pointer *pointer = d->pointer;
     float scale = 1.0f;
 
-    if (!pointer) {
+    if (pointer == NULL) {
         return -1;
     }
 

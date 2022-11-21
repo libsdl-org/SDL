@@ -333,7 +333,7 @@ X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScre
     }
 
     output_info = X11_XRRGetOutputInfo(dpy, res, outputid);
-    if (!output_info || !output_info->crtc || output_info->connection == RR_Disconnected) {
+    if (output_info == NULL || !output_info->crtc || output_info->connection == RR_Disconnected) {
         X11_XRRFreeOutputInfo(output_info);
         return 0;  /* ignore this one. */
     }
@@ -345,7 +345,7 @@ X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScre
     X11_XRRFreeOutputInfo(output_info);
 
     crtc = X11_XRRGetCrtcInfo(dpy, res, output_crtc);
-    if (!crtc) {
+    if (crtc == NULL) {
         return 0;  /* oh well, ignore it. */
     }
 
@@ -361,12 +361,12 @@ X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScre
     X11_XRRFreeCrtcInfo(crtc);
 
     displaydata = (SDL_DisplayData *) SDL_calloc(1, sizeof(*displaydata));
-    if (!displaydata) {
+    if (displaydata == NULL) {
         return SDL_OutOfMemory();
     }
 
     modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
-    if (!modedata) {
+    if (modedata == NULL) {
         SDL_free(displaydata);
         return SDL_OutOfMemory();
     }
@@ -436,7 +436,7 @@ X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent *ev)
             XVisualInfo vinfo;
             if (get_visualinfo(dpy, screen, &vinfo) == 0) {
                 XRRScreenResources *res = X11_XRRGetScreenResourcesCurrent(dpy, RootWindow(dpy, screen));
-                if (!res || res->noutput == 0) {
+                if (res == NULL || res->noutput == 0) {
                     if (res) {
                         X11_XRRFreeScreenResources(res);
                     }
@@ -495,13 +495,13 @@ X11_InitModes_XRandR(_THIS)
             }
 
             res = X11_XRRGetScreenResourcesCurrent(dpy, RootWindow(dpy, screen));
-            if (!res || res->noutput == 0) {
+            if (res == NULL || res->noutput == 0) {
                 if (res) {
                     X11_XRRFreeScreenResources(res);
                 }
 
                 res = X11_XRRGetScreenResources(dpy, RootWindow(dpy, screen));
-                if (!res) {
+                if (res == NULL) {
                     continue;
                 }
             }
@@ -540,7 +540,7 @@ GetXftDPI(Display* dpy)
 
     xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
 
-    if(!xdefault_resource) {
+    if(xdefault_resource == NULL) {
         return 0;
     }
 
@@ -593,12 +593,12 @@ static int X11_InitModes_StdXlib(_THIS)
     mode.refresh_rate = 0;  /* don't know it, sorry. */
 
     displaydata = (SDL_DisplayData *) SDL_calloc(1, sizeof(*displaydata));
-    if (!displaydata) {
+    if (displaydata == NULL) {
         return SDL_OutOfMemory();
     }
 
     modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
-    if (!modedata) {
+    if (modedata == NULL) {
         SDL_free(displaydata);
         return SDL_OutOfMemory();
     }
@@ -700,7 +700,7 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
             if (output_info && output_info->connection != RR_Disconnected) {
                 for (i = 0; i < output_info->nmode; ++i) {
                     modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
-                    if (!modedata) {
+                    if (modedata == NULL) {
                         continue;
                     }
                     mode.driverdata = modedata;
@@ -769,18 +769,18 @@ X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode
         Status status;
 
         res = X11_XRRGetScreenResources (display, RootWindow(display, data->screen));
-        if (!res) {
+        if (res == NULL) {
             return SDL_SetError("Couldn't get XRandR screen resources");
         }
 
         output_info = X11_XRRGetOutputInfo(display, res, data->xrandr_output);
-        if (!output_info || output_info->connection == RR_Disconnected) {
+        if (output_info == NULL || output_info->connection == RR_Disconnected) {
             X11_XRRFreeScreenResources(res);
             return SDL_SetError("Couldn't get XRandR output info");
         }
 
         crtc = X11_XRRGetCrtcInfo(display, res, output_info->crtc);
-        if (!crtc) {
+        if (crtc == NULL) {
             X11_XRRFreeOutputInfo(output_info);
             X11_XRRFreeScreenResources(res);
             return SDL_SetError("Couldn't get XRandR crtc info");

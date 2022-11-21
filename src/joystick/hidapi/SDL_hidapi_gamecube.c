@@ -146,7 +146,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 #endif
 
     ctx = (SDL_DriverGameCube_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -258,7 +258,7 @@ HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_Driver
     }
 
     joystick = SDL_JoystickFromInstanceID(ctx->joysticks[i]);
-    if (!joystick) {
+    if (joystick == NULL) {
         /* Hasn't been opened yet, skip */
         return;
     }

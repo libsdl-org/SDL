@@ -189,7 +189,7 @@ WIN_GL_GetProcAddress(_THIS, const char *proc)
 
     /* This is to pick up extensions */
     func = _this->gl_data->wglGetProcAddress(proc);
-    if (!func) {
+    if (func == NULL) {
         /* This is probably a normal GL function */
         func = GetProcAddress(_this->gl_config.dll_handle, proc);
     }
@@ -356,7 +356,7 @@ HasExtension(const char *extension, const char *extensions)
         return SDL_FALSE;
     }
 
-    if (!extensions) {
+    if (extensions == NULL) {
         return SDL_FALSE;
     }
 
@@ -368,7 +368,7 @@ HasExtension(const char *extension, const char *extensions)
 
     for (;;) {
         where = SDL_strstr(start, extension);
-        if (!where)
+        if (where == NULL)
             break;
 
         terminator = where + SDL_strlen(extension);
@@ -810,15 +810,15 @@ WIN_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     }
 
     /* sanity check that higher level handled this. */
-    SDL_assert(window || (!window && !context));
+    SDL_assert(window || (window == NULL && !context));
 
     /* Some Windows drivers freak out if hdc is NULL, even when context is
        NULL, against spec. Since hdc is _supposed_ to be ignored if context
        is NULL, we either use the current GL window, or do nothing if we
        already have no current context. */
-    if (!window) {
+    if (window == NULL) {
         window = SDL_GL_GetCurrentWindow();
-        if (!window) {
+        if (window == NULL) {
             SDL_assert(SDL_GL_GetCurrentContext() == NULL);
             return 0;  /* already done. */
         }

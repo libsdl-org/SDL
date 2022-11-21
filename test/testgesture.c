@@ -132,7 +132,7 @@ DrawScreen(SDL_Window *window)
     SDL_Surface *screen = SDL_GetWindowSurface(window);
     int i;
 
-    if (!screen) {
+    if (screen == NULL) {
         return;
     }
 

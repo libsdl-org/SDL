@@ -565,7 +565,7 @@ void _Redraw(int rendererID)
         {
             char *p = utf8_advance(markedText, cursor);
             char c = 0;
-            if (!p) {
+            if (p == NULL) {
                 p = &markedText[SDL_strlen(markedText)];
             }
 

@@ -40,7 +40,7 @@ SDL_LoadObject(const char *sofile)
     CHAR    acError[256];
     PSZ     pszModName;
 
-    if (!sofile) {
+    if (sofile == NULL) {
         SDL_InvalidParamError("sofile");
         return NULL;
     }

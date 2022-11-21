@@ -113,7 +113,7 @@ PS2_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GSTEXTURE* ps2_tex = (GSTEXTURE*) SDL_calloc(1, sizeof(GSTEXTURE));
 
-    if (!ps2_tex) {
+    if (ps2_tex == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -218,7 +218,7 @@ PS2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
     gs_rgbaq rgbaq;
     int i;
 
-    if (!vertices) {
+    if (vertices == NULL) {
         return -1;
     }
 
@@ -253,7 +253,7 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     if (texture) {
         GSPRIMSTQPOINT *vertices = (GSPRIMSTQPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMSTQPOINT), 4, &cmd->data.draw.first);
         
-        if (!vertices) {
+        if (vertices == NULL) {
             return -1;
         }
 
@@ -286,7 +286,7 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     } else {
         GSPRIMPOINT *vertices = (GSPRIMPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMPOINT), 4, &cmd->data.draw.first);
 
-        if (!vertices) {
+        if (vertices == NULL) {
             return -1;
         }
 
@@ -605,13 +605,13 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_bool dynamicVsync;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     data = (PS2_RenderData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         PS2_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return NULL;

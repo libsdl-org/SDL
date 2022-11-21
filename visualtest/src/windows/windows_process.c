@@ -37,12 +37,12 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     STARTUPINFO sui = {0};
     sui.cb = sizeof(sui);
 
-    if(!file)
+    if(file == NULL)
     {
         SDLTest_LogError("Path to executable to launched cannot be NULL.");
         return 0;
     }
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo cannot be NULL.");
         return 0;
@@ -58,7 +58,7 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     }
 
     working_directory = (char*)SDL_malloc(path_length + 1);
-    if(!working_directory)
+    if(working_directory == NULL)
     {
         SDLTest_LogError("Could not allocate working_directory - SDL_malloc() failed.");
         return 0;
@@ -73,12 +73,12 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     }
 
     /* join the file path and the args string together */
-    if (!args) {
+    if (args == NULL) {
         args = "";
     }
     args_length = SDL_strlen(args);
     command_line = (char*)SDL_malloc(path_length + args_length + 2);
-    if(!command_line)
+    if(command_line == NULL)
     {
         SDLTest_LogError("Could not allocate command_line - SDL_malloc() failed.");
         return 0;
@@ -112,12 +112,12 @@ SDL_GetProcessExitStatus(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
     DWORD exit_status;
     BOOL success;
 
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo cannot be NULL");
         return 0;
     }
-    if(!ps)
+    if(ps == NULL)
     {
         SDLTest_LogError("ps cannot be NULL");
         return 0;
@@ -146,7 +146,7 @@ SDL_IsProcessRunning(SDL_ProcessInfo* pinfo)
     DWORD exit_status;
     BOOL success;
 
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo cannot be NULL");
         return -1;
@@ -194,12 +194,12 @@ int
 SDL_QuitProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     DWORD wait_result;
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(!ps)
+    if(ps == NULL)
     {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
@@ -241,12 +241,12 @@ SDL_KillProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
     BOOL success;
     DWORD exit_status, wait_result;
 
-    if(!pinfo)
+    if(pinfo == NULL)
     {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(!ps)
+    if(ps == NULL)
     {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;

@@ -233,13 +233,13 @@ xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
 
     /* don't know about this device yet, query and cache it. */
     devinfo = (SDL_XInput2DeviceInfo *) SDL_calloc(1, sizeof (SDL_XInput2DeviceInfo));
-    if (!devinfo) {
+    if (devinfo == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     xidevinfo = X11_XIQueryDevice(videodata->display, device_id, &i);
-    if (!xidevinfo) {
+    if (xidevinfo == NULL) {
         SDL_free(devinfo);
         return NULL;
     }
@@ -293,7 +293,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             }
 
             devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
-            if (!devinfo) {
+            if (devinfo == NULL) {
                 return 0;  /* oh well. */
             }
 

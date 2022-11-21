@@ -167,19 +167,19 @@ X11_CreateDevice(void)
     /* Open the display first to be sure that X11 is available */
     x11_display = X11_XOpenDisplay(display);
 
-    if (!x11_display) {
+    if (x11_display == NULL) {
         SDL_X11_UnloadSymbols();
         return NULL;
     }
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
     data = (struct SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
-    if (!data) {
+    if (data == NULL) {
         SDL_free(device);
         SDL_OutOfMemory();
         return NULL;

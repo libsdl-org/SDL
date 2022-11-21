@@ -272,7 +272,7 @@ QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char** device_name)
 {
     DIPROPSTRING dipstr;
 
-    if (!device || !device_name) {
+    if (!device || device_name == NULL) {
         return SDL_FALSE;
     }
 
@@ -295,7 +295,7 @@ QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char** device_path)
 {
     DIPROPGUIDANDPATH dippath;
 
-    if (!device || !device_path) {
+    if (!device || device_path == NULL) {
         return SDL_FALSE;
     }
 
@@ -321,7 +321,7 @@ QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_
 {
     DIPROPDWORD dipdw;
 
-    if (!device || !vendor_id || !product_id) {
+    if (!device || vendor_id == NULL || product_id == NULL) {
         return SDL_FALSE;
     }
 
@@ -343,7 +343,7 @@ QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_
 
 void FreeRumbleEffectData(DIEFFECT *effect)
 {
-    if (!effect) {
+    if (effect == NULL) {
         return;
     }
     SDL_free(effect->rgdwAxes);
@@ -359,7 +359,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 
     /* Create the effect */
     effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect));
-    if (!effect) {
+    if (effect == NULL) {
         return NULL;
     }
     effect->dwSize = sizeof(*effect);
@@ -383,7 +383,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     effect->dwFlags |= DIEFF_CARTESIAN;
 
     periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (!periodic) {
+    if (periodic == NULL) {
         FreeRumbleEffectData(effect);
         return NULL;
     }

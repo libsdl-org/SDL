@@ -228,7 +228,7 @@ X11_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display;
 
-    if (!data) {
+    if (data == NULL) {
         /* The window wasn't fully initialized */
         return;
     }

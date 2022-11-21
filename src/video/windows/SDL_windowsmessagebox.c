@@ -345,7 +345,7 @@ static SDL_bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
 
     if (size > dialog->size) {
         void *data = SDL_realloc(dialog->data, size);
-        if (!data) {
+        if (data == NULL) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
@@ -388,12 +388,12 @@ static SDL_bool AddDialogString(WIN_DialogData *dialog, const char *string)
     size_t count;
     SDL_bool status;
 
-    if (!string) {
+    if (string == NULL) {
         string = "";
     }
 
     wstring = WIN_UTF8ToStringW(string);
-    if (!wstring) {
+    if (wstring == NULL) {
         return SDL_FALSE;
     }
 
@@ -523,7 +523,7 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
     Vec2ToDLU(&dialogTemplate.cx, &dialogTemplate.cy);
 
     dialog = (WIN_DialogData *)SDL_calloc(1, sizeof(*dialog));
-    if (!dialog) {
+    if (dialog == NULL) {
         return NULL;
     }
 
@@ -820,7 +820,7 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     Size.cy += ButtonHeight + TextMargin;
 
     dialog = CreateDialogData(Size.cx, Size.cy, messageboxdata->title);
-    if (!dialog) {
+    if (dialog == NULL) {
         return -1;
     }
 

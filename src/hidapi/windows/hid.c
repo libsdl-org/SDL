@@ -962,7 +962,7 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 	typedef BOOL (WINAPI *CancelIoEx_t)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
 	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
 
-	if (!dev)
+	if (dev == NULL)
 		return;
 
 	if (CancelIoExFunc) {

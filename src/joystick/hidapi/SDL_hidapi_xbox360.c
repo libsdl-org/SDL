@@ -147,7 +147,7 @@ HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverXbox360_Context *ctx;
 
     ctx = (SDL_DriverXbox360_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -345,7 +345,7 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_XBOX_PROTOCOL
         HIDAPI_DumpPacket("Xbox 360 packet: size = %d", data, size);
 #endif
-        if (!joystick) {
+        if (joystick == NULL) {
             continue;
         }
 

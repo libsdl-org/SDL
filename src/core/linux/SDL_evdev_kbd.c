@@ -347,7 +347,7 @@ SDL_EVDEV_kbd_init(void)
     char shift_state[ sizeof (long) ] = {TIOCL_GETSHIFTSTATE, 0};
 
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(*kbd));
-    if (!kbd) {
+    if (kbd == NULL) {
         return NULL;
     }
 
@@ -413,7 +413,7 @@ SDL_EVDEV_kbd_init(void)
 void
 SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (!kbd) {
+    if (kbd == NULL) {
         return;
     }
 
@@ -768,7 +768,7 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
     unsigned short *key_map;
     unsigned short keysym;
 
-    if (!kbd) {
+    if (kbd == NULL) {
         return;
     }
 
@@ -776,7 +776,7 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
 
     shift_final = (kbd->shift_state | kbd->slockstate) ^ kbd->lockstate;
     key_map = kbd->key_maps[shift_final];
-    if (!key_map) {
+    if (key_map == NULL) {
         /* Unsupported shift state (e.g. ctrl = 4, alt = 8), just reset to the default state */
         kbd->shift_state = 0;
         kbd->slockstate = 0;

@@ -57,7 +57,7 @@ SDL_DestroyCond(SDL_cond *cond)
 int
 SDL_CondSignal(SDL_cond *cond)
 {
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_SetError("Passed a NULL condition variable");
     }
 
@@ -69,7 +69,7 @@ SDL_CondSignal(SDL_cond *cond)
 int
 SDL_CondBroadcast(SDL_cond *cond)
 {
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_SetError("Passed a NULL condition variable");
     }
 
@@ -103,10 +103,10 @@ SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
 {
     Result res;
 
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_SetError("Passed a NULL condition variable");
     }
-    if (!mutex) {
+    if (mutex == NULL) {
         return SDL_SetError("Passed a NULL mutex");
     }
 

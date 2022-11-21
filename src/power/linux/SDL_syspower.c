@@ -441,7 +441,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
     DIR *dirp;
 
     dirp = opendir(base);
-    if (!dirp) {
+    if (dirp == NULL) {
         return SDL_FALSE;
     }
 
@@ -635,9 +635,9 @@ SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *second
     char **paths = NULL;
     int i, numpaths = 0;
 
-    if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
-            DBUS_TYPE_INVALID,
-            DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
+    if (dbus == NULL || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
+                                                         DBUS_TYPE_INVALID,
+                                                         DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
         return SDL_FALSE;  /* try a different approach than UPower. */
     }
 

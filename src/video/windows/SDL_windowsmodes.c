@@ -174,7 +174,7 @@ WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mod
     }
 
     data = (SDL_DisplayModeData *) SDL_malloc(sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         return SDL_FALSE;
     }
 
@@ -217,7 +217,7 @@ WIN_GetDisplayNameVista(const WCHAR *deviceName)
     LONG rc;
 
     dll = SDL_LoadObject("USER32.DLL");
-    if (!dll) {
+    if (dll == NULL) {
         return NULL;
     }
 
@@ -225,7 +225,7 @@ WIN_GetDisplayNameVista(const WCHAR *deviceName)
     pQueryDisplayConfig = (SDL_WIN32PROC_QueryDisplayConfig) SDL_LoadFunction(dll, "QueryDisplayConfig");
     pDisplayConfigGetDeviceInfo = (SDL_WIN32PROC_DisplayConfigGetDeviceInfo) SDL_LoadFunction(dll, "DisplayConfigGetDeviceInfo");
 
-    if (!pGetDisplayConfigBufferSizes || !pQueryDisplayConfig || !pDisplayConfigGetDeviceInfo) {
+    if (pGetDisplayConfigBufferSizes == NULL || pQueryDisplayConfig == NULL || pDisplayConfigGetDeviceInfo == NULL) {
         goto WIN_GetDisplayNameVista_failed;
     }
 
@@ -333,7 +333,7 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
     }
 
     displaydata = (SDL_DisplayData *) SDL_calloc(1, sizeof(*displaydata));
-    if (!displaydata) {
+    if (displaydata == NULL) {
         return SDL_FALSE;
     }
     SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
@@ -583,7 +583,7 @@ void WIN_ScreenPointFromSDL(int *x, int *y, int *dpiOut)
         *dpiOut = 96;
     }
 
-    if (!videodevice || !videodevice->driverdata) {
+    if (videodevice == NULL || !videodevice->driverdata) {
         return;
     }
 
@@ -637,7 +637,7 @@ void WIN_ScreenPointToSDL(int *x, int *y)
     float ddpi, hdpi, vdpi;
     int x_pixels, y_pixels;
 
-    if (!videodevice || !videodevice->driverdata) {
+    if (videodevice == NULL || !videodevice->driverdata) {
         return;
     }
 

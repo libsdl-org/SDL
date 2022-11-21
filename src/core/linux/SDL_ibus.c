@@ -115,7 +115,7 @@ IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *
     }
 
     dbus->message_iter_get_basic(inside, &struct_id);
-    if (!struct_id || SDL_strncmp(struct_id, struct_id, id_size) != 0) {
+    if (struct_id == NULL || SDL_strncmp(struct_id, struct_id, id_size) != 0) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -315,7 +315,7 @@ IBus_ReadAddressFromFile(const char *file_path)
     FILE *addr_file;
 
     addr_file = fopen(file_path, "r");
-    if (!addr_file) {
+    if (addr_file == NULL) {
         return NULL;
     }
 
@@ -361,7 +361,7 @@ IBus_GetDBusAddressFilename(void)
     }
     
     dbus = SDL_DBus_GetContext();
-    if (!dbus) {
+    if (dbus == NULL) {
         return NULL;
     }
     
@@ -375,7 +375,7 @@ IBus_GetDBusAddressFilename(void)
        and look up the address from a filepath using all those bits, eek. */
     disp_env = SDL_getenv("DISPLAY");
 
-    if (!disp_env || !*disp_env) {
+    if (disp_env == NULL || !*disp_env) {
         display = SDL_strdup(":0.0");
     } else {
         display = SDL_strdup(disp_env);
@@ -385,7 +385,7 @@ IBus_GetDBusAddressFilename(void)
     disp_num   = SDL_strrchr(display, ':');
     screen_num = SDL_strrchr(display, '.');
     
-    if (!disp_num) {
+    if (disp_num == NULL) {
         SDL_free(display);
         return NULL;
     }
@@ -413,7 +413,7 @@ IBus_GetDBusAddressFilename(void)
         SDL_strlcpy(config_dir, conf_env, sizeof(config_dir));
     } else {
         const char *home_env = SDL_getenv("HOME");
-        if (!home_env || !*home_env) {
+        if (home_env == NULL || !*home_env) {
             SDL_free(display);
             return NULL;
         }
@@ -519,7 +519,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 static SDL_bool
 IBus_CheckConnection(SDL_DBusContext *dbus)
 {
-    if (!dbus) {
+    if (dbus == NULL) {
         return SDL_FALSE;
     }
     
@@ -539,7 +539,7 @@ IBus_CheckConnection(SDL_DBusContext *dbus)
                 struct inotify_event *event = (struct inotify_event*) p;
                 if (event->len > 0) {
                     char *addr_file_no_path = SDL_strrchr(ibus_addr_file, '/');
-                    if (!addr_file_no_path) {
+                    if (addr_file_no_path == NULL) {
                         return SDL_FALSE;
                     }
                  
@@ -577,7 +577,7 @@ SDL_IBus_Init(void)
         char *addr;
         char *addr_file_dir;
 
-        if (!addr_file) {
+        if (addr_file == NULL) {
             return SDL_FALSE;
         }
         
@@ -585,7 +585,7 @@ SDL_IBus_Init(void)
         ibus_addr_file = SDL_strdup(addr_file);
         
         addr = IBus_ReadAddressFromFile(addr_file);
-        if (!addr) {
+        if (addr == NULL) {
             SDL_free(addr_file);
             return SDL_FALSE;
         }
@@ -724,7 +724,7 @@ SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
     }
 
     focused_win = SDL_GetKeyboardFocus();
-    if (!focused_win) {
+    if (focused_win == NULL) {
         return;
     }
 

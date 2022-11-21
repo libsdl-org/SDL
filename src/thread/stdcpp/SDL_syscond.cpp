@@ -69,7 +69,7 @@ extern "C"
 int
 SDL_CondSignal(SDL_cond * cond)
 {
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -82,7 +82,7 @@ extern "C"
 int
 SDL_CondBroadcast(SDL_cond * cond)
 {
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 

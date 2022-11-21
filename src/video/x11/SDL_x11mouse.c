@@ -94,7 +94,7 @@ X11_CreateXCursorCursor(SDL_Surface * surface, int hot_x, int hot_y)
     XcursorImage *image;
 
     image = X11_XcursorImageCreate(surface->w, surface->h);
-    if (!image) {
+    if (image == NULL) {
         SDL_OutOfMemory();
         return None;
     }
@@ -128,13 +128,13 @@ X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
     unsigned int width_bytes = ((surface->w + 7) & ~7) / 8;
 
     data_bits = SDL_calloc(1, surface->h * width_bytes);
-    if (!data_bits) {
+    if (data_bits == NULL) {
         SDL_OutOfMemory();
         return None;
     }
 
     mask_bits = SDL_calloc(1, surface->h * width_bytes);
-    if (!mask_bits) {
+    if (mask_bits == NULL) {
         SDL_free(data_bits);
         SDL_OutOfMemory();
         return None;

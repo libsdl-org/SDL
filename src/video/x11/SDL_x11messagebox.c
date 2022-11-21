@@ -250,7 +250,7 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
         const int linecount = CountLinesOfText(text);
         TextLineData *plinedata = (TextLineData *) SDL_malloc(sizeof (TextLineData) * linecount);
 
-        if (!plinedata) {
+        if (plinedata == NULL) {
             return SDL_OutOfMemory();
         }
 
@@ -278,7 +278,7 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
             text += length + 1;
 
             /* Break if there are no more linefeeds. */
-            if ( !lf )
+            if (lf == NULL)
                 break;
         }
 

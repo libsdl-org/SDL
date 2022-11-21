@@ -133,7 +133,7 @@ main(int argc, char *argv[])
         quit(3);
     }
     window = SDL_CreateWindowFrom(native_window);
-    if (!window) {
+    if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s\n", SDL_GetError());
         quit(4);
     }
@@ -141,7 +141,7 @@ main(int argc, char *argv[])
 
     /* Create the renderer */
     renderer = SDL_CreateRenderer(window, -1, 0);
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         quit(5);
     }
@@ -151,7 +151,7 @@ main(int argc, char *argv[])
     SDL_RenderClear(renderer);
 
     sprite = LoadTexture(renderer, "icon.bmp", SDL_TRUE, NULL, NULL);
-    if (!sprite) {
+    if (sprite == NULL) {
         quit(6);
     }
 

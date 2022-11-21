@@ -17,7 +17,7 @@ CountTokens(char* args)
     int index, num_tokens;
     int state; /* current state of the DFA */
 
-    if (!args) {
+    if (args == NULL) {
         return -1;
     }
 
@@ -68,12 +68,12 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
 {
     int index, state, done, st_index, token_index;
 
-    if(!str)
+    if(str == NULL)
     {
         SDLTest_LogError("str argument cannot be NULL");
         return 0;
     }
-    if(!tokens)
+    if(tokens == NULL)
     {
         SDLTest_LogError("tokens argument cannot be NULL");
         return 0;
@@ -179,7 +179,7 @@ SDLVisualTest_Tokenize(char* str, int max_token_len)
     int num_tokens;
     char** tokens;
 
-    if(!str)
+    if(str == NULL)
     {
         SDLTest_LogError("str argument cannot be NULL");
         return NULL;
@@ -218,7 +218,7 @@ SDLVisualTest_ParseArgsToArgv(char* args)
 
     /* allocate space for arguments */
     argv = (char**)SDL_malloc((num_tokens + 2) * sizeof(char*));
-    if(!argv)
+    if(argv == NULL)
     {
         SDLTest_LogError("SDL_malloc() failed.");
         return NULL;

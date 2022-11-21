@@ -56,10 +56,10 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     }
 
     /* Load the Vulkan loader library */
-    if (!path) {
+    if (path == NULL) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
-    if (!path) {
+    if (path == NULL) {
         path = DEFAULT_VULKAN;
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
@@ -83,7 +83,7 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
-    if (!extensions) {
+    if (extensions == NULL) {
         goto fail;
     }
     for(i = 0; i < extensionCount; i++)
@@ -117,7 +117,7 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     else
     {
         const char *libX11XCBLibraryName = SDL_getenv("SDL_X11_XCB_LIBRARY");
-        if (!libX11XCBLibraryName) {
+        if (libX11XCBLibraryName == NULL) {
             libX11XCBLibraryName = "libX11-xcb.so";
         }
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);

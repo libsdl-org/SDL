@@ -48,7 +48,7 @@ SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void
     FreePreviousWindowFramebuffer(window);
     framebuffer = CreateNewWindowFramebuffer(window);
 
-    if (!framebuffer) {
+    if (framebuffer == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -86,7 +86,7 @@ SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rect
     u32 bufsize;
 
     surface = (SDL_Surface *) SDL_GetWindowData(window, N3DS_SURFACE);
-    if (!surface) {
+    if (surface == NULL) {
         return SDL_SetError("%s: Unable to get the window surface.", __func__);
     }
 

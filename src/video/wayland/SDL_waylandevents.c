@@ -433,7 +433,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window;
 
-    if (!surface) {
+    if (surface == NULL) {
         /* enter event for a window we've just destroyed */
         return;
     }
@@ -472,7 +472,7 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
 
-    if (!surface || !SDL_WAYLAND_own_surface(surface)) {
+    if (surface == NULL || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
@@ -964,7 +964,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     char *map_str;
     const char *locale;
 
-    if (!data) {
+    if (data == NULL) {
         close(fd);
         return;
     }
@@ -1103,7 +1103,7 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     SDL_WindowData *window;
     uint32_t *key;
 
-    if (!surface) {
+    if (surface == NULL) {
         /* enter event for a window we've just destroyed */
         return;
     }
@@ -1146,7 +1146,7 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window;
 
-    if (!surface || !SDL_WAYLAND_own_surface(surface)) {
+    if (surface == NULL || !SDL_WAYLAND_own_surface(surface)) {
         return;
     }
 
@@ -1175,7 +1175,7 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
 
-    if (!window || window->keyboard_device != input || !input->xkb.state) {
+    if (window == NULL || window->keyboard_device != input || !input->xkb.state) {
         return SDL_FALSE;
     }
 
@@ -2098,7 +2098,7 @@ tablet_tool_handle_proximity_in(void* data, struct zwp_tablet_tool_v2* tool, uin
     struct SDL_WaylandTabletInput* input = data;
     SDL_WindowData* window;
 
-    if (!surface) {
+    if (surface == NULL) {
         return;
     }
 
@@ -2158,7 +2158,7 @@ tablet_tool_handle_down(void* data, struct zwp_tablet_tool_v2* tool, uint32_t se
     struct SDL_WaylandTabletInput* input = data;
     SDL_WindowData* window = input->tool_focus;
     input->is_down = SDL_TRUE;
-    if (!window) {
+    if (window == NULL) {
         /* tablet_tool_handle_proximity_out gets called when moving over the libdecoration csd.
          * that sets input->tool_focus (window) to NULL, but handle_{down,up} events are still
          * received. To prevent SIGSEGV this returns when this is the case.
@@ -2177,7 +2177,7 @@ tablet_tool_handle_up(void* data, struct zwp_tablet_tool_v2* tool)
 
     input->is_down = SDL_FALSE;
 
-    if (!window) {
+    if (window == NULL) {
         /* tablet_tool_handle_proximity_out gets called when moving over the libdecoration csd.
          * that sets input->tool_focus (window) to NULL, but handle_{down,up} events are still
          * received. To prevent SIGSEGV this returns when this is the case.
@@ -2379,7 +2379,7 @@ Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTable
 {
     struct SDL_WaylandTabletInput* tablet_input;
 
-    if (!tablet_manager || !input || !input->seat) {
+    if (tablet_manager == NULL || input == NULL || !input->seat) {
         return;
     }
 
@@ -2453,7 +2453,7 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
 {
     struct SDL_WaylandInput *input = d->input;
 
-    if (!input)
+    if (input == NULL)
         return;
 
     if (input->data_device != NULL) {

@@ -74,7 +74,7 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
-    if (!tmp) {
+    if (tmp == NULL) {
         SDL_OutOfMemory();
         return;
     }

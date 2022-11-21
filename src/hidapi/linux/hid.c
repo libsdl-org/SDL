@@ -231,12 +231,12 @@ parse_uevent_info(const char *uevent, unsigned *bus_type,
 	int found_serial = 0;
 	int found_name = 0;
 
-	if (!uevent) {
+	if (uevent == NULL) {
 		return 0;
 	}
 
 	tmp = strdup(uevent);
-	if (!tmp) {
+	if (tmp == NULL) {
 		return 0;
 	}
 
@@ -245,7 +245,7 @@ parse_uevent_info(const char *uevent, unsigned *bus_type,
 		/* line: "KEY=value" */
 		key = line;
 		value = strchr(line, '=');
-		if (!value) {
+		if (value == NULL) {
 			goto next_line;
 		}
 		*value = '\0';
@@ -287,7 +287,7 @@ static int is_BLE(hid_device *dev)
 
 	/* Create the udev object */
 	udev = udev_new();
-	if (!udev) {
+	if (udev == NULL) {
 		printf("Can't create udev\n");
 		return -1;
 	}
@@ -353,7 +353,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 
 	/* Create the udev object */
 	udev = udev_new();
-	if (!udev) {
+	if (udev == NULL) {
 		printf("Can't create udev\n");
 		return -1;
 	}
@@ -459,7 +459,7 @@ int HID_API_EXPORT hid_init(void)
 
 	/* Set the locale if it's not set. */
 	locale = setlocale(LC_CTYPE, NULL);
-	if (!locale) {
+	if (locale == NULL) {
 		setlocale(LC_CTYPE, "");
 	}
 
@@ -900,7 +900,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 
 void HID_API_EXPORT hid_close(hid_device *dev)
 {
-	if (!dev)
+	if (dev == NULL)
 		return;
 	close(dev->device_handle);
 	free(dev);

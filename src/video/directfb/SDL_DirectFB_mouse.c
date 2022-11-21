@@ -181,7 +181,7 @@ DirectFB_ShowCursor(SDL_Cursor * cursor)
     SDL_Window *window;
 
     window = SDL_GetFocusWindow();
-    if (!window)
+    if (window == NULL)
         return -1;
     else {
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);

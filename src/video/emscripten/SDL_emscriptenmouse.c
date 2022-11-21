@@ -40,7 +40,7 @@ Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
         curdata = (Emscripten_CursorData *) SDL_calloc(1, sizeof(*curdata));
-        if (!curdata) {
+        if (curdata == NULL) {
             SDL_OutOfMemory();
             SDL_free(cursor);
             return NULL;
@@ -72,7 +72,7 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
 
     conv_surf = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
 
-    if (!conv_surf) {
+    if (conv_surf == NULL) {
         return NULL;
     }
 

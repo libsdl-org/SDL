@@ -73,7 +73,7 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     }
 
     state = (SDLTest_CommonState *)SDL_calloc(1, sizeof(*state));
-    if (!state) {
+    if (state == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -597,7 +597,7 @@ static const char *
 BuildCommonUsageString(char **pstr, const char **strlist, const int numitems, const char **strlist2, const int numitems2)
 {
     char *str = *pstr;
-    if (!str) {
+    if (str == NULL) {
         size_t len = SDL_strlen("[--trackmem]") + 2;
         int i;
         for (i = 0; i < numitems; i++) {
@@ -609,7 +609,7 @@ BuildCommonUsageString(char **pstr, const char **strlist, const int numitems, co
             }
         }
         str = (char *) SDL_calloc(1, len);
-        if (!str) {
+        if (str == NULL) {
             return "";  /* oh well. */
         }
         SDL_strlcat(str, "[--trackmem] ", len);
@@ -1765,7 +1765,7 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
     SDL_Rect viewport;
     SDL_Surface *surface;
 
-    if (!renderer) {
+    if (renderer == NULL) {
         return;
     }
 
@@ -1777,7 +1777,7 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
                     0x000000FF, 0x0000FF00, 0x00FF0000,
 #endif
                     0x00000000);
-    if (!surface) {
+    if (surface == NULL) {
         SDL_Log("Couldn't create surface: %s\n", SDL_GetError());
         return;
     }
@@ -1802,7 +1802,7 @@ FullscreenTo(int index, int windowId)
     Uint32 flags;
     struct SDL_Rect rect = { 0, 0, 0, 0 };
     SDL_Window *window = SDL_GetWindowFromID(windowId);
-    if (!window) {
+    if (window == NULL) {
         return;
     }
 

@@ -81,7 +81,7 @@ HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverLuna_Context *ctx;
 
     ctx = (SDL_DriverLuna_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -414,7 +414,7 @@ HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_LUNA_PROTOCOL
         HIDAPI_DumpPacket("Amazon Luna packet: size = %d", data, size);
 #endif
-        if (!joystick) {
+        if (joystick == NULL) {
             continue;
         }
 

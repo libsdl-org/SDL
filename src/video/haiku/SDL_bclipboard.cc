@@ -65,7 +65,7 @@ char *HAIKU_GetClipboardText(_THIS) {
         be_clipboard->Unlock();
     } 
     
-    if (!text) {
+    if (text == NULL) {
         result = SDL_strdup("");
     } else {
         /* Copy the data and pass on to SDL */

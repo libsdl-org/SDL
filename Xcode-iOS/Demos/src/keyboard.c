@@ -165,7 +165,7 @@ loadFont(void)
 {
     SDL_Surface *surface = SDL_LoadBMP("kromasky_16x16.bmp");
 
-    if (!surface) {
+    if (surface == NULL) {
         printf("Error loading bitmap: %s\n", SDL_GetError());
         return 0;
     } else {

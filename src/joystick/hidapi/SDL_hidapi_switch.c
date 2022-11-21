@@ -411,7 +411,7 @@ static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
     SwitchSubcommandInputPacket_t *reply = NULL;
     int nTries;
 
-    for (nTries = 1; !reply && nTries <= ctx->m_nMaxWriteAttempts; ++nTries) {
+    for (nTries = 1; reply == NULL && nTries <= ctx->m_nMaxWriteAttempts; ++nTries) {
         SwitchSubcommandOutputPacket_t commandPacket;
         ConstructSubcommand(ctx, ucCommandID, pBuf, ucLen, &commandPacket);
 
@@ -435,7 +435,7 @@ static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
     for (nTries = 1; nTries <= ctx->m_nMaxWriteAttempts; ++nTries) {
         SwitchProprietaryOutputPacket_t packet;
 
-        if ((!pBuf && ucLen > 0) || ucLen > sizeof(packet.rgucProprietaryData)) {
+        if ((pBuf == NULL && ucLen > 0) || ucLen > sizeof(packet.rgucProprietaryData)) {
             return SDL_FALSE;
         }
 
@@ -1229,7 +1229,7 @@ HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverSwitch_Context *ctx;
 
     ctx = (SDL_DriverSwitch_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -2139,7 +2139,7 @@ HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         ++packet_count;
         ctx->m_unLastInput = now;
 
-        if (!joystick) {
+        if (joystick == NULL) {
             continue;
         }
 

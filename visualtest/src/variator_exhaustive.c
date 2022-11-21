@@ -16,12 +16,12 @@ NextVariation(SDLVisualTest_Variation* variation,
               SDLVisualTest_SUTConfig* config)
 {
     int i, carry;
-    if(!variation)
+    if(variation == NULL)
     {
         SDLTest_LogError("variation argument cannot be NULL");
         return -1;
     }
-    if(!config)
+    if(config == NULL)
     {
         SDLTest_LogError("config argument cannot be NULL");
         return -1;
@@ -50,12 +50,12 @@ int
 SDLVisualTest_InitExhaustiveVariator(SDLVisualTest_ExhaustiveVariator* variator,
                                      SDLVisualTest_SUTConfig* config)
 {
-    if(!variator)
+    if(variator == NULL)
     {
         SDLTest_LogError("variator argument cannot be NULL");
         return 0;
     }
-    if(!config)
+    if(config == NULL)
     {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
@@ -77,7 +77,7 @@ char*
 SDLVisualTest_GetNextExhaustiveVariation(SDLVisualTest_ExhaustiveVariator* variator)
 {
     int success;
-    if(!variator)
+    if(variator == NULL)
     {
         SDLTest_LogError("variator argument cannot be NULL");
         return NULL;
@@ -126,7 +126,7 @@ SDLVisualTest_GetNextExhaustiveVariation(SDLVisualTest_ExhaustiveVariator* varia
 void
 SDLVisualTest_FreeExhaustiveVariator(SDLVisualTest_ExhaustiveVariator* variator)
 {
-    if(!variator)
+    if(variator == NULL)
     {
         SDLTest_LogError("variator argument cannot be NULL");
         return;

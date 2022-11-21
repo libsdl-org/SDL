@@ -12,12 +12,12 @@ int
 SDLVisualTest_NextValue(SDLVisualTest_SUTOptionValue* var,
                         SDLVisualTest_SUTOption* opt)
 {
-    if(!var)
+    if(var == NULL)
     {
         SDLTest_LogError("var argument cannot be NULL");
         return -1;
     }
-    if(!opt)
+    if(opt == NULL)
     {
         SDLTest_LogError("opt argument cannot be NULL");
         return -1;
@@ -81,17 +81,17 @@ SDLVisualTest_MakeStrFromVariation(SDLVisualTest_Variation* variation,
     int i, index;
     SDLVisualTest_SUTOptionValue* vars;
     SDLVisualTest_SUTOption* options;
-    if(!variation)
+    if(variation == NULL)
     {
         SDLTest_LogError("variation argument cannot be NULL");
         return 0;
     }
-    if(!config)
+    if(config == NULL)
     {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
     }
-    if(!buffer)
+    if(buffer == NULL)
     {
         SDLTest_LogError("buffer argument cannot be NULL");
         return 0;
@@ -169,12 +169,12 @@ SDLVisualTest_InitVariation(SDLVisualTest_Variation* variation,
     int i;
     SDLVisualTest_SUTOptionValue* vars;
     SDLVisualTest_SUTOption* options;
-    if(!variation)
+    if(variation == NULL)
     {
         SDLTest_LogError("variation argument cannot be NULL");
         return 0;
     }
-    if(!config)
+    if(config == NULL)
     {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;

@@ -415,7 +415,7 @@ static SDL_WSCONS_input_data* SDL_WSCONS_Init_Keyboard(const char* dev)
 #endif
     SDL_WSCONS_input_data* input = (SDL_WSCONS_input_data*)SDL_calloc(1, sizeof(SDL_WSCONS_input_data));
 
-    if (!input) {
+    if (input == NULL) {
         return input;
     }
     input->fd = open(dev,O_RDWR | O_NONBLOCK | O_CLOEXEC);
@@ -572,7 +572,7 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
     keysym_t *group;
     keysym_t ksym, result;
 
-    if (!input) return;
+    if (input == NULL) return;
     if ((n = read(input->fd, events, sizeof(events))) > 0) {
         n /= sizeof(struct wscons_event);
         for (i = 0; i < n; i++) {

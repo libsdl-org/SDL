@@ -35,7 +35,7 @@ X11_CreateShaper(SDL_Window* window) {
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
     if (SDL_X11_HAVE_XSHAPE) {  /* Make sure X server supports it. */
         result = SDL_malloc(sizeof(SDL_WindowShaper));
-        if (!result) {
+        if (result == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -44,7 +44,7 @@ X11_CreateShaper(SDL_Window* window) {
         result->mode.parameters.binarizationCutoff = 1;
         result->userx = result->usery = 0;
         data = SDL_malloc(sizeof(SDL_ShapeData));
-        if (!data) {
+        if (data == NULL) {
             SDL_free(result);
             SDL_OutOfMemory();
             return NULL;
