@@ -878,11 +878,17 @@ decoration_frame_configure(struct libdecor_frame *frame,
         wind->floating_resize_pending = SDL_FALSE;
     } else {
         /*
-         * XXX: When hiding a floating window, libdecor can send bogus content sizes that
-         *      are +/- the height of the title bar, which distorts the window size.
-         *      Ignore any values from libdecor when hiding a floating window.
+         * XXX: libdecor can send bogus content sizes that are +/- the height
+         *      of the title bar when hiding a window or transitioning from
+         *      non-floating to floating state, which distorts the window size.
+         *
+         *      Ignore any size values from libdecor in these scenarios in
+         *      favor of the cached window size.
+         *
+         *      https://gitlab.gnome.org/jadahl/libdecor/-/issues/40
          */
-        const SDL_bool use_cached_size = (window->is_hiding || !!(window->flags & SDL_WINDOW_HIDDEN));
+        const SDL_bool use_cached_size = (floating && !wind->was_floating) ||
+                                         (window->is_hiding || !!(window->flags & SDL_WINDOW_HIDDEN));
 
         /* This will never set 0 for width/height unless the function returns false */
         if (use_cached_size || !libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
@@ -904,6 +910,8 @@ decoration_frame_configure(struct libdecor_frame *frame,
         wind->floating_width = width;
         wind->floating_height = height;
     }
+
+    wind->was_floating = floating;
 
     /* Do the resize on the SDL side (this will set window->w/h)... */
     Wayland_HandleResize(window, width, height, scale_factor);

@@ -114,8 +114,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
     if (! sem)
     {
-        SDL_SetError("Passed a NULL sem");
-        return -1;
+        return SDL_SetError("Passed a NULL sem");
     }
 
     if (timeout == SDL_MUTEX_MAXWAIT)
@@ -177,8 +176,7 @@ SDL_SemPost(SDL_sem * sem)
 {
     if (! sem)
     {
-        SDL_SetError("Passed a NULL sem.");
-        return -1;
+        return SDL_SetError("Passed a NULL sem.");
     }
     sem->count++;
     RSemaphore sema;
