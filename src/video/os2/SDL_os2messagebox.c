@@ -195,7 +195,7 @@ static MRESULT EXPENTRY DynDlgProc(HWND hwnd, USHORT message, MPARAM mp1, MPARAM
         }
 
     default:
-        return(WinDefDlgProc(hwnd, message, mp1, mp2));
+        return WinDefDlgProc(hwnd, message, mp1, mp2);
     }
 
     return FALSE;
@@ -555,7 +555,7 @@ int OS2_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         WinTerminate(hab);
     }
 
-    return (fSuccess)? 0 : -1;
+    return (fSuccess) ? 0 : -1;
 }
 
 #endif /* SDL_VIDEO_DRIVER_OS2 */

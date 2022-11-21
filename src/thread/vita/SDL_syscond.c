@@ -58,7 +58,7 @@ SDL_CreateCond(void)
     } else {
         SDL_OutOfMemory();
     }
-    return (cond);
+    return cond;
 }
 
 /* Destroy a condition variable */

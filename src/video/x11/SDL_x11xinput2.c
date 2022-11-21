@@ -66,13 +66,13 @@ query_xinput2_version(Display *display, int major, int minor)
 {
     /* We don't care if this fails, so long as it sets major/minor on it's way out the door. */
     X11_XIQueryVersion(display, &major, &minor);
-    return ((major * 1000) + minor);
+    return (major * 1000) + minor;
 }
 
 static SDL_bool
 xinput2_version_atleast(const int version, const int wantmajor, const int wantminor)
 {
-    return ( version >= ((wantmajor * 1000) + wantminor) );
+    return version >= ((wantmajor * 1000) + wantminor);
 }
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH

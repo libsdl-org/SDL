@@ -167,7 +167,7 @@ ESD_PlayDevice(_THIS)
 static Uint8 *
 ESD_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    return this->hidden->mixbuf;
 }
 
 static void
@@ -203,7 +203,7 @@ get_progname(void)
         fclose(fp);
     }
 #endif
-    return (progname);
+    return progname;
 }
 
 

@@ -826,7 +826,7 @@ render_testBlitBlend (void *arg)
 static int
 _isSupported( int code )
 {
-   return (code == 0);
+   return code == 0;
 }
 
 /**

@@ -76,7 +76,7 @@ StartBeApp(void *unused)
 
     App->Run();
     delete App;
-    return (0);
+    return 0;
 }
 
 /* Initialize the Be Application, if it's not already started */
@@ -117,7 +117,7 @@ SDL_InitBeApp(void)
     ++SDL_BeAppActive;
 
     /* The app is running, and we're ready to go */
-    return (0);
+    return 0;
 }
 
 /* Quit the Be Application, if there's nothing left to do */

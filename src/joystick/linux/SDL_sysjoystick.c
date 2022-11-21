@@ -177,7 +177,7 @@ GuessIsJoystick(int fd)
         (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
-        return (0);
+        return 0;
     }
 
     devclass = SDL_EVDEV_GuessDeviceClass(evbit, absbit, keybit, relbit);
@@ -489,7 +489,7 @@ static void SteamControllerDisconnectedCallback(int device_instance)
 static int
 StrHasPrefix(const char *string, const char *prefix)
 {
-    return (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0);
+    return SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0;
 }
 
 static int
@@ -517,7 +517,7 @@ IsJoystickJSNode(const char *node)
     if (last_slash) {
         node = last_slash + 1;
     }
-    return (StrHasPrefix(node, "js") && StrIsInteger(node + 2));
+    return StrHasPrefix(node, "js") && StrIsInteger(node + 2);
 }
 
 static SDL_bool
@@ -527,7 +527,7 @@ IsJoystickEventNode(const char *node)
     if (last_slash) {
         node = last_slash + 1;
     }
-    return (StrHasPrefix(node, "event") && StrIsInteger(node + 5));
+    return StrHasPrefix(node, "event") && StrIsInteger(node + 5);
 }
 
 static SDL_bool
@@ -661,7 +661,7 @@ sort_entries(const void *_a, const void *_b)
             }
         }
     }
-    return (numA - numB);
+    return numA - numB;
 }
 
 static void
@@ -889,13 +889,13 @@ allocate_hatdata(SDL_Joystick *joystick)
         (struct hwdata_hat *) SDL_malloc(joystick->nhats *
                                          sizeof(struct hwdata_hat));
     if (joystick->hwdata->hats == NULL) {
-        return (-1);
+        return -1;
     }
     for (i = 0; i < joystick->nhats; ++i) {
         joystick->hwdata->hats[i].axis[0] = 1;
         joystick->hwdata->hats[i].axis[1] = 1;
     }
-    return (0);
+    return 0;
 }
 
 static int
@@ -907,13 +907,13 @@ allocate_balldata(SDL_Joystick *joystick)
         (struct hwdata_ball *) SDL_malloc(joystick->nballs *
                                           sizeof(struct hwdata_ball));
     if (joystick->hwdata->balls == NULL) {
-        return (-1);
+        return -1;
     }
     for (i = 0; i < joystick->nballs; ++i) {
         joystick->hwdata->balls[i].axis[0] = 0;
         joystick->hwdata->balls[i].axis[1] = 0;
     }
-    return (0);
+    return 0;
 }
 
 static SDL_bool

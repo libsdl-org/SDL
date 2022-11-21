@@ -3386,7 +3386,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
 
     /* We don't support destinations less than 8-bits */
     if (dstfmt->BitsPerPixel < 8) {
-        return (NULL);
+        return NULL;
     }
 
     switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
@@ -3454,7 +3454,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
                 }
             }
         }
-        return (blitfun);
+        return blitfun;
 
     case SDL_COPY_COLORKEY:
         /* colorkey blit: Here we don't have too many options, mostly

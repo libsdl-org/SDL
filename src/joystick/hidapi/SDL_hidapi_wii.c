@@ -216,13 +216,13 @@ static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int s
     }
 #endif
     if (sync) {
-        return (SDL_hid_write(ctx->device->dev, data, size) >= 0);
+        return SDL_hid_write(ctx->device->dev, data, size) >= 0;
     } else {
         /* Use the rumble thread for general asynchronous writes */
         if (SDL_HIDAPI_LockRumble() < 0) {
             return SDL_FALSE;
         }
-        return (SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size) >= 0);
+        return SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size) >= 0;
     }
 }
 
@@ -1529,7 +1529,7 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return (size >= 0);
+    return size >= 0;
 }
 
 static void

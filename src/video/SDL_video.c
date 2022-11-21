@@ -899,8 +899,7 @@ SDL_GetDisplayMode(int displayIndex, int index, SDL_DisplayMode * mode)
 
     display = &_this->displays[displayIndex];
     if (index < 0 || index >= SDL_GetNumDisplayModesForDisplay(display)) {
-        return SDL_SetError("index must be in the range of 0 - %d",
-                            SDL_GetNumDisplayModesForDisplay(display) - 1);
+        return SDL_SetError("index must be in the range of 0 - %d", SDL_GetNumDisplayModesForDisplay(display) - 1);
     }
     if (mode) {
         *mode = display->display_modes[index];
@@ -1087,8 +1086,7 @@ SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode *
 
         /* Get a good video mode, the closest one possible */
         if (!SDL_GetClosestDisplayModeForDisplay(display, &display_mode, &display_mode)) {
-            return SDL_SetError("No video mode large enough for %dx%d",
-                                display_mode.w, display_mode.h);
+            return SDL_SetError("No video mode large enough for %dx%d", display_mode.w, display_mode.h);
         }
     } else {
         display_mode = display->desktop_mode;
@@ -1598,9 +1596,8 @@ SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
 static int
 SDL_ContextNotSupported(const char *name)
 {
-    return SDL_SetError("%s support is either not configured in SDL "
-                 "or not available in current SDL video driver "
-                 "(%s) or platform", name, _this->name);
+    return SDL_SetError("%s support is either not configured in SDL " "or not available in current SDL video driver " "(%s) or platform", name,
+                        _this->name);
 }
 
 static int
@@ -2015,7 +2012,7 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 SDL_bool
 SDL_HasWindows(void)
 {
-    return (_this && _this->windows != NULL);
+    return _this && _this->windows != NULL;
 }
 
 Uint32
@@ -3028,23 +3025,21 @@ SDL_SetWindowMouseGrab(SDL_Window * window, SDL_bool grabbed)
 SDL_bool
 SDL_GetWindowGrab(SDL_Window * window)
 {
-    return (SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window));
+    return SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window);
 }
 
 SDL_bool
 SDL_GetWindowKeyboardGrab(SDL_Window * window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    return window == _this->grabbed_window &&
-           ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0);
+    return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_KEYBOARD_GRABBED) != 0);
 }
 
 SDL_bool
 SDL_GetWindowMouseGrab(SDL_Window * window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
-    return window == _this->grabbed_window &&
-           ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0);
+    return window == _this->grabbed_window && ((_this->grabbed_window->flags & SDL_WINDOW_MOUSE_GRABBED) != 0);
 }
 
 SDL_Window *
@@ -3458,7 +3453,7 @@ SDL_GL_LoadLibrary(const char *path)
             _this->GL_UnloadLibrary(_this);
         }
     }
-    return (retval);
+    return retval;
 }
 
 void *
@@ -3504,7 +3499,7 @@ SDL_GL_UnloadLibrary(void)
 static SDL_INLINE SDL_bool
 isAtLeastGL3(const char *verstr)
 {
-    return (verstr && (SDL_atoi(verstr) >= 3));
+    return verstr && (SDL_atoi(verstr) >= 3);
 }
 #endif
 
@@ -4337,7 +4332,7 @@ SDL_GetWindowWMInfo(SDL_Window * window, struct SDL_SysWMinfo *info)
         SDL_Unsupported();
         return SDL_FALSE;
     }
-    return (_this->GetWindowWMInfo(_this, window, info));
+    return _this->GetWindowWMInfo(_this, window, info);
 }
 
 void
@@ -4382,7 +4377,7 @@ SDL_IsTextInputShown(void)
 SDL_bool
 SDL_IsTextInputActive(void)
 {
-    return (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE);
+    return SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE;
 }
 
 void
@@ -4486,7 +4481,7 @@ static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messagebo
     if (!SDL_GetWindowWMInfo(window, &info)) {
         return SDL_TRUE;
     } else {
-        return (info.subsystem == drivertype);
+        return info.subsystem == drivertype;
     }
 }
 #endif
@@ -4702,8 +4697,7 @@ SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
         return 0.0f;
     }
 
-    return (float)(SDL_sqrt((double)hpix * (double)hpix + (double)vpix * (double)vpix) /
-                   SDL_sqrt((double)den2));
+    return (float)(SDL_sqrt((double)hpix * (double)hpix + (double)vpix * (double)vpix) / SDL_sqrt((double)den2));
 }
 
 /*

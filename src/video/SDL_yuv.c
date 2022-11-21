@@ -78,17 +78,12 @@ static int GetYUVConversionType(int width, int height, YCbCrType *yuv_type)
 
 static SDL_bool IsPlanar2x2Format(Uint32 format)
 {
-    return (format == SDL_PIXELFORMAT_YV12 ||
-            format == SDL_PIXELFORMAT_IYUV ||
-            format == SDL_PIXELFORMAT_NV12 ||
-            format == SDL_PIXELFORMAT_NV21);
+    return format == SDL_PIXELFORMAT_YV12 || format == SDL_PIXELFORMAT_IYUV || format == SDL_PIXELFORMAT_NV12 || format == SDL_PIXELFORMAT_NV21;
 }
 
 static SDL_bool IsPacked4Format(Uint32 format)
 {
-    return (format == SDL_PIXELFORMAT_YUY2 ||
-            format == SDL_PIXELFORMAT_UYVY ||
-            format == SDL_PIXELFORMAT_YVYU);
+    return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
 
 static int GetYUVPlanes(int width, int height, Uint32 format, const void *yuv, int yuv_pitch,
@@ -1269,7 +1264,8 @@ SDL_ConvertPixels_Planar2x2_to_Planar2x2(int width, int height,
     default:
         break;
     }
-    return SDL_SetError("SDL_ConvertPixels_Planar2x2_to_Planar2x2: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format), SDL_GetPixelFormatName(dst_format));
+    return SDL_SetError("SDL_ConvertPixels_Planar2x2_to_Planar2x2: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format),
+                        SDL_GetPixelFormatName(dst_format));
 }
 
 #ifdef __SSE2__
@@ -1582,7 +1578,8 @@ SDL_ConvertPixels_Packed4_to_Packed4(int width, int height,
     default:
         break;
     }
-    return SDL_SetError("SDL_ConvertPixels_Packed4_to_Packed4: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format), SDL_GetPixelFormatName(dst_format));
+    return SDL_SetError("SDL_ConvertPixels_Packed4_to_Packed4: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format),
+                        SDL_GetPixelFormatName(dst_format));
 }
 
 static int
@@ -1885,7 +1882,8 @@ SDL_ConvertPixels_YUV_to_YUV(int width, int height,
     } else if (IsPacked4Format(src_format) && IsPlanar2x2Format(dst_format)) {
         return SDL_ConvertPixels_Packed4_to_Planar2x2(width, height, src_format, src, src_pitch, dst_format, dst, dst_pitch);
     } else {
-        return SDL_SetError("SDL_ConvertPixels_YUV_to_YUV: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format), SDL_GetPixelFormatName(dst_format));
+        return SDL_SetError("SDL_ConvertPixels_YUV_to_YUV: Unsupported YUV conversion: %s -> %s", SDL_GetPixelFormatName(src_format),
+                            SDL_GetPixelFormatName(dst_format));
     }
 #else
     return SDL_SetError("SDL not built with YUV support");

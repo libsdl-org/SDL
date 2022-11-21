@@ -43,5 +43,5 @@ main(int argc, char *argv[])
            linked.major, linked.minor, linked.patch,
            SDL_GetRevision());
     SDL_Quit();
-    return (0);
+    return 0;
 }

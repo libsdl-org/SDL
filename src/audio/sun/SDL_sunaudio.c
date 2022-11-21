@@ -173,7 +173,7 @@ SUNAUDIO_PlayDevice(_THIS)
 static Uint8 *
 SUNAUDIO_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    return this->hidden->mixbuf;
 }
 
 static void
@@ -269,8 +269,7 @@ SUNAUDIO_OpenDevice(_THIS, const char *devname)
 
             /* Check to be sure we got what we wanted */
             if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
-                return SDL_SetError("Error getting audio parameters: %s",
-                                    strerror(errno));
+                return SDL_SetError("Error getting audio parameters: %s", strerror(errno));
             }
             if (info.play.encoding == enc
                 && info.play.precision == (this->spec.format & 0xff)
@@ -299,8 +298,7 @@ SUNAUDIO_OpenDevice(_THIS, const char *devname)
 
         default:
             /* oh well... */
-            return SDL_SetError("Error setting audio parameters: %s",
-                                strerror(errno));
+            return SDL_SetError("Error setting audio parameters: %s", strerror(errno));
         }
     }
 #endif /* AUDIO_SETINFO */
@@ -392,7 +390,7 @@ snd2au(int sample)
     } else {
         sample = 0x80;
     }
-    return (mask & sample);
+    return mask & sample;
 }
 
 static SDL_bool

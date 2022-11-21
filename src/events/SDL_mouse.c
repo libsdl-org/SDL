@@ -225,7 +225,7 @@ SDL_MouseInit(void)
 
     mouse->cursor_shown = SDL_TRUE;
 
-    return (0);
+    return 0;
 }
 
 void

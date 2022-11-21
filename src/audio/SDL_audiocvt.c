@@ -184,7 +184,7 @@ ResamplerPadding(const int inrate, const int outrate)
         return 0;
     }
     if (inrate > outrate) {
-        return (int) SDL_ceilf(((float) (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float) outrate)));
+        return (int)SDL_ceilf(((float)(RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float)outrate)));
     }
     return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
 }
@@ -250,7 +250,7 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
         outtime = outtimeincr * i;
     }
 
-    return outframes * chans * sizeof (float);
+    return outframes * chans * sizeof(float);
 }
 
 int
@@ -587,7 +587,7 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
        !!! FIXME in 2.1:   We need to store data for this resampler, because the cvt structure doesn't store the original sample rates,
        !!! FIXME in 2.1:   so we steal the ninth and tenth slot.  :( */
     if (cvt->filter_index >= (SDL_AUDIOCVT_MAX_FILTERS-2)) {
-        return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS-2);
+        return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS - 2);
     }
     cvt->filters[SDL_AUDIOCVT_MAX_FILTERS-1] = (SDL_AudioFilter) (uintptr_t) src_rate;
     cvt->filters[SDL_AUDIOCVT_MAX_FILTERS] = (SDL_AudioFilter) (uintptr_t) dst_rate;
@@ -789,7 +789,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     }
 
     cvt->needed = (cvt->filter_index != 0);
-    return (cvt->needed);
+    return cvt->needed;
 }
 
 typedef int (*SDL_ResampleAudioStreamFunc)(SDL_AudioStream *stream, const void *inbuf, const int inbuflen, void *outbuf, const int outbuflen);
@@ -1346,14 +1346,14 @@ SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
         return SDL_SetError("Can't request partial sample frames");
     }
 
-    return (int) SDL_ReadFromDataQueue(stream->queue, buf, len);
+    return (int)SDL_ReadFromDataQueue(stream->queue, buf, len);
 }
 
 /* number of converted/resampled bytes available */
 int
 SDL_AudioStreamAvailable(SDL_AudioStream *stream)
 {
-    return stream ? (int) SDL_CountDataQueue(stream->queue) : 0;
+    return stream ? (int)SDL_CountDataQueue(stream->queue) : 0;
 }
 
 void

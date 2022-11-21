@@ -88,7 +88,7 @@ Run(void *data)
         SDL_Log("Process %lu:  raising SIGTERM\n", SDL_ThreadID());
         raise(SIGTERM);
     }
-    return (0);
+    return 0;
 }
 
 int
@@ -127,5 +127,5 @@ main(int argc, char *argv[])
     signal(SIGINT, terminate);
     Run(NULL);
 
-    return (0);                 /* Never reached */
+    return 0;                 /* Never reached */
 }

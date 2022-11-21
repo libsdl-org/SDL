@@ -64,9 +64,7 @@ static SDL_bool
 HIDAPI_DriverXbox360_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360,
-               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX,
-                   SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
-                       SDL_HIDAPI_DEFAULT)));
+                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT)));
 }
 
 static SDL_bool
@@ -360,7 +358,7 @@ HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return (size >= 0);
+    return size >= 0;
 }
 
 static void

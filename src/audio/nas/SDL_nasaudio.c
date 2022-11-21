@@ -185,7 +185,7 @@ NAS_PlayDevice(_THIS)
 static Uint8 *
 NAS_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    return this->hidden->mixbuf;
 }
 
 static int

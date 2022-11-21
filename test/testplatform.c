@@ -78,7 +78,7 @@ TestTypes(SDL_bool verbose)
         SDL_Log("All data types are the expected size.\n");
     }
 
-    return (error ? 1 : 0);
+    return error ? 1 : 0;
 }
 
 int
@@ -170,7 +170,7 @@ TestEndian(SDL_bool verbose)
         }
         ++error;
     }
-    return (error ? 1 : 0);
+    return error ? 1 : 0;
 }
 
 static int TST_allmul (void *a, void *b, int arg, void *result, void *expected)
@@ -387,7 +387,7 @@ Test64Bit (SDL_bool verbose)
     if (verbose && (failed == 0)) {
         SDL_Log("All 64bit instrinsic tests passed\n");
     }
-    return (failed ? 1 : 0);
+    return failed ? 1 : 0;
 }
 
 int
@@ -414,7 +414,7 @@ TestCPUInfo(SDL_bool verbose)
         SDL_Log("LASX %s\n", SDL_HasLASX()? "detected" : "not detected");
         SDL_Log("System RAM %d MB\n", SDL_GetSystemRAM());
     }
-    return (0);
+    return 0;
 }
 
 int
@@ -443,7 +443,7 @@ TestAssertions(SDL_bool verbose)
             item = item->next;
         }
     }
-    return (0);
+    return 0;
 }
 
 int

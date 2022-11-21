@@ -257,7 +257,7 @@ windows_file_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
         }
         total_read += byte_read;
     }
-    return (total_read / size);
+    return total_read / size;
 }
 
 static size_t SDLCALL
@@ -504,7 +504,7 @@ mem_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
     SDL_memcpy(ptr, context->hidden.mem.here, total_bytes);
     context->hidden.mem.here += total_bytes;
 
-    return (total_bytes / size);
+    return total_bytes / size;
 }
 
 static size_t SDLCALL
@@ -897,49 +897,49 @@ SDL_ReadBE64(SDL_RWops * src)
 size_t
 SDL_WriteU8(SDL_RWops * dst, Uint8 value)
 {
-    return SDL_RWwrite(dst, &value, sizeof (value), 1);
+    return SDL_RWwrite(dst, &value, sizeof(value), 1);
 }
 
 size_t
 SDL_WriteLE16(SDL_RWops * dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapLE16(value);
-    return SDL_RWwrite(dst, &swapped, sizeof (swapped), 1);
+    return SDL_RWwrite(dst, &swapped, sizeof(swapped), 1);
 }
 
 size_t
 SDL_WriteBE16(SDL_RWops * dst, Uint16 value)
 {
     const Uint16 swapped = SDL_SwapBE16(value);
-    return SDL_RWwrite(dst, &swapped, sizeof (swapped), 1);
+    return SDL_RWwrite(dst, &swapped, sizeof(swapped), 1);
 }
 
 size_t
 SDL_WriteLE32(SDL_RWops * dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapLE32(value);
-    return SDL_RWwrite(dst, &swapped, sizeof (swapped), 1);
+    return SDL_RWwrite(dst, &swapped, sizeof(swapped), 1);
 }
 
 size_t
 SDL_WriteBE32(SDL_RWops * dst, Uint32 value)
 {
     const Uint32 swapped = SDL_SwapBE32(value);
-    return SDL_RWwrite(dst, &swapped, sizeof (swapped), 1);
+    return SDL_RWwrite(dst, &swapped, sizeof(swapped), 1);
 }
 
 size_t
 SDL_WriteLE64(SDL_RWops * dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapLE64(value);
-    return SDL_RWwrite(dst, &swapped, sizeof (swapped), 1);
+    return SDL_RWwrite(dst, &swapped, sizeof(swapped), 1);
 }
 
 size_t
 SDL_WriteBE64(SDL_RWops * dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapBE64(value);
-    return SDL_RWwrite(dst, &swapped, sizeof (swapped), 1);
+    return SDL_RWwrite(dst, &swapped, sizeof(swapped), 1);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

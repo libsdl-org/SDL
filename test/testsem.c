@@ -252,13 +252,13 @@ main(int argc, char **argv)
 
     if (argc < 2) {
         SDL_Log("Usage: %s init_value\n", argv[0]);
-        return (1);
+        return 1;
     }
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
     signal(SIGTERM, killed);
     signal(SIGINT, killed);
@@ -277,5 +277,5 @@ main(int argc, char **argv)
     TestOverheadContended(SDL_TRUE);
 
     SDL_Quit();
-    return (0);
+    return 0;
 }

@@ -117,7 +117,7 @@ NGAGE_CreateDevice(void)
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
-        return (0);
+        return 0;
     }
 
     /* Initialize internal N-Gage specific data */
@@ -126,7 +126,7 @@ NGAGE_CreateDevice(void)
     {
         SDL_OutOfMemory();
         SDL_free(device);
-        return (0);
+        return 0;
     }
 
     /* General video */

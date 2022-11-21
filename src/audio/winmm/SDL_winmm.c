@@ -161,8 +161,7 @@ WINMM_WaitDevice(_THIS)
 static Uint8 *
 WINMM_GetDeviceBuf(_THIS)
 {
-    return (Uint8 *) (this->hidden->
-                      wavebuf[this->hidden->next_buffer].lpData);
+    return (Uint8 *)(this->hidden->wavebuf[this->hidden->next_buffer].lpData);
 }
 
 static void
@@ -276,9 +275,9 @@ PrepWaveFormat(_THIS, UINT devId, WAVEFORMATEX *pfmt, const int iscapture)
     pfmt->nAvgBytesPerSec = pfmt->nSamplesPerSec * pfmt->nBlockAlign;
 
     if (iscapture) {
-        return (waveInOpen(0, devId, pfmt, 0, 0, WAVE_FORMAT_QUERY) == 0);
+        return waveInOpen(0, devId, pfmt, 0, 0, WAVE_FORMAT_QUERY) == 0;
     } else {
-        return (waveOutOpen(0, devId, pfmt, 0, 0, WAVE_FORMAT_QUERY) == 0);
+        return waveOutOpen(0, devId, pfmt, 0, 0, WAVE_FORMAT_QUERY) == 0;
     }
 }
 

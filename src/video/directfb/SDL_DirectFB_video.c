@@ -152,7 +152,7 @@ DirectFB_CreateDevice(void)
     if (device) {
         SDL_free(device);
     }
-    return (0);
+    return 0;
 }
 
 static void

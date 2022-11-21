@@ -62,7 +62,7 @@ OFFSCREEN_CreateDevice(void)
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
-        return (0);
+        return 0;
     }
 
     /* General video */

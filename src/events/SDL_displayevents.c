@@ -54,7 +54,7 @@ SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1)
         posted = (SDL_PushEvent(&event) > 0);
     }
 
-    return (posted);
+    return posted;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

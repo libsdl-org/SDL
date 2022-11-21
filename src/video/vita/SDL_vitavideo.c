@@ -577,7 +577,7 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
     return videodata->ime_active;
 #else
     SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
-    return (dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING);
+    return dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING;
 #endif
 }
 

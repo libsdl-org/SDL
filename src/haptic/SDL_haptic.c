@@ -752,7 +752,7 @@ SDL_HapticRumbleSupported(SDL_Haptic * haptic)
     }
 
     /* Most things can use SINE, but XInput only has LEFTRIGHT. */
-    return ((haptic->supported & (SDL_HAPTIC_SINE|SDL_HAPTIC_LEFTRIGHT)) != 0);
+    return (haptic->supported & (SDL_HAPTIC_SINE | SDL_HAPTIC_LEFTRIGHT)) != 0;
 }
 
 /*

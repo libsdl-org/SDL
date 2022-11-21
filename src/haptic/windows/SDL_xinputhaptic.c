@@ -233,7 +233,7 @@ SDL_XINPUT_HapticOpen(SDL_Haptic * haptic, SDL_hapticlist_item *item)
 int
 SDL_XINPUT_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
-    return (haptic->hwdata->userid == joystick->hwdata->userid);
+    return haptic->hwdata->userid == joystick->hwdata->userid;
 }
 
 int

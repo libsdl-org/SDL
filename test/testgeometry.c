@@ -50,17 +50,17 @@ LoadSprite(const char *file)
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
         sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &sprite_w, &sprite_h);
         if (!sprites[i]) {
-            return (-1);
+            return -1;
         }
         if (SDL_SetTextureBlendMode(sprites[i], blendMode) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
-            return (-1);
+            return -1;
         }
     }
 
     /* We're ready to roll. :) */
-    return (0);
+    return 0;
 }
 
 

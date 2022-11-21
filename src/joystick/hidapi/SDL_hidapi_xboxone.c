@@ -140,7 +140,7 @@ typedef struct {
 static SDL_bool
 ControllerHasColorLED(Uint16 vendor_id, Uint16 product_id)
 {
-    return (vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2);
+    return vendor_id == USB_VENDOR_MICROSOFT && product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2;
 }
 
 static SDL_bool
@@ -357,9 +357,7 @@ static SDL_bool
 HIDAPI_DriverXboxOne_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE,
-               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX,
-                   SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
-                       SDL_HIDAPI_DEFAULT)));
+                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT)));
 }
 
 static SDL_bool
@@ -1253,7 +1251,7 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return (size >= 0);
+    return size >= 0;
 }
 
 static void

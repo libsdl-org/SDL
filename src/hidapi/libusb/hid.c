@@ -261,16 +261,13 @@ static uint32_t get_bytes(uint8_t *rpt, size_t len, size_t num_bytes, size_t cur
 	if (num_bytes == 0)
 		return 0;
 	else if (num_bytes == 1) {
-		return rpt[cur+1];
+		return rpt[cur + 1];
 	}
 	else if (num_bytes == 2) {
-		return (rpt[cur+2] * 256 + rpt[cur+1]);
+		return rpt[cur + 2] * 256 + rpt[cur + 1];
 	}
 	else if (num_bytes == 4) {
-		return (rpt[cur+4] * 0x01000000 +
-		        rpt[cur+3] * 0x00010000 +
-		        rpt[cur+2] * 0x00000100 +
-		        rpt[cur+1] * 0x00000001);
+		return rpt[cur + 4] * 0x01000000 + rpt[cur + 3] * 0x00010000 + rpt[cur + 2] * 0x00000100 + rpt[cur + 1] * 0x00000001;
 	}
 	else
 		return 0;
@@ -365,11 +362,8 @@ static inline int libusb_get_string_descriptor(libusb_device_handle *dev,
 	uint8_t descriptor_index, uint16_t lang_id,
 	unsigned char *data, int length)
 {
-	return libusb_control_transfer(dev,
-		LIBUSB_ENDPOINT_IN | 0x0, /* Endpoint 0 IN */
-		LIBUSB_REQUEST_GET_DESCRIPTOR,
-		(LIBUSB_DT_STRING << 8) | descriptor_index,
-		lang_id, data, (uint16_t) length, 1000);
+	return libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN | 0x0, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | descriptor_index,
+				       lang_id, data, (uint16_t)length, 1000); /* Endpoint 0 IN */
 }
 #endif
 

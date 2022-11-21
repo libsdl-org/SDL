@@ -94,7 +94,7 @@ SDL_ScanLong(const char *text, int count, int radix, long *valuep)
             *valuep = value;
         }
     }
-    return (text - textstart);
+    return text - textstart;
 }
 #endif
 
@@ -134,7 +134,7 @@ SDL_ScanUnsignedLong(const char *text, int count, int radix, unsigned long *valu
     if (valuep && text > textstart) {
         *valuep = value;
     }
-    return (text - textstart);
+    return text - textstart;
 }
 #endif
 
@@ -166,7 +166,7 @@ SDL_ScanUintPtrT(const char *text, int radix, uintptr_t * valuep)
     if (valuep && text > textstart) {
         *valuep = value;
     }
-    return (text - textstart);
+    return text - textstart;
 }
 #endif
 
@@ -211,7 +211,7 @@ SDL_ScanLongLong(const char *text, int count, int radix, Sint64 * valuep)
             *valuep = value;
         }
     }
-    return (text - textstart);
+    return text - textstart;
 }
 #endif
 
@@ -251,7 +251,7 @@ SDL_ScanUnsignedLongLong(const char *text, int count, int radix, Uint64 * valuep
     if (valuep && text > textstart) {
         *valuep = value;
     }
-    return (text - textstart);
+    return text - textstart;
 }
 #endif
 
@@ -287,7 +287,7 @@ SDL_ScanFloat(const char *text, double *valuep)
             *valuep = value;
         }
     }
-    return (text - textstart);
+    return text - textstart;
 }
 #endif
 
@@ -336,7 +336,7 @@ SDL_memcmp(const void *s1, const void *s2, size_t len)
     char *s2p = (char *) s2;
     while (len--) {
         if (*s1p != *s2p) {
-            return (*s1p - *s2p);
+            return *s1p - *s2p;
         }
         ++s1p;
         ++s2p;
@@ -419,7 +419,7 @@ wchar_t *
 SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle)
 {
 #if defined(HAVE_WCSSTR)
-    return SDL_const_cast(wchar_t*,wcsstr(haystack, needle));
+    return SDL_const_cast(wchar_t *, wcsstr(haystack, needle));
 #else
     size_t length = SDL_wcslen(needle);
     while (*haystack) {
@@ -464,7 +464,7 @@ SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
     if (!maxlen) {
         return 0;
     }
-    return (int) (*str1 - *str2);
+    return (int)(*str1 - *str2);
 
 #endif /* HAVE_WCSNCMP */
 }
@@ -502,7 +502,7 @@ SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2)
         a = SDL_toupper((unsigned char) *str1);
         b = SDL_toupper((unsigned char) *str2);
     }
-    return (int) ((unsigned int) a - (unsigned int) b);
+    return (int)((unsigned int)a - (unsigned int)b);
 #endif /* HAVE__WCSICMP */
 }
 
@@ -543,7 +543,7 @@ SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
             a = SDL_toupper((unsigned char) *str1);
             b = SDL_toupper((unsigned char) *str2);
         }
-        return (int) ((unsigned int) a - (unsigned int) b);
+        return (int)((unsigned int)a - (unsigned int)b);
     }
 #endif /* HAVE__WCSNICMP */
 }
@@ -709,18 +709,18 @@ char *
 SDL_strchr(const char *string, int c)
 {
 #ifdef HAVE_STRCHR
-    return SDL_const_cast(char*,strchr(string, c));
+    return SDL_const_cast(char *, strchr(string, c));
 #elif defined(HAVE_INDEX)
-    return SDL_const_cast(char*,index(string, c));
+    return SDL_const_cast(char *, index(string, c));
 #else
     while (*string) {
         if (*string == c) {
-            return (char *) string;
+            return (char *)string;
         }
         ++string;
     }
     if (c == '\0') {
-        return (char *) string;
+        return (char *)string;
     }
     return NULL;
 #endif /* HAVE_STRCHR */
@@ -730,14 +730,14 @@ char *
 SDL_strrchr(const char *string, int c)
 {
 #ifdef HAVE_STRRCHR
-    return SDL_const_cast(char*,strrchr(string, c));
+    return SDL_const_cast(char *, strrchr(string, c));
 #elif defined(HAVE_RINDEX)
-    return SDL_const_cast(char*,rindex(string, c));
+    return SDL_const_cast(char *, rindex(string, c));
 #else
     const char *bufp = string + SDL_strlen(string);
     while (bufp >= string) {
         if (*bufp == c) {
-            return (char *) bufp;
+            return (char *)bufp;
         }
         --bufp;
     }
@@ -749,12 +749,12 @@ char *
 SDL_strstr(const char *haystack, const char *needle)
 {
 #if defined(HAVE_STRSTR)
-    return SDL_const_cast(char*,strstr(haystack, needle));
+    return SDL_const_cast(char *, strstr(haystack, needle));
 #else
     size_t length = SDL_strlen(needle);
     while (*haystack) {
         if (SDL_strncmp(haystack, needle, length) == 0) {
-            return (char *) haystack;
+            return (char *)haystack;
         }
         ++haystack;
     }
@@ -766,12 +766,12 @@ char *
 SDL_strcasestr(const char *haystack, const char *needle)
 {
 #if defined(HAVE_STRCASESTR)
-    return SDL_const_cast(char*,strcasestr(haystack, needle));
+    return SDL_const_cast(char *, strcasestr(haystack, needle));
 #else
     size_t length = SDL_strlen(needle);
     while (*haystack) {
         if (SDL_strncasecmp(haystack, needle, length) == 0) {
-            return (char *) haystack;
+            return (char *)haystack;
         }
         ++haystack;
     }

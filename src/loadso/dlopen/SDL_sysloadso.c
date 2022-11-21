@@ -52,7 +52,7 @@ SDL_LoadObject(const char *sofile)
     if (handle == NULL) {
         SDL_SetError("Failed loading %s: %s", sofile, loaderror);
     }
-    return (handle);
+    return handle;
 }
 
 void *
@@ -73,7 +73,7 @@ SDL_LoadFunction(void *handle, const char *name)
                          (const char *) dlerror());
         }
     }
-    return (symbol);
+    return symbol;
 }
 
 void

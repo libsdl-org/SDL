@@ -708,7 +708,7 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
             if (action == SDL_GETEVENT) {
                 SDL_SetError("The event system has been shut down");
             }
-            return (-1);
+            return -1;
         }
         if (action == SDL_ADDEVENT) {
             for (i = 0; i < numevents; ++i) {
@@ -787,7 +787,7 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
         SDL_SendWakeupEvent();
     }
 
-    return (used);
+    return used;
 }
 int
 SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
@@ -799,13 +799,13 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
 SDL_bool
 SDL_HasEvent(Uint32 type)
 {
-    return (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0);
+    return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type) > 0;
 }
 
 SDL_bool
 SDL_HasEvents(Uint32 minType, Uint32 maxType)
 {
-    return (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0);
+    return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, minType, maxType) > 0;
 }
 
 void
@@ -1355,7 +1355,7 @@ SDL_SendAppEvent(SDL_EventType eventType)
         event.type = eventType;
         posted = (SDL_PushEvent(&event) > 0);
     }
-    return (posted);
+    return posted;
 }
 
 int
@@ -1372,7 +1372,7 @@ SDL_SendSysWMEvent(SDL_SysWMmsg * message)
         posted = (SDL_PushEvent(&event) > 0);
     }
     /* Update internal event state */
-    return (posted);
+    return posted;
 }
 
 int

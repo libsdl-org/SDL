@@ -261,13 +261,13 @@ DSP_PlayDevice(_THIS)
 static Uint8 *
 DSP_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    return this->hidden->mixbuf;
 }
 
 static int
 DSP_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
-    return (int) read(this->hidden->audio_fd, buffer, buflen);
+    return (int)read(this->hidden->audio_fd, buffer, buflen);
 }
 
 static void

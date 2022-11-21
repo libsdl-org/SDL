@@ -699,7 +699,7 @@ SDL_LowerBlit(SDL_Surface * src, SDL_Rect * srcrect,
         (src->format->palette &&
          src->map->src_palette_version != src->format->palette->version)) {
         if (SDL_MapSurface(src, dst) < 0) {
-            return (-1);
+            return -1;
         }
         /* just here for debugging */
 /*         printf */
@@ -707,7 +707,7 @@ SDL_LowerBlit(SDL_Surface * src, SDL_Rect * srcrect,
 /*              src, dst->flags, src->map->info.flags, dst, dst->flags, */
 /*              dst->map->info.flags, src->map->blit); */
     }
-    return (src->map->blit(src, srcrect, dst, dstrect));
+    return src->map->blit(src, srcrect, dst, dstrect);
 }
 
 
@@ -1016,9 +1016,9 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
         if ( !(src->map->info.flags & complex_copy_flags) &&
                 src->format->format == dst->format->format &&
                 !SDL_ISPIXELFORMAT_INDEXED(src->format->format) ) {
-            return SDL_SoftStretch( src, srcrect, dst, dstrect );
+            return SDL_SoftStretch(src, srcrect, dst, dstrect);
         } else {
-            return SDL_LowerBlit( src, srcrect, dst, dstrect );
+            return SDL_LowerBlit(src, srcrect, dst, dstrect);
         }
     } else {
         if ( !(src->map->info.flags & complex_copy_flags) &&
@@ -1122,7 +1122,7 @@ SDL_LockSurface(SDL_Surface * surface)
     ++surface->locked;
 
     /* Ready to go.. */
-    return (0);
+    return 0;
 }
 
 /*
@@ -1192,7 +1192,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
         }
         if (i == format->palette->ncolors) {
             SDL_SetError("Empty destination palette");
-            return (NULL);
+            return NULL;
         }
     }
 
@@ -1202,7 +1202,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                                    format->Gmask, format->Bmask,
                                    format->Amask);
     if (convert == NULL) {
-        return (NULL);
+        return NULL;
     }
 
     /* Copy the palette if any */
@@ -1388,7 +1388,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     }
 
     /* We're ready to go! */
-    return (convert);
+    return convert;
 }
 
 SDL_Surface *

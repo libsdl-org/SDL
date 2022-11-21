@@ -233,7 +233,7 @@ get_audio_device(void *handle, const int channels)
     const char *device;
 
     if (handle != NULL) {
-        return (const char *) handle;
+        return (const char *)handle;
     }
 
     /* !!! FIXME: we also check "SDL_AUDIO_DEVICE_NAME" at the higher level. */
@@ -417,7 +417,7 @@ ALSA_PlayDevice(_THIS)
 static Uint8 *
 ALSA_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    return this->hidden->mixbuf;
 }
 
 static int
@@ -503,7 +503,7 @@ ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
     status = ALSA_snd_pcm_hw_params_set_period_size_near(
                 this->hidden->pcm_handle, hwparams, &persize, NULL);
     if ( status < 0 ) {
-        return(-1);
+        return -1;
     }
 
     /* Need to at least double buffer */
@@ -511,19 +511,19 @@ ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
     status = ALSA_snd_pcm_hw_params_set_periods_min(
                 this->hidden->pcm_handle, hwparams, &periods, NULL);
     if ( status < 0 ) {
-        return(-1);
+        return -1;
     }
 
     status = ALSA_snd_pcm_hw_params_set_periods_first(
                 this->hidden->pcm_handle, hwparams, &periods, NULL);
     if ( status < 0 ) {
-        return(-1);
+        return -1;
     }
 
     /* "set" the hardware with the desired parameters */
     status = ALSA_snd_pcm_hw_params(this->hidden->pcm_handle, hwparams);
     if ( status < 0 ) {
-        return(-1);
+        return -1;
     }
 
     this->spec.samples = persize;
@@ -539,7 +539,7 @@ ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
             persize, periods, bufsize);
     }
 
-    return(0);
+    return 0;
 }
 
 static int
@@ -575,8 +575,7 @@ ALSA_OpenDevice(_THIS, const char *devname)
                 SND_PCM_NONBLOCK);
 
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't open audio device: %s",
-                            ALSA_snd_strerror(status));
+        return SDL_SetError("ALSA: Couldn't open audio device: %s", ALSA_snd_strerror(status));
     }
 
     this->hidden->pcm_handle = pcm_handle;
@@ -585,16 +584,14 @@ ALSA_OpenDevice(_THIS, const char *devname)
     snd_pcm_hw_params_alloca(&hwparams);
     status = ALSA_snd_pcm_hw_params_any(pcm_handle, hwparams);
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't get hardware config: %s",
-                            ALSA_snd_strerror(status));
+        return SDL_SetError("ALSA: Couldn't get hardware config: %s", ALSA_snd_strerror(status));
     }
 
     /* SDL only uses interleaved sample output */
     status = ALSA_snd_pcm_hw_params_set_access(pcm_handle, hwparams,
                                                SND_PCM_ACCESS_RW_INTERLEAVED);
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't set interleaved access: %s",
-                     ALSA_snd_strerror(status));
+        return SDL_SetError("ALSA: Couldn't set interleaved access: %s", ALSA_snd_strerror(status));
     }
 
     /* Try for a closest match on audio format */
@@ -676,8 +673,7 @@ ALSA_OpenDevice(_THIS, const char *devname)
     status = ALSA_snd_pcm_hw_params_set_rate_near(pcm_handle, hwparams,
                                                   &rate, NULL);
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't set audio frequency: %s",
-                            ALSA_snd_strerror(status));
+        return SDL_SetError("ALSA: Couldn't set audio frequency: %s", ALSA_snd_strerror(status));
     }
     this->spec.freq = rate;
 
@@ -691,24 +687,20 @@ ALSA_OpenDevice(_THIS, const char *devname)
     snd_pcm_sw_params_alloca(&swparams);
     status = ALSA_snd_pcm_sw_params_current(pcm_handle, swparams);
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't get software config: %s",
-                            ALSA_snd_strerror(status));
+        return SDL_SetError("ALSA: Couldn't get software config: %s", ALSA_snd_strerror(status));
     }
     status = ALSA_snd_pcm_sw_params_set_avail_min(pcm_handle, swparams, this->spec.samples);
     if (status < 0) {
-        return SDL_SetError("Couldn't set minimum available samples: %s",
-                            ALSA_snd_strerror(status));
+        return SDL_SetError("Couldn't set minimum available samples: %s", ALSA_snd_strerror(status));
     }
     status =
         ALSA_snd_pcm_sw_params_set_start_threshold(pcm_handle, swparams, 1);
     if (status < 0) {
-        return SDL_SetError("ALSA: Couldn't set start threshold: %s",
-                            ALSA_snd_strerror(status));
+        return SDL_SetError("ALSA: Couldn't set start threshold: %s", ALSA_snd_strerror(status));
     }
     status = ALSA_snd_pcm_sw_params(pcm_handle, swparams);
     if (status < 0) {
-        return SDL_SetError("Couldn't set software audio parameters: %s",
-                            ALSA_snd_strerror(status));
+        return SDL_SetError("Couldn't set software audio parameters: %s", ALSA_snd_strerror(status));
     }
 
     /* Calculate the final parameters for this audio specification */

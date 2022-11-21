@@ -68,7 +68,7 @@ struct SDL_EVDEV_keyboard_state
 
 static int SDL_EVDEV_kbd_load_keymaps(SDL_EVDEV_keyboard_state *kbd)
 {
-    return (ioctl(kbd->keyboard_fd, GIO_KEYMAP, kbd->key_map) >= 0);
+    return ioctl(kbd->keyboard_fd, GIO_KEYMAP, kbd->key_map) >= 0;
 }
 
 static SDL_EVDEV_keyboard_state * kbd_cleanup_state = NULL;

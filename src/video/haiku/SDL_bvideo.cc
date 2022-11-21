@@ -41,7 +41,7 @@ extern "C" {
 #include "SDL_bevents.h"
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return ((SDL_BWin*)(window->driverdata));
+    return (SDL_BWin *)(window->driverdata);
 }
 
 /* FIXME: Undefined functions */
@@ -293,7 +293,7 @@ int HAIKU_VideoInit(_THIS)
 #endif
 
     /* We're done! */
-    return (0);
+    return 0;
 }
 
 void HAIKU_VideoQuit(_THIS)
@@ -310,7 +310,7 @@ int HAIKU_OpenURL(const char *url)
 {
     BUrl burl(url);
     const status_t rc = burl.OpenWithPreferredApplication(false);
-    return (rc == B_NO_ERROR) ? 0 : SDL_SetError("URL open failed (err=%d)", (int) rc);
+    return (rc == B_NO_ERROR) ? 0 : SDL_SetError("URL open failed (err=%d)", (int)rc);
 }
 
 #ifdef __cplusplus

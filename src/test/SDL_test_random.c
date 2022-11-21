@@ -94,7 +94,7 @@ unsigned int SDLTest_Random(SDLTest_RandomContext * rndContext)
   if (xl * rndContext->al >= (~rndContext->c + 1)) {
     rndContext->c++;
   }
-  return (rndContext->x);
+  return rndContext->x;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

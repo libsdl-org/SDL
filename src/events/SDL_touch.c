@@ -44,7 +44,7 @@ static SDL_TouchID  track_touchid;
 int
 SDL_TouchInit(void)
 {
-    return (0);
+    return 0;
 }
 
 int

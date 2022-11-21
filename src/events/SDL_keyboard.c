@@ -939,7 +939,7 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode, SD
         SDL_MinimizeWindow(keyboard->focus);
     }
 
-    return (posted);
+    return posted;
 }
 
 int
@@ -1045,7 +1045,7 @@ SDL_SendKeyboardText(const char *text)
             posted |= (SDL_PushEvent(&event) > 0);
         }
     }
-    return (posted);
+    return posted;
 }
 
 int
@@ -1076,7 +1076,7 @@ SDL_SendEditingText(const char *text, int start, int length)
 
         posted = (SDL_PushEvent(&event) > 0);
     }
-    return (posted);
+    return posted;
 }
 
 void
@@ -1100,7 +1100,7 @@ SDL_GetModState(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    return (SDL_Keymod) keyboard->modstate;
+    return (SDL_Keymod)keyboard->modstate;
 }
 
 void
@@ -1208,8 +1208,7 @@ SDL_GetKeyName(SDL_Keycode key)
     char *end;
 
     if (key & SDLK_SCANCODE_MASK) {
-        return
-            SDL_GetScancodeName((SDL_Scancode) (key & ~SDLK_SCANCODE_MASK));
+        return SDL_GetScancodeName((SDL_Scancode)(key & ~SDLK_SCANCODE_MASK));
     }
 
     switch (key) {

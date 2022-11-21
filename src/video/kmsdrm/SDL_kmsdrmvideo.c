@@ -1406,7 +1406,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Allocate window internal data */
     windata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!windata) {
-        return(SDL_OutOfMemory());
+        return SDL_OutOfMemory();
     }
 
     /* Setup driver data for this window */
@@ -1438,7 +1438,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                but only when we come here for the first time,
                and only if it's not a VK window. */
             if ((ret = KMSDRM_GBMInit(_this, dispdata))) {
-                return (SDL_SetError("Can't init GBM on window creation."));
+                return SDL_SetError("Can't init GBM on window creation.");
             }
         }
 
@@ -1450,7 +1450,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 	if (!_this->egl_data) {
 	    egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
 	    if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
-                return (SDL_SetError("Can't load EGL/GL library on window creation."));
+                return SDL_SetError("Can't load EGL/GL library on window creation.");
 	    }
 
 	    _this->gl_config.driver_loaded = 1;
@@ -1482,7 +1482,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         /* Create the window surfaces with the size we have just chosen.
            Needs the window diverdata in place. */
         if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
-            return (SDL_SetError("Can't window GBM/EGL surfaces on window creation."));
+            return SDL_SetError("Can't window GBM/EGL surfaces on window creation.");
         }
     } /* NON-Vulkan block ends. */
 
@@ -1496,7 +1496,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
         viddata->max_windows = new_max_windows;
 
         if (!viddata->windows) {
-            return (SDL_OutOfMemory());
+            return SDL_OutOfMemory();
         }
     }
 

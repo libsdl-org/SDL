@@ -64,7 +64,7 @@ main(int argc, char *argv[])
     file = fopen(fname, "rb");
     if (!file) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
-        return (1);
+        return 1;
     }
     SDL_free(fname);
 
@@ -93,5 +93,5 @@ main(int argc, char *argv[])
     fclose(file);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
-    return (errors ? errors + 1 : 0);
+    return errors ? errors + 1 : 0;
 }

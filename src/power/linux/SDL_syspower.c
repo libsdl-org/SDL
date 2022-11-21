@@ -321,7 +321,7 @@ int_string(char *str, int *val)
 {
     char *endptr = NULL;
     *val = (int) SDL_strtol(str, &endptr, 0);
-    return ((*str != '\0') && (*endptr == '\0'));
+    return (*str != '\0') && (*endptr == '\0');
 }
 
 /* http://lxr.linux.no/linux+v2.6.29/drivers/char/apm-emulation.c */

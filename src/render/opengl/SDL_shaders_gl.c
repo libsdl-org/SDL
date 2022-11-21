@@ -479,7 +479,7 @@ CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
     }
     ctx->glUseProgramObjectARB(0);
 
-    return (ctx->glGetError() == GL_NO_ERROR);
+    return ctx->glGetError() == GL_NO_ERROR;
 }
 
 static void

@@ -1292,12 +1292,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             FillRect(GetDC(hwnd), &client_rect, brush);
             DeleteObject(brush);
         }
-        return (1);
+        return 1;
 
     case WM_SYSCOMMAND:
         {
             if ((wParam & 0xFFF0) == SC_KEYMENU) {
-                return (0);
+                return 0;
             }
 
 #if defined(SC_SCREENSAVE) || defined(SC_MONITORPOWER)
@@ -1305,7 +1305,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if ((wParam & 0xFFF0) == SC_SCREENSAVE ||
                 (wParam & 0xFFF0) == SC_MONITORPOWER) {
                 if (SDL_GetVideoDevice()->suspend_screensaver) {
-                    return (0);
+                    return 0;
                 }
             }
 #endif /* System has screensaver support */
@@ -1383,15 +1383,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          * If we're handling our own touches, we don't want any gestures.
          * Not all of these settings are documented.
          * The use of the undocumented ones was suggested by https://github.com/bjarkeck/GCGJ/blob/master/Monogame/Windows/WinFormsGameForm.cs . */
-        return TABLET_DISABLE_PRESSANDHOLD |    /*  disables press and hold (right-click) gesture */
-            TABLET_DISABLE_PENTAPFEEDBACK |     /*  disables UI feedback on pen up (waves) */
-            TABLET_DISABLE_PENBARRELFEEDBACK |  /*  disables UI feedback on pen button down (circle) */
-            TABLET_DISABLE_TOUCHUIFORCEON |
-            TABLET_DISABLE_TOUCHUIFORCEOFF |
-            TABLET_DISABLE_TOUCHSWITCH |
-            TABLET_DISABLE_FLICKS |             /*  disables pen flicks (back, forward, drag down, drag up) */
-            TABLET_DISABLE_SMOOTHSCROLLING |
-            TABLET_DISABLE_FLICKFALLBACKKEYS;
+        return TABLET_DISABLE_PRESSANDHOLD | TABLET_DISABLE_PENTAPFEEDBACK | TABLET_DISABLE_PENBARRELFEEDBACK | TABLET_DISABLE_TOUCHUIFORCEON | TABLET_DISABLE_TOUCHUIFORCEOFF | TABLET_DISABLE_TOUCHSWITCH | TABLET_DISABLE_FLICKS | TABLET_DISABLE_SMOOTHSCROLLING | TABLET_DISABLE_FLICKFALLBACKKEYS;    /*  disables press and hold (right-click) gesture */
+            /*  disables UI feedback on pen up (waves) */
+            /*  disables UI feedback on pen button down (circle) */
+            /*  disables pen flicks (back, forward, drag down, drag up) */
 
 #endif /* HAVE_TPCSHRD_H */
 
@@ -1904,7 +1899,7 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     /* Only do this once... */
     if (app_registered) {
         ++app_registered;
-        return (0);
+        return 0;
     }
     SDL_assert(SDL_Appname == NULL);
     if (!name) {

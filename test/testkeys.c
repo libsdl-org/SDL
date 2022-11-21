@@ -36,5 +36,5 @@ main(int argc, char *argv[])
                SDL_GetScancodeName(scancode));
     }
     SDL_Quit();
-    return (0);
+    return 0;
 }

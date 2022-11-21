@@ -265,7 +265,7 @@ main(int argc, char *argv[])
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     /* Set 640x480 video mode */
@@ -310,7 +310,7 @@ main(int argc, char *argv[])
 #endif
 
     SDL_Quit();
-    return (0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

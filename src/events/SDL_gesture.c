@@ -103,7 +103,7 @@ int SDL_RecordGesture(SDL_TouchID touchId)
             }
         }
     }
-    return (touchId < 0);
+    return touchId < 0;
 }
 
 void SDL_GestureQuit()
@@ -303,7 +303,7 @@ static float dollarDifference(SDL_FloatPoint* points,SDL_FloatPoint* templ,float
         dist += (float)(SDL_sqrt((p.x-templ[i].x)*(p.x-templ[i].x)+
                                  (p.y-templ[i].y)*(p.y-templ[i].y)));
     }
-    return dist/DOLLARNPOINTS;
+    return dist / DOLLARNPOINTS;
 
 }
 
@@ -342,7 +342,7 @@ static float bestDollarDifference(SDL_FloatPoint* points,SDL_FloatPoint* templ)
       else if (f1 >  f2)
           printf("Min angle (x2): %f\n",x2);
     */
-    return SDL_min(f1,f2);
+    return SDL_min(f1, f2);
 }
 
 /* DollarPath contains raw points, plus (possibly) the calculated length */

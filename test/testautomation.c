@@ -120,7 +120,7 @@ main(int argc, char *argv[])
 
     /* Shutdown everything */
     quit(result);
-    return(result);
+    return result;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

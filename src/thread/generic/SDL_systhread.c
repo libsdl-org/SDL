@@ -47,13 +47,13 @@ SDL_SYS_SetupThread(const char *name)
 SDL_threadID
 SDL_ThreadID(void)
 {
-    return (0);
+    return 0;
 }
 
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-    return (0);
+    return 0;
 }
 
 void

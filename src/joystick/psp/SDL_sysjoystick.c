@@ -116,7 +116,7 @@ static const char *PSP_JoystickGetDeviceName(int device_index)
     }
 
     SDL_SetError("No joystick available with that index");
-    return(NULL);
+    return NULL;
 }
 
 static const char *PSP_JoystickGetDevicePath(int index)

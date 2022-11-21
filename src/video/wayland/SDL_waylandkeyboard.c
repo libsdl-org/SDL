@@ -147,7 +147,7 @@ Wayland_HasScreenKeyboardSupport(_THIS)
     SDL_VideoData *driverdata = _this->driverdata;
     SDL_bool haskeyboard = (driverdata->input != NULL) && (driverdata->input->keyboard != NULL);
     SDL_bool hastextmanager = (driverdata->text_input_manager != NULL);
-    return (!haskeyboard && hastextmanager);
+    return !haskeyboard && hastextmanager;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

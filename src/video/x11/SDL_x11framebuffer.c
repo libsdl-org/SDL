@@ -35,9 +35,9 @@ static int shm_errhandler(Display *d, XErrorEvent *e)
 {
         if ( e->error_code == BadAccess ) {
             shm_error = True;
-            return(0);
+            return 0;
         } else
-        return(X_handler(d,e));
+        return X_handler(d, e);
 }
 
 static SDL_bool have_mitshm(Display *dpy)

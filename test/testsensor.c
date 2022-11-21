@@ -64,7 +64,7 @@ main(int argc, char **argv)
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_SENSOR) < 0) {
         SDL_Log("Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     num_sensors = SDL_NumSensors();
@@ -117,5 +117,5 @@ main(int argc, char **argv)
     }
 
     SDL_Quit();
-    return (0);
+    return 0;
 }

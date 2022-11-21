@@ -25,9 +25,7 @@
 /* Return true if the YUV format is packed pixels */
 static SDL_bool is_packed_yuv_format(Uint32 format)
 {
-    return (format == SDL_PIXELFORMAT_YUY2 ||
-            format == SDL_PIXELFORMAT_UYVY ||
-            format == SDL_PIXELFORMAT_YVYU);
+    return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
 
 /* Create a surface with a good pattern for verifying YUV conversion */

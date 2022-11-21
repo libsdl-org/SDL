@@ -602,7 +602,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     if (freesrc && src) {
         SDL_RWclose(src);
     }
-    return (surface);
+    return surface;
 }
 
 int
@@ -842,7 +842,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
     if (freedst && dst) {
         SDL_RWclose(dst);
     }
-    return ((SDL_strcmp(SDL_GetError(), "") == 0) ? 0 : -1);
+    return (SDL_strcmp(SDL_GetError(), "") == 0) ? 0 : -1;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

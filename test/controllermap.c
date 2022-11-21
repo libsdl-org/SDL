@@ -245,7 +245,7 @@ BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const S
             int maxA = SDL_max(pBindingA->value.axis.axis_min, pBindingA->value.axis.axis_max);
             int minB = SDL_min(pBindingB->value.axis.axis_min, pBindingB->value.axis.axis_max);
             int maxB = SDL_max(pBindingB->value.axis.axis_min, pBindingB->value.axis.axis_max);
-            return (minA <= minB && maxA >= maxB);
+            return minA <= minB && maxA >= maxB;
         }
         /* Not reached */
     default:

@@ -36,11 +36,11 @@ extern "C" {
 
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return ((SDL_BWin*)(window->driverdata));
+    return (SDL_BWin *)(window->driverdata);
 }
 
 static SDL_INLINE SDL_BApp *_GetBeApp() {
-    return ((SDL_BApp*)be_app);
+    return (SDL_BApp *)be_app;
 }
 
 /* Passing a NULL path means load pointers from the application */

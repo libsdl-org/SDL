@@ -1880,7 +1880,7 @@ size_t Android_JNI_FileRead(SDL_RWops* ctx, void* buffer,
 
     if (result > 0) {
         /* Number of chuncks */
-        return (result / size);
+        return result / size;
     } else {
         /* Error or EOF */
         return result;

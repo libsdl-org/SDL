@@ -93,14 +93,14 @@ DUMMY_CreateDevice(void)
     SDL_VideoDevice *device;
 
     if (!DUMMY_Available()) {
-        return (0);
+        return 0;
     }
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
-        return (0);
+        return 0;
     }
     device->is_dummy = SDL_TRUE;
 

@@ -48,7 +48,7 @@ SDL_CreateCond(void)
             cond = NULL;
         }
     }
-    return (cond);
+    return cond;
 }
 
 /* Destroy a condition variable */

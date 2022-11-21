@@ -49,7 +49,7 @@ SDL_XInputUseOldJoystickMapping()
 #ifdef __WINRT__
     /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
     /* FIXME: Why are Win8/10 different here? -flibit */
-    return (NTDDI_VERSION < NTDDI_WIN10);
+    return NTDDI_VERSION < NTDDI_WIN10;
 #elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return SDL_FALSE;
 #else
@@ -57,7 +57,7 @@ SDL_XInputUseOldJoystickMapping()
     if (s_XInputUseOldJoystickMapping < 0) {
         s_XInputUseOldJoystickMapping = SDL_GetHintBoolean(SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING, SDL_FALSE);
     }
-    return (s_XInputUseOldJoystickMapping > 0);
+    return s_XInputUseOldJoystickMapping > 0;
 #endif
 }
 

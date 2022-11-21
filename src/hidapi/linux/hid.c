@@ -275,7 +275,7 @@ next_line:
 	}
 
 	free(tmp);
-	return (found_id && found_name && found_serial);
+	return found_id && found_name && found_serial;
 }
 
 static int is_BLE(hid_device *dev)
@@ -839,7 +839,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 
 int HID_API_EXPORT hid_read(hid_device *dev, unsigned char *data, size_t length)
 {
-	return hid_read_timeout(dev, data, length, (dev->blocking)? -1: 0);
+	return hid_read_timeout(dev, data, length, (dev->blocking) ? -1 : 0);
 }
 
 int HID_API_EXPORT hid_set_nonblocking(hid_device *dev, int nonblock)

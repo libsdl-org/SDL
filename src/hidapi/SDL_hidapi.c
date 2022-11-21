@@ -197,7 +197,7 @@ static int SDL_inotify_init1(void) {
 static int
 StrHasPrefix(const char *string, const char *prefix)
 {
-    return (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0);
+    return SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0;
 }
 
 static int
@@ -811,14 +811,8 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
                                  uint8_t descriptor_index, uint16_t lang_id,
                                  unsigned char *data, int length)
 {
-    return libusb_control_transfer(dev,
-                                   LIBUSB_ENDPOINT_IN | 0x0, /* Endpoint 0 IN */
-                                   LIBUSB_REQUEST_GET_DESCRIPTOR,
-                                   (LIBUSB_DT_STRING << 8) | descriptor_index,
-                                   lang_id,
-                                   data,
-                                   (uint16_t) length,
-                                   1000);
+    return libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN | 0x0, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | descriptor_index, lang_id,
+                                   data, (uint16_t)length, 1000); /* Endpoint 0 IN */
 }
 #define libusb_get_string_descriptor SDL_libusb_get_string_descriptor
 #endif /* __FreeBSD__ */

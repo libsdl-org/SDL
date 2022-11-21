@@ -339,9 +339,9 @@ static int
 X11_CheckWindowManagerErrorHandler(Display * d, XErrorEvent * e)
 {
     if (e->error_code == BadWindow) {
-        return (0);
+        return 0;
     } else {
-        return (handler(d, e));
+        return handler(d, e);
     }
 }
 

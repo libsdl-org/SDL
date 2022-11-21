@@ -46,7 +46,7 @@ void *
 NACL_GLES_GetProcAddress(_THIS, const char *proc)
 {
 #ifdef HAVE_DLOPEN
-    return dlsym( 0 /* RTLD_DEFAULT */, proc);
+    return dlsym(0, proc); /* RTLD_DEFAULT */
 #else
     return NULL;
 #endif
@@ -132,7 +132,7 @@ NACL_GLES_CreateContext(_THIS, SDL_Window * window)
         SDL_GL_MakeCurrent(window, (SDL_GLContext) context);
     }
     
-    return (SDL_GLContext) context;
+    return (SDL_GLContext)context;
 }
 
 

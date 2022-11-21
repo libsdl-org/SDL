@@ -36,7 +36,7 @@ extern TInt CreateUnique(TInt (*aFunc)(const TDesC& aName, TAny*, TAny*), TAny*,
 
 static TInt NewMutex(const TDesC& aName, TAny* aPtr1, TAny*)
 {
-    return ((RMutex*)aPtr1)->CreateGlobal(aName);
+    return ((RMutex *)aPtr1)->CreateGlobal(aName);
 }
 
 /* Create a mutex */
@@ -52,7 +52,7 @@ SDL_CreateMutex(void)
     }
     SDL_mutex* mutex = new /*(ELeave)*/ SDL_mutex;
     mutex->handle = rmutex.Handle();
-    return(mutex);
+    return mutex;
 }
 
 /* Free the mutex */
@@ -100,7 +100,7 @@ SDL_LockMutex(SDL_mutex * mutex)
     rmutex.SetHandle(mutex->handle);
     rmutex.Wait();
 
-    return(0);
+    return 0;
 }
 
 /* Unlock the mutex */
@@ -117,7 +117,7 @@ SDL_UnlockMutex(SDL_mutex * mutex)
     rmutex.SetHandle(mutex->handle);
     rmutex.Signal();
 
-    return(0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

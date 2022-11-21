@@ -27,7 +27,7 @@ static Uint32 SDLCALL
 ticktock(Uint32 interval, void *param)
 {
     ++ticks;
-    return (interval);
+    return interval;
 }
 
 static Uint32 SDLCALL
@@ -51,7 +51,7 @@ main(int argc, char *argv[])
 
     if (SDL_Init(SDL_INIT_TIMER) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
@@ -143,7 +143,7 @@ main(int argc, char *argv[])
     SDL_Log("Delay 1 second = %d ms in ticks, %d ms in ticks64, %f ms according to performance counter\n", (int) (now32-start32), (int) (now64-start64), (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
 
     SDL_Quit();
-    return (0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
