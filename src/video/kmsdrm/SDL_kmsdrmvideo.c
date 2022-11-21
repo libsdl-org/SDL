@@ -1478,7 +1478,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
                 _this->gl_config.major_version = 2;
                 _this->gl_config.minor_version = 0;
                 if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA) < 0) {
-                    return (SDL_SetError("Can't load EGL/GL library on window creation."));
+                    return SDL_SetError("Can't load EGL/GL library on window creation.");
                 }
             }
             
