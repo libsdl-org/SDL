@@ -1038,11 +1038,13 @@ RLEAlphaSurface(SDL_Surface * surface)
                         SDL_PixelFormat *, SDL_PixelFormat *);
 
     dest = surface->map->dst;
-    if (dest == NULL)
+    if (dest == NULL) {
         return -1;
+    }
     df = dest->format;
-    if (surface->format->BitsPerPixel != 32)
-        return -1;              /* only 32bpp source supported */
+    if (surface->format->BitsPerPixel != 32) {
+        return -1; /* only 32bpp source supported */
+    }
 
     /* find out whether the destination is one we support,
        and determine the max size of the encoded result */
