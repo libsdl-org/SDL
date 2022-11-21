@@ -116,6 +116,16 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     return state;
 }
 
+#define SEARCHARG(dim)              \
+    while (*dim && *dim != ',') {   \
+        ++dim;                      \
+    }                               \
+    if (!*dim) {                    \
+        return -1;                  \
+    }                               \
+    *dim++ = '\0';
+
+
 int
 SDLTest_CommonArg(SDLTest_CommonState * state, int index)
 {
@@ -309,20 +319,11 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         }
         x = argv[index];
         y = argv[index];
-        #define SEARCHARG(dim) \
-            while (*dim && *dim != ',') { \
-                ++dim; \
-            } \
-            if (!*dim) { \
-                return -1; \
-            } \
-            *dim++ = '\0';
         SEARCHARG(y)
         w = y;
         SEARCHARG(w)
         h = w;
         SEARCHARG(h)
-        #undef SEARCHARG
         state->confine.x = SDL_atoi(x);
         state->confine.y = SDL_atoi(y);
         state->confine.w = SDL_atoi(w);
@@ -1009,7 +1010,7 @@ SDLTest_LoadIcon(const char *file)
     icon = SDL_LoadBMP(file);
     if (icon == NULL) {
         SDL_Log("Couldn't load %s: %s\n", file, SDL_GetError());
-        return (NULL);
+        return NULL;
     }
 
     if (icon->format->palette) {
@@ -1017,7 +1018,7 @@ SDLTest_LoadIcon(const char *file)
         SDL_SetColorKey(icon, 1, *((Uint8 *) icon->pixels));
     }
 
-    return (icon);
+    return icon;
 }
 
 static SDL_HitTestResult SDLCALL

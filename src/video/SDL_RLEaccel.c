@@ -384,12 +384,6 @@
  * This takes care of the case when the surface is clipped on the left and/or
  * right. Top clipping has already been taken care of.
  */
-static void
-RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
-            Uint8 * dstbuf, SDL_Rect * srcrect, unsigned alpha)
-{
-    SDL_PixelFormat *fmt = surf_dst->format;
-
 #define RLECLIPBLIT(bpp, Type, do_blit)                         \
     do {                                                        \
         int linecount = srcrect->h;                             \
@@ -435,12 +429,17 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
         }                                                       \
     } while(0)
 
+
+static void
+RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
+            Uint8 * dstbuf, SDL_Rect * srcrect, unsigned alpha)
+{
+    SDL_PixelFormat *fmt = surf_dst->format;
+
     CHOOSE_BLIT(RLECLIPBLIT, alpha, fmt);
-
-#undef RLECLIPBLIT
-
 }
 
+#undef RLECLIPBLIT
 
 /* blit a colorkeyed RLE surface */
 static int SDLCALL
@@ -456,7 +455,7 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
     /* Lock the destination if necessary */
     if (SDL_MUSTLOCK(surf_dst)) {
         if (SDL_LockSurface(surf_dst) < 0) {
-            return (-1);
+            return -1;
         }
     }
 
@@ -552,7 +551,7 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
     if (SDL_MUSTLOCK(surf_dst)) {
         SDL_UnlockSurface(surf_dst);
     }
-    return (0);
+    return 0;
 }
 
 #undef OPAQUE_BLIT
@@ -1247,7 +1246,7 @@ getpix_8(const Uint8 * srcbuf)
 static Uint32
 getpix_16(const Uint8 * srcbuf)
 {
-    return *(const Uint16 *) srcbuf;
+    return *(const Uint16 *)srcbuf;
 }
 
 static Uint32
@@ -1263,7 +1262,7 @@ getpix_24(const Uint8 * srcbuf)
 static Uint32
 getpix_32(const Uint8 * srcbuf)
 {
-    return *(const Uint32 *) srcbuf;
+    return *(const Uint32 *)srcbuf;
 }
 
 typedef Uint32(*getpix_func) (const Uint8 *);
@@ -1466,7 +1465,7 @@ SDL_RLESurface(SDL_Surface * surface)
     /* The surface is now accelerated */
     surface->flags |= SDL_RLEACCEL;
 
-    return (0);
+    return 0;
 }
 
 /*
@@ -1498,7 +1497,7 @@ UnRLEAlpha(SDL_Surface * surface)
 
     surface->pixels = SDL_SIMDAlloc(surface->h * surface->pitch);
     if (!surface->pixels) {
-        return (SDL_FALSE);
+        return SDL_FALSE;
     }
     surface->flags |= SDL_SIMD_ALIGNED;
     /* fill background with transparent pixels */
@@ -1548,7 +1547,7 @@ UnRLEAlpha(SDL_Surface * surface)
     }
 
 end_function:
-    return (SDL_TRUE);
+    return SDL_TRUE;
 }
 
 void
