@@ -1153,8 +1153,9 @@ RLEAlphaSurface(SDL_Surface * surface)
                 while (x < w && ISOPAQUE(src[x], sf))
                     x++;
                 skip = runstart - skipstart;
-                if (skip == w)
+                if (skip == w) {
                     blankline = 1;
+                }
                 run = x - runstart;
                 while (skip > max_opaque_run) {
                     ADD_OPAQUE_COUNTS(max_opaque_run, 0);
@@ -1206,8 +1207,9 @@ RLEAlphaSurface(SDL_Surface * surface)
                     runstart += len;
                     run -= len;
                 }
-                if (!blankline)
+                if (!blankline) {
                     lastline = dst;
+                }
             } while (x < w);
 
             src += surface->pitch >> 2;
@@ -1233,8 +1235,9 @@ RLEAlphaSurface(SDL_Surface * surface)
     /* reallocate the buffer to release unused memory */
     {
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (p == NULL)
+        if (p == NULL) {
             p = rlebuf;
+        }
         surface->map->data = p;
     }
 
@@ -1353,8 +1356,9 @@ RLEColorkeySurface(SDL_Surface * surface)
             while (x < w && (getpix(srcbuf + x * bpp) & rgbmask) != ckey)
                 x++;
             skip = runstart - skipstart;
-            if (skip == w)
+            if (skip == w) {
                 blankline = 1;
+            }
             run = x - runstart;
 
             /* encode segment */
@@ -1376,8 +1380,9 @@ RLEColorkeySurface(SDL_Surface * surface)
                 runstart += len;
                 run -= len;
             }
-            if (!blankline)
+            if (!blankline) {
                 lastline = dst;
+            }
         } while (x < w);
 
         srcbuf += surface->pitch;
@@ -1402,8 +1407,9 @@ RLEColorkeySurface(SDL_Surface * surface)
     {
         /* If SDL_realloc returns NULL, the original block is left intact */
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (p == NULL)
+        if (p == NULL) {
             p = rlebuf;
+        }
         surface->map->data = p;
     }
 
@@ -1532,8 +1538,9 @@ UnRLEAlpha(SDL_Surface * surface)
         } while (ofs < w);
 
         /* skip padding if needed */
-        if (bpp == 2)
-            srcbuf += (uintptr_t) srcbuf & 2;
+        if (bpp == 2) {
+            srcbuf += (uintptr_t)srcbuf & 2;
+        }
 
         /* copy translucent pixels */
         ofs = 0;
