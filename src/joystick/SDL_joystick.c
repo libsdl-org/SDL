@@ -2901,7 +2901,7 @@ void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLe
 {
     CHECK_JOYSTICK_MAGIC(joystick, );
 
-    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialisation */
+    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialization */
     if (ePowerLevel != joystick->epowerlevel) {
 #if !SDL_EVENTS_DISABLED
         if (SDL_GetEventState(SDL_JOYBATTERYUPDATED) == SDL_ENABLE) {

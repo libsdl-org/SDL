@@ -1775,7 +1775,8 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
             has_trigger_data = SDL_TRUE;
 
-            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN) {
+            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN &&
+                battery_info->BatteryType != BATTERY_TYPE_DISCONNECTED) {
                 SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
                 if (battery_info->BatteryType == BATTERY_TYPE_WIRED) {
                     ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
