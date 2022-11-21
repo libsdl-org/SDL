@@ -110,12 +110,16 @@ void _testBlitBlendMode(int mode)
 
     /* Check test surface */
     SDLTest_AssertCheck(testSurface != NULL, "Verify testSurface is not NULL");
-    if (testSurface == NULL) return;
+    if (testSurface == NULL) {
+        return;
+    }
 
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) return;
+    if (face == NULL) {
+        return;
+    }
 
         /* Reset alpha modulation */
     ret = SDL_SetSurfaceAlphaMod(face, 255);

@@ -200,8 +200,9 @@ static VOID _setVisibleRegion(WINDATA *pWinData, BOOL fVisible)
 {
     SDL_VideoDisplay *pSDLDisplay;
 
-    if (! pWinData->pVOData)
+    if (!pWinData->pVOData) {
         return;
+     }
 
      pSDLDisplay = (fVisible)? SDL_GetDisplayForWindow(pWinData->window) : NULL;
      pWinData->pOutput->SetVisibleRegion(pWinData->pVOData, pWinData->hwnd,
@@ -942,8 +943,9 @@ static void OS2_DestroyWindow(_THIS, SDL_Window * window)
     WINDATA       *pWinData = (WINDATA *)window->driverdata;
 
     debug_os2("Enter");
-    if (pWinData == NULL)
+    if (pWinData == NULL) {
         return;
+    }
 
     if (pWinData->hrgnShape != NULLHANDLE) {
         HPS hps = WinGetPS(pWinData->hwnd);
@@ -991,8 +993,9 @@ static void OS2_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
     WINDATA  *pWinData = (WINDATA *)window->driverdata;
     HPOINTER  hptr = utilCreatePointer(icon, 0, 0);
 
-    if (hptr == NULLHANDLE)
+    if (hptr == NULLHANDLE) {
         return;
+    }
 
     /* Destroy old icon */
     if (pWinData->hptrIcon != NULLHANDLE) {
@@ -1014,8 +1017,9 @@ static void OS2_SetWindowPosition(_THIS, SDL_Window *window)
     SDL_DisplayMode *pSDLDisplayMode = _getDisplayModeForSDLWindow(window);
 
     debug_os2("Enter");
-    if (pSDLDisplayMode == NULL)
+    if (pSDLDisplayMode == NULL) {
         return;
+    }
 
     rectl.xLeft = 0;
     rectl.yBottom = 0;
@@ -1134,8 +1138,9 @@ static void OS2_SetWindowFullscreen(_THIS, SDL_Window *window,
 
     debug_os2("Enter, fullscreen: %u", fullscreen);
 
-    if (pSDLDisplayMode == NULL)
+    if (pSDLDisplayMode == NULL) {
         return;
+    }
 
     if (SDL_ShouldAllowTopmost() &&
         (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) == (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS))
@@ -1221,8 +1226,9 @@ static void _combineRectRegions(SDL_ShapeTree *node, void *closure)
     /* Expand rectangles list */
     if ((pShapeRects->cRects & 0x0F) == 0) {
         pRect = SDL_realloc(pShapeRects->pRects, (pShapeRects->cRects + 0x10) * sizeof(RECTL));
-        if (pRect == NULL)
+        if (pRect == NULL) {
             return;
+        }
         pShapeRects->pRects = pRect;
     }
 

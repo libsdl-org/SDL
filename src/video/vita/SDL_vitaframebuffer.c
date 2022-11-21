@@ -57,8 +57,9 @@ void *vita_gpu_alloc(unsigned int type, unsigned int size, SceUID *uid)
 void vita_gpu_free(SceUID uid)
 {
     void *mem = NULL;
-    if (sceKernelGetMemBlockBase(uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(uid, &mem) < 0) {
         return;
+    }
     sceKernelFreeMemBlock(uid);
 }
 

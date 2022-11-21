@@ -537,8 +537,9 @@ InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, 
     Display *display = viddata->display;
     XEvent evt;
 
-    if (direction < _NET_WM_MOVERESIZE_SIZE_TOPLEFT || direction > _NET_WM_MOVERESIZE_SIZE_LEFT)
+    if (direction < _NET_WM_MOVERESIZE_SIZE_TOPLEFT || direction > _NET_WM_MOVERESIZE_SIZE_LEFT) {
         return;
+    }
 
     /* !!! FIXME: we need to regrab this if necessary when the drag is done. */
     X11_XUngrabPointer(display, 0L);

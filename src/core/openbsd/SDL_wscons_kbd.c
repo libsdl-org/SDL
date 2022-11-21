@@ -492,10 +492,12 @@ static void put_utf8(SDL_WSCONS_input_data* input, uint c)
         put_queue(input, 0xc0 | (c >> 6));
         put_queue(input, 0x80 | (c & 0x3f));
     } else if (c < 0x10000) {
-        if (c >= 0xD800 && c <= 0xF500)
+        if (c >= 0xD800 && c <= 0xF500) {
             return;
-        if (c == 0xFFFF)
+        }
+        if (c == 0xFFFF) {
             return;
+        }
         /* 1110**** 10****** 10****** */
         put_queue(input, 0xe0 | (c >> 12));
         put_queue(input, 0x80 | ((c >> 6) & 0x3f));
@@ -572,7 +574,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
     keysym_t *group;
     keysym_t ksym, result;
 
-    if (input == NULL) return;
+    if (input == NULL) {
+        return;
+    }
     if ((n = read(input->fd, events, sizeof(events))) > 0) {
         n /= sizeof(struct wscons_event);
         for (i = 0; i < n; i++) {

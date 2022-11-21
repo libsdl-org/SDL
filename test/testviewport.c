@@ -103,8 +103,9 @@ loop()
     int i;
 #ifdef __EMSCRIPTEN__
     /* Avoid using delays */
-    if(SDL_GetTicks() - wait_start < 1000)
+    if (SDL_GetTicks() - wait_start < 1000) {
         return;
+    }
     wait_start = SDL_GetTicks();
 #endif
     /* Check for events */

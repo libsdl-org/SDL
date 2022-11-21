@@ -52,8 +52,9 @@ void
 VITA_PollKeyboard(void)
 {
     // We skip polling keyboard if no window is created
-    if (Vita_Window == NULL)
+    if (Vita_Window == NULL) {
         return;
+    }
 
     if (keyboard_hid_handle > 0)
     {

@@ -1451,8 +1451,9 @@ WIN_ClientPointToSDL(const SDL_Window *window, int *x, int *y)
     const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
     const SDL_VideoData *videodata = data->videodata;
 
-    if (!videodata->dpi_scaling_enabled)
+    if (!videodata->dpi_scaling_enabled) {
         return;
+    }
 
     *x = MulDiv(*x, 96, data->scaling_dpi);
     *y = MulDiv(*y, 96, data->scaling_dpi);
@@ -1469,8 +1470,9 @@ WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y)
     const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
     const SDL_VideoData *videodata = data->videodata;
 
-    if (!videodata->dpi_scaling_enabled)
+    if (!videodata->dpi_scaling_enabled) {
         return;
+    }
     
     *x = MulDiv(*x, data->scaling_dpi, 96);
     *y = MulDiv(*y, data->scaling_dpi, 96);

@@ -111,8 +111,9 @@ CaptureSound(HWAVEIN hwi, UINT uMsg, DWORD_PTR dwInstance,
     SDL_AudioDevice *this = (SDL_AudioDevice *) dwInstance;
 
     /* Only service "buffer is filled" messages */
-    if (uMsg != WIM_DATA)
+    if (uMsg != WIM_DATA) {
         return;
+    }
 
     /* Signal that we have a new buffer of data */
     ReleaseSemaphore(this->hidden->audio_sem, 1, NULL);
@@ -127,8 +128,9 @@ FillSound(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance,
     SDL_AudioDevice *this = (SDL_AudioDevice *) dwInstance;
 
     /* Only service "buffer done playing" messages */
-    if (uMsg != WOM_DONE)
+    if (uMsg != WOM_DONE) {
         return;
+    }
 
     /* Signal that we are done playing a buffer */
     ReleaseSemaphore(this->hidden->audio_sem, 1, NULL);

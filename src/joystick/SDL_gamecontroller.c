@@ -2817,8 +2817,9 @@ SDL_GameControllerClose(SDL_GameController *gamecontroller)
 {
     SDL_GameController *gamecontrollerlist, *gamecontrollerlistprev;
 
-    if (gamecontroller == NULL || gamecontroller->magic != &gamecontroller_magic)
+    if (gamecontroller == NULL || gamecontroller->magic != &gamecontroller_magic) {
         return;
+    }
 
     SDL_LockJoysticks();
 

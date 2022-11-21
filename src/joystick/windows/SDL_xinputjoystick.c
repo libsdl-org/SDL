@@ -248,11 +248,13 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     JoyStick_DeviceData *pPrevJoystick = NULL;
     JoyStick_DeviceData *pNewJoystick = *pContext;
 
-    if (SDL_XInputUseOldJoystickMapping() && SubType != XINPUT_DEVSUBTYPE_GAMEPAD)
+    if (SDL_XInputUseOldJoystickMapping() && SubType != XINPUT_DEVSUBTYPE_GAMEPAD) {
         return;
+    }
 
-    if (SubType == XINPUT_DEVSUBTYPE_UNKNOWN)
+    if (SubType == XINPUT_DEVSUBTYPE_UNKNOWN) {
         return;
+    }
 
     while (pNewJoystick) {
         if (pNewJoystick->bXInputDevice && (pNewJoystick->XInputUserId == userid) && (pNewJoystick->SubType == SubType)) {
@@ -521,8 +523,9 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
     XINPUT_STATE_EX XInputState;
     XINPUT_BATTERY_INFORMATION_EX XBatteryInformation;
 
-    if (!XINPUTGETSTATE)
+    if (!XINPUTGETSTATE) {
         return;
+    }
 
     result = XINPUTGETSTATE(joystick->hwdata->userid, &XInputState);
     if (result == ERROR_DEVICE_NOT_CONNECTED) {

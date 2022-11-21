@@ -326,15 +326,17 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
     len = SDL_vsnprintf(stack_buf, sizeof(stack_buf), fmt, aq);
     va_end(aq);
 
-    if (len < 0)
+    if (len < 0) {
         return;
+    }
 
     /* If message truncated, allocate and re-render */
     if (len >= sizeof(stack_buf) && SDL_size_add_overflow(len, 1, &len_plus_term) == 0) {
         /* Allocate exactly what we need, including the zero-terminator */
         message = (char *)SDL_malloc(len_plus_term);
-        if (message == NULL)
+        if (message == NULL) {
             return;
+        }
         va_copy(aq, ap);
         len = SDL_vsnprintf(message, len_plus_term, fmt, aq);
         va_end(aq);

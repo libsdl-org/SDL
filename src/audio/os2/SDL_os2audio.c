@@ -208,8 +208,9 @@ static void OS2_CloseDevice(_THIS)
     MCI_GENERIC_PARMS     sMCIGenericParms;
     ULONG                 ulRC;
 
-    if (pAData == NULL)
+    if (pAData == NULL) {
         return;
+    }
 
     /* Close up audio */
     if (pAData->usDeviceId != (USHORT)~0) { /* Device is open. */

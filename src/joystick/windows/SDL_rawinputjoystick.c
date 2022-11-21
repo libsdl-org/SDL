@@ -473,11 +473,13 @@ static void
 RAWINPUT_UpdateWindowsGamingInput()
 {
     int ii;
-    if (!wgi_state.gamepad_statics)
+    if (!wgi_state.gamepad_statics) {
         return;
+    }
 
-    if (!wgi_state.dirty)
+    if (!wgi_state.dirty) {
         return;
+    }
 
     wgi_state.dirty = SDL_FALSE;
 

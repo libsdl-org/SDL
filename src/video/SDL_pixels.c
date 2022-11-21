@@ -758,8 +758,9 @@ void
 SDL_DitherColors(SDL_Color * colors, int bpp)
 {
     int i;
-    if (bpp != 8)
-        return;                 /* only 8bpp supported right now */
+    if (bpp != 8) {
+        return; /* only 8bpp supported right now */
+    }
 
     for (i = 0; i < 256; i++) {
         int r, g, b;

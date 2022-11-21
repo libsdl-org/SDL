@@ -159,8 +159,9 @@ static hid_device *new_hid_device(void)
 static void free_hid_device(hid_device *dev)
 {
 	struct input_report *rpt;
-	if (dev == NULL)
+	if (dev == NULL) {
 		return;
+	}
 	
 	/* Delete any input reports still left over. */
 	rpt = dev->input_reports;
@@ -1148,8 +1149,9 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 
 void HID_API_EXPORT hid_close(hid_device *dev)
 {
-	if (dev == NULL)
+	if (dev == NULL) {
 		return;
+	}
 	
 	/* Disconnect the report callback before close. */
 	if (!dev->disconnected) {

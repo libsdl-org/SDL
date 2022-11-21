@@ -2419,8 +2419,9 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id, uint32_t version)
     struct SDL_WaylandInput *input;
 
     input = SDL_calloc(1, sizeof *input);
-    if (input == NULL)
+    if (input == NULL) {
         return;
+    }
 
     input->display = d;
     input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, SDL_min(SDL_WL_SEAT_VERSION, version));
@@ -2453,8 +2454,9 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
 {
     struct SDL_WaylandInput *input = d->input;
 
-    if (input == NULL)
+    if (input == NULL) {
         return;
+    }
 
     if (input->data_device != NULL) {
         Wayland_data_device_clear_selection(input->data_device);
@@ -2607,8 +2609,9 @@ lock_pointer_to_window(SDL_Window *window,
     SDL_VideoData *d = input->display;
     struct zwp_locked_pointer_v1 *locked_pointer;
 
-    if (w->locked_pointer)
+    if (w->locked_pointer) {
         return;
+    }
 
     locked_pointer =
         zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints,

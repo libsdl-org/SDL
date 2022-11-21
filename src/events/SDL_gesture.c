@@ -589,7 +589,9 @@ void SDL_GestureProcessEvent(SDL_Event* event)
         SDL_GestureTouch* inTouch = SDL_GetGestureTouch(event->tfinger.touchId);
 
         /* Shouldn't be possible */
-        if (inTouch == NULL) return;
+        if (inTouch == NULL) {
+            return;
+        }
 
         x = event->tfinger.x;
         y = event->tfinger.y;

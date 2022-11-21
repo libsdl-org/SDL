@@ -62,8 +62,9 @@ Wayland_StartTextInput(_THIS)
             const SDL_Rect *rect = &input->text_input->cursor_rect;
 
             /* Don't re-enable if we're already enabled. */
-            if (input->text_input->is_enabled)
+            if (input->text_input->is_enabled) {
                 return;
+            }
 
             /* For some reason this has to be done twice, it appears to be a
              * bug in mutter? Maybe?

@@ -122,8 +122,9 @@ DirectFB_WM_RedrawLayout(_THIS, SDL_Window * window)
     int x, y, w;
 
 
-    if (!windata->is_managed || (window->flags & SDL_WINDOW_FULLSCREEN))
+    if (!windata->is_managed || (window->flags & SDL_WINDOW_FULLSCREEN)) {
         return;
+    }
 
     SDL_DFB_CHECK(s->SetSrcBlendFunction(s, DSBF_ONE));
     SDL_DFB_CHECK(s->SetDstBlendFunction(s, DSBF_ZERO));

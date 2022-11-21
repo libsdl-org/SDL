@@ -243,8 +243,9 @@ static void register_error(hid_device *device, const char *op)
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPWSTR)&msg, 0/*sz*/,
 		NULL);
-	if (!count)
+	if (!count) {
 		return;
+	}
 	
 	/* Get rid of the CR and LF that FormatMessage() sticks at the
 	   end of the message. Thanks Microsoft! */
@@ -962,8 +963,9 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 	typedef BOOL (WINAPI *CancelIoEx_t)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
 	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
 
-	if (dev == NULL)
+	if (dev == NULL) {
 		return;
+	}
 
 	if (CancelIoExFunc) {
 		CancelIoExFunc(dev->device_handle, NULL);

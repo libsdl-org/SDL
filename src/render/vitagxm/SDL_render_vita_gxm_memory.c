@@ -57,8 +57,9 @@ void
 vita_mem_free(SceUID uid)
 {
     void *mem = NULL;
-    if (sceKernelGetMemBlockBase(uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(uid, &mem) < 0) {
         return;
+    }
     sceGxmUnmapMemory(mem);
     sceKernelFreeMemBlock(uid);
 }
@@ -120,8 +121,9 @@ vita_gpu_mem_destroy(VITA_GXM_RenderData *data)
     {
         sceClibMspaceDestroy(data->texturePool);
         data->texturePool = NULL;
-        if (sceKernelGetMemBlockBase(data->texturePoolUID, &mem) < 0)
+        if (sceKernelGetMemBlockBase(data->texturePoolUID, &mem) < 0) {
             return;
+        }
         sceGxmUnmapMemory(mem);
         sceKernelFreeMemBlock(data->texturePoolUID);
     }
@@ -149,8 +151,9 @@ void
 vita_mem_vertex_usse_free(SceUID uid)
 {
     void *mem = NULL;
-    if (sceKernelGetMemBlockBase(uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(uid, &mem) < 0) {
         return;
+    }
     sceGxmUnmapVertexUsseMemory(mem);
     sceKernelFreeMemBlock(uid);
 }
@@ -177,8 +180,9 @@ void
 vita_mem_fragment_usse_free(SceUID uid)
 {
     void *mem = NULL;
-    if (sceKernelGetMemBlockBase(uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(uid, &mem) < 0) {
         return;
+    }
     sceGxmUnmapFragmentUsseMemory(mem);
     sceKernelFreeMemBlock(uid);
 }

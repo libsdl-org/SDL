@@ -1236,14 +1236,17 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
 
-    if (data == NULL)
+    if (data == NULL) {
         return;
+    }
 
-    if(vita_texture == NULL)
+    if (vita_texture == NULL) {
         return;
+    }
 
-    if(vita_texture->tex == NULL)
+    if (vita_texture->tex == NULL) {
         return;
+    }
 
     sceGxmFinish(data->gxm_context);
 
@@ -1259,8 +1262,9 @@ VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     if (data) {
-        if (!data->initialized)
+        if (!data->initialized) {
             return;
+        }
 
         gxm_finish(renderer);
 

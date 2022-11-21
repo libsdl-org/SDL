@@ -462,10 +462,12 @@ static void put_utf8(SDL_EVDEV_keyboard_state *kbd, uint c)
         put_queue(kbd, 0xc0 | (c >> 6));
         put_queue(kbd, 0x80 | (c & 0x3f));
     } else if (c < 0x10000) {
-        if (c >= 0xD800 && c < 0xE000)
+        if (c >= 0xD800 && c < 0xE000) {
             return;
-        if (c == 0xFFFF)
+        }
+        if (c == 0xFFFF) {
             return;
+        }
         /* 1110**** 10****** 10****** */
         put_queue(kbd, 0xe0 | (c >> 12));
         put_queue(kbd, 0x80 | ((c >> 6) & 0x3f));
@@ -556,16 +558,18 @@ static void fn_enter(SDL_EVDEV_keyboard_state *kbd)
 
 static void fn_caps_toggle(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (kbd->rep)
+    if (kbd->rep) {
         return;
+    }
 
     chg_vc_kbd_led(kbd, K_CAPSLOCK);
 }
 
 static void fn_caps_on(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (kbd->rep)
+    if (kbd->rep) {
         return;
+    }
 
     set_vc_kbd_led(kbd, K_CAPSLOCK);
 }
@@ -592,10 +596,12 @@ static void k_ignore(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up
 
 static void k_spec(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
-    if (up_flag)
+    if (up_flag) {
         return;
-    if (value >= SDL_arraysize(fn_handler))
+    }
+    if (value >= SDL_arraysize(fn_handler)) {
         return;
+    }
     if (fn_handler[value]) {
         fn_handler[value](kbd);
     }
@@ -607,8 +613,9 @@ static void k_lowercase(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char
 
 static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
-    if (up_flag)
-        return;        /* no action, if this is a key release */
+    if (up_flag) {
+        return; /* no action, if this is a key release */
+    } 
 
     if (kbd->diacr) {
         value = handle_diacr(kbd, value);

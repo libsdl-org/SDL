@@ -1619,8 +1619,9 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 {
 	int status;
 
-	if (dev == NULL)
+	if (dev == NULL) {
 		return;
+	}
 
 	/* Cause read_thread() to stop. */
 	dev->shutdown_thread = 1;

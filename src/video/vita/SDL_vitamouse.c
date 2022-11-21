@@ -47,8 +47,9 @@ void
 VITA_PollMouse(void)
 {
     // We skip polling mouse if no window is created
-    if (Vita_Window == NULL)
+    if (Vita_Window == NULL) {
         return;
+    }
 
     if (mouse_hid_handle > 0)
     {

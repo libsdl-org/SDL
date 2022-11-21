@@ -900,8 +900,9 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 
 void HID_API_EXPORT hid_close(hid_device *dev)
 {
-	if (dev == NULL)
+	if (dev == NULL) {
 		return;
+	}
 	close(dev->device_handle);
 	free(dev);
 }

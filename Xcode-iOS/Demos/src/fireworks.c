@@ -192,8 +192,9 @@ explodeEmitter(struct particle *emitter)
     int i;
     for (i = 0; i < 200; i++) {
 
-        if (num_active_particles >= MAX_PARTICLES)
+        if (num_active_particles >= MAX_PARTICLES) {
             return;
+        }
 
         /* come up with a random angle and speed for new particle */
         float theta = randomFloat(0, 2.0f * 3.141592);
@@ -230,8 +231,9 @@ void
 spawnTrailFromEmitter(struct particle *emitter)
 {
 
-    if (num_active_particles >= MAX_PARTICLES)
+    if (num_active_particles >= MAX_PARTICLES) {
         return;
+    }
 
     /* select the particle at the slot at the end of our array */
     struct particle *p = &particles[num_active_particles];
@@ -266,8 +268,9 @@ void
 spawnEmitterParticle(GLfloat x, GLfloat y)
 {
 
-    if (num_active_particles >= MAX_PARTICLES)
+    if (num_active_particles >= MAX_PARTICLES) {
         return;
+    }
 
     /* find particle at endpoint of array */
     struct particle *p = &particles[num_active_particles];

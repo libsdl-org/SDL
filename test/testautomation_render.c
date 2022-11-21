@@ -1077,7 +1077,9 @@ _compare(SDL_Surface *referenceSurface, int allowable_error)
    /* Read pixels. */
    pixels = (Uint8 *)SDL_malloc(4*TESTRENDER_SCREEN_W*TESTRENDER_SCREEN_H);
    SDLTest_AssertCheck(pixels != NULL, "Validate allocated temp pixel buffer");
-   if (pixels == NULL) return;
+   if (pixels == NULL) {
+      return;
+   }
 
    /* Explicitly specify the rect in case the window isn't the expected size... */
    rect.x = 0;

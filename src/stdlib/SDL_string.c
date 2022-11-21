@@ -1563,8 +1563,9 @@ SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
 {/* left-pad num with zeroes. */
     size_t sz, pad, have_sign;
 
-    if (info == NULL)
+    if (info == NULL) {
         return;
+    }
 
     have_sign = 0;
     if (*num == '-' || *num == '+') {

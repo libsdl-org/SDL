@@ -49,8 +49,9 @@ InitIME()
     const char *xmodifiers = SDL_getenv("XMODIFIERS");
 #endif
 
-    if (inited == SDL_TRUE)
+    if (inited == SDL_TRUE) {
         return;
+    }
 
     inited = SDL_TRUE;
 

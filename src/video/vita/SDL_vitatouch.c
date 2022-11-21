@@ -87,8 +87,9 @@ VITA_PollTouch(void)
     int port;
 
     // We skip polling touch if no window is created
-    if (Vita_Window == NULL)
+    if (Vita_Window == NULL) {
         return;
+    }
 
     SDL_memcpy(touch_old, touch, sizeof(touch_old));
 

@@ -40,7 +40,9 @@
 
 void SDLTest_RandomInit(SDLTest_RandomContext * rndContext, unsigned int xi, unsigned int ci)
 {
-  if (rndContext==NULL) return;
+  if (rndContext == NULL) {
+      return;
+  }
 
   /*
    * Choose a value for 'a' from this list
@@ -66,7 +68,9 @@ void SDLTest_RandomInitTime(SDLTest_RandomContext * rndContext)
 {
   int a, b;
 
-  if (rndContext==NULL) return;
+  if (rndContext == NULL) {
+    return;
+  }
 
   srand((unsigned int)time(NULL));
   a=rand();

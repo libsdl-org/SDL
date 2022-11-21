@@ -47,7 +47,9 @@ RWopsSetUp(void *arg)
     /* Create a test file */
     handle = fopen(RWopsReadTestFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsReadTestFilename);
-        if (handle == NULL) return;
+        if (handle == NULL) {
+            return;
+    }
 
     /* Write some known text into it */
     fileLen = SDL_strlen(RWopsHelloWorldTestString);
@@ -59,7 +61,9 @@ RWopsSetUp(void *arg)
     /* Create a second test file */
     handle = fopen(RWopsAlphabetFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsAlphabetFilename);
-        if (handle == NULL) return;
+        if (handle == NULL) {
+            return;
+    }
 
     /* Write alphabet text into it */
     fileLen = SDL_strlen(RWopsAlphabetString);

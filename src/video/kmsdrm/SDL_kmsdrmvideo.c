@@ -623,8 +623,9 @@ void
 KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, SDL_bool enabled)
 {
     uint32_t vrr_prop_id;
-    if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) 
+    if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) {
         return;
+    }
 
     KMSDRM_drmModeObjectSetProperty(drm_fd,
                              crtc_id,

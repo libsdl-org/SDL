@@ -350,10 +350,12 @@ static void put_utf8(SDL_EVDEV_keyboard_state *kbd, uint c)
         put_queue(kbd, 0xc0 | (c >> 6));
         put_queue(kbd, 0x80 | (c & 0x3f));
     } else if (c < 0x10000) {
-        if (c >= 0xD800 && c < 0xE000)
+        if (c >= 0xD800 && c < 0xE000) {
             return;
-        if (c == 0xFFFF)
+        }
+        if (c == 0xFFFF) {
             return;
+        }
         /* 1110**** 10****** 10****** */
         put_queue(kbd, 0xe0 | (c >> 12));
         put_queue(kbd, 0x80 | ((c >> 6) & 0x3f));
@@ -421,8 +423,9 @@ static void chg_vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 
 static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned int value, char up_flag)
 {
-    if (up_flag)
-        return;        /* no action, if this is a key release */
+    if (up_flag) {
+        return; /* no action, if this is a key release */
+    }
 
     if (kbd->diacr) {
         value = handle_diacr(kbd, value);

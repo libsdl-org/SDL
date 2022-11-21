@@ -15,8 +15,9 @@
 static void
 FreeAction(SDLVisualTest_Action* action)
 {
-    if(action == NULL)
+    if (action == NULL) {
         return;
+    }
     switch(action->type)
     {
         case SDL_ACTION_LAUNCH:
@@ -170,8 +171,9 @@ SortQueue(SDLVisualTest_ActionQueue* queue)
     SDLVisualTest_ActionNode* head;
     SDLVisualTest_ActionNode* tail;
 
-    if(queue == NULL || SDLVisualTest_IsActionQueueEmpty(queue))
+    if (queue == NULL || SDLVisualTest_IsActionQueueEmpty(queue)) {
         return;
+    }
 
     head = queue->front;
     for(tail = head; tail && tail->next;)

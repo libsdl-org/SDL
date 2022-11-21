@@ -23,8 +23,9 @@ static void
 LogLastError(const char* str)
 {
     const char* error = strerror(errno);
-    if(str == NULL || error == NULL)
+    if (str == NULL || error == NULL) {
         return;
+    }
     SDLTest_LogError("%s: %s", str, error);
 }
 

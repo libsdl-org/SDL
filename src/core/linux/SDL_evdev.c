@@ -253,11 +253,13 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
 
     switch(udev_event) {
     case SDL_UDEV_DEVICEADDED:
-        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD | SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD)))
+        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE | SDL_UDEV_DEVICE_KEYBOARD | SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD))) {
             return;
+        }
 
-        if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK))
+        if ((udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
             return;
+        }
 
         SDL_EVDEV_device_added(dev_path, udev_class);
         break;  
@@ -647,8 +649,9 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
 
 static void
 SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item* item) {
-    if (!item->is_touchscreen)
+    if (!item->is_touchscreen) {
         return;
+    }
 
     SDL_DelTouch(item->fd);
     SDL_free(item->touchscreen_data->slots);
@@ -675,8 +678,9 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
     size_t mt_req_size;
 
     /* TODO: sync devices other than touchscreen */
-    if (!item->is_touchscreen)
+    if (!item->is_touchscreen) {
         return;
+    }
 
     mt_req_size = sizeof(*mt_req_code) +
         sizeof(*mt_req_values) * item->touchscreen_data->max_slots;

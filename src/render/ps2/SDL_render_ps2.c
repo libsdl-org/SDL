@@ -551,11 +551,13 @@ PS2_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    if (data == NULL)
+    if (data == NULL) {
         return;
+    }
 
-    if(ps2_texture == NULL)
+    if (ps2_texture == NULL) {
         return;
+    }
 
     // Free from vram
     gsKit_TexManager_free(data->gsGlobal, ps2_texture);

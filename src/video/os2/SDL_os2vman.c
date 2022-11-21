@@ -312,8 +312,9 @@ static VOID voVideoBufFree(PVODATA pVOData)
 {
     ULONG ulRC;
 
-    if (pVOData->pBuffer == NULL)
+    if (pVOData->pBuffer == NULL) {
         return;
+    }
 
     ulRC = DosFreeMem(pVOData->pBuffer);
     if (ulRC != NO_ERROR) {

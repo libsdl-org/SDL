@@ -130,7 +130,9 @@ void updateMouse(SDL_WSCONS_mouse_input_data* inputData)
 
 void SDL_WSCONS_Quit_Mouse(SDL_WSCONS_mouse_input_data* inputData)
 {
-    if (inputData == NULL) return;
+    if (inputData == NULL) {
+        return;
+    }
     close(inputData->fd);
     free(inputData);
 }

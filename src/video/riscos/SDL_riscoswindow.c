@@ -56,8 +56,9 @@ RISCOS_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
 
-    if (driverdata == NULL)
+    if (driverdata == NULL) {
         return;
+    }
 
     SDL_free(driverdata);
     window->driverdata = NULL;

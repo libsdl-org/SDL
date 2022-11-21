@@ -260,8 +260,9 @@ HAIKU_SetRelativeMouseMode(SDL_bool enabled)
 static void HAIKU_MouseInit(_THIS)
 {
 	SDL_Mouse *mouse = SDL_GetMouse();
-	if (mouse == NULL)
+	if (mouse == NULL) {
 		return;
+	}
 	mouse->CreateCursor = HAIKU_CreateCursor;
 	mouse->CreateSystemCursor = HAIKU_CreateSystemCursor;
 	mouse->ShowCursor = HAIKU_ShowCursor;
