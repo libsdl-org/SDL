@@ -581,7 +581,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     }
 
     /* Add device to the end of the list */
-    if ( !gpDeviceList ) {
+    if (gpDeviceList == NULL) {
         gpDeviceList = device;
     } else {
         recDevice *curdevice;

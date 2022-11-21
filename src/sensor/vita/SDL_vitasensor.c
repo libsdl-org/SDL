@@ -55,7 +55,7 @@ SDL_VITA_SensorInit(void)
     SDL_sensors_count = 2;
 
     SDL_sensors = (SDL_VitaSensor *)SDL_calloc(SDL_sensors_count, sizeof(*SDL_sensors));
-    if (!SDL_sensors) {
+    if (SDL_sensors == NULL) {
         return SDL_OutOfMemory();
     }
 

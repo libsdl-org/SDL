@@ -402,18 +402,18 @@ static int
 SDL_StartJoystickThread(void)
 {
     s_mutexJoyStickEnum = SDL_CreateMutex();
-    if (!s_mutexJoyStickEnum) {
+    if (s_mutexJoyStickEnum == NULL) {
         return -1;
     }
 
     s_condJoystickThread = SDL_CreateCond();
-    if (!s_condJoystickThread) {
+    if (s_condJoystickThread == NULL) {
         return -1;
     }
 
     s_bJoystickThreadQuit = SDL_FALSE;
     s_joystickThread = SDL_CreateThreadInternal(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
-    if (!s_joystickThread) {
+    if (s_joystickThread == NULL) {
         return -1;
     }
     return 0;
@@ -422,7 +422,7 @@ SDL_StartJoystickThread(void)
 static void
 SDL_StopJoystickThread(void)
 {
-    if (!s_joystickThread) {
+    if (s_joystickThread == NULL) {
         return;
     }
 

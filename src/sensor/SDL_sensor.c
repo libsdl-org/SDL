@@ -79,7 +79,7 @@ SDL_SensorInit(void)
     int i, status;
 
     /* Create the sensor list lock */
-    if (!SDL_sensor_lock) {
+    if (SDL_sensor_lock == NULL) {
         SDL_sensor_lock = SDL_CreateMutex();
     }
 

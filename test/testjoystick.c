@@ -118,7 +118,7 @@ loop(void *arg)
 
         case SDL_JOYDEVICEADDED:
             SDL_Log("Joystick device %d added.\n", (int) event.jdevice.which);
-            if (!joystick) {
+            if (joystick == NULL) {
                 joystick = SDL_JoystickOpen(event.jdevice.which);
                 if (joystick) {
                     PrintJoystick(joystick);

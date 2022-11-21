@@ -121,14 +121,14 @@ main(int argc, char *argv[])
             break;
         }
     }
-    if (!factory) {
+    if (factory == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find native window code for %s driver\n",
                 driver);
         quit(2);
     }
     SDL_Log("Creating native window for %s driver\n", driver);
     native_window = factory->CreateNativeWindow(WINDOW_W, WINDOW_H);
-    if (!native_window) {
+    if (native_window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create native window\n");
         quit(3);
     }
@@ -160,7 +160,7 @@ main(int argc, char *argv[])
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
     positions = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
     velocities = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    if (!positions || !velocities) {
+    if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }

@@ -638,7 +638,7 @@ static char *make_path(libusb_device *dev, int interface_number)
 
 int HID_API_EXPORT hid_init(void)
 {
-	if (!usb_context) {
+	if (usb_context == NULL) {
 		/* Init Libusb */
 		if (libusb_init(&usb_context)) {
 			return -1;

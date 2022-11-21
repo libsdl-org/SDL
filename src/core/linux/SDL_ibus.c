@@ -481,7 +481,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
         ibus_input_interface = IBUS_INPUT_INTERFACE;
         ibus_conn = dbus->connection_open_private(addr, NULL);
 
-        if (!ibus_conn) {
+        if (ibus_conn == NULL) {
             return SDL_FALSE;  /* oh well. */
         }
 

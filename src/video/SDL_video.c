@@ -579,7 +579,7 @@ pre_driver_error:
 const char *
 SDL_GetCurrentVideoDriver()
 {
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -663,7 +663,7 @@ SDL_DelVideoDisplay(int index)
 int
 SDL_GetNumVideoDisplays(void)
 {
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return 0;
     }
@@ -1612,7 +1612,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     SDL_Window *window;
     Uint32 type_flags, graphics_flags;
 
-    if (!_this) {
+    if (_this == NULL) {
         /* Initialize the video system if needed */
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             return NULL;
@@ -1805,7 +1805,7 @@ SDL_CreateWindowFrom(const void *data)
     SDL_Window *window;
     Uint32 flags = SDL_WINDOW_FOREIGN;
 
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -2028,7 +2028,7 @@ SDL_GetWindowFromID(Uint32 id)
 {
     SDL_Window *window;
 
-    if (!_this) {
+    if (_this == NULL) {
         return NULL;
     }
     for (window = _this->windows; window; window = window->next) {
@@ -3249,7 +3249,7 @@ SDL_GetFocusWindow(void)
 {
     SDL_Window *window;
 
-    if (!_this) {
+    if (_this == NULL) {
         return NULL;
     }
     for (window = _this->windows; window; window = window->next) {
@@ -3346,7 +3346,7 @@ SDL_DestroyWindow(SDL_Window * window)
 SDL_bool
 SDL_IsScreenSaverEnabled()
 {
-    if (!_this) {
+    if (_this == NULL) {
         return SDL_TRUE;
     }
     return _this->suspend_screensaver ? SDL_FALSE : SDL_TRUE;
@@ -3355,7 +3355,7 @@ SDL_IsScreenSaverEnabled()
 void
 SDL_EnableScreenSaver()
 {
-    if (!_this) {
+    if (_this == NULL) {
         return;
     }
     if (!_this->suspend_screensaver) {
@@ -3370,7 +3370,7 @@ SDL_EnableScreenSaver()
 void
 SDL_DisableScreenSaver()
 {
-    if (!_this) {
+    if (_this == NULL) {
         return;
     }
     if (_this->suspend_screensaver) {
@@ -3387,7 +3387,7 @@ SDL_VideoQuit(void)
 {
     int i;
 
-    if (!_this) {
+    if (_this == NULL) {
         return;
     }
 
@@ -3432,7 +3432,7 @@ SDL_GL_LoadLibrary(const char *path)
 {
     int retval;
 
-    if (!_this) {
+    if (_this == NULL) {
         return SDL_UninitializedVideo();
     }
     if (_this->gl_config.driver_loaded) {
@@ -3461,7 +3461,7 @@ SDL_GL_GetProcAddress(const char *proc)
 {
     void *func;
 
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -3481,7 +3481,7 @@ SDL_GL_GetProcAddress(const char *proc)
 void
 SDL_GL_UnloadLibrary(void)
 {
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return;
     }
@@ -3624,7 +3624,7 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 void
 SDL_GL_ResetAttributes()
 {
-    if (!_this) {
+    if (_this == NULL) {
         return;
     }
 
@@ -3682,7 +3682,7 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
     int retval;
 
-    if (!_this) {
+    if (_this == NULL) {
         return SDL_UninitializedVideo();
     }
     retval = 0;
@@ -3828,7 +3828,7 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     /* Clear value in any case */
     *value = 0;
 
-    if (!_this) {
+    if (_this == NULL) {
         return SDL_UninitializedVideo();
     }
 
@@ -4092,7 +4092,7 @@ SDL_GL_MakeCurrent(SDL_Window * window, SDL_GLContext ctx)
 {
     int retval;
 
-    if (!_this) {
+    if (_this == NULL) {
         return SDL_UninitializedVideo();
     }
 
@@ -4127,7 +4127,7 @@ SDL_GL_MakeCurrent(SDL_Window * window, SDL_GLContext ctx)
 SDL_Window *
 SDL_GL_GetCurrentWindow(void)
 {
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -4137,7 +4137,7 @@ SDL_GL_GetCurrentWindow(void)
 SDL_GLContext
 SDL_GL_GetCurrentContext(void)
 {
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -4158,7 +4158,7 @@ void SDL_GL_GetDrawableSize(SDL_Window * window, int *w, int *h)
 int
 SDL_GL_SetSwapInterval(int interval)
 {
-    if (!_this) {
+    if (_this == NULL) {
         return SDL_UninitializedVideo();
     } else if (SDL_GL_GetCurrentContext() == NULL) {
         return SDL_SetError("No OpenGL context has been made current");
@@ -4172,7 +4172,7 @@ SDL_GL_SetSwapInterval(int interval)
 int
 SDL_GL_GetSwapInterval(void)
 {
-    if (!_this) {
+    if (_this == NULL) {
         return 0;
     } else if (SDL_GL_GetCurrentContext() == NULL) {
         return 0;
@@ -4208,7 +4208,7 @@ SDL_GL_SwapWindow(SDL_Window * window)
 void
 SDL_GL_DeleteContext(SDL_GLContext context)
 {
-    if (!_this || !context) {
+    if (_this == NULL || !context) {
         return;
     }
 
@@ -4754,7 +4754,7 @@ void SDL_OnApplicationDidBecomeActive(void)
 int SDL_Vulkan_LoadLibrary(const char *path)
 {
     int retval;
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return -1;
     }
@@ -4777,7 +4777,7 @@ int SDL_Vulkan_LoadLibrary(const char *path)
 
 void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 {
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return NULL;
     }
@@ -4790,7 +4790,7 @@ void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 
 void SDL_Vulkan_UnloadLibrary(void)
 {
-    if (!_this) {
+    if (_this == NULL) {
         SDL_UninitializedVideo();
         return;
     }

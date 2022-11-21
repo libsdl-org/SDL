@@ -133,7 +133,7 @@ loop(void *arg)
                 break;
 
         case SDL_MOUSEMOTION:
-            if (!active) {
+            if (active == NULL) {
                 break;
             }
 
@@ -142,7 +142,7 @@ loop(void *arg)
             break;
 
         case SDL_MOUSEBUTTONDOWN:
-            if (!active) {
+            if (active == NULL) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
                 active->y1 = active->y2 = event.button.y;
@@ -159,7 +159,7 @@ loop(void *arg)
             break;
 
         case SDL_MOUSEBUTTONUP:
-            if (!active) {
+            if (active == NULL) {
                 break;
             }
 

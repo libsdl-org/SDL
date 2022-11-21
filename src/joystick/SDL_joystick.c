@@ -316,7 +316,7 @@ SDL_JoystickInit(void)
     int i, status;
 
     /* Create the joystick list lock */
-    if (!SDL_joystick_lock) {
+    if (SDL_joystick_lock == NULL) {
         SDL_joystick_lock = SDL_CreateMutex();
     }
 

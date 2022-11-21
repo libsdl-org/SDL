@@ -201,7 +201,7 @@ SDL_DBus_Quit(void)
 SDL_DBusContext *
 SDL_DBus_GetContext(void)
 {
-    if (!dbus_handle || !dbus.session_conn) {
+    if (dbus_handle == NULL || !dbus.session_conn) {
         SDL_DBus_Init();
     }
     

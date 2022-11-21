@@ -127,14 +127,14 @@ SDL_Generic_GetTLSData(void)
     SDL_TLSData *storage = NULL;
 
 #if !SDL_THREADS_DISABLED
-    if (!SDL_generic_TLS_mutex) {
+    if (SDL_generic_TLS_mutex == NULL) {
         static SDL_SpinLock tls_lock;
         SDL_AtomicLock(&tls_lock);
-        if (!SDL_generic_TLS_mutex) {
+        if (SDL_generic_TLS_mutex == NULL) {
             SDL_mutex *mutex = SDL_CreateMutex();
             SDL_MemoryBarrierRelease();
             SDL_generic_TLS_mutex = mutex;
-            if (!SDL_generic_TLS_mutex) {
+            if (SDL_generic_TLS_mutex == NULL) {
                 SDL_AtomicUnlock(&tls_lock);
                 return NULL;
             }

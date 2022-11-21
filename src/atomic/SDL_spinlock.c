@@ -66,7 +66,7 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
     /* Terrible terrible damage */
     static SDL_mutex *_spinlock_mutex;
 
-    if (!_spinlock_mutex) {
+    if (_spinlock_mutex == NULL) {
         /* Race condition on first lock... */
         _spinlock_mutex = SDL_CreateMutex();
     }

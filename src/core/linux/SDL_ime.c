@@ -57,7 +57,7 @@ InitIME()
 
     /* See if fcitx IME support is being requested */
 #ifdef HAVE_FCITX
-    if (!SDL_IME_Init_Real &&
+    if (SDL_IME_Init_Real == NULL &&
         ((im_module && SDL_strcmp(im_module, "fcitx") == 0) ||
          (im_module == NULL && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
         SDL_IME_Init_Real = SDL_Fcitx_Init;
@@ -72,7 +72,7 @@ InitIME()
 
     /* default to IBus */
 #ifdef HAVE_IBUS_IBUS_H
-    if (!SDL_IME_Init_Real) {
+    if (SDL_IME_Init_Real == NULL) {
         SDL_IME_Init_Real = SDL_IBus_Init;
         SDL_IME_Quit_Real = SDL_IBus_Quit;
         SDL_IME_SetFocus_Real = SDL_IBus_SetFocus;

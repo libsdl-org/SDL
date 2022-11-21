@@ -78,7 +78,7 @@ SDL_TLSData *SDL_SYS_GetTLSData(void)
 
 int SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
-    if (!ppSDLTLSData) {
+    if (ppSDLTLSData == NULL) {
         return -1;
     }
 

@@ -666,7 +666,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
+    if (state == NULL) {
         return 1;
     }
     for (i = 1; i < argc;i++) {
@@ -703,7 +703,7 @@ int main(int argc, char *argv[])
     TTF_Init();
 
     font = TTF_OpenFont(fontname, DEFAULT_PTSIZE);
-    if (! font)
+    if (font == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find font: %s\n", TTF_GetError());
         return -1;

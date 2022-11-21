@@ -925,7 +925,7 @@ static void initVulkan(void)
     SDL_Vulkan_LoadLibrary(NULL);
 
     vulkanContexts = (VulkanContext *) SDL_calloc(state->num_windows, sizeof (VulkanContext));
-    if (!vulkanContexts) {
+    if (vulkanContexts == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
     }
@@ -1088,7 +1088,7 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if(!state) {
+    if(state == NULL) {
         return 1;
     }
 

@@ -108,7 +108,7 @@ static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
 void
 SDL_LogInit(void)
 {
-    if (!log_function_mutex) {
+    if (log_function_mutex == NULL) {
         /* if this fails we'll try to continue without it. */
         log_function_mutex = SDL_CreateMutex();
     }
@@ -316,7 +316,7 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         return;
     }
 
-    if (!log_function_mutex) {
+    if (log_function_mutex == NULL) {
         /* this mutex creation can race if you log from two threads at startup. You should have called SDL_Init first! */
         log_function_mutex = SDL_CreateMutex();
     }

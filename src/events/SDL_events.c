@@ -556,7 +556,7 @@ SDL_StartEventLoop(void)
     }
     SDL_LockMutex(SDL_EventQ.lock);
 
-    if (!SDL_event_watchers_lock) {
+    if (SDL_event_watchers_lock == NULL) {
         SDL_event_watchers_lock = SDL_CreateMutex();
         if (SDL_event_watchers_lock == NULL) {
             SDL_UnlockMutex(SDL_EventQ.lock);
@@ -1128,7 +1128,7 @@ SDL_PushEvent(SDL_Event * event)
     event->common.timestamp = SDL_GetTicks();
 
     if (SDL_EventOK.callback || SDL_event_watchers_count > 0) {
-        if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+        if (SDL_event_watchers_lock == NULL || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
             if (SDL_EventOK.callback && !SDL_EventOK.callback(SDL_EventOK.userdata, event)) {
                 if (SDL_event_watchers_lock) {
                     SDL_UnlockMutex(SDL_event_watchers_lock);
@@ -1179,7 +1179,7 @@ SDL_PushEvent(SDL_Event * event)
 void
 SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
 {
-    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+    if (SDL_event_watchers_lock == NULL || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
         /* Set filter and discard pending events */
         SDL_EventOK.callback = filter;
         SDL_EventOK.userdata = userdata;
@@ -1196,7 +1196,7 @@ SDL_GetEventFilter(SDL_EventFilter * filter, void **userdata)
 {
     SDL_EventWatcher event_ok;
 
-    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+    if (SDL_event_watchers_lock == NULL || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
         event_ok = SDL_EventOK;
 
         if (SDL_event_watchers_lock) {
@@ -1218,7 +1218,7 @@ SDL_GetEventFilter(SDL_EventFilter * filter, void **userdata)
 void
 SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 {
-    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+    if (SDL_event_watchers_lock == NULL || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
         SDL_EventWatcher *event_watchers;
 
         event_watchers = SDL_realloc(SDL_event_watchers, (SDL_event_watchers_count + 1) * sizeof(*event_watchers));
@@ -1242,7 +1242,7 @@ SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 void
 SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
 {
-    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+    if (SDL_event_watchers_lock == NULL || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
         int i;
 
         for (i = 0; i < SDL_event_watchers_count; ++i) {

@@ -272,7 +272,7 @@ loop(void)
 int main(int argc, char* argv[])
 {
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
+    if (state == NULL) {
         return 1;
     }
 
