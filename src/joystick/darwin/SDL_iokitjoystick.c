@@ -101,8 +101,9 @@ static recDevice *GetDeviceForIndex(int device_index)
     recDevice *device = gpDeviceList;
     while (device) {
         if (!device->removed) {
-            if (device_index == 0)
+            if (device_index == 0) {
                 break;
+            }
 
             --device_index;
         }

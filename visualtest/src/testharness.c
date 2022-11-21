@@ -486,8 +486,9 @@ main(int argc, char* argv[])
         for(i = 0; state.num_variations > 0 ? (i < state.num_variations) : 1; i++)
         {
             char* args = SDLVisualTest_GetNextVariation(&variator);
-            if(args == NULL)
+            if (args == NULL) {
                 break;
+            }
             SDLTest_Log("\nVariation number: %d\nArguments: %s", i + 1, args);
 
             if(!state.no_launch)

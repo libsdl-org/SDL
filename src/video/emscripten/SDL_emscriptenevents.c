@@ -773,8 +773,9 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
         SDL_FingerID id;
         float x, y;
 
-        if (!touchEvent->touches[i].isChanged)
+        if (!touchEvent->touches[i].isChanged) {
             continue;
+        }
 
         id = touchEvent->touches[i].identifier;
         x = touchEvent->touches[i].targetX / client_w;

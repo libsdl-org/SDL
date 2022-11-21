@@ -342,13 +342,15 @@ SDL_EVDEV_Poll(void)
                 case EV_ABS:
                     switch(events[i].code) {
                     case ABS_MT_SLOT:
-                        if (!item->is_touchscreen) /* FIXME: temp hack */
+                        if (!item->is_touchscreen) { /* FIXME: temp hack */
                             break;
+                        } 
                         item->touchscreen_data->current_slot = events[i].value;
                         break;
                     case ABS_MT_TRACKING_ID:
-                        if (!item->is_touchscreen) /* FIXME: temp hack */
+                        if (!item->is_touchscreen) { /* FIXME: temp hack */
                             break;
+                        }
                         if (events[i].value >= 0) {
                             item->touchscreen_data->slots[item->touchscreen_data->current_slot].tracking_id = events[i].value;
                             item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta = EVDEV_TOUCH_SLOTDELTA_DOWN;
@@ -357,24 +359,27 @@ SDL_EVDEV_Poll(void)
                         }
                         break;
                     case ABS_MT_POSITION_X:
-                        if (!item->is_touchscreen) /* FIXME: temp hack */
+                        if (!item->is_touchscreen) { /* FIXME: temp hack */
                             break;
+                        }
                         item->touchscreen_data->slots[item->touchscreen_data->current_slot].x = events[i].value;
                         if (item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta == EVDEV_TOUCH_SLOTDELTA_NONE) {
                             item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta = EVDEV_TOUCH_SLOTDELTA_MOVE;
                         }
                         break;
                     case ABS_MT_POSITION_Y:
-                        if (!item->is_touchscreen) /* FIXME: temp hack */
+                        if (!item->is_touchscreen) { /* FIXME: temp hack */
                             break;
+                        }
                         item->touchscreen_data->slots[item->touchscreen_data->current_slot].y = events[i].value;
                         if (item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta == EVDEV_TOUCH_SLOTDELTA_NONE) {
                             item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta = EVDEV_TOUCH_SLOTDELTA_MOVE;
                         }
                         break;
                     case ABS_MT_PRESSURE:
-                        if (!item->is_touchscreen) /* FIXME: temp hack */
+                        if (!item->is_touchscreen) { /* FIXME: temp hack */
                             break;
+                        }
                         item->touchscreen_data->slots[item->touchscreen_data->current_slot].pressure = events[i].value;
                         if (item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta == EVDEV_TOUCH_SLOTDELTA_NONE) {
                             item->touchscreen_data->slots[item->touchscreen_data->current_slot].delta = EVDEV_TOUCH_SLOTDELTA_MOVE;
@@ -382,8 +387,9 @@ SDL_EVDEV_Poll(void)
                         break;
                     case ABS_X:
                         if (item->is_touchscreen) {
-                            if (item->touchscreen_data->max_slots != 1)
+                            if (item->touchscreen_data->max_slots != 1) {
                                 break;
+                            }
                             item->touchscreen_data->slots[0].x = events[i].value;
                         } else if (!item->relative_mouse) {
                             /* FIXME: Normalize to input device's reported input range (EVIOCGABS) */
@@ -392,8 +398,9 @@ SDL_EVDEV_Poll(void)
                         break;
                     case ABS_Y:
                         if (item->is_touchscreen) {
-                            if (item->touchscreen_data->max_slots != 1)
+                            if (item->touchscreen_data->max_slots != 1) {
                                 break;
+                            }
                             item->touchscreen_data->slots[0].y = events[i].value;
                         } else if (!item->relative_mouse) {
                             /* FIXME: Normalize to input device's reported input range (EVIOCGABS) */
@@ -454,8 +461,9 @@ SDL_EVDEV_Poll(void)
                             item->mouse_wheel = item->mouse_hwheel = 0;
                         }
 
-                        if (!item->is_touchscreen) /* FIXME: temp hack */
+                        if (!item->is_touchscreen) { /* FIXME: temp hack */
                             break;
+                        }
 
                         for(j = 0; j < item->touchscreen_data->max_slots; j++) {
                             norm_x = (float)(item->touchscreen_data->slots[j].x - item->touchscreen_data->min_x) /

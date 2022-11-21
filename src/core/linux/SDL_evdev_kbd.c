@@ -270,13 +270,14 @@ static void kbd_unregister_emerg_cleanup()
         old_action_p = &(old_sigaction[signum]);
 
         /* Examine current signal action */
-        if (sigaction(signum, NULL, &cur_action))
+        if (sigaction(signum, NULL, &cur_action)) {
             continue;
+        }
 
         /* Check if action installed and not modifed */
-        if (!(cur_action.sa_flags & SA_SIGINFO)
-                || cur_action.sa_sigaction != &kbd_cleanup_signal_action)
+        if (!(cur_action.sa_flags & SA_SIGINFO) || cur_action.sa_sigaction != &kbd_cleanup_signal_action) {
             continue;
+        }
 
         /* Restore original action */
         sigaction(signum, old_action_p, NULL);
@@ -320,16 +321,16 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
         struct sigaction new_action;
         signum = fatal_signals[tabidx];   
         old_action_p = &(old_sigaction[signum]);
-        if (sigaction(signum, NULL, old_action_p))
+        if (sigaction(signum, NULL, old_action_p)) {
             continue;
+        }
 
         /* Skip SIGHUP and SIGPIPE if handler is already installed
          * - assume the handler will do the cleanup
          */
-        if ((signum == SIGHUP || signum == SIGPIPE)
-                && (old_action_p->sa_handler != SIG_DFL 
-                    || (void (*)(int))old_action_p->sa_sigaction != SIG_DFL))
+        if ((signum == SIGHUP || signum == SIGPIPE) && (old_action_p->sa_handler != SIG_DFL || (void(*)(int))old_action_p->sa_sigaction != SIG_DFL)) {
             continue;
+        }
 
         new_action = *old_action_p;
         new_action.sa_flags |= SA_SIGINFO;

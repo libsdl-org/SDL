@@ -451,9 +451,9 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
         /* The plane must be bound to the chosen display, or not in use.
            If none of these is true, iterate to another plane. */
-        if (!((plane_props[i].currentDisplay == display) ||
-              (plane_props[i].currentDisplay == VK_NULL_HANDLE))) 
+        if (!((plane_props[i].currentDisplay == display) || (plane_props[i].currentDisplay == VK_NULL_HANDLE))) {
             continue;
+        }
 
         /* Iterate the list of displays supported by this plane
            in order to find out if the chosen display is among them. */

@@ -678,8 +678,9 @@ dump_monitor_info (MonitorInfo *info)
     {
 	Timing *timing = &(info->established[i]);
 	
-	if (timing->frequency == 0)
+	if (timing->frequency == 0) {
 	    break;
+	}
 	
 	printf ("  %d x %d @ %d Hz\n",
 		timing->width, timing->height, timing->frequency);
@@ -691,8 +692,9 @@ dump_monitor_info (MonitorInfo *info)
     {
 	Timing *timing = &(info->standard[i]);
 	
-	if (timing->frequency == 0)
+	if (timing->frequency == 0) {
 	    break;
+	}
 	
 	printf ("  %d x %d @ %d Hz\n",
 		timing->width, timing->height, timing->frequency);

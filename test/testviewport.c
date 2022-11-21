@@ -121,8 +121,9 @@ loop()
     SDL_Log("Current Viewport x=%i y=%i w=%i h=%i", viewport.x, viewport.y, viewport.w, viewport.h);
 
     for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL)
+        if (state->windows[i] == NULL) {
             continue;
+        }
 
         /* Draw using viewport */
         DrawOnViewport(state->renderers[i]);

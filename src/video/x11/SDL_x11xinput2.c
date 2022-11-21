@@ -418,8 +418,9 @@ X11_InitXinput2Multitouch(_THIS)
             XITouchClassInfo *t = (XITouchClassInfo*)class;
 
             /* Only touch devices */
-            if (class->type != XITouchClass)
+            if (class->type != XITouchClass) {
                 continue;
+            }
 
             if (t->mode == XIDependentTouch) {
                 touchType = SDL_TOUCH_DEVICE_INDIRECT_RELATIVE;

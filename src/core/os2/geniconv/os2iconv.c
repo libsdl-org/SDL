@@ -81,8 +81,9 @@ static int _createUconvObj(const char *code, UconvObject *uobj)
     else {
         for (i = 0; i < MAX_CP_NAME_LEN; i++) {
             uc_code[i] = (unsigned short)*ch;
-            if (! (*ch))
+            if (!(*ch)) {
                 break;
+            }
             ch++;
         }
     }

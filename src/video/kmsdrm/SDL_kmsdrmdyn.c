@@ -58,8 +58,9 @@ KMSDRM_GetSym(const char *fnname, int *pHasModule)
     for (i = 0; i < SDL_TABLESIZE(kmsdrmlibs); i++) {
         if (kmsdrmlibs[i].lib != NULL) {
             fn = SDL_LoadFunction(kmsdrmlibs[i].lib, fnname);
-            if (fn != NULL)
+            if (fn != NULL) {
                 break;
+            }
         }
     }
 

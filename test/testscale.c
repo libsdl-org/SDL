@@ -89,8 +89,9 @@ loop()
         SDLTest_CommonEvent(state, &event, &done);
     }
     for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL)
+        if (state->windows[i] == NULL) {
             continue;
+        }
         Draw(&drawstates[i]);
     }
 #ifdef __EMSCRIPTEN__

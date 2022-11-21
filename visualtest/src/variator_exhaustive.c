@@ -31,8 +31,9 @@ NextVariation(SDLVisualTest_Variation* variation,
     for(i = 0; i < variation->num_vars; i++)
     {
         carry = SDLVisualTest_NextValue(&variation->vars[i], &config->options[i]);
-        if(carry != 1)
+        if (carry != 1) {
             break;
+        }
     }
 
     if (carry == 1) {

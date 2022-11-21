@@ -78,8 +78,9 @@ X11_GetSym(const char *fnname, int *pHasModule)
     for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
         if (x11libs[i].lib != NULL) {
             fn = SDL_LoadFunction(x11libs[i].lib, fnname);
-            if (fn != NULL)
+            if (fn != NULL) {
                 break;
+            }
         }
     }
 

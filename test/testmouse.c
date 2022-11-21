@@ -133,8 +133,9 @@ loop(void *arg)
                 break;
 
         case SDL_MOUSEMOTION:
-            if (!active)
+            if (!active) {
                 break;
+            }
 
             active->x2 = event.motion.x;
             active->y2 = event.motion.y;
@@ -158,8 +159,9 @@ loop(void *arg)
             break;
 
         case SDL_MOUSEBUTTONUP:
-            if (!active)
+            if (!active) {
                 break;
+            }
 
             switch (event.button.button) {
             case SDL_BUTTON_LEFT:   buttons &= ~SDL_BUTTON_LMASK; break;

@@ -91,9 +91,13 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
                 Uint8 pixel1 = pixel & 0x0F;
                 for (;;) {
                     COPY_PIXEL(pixel0); /* even count, high nibble */
-                    if (!--ch) break;
+                    if (!--ch) {
+                    break;
+                    }
                     COPY_PIXEL(pixel1); /* odd count, low nibble */
-                    if (!--ch) break;
+                    if (!--ch) {
+                    break;
+                    }
                 }
             }
         } else {
@@ -140,9 +144,13 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
                             return SDL_TRUE;
                         }
                         COPY_PIXEL(pixel >> 4);
-                        if (!--ch) break;
+                        if (!--ch) {
+                            break;
+                        }
                         COPY_PIXEL(pixel & 0x0F);
-                        if (!--ch) break;
+                        if (!--ch) {
+                            break;
+                        }
                     }
                 }
                 /* pad at even boundary */

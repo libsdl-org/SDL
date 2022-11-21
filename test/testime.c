@@ -153,8 +153,9 @@ static int unifont_init(const char *fontname)
         Uint32 codepoint;
 
         bytesRead = SDL_RWread(hexFile, hexBuffer, 1, 9);
-        if (numGlyphs > 0 && bytesRead == 0)
+        if (numGlyphs > 0 && bytesRead == 0) {
             break; /* EOF */
+        } 
         if ((numGlyphs == 0 && bytesRead == 0) || (numGlyphs > 0 && bytesRead < 9))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
@@ -310,8 +311,9 @@ static int unifont_load_texture(Uint32 textureID)
     {
         SDL_Renderer *renderer = state->renderers[i];
         SDL_Texture *tex = unifontTexture[UNIFONT_NUM_TEXTURES * i + textureID];
-        if (state->windows[i] == NULL || renderer == NULL || tex != NULL)
+        if (state->windows[i] == NULL || renderer == NULL || tex != NULL) {
             continue;
+        }
         tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, UNIFONT_TEXTURE_WIDTH, UNIFONT_TEXTURE_WIDTH);
         if (tex == NULL)
         {
@@ -362,8 +364,9 @@ static void unifont_cleanup()
     for (i = 0; i < state->num_windows; ++i)
     {
         SDL_Renderer *renderer = state->renderers[i];
-        if (state->windows[i] == NULL || renderer == NULL)
+        if (state->windows[i] == NULL || renderer == NULL) {
             continue;
+        }
         for (j = 0; j < UNIFONT_NUM_TEXTURES; j++)
         {
             SDL_Texture *tex = unifontTexture[UNIFONT_NUM_TEXTURES * i + j];
@@ -639,8 +642,9 @@ void Redraw()
     int i;
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
-        if (state->windows[i] == NULL)
+        if (state->windows[i] == NULL) {
             continue;
+        }
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderClear(renderer);
 
@@ -784,9 +788,9 @@ int main(int argc, char *argv[])
                     break;
 
                 case SDL_TEXTINPUT:
-                    if (event.text.text[0] == '\0' || event.text.text[0] == '\n' ||
-                        markedRect.w < 0)
+                    if (event.text.text[0] == '\0' || event.text.text[0] == '\n' || markedRect.w < 0) {
                         break;
+                    }
 
                     SDL_Log("Keyboard: text input \"%s\"\n", event.text.text);
 

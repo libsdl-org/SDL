@@ -3571,8 +3571,9 @@ SDL_GL_ExtensionSupported(const char *extension)
 
     for (;;) {
         where = SDL_strstr(start, extension);
-        if (where == NULL)
+        if (where == NULL) {
             break;
+        }
 
         terminator = where + SDL_strlen(extension);
         if (where == extensions || *(where - 1) == ' ') {

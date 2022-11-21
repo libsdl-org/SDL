@@ -278,8 +278,9 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
             text += length + 1;
 
             /* Break if there are no more linefeeds. */
-            if (lf == NULL)
+            if (lf == NULL) {
                 break;
+            }
         }
 
         /* Bump up the text height slightly. */
@@ -642,8 +643,9 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
 
         /* If X11_XFilterEvent returns True, then some input method has filtered the
            event, and the client should discard the event. */
-        if ( ( e.type != Expose ) && X11_XFilterEvent( &e, None ) )
+        if ((e.type != Expose) && X11_XFilterEvent(&e, None)) {
             continue;
+        }
 
         switch( e.type ) {
         case Expose:
@@ -693,8 +695,9 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
             KeySym key = X11_XLookupKeysym( &e.xkey, 0 );
 
             /* If this is a key release for something we didn't get the key down for, then bail. */
-            if ( key != last_key_pressed )
+            if (key != last_key_pressed) {
                 break;
+            }
 
             if ( key == XK_Escape ) {
                 mask = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;

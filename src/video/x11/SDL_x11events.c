@@ -665,8 +665,9 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
                 sevent.xselection.target = XA_TARGETS;
             } else {
                 for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
-                    if (X11_GetSDLCutBufferClipboardExternalFormat(display, i) != req->target)
+                    if (X11_GetSDLCutBufferClipboardExternalFormat(display, i) != req->target) {
                         continue;
+                    }
                     if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
                         X11_GetSDLCutBufferClipboardType(display, i, req->selection), 0, INT_MAX/4, False, X11_GetSDLCutBufferClipboardInternalFormat(display, i),
                         &sevent.xselection.target, &seln_format, &nbytes,

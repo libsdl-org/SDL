@@ -364,8 +364,9 @@ loop()
 #endif
     }
     for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL)
+        if (state->windows[i] == NULL) {
             continue;
+        }
         DrawSprites(state->renderers[i], sprites[i]);
     }
 }

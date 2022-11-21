@@ -544,8 +544,9 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
         case IMEID_CHT_VER43:
         case IMEID_CHT_VER44:
             p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + 24);
-            if (!p)
+            if (!p) {
                 break;
+            }
 
             len = *(DWORD *)(p + 7*4 + 32*4);
             s = (WCHAR *)(p + 56);
@@ -554,12 +555,14 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
         case IMEID_CHT_VER52:
         case IMEID_CHS_VER53:
             p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + 4);
-            if (!p)
+            if (!p) {
                 break;
+            }
 
             p = *(LPBYTE *)((LPBYTE)p + 1*4 + 5*4);
-            if (!p)
+            if (!p) {
                 break;
+            }
 
             len = *(DWORD *)(p + 1*4 + (16*2+2*4) + 5*4 + 16*2);
             s = (WCHAR *)(p + 1*4 + (16*2+2*4) + 5*4);
@@ -568,8 +571,9 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
             {
                 int offset = (IME_GetId(videodata, 1) >= 0x00000002) ? 8 : 7;
                 p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + offset * 4);
-                if (!p)
+                if (!p) {
                     break;
+                }
 
                 len = *(DWORD *)(p + 7*4 + 16*2*4);
                 s = (WCHAR *)(p + 6*4 + 16*2*1);
@@ -577,8 +581,9 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
             break;
         case IMEID_CHS_VER42:
             p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + 1*4 + 1*4 + 6*4);
-            if (!p)
+            if (!p) {
                 break;
+            }
 
             len = *(DWORD *)(p + 1*4 + (16*2+2*4) + 5*4 + 16*2);
             s = (WCHAR *)(p + 1*4 + (16*2+2*4) + 5*4);
@@ -847,15 +852,15 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
             ImmGetCompositionString(himc, GCS_COMPATTR, attributes, length);
 
             for (start = 0; start < length; ++start) {
-                if (attributes[start] == ATTR_TARGET_CONVERTED ||
-                    attributes[start] == ATTR_TARGET_NOTCONVERTED)
+                if (attributes[start] == ATTR_TARGET_CONVERTED || attributes[start] == ATTR_TARGET_NOTCONVERTED) {
                     break;
+                }
             }
 
             for (end = start; end < length; ++end) {
-                if (attributes[end] != ATTR_TARGET_CONVERTED &&
-                    attributes[end] != ATTR_TARGET_NOTCONVERTED)
+                if (attributes[end] != ATTR_TARGET_CONVERTED && attributes[end] != ATTR_TARGET_NOTCONVERTED) {
                     break;
+                }
             }
 
             if (start == length) {
@@ -960,8 +965,9 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
                     for (i = 0; i < videodata->ime_candcount; ++i) {
                         size_t len = SDL_wcslen((LPWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i])) + 1;
                         if (len + cchars > maxcandchar) {
-                            if (i > cand_list->dwSelection)
+                            if (i > cand_list->dwSelection) {
                                 break;
+                            }
 
                             page_start = i;
                             cchars = len;
@@ -1091,8 +1097,9 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
             break;
         case IMN_OPENCANDIDATE:
         case IMN_CHANGECANDIDATE:
-            if (videodata->ime_uiless)
+            if (videodata->ime_uiless) {
                 break;
+            }
 
             trap = SDL_TRUE;
             videodata->ime_uicontext = 1;

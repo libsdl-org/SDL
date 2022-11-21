@@ -653,8 +653,9 @@ static MRESULT EXPENTRY wndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case WM_TRANSLATEACCEL:
         /* ALT and acceleration keys not allowed (must be processed in WM_CHAR) */
-        if (mp1 == NULL || ((PQMSG)mp1)->msg != WM_CHAR)
+        if (mp1 == NULL || ((PQMSG)mp1)->msg != WM_CHAR) {
             break;
+        }
         return (MRESULT)FALSE;
 
     case WM_CHAR:

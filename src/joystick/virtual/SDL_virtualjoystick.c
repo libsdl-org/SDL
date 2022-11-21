@@ -38,8 +38,9 @@ VIRTUAL_HWDataForIndex(int device_index)
 {
     joystick_hwdata *vjoy = g_VJoys;
     while (vjoy) {
-        if (device_index == 0)
+        if (device_index == 0) {
             break;
+        }
         --device_index;
         vjoy = vjoy->next;
     }

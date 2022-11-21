@@ -417,14 +417,17 @@
     nocopy ## bpp ## do_blit:                                   \
                 srcbuf += run * bpp;                            \
                 ofs += run;                                     \
-            } else if (!ofs)                                    \
-                break;                                          \
+            } else {if (!ofs) {                                  \
+                break;                                           \
+            }                                                    \
+        }                                                        \
                                                                 \
             if (ofs == w) {                                     \
                 ofs = 0;                                        \
                 dstbuf += surf_dst->pitch;                      \
-                if (!--linecount)                               \
-                    break;                                      \
+                if (!--linecount) {                              \
+                break;                                           \
+            }                                                    \
             }                                                   \
         }                                                       \
     } while(0)

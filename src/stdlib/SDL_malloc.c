@@ -3855,8 +3855,9 @@ tmalloc_large(mstate m, size_t nb)
             size_t trem = chunksize(t) - nb;
             if (trem < rsize) {
                 v = t;
-                if ((rsize = trem) == 0)
+                if ((rsize = trem) == 0) {
                     break;
+                }
             }
             rt = t->child[1];
             t = t->child[(sizebits >> (SIZE_T_BITSIZE - SIZE_T_ONE)) & 1];

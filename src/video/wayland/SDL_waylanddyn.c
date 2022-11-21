@@ -67,8 +67,9 @@ WAYLAND_GetSym(const char *fnname, int *pHasModule)
     for (i = 0; i < SDL_TABLESIZE(waylandlibs); i++) {
         if (waylandlibs[i].lib != NULL) {
             fn = SDL_LoadFunction(waylandlibs[i].lib, fnname);
-            if (fn != NULL)
+            if (fn != NULL) {
                 break;
+            }
         }
     }
 

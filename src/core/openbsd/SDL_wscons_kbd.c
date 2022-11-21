@@ -581,21 +581,27 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
             case WSCONS_EVENT_KEY_DOWN: {
                 switch (input->keymap.map[events[i].value].group1[0]) {
                 case KS_Hold_Screen: {
-                    if (input->lockheldstate[0] >= 1) break;
+                    if (input->lockheldstate[0] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= LED_SCR;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[0] = 1;
                     break;
                 }
                 case KS_Num_Lock: {
-                    if (input->lockheldstate[1] >= 1) break;
+                    if (input->lockheldstate[1] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= LED_NUM;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[1] = 1;
                     break;
                 }
                 case KS_Caps_Lock: {
-                    if (input->lockheldstate[2] >= 1) break;
+                    if (input->lockheldstate[2] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= LED_CAP;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[2] = 1;
@@ -603,7 +609,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                 }
 #ifndef __NetBSD__
                 case KS_Mode_Lock: {
-                    if (input->lockheldstate[3] >= 1) break;
+                    if (input->lockheldstate[3] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= 1 << 4;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[3] = 1;
@@ -611,50 +619,66 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                 }
 #endif
                 case KS_Shift_Lock: {
-                    if (input->lockheldstate[4] >= 1) break;
+                    if (input->lockheldstate[4] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= 1 << 5;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[4] = 1;
                     break;
                 }
                 case KS_Shift_L: {
-                    if (input->shiftheldstate[0]) break;
+                    if (input->shiftheldstate[0]) {
+                                break;
+                    }
                     input->shiftstate[0]++;
                     input->shiftheldstate[0] = 1;
                     break;
                 }
                 case KS_Shift_R: {
-                    if (input->shiftheldstate[1]) break;
+                    if (input->shiftheldstate[1]) {
+                                break;
+                    }
                     input->shiftstate[0]++;
                     input->shiftheldstate[1] = 1;
                     break;
                 }
                 case KS_Alt_L: {
-                    if (input->shiftheldstate[2]) break;
+                    if (input->shiftheldstate[2]) {
+                                break;
+                    }
                     input->shiftstate[1]++;
                     input->shiftheldstate[2] = 1;
                     break;
                 }
                 case KS_Alt_R: {
-                    if (input->shiftheldstate[3]) break;
+                    if (input->shiftheldstate[3]) {
+                                break;
+                    }
                     input->shiftstate[1]++;
                     input->shiftheldstate[3] = 1;
                     break;
                 }
                 case KS_Control_L: {
-                    if (input->shiftheldstate[4]) break;
+                    if (input->shiftheldstate[4]) {
+                                break;
+                    }
                     input->shiftstate[2]++;
                     input->shiftheldstate[4] = 1;
                     break;
                 }
                 case KS_Control_R: {
-                    if (input->shiftheldstate[5]) break;
+                    if (input->shiftheldstate[5]) {
+                                break;
+                    }
                     input->shiftstate[2]++;
                     input->shiftheldstate[5] = 1;
                     break;
                 }
                 case KS_Mode_switch: {
-                    if (input->shiftheldstate[6]) break;
+                    if (input->shiftheldstate[6]) {
+                                break;
+                    }
                     input->shiftstate[3]++;
                     input->shiftheldstate[6] = 1;
                     break;
@@ -760,7 +784,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
             else 
                 Translate_to_keycode(input, type, events[i].value);
 
-            if (type == WSCONS_EVENT_KEY_UP) continue;
+            if (type == WSCONS_EVENT_KEY_UP) {
+                continue;
+            }
 
             if (IS_ALTGR_MODE && !IS_CONTROL_HELD)
                 group = &input->keymap.map[events[i].value].group2[0];
@@ -805,7 +831,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                 } else result = ksym;
                 break;
             }
-            if (result == KS_voidSymbol) continue;
+            if (result == KS_voidSymbol) {
+                continue;
+            }
 
             if (input->composelen > 0) {
                 if (input->composelen == 2 && group == &input->keymap.map[events[i].value].group2[0]) {

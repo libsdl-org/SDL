@@ -51,8 +51,9 @@ loop(){
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Rect viewport;
         SDL_Renderer *renderer = state->renderers[i];
-        if (state->windows[i] == NULL)
+        if (state->windows[i] == NULL) {
             continue;
+        }
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(renderer);
 

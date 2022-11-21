@@ -96,8 +96,9 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
         
         /* we keep going until we've iterated through the screenshots each
            SUT window */
-        if(testrw == NULL)
+        if (testrw == NULL) {
             break;
+        }
 
         /* load the test screenshot */
         testbmp = SDL_LoadBMP_RW(testrw, 1);

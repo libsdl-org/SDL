@@ -1091,8 +1091,9 @@ UpdateDINPUTJoystickState_Buffered(SDL_Joystick * joystick)
         for (j = 0; j < joystick->hwdata->NumInputs; ++j) {
             const input_t *in = &joystick->hwdata->Inputs[j];
 
-            if (evtbuf[i].dwOfs != in->ofs)
+            if (evtbuf[i].dwOfs != in->ofs) {
                 continue;
+            }
 
             switch (in->type) {
             case AXIS:

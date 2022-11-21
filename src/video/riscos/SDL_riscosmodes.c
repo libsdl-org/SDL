@@ -268,8 +268,9 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             continue;
         }
 
-        if (mode.format == SDL_PIXELFORMAT_UNKNOWN)
+        if (mode.format == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
+        }
 
         mode.driverdata = convert_mode_block(pos + 4);
         if (!mode.driverdata) {

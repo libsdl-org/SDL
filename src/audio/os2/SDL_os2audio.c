@@ -266,8 +266,9 @@ static int OS2_OpenDevice(_THIS, const char *devname)
     SDL_zero(stMCIBuffer);
 
     for (test_format = SDL_FirstAudioFormat(_this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
-        if (test_format == AUDIO_U8 || test_format == AUDIO_S16)
+        if (test_format == AUDIO_U8 || test_format == AUDIO_S16) {
             break;
+        }
     }
     if (!test_format) {
         debug_os2("Unsupported audio format, AUDIO_S16 used");

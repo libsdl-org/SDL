@@ -594,10 +594,12 @@ static const struct usb_string_cache_entry *usb_string_cache_find(struct libusb_
 	/* Search for existing string cache entry */
 	for (i = 0; i < usb_string_cache_insert_pos; i++) {
 		entry = &usb_string_cache[i];
-		if (entry->vid != desc->idVendor)
+		if (entry->vid != desc->idVendor) {
 			continue;
-		if (entry->pid != desc->idProduct)
+		}
+		if (entry->pid != desc->idProduct) {
 			continue;
+		}
 		return entry;
 	}
 
@@ -1252,8 +1254,9 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		if (res < 0) {
 			libusb_get_config_descriptor(usb_dev, 0, &conf_desc);
 		}
-		if (conf_desc == NULL)
+		if (conf_desc == NULL) {
 			continue;
+		}
 		for (j = 0; j < conf_desc->bNumInterfaces && !good_open; j++) {
 			const struct libusb_interface *intf = &conf_desc->interface[j];
 			for (k = 0; k < intf->num_altsetting && !good_open; k++) {

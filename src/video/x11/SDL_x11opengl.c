@@ -325,8 +325,9 @@ HasExtension(const char *extension, const char *extensions)
 
     for (;;) {
         where = SDL_strstr(start, extension);
-        if (!where)
+        if (!where) {
             break;
+        }
 
         terminator = where + SDL_strlen(extension);
         if (where == start || *(where - 1) == ' ') {

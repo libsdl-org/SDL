@@ -1185,10 +1185,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     if (format->palette != NULL) {
         int i;
         for (i = 0; i < format->palette->ncolors; ++i) {
-            if ((format->palette->colors[i].r != 0xFF) ||
-                (format->palette->colors[i].g != 0xFF) ||
-                (format->palette->colors[i].b != 0xFF))
+            if ((format->palette->colors[i].r != 0xFF) || (format->palette->colors[i].g != 0xFF) || (format->palette->colors[i].b != 0xFF)) {
                 break;
+            }
         }
         if (i == format->palette->ncolors) {
             SDL_SetError("Empty destination palette");

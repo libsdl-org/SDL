@@ -109,8 +109,9 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 
         DosReleaseMutexSem(sem->hMtx);
 
-        if (cPost != 0)
+        if (cPost != 0) {
             break;
+        }
 
         if (timeout == SEM_INDEFINITE_WAIT)
             ulTimeout = SEM_INDEFINITE_WAIT;

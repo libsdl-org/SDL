@@ -3423,8 +3423,9 @@ SDL_CalculateBlitN(SDL_Surface * surface)
                     dstfmt->BytesPerPixel == table[which].dstbpp &&
                     (a_need & table[which].alpha) == a_need &&
                     ((table[which].blit_features & GetBlitFeatures()) ==
-                     table[which].blit_features))
+                     table[which].blit_features)) {
                     break;
+                }
             }
             blitfun = table[which].blitfunc;
 

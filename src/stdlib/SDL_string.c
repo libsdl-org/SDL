@@ -439,8 +439,9 @@ SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
     return wcscmp(str1, str2);
 #else
     while (*str1 && *str2) {
-        if (*str1 != *str2)
+        if (*str1 != *str2) {
             break;
+        }
         ++str1;
         ++str2;
     }
@@ -455,8 +456,9 @@ SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
     return wcsncmp(str1, str2, maxlen);
 #else
     while (*str1 && *str2 && maxlen) {
-        if (*str1 != *str2)
+        if (*str1 != *str2) {
             break;
+        }
         ++str1;
         ++str2;
         --maxlen;
@@ -488,8 +490,9 @@ SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2)
             a = SDL_toupper((unsigned char) *str1);
             b = SDL_toupper((unsigned char) *str2);
         }
-        if (a != b)
+        if (a != b) {
             break;
+        }
         ++str1;
         ++str2;
     }
@@ -525,8 +528,9 @@ SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
             a = SDL_toupper((unsigned char) *str1);
             b = SDL_toupper((unsigned char) *str2);
         }
-        if (a != b)
+        if (a != b) {
             break;
+        }
         ++str1;
         ++str2;
         --maxlen;
@@ -1042,8 +1046,9 @@ SDL_strcmp(const char *str1, const char *str2)
 
     while(1) {
         result = (int)((unsigned char) *str1 - (unsigned char) *str2);
-        if (result != 0 || (*str1 == '\0'/* && *str2 == '\0'*/))
+        if (result != 0 || (*str1 == '\0'/* && *str2 == '\0'*/)) {
             break;
+        }
         ++str1;
         ++str2;
     }
@@ -1061,8 +1066,9 @@ SDL_strncmp(const char *str1, const char *str2, size_t maxlen)
 
     while (maxlen) {
         result = (int) (unsigned char) *str1 - (unsigned char) *str2;
-        if (result != 0 || *str1 == '\0'/* && *str2 == '\0'*/)
+        if (result != 0 || *str1 == '\0'/* && *str2 == '\0'*/) {
             break;
+        }
         ++str1;
         ++str2;
         --maxlen;
@@ -1088,8 +1094,9 @@ SDL_strcasecmp(const char *str1, const char *str2)
         a = SDL_toupper((unsigned char) *str1);
         b = SDL_toupper((unsigned char) *str2);
         result = a - b;
-        if (result != 0 || a == 0 /*&& b == 0*/)
+        if (result != 0 || a == 0 /*&& b == 0*/) {
             break;
+        }
         ++str1;
         ++str2;
     }
@@ -1111,8 +1118,9 @@ SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen)
         a = SDL_tolower((unsigned char) *str1);
         b = SDL_tolower((unsigned char) *str2);
         result = a - b;
-        if (result != 0 || a == 0 /*&& b == 0*/)
+        if (result != 0 || a == 0 /*&& b == 0*/) {
             break;
+        }
         ++str1;
         ++str2;
         --maxlen;
