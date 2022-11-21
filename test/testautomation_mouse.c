@@ -587,12 +587,13 @@ mouse_getGlobalMouseState(void *arg)
 {
     int x;
     int y;
+    Uint32 state;
 
     x = INT_MIN;
     y = INT_MIN;
 
     /* Get current cursor */
-    Uint32 state = SDL_GetGlobalMouseState(&x, &y);
+    state = SDL_GetGlobalMouseState(&x, &y);
     SDLTest_AssertPass("Call to SDL_GetGlobalMouseState()");
     SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
     SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
