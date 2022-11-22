@@ -3453,8 +3453,7 @@ void SDLTest_TextWindowClear(SDLTest_TextWindow *textwin)
 {
     int i;
 
-    for ( i = 0; i < textwin->numlines; ++i )
-    {
+    for ( i = 0; i < textwin->numlines; ++i ) {
         if ( textwin->lines[i] ) {
             SDL_free(textwin->lines[i]);
             textwin->lines[i] = NULL;

@@ -178,8 +178,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 	{
 		if (fCustomColorScheme) {
 			int32 countButtons = CountButtons();
-			for (int i = 0; i < countButtons; ++i)
-			{
+			for (int i = 0; i < countButtons; ++i) {
 				ButtonAt(i)->SetViewColor(ConvertColorType(aBorderColor));
 				ButtonAt(i)->SetLowColor(ConvertColorType(aBackgroundColor));
 
@@ -214,8 +213,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 		BString message = aMessage;
 		int32 length = message.CountChars();
 
-		for (int i = 0, c = 0; i < length; ++i)
-		{
+		for (int i = 0, c = 0; i < length; ++i) {
 			c++;
 			if (*(message.CharAt(i)) == '\n') {
 				c = 0;
@@ -260,16 +258,14 @@ class HAIKU_SDL_MessageBox : public BAlert
 	void
 	AddSdlButtons(const SDL_MessageBoxButtonData *aButtons, int aNumButtons)
 	{
-		for (int i = 0; i < aNumButtons; ++i)
-		{
+		for (int i = 0; i < aNumButtons; ++i) {
 			fButtons.push_back(&aButtons[i]);
 		}
 
 		std::sort(fButtons.begin(), fButtons.end(), &HAIKU_SDL_MessageBox::SortButtonsPredicate);
 
 		size_t countButtons = fButtons.size();
-		for (size_t i = 0; i < countButtons; ++i)
-		{
+		for (size_t i = 0; i < countButtons; ++i) {
 			switch (fButtons[i]->flags)
 			{
 				case SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT:

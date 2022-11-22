@@ -309,10 +309,8 @@ decode_established_timings (const uchar *edid, MonitorInfo *info)
     int i, j, idx;
 
     idx = 0;
-    for (i = 0; i < 3; ++i)
-    {
-	for (j = 0; j < 8; ++j)
-	{
+    for (i = 0; i < 3; ++i) {
+	for (j = 0; j < 8; ++j) {
 	    int byte = edid[0x23 + i];
 
 	    if (get_bit(byte, j) && established[i][j].frequency != 0) {
@@ -328,8 +326,7 @@ decode_standard_timings (const uchar *edid, MonitorInfo *info)
 {
     int i;
     
-    for (i = 0; i < 8; i++)
-    {
+    for (i = 0; i < 8; i++) {
 	int first = edid[0x26 + 2 * i];
 	int second = edid[0x27 + 2 * i];
 
@@ -358,8 +355,7 @@ static void
 decode_lf_string (const uchar *s, int n_chars, char *result)
 {
     int i;
-    for (i = 0; i < n_chars; ++i)
-    {
+    for (i = 0; i < n_chars; ++i) {
 	if (s[i] == 0x0a) {
 	    *result++ = '\0';
 	    break;
@@ -483,8 +479,7 @@ decode_descriptors (const uchar *edid, MonitorInfo *info)
     
     timing_idx = 0;
     
-    for (i = 0; i < 4; ++i)
-    {
+    for (i = 0; i < 4; ++i) {
 	int index = 0x36 + i * 18;
 
 	if (edid[index + 0] == 0x00 && edid[index + 1] == 0x00) {
@@ -664,8 +659,7 @@ dump_monitor_info (MonitorInfo *info)
     
     printf ("Established Timings:\n");
     
-    for (i = 0; i < 24; ++i)
-    {
+    for (i = 0; i < 24; ++i) {
 	Timing *timing = &(info->established[i]);
 	
 	if (timing->frequency == 0) {
@@ -678,8 +672,7 @@ dump_monitor_info (MonitorInfo *info)
     }
     
     printf ("Standard Timings:\n");
-    for (i = 0; i < 8; ++i)
-    {
+    for (i = 0; i < 8; ++i) {
 	Timing *timing = &(info->standard[i]);
 	
 	if (timing->frequency == 0) {
@@ -690,8 +683,7 @@ dump_monitor_info (MonitorInfo *info)
 		timing->width, timing->height, timing->frequency);
     }
     
-    for (i = 0; i < info->n_detailed_timings; ++i)
-    {
+    for (i = 0; i < info->n_detailed_timings; ++i) {
 	DetailedTiming *timing = &(info->detailed_timings[i]);
 	const char *s;
 	

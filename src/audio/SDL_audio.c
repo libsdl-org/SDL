@@ -541,8 +541,7 @@ SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
     } else {
         mark_device_removed(handle, current_audio.outputDevices, &current_audio.outputDevicesRemoved);
     }
-    for (device_index = 0; device_index < SDL_arraysize(open_devices); device_index++)
-    {
+    for (device_index = 0; device_index < SDL_arraysize(open_devices); device_index++) {
         device = open_devices[device_index];
         if (device != NULL && device->handle == handle) {
             device_was_opened = SDL_TRUE;

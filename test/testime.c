@@ -89,8 +89,7 @@ static Uint8 dehex2(char c1, char c2)
 static Uint8 validate_hex(const char *cp, size_t len, Uint32 *np)
 {
     Uint32 n = 0;
-    for (; len > 0; cp++, len--)
-    {
+    for (; len > 0; cp++, len--) {
         Uint8 c = dehex(*cp);
         if (c == 255) {
             return 0;
@@ -235,11 +234,9 @@ static void unifont_make_rgba(Uint8 *src, Uint8 *dst, Uint8 width)
     int i, j;
     Uint8 *row = dst;
 
-    for (i = 0; i < width * 2; i++)
-    {
+    for (i = 0; i < width * 2; i++) {
         Uint8 data = src[i];
-        for (j = 0; j < 8; j++)
-        {
+        for (j = 0; j < 8; j++) {
             if (data & 0x80) {
                 row[0] = textColor.r;
                 row[1] = textColor.g;
@@ -282,8 +279,7 @@ static int unifont_load_texture(Uint32 textureID)
     SDL_memset(textureRGBA, 0, UNIFONT_TEXTURE_SIZE);
 
     /* Copy the glyphs into memory in RGBA format. */
-    for (i = 0; i < UNIFONT_GLYPHS_IN_TEXTURE; i++)
-    {
+    for (i = 0; i < UNIFONT_GLYPHS_IN_TEXTURE; i++) {
         Uint32 codepoint = UNIFONT_GLYPHS_IN_TEXTURE * textureID + i;
         if (unifontGlyph[codepoint].width > 0) {
             const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
@@ -293,8 +289,7 @@ static int unifont_load_texture(Uint32 textureID)
     }
 
     /* Create textures and upload the RGBA data from above. */
-    for (i = 0; i < state->num_windows; ++i)
-    {
+    for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
         SDL_Texture *tex = unifontTexture[UNIFONT_NUM_TEXTURES * i + textureID];
         if (state->windows[i] == NULL || renderer == NULL || tex != NULL) {
@@ -344,14 +339,12 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dst
 static void unifont_cleanup()
 {
     int i, j;
-    for (i = 0; i < state->num_windows; ++i)
-    {
+    for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
         if (state->windows[i] == NULL || renderer == NULL) {
             continue;
         }
-        for (j = 0; j < UNIFONT_NUM_TEXTURES; j++)
-        {
+        for (j = 0; j < UNIFONT_NUM_TEXTURES; j++) {
             SDL_Texture *tex = unifontTexture[UNIFONT_NUM_TEXTURES * i + j];
             if (tex != NULL) {
                 SDL_DestroyTexture(tex);
@@ -393,8 +386,7 @@ char *utf8_next(char *p)
         return 0;
     }
 
-    for (; i < len; ++i)
-    {
+    for (; i < len; ++i) {
         ++p;
         if (!*p) {
             return 0;
@@ -406,8 +398,7 @@ char *utf8_next(char *p)
 char *utf8_advance(char *p, size_t distance)
 {
     size_t i = 0;
-    for (; i < distance && p; ++i)
-    {
+    for (; i < distance && p; ++i) {
         p = utf8_next(p);
     }
     return p;
@@ -421,8 +412,7 @@ Uint32 utf8_decode(char *p, size_t len)
         return 0;
     }
 
-    for (; i < len; ++i)
-    {
+    for (; i < len; ++i) {
         if (i == 0)
             codepoint = (0xff >> len) & *p;
         else
@@ -648,8 +638,7 @@ int main(int argc, char *argv[])
     for (i = 1; i < argc;i++) {
         SDLTest_CommonArg(state, i);
     }
-    for (argc--, argv++; argc > 0; argc--, argv++)
-    {
+    for (argc--, argv++; argc > 0; argc--, argv++) {
         if (SDL_strcmp(argv[0], "--help") == 0) {
             usage();
             return 0;

@@ -149,8 +149,7 @@ SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
         return;
     }
 
-    for (int i = 0; i < SCE_MOTION_MAX_NUM_STATES; i++)
-    {
+    for (int i = 0; i < SCE_MOTION_MAX_NUM_STATES; i++) {
         if (sensor->hwdata->counter < motionState[i].counter) {
             unsigned int timestamp = motionState[i].timestamp;
 

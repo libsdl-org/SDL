@@ -106,10 +106,8 @@ DirectFB_CreateDefaultCursor(void)
                                          (void *) &dest, &pitch));
 
     /* Relies on the fact that this is only called with ARGB surface. */
-    for (i = 0; i < 32; i++)
-    {
-        for (j = 0; j < 32; j++)
-        {
+    for (i = 0; i < 32; i++) {
+        for (j = 0; j < 32; j++) {
             switch (arrow[i][j])
             {
             case ' ': dest[j] = 0x00000000; break;

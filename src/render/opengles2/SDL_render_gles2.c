@@ -1595,8 +1595,7 @@ GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoffset, GLint 
             return SDL_OutOfMemory();
         }
         src = blob;
-        for (y = 0; y < height; ++y)
-        {
+        for (y = 0; y < height; ++y) {
             SDL_memcpy(src, pixels, src_pitch);
             src += src_pitch;
             pixels = (Uint8 *)pixels + pitch;

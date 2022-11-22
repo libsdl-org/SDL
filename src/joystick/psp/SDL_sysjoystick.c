@@ -89,8 +89,7 @@ static int PSP_JoystickInit(void)
 
     /* Create an accurate map from analog inputs (0 to 255)
        to SDL joystick positions (-32768 to 32767) */
-    for (i = 0; i < 128; i++)
-    {
+    for (i = 0; i < 128; i++) {
         float t = (float)i/127.0f;
         analog_map[i+128] = calc_bezier_y(t);
         analog_map[127-i] = -1 * analog_map[i+128];

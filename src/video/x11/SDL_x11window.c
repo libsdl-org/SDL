@@ -103,8 +103,7 @@ X11_IsActionAllowed(SDL_Window *window, Atom action)
     SDL_bool ret = SDL_FALSE;
 
     if (X11_XGetWindowProperty(display, data->xwindow, _NET_WM_ALLOWED_ACTIONS, 0, 1024, False, XA_ATOM, &type, &form, &len, &remain, (unsigned char **)&list) == Success) {
-        for (i=0; i<len; ++i)
-        {
+        for (i=0; i<len; ++i) {
             if (list[i] == action) {
                 ret = SDL_TRUE;
                 break;

@@ -466,8 +466,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     }
 
     msg = (FeatureReportMsg *)&buf[1];
-    for ( i = 0; i < (int)msg->header.length / sizeof( ControllerAttribute ); ++i )
-    {
+    for ( i = 0; i < (int)msg->header.length / sizeof( ControllerAttribute ); ++i ) {
         uint8_t unAttribute = msg->payload.getAttributes.attributes[i].attributeTag;
         uint32_t unValue = msg->payload.getAttributes.attributes[i].attributeValue;
 
@@ -547,8 +546,7 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
     // Wait for ID_CLEAR_DIGITAL_MAPPINGS to be processed on the controller
     bool bMappingsCleared = false;
     int iRetry;
-    for ( iRetry = 0; iRetry < 2; ++iRetry )
-    {
+    for ( iRetry = 0; iRetry < 2; ++iRetry ) {
         SDL_memset( buf, 0, 65 );
         buf[1] = ID_GET_DIGITAL_MAPPINGS;
         buf[2] = 1; // one byte - requesting from index 0
@@ -1142,8 +1140,7 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
 
-    for (;;)
-    {
+    for (;;) {
         uint8_t data[128];
         int r, nPacketLength;
         const Uint8 *pPacket;

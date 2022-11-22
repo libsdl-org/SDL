@@ -625,10 +625,8 @@ EControllerType GuessControllerType( int nVID, int nPID )
 	if ( !s_bCheckedForDuplicates ) {
 		s_bCheckedForDuplicates = true;
 		int i, j;
-		for ( i = 0; i < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++i )
-		{
-			for ( j = i + 1; j < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++j )
-			{
+		for ( i = 0; i < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++i ) {
+			for ( j = i + 1; j < sizeof( arrControllers ) / sizeof( arrControllers[ 0 ] ); ++j ) {
 				if ( arrControllers[ i ].m_unDeviceID == arrControllers[ j ].m_unDeviceID ) {
 					Log( "Duplicate controller entry found for VID 0x%.4x PID 0x%.4x\n", ( arrControllers[ i ].m_unDeviceID >> 16 ), arrControllers[ i ].m_unDeviceID & 0xFFFF );
 				}
@@ -666,8 +664,7 @@ EControllerType GuessControllerType( int nVID, int nPID )
 		return k_eControllerType_UnknownNonSteamController;
 	}
 
-	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex )
-	{
+	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex ) {
 		if ( unDeviceID == arrControllers[ iIndex ].m_unDeviceID ) {
 			return arrControllers[ iIndex ].m_eControllerType;
 		}
@@ -681,8 +678,7 @@ const char *GuessControllerName( int nVID, int nPID )
 {
 	unsigned int unDeviceID = MAKE_CONTROLLER_ID( nVID, nPID );
 	int iIndex;
-	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex )
-	{
+	for ( iIndex = 0; iIndex < sizeof( arrControllers ) / sizeof( arrControllers[0] ); ++iIndex ) {
 		if ( unDeviceID == arrControllers[ iIndex ].m_unDeviceID ) {
 			return arrControllers[ iIndex ].m_pszName;
 		}

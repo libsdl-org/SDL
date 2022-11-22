@@ -282,8 +282,7 @@ static int OS2_JoystickInit(void)
 			SYS_JoyData[0].balls = joycfg.balls;
 
 			/* Initialize Axes Callibration Values */
-			for (i=0; i<joycfg.axes; i++)
-			{
+			for (i=0; i<joycfg.axes; i++) {
 				SYS_JoyData[0].axes_min[i] = axis[i]->lower;
 				SYS_JoyData[0].axes_med[i] = axis[i]->centre;
 				SYS_JoyData[0].axes_max[i] = axis[i]->upper;
@@ -381,8 +380,7 @@ static int OS2_JoystickInit(void)
 				numdevs = maxdevs;
 			}
 
-			for (i = 0; i < numdevs; i++)
-			{
+			for (i = 0; i < numdevs; i++) {
 				SDL_snprintf(SYS_JoyData[i].szDeviceName,
 						SDL_arraysize(SYS_JoyData[i].szDeviceName),
 						"Default Joystick %c", 'A'+SYS_JoyData[i].id);
@@ -458,8 +456,7 @@ static int OS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
 	/* Define offsets and scales for all axes */
 	joystick->hwdata->id = SYS_JoyData[index].id;
-	for (i = 0; i < MAX_AXES; ++i)
-	{
+	for (i = 0; i < MAX_AXES; ++i) {
 		if ((i < 2) || i < SYS_JoyData[index].axes) {
 			joystick->hwdata->transaxes[i].offset = ((SDL_JOYSTICK_AXIS_MAX + SDL_JOYSTICK_AXIS_MIN)>>1) - SYS_JoyData[index].axes_med[i];
 			joystick->hwdata->transaxes[i].scale1 = (float)SDL_abs((SDL_JOYSTICK_AXIS_MIN/SYS_JoyData[index].axes_min[i]));
@@ -567,8 +564,7 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 
 	/* Corrects the movements using the callibration */
 	transaxes = joystick->hwdata->transaxes;
-	for (i = 0; i < joystick->naxes; i++)
-	{
+	for (i = 0; i < joystick->naxes; i++) {
 		value = pos[i] + transaxes[i].offset;
 		if (value < 0) {
 			value *= transaxes[i].scale1;
@@ -593,8 +589,7 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 	if (joystick->nbuttons < normbut) {
 		normbut = joystick->nbuttons;
 	}
-	for (i = corr; (i-corr) < normbut; ++i)
-	{
+	for (i = corr; (i-corr) < normbut; ++i) {
 		/*
 		Button A: 1110 0000
 		Button B: 1101 0000

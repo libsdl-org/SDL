@@ -159,8 +159,7 @@ PrintText(const char *eventtype, const char *text)
     char expanded[1024];
 
     expanded[0] = '\0';
-    for ( spot = text; *spot; ++spot )
-    {
+    for ( spot = text; *spot; ++spot ) {
         size_t length = SDL_strlen(expanded);
         SDL_snprintf(expanded + length, sizeof(expanded) - length, "\\x%.2x", (unsigned char)*spot);
     }

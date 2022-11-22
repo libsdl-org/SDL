@@ -229,8 +229,7 @@ MacHaptic_MaybeAddDevice( io_object_t device )
     }
 
     /* Make sure we don't already have it */
-    for (item = SDL_hapticlist; item ; item = item->next)
-    {
+    for (item = SDL_hapticlist; item ; item = item->next) {
         if (IOObjectIsEqualTo((io_object_t) item->dev, device)) {
             /* Already added */
             return -1;

@@ -209,8 +209,7 @@ DirectFB_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     DirectFB_GLContext *ctx = (DirectFB_GLContext *) context;
     DirectFB_GLContext *p;
 
-    for (p = _this->gl_data->firstgl; p; p = p->next)
-    {
+    for (p = _this->gl_data->firstgl; p; p = p->next) {
        if (p->is_locked) {
          SDL_DFB_CHECKERR(p->context->Unlock(p->context));
          p->is_locked = 0;

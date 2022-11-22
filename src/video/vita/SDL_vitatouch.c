@@ -100,8 +100,7 @@ VITA_PollTouch(void)
         }
         sceTouchPeek(port, &touch[port], 1);
         if (touch[port].reportNum > 0) {
-            for (int i = 0; i < touch[port].reportNum; i++)
-            {
+            for (int i = 0; i < touch[port].reportNum; i++) {
                 // adjust coordinates and forces to return normalized values
                 // for the front, screen area is used as a reference (for direct touch)
                 // e.g. touch_x = 1.0 corresponds to screen_x = 960

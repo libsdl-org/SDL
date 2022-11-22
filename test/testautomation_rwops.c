@@ -556,8 +556,7 @@ rwops_testCompareRWFromMemWithRWFromFile(void)
    int result;
 
 
-   for (size=5; size<10; size++)
-   {
+   for (size=5; size<10; size++) {
      /* Terminate buffer */
      buffer_file[slen] = 0;
      buffer_mem[slen] = 0;

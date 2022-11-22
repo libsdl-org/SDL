@@ -888,8 +888,7 @@ DirectFB_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *
                 Uint8 save_a = cmd->data.draw.a;
 
                 int j;
-                for (j = 0; j < count; j += 3)
-                {
+                for (j = 0; j < count; j += 3) {
                     float x1, y1, r1, g1, b1, a1, u1, v1;
                     float x2, y2, r2, g2, b2, a2, u2, v2;
                     float x3, y3, r3, g3, b3, a3, u3, v3;

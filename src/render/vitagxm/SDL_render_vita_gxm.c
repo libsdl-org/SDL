@@ -709,8 +709,7 @@ VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
     cmd->data.draw.first = (size_t)vertex;
     cmd->data.draw.count = count;
 
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         vertex[i].x = points[i].x;
         vertex[i].y = points[i].y;
         vertex[i].color = color;
@@ -733,8 +732,7 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
     cmd->data.draw.first = (size_t)vertex;
     cmd->data.draw.count = (count-1) * 2;
 
-    for (int i = 0; i < count - 1; i++)
-    {
+    for (int i = 0; i < count - 1; i++) {
         vertex[i*2].x = points[i].x;
         vertex[i*2].y = points[i].y;
         vertex[i*2].color = color;

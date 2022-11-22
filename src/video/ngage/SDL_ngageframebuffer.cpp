@@ -226,8 +226,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
 
     /* Render the rectangles in the list */
 
-    for (i = 0; i < numrects; ++i)
-    {
+    for (i = 0; i < numrects; ++i) {
         const SDL_Rect& currentRect = rects[i];
         SDL_Rect        rect2;
         rect2.x = currentRect.x;
@@ -371,8 +370,7 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
         DirectDraw(_this, numrects, rects, screenBuffer);
     }
 
-    for (int i = 0; i < numrects; ++i)
-    {
+    for (int i = 0; i < numrects; ++i) {
         TInt  aAx   = rects[i].x;
         TInt  aAy   = rects[i].y;
         TInt  aBx   = rects[i].w;

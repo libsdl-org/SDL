@@ -750,8 +750,7 @@ gxm_init(SDL_Renderer *renderer)
         &data->linearIndicesUid
     );
 
-    for (i = 0; i <= UINT16_MAX; ++i)
-    {
+    for (i = 0; i <= UINT16_MAX; ++i) {
         data->linearIndices[i] = i;
     }
 
@@ -929,8 +928,7 @@ void gxm_finish(SDL_Renderer *renderer)
     // clean up display queue
     vita_mem_free(data->depthBufferUid);
 
-    for (size_t i = 0; i < VITA_GXM_BUFFERS; i++)
-    {
+    for (size_t i = 0; i < VITA_GXM_BUFFERS; i++) {
         // clear the buffer then deallocate
         SDL_memset(data->displayBufferData[i], 0, VITA_GXM_SCREEN_HEIGHT * VITA_GXM_SCREEN_STRIDE * 4);
         vita_mem_free(data->displayBufferUid[i]);
@@ -1212,8 +1210,7 @@ void gxm_minimal_term_for_common_dialog(void)
 
 void gxm_init_for_common_dialog(void)
 {
-    for (int i = 0; i < VITA_GXM_BUFFERS; i += 1)
-    {
+    for (int i = 0; i < VITA_GXM_BUFFERS; i += 1) {
         buffer_for_common_dialog[i].displayData.wait_vblank = SDL_TRUE;
         buffer_for_common_dialog[i].displayData.address = vita_mem_alloc(
             SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
@@ -1261,8 +1258,7 @@ void gxm_swap_for_common_dialog(void)
 void gxm_term_for_common_dialog(void)
 {
     sceGxmDisplayQueueFinish();
-    for (int i = 0; i < VITA_GXM_BUFFERS; i += 1)
-    {
+    for (int i = 0; i < VITA_GXM_BUFFERS; i += 1) {
         vita_mem_free(buffer_for_common_dialog[i].uid);
         sceGxmSyncObjectDestroy(buffer_for_common_dialog[i].sync);
     }

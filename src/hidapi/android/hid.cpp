@@ -330,8 +330,7 @@ static wchar_t *CreateWStringFromJString( JNIEnv *env, const jstring &sString )
 	const jchar *pjChars = env->GetStringChars( sString, NULL );
 	wchar_t *pwString = (wchar_t*)malloc( ( nLength + 1 ) * sizeof( wchar_t ) );
 	wchar_t *pwChars = pwString;
-	for ( size_t iIndex = 0; iIndex < nLength; ++iIndex )
-	{
+	for ( size_t iIndex = 0; iIndex < nLength; ++iIndex ) {
 		pwChars[ iIndex ] = pjChars[ iIndex ];
 	}
 	pwString[ nLength ] = '\0';
@@ -764,8 +763,7 @@ static hid_device_ref<CHIDDevice> FindDevice( int nDeviceId )
 	hid_device_ref<CHIDDevice> pDevice;
 
 	hid_mutex_guard l( &g_DevicesMutex );
-	for ( pDevice = g_Devices; pDevice; pDevice = pDevice->next )
-	{
+	for ( pDevice = g_Devices; pDevice; pDevice = pDevice->next ) {
 		if ( pDevice->GetId() == nDeviceId ) {
 			break;
 		}
@@ -899,8 +897,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected)(JNI
 
 	hid_mutex_guard l( &g_DevicesMutex );
 	hid_device_ref<CHIDDevice> pLast, pCurr;
-	for ( pCurr = g_Devices; pCurr; pLast = pCurr, pCurr = pCurr->next )
-	{
+	for ( pCurr = g_Devices; pCurr; pLast = pCurr, pCurr = pCurr->next ) {
 		continue;
 	}
 	if ( pLast ) {
@@ -940,8 +937,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected)(
 	{
 		hid_mutex_guard l( &g_DevicesMutex );
 		hid_device_ref<CHIDDevice> pLast, pCurr;
-		for ( pCurr = g_Devices; pCurr; pLast = pCurr, pCurr = pCurr->next )
-		{
+		for ( pCurr = g_Devices; pCurr; pLast = pCurr, pCurr = pCurr->next ) {
 			if ( pCurr->GetId() == nDeviceID ) {
 				pDevice = pCurr;
 
@@ -1036,8 +1032,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
 	hid_mutex_guard l( &g_DevicesMutex );
-	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next )
-	{
+	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next ) {
 		const hid_device_info *info = pDevice->GetDeviceInfo();
 
 		/* See if there are any devices we should skip in enumeration */
@@ -1084,8 +1079,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
 	{
 		hid_mutex_guard r( &g_DevicesRefCountMutex );
 		hid_mutex_guard l( &g_DevicesMutex );
-		for ( hid_device_ref<CHIDDevice> pCurr = g_Devices; pCurr; pCurr = pCurr->next )
-		{
+		for ( hid_device_ref<CHIDDevice> pCurr = g_Devices; pCurr; pCurr = pCurr->next ) {
 			if ( SDL_strcmp( pCurr->GetDeviceInfo()->path, path ) == 0 )  {
 				hid_device *pValue = pCurr->GetDevice();
 				if ( pValue ) {
