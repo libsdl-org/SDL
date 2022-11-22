@@ -135,7 +135,7 @@ typedef struct SDL_hid_device_info
  *
  * \returns 0 on success and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_hid_exit
  */
@@ -149,7 +149,7 @@ extern DECLSPEC int SDLCALL SDL_hid_init(void);
  *
  * \returns 0 on success and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_hid_init
  */
@@ -170,7 +170,7 @@ extern DECLSPEC int SDLCALL SDL_hid_exit(void);
  * \returns a change counter that is incremented with each potential device
  *          change, or 0 if device change detection isn't available.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_hid_enumerate
  */
@@ -192,7 +192,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
  *          in the case of failure. Free this linked list by calling
  *          SDL_hid_free_enumeration().
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_hid_device_change_count
  */
@@ -206,7 +206,7 @@ extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned short v
  * \param devs Pointer to a list of struct_device returned from
  *             SDL_hid_enumerate().
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *devs);
 
@@ -224,7 +224,7 @@ extern DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *devs)
  * \returns a pointer to a SDL_hid_device object on success or NULL on
  *          failure.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number);
 
@@ -238,7 +238,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, 
  * \returns a pointer to a SDL_hid_device object on success or NULL on
  *          failure.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
 
@@ -264,7 +264,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int
  * \param length The length in bytes of the data to send.
  * \returns the actual number of bytes written and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigned char *data, size_t length);
 
@@ -285,7 +285,7 @@ extern DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigned ch
  *          available to be read within the timeout period, this function
  *          returns 0.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_read_timeout(SDL_hid_device *dev, unsigned char *data, size_t length, int milliseconds);
 
@@ -305,7 +305,7 @@ extern DECLSPEC int SDLCALL SDL_hid_read_timeout(SDL_hid_device *dev, unsigned c
  *          available to be read and the handle is in non-blocking mode, this
  *          function returns 0.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char *data, size_t length);
 
@@ -323,7 +323,7 @@ extern DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char *dat
  *                 nonblocking - 0 to disable nonblocking.
  * \returns 0 on success and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_set_nonblocking(SDL_hid_device *dev, int nonblock);
 
@@ -347,7 +347,7 @@ extern DECLSPEC int SDLCALL SDL_hid_set_nonblocking(SDL_hid_device *dev, int non
  *               number.
  * \returns the actual number of bytes written and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev, const unsigned char *data, size_t length);
 
@@ -369,7 +369,7 @@ extern DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev, con
  * \returns the number of bytes read plus one for the report ID (which is
  *          still in the first byte), or -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsigned char *data, size_t length);
 
@@ -378,7 +378,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsi
  *
  * \param dev A device handle returned from SDL_hid_open().
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_hid_close(SDL_hid_device *dev);
 
@@ -390,7 +390,7 @@ extern DECLSPEC void SDLCALL SDL_hid_close(SDL_hid_device *dev);
  * \param maxlen The length of the buffer in multiples of wchar_t.
  * \returns 0 on success and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
 
@@ -402,7 +402,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *dev,
  * \param maxlen The length of the buffer in multiples of wchar_t.
  * \returns 0 on success and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
 
@@ -414,7 +414,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, wcha
  * \param maxlen The length of the buffer in multiples of wchar_t.
  * \returns 0 on success and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
 
@@ -427,7 +427,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev
  * \param maxlen The length of the buffer in multiples of wchar_t.
  * \returns 0 on success and -1 on error.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int string_index, wchar_t *string, size_t maxlen);
 
@@ -436,7 +436,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int 
  *
  * \param active SDL_TRUE to start the scan, SDL_FALSE to stop the scan
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_bool active);
 

@@ -143,7 +143,7 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Init
  */
@@ -172,7 +172,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *              will use `GetModuleHandle(NULL)` instead.
  * \returns 0 on success, -1 on error. SDL_GetError() may have details.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 
@@ -189,7 +189,7 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  * deregistered when the registration counter in SDL_RegisterApp decrements to
  * zero through calls to this function.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
@@ -206,7 +206,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  * \param mainFunction The SDL app's C-style main(), an SDL_main_func
  * \return the return value from mainFunction
  *
- * \since This function is available since SDL 2.0.10.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
 
@@ -222,7 +222,7 @@ extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_fun
  * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
  *          more information on the failure.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
 

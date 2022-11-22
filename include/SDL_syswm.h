@@ -309,7 +309,7 @@ typedef struct SDL_SysWMinfo SDL_SysWMinfo;
  *          of the `info` struct is valid, or SDL_FALSE if the information
  *          could not be retrieved; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowWMInfo(SDL_Window * window,
                                                      SDL_SysWMinfo * info);

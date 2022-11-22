@@ -219,7 +219,7 @@ typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
  *                fails or NULL for the default handler
  * \param userdata a pointer that is passed to `handler`
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetAssertionHandler
  */
@@ -238,7 +238,7 @@ extern DECLSPEC void SDLCALL SDL_SetAssertionHandler(
  * \returns the default SDL_AssertionHandler that is called when an assert
  *          triggers.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetAssertionHandler
  */
@@ -261,7 +261,7 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(void
  *                  was passed to SDL_SetAssertionHandler()
  * \returns the SDL_AssertionHandler that is called when an assert triggers.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetAssertionHandler
  */
@@ -289,7 +289,7 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puse
  * \returns a list of all failed assertions or NULL if the list is empty. This
  *          memory should not be modified or freed by the application.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ResetAssertionReport
  */
@@ -303,7 +303,7 @@ extern DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
  * no items. In addition, any previously-triggered assertions will be reset to
  * a trigger_count of zero, and their always_ignore state will be false.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetAssertionReport
  */

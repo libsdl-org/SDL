@@ -116,7 +116,7 @@ typedef struct SDL_version
  *
  * \param ver the SDL_version structure that contains the version information
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRevision
  */
@@ -145,7 +145,7 @@ extern DECLSPEC void SDLCALL SDL_GetVersion(SDL_version * ver);
  * \returns an arbitrary string, uniquely identifying the exact revision of
  *          the SDL library in use.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetVersion
  */
@@ -168,7 +168,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetRevision(void);
  *
  * \returns zero, always, in modern SDL releases.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRevision
  */
