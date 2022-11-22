@@ -118,7 +118,6 @@ test/testgamecontroller
 test/testgeometry
 test/testgesture
 test/testgl2
-test/testgles
 test/testgles2
 test/testhaptic
 test/testhittesting
