@@ -45,8 +45,7 @@ OSStatus AEHandler(EventHandlerCallRef inCaller, EventRef inEvent, void* inRefco
 	
     // Events of type kEventAppleEvent must be removed from the queue 
     //  before being passed to AEProcessAppleEvent. 
-    if (IsEventInQueue(GetMainEventQueue(), inEvent)) 
-    { 
+    if (IsEventInQueue(GetMainEventQueue(), inEvent))  { 
         // RemoveEventFromQueue will release the event, which will 
         //  destroy it if we don't retain it first. 
         RetainEvent(inEvent); 

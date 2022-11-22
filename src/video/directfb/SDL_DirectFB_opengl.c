@@ -254,8 +254,7 @@ DirectFB_GL_SwapWindow(_THIS, SDL_Window * window)
 #endif
 
     for (p = _this->gl_data->firstgl; p != NULL; p = p->next)
-        if (p->sdl_window == window && p->is_locked)
-        {
+        if (p->sdl_window == window && p->is_locked) {
             SDL_DFB_CHECKERR(p->context->Unlock(p->context));
             p->is_locked = 0;
         }
@@ -293,8 +292,7 @@ DirectFB_GL_FreeWindowContexts(_THIS, SDL_Window * window)
     DirectFB_GLContext *p;
 
     for (p = _this->gl_data->firstgl; p != NULL; p = p->next)
-        if (p->sdl_window == window)
-        {
+        if (p->sdl_window == window) {
             if (p->is_locked) {
                 SDL_DFB_CHECK(p->context->Unlock(p->context));
             }
@@ -308,8 +306,7 @@ DirectFB_GL_ReAllocWindowContexts(_THIS, SDL_Window * window)
     DirectFB_GLContext *p;
 
     for (p = _this->gl_data->firstgl; p != NULL; p = p->next)
-        if (p->sdl_window == window)
-        {
+        if (p->sdl_window == window) {
             SDL_DFB_WINDOWDATA(window);
             SDL_DFB_CHECK(windata->surface->GetGL(windata->surface,
                                              &p->context));

@@ -282,8 +282,7 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     sceSysmoduleLoadModule( SCE_SYSMODULE_RAZOR_CAPTURE );
 #endif
 
-    if (gxm_init(renderer) != 0)
-    {
+    if (gxm_init(renderer) != 0) {
         SDL_free(data);
         SDL_free(renderer);
         return NULL;
@@ -649,8 +648,7 @@ VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 static void
 VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
 {
-    if (blendMode != data->currentBlendMode)
-    {
+    if (blendMode != data->currentBlendMode) {
         fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
 
         switch (blendMode)

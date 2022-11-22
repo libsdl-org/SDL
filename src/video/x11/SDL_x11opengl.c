@@ -674,13 +674,11 @@ X11_GL_ErrorHandler(Display * d, XErrorEvent * e)
     char x11_error_locale[256];
 
     errorCode = e->error_code;
-    if (X11_XGetErrorText(d, errorCode, x11_error_locale, sizeof(x11_error_locale)) == Success)
-    {
+    if (X11_XGetErrorText(d, errorCode, x11_error_locale, sizeof(x11_error_locale)) == Success) {
         x11_error = SDL_iconv_string("UTF-8", "", x11_error_locale, SDL_strlen(x11_error_locale)+1);
     }
 
-    if (x11_error)
-    {
+    if (x11_error) {
         SDL_SetError("Could not %s: %s", errorHandlerOperation, x11_error);
         SDL_free(x11_error);
     }
@@ -696,8 +694,7 @@ SDL_bool
 X11_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
-    {
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
         /* use of EGL has been requested, even for desktop GL */
         return SDL_TRUE;
     }

@@ -111,8 +111,7 @@ double atan(double x)
     /* break sum from i=0 to 10 aT[i]z**(i+1) into odd and even poly */
 	s1 = z*(aT[0]+w*(aT[2]+w*(aT[4]+w*(aT[6]+w*(aT[8]+w*aT[10])))));
 	s2 = w*(aT[1]+w*(aT[3]+w*(aT[5]+w*(aT[7]+w*aT[9]))));
-	if (id<0) return x - x*(s1+s2);
-	else {
+	if (id<0) return x - x*(s1+s2); else {
 	    z = atanhi[id] - ((x*(s1+s2) - atanlo[id]) - x);
 	    return (hx<0)? -z:z;
 	}

@@ -234,14 +234,12 @@ SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseRef
     int testResult = 0;
     int fuzzerCount;
 
-    if (testSuite==NULL || testCase==NULL || testSuite->name==NULL || testCase->name==NULL)
-    {
+    if (testSuite==NULL || testCase==NULL || testSuite->name==NULL || testCase->name==NULL) {
         SDLTest_LogError("Setup failure: testSuite or testCase references NULL");
         return TEST_RESULT_SETUP_FAILURE;
     }
 
-    if (!testCase->enabled && forceTestRun == SDL_FALSE)
-    {
+    if (!testCase->enabled && forceTestRun == SDL_FALSE) {
         SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Test", testCase->name, "Skipped (Disabled)");
         return TEST_RESULT_SKIPPED;
     }
@@ -649,8 +647,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
             /* Log summary and final Suite result */
             countSum = testPassedCount + testFailedCount + testSkippedCount;
-            if (testFailedCount == 0)
-            {
+            if (testFailedCount == 0) {
                 SDLTest_Log(SDLTEST_LOG_SUMMARY_FORMAT, "Suite", countSum, testPassedCount, testFailedCount, testSkippedCount);
                 SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Suite", currentSuiteName, "Passed");
             }
@@ -675,8 +672,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     /* Log summary and final run result */
     countSum = totalTestPassedCount + totalTestFailedCount + totalTestSkippedCount;
-    if (totalTestFailedCount == 0)
-    {
+    if (totalTestFailedCount == 0) {
         runResult = 0;
         SDLTest_Log(SDLTEST_LOG_SUMMARY_FORMAT, "Run", countSum, totalTestPassedCount, totalTestFailedCount, totalTestSkippedCount);
         SDLTest_Log(SDLTEST_FINAL_RESULT_FORMAT, "Run /w seed", runSeed, "Passed");

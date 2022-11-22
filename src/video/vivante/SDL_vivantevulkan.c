@@ -50,13 +50,11 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
     if (path == NULL) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
-    if(path == NULL)
-    {
+    if(path == NULL) {
         /* If no path set, try Vivante fb vulkan driver explicitly */
         path = "libvulkan-fb.so";
         _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-        if(!_this->vulkan_config.loader_handle)
-        {
+        if(!_this->vulkan_config.loader_handle) {
             /* If that couldn't be loaded, fall back to default name */
             path = "libvulkan.so";
             _this->vulkan_config.loader_handle = SDL_LoadObject(path);
@@ -98,8 +96,7 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
         }
     }
     SDL_free(extensions);
-    if(!hasSurfaceExtension)
-    {
+    if(!hasSurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
@@ -120,8 +117,7 @@ fail:
 
 void VIVANTE_Vulkan_UnloadLibrary(_THIS)
 {
-    if(_this->vulkan_config.loader_handle)
-    {
+    if(_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
     }
@@ -135,8 +131,7 @@ SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
     static const char *const extensionsForVivante[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if(!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -150,8 +145,7 @@ SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)
 {
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if(!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }

@@ -30,8 +30,7 @@ CountTokens(char* args)
         switch(state)
         {
             case 0:
-            if(ch == '\"')
-            {
+            if(ch == '\"') {
                 state = 1;
                 num_tokens++;
             }
@@ -43,15 +42,13 @@ CountTokens(char* args)
             break;
 
             case 1:
-            if(ch == '\"')
-            {
+            if(ch == '\"') {
                 state = 0;
             }
             break;
 
             case 2:
-            if(SDL_isspace(ch))
-            {
+            if(SDL_isspace(ch)) {
                 state = 0;
             }
             break;
@@ -68,23 +65,19 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
 {
     int index, state, done, st_index, token_index;
 
-    if(str == NULL)
-    {
+    if(str == NULL) {
         SDLTest_LogError("str argument cannot be NULL");
         return 0;
     }
-    if(tokens == NULL)
-    {
+    if(tokens == NULL) {
         SDLTest_LogError("tokens argument cannot be NULL");
         return 0;
     }
-    if(num_tokens <= 0)
-    {
+    if(num_tokens <= 0) {
         SDLTest_LogError("num_tokens argument must be positive");
         return 0;
     }
-    if(max_token_len <= 0)
-    {
+    if(max_token_len <= 0) {
         SDLTest_LogError("max_token_len argument must be positive");
         return 0;
     }
@@ -94,8 +87,7 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
     for(index = 0; index < num_tokens; index++)
     {
         tokens[index] = (char*)SDL_malloc(max_token_len);
-        if(!tokens[index])
-        {
+        if(!tokens[index]) {
             int i;
             SDLTest_LogError("SDL_malloc() failed.");
             for(i = 0; i < index; i++) {
@@ -118,8 +110,7 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
         switch(state)
         {
             case 0:
-            if(ch == '\"')
-            {
+            if(ch == '\"') {
                 state = 1;
                 st_index = index + 1;
             }
@@ -133,8 +124,7 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
             break;
 
             case 1:
-            if(ch == '\"')
-            {
+            if(ch == '\"') {
                 int i;
                 state = 0;
                 for(i = st_index; i < index; i++)
@@ -155,8 +145,7 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
             if (!ch) {
                 done = 1;
             }
-            if(SDL_isspace(ch) || !ch)
-            {
+            if(SDL_isspace(ch) || !ch) {
                 int i;
                 state = 0;
                 for(i = st_index; i < index; i++)
@@ -179,13 +168,11 @@ SDLVisualTest_Tokenize(char* str, int max_token_len)
     int num_tokens;
     char** tokens;
 
-    if(str == NULL)
-    {
+    if(str == NULL) {
         SDLTest_LogError("str argument cannot be NULL");
         return NULL;
     }
-    if(max_token_len <= 0)
-    {
+    if(max_token_len <= 0) {
         SDLTest_LogError("max_token_len argument must be positive");
         return NULL;
     }
@@ -196,8 +183,7 @@ SDLVisualTest_Tokenize(char* str, int max_token_len)
     }
 
     tokens = (char**)SDL_malloc(sizeof(char*) * (num_tokens + 1));
-    if(!TokenizeHelper(str, tokens, num_tokens, max_token_len))
-    {
+    if(!TokenizeHelper(str, tokens, num_tokens, max_token_len)) {
         SDLTest_LogError("TokenizeHelper() failed");
         SDL_free(tokens);
         return NULL;
@@ -218,15 +204,13 @@ SDLVisualTest_ParseArgsToArgv(char* args)
 
     /* allocate space for arguments */
     argv = (char**)SDL_malloc((num_tokens + 2) * sizeof(char*));
-    if(argv == NULL)
-    {
+    if(argv == NULL) {
         SDLTest_LogError("SDL_malloc() failed.");
         return NULL;
     }
 
     /* tokenize */
-    if(!TokenizeHelper(args, argv + 1, num_tokens, MAX_SUT_ARGS_LEN))
-    {
+    if(!TokenizeHelper(args, argv + 1, num_tokens, MAX_SUT_ARGS_LEN)) {
         SDLTest_LogError("TokenizeHelper() failed");
         SDL_free(argv);
         return NULL;

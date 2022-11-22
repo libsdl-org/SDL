@@ -50,16 +50,14 @@ SDLVisualTest_EnqueueAction(SDLVisualTest_ActionQueue* queue,
                             SDLVisualTest_Action action)
 {
     SDLVisualTest_ActionNode* node;
-    if(queue == NULL)
-    {
+    if(queue == NULL) {
         SDLTest_LogError("queue argument cannot be NULL");
         return 0;
     }
 
     node = (SDLVisualTest_ActionNode*)SDL_malloc(
                                       sizeof(SDLVisualTest_ActionNode));
-    if(node == NULL)
-    {
+    if(node == NULL) {
         SDLTest_LogError("SDL_malloc() failed");
         return 0;
     }
@@ -80,18 +78,15 @@ int
 SDLVisualTest_DequeueAction(SDLVisualTest_ActionQueue* queue)
 {
     SDLVisualTest_ActionNode* node;
-    if(queue == NULL)
-    {
+    if(queue == NULL) {
         SDLTest_LogError("queue argument cannot be NULL");
         return 0;
     }
-    if(SDLVisualTest_IsActionQueueEmpty(queue))
-    {
+    if(SDLVisualTest_IsActionQueueEmpty(queue)) {
         SDLTest_LogError("cannot dequeue from empty queue");
         return 0;
     }
-    if(queue->front == queue->rear)
-    {
+    if(queue->front == queue->rear) {
         FreeAction(&queue->front->action);
         SDL_free(queue->front);
         queue->front = queue->rear = NULL;
@@ -110,8 +105,7 @@ SDLVisualTest_DequeueAction(SDLVisualTest_ActionQueue* queue)
 void
 SDLVisualTest_InitActionQueue(SDLVisualTest_ActionQueue* queue)
 {
-    if(queue == NULL)
-    {
+    if(queue == NULL) {
         SDLTest_LogError("queue argument cannot be NULL");
         return;
     }
@@ -123,13 +117,11 @@ SDLVisualTest_InitActionQueue(SDLVisualTest_ActionQueue* queue)
 SDLVisualTest_Action*
 SDLVisualTest_GetQueueFront(SDLVisualTest_ActionQueue* queue)
 {
-    if(queue == NULL)
-    {
+    if(queue == NULL) {
         SDLTest_LogError("queue argument cannot be NULL");
         return NULL;
     }
-    if(!queue->front)
-    {
+    if(!queue->front) {
         SDLTest_LogError("cannot get front of empty queue");
         return NULL;
     }
@@ -140,8 +132,7 @@ SDLVisualTest_GetQueueFront(SDLVisualTest_ActionQueue* queue)
 int
 SDLVisualTest_IsActionQueueEmpty(SDLVisualTest_ActionQueue* queue)
 {
-    if(queue == NULL)
-    {
+    if(queue == NULL) {
         SDLTest_LogError("queue argument cannot be NULL");
         return 1;
     }
@@ -155,8 +146,7 @@ SDLVisualTest_IsActionQueueEmpty(SDLVisualTest_ActionQueue* queue)
 void
 SDLVisualTest_EmptyActionQueue(SDLVisualTest_ActionQueue* queue)
 {
-    if(queue)
-    {
+    if(queue) {
         while (!SDLVisualTest_IsActionQueueEmpty(queue)) {
             SDLVisualTest_DequeueAction(queue);
         }
@@ -181,8 +171,7 @@ SortQueue(SDLVisualTest_ActionQueue* queue)
         SDLVisualTest_ActionNode* pos;
         SDLVisualTest_ActionNode* element = tail->next;
 
-        if(element->action.time < head->action.time)
-        {
+        if(element->action.time < head->action.time) {
             tail->next = tail->next->next;
             element->next = head;
             head = element;
@@ -213,16 +202,13 @@ SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
     SDLVisualTest_ActionNode* n;
     SDLVisualTest_ActionNode* prev;
     SDLVisualTest_ActionNode* newnode;
-    if(queue == NULL)
-    {
+    if(queue == NULL) {
         SDLTest_LogError("queue argument cannot be NULL");
         return 0;
     }
 
-    if(SDLVisualTest_IsActionQueueEmpty(queue))
-    {
-        if(!SDLVisualTest_EnqueueAction(queue, action))
-        {
+    if(SDLVisualTest_IsActionQueueEmpty(queue)) {
+        if(!SDLVisualTest_EnqueueAction(queue, action)) {
             SDLTest_LogError("SDLVisualTest_EnqueueAction() failed");
             return 0;
         }
@@ -230,8 +216,7 @@ SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
     }
 
     newnode = (SDLVisualTest_ActionNode*)SDL_malloc(sizeof(SDLVisualTest_ActionNode));
-    if(newnode == NULL)
-    {
+    if(newnode == NULL) {
         SDLTest_LogError("SDL_malloc() failed");
         return 0;
     }
@@ -240,10 +225,8 @@ SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
     queue->size++;
     for(n = queue->front, prev = NULL; n; n = n->next)
     {
-        if(action.time < n->action.time)
-        {
-            if(prev)
-            {
+        if(action.time < n->action.time) {
+            if(prev) {
                 prev->next = newnode;
                 newnode->next = n;
             }
@@ -273,20 +256,17 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
     int linenum;
     SDL_RWops* rw;
 
-    if(file == NULL)
-    {
+    if(file == NULL) {
         SDLTest_LogError("file argument cannot be NULL");
         return 0;
     }
-    if(queue == NULL)
-    {
+    if(queue == NULL) {
         SDLTest_LogError("queue argument cannot be NULL");
         return 0;
     }
 
     rw = SDL_RWFromFile(file, "r");
-    if(rw == NULL)
-    {
+    if(rw == NULL) {
         SDLTest_LogError("SDL_RWFromFile() failed");
         return 0;
     }
@@ -335,15 +315,13 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
         }
 
         /* parse the extra field */
-        if(action.type == SDL_ACTION_LAUNCH)
-        {
+        if(action.type == SDL_ACTION_LAUNCH) {
             int len;
             char* args;
             char* path;
             token_ptr = strtok(NULL, " ");
             len = token_ptr ? SDL_strlen(token_ptr) : 0;
-            if(len <= 0)
-            {
+            if(len <= 0) {
                 SDLTest_LogError("Please specify the process to launch at line: %d",
                                  linenum);
                 SDLVisualTest_EmptyActionQueue(queue);
@@ -351,8 +329,7 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
                 return 0;
             }
             path = (char*)SDL_malloc(sizeof(char) * (len + 1));
-            if(path == NULL)
-            {
+            if(path == NULL) {
                 SDLTest_LogError("SDL_malloc() failed");
                 SDLVisualTest_EmptyActionQueue(queue);
                 SDL_RWclose(rw);
@@ -362,11 +339,9 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
 
             token_ptr = strtok(NULL, "");
             len = token_ptr ? SDL_strlen(token_ptr) : 0;
-            if(len > 0)
-            {
+            if(len > 0) {
                 args = (char*)SDL_malloc(sizeof(char) * (len + 1));
-                if(args == NULL)
-                {
+                if(args == NULL) {
                     SDLTest_LogError("SDL_malloc() failed");
                     SDL_free(path);
                     SDLVisualTest_EmptyActionQueue(queue);
@@ -383,11 +358,9 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
         }
 
         /* add the action to the queue */
-        if(!SDLVisualTest_EnqueueAction(queue, action))
-        {
+        if(!SDLVisualTest_EnqueueAction(queue, action)) {
             SDLTest_LogError("SDLVisualTest_EnqueueAction() failed");
-            if(action.type == SDL_ACTION_LAUNCH)
-            {
+            if(action.type == SDL_ACTION_LAUNCH) {
                 SDL_free(action.extra.process.path);
                 if (action.extra.process.args) {
                     SDL_free(action.extra.process.args);

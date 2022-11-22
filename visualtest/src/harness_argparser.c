@@ -48,11 +48,9 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
         return 0;
     }
 
-    if(StrCaseCmpIgnoreHyphen("sutapp", argv[index]) == 0)
-    {
+    if(StrCaseCmpIgnoreHyphen("sutapp", argv[index]) == 0) {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for sutapp.");
             return -1;
         }
@@ -63,8 +61,7 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("output-dir", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for output-dir.");
             return -1;
         }
@@ -75,8 +72,7 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("verify-dir", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for verify-dir.");
             return -1;
         }
@@ -87,8 +83,7 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("sutargs", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for sutargs.");
             return -1;
         }
@@ -100,8 +95,7 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     {
         int hr, min, sec;
         index++;
-        if(!argv[index] || SDL_sscanf(argv[index], "%d:%d:%d", &hr, &min, &sec) != 3)
-        {
+        if(!argv[index] || SDL_sscanf(argv[index], "%d:%d:%d", &hr, &min, &sec) != 3) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for timeout.");
             return -1;
         }
@@ -113,15 +107,13 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("parameter-config", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for parameter-config.");
             return -1;
         }
         SDLTest_Log("SUT Parameters file: %s", argv[index]);
         SDLVisualTest_FreeSUTConfig(&state->sut_config);
-        if(!SDLVisualTest_ParseSUTConfig(argv[index], &state->sut_config))
-        {
+        if(!SDLVisualTest_ParseSUTConfig(argv[index], &state->sut_config)) {
             SDLTest_LogError("Failed to parse SUT parameters file");
             return -1;
         }
@@ -130,8 +122,7 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("variator", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for variator.");
             return -1;
         }
@@ -150,15 +141,13 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("num-variations", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: Invalid argument for num-variations.");
             return -1;
         }
         state->num_variations = SDL_atoi(argv[index]);
         SDLTest_Log("Number of variations to run: %d", state->num_variations);
-        if(state->num_variations <= 0)
-        {
+        if(state->num_variations <= 0) {
             SDLTest_LogError("Arguments parsing error: num-variations must be positive.");
             return -1;
         }
@@ -173,15 +162,13 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("action-config", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: invalid argument for action-config");
             return -1;
         }
         SDLTest_Log("Action Config file: %s", argv[index]);
         SDLVisualTest_EmptyActionQueue(&state->action_queue);
-        if(!SDLVisualTest_ParseActionConfig(argv[index], &state->action_queue))
-        {
+        if(!SDLVisualTest_ParseActionConfig(argv[index], &state->action_queue)) {
             SDLTest_LogError("SDLVisualTest_ParseActionConfig() failed");
             return -1;
         }
@@ -190,8 +177,7 @@ ParseArg(char** argv, int index, SDLVisualTest_HarnessState* state)
     else if(StrCaseCmpIgnoreHyphen("config", argv[index]) == 0)
     {
         index++;
-        if(!argv[index])
-        {
+        if(!argv[index]) {
             SDLTest_LogError("Arguments parsing error: invalid argument for config");
             return -1;
         }
@@ -211,8 +197,7 @@ ParseConfig(const char* file, SDLVisualTest_HarnessState* state)
     char line[MAX_CONFIG_LINE_LEN];
 
     rw = SDL_RWFromFile(file, "r");
-    if(rw == NULL)
-    {
+    if(rw == NULL) {
         SDLTest_LogError("SDL_RWFromFile() failed");
         return 0;
     }
@@ -228,8 +213,7 @@ ParseConfig(const char* file, SDLVisualTest_HarnessState* state)
         num_params = 1;
         for(i = 0; line[i]; i++)
         {
-            if(line[i] == '=')
-            {
+            if(line[i] == '=') {
                 num_params = 2;
                 break;
             }
@@ -237,8 +221,7 @@ ParseConfig(const char* file, SDLVisualTest_HarnessState* state)
 
         /* populate argv */
         argv = (char**)SDL_malloc((num_params + 1) * sizeof(char*));
-        if(argv == NULL)
-        {
+        if(argv == NULL) {
             SDLTest_LogError("SDL_malloc() failed.");
             SDL_RWclose(rw);
             return 0;
@@ -250,8 +233,7 @@ ParseConfig(const char* file, SDLVisualTest_HarnessState* state)
             argv[i] = strtok(i == 0 ? line : NULL, "=");
         }
 
-        if(ParseArg(argv, 0, state) == -1)
-        {
+        if(ParseArg(argv, 0, state) == -1) {
             SDLTest_LogError("ParseArg() failed");
             SDL_free(argv);
             SDL_RWclose(rw);
@@ -274,13 +256,11 @@ SDLVisualTest_ParseHarnessArgs(char** argv, SDLVisualTest_HarnessState* state)
 
     SDLTest_Log("Parsing commandline arguments..");
 
-    if(argv == NULL)
-    {
+    if(argv == NULL) {
         SDLTest_LogError("argv is NULL");
         return 0;
     }
-    if(state == NULL)
-    {
+    if(state == NULL) {
         SDLTest_LogError("state is NULL");
         return 0;
     }
@@ -300,15 +280,12 @@ SDLVisualTest_ParseHarnessArgs(char** argv, SDLVisualTest_HarnessState* state)
     /* parse config file if passed */
     for(i = 0; argv[i]; i++)
     {
-        if(StrCaseCmpIgnoreHyphen("config", argv[i]) == 0)
-        {
-            if(!argv[i + 1])
-            {
+        if(StrCaseCmpIgnoreHyphen("config", argv[i]) == 0) {
+            if(!argv[i + 1]) {
                 SDLTest_Log("Arguments parsing error: invalid argument for config.");
                 return 0;
             }
-            if(!ParseConfig(argv[i + 1], state))
-            {
+            if(!ParseConfig(argv[i + 1], state)) {
                 SDLTest_LogError("ParseConfig() failed");
                 return 0;
             }
@@ -319,8 +296,7 @@ SDLVisualTest_ParseHarnessArgs(char** argv, SDLVisualTest_HarnessState* state)
     for(i = 0; argv[i];)
     {
         int consumed = ParseArg(argv, i, state);
-        if(consumed == -1 || consumed == 0)
-        {
+        if(consumed == -1 || consumed == 0) {
             SDLTest_LogError("ParseArg() failed");
             return 0;
         }
@@ -332,22 +308,18 @@ SDLVisualTest_ParseHarnessArgs(char** argv, SDLVisualTest_HarnessState* state)
     }
 
     /* check to see if required options have been passed */
-    if(!state->sutapp[0])
-    {
+    if(!state->sutapp[0]) {
         SDLTest_LogError("sutapp must be passed.");
         return 0;
     }
-    if(!state->sutargs[0] && !state->sut_config.options)
-    {
+    if(!state->sutargs[0] && !state->sut_config.options) {
         SDLTest_LogError("Either sutargs or parameter-config must be passed.");
         return 0;
     }
-    if(!state->output_dir[0])
-    {
+    if(!state->output_dir[0]) {
         SDL_strlcpy(state->output_dir, "./output", MAX_PATH_LEN);
     }
-    if(!state->verify_dir[0])
-    {
+    if(!state->verify_dir[0]) {
         SDL_strlcpy(state->verify_dir, "./verify", MAX_PATH_LEN);
     }
 
@@ -357,8 +329,7 @@ SDLVisualTest_ParseHarnessArgs(char** argv, SDLVisualTest_HarnessState* state)
 void
 SDLVisualTest_FreeHarnessState(SDLVisualTest_HarnessState* state)
 {
-    if(state)
-    {
+    if(state) {
         SDLVisualTest_EmptyActionQueue(&state->action_queue);
         SDLVisualTest_FreeSUTConfig(&state->sut_config);
     }

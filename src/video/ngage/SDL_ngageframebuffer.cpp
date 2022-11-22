@@ -98,8 +98,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
      *
      * In 12 bpp machines the table has 16 entries.
      */
-    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 8)
-    {
+    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 8) {
         phdata->NGAGE_FrameBuffer += 512;
     }
     else
@@ -107,12 +106,10 @@ int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
         phdata->NGAGE_FrameBuffer += 32;
     }
     #if 0
-    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 12)
-    {
+    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 12) {
         phdata->NGAGE_FrameBuffer += 16 * 2;
     }
-    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 16)
-    {
+    if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 16) {
         phdata->NGAGE_FrameBuffer += 16 * 2;
     }
     #endif
@@ -154,14 +151,12 @@ int SDL_NGAGE_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect
     SDL_Surface *surface;
 
     surface = (SDL_Surface *) SDL_GetWindowData(window, NGAGE_SURFACE);
-    if (surface == NULL)
-    {
+    if (surface == NULL) {
         return SDL_SetError("Couldn't find ngage surface for window");
     }
 
     /* Send the data to the display */
-    if (SDL_getenv("SDL_VIDEO_NGAGE_SAVE_FRAMES"))
-    {
+    if (SDL_getenv("SDL_VIDEO_NGAGE_SAVE_FRAMES")) {
         char file[128];
         SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
                      (int)SDL_GetWindowID(window), ++frame_number);
@@ -240,8 +235,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
         rect2.w = currentRect.w;
         rect2.h = currentRect.h;
 
-        if (rect2.w <= 0 || rect2.h <= 0) /* Sanity check */
-        {
+        if (rect2.w <= 0 || rect2.h <= 0) /* Sanity check */ {
             continue;
         }
 
@@ -250,8 +244,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
         /* Check rects validity, i.e. upper and lower bounds */
         TInt maxX = Min(screenW - 1, rect2.x + rect2.w - 1);
         TInt maxY = Min(screenH - 1, rect2.y + rect2.h - 1);
-        if (maxX < 0 || maxY < 0) /* sanity check */
-        {
+        if (maxX < 0 || maxY < 0) /* sanity check */ {
             continue;
         }
         /* Clip from bottom */
@@ -274,8 +267,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
                 TUint16* bitmapLine   = (TUint16*)screen->pixels + sourceStartOffset;
                 TUint16* screenMemory = screenBuffer + targetStartOffset;
 
-                if (skipValue == 1)
-                {
+                if (skipValue == 1) {
                     for(TInt y = 0 ; y < sourceRectHeight ; y++)
                     {
                         Mem::Copy(screenMemory, bitmapLine, sourceRectWidthInBytes);
@@ -308,8 +300,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
             // 256 color paletted mode: 8 bpp --> 12 bpp
             default:
             {
-                if(phdata->NGAGE_BytesPerPixel <= 2)
-                {
+                if(phdata->NGAGE_BytesPerPixel <= 2) {
                     TUint8*  bitmapLine   = (TUint8*)screen->pixels + sourceStartOffset;
                     TUint16* screenMemory = screenBuffer + targetStartOffset;
 
@@ -360,8 +351,7 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
 {
     SDL_VideoData *phdata = (SDL_VideoData*)_this->driverdata;
 
-    if (! phdata->NGAGE_IsWindowFocused)
-    {
+    if (! phdata->NGAGE_IsWindowFocused) {
         SDL_PauseAudio(1);
         SDL_Delay(1000);
         return;
@@ -372,8 +362,7 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
     TUint16* screenBuffer = (TUint16*)phdata->NGAGE_FrameBuffer;
 
 #if 0
-    if (phdata->NGAGE_ScreenOrientation == CFbsBitGc::EGraphicsOrientationRotated270)
-    {
+    if (phdata->NGAGE_ScreenOrientation == CFbsBitGc::EGraphicsOrientationRotated270) {
         // ...
     }
     else

@@ -199,8 +199,7 @@ SetCurrentBinding(int iBinding)
         return;
     }
 
-    if (s_arrBindingOrder[iBinding] == -1)
-    {
+    if (s_arrBindingOrder[iBinding] == -1) {
         SetCurrentBinding(iBinding + 1);
         return;
     }
@@ -227,8 +226,7 @@ SetCurrentBinding(int iBinding)
 static SDL_bool
 BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const SDL_GameControllerExtendedBind *pBindingB)
 {
-    if (pBindingA->bindType != pBindingB->bindType)
-    {
+    if (pBindingA->bindType != pBindingB->bindType) {
         return SDL_FALSE;
     }
     switch (pBindingA->bindType)

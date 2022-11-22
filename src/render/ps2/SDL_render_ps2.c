@@ -76,10 +76,8 @@ static void gsKit_sync(GSGLOBAL *gsGlobal)
 /* Copy of gsKit_sync_flip, but without the 'sync' */
 static void gsKit_flip(GSGLOBAL *gsGlobal)
 {
-   if (!gsGlobal->FirstFrame)
-   {
-      if (gsGlobal->DoubleBuffering == GS_SETTING_ON)
-      {
+   if (!gsGlobal->FirstFrame) {
+      if (gsGlobal->DoubleBuffering == GS_SETTING_ON) {
          GS_SET_DISPFB2( gsGlobal->ScreenBuffer[
                gsGlobal->ActiveBuffer & 1] / 8192,
                gsGlobal->Width / 64, gsGlobal->PSM, 0, 0 );
@@ -122,8 +120,7 @@ PS2_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     ps2_tex->PSM = PixelFormatToPS2PSM(texture->format);
     ps2_tex->Mem = memalign(128, gsKit_texture_size_ee(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM));
 
-    if (!ps2_tex->Mem)
-    {
+    if (!ps2_tex->Mem) {
         SDL_free(ps2_tex);
         return SDL_OutOfMemory();
     }

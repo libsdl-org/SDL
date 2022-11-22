@@ -16,13 +16,11 @@ NextVariation(SDLVisualTest_Variation* variation,
               SDLVisualTest_SUTConfig* config)
 {
     int i, carry;
-    if(variation == NULL)
-    {
+    if(variation == NULL) {
         SDLTest_LogError("variation argument cannot be NULL");
         return -1;
     }
-    if(config == NULL)
-    {
+    if(config == NULL) {
         SDLTest_LogError("config argument cannot be NULL");
         return -1;
     }
@@ -51,13 +49,11 @@ int
 SDLVisualTest_InitExhaustiveVariator(SDLVisualTest_ExhaustiveVariator* variator,
                                      SDLVisualTest_SUTConfig* config)
 {
-    if(variator == NULL)
-    {
+    if(variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return 0;
     }
-    if(config == NULL)
-    {
+    if(config == NULL) {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
     }
@@ -78,25 +74,21 @@ char*
 SDLVisualTest_GetNextExhaustiveVariation(SDLVisualTest_ExhaustiveVariator* variator)
 {
     int success;
-    if(variator == NULL)
-    {
+    if(variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return NULL;
     }
 
-    if(!variator->variation.vars) /* the first time this function is called */
-    {
+    if(!variator->variation.vars) /* the first time this function is called */ {
         success = SDLVisualTest_InitVariation(&variator->variation,
                                               &variator->config);
-        if(!success)
-        {
+        if(!success) {
             SDLTest_LogError("SDLVisualTest_InitVariation() failed");
             return NULL;
         }
         success = SDLVisualTest_MakeStrFromVariation(&variator->variation,
                   &variator->config, variator->buffer, MAX_SUT_ARGS_LEN);
-        if(!success)
-        {
+        if(!success) {
             SDLTest_LogError("SDLVisualTest_MakeStrFromVariation() failed");
             return NULL;
         }
@@ -105,12 +97,10 @@ SDLVisualTest_GetNextExhaustiveVariation(SDLVisualTest_ExhaustiveVariator* varia
     else
     {
         success = NextVariation(&variator->variation, &variator->config);
-        if(success == 1)
-        {
+        if(success == 1) {
             success = SDLVisualTest_MakeStrFromVariation(&variator->variation,
                       &variator->config, variator->buffer, MAX_SUT_ARGS_LEN);
-            if(!success)
-            {
+            if(!success) {
                 SDLTest_LogError("SDLVisualTest_MakeStrFromVariation() failed");
                 return NULL;
             }
@@ -127,8 +117,7 @@ SDLVisualTest_GetNextExhaustiveVariation(SDLVisualTest_ExhaustiveVariator* varia
 void
 SDLVisualTest_FreeExhaustiveVariator(SDLVisualTest_ExhaustiveVariator* variator)
 {
-    if(variator == NULL)
-    {
+    if(variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return;
     }

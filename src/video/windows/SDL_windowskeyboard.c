@@ -258,8 +258,7 @@ WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
     videodata->ime_rect = *rect;
 
     himc = ImmGetContext(videodata->ime_hwnd_current);
-    if (himc)
-    {
+    if (himc) {
         COMPOSITIONFORM cof;
         CANDIDATEFORM caf;
 
@@ -1054,8 +1053,7 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
 
     switch (msg) {
     case WM_KEYDOWN:
-        if (wParam == VK_PROCESSKEY)
-        {
+        if (wParam == VK_PROCESSKEY) {
             videodata->ime_uicontext = 1;
             trap = SDL_TRUE;
         }

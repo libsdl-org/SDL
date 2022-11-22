@@ -108,8 +108,7 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
 
     SDL_free(extensions);
 
-    if(!hasSurfaceExtension)
-    {
+    if(!hasSurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
@@ -131,8 +130,7 @@ fail:
 
 void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 {
-    if(_this->vulkan_config.loader_handle)
-    {
+    if(_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
     }
@@ -156,8 +154,7 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if(!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -265,8 +262,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         (PFN_vkCreateDisplayModeKHR)vkGetInstanceProcAddr(
             instance, "vkCreateDisplayModeKHR");
 
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if(!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         goto clean;
     }
@@ -280,8 +276,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     /* that the VK_KHR_Display extension is active on the instance. */
     /* That's the central extension we need for x-less VK!          */
     /****************************************************************/
-    if(!vkCreateDisplayPlaneSurfaceKHR)
-    {
+    if(!vkCreateDisplayPlaneSurfaceKHR) {
         SDL_SetError(VK_KHR_DISPLAY_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         goto clean;
@@ -508,8 +503,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                      &display_plane_surface_create_info,
                                      NULL,
                                      surface);
-    if(result != VK_SUCCESS)
-    {
+    if(result != VK_SUCCESS) {
         SDL_SetError("vkCreateDisplayPlaneSurfaceKHR failed: %s",
             SDL_Vulkan_GetResultString(result));
         goto clean;

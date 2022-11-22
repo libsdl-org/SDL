@@ -86,8 +86,7 @@ vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
         }
 
         ret = sceKernelGetMemBlockBase(data->texturePoolUID, &mem);
-        if ( ret < 0)
-        {
+        if ( ret < 0) {
             return NULL;
         }
         data->texturePool = sceClibMspaceCreate(mem, poolsize);
@@ -96,8 +95,7 @@ vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
             return NULL;
         }
         ret = sceGxmMapMemory(mem, poolsize, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE);
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return NULL;
         }
     }
@@ -107,8 +105,7 @@ vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
 void
 vita_gpu_mem_free(VITA_GXM_RenderData *data, void* ptr)
 {
-    if (data->texturePool != NULL)
-    {
+    if (data->texturePool != NULL) {
         sceClibMspaceFree(data->texturePool, ptr);
     }
 }
@@ -117,8 +114,7 @@ void
 vita_gpu_mem_destroy(VITA_GXM_RenderData *data)
 {
     void *mem = NULL;
-    if (data->texturePool != NULL)
-    {
+    if (data->texturePool != NULL) {
         sceClibMspaceDestroy(data->texturePool);
         data->texturePool = NULL;
         if (sceKernelGetMemBlockBase(data->texturePoolUID, &mem) < 0) {

@@ -55,8 +55,7 @@ double attribute_hidden __kernel_sin(double x, double y, int iy)
 	int32_t ix;
 	GET_HIGH_WORD(ix,x);
 	ix &= 0x7fffffff;			/* high word of x */
-	if(ix<0x3e400000)			/* |x| < 2**-27 */
-	   {if ((int)x == 0) {
+	if(ix<0x3e400000)			/* |x| < 2**-27 */ {if ((int)x == 0) {
 	   		return x;
 		}}		/* generate inexact */
 	z	=  x*x;

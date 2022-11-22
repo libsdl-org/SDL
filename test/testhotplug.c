@@ -72,8 +72,7 @@ main(int argc, char *argv[])
                     keepGoing = SDL_FALSE;
                     break;
                 case SDL_JOYDEVICEADDED:
-                    if (joystick != NULL)
-                    {
+                    if (joystick != NULL) {
                         SDL_Log("Only one joystick supported by this test\n");
                     }
                     else
@@ -81,16 +80,12 @@ main(int argc, char *argv[])
                         joystick = SDL_JoystickOpen(event.jdevice.which);
                         instance = SDL_JoystickInstanceID(joystick);
                         SDL_Log("Joy Added  : %" SDL_PRIs32 " : %s\n", event.jdevice.which, SDL_JoystickName(joystick));
-                        if (enable_haptic)
-                        {
-                            if (SDL_JoystickIsHaptic(joystick))
-                            {
+                        if (enable_haptic) {
+                            if (SDL_JoystickIsHaptic(joystick)) {
                                 haptic = SDL_HapticOpenFromJoystick(joystick);
-                                if (haptic)
-                                {
+                                if (haptic) {
                                     SDL_Log("Joy Haptic Opened\n");
-                                    if (SDL_HapticRumbleInit( haptic ) != 0)
-                                    {
+                                    if (SDL_HapticRumbleInit( haptic ) != 0) {
                                         SDL_Log("Could not init Rumble!: %s\n", SDL_GetError());
                                         SDL_HapticClose(haptic);
                                         haptic = NULL;
@@ -107,12 +102,10 @@ main(int argc, char *argv[])
                     }
                     break;
                 case SDL_JOYDEVICEREMOVED:
-                    if (instance == event.jdevice.which)
-                    {
+                    if (instance == event.jdevice.which) {
                         SDL_Log("Joy Removed: %" SDL_PRIs32 "\n", event.jdevice.which);
                         instance = -1;
-                        if(enable_haptic && haptic)
-                        {
+                        if(enable_haptic && haptic) {
                             SDL_HapticClose(haptic);
                             haptic = NULL;
                         }
@@ -132,8 +125,7 @@ main(int argc, char *argv[])
                     break;
                 case SDL_JOYBUTTONDOWN:
                     SDL_Log("Button Press: %d\n", event.jbutton.button);
-                    if(enable_haptic && haptic)
-                    {
+                    if(enable_haptic && haptic) {
                         SDL_HapticRumblePlay(haptic, 0.25, 250);
                     }
                     if (event.jbutton.button == 0) {

@@ -817,8 +817,7 @@ PND_gl_deletecontext(_THIS, SDL_GLContext context)
     }
 
 #ifdef WIZ_GLES_LITE
-    if( hNativeWnd != 0 )
-    {
+    if( hNativeWnd != 0 ) {
       SDL_free(hNativeWnd);
       hNativeWnd = 0;
       printf( "SDL: Wiz framebuffer released\n" );

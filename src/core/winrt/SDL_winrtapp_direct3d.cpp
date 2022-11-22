@@ -104,8 +104,7 @@ IFrameworkView^ SDLApplicationSource::CreateView()
     // SDL_WinRTGlobalApp more than once.
     SDL_assert(!SDL_WinRTGlobalApp);
     SDL_WinRTApp ^ app = ref new SDL_WinRTApp();
-    if (!SDL_WinRTGlobalApp)
-    {
+    if (!SDL_WinRTGlobalApp) {
         SDL_WinRTGlobalApp = app;
     }
     return app;
@@ -353,8 +352,7 @@ void SDL_WinRTApp::Load(Platform::String^ entryPoint)
 void SDL_WinRTApp::Run()
 {
     SDL_SetMainReady();
-    if (WINRT_SDLAppEntryPoint)
-    {
+    if (WINRT_SDLAppEntryPoint) {
         // TODO, WinRT: pass the C-style main() a reasonably realistic
         // representation of command line arguments.
         int argc = 1;

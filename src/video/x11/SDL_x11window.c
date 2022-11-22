@@ -102,8 +102,7 @@ X11_IsActionAllowed(SDL_Window *window, Atom action)
     Atom *list;
     SDL_bool ret = SDL_FALSE;
 
-    if (X11_XGetWindowProperty(display, data->xwindow, _NET_WM_ALLOWED_ACTIONS, 0, 1024, False, XA_ATOM, &type, &form, &len, &remain, (unsigned char **)&list) == Success)
-    {
+    if (X11_XGetWindowProperty(display, data->xwindow, _NET_WM_ALLOWED_ACTIONS, 0, 1024, False, XA_ATOM, &type, &form, &len, &remain, (unsigned char **)&list) == Success) {
         for (i=0; i<len; ++i)
         {
             if (list[i] == action) {
@@ -326,8 +325,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
         Window FocalWindow;
         int RevertTo=0;
         X11_XGetInputFocus(data->videodata->display, &FocalWindow, &RevertTo);
-        if (FocalWindow==w)
-        {
+        if (FocalWindow==w) {
             window->flags |= SDL_WINDOW_INPUT_FOCUS;
         }
 
@@ -405,8 +403,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
 
-    if (forced_visual_id != NULL && forced_visual_id[0] != '\0')
-    {
+    if (forced_visual_id != NULL && forced_visual_id[0] != '\0') {
         XVisualInfo *vi, template;
         int nvis;
 

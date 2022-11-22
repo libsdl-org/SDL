@@ -379,13 +379,11 @@ CPU_haveARMSIMD(void)
     int fd;
 
     fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
-    if (fd >= 0)
-    {
+    if (fd >= 0) {
         Elf32_auxv_t aux;
         while (read(fd, &aux, sizeof aux) == sizeof aux)
         {
-            if (aux.a_type == AT_PLATFORM)
-            {
+            if (aux.a_type == AT_PLATFORM) {
                 const char *plat = (const char *) aux.a_un.a_val;
                 if (plat) {
                     arm_simd = SDL_strncmp(plat, "v6l", 3) == 0 ||
@@ -438,8 +436,7 @@ readProcAuxvForNeon(void)
     int fd;
 
     fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
-    if (fd >= 0)
-    {
+    if (fd >= 0) {
         Elf32_auxv_t aux;
         while (read(fd, &aux, sizeof (aux)) == sizeof (aux)) {
             if (aux.a_type == AT_HWCAP) {

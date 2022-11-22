@@ -209,8 +209,7 @@ GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 m
     const float deviceScale = max - min;
     const float readScale = pElement->maxReport - pElement->minReport;
     int returnValue = SDL_FALSE;
-    if (GetHIDElementState(pDevice, pElement, pValue))
-    {
+    if (GetHIDElementState(pDevice, pElement, pValue)) {
         if (readScale == 0) {
             returnValue = SDL_TRUE;           /* no scaling at all */
         }

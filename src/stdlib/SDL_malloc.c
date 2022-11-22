@@ -5120,14 +5120,12 @@ mspace_mallopt(int param_number, int value)
     void *ptr = 0;
     static void *sbrk_top = 0;
 
-    if (size > 0)
-    {
+    if (size > 0) {
       if (size < MINIMUM_MORECORE_SIZE)
          size = MINIMUM_MORECORE_SIZE;
       if (CurrentExecutionLevel() == kTaskLevel)
          ptr = PoolAllocateResident(size + RM_PAGE_SIZE, 0);
-      if (ptr == 0)
-      {
+      if (ptr == 0) {
         return (void *) MFAIL;
       }
       // save ptrs so they can be freed during cleanup
@@ -5156,8 +5154,7 @@ mspace_mallopt(int param_number, int value)
     void **ptr;
 
     for (ptr = our_os_pools; ptr < &our_os_pools[MAX_POOL_ENTRIES]; ptr++)
-      if (*ptr)
-      {
+      if (*ptr) {
          PoolDeallocate(*ptr);
          *ptr = 0;
       }

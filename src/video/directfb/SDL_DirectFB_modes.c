@@ -112,8 +112,7 @@ CheckSetDisplayMode(_THIS, SDL_VideoDisplay * display, DFB_DisplayData * data, S
     data->layer->TestConfiguration(data->layer, &config, &failed);
     SDL_DFB_CHECKERR(data->layer->SetCooperativeLevel(data->layer,
                                                       DLSCL_SHARED));
-    if (failed == 0)
-    {
+    if (failed == 0) {
         SDL_AddDisplayMode(display, mode);
         SDL_DFB_LOG("Mode %d x %d Added\n", mode->w, mode->h);
     }

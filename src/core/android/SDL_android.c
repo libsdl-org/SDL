@@ -874,8 +874,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         Android_SendResize(Android_Window);
     }
 
@@ -890,8 +889,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
 
     displayOrientation = (SDL_DisplayOrientation)orientation;
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_VideoDisplay *display = SDL_GetDisplay(0);
         SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
     }
@@ -1000,8 +998,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
 
         data->native_window = Android_JNI_GetNativeWindow();
@@ -1019,8 +1016,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
     SDL_LockMutex(Android_ActivityMutex);
 
 #if SDL_VIDEO_OPENGL_EGL
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData  *data  = (SDL_WindowData *) Android_Window->driverdata;
 
@@ -1045,8 +1041,7 @@ retry:
 
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData  *data  = (SDL_WindowData *) Android_Window->driverdata;
 

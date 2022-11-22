@@ -63,8 +63,7 @@ DirectFB_ResizeWindowShape(SDL_Window* window) {
     SDL_ShapeData* data = window->shaper->driverdata;
     SDL_assert(data != NULL);
 
-    if (window->x != -1000)
-    {
+    if (window->x != -1000) {
         window->shaper->userx = window->x;
         window->shaper->usery = window->y;
     }

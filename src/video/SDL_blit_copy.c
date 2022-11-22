@@ -80,8 +80,7 @@ SDL_memcpyMMX(Uint8 * dst, const Uint8 * src, int len)
         s64 += 8;
     }
 
-    if (remain)
-    {
+    if (remain) {
         const int skip = len - remain;
         SDL_memcpy(dst + skip, src + skip, remain);
     }

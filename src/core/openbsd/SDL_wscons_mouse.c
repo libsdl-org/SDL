@@ -63,8 +63,7 @@ void updateMouse(SDL_WSCONS_mouse_input_data* inputData)
     int n,i;
     SDL_Mouse* mouse = SDL_GetMouse();
 
-    if ((n = read(inputData->fd, events, sizeof(events))) > 0)
-    {
+    if ((n = read(inputData->fd, events, sizeof(events))) > 0) {
         n /= sizeof(struct wscons_event);
         for (i = 0; i < n; i++)
         {

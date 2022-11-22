@@ -172,8 +172,7 @@ rtkit_initialize_realtime_thread()
 
     // Requirement #1: Set RLIMIT_RTTIME
     err = getrlimit(nLimit, &rlimit);
-    if (err)
-    {
+    if (err) {
         return SDL_FALSE;
     }
 
@@ -181,21 +180,18 @@ rtkit_initialize_realtime_thread()
     rlimit.rlim_max = rtkit_max_rttime_usec;
     rlimit.rlim_cur = rlimit.rlim_max / 2;
     err = setrlimit(nLimit, &rlimit);
-    if (err)
-    {
+    if (err) {
         return SDL_FALSE;
     }
 
     // Requirement #2: Add SCHED_RESET_ON_FORK to the scheduler policy
     err = sched_getparam(nPid, &schedParam);
-    if (err)
-    {
+    if (err) {
         return SDL_FALSE;
     }
 
     err = sched_setscheduler(nPid, nSchedPolicy, &schedParam);
-    if (err)
-    {
+    if (err) {
         return SDL_FALSE;
     }
 

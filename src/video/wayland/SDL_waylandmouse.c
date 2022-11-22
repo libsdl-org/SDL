@@ -342,8 +342,7 @@ create_buffer_from_shm(Wayland_CursorData *d,
     int shm_fd;
 
     shm_fd = wayland_create_tmp_file(size);
-    if (shm_fd < 0)
-    {
+    if (shm_fd < 0) {
         return SDL_SetError("Creating mouse cursor buffer failed.");
     }
 
@@ -509,8 +508,7 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
         return -1;
     }
 
-    if (cursor)
-    {
+    if (cursor) {
         Wayland_CursorData *data = cursor->driverdata;
 
         /* TODO: High-DPI custom cursors? -flibit */

@@ -233,8 +233,7 @@ DirectFB_VideoInit(_THIS)
 
     devdata->use_linux_input = readBoolEnv(DFBENV_USE_LINUX_INPUT, 1);       /* default: on */
 
-    if (!devdata->use_linux_input)
-    {
+    if (!devdata->use_linux_input) {
         SDL_DFB_LOG("Disabling linux input\n");
         DirectFBSetOption("disable-module", "linux_input");
     }
@@ -389,8 +388,7 @@ DirectFB_DFBToSDLPixelFormat(DFBSurfacePixelFormat pixelformat)
     int i;
 
     for (i=0; pixelformat_tab[i].dfb != DSPF_UNKNOWN; i++)
-        if (pixelformat_tab[i].dfb == pixelformat)
-        {
+        if (pixelformat_tab[i].dfb == pixelformat) {
             return pixelformat_tab[i].sdl;
         }
     return SDL_PIXELFORMAT_UNKNOWN;
@@ -402,8 +400,7 @@ DirectFB_SDLToDFBPixelFormat(Uint32 format)
     int i;
 
     for (i=0; pixelformat_tab[i].dfb != DSPF_UNKNOWN; i++)
-        if (pixelformat_tab[i].sdl == format)
-        {
+        if (pixelformat_tab[i].sdl == format) {
             return pixelformat_tab[i].dfb;
         }
     return DSPF_UNKNOWN;

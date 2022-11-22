@@ -818,8 +818,7 @@ SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
     }
 
     /* first ensure that a found config has a matching format, or the function will fall through. */
-    if (_this->egl_data->egl_required_visual_id)
-    {
+    if (_this->egl_data->egl_required_visual_id) {
         for (i = 0; i < found_configs; i++ ) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,

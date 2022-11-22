@@ -161,13 +161,11 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
                 /* Clipped? */
                 continue;
             }
-            if (x < 0)
-            {
+            if (x < 0) {
                 x += w;
                 w += rects[i].x;
             }
-            if (y < 0)
-            {
+            if (y < 0) {
                 y += h;
                 h += rects[i].y;
             }
@@ -195,13 +193,11 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
                 /* Clipped? */
                 continue;
             }
-            if (x < 0)
-            {
+            if (x < 0) {
                 x += w;
                 w += rects[i].x;
             }
-            if (y < 0)
-            {
+            if (y < 0) {
                 y += h;
                 h += rects[i].y;
             }

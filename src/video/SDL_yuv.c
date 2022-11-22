@@ -624,8 +624,7 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
             next_row = (const Uint8*)src;
             next_row += src_pitch;
 
-            if (dst_format == SDL_PIXELFORMAT_YV12 || dst_format == SDL_PIXELFORMAT_IYUV)
-            {
+            if (dst_format == SDL_PIXELFORMAT_YV12 || dst_format == SDL_PIXELFORMAT_IYUV) {
                 /* Write UV planes, not interleaved */
                 uv_skip = (uv_stride - (width + 1)/2);
                 for (j = 0; j < height_half; j++) {
@@ -739,8 +738,7 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
             plane_skip = (dst_pitch - row_size);
 
             /* Write YUV plane, packed */
-            if (dst_format == SDL_PIXELFORMAT_YUY2) 
-            {
+            if (dst_format == SDL_PIXELFORMAT_YUY2)  {
                 for (j = 0; j < height; j++) {
                     for (i = 0; i < width_half; i++) {
                         READ_TWO_RGB_PIXELS;

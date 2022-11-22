@@ -794,8 +794,7 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 
 	/* Wait here until the write is done. This makes hid_write() synchronous. */
 	res = WaitForSingleObject(dev->write_ol.hEvent, milliseconds);
-	if (res != WAIT_OBJECT_0)
-	{
+	if (res != WAIT_OBJECT_0) {
 		// There was a Timeout.
 		bytes_written = (DWORD) -1;
 		register_error(dev, "WriteFile/WaitForSingleObject Timeout");

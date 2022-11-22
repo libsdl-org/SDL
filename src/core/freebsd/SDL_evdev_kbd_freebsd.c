@@ -256,8 +256,7 @@ SDL_EVDEV_kbd_init(void)
         kbd->ledflagstate = flag_state;
     }
     
-    if (ioctl(kbd->console_fd, GIO_DEADKEYMAP, kbd->accents) < 0)
-    {
+    if (ioctl(kbd->console_fd, GIO_DEADKEYMAP, kbd->accents) < 0) {
         SDL_free(kbd->accents);
         kbd->accents = &accentmap_default_us_acc;
     }
@@ -265,8 +264,7 @@ SDL_EVDEV_kbd_init(void)
     if (ioctl(kbd->console_fd, KDGKBMODE, &kbd->old_kbd_mode) == 0) {
         /* Set the keyboard in XLATE mode and load the keymaps */
         ioctl(kbd->console_fd, KDSKBMODE, (unsigned long)(K_XLATE));
-        if(!SDL_EVDEV_kbd_load_keymaps(kbd))
-        {
+        if(!SDL_EVDEV_kbd_load_keymaps(kbd)) {
             SDL_free(kbd->key_map);
             kbd->key_map = &keymap_default_us_acc;
         }
@@ -278,8 +276,7 @@ SDL_EVDEV_kbd_init(void)
             ioctl(kbd->console_fd, CONS_RELKBD, 1ul);
             SDL_asprintf(&devicePath, "/dev/kbd%d", kbd->kbInfo->kb_index);
             kbd->keyboard_fd = open(devicePath, O_WRONLY | O_CLOEXEC);
-            if (kbd->keyboard_fd == -1)
-            {
+            if (kbd->keyboard_fd == -1) {
                 // Give keyboard back.
                 ioctl(kbd->console_fd, CONS_SETKBD, (unsigned long)(kbd->kbInfo->kb_index));
                 kbd->keyboard_fd = kbd->console_fd;
@@ -318,8 +315,7 @@ SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
         ioctl(kbd->keyboard_fd, KDSKBMODE, kbd->old_kbd_mode);
 
         close(kbd->keyboard_fd);
-        if (kbd->console_fd != kbd->keyboard_fd && kbd->console_fd >= 0)
-        {
+        if (kbd->console_fd != kbd->keyboard_fd && kbd->console_fd >= 0) {
             // Give back keyboard.
             ioctl(kbd->console_fd, CONS_SETKBD, (unsigned long)(kbd->kbInfo->kb_index));
         }
@@ -384,8 +380,7 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
     kbd->diacr = 0;
 
     for (i = 0; i < kbd->accents->n_accs; i++) {
-        if (kbd->accents->acc[i].accchar == d)
-        {
+        if (kbd->accents->acc[i].accchar == d) {
             for (j = 0; j < NUM_ACCENTCHARS; ++j) {
                     if (kbd->accents->acc[i].map[j][0] == 0) { /* end of table */
                             break;
@@ -501,8 +496,7 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
         if (keycode > 95) {
             keycode -= 7;
         }
-        if (vc_kbd_led(kbd, ALKED) || (kbd->shift_state & 0x8))
-        {
+        if (vc_kbd_led(kbd, ALKED) || (kbd->shift_state & 0x8)) {
             keycode += ALTGR_OFFSET;
         }
         keysym = key_map.key[keycode];

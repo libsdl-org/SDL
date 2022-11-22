@@ -697,8 +697,7 @@ EnumKeyboards(DFBInputDeviceID device_id,
 #endif
         devdata->keyboard[devdata->num_keyboard].id = device_id;
         devdata->keyboard[devdata->num_keyboard].is_generic = 0;
-        if (!SDL_strncmp("X11", desc.name, 3))
-        {
+        if (!SDL_strncmp("X11", desc.name, 3)) {
             devdata->keyboard[devdata->num_keyboard].map = SDL_GetScancodeTable(SDL_SCANCODE_TABLE_XFREE86_2, &devdata->keyboard[devdata->num_keyboard].map_size);
             devdata->keyboard[devdata->num_keyboard].map_adjust = 8;
         } else {

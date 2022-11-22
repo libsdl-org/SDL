@@ -996,8 +996,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusIn!\n", data);
 #endif
-            if (!videodata->last_mode_change_deadline) /* no recent mode changes */
-            {
+            if (!videodata->last_mode_change_deadline) /* no recent mode changes */ {
                 data->pending_focus = PENDING_FOCUS_NONE;
                 data->pending_focus_time = 0;
                 X11_DispatchFocusIn(_this, data);
@@ -1032,8 +1031,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusOut!\n", data);
 #endif
-            if (!videodata->last_mode_change_deadline) /* no recent mode changes */
-            {
+            if (!videodata->last_mode_change_deadline) /* no recent mode changes */ {
                 data->pending_focus = PENDING_FOCUS_NONE;
                 data->pending_focus_time = 0;
                 X11_DispatchFocusOut(_this, data);

@@ -314,8 +314,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
 
         /* Get display mode properties for the chosen display */
         result = vkGetDisplayModePropertiesKHR(physicalDevice, display, &displayModePropertiesCount, NULL);
-        if (result != VK_SUCCESS || displayModePropertiesCount == 0)
-        {
+        if (result != VK_SUCCESS || displayModePropertiesCount == 0) {
             SDL_SetError("Error enumerating display modes");
             goto error;
         }

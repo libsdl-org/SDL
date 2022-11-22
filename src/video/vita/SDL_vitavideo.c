@@ -273,8 +273,7 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
     window->driverdata = wdata;
 
     // Vita can only have one window
-    if (Vita_Window != NULL)
-    {
+    if (Vita_Window != NULL) {
         return SDL_SetError("Only one window supported");
     }
 

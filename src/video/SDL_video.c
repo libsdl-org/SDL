@@ -4809,8 +4809,7 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window *window, unsigned *count, c
     if (window) {
         CHECK_WINDOW_MAGIC(window, SDL_FALSE);
 
-        if (!(window->flags & SDL_WINDOW_VULKAN))
-        {
+        if (!(window->flags & SDL_WINDOW_VULKAN)) {
             SDL_SetError(NOT_A_VULKAN_WINDOW);
             return SDL_FALSE;
         }

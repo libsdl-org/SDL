@@ -37,13 +37,11 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     STARTUPINFO sui = {0};
     sui.cb = sizeof(sui);
 
-    if(file == NULL)
-    {
+    if(file == NULL) {
         SDLTest_LogError("Path to executable to launched cannot be NULL.");
         return 0;
     }
-    if(pinfo == NULL)
-    {
+    if(pinfo == NULL) {
         SDLTest_LogError("pinfo cannot be NULL.");
         return 0;
     }
@@ -51,23 +49,20 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     /* get the working directory of the process being launched, so that
         the process can load any resources it has in it's working directory */
     path_length = SDL_strlen(file);
-    if(path_length == 0)
-    {
+    if(path_length == 0) {
         SDLTest_LogError("Length of the file parameter is zero.");
         return 0;
     }
 
     working_directory = (char*)SDL_malloc(path_length + 1);
-    if(working_directory == NULL)
-    {
+    if(working_directory == NULL) {
         SDLTest_LogError("Could not allocate working_directory - SDL_malloc() failed.");
         return 0;
     }
 
     SDL_memcpy(working_directory, file, path_length + 1);
     PathRemoveFileSpec(working_directory);
-    if(SDL_strlen(working_directory) == 0)
-    {
+    if(SDL_strlen(working_directory) == 0) {
         SDL_free(working_directory);
         working_directory = NULL;
     }
@@ -78,8 +73,7 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     }
     args_length = SDL_strlen(args);
     command_line = (char*)SDL_malloc(path_length + args_length + 2);
-    if(command_line == NULL)
-    {
+    if(command_line == NULL) {
         SDLTest_LogError("Could not allocate command_line - SDL_malloc() failed.");
         return 0;
     }
@@ -91,14 +85,12 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     success = CreateProcess(NULL, command_line, NULL, NULL, FALSE,
                             NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
                             NULL, working_directory, &sui, &pinfo->pi);
-    if(working_directory)
-    {
+    if(working_directory) {
         SDL_free(working_directory);
         working_directory = NULL;
     }
     SDL_free(command_line);
-    if(!success)
-    {
+    if(!success) {
         LogLastError("CreateProcess() failed");
         return 0;
     }
@@ -112,21 +104,18 @@ SDL_GetProcessExitStatus(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
     DWORD exit_status;
     BOOL success;
 
-    if(pinfo == NULL)
-    {
+    if(pinfo == NULL) {
         SDLTest_LogError("pinfo cannot be NULL");
         return 0;
     }
-    if(ps == NULL)
-    {
+    if(ps == NULL) {
         SDLTest_LogError("ps cannot be NULL");
         return 0;
     }
 
     /* get the exit code */
     success = GetExitCodeProcess(pinfo->pi.hProcess, &exit_status);
-    if(!success)
-    {
+    if(!success) {
         LogLastError("GetExitCodeProcess() failed");
         return 0;
     }
@@ -146,15 +135,13 @@ SDL_IsProcessRunning(SDL_ProcessInfo* pinfo)
     DWORD exit_status;
     BOOL success;
 
-    if(pinfo == NULL)
-    {
+    if(pinfo == NULL) {
         SDLTest_LogError("pinfo cannot be NULL");
         return -1;
     }
 
     success = GetExitCodeProcess(pinfo->pi.hProcess, &exit_status);
-    if(!success)
-    {
+    if(!success) {
         LogLastError("GetExitCodeProcess() failed");
         return -1;
     }
@@ -174,14 +161,12 @@ CloseWindowCallback(HWND hwnd, LPARAM lparam)
     pinfo = (SDL_ProcessInfo*)lparam;
 
     GetWindowThreadProcessId(hwnd, &pid);
-    if(pid == pinfo->pi.dwProcessId)
-    {
+    if(pid == pinfo->pi.dwProcessId) {
         DWORD_PTR result;
         if(!SendMessageTimeout(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK,
                                1000, &result))
         {
-            if(GetLastError() != ERROR_TIMEOUT)
-            {
+            if(GetLastError() != ERROR_TIMEOUT) {
                 LogLastError("SendMessageTimeout() failed");
                 return FALSE;
             }
@@ -194,40 +179,34 @@ int
 SDL_QuitProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     DWORD wait_result;
-    if(pinfo == NULL)
-    {
+    if(pinfo == NULL) {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(ps == NULL)
-    {
+    if(ps == NULL) {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
     }
 
     /* enumerate through all the windows, trying to close each one */
-    if(!EnumWindows(CloseWindowCallback, (LPARAM)pinfo))
-    {
+    if(!EnumWindows(CloseWindowCallback, (LPARAM)pinfo)) {
         SDLTest_LogError("EnumWindows() failed");
         return 0;
     }
 
     /* wait until the process terminates */
     wait_result = WaitForSingleObject(pinfo->pi.hProcess, 1000);
-    if(wait_result == WAIT_FAILED)
-    {
+    if(wait_result == WAIT_FAILED) {
         LogLastError("WaitForSingleObject() failed");
         return 0;
     }
-    if(wait_result != WAIT_OBJECT_0)
-    {
+    if(wait_result != WAIT_OBJECT_0) {
         SDLTest_LogError("Process did not quit.");
         return 0;
     }
 
     /* get the exit code */
-    if(!SDL_GetProcessExitStatus(pinfo, ps))
-    {
+    if(!SDL_GetProcessExitStatus(pinfo, ps)) {
         SDLTest_LogError("SDL_GetProcessExitStatus() failed");
         return 0;
     }
@@ -241,37 +220,32 @@ SDL_KillProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
     BOOL success;
     DWORD exit_status, wait_result;
 
-    if(pinfo == NULL)
-    {
+    if(pinfo == NULL) {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(ps == NULL)
-    {
+    if(ps == NULL) {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
     }
 
     /* initiate termination of the process */
     success = TerminateProcess(pinfo->pi.hProcess, 0);
-    if(!success)
-    {
+    if(!success) {
         LogLastError("TerminateProcess() failed");
         return 0;
     }
 
     /* wait until the process terminates */
     wait_result = WaitForSingleObject(pinfo->pi.hProcess, INFINITE);
-    if(wait_result == WAIT_FAILED)
-    {
+    if(wait_result == WAIT_FAILED) {
         LogLastError("WaitForSingleObject() failed");
         return 0;
     }
 
     /* get the exit code */
     success = GetExitCodeProcess(pinfo->pi.hProcess, &exit_status);
-    if(!success)
-    {
+    if(!success) {
         LogLastError("GetExitCodeProcess() failed");
         return 0;
     }

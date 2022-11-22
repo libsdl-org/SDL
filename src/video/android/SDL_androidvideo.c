@@ -283,8 +283,7 @@ void Android_SendResize(SDL_Window *window)
       which can happen after VideoInit().
     */
     SDL_VideoDevice *device = SDL_GetVideoDevice();
-    if (device && device->num_displays > 0)
-    {
+    if (device && device->num_displays > 0) {
         SDL_VideoDisplay *display          = &device->displays[0];
         display->desktop_mode.format       = Android_ScreenFormat;
         display->desktop_mode.w            = Android_DeviceWidth;

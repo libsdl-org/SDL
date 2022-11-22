@@ -461,8 +461,7 @@ int audio_printAudioDrivers()
    SDLTest_AssertCheck(n>=0, "Verify number of audio drivers >= 0, got: %i", n);
 
    /* List drivers. */
-   if (n>0)
-   {
+   if (n>0) {
       for (i=0; i<n; i++) {
          name = SDL_GetAudioDriver(i);
          SDLTest_AssertPass("Call to SDL_GetAudioDriver(%i)", i);

@@ -49,8 +49,7 @@ main(int argc, char *argv[])
     int iteration;
     SDLTest_RandomContext rndctx;
 
-    if (argc > 1)
-    {
+    if (argc > 1) {
         int success;
         Uint64 seed = 0;
         if (argv[1][0] == '0' && argv[1][1] == 'x')

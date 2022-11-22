@@ -265,8 +265,7 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
 
                 dbus->message_iter_init(msg, &iter);
                 has_dec_pos = IBus_GetDecorationPosition(conn, &iter, dbus, &start_pos, &end_pos);
-                if (!has_dec_pos)
-                {
+                if (!has_dec_pos) {
                     dbus->message_iter_init(msg, &iter);
                     has_pos = IBus_GetVariantCursorPos(conn, &iter, dbus, &pos);
                 }

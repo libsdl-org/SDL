@@ -173,8 +173,7 @@ GL_ClearErrors(SDL_Renderer *renderer)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
 
-    if (!data->debug_enabled)
-    {
+    if (!data->debug_enabled) {
         return;
     }
     if (data->GL_ARB_debug_output_supported) {
@@ -201,8 +200,7 @@ GL_CheckAllErrors (const char *prefix, SDL_Renderer *renderer, const char *file,
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
     int ret = 0;
 
-    if (!data->debug_enabled)
-    {
+    if (!data->debug_enabled) {
         return 0;
     }
     if (data->GL_ARB_debug_output_supported) {

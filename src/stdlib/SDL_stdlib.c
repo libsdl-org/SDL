@@ -82,8 +82,7 @@ SDL_acos(double val)
         result = M_PI;
     } else {
         result = SDL_atan(SDL_sqrt(1.0 - val * val) / val);
-        if (result < 0.0)
-        {
+        if (result < 0.0) {
             result += M_PI;
         }
     }

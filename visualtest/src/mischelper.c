@@ -12,8 +12,7 @@ SDLVisualTest_HashString(char* str, char hash[33])
     SDLTest_Md5Context md5c;
     int i;
 
-    if(str == NULL)
-    {
+    if(str == NULL) {
         SDLTest_LogError("str argument cannot be NULL");
         return;
     }

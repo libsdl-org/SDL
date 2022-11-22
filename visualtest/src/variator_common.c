@@ -12,13 +12,11 @@ int
 SDLVisualTest_NextValue(SDLVisualTest_SUTOptionValue* var,
                         SDLVisualTest_SUTOption* opt)
 {
-    if(var == NULL)
-    {
+    if(var == NULL) {
         SDLTest_LogError("var argument cannot be NULL");
         return -1;
     }
-    if(opt == NULL)
-    {
+    if(opt == NULL) {
         SDLTest_LogError("opt argument cannot be NULL");
         return -1;
     }
@@ -26,8 +24,7 @@ SDLVisualTest_NextValue(SDLVisualTest_SUTOptionValue* var,
     switch(opt->type)
     {
         case SDL_SUT_OPTIONTYPE_BOOL:
-            if(var->bool_value)
-            {
+            if(var->bool_value) {
                 var->bool_value = SDL_FALSE;
                 return 1;
             }
@@ -40,8 +37,7 @@ SDLVisualTest_NextValue(SDLVisualTest_SUTOptionValue* var,
 
         case SDL_SUT_OPTIONTYPE_ENUM:
             var->enumerated.index++;
-            if(!opt->data.enum_values[var->enumerated.index])
-            {
+            if(!opt->data.enum_values[var->enumerated.index]) {
                 var->enumerated.index = 0;
                 return 1;
             }
@@ -57,8 +53,7 @@ SDLVisualTest_NextValue(SDLVisualTest_SUTOptionValue* var,
                 increment = 1;
             }
             var->integer.value += increment;
-            if(var->integer.value > opt->data.range.max)
-            {
+            if(var->integer.value > opt->data.range.max) {
                 var->integer.value = opt->data.range.min;
                 return 1;
             }
@@ -81,23 +76,19 @@ SDLVisualTest_MakeStrFromVariation(SDLVisualTest_Variation* variation,
     int i, index;
     SDLVisualTest_SUTOptionValue* vars;
     SDLVisualTest_SUTOption* options;
-    if(variation == NULL)
-    {
+    if(variation == NULL) {
         SDLTest_LogError("variation argument cannot be NULL");
         return 0;
     }
-    if(config == NULL)
-    {
+    if(config == NULL) {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
     }
-    if(buffer == NULL)
-    {
+    if(buffer == NULL) {
         SDLTest_LogError("buffer argument cannot be NULL");
         return 0;
     }
-    if(size <= 0)
-    {
+    if(size <= 0) {
         SDLTest_LogError("size argument should be positive");
         return 0;
     }
@@ -109,20 +100,17 @@ SDLVisualTest_MakeStrFromVariation(SDLVisualTest_Variation* variation,
     for(i = 0; i < variation->num_vars; i++)
     {
         int n, enum_index;
-        if(index >= size - 1)
-        {
+        if(index >= size - 1) {
             SDLTest_LogError("String did not fit in buffer size");
             return 0;
         }
         switch(options[i].type)
         {
             case SDL_SUT_OPTIONTYPE_BOOL:
-                if(vars[i].bool_value)
-                {
+                if(vars[i].bool_value) {
                     n = SDL_snprintf(buffer + index, size - index, "%s ",
                                      options[i].name);
-                    if(n <= 0)
-                    {
+                    if(n <= 0) {
                         SDLTest_LogError("SDL_snprintf() failed");
                         return 0;
                     }
@@ -131,8 +119,7 @@ SDLVisualTest_MakeStrFromVariation(SDLVisualTest_Variation* variation,
             break;
 
             case SDL_SUT_OPTIONTYPE_ENUM:
-                if(vars[i].enumerated.on)
-                {
+                if(vars[i].enumerated.on) {
                     enum_index = vars[i].enumerated.index;
                     n = SDL_snprintf(buffer + index, size - index, "%s %s ",
                         options[i].name, options[i].data.enum_values[enum_index]);
@@ -141,8 +128,7 @@ SDLVisualTest_MakeStrFromVariation(SDLVisualTest_Variation* variation,
             break;
 
             case SDL_SUT_OPTIONTYPE_INT:
-                if(vars[i].integer.on)
-                {
+                if(vars[i].integer.on) {
                     n = SDL_snprintf(buffer + index, size - index, "%s %d ",
                                      options[i].name, vars[i].integer.value);
                     index += n;
@@ -150,8 +136,7 @@ SDLVisualTest_MakeStrFromVariation(SDLVisualTest_Variation* variation,
             break;
 
             case SDL_SUT_OPTIONTYPE_STRING:
-                if(vars[i].string.on)
-                {
+                if(vars[i].string.on) {
                     n = SDL_snprintf(buffer + index, size - index, "%s %s ",
                                      options[i].name, vars[i].string.value);
                     index += n;
@@ -169,27 +154,23 @@ SDLVisualTest_InitVariation(SDLVisualTest_Variation* variation,
     int i;
     SDLVisualTest_SUTOptionValue* vars;
     SDLVisualTest_SUTOption* options;
-    if(variation == NULL)
-    {
+    if(variation == NULL) {
         SDLTest_LogError("variation argument cannot be NULL");
         return 0;
     }
-    if(config == NULL)
-    {
+    if(config == NULL) {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
     }
 
     /* initialize the first variation */
-    if(config->num_options <= 0)
-    {
+    if(config->num_options <= 0) {
         SDLTest_LogError("config->num_options must be positive");
         return 0;
     }
     variation->vars = (SDLVisualTest_SUTOptionValue*)SDL_malloc(config->num_options *
                      sizeof(SDLVisualTest_SUTOptionValue));
-    if(!variation->vars)
-    {
+    if(!variation->vars) {
         SDLTest_LogError("SDL_malloc() failed");
         return 0;
     }

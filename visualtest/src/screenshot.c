@@ -20,20 +20,17 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
 
     return_code = 1;
 
-    if(args == NULL)
-    {
+    if(args == NULL) {
         SDLTest_LogError("args argument cannot be NULL");
         return_code = -1;
         goto verifyscreenshots_cleanup_generic;
     }
-    if(test_dir == NULL)
-    {
+    if(test_dir == NULL) {
         SDLTest_LogError("test_dir argument cannot be NULL");
         return_code = -1;
         goto verifyscreenshots_cleanup_generic;
     }
-    if(verify_dir == NULL)
-    {
+    if(verify_dir == NULL) {
         SDLTest_LogError("verify_dir argument cannot be NULL");
         return_code = -1;
         goto verifyscreenshots_cleanup_generic;
@@ -46,8 +43,7 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
     /* path_len + hash_len + some number of extra characters */
     verify_len = SDL_strlen(verify_dir) + 32 + 10;
     verify_path = (char*)SDL_malloc(verify_len * sizeof(char));
-    if(verify_path == NULL)
-    {
+    if(verify_path == NULL) {
         SDLTest_LogError("SDL_malloc() failed");
         return_code = -1;
         goto verifyscreenshots_cleanup_generic;
@@ -55,8 +51,7 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
     SDL_snprintf(verify_path, verify_len - 1,
                  "%s/%s.bmp", verify_dir, hash);
     rw = SDL_RWFromFile(verify_path, "rb");
-    if(rw == NULL)
-    {
+    if(rw == NULL) {
         SDLTest_Log("Verification image does not exist."
                     " Please manually verify that the SUT is working correctly.");
         return_code = 2;
@@ -65,8 +60,7 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
 
     /* load the verification image */
     verifybmp = SDL_LoadBMP_RW(rw, 1);
-    if(verifybmp == NULL)
-    {
+    if(verifybmp == NULL) {
         SDLTest_LogError("SDL_LoadBMP_RW() failed");
         return_code = -1;
         goto verifyscreenshots_cleanup_verifypath;
@@ -76,8 +70,7 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
     /* path_len + hash_len + some number of extra characters */
     test_len = SDL_strlen(test_dir) + 32 + 10;
     test_path = (char*)SDL_malloc(test_len * sizeof(char));
-    if(test_path == NULL)
-    {
+    if(test_path == NULL) {
         SDLTest_LogError("SDL_malloc() failed");
         return_code = -1;
         goto verifyscreenshots_cleanup_verifybmp;
@@ -102,16 +95,14 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
 
         /* load the test screenshot */
         testbmp = SDL_LoadBMP_RW(testrw, 1);
-        if(testbmp == NULL)
-        {
+        if(testbmp == NULL) {
             SDLTest_LogError("SDL_LoadBMP_RW() failed");
             return_code = -1;
             goto verifyscreenshots_cleanup_verifybmp;
         }
 
         /* compare with the verification image */
-        if(SDLTest_CompareSurfaces(testbmp, verifybmp, 0) != 0)
-        {
+        if(SDLTest_CompareSurfaces(testbmp, verifybmp, 0) != 0) {
             return_code = 0;
             SDL_FreeSurface(testbmp);
             goto verifyscreenshots_cleanup_verifybmp;
@@ -120,8 +111,7 @@ SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir)
         SDL_FreeSurface(testbmp);
     }
 
-    if(i == 1)
-    {
+    if(i == 1) {
         SDLTest_LogError("No verification images found");
         return_code = -1;
     }

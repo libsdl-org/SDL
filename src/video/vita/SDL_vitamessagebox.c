@@ -43,8 +43,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SceCommonDialogErrorCode init_result;
     SDL_bool setup_minimal_gxm = SDL_FALSE;
 
-    if (messageboxdata->numbuttons > 3)
-    {
+    if (messageboxdata->numbuttons > 3) {
         return -1;
     }
 
@@ -58,8 +57,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     msgParam.msg = (const SceChar8*)message;
     SDL_zero(buttonParam);
 
-    if (messageboxdata->numbuttons == 3)
-    {
+    if (messageboxdata->numbuttons == 3) {
         msgParam.buttonType = SCE_MSG_DIALOG_BUTTON_TYPE_3BUTTONS;
         msgParam.buttonParam = &buttonParam;
         buttonParam.msg1 = messageboxdata->buttons[0].text;
@@ -81,8 +79,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     init_result = sceMsgDialogInit(&param);
 
     // Setup display if it hasn't been initialized before
-    if (init_result == SCE_COMMON_DIALOG_ERROR_GXM_IS_UNINITIALIZED)
-    {
+    if (init_result == SCE_COMMON_DIALOG_ERROR_GXM_IS_UNINITIALIZED) {
         gxm_minimal_init_for_common_dialog();
         init_result = sceMsgDialogInit(&param);
         setup_minimal_gxm = SDL_TRUE;
@@ -90,8 +87,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     gxm_init_for_common_dialog();
 
-    if (init_result >= 0)
-    {
+    if (init_result >= 0) {
         while (sceMsgDialogGetStatus() == SCE_COMMON_DIALOG_STATUS_RUNNING)
         {
             gxm_swap_for_common_dialog();
@@ -99,8 +95,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         SDL_zero(dialog_result);
         sceMsgDialogGetResult(&dialog_result);
 
-        if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON1)
-        {
+        if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON1) {
             *buttonid = messageboxdata->buttons[0].buttonid;
         }
         else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON2)
@@ -132,8 +127,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     gxm_term_for_common_dialog();
 
-    if (setup_minimal_gxm)
-    {
+    if (setup_minimal_gxm) {
         gxm_minimal_term_for_common_dialog();
     }
 

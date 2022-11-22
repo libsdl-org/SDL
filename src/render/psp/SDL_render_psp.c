@@ -552,8 +552,7 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         psp_texture->data = SDL_calloc(1, psp_texture->size);
     }
 
-    if(!psp_texture->data)
-    {
+    if(!psp_texture->data) {
         SDL_free(psp_texture);
         return SDL_OutOfMemory();
     }
@@ -577,8 +576,7 @@ TextureActivate(SDL_Texture * texture)
     int scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GU_NEAREST : GU_LINEAR;
 
     /* Swizzling is useless with small textures. */
-    if (TextureShouldSwizzle(psp_texture, texture))
-    {
+    if (TextureShouldSwizzle(psp_texture, texture)) {
         TextureSwizzle(psp_texture, NULL);
     }
 
@@ -814,8 +812,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
     const float u1 = srcrect->x + srcrect->w;
     const float v1 = srcrect->y + srcrect->h;
 
-    if((MathAbs(u1) - MathAbs(u0)) < 64.0f)
-    {
+    if((MathAbs(u1) - MathAbs(u0)) < 64.0f) {
         verts = (VertTV *) SDL_AllocateRenderVertices(renderer, 2 * sizeof (VertTV), 4, &cmd->data.draw.first);
         if (verts == NULL) {
             return -1;

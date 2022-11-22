@@ -87,8 +87,7 @@ LoadFont(_THIS, SDL_Window * window)
         SDL_DFB_CHECK(windata->window_surface->SetFont(windata->window_surface, windata->font));
     }
 
-    if (windata->theme.font != NULL)
-    {
+    if (windata->theme.font != NULL) {
         DFBFontDescription fdesc;
 
         SDL_zero(fdesc);

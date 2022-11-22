@@ -66,8 +66,7 @@ double floor(double x)
 	    }	/* x is integral */
 	    if(huge+x>0.0) { 		/* raise inexact flag */
 		if(i0<0) {
-		    if(j0==20) i0+=1;
-		    else {
+		    if(j0==20) i0+=1; else {
 			j = i1+(1<<(52-j0));
 			if (j < (u_int32_t)i1) {
 			    i0 += 1;

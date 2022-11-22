@@ -389,8 +389,7 @@ static void findPhysicalDevice(void)
             continue;
         }
         result = vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &deviceExtensionCount, NULL);
-        if (result != VK_SUCCESS)
-        {
+        if (result != VK_SUCCESS) {
             SDL_free(physicalDevices);
             SDL_free(queueFamiliesProperties);
             SDL_free(deviceExtensions);

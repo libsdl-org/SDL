@@ -181,8 +181,7 @@ static int OS2_JoystickInit(void)
 	ulDataLen = sizeof(stGameParms);
 	rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_GET_PARMS,
 			 NULL, 0, NULL, &stGameParms, ulDataLen, &ulDataLen); /* Ask device info */
-	if (rc != 0)
-	{
+	if (rc != 0) {
 		joyPortClose(&hJoyPort);
 		return SDL_SetError("Could not read joystick port.");
 	}
@@ -201,8 +200,7 @@ static int OS2_JoystickInit(void)
 	ulDataLen = sizeof(stGameCalib);
 	rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_GET_CALIB,
 			 NULL, 0, NULL, &stGameCalib, ulDataLen, &ulDataLen);
-	if (rc != 0)
-	{
+	if (rc != 0) {
 		joyPortClose(&hJoyPort);
 		return SDL_SetError("Could not read callibration data.");
 	}
@@ -213,13 +211,11 @@ static int OS2_JoystickInit(void)
 	ulDataLen = sizeof(ucNewJoystickMask);
 	rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_PORT_RESET,
 			 &ucNewJoystickMask, ulDataLen, &ulDataLen, NULL, 0, NULL);
-	if (rc == 0)
-	{
+	if (rc == 0) {
 		ulDataLen = sizeof(stJoyStatus);
 		rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_PORT_GET,
 				 NULL, 0, NULL, &stJoyStatus, ulDataLen, &ulDataLen);
-		if (rc != 0)
-		{
+		if (rc != 0) {
 			joyPortClose(&hJoyPort);
 			return SDL_SetError("Could not call joystick port.");
 		}
@@ -242,11 +238,9 @@ static int OS2_JoystickInit(void)
 	}
 
 	/* If *any* joystick was detected... Let's configure SDL for them */
-	if (numdevs > 0)
-	{
+	if (numdevs > 0) {
 		/* Verify if it is a "user defined" joystick */
-		if (joyGetEnv(&joycfg))
-		{
+		if (joyGetEnv(&joycfg)) {
 			GAME_3POS_STRUCT * axis[4];
 			axis[0] = &stGameCalib.Ax;
 			axis[1] = &stGameCalib.Ay;
@@ -315,8 +309,7 @@ static int OS2_JoystickInit(void)
 		else
 		{
 			/* if two devices were detected... configure as Joy1 4 axis and Joy2 2 axis */
-			if (numdevs == 2)
-			{
+			if (numdevs == 2) {
 				/* Define Device 0 as 4 axes, 4 buttons */
 				SYS_JoyData[0].id=0;
 				SYS_JoyData[0].axes = 4;
@@ -352,8 +345,7 @@ static int OS2_JoystickInit(void)
 			else
 			{
 				/* If it is joystick A... */
-				if ((stJoyStatus.ucJs_JoyStickMask & 0x03) > 0)
-				{
+				if ((stJoyStatus.ucJs_JoyStickMask & 0x03) > 0) {
 					/* Define Device 0 as 2 axes, 4 buttons */
 					SYS_JoyData[0].id=0;
 					SYS_JoyData[0].axes = 2;
@@ -457,8 +449,7 @@ static int OS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
 	/* allocate memory for system specific hardware data */
 	joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
-	if (!joystick->hwdata)
-	{
+	if (!joystick->hwdata) {
 		return SDL_OutOfMemory();
 	}
 
@@ -470,8 +461,7 @@ static int OS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 	joystick->hwdata->id = SYS_JoyData[index].id;
 	for (i = 0; i < MAX_AXES; ++i)
 	{
-		if ((i < 2) || i < SYS_JoyData[index].axes)
-		{
+		if ((i < 2) || i < SYS_JoyData[index].axes) {
 			joystick->hwdata->transaxes[i].offset = ((SDL_JOYSTICK_AXIS_MAX + SDL_JOYSTICK_AXIS_MIN)>>1) - SYS_JoyData[index].axes_med[i];
 			joystick->hwdata->transaxes[i].scale1 = (float)SDL_abs((SDL_JOYSTICK_AXIS_MIN/SYS_JoyData[index].axes_min[i]));
 			joystick->hwdata->transaxes[i].scale2 = (float)SDL_abs((SDL_JOYSTICK_AXIS_MAX/SYS_JoyData[index].axes_max[i]));
@@ -549,8 +539,7 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 	ulDataLen = sizeof(stGameStatus);
 	rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_GET_STATUS,
 			 NULL, 0, NULL, &stGameStatus, ulDataLen, &ulDataLen);
-	if (rc != 0)
-	{
+	if (rc != 0) {
 		SDL_SetError("Could not read joystick status.");
 		return; /* Could not read data */
 	}
@@ -560,8 +549,7 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 
 	/* joystick motion events */
 
-	if (SYS_JoyData[index].id == 0)
-	{
+	if (SYS_JoyData[index].id == 0) {
 		pos[0] = stGameStatus.curdata.A.x;
 		pos[1] = stGameStatus.curdata.A.y;
 		if (SYS_JoyData[index].axes >= 3) pos[2] = stGameStatus.curdata.B.x;
@@ -583,8 +571,7 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 	for (i = 0; i < joystick->naxes; i++)
 	{
 		value = pos[i] + transaxes[i].offset;
-		if (value < 0)
-		{
+		if (value < 0) {
 			value *= transaxes[i].scale1;
 			if (value > 0) {
 				value = SDL_JOYSTICK_AXIS_MIN;
@@ -615,8 +602,7 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 		Button C: 1011 0000
 		Button D: 0111 0000
 		*/
-		if ((~stGameStatus.curdata.butMask)>>4 & JOY_BUTTON_FLAG(i))
-		{
+		if ((~stGameStatus.curdata.butMask)>>4 & JOY_BUTTON_FLAG(i)) {
 			SDL_PrivateJoystickButton(joystick, (Uint8)(i-corr), SDL_PRESSED);
 		}
 		else
@@ -632,23 +618,19 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 	Button G: Axis 2 X Right
 	Button H: Axis 2 Y Down
 	*/
-	if (joystick->nbuttons >= 5)
-	{
+	if (joystick->nbuttons >= 5) {
 		if (stGameStatus.curdata.B.x < SYS_JoyData[index].buttoncalc[0]) SDL_PrivateJoystickButton(joystick, (Uint8)4, SDL_PRESSED);
 		else SDL_PrivateJoystickButton(joystick, (Uint8)4, SDL_RELEASED);
 	}
-	if (joystick->nbuttons >= 6)
-	{
+	if (joystick->nbuttons >= 6) {
 		if (stGameStatus.curdata.B.y < SYS_JoyData[index].buttoncalc[1]) SDL_PrivateJoystickButton(joystick, (Uint8)5, SDL_PRESSED);
 		else SDL_PrivateJoystickButton(joystick, (Uint8)5, SDL_RELEASED);
 	}
-	if (joystick->nbuttons >= 7)
-	{
+	if (joystick->nbuttons >= 7) {
 		if (stGameStatus.curdata.B.x > SYS_JoyData[index].buttoncalc[2]) SDL_PrivateJoystickButton(joystick, (Uint8)6, SDL_PRESSED);
 		else SDL_PrivateJoystickButton(joystick, (Uint8)6, SDL_RELEASED);
 	}
-	if (joystick->nbuttons >= 8)
-	{
+	if (joystick->nbuttons >= 8) {
 		if (stGameStatus.curdata.B.y > SYS_JoyData[index].buttoncalc[3]) SDL_PrivateJoystickButton(joystick, (Uint8)7, SDL_PRESSED);
 		else SDL_PrivateJoystickButton(joystick, (Uint8)7, SDL_RELEASED);
 	}
@@ -704,8 +686,7 @@ static int joyPortOpen(HFILE * hGame)
 	/* Open GAME$ for read */
 	rc = DosOpen("GAME$   ", hGame, &ulAction, 0, FILE_READONLY,
 		     FILE_OPEN, OPEN_ACCESS_READONLY | OPEN_SHARE_DENYNONE, NULL);
-	if (rc != 0)
-	{
+	if (rc != 0) {
 		return SDL_SetError("Could not open Joystick Port.");
 	}
 
@@ -714,13 +695,11 @@ static int joyPortOpen(HFILE * hGame)
 	ulDataLen = sizeof(ulVersion);
 	rc = DosDevIOCtl(*hGame, IOCTL_CAT_USER, GAME_GET_VERSION,
 			 NULL, 0, NULL, &ulVersion, ulDataLen, &ulDataLen);
-	if (rc != 0)
-	{
+	if (rc != 0) {
 		joyPortClose(hGame);
 		return SDL_SetError("Could not get Joystick Driver version.");
 	}
-	if (ulVersion < 0x20)
-	{
+	if (ulVersion < 0x20) {
 		joyPortClose(hGame);
 		return SDL_SetError("Driver too old. At least IBM driver version 2.0 required.");
 	}
@@ -816,16 +795,14 @@ static int joyGetData(const char *joyenv, char *name, char stopchar, size_t maxc
 	nameptr = name;
 	while (*joyenv!=stopchar && *joyenv!=0)
 	{
-		if (nameptr < (name + (maxchars-1)))
-		{
+		if (nameptr < (name + (maxchars-1))) {
 			*nameptr = *joyenv; /* Only copy if smaller than maximum */
 			nameptr++;
 		}
 		chcnt++;
 		joyenv++;
 	}
-	if (*joyenv == stopchar)
-	{
+	if (*joyenv == stopchar) {
 		joyenv++; /* Jump stopchar */
 		chcnt++;
 	}

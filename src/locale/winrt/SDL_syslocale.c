@@ -40,8 +40,7 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     ret = GetSystemDefaultLocaleName(wbuffer, SDL_arraysize(wbuffer));
 # endif
 
-    if (ret > 0)
-    {
+    if (ret > 0) {
         /* Need to convert LPWSTR to LPSTR, that is wide char to char. */
         int i;
 

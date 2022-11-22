@@ -410,8 +410,7 @@ void loop()
     matrix_mvp[1][1] = -2.0f / 480.0;
     matrix_mvp[3][1] = 1.0f;
     
-    if (0)
-    {
+    if (0) {
         float *f = (float *) matrix_mvp;
         SDL_Log("-----------------------------------");
         SDL_Log("[ %f, %f, %f, %f ]", *f++, *f++, *f++, *f++);

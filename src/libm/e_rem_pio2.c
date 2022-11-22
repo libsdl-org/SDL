@@ -75,8 +75,7 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 
 	GET_HIGH_WORD(hx,x);		/* high word of x */
 	ix = hx&0x7fffffff;
-	if(ix<=0x3fe921fb)   /* |x| ~<= pi/4 , no need for reduction */
-	    {y[0] = x; y[1] = 0; return 0;}
+	if(ix<=0x3fe921fb)   /* |x| ~<= pi/4 , no need for reduction */ {y[0] = x; y[1] = 0; return 0;}
 	if(ix<0x4002d97c) {  /* |x| < 3pi/4, special case with n=+-1 */
 	    if(hx>0) {
 		z = x - pio2_1;

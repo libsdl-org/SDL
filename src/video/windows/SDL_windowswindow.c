@@ -842,8 +842,7 @@ WIN_RaiseWindow(_THIS, SDL_Window * window)
     DWORD dwCurID = 0u;
 
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-    if(bForce)
-    {
+    if(bForce) {
         hCurWnd = GetForegroundWindow();
         dwMyID = GetCurrentThreadId();
         dwCurID = GetWindowThreadProcessId(hCurWnd, NULL);
@@ -853,8 +852,7 @@ WIN_RaiseWindow(_THIS, SDL_Window * window)
         SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
     }
     SetForegroundWindow(hwnd);
-    if (bForce)
-    {
+    if (bForce) {
         AttachThreadInput(dwCurID, dwMyID, FALSE);
         SetFocus(hwnd);
         SetActiveWindow(hwnd);

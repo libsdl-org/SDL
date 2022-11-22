@@ -404,8 +404,7 @@ D3D12_CPUtoGPUHandle(ID3D12DescriptorHeap * heap, D3D12_CPU_DESCRIPTOR_HANDLE CP
 static void
 D3D12_WaitForGPU(D3D12_RenderData * data)
 {
-    if (data->commandQueue && data->fence && data->fenceEvent)
-    {
+    if (data->commandQueue && data->fence && data->fenceEvent) {
         D3D_CALL(data->commandQueue, Signal, data->fence, data->fenceValue);
         if (D3D_CALL(data->fence, GetCompletedValue) < data->fenceValue) {
             D3D_CALL(data->fence, SetEventOnCompletion,

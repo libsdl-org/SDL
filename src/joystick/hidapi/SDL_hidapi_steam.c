@@ -238,21 +238,18 @@ static void InitializeSteamControllerPacketAssembler( SteamControllerPacketAssem
 //     Complete packet size on completion
 static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAssembler *pAssembler, const uint8_t *pSegment, int nSegmentLength )
 {
-    if ( pAssembler->bIsBle )
-    {
+    if ( pAssembler->bIsBle ) {
         uint8_t uSegmentHeader = pSegment[ 1 ];
         int nSegmentNumber = uSegmentHeader & 0x07;
 
         HEXDUMP( pSegment, nSegmentLength );
 
-        if ( pSegment[ 0 ] != BLE_REPORT_NUMBER )
-        {
+        if ( pSegment[ 0 ] != BLE_REPORT_NUMBER ) {
             // We may get keyboard/mouse input events until controller stops sending them
             return 0;
         }
         
-        if ( nSegmentLength != MAX_REPORT_SEGMENT_SIZE )
-        {
+        if ( nSegmentLength != MAX_REPORT_SEGMENT_SIZE ) {
             printf( "Bad segment size! %d\n", (int)nSegmentLength );
             hexdump( pSegment, nSegmentLength );
             ResetSteamControllerPacketAssembler( pAssembler );
@@ -261,18 +258,15 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
         
         DPRINTF("GOT PACKET HEADER = 0x%x\n", uSegmentHeader);
         
-        if ( ( uSegmentHeader & REPORT_SEGMENT_DATA_FLAG ) == 0 )
-        {
+        if ( ( uSegmentHeader & REPORT_SEGMENT_DATA_FLAG ) == 0 ) {
             // We get empty segments, just ignore them
             return 0;
         }
         
-        if ( nSegmentNumber != pAssembler->nExpectedSegmentNumber )
-        {
+        if ( nSegmentNumber != pAssembler->nExpectedSegmentNumber ) {
             ResetSteamControllerPacketAssembler( pAssembler );
             
-            if ( nSegmentNumber )
-            {
+            if ( nSegmentNumber ) {
                 // This happens occasionally
                 DPRINTF("Bad segment number, got %d, expected %d\n",
                     nSegmentNumber, pAssembler->nExpectedSegmentNumber );
@@ -284,8 +278,7 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
                pSegment + 2, // ignore header and report number
                MAX_REPORT_SEGMENT_PAYLOAD_SIZE );
         
-        if ( uSegmentHeader & REPORT_SEGMENT_LAST_FLAG )
-        {
+        if ( uSegmentHeader & REPORT_SEGMENT_LAST_FLAG ) {
             pAssembler->nExpectedSegmentNumber = 0;
             return ( nSegmentNumber + 1 ) * MAX_REPORT_SEGMENT_PAYLOAD_SIZE;
         }
@@ -313,8 +306,7 @@ static int SetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65], int
     
     DPRINTF("SetFeatureReport %p %p %d\n", dev, uBuffer, nActualDataLen);
 
-    if ( bBle )
-    {
+    if ( bBle ) {
         int nSegmentNumber = 0;
         uint8_t uPacketBuffer[ MAX_REPORT_SEGMENT_SIZE ];
         unsigned char *pBufferPtr = uBuffer + 1;
@@ -356,8 +348,7 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
 
     DPRINTF("GetFeatureReport( %p %p )\n", dev, uBuffer );
 
-    if ( bBle )
-    {
+    if ( bBle ) {
         int nRetries = 0;
         uint8_t uSegmentBuffer[ MAX_REPORT_SEGMENT_SIZE + 1 ];
         uint8_t ucBytesToRead = MAX_REPORT_SEGMENT_SIZE;
@@ -389,14 +380,12 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
             else
                 nRetries++;
 
-            if ( nRet > 0 )
-            {
+            if ( nRet > 0 ) {
                 int nPacketLength = WriteSegmentToSteamControllerPacketAssembler( &assembler,
                                                                                  uSegmentBuffer + ucDataStartOffset,
                                                                                  nRet - ucDataStartOffset );
                 
-                if ( nPacketLength > 0 && nPacketLength < 65 )
-                {
+                if ( nPacketLength > 0 && nPacketLength < 65 ) {
                     // Leave space for "report number"
                     uBuffer[ 0 ] = 0;
                     SDL_memcpy( uBuffer + 1, assembler.uBuffer, nPacketLength );
@@ -452,8 +441,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     buf[0] = 0;
     buf[1] = ID_GET_ATTRIBUTES_VALUES;
     res = SetFeatureReport( dev, buf, 2 );
-    if ( res < 0 )
-    {
+    if ( res < 0 ) {
         if (!bSuppressErrorSpew) {
             printf("GET_ATTRIBUTES_VALUES failed for controller %p\n", dev);
         }
@@ -463,8 +451,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     // Retrieve GET_ATTRIBUTES_VALUES result
     // Wireless controller endpoints without a connected controller will return nAttrs == 0
     res = ReadResponse( dev, buf, ID_GET_ATTRIBUTES_VALUES );
-    if ( res < 0 || buf[1] != ID_GET_ATTRIBUTES_VALUES )
-    {
+    if ( res < 0 || buf[1] != ID_GET_ATTRIBUTES_VALUES ) {
         HEXDUMP(buf, res);
         if (!bSuppressErrorSpew) {
             printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
@@ -473,8 +460,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     }
     
     nAttributesLength = buf[ 2 ];
-    if ( nAttributesLength > res )
-    {
+    if ( nAttributesLength > res ) {
         if (!bSuppressErrorSpew) {
             printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
         }
@@ -502,8 +488,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
             break;
         }
     }
-    if ( punUpdateRateUS )
-    {
+    if ( punUpdateRateUS ) {
         *punUpdateRateUS = unUpdateRateUS;
     }
 
@@ -511,8 +496,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     buf[0] = 0;
     buf[1] = ID_CLEAR_DIGITAL_MAPPINGS;
     res = SetFeatureReport( dev, buf, 2 );
-    if ( res < 0 )
-    {
+    if ( res < 0 ) {
         if (!bSuppressErrorSpew) {
             printf("CLEAR_DIGITAL_MAPPINGS failed for controller %p\n", dev);
         }
@@ -524,8 +508,7 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
     buf[1] = ID_LOAD_DEFAULT_SETTINGS;
     buf[2] = 0;
     res = SetFeatureReport( dev, buf, 3 );
-    if ( res < 0 )
-    {
+    if ( res < 0 ) {
         if (!bSuppressErrorSpew) {
             printf("LOAD_DEFAULT_SETTINGS failed for controller %p\n", dev);
         }
@@ -555,8 +538,7 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
     buf[2] = nSettings*3;
     
     res = SetFeatureReport( dev, buf, 3+nSettings*3 );
-    if ( res < 0 )
-    {
+    if ( res < 0 ) {
         if (!bSuppressErrorSpew) {
             printf("SET_SETTINGS failed for controller %p\n", dev);
         }
@@ -574,30 +556,26 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
         buf[2] = 1; // one byte - requesting from index 0
         buf[3] = 0;
         res = SetFeatureReport( dev, buf, 4 );
-        if ( res < 0 )
-        {
+        if ( res < 0 ) {
             printf( "GET_DIGITAL_MAPPINGS failed for controller %p\n", dev );
             return false;
         }
         
         res = ReadResponse( dev, buf, ID_GET_DIGITAL_MAPPINGS );
-        if ( res < 0 || buf[1] != ID_GET_DIGITAL_MAPPINGS )
-        {
+        if ( res < 0 || buf[1] != ID_GET_DIGITAL_MAPPINGS ) {
             printf( "Bad GET_DIGITAL_MAPPINGS response for controller %p\n", dev );
             return false;
         }
         
         // If the length of the digital mappings result is not 1 (index byte, no mappings) then clearing hasn't executed
-        if ( buf[2] == 1 && buf[3] == 0xFF )
-        {
+        if ( buf[2] == 1 && buf[3] == 0xFF ) {
             bMappingsCleared = true;
             break;
         }
         usleep( CONTROLLER_CONFIGURATION_DELAY_US );
     }
     
-    if ( !bMappingsCleared && !bSuppressErrorSpew )
-    {
+    if ( !bMappingsCleared && !bSuppressErrorSpew ) {
         printf( "Warning: CLEAR_DIGITAL_MAPPINGS never completed for controller %p\n", dev );
     }
     
@@ -613,8 +591,7 @@ buf[3+nSettings*3+2] = ((uint16_t)VALUE)>>8; \
     buf[8] = MOUSE_BTN_RIGHT;
     
     res = SetFeatureReport( dev, buf, 9 );
-    if ( res < 0 )
-    {
+    if ( res < 0 ) {
         if (!bSuppressErrorSpew) {
             printf("SET_DIGITAL_MAPPINGS failed for controller %p\n", dev);
         }
@@ -671,8 +648,7 @@ static void CloseSteamController( SDL_hid_device *dev )
 //---------------------------------------------------------------------------
 static float RemapValClamped( float val, float A, float B, float C, float D)
 {
-    if ( A == B )
-    {
+    if ( A == B ) {
         return ( val - B ) >= 0.0f ? D : C;
     }
     else
@@ -729,14 +705,12 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
     pState->ulButtons &= ~0xFFFF000000LL;
 
     // The firmware uses this bit to tell us what kind of data is packed into the left two axises
-    if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK)
-    {
+    if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) {
         // Finger-down bit not set; "left pad" is actually trackpad
         pState->sLeftPadX = pState->sPrevLeftPad[0] = pStatePacket->sLeftPadX;
         pState->sLeftPadY = pState->sPrevLeftPad[1] = pStatePacket->sLeftPadY;
 
-        if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_AND_JOYSTICK_MASK)
-        {
+        if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_AND_JOYSTICK_MASK) {
             // The controller is interleaving both stick and pad data, both are active
             pState->sLeftStickX = pState->sPrevLeftStick[0];
             pState->sLeftStickY = pState->sPrevLeftStick[1];
@@ -755,8 +729,7 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
         // XXX there's a firmware bug where sometimes padX is 0 and padY is a large number (acutally the battery voltage)
         // If that happens skip this packet and report last frames stick
 /*
-        if ( m_eControllerType == k_eControllerType_SteamControllerV2 && pStatePacket->sLeftPadY > 900 )
-        {
+        if ( m_eControllerType == k_eControllerType_SteamControllerV2 && pStatePacket->sLeftPadY > 900 ) {
             pState->sLeftStickX = pState->sPrevLeftStick[0];
             pState->sLeftStickY = pState->sPrevLeftStick[1];
         }
@@ -767,14 +740,12 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
             pState->sPrevLeftStick[1] = pState->sLeftStickY = pStatePacket->sLeftPadY;
         }
 /*
-        if (m_eControllerType == k_eControllerType_SteamControllerV2)
-        {
+        if (m_eControllerType == k_eControllerType_SteamControllerV2) {
             UpdateV2JoystickCap(&state);
         }
 */
 
-        if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_AND_JOYSTICK_MASK)
-        {
+        if (pStatePacket->ButtonTriggerData.ulButtons & STEAM_LEFTPAD_AND_JOYSTICK_MASK) {
             // The controller is interleaving both stick and pad data, both are active
             pState->sLeftPadX = pState->sPrevLeftPad[0];
             pState->sLeftPadY = pState->sPrevLeftPad[1];
@@ -786,8 +757,7 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
             pState->sPrevLeftPad[1] = 0;
 
             // Old controllers send trackpad click for joystick button when trackpad is not active
-            if (pState->ulButtons & STEAM_BUTTON_LEFTPAD_CLICKED_MASK)
-            {
+            if (pState->ulButtons & STEAM_BUTTON_LEFTPAD_CLICKED_MASK) {
                 pState->ulButtons &= ~STEAM_BUTTON_LEFTPAD_CLICKED_MASK;
                 pState->ulButtons |= STEAM_JOYSTICK_BUTTON_MASK;
             }
@@ -844,35 +814,30 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
     pState->unPacketNum++;
     ucOptionDataMask = ( *pData++ & 0xF0 );
     ucOptionDataMask |= (uint32_t)(*pData++) << 8;
-    if ( ucOptionDataMask & k_EBLEButtonChunk1 )
-    {
+    if ( ucOptionDataMask & k_EBLEButtonChunk1 ) {
         SDL_memcpy( &pState->ulButtons, pData, 3 );
         pData += 3;
     }
-    if ( ucOptionDataMask & k_EBLEButtonChunk2 )
-    {
+    if ( ucOptionDataMask & k_EBLEButtonChunk2 ) {
         // The middle 2 bytes of the button bits over the wire are triggers when over the wire and non-SC buttons in the internal controller state packet
         pState->sTriggerL = (unsigned short)RemapValClamped( (float)(( pData[ 0 ] << 7 ) | pData[ 0 ]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
         pState->sTriggerR = (unsigned short)RemapValClamped( (float)(( pData[ 1 ] << 7 ) | pData[ 1 ]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
         pData += 2;
     }
-    if ( ucOptionDataMask & k_EBLEButtonChunk3 )
-    {
+    if ( ucOptionDataMask & k_EBLEButtonChunk3 ) {
         uint8_t *pButtonByte = (uint8_t *)&pState->ulButtons;
         pButtonByte[ 5 ] = *pData++;
         pButtonByte[ 6 ] = *pData++;
         pButtonByte[ 7 ] = *pData++;
     }
-    if ( ucOptionDataMask & k_EBLELeftJoystickChunk )
-    {
+    if ( ucOptionDataMask & k_EBLELeftJoystickChunk ) {
         // This doesn't handle any of the special headcrab stuff for raw joystick which is OK for now since that FW doesn't support
         // this protocol yet either
         int nLength = sizeof( pState->sLeftStickX ) + sizeof( pState->sLeftStickY );
         SDL_memcpy( &pState->sLeftStickX, pData, nLength );
         pData += nLength;
     }
-    if ( ucOptionDataMask & k_EBLELeftTrackpadChunk )
-    {
+    if ( ucOptionDataMask & k_EBLELeftTrackpadChunk ) {
         int nLength = sizeof( pState->sLeftPadX ) + sizeof( pState->sLeftPadY );
         int nPadOffset;
         SDL_memcpy( &pState->sLeftPadX, pData, nLength );
@@ -886,8 +851,7 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
         pState->sLeftPadY = clamp( pState->sLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16 );
         pData += nLength;
     }
-    if ( ucOptionDataMask & k_EBLERightTrackpadChunk )
-    {
+    if ( ucOptionDataMask & k_EBLERightTrackpadChunk ) {
         int nLength = sizeof( pState->sRightPadX ) + sizeof( pState->sRightPadY );
         int nPadOffset = 0;
 
@@ -903,20 +867,17 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
         pState->sRightPadY = clamp( pState->sRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16 );
         pData += nLength;
     }
-    if ( ucOptionDataMask & k_EBLEIMUAccelChunk )
-    {
+    if ( ucOptionDataMask & k_EBLEIMUAccelChunk ) {
         int nLength = sizeof( pState->sAccelX ) + sizeof( pState->sAccelY ) + sizeof( pState->sAccelZ );
         SDL_memcpy( &pState->sAccelX, pData, nLength );
         pData += nLength;
     }
-    if ( ucOptionDataMask & k_EBLEIMUGyroChunk )
-    {
+    if ( ucOptionDataMask & k_EBLEIMUGyroChunk ) {
         int nLength = sizeof( pState->sAccelX ) + sizeof( pState->sAccelY ) + sizeof( pState->sAccelZ );
         SDL_memcpy( &pState->sGyroX, pData, nLength );
         pData += nLength;
     }
-    if ( ucOptionDataMask & k_EBLEIMUQuatChunk )
-    {
+    if ( ucOptionDataMask & k_EBLEIMUQuatChunk ) {
         int nLength = sizeof( pState->sGyroQuatW ) + sizeof( pState->sGyroQuatX ) + sizeof( pState->sGyroQuatY ) + sizeof( pState->sGyroQuatZ );
         SDL_memcpy( &pState->sGyroQuatW, pData, nLength );
         pData += nLength;
@@ -932,10 +893,8 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
 {
     ValveInReport_t *pInReport = (ValveInReport_t*)pData;
 
-    if ( pInReport->header.unReportVersion != k_ValveInReportMsgVersion )
-    {
-        if ( ( pData[ 0 ] & 0x0F ) == k_EBLEReportState )
-        {
+    if ( pInReport->header.unReportVersion != k_ValveInReportMsgVersion ) {
+        if ( ( pData[ 0 ] & 0x0F ) == k_EBLEReportState ) {
             return UpdateBLESteamControllerState( pData, nDataSize, pState );
         }
         return false;
@@ -947,8 +906,7 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
         return false;
     }
 
-    if ( pInReport->header.ucType == ID_CONTROLLER_STATE )
-    {
+    if ( pInReport->header.ucType == ID_CONTROLLER_STATE ) {
         ValveControllerStatePacket_t *pStatePacket = &pInReport->payload.controllerState;
 
         // No new data to process; indicate that we received a state packet, but otherwise do nothing.

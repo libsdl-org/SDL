@@ -56,8 +56,7 @@ VITA_PollKeyboard(void)
         return;
     }
 
-    if (keyboard_hid_handle > 0)
-    {
+    if (keyboard_hid_handle > 0) {
         int numReports = sceHidKeyboardRead(keyboard_hid_handle, (SceHidKeyboardReport**)&k_reports, SCE_HID_MAX_REPORT);
 
         if (numReports < 0) {

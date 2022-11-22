@@ -1282,8 +1282,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* We'll do our own drawing, prevent flicker */
     case WM_ERASEBKGND:
-        if (!data->videodata->cleared)
-        {
+        if (!data->videodata->cleared) {
             RECT client_rect;
             HBRUSH brush;
             data->videodata->cleared = SDL_TRUE;

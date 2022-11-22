@@ -72,8 +72,7 @@ double attribute_hidden __kernel_tan(double x, double y, int iy)
 	int32_t ix,hx;
 	GET_HIGH_WORD(hx,x);
 	ix = hx&0x7fffffff;	/* high word of |x| */
-	if(ix<0x3e300000)			/* x < 2**-28 */
-	    {if((int)x==0) {			/* generate inexact */
+	if(ix<0x3e300000)			/* x < 2**-28 */ {if((int)x==0) {			/* generate inexact */
 	        u_int32_t low;
 		GET_LOW_WORD(low,x);
 		if(((ix|low)|(iy+1))==0) return one/fabs(x);
@@ -102,8 +101,7 @@ double attribute_hidden __kernel_tan(double x, double y, int iy)
 	    v = (double)iy;
 	    return (double)(1-((hx>>30)&2))*(v-2.0*(x-(w*w/(w+v)-r)));
 	}
-	if(iy==1) return w;
-	else {		/* if allow error up to 2 ulp,
+	if(iy==1) return w; else {		/* if allow error up to 2 ulp,
 			   simply return -1.0/(x+r) here */
      /*  compute -1.0/(x+r) accurately */
 	    double a,t;

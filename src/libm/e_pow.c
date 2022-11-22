@@ -233,8 +233,7 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	    double s2,s_h,s_l,t_h,t_l;
 	    n = 0;
 	/* take care subnormal number */
-	    if(ix<0x00100000)
-		{ax *= two53; n -= 53; GET_HIGH_WORD(ix,ax); }
+	    if(ix<0x00100000) {ax *= two53; n -= 53; GET_HIGH_WORD(ix,ax); }
 	    n  += ((ix)>>20)-0x3ff;
 	    j  = ix&0x000fffff;
 	/* determine interval */

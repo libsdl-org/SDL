@@ -46,8 +46,7 @@ SDL_CreateMutex(void)
     RMutex rmutex;
 
     TInt status = CreateUnique(NewMutex, &rmutex, NULL);
-    if(status != KErrNone)
-    {
+    if(status != KErrNone) {
         SDL_SetError("Couldn't create mutex.");
     }
     SDL_mutex* mutex = new /*(ELeave)*/ SDL_mutex;
@@ -59,8 +58,7 @@ SDL_CreateMutex(void)
 void
 SDL_DestroyMutex(SDL_mutex * mutex)
 {
-    if (mutex)
-    {
+    if (mutex) {
         RMutex rmutex;
         rmutex.SetHandle(mutex->handle);
         rmutex.Signal();
@@ -75,8 +73,7 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 int
 SDL_TryLockMutex(SDL_mutex * mutex)
 {
-    if (mutex == NULL)
-    {
+    if (mutex == NULL) {
         SDL_SetError("Passed a NULL mutex.");
         return -1;
     }
@@ -90,8 +87,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 int
 SDL_LockMutex(SDL_mutex * mutex)
 {
-    if (mutex == NULL)
-    {
+    if (mutex == NULL) {
         return SDL_SetError("Passed a NULL mutex.");
     }
 
@@ -106,8 +102,7 @@ SDL_LockMutex(SDL_mutex * mutex)
 int
 SDL_UnlockMutex(SDL_mutex * mutex)
 {
-    if ( mutex == NULL )
-    {
+    if ( mutex == NULL ) {
         return SDL_SetError("Passed a NULL mutex.");
     }
 

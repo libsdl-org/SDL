@@ -97,8 +97,7 @@ decode_vendor_and_product_identification (const uchar *edid, MonitorInfo *info)
 	break;
     }
 
-    if (is_model_year)
-    {
+    if (is_model_year) {
 	info->production_year = -1;
 	info->model_year = 1990 + edid[0x11];
     }
@@ -126,8 +125,7 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
     /* Digital vs Analog */
     info->is_digital = get_bit (edid[0x14], 7);
 
-    if (info->is_digital)
-    {
+    if (info->is_digital) {
 	int bits;
 	
 	static const int bit_depth[8] =
@@ -176,8 +174,7 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
     }
 
     /* Screen Size / Aspect Ratio */
-    if (edid[0x15] == 0 && edid[0x16] == 0)
-    {
+    if (edid[0x15] == 0 && edid[0x16] == 0) {
 	info->width_mm = -1;
 	info->height_mm = -1;
 	info->aspect_ratio = -1.0;
@@ -212,8 +209,7 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
     info->suspend = get_bit (edid[0x18], 6);
     info->active_off = get_bit (edid[0x18], 5);
 
-    if (info->is_digital)
-    {
+    if (info->is_digital) {
 	info->ad.digital.rgb444 = TRUE;
 	if (get_bit(edid[0x18], 3)) {
 	    info->ad.digital.ycrcb444 = 1;
@@ -337,8 +333,7 @@ decode_standard_timings (const uchar *edid, MonitorInfo *info)
 	int first = edid[0x26 + 2 * i];
 	int second = edid[0x27 + 2 * i];
 
-	if (first != 0x01 && second != 0x01)
-	{
+	if (first != 0x01 && second != 0x01) {
 	    int w = 8 * (first + 31);
 	    int h = 0;
 
@@ -365,8 +360,7 @@ decode_lf_string (const uchar *s, int n_chars, char *result)
     int i;
     for (i = 0; i < n_chars; ++i)
     {
-	if (s[i] == 0x0a)
-	{
+	if (s[i] == 0x0a) {
 	    *result++ = '\0';
 	    break;
 	}
@@ -458,12 +452,10 @@ decode_detailed_timing (const uchar *timing,
     bits = timing[0x11];
 
     detailed->digital_sync = get_bit (bits, 4);
-    if (detailed->digital_sync)
-    {
+    if (detailed->digital_sync) {
 	detailed->ad.digital.composite = !get_bit (bits, 3);
 
-	if (detailed->ad.digital.composite)
-	{
+	if (detailed->ad.digital.composite) {
 	    detailed->ad.digital.serrations = get_bit (bits, 2);
 	    detailed->ad.digital.negative_vsync = FALSE;
 	}
@@ -495,8 +487,7 @@ decode_descriptors (const uchar *edid, MonitorInfo *info)
     {
 	int index = 0x36 + i * 18;
 
-	if (edid[index + 0] == 0x00 && edid[index + 1] == 0x00)
-	{
+	if (edid[index + 0] == 0x00 && edid[index + 1] == 0x00) {
 	    decode_display_descriptor (edid + index, info);
 	}
 	else
@@ -582,8 +573,7 @@ dump_monitor_info (MonitorInfo *info)
     printf ("EDID revision: %d.%d\n", info->major_version, info->minor_version);
     
     printf ("Display is %s\n", info->is_digital? "digital" : "analog");
-    if (info->is_digital)
-    {
+    if (info->is_digital) {
 	const char *interface;
 	if (info->ad.digital.bits_per_primary != -1)
 	    printf ("Bits Per Primary: %d\n", info->ad.digital.bits_per_primary);
@@ -734,8 +724,7 @@ dump_monitor_info (MonitorInfo *info)
 	}
 	printf ("  Stereo: %s\n", s);
 	
-	if (timing->digital_sync)
-	{
+	if (timing->digital_sync) {
 	    printf ("  Digital Sync:\n");
 	    printf ("    composite: %s\n", yesno (timing->ad.digital.composite));
 	    printf ("    serrations: %s\n", yesno (timing->ad.digital.serrations));

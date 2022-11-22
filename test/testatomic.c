@@ -25,8 +25,7 @@ tf(SDL_bool _tf)
     static const char *t = "TRUE";
     static const char *f = "FALSE";
 
-    if (_tf)
-    {
+    if (_tf) {
        return t;
     }
 

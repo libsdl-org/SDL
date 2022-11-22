@@ -70,8 +70,7 @@ SDL_SYS_CreateThread(SDL_Thread *thread)
     RThread rthread;
 
     TInt status = CreateUnique(NewThread, &rthread, thread);
-    if (status != KErrNone)
-    {
+    if (status != KErrNone) {
         delete(((RThread*)(thread->handle)));
         thread->handle = NULL;
         SDL_SetError("Not enough resources to create thread");
@@ -108,8 +107,7 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
 {
     RThread t;
     t.Open(thread->threadid);
-    if(t.ExitReason() == EExitPending)
-    {
+    if(t.ExitReason() == EExitPending) {
         TRequestStatus status;
         t.Logon(status);
         User::WaitForRequest(status);

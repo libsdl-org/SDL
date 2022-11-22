@@ -93,8 +93,7 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
         }
     }
     SDL_free(extensions);
-    if(!hasSurfaceExtension)
-    {
+    if(!hasSurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
@@ -115,8 +114,7 @@ fail:
 
 void Wayland_Vulkan_UnloadLibrary(_THIS)
 {
-    if(_this->vulkan_config.loader_handle)
-    {
+    if(_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
     }
@@ -130,8 +128,7 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
     static const char *const extensionsForWayland[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
     };
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if(!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -155,14 +152,12 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
     VkWaylandSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if(!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
 
-    if(!vkCreateWaylandSurfaceKHR)
-    {
+    if(!vkCreateWaylandSurfaceKHR) {
         SDL_SetError(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
@@ -175,8 +170,7 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
     createInfo.surface =  windowData->surface;
     result = vkCreateWaylandSurfaceKHR(instance, &createInfo,
                                        NULL, surface);
-    if(result != VK_SUCCESS)
-    {
+    if(result != VK_SUCCESS) {
         SDL_SetError("vkCreateWaylandSurfaceKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));
         return SDL_FALSE;

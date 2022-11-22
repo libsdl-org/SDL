@@ -33,24 +33,20 @@ SaveBitmapToFile(HDC hdc, HBITMAP hbitmap, char* filename)
     char* bmpdata;
     int return_code = 1;
 
-    if(!hdc)
-    {
+    if(!hdc) {
         SDLTest_LogError("hdc argument is NULL");
         return 0;
     }
-    if(!hbitmap)
-    {
+    if(!hbitmap) {
         SDLTest_LogError("hbitmap argument is NULL");
         return 0;
     }
-    if(filename == NULL)
-    {
+    if(filename == NULL) {
         SDLTest_LogError("filename argument is NULL");
         return 0;
     }
 
-    if(!GetObject(hbitmap, sizeof(BITMAP), (void*)&bitmap))
-    {
+    if(!GetObject(hbitmap, sizeof(BITMAP), (void*)&bitmap)) {
         SDLTest_LogError("GetObject() failed");
         return_code = 0;
         goto savebitmaptofile_cleanup_generic;
@@ -71,15 +67,13 @@ SaveBitmapToFile(HDC hdc, HBITMAP hbitmap, char* filename)
     bmpsize = ((bitmap.bmWidth * bih.biBitCount + 31) / 32) * 4 * bitmap.bmHeight;
 
     hdib = GlobalAlloc(GHND, bmpsize);
-    if(!hdib)
-    {
+    if(!hdib) {
         LogLastError("GlobalAlloc() failed");
         return_code = 0;
         goto savebitmaptofile_cleanup_generic;
     }
     bmpdata = (char*)GlobalLock(hdib);
-    if(bmpdata == NULL)
-    {
+    if(bmpdata == NULL) {
         LogLastError("GlobalLock() failed");
         return_code = 0;
         goto savebitmaptofile_cleanup_hdib;
@@ -95,8 +89,7 @@ SaveBitmapToFile(HDC hdc, HBITMAP hbitmap, char* filename)
 
     hfile = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
                        FILE_ATTRIBUTE_NORMAL, NULL);
-    if(hfile == INVALID_HANDLE_VALUE)
-    {
+    if(hfile == INVALID_HANDLE_VALUE) {
         LogLastError("CreateFile()");
         return_code = 0;
         goto savebitmaptofile_cleanup_unlockhdib;
@@ -120,8 +113,7 @@ savebitmaptofile_cleanup_hfile:
 
 /* make the screenshot file writable on cygwin, since it could be overwritten later */
 #if defined(__CYGWIN__)
-    if(chmod(filename, 0777) == -1)
-    {
+    if(chmod(filename, 0777) == -1) {
         SDLTest_LogError("chmod() failed");
         return_code = 0;
     }
@@ -150,31 +142,26 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
     BOOL blt_success;
     int return_code = 1;
 
-    if(filename == NULL)
-    {
+    if(filename == NULL) {
         SDLTest_LogError("filename argument cannot be NULL");
         return_code = 0;
         goto screenshotwindow_cleanup_generic;
     }
-    if(!hwnd)
-    {
+    if(!hwnd) {
         SDLTest_LogError("hwnd argument cannot be NULL");
         return_code = 0;
         goto screenshotwindow_cleanup_generic;
     }
 
-    if(!GetWindowRect(hwnd, &dimensions))
-    {
+    if(!GetWindowRect(hwnd, &dimensions)) {
         LogLastError("GetWindowRect() failed");
         return_code = 0;
         goto screenshotwindow_cleanup_generic;
     }
 
-    if(only_client_area)
-    {
+    if(only_client_area) {
         RECT crect;
-        if(!GetClientRect(hwnd, &crect))
-        {
+        if(!GetClientRect(hwnd, &crect)) {
             SDLTest_LogError("GetClientRect() failed");
             return_code = 0;
             goto screenshotwindow_cleanup_generic;
@@ -183,8 +170,7 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
         width = crect.right;
         height = crect.bottom;
         windowdc = GetDC(hwnd);
-        if(!windowdc)
-        {
+        if(!windowdc) {
             SDLTest_LogError("GetDC() failed");
             return_code = 0;
             goto screenshotwindow_cleanup_generic;
@@ -195,8 +181,7 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
         width = dimensions.right - dimensions.left;
         height = dimensions.bottom - dimensions.top;
         windowdc = GetWindowDC(hwnd);
-        if(!windowdc)
-        {
+        if(!windowdc) {
             SDLTest_LogError("GetWindowDC() failed");
             return_code = 0;
             goto screenshotwindow_cleanup_generic;
@@ -204,38 +189,33 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
     }
     
     capturedc = CreateCompatibleDC(windowdc);
-    if(!capturedc)
-    {
+    if(!capturedc) {
         SDLTest_LogError("CreateCompatibleDC() failed");
         return_code = 0;
         goto screenshotwindow_cleanup_windowdc;
     }
     capturebitmap = CreateCompatibleBitmap(windowdc, width, height);
-    if(!capturebitmap)
-    {
+    if(!capturebitmap) {
         SDLTest_LogError("CreateCompatibleBitmap() failed");
         return_code = 0;
         goto screenshotwindow_cleanup_capturedc;
     }
     select_success = SelectObject(capturedc, capturebitmap);
-    if(!select_success || select_success == HGDI_ERROR)
-    {
+    if(!select_success || select_success == HGDI_ERROR) {
         SDLTest_LogError("SelectObject() failed");
         return_code = 0;
         goto screenshotwindow_cleanup_capturebitmap;
     }
     blt_success = BitBlt(capturedc, 0, 0, width, height, windowdc,
                          0, 0, SRCCOPY|CAPTUREBLT);
-    if(!blt_success)
-    {
+    if(!blt_success) {
         LogLastError("BitBlt() failed");
         return_code = 0;
         goto screenshotwindow_cleanup_capturebitmap;
     }
 
     /* save bitmap as file */
-    if(!SaveBitmapToFile(windowdc, capturebitmap, filename))
-    {
+    if(!SaveBitmapToFile(windowdc, capturebitmap, filename)) {
         SDLTest_LogError("SaveBitmapToFile() failed");
         return_code = 0;
         goto screenshotwindow_cleanup_capturebitmap;
@@ -244,22 +224,19 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
     /* Free resources */
 
 screenshotwindow_cleanup_capturebitmap:
-    if(!DeleteObject(capturebitmap))
-    {
+    if(!DeleteObject(capturebitmap)) {
         SDLTest_LogError("DeleteObjectFailed");
         return_code = 0;
     }
 
 screenshotwindow_cleanup_capturedc:
-    if(!DeleteDC(capturedc))
-    {
+    if(!DeleteDC(capturedc)) {
         SDLTest_LogError("DeleteDC() failed");
         return_code = 0;
     }
 
 screenshotwindow_cleanup_windowdc:
-    if(!ReleaseDC(hwnd, windowdc))
-    {
+    if(!ReleaseDC(hwnd, windowdc)) {
         SDLTest_LogError("ReleaseDC() failed");
         return_code = 0;
     }
@@ -297,8 +274,7 @@ ScreenshotHwnd(HWND hwnd, LPARAM lparam)
     prefix = (char*)lparam;
     len = SDL_strlen(prefix) + 100;
     filename = (char*)SDL_malloc(len * sizeof(char));
-    if(filename == NULL)
-    {
+    if(filename == NULL) {
         SDLTest_LogError("SDL_malloc() failed");
         return FALSE;
     }
@@ -326,21 +302,18 @@ ScreenshotHwnd(HWND hwnd, LPARAM lparam)
 int
 SDLVisualTest_ScreenshotProcess(SDL_ProcessInfo* pinfo, char* prefix)
 {
-    if(pinfo == NULL)
-    {
+    if(pinfo == NULL) {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(prefix == NULL)
-    {
+    if(prefix == NULL) {
         SDLTest_LogError("prefix argument cannot be NULL");
         return 0;
     }
 
     img_num = 1;
     screenshot_pinfo = *pinfo;
-    if(!EnumWindows(ScreenshotHwnd, (LPARAM)prefix))
-    {
+    if(!EnumWindows(ScreenshotHwnd, (LPARAM)prefix)) {
         SDLTest_LogError("EnumWindows() failed");
         return 0;
     }
