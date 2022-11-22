@@ -102,7 +102,7 @@ typedef struct SDL_version
  *  This macro will evaluate to true if compiled with SDL at least X.Y.Z.
  */
 #define SDL_VERSION_ATLEAST(X, Y, Z) \
-    (SDL_COMPILEDVERSION >= SDL_VERSIONUM(X, Y, Z))
+    (SDL_COMPILEDVERSION >= SDL_VERSIONNUM(X, Y, Z))
 
 /**
  * Get the version of SDL that is linked against your program.
