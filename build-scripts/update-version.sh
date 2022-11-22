@@ -66,14 +66,6 @@ perl -w -pi -e 's/\A(.* SDL_MAJOR_VERSION = )\d+/${1}'$MAJOR'/;' android-project
 perl -w -pi -e 's/\A(.* SDL_MINOR_VERSION = )\d+/${1}'$MINOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
 perl -w -pi -e 's/\A(.* SDL_MICRO_VERSION = )\d+/${1}'$PATCH'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
 
-perl -w -pi -e 's/\A(MAJOR_VERSION\s*=\s*)\d+/${1}'$MAJOR'/;' Makefile.os2
-perl -w -pi -e 's/\A(MINOR_VERSION\s*=\s*)\d+/${1}'$MINOR'/;' Makefile.os2
-perl -w -pi -e 's/\A(MICRO_VERSION\s*=\s*)\d+/${1}'$PATCH'/;' Makefile.os2
-
-perl -w -pi -e 's/\A(MAJOR_VERSION\s*=\s*)\d+/${1}'$MAJOR'/;' Makefile.w32
-perl -w -pi -e 's/\A(MINOR_VERSION\s*=\s*)\d+/${1}'$MINOR'/;' Makefile.w32
-perl -w -pi -e 's/\A(MICRO_VERSION\s*=\s*)\d+/${1}'$PATCH'/;' Makefile.w32
-
 perl -w -pi -e 's/(\#define SDL_MAJOR_VERSION\s+)\d+/${1}'$MAJOR'/;' include/SDL_version.h
 perl -w -pi -e 's/(\#define SDL_MINOR_VERSION\s+)\d+/${1}'$MINOR'/;' include/SDL_version.h
 perl -w -pi -e 's/(\#define SDL_PATCHLEVEL\s+)\d+/${1}'$PATCH'/;' include/SDL_version.h

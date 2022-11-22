@@ -69,28 +69,6 @@ else
     not_ok "android-project/app/src/main/java/org/libsdl/app/SDLActivity.java $version disagrees with SDL_version.h $ref_version"
 fi
 
-major=$(sed -ne 's/^MAJOR_VERSION *= *//p' Makefile.os2)
-minor=$(sed -ne 's/^MINOR_VERSION *= *//p' Makefile.os2)
-micro=$(sed -ne 's/^MICRO_VERSION *= *//p' Makefile.os2)
-version="${major}.${minor}.${micro}"
-
-if [ "$ref_version" = "$version" ]; then
-    ok "Makefile.os2 $version"
-else
-    not_ok "Makefile.os2 $version disagrees with SDL_version.h $ref_version"
-fi
-
-major=$(sed -ne 's/^MAJOR_VERSION *= *//p' Makefile.w32)
-minor=$(sed -ne 's/^MINOR_VERSION *= *//p' Makefile.w32)
-micro=$(sed -ne 's/^MICRO_VERSION *= *//p' Makefile.w32)
-version="${major}.${minor}.${micro}"
-
-if [ "$ref_version" = "$version" ]; then
-    ok "Makefile.w32 $version"
-else
-    not_ok "Makefile.w32 $version disagrees with SDL_version.h $ref_version"
-fi
-
 tuple=$(sed -ne 's/^ *FILEVERSION *//p' src/main/windows/version.rc | tr -d '\r')
 ref_tuple="${ref_major},${ref_minor},${ref_micro},0"
 
