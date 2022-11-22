@@ -100,7 +100,6 @@ HDRS = \
 	SDL_name.h \
 	SDL_opengl.h \
 	SDL_opengl_glext.h \
-	SDL_opengles.h \
 	SDL_opengles2_gl2ext.h \
 	SDL_opengles2_gl2.h \
 	SDL_opengles2_gl2platform.h \

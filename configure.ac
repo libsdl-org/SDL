@@ -2130,9 +2130,6 @@ dnl Check to see if OpenGL ES support is desired
 AC_ARG_ENABLE(video-opengles,
 [AS_HELP_STRING([--enable-video-opengles], [include OpenGL ES support [default=yes]])],
               , enable_video_opengles=yes)
-AC_ARG_ENABLE(video-opengles1,
-[AS_HELP_STRING([--enable-video-opengles1], [include OpenGL ES 1.1 support [default=yes]])],
-              , enable_video_opengles1=yes)
 AC_ARG_ENABLE(video-opengles2,
 [AS_HELP_STRING([--enable-video-opengles2], [include OpenGL ES 2.0 support [default=yes]])],
               , enable_video_opengles2=yes)
@@ -2181,21 +2178,6 @@ dnl Find OpenGL ES
 CheckOpenGLES()
 {
     if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
-        if test x$enable_video_opengles1 = xyes; then
-            AC_MSG_CHECKING(for OpenGL ES v1 headers)
-            video_opengles_v1=no
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-             #include <GLES/gl.h>
-             #include <GLES/glext.h>
-            ]],[])], [video_opengles_v1=yes],[])
-            AC_MSG_RESULT($video_opengles_v1)
-            if test x$video_opengles_v1 = xyes; then
-                AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
-                AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
-                SUMMARY_video="${SUMMARY_video} opengl_es1"
-            fi
-        fi
-
         if test x$enable_video_opengles2 = xyes; then
             AC_MSG_CHECKING(for OpenGL ES v2 headers)
             video_opengles_v2=no
@@ -3901,8 +3883,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         # The iOS platform requires special setup.
         AC_DEFINE(SDL_VIDEO_DRIVER_UIKIT, 1, [ ])
         AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/uikit/*.m"
         SUMMARY_video="${SUMMARY_video} uikit"

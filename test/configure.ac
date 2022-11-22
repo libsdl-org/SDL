@@ -127,17 +127,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 ]],[])], [have_opengl=yes],[])
 AC_MSG_RESULT($have_opengl)
 
-dnl Check for OpenGL ES
-AC_MSG_CHECKING(for OpenGL ES support)
-have_opengles=no
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
- #include "SDL_opengles.h"
- #ifndef SDL_VIDEO_OPENGL_ES
- #error SDL_VIDEO_OPENGL_ES
- #endif
-]],[])] ,[have_opengles=yes],[])
-AC_MSG_RESULT($have_opengles)
-
 dnl Check for OpenGL ES2
 AC_MSG_CHECKING(for OpenGL ES2 support)
 have_opengles2=no
@@ -152,14 +141,8 @@ AC_MSG_RESULT($have_opengles2)
 GLLIB=""
 GLESLIB=""
 GLES2LIB=""
-OPENGLES1_TARGETS="UNUSED"
 OPENGLES2_TARGETS="UNUSED"
 OPENGL_TARGETS="UNUSED"
-if test x$have_opengles = xyes; then
-    CFLAGS="$CFLAGS -DHAVE_OPENGLES"
-    GLESLIB="$XPATH -lGLESv1_CM"
-    OPENGLES1_TARGETS="TARGETS"
-fi
 if test x$have_opengles2 = xyes; then
     CFLAGS="$CFLAGS -DHAVE_OPENGLES2"
     #GLES2LIB="$XPATH -lGLESv2"
@@ -245,7 +228,6 @@ case "$host" in
     	;;
 esac
 
-AC_SUBST(OPENGLES1_TARGETS)
 AC_SUBST(OPENGLES2_TARGETS)
 AC_SUBST(OPENGL_TARGETS)
 AC_SUBST(GLLIB)

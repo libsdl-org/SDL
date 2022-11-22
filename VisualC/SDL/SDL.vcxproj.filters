@@ -285,9 +285,6 @@
     <ClInclude Include="..\..\include\SDL_opengl_glext.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL_opengles.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL_opengles2.h">
       <Filter>API Headers</Filter>
     </ClInclude>

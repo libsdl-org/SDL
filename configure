@@ -903,7 +903,6 @@ enable_video_dummy
 enable_video_offscreen
 enable_video_opengl
 enable_video_opengles
-enable_video_opengles1
 enable_video_opengles2
 enable_video_vulkan
 enable_libudev
@@ -1690,8 +1689,6 @@ Optional Features:
                           use offscreen video driver [default=yes]
   --enable-video-opengl   include OpenGL support [default=yes]
   --enable-video-opengles include OpenGL ES support [default=yes]
-  --enable-video-opengles1
-                          include OpenGL ES 1.1 support [default=yes]
   --enable-video-opengles2
                           include OpenGL ES 2.0 support [default=yes]
   --enable-video-vulkan   include Vulkan support [default=yes]
@@ -24398,14 +24395,6 @@ else $as_nop
   enable_video_opengles=yes
 fi
 
-# Check whether --enable-video-opengles1 was given.
-if test ${enable_video_opengles1+y}
-then :
-  enableval=$enable_video_opengles1;
-else $as_nop
-  enable_video_opengles1=yes
-fi
-
 # Check whether --enable-video-opengles2 was given.
 if test ${enable_video_opengles2+y}
 then :
@@ -24496,42 +24485,6 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
 CheckOpenGLES()
 {
     if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
-        if test x$enable_video_opengles1 = xyes; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v1 headers" >&5
-printf %s "checking for OpenGL ES v1 headers... " >&6; }
-            video_opengles_v1=no
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-             #include <GLES/gl.h>
-             #include <GLES/glext.h>
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  video_opengles_v1=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v1" >&5
-printf "%s\n" "$video_opengles_v1" >&6; }
-            if test x$video_opengles_v1 = xyes; then
-
-printf "%s\n" "#define SDL_VIDEO_OPENGL_ES 1" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES 1" >>confdefs.h
-
-                SUMMARY_video="${SUMMARY_video} opengl_es1"
-            fi
-        fi
-
         if test x$enable_video_opengles2 = xyes; then
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
 printf %s "checking for OpenGL ES v2 headers... " >&6; }
@@ -27703,12 +27656,6 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_UIKIT 1" >>confdefs.h
 
 
 printf "%s\n" "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_VIDEO_OPENGL_ES 1" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES 1" >>confdefs.h
 
 
 printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h

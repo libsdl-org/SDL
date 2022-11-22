@@ -199,7 +199,6 @@
 
 /* Enable OpenGL support */
 /* #undef SDL_VIDEO_OPENGL */
-/* #undef SDL_VIDEO_OPENGL_ES */
 #define SDL_VIDEO_OPENGL_ES2 1
 /* #undef SDL_VIDEO_OPENGL_BGL */
 /* #undef SDL_VIDEO_OPENGL_CGL */

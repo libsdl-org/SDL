@@ -37,10 +37,6 @@
 #include "SDL_opengl.h"
 #endif /* SDL_VIDEO_OPENGL */
 
-#if SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL
-#include "SDL_opengles.h"
-#endif /* SDL_VIDEO_OPENGL_ES && !SDL_VIDEO_OPENGL */
-
 /* GL and GLES2 headers conflict on Linux 32 bits */
 #if SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL
 #include "SDL_opengles2.h"
@@ -3483,7 +3479,7 @@ SDL_GL_UnloadLibrary(void)
     }
 }
 
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES2
 static SDL_INLINE SDL_bool
 isAtLeastGL3(const char *verstr)
 {
@@ -3494,7 +3490,7 @@ isAtLeastGL3(const char *verstr)
 SDL_bool
 SDL_GL_ExtensionSupported(const char *extension)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES2
     const GLubyte *(APIENTRY * glGetStringFunc) (GLenum);
     const char *extensions;
     const char *start;
@@ -3586,7 +3582,7 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 {
 /* THIS REQUIRES AN EXISTING GL CONTEXT THAT HAS BEEN MADE CURRENT. */
 /*  Please refer to https://bugzilla.libsdl.org/show_bug.cgi?id=3725 for discussion. */
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES2
     /* XXX This is fragile; it will break in the event of release of
      * new versions of OpenGL ES.
      */
@@ -3640,10 +3636,6 @@ SDL_GL_ResetAttributes()
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
-#elif SDL_VIDEO_OPENGL_ES
-    _this->gl_config.major_version = 1;
-    _this->gl_config.minor_version = 1;
-    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #endif
 
     if (_this->GL_DefaultProfileConfig) {
@@ -3664,7 +3656,7 @@ SDL_GL_ResetAttributes()
 int
 SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES2
     int retval;
 
     if (!_this) {
@@ -3788,7 +3780,7 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
 int
 SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 {
-#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES2
     GLenum (APIENTRY *glGetErrorFunc) (void);
     GLenum attrib = 0;
     GLenum error = 0;

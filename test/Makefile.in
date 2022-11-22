@@ -84,7 +84,6 @@ TARGETS = \
 
 
 @OPENGL_TARGETS@ += testgl2$(EXE) testshader$(EXE)
-@OPENGLES1_TARGETS@ += testgles$(EXE)
 @OPENGLES2_TARGETS@ += testgles2$(EXE)
 
 
@@ -207,9 +206,6 @@ testgesture$(EXE): $(srcdir)/testgesture.c
 
 testgl2$(EXE): $(srcdir)/testgl2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
-
-testgles$(EXE): $(srcdir)/testgles.c
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
 
 testgles2$(EXE): $(srcdir)/testgles2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
