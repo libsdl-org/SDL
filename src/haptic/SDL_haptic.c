@@ -60,8 +60,7 @@ ValidHaptic(SDL_Haptic * haptic)
     valid = 0;
     if (haptic != NULL) {
         hapticlist = SDL_haptics;
-        while ( hapticlist )
-        {
+        while ( hapticlist ) {
             if (hapticlist == haptic) {
                 valid = 1;
                 break;
@@ -123,8 +122,7 @@ SDL_HapticOpen(int device_index)
     /* If the haptic is already open, return it
     * TODO: Should we create haptic instance IDs like the Joystick API?
     */
-    while ( hapticlist )
-    {
+    while ( hapticlist ) {
         if (device_index == hapticlist->index) {
             haptic = hapticlist;
             ++haptic->ref_count;
@@ -186,8 +184,7 @@ SDL_HapticOpened(int device_index)
     opened = 0;
     hapticlist = SDL_haptics;
     /* TODO Should this use an instance ID? */
-    while ( hapticlist )
-    {
+    while ( hapticlist ) {
         if (hapticlist->index == (Uint8) device_index) {
             opened = 1;
             break;
@@ -298,8 +295,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
 
     hapticlist = SDL_haptics;
     /* Check to see if joystick's haptic is already open */
-    while ( hapticlist )
-    {
+    while ( hapticlist ) {
         if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick)) {
             haptic = hapticlist;
             ++haptic->ref_count;
@@ -365,8 +361,7 @@ SDL_HapticClose(SDL_Haptic * haptic)
     /* Remove from the list */
     hapticlist = SDL_haptics;
     hapticlistprev = NULL;
-    while ( hapticlist )
-    {
+    while ( hapticlist ) {
         if (haptic == hapticlist) {
             if ( hapticlistprev ) {
                 /* unlink this entry */

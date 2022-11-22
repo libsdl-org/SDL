@@ -332,8 +332,7 @@ static void SDLTest_LogTestSuiteSummary(SDLTest_TestSuiteReference *testSuites)
 
         /* Loop over all test cases */
         testCounter = 0;
-        while(testSuite->testCases[testCounter])
-        {
+        while(testSuite->testCases[testCounter]) {
             testCase=(SDLTest_TestCaseReference *)testSuite->testCases[testCounter];
             testCounter++;
             SDLTest_Log("  Test Case %i - %s: %s", testCounter,
@@ -434,8 +433,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         testSuite = testSuites[suiteCounter];
         suiteCounter++;
         testCounter = 0;
-        while (testSuite->testCases[testCounter])
-        {
+        while (testSuite->testCases[testCounter]) {
             testCounter++;
             totalNumberOfTests++;
         }
@@ -537,8 +535,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
             /* Loop over all test cases */
             testCounter = 0;
-            while(testSuite->testCases[testCounter])
-            {
+            while(testSuite->testCases[testCounter]) {
                 testCase = testSuite->testCases[testCounter];
                 currentTestName = (testCase->name ? testCase->name : SDLTEST_INVALID_NAME_FORMAT);
                 testCounter++;
@@ -573,8 +570,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
                     /* Loop over all iterations */
                     iterationCounter = 0;
-                    while(iterationCounter < testIterations)
-                    {
+                    while(iterationCounter < testIterations) {
                         iterationCounter++;
 
                         if (userExecKey != 0) {

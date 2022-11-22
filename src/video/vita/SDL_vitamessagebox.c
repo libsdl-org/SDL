@@ -88,8 +88,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     gxm_init_for_common_dialog();
 
     if (init_result >= 0) {
-        while (sceMsgDialogGetStatus() == SCE_COMMON_DIALOG_STATUS_RUNNING)
-        {
+        while (sceMsgDialogGetStatus() == SCE_COMMON_DIALOG_STATUS_RUNNING) {
             gxm_swap_for_common_dialog();
         }
         SDL_zero(dialog_result);

@@ -231,8 +231,7 @@ public:
 	{
 		clear();
 
-		while ( m_pFree )
-		{
+		while ( m_pFree ) {
 			hid_buffer_entry *pEntry = m_pFree;
 			m_pFree = m_pFree->m_pNext;
 			delete pEntry;
@@ -286,8 +285,7 @@ public:
 
 	void clear()
 	{
-		while ( size() > 0 )
-		{
+		while ( size() > 0 ) {
 			pop_front();
 		}
 	}
@@ -1065,8 +1063,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 void  HID_API_EXPORT HID_API_CALL hid_free_enumeration(struct hid_device_info *devs)
 {
-	while ( devs )
-	{
+	while ( devs ) {
 		struct hid_device_info *next = devs->next;
 		FreeHIDDeviceInfo( devs );
 		devs = next;

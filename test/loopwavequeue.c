@@ -135,8 +135,7 @@ main(int argc, char *argv[])
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING))
-    {
+    while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING)) {
         loop();
 
         SDL_Delay(100);  /* let it play for awhile. */

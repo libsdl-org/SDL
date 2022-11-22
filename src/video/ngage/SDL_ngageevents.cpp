@@ -47,8 +47,7 @@ NGAGE_PumpEvents(_THIS)
 {
     SDL_VideoData *phdata = (SDL_VideoData*)_this->driverdata;
 
-    while (phdata->NGAGE_WsEventStatus != KRequestPending)
-    {
+    while (phdata->NGAGE_WsEventStatus != KRequestPending) {
         phdata->NGAGE_WsSession.GetEvent(phdata->NGAGE_WsEvent);
 
         HandleWsEvent(_this, phdata->NGAGE_WsEvent);

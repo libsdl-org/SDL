@@ -74,8 +74,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    while (!done)
-    {
+    while (!done) {
         SDL_Event e;
         int nothing_to_do = 1;
 

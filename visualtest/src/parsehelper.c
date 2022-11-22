@@ -24,8 +24,7 @@ CountTokens(char* args)
     index = 0;
     state = 0;
     num_tokens = 0;
-    while(args[index])
-    {
+    while(args[index]) {
         char ch = args[index];
         switch(state)
         {
@@ -104,8 +103,7 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
     token_index = 0;
     state = 0;
     done = 0;
-    while(!done)
-    {
+    while(!done) {
         char ch = str[index];
         switch(state)
         {

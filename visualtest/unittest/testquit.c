@@ -87,8 +87,7 @@ main(int argc, char** argv)
 
     /* event loop */
     done = 0;
-    while(!done)
-    {
+    while(!done) {
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
         }

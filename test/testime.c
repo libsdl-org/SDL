@@ -507,8 +507,7 @@ void _Redraw(int rendererID)
         drawnTextRect.y = dstrect.y;
         drawnTextRect.h = dstrect.h;
 
-        while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))))
-        {
+        while ((codepoint = utf8_decode(utext, len = utf8_length(*utext)))) {
             Sint32 advance = unifont_draw_glyph(codepoint, rendererID, &dstrect) * UNIFONT_DRAW_SCALE;
             dstrect.x += advance;
             drawnTextRect.w += advance;
@@ -582,8 +581,7 @@ void _Redraw(int rendererID)
         drawnTextRect.y = dstrect.y;
         drawnTextRect.h = dstrect.h;
 
-        while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))))
-        {
+        while ((codepoint = utf8_decode(utext, len = utf8_length(*utext)))) {
             Sint32 advance = unifont_draw_glyph(codepoint, rendererID, &dstrect) * UNIFONT_DRAW_SCALE;
             dstrect.x += advance;
             drawnTextRect.w += advance;

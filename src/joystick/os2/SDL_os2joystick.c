@@ -220,8 +220,7 @@ static int OS2_JoystickInit(void)
 			return SDL_SetError("Could not call joystick port.");
 		}
 		ulLastTick = stJoyStatus.ulJs_Ticks;
-		while (stJoyStatus.ulJs_Ticks == ulLastTick)
-		{
+		while (stJoyStatus.ulJs_Ticks == ulLastTick) {
 			rc = DosDevIOCtl(hJoyPort, IOCTL_CAT_USER, GAME_PORT_GET,
 					 NULL, 0, NULL, &stJoyStatus, ulDataLen, &ulDataLen);
 		}
@@ -793,8 +792,7 @@ static int joyGetData(const char *joyenv, char *name, char stopchar, size_t maxc
 	int chcnt = 0;			/* Count how many characters where copied */
 
 	nameptr = name;
-	while (*joyenv!=stopchar && *joyenv!=0)
-	{
+	while (*joyenv!=stopchar && *joyenv!=0) {
 		if (nameptr < (name + (maxchars-1))) {
 			*nameptr = *joyenv; /* Only copy if smaller than maximum */
 			nameptr++;

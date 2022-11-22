@@ -400,8 +400,7 @@ main(int argc, char **argv)
     }
 
     { int done = 0;
-        while ( !done )
-        {
+        while ( !done ) {
             SDL_Event event;
             while (SDL_PollEvent(&event) > 0) {
                 if (event.type == SDL_QUIT) {

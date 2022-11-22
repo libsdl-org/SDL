@@ -64,8 +64,7 @@ SDLVisualTest_RWHelperReadLine(SDL_RWops* rw, char* str, int size,
     }
 
     done = 0;
-    while(!done)
-    {
+    while(!done) {
         /* ignore leading whitespace */
         for(ch = SDLVisualTest_RWHelperReadChar(rw, buffer); ch && SDL_isspace(ch);
             ch = SDLVisualTest_RWHelperReadChar(rw, buffer));

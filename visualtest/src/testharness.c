@@ -295,11 +295,9 @@ RunSUTAndTest(char* sutargs, int variation_num)
 
     /* the timer stops running if the actions queue is empty, and the
        SUT stops running if it crashes or if we encounter a KILL/QUIT action */
-    while(sut_running)
-    {
+    while(sut_running) {
         /* process the actions by using an event queue */
-        while(SDL_PollEvent(&event))
-        {
+        while(SDL_PollEvent(&event)) {
             if(event.type == SDL_USEREVENT) {
                 if(event.user.code == ACTION_TIMER_EVENT) {
                     SDLVisualTest_Action* action;

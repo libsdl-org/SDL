@@ -318,8 +318,7 @@ static int SetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65], int
         // Skip report number in data
         nActualDataLen--;
         
-        while ( nActualDataLen > 0 )
-        {
+        while ( nActualDataLen > 0 ) {
             int nBytesInPacket = nActualDataLen > MAX_REPORT_SEGMENT_PAYLOAD_SIZE ? MAX_REPORT_SEGMENT_PAYLOAD_SIZE : nActualDataLen;
             
             nActualDataLen -= nBytesInPacket;
@@ -365,8 +364,7 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
         ++ucDataStartOffset;
 #endif
 
-        while( nRetries < BLE_MAX_READ_RETRIES )
-        {
+        while( nRetries < BLE_MAX_READ_RETRIES ) {
             SDL_memset( uSegmentBuffer, 0, sizeof( uSegmentBuffer ) );
             uSegmentBuffer[ 0 ] = BLE_REPORT_NUMBER;
             nRet = SDL_hid_get_feature_report( dev, uSegmentBuffer, ucBytesToRead );

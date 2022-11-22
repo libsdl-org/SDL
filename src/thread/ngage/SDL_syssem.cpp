@@ -74,8 +74,7 @@ static void WaitAll(SDL_sem *sem)
     RSemaphore sema;
     sema.SetHandle(sem->handle);
     sema.Wait();
-    while(sem->count < 0)
-    {
+    while(sem->count < 0) {
         sema.Wait();
     }
 }

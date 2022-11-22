@@ -61,11 +61,9 @@ main(int argc, char *argv[])
         SDL_Log("There are %d haptic devices at startup\n", SDL_NumHaptics());
     }
 
-    while(keepGoing)
-    {
+    while(keepGoing) {
         SDL_Event event;
-        while(SDL_PollEvent(&event))
-        {
+        while(SDL_PollEvent(&event)) {
             switch(event.type)
             {
                 case SDL_QUIT:
