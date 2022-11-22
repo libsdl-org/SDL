@@ -25,9 +25,9 @@ set -e
 
 # Get the canonical path of the folder containing this script
 testdir=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
-CFLAGS="$( pkg-config sdl2 --cflags )"
-LDFLAGS="$( pkg-config sdl2 --libs )"
-STATIC_LDFLAGS="$( pkg-config sdl2 --libs --static )"
+CFLAGS="$( pkg-config sdl3 --cflags )"
+LDFLAGS="$( pkg-config sdl3 --libs )"
+STATIC_LDFLAGS="$( pkg-config sdl3 --libs --static )"
 
 compile_cmd="$CC -c "$testdir/main_gui.c" -o main_gui_pkgconfig.c.o $CFLAGS $EXTRA_CFLAGS"
 link_cmd="$CC main_gui_pkgconfig.c.o -o ${EXEPREFIX}main_gui_pkgconfig${EXESUFFIX} $LDFLAGS $EXTRA_LDFLAGS"

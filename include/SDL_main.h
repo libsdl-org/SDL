@@ -55,7 +55,7 @@
 /* On GDK, SDL provides a main function that initializes the game runtime.
 
    Please note that #include'ing SDL_main.h is not enough to get a main()
-   function working. You must either link against SDL2main or, if not possible,
+   function working. You must either link against SDL3main or, if not possible,
    call the SDL_GDKRunApp function from your entry point.
 */
 #define SDL_MAIN_NEEDED

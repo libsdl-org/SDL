@@ -42,23 +42,20 @@ Installing:
 
 - eComStation:
 
-  If you have previously installed SDL2, make a Backup copy of SDL2.dll
+  If you have previously installed SDL3, make a Backup copy of SDL3.dll
   located in D:\ecs\dll (where D: is disk on which installed eComStation).
-  Stop all programs running with SDL2. Copy SDL2.dll to D:\ecs\dll
+  Stop all programs running with SDL3. Copy SDL3.dll to D:\ecs\dll
 
 - OS/2:
 
-  Copy SDL2.dll to any directory on your LIBPATH.  If you have a previous
-  version installed, close all SDL2 applications before replacing the old
+  Copy SDL3.dll to any directory on your LIBPATH.  If you have a previous
+  version installed, close all SDL3 applications before replacing the old
   copy.  Also make sure that any other older versions of DLLs are removed
   from your system.
 
 
-Joysticks in SDL2:
+Joysticks:
 ------------------
-
-The joystick code in SDL2 is a direct forward-port from the SDL-1.2 version.
-Here is the original documentation from SDL-1.2:
 
 The Joystick detection only works for standard joysticks (2 buttons, 2 axes
 and the like). Therefore, if you use a non-standard joystick, you should

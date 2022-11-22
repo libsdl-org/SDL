@@ -23,13 +23,13 @@ esac
 AC_SUBST(EXE)
 
 dnl Check for SDL
-SDL_VERSION=2.0.0
-AM_PATH_SDL2($SDL_VERSION,
+SDL_VERSION=3.0.0
+AM_PATH_SDL3($SDL_VERSION,
             :,
 	    AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
 )
 CFLAGS="$CFLAGS $SDL_CFLAGS"
-LIBS="$LIBS -lSDL2_test $SDL_LIBS $EXTRALIB"
+LIBS="$LIBS -lSDL3_test $SDL_LIBS $EXTRALIB"
 
 PKG_CHECK_MODULES(LIBUNWIND, libunwind, have_libunwind=yes, have_libunwind=no)
 if test x$have_libunwind = xyes ; then

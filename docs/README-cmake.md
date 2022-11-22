@@ -57,24 +57,24 @@ option(MYGAME_VENDORED "Use vendored libraries" OFF)
 if(MYGAME_VENDORED)
     add_subdirectory(vendored/sdl EXCLUDE_FROM_ALL)
 else()
-    # 1. Look for a SDL2 package, 2. look for the SDL2 component and 3. fail if none can be found
-    find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
+    # 1. Look for a SDL3 package, 2. look for the SDL3 component and 3. fail if none can be found
+    find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
     
-    # 1. Look for a SDL2 package, 2. Look for the SDL2maincomponent and 3. DO NOT fail when SDL2main is not available 
-    find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
+    # 1. Look for a SDL3 package, 2. Look for the SDL3maincomponent and 3. DO NOT fail when SDL3main is not available 
+    find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3main)
 endif()
 
 # Create your game executable target as usual 
 add_executable(mygame WIN32 mygame.c)
 
-# SDL2::SDL2main may or may not be available. It is e.g. required by Windows GUI applications  
-if(TARGET SDL2::SDL2main)
-    # It has an implicit dependency on SDL2 functions, so it MUST be added before SDL2::SDL2 (or SDL2::SDL2-static)
-    target_link_libraries(mygame PRIVATE SDL2::SDL2main)
+# SDL3::SDL3main may or may not be available. It is e.g. required by Windows GUI applications  
+if(TARGET SDL3::SDL3main)
+    # It has an implicit dependency on SDL3 functions, so it MUST be added before SDL3::SDL3 (or SDL3::SDL3-static)
+    target_link_libraries(mygame PRIVATE SDL3::SDL3main)
 endif()
 
-# Link to the actual SDL2 library. SDL2::SDL2 is the shared SDL library, SDL2::SDL2-static is the static SDL libarary.
-target_link_libraries(mygame PRIVATE SDL2::SDL2)
+# Link to the actual SDL3 library. SDL3::SDL3 is the shared SDL library, SDL3::SDL3-static is the static SDL libarary.
+target_link_libraries(mygame PRIVATE SDL3::SDL3)
 ```
 
 ### A system SDL library
@@ -85,10 +85,10 @@ The following components are available, to be used as an argument of `find_packa
 
 | Component name | Description                                                                                |
 |----------------|--------------------------------------------------------------------------------------------|
-| SDL2           | The SDL2 shared library, available through the `SDL2::SDL2` target [^SDL_TARGET_EXCEPTION] |
-| SDL2-static    | The SDL2 static library, available through the `SDL2::SDL2-static` target                  |
-| SDL2main       | The SDL2main static library, available through the `SDL2::SDL2main` target                 |
-| SDL2test       | The SDL2test static library, available through the `SDL2::SDL2test` target                 |
+| SDL3           | The SDL3 shared library, available through the `SDL3::SDL3` target [^SDL_TARGET_EXCEPTION] |
+| SDL3-static    | The SDL3 static library, available through the `SDL3::SDL3-static` target                  |
+| SDL3main       | The SDL3main static library, available through the `SDL3::SDL3main` target                 |
+| SDL3test       | The SDL3test static library, available through the `SDL3::SDL3test` target                 |
 
 ### Using a vendored SDL
 
@@ -160,4 +160,4 @@ To use, set the following CMake variables when running CMake's configuration sta
     ```
 
 
-[^SDL_TARGET_EXCEPTION]: `SDL2::SDL2` can be an ALIAS to a static `SDL2::SDL2-static` target for multiple reasons.
+[^SDL_TARGET_EXCEPTION]: `SDL3::SDL3` can be an ALIAS to a static `SDL3::SDL3-static` target for multiple reasons.

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(SDL2_test)
+project(SDL3_test)
 
 include(CheckCCompilerFlag)
 include(CMakeParseArguments)
@@ -22,8 +22,8 @@ macro(add_sdl_test_executable TARGET)
     endif()
 endmacro()
 
-if(NOT TARGET SDL2::SDL2-static)
-    find_package(SDL2 2.0.23 REQUIRED COMPONENTS SDL2-static SDL2test)
+if(NOT TARGET SDL3::SDL3-static)
+    find_package(SDL3 3.0.0 REQUIRED COMPONENTS SDL3-static SDL3test)
 endif()
 
 enable_testing()
@@ -33,14 +33,14 @@ if(SDL_INSTALL_TESTS)
 endif()
 
 if(N3DS)
-    link_libraries(SDL2::SDL2main)
+    link_libraries(SDL3::SDL3main)
 endif()
 
 if(PSP)
     link_libraries(
-        SDL2::SDL2main
-        SDL2::SDL2test
-        SDL2::SDL2-static
+        SDL3::SDL3main
+        SDL3::SDL3test
+        SDL3::SDL3-static
         GL
         pspvram
         pspvfpu
@@ -54,20 +54,20 @@ if(PSP)
     )
 elseif(PS2)
 link_libraries(
-        SDL2main
-        SDL2_test
-        SDL2-static
+        SDL3main
+        SDL3_test
+        SDL3-static
         patches
         gskit
         dmakit
         ps2_drivers
 )
 else()
-    link_libraries(SDL2::SDL2test SDL2::SDL2-static)
+    link_libraries(SDL3::SDL3test SDL3::SDL3-static)
 endif()
 
 if(WINDOWS)
-    # mingw32 must come before SDL2main to link successfully
+    # mingw32 must come before SDL3main to link successfully
     if(MINGW OR CYGWIN)
         link_libraries(mingw32)
     endif()
@@ -79,7 +79,7 @@ if(WINDOWS)
 
     # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
     # but we need them for VS as well.
-    link_libraries(SDL2main)
+    link_libraries(SDL3main)
     add_definitions(-Dmain=SDL_main)
 endif()
 
@@ -331,8 +331,8 @@ if(N3DS)
         set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
         ctr_generate_smdh("${SMDH_FILE}" 
             NAME "SDL-${APP}"
-            DESCRIPTION "SDL2 Test suite"
-            AUTHOR "SDL2 Contributors"
+            DESCRIPTION "SDL3 Test suite"
+            AUTHOR "SDL3 Contributors"
             ICON "${CMAKE_CURRENT_SOURCE_DIR}/n3ds/logo48x48.png"
         )
         ctr_create_3dsx(
@@ -412,11 +412,11 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     )
     if(SDL_INSTALL_TESTS)
         set(exe ${TESTCASE})
-        set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL2")
+        set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3")
         configure_file(template.test.in "${exe}.test" @ONLY)
         install(
             FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
-            DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL2
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL3
         )
     endif()
 endforeach()
@@ -428,16 +428,16 @@ if(SDL_INSTALL_TESTS)
     if(RISCOS)
         install(
             FILES ${SDL_TEST_EXECUTABLES_AIF}
-            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
         )
     else()
         install(
             TARGETS ${SDL_TEST_EXECUTABLES}
-            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
         )
     endif()
     install(
         FILES ${RESOURCE_FILES}
-        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL2
+        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
     )
 endif()

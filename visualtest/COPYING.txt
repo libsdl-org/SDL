@@ -1,4 +1,4 @@
-Visual and Interactive Test Automation for SDL 2.0
+Visual and Interactive Test Automation for SDL 3.0
 Copyright (C) 2013 Apoorv Upreti <apoorvupreti@gmail.com>
 
 This software is provided 'as-is', without any express or implied

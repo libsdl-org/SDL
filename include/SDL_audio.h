@@ -1211,7 +1211,7 @@ extern DECLSPEC void SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  * You should not call SDL_LockAudio() on the device before queueing; SDL
  * handles locking internally for this function.
  *
- * Note that SDL2 does not support planar audio. You will need to resample
+ * Note that SDL does not support planar audio. You will need to resample
  * from planar audio formats into a non-planar one (see SDL_AudioFormat)
  * before queuing audio.
  *

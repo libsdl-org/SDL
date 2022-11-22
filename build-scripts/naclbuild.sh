@@ -39,7 +39,7 @@ CURDIR=`pwd -P`
 SDLPATH="$( cd "$(dirname "$0")/.." ; pwd -P )"
 BUILDPATH="$SDLPATH/build/nacl"
 TESTBUILDPATH="$BUILDPATH/test"
-SDL2_STATIC="$BUILDPATH/build/.libs/libSDL2.a"
+SDL3_STATIC="$BUILDPATH/build/.libs/libSDL3.a"
 mkdir -p $BUILDPATH
 mkdir -p $TESTBUILDPATH
 
@@ -73,8 +73,8 @@ $SDLPATH/configure --host=pnacl --prefix $TESTBUILDPATH
 make -j$NCPUS CFLAGS="$CFLAGS -I./include"
 make install
 
-if [ ! -f "$SDL2_STATIC" ]; then
-    echo "Build failed! $SDL2_STATIC"
+if [ ! -f "$SDL3_STATIC" ]; then
+    echo "Build failed! $SDL3_STATIC"
     exit 1
 fi
 
@@ -83,7 +83,7 @@ cp -f $SDLPATH/test/nacl/* $TESTBUILDPATH
 # Some tests need these resource files
 cp -f $SDLPATH/test/*.bmp $TESTBUILDPATH
 cp -f $SDLPATH/test/*.wav $TESTBUILDPATH
-cp -f $SDL2_STATIC $TESTBUILDPATH
+cp -f $SDL3_STATIC $TESTBUILDPATH
 
 # Copy user sources
 _SOURCES=($SOURCES)
@@ -94,8 +94,8 @@ done
 export SOURCES="$SOURCES"
 
 cd $TESTBUILDPATH
-make -j$NCPUS CONFIG="Release" CFLAGS="$CFLAGS -I$TESTBUILDPATH/include/SDL2 -I$SDLPATH/include"
-make -j$NCPUS CONFIG="Debug" CFLAGS="$CFLAGS -I$TESTBUILDPATH/include/SDL2 -I$SDLPATH/include"
+make -j$NCPUS CONFIG="Release" CFLAGS="$CFLAGS -I$TESTBUILDPATH/include/SDL3 -I$SDLPATH/include"
+make -j$NCPUS CONFIG="Debug" CFLAGS="$CFLAGS -I$TESTBUILDPATH/include/SDL3 -I$SDLPATH/include"
 
 echo
 echo "Run the test with: "

@@ -59,8 +59,8 @@ import java.util.Locale;
 */
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
-    private static final int SDL_MAJOR_VERSION = 2;
-    private static final int SDL_MINOR_VERSION = 26;
+    private static final int SDL_MAJOR_VERSION = 3;
+    private static final int SDL_MINOR_VERSION = 0;
     private static final int SDL_MICRO_VERSION = 0;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
@@ -263,17 +263,17 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL before loading the native shared libraries.
      * It can be overridden to provide names of shared libraries to be loaded.
      * The default implementation returns the defaults. It never returns null.
-     * An array returned by a new implementation must at least contain "SDL2".
+     * An array returned by a new implementation must at least contain "SDL3".
      * Also keep in mind that the order the libraries are loaded may matter.
-     * @return names of shared libraries to be loaded (e.g. "SDL2", "main").
+     * @return names of shared libraries to be loaded (e.g. "SDL3", "main").
      */
     protected String[] getLibraries() {
         return new String[] {
-            "SDL2",
-            // "SDL2_image",
-            // "SDL2_mixer",
-            // "SDL2_net",
-            // "SDL2_ttf",
+            "SDL3",
+            // "SDL3_image",
+            // "SDL3_mixer",
+            // "SDL3_net",
+            // "SDL3_ttf",
             "main"
         };
     }

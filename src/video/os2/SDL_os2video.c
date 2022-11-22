@@ -40,7 +40,7 @@
 #define FOURCC_R666 mmioFOURCC('R','6','6','6')
 #endif
 
-#define WIN_CLIENT_CLASS        "SDL2"
+#define WIN_CLIENT_CLASS        "SDL3"
 #define OS2DRIVER_NAME_DIVE     "DIVE"
 #define OS2DRIVER_NAME_VMAN     "VMAN"
 
@@ -760,7 +760,7 @@ static int OS2_CreateWindow(_THIS, SDL_Window *window)
         ulSWPFlags |= SWP_MINIMIZE;
 
     hwndFrame = WinCreateStdWindow(HWND_DESKTOP, 0, &ulFrameFlags,
-                                   WIN_CLIENT_CLASS, "SDL2", 0, 0, 0, &hwnd);
+                                   WIN_CLIENT_CLASS, "SDL3", 0, 0, 0, &hwnd);
     if (hwndFrame == NULLHANDLE)
         return SDL_SetError("Couldn't create window");
 

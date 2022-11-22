@@ -146,7 +146,7 @@ extern DECLSPEC int SDLCALL SDL_Init(Uint32 flags);
 /**
  * Compatibility function to initialize the SDL library.
  *
- * In SDL2, this function and SDL_Init() are interchangeable.
+ * This function and SDL_Init() are interchangeable.
  *
  * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
  * \returns 0 on success or a negative error code on failure; call

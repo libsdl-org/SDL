@@ -55,7 +55,7 @@
 #define O_CLOEXEC                       0
 #endif
 
-/* A few #defines to reduce SDL2 footprint.
+/* A few #defines to reduce SDL footprint.
    Only effective when library is statically linked.
    You have to manually edit this file. */
 #ifndef SDL_LEAN_AND_MEAN

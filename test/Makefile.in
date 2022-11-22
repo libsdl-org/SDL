@@ -90,8 +90,8 @@ TARGETS = \
 
 all: Makefile $(TARGETS) copydatafiles generatetestmeta
 
-installedtestsdir = $(libexecdir)/installed-tests/SDL2
-installedtestsmetadir = $(datadir)/installed-tests/SDL2
+installedtestsdir = $(libexecdir)/installed-tests/SDL3
+installedtestsmetadir = $(datadir)/installed-tests/SDL3
 
 generatetestmeta:
 	rm -f *.test

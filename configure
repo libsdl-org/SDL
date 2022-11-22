@@ -684,7 +684,7 @@ SDL_CFLAGS
 bin_prefix_relpath
 cmake_prefix_relpath
 SDL_VENDOR_INFO
-INSTALL_SDL2_CONFIG
+INSTALL_SDL3_CONFIG
 LIBUSB_LIBS
 LIBUSB_CFLAGS
 IBUS_LIBS
@@ -954,7 +954,7 @@ enable_backgrounding_signal
 enable_foregrounding_signal
 enable_joystick_virtual
 enable_render_d3d
-enable_sdl2_config
+enable_sdl3_config
 enable_vendor_info
 '
       ac_precious_vars='build_alias
@@ -1782,7 +1782,7 @@ Optional Features:
   --enable-joystick-virtual
                           enable virtual joystick APIs [default=yes]
   --enable-render-d3d     enable the Direct3D render driver [default=yes]
-  --enable-sdl2-config    Install sdl2-config [default=yes]
+  --enable-sdl3-config    Install sdl3-config [default=yes]
   --enable-vendor-info=STRING
                           Add vendor info to SDL_REVISION
 
@@ -3452,8 +3452,8 @@ ac_config_headers="$ac_config_headers include/SDL_config.h"
 orig_CFLAGS="$CFLAGS"
 
 # See docs/release_checklist.md
-SDL_MAJOR_VERSION=2
-SDL_MINOR_VERSION=26
+SDL_MAJOR_VERSION=3
+SDL_MINOR_VERSION=0
 SDL_MICRO_VERSION=0
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
@@ -13073,9 +13073,9 @@ CFLAGS=$lt_save_CFLAGS
 
 
 # For historical reasons, the library name redundantly includes the major
-# version twice: libSDL2-2.0.so.0.
+# version twice: libSDL3-3.0.so.0.
 # TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
-LT_RELEASE=2.0
+LT_RELEASE=3.0
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL2 to SDL3, at which point this would
 # reset to 0 anyway.
@@ -18276,7 +18276,7 @@ EXTRA_LDFLAGS="$BASE_LDFLAGS"
 #    fi
 #done
 SDL_CFLAGS="$BASE_CFLAGS"
-SDL_LIBS="-lSDL2"
+SDL_LIBS="-lSDL3"
 if test "x$BASE_LDFLAGS" != x; then
     SDL_LIBS="$SDL_LIBS $BASE_LDFLAGS"
 fi
@@ -28848,7 +28848,7 @@ printf "%s\n" "#define SDL_LOADSO_WINDOWS 1" >>confdefs.h
         VERSION_SOURCES="$srcdir/src/main/windows/*.rc"
         SDLMAIN_SOURCES="$srcdir/src/main/windows/*.c"
         SDL_CFLAGS="$SDL_CFLAGS -Dmain=SDL_main"
-        SDL_LIBS="-lSDL2main $SDL_LIBS -mwindows"
+        SDL_LIBS="-lSDL3main $SDL_LIBS -mwindows"
 
         # Check to see if this is a mingw or cygwin build
         have_mingw32=
@@ -29464,29 +29464,29 @@ esac
 
 CheckVirtualJoystick
 
-# Check whether to install sdl2-config
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to install sdl2-config" >&5
-printf %s "checking whether to install sdl2-config... " >&6; }
-# Check whether --enable-sdl2-config was given.
-if test ${enable_sdl2_config+y}
+# Check whether to install sdl3-config
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to install sdl3-config" >&5
+printf %s "checking whether to install sdl3-config... " >&6; }
+# Check whether --enable-sdl3-config was given.
+if test ${enable_sdl3_config+y}
 then :
-  enableval=$enable_sdl2_config; case "${enableval}" in
-        yes) enable_sdl2_config="TRUE" ;;
-        no) enable_sdl2_config="FALSE" ;;
-        *) as_fn_error $? "bad value '${enableval}' for --enable-sdl2-config" "$LINENO" 5 ;;
+  enableval=$enable_sdl3_config; case "${enableval}" in
+        yes) enable_sdl3_config="TRUE" ;;
+        no) enable_sdl3_config="FALSE" ;;
+        *) as_fn_error $? "bad value '${enableval}' for --enable-sdl3-config" "$LINENO" 5 ;;
     esac
 else $as_nop
-  enable_sdl2_config="TRUE"
+  enable_sdl3_config="TRUE"
 fi
 
-if test "$enable_sdl2_config" = "TRUE"; then
+if test "$enable_sdl3_config" = "TRUE"; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 fi
-INSTALL_SDL2_CONFIG=$enable_sdl2_config
+INSTALL_SDL3_CONFIG=$enable_sdl3_config
 
 
 # Check whether --enable-vendor-info was given.
@@ -29700,7 +29700,7 @@ fi
 
 SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 
-pkg_cmakedir='$libdir/cmake/SDL2'
+pkg_cmakedir='$libdir/cmake/SDL3'
 for _lcl_i in pkg_cmakedir:prefix:cmake_prefix_relpath bindir:prefix:bin_prefix_relpath; do
   _lcl_from=\$`echo "$_lcl_i" | sed 's,:.*$,,'`
   _lcl_to=\$`echo "$_lcl_i" | sed 's,^[^:]*:,,' | sed 's,:[^:]*$,,'`
@@ -29852,12 +29852,12 @@ $SDLTEST_DEPENDS
 $WAYLAND_PROTOCOLS_DEPENDS
 __EOF__
 
-ac_config_files="$ac_config_files Makefile:Makefile.in:Makefile.rules sdl2-config sdl2-config.cmake sdl2-config-version.cmake SDL2.spec sdl2.pc"
+ac_config_files="$ac_config_files Makefile:Makefile.in:Makefile.rules sdl3-config sdl3-config.cmake sdl3-config-version.cmake SDL3.spec sdl3.pc"
 
-ac_config_commands="$ac_config_commands sdl2_config"
+ac_config_commands="$ac_config_commands sdl3_config"
 
 
-SUMMARY="SDL2 Configure Summary:\n"
+SUMMARY="SDL3 Configure Summary:\n"
 if test x$enable_shared = xyes; then
     SUMMARY="${SUMMARY}Building Shared Libraries\n"
 fi
@@ -31093,12 +31093,12 @@ do
     "include/SDL_config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/SDL_config.h" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile:Makefile.in:Makefile.rules" ;;
-    "sdl2-config") CONFIG_FILES="$CONFIG_FILES sdl2-config" ;;
-    "sdl2-config.cmake") CONFIG_FILES="$CONFIG_FILES sdl2-config.cmake" ;;
-    "sdl2-config-version.cmake") CONFIG_FILES="$CONFIG_FILES sdl2-config-version.cmake" ;;
-    "SDL2.spec") CONFIG_FILES="$CONFIG_FILES SDL2.spec" ;;
-    "sdl2.pc") CONFIG_FILES="$CONFIG_FILES sdl2.pc" ;;
-    "sdl2_config") CONFIG_COMMANDS="$CONFIG_COMMANDS sdl2_config" ;;
+    "sdl3-config") CONFIG_FILES="$CONFIG_FILES sdl3-config" ;;
+    "sdl3-config.cmake") CONFIG_FILES="$CONFIG_FILES sdl3-config.cmake" ;;
+    "sdl3-config-version.cmake") CONFIG_FILES="$CONFIG_FILES sdl3-config-version.cmake" ;;
+    "SDL3.spec") CONFIG_FILES="$CONFIG_FILES SDL3.spec" ;;
+    "sdl3.pc") CONFIG_FILES="$CONFIG_FILES sdl3.pc" ;;
+    "sdl3_config") CONFIG_COMMANDS="$CONFIG_COMMANDS sdl3_config" ;;
     "summary") CONFIG_COMMANDS="$CONFIG_COMMANDS summary" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -32522,7 +32522,7 @@ compiler_lib_search_path=$lt_compiler_lib_search_path_CXX
 _LT_EOF
 
  ;;
-    "sdl2_config":C) chmod a+x sdl2-config ;;
+    "sdl3_config":C) chmod a+x sdl3-config ;;
     "summary":C) printf "$SUMMARY" ;;
 
   esac

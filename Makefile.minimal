@@ -5,8 +5,8 @@ CFLAGS  = -g -O2 $(INCLUDE)
 AR	= ar
 RANLIB	= ranlib
 
-TARGET  = libSDL2.a
-TESTTARGET = libSDL2_test.a
+TARGET  = libSDL3.a
+TESTTARGET = libSDL3_test.a
 
 SOURCES = \
 	src/*.c \

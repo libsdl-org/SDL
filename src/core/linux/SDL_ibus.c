@@ -434,7 +434,7 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
 static SDL_bool
 IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 {
-    const char *client_name = "SDL2_Application";
+    const char *client_name = "SDL3_Application";
     const char *path = NULL;
     SDL_bool result = SDL_FALSE;
     DBusObjectPathVTable ibus_vtable;
