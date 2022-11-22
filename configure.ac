@@ -1529,33 +1529,6 @@ dnl See if libdecor is available
     fi
 }
 
-dnl Check for Native Client stuff
-CheckNativeClient()
-{
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-          #if !defined(__native_client__)
-          #error "NO NACL"
-          #endif
-        ]],[])], [
-        AC_DEFINE(SDL_VIDEO_DRIVER_NACL, 1, [ ])
-        AC_DEFINE(SDL_AUDIO_DRIVER_NACL, 1, [ ])
-        AC_DEFINE(HAVE_POW, 1, [ ])
-        AC_DEFINE(HAVE_OPENGLES2, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
-
-        SDL_LIBS="-lppapi_simple -lppapi_gles2 $SDL_LIBS"
-
-        SDLMAIN_SOURCES="$srcdir/src/main/nacl/*.c"
-        SOURCES="$SOURCES $srcdir/src/audio/nacl/*.c"
-        SUMMARY_audio="${SUMMARY_audio} nacl"
-        have_audio=yes
-        SOURCES="$SOURCES $srcdir/src/video/nacl/*.c"
-        SUMMARY_video="${SUMMARY_video} nacl opengles2"
-        have_video=yes
-        ],[])
-}
-
 CheckRPI()
 {
     AC_ARG_ENABLE(video-rpi,
@@ -4145,29 +4118,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
 
         if test x$enable_video_metal = xyes -o x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,QuartzCore -Wl,-weak_framework,Metal"
-        fi
-        ;;
-    *-nacl|*-pnacl)
-        ARCH=nacl
-        CheckNativeClient
-        CheckDummyAudio
-        CheckDummyVideo
-        CheckOffscreenVideo
-        CheckInputEvents
-        CheckPTHREAD
-        CheckO_CLOEXEC
-
-        # Set up files for the timer library
-        if test x$enable_timers = xyes; then
-            AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
-            have_timers=yes
-        fi
-
-        if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_NACL, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
-            have_filesystem=yes
         fi
         ;;
     *-*-emscripten* )

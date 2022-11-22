@@ -62,10 +62,6 @@
 #include "SDL_system.h"
 #endif
 
-#if __NACL__
-#include "nacl_io/nacl_io.h"
-#endif
-
 #if defined(__WIN32__) || defined(__GDK__)
 
 /* Functions to read/write Win32 API file pointers */

@@ -496,9 +496,6 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
 #if HAVE_STDIO_H && \
     !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
     fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
-#if __NACL__
-    fflush(stderr);
-#endif
 #endif
 }
 

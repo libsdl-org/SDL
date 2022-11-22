@@ -83,15 +83,6 @@
 /* We need to export SDL_main so it can be launched from Java */
 #define SDLMAIN_DECLSPEC    DECLSPEC
 
-#elif defined(__NACL__)
-/* On NACL we use ppapi_simple to set up the application helper code,
-   then wait for the first PSE_INSTANCE_DIDCHANGEVIEW event before 
-   starting the user main function.
-   All user code is run in a separate thread by ppapi_simple, thus 
-   allowing for blocking io to take place via nacl_io
-*/
-#define SDL_MAIN_NEEDED
-
 #elif defined(__PSP__)
 /* On PSP SDL provides a main function that sets the module info,
    activates the GPU and starts the thread required to be able to exit

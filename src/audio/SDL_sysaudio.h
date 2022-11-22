@@ -187,7 +187,6 @@ extern AudioBootStrap ALSA_bootstrap;
 extern AudioBootStrap NETBSDAUDIO_bootstrap;
 extern AudioBootStrap DSP_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
-extern AudioBootStrap NACLAUDIO_bootstrap;
 extern AudioBootStrap WASAPI_bootstrap;
 extern AudioBootStrap DSOUND_bootstrap;
 extern AudioBootStrap WINMM_bootstrap;
