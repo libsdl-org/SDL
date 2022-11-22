@@ -46,13 +46,27 @@
 #endif
 
 /* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
+static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32,{ 0xb1, 0x78, 0xc2, 0xf5, 0x68, 0xa7, 0x03, 0xb2 } };
 static const IID SDL_IID_IAudioRenderClient = { 0xf294acfc, 0x3146, 0x4483,{ 0xa7, 0xbf, 0xad, 0xdc, 0xa7, 0xc2, 0x60, 0xe2 } };
 static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0,{ 0xa4, 0xde, 0x18, 0x5c, 0x39, 0x5c, 0xd3, 0x17 } };
+
+/* handle to Avrt.dll--Vista and later!--for flagging the callback thread as "Pro Audio" (low latency). */
+static HMODULE libavrt = NULL;
+typedef HANDLE(WINAPI *pfnAvSetMmThreadCharacteristicsW)(LPCWSTR, LPDWORD);
+typedef BOOL(WINAPI *pfnAvRevertMmThreadCharacteristics)(HANDLE);
+static pfnAvSetMmThreadCharacteristicsW pAvSetMmThreadCharacteristicsW = NULL;
+static pfnAvRevertMmThreadCharacteristics pAvRevertMmThreadCharacteristics = NULL;
 
 static void
 WASAPI_DetectDevices(void)
 {
-    WASAPI_EnumerateEndpoints();
+    SDL_IMMDevice_EnumerateEndpoints(SDL_FALSE);
+}
+
+int
+WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    return SDL_IMMDevice_GetDefaultAudioInfo(name, spec, iscapture);
 }
 
 static SDL_INLINE SDL_bool
@@ -126,7 +140,7 @@ UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
     return 0;
 }
 
-
+static int ActivateWasapiDevice(_THIS, SDL_bool isrecovery);
 static void ReleaseWasapiDevice(_THIS);
 
 static SDL_bool
@@ -143,7 +157,7 @@ RecoverWasapiDevice(_THIS)
        devices try to reinitialize whatever the new default is, so it's more
        likely to carry on here, but this handles a non-default device that
        simply had its format changed in the Windows Control Panel. */
-    if (WASAPI_ActivateDevice(this, SDL_TRUE) == -1) {
+    if (ActivateWasapiDevice(this, SDL_TRUE) == -1) {
         SDL_OpenedAudioDeviceDisconnected(this);
         return SDL_FALSE;
     }
@@ -349,11 +363,6 @@ ReleaseWasapiDevice(_THIS)
         this->hidden->capturestream = NULL;
     }
 
-    if (this->hidden->activation_handler) {
-        WASAPI_PlatformDeleteActivationHandler(this->hidden->activation_handler);
-        this->hidden->activation_handler = NULL;
-    }
-
     if (this->hidden->event) {
         CloseHandle(this->hidden->event);
         this->hidden->event = NULL;
@@ -362,18 +371,6 @@ ReleaseWasapiDevice(_THIS)
 
 static void
 WASAPI_CloseDevice(_THIS)
-{
-    WASAPI_UnrefDevice(this);
-}
-
-void
-WASAPI_RefDevice(_THIS)
-{
-    SDL_AtomicIncRef(&this->hidden->refcount);
-}
-
-void
-WASAPI_UnrefDevice(_THIS)
 {
     if (!SDL_AtomicDecRef(&this->hidden->refcount)) {
         return;
@@ -390,7 +387,7 @@ WASAPI_UnrefDevice(_THIS)
 }
 
 /* This is called once a device is activated, possibly asynchronously. */
-int
+static int
 WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 {
     /* !!! FIXME: we could request an exclusive mode stream, which is lower latency;
@@ -541,6 +538,34 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
     return 0;  /* good to go. */
 }
 
+static int
+ActivateWasapiDevice(_THIS, const SDL_bool isrecovery)
+{
+    IMMDevice *device = NULL;
+    HRESULT ret;
+
+    if (SDL_IMMDevice_Get(this->hidden->devid, &device, this->iscapture) < 0) {
+        this->hidden->client = NULL;
+        return -1; /* This is already set by SDL_IMMDevice_Get */
+    }
+
+    /* this is not async in standard win32, yay! */
+    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **) &this->hidden->client);
+    IMMDevice_Release(device);
+
+    if (FAILED(ret)) {
+        SDL_assert(this->hidden->client == NULL);
+        return WIN_SetErrorFromHRESULT("WASAPI can't activate audio endpoint", ret);
+    }
+
+    SDL_assert(this->hidden->client != NULL);
+    if (WASAPI_PrepDevice(this, isrecovery) == -1) {   /* not async, fire it right away. */
+        return -1;
+    }
+
+    return 0;  /* good to go. */
+}
+
 
 static int
 WASAPI_OpenDevice(_THIS, const char *devname)
@@ -555,7 +580,7 @@ WASAPI_OpenDevice(_THIS, const char *devname)
     }
     SDL_zerop(this->hidden);
 
-    WASAPI_RefDevice(this);   /* so CloseDevice() will unref to zero. */
+    SDL_AtomicIncRef(&this->hidden->refcount); /* so CloseDevice() will unref to zero. */
 
     if (!devid) {  /* is default device? */
         this->hidden->default_device_generation = SDL_AtomicGet(this->iscapture ? &SDL_IMMDevice_DefaultCaptureGeneration : &SDL_IMMDevice_DefaultPlaybackGeneration);
@@ -566,7 +591,7 @@ WASAPI_OpenDevice(_THIS, const char *devname)
         }
     }
 
-    if (WASAPI_ActivateDevice(this, SDL_FALSE) == -1) {
+    if (ActivateWasapiDevice(this, SDL_FALSE) == -1) {
         return -1;  /* already set error. */
     }
 
@@ -584,26 +609,58 @@ WASAPI_OpenDevice(_THIS, const char *devname)
 static void
 WASAPI_ThreadInit(_THIS)
 {
-    WASAPI_PlatformThreadInit(this);
+    /* this thread uses COM. */
+    if (SUCCEEDED(WIN_CoInitialize())) {    /* can't report errors, hope it worked! */
+        this->hidden->coinitialized = SDL_TRUE;
+    }
+
+    /* Set this thread to very high "Pro Audio" priority. */
+    if (pAvSetMmThreadCharacteristicsW) {
+        DWORD idx = 0;
+        this->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
+    }
 }
 
 static void
 WASAPI_ThreadDeinit(_THIS)
 {
-    WASAPI_PlatformThreadDeinit(this);
+    /* Set this thread back to normal priority. */
+    if (this->hidden->task && pAvRevertMmThreadCharacteristics) {
+        pAvRevertMmThreadCharacteristics(this->hidden->task);
+        this->hidden->task = NULL;
+    }
+
+    if (this->hidden->coinitialized) {
+        WIN_CoUninitialize();
+        this->hidden->coinitialized = SDL_FALSE;
+    }
 }
 
 static void
 WASAPI_Deinitialize(void)
 {
-    WASAPI_PlatformDeinit();
+    if (libavrt) {
+        FreeLibrary(libavrt);
+        libavrt = NULL;
+    }
+
+    pAvSetMmThreadCharacteristicsW = NULL;
+    pAvRevertMmThreadCharacteristics = NULL;
+
+    SDL_IMMDevice_Quit();
 }
 
 static SDL_bool
 WASAPI_Init(SDL_AudioDriverImpl * impl)
 {
-    if (WASAPI_PlatformInit() == -1) {
-        return SDL_FALSE;
+    if (SDL_IMMDevice_Init() < 0) {
+        return SDL_FALSE; /* Error is set by SDL_IMMDevice_Init */
+    }
+
+    libavrt = LoadLibrary(TEXT("avrt.dll"));  /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
+    if (libavrt) {
+        pAvSetMmThreadCharacteristicsW = (pfnAvSetMmThreadCharacteristicsW) GetProcAddress(libavrt, "AvSetMmThreadCharacteristicsW");
+        pAvRevertMmThreadCharacteristics = (pfnAvRevertMmThreadCharacteristics) GetProcAddress(libavrt, "AvRevertMmThreadCharacteristics");
     }
 
     /* Set the function pointers */
