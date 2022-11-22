@@ -289,8 +289,7 @@ SDL_EVDEV_kbd_init(void)
                 kbd_register_emerg_cleanup(kbd);
             }
             SDL_free(devicePath);
-        }
-        else kbd->keyboard_fd = kbd->console_fd;
+        } else kbd->keyboard_fd = kbd->console_fd;
     }
 
     return kbd;

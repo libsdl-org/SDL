@@ -92,9 +92,7 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
-    }
-    else if(!hasWin32SurfaceExtension)
-    {
+    } else if(!hasWin32SurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_WIN32_SURFACE_EXTENSION_NAME "extension");
         goto fail;

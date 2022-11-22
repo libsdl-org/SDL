@@ -152,8 +152,7 @@ void ANDROIDAUDIO_PauseDevices(void)
         if (SDL_AtomicGet(&audioDevice->paused)) {
             /* The device is already paused, leave it alone */
             private->resume = SDL_FALSE;
-        }
-        else {
+        } else {
             SDL_LockMutex(audioDevice->mixer_lock);
             SDL_AtomicSet(&audioDevice->paused, 1);
             private->resume = SDL_TRUE;
@@ -165,8 +164,7 @@ void ANDROIDAUDIO_PauseDevices(void)
         if (SDL_AtomicGet(&captureDevice->paused)) {
             /* The device is already paused, leave it alone */
             private->resume = SDL_FALSE;
-        }
-        else {
+        } else {
             SDL_LockMutex(captureDevice->mixer_lock);
             SDL_AtomicSet(&captureDevice->paused, 1);
             private->resume = SDL_TRUE;

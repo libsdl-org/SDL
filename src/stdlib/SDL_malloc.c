@@ -3681,9 +3681,7 @@ sys_alloc(mstate m, size_t nb)
                          (size_t) ((tbase + tsize) - (char *) mn) -
                          TOP_FOOT_SIZE);
             }
-        }
-
-        else {
+        } else {
             /* Try to merge with an existing segment */
             msegmentptr sp = &m->seg;
             while (sp != 0 && tbase != sp->base + sp->size) {
@@ -5134,14 +5132,10 @@ mspace_mallopt(int param_number, int value)
       ptr = (void *) ((((size_t) ptr) + RM_PAGE_MASK) & ~RM_PAGE_MASK);
       sbrk_top = (char *) ptr + size;
       return ptr;
-    }
-    else if (size < 0)
-    {
+    } else if (size < 0) {
       // we don't currently support shrink behavior
       return (void *) MFAIL;
-    }
-    else
-    {
+    } else {
       return sbrk_top;
     }
   }

@@ -863,9 +863,7 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
         window_data->window->flags |= window_data->requested_fullscreen_mode;
 
         window_data->requested_fullscreen_mode = 0;
-    }
-    else
-    {
+    } else {
         window_data->window->flags &= ~FULLSCREEN_MASK;
 
         /* reset fullscreen window if the browser left fullscreen */

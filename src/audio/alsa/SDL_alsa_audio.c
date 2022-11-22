@@ -401,8 +401,7 @@ ALSA_PlayDevice(_THIS)
                 return;
             }
             continue;
-        }
-        else if (status == 0) {
+        } else if (status == 0) {
             /* No frames were written (no available space in pcm device).
                Allow other threads to catch up. */
             Uint32 delay = (frames_left / 2 * 1000) / this->spec.freq;
@@ -441,8 +440,7 @@ ALSA_CaptureFromDevice(_THIS, void *buffer, int buflen)
         if (status == -EAGAIN) {
             ALSA_snd_pcm_wait(this->hidden->pcm_handle, wait_time);
             status = 0;
-        }
-        else if (status < 0) {
+        } else if (status < 0) {
             /*printf("ALSA: capture error %d\n", status);*/
             status = ALSA_snd_pcm_recover(this->hidden->pcm_handle, status, 0);
             if (status < 0) {

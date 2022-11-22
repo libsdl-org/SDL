@@ -175,9 +175,7 @@ ScreenshotWindow(HWND hwnd, char* filename, SDL_bool only_client_area)
             return_code = 0;
             goto screenshotwindow_cleanup_generic;
         }
-    }
-    else
-    {
+    } else {
         width = dimensions.right - dimensions.left;
         height = dimensions.bottom - dimensions.top;
         windowdc = GetWindowDC(hwnd);

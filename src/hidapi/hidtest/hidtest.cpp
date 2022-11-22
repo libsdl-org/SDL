@@ -135,8 +135,7 @@ int main(int argc, char* argv[])
 	if (res < 0) {
 		printf("Unable to get a feature report.\n");
 		printf("%ls", hid_error(handle));
-	}
-	else {
+	} else {
 		// Print out the returned buffer.
 		printf("Feature Report\n   ");
 		for(i = 0; i < res; i++) {

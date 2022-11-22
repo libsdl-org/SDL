@@ -63,13 +63,9 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         buttonParam.msg1 = messageboxdata->buttons[0].text;
         buttonParam.msg2 = messageboxdata->buttons[1].text;
         buttonParam.msg3 = messageboxdata->buttons[2].text;
-    }
-    else if (messageboxdata->numbuttons == 2)
-    {
+    } else if (messageboxdata->numbuttons == 2) {
         msgParam.buttonType = SCE_MSG_DIALOG_BUTTON_TYPE_YESNO;
-    }
-    else if (messageboxdata->numbuttons == 1)
-    {
+    } else if (messageboxdata->numbuttons == 1) {
         msgParam.buttonType = SCE_MSG_DIALOG_BUTTON_TYPE_OK;
     }
     param.userMsgParam = &msgParam;
@@ -96,31 +92,19 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
         if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON1) {
             *buttonid = messageboxdata->buttons[0].buttonid;
-        }
-        else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON2)
-        {
+        } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON2) {
             *buttonid = messageboxdata->buttons[1].buttonid;
-        }
-        else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON3)
-        {
+        } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON3) {
             *buttonid = messageboxdata->buttons[2].buttonid;
-        }
-        else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_YES)
-        {
+        } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_YES) {
             *buttonid = messageboxdata->buttons[0].buttonid;
-        }
-        else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_NO)
-        {
+        } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_NO) {
             *buttonid = messageboxdata->buttons[1].buttonid;
-        }
-        else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_OK)
-        {
+        } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_OK) {
             *buttonid = messageboxdata->buttons[0].buttonid;
         }
         sceMsgDialogTerm();
-    }
-    else
-    {
+    } else {
         return -1;
     }
 

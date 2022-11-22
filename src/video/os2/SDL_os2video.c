@@ -1165,8 +1165,7 @@ static void OS2_SetWindowFullscreen(_THIS, SDL_Window *window,
 
     if (!WinCalcFrameRect(pWinData->hwndFrame, &rectl, FALSE)) {
         debug_os2("WinCalcFrameRect() failed");
-    }
-    else if (!WinSetWindowPos(pWinData->hwndFrame, HWND_TOP,
+    } else if (!WinSetWindowPos(pWinData->hwndFrame, HWND_TOP,
                               rectl.xLeft, rectl.yBottom,
                               rectl.xRight - rectl.xLeft, rectl.yTop - rectl.yBottom,
                               ulFlags)) {

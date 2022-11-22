@@ -100,9 +100,7 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
-    }
-    else if(!hasDisplayExtension)
-    {
+    } else if(!hasDisplayExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_DISPLAY_EXTENSION_NAME "extension");
         goto fail;
