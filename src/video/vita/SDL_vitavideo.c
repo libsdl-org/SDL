@@ -143,7 +143,7 @@ VITA_Create()
 
 #if defined(SDL_VIDEO_VITA_PIB) || defined(SDL_VIDEO_VITA_PVR)
 #if defined(SDL_VIDEO_VITA_PVR_OGL)
-if(SDL_getenv("VITA_PVR_OGL") != NULL) {
+if (SDL_getenv("VITA_PVR_OGL") != NULL) {
     device->GL_LoadLibrary = VITA_GL_LoadLibrary;
     device->GL_CreateContext = VITA_GL_CreateContext;
     device->GL_GetProcAddress = VITA_GL_GetProcAddress;
@@ -297,7 +297,7 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
         win.windowSize = PSP2_WINDOW_960X544;
     }
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
-      if(SDL_getenv("VITA_PVR_OGL") != NULL) {
+      if (SDL_getenv("VITA_PVR_OGL") != NULL) {
         /* Set version to 2.1 and PROFILE to ES */
         temp_major = _this->gl_config.major_version;
         temp_minor = _this->gl_config.minor_version;
@@ -311,7 +311,7 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
       if (wdata->egl_surface == EGL_NO_SURFACE) {
           return SDL_SetError("Could not create GLES window surface");
       }
-      if(SDL_getenv("VITA_PVR_OGL") != NULL) {
+      if (SDL_getenv("VITA_PVR_OGL") != NULL) {
         /* Revert */
         _this->gl_config.major_version = temp_major;
         _this->gl_config.minor_version = temp_minor;
@@ -426,10 +426,10 @@ static void utf16_to_utf8(const uint16_t *src, uint8_t *dst) {
   for (i = 0; src[i]; i++) {
     if ((src[i] & 0xFF80) == 0) {
       *(dst++) = src[i] & 0xFF;
-    } else if((src[i] & 0xF800) == 0) {
+    } else if ((src[i] & 0xF800) == 0) {
       *(dst++) = ((src[i] >> 6) & 0xFF) | 0xC0;
       *(dst++) = (src[i] & 0x3F) | 0x80;
-    } else if((src[i] & 0xFC00) == 0xD800 && (src[i + 1] & 0xFC00) == 0xDC00) {
+    } else if ((src[i] & 0xFC00) == 0xD800 && (src[i + 1] & 0xFC00) == 0xDC00) {
       *(dst++) = (((src[i] + 64) >> 8) & 0x3) | 0xF0;
       *(dst++) = (((src[i] >> 2) + 16) & 0x3F) | 0x80;
       *(dst++) = ((src[i] >> 4) & 0x30) | 0x80 | ((src[i + 1] << 2) & 0xF);

@@ -596,7 +596,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 
         ctx->m_eControllerType = CalculateControllerType(ctx, (ESwitchDeviceInfoControllerType)status->ucDeviceType);
 
-        for(i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
+        for (i = 0; i < sizeof(ctx->m_rgucMACAddress); ++i) {
             ctx->m_rgucMACAddress[i] = status->rgucMACAddress[sizeof(ctx->m_rgucMACAddress) - i - 1];
         }
 
@@ -777,14 +777,14 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     }
 
     for (stick = 0; stick < 2; ++stick) {
-        for(axis = 0; axis < 2; ++axis) {
+        for (axis = 0; axis < 2; ++axis) {
             ctx->m_StickExtents[stick].axis[axis].sMin = -(Sint16)(ctx->m_StickCalData[stick].axis[axis].sMin * 0.7f);
             ctx->m_StickExtents[stick].axis[axis].sMax = (Sint16)(ctx->m_StickCalData[stick].axis[axis].sMax * 0.7f);
         }
     }
 
     for (stick = 0; stick < 2; ++stick) {
-        for(axis = 0; axis < 2; ++axis) {
+        for (axis = 0; axis < 2; ++axis) {
             ctx->m_SimpleStickExtents[stick].axis[axis].sMin = (Sint16)(SDL_MIN_SINT16 * 0.5f);
             ctx->m_SimpleStickExtents[stick].axis[axis].sMax = (Sint16)(SDL_MAX_SINT16 * 0.5f);
         }

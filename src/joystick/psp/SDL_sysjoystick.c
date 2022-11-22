@@ -210,11 +210,11 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     y = pad.Ly;
 
     /* Axes */
-    if(old_x != x) {
+    if (old_x != x) {
         SDL_PrivateJoystickAxis(joystick, 0, analog_map[x]);
         old_x = x;
     }
-    if(old_y != y) {
+    if (old_y != y) {
         SDL_PrivateJoystickAxis(joystick, 1, analog_map[y]);
         old_y = y;
     }
@@ -222,7 +222,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     /* Buttons */
     changed = old_buttons ^ buttons;
     old_buttons = buttons;
-    if(changed) {
+    if (changed) {
         for (i = 0; i < SDL_arraysize(button_map); i++) {
             if (changed & button_map[i]) {
                 SDL_PrivateJoystickButton(

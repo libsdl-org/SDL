@@ -4121,7 +4121,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             prev[1] = k1;
             prev[2] = k2;
         }
-    } /* End for(), next triangle */
+    } /* End for (), next triangle */
 
     if (prev[0] != -1) {
         /* flush the last triangle */

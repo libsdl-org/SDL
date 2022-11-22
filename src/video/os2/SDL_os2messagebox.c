@@ -83,7 +83,7 @@ static VOID _wmInitDlg(HWND hwnd, MSGBOXDLGDATA *pDlgData)
      * coordinates_. */
     hps = WinGetPS(hwnd);
 
-    for(ulIdx = 0; ulIdx < cButtons; ulIdx++) {
+    for (ulIdx = 0; ulIdx < cButtons; ulIdx++) {
         /* Query size of text in window coordinates. */
         cbBuf = WinQueryWindowText(aButtons[ulIdx].hwnd, sizeof(acBuf), acBuf);
         GpiQueryTextBox(hps, cbBuf, acBuf, TXTBOX_COUNT, aptText);

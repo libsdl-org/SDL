@@ -150,7 +150,7 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
         res = SDL_TRUE;
     }
     // enable interuption
-    if(oldintr) { EIntr(); }
+    if (oldintr) { EIntr(); }
     return res;
 #else
 #error Please implement for your platform.

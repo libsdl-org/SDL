@@ -128,7 +128,7 @@ iteration()
 void
 loop()
 {
-    if(done)
+    if (done)
         emscripten_cancel_main_loop();
     else
         iteration();

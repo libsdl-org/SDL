@@ -51,15 +51,15 @@ typedef struct pthread_barrier {
 
 static int pthread_barrier_init(pthread_barrier_t *barrier, const pthread_barrierattr_t *attr, unsigned int count)
 {
-	if(count == 0) {
+	if (count == 0) {
 		errno = EINVAL;
 		return -1;
 	}
 	
-	if(pthread_mutex_init(&barrier->mutex, 0) < 0) {
+	if (pthread_mutex_init(&barrier->mutex, 0) < 0) {
 		return -1;
 	}
-	if(pthread_cond_init(&barrier->cond, 0) < 0) {
+	if (pthread_cond_init(&barrier->cond, 0) < 0) {
 		pthread_mutex_destroy(&barrier->mutex);
 		return -1;
 	}
@@ -80,7 +80,7 @@ static int pthread_barrier_wait(pthread_barrier_t *barrier)
 {
 	pthread_mutex_lock(&barrier->mutex);
 	++(barrier->count);
-	if(barrier->count >= barrier->trip_count) {
+	if (barrier->count >= barrier->trip_count) {
 		barrier->count = 0;
 		pthread_cond_broadcast(&barrier->cond);
 		pthread_mutex_unlock(&barrier->mutex);
@@ -510,7 +510,7 @@ static void process_pending_events() {
 	SInt32 res;
 	do {
 		res = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.001, FALSE);
-	} while(res != kCFRunLoopRunFinished && res != kCFRunLoopRunTimedOut);
+	} while (res != kCFRunLoopRunFinished && res != kCFRunLoopRunTimedOut);
 }
 
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)

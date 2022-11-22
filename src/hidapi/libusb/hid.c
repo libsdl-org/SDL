@@ -775,7 +775,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	struct hid_device_info *cur_dev = NULL;
 	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
-	if(hid_init() < 0)
+	if (hid_init() < 0)
 		return NULL;
 
 	num_devs = libusb_get_device_list(usb_context, &devs);
@@ -1086,7 +1086,7 @@ static int SDLCALL read_thread(void *param)
 	/* Make the first submission. Further submissions are made
 	   from inside read_callback() */
 	res = libusb_submit_transfer(dev->transfer);
-	if(res < 0) {
+	if (res < 0) {
                 LOG("libusb_submit_transfer failed: %d %s. Stopping read_thread from running\n", res, libusb_error_name(res));
                 dev->shutdown_thread = 1;
                 dev->transfer_loop_finished = 1;

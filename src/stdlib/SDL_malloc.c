@@ -1222,7 +1222,7 @@ extern "C"
 #endif /* LACKS_STDLIB_H */
 #ifdef DEBUG
 #if ABORT_ON_ASSERT_FAILURE
-#define assert(x) if(!(x)) ABORT
+#define assert(x) if (!(x)) ABORT
 #else /* ABORT_ON_ASSERT_FAILURE */
 #include <assert.h>
 #endif /* ABORT_ON_ASSERT_FAILURE */
@@ -2926,10 +2926,10 @@ do_check_malloc_state(mstate m)
     bindex_t i;
     size_t total;
     /* check bins */
-    for(i = 0; i < NSMALLBINS; ++i) {
+    for (i = 0; i < NSMALLBINS; ++i) {
         do_check_smallbin(m, i);
     }
-    for(i = 0; i < NTREEBINS; ++i) {
+    for (i = 0; i < NTREEBINS; ++i) {
         do_check_treebin(m, i);
     }
 
@@ -3414,7 +3414,7 @@ reset_on_error(mstate m)
     m->seg.size = 0;
     m->seg.next = 0;
     m->top = m->dv = 0;
-    for(i = 0; i < NTREEBINS; ++i) {
+    for (i = 0; i < NTREEBINS; ++i) {
         *treebin_at(m, i) = 0;
     }
     init_bins(m);
@@ -4011,7 +4011,7 @@ internal_realloc(mstate m, void *oldmem, size_t bytes)
         } else {
             void *newmem = internal_malloc(m, bytes);
             if (newmem != 0) {
-                size_t oc = oldsize - overhead_for(oldp);
+                size_t oc = oldsize - overhead_for (oldp);
                 memcpy(newmem, oldmem, (oc < bytes) ? oc : bytes);
                 internal_free(m, oldmem);
             }
@@ -4165,7 +4165,7 @@ ialloc(mstate m, size_t n_elements, size_t * sizes, int opts, void *chunks[])
     } else {                    /* add up all the sizes */
         element_size = 0;
         contents_size = 0;
-        for(i = 0; i != n_elements; ++i) {
+        for (i = 0; i != n_elements; ++i) {
             contents_size += request2size(sizes[i]);
         }
     }
@@ -4235,7 +4235,7 @@ ialloc(mstate m, size_t n_elements, size_t * sizes, int opts, void *chunks[])
         }
         check_inuse_chunk(m, mem2chunk(marray));
     }
-    for(i = 0; i != n_elements; ++i) {
+    for (i = 0; i != n_elements; ++i) {
         check_inuse_chunk(m, mem2chunk(marray[i]));
     }
 
@@ -4396,7 +4396,7 @@ dlfree(void *mem)
     if (mem != 0) {
         mchunkptr p = mem2chunk(mem);
 #if FOOTERS
-        mstate fm = get_mstate_for(p);
+        mstate fm = get_mstate_for (p);
         if (!ok_magic(fm)) {
             USAGE_ERROR_ACTION(fm, p);
             return;
@@ -4514,7 +4514,7 @@ dlrealloc(void *oldmem, size_t bytes)
 #if ! FOOTERS
         mstate m = gm;
 #else /* FOOTERS */
-        mstate m = get_mstate_for(mem2chunk(oldmem));
+        mstate m = get_mstate_for (mem2chunk(oldmem));
         if (!ok_magic(m)) {
             USAGE_ERROR_ACTION(m, oldmem);
             return 0;
@@ -4605,7 +4605,7 @@ dlmalloc_usable_size(void *mem)
     if (mem != 0) {
         mchunkptr p = mem2chunk(mem);
         if (cinuse(p)) {
-            return chunksize(p) - overhead_for(p);
+            return chunksize(p) - overhead_for (p);
         }
     }
     return 0;
@@ -4832,7 +4832,7 @@ mspace_free(mspace msp, void *mem)
     if (mem != 0) {
         mchunkptr p = mem2chunk(mem);
 #if FOOTERS
-        mstate fm = get_mstate_for(p);
+        mstate fm = get_mstate_for (p);
 #else /* FOOTERS */
         mstate fm = (mstate) msp;
 #endif /* FOOTERS */
@@ -4951,7 +4951,7 @@ mspace_realloc(mspace msp, void *oldmem, size_t bytes)
     else {
 #if FOOTERS
         mchunkptr p = mem2chunk(oldmem);
-        mstate ms = get_mstate_for(p);
+        mstate ms = get_mstate_for (p);
 #else /* FOOTERS */
         mstate ms = (mstate) msp;
 #endif /* FOOTERS */

@@ -567,7 +567,7 @@ SDL_InitFormat(SDL_PixelFormat * format, Uint32 pixel_format)
     format->Rshift = 0;
     format->Rloss = 8;
     if (Rmask) {
-        for(mask = Rmask; !(mask & 0x01); mask >>= 1) {
+        for (mask = Rmask; !(mask & 0x01); mask >>= 1) {
             ++format->Rshift;
         }
         for (; (mask & 0x01); mask >>= 1)
@@ -578,7 +578,7 @@ SDL_InitFormat(SDL_PixelFormat * format, Uint32 pixel_format)
     format->Gshift = 0;
     format->Gloss = 8;
     if (Gmask) {
-        for(mask = Gmask; !(mask & 0x01); mask >>= 1) {
+        for (mask = Gmask; !(mask & 0x01); mask >>= 1) {
             ++format->Gshift;
         }
         for (; (mask & 0x01); mask >>= 1)
@@ -589,7 +589,7 @@ SDL_InitFormat(SDL_PixelFormat * format, Uint32 pixel_format)
     format->Bshift = 0;
     format->Bloss = 8;
     if (Bmask) {
-        for(mask = Bmask; !(mask & 0x01); mask >>= 1) {
+        for (mask = Bmask; !(mask & 0x01); mask >>= 1) {
             ++format->Bshift;
         }
         for (; (mask & 0x01); mask >>= 1)
@@ -600,7 +600,7 @@ SDL_InitFormat(SDL_PixelFormat * format, Uint32 pixel_format)
     format->Ashift = 0;
     format->Aloss = 8;
     if (Amask) {
-        for(mask = Amask; !(mask & 0x01); mask >>= 1) {
+        for (mask = Amask; !(mask & 0x01); mask >>= 1) {
             ++format->Ashift;
         }
         for (; (mask & 0x01); mask >>= 1)

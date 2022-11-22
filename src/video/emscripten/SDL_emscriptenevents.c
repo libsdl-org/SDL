@@ -859,7 +859,7 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
     SDL_WindowData *window_data = userData;
     SDL_VideoDisplay *display;
 
-    if(fullscreenChangeEvent->isFullscreen) {
+    if (fullscreenChangeEvent->isFullscreen) {
         window_data->window->flags |= window_data->requested_fullscreen_mode;
 
         window_data->requested_fullscreen_mode = 0;
@@ -891,13 +891,13 @@ Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *u
         }
     }
 
-    if(!(window_data->window->flags & FULLSCREEN_MASK)) {
+    if (!(window_data->window->flags & FULLSCREEN_MASK)) {
         /* this will only work if the canvas size is set through css */
-        if(window_data->window->flags & SDL_WINDOW_RESIZABLE) {
+        if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
             double w = window_data->window->w;
             double h = window_data->window->h;
 
-            if(window_data->external_size) {
+            if (window_data->external_size) {
                 emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
             }
 
@@ -927,7 +927,7 @@ Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userDat
     /*this is used during fullscreen changes*/
     SDL_WindowData *window_data = userData;
 
-    if(window_data->fullscreen_resize) {
+    if (window_data->fullscreen_resize) {
         double css_w, css_h;
         emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
         SDL_SendWindowEvent(window_data->window, SDL_WINDOWEVENT_RESIZED, css_w, css_h);

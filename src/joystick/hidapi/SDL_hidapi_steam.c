@@ -213,7 +213,7 @@ static uint8_t GetSegmentHeader( int nSegmentNumber, bool bLastPacket )
 static void hexdump( const uint8_t *ptr, int len )
 {
     int i;
-    for(i = 0; i < len; ++i) {
+    for (i = 0; i < len; ++i) {
         printf("%02x ", ptr[i]);
     }
     printf("\n");
@@ -362,7 +362,7 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
         ++ucDataStartOffset;
 #endif
 
-        while( nRetries < BLE_MAX_READ_RETRIES ) {
+        while ( nRetries < BLE_MAX_READ_RETRIES ) {
             SDL_memset( uSegmentBuffer, 0, sizeof( uSegmentBuffer ) );
             uSegmentBuffer[ 0 ] = BLE_REPORT_NUMBER;
             nRet = SDL_hid_get_feature_report( dev, uSegmentBuffer, ucBytesToRead );

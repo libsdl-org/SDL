@@ -716,7 +716,7 @@ RAWINPUT_DeviceFromHandle(HANDLE hDevice)
 static void
 RAWINPUT_AddDevice(HANDLE hDevice)
 {
-#define CHECK(expression) { if(!(expression)) goto err; }
+#define CHECK(expression) { if (!(expression)) goto err; }
     SDL_RAWINPUT_Device *device = NULL;
     SDL_RAWINPUT_Device *curr, *last;
     RID_DEVICE_INFO rdi;

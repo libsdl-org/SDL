@@ -841,7 +841,7 @@ KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources)
     /* save previous vrr state */
     dispdata->saved_vrr = KMSDRM_CrtcGetVrr(viddata->drm_fd, crtc->crtc_id);
     /* try to enable vrr */
-    if(KMSDRM_ConnectorCheckVrrCapable(viddata->drm_fd, connector->connector_id, "VRR_CAPABLE")) {
+    if (KMSDRM_ConnectorCheckVrrCapable(viddata->drm_fd, connector->connector_id, "VRR_CAPABLE")) {
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Enabling VRR");
         KMSDRM_CrtcSetVrr(viddata->drm_fd, crtc->crtc_id, SDL_TRUE);
     }
@@ -1068,7 +1068,7 @@ KMSDRM_DestroySurfaces(_THIS, SDL_Window *window)
                 &dispdata->original_mode);
     }
 
-    if(ret) {
+    if (ret) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
     }
 

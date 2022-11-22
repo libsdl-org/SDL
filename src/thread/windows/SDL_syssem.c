@@ -421,7 +421,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
                 pWaitOnAddress = (pfnWaitOnAddress) GetProcAddress(synch120, "WaitOnAddress");
                 pWakeByAddressSingle = (pfnWakeByAddressSingle) GetProcAddress(synch120, "WakeByAddressSingle");
 
-                if(pWaitOnAddress && pWakeByAddressSingle) {
+                if (pWaitOnAddress && pWakeByAddressSingle) {
                     impl = &SDL_sem_impl_atom;
                 }
             }

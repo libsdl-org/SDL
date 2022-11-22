@@ -148,7 +148,7 @@ SDL_QuitBeApp(void)
 void SDL_BApp::ClearID(SDL_BWin *bwin) {
     _SetSDLWindow(NULL, bwin->GetID());
     int32 i = _GetNumWindowSlots() - 1;
-    while(i >= 0 && GetSDLWindow(i) == NULL) {
+    while (i >= 0 && GetSDLWindow(i) == NULL) {
         _PopBackWindow();
         --i;
     }

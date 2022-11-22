@@ -56,7 +56,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if(org == NULL) {
+    if (org == NULL) {
         org = "";
     }
 

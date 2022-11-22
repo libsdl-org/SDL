@@ -14,23 +14,23 @@ int
 SDLVisualTest_InitRandomVariator(SDLVisualTest_RandomVariator* variator,
                                  SDLVisualTest_SUTConfig* config, Uint64 seed)
 {
-    if(variator == NULL) {
+    if (variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return 0;
     }
-    if(config == NULL) {
+    if (config == NULL) {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
     }
 
-    if(seed)
+    if (seed)
         SDLTest_FuzzerInit(seed);
     else
         SDLTest_FuzzerInit(time(NULL));
 
     variator->config = *config;
 
-    if(!SDLVisualTest_InitVariation(&variator->variation, &variator->config)) {
+    if (!SDLVisualTest_InitVariation(&variator->variation, &variator->config)) {
         SDLTest_LogError("SDLVisualTest_InitVariation() failed");
         return 0;
     }
@@ -45,7 +45,7 @@ SDLVisualTest_GetNextRandomVariation(SDLVisualTest_RandomVariator* variator)
     SDLVisualTest_SUTOption* options;
     int i;
 
-    if(variator == NULL) {
+    if (variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return NULL;
     }
@@ -55,7 +55,7 @@ SDLVisualTest_GetNextRandomVariation(SDLVisualTest_RandomVariator* variator)
     options = variator->config.options;
 
     /* generate a random variation */
-    for(i = 0; i < variator->variation.num_vars; i++)
+    for (i = 0; i < variator->variation.num_vars; i++)
     {
         switch(options[i].type)
         {
@@ -87,7 +87,7 @@ SDLVisualTest_GetNextRandomVariation(SDLVisualTest_RandomVariator* variator)
     }
 
     /* convert variation to an arguments string */
-    if(!SDLVisualTest_MakeStrFromVariation(&variator->variation, &variator->config,
+    if (!SDLVisualTest_MakeStrFromVariation(&variator->variation, &variator->config,
                                            variator->buffer, MAX_SUT_ARGS_LEN))
     {
         SDLTest_LogError("SDLVisualTest_MakeStrFromVariation() failed");
@@ -99,7 +99,7 @@ SDLVisualTest_GetNextRandomVariation(SDLVisualTest_RandomVariator* variator)
 
 void SDLVisualTest_FreeRandomVariator(SDLVisualTest_RandomVariator* variator)
 {
-    if(variator == NULL) {
+    if (variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return;
     }

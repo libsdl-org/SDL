@@ -75,11 +75,11 @@ X11_ResizeWindowShape(SDL_Window* window) {
         bitmapsize += 1;
     }
     bitmapsize *= window->h;
-    if(data->bitmapsize != bitmapsize || data->bitmap == NULL) {
+    if (data->bitmapsize != bitmapsize || data->bitmap == NULL) {
         data->bitmapsize = bitmapsize;
         SDL_free(data->bitmap);
         data->bitmap = SDL_malloc(data->bitmapsize);
-        if(data->bitmap == NULL) {
+        if (data->bitmap == NULL) {
             return SDL_OutOfMemory();
         }
     }

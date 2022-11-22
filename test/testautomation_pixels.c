@@ -352,7 +352,7 @@ pixels_allocFreePalette(void *arg)
       if (result->ncolors > 0) {
         SDLTest_AssertCheck(result->colors != NULL, "Verify value of result.colors is not NULL");
         if (result->colors != NULL) {
-          for(i = 0; i < result->ncolors; i++) {
+          for (i = 0; i < result->ncolors; i++) {
             SDLTest_AssertCheck(result->colors[i].r == 255, "Verify value of result.colors[%d].r; expected: 255, got %u", i, result->colors[i].r);
             SDLTest_AssertCheck(result->colors[i].g == 255, "Verify value of result.colors[%d].g; expected: 255, got %u", i, result->colors[i].g);
             SDLTest_AssertCheck(result->colors[i].b == 255, "Verify value of result.colors[%d].b; expected: 255, got %u", i, result->colors[i].b);
@@ -448,7 +448,7 @@ pixels_calcGammaRamp(void *arg)
     }
 
     /* Make call and check that values were updated */
-    for(i = 0; i < 256; i++) {
+    for (i = 0; i < 256; i++) {
         ramp[i] = magic;
     }
     SDL_CalculateGammaRamp(gamma, ramp);
@@ -480,7 +480,7 @@ pixels_calcGammaRamp(void *arg)
   SDL_ClearError();
   SDLTest_AssertPass("Call to SDL_ClearError()");
   gamma = -1;
-  for(i = 0; i < 256; i++) {
+  for (i = 0; i < 256; i++) {
     ramp[i] = magic;
   }
   SDL_CalculateGammaRamp(gamma, ramp);

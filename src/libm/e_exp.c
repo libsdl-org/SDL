@@ -113,11 +113,11 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	hx &= 0x7fffffff;		/* high word of |x| */
 
     /* filter out non-finite argument */
-	if(hx >= 0x40862E42) {			/* if |x|>=709.78... */
-            if(hx>=0x7ff00000) {
+	if (hx >= 0x40862E42) {			/* if |x|>=709.78... */
+            if (hx>=0x7ff00000) {
 	        u_int32_t lx;
 		GET_LOW_WORD(lx,x);
-		if(((hx&0xfffff)|lx)!=0)
+		if (((hx&0xfffff)|lx)!=0)
 		     return x+x; 		/* NaN */
 		else return (xsb==0)? x:0.0;	/* exp(+-inf)={inf,0} */
 	    }
@@ -127,7 +127,7 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 		} 
 
 		#else  /* !!! FIXME: check this: "huge * huge" is a compiler warning, maybe they wanted +Inf? */
-		if(x > o_threshold) return INFINITY; /* overflow */
+		if (x > o_threshold) return INFINITY; /* overflow */
 		#endif
 
 	    if (x < u_threshold) {
@@ -137,8 +137,8 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	}
 
     /* argument reduction */
-	if(hx > 0x3fd62e42) {		/* if  |x| > 0.5 ln2 */
-	    if(hx < 0x3FF0A2B2) {	/* and |x| < 1.5 ln2 */
+	if (hx > 0x3fd62e42) {		/* if  |x| > 0.5 ln2 */
+	    if (hx < 0x3FF0A2B2) {	/* and |x| < 1.5 ln2 */
 		hi = x-ln2HI[xsb]; lo=ln2LO[xsb]; k = 1-xsb-xsb;
 	    } else {
 		k  = (int32_t) (invln2*x+halF[xsb]);
@@ -148,7 +148,7 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	    }
 	    x  = hi - lo;
 	}
-	else if(hx < 0x3e300000)  {	/* when |x|<2**-28 */
+	else if (hx < 0x3e300000)  {	/* when |x|<2**-28 */
 	    if (huge + x > one) {
 		return one + x; /* trigger inexact */
 	    }
@@ -159,9 +159,9 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
     /* x is now in primary range */
 	t  = x*x;
 	c  = x - t*(P1+t*(P2+t*(P3+t*(P4+t*P5))));
-	if(k==0) 	return one-((x*c)/(c-2.0)-x);
+	if (k==0) 	return one-((x*c)/(c-2.0)-x);
 	else 		y = one-((lo-(x*c)/(2.0-c))-hi);
-	if(k >= -1021) {
+	if (k >= -1021) {
 	    u_int32_t hy;
 	    GET_HIGH_WORD(hy,y);
 	    SET_HIGH_WORD(y,hy+(k<<20));	/* add k to y's exponent */

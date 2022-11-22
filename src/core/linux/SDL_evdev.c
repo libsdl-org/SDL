@@ -229,7 +229,7 @@ SDL_EVDEV_Quit(void)
         SDL_EVDEV_kbd_quit(_this->kbd);
 
         /* Remove existing devices */
-        while(_this->first != NULL) {
+        while (_this->first != NULL) {
             SDL_EVDEV_device_removed(_this->first->path);
         }
 
@@ -466,7 +466,7 @@ SDL_EVDEV_Poll(void)
                             break;
                         }
 
-                        for(j = 0; j < item->touchscreen_data->max_slots; j++) {
+                        for (j = 0; j < item->touchscreen_data->max_slots; j++) {
                             norm_x = (float)(item->touchscreen_data->slots[j].x - item->touchscreen_data->min_x) /
                                 (float)item->touchscreen_data->range_x;
                             norm_y = (float)(item->touchscreen_data->slots[j].y - item->touchscreen_data->min_y) /
@@ -629,7 +629,7 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
         return SDL_OutOfMemory();
     }
 
-    for(i = 0; i < item->touchscreen_data->max_slots; i++) {
+    for (i = 0; i < item->touchscreen_data->max_slots; i++) {
         item->touchscreen_data->slots[i].tracking_id = -1;
     }
 
@@ -697,7 +697,7 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         SDL_free(mt_req_code);
         return;
     }
-    for(i = 0; i < item->touchscreen_data->max_slots; i++) {
+    for (i = 0; i < item->touchscreen_data->max_slots; i++) {
         /*
          * This doesn't account for the very edge case of the user removing their
          * finger and replacing it on the screen during the time we're out of sync,
@@ -724,7 +724,7 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         SDL_free(mt_req_code);
         return;
     }
-    for(i = 0; i < item->touchscreen_data->max_slots; i++) {
+    for (i = 0; i < item->touchscreen_data->max_slots; i++) {
         if (item->touchscreen_data->slots[i].tracking_id >= 0 &&
             item->touchscreen_data->slots[i].x != mt_req_values[i]) {
             item->touchscreen_data->slots[i].x = mt_req_values[i];
@@ -742,7 +742,7 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         SDL_free(mt_req_code);
         return;
     }
-    for(i = 0; i < item->touchscreen_data->max_slots; i++) {
+    for (i = 0; i < item->touchscreen_data->max_slots; i++) {
         if (item->touchscreen_data->slots[i].tracking_id >= 0 &&
             item->touchscreen_data->slots[i].y != mt_req_values[i]) {
             item->touchscreen_data->slots[i].y = mt_req_values[i];
@@ -760,7 +760,7 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         SDL_free(mt_req_code);
         return;
     }
-    for(i = 0; i < item->touchscreen_data->max_slots; i++) {
+    for (i = 0; i < item->touchscreen_data->max_slots; i++) {
         if (item->touchscreen_data->slots[i].tracking_id >= 0 &&
             item->touchscreen_data->slots[i].pressure != mt_req_values[i]) {
             item->touchscreen_data->slots[i].pressure = mt_req_values[i];

@@ -92,7 +92,7 @@ ActionTimerCallback(Uint32 interval, void* param)
     SDL_PushEvent(&event);
 
     /* calculate the new interval and return it */
-    if(current->next)
+    if (current->next)
         next_action_time = current->next->action.time - current->action.time;
     else {
         next_action_time = 0;
@@ -132,7 +132,7 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
     {
         case SDL_ACTION_KILL:
             SDLTest_Log("Action: Kill SUT");
-            if(SDL_IsProcessRunning(&pinfo) == 1 &&
+            if (SDL_IsProcessRunning(&pinfo) == 1 &&
                !SDL_KillProcess(&pinfo, &sut_exitstatus))
             {
                 SDLTest_LogError("SDL_KillProcess() failed");
@@ -143,7 +143,7 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
 
         case SDL_ACTION_QUIT:
             SDLTest_Log("Action: Quit SUT");
-            if(SDL_IsProcessRunning(&pinfo) == 1 &&
+            if (SDL_IsProcessRunning(&pinfo) == 1 &&
                !SDL_QuitProcess(&pinfo, &sut_exitstatus))
             {
                 SDLTest_LogError("SDL_QuitProcess() failed");
@@ -161,12 +161,12 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
 
             path = action->extra.process.path;
             args = action->extra.process.args;
-            if(args) {
+            if (args) {
                 SDLTest_Log("Action: Launch process: %s with arguments: %s",
                             path, args);
             } else
                 SDLTest_Log("Action: Launch process: %s", path);
-            if(!SDL_LaunchProcess(path, args, &action_process)) {
+            if (!SDL_LaunchProcess(path, args, &action_process)) {
                 SDLTest_LogError("SDL_LaunchProcess() failed");
                 return TEST_ERROR;
             }
@@ -174,10 +174,10 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
             /* small delay so that the process can do its job */
             SDL_Delay(1000);
 
-            if(SDL_IsProcessRunning(&action_process) > 0) {
+            if (SDL_IsProcessRunning(&action_process) > 0) {
                 SDLTest_LogError("Process %s took too long too complete."
                                  " Force killing...", action->extra.process.path);
-                if(!SDL_KillProcess(&action_process, &ps)) {
+                if (!SDL_KillProcess(&action_process, &ps)) {
                     SDLTest_LogError("SDL_KillProcess() failed");
                     return TEST_ERROR;
                 }
@@ -191,7 +191,7 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
 
             SDLTest_Log("Action: Take screenshot");
             /* can't take a screenshot if the SUT isn't running */
-            if(SDL_IsProcessRunning(&pinfo) != 1) {
+            if (SDL_IsProcessRunning(&pinfo) != 1) {
                 SDLTest_LogError("SUT has quit.");
                 *sut_running = 0;
                 return TEST_FAILED;
@@ -200,7 +200,7 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
             /* file name for the screenshot image */
             SDLVisualTest_HashString(args, hash);
             SDL_snprintf(path, MAX_PATH_LEN, "%s/%s", state.output_dir, hash);
-            if(!SDLVisualTest_ScreenshotProcess(&pinfo, path)) {
+            if (!SDLVisualTest_ScreenshotProcess(&pinfo, path)) {
                 SDLTest_LogError("SDLVisualTest_ScreenshotProcess() failed");
                 return TEST_ERROR;
             }
@@ -215,13 +215,13 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
             ret = SDLVisualTest_VerifyScreenshots(args, state.output_dir,
                                                   state.verify_dir);
 
-            if(ret == -1) {
+            if (ret == -1) {
                 SDLTest_LogError("SDLVisualTest_VerifyScreenshots() failed");
                 return TEST_ERROR;
-            } else if(ret == 0) {
+            } else if (ret == 0) {
                 SDLTest_Log("Verification failed: Images were not equal.");
                 return TEST_FAILED;
-            } else if(ret == 1)
+            } else if (ret == 1)
                 SDLTest_Log("Verification successful.");
             else {
                 SDLTest_Log("Verfication skipped.");
@@ -248,7 +248,7 @@ RunSUTAndTest(char* sutargs, int variation_num)
 
     return_code = TEST_PASSED;
 
-    if(sutargs == NULL) {
+    if (sutargs == NULL) {
         SDLTest_LogError("sutargs argument cannot be NULL");
         return_code = TEST_ERROR;
         goto runsutandtest_cleanup_generic;
@@ -258,7 +258,7 @@ RunSUTAndTest(char* sutargs, int variation_num)
     SDLTest_Log("Hash: %s", hash);
 
     success = SDL_LaunchProcess(state.sutapp, sutargs, &pinfo);
-    if(!success) {
+    if (!success) {
         SDLTest_Log("Could not launch SUT.");
         return_code = TEST_ERROR;
         goto runsutandtest_cleanup_generic;
@@ -272,16 +272,16 @@ RunSUTAndTest(char* sutargs, int variation_num)
     current = state.action_queue.front;
     action_timer = 0;
     kill_timer = 0;
-    if(current) {
+    if (current) {
         action_timer = SDL_AddTimer(current->action.time, ActionTimerCallback, NULL);
-        if(!action_timer) {
+        if (!action_timer) {
             SDLTest_LogError("SDL_AddTimer() failed");
             return_code = TEST_ERROR;
             goto runsutandtest_cleanup_timer;
         }
     }
     kill_timer = SDL_AddTimer(state.timeout, KillTimerCallback, NULL);
-    if(!kill_timer) {
+    if (!kill_timer) {
         SDLTest_LogError("SDL_AddTimer() failed");
         return_code = TEST_ERROR;
         goto runsutandtest_cleanup_timer;
@@ -289,11 +289,11 @@ RunSUTAndTest(char* sutargs, int variation_num)
 
     /* the timer stops running if the actions queue is empty, and the
        SUT stops running if it crashes or if we encounter a KILL/QUIT action */
-    while(sut_running) {
+    while (sut_running) {
         /* process the actions by using an event queue */
-        while(SDL_PollEvent(&event)) {
-            if(event.type == SDL_USEREVENT) {
-                if(event.user.code == ACTION_TIMER_EVENT) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_USEREVENT) {
+                if (event.user.code == ACTION_TIMER_EVENT) {
                     SDLVisualTest_Action* action;
 
                     action = (SDLVisualTest_Action*)event.user.data1;
@@ -313,12 +313,12 @@ RunSUTAndTest(char* sutargs, int variation_num)
                             return_code = TEST_ERROR;
                             goto runsutandtest_cleanup_timer;
                     }
-                } else if(event.user.code == KILL_TIMER_EVENT) {
+                } else if (event.user.code == KILL_TIMER_EVENT) {
                     SDLTest_LogError("Maximum timeout reached. Force killing..");
                     return_code = TEST_FAILED;
                     goto runsutandtest_cleanup_timer;
                 }
-            } else if(event.type == SDL_QUIT) {
+            } else if (event.type == SDL_QUIT) {
                 SDLTest_LogError("Received QUIT event. Testharness is quitting..");
                 return_code = TEST_ERROR;
                 goto runsutandtest_cleanup_timer;
@@ -328,7 +328,7 @@ RunSUTAndTest(char* sutargs, int variation_num)
     }
 
     SDLTest_Log("SUT exit code was: %d", sut_exitstatus.exit_status);
-    if(sut_exitstatus.exit_status == 0) {
+    if (sut_exitstatus.exit_status == 0) {
         return_code = TEST_PASSED;
         goto runsutandtest_cleanup_timer;
     } else {
@@ -340,17 +340,17 @@ RunSUTAndTest(char* sutargs, int variation_num)
     goto runsutandtest_cleanup_generic;
 
 runsutandtest_cleanup_timer:
-    if(action_timer && !SDL_RemoveTimer(action_timer)) {
+    if (action_timer && !SDL_RemoveTimer(action_timer)) {
         SDLTest_Log("SDL_RemoveTimer() failed");
         return_code = TEST_ERROR;
     }
 
-    if(kill_timer && !SDL_RemoveTimer(kill_timer)) {
+    if (kill_timer && !SDL_RemoveTimer(kill_timer)) {
         SDLTest_Log("SDL_RemoveTimer() failed");
         return_code = TEST_ERROR;
     }
 /* runsutandtest_cleanup_process: */
-    if(SDL_IsProcessRunning(&pinfo) && !SDL_KillProcess(&pinfo, &sut_exitstatus)) {
+    if (SDL_IsProcessRunning(&pinfo) && !SDL_KillProcess(&pinfo, &sut_exitstatus)) {
         SDLTest_Log("SDL_KillProcess() failed");
         return_code = TEST_ERROR;
     }
@@ -367,7 +367,7 @@ main(int argc, char* argv[])
     /* freeing resources, linux style! */
     return_code = 0;
 
-    if(argc < 2) {
+    if (argc < 2) {
         SDLTest_Log(usage(), argv[0]);
         goto cleanup_generic;
     }
@@ -377,7 +377,7 @@ main(int argc, char* argv[])
 #endif
 
     /* parse arguments */
-    if(!SDLVisualTest_ParseHarnessArgs(argv + 1, &state)) {
+    if (!SDLVisualTest_ParseHarnessArgs(argv + 1, &state)) {
         SDLTest_Log(usage(), argv[0]);
         return_code = 1;
         goto cleanup_generic;
@@ -385,7 +385,7 @@ main(int argc, char* argv[])
     SDLTest_Log("Parsed harness arguments successfully.");
 
     /* initialize SDL */
-    if(SDL_Init(SDL_INIT_TIMER) == -1) {
+    if (SDL_Init(SDL_INIT_TIMER) == -1) {
         SDLTest_LogError("SDL_Init() failed.");
         SDLVisualTest_FreeHarnessState(&state);
         return_code = 1;
@@ -402,9 +402,9 @@ main(int argc, char* argv[])
 #endif
 
     /* test with sutargs */
-    if(SDL_strlen(state.sutargs)) {
+    if (SDL_strlen(state.sutargs)) {
         SDLTest_Log("Running: %s %s", state.sutapp, state.sutargs);
-        if(!state.no_launch) {
+        if (!state.no_launch) {
             switch(RunSUTAndTest(state.sutargs, 0))
             {
                 case TEST_PASSED:
@@ -424,17 +424,17 @@ main(int argc, char* argv[])
         }
     }
 
-    if(state.sut_config.num_options > 0) {
+    if (state.sut_config.num_options > 0) {
         const char* variator_name = (state.variator_type == SDL_VARIATOR_RANDOM) ?
                               "RANDOM" : "EXHAUSTIVE";
-        if(state.num_variations > 0)
+        if (state.num_variations > 0)
             SDLTest_Log("Testing SUT with variator: %s for %d variations",
                         variator_name, state.num_variations);
         else
             SDLTest_Log("Testing SUT with variator: %s and ALL variations",
                         variator_name);
         /* initialize the variator */
-        if(!SDLVisualTest_InitVariator(&variator, &state.sut_config,
+        if (!SDLVisualTest_InitVariator(&variator, &state.sut_config,
                                        state.variator_type, 0))
         {
             SDLTest_LogError("Could not initialize variator");
@@ -445,7 +445,7 @@ main(int argc, char* argv[])
         /* iterate through all the variations */
         passed = 0;
         failed = 0;
-        for(i = 0; state.num_variations > 0 ? (i < state.num_variations) : 1; i++)
+        for (i = 0; state.num_variations > 0 ? (i < state.num_variations) : 1; i++)
         {
             char* args = SDLVisualTest_GetNextVariation(&variator);
             if (args == NULL) {
@@ -453,7 +453,7 @@ main(int argc, char* argv[])
             }
             SDLTest_Log("\nVariation number: %d\nArguments: %s", i + 1, args);
 
-            if(!state.no_launch) {
+            if (!state.no_launch) {
                 switch(RunSUTAndTest(args, i + 1))
                 {
                     case TEST_PASSED:
@@ -473,7 +473,7 @@ main(int argc, char* argv[])
                 }
             }
         }
-        if(!state.no_launch) {
+        if (!state.no_launch) {
             /* report stats */
             SDLTest_Log("Testing complete.");
             SDLTest_Log("%d/%d tests passed.", passed, passed + failed);

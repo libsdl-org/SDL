@@ -67,7 +67,7 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	m = ((hy>>31)&1)|((hx>>30)&2);	/* 2*sign(x)+sign(y) */
 
     /* when y = 0 */
-	if((iy|ly)==0) {
+	if ((iy|ly)==0) {
 	    switch(m) {
 		case 0:
 		case 1: return y; 	/* atan(+-0,+anything)=+-0 */
@@ -81,8 +81,8 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	}
 
     /* when x is INF */
-	if(ix==0x7ff00000) {
-	    if(iy==0x7ff00000) {
+	if (ix==0x7ff00000) {
+	    if (iy==0x7ff00000) {
 		switch(m) {
 		    case 0: return  pi_o_4+tiny;/* atan(+INF,+INF) */
 		    case 1: return -pi_o_4-tiny;/* atan(-INF,+INF) */
@@ -105,8 +105,8 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 
     /* compute y/x */
 	k = (iy-ix)>>20;
-	if(k > 60) z=pi_o_2+0.5*pi_lo; 	/* |y/x| >  2**60 */
-	else if(hx<0&&k<-60) z=0.0; 	/* |y|/x < -2**60 */
+	if (k > 60) z=pi_o_2+0.5*pi_lo; 	/* |y/x| >  2**60 */
+	else if (hx<0&&k<-60) z=0.0; 	/* |y|/x < -2**60 */
 	else z=atan(fabs(y/x));		/* safe to do y/x */
 	switch (m) {
 	    case 0: return       z  ;	/* atan(+,+) */

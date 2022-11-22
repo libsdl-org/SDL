@@ -316,7 +316,7 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
     // Prevent adding duplicate displays. Do this after we know the display is
     // ready to be added to allow any displays that we can't fully query to be
     // removed
-    for(i = 0; i < _this->num_displays; ++i) {
+    for (i = 0; i < _this->num_displays; ++i) {
         SDL_DisplayData *driverdata = (SDL_DisplayData *)_this->displays[i].driverdata;
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
             driverdata->MonitorHandle = hMonitor;

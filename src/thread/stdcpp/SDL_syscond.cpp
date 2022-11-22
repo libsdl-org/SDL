@@ -132,7 +132,7 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
             cpp_lock.release();
             return 0;
         } else {
-            auto wait_result = cond->cpp_cond.wait_for(
+            auto wait_result = cond->cpp_cond.wait_for (
                 cpp_lock,
                 std::chrono::duration<Uint32, std::milli>(ms)
                 );

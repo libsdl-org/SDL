@@ -14,11 +14,11 @@ SDLVisualTest_InitVariator(SDLVisualTest_Variator* variator,
                            SDLVisualTest_VariatorType type,
                            Uint64 seed)
 {
-    if(variator == NULL) {
+    if (variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return 0;
     }
-    if(config == NULL) {
+    if (config == NULL) {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
     }
@@ -46,7 +46,7 @@ SDLVisualTest_InitVariator(SDLVisualTest_Variator* variator,
 char*
 SDLVisualTest_GetNextVariation(SDLVisualTest_Variator* variator)
 {
-    if(variator == NULL) {
+    if (variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return NULL;
     }
@@ -70,7 +70,7 @@ SDLVisualTest_GetNextVariation(SDLVisualTest_Variator* variator)
 
 void SDLVisualTest_FreeVariator(SDLVisualTest_Variator* variator)
 {
-    if(variator == NULL) {
+    if (variator == NULL) {
         SDLTest_LogError("variator argument cannot be NULL");
         return;
     }

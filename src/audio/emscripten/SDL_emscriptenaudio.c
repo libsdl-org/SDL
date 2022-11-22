@@ -207,7 +207,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* create context */
     result = MAIN_THREAD_EM_ASM_INT({
-        if(typeof(Module['SDL3']) === 'undefined') {
+        if (typeof(Module['SDL3']) === 'undefined') {
             Module['SDL3'] = {};
         }
         var SDL3 = Module['SDL3'];

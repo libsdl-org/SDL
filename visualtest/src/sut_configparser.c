@@ -23,26 +23,26 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
     int num_lines, i, token_len;
     SDL_RWops* rw;
 
-    if(file == NULL) {
+    if (file == NULL) {
         SDLTest_LogError("file argument cannot be NULL");
         return 0;
     }
-    if(config == NULL) {
+    if (config == NULL) {
         SDLTest_LogError("config argument cannot be NULL");
         return 0;
     }
 
     /* count the number of lines */
     rw = SDL_RWFromFile(file, "r");
-    if(rw == NULL) {
+    if (rw == NULL) {
         SDLTest_LogError("SDL_RWFromFile() failed");
         return 0;
     }
     SDLVisualTest_RWHelperResetBuffer(&buffer);
     num_lines = SDLVisualTest_RWHelperCountNonEmptyLines(rw, &buffer, '#');
-    if(num_lines == -1)
+    if (num_lines == -1)
         return 0;
-    else if(num_lines == 0) {
+    else if (num_lines == 0) {
         config->options = NULL;
         config->num_options = 0;
         SDL_RWclose(rw);
@@ -55,16 +55,16 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
     config->num_options = num_lines;
     config->options = (SDLVisualTest_SUTOption*)SDL_malloc(num_lines * 
                       sizeof(SDLVisualTest_SUTOption));
-    if(!config->options) {
+    if (!config->options) {
         SDLTest_LogError("SDL_malloc() failed");
         SDL_RWclose(rw);
         return 0;
     }
 
     /* actually parse the options */
-    for(i = 0; i < num_lines; i++)
+    for (i = 0; i < num_lines; i++)
     {
-        if(!SDLVisualTest_RWHelperReadLine(rw, line, MAX_SUTOPTION_LINE_LENGTH,
+        if (!SDLVisualTest_RWHelperReadLine(rw, line, MAX_SUTOPTION_LINE_LENGTH,
                                            &buffer, '#'))
         {
             SDLTest_LogError("SDLVisualTest_RWHelperReadLine() failed");
@@ -75,7 +75,7 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
 
         /* parse name */
         token_ptr = strtok(line, ", ");
-        if(token_ptr == NULL) {
+        if (token_ptr == NULL) {
             SDLTest_LogError("Could not parse line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
@@ -86,19 +86,19 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
 
         /* parse type */
         token_ptr = strtok(NULL, ", ");
-        if(token_ptr == NULL) {
+        if (token_ptr == NULL) {
             SDLTest_LogError("Could not parse line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
             return 0;
         }
-        if(SDL_strcmp(token_ptr, "string") == 0)
+        if (SDL_strcmp(token_ptr, "string") == 0)
             config->options[i].type = SDL_SUT_OPTIONTYPE_STRING;
-        else if(SDL_strcmp(token_ptr, "integer") == 0)
+        else if (SDL_strcmp(token_ptr, "integer") == 0)
             config->options[i].type = SDL_SUT_OPTIONTYPE_INT;
-        else if(SDL_strcmp(token_ptr, "enum") == 0)
+        else if (SDL_strcmp(token_ptr, "enum") == 0)
             config->options[i].type = SDL_SUT_OPTIONTYPE_ENUM;
-        else if(SDL_strcmp(token_ptr, "boolean") == 0)
+        else if (SDL_strcmp(token_ptr, "boolean") == 0)
             config->options[i].type = SDL_SUT_OPTIONTYPE_BOOL;
         else {
             SDLTest_LogError("Could not parse type token at line %d", i + 1);
@@ -109,31 +109,31 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
 
         /* parse values */
         token_ptr = strtok(NULL, "]");
-        if(token_ptr == NULL) {
+        if (token_ptr == NULL) {
             SDLTest_LogError("Could not parse line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
             return 0;
         }
         token_ptr = SDL_strchr(token_ptr, '[');
-        if(token_ptr == NULL) {
+        if (token_ptr == NULL) {
             SDLTest_LogError("Could not parse enum token at line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
             return 0;
         }
         token_ptr++;
-        if(config->options[i].type == SDL_SUT_OPTIONTYPE_INT) {
-            if(SDL_sscanf(token_ptr, "%d %d", &config->options[i].data.range.min,
+        if (config->options[i].type == SDL_SUT_OPTIONTYPE_INT) {
+            if (SDL_sscanf(token_ptr, "%d %d", &config->options[i].data.range.min,
                           &config->options[i].data.range.max) != 2)
             {
                 config->options[i].data.range.min = INT_MIN;
                 config->options[i].data.range.max = INT_MAX;
             }
-        } else if(config->options[i].type == SDL_SUT_OPTIONTYPE_ENUM) {
+        } else if (config->options[i].type == SDL_SUT_OPTIONTYPE_ENUM) {
             config->options[i].data.enum_values = SDLVisualTest_Tokenize(token_ptr,
                                                   MAX_SUTOPTION_ENUMVAL_LEN);
-            if(!config->options[i].data.enum_values) {
+            if (!config->options[i].data.enum_values) {
                 SDLTest_LogError("Could not parse enum token at line %d", i + 1);
                 SDL_free(config->options);
                 SDL_RWclose(rw);
@@ -143,16 +143,16 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
 
         /* parse required */
         token_ptr = strtok(NULL, ", ");
-        if(token_ptr == NULL) {
+        if (token_ptr == NULL) {
             SDLTest_LogError("Could not parse line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
             return 0;
         }
 
-        if(SDL_strcmp(token_ptr, "true") == 0)
+        if (SDL_strcmp(token_ptr, "true") == 0)
             config->options[i].required = SDL_TRUE;
-        else if(SDL_strcmp(token_ptr, "false") == 0)
+        else if (SDL_strcmp(token_ptr, "false") == 0)
             config->options[i].required = SDL_FALSE;
         else {
             SDLTest_LogError("Could not parse required token at line %d", i + 1);
@@ -163,14 +163,14 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
 
         /* parse categories */
         token_ptr = strtok(NULL, ",");
-        if(token_ptr == NULL) {
+        if (token_ptr == NULL) {
             SDLTest_LogError("Could not parse line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
             return 0;
         }
         token_ptr = SDL_strchr(token_ptr, '[');
-        if(token_ptr == NULL) {
+        if (token_ptr == NULL) {
             SDLTest_LogError("Could not parse enum token at line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
@@ -179,7 +179,7 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
         token_ptr++;
         token_end = SDL_strchr(token_ptr, ']');
         *token_end = '\0';
-        if(token_end == NULL) {
+        if (token_end == NULL) {
             SDLTest_LogError("Could not parse enum token at line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
@@ -195,9 +195,9 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
 void
 SDLVisualTest_FreeSUTConfig(SDLVisualTest_SUTConfig* config)
 {
-    if(config && config->options) {
+    if (config && config->options) {
         SDLVisualTest_SUTOption* option;
-        for(option = config->options;
+        for (option = config->options;
             option != config->options + config->num_options; option++)
         {
             if (option->categories) {

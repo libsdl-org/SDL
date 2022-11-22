@@ -811,11 +811,11 @@ D3D_SetRenderTargetInternal(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 
     result = IDirect3DTexture9_GetSurfaceLevel(texturedata->texture.texture, 0, &data->currentRenderTarget);
-    if(FAILED(result)) {
+    if (FAILED(result)) {
         return D3D_SetError("GetSurfaceLevel()", result);
     }
     result = IDirect3DDevice9_SetRenderTarget(data->device, 0, data->currentRenderTarget);
-    if(FAILED(result)) {
+    if (FAILED(result)) {
         return D3D_SetError("SetRenderTarget()", result);
     }
 

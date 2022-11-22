@@ -100,7 +100,7 @@ static int PS2_JoystickInit(void)
         return -1;
    }
 
-   for(port = 0; port < PS2_MAX_PORT; port++) {
+   for (port = 0; port < PS2_MAX_PORT; port++) {
         mtapPortOpen(port);
    }
     /* it can fail - we dont care, we will check it more strictly when padPortOpen */
@@ -119,7 +119,7 @@ static int PS2_JoystickInit(void)
             */
 
             struct JoyInfo *info = &joyInfo[enabled_pads];
-            if(padPortOpen(port, slot, (void *)info->padBuf) > 0) {
+            if (padPortOpen(port, slot, (void *)info->padBuf) > 0) {
                 info->port = (uint8_t)port;
                 info->slot = (uint8_t)slot;
                 info->opened = 1;

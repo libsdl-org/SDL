@@ -84,7 +84,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
 {
     RSemaphore s;
     TInt status = CreateUnique(NewSema, &s, &initial_value);
-    if(status != KErrNone) {
+    if (status != KErrNone) {
         SDL_SetError("Couldn't create semaphore");
     }
     SDL_semaphore* sem = new /*(ELeave)*/ SDL_semaphore;
@@ -122,14 +122,14 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     TInfo*  info   = new (ELeave)TInfo(timeout, sem->handle);
     TInt    status = CreateUnique(NewThread, &thread, info);
 
-    if(status != KErrNone) {
+    if (status != KErrNone) {
         return status;
     }
 
     thread.Resume();
     WaitAll(sem);
 
-    if(thread.ExitType() == EExitPending) {
+    if (thread.ExitType() == EExitPending) {
         thread.Kill(SDL_MUTEX_TIMEOUT);
     }
 
@@ -140,7 +140,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 int
 SDL_SemTryWait(SDL_sem *sem)
 {
-    if(sem->count > 0) {
+    if (sem->count > 0) {
         sem->count--;
     }
     return SDL_MUTEX_TIMEOUT;

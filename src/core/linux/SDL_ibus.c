@@ -270,7 +270,7 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
                     has_pos = IBus_GetVariantCursorPos(conn, &iter, dbus, &pos);
                 }
 
-                if(has_dec_pos) {
+                if (has_dec_pos) {
                     SDL_SendEditingText(text, start_pos, end_pos - start_pos);
                 } else if (has_pos) {
                     SDL_SendEditingText(text, pos, -1);

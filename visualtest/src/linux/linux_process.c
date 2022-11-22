@@ -35,19 +35,19 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     pid_t pid;
     char** argv;
 
-    if(file == NULL) {
+    if (file == NULL) {
         SDLTest_LogError("file argument cannot be NULL");
         return 0;
     }
-    if(pinfo == NULL) {
+    if (pinfo == NULL) {
         SDLTest_LogError("pinfo cannot be NULL");
         return 0;
     }
     pid = fork();
-    if(pid == -1) {
+    if (pid == -1) {
         LogLastError("fork() failed");
         return 0;
-    } else if(pid == 0) {
+    } else if (pid == 0) {
         /* parse the arguments string */
         argv = SDLVisualTest_ParseArgsToArgv(args);
         argv[0] = file;
@@ -67,19 +67,19 @@ int
 SDL_GetProcessExitStatus(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     int success, status;
-    if(pinfo == NULL) {
+    if (pinfo == NULL) {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(ps == NULL) {
+    if (ps == NULL) {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
     }
     success = waitpid(pinfo->pid, &status, WNOHANG);
-    if(success == -1) {
+    if (success == -1) {
         LogLastError("waitpid() failed");
         return 0;
-    } else if(success == 0) {
+    } else if (success == 0) {
         ps->exit_status = -1;
         ps->exit_success = 1;
     } else {
@@ -94,14 +94,14 @@ SDL_IsProcessRunning(SDL_ProcessInfo* pinfo)
 {
     int success;
 
-    if(pinfo == NULL) {
+    if (pinfo == NULL) {
         SDLTest_LogError("pinfo cannot be NULL");
         return -1;
     }
 
     success = kill(pinfo->pid, 0);
-    if(success == -1) {
-        if(errno == ESRCH) /* process is not running */
+    if (success == -1) {
+        if (errno == ESRCH) /* process is not running */
             return 0;
         else {
             LogLastError("kill() failed");
@@ -116,23 +116,23 @@ SDL_QuitProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     int success, status;
 
-    if(pinfo == NULL) {
+    if (pinfo == NULL) {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(ps == NULL) {
+    if (ps == NULL) {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
     }
 
     success = kill(pinfo->pid, SIGQUIT);
-    if(success == -1) {
+    if (success == -1) {
         LogLastError("kill() failed");
         return 0;
     }
 
     success = waitpid(pinfo->pid, &status, 0);
-    if(success == -1) {
+    if (success == -1) {
         LogLastError("waitpid() failed");
         return 0;
     }
@@ -147,22 +147,22 @@ SDL_KillProcess(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
 {
     int success, status;
 
-    if(pinfo == NULL) {
+    if (pinfo == NULL) {
         SDLTest_LogError("pinfo argument cannot be NULL");
         return 0;
     }
-    if(ps == NULL) {
+    if (ps == NULL) {
         SDLTest_LogError("ps argument cannot be NULL");
         return 0;
     }
 
     success = kill(pinfo->pid, SIGKILL);
-    if(success == -1) {
+    if (success == -1) {
         LogLastError("kill() failed");
         return 0;
     }
     success = waitpid(pinfo->pid, &status, 0);
-    if(success == -1) {
+    if (success == -1) {
         LogLastError("waitpid() failed");
         return 0;
     }

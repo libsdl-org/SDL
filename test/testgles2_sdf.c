@@ -117,7 +117,7 @@ quit(int rc)
         x; \
         { \
           GLenum glError = ctx.glGetError(); \
-          if(glError != GL_NO_ERROR) { \
+          if (glError != GL_NO_ERROR) { \
             SDL_Log("glGetError() = %i (0x%.8x) at line %i\n", glError, glError, __LINE__); \
             quit(1); \
           } \
@@ -154,7 +154,7 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
     GL_CHECK(ctx.glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
 
     /* Dump debug info (source and log) if compilation failed. */
-    if(status != GL_TRUE) {
+    if (status != GL_TRUE) {
         ctx.glGetProgramInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
         buffer[length] = '\0';
         SDL_Log("Shader compilation failed: %s", buffer);fflush(stderr);
@@ -581,7 +581,7 @@ main(int argc, char *argv[])
         }
 
         tmp = SDL_LoadBMP(path);
-        if  (tmp == NULL) {
+        if (tmp == NULL) {
             SDL_Log("missing image file: %s", path);
             exit(-1);
         } else {

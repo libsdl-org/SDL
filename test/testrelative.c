@@ -111,7 +111,7 @@ main(int argc, char *argv[])
     }
 
     srand((unsigned int)time(NULL));
-    if(SDL_SetRelativeMouseMode(SDL_TRUE) < 0) {
+    if (SDL_SetRelativeMouseMode(SDL_TRUE) < 0) {
         return 3;
     }
 

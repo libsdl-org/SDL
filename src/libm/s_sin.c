@@ -53,7 +53,7 @@ double sin(double x)
 
     /* |x| ~< pi/4 */
 	ix &= 0x7fffffff;
-	if(ix <= 0x3fe921fb) return __kernel_sin(x,z,0);
+	if (ix <= 0x3fe921fb) return __kernel_sin(x,z,0);
 
     /* sin(Inf or NaN) is NaN */
 	else if (ix>=0x7ff00000) return x-x;

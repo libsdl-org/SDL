@@ -152,13 +152,13 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FP
     {
         /* The trig code below gets the wrong size (due to FP inaccuracy?) when angle is a multiple of 90 degrees */
         int angle90 = (int)(angle/90);
-        if(angle90 == angle/90) { /* if the angle is a multiple of 90 degrees */
+        if (angle90 == angle/90) { /* if the angle is a multiple of 90 degrees */
             angle90 %= 4;
             if (angle90 < 0) {
                 angle90 += 4; /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
             }
 
-            if(angle90 & 1) {
+            if (angle90 & 1) {
                 rect_dest->w  = height;
                 rect_dest->h = width;
                 *cangle = 0;
@@ -570,7 +570,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
 
     if (is8bit) {
         /* Call the 8-bit transformation routine to do the rotation */
-        if(angle90 >= 0) {
+        if (angle90 >= 0) {
             transformSurfaceY90(src, rz_dst, angle90, flipx, flipy);
         } else {
             transformSurfaceY(src, rz_dst, (int)sangleinv, (int)cangleinv,

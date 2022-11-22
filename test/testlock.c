@@ -55,7 +55,7 @@ closemutex(int sig)
     int i;
     SDL_Log("Process %lu:  Cleaning up...\n", id == mainthread ? 0 : id);
     SDL_AtomicSet(&doterminate, 1);
-    for(i = 0; i < 6; ++i) {
+    for (i = 0; i < 6; ++i) {
         SDL_WaitThread(threads[i], NULL);
     }
     SDL_DestroyMutex(mutex);

@@ -423,7 +423,7 @@ HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
         return;
     }
 
-    for( tries = 0; tries < 5; ++tries ) {
+    for ( tries = 0; tries < 5; ++tries ) {
         /* For Bluetooth controllers, this report switches them into advanced report mode */
         size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdGyroCalibration_USB, data, sizeof(data));
         if (size < 35) {

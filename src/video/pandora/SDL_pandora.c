@@ -611,10 +611,10 @@ PND_gl_createcontext(_THIS, SDL_Window * window)
     }
 
 #ifdef WIZ_GLES_LITE
-    if( !hNativeWnd ) {
+    if ( !hNativeWnd ) {
     hNativeWnd = (NativeWindowType)SDL_malloc(16*1024);
 
-    if(!hNativeWnd)
+    if (!hNativeWnd)
         printf( "Error: Wiz framebuffer allocatation failed\n" );
     else
         printf( "SDL: Wiz framebuffer allocated: %X\n", hNativeWnd );
@@ -816,7 +816,7 @@ PND_gl_deletecontext(_THIS, SDL_GLContext context)
     }
 
 #ifdef WIZ_GLES_LITE
-    if( hNativeWnd != 0 ) {
+    if ( hNativeWnd != 0 ) {
       SDL_free(hNativeWnd);
       hNativeWnd = 0;
       printf( "SDL: Wiz framebuffer released\n" );

@@ -540,7 +540,7 @@ GetXftDPI(Display* dpy)
 
     xdefault_resource = X11_XGetDefault(dpy, "Xft", "dpi");
 
-    if(xdefault_resource == NULL) {
+    if (xdefault_resource == NULL) {
         return 0;
     }
 
@@ -615,7 +615,7 @@ static int X11_InitModes_StdXlib(_THIS)
     displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
 
     xft_dpi = GetXftDPI(dpy);
-    if(xft_dpi > 0) {
+    if (xft_dpi > 0) {
         displaydata->hdpi = (float)xft_dpi;
         displaydata->vdpi = (float)xft_dpi;
     }

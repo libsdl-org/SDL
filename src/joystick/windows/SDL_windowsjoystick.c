@@ -596,7 +596,7 @@ WINDOWS_JoystickGetDeviceName(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for(index = device_index; index > 0; index--) {
+    for (index = device_index; index > 0; index--) {
         device = device->pNext;
     }
 
@@ -609,7 +609,7 @@ WINDOWS_JoystickGetDevicePath(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for(index = device_index; index > 0; index--) {
+    for (index = device_index; index > 0; index--) {
         device = device->pNext;
     }
 
@@ -622,7 +622,7 @@ WINDOWS_JoystickGetDevicePlayerIndex(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for(index = device_index; index > 0; index--) {
+    for (index = device_index; index > 0; index--) {
         device = device->pNext;
     }
 
@@ -641,7 +641,7 @@ WINDOWS_JoystickGetDeviceGUID(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for(index = device_index; index > 0; index--) {
+    for (index = device_index; index > 0; index--) {
         device = device->pNext;
     }
 
@@ -655,7 +655,7 @@ WINDOWS_JoystickGetDeviceInstanceID(int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for(index = device_index; index > 0; index--) {
+    for (index = device_index; index > 0; index--) {
         device = device->pNext;
     }
 
@@ -673,7 +673,7 @@ WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
 
-    for(index = device_index; index > 0; index--) {
+    for (index = device_index; index > 0; index--) {
         device = device->pNext;
     }
 

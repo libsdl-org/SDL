@@ -33,13 +33,13 @@ SDL_CreateShapedWindow(const char *title,unsigned int x,unsigned int y,unsigned 
 {
     SDL_Window *result = NULL;
     result = SDL_CreateWindow(title,-1000,-1000,w,h,(flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE) /* & (~SDL_WINDOW_SHOWN) */);
-    if(result != NULL) {
+    if (result != NULL) {
         if (SDL_GetVideoDevice()->shape_driver.CreateShaper == NULL) {
             SDL_DestroyWindow(result);
             return NULL;
         }
         result->shaper = SDL_GetVideoDevice()->shape_driver.CreateShaper(result);
-        if(result->shaper != NULL) {
+        if (result->shaper != NULL) {
             result->shaper->userx = x;
             result->shaper->usery = y;
             result->shaper->mode.mode = ShapeModeDefault;
@@ -57,7 +57,7 @@ SDL_CreateShapedWindow(const char *title,unsigned int x,unsigned int y,unsigned 
 SDL_bool
 SDL_IsShapedWindow(const SDL_Window *window)
 {
-    if(window == NULL)
+    if (window == NULL)
         return SDL_FALSE;
     else
         return (SDL_bool)(window->shaper != NULL);
@@ -82,9 +82,9 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
 
     SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
 
-    for(y = 0;y<shape->h;y++) {
+    for (y = 0;y<shape->h;y++) {
         bitmap_scanline = bitmap + y * bytes_per_scanline;
-        for(x=0;x<shape->w;x++) {
+        for (x=0;x<shape->w;x++) {
             alpha = 0;
             pixel_value = 0;
             pixel = (Uint8 *)(shape->pixels) + (y*shape->pitch) + (x*shape->format->BytesPerPixel);
@@ -139,8 +139,8 @@ RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode,SDL_Surface* mask,SDL_Rec
     SDL_ShapeTree* result = (SDL_ShapeTree*)SDL_malloc(sizeof(SDL_ShapeTree));
     SDL_Rect next = {0,0,0,0};
 
-    for(y=dimensions.y;y<dimensions.y + dimensions.h;y++) {
-        for(x=dimensions.x;x<dimensions.x + dimensions.w;x++) {
+    for (y=dimensions.y;y<dimensions.y + dimensions.h;y++) {
+        for (x=dimensions.x;x<dimensions.x + dimensions.w;x++) {
             pixel_value = 0;
             pixel = (Uint8 *)(mask->pixels) + (y*mask->pitch) + (x*mask->format->BytesPerPixel);
             switch(mask->format->BytesPerPixel) {
@@ -176,7 +176,7 @@ RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode,SDL_Surface* mask,SDL_Rec
             if (last_opaque == -1) {
                 last_opaque = pixel_opaque;
             }
-            if(last_opaque != pixel_opaque) {
+            if (last_opaque != pixel_opaque) {
                 const int halfwidth = dimensions.w / 2;
                 const int halfheight = dimensions.h / 2;
 
@@ -239,7 +239,7 @@ void
 SDL_TraverseShapeTree(SDL_ShapeTree *tree,SDL_TraversalFunction function,void* closure)
 {
     SDL_assert(tree != NULL);
-    if(tree->kind == QuadShape) {
+    if (tree->kind == QuadShape) {
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upleft,function,closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upright,function,closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.downleft,function,closure);
@@ -251,7 +251,7 @@ SDL_TraverseShapeTree(SDL_ShapeTree *tree,SDL_TraversalFunction function,void* c
 void
 SDL_FreeShapeTree(SDL_ShapeTree** shape_tree)
 {
-    if((*shape_tree)->kind == QuadShape) {
+    if ((*shape_tree)->kind == QuadShape) {
         SDL_FreeShapeTree((SDL_ShapeTree **)(char*)&(*shape_tree)->data.children.upleft);
         SDL_FreeShapeTree((SDL_ShapeTree **)(char*)&(*shape_tree)->data.children.upright);
         SDL_FreeShapeTree((SDL_ShapeTree **)(char*)&(*shape_tree)->data.children.downleft);
@@ -329,9 +329,9 @@ SDL_WindowHasAShape(SDL_Window *window)
 int
 SDL_GetShapedWindowMode(SDL_Window *window,SDL_WindowShapeMode *shape_mode)
 {
-    if(window != NULL && SDL_IsShapedWindow(window)) {
-        if(shape_mode == NULL) {
-            if(SDL_WindowHasAShape(window))
+    if (window != NULL && SDL_IsShapedWindow(window)) {
+        if (shape_mode == NULL) {
+            if (SDL_WindowHasAShape(window))
                 /* The window given has a shape. */
                 return 0;
             else

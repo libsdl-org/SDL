@@ -173,7 +173,7 @@ int32_t attribute_hidden __kernel_rem_pio2(const double *x, double *y, int e0, i
 
     /* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
 	j = jv-jx; m = jx+jk;
-	for(i = 0; i <= m; i++, j++) {
+	for (i = 0; i <= m; i++, j++) {
 		f[i] = (j < 0) ? zero : (double)ipio2[j];
 	}
 	if ((m+1) < SDL_arraysize(f)) {
@@ -182,7 +182,7 @@ int32_t attribute_hidden __kernel_rem_pio2(const double *x, double *y, int e0, i
 
     /* compute q[0],q[1],...q[jk] */
 	for (i=0;i<=jk;i++) {
-	    for(j = 0, fw = 0.0; j <= jx; j++) {
+	    for (j = 0, fw = 0.0; j <= jx; j++) {
 		fw += x[j] * f[jx + i - j];
 	    }
 	    q[i] = fw;
@@ -191,7 +191,7 @@ int32_t attribute_hidden __kernel_rem_pio2(const double *x, double *y, int e0, i
 	jz = jk;
 recompute:
     /* distill q[] into iq[] reversingly */
-	for(i=0,j=jz,z=q[jz];j>0;i++,j--) {
+	for (i=0,j=jz,z=q[jz];j>0;i++,j--) {
 	    fw    =  (double)((int32_t)(twon24* z));
 	    iq[i] =  (int32_t)(z-two24*fw);
 	    z     =  q[j-1]+fw;
@@ -206,27 +206,27 @@ recompute:
 	n  = (int32_t) z;
 	z -= (double)n;
 	ih = 0;
-	if(q0>0) {	/* need iq[jz-1] to determine n */
+	if (q0>0) {	/* need iq[jz-1] to determine n */
 	    i  = (iq[jz-1]>>(24-q0)); n += i;
 	    iq[jz-1] -= i<<(24-q0);
 	    ih = iq[jz-1]>>(23-q0);
 	}
-	else if(q0==0) ih = iq[jz-1]>>23;
+	else if (q0==0) ih = iq[jz-1]>>23;
 	else if (z >= 0.5) {
 		ih = 2;
    }
 
-	if(ih>0) {	/* q > 0.5 */
+	if (ih>0) {	/* q > 0.5 */
 	    n += 1; carry = 0;
-	    for(i=0;i<jz ;i++) {	/* compute 1-q */
+	    for (i=0;i<jz ;i++) {	/* compute 1-q */
 		j = iq[i];
-		if(carry==0) {
-		    if(j!=0) {
+		if (carry==0) {
+		    if (j!=0) {
 			carry = 1; iq[i] = 0x1000000- j;
 		    }
 		} else  iq[i] = 0xffffff - j;
 	    }
-	    if(q0>0) {		/* rare case: chance is 1 in 12 */
+	    if (q0>0) {		/* rare case: chance is 1 in 12 */
 	        switch(q0) {
 	        case 1:
 	    	   iq[jz-1] &= 0x7fffff; break;
@@ -234,7 +234,7 @@ recompute:
 	    	   iq[jz-1] &= 0x3fffff; break;
 	        }
 	    }
-	    if(ih==2) {
+	    if (ih==2) {
 		z = one - z;
 		if (carry != 0) {
 	    	   z -= scalbn(one, q0);
@@ -243,15 +243,15 @@ recompute:
 	}
 
     /* check if recomputation is needed */
-	if(z==zero) {
+	if (z==zero) {
 	    j = 0;
 	    for (i = jz-1; i >= jk; i--) {
 		j |= iq[i];
 	    }
-	    if(j==0) { /* need recomputation */
-		for(k=1;iq[jk-k]==0;k++);   /* k = no. of terms needed */
+	    if (j==0) { /* need recomputation */
+		for (k=1;iq[jk-k]==0;k++);   /* k = no. of terms needed */
 
-		for(i=jz+1;i<=jz+k;i++) {   /* add q[jz+1] to q[jz+k] */
+		for (i=jz+1;i<=jz+k;i++) {   /* add q[jz+1] to q[jz+k] */
 		    f[jx+i] = (double) ipio2[jv+i];
 		    for ( j=0, fw=0.0; j <= jx; j++) { 
                        fw += x[j]*f[jx+i-j];
@@ -264,13 +264,13 @@ recompute:
 	}
 
     /* chop off zero terms */
-	if(z==0.0) {
+	if (z==0.0) {
 	    jz -= 1; q0 -= 24;
 		SDL_assert(jz >= 0);
-	    while(iq[jz]==0) { jz--; SDL_assert(jz >= 0); q0-=24;}
+	    while (iq[jz]==0) { jz--; SDL_assert(jz >= 0); q0-=24;}
 	} else { /* break z into 24-bit if necessary */
 	    z = scalbn(z,-q0);
-	    if(z>=two24) {
+	    if (z>=two24) {
 		fw = (double)((int32_t)(twon24*z));
 		iq[jz] = (int32_t)(z-two24*fw);
 		jz += 1; q0 += 24;
@@ -280,13 +280,13 @@ recompute:
 
     /* convert integer "bit" chunk to floating-point value */
 	fw = scalbn(one,q0);
-	for(i=jz;i>=0;i--) {
+	for (i=jz;i>=0;i--) {
 	    q[i] = fw*(double)iq[i]; fw*=twon24;
 	}
 
     /* compute PIo2[0,...,jp]*q[jz,...,0] */
-	for(i=jz;i>=0;i--) {
-	    for(fw = 0.0, k = 0; k <= jp && k <= jz - i; k++) {
+	for (i=jz;i>=0;i--) {
+	    for (fw = 0.0, k = 0; k <= jp && k <= jz - i; k++) {
 		fw += PIo2[k] * q[i + k];
 	    }
 	    fq[jz-i] = fw;
@@ -299,7 +299,7 @@ recompute:
 	switch(prec) {
 	    case 0:
 		fw = 0.0;
-		for(i = jz; i >= 0; i--) {
+		for (i = jz; i >= 0; i--) {
 		    fw += fq[i];
 		}
 		y[0] = (ih==0)? fw: -fw;
@@ -307,12 +307,12 @@ recompute:
 	    case 1:
 	    case 2:
 		fw = 0.0;
-		for(i = jz; i >= 0; i--) {
+		for (i = jz; i >= 0; i--) {
 		    fw += fq[i];
 		}
 		y[0] = (ih==0)? fw: -fw;
 		fw = fq[0]-fw;
-		for(i = 1; i <= jz; i++) {
+		for (i = 1; i <= jz; i++) {
 		    fw += fq[i];
 		}
 		y[1] = (ih==0)? fw: -fw;
@@ -328,10 +328,10 @@ recompute:
 		    fq[i]  += fq[i-1]-fw;
 		    fq[i-1] = fw;
 		}
-		for(fw = 0.0, i = jz; i >= 2; i--) {
+		for (fw = 0.0, i = jz; i >= 2; i--) {
 		    fw += fq[i];
 		}
-		if(ih==0) {
+		if (ih==0) {
 		    y[0] =  fq[0]; y[1] =  fq[1]; y[2] =  fw;
 		} else {
 		    y[0] = -fq[0]; y[1] = -fq[1]; y[2] = -fw;

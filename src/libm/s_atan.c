@@ -75,13 +75,13 @@ double atan(double x)
 
 	GET_HIGH_WORD(hx,x);
 	ix = hx&0x7fffffff;
-	if(ix>=0x44100000) {	/* if |x| >= 2^66 */
+	if (ix>=0x44100000) {	/* if |x| >= 2^66 */
 	    u_int32_t low;
 	    GET_LOW_WORD(low,x);
 	    if (ix > 0x7ff00000 || (ix == 0x7ff00000 && (low != 0))) {
 		return x + x;
 	    }		/* NaN */
-	    if(hx>0) return  atanhi[3]+atanlo[3];
+	    if (hx>0) return  atanhi[3]+atanlo[3];
 	    else     return -atanhi[3]-atanlo[3];
 	} if (ix < 0x3fdc0000) {	/* |x| < 0.4375 */
 	    if (ix < 0x3e200000) {	/* |x| < 2^-29 */

@@ -221,10 +221,10 @@ PixelFormatToPSPFMT(Uint32 format)
 ///SECTION render target LRU management
 static void
 LRUTargetRelink(PSP_TextureData* psp_texture) {
-    if(psp_texture->prevhotw) {
+    if (psp_texture->prevhotw) {
         psp_texture->prevhotw->nexthotw = psp_texture->nexthotw;
     }
-    if(psp_texture->nexthotw) {
+    if (psp_texture->nexthotw) {
         psp_texture->nexthotw->prevhotw = psp_texture->prevhotw;
     }
 }
@@ -232,11 +232,11 @@ LRUTargetRelink(PSP_TextureData* psp_texture) {
 static void
 LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     psp_texture->nexthotw = data->most_recent_target;
-    if(data->most_recent_target) {
+    if (data->most_recent_target) {
         data->most_recent_target->prevhotw = psp_texture;
     }
     data->most_recent_target = psp_texture;
-    if(!data->least_recent_target) {
+    if (!data->least_recent_target) {
         data->least_recent_target = psp_texture;
     }
 }
@@ -244,10 +244,10 @@ LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
 static void
 LRUTargetRemove(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     LRUTargetRelink(psp_texture);
-    if(data->most_recent_target == psp_texture) {
+    if (data->most_recent_target == psp_texture) {
         data->most_recent_target = psp_texture->nexthotw;
     }
-    if(data->least_recent_target == psp_texture) {
+    if (data->least_recent_target == psp_texture) {
         data->least_recent_target = psp_texture->prevhotw;
     }
     psp_texture->prevhotw = NULL;
@@ -256,7 +256,7 @@ LRUTargetRemove(PSP_RenderData* data, PSP_TextureData* psp_texture) {
 
 static void
 LRUTargetBringFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
-    if(data->most_recent_target == psp_texture) {
+    if (data->most_recent_target == psp_texture) {
         return; //nothing to do
     }
     LRUTargetRemove(data, psp_texture);
@@ -265,7 +265,7 @@ LRUTargetBringFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
 
 static void
 TextureStorageFree(void* storage) {
-    if(InVram(storage)) {
+    if (InVram(storage)) {
         vfree(storage);
     } else {
         SDL_free(storage);
@@ -295,21 +295,21 @@ TextureSwizzle(PSP_TextureData *psp_texture, void* dst)
     src = (unsigned int*) psp_texture->data;
 
     data = dst;
-    if(data == NULL) {
+    if (data == NULL) {
         data = SDL_malloc(psp_texture->size);
     }
 
-    if(data == NULL) {
+    if (data == NULL) {
         return SDL_OutOfMemory();
     }
 
-    for(j = 0; j < height; j++, blockaddress += 16)
+    for (j = 0; j < height; j++, blockaddress += 16)
     {
         unsigned int *block;
 
         block = (unsigned int*)&data[blockaddress];
 
-        for(i = 0; i < rowblocks; i++)
+        for (i = 0; i < rowblocks; i++)
         {
             *block++ = *src++;
             *block++ = *src++;
@@ -360,7 +360,7 @@ TextureUnswizzle(PSP_TextureData *psp_texture, void* dst)
 
     data = dst;
 
-    if(data == NULL) {
+    if (data == NULL) {
         data = SDL_malloc(psp_texture->size);
     }
 
@@ -370,17 +370,17 @@ TextureUnswizzle(PSP_TextureData *psp_texture, void* dst)
 
     ydst = (unsigned char *)data;
 
-    for(blocky = 0; blocky < heightblocks; ++blocky)
+    for (blocky = 0; blocky < heightblocks; ++blocky)
     {
         unsigned char *xdst = ydst;
 
-        for(blockx = 0; blockx < widthblocks; ++blockx)
+        for (blockx = 0; blockx < widthblocks; ++blockx)
         {
             unsigned int *block;
 
             block = (unsigned int*)xdst;
 
-            for(j = 0; j < 8; ++j)
+            for (j = 0; j < 8; ++j)
             {
                 *(block++) = *(src++);
                 *(block++) = *(src++);
@@ -409,10 +409,10 @@ static int
 TextureSpillToSram(PSP_RenderData* data, PSP_TextureData* psp_texture)
 {
     // Assumes the texture is in VRAM
-    if(psp_texture->swizzled) {
+    if (psp_texture->swizzled) {
         //Texture was swizzled in vram, just copy to system memory
         void* sdata = SDL_malloc(psp_texture->size);
-        if(sdata == NULL) {
+        if (sdata == NULL) {
             return SDL_OutOfMemory();
         }
 
@@ -430,7 +430,7 @@ TexturePromoteToVram(PSP_RenderData* data, PSP_TextureData* psp_texture, SDL_boo
 {
     // Assumes texture in sram and a large enough continuous block in vram
     void* tdata = vramalloc(psp_texture->size);
-    if(psp_texture->swizzled && target) {
+    if (psp_texture->swizzled && target) {
         return TextureUnswizzle(psp_texture, tdata);
     } else {
         SDL_memcpy(tdata, psp_texture->data, psp_texture->size);
@@ -443,8 +443,8 @@ TexturePromoteToVram(PSP_RenderData* data, PSP_TextureData* psp_texture, SDL_boo
 static int
 TextureSpillLRU(PSP_RenderData* data, size_t wanted) {
     PSP_TextureData* lru = data->least_recent_target;
-    if(lru) {
-        if(TextureSpillToSram(data, lru) < 0) {
+    if (lru) {
+        if (TextureSpillToSram(data, lru) < 0) {
             return -1;
         }
         LRUTargetRemove(data, lru);
@@ -458,8 +458,8 @@ TextureSpillLRU(PSP_RenderData* data, size_t wanted) {
 static int
 TextureSpillTargetsForSpace(PSP_RenderData* data, size_t size)
 {
-    while(vlargestblock() < size) {
-        if(TextureSpillLRU(data, size) < 0) {
+    while (vlargestblock() < size) {
+        if (TextureSpillLRU(data, size) < 0) {
             return -1;
         }
     }
@@ -470,12 +470,12 @@ static int
 TextureBindAsTarget(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     unsigned int dstFormat;
 
-    if(!InVram(psp_texture->data)) {
+    if (!InVram(psp_texture->data)) {
         // Bring back the texture in vram
-        if(TextureSpillTargetsForSpace(data, psp_texture->size) < 0) {
+        if (TextureSpillTargetsForSpace(data, psp_texture->size) < 0) {
             return -1;
         }
-        if(TexturePromoteToVram(data, psp_texture, SDL_TRUE) < 0) {
+        if (TexturePromoteToVram(data, psp_texture, SDL_TRUE) < 0) {
             return -1;
         }
     }
@@ -484,7 +484,7 @@ TextureBindAsTarget(PSP_RenderData* data, PSP_TextureData* psp_texture) {
 
     // Stencil alpha dst hack
     dstFormat = psp_texture->format;
-    if(dstFormat == GU_PSM_5551) {
+    if (dstFormat == GU_PSM_5551) {
         sceGuEnable(GU_STENCIL_TEST);
         sceGuStencilOp(GU_REPLACE, GU_REPLACE, GU_REPLACE);
         sceGuStencilFunc(GU_GEQUAL, 0xff, 0xff);
@@ -539,20 +539,20 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     psp_texture->pitch = psp_texture->textureWidth * SDL_BYTESPERPIXEL(texture->format);
     psp_texture->size = psp_texture->textureHeight*psp_texture->pitch;
-    if(texture->access & SDL_TEXTUREACCESS_TARGET) {
-        if(TextureSpillTargetsForSpace(renderer->driverdata, psp_texture->size) < 0){
+    if (texture->access & SDL_TEXTUREACCESS_TARGET) {
+        if (TextureSpillTargetsForSpace(renderer->driverdata, psp_texture->size) < 0){
             SDL_free(psp_texture);
             return -1;
         }
         psp_texture->data = vramalloc(psp_texture->size);
-        if(psp_texture->data) {
+        if (psp_texture->data) {
             LRUTargetPushFront(data, psp_texture);
         }
     } else {
         psp_texture->data = SDL_calloc(1, psp_texture->size);
     }
 
-    if(!psp_texture->data) {
+    if (!psp_texture->data) {
         SDL_free(psp_texture);
         return SDL_OutOfMemory();
     }
@@ -812,7 +812,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
     const float u1 = srcrect->x + srcrect->w;
     const float v1 = srcrect->y + srcrect->h;
 
-    if((MathAbs(u1) - MathAbs(u0)) < 64.0f) {
+    if ((MathAbs(u1) - MathAbs(u0)) < 64.0f) {
         verts = (VertTV *) SDL_AllocateRenderVertices(renderer, 2 * sizeof (VertTV), 4, &cmd->data.draw.first);
         if (verts == NULL) {
             return -1;
@@ -855,7 +855,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
         }
 
 
-        for(i = 0, start = 0, end = width; i < count; i++, start += slice)
+        for (i = 0, start = 0, end = width; i < count; i++, start += slice)
         {
             const float polyWidth = ((curX + slice) > endX) ? (endX - curX) : slice;
             const float sourceWidth = ((curU + ustep) > u1) ? (u1 - curU) : ustep;
@@ -990,16 +990,16 @@ StartDrawing(SDL_Renderer * renderer)
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
 
     // Check if we need to start GU displaylist
-    if(!data->displayListAvail) {
+    if (!data->displayListAvail) {
         sceGuStart(GU_DIRECT, DisplayList);
         data->displayListAvail = SDL_TRUE;
         //ResetBlendState(&data->blendState);
     }
 
     // Check if we need a draw buffer change
-    if(renderer->target != data->boundTarget) {
+    if (renderer->target != data->boundTarget) {
         SDL_Texture* texture = renderer->target;
-        if(texture) {
+        if (texture) {
             PSP_TextureData* psp_texture = (PSP_TextureData*) texture->driverdata;
             // Set target, registering LRU
             TextureBindAsTarget(data, psp_texture);
@@ -1048,16 +1048,16 @@ PSP_SetBlendState(PSP_RenderData* data, PSP_BlendState* state)
         }
     }
 
-    if(state->color != current->color) {
+    if (state->color != current->color) {
         sceGuColor(state->color);
     }
 
-    if(state->shadeModel != current->shadeModel) {
+    if (state->shadeModel != current->shadeModel) {
         sceGuShadeModel(state->shadeModel);
     }
 
-    if(state->texture != current->texture) {
-        if(state->texture != NULL) {
+    if (state->texture != current->texture) {
+        if (state->texture != NULL) {
             TextureActivate(state->texture);
             sceGuEnable(GU_TEXTURE_2D);
         } else {
@@ -1103,7 +1103,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
             case SDL_RENDERCMD_SETCLIPRECT: {
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
-                if(cmd->data.cliprect.enabled){
+                if (cmd->data.cliprect.enabled){
                     sceGuEnable(GU_SCISSOR_TEST);
                     sceGuScissor(rect->x, rect->y, rect->w, rect->h);
                 } else {

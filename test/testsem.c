@@ -158,14 +158,14 @@ ThreadFuncOverheadContended(void *data)
     Thread_State *state = (Thread_State *) data;
 
     if (state->flag) {
-        while(alive) {
+        while (alive) {
             if (SDL_SemTryWait(sem) == SDL_MUTEX_TIMEDOUT) {
                 ++state->content_count;
             }
             ++state->loop_count;
         }
     } else {
-        while(alive) {
+        while (alive) {
             /* Timeout needed to allow check on alive flag */
             if (SDL_SemWaitTimeout(sem, 50) == SDL_MUTEX_TIMEDOUT) {
                 ++state->content_count;

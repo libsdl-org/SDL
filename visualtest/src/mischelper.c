@@ -12,7 +12,7 @@ SDLVisualTest_HashString(char* str, char hash[33])
     SDLTest_Md5Context md5c;
     int i;
 
-    if(str == NULL) {
+    if (str == NULL) {
         SDLTest_LogError("str argument cannot be NULL");
         return;
     }
@@ -22,7 +22,7 @@ SDLVisualTest_HashString(char* str, char hash[33])
     SDLTest_Md5Final(&md5c);
 
     /* convert the md5 hash to an array of hexadecimal digits */
-    for(i = 0; i < 16; i++) {
+    for (i = 0; i < 16; i++) {
         SDL_snprintf(hash + 2 * i, 33 - 2 * i, "%02x", (int)md5c.digest[i]);
     }
 }

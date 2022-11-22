@@ -56,7 +56,7 @@ VITA_InitTouch(void)
     sceTouchEnableTouchForce(SCE_TOUCH_PORT_FRONT);
     sceTouchEnableTouchForce(SCE_TOUCH_PORT_BACK);
 
-    for(int port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+    for (int port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
         SceTouchPanelInfo panelinfo;
         sceTouchGetPanelInfo(port, &panelinfo);
 
@@ -93,7 +93,7 @@ VITA_PollTouch(void)
 
     SDL_memcpy(touch_old, touch, sizeof(touch_old));
 
-    for(port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+    for (port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
         /** Skip polling of Touch Device if environment variable is set **/
         if (((port == 0) && disableFrontPoll) || ((port == 1) && disableBackPoll)) {
             continue;
@@ -122,7 +122,7 @@ VITA_PollTouch(void)
                 finger_id = (SDL_FingerID) touch[port].report[i].id;
 
                 // Skip if finger was already previously down
-                if(!finger_down) {
+                if (!finger_down) {
                     // Send an initial touch
                     SDL_SendTouch((SDL_TouchID)port,
                         finger_id,

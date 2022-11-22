@@ -309,7 +309,7 @@ WINMM_OpenDevice(_THIS, const char *devname)
     SDL_zerop(this->hidden);
 
     /* Initialize the wavebuf structures for closing */
-    for(i = 0; i < NUM_BUFFERS; ++i) {
+    for (i = 0; i < NUM_BUFFERS; ++i) {
         this->hidden->wavebuf[i].dwUser = 0xFFFF;
     }
 

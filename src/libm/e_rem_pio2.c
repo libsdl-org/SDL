@@ -75,11 +75,11 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 
 	GET_HIGH_WORD(hx,x);		/* high word of x */
 	ix = hx&0x7fffffff;
-	if(ix<=0x3fe921fb)   /* |x| ~<= pi/4 , no need for reduction */ {y[0] = x; y[1] = 0; return 0;}
-	if(ix<0x4002d97c) {  /* |x| < 3pi/4, special case with n=+-1 */
-	    if(hx>0) {
+	if (ix<=0x3fe921fb)   /* |x| ~<= pi/4 , no need for reduction */ {y[0] = x; y[1] = 0; return 0;}
+	if (ix<0x4002d97c) {  /* |x| < 3pi/4, special case with n=+-1 */
+	    if (hx>0) {
 		z = x - pio2_1;
-		if(ix!=0x3ff921fb) { 	/* 33+53 bit pi is good enough */
+		if (ix!=0x3ff921fb) { 	/* 33+53 bit pi is good enough */
 		    y[0] = z - pio2_1t;
 		    y[1] = (z-y[0])-pio2_1t;
 		} else {		/* near pi/2, use 33+33+53 bit pi */
@@ -90,7 +90,7 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 		return 1;
 	    } else {	/* negative x */
 		z = x + pio2_1;
-		if(ix!=0x3ff921fb) { 	/* 33+53 bit pi is good enough */
+		if (ix!=0x3ff921fb) { 	/* 33+53 bit pi is good enough */
 		    y[0] = z + pio2_1t;
 		    y[1] = (z-y[0])+pio2_1t;
 		} else {		/* near pi/2, use 33+33+53 bit pi */
@@ -101,13 +101,13 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 		return -1;
 	    }
 	}
-	if(ix<=0x413921fb) { /* |x| ~<= 2^19*(pi/2), medium size */
+	if (ix<=0x413921fb) { /* |x| ~<= 2^19*(pi/2), medium size */
 	    t  = fabs(x);
 	    n  = (int32_t) (t*invpio2+half);
 	    fn = (double)n;
 	    r  = t-fn*pio2_1;
 	    w  = fn*pio2_1t;	/* 1st round good to 85 bit */
-	    if(n<32&&ix!=npio2_hw[n-1]) {
+	    if (n<32&&ix!=npio2_hw[n-1]) {
 		y[0] = r-w;	/* quick check no cancellation */
 	    } else {
 	        u_int32_t high;
@@ -115,7 +115,7 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 	        y[0] = r-w;
 		GET_HIGH_WORD(high,y[0]);
 	        i = j-((high>>20)&0x7ff);
-	        if(i>16) {  /* 2nd iteration needed, good to 118 */
+	        if (i>16) {  /* 2nd iteration needed, good to 118 */
 		    t  = r;
 		    w  = fn*pio2_2;
 		    r  = t-w;
@@ -123,7 +123,7 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 		    y[0] = r-w;
 		    GET_HIGH_WORD(high,y[0]);
 		    i = j-((high>>20)&0x7ff);
-		    if(i>49)  {	/* 3rd iteration need, 151 bits acc */
+		    if (i>49)  {	/* 3rd iteration need, 151 bits acc */
 		    	t  = r;	/* will cover all possible cases */
 		    	w  = fn*pio2_3;
 		    	r  = t-w;
@@ -133,13 +133,13 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 		}
 	    }
 	    y[1] = (r-y[0])-w;
-	    if(hx<0) 	{y[0] = -y[0]; y[1] = -y[1]; return -n;}
+	    if (hx<0) 	{y[0] = -y[0]; y[1] = -y[1]; return -n;}
 	    else	 return n;
 	}
     /*
      * all other (large) arguments
      */
-	if(ix>=0x7ff00000) {		/* x is inf or NaN */
+	if (ix>=0x7ff00000) {		/* x is inf or NaN */
 	    y[0]=y[1]=x-x; return 0;
 	}
     /* set z = scalbn(|x|,ilogb(x)-23) */
@@ -147,7 +147,7 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 	SET_LOW_WORD(z,low);
 	e0 	= (ix>>20)-1046;	/* e0 = ilogb(z)-23; */
 	SET_HIGH_WORD(z, ix - ((int32_t)(e0<<20)));
-	for(i=0;i<2;i++) {
+	for (i=0;i<2;i++) {
 		tx[i] = (double)((int32_t)(z));
 		z     = (z-tx[i])*two24;
 	}
@@ -157,6 +157,6 @@ int32_t attribute_hidden __ieee754_rem_pio2(double x, double *y)
 		nx--;
 	}	/* skip zero term */
 	n  =  __kernel_rem_pio2(tx,y,e0,nx,2,two_over_pi);
-	if(hx<0) {y[0] = -y[0]; y[1] = -y[1]; return -n;}
+	if (hx<0) {y[0] = -y[0]; y[1] = -y[1]; return -n;}
 	return n;
 }

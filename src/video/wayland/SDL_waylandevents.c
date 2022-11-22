@@ -737,7 +737,7 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
 
-    if(wl_seat_get_version(input->seat) >= 5)
+    if (wl_seat_get_version(input->seat) >= 5)
         pointer_handle_axis_common(input, AXIS_EVENT_CONTINUOUS, axis, value);
     else
         pointer_handle_axis_common_v1(input, time, axis, value);
@@ -1290,7 +1290,7 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     }
 
     /* If a key is repeating, update the text to apply the modifier. */
-    if(keyboard_repeat_is_set(&input->keyboard_repeat)) {
+    if (keyboard_repeat_is_set(&input->keyboard_repeat)) {
         char text[8];
         const uint32_t key = keyboard_repeat_get_key(&input->keyboard_repeat);
 
@@ -2657,7 +2657,7 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
     /* If we have a pointer confine active, we must destroy it here because
      * creating a locked pointer otherwise would be a protocol error.
      */
-    for(window = vd->windows; window; window = window->next) {
+    for (window = vd->windows; window; window = window->next) {
         pointer_confine_destroy(window);
     }
 
@@ -2672,7 +2672,7 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
         input->relative_pointer = relative_pointer;
     }
 
-    for(window = vd->windows; window; window = window->next) {
+    for (window = vd->windows; window; window = window->next) {
         lock_pointer_to_window(window, input);
     }
 
@@ -2701,7 +2701,7 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
 
     d->relative_mouse_mode = 0;
 
-    for(window = vd->windows; window; window = window->next) {
+    for (window = vd->windows; window; window = window->next) {
         Wayland_input_confine_pointer(input, window);
     }
 

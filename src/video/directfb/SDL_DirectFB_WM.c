@@ -134,19 +134,19 @@ DirectFB_WM_RedrawLayout(_THIS, SDL_Window * window)
     /* s->SetDrawingFlags(s, DSDRAW_BLEND); */
     s->SetColor(s, COLOR_EXPAND(t->frame_color));
     /* top */
-    for(i = 0; i < t->top_size; i++) {
+    for (i = 0; i < t->top_size; i++) {
         s->DrawLine(s, 0, i, windata->size.w, i);
     }
     /* bottom */
-    for(i = windata->size.h - t->bottom_size; i < windata->size.h; i++) {
+    for (i = windata->size.h - t->bottom_size; i < windata->size.h; i++) {
         s->DrawLine(s, 0, i, windata->size.w, i);
     }
     /* left */
-    for(i = 0; i < t->left_size; i++) {
+    for (i = 0; i < t->left_size; i++) {
         s->DrawLine(s, i, 0, i, windata->size.h);
     }
     /* right */
-    for(i = windata->size.w - t->right_size; i < windata->size.w; i++) {
+    for (i = windata->size.w - t->right_size; i < windata->size.w; i++) {
         s->DrawLine(s, i, 0, i, windata->size.h);
     }
     /* Caption */

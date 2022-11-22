@@ -350,8 +350,8 @@ X11_GetNumLockModifierMask(_THIS)
 
     xmods = X11_XGetModifierMapping(display);
     n = xmods->max_keypermod;
-    for(i = 3; i < 8; i++) {
-        for(j = 0; j < n; j++) {
+    for (i = 3; i < 8; i++) {
+        for (j = 0; j < n; j++) {
             KeyCode kc = xmods->modifiermap[i * n + j];
             if (viddata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
                 num_mask = 1 << i;
@@ -376,8 +376,8 @@ X11_GetScrollLockModifierMask(_THIS)
 
     xmods = X11_XGetModifierMapping(display);
     n = xmods->max_keypermod;
-    for(i = 3; i < 8; i++) {
-        for(j = 0; j < n; j++) {
+    for (i = 3; i < 8; i++) {
+        for (j = 0; j < n; j++) {
             KeyCode kc = xmods->modifiermap[i * n + j];
             if (viddata->key_layout[kc] == SDL_SCANCODE_SCROLLLOCK) {
                 num_mask = 1 << i;
@@ -655,7 +655,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
             if (req->target == XA_TARGETS) {
                 supportedFormats[0] = XA_TARGETS;
                 mime_formats = 1;
-                for(i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
+                for (i = 0; i < SDL_X11_CLIPBOARD_MIME_TYPE_MAX; ++i) {
                     supportedFormats[mime_formats++] = X11_GetSDLCutBufferClipboardExternalFormat(display, i);
                 }
                 X11_XChangeProperty(display, req->requestor, req->property,
@@ -809,7 +809,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     }
 
 #if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
-    if(xevent->type == GenericEvent) {
+    if (xevent->type == GenericEvent) {
         X11_HandleGenericEvent(videodata, xevent);
         return;
     }
@@ -1083,7 +1083,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
 #ifdef SDL_USE_IME
-            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+            if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
                 handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
             }
 #endif
@@ -1176,7 +1176,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
                                     xevent->xconfigure.x, xevent->xconfigure.y);
 #ifdef SDL_USE_IME
-                if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
                     /* Update IME candidate list position */
                     SDL_IME_UpdateTextRect(NULL);
                 }
@@ -1223,7 +1223,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
 #ifdef DEBUG_XEVENTS
                 Atom act= videodata->XdndActionCopy;
-                if(xdnd_version >= 2) {
+                if (xdnd_version >= 2) {
                     act = xevent->xclient.data.l[4];
                 }
                 printf("Action requested by user is : %s\n", X11_XGetAtomName(display , act));
@@ -1245,7 +1245,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
                 X11_XSendEvent(display, xevent->xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
                 X11_XFlush(display);
-            } else if(xevent->xclient.message_type == videodata->XdndDrop) {
+            } else if (xevent->xclient.message_type == videodata->XdndDrop) {
                 if (data->xdnd_req == None) {
                     /* say again - not interested! */
                     SDL_memset(&m, 0, sizeof(XClientMessageEvent));
@@ -1260,7 +1260,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                     X11_XSendEvent(display, xevent->xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
                 } else {
                     /* convert */
-                    if(xdnd_version >= 1) {
+                    if (xdnd_version >= 1) {
                         X11_XConvertSelection(display, videodata->XdndSelection, data->xdnd_req, videodata->PRIMARY, data->xwindow, xevent->xclient.data.l[2]);
                     } else {
                         X11_XConvertSelection(display, videodata->XdndSelection, data->xdnd_req, videodata->PRIMARY, data->xwindow, CurrentTime);
@@ -1312,7 +1312,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
     case MotionNotify:{
             SDL_Mouse *mouse = SDL_GetMouse();
-            if(!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!mouse->relative_mode || mouse->relative_mode_warp) {
 #ifdef DEBUG_MOTION
                 printf("window %p: X11 motion: %d,%d\n", data, xevent->xmotion.x, xevent->xmotion.y);
 #endif
@@ -1332,12 +1332,12 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             } else {
                 SDL_bool ignore_click = SDL_FALSE;
                 int button = xevent->xbutton.button;
-                if(button == Button1) {
+                if (button == Button1) {
                     if (ProcessHitTest(_this, data, xevent)) {
                         SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
                         break;  /* don't pass this event on to app. */
                     }
-                } else if(button > 7) {
+                } else if (button > 7) {
                     /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
                        => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
                     button -= (8-SDL_BUTTON_X1);
@@ -1680,7 +1680,7 @@ X11_WaitEventTimeout(_THIS, int timeout)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
         SDL_IME_PumpEvents();
     }
 #endif
@@ -1723,7 +1723,7 @@ X11_PumpEvents(_THIS)
     }
 
 #ifdef SDL_USE_IME
-    if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
         SDL_IME_PumpEvents();
     }
 #endif

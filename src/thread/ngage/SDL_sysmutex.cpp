@@ -46,7 +46,7 @@ SDL_CreateMutex(void)
     RMutex rmutex;
 
     TInt status = CreateUnique(NewMutex, &rmutex, NULL);
-    if(status != KErrNone) {
+    if (status != KErrNone) {
         SDL_SetError("Couldn't create mutex.");
     }
     SDL_mutex* mutex = new /*(ELeave)*/ SDL_mutex;

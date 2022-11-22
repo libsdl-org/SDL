@@ -48,7 +48,7 @@ int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
                                        void ** pixels, int *pitch) {
     SDL_BWin *bwin = _ToBeWin(window);
     BScreen bscreen;
-    if(!bscreen.IsValid()) {
+    if (!bscreen.IsValid()) {
         return -1;
     }
 
@@ -65,14 +65,14 @@ int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
     /* Create the new bitmap object */
     BBitmap *bitmap = bwin->GetBitmap();
 
-    if(bitmap) {
+    if (bitmap) {
         delete bitmap;
     }
     bitmap = new BBitmap(bwin->Bounds(), (color_space)bmode.space,
             false,    /* Views not accepted */
             true);    /* Contiguous memory required */
 
-    if(bitmap->InitCheck() != B_OK) {
+    if (bitmap->InitCheck() != B_OK) {
         delete bitmap;
         return SDL_SetError("Could not initialize back buffer!");
     }

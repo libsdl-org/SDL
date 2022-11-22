@@ -119,7 +119,7 @@ SDL_UDEV_Init(void)
 
     if (_this == NULL) {
         _this = (SDL_UDEV_PrivateData *) SDL_calloc(1, sizeof(*_this));
-        if(_this == NULL) {
+        if (_this == NULL) {
             return SDL_OutOfMemory();
         }
 
@@ -327,7 +327,7 @@ SDL_UDEV_LoadLibrary(void)
 #endif
 
     if (_this->udev_handle == NULL) {
-        for( i = 0 ; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
+        for ( i = 0 ; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
             _this->udev_handle = SDL_LoadObject(SDL_UDEV_LIBS[i]);
             if (_this->udev_handle != NULL) {
                 retval = SDL_UDEV_load_syms();

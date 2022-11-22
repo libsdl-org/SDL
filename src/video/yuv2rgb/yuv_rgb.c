@@ -194,7 +194,7 @@ void rgb24_yuv420_std(
 	const RGB2YUVParam *const param = &(RGB2YUV[yuv_type]);
 	
 	uint32_t x, y;
-	for(y=0; y<(height-1); y+=2)
+	for (y=0; y<(height-1); y+=2)
 	{
 		const uint8_t *rgb_ptr1=RGB+y*RGB_stride,
 			*rgb_ptr2=RGB+(y+1)*RGB_stride;
@@ -204,7 +204,7 @@ void rgb24_yuv420_std(
 			*u_ptr=U+(y/2)*UV_stride,
 			*v_ptr=V+(y/2)*UV_stride;
 		
-		for(x=0; x<(width-1); x+=2)
+		for (x=0; x<(width-1); x+=2)
 		{
 			// compute yuv for the four pixels, u and v values are summed
 			int32_t y_tmp, u_tmp, v_tmp;
@@ -622,7 +622,7 @@ void rgb24_yuv420_sse(uint32_t width, uint32_t height,
 	const RGB2YUVParam *const param = &(RGB2YUV[yuv_type]);
 	
 	uint32_t xpos, ypos;
-	for(ypos=0; ypos<(height-1); ypos+=2)
+	for (ypos=0; ypos<(height-1); ypos+=2)
 	{
 		const uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
 			*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
@@ -632,7 +632,7 @@ void rgb24_yuv420_sse(uint32_t width, uint32_t height,
 			*u_ptr=U+(ypos/2)*UV_stride,
 			*v_ptr=V+(ypos/2)*UV_stride;
 		
-		for(xpos=0; xpos<(width-31); xpos+=32)
+		for (xpos=0; xpos<(width-31); xpos+=32)
 		{
 			RGB2YUV_32
 			
@@ -658,7 +658,7 @@ void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 	const RGB2YUVParam *const param = &(RGB2YUV[yuv_type]);
 	
 	uint32_t xpos, ypos;
-	for(ypos=0; ypos<(height-1); ypos+=2)
+	for (ypos=0; ypos<(height-1); ypos+=2)
 	{
 		const uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
 			*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
@@ -668,7 +668,7 @@ void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 			*u_ptr=U+(ypos/2)*UV_stride,
 			*v_ptr=V+(ypos/2)*UV_stride;
 		
-		for(xpos=0; xpos<(width-31); xpos+=32)
+		for (xpos=0; xpos<(width-31); xpos+=32)
 		{
 			RGB2YUV_32
 			

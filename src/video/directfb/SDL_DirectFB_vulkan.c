@@ -71,9 +71,9 @@ int DirectFB_Vulkan_LoadLibrary(_THIS, const char *path)
     if (extensions == NULL) {
         goto fail;
     }
-    for(i = 0; i < extensionCount; i++)
+    for (i = 0; i < extensionCount; i++)
     {
-        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
+        if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
         } else if (SDL_strcmp(VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasDirectFBSurfaceExtension = SDL_TRUE;
@@ -81,11 +81,11 @@ int DirectFB_Vulkan_LoadLibrary(_THIS, const char *path)
         
     }
     SDL_free(extensions);
-    if(!hasSurfaceExtension) {
+    if (!hasSurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
-    } else if(!hasDirectFBSurfaceExtension) {
+    } else if (!hasDirectFBSurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME "extension");
         goto fail;
@@ -100,7 +100,7 @@ fail:
 
 void DirectFB_Vulkan_UnloadLibrary(_THIS)
 {
-    if(_this->vulkan_config.loader_handle) {
+    if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
     }
@@ -114,7 +114,7 @@ SDL_bool DirectFB_Vulkan_GetInstanceExtensions(_THIS,
     static const char *const extensionsForDirectFB[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME
     };
-    if(!_this->vulkan_config.loader_handle) {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -139,12 +139,12 @@ SDL_bool DirectFB_Vulkan_CreateSurface(_THIS,
     VkDirectFBSurfaceCreateInfoEXT createInfo;
     VkResult result;
 
-    if(!_this->vulkan_config.loader_handle) {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
 
-    if(!vkCreateDirectFBSurfaceEXT) {
+    if (!vkCreateDirectFBSurfaceEXT) {
         SDL_SetError(VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
@@ -157,7 +157,7 @@ SDL_bool DirectFB_Vulkan_CreateSurface(_THIS,
     createInfo.surface =  windata->surface;
     result = vkCreateDirectFBSurfaceEXT(instance, &createInfo,
                                         NULL, surface);
-    if(result != VK_SUCCESS) {
+    if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateDirectFBSurfaceEXT failed: %s",
                      SDL_Vulkan_GetResultString(result));
         return SDL_FALSE;

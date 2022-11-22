@@ -51,7 +51,7 @@ int HAIKU_GL_LoadLibrary(_THIS, const char *path)
             int32 cookie = 0;
     while (get_next_image_info(0, &cookie, &info) == B_OK) {
         void *location = NULL;
-        if( get_image_symbol(info.id, "glBegin", B_SYMBOL_TYPE_ANY,
+        if ( get_image_symbol(info.id, "glBegin", B_SYMBOL_TYPE_ANY,
                 &location) == B_OK) {
 
             _this->gl_config.dll_handle = (void *) (addr_t) info.id;
@@ -175,9 +175,9 @@ void HAIKU_GL_UnloadLibrary(_THIS) {
    currently in use. */
 void HAIKU_GL_RebootContexts(_THIS) {
     SDL_Window *window = _this->windows;
-    while(window) {
+    while (window) {
         SDL_BWin *bwin = _ToBeWin(window);
-        if(bwin->GetGLView()) {
+        if (bwin->GetGLView()) {
             bwin->LockLooper();
             bwin->RemoveGLView();
             bwin->CreateGLView(bwin->GetGLType());

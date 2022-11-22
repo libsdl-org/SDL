@@ -443,7 +443,7 @@ SDL_DINPUT_JoystickInit(void)
 static BOOL CALLBACK
 EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(expression) { if(!(expression)) goto err; }
+#define CHECK(expression) { if (!(expression)) goto err; }
     JoyStick_DeviceData *pNewJoystick = NULL;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     Uint16 vendor = 0;
@@ -555,7 +555,7 @@ typedef struct
 static BOOL CALLBACK
 EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(expression) { if(!(expression)) goto err; }
+#define CHECK(expression) { if (!(expression)) goto err; }
     Joystick_PresentData *pData = (Joystick_PresentData *)pContext;
     Uint16 vendor = 0;
     Uint16 product = 0;

@@ -96,7 +96,7 @@ FocusAllMice(_THIS, SDL_Window *window)
     SDL_DFB_DEVICEDATA(_this);
     int index;
 
-    for(index = 0; index < devdata->num_mice; index++) {
+    for (index = 0; index < devdata->num_mice; index++) {
         SDL_SetMouseFocus(devdata->mouse_id[index], id);
     }
 #else
@@ -112,7 +112,7 @@ FocusAllKeyboards(_THIS, SDL_Window *window)
     SDL_DFB_DEVICEDATA(_this);
     int index;
 
-    for(index = 0; index < devdata->num_keyboard; index++) {
+    for (index = 0; index < devdata->num_keyboard; index++) {
         SDL_SetKeyboardFocus(index, id);
     }
 #else
@@ -464,7 +464,7 @@ DirectFB_InitOSKeymap(_THIS, SDL_Scancode * keymap, int numkeys)
     int i;
 
     /* Initialize the DirectFB key translation table */
-    for(i = 0; i < numkeys; ++i) {
+    for (i = 0; i < numkeys; ++i) {
         keymap[i] = SDL_SCANCODE_UNKNOWN;
     }
 

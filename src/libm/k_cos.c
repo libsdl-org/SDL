@@ -62,17 +62,17 @@ double attribute_hidden __kernel_cos(double x, double y)
 	int32_t ix;
 	GET_HIGH_WORD(ix,x);
 	ix &= 0x7fffffff;			/* ix = |x|'s high word*/
-	if(ix<0x3e400000) {			/* if x < 2**27 */
+	if (ix<0x3e400000) {			/* if x < 2**27 */
 	    if (((int)x) == 0) {
 		return one;
 	    }		/* generate inexact */
 	}
 	z  = x*x;
 	r  = z*(C1+z*(C2+z*(C3+z*(C4+z*(C5+z*C6)))));
-	if(ix < 0x3FD33333) 			/* if |x| < 0.3 */
+	if (ix < 0x3FD33333) 			/* if |x| < 0.3 */
 	    return one - (0.5*z - (z*r - x*y));
 	else {
-	    if(ix > 0x3fe90000) {		/* x > 0.78125 */
+	    if (ix > 0x3fe90000) {		/* x > 0.78125 */
 		qx = 0.28125;
 	    } else {
 	        INSERT_WORDS(qx,ix-0x00200000,0);	/* x/4 */

@@ -67,7 +67,7 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
     Uint8 ch;
     Uint8 needsPad;
 
-#define COPY_PIXEL(x)   spot = &bits[ofs++]; if(spot >= start && spot < end) *spot = (x)
+#define COPY_PIXEL(x)   spot = &bits[ofs++]; if (spot >= start && spot < end) *spot = (x)
 
     for (;;) {
         if (!SDL_RWread(src, &ch, 1, 1)) {
@@ -564,7 +564,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             case 15:
             case 16:{
                     Uint16 *pix = (Uint16 *) bits;
-                    for(i = 0; i < surface->w; i++) {
+                    for (i = 0; i < surface->w; i++) {
                         pix[i] = SDL_Swap16(pix[i]);
                     }
                     break;
@@ -572,7 +572,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
 
             case 32:{
                     Uint32 *pix = (Uint32 *) bits;
-                    for(i = 0; i < surface->w; i++) {
+                    for (i = 0; i < surface->w; i++) {
                         pix[i] = SDL_Swap32(pix[i]);
                     }
                     break;

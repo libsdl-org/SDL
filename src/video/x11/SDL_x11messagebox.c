@@ -633,7 +633,7 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
     data->button_press_index = -1;  /* Reset what button is currently depressed. */
     data->mouse_over_index = -1;    /* Reset what button the mouse is over. */
 
-    while( !close_dialog ) {
+    while ( !close_dialog ) {
         XEvent e;
         SDL_bool draw = SDL_TRUE;
 

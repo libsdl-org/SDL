@@ -1190,8 +1190,8 @@ BlitARGBto565PixelAlpha(SDL_BlitInfo * info)
            compositioning used (>>8 instead of /255) doesn't handle
            it correctly. Also special-case alpha=0 for speed?
            Benchmark this! */
-        if(alpha) {   
-          if(alpha == (SDL_ALPHA_OPAQUE >> 3)) {
+        if (alpha) {   
+          if (alpha == (SDL_ALPHA_OPAQUE >> 3)) {
             *dstp = (Uint16)((s >> 8 & 0xf800) + (s >> 5 & 0x7e0) + (s >> 3  & 0x1f));
           } else {
             Uint32 d = *dstp;
@@ -1237,8 +1237,8 @@ BlitARGBto555PixelAlpha(SDL_BlitInfo * info)
            compositioning used (>>8 instead of /255) doesn't handle
            it correctly. Also special-case alpha=0 for speed?
            Benchmark this! */
-        if(alpha) {   
-          if(alpha == (SDL_ALPHA_OPAQUE >> 3)) {
+        if (alpha) {   
+          if (alpha == (SDL_ALPHA_OPAQUE >> 3)) {
             *dstp = (Uint16)((s >> 9 & 0x7c00) + (s >> 6 & 0x3e0) + (s >> 3  & 0x1f));
           } else {
             Uint32 d = *dstp;
@@ -1327,7 +1327,7 @@ BlitNtoNSurfaceAlphaKey(SDL_BlitInfo * info)
         DUFFS_LOOP4(
         {
         RETRIEVE_RGB_PIXEL(src, srcbpp, Pixel);
-        if(sA && Pixel != ckey) {
+        if (sA && Pixel != ckey) {
             RGB_FROM_PIXEL(Pixel, srcfmt, sR, sG, sB);
             DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
             ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
@@ -1370,7 +1370,7 @@ BlitNtoNPixelAlpha(SDL_BlitInfo * info)
         DUFFS_LOOP4(
         {
         DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-        if(sA) {
+        if (sA) {
             DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
             ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
             ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);

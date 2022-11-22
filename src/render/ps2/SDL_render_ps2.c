@@ -333,7 +333,7 @@ PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
     const SDL_Rect *rect = &cmd->data.cliprect.rect;
 
-    if(cmd->data.cliprect.enabled){
+    if (cmd->data.cliprect.enabled){
         gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(rect->x, rect->y, rect->w, rect->h));
     } else {
         gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);

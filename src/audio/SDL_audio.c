@@ -1007,7 +1007,7 @@ SDL_AudioInit(const char *driver_name)
         }
     } else {
         for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
-            if(bootstrap[i]->demand_only) {
+            if (bootstrap[i]->demand_only) {
                 continue;
             }
 

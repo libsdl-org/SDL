@@ -373,7 +373,7 @@ DirectFB_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT | DSDESC_CAPS;
         dsc.width = texture->w;
         dsc.height = texture->h;
-        if(texture->format == SDL_PIXELFORMAT_YV12 ||
+        if (texture->format == SDL_PIXELFORMAT_YV12 ||
            texture->format == SDL_PIXELFORMAT_IYUV) {
            /* dfb has problems with odd sizes -make them even internally */
            dsc.width += (dsc.width % 2);
@@ -420,7 +420,7 @@ DirectFB_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 #endif
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         /* 3 plane YUVs return 1 bpp, but we need more space for other planes */
-        if(texture->format == SDL_PIXELFORMAT_YV12 ||
+        if (texture->format == SDL_PIXELFORMAT_YV12 ||
            texture->format == SDL_PIXELFORMAT_IYUV) {
             SDL_DFB_ALLOC_CLEAR(data->pixels, (texture->h * data->pitch  + ((texture->h + texture->h % 2) * (data->pitch + data->pitch % 2) * 2) / 4));
         } else {

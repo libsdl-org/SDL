@@ -37,7 +37,7 @@ main(int argc, char *argv[])
         }
     }
 
-    if(enable_haptic) {
+    if (enable_haptic) {
         init_subsystems |= SDL_INIT_HAPTIC;
     }
     
@@ -61,9 +61,9 @@ main(int argc, char *argv[])
         SDL_Log("There are %d haptic devices at startup\n", SDL_NumHaptics());
     }
 
-    while(keepGoing) {
+    while (keepGoing) {
         SDL_Event event;
-        while(SDL_PollEvent(&event)) {
+        while (SDL_PollEvent(&event)) {
             switch(event.type)
             {
                 case SDL_QUIT:
@@ -99,7 +99,7 @@ main(int argc, char *argv[])
                     if (instance == event.jdevice.which) {
                         SDL_Log("Joy Removed: %" SDL_PRIs32 "\n", event.jdevice.which);
                         instance = -1;
-                        if(enable_haptic && haptic) {
+                        if (enable_haptic && haptic) {
                             SDL_HapticClose(haptic);
                             haptic = NULL;
                         }
@@ -119,7 +119,7 @@ main(int argc, char *argv[])
                     break;
                 case SDL_JOYBUTTONDOWN:
                     SDL_Log("Button Press: %d\n", event.jbutton.button);
-                    if(enable_haptic && haptic) {
+                    if (enable_haptic && haptic) {
                         SDL_HapticRumblePlay(haptic, 0.25, 250);
                     }
                     if (event.jbutton.button == 0) {

@@ -1044,7 +1044,7 @@ SDL_strcmp(const char *str1, const char *str2)
 #else
     int result;
 
-    while(1) {
+    while (1) {
         result = (int)((unsigned char) *str1 - (unsigned char) *str2);
         if (result != 0 || (*str1 == '\0'/* && *str2 == '\0'*/)) {
             break;

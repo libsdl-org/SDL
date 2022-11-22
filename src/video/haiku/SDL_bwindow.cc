@@ -52,17 +52,17 @@ static int _InitWindow(_THIS, SDL_Window *window) {
         window->y + window->h - 1
     );
     
-    if(window->flags & SDL_WINDOW_FULLSCREEN) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         /* TODO: Add support for this flag */
         printf(__FILE__": %d!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",__LINE__);
     }
-    if(window->flags & SDL_WINDOW_OPENGL) {
+    if (window->flags & SDL_WINDOW_OPENGL) {
         /* TODO: Add support for this flag */
     }
-    if(!(window->flags & SDL_WINDOW_RESIZABLE)) {
+    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         flags |= B_NOT_RESIZABLE | B_NOT_ZOOMABLE;
     }
-    if(window->flags & SDL_WINDOW_BORDERLESS) {
+    if (window->flags & SDL_WINDOW_BORDERLESS) {
         look = B_NO_BORDER_WINDOW_LOOK;
     }
 
@@ -102,7 +102,7 @@ int HAIKU_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
     window->h = (int)otherBWin->Frame().Height();
     
     /* Set SDL flags */
-    if(!(otherBWin->Flags() & B_NOT_RESIZABLE)) {
+    if (!(otherBWin->Flags() & B_NOT_RESIZABLE)) {
         window->flags |= SDL_WINDOW_RESIZABLE;
     }
     

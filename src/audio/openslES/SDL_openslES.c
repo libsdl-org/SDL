@@ -424,7 +424,7 @@ openslES_CreatePCMPlayer(_THIS)
        it can be done as described here:
         https://developer.android.com/ndk/guides/audio/opensl/android-extensions.html#floating-point
     */
-    if(SDL_GetAndroidSDKVersion() >= 21) {
+    if (SDL_GetAndroidSDKVersion() >= 21) {
         SDL_AudioFormat test_format;
         for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
             if (SDL_AUDIO_ISSIGNED(test_format)) {
@@ -499,7 +499,7 @@ openslES_CreatePCMPlayer(_THIS)
         break;
     }
 
-    if(SDL_AUDIO_ISFLOAT(this->spec.format)) {
+    if (SDL_AUDIO_ISFLOAT(this->spec.format)) {
         /* Copy all setup into PCM EX structure */
         format_pcm_ex.formatType = SL_ANDROID_DATAFORMAT_PCM_EX;
         format_pcm_ex.endianness = format_pcm.endianness;

@@ -260,7 +260,7 @@ set_stencil_mask(VITA_GXM_RenderData *data, float x, float y, float w, float h)
 void
 set_clip_rectangle(VITA_GXM_RenderData *data, int x_min, int y_min, int x_max, int y_max)
 {
-    if(data->drawing) {
+    if (data->drawing) {
         // clear the stencil buffer to 0
         sceGxmSetFrontStencilFunc(
             data->gxm_context,

@@ -264,7 +264,7 @@ SDL_EVDEV_kbd_init(void)
     if (ioctl(kbd->console_fd, KDGKBMODE, &kbd->old_kbd_mode) == 0) {
         /* Set the keyboard in XLATE mode and load the keymaps */
         ioctl(kbd->console_fd, KDSKBMODE, (unsigned long)(K_XLATE));
-        if(!SDL_EVDEV_kbd_load_keymaps(kbd)) {
+        if (!SDL_EVDEV_kbd_load_keymaps(kbd)) {
             SDL_free(kbd->key_map);
             kbd->key_map = &keymap_default_us_acc;
         }

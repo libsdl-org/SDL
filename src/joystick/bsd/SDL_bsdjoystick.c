@@ -321,7 +321,7 @@ CreateHwData(const char *path)
         hw->type = BSDJOY_UHID;
         {
             int ax;
-            for(ax = 0; ax < JOYAXE_count; ax++) {
+            for (ax = 0; ax < JOYAXE_count; ax++) {
                 hw->axis_map[ax] = -1;
             }
         }
@@ -357,7 +357,7 @@ CreateHwData(const char *path)
             SDL_SetError("%s: Cannot start HID parser", path);
             goto usberr;
         }
-        for(i = 0; i < JOYAXE_count; i++) {
+        for (i = 0; i < JOYAXE_count; i++) {
             hw->axis_map[i] = -1;
         }
 

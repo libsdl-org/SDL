@@ -235,7 +235,7 @@ decode_fraction (int high, int low)
 
     high = (high << 2) | low;
 
-    for(i = 0; i < 10; ++i) {
+    for (i = 0; i < 10; ++i) {
 	result += get_bit(high, i) * SDL_pow(2, i - 10);
     }
 
@@ -482,7 +482,7 @@ decode_check_sum (const uchar *edid,
     int i;
     uchar check = 0;
 
-    for(i = 0; i < 128; ++i) {
+    for (i = 0; i < 128; ++i) {
 	check += edid[i];
     }
 

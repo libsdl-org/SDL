@@ -66,7 +66,7 @@ SDL_memcpyMMX(Uint8 * dst, const Uint8 * src, int len)
     __m64* d64 = (__m64*)dst;
     __m64* s64 = (__m64*)src;
 
-    for(i= len / 64; i--;) {
+    for (i= len / 64; i--;) {
         d64[0] = s64[0];
         d64[1] = s64[1];
         d64[2] = s64[2];

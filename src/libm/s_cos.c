@@ -53,7 +53,7 @@ double cos(double x)
 
     /* |x| ~< pi/4 */
 	ix &= 0x7fffffff;
-	if(ix <= 0x3fe921fb) return __kernel_cos(x,z);
+	if (ix <= 0x3fe921fb) return __kernel_cos(x,z);
 
     /* cos(Inf or NaN) is NaN */
 	else if (ix>=0x7ff00000) return x-x;
