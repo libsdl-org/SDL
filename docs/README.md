@@ -40,7 +40,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [Raspberry Pi](README-raspberrypi.md)
 - [Touch](README-touch.md)
 - [Versions](README-versions.md)
-- [WinCE](README-wince.md)
 - [Windows](README-windows.md)
 - [WinRT](README-winrt.md)
 - [PSVita](README-vita.md)
