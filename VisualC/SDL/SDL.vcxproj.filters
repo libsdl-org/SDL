@@ -76,9 +76,6 @@
     <Filter Include="audio\dummy">
       <UniqueIdentifier>{4c8ad943-c2fb-4014-9ca3-041e0ad08426}</UniqueIdentifier>
     </Filter>
-    <Filter Include="audio\winmm">
-      <UniqueIdentifier>{e90fa293-2828-4927-8113-35bf561024a9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="audio\wasapi">
       <UniqueIdentifier>{3d68ae70-a9ff-46cf-be69-069f0b02aca0}</UniqueIdentifier>
     </Filter>
@@ -530,9 +527,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\audio\dummy\SDL_dummyaudio.h">
       <Filter>audio\dummy</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\audio\winmm\SDL_winmm.h">
-      <Filter>audio\winmm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\audio\wasapi\SDL_wasapi.h">
       <Filter>audio\wasapi</Filter>
@@ -1014,9 +1008,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\audio\dummy\SDL_dummyaudio.c">
       <Filter>audio\dummy</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\audio\winmm\SDL_winmm.c">
-      <Filter>audio\winmm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c">
       <Filter>audio\wasapi</Filter>
