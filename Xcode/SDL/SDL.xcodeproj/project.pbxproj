@@ -9570,7 +9570,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				MARKETING_VERSION = 2.0.17;
+				MARKETING_VERSION = 2.27.0;
 				OTHER_LDFLAGS = "-liconv";
 			};
 			name = Release;
@@ -9656,7 +9656,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				MARKETING_VERSION = 2.0.17;
+				MARKETING_VERSION = 2.27.0;
 				OTHER_LDFLAGS = "-liconv";
 			};
 			name = Debug;
