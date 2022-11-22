@@ -1,9 +1,9 @@
 INCPATH+= -I"../include"
 LIBPATH = ..
-LIBS    = SDL2.lib SDL2test.lib testutils.lib
+LIBS    = SDL3.lib SDL3test.lib testutils.lib
 
 #CFLAGS+= -DHAVE_SDL_TTF
-#TTFLIBS = SDL2ttf.lib
+#TTFLIBS = SDL3ttf.lib
 
 CFLAGS+= $(INCPATH)
 
@@ -106,14 +106,14 @@ testutils.lib: testutils.obj
 check: .SYMBOLIC $(TESTS)
   @set SDL_AUDIODRIVER=dummy
   @set SDL_VIDEODRIVER=dummy
-  @copy "../SDL2.dll" .
+  @copy "../SDL3.dll" .
   @for %exe in ($(TESTS)) do %exe
 
 check-quick: .SYMBOLIC $(TESTS)
   @set SDL_TESTS_QUICK=1
   @set SDL_AUDIODRIVER=dummy
   @set SDL_VIDEODRIVER=dummy
-  @copy "../SDL2.dll" .
+  @copy "../SDL3.dll" .
   @for %exe in ($(TESTS)) do %exe
 
 clean: .SYMBOLIC

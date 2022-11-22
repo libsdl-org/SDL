@@ -1,5 +1,5 @@
 Summary: Simple DirectMedia Layer
-Name: SDL2
+Name: SDL3
 Version: @SDL_VERSION@
 Release: 2
 Source: http://www.libsdl.org/release/%{name}-%{version}.tar.gz
@@ -9,7 +9,7 @@ Group: System Environment/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 %ifos linux
-Provides: libSDL2-2.0.so.0
+Provides: libSDL3-3.0.so.0
 %endif
 
 %define __defattr %defattr(-,root,root)
@@ -75,7 +75,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/lib*.%{__soext}
 %{_includedir}/*/*.h
 %{_libdir}/cmake/*
-%{_libdir}/pkgconfig/SDL2/*
+%{_libdir}/pkgconfig/SDL3/*
 %{_datadir}/aclocal/*
 
 %changelog

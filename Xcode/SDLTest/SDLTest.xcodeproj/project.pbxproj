@@ -1222,17 +1222,17 @@
 		003FA63B093FFD41000C53B3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				003FA643093FFD41000C53B3 /* SDL2.framework */,
-				F3C17C5D28E3FB2900E1A26D /* SDL2.framework */,
-				F3C17C5F28E3FB2900E1A26D /* SDL2.framework */,
-				F3C17C6128E3FB2900E1A26D /* SDL2.framework */,
-				003FA645093FFD41000C53B3 /* libSDL2.a */,
-				F3C17C6328E3FB2900E1A26D /* libSDL2.a */,
-				F3C17C6528E3FB2900E1A26D /* libSDL2.a */,
-				DB1D40D717B3F30D00D74CFC /* libSDL2.dylib */,
-				F3C17C6728E3FB2900E1A26D /* libSDL2.dylib */,
-				F3C17C6928E3FB2900E1A26D /* libSDL2.dylib */,
-				003FA649093FFD41000C53B3 /* SDL2 */,
+				003FA643093FFD41000C53B3 /* SDL3.framework */,
+				F3C17C5D28E3FB2900E1A26D /* SDL3.framework */,
+				F3C17C5F28E3FB2900E1A26D /* SDL3.framework */,
+				F3C17C6128E3FB2900E1A26D /* SDL3.framework */,
+				003FA645093FFD41000C53B3 /* libSDL3.a */,
+				F3C17C6328E3FB2900E1A26D /* libSDL3.a */,
+				F3C17C6528E3FB2900E1A26D /* libSDL3.a */,
+				DB1D40D717B3F30D00D74CFC /* libSDL3.dylib */,
+				F3C17C6728E3FB2900E1A26D /* libSDL3.dylib */,
+				F3C17C6928E3FB2900E1A26D /* libSDL3.dylib */,
+				003FA649093FFD41000C53B3 /* SDL3 */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2298,80 +2298,80 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		003FA643093FFD41000C53B3 /* SDL2.framework */ = {
+		003FA643093FFD41000C53B3 /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = 003FA642093FFD41000C53B3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		003FA645093FFD41000C53B3 /* libSDL2.a */ = {
+		003FA645093FFD41000C53B3 /* libSDL3.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL2.a;
+			path = libSDL3.a;
 			remoteRef = 003FA644093FFD41000C53B3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		003FA649093FFD41000C53B3 /* SDL2 */ = {
+		003FA649093FFD41000C53B3 /* SDL3 */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
-			path = SDL2;
+			path = SDL3;
 			remoteRef = 003FA648093FFD41000C53B3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		DB1D40D717B3F30D00D74CFC /* libSDL2.dylib */ = {
+		DB1D40D717B3F30D00D74CFC /* libSDL3.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL2.dylib;
+			path = libSDL3.dylib;
 			remoteRef = DB1D40D617B3F30D00D74CFC /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C5D28E3FB2900E1A26D /* SDL2.framework */ = {
+		F3C17C5D28E3FB2900E1A26D /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = F3C17C5C28E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C5F28E3FB2900E1A26D /* SDL2.framework */ = {
+		F3C17C5F28E3FB2900E1A26D /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = F3C17C5E28E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6128E3FB2900E1A26D /* SDL2.framework */ = {
+		F3C17C6128E3FB2900E1A26D /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = F3C17C6028E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6328E3FB2900E1A26D /* libSDL2.a */ = {
+		F3C17C6328E3FB2900E1A26D /* libSDL3.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL2.a;
+			path = libSDL3.a;
 			remoteRef = F3C17C6228E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6528E3FB2900E1A26D /* libSDL2.a */ = {
+		F3C17C6528E3FB2900E1A26D /* libSDL3.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL2.a;
+			path = libSDL3.a;
 			remoteRef = F3C17C6428E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6728E3FB2900E1A26D /* libSDL2.dylib */ = {
+		F3C17C6728E3FB2900E1A26D /* libSDL3.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL2.dylib;
+			path = libSDL3.dylib;
 			remoteRef = F3C17C6628E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17C6928E3FB2900E1A26D /* libSDL2.dylib */ = {
+		F3C17C6928E3FB2900E1A26D /* libSDL3.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL2.dylib;
+			path = libSDL3.dylib;
 			remoteRef = F3C17C6828E3FB2900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};

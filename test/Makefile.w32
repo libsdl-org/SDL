@@ -1,4 +1,4 @@
-# Open Watcom makefile to build SDL2 tests for Win32
+# Open Watcom makefile to build SDL3 tests for Win32
 # wmake -f Makefile.w32
 #
 # To error out upon warnings: wmake -f Makefile.w32 ENABLE_WERROR=1

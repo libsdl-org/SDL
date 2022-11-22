@@ -11,18 +11,18 @@ orig_CFLAGS="$CFLAGS"
 
 dnl Set various version strings - taken gratefully from the GTk sources
 # See docs/release_checklist.md
-SDL_MAJOR_VERSION=2
-SDL_MINOR_VERSION=25
-SDL_MICRO_VERSION=1
+SDL_MAJOR_VERSION=3
+SDL_MINOR_VERSION=0
+SDL_MICRO_VERSION=0
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
 AS_CASE(["$SDL_MINOR_VERSION"],
   [*@<:@02468@:>@],
-    dnl Stable branch, 2.24.1 -> libSDL2-2.0.so.0.2400.1
+    dnl Stable branch, 3.24.1 -> libSDL3-3.0.so.0.2400.1
     [SDL_INTERFACE_AGE="$SDL_MICRO_VERSION"],
   [*],
-    dnl Development branch, 2.23.1 -> libSDL2-2.0.so.0.2301.0
+    dnl Development branch, 3.23.1 -> libSDL3-3.0.so.0.2301.0
     [SDL_INTERFACE_AGE=0])
 
 AC_SUBST(SDL_MAJOR_VERSION)
@@ -37,9 +37,9 @@ LT_INIT([win32-dll])
 LT_LANG([Windows Resource])
 
 # For historical reasons, the library name redundantly includes the major
-# version twice: libSDL2-2.0.so.0.
+# version twice: libSDL3-3.0.so.0.
 # TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
-LT_RELEASE=2.0
+LT_RELEASE=3.0
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL2 to SDL3, at which point this would
 # reset to 0 anyway.
@@ -162,7 +162,7 @@ EXTRA_LDFLAGS="$BASE_LDFLAGS"
 #    fi
 #done
 SDL_CFLAGS="$BASE_CFLAGS"
-SDL_LIBS="-lSDL2"
+SDL_LIBS="-lSDL3"
 if test "x$BASE_LDFLAGS" != x; then
     SDL_LIBS="$SDL_LIBS $BASE_LDFLAGS"
 fi
@@ -4168,7 +4168,7 @@ case "$host" in
         VERSION_SOURCES="$srcdir/src/main/windows/*.rc"
         SDLMAIN_SOURCES="$srcdir/src/main/windows/*.c"
         SDL_CFLAGS="$SDL_CFLAGS -Dmain=SDL_main"
-        SDL_LIBS="-lSDL2main $SDL_LIBS -mwindows"
+        SDL_LIBS="-lSDL3main $SDL_LIBS -mwindows"
 
         # Check to see if this is a mingw or cygwin build
         have_mingw32=
@@ -4670,21 +4670,21 @@ esac
 dnl Permit use of virtual joystick APIs on any platform (subject to configure options)
 CheckVirtualJoystick
 
-# Check whether to install sdl2-config
-AC_MSG_CHECKING(whether to install sdl2-config)
-AC_ARG_ENABLE([sdl2-config],
-    [AS_HELP_STRING([--enable-sdl2-config],[Install sdl2-config [default=yes]])],
+# Check whether to install sdl3-config
+AC_MSG_CHECKING(whether to install sdl3-config)
+AC_ARG_ENABLE([sdl3-config],
+    [AS_HELP_STRING([--enable-sdl3-config],[Install sdl3-config [default=yes]])],
     [case "${enableval}" in
-        yes) enable_sdl2_config="TRUE" ;;
-        no) enable_sdl2_config="FALSE" ;;
-        *) AC_MSG_ERROR([bad value '${enableval}' for --enable-sdl2-config]) ;;
-    esac], [enable_sdl2_config="TRUE"])
-if test "$enable_sdl2_config" = "TRUE"; then
+        yes) enable_sdl3_config="TRUE" ;;
+        no) enable_sdl3_config="FALSE" ;;
+        *) AC_MSG_ERROR([bad value '${enableval}' for --enable-sdl3-config]) ;;
+    esac], [enable_sdl3_config="TRUE"])
+if test "$enable_sdl3_config" = "TRUE"; then
     AC_MSG_RESULT(yes)
 else
     AC_MSG_RESULT(no)
 fi
-AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
+AC_SUBST([INSTALL_SDL3_CONFIG], [$enable_sdl3_config])
 
 AC_ARG_ENABLE([vendor-info],
     [AS_HELP_STRING([--enable-vendor-info=STRING], [Add vendor info to SDL_REVISION])],
@@ -4850,7 +4850,7 @@ SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 
 dnl Calculate the location of the prefix, relative to the cmake folder
 dnl Calculate the location of the prefix, relative to bindir
-pkg_cmakedir='$libdir/cmake/SDL2'
+pkg_cmakedir='$libdir/cmake/SDL3'
 AX_COMPUTE_RELATIVE_PATHS([pkg_cmakedir:prefix:cmake_prefix_relpath bindir:prefix:bin_prefix_relpath])
 AC_SUBST([cmake_prefix_relpath])
 AC_SUBST([bin_prefix_relpath])
@@ -4914,11 +4914,11 @@ $WAYLAND_PROTOCOLS_DEPENDS
 __EOF__
 
 AC_CONFIG_FILES([
-    Makefile:Makefile.in:Makefile.rules sdl2-config sdl2-config.cmake sdl2-config-version.cmake SDL2.spec sdl2.pc
+    Makefile:Makefile.in:Makefile.rules sdl3-config sdl3-config.cmake sdl3-config-version.cmake SDL3.spec sdl3.pc
 ])
-AC_CONFIG_COMMANDS([sdl2_config],[chmod a+x sdl2-config])
+AC_CONFIG_COMMANDS([sdl3_config],[chmod a+x sdl3-config])
 
-SUMMARY="SDL2 Configure Summary:\n"
+SUMMARY="SDL3 Configure Summary:\n"
 if test x$enable_shared = xyes; then
     SUMMARY="${SUMMARY}Building Shared Libraries\n"
 fi

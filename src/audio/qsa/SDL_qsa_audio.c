@@ -26,7 +26,7 @@
  */
 
 /* !!! FIXME: can this target support hotplugging? */
-/* !!! FIXME: ...does SDL2 even support QNX? */
+/* !!! FIXME: ...does SDL even support QNX? */
 
 #include "../../SDL_internal.h"
 

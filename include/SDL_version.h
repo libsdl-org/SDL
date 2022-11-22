@@ -57,9 +57,9 @@ typedef struct SDL_version
 
 /* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
 */
-#define SDL_MAJOR_VERSION   2
-#define SDL_MINOR_VERSION   25
-#define SDL_PATCHLEVEL      1
+#define SDL_MAJOR_VERSION   3
+#define SDL_MINOR_VERSION   0
+#define SDL_PATCHLEVEL      0
 
 /**
  * Macro to determine SDL version program was compiled against.
@@ -84,7 +84,7 @@ typedef struct SDL_version
 }
 
 /* TODO: Remove this whole block in SDL 3 */
-#if SDL_MAJOR_VERSION < 3
+#if SDL_MAJOR_VERSION <= 3
 /**
  *  This macro turns the version numbers into a numeric value:
  *  \verbatim

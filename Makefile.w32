@@ -1,12 +1,12 @@
-# Open Watcom makefile to build SDL2.dll for Win32
+# Open Watcom makefile to build SDL3.dll for Win32
 # wmake -f Makefile.w32
 #
 # To error out upon warnings: wmake -f Makefile.w32 ENABLE_WERROR=1
 
-LIBNAME = SDL2
-MAJOR_VERSION = 2
-MINOR_VERSION = 25
-MICRO_VERSION = 1
+LIBNAME = SDL3
+MAJOR_VERSION = 3
+MINOR_VERSION = 0
+MICRO_VERSION = 0
 VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(MICRO_VERSION)
 
 LIBHOME = .
@@ -19,8 +19,8 @@ INCPATH = -I"$(%WATCOM)/h/nt" -I"$(%WATCOM)/h/nt/directx" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude
 INCPATH+= -I"src/video/khronos"
 
-LIBM = SDL2libm.lib
-TLIB = SDL2test.lib
+LIBM = SDL3libm.lib
+TLIB = SDL3test.lib
 # user32.lib, gdi32.lib, ole32.lib and oleaut32.lib are actually
 # among the default libraries in wlink.lnk for nt_dll linkage...
 LIBS = user32.lib gdi32.lib winmm.lib imm32.lib ole32.lib oleaut32.lib shell32.lib setupapi.lib version.lib uuid.lib dxguid.lib $(LIBM)
@@ -147,7 +147,7 @@ SDL_RLEaccel.obj: SDL_RLEaccel.c
 SDL_malloc.obj: SDL_malloc.c
     wcc386 $(CFLAGS_DLL) -wcd=201 -fo=$^@ $<
 
-# SDL2libm
+# SDL3libm
 MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &
        k_cos.c k_rem_pio2.c k_sin.c k_tan.c &
        s_atan.c s_copysign.c s_cos.c s_fabs.c s_floor.c s_scalbn.c s_sin.c s_tan.c
@@ -201,7 +201,7 @@ $(LIBM): build_libm $(MOBJS)
     @echo * Creating: $@
     wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $(MOBJS)
 
-# SDL2test
+# SDL3test
 TSRCS = SDL_test_assert.c SDL_test_common.c SDL_test_compare.c &
         SDL_test_crc32.c SDL_test_font.c SDL_test_fuzzer.c SDL_test_harness.c &
         SDL_test_imageBlit.c SDL_test_imageBlitBlend.c SDL_test_imageFace.c &
@@ -257,7 +257,7 @@ $(LNKFILE): Makefile.w32
     @for %i in ($(OBJS)) do @%append $@ FILE %i
     @for %i in ($(LIBS)) do @%append $@ LIB %i
     @%append $@ OPTION RESOURCE=$(RCOBJS)
-    @%append $@ EXPORT=src/dynapi/SDL2.exports
+    @%append $@ EXPORT=src/dynapi/SDL3.exports
     @%append $@ OPTION QUIET
     @%append $@ OPTION IMPF=$(EXPFILE)
     @%append $@ OPTION MAP=$(LIBHOME)/$^&.map

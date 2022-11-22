@@ -12,15 +12,15 @@ Requirements:
 Compiling:
 ----------
 
-Currently, SDL2 for RISC OS only supports compiling with GCCSDK under Linux. Both the autoconf and CMake build systems are supported.
+Currently, SDL for RISC OS only supports compiling with GCCSDK under Linux. Both the autoconf and CMake build systems are supported.
 
-The following commands can be used to build SDL2 for RISC OS using autoconf:
+The following commands can be used to build SDL for RISC OS using autoconf:
 
     ./configure --host=arm-unknown-riscos --prefix=$GCCSDK_INSTALL_ENV --disable-gcc-atomics
     make
     make install
 
-The following commands can be used to build SDL2 for RISC OS using CMake:
+The following commands can be used to build SDL for RISC OS using CMake:
 
     cmake -Bbuild-riscos -DCMAKE_TOOLCHAIN_FILE=$GCCSDK_INSTALL_ENV/toolchain-riscos.cmake -DRISCOS=ON -DCMAKE_INSTALL_PREFIX=$GCCSDK_INSTALL_ENV -DCMAKE_BUILD_TYPE=Release -DSDL_GCC_ATOMICS=OFF
     cmake --build build-riscos

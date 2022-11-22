@@ -37,6 +37,7 @@
 #include "SDL_windowsshape.h"
 #include "SDL_hints.h"
 #include "SDL_timer.h"
+#include "SDL_version.h"
 
 /* Dropfile support */
 #include <shellapi.h>
@@ -773,7 +774,7 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 
     /* Now that both the inner and outer rects use the same coordinate system we can substract them to get the border size.
      * Keep in mind that the top/left coordinates of rcWindow are negative because the border lies slightly before {0,0},
-     * so switch them around because SDL2 wants them in positive. */
+     * so switch them around because SDL3 wants them in positive. */
     *top    = rcClient.top    - rcWindow.top;
     *left   = rcClient.left   - rcWindow.left;
     *bottom = rcWindow.bottom - rcClient.bottom;

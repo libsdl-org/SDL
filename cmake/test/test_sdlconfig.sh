@@ -25,9 +25,9 @@ set -e
 
 # Get the canonical path of the folder containing this script
 testdir=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
-CFLAGS="$( sdl2-config --cflags )"
-LDFLAGS="$( sdl2-config --libs )"
-STATIC_LDFLAGS="$( sdl2-config --static-libs )"
+CFLAGS="$( sdl3-config --cflags )"
+LDFLAGS="$( sdl3-config --libs )"
+STATIC_LDFLAGS="$( sdl3-config --static-libs )"
 
 compile_cmd="$CC -c "$testdir/main_gui.c" -o main_gui_sdlconfig.c.o $CFLAGS $EXTRA_CFLAGS"
 link_cmd="$CC main_gui_sdlconfig.c.o -o ${EXEPREFIX}main_gui_sdlconfig${EXESUFFIX} $LDFLAGS $EXTRA_LDFLAGS"

@@ -55,7 +55,7 @@ mkdir buildbot
 pushd buildbot
 
 echo "Configuring..."
-emconfigure ../configure --host=wasm32-unknown-emscripten --disable-assembly --disable-threads --disable-cpuinfo CFLAGS="-s USE_SDL=0 -O2 -Wno-warn-absolute-paths -Wdeclaration-after-statement -Werror=declaration-after-statement" --prefix="$PWD/emscripten-sdl2-installed" || exit $?
+emconfigure ../configure --host=wasm32-unknown-emscripten --disable-assembly --disable-threads --disable-cpuinfo CFLAGS="-s USE_SDL=0 -O2 -Wno-warn-absolute-paths -Wdeclaration-after-statement -Werror=declaration-after-statement" --prefix="$PWD/emscripten-sdl3-installed" || exit $?
 
 echo "Building..."
 emmake $MAKE || exit $?
@@ -64,9 +64,9 @@ echo "Moving things around..."
 emmake $MAKE install || exit $?
 
 # Fix up a few things to a real install path
-perl -w -pi -e "s#$PWD/emscripten-sdl2-installed#/usr/local#g;" ./emscripten-sdl2-installed/lib/libSDL2.la ./emscripten-sdl2-installed/lib/pkgconfig/sdl2.pc ./emscripten-sdl2-installed/bin/sdl2-config
+perl -w -pi -e "s#$PWD/emscripten-sdl3-installed#/usr/local#g;" ./emscripten-sdl3-installed/lib/libSDL3.la ./emscripten-sdl3-installed/lib/pkgconfig/sdl3.pc ./emscripten-sdl3-installed/bin/sdl3-config
 mkdir -p ./usr
-mv ./emscripten-sdl2-installed ./usr/local
+mv ./emscripten-sdl3-installed ./usr/local
 tar -cJvvf $TARBALL usr
 popd
 

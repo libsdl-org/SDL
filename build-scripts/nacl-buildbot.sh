@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This is the script buildbot.libsdl.org uses to cross-compile SDL2 from
+# This is the script buildbot.libsdl.org uses to cross-compile SDL3 from
 #  amd64 Linux to NaCl.
 
 # PLEASE NOTE that we have reports that SDL built with pepper_49 (current
@@ -44,13 +44,13 @@ export AR="$NACL_SDK_ROOT/toolchain/linux_pnacl/bin/pnacl-ar"
 export LD="$NACL_SDK_ROOT/toolchain/linux_pnacl/bin/pnacl-ar"
 export RANLIB="$NACL_SDK_ROOT/toolchain/linux_pnacl/bin/pnacl-ranlib"
 
-../configure --host=pnacl --prefix=$PWD/nacl-sdl2-installed
+../configure --host=pnacl --prefix=$PWD/nacl-sdl3-installed
 $MAKE
 $MAKE install
 # Fix up a few things to a real install path
-perl -w -pi -e "s#$PWD/nacl-sdl2-installed#/usr/local#g;" ./nacl-sdl2-installed/lib/libSDL2.la ./nacl-sdl2-installed/lib/pkgconfig/sdl2.pc ./nacl-sdl2-installed/bin/sdl2-config
+perl -w -pi -e "s#$PWD/nacl-sdl3-installed#/usr/local#g;" ./nacl-sdl3-installed/lib/libSDL3.la ./nacl-sdl3-installed/lib/pkgconfig/sdl3.pc ./nacl-sdl3-installed/bin/sdl3-config
 mkdir -p ./usr
-mv ./nacl-sdl2-installed ./usr/local
+mv ./nacl-sdl3-installed ./usr/local
 
 popd
 tar -cJvvf $TARBALL -C $BUILDBOTDIR usr

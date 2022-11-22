@@ -352,7 +352,7 @@ extern "C" {
  *  \brief Disable giving back control to the browser automatically
  *  when running with asyncify
  *
- * With -s ASYNCIFY, SDL2 calls emscripten_sleep during operations
+ * With -s ASYNCIFY, SDL calls emscripten_sleep during operations
  * such as refreshing the screen or polling events.
  *
  * This hint only applies to the emscripten platform

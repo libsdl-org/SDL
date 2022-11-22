@@ -160,8 +160,8 @@ WINRT_ShowCursor(SDL_Cursor * cursor)
         // Tech notes:
         //  - SDL's blank cursor resource uses a resource ID of 5000.
         //  - SDL's cursor resources consist of the following two files:
-        //     - src/main/winrt/SDL2-WinRTResource_BlankCursor.cur -- cursor pixel data
-        //     - src/main/winrt/SDL2-WinRTResources.rc             -- declares the cursor resource, and its ID (of 5000)
+        //     - src/main/winrt/SDL3-WinRTResource_BlankCursor.cur -- cursor pixel data
+        //     - src/main/winrt/SDL3-WinRTResources.rc             -- declares the cursor resource, and its ID (of 5000)
         //
 
         const unsigned int win32CursorResourceID = 5000;  

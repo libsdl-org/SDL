@@ -958,7 +958,7 @@ int audio_openCloseAudioDeviceConnected()
        SDLTest_AssertCheck(id > 1, "Validate device ID; expected: >1, got: %" SDL_PRIu32, id);
        if (id > 1) {
 
-/* TODO: enable test code when function is available in SDL2 */
+/* TODO: enable test code when function is available in SDL3 */
 
 #ifdef AUDIODEVICECONNECTED_DEFINED
          /* Get connected status */

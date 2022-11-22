@@ -2476,6 +2476,8 @@ static SDL_bool SDL_IsJoystickProductFlightStick(Uint32 vidpid)
         MAKE_VIDPID(0x0738, 0x2221),    /* Saitek Pro Flight X-56 Rhino Stick */
         MAKE_VIDPID(0x044f, 0xb10a),    /* ThrustMaster, Inc. T.16000M Joystick */
         MAKE_VIDPID(0x046d, 0xc215),    /* Logitech Extreme 3D */
+        MAKE_VIDPID(0x231d, 0x0126),    /* Gunfighter Mk.III ‘Space Combat Edition’ (right) */
+        MAKE_VIDPID(0x231d, 0x0127),    /* Gunfighter Mk.III ‘Space Combat Edition’ (left) */
     };
     int i;
 
@@ -2898,7 +2900,7 @@ void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLe
 {
     CHECK_JOYSTICK_MAGIC(joystick, );
 
-    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialisation */
+    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialization */
     if (ePowerLevel != joystick->epowerlevel) {
 #if !SDL_EVENTS_DISABLED
         if (SDL_GetEventState(SDL_JOYBATTERYUPDATED) == SDL_ENABLE) {

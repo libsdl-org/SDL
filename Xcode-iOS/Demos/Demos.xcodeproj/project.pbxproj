@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F3A497102555EE4800E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL2.a */; };
-		F3A4972F2555EE8A00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL2.a */; };
-		F3A497422555EEBE00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL2.a */; };
-		F3A497442555EECD00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL2.a */; };
-		F3A497462555EEDF00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A4959B2555ED0500E92A8B /* libSDL2.a */; };
-		F3A497492555EF0B00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL2.a */; };
-		F3A4974B2555EF1B00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL2.a */; };
-		F3A4974E2555EF9F00E92A8B /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL2.a */; };
+		F3A497102555EE4800E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL3.a */; };
+		F3A4972F2555EE8A00E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL3.a */; };
+		F3A497422555EEBE00E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL3.a */; };
+		F3A497442555EECD00E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL3.a */; };
+		F3A497462555EEDF00E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A4959B2555ED0500E92A8B /* libSDL3.a */; };
+		F3A497492555EF0B00E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL3.a */; };
+		F3A4974B2555EF1B00E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL3.a */; };
+		F3A4974E2555EF9F00E92A8B /* libSDL3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F3A495992555ED0500E92A8B /* libSDL3.a */; };
 		FA30DEB01BBF5A8F009C397F /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0060E26BC0500F39101 /* common.c */; };
 		FA30DEB11BBF5A93009C397F /* happy.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0080E26BC0500F39101 /* happy.c */; };
 		FA30DEB31BBF5AD7009C397F /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CC0E43D19800F688B5 /* icon.bmp */; };
@@ -188,7 +188,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A497102555EE4800E92A8B /* libSDL2.a in Frameworks */,
+				F3A497102555EE4800E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,7 +196,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A497462555EEDF00E92A8B /* libSDL2.a in Frameworks */,
+				F3A497462555EEDF00E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,7 +204,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A497442555EECD00E92A8B /* libSDL2.a in Frameworks */,
+				F3A497442555EECD00E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,7 +212,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A4972F2555EE8A00E92A8B /* libSDL2.a in Frameworks */,
+				F3A4972F2555EE8A00E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,7 +220,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A497492555EF0B00E92A8B /* libSDL2.a in Frameworks */,
+				F3A497492555EF0B00E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -228,7 +228,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A4974E2555EF9F00E92A8B /* libSDL2.a in Frameworks */,
+				F3A4974E2555EF9F00E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,7 +236,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A497422555EEBE00E92A8B /* libSDL2.a in Frameworks */,
+				F3A497422555EEBE00E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,7 +244,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3A4974B2555EF1B00E92A8B /* libSDL2.a in Frameworks */,
+				F3A4974B2555EF1B00E92A8B /* libSDL3.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,17 +292,17 @@
 		F3A495812555ED0400E92A8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F3A495912555ED0500E92A8B /* SDL2.framework */,
-				F3A495932555ED0500E92A8B /* SDL2.framework */,
-				F3A495952555ED0500E92A8B /* SDL2.framework */,
-				F3C17D9228E4355900E1A26D /* SDL2.framework */,
-				F3A495972555ED0500E92A8B /* libSDL2.a */,
-				F3A495992555ED0500E92A8B /* libSDL2.a */,
-				F3A4959B2555ED0500E92A8B /* libSDL2.a */,
-				F3A4959D2555ED0500E92A8B /* libSDL2.dylib */,
-				F3A4959F2555ED0500E92A8B /* libSDL2.dylib */,
-				F3A495A12555ED0500E92A8B /* libSDL2.dylib */,
-				F3A495A32555ED0500E92A8B /* SDL2 */,
+				F3A495912555ED0500E92A8B /* SDL3.framework */,
+				F3A495932555ED0500E92A8B /* SDL3.framework */,
+				F3A495952555ED0500E92A8B /* SDL3.framework */,
+				F3C17D9228E4355900E1A26D /* SDL3.framework */,
+				F3A495972555ED0500E92A8B /* libSDL3.a */,
+				F3A495992555ED0500E92A8B /* libSDL3.a */,
+				F3A4959B2555ED0500E92A8B /* libSDL3.a */,
+				F3A4959D2555ED0500E92A8B /* libSDL3.dylib */,
+				F3A4959F2555ED0500E92A8B /* libSDL3.dylib */,
+				F3A495A12555ED0500E92A8B /* libSDL3.dylib */,
+				F3A495A32555ED0500E92A8B /* SDL3 */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -565,80 +565,80 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		F3A495912555ED0500E92A8B /* SDL2.framework */ = {
+		F3A495912555ED0500E92A8B /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = F3A495902555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A495932555ED0500E92A8B /* SDL2.framework */ = {
+		F3A495932555ED0500E92A8B /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = F3A495922555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A495952555ED0500E92A8B /* SDL2.framework */ = {
+		F3A495952555ED0500E92A8B /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = F3A495942555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A495972555ED0500E92A8B /* libSDL2.a */ = {
+		F3A495972555ED0500E92A8B /* libSDL3.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL2.a;
+			path = libSDL3.a;
 			remoteRef = F3A495962555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A495992555ED0500E92A8B /* libSDL2.a */ = {
+		F3A495992555ED0500E92A8B /* libSDL3.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL2.a;
+			path = libSDL3.a;
 			remoteRef = F3A495982555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A4959B2555ED0500E92A8B /* libSDL2.a */ = {
+		F3A4959B2555ED0500E92A8B /* libSDL3.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libSDL2.a;
+			path = libSDL3.a;
 			remoteRef = F3A4959A2555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A4959D2555ED0500E92A8B /* libSDL2.dylib */ = {
+		F3A4959D2555ED0500E92A8B /* libSDL3.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL2.dylib;
+			path = libSDL3.dylib;
 			remoteRef = F3A4959C2555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A4959F2555ED0500E92A8B /* libSDL2.dylib */ = {
+		F3A4959F2555ED0500E92A8B /* libSDL3.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL2.dylib;
+			path = libSDL3.dylib;
 			remoteRef = F3A4959E2555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A495A12555ED0500E92A8B /* libSDL2.dylib */ = {
+		F3A495A12555ED0500E92A8B /* libSDL3.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libSDL2.dylib;
+			path = libSDL3.dylib;
 			remoteRef = F3A495A02555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3A495A32555ED0500E92A8B /* SDL2 */ = {
+		F3A495A32555ED0500E92A8B /* SDL3 */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
-			path = SDL2;
+			path = SDL3;
 			remoteRef = F3A495A22555ED0500E92A8B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		F3C17D9228E4355900E1A26D /* SDL2.framework */ = {
+		F3C17D9228E4355900E1A26D /* SDL3.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = SDL2.framework;
+			path = SDL3.framework;
 			remoteRef = F3C17D9128E4355900E1A26D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};

@@ -1,4 +1,4 @@
-# Open Watcom makefile to build SDL2.dll for OS/2
+# Open Watcom makefile to build SDL3.dll for OS/2
 # wmake -f Makefile.os2
 #
 # If you have GNU libiconv installed (iconv2.dll), you
@@ -12,10 +12,10 @@
 #
 # To error out upon warnings: wmake -f Makefile.os2 ENABLE_WERROR=1
 
-LIBNAME = SDL2
-MAJOR_VERSION = 2
-MINOR_VERSION = 25
-MICRO_VERSION = 1
+LIBNAME = SDL3
+MAJOR_VERSION = 3
+MINOR_VERSION = 0
+MICRO_VERSION = 0
 VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(MICRO_VERSION)
 DESCRIPTION = Simple DirectMedia Layer 2
 
@@ -30,8 +30,8 @@ LNKFILE = $(LIBNAME).lnk
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 INCPATH+= -Iinclude
 
-LIBM = SDL2libm.lib
-TLIB = SDL2test.lib
+LIBM = SDL3libm.lib
+TLIB = SDL3test.lib
 LIBS = mmpm2.lib $(LIBM)
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxhn -ei
 # Debug options:
@@ -162,7 +162,7 @@ $(LIBICONV_LIB):  "src/core/os2/iconv2.lbc"
     @echo * Creating: $@
     wlib -q -b -n -c -pa -s -t -zld -ii -io $@ @$<
 
-# SDL2libm
+# SDL3libm
 MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &
        k_cos.c k_rem_pio2.c k_sin.c k_tan.c &
        s_atan.c s_copysign.c s_cos.c s_fabs.c s_floor.c s_scalbn.c s_sin.c s_tan.c
@@ -216,7 +216,7 @@ $(LIBM): build_libm $(MOBJS)
     @echo * Creating: $@
     wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $(MOBJS)
 
-# SDL2test
+# SDL3test
 TSRCS = SDL_test_assert.c SDL_test_common.c SDL_test_compare.c &
         SDL_test_crc32.c SDL_test_font.c SDL_test_fuzzer.c SDL_test_harness.c &
         SDL_test_imageBlit.c SDL_test_imageBlitBlend.c SDL_test_imageFace.c &

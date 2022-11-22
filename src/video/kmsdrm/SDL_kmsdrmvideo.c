@@ -1448,7 +1448,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
         if (!(viddata->gbm_init)) {
 
-            /* After SDL_CreateWindow, most SDL2 programs will do SDL_CreateRenderer(),
+            /* After SDL_CreateWindow, most SDL programs will do SDL_CreateRenderer(),
                which will in turn call GL_CreateRenderer() or GLES2_CreateRenderer().
                In order for the GL_CreateRenderer() or GLES2_CreateRenderer() call to
                succeed without an unnecessary window re-creation, we must: 
