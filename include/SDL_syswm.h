@@ -55,10 +55,6 @@ struct SDL_SysWMinfo;
 #include <windows.h>
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_WINRT)
-#include <Inspectable.h>
-#endif
-
 /* This is the structure for custom window manager events */
 #if defined(SDL_VIDEO_DRIVER_X11)
 #if defined(__APPLE__) && defined(__MACH__)
@@ -132,7 +128,6 @@ typedef enum
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
     SDL_SYSWM_WAYLAND,
-    SDL_SYSWM_WINRT,
     SDL_SYSWM_ANDROID,
     SDL_SYSWM_VIVANTE,
     SDL_SYSWM_HAIKU,
@@ -210,12 +205,6 @@ struct SDL_SysWMinfo
             HDC hdc;                    /**< The window device context */
             HINSTANCE hinstance;        /**< The instance handle */
         } win;
-#endif
-#if defined(SDL_VIDEO_DRIVER_WINRT)
-        struct
-        {
-            IInspectable * window;      /**< The WinRT CoreWindow */
-        } winrt;
 #endif
 #if defined(SDL_VIDEO_DRIVER_X11)
         struct

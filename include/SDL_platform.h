@@ -167,8 +167,7 @@
 #endif /* HAVE_WINAPIFAMILY_H */
 
 #if WINAPI_FAMILY_WINRT
-#undef __WINRT__
-#define __WINRT__ 1
+#error WinRT no longer supported.
 #elif defined(_GAMING_DESKTOP) /* GDK project configuration always defines _GAMING_XXX */
 #undef __WINGDK__
 #define __WINGDK__ 1

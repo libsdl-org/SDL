@@ -37,7 +37,7 @@ static HANDLE s_pXInputDLL = 0;
 static int s_XInputDLLRefCount = 0;
 
 
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 
 int
 WIN_LoadXInputDLL(void)
@@ -70,7 +70,7 @@ WIN_UnloadXInputDLL(void)
 {
 }
 
-#else /* !(defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)) */
+#else /* !(defined(__XBOXONE__) || defined(__XBOXSERIES__)) */
 
 int
 WIN_LoadXInputDLL(void)
@@ -138,7 +138,7 @@ WIN_UnloadXInputDLL(void)
     }
 }
 
-#endif /* __WINRT__ */
+#endif /**/
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

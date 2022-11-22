@@ -26,7 +26,7 @@
    The code in SDL_wasapi.c is used by both standard Windows and WinRT builds
    to deal with audio and calls into these functions. */
 
-#if SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__)
+#if SDL_AUDIO_DRIVER_WASAPI
 
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_immdevice.h"
@@ -156,7 +156,7 @@ WASAPI_PlatformDeleteActivationHandler(void *handler)
     SDL_assert(!"This function should have only been called on WinRT.");
 }
 
-#endif  /* SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__) */
+#endif  /* SDL_AUDIO_DRIVER_WASAPI */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

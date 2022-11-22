@@ -46,11 +46,7 @@ static char *s_arrXInputDevicePath[XUSER_MAX_COUNT];
 static SDL_bool
 SDL_XInputUseOldJoystickMapping()
 {
-#ifdef __WINRT__
-    /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
-    /* FIXME: Why are Win8/10 different here? -flibit */
-    return (NTDDI_VERSION < NTDDI_WIN10);
-#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return SDL_FALSE;
 #else
     static int s_XInputUseOldJoystickMapping = -1;
@@ -133,7 +129,7 @@ GetXInputName(const Uint8 userid, BYTE SubType)
 static void
 GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
     PRAWINPUTDEVICELIST devices = NULL;
     UINT i, j, device_count = 0;
 
@@ -231,7 +227,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
         }
     }
     SDL_free(devices);
-#endif  /* !__WINRT__ */
+#endif
 
     /* The device wasn't in the raw HID device list, it's probably Bluetooth */
     *pVID = 0x045e; /* Microsoft */

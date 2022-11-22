@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef __WINRT__
-
 #include "SDL_hid.h"
 
 
@@ -84,7 +82,5 @@ WIN_UnloadHIDDLL(void)
         SDL_assert(s_HIDDLLRefCount == 0);
     }
 }
-
-#endif /* !__WINRT__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

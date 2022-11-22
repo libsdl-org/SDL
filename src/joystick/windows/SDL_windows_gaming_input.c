@@ -282,17 +282,9 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             typedef PCWSTR (WINAPI *WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 *length);
             typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);
 
-            WindowsGetStringRawBuffer_t WindowsGetStringRawBufferFunc = NULL;
-            WindowsDeleteString_t WindowsDeleteStringFunc = NULL;
-#ifdef __WINRT__
-            WindowsGetStringRawBufferFunc = WindowsGetStringRawBuffer;
-            WindowsDeleteStringFunc = WindowsDeleteString;
-#else
-            {
-                WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)WIN_LoadComBaseFunction("WindowsGetStringRawBuffer");
-                WindowsDeleteStringFunc = (WindowsDeleteString_t)WIN_LoadComBaseFunction("WindowsDeleteString");
-            }
-#endif /* __WINRT__ */
+            WindowsGetStringRawBuffer_t WindowsGetStringRawBufferFunc = (WindowsGetStringRawBuffer_t)WIN_LoadComBaseFunction("WindowsGetStringRawBuffer");
+            WindowsDeleteString_t WindowsDeleteStringFunc = (WindowsDeleteString_t)WIN_LoadComBaseFunction("WindowsDeleteString");
+
             if (WindowsGetStringRawBufferFunc && WindowsDeleteStringFunc) {
                 HSTRING hString;
                 hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController2_get_DisplayName(controller2, &hString);
@@ -484,7 +476,6 @@ WGI_JoystickInit(void)
     }
     wgi.ro_initialized = SDL_TRUE;
 
-#ifndef __WINRT__
     {
         /* There seems to be a bug in Windows where a dependency of WGI can be unloaded from memory prior to WGI itself.
          * This results in Windows_Gaming_Input!GameController::~GameController() invoking an unloaded DLL and crashing.
@@ -505,17 +496,9 @@ WGI_JoystickInit(void)
             }
         }
     }
-#endif
 
-#ifdef __WINRT__
-    WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
-    RoGetActivationFactoryFunc = RoGetActivationFactory;
-#else
-    {
-        WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)WIN_LoadComBaseFunction("WindowsCreateStringReference");
-        RoGetActivationFactoryFunc = (RoGetActivationFactory_t)WIN_LoadComBaseFunction("RoGetActivationFactory");
-    }
-#endif /* __WINRT__ */
+    WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)WIN_LoadComBaseFunction("WindowsCreateStringReference");
+    RoGetActivationFactoryFunc = (RoGetActivationFactory_t)WIN_LoadComBaseFunction("RoGetActivationFactory");
     if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
         PCWSTR pNamespace;
         HSTRING_HEADER hNamespaceStringHeader;

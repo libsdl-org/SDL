@@ -22,7 +22,7 @@
 
 #if defined(__WIN32__) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
-#elif !defined(__WINRT__)
+#else
 #include <unistd.h> /* _exit(), etc. */
 #endif
 
@@ -575,8 +575,6 @@ SDL_GetPlatform(void)
     return "Solaris";
 #elif __WIN32__
     return "Windows";
-#elif __WINRT__
-    return "WinRT";
 #elif __WINGDK__
     return "WinGDK";
 #elif __XBOXONE__
