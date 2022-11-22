@@ -4,6 +4,8 @@
 
 set -eu
 
+cd `dirname $0`/..
+
 ref_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' include/SDL_version.h)
 ref_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' include/SDL_version.h)
 ref_micro=$(sed -ne 's/^#define SDL_PATCHLEVEL  *//p' include/SDL_version.h)
@@ -137,6 +139,25 @@ if [ "$ref_version" = "$version" ]; then
     ok "Info-Framework.plist CFBundleVersion $version"
 else
     not_ok "Info-Framework.plist CFBundleVersion $version disagrees with SDL_version.h $ref_version"
+fi
+
+version=$(sed -Ene 's/Title SDL (.*)/\1/p' Xcode/SDL/pkg-support/SDL.info)
+
+if [ "$ref_version" = "$version" ]; then
+    ok "SDL.info Title $version"
+else
+    not_ok "SDL.info Title $version disagrees with SDL_version.h $ref_version"
+fi
+
+marketing=$(sed -Ene 's/.*MARKETING_VERSION = (.*);/\1/p' Xcode/SDL/SDL.xcodeproj/project.pbxproj)
+
+ref="$ref_version
+$ref_version"
+
+if [ "$ref" = "$marketing" ]; then
+    ok "project.pbxproj MARKETING_VERSION is consistent"
+else
+    not_ok "project.pbxproj MARKETING_VERSION is inconsistent, expected $ref, got $marketing"
 fi
 
 # For simplicity this assumes we'll never break ABI before SDL 3.
