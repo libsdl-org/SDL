@@ -611,7 +611,8 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
         if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
             return SDL_SetError("Could not initialize EGL");
         }
-    } else {
+    }
+    else {
         int i;
         SDL_bool found = SDL_FALSE;
         EGLDisplay attempted_egl_display;

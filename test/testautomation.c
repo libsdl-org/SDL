@@ -61,17 +61,20 @@ main(int argc, char *argv[])
                     }
                     consumed = 2;
                 }
-            } else if (SDL_strcasecmp(argv[i], "--execKey") == 0) {
+            }
+            else if (SDL_strcasecmp(argv[i], "--execKey") == 0) {
                 if (argv[i + 1]) {
                     SDL_sscanf(argv[i + 1], "%"SDL_PRIu64, &userExecKey);
                     consumed = 2;
                 }
-            } else if (SDL_strcasecmp(argv[i], "--seed") == 0) {
+            }
+            else if (SDL_strcasecmp(argv[i], "--seed") == 0) {
                 if (argv[i + 1]) {
                     userRunSeed = SDL_strdup(argv[i + 1]);
                     consumed = 2;
                 }
-            } else if (SDL_strcasecmp(argv[i], "--filter") == 0) {
+            }
+            else if (SDL_strcasecmp(argv[i], "--filter") == 0) {
                 if (argv[i + 1]) {
                     filter = SDL_strdup(argv[i + 1]);
                     consumed = 2;

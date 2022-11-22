@@ -66,7 +66,8 @@ SDLVisualTest_EnqueueAction(SDLVisualTest_ActionQueue* queue,
     queue->size++;
     if(!queue->rear)
         queue->rear = queue->front = node;
-    else {
+    else
+    {
         queue->rear->next = node;
         queue->rear = node;
     }
@@ -89,7 +90,9 @@ SDLVisualTest_DequeueAction(SDLVisualTest_ActionQueue* queue)
         FreeAction(&queue->front->action);
         SDL_free(queue->front);
         queue->front = queue->rear = NULL;
-    } else {
+    }
+    else
+    {
         node = queue->front;
         queue->front = queue->front->next;
         FreeAction(&node->action);
@@ -172,9 +175,13 @@ SortQueue(SDLVisualTest_ActionQueue* queue)
             tail->next = tail->next->next;
             element->next = head;
             head = element;
-        } else if(element->action.time >= tail->action.time) {
+        }
+        else if(element->action.time >= tail->action.time)
+        {
             tail = tail->next;
-        } else {
+        }
+        else
+        {
             for(pos = head;
                 (pos->next->action.time < element->action.time);
                 pos = pos->next);
@@ -222,7 +229,9 @@ SDLVisualTest_InsertIntoActionQueue(SDLVisualTest_ActionQueue* queue,
             if(prev) {
                 prev->next = newnode;
                 newnode->next = n;
-            } else {
+            }
+            else
+            {
                 newnode->next = queue->front;
                 queue->front = newnode;
             }
@@ -296,7 +305,8 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
             action.type = SDL_ACTION_SCREENSHOT;
         else if(SDL_strcasecmp(token_ptr, "verify") == 0)
             action.type = SDL_ACTION_VERIFY;
-        else {
+        else
+        {
             SDLTest_LogError("Could not parse type token at line: %d",
                              linenum);
             SDLVisualTest_EmptyActionQueue(queue);
@@ -339,7 +349,8 @@ SDLVisualTest_ParseActionConfig(const char* file, SDLVisualTest_ActionQueue* que
                     return 0;
                 }
                 SDL_strlcpy(args, token_ptr, len + 1);
-            } else
+            }
+            else
                 args = NULL;
 
             action.extra.process.path = path;

@@ -273,7 +273,8 @@ int SDL_LoadDollarTemplates(SDL_TouchID touchId, SDL_RWops *src)
             if (SDL_AddDollarGesture(touch, templ.path) >= 0) {
                 loaded++;
             }
-        } else {
+        }
+        else {
             /* printf("Adding to: %i touches\n",SDL_numGestureTouches); */
             for (i = 0; i < SDL_numGestureTouches; i++) {
                 touch = &SDL_gestureTouch[i];
@@ -326,7 +327,8 @@ static float bestDollarDifference(SDL_FloatPoint* points,SDL_FloatPoint* templ)
             f2 = f1;
             x1 = (float)(PHI*ta + (1-PHI)*tb);
             f1 = dollarDifference(points,templ,x1);
-        } else {
+        }
+        else {
             ta = x1;
             x1 = x2;
             f1 = f2;
@@ -612,16 +614,19 @@ void SDL_GestureProcessEvent(SDL_Event* event)
                     for(i = 0; i < SDL_numGestureTouches; i++) {
                         SDL_gestureTouch[i].recording = SDL_FALSE;
                     }
-                } else {
+                }
+                else {
                     index = SDL_AddDollarGesture(inTouch,path);
                 }
 
                 if (index >= 0) {
                     SDL_SendDollarRecord(inTouch,inTouch->dollarTemplate[index].hash);
-                } else {
+                }
+                else {
                     SDL_SendDollarRecord(inTouch,-1);
                 }
-            } else {
+            }
+            else {
                 int bestTempl;
                 float error;
                 error = dollarRecognize(&inTouch->dollarPath,
@@ -641,7 +646,8 @@ void SDL_GestureProcessEvent(SDL_Event* event)
                 inTouch->centroid.y = (inTouch->centroid.y*(inTouch->numDownFingers+1)-
                                        y)/inTouch->numDownFingers;
             }
-        } else if (event->type == SDL_FINGERMOTION) {
+        }
+        else if (event->type == SDL_FINGERMOTION) {
             float dx = event->tfinger.dx;
             float dy = event->tfinger.dy;
 #if defined(ENABLE_DOLLAR)
@@ -704,7 +710,8 @@ void SDL_GestureProcessEvent(SDL_Event* event)
                 printf("thetaSum = %f, distSum = %f\n",gdtheta,gdDist);
                 printf("id: %i dTheta = %f, dDist = %f\n",j,dtheta,dDist); */
                 SDL_SendGestureMulti(inTouch,dtheta,dDist);
-            } else {
+            }
+            else {
                 /* inTouch->gestureLast[j].dDist = 0;
                 inTouch->gestureLast[j].dtheta = 0;
                 inTouch->gestureLast[j].cv.x = 0;
@@ -714,7 +721,8 @@ void SDL_GestureProcessEvent(SDL_Event* event)
             inTouch->gestureLast[j].f.p.y = y;
             break;
             pressure? */
-        } else if (event->type == SDL_FINGERDOWN) {
+        }
+        else if (event->type == SDL_FINGERDOWN) {
 
             inTouch->numDownFingers++;
             inTouch->centroid.x = (inTouch->centroid.x*(inTouch->numDownFingers - 1)+

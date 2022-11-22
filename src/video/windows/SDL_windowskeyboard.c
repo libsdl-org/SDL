@@ -538,7 +538,8 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
             len = videodata->GetReadingString(himc, len, s, &err, &vertical, &maxuilen);
         }
         SDL_wcslcpy(videodata->ime_readingstring, s, len);
-    } else {
+    }
+    else {
         LPINPUTCONTEXT2 lpimc = videodata->ImmLockIMC(himc);
         LPBYTE p = 0;
         s = 0;
@@ -914,7 +915,8 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
         SDL_wcslcpy(buffer, videodata->ime_composition, len + 1);
         SDL_wcslcat(buffer, videodata->ime_readingstring, size);
         SDL_wcslcat(buffer, &videodata->ime_composition[len], size);
-    } else {
+    }
+    else {
         buffer = (WCHAR*)SDL_malloc(size + sizeof(WCHAR));
         buffer[0] = 0;
         SDL_wcslcpy(buffer, videodata->ime_composition, size);
@@ -982,7 +984,8 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
 
                             page_start = i;
                             cchars = len;
-                        } else {
+                        }
+                        else {
                             cchars += len;
                         }
                     }
@@ -1053,7 +1056,8 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
         if (wParam == VK_PROCESSKEY) {
             videodata->ime_uicontext = 1;
             trap = SDL_TRUE;
-        } else
+        }
+        else
             videodata->ime_uicontext = 0;
         break;
     case WM_INPUTLANGCHANGE:
@@ -1281,7 +1285,8 @@ STDMETHODIMP UIElementSink_BeginUIElement(TSFSink *sink, DWORD dwUIElementId, BO
             SysFreeString(bstr);
         }
         preading->lpVtbl->Release(preading);
-    } else if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfCandidateListUIElement, (LPVOID *)&pcandlist))) {
+    }
+    else if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfCandidateListUIElement, (LPVOID *)&pcandlist))) {
         videodata->ime_candref++;
         UILess_GetCandidateList(videodata, pcandlist);
         pcandlist->lpVtbl->Release(pcandlist);
@@ -1308,7 +1313,8 @@ STDMETHODIMP UIElementSink_UpdateUIElement(TSFSink *sink, DWORD dwUIElementId)
             SysFreeString(bstr);
         }
         preading->lpVtbl->Release(preading);
-    } else if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfCandidateListUIElement, (LPVOID *)&pcandlist))) {
+    }
+    else if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfCandidateListUIElement, (LPVOID *)&pcandlist))) {
         UILess_GetCandidateList(videodata, pcandlist);
         pcandlist->lpVtbl->Release(pcandlist);
     }
@@ -1674,7 +1680,8 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             (candcount * candpadding * 2) +
             (candcount * maxcandsize.cy)
             ;
-    } else {
+    }
+    else {
         size.cx =
             (listborder * 2) +
             (listpadding * 2) +
@@ -1717,7 +1724,8 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             top = listborder + listpadding + (i * candborder * 2) + (i * candpadding * 2) + ((i + 1) * candmargin) + (i * maxcandsize.cy);
             right = size.cx - listborder - listpadding - candmargin;
             bottom = top + maxcandsize.cy + (candpadding * 2) + (candborder * 2);
-        } else {
+        }
+        else {
             left = listborder + listpadding + (i * candborder * 2) + (i * candpadding * 2) + ((i + 1) * candmargin) + (i * horzcandspacing);
 
             for(j = 0; j < i; ++j) {
@@ -1733,7 +1741,8 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             SelectObject(hdc, selpen);
             SelectObject(hdc, selbrush);
             SetTextColor(hdc, seltextcolor);
-        } else {
+        }
+        else {
             SelectObject(hdc, candpen);
             SelectObject(hdc, candbrush);
             SetTextColor(hdc, candtextcolor);

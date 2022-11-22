@@ -175,13 +175,15 @@ X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
         fg.red   = rfg * 257 / fgBits;
         fg.green = gfg * 257 / fgBits;
         fg.blue  = bfg * 257 / fgBits;
-    } else fg.red = fg.green = fg.blue = 0;
+    }
+    else fg.red = fg.green = fg.blue = 0;
 
     if (bgBits) {
         bg.red   = rbg * 257 / bgBits;
         bg.green = gbg * 257 / bgBits;
         bg.blue  = bbg * 257 / bgBits;
-    } else bg.red = bg.green = bg.blue = 0;
+    }
+    else bg.red = bg.green = bg.blue = 0;
 
     data_pixmap = X11_XCreateBitmapFromData(display, DefaultRootWindow(display),
                                         (char*)data_bits,

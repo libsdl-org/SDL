@@ -77,7 +77,9 @@ int SDLTest_AssertCheck(int assertCondition, SDL_PRINTF_FORMAT_STRING const char
     if (assertCondition == ASSERT_FAIL) {
         SDLTest_AssertsFailed++;
         SDLTest_LogError(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Failed");
-    } else {
+    }
+    else
+    {
         SDLTest_AssertsPassed++;
         SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Passed");
     }
@@ -122,7 +124,9 @@ void SDLTest_LogAssertSummary()
     int totalAsserts = SDLTest_AssertsPassed + SDLTest_AssertsFailed;
     if (SDLTest_AssertsFailed == 0) {
         SDLTest_Log(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
-    } else {
+    }
+    else
+    {
         SDLTest_LogError(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
     }
 }

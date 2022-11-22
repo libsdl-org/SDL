@@ -657,7 +657,9 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
                     plane_u += uv_skip;
                     plane_v += uv_skip;
                 }
-            } else if (dst_format == SDL_PIXELFORMAT_NV12) {
+            }
+            else if (dst_format == SDL_PIXELFORMAT_NV12)
+            {
                 uv_skip = (uv_stride - ((width + 1)/2)*2);
                 for (j = 0; j < height_half; j++) {
                     for (i = 0; i < width_half; i++) {
@@ -686,7 +688,9 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
                         *plane_interleaved_uv++ = MAKE_V(r, g, b);
                     }
                 }
-            }  else /* dst_format == SDL_PIXELFORMAT_NV21 */ {
+            } 
+            else /* dst_format == SDL_PIXELFORMAT_NV21 */
+            {
                 uv_skip = (uv_stride - ((width + 1)/2)*2);
                 for (j = 0; j < height_half; j++) {
                     for (i = 0; i < width_half; i++) {
@@ -755,7 +759,9 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
                     plane += plane_skip;
                     curr_row += src_pitch;
                 }
-            }  else if (dst_format == SDL_PIXELFORMAT_UYVY) {
+            } 
+            else if (dst_format == SDL_PIXELFORMAT_UYVY)
+            {
                 for (j = 0; j < height; j++) {
                     for (i = 0; i < width_half; i++) {
                         READ_TWO_RGB_PIXELS;
@@ -776,7 +782,9 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
                     plane += plane_skip;
                     curr_row += src_pitch;
                 }
-            } else if (dst_format == SDL_PIXELFORMAT_YVYU) {
+            }
+            else if (dst_format == SDL_PIXELFORMAT_YVYU)
+            {
                 for (j = 0; j < height; j++) {
                     for (i = 0; i < width_half; i++) {
                         READ_TWO_RGB_PIXELS;

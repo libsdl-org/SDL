@@ -252,7 +252,10 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
         } else {
             state = (SDL_assert_state)selected;
         }
-    } else {
+    }
+
+    else
+    {
 #if defined(__EMSCRIPTEN__)
         /* This is nasty, but we can't block on a custom UI. */
         for ( ; ; ) {

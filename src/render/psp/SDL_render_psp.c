@@ -833,7 +833,9 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
         verts->y = y + height;
         verts->z = 0;
         verts++;
-    } else {
+    }
+    else
+    {
         float start, end;
         float curU = u0;
         float curX = x;

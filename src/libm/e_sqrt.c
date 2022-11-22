@@ -427,7 +427,8 @@ B.  sqrt(x) by Reciproot Iteration
 	trailing parts of x.
 
 	If ((z1&0x03ffffff)!=0)	... not exact if trailing 26 bits of z!=0
-	    I := 1;		... Raise Inexact flag: z is not exact else {
+	    I := 1;		... Raise Inexact flag: z is not exact
+	else {
 	    j := 1 - [(x0>>20)&1]	... j = logb(x) mod 2
 	    k := z1 >> 26;		... get z's 25-th and 26-th
 					    fraction bits

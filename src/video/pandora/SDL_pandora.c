@@ -618,7 +618,8 @@ PND_gl_createcontext(_THIS, SDL_Window * window)
         printf( "Error: Wiz framebuffer allocatation failed\n" );
     else
         printf( "SDL: Wiz framebuffer allocated: %X\n", hNativeWnd );
-    } else {
+    }
+    else {
         printf( "SDL: Wiz framebuffer already allocated: %X\n", hNativeWnd );
     }
 

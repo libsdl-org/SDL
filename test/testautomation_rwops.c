@@ -118,7 +118,8 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
    SDLTest_AssertPass("Call to SDL_RWwrite succeeded");
    if (write) {
         SDLTest_AssertCheck(s == (size_t)1, "Verify result of writing one byte with SDL_RWwrite, expected 1, got %i", (int) s);
-   } else {
+   }
+   else {
         SDLTest_AssertCheck(s == (size_t)0, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int) s);
    }
 

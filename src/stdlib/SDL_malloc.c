@@ -2344,8 +2344,10 @@ static size_t traverse_and_check(mstate m);
 {\
   size_t X = S >> TREEBIN_SHIFT;\
   if (X == 0)\
-    I = 0;\ else if (X > 0xFFFF)\
-    I = NTREEBINS-1;\ else {\
+    I = 0;\
+  else if (X > 0xFFFF)\
+    I = NTREEBINS-1;\
+  else {\
     unsigned int K;\
     __asm__("bsrl %1,%0\n\t" : "=r" (K) : "rm"  (X));\
     I =  (bindex_t)((K << 1) + ((S >> (K + (TREEBIN_SHIFT-1)) & 1)));\
@@ -2356,8 +2358,10 @@ static size_t traverse_and_check(mstate m);
 {\
   size_t X = S >> TREEBIN_SHIFT;\
   if (X == 0)\
-    I = 0;\ else if (X > 0xFFFF)\
-    I = NTREEBINS-1;\ else {\
+    I = 0;\
+  else if (X > 0xFFFF)\
+    I = NTREEBINS-1;\
+  else {\
     unsigned int Y = (unsigned int)X;\
     unsigned int N = ((Y - 0x100) >> 16) & 8;\
     unsigned int K = (((Y <<= N) - 0x1000) >> 16) & 4;\
@@ -3053,7 +3057,8 @@ internal_malloc_stats(mstate m)
   if (!smallmap_is_marked(M, I))\
     mark_smallmap(M, I);\
   else if (RTCHECK(ok_address(M, B->fd)))\
-    F = B->fd;\ else {\
+    F = B->fd;\
+  else {\
     CORRUPTION_ERROR_ACTION(M);\
   }\
   B->fd = P;\
@@ -3076,7 +3081,8 @@ internal_malloc_stats(mstate m)
                    (B == smallbin_at(M,I) || ok_address(M, B)))) {\
     F->bk = B;\
     B->fd = F;\
-  }\ else {\
+  }\
+  else {\
     CORRUPTION_ERROR_ACTION(M);\
   }\
 }
@@ -3092,7 +3098,8 @@ internal_malloc_stats(mstate m)
   else if (RTCHECK(ok_address(M, F))) {\
     B->fd = F;\
     F->bk = B;\
-  }\ else {\
+  }\
+  else {\
     CORRUPTION_ERROR_ACTION(M);\
   }\
 }
@@ -3125,7 +3132,8 @@ internal_malloc_stats(mstate m)
     *H = X;\
     X->parent = (tchunkptr)H;\
     X->fd = X->bk = X;\
-  }\ else {\
+  }\
+  else {\
     tchunkptr T = *H;\
     size_t K = S << leftshift_for_tree_index(I);\
     for (;;) {\
@@ -3133,16 +3141,19 @@ internal_malloc_stats(mstate m)
         tchunkptr* C = &(T->child[(K >> (SIZE_T_BITSIZE-SIZE_T_ONE)) & 1]);\
         K <<= 1;\
         if (*C != 0)\
-          T = *C;\ else if (RTCHECK(ok_address(M, C))) {\
+          T = *C;\
+        else if (RTCHECK(ok_address(M, C))) {\
           *C = X;\
           X->parent = T;\
           X->fd = X->bk = X;\
           break;\
-        }\ else {\
+        }\
+        else {\
           CORRUPTION_ERROR_ACTION(M);\
           break;\
         }\
-      }\ else {\
+      }\
+      else {\
         tchunkptr F = T->fd;\
         if (RTCHECK(ok_address(M, T) && ok_address(M, F))) {\
           T->fd = F->bk = X;\
@@ -3150,7 +3161,8 @@ internal_malloc_stats(mstate m)
           X->bk = T;\
           X->parent = 0;\
           break;\
-        }\ else {\
+        }\
+        else {\
           CORRUPTION_ERROR_ACTION(M);\
           break;\
         }\
@@ -3185,10 +3197,12 @@ internal_malloc_stats(mstate m)
     if (RTCHECK(ok_address(M, F))) {\
       F->bk = R;\
       R->fd = F;\
-    }\ else {\
+    }\
+    else {\
       CORRUPTION_ERROR_ACTION(M);\
     }\
-  }\ else {\
+  }\
+  else {\
     tchunkptr* RP;\
     if (((R = *(RP = &(X->child[1]))) != 0) ||\
         ((R = *(RP = &(X->child[0]))) != 0)) {\
@@ -3209,12 +3223,14 @@ internal_malloc_stats(mstate m)
     if (X == *H) {\
       if ((*H = R) == 0) \
         clear_treemap(M, X->index);\
-    }\ else if (RTCHECK(ok_address(M, XP))) {\
+    }\
+    else if (RTCHECK(ok_address(M, XP))) {\
       if (XP->child[0] == X) \
         XP->child[0] = R;\
       else \
         XP->child[1] = R;\
-    }\ else\
+    }\
+    else\
       CORRUPTION_ERROR_ACTION(M);\
     if (R != 0) {\
       if (RTCHECK(ok_address(M, R))) {\
@@ -3224,17 +3240,20 @@ internal_malloc_stats(mstate m)
           if (RTCHECK(ok_address(M, C0))) {\
             R->child[0] = C0;\
             C0->parent = R;\
-          }\ else\
+          }\
+          else\
             CORRUPTION_ERROR_ACTION(M);\
         }\
         if ((C1 = X->child[1]) != 0) {\
           if (RTCHECK(ok_address(M, C1))) {\
             R->child[1] = C1;\
             C1->parent = R;\
-          }\ else\
+          }\
+          else\
             CORRUPTION_ERROR_ACTION(M);\
         }\
-      }\ else\
+      }\
+      else\
         CORRUPTION_ERROR_ACTION(M);\
     }\
   }\
@@ -3485,7 +3504,8 @@ add_segment(mstate m, char *tbase, size_t tsize, flag_t mmapped)
         ++nfences;
 #endif
         if ((char *) (&(nextp->head)) < old_end)
-            p = nextp; else
+            p = nextp;
+        else
             break;
     }
 #ifdef DEBUG
@@ -3661,7 +3681,9 @@ sys_alloc(mstate m, size_t nb)
                          (size_t) ((tbase + tsize) - (char *) mn) -
                          TOP_FOOT_SIZE);
             }
-        } else {
+        }
+
+        else {
             /* Try to merge with an existing segment */
             msegmentptr sp = &m->seg;
             while (sp != 0 && tbase != sp->base + sp->size) {
@@ -5112,10 +5134,14 @@ mspace_mallopt(int param_number, int value)
       ptr = (void *) ((((size_t) ptr) + RM_PAGE_MASK) & ~RM_PAGE_MASK);
       sbrk_top = (char *) ptr + size;
       return ptr;
-    } else if (size < 0) {
+    }
+    else if (size < 0)
+    {
       // we don't currently support shrink behavior
       return (void *) MFAIL;
-    } else {
+    }
+    else
+    {
       return sbrk_top;
     }
   }

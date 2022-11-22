@@ -72,7 +72,9 @@ main(int argc, char *argv[])
                 case SDL_JOYDEVICEADDED:
                     if (joystick != NULL) {
                         SDL_Log("Only one joystick supported by this test\n");
-                    } else {
+                    }
+                    else
+                    {
                         joystick = SDL_JoystickOpen(event.jdevice.which);
                         instance = SDL_JoystickInstanceID(joystick);
                         SDL_Log("Joy Added  : %" SDL_PRIs32 " : %s\n", event.jdevice.which, SDL_JoystickName(joystick));
@@ -89,7 +91,9 @@ main(int argc, char *argv[])
                                 } else {
                                     SDL_Log("Joy haptic open FAILED!: %s\n", SDL_GetError());
                                 }
-                            } else {
+                            }
+                            else
+                            {
                                 SDL_Log("No haptic found\n");
                             }
                         }

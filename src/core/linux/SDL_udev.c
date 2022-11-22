@@ -333,7 +333,8 @@ SDL_UDEV_LoadLibrary(void)
                 retval = SDL_UDEV_load_syms();
                 if (retval < 0) {
                     SDL_UDEV_UnloadLibrary();
-                } else {
+                }
+                else {
                     break;
                 }
             }

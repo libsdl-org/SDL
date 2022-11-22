@@ -179,7 +179,8 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
             X11_XShmPutImage(display, data->xwindow, data->gc, data->ximage,
                 x, y, x, y, w, h, False);
         }
-    } else
+    }
+    else
 #endif /* !NO_SHARED_MEMORY */
     {
         for (i = 0; i < numrects; ++i) {

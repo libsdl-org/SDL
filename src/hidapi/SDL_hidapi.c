@@ -326,7 +326,8 @@ HIDAPI_InitializeDiscovery()
                 SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
             }
         }
-    } else
+    }
+    else
 #endif /* SDL_USE_LIBUDEV */
     {
 #if defined(HAVE_INOTIFY)
@@ -429,7 +430,8 @@ HIDAPI_UpdateDiscovery()
                 }
             }
         }
-    } else
+    }
+    else
 #endif /* SDL_USE_LIBUDEV */
     {
 #if defined(HAVE_INOTIFY)
@@ -510,7 +512,8 @@ HIDAPI_ShutdownDiscovery()
             SDL_UDEV_ReleaseUdevSyms();
             usyms = NULL;
         }
-    } else
+    }
+    else
 #endif /* SDL_USE_LIBUDEV */
     {
 #if defined(HAVE_INOTIFY)

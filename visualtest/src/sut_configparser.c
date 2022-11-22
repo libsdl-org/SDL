@@ -42,7 +42,8 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
     num_lines = SDLVisualTest_RWHelperCountNonEmptyLines(rw, &buffer, '#');
     if(num_lines == -1)
         return 0;
-    else if(num_lines == 0) {
+    else if(num_lines == 0)
+    {
         config->options = NULL;
         config->num_options = 0;
         SDL_RWclose(rw);
@@ -100,7 +101,8 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
             config->options[i].type = SDL_SUT_OPTIONTYPE_ENUM;
         else if(SDL_strcmp(token_ptr, "boolean") == 0)
             config->options[i].type = SDL_SUT_OPTIONTYPE_BOOL;
-        else {
+        else
+        {
             SDLTest_LogError("Could not parse type token at line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);
@@ -130,7 +132,9 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
                 config->options[i].data.range.min = INT_MIN;
                 config->options[i].data.range.max = INT_MAX;
             }
-        } else if(config->options[i].type == SDL_SUT_OPTIONTYPE_ENUM) {
+        }
+        else if(config->options[i].type == SDL_SUT_OPTIONTYPE_ENUM)
+        {
             config->options[i].data.enum_values = SDLVisualTest_Tokenize(token_ptr,
                                                   MAX_SUTOPTION_ENUMVAL_LEN);
             if(!config->options[i].data.enum_values) {
@@ -154,7 +158,8 @@ SDLVisualTest_ParseSUTConfig(char* file, SDLVisualTest_SUTConfig* config)
             config->options[i].required = SDL_TRUE;
         else if(SDL_strcmp(token_ptr, "false") == 0)
             config->options[i].required = SDL_FALSE;
-        else {
+        else
+        {
             SDLTest_LogError("Could not parse required token at line %d", i + 1);
             SDL_free(config->options);
             SDL_RWclose(rw);

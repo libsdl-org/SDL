@@ -76,7 +76,9 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
     if (bshaped) {
         desc.flags |= DWDESC_CAPS;
         desc.caps |= DWCAPS_ALPHACHANNEL;
-    } else {
+    }
+    else
+    {
         desc.flags |= DWDESC_PIXELFORMAT;
     }
 
@@ -107,7 +109,8 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
     wopts |= DWOP_SCALE;
     if (window->flags & SDL_WINDOW_RESIZABLE) {
         wopts &= ~DWOP_KEEP_SIZE;
-    } else {
+    }
+    else {
         wopts |= DWOP_KEEP_SIZE;
     }
 

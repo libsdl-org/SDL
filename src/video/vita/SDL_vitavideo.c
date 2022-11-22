@@ -460,11 +460,13 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
         if (e->param.text.caretIndex == 0) {
             SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_BACKSPACE);
             sceImeSetText((SceWChar16 *)libime_initval, 4);
-        } else {
+        }
+        else {
             scancode = SDL_GetScancodeFromKey(*(SceWChar16 *)&libime_out[1]);
             if (scancode == SDL_SCANCODE_SPACE) {
                 SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_SPACE);
-            } else {
+            }
+            else {
                 utf16_to_utf8((SceWChar16 *)&libime_out[1], utf8_buffer);
                 SDL_SendKeyboardText((const char*)utf8_buffer);
             }

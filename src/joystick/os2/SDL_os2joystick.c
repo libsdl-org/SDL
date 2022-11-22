@@ -304,7 +304,8 @@ static int OS2_JoystickInit(void)
 			SDL_strlcpy (SYS_JoyData[0].szDeviceName,joycfg.name, SDL_arraysize(SYS_JoyData[0].szDeviceName));
 		}
 		/* Default Init ... autoconfig */
-		else {
+		else
+		{
 			/* if two devices were detected... configure as Joy1 4 axis and Joy2 2 axis */
 			if (numdevs == 2) {
 				/* Define Device 0 as 4 axes, 4 buttons */
@@ -339,7 +340,8 @@ static int OS2_JoystickInit(void)
 				SYS_JoyData[1].axes_max[1] = stGameCalib.By.upper;
 			}
 			/* One joystick only? */
-			else {
+			else
+			{
 				/* If it is joystick A... */
 				if ((stJoyStatus.ucJs_JoyStickMask & 0x03) > 0) {
 					/* Define Device 0 as 2 axes, 4 buttons */
@@ -356,7 +358,8 @@ static int OS2_JoystickInit(void)
 					SYS_JoyData[0].axes_max[1] = stGameCalib.Ay.upper;
 				}
 				/* If not, it is joystick B */
-				else {
+				else
+				{
 					/* Define Device 1 as 2 axes, 2 buttons */
 					SYS_JoyData[0].id=1;
 					SYS_JoyData[0].axes = 2;
@@ -458,7 +461,9 @@ static int OS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 			joystick->hwdata->transaxes[i].offset = ((SDL_JOYSTICK_AXIS_MAX + SDL_JOYSTICK_AXIS_MIN)>>1) - SYS_JoyData[index].axes_med[i];
 			joystick->hwdata->transaxes[i].scale1 = (float)SDL_abs((SDL_JOYSTICK_AXIS_MIN/SYS_JoyData[index].axes_min[i]));
 			joystick->hwdata->transaxes[i].scale2 = (float)SDL_abs((SDL_JOYSTICK_AXIS_MAX/SYS_JoyData[index].axes_max[i]));
-		} else {
+		}
+		else
+		{
 			joystick->hwdata->transaxes[i].offset = 0;
 			joystick->hwdata->transaxes[i].scale1 = 1.0f; /* Just in case */
 			joystick->hwdata->transaxes[i].scale2 = 1.0f; /* Just in case */
@@ -548,7 +553,9 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 		if (SYS_JoyData[index].axes >= 4) pos[3] = stGameStatus.curdata.B.y;
 		else pos[3] = 0;
 		/* OS/2 basic drivers do not support more than 4 axes joysticks */
-	} else if (SYS_JoyData[index].id == 1) {
+	}
+	else if (SYS_JoyData[index].id == 1)
+	{
 		pos[0] = stGameStatus.curdata.B.x;
 		pos[1] = stGameStatus.curdata.B.y;
 		pos[2] = 0;
@@ -564,7 +571,9 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 			if (value > 0) {
 				value = SDL_JOYSTICK_AXIS_MIN;
 			}
-		} else {
+		}
+		else
+		{
 			value *= transaxes[i].scale2;
 			if (value < 0) {
 				value = SDL_JOYSTICK_AXIS_MAX;
@@ -589,7 +598,9 @@ static void OS2_JoystickUpdate(SDL_Joystick *joystick)
 		*/
 		if ((~stGameStatus.curdata.butMask)>>4 & JOY_BUTTON_FLAG(i)) {
 			SDL_PrivateJoystickButton(joystick, (Uint8)(i-corr), SDL_PRESSED);
-		} else {
+		}
+		else
+		{
 			SDL_PrivateJoystickButton(joystick, (Uint8)(i-corr), SDL_RELEASED);
 		}
 	}
@@ -727,7 +738,8 @@ static int joyGetEnv(struct _joycfg * joydata)
 	else if (*joyenv == '\"') {
 		joyenv++;
 		joyenv += joyGetData(joyenv,joydata->name,'\"',sizeof(joydata->name));
-	} else {
+	}
+	else {
 		joyenv += joyGetData(joyenv,joydata->name, ' ',sizeof(joydata->name));
 	}
 

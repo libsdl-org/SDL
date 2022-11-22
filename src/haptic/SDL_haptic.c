@@ -366,7 +366,9 @@ SDL_HapticClose(SDL_Haptic * haptic)
             if ( hapticlistprev ) {
                 /* unlink this entry */
                 hapticlistprev->next = hapticlist->next;
-            } else {
+            }
+            else
+            {
                 SDL_haptics = haptic->next;
             }
 

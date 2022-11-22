@@ -93,7 +93,9 @@ SDLVisualTest_GetNextExhaustiveVariation(SDLVisualTest_ExhaustiveVariator* varia
             return NULL;
         }
         return variator->buffer;
-    } else {
+    }
+    else
+    {
         success = NextVariation(&variator->variation, &variator->config);
         if(success == 1) {
             success = SDLVisualTest_MakeStrFromVariation(&variator->variation,
@@ -103,7 +105,8 @@ SDLVisualTest_GetNextExhaustiveVariation(SDLVisualTest_ExhaustiveVariator* varia
                 return NULL;
             }
             return variator->buffer;
-        } else if (success == -1) {
+        }
+        else if (success == -1) {
            SDLTest_LogError("NextVariation() failed.");
         }
         return NULL;

@@ -49,7 +49,8 @@ Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
         curdata->system_cursor = cursor_str;
         curdata->is_custom = is_custom;
         cursor->driverdata = curdata;
-    } else {
+    }
+    else {
         SDL_OutOfMemory();
     }
 
@@ -213,7 +214,8 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
                     }
                 }, curdata->system_cursor);
             }
-        } else {
+        }
+        else {
             MAIN_THREAD_EM_ASM(
                 if (Module['canvas']) {
                     Module['canvas'].style['cursor'] = 'none';

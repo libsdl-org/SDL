@@ -380,7 +380,8 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
                 /* unset flags, fullscreen failed */
                 window->flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
             }
-        } else
+        }
+        else
             emscripten_exit_fullscreen();
     }
 }

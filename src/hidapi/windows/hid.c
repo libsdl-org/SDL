@@ -283,7 +283,8 @@ static int lookup_functions()
 		RESOLVE(HidD_SetNumInputBuffers);
 		RESOLVE(HidD_SetOutputReport);
 #undef RESOLVE
-	} else
+	}
+	else
 		return -1;
 
 	return 0;
@@ -466,7 +467,9 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				           SPDRP_DRIVER, NULL, (PBYTE)driver_name, sizeof(driver_name), NULL);
 				if (!res)
 					goto cont;
-			} else {
+			}
+			else
+			{
 				goto cont;
 			}
 		}
@@ -523,7 +526,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				if (nt_res != HIDP_STATUS_SUCCESS) {
 					goto cont_close;
 				}
-			} else {
+			}
+			else {
 				goto cont_close;
 			}
 
@@ -542,7 +546,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
 			if (cur_dev) {
 				cur_dev->next = tmp;
-			} else {
+			}
+			else {
 				root = tmp;
 			}
 			cur_dev = tmp;
@@ -556,7 +561,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				len = strlen(str);
 				cur_dev->path = (char*) calloc(len+1, sizeof(char));
 				memcpy(cur_dev->path, str, len+1);
-			} else
+			}
+			else
 				cur_dev->path = NULL;
 
 			/* Serial Number */
@@ -657,7 +663,8 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 					path_to_open = cur_dev->path;
 					break;
 				}
-			} else {
+			}
+			else {
 				path_to_open = cur_dev->path;
 				break;
 			}
@@ -867,7 +874,8 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 			bytes_read--;
 			copy_len = length > bytes_read ? bytes_read : length;
 			memcpy(data, dev->read_buf+1, copy_len);
-		} else {
+		}
+		else {
 			/* Copy the whole buffer, report number and all. */
 			copy_len = length > bytes_read ? bytes_read : length;
 			memcpy(data, dev->read_buf, copy_len);

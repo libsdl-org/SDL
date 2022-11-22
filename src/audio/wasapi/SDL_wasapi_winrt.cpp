@@ -389,7 +389,8 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
         if (SDL_wcscmp(i->str, devid) == 0) {
             if (prev) {
                 prev->next = next;
-            } else {
+            }
+            else {
                 deviceid_list = next;
             }
             SDL_RemoveAudioDevice(iscapture, i->str);

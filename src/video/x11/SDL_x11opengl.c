@@ -681,7 +681,9 @@ X11_GL_ErrorHandler(Display * d, XErrorEvent * e)
     if (x11_error) {
         SDL_SetError("Could not %s: %s", errorHandlerOperation, x11_error);
         SDL_free(x11_error);
-    } else {
+    }
+    else
+    {
         SDL_SetError("Could not %s: %i (Base %i)", errorHandlerOperation, errorCode, errorBase);
     }
 

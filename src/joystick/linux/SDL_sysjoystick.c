@@ -584,7 +584,8 @@ LINUX_InotifyJoystickDetect(void)
 
                 if (buf.event.mask & (IN_CREATE | IN_MOVED_TO | IN_ATTRIB)) {
                     MaybeAddDevice(path);
-                } else if (buf.event.mask & (IN_DELETE | IN_MOVED_FROM)) {
+                }
+                else if (buf.event.mask & (IN_DELETE | IN_MOVED_FROM)) {
                     MaybeRemoveDevice(path);
                 }
             }
@@ -703,12 +704,14 @@ LINUX_JoystickDetect(void)
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         SDL_UDEV_Poll();
-    } else
+    }
+    else
 #endif
 #ifdef HAVE_INOTIFY
     if (inotify_fd >= 0 && last_joy_detect_time != 0) {
         LINUX_InotifyJoystickDetect();
-    } else
+    }
+    else
 #endif
     {
         LINUX_FallbackJoystickDetect();
@@ -785,7 +788,8 @@ LINUX_JoystickInit(void)
 
         /* Force a scan to build the initial device list */
         SDL_UDEV_Scan();
-    } else
+    }
+    else
 #endif
     {
 #if defined(HAVE_INOTIFY)

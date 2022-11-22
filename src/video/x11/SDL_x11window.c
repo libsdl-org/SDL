@@ -413,10 +413,13 @@ X11_CreateWindow(_THIS, SDL_Window * window)
             visual = vi->visual;
             depth = vi->depth;
             X11_XFree(vi);
-        } else {
+        }
+        else
+        {
             return -1;
         }
-    } else if ((window->flags & SDL_WINDOW_OPENGL) &&
+    }
+    else if ((window->flags & SDL_WINDOW_OPENGL) &&
         !SDL_getenv("SDL_VIDEO_X11_VISUALID")) {
         XVisualInfo *vinfo = NULL;
 

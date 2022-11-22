@@ -56,7 +56,8 @@ loop()
 #ifdef __EMSCRIPTEN__
     if (done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)) {
         emscripten_cancel_main_loop();
-    } else
+    }
+    else
 #endif
     {
         /* The device from SDL_OpenAudio() is always device #1. */

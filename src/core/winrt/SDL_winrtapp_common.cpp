@@ -51,9 +51,13 @@ SDL_WinRTGetDeviceFamily()
 
     if (deviceFamily->Equals("Windows.Desktop")) {
         return SDL_WINRT_DEVICEFAMILY_DESKTOP;
-    } else if (deviceFamily->Equals("Windows.Mobile")) {
+    }
+    else if (deviceFamily->Equals("Windows.Mobile"))
+    {
         return SDL_WINRT_DEVICEFAMILY_MOBILE;
-    } else if (deviceFamily->Equals("Windows.Xbox")) {
+    }
+    else if (deviceFamily->Equals("Windows.Xbox"))
+    {
         return SDL_WINRT_DEVICEFAMILY_XBOX;
     }
 #endif

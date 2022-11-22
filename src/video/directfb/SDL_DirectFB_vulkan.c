@@ -85,7 +85,9 @@ int DirectFB_Vulkan_LoadLibrary(_THIS, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
-    } else if(!hasDirectFBSurfaceExtension) {
+    }
+    else if(!hasDirectFBSurfaceExtension)
+    {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME "extension");
         goto fail;

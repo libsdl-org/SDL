@@ -115,7 +115,8 @@ CheckSetDisplayMode(_THIS, SDL_VideoDisplay * display, DFB_DisplayData * data, S
     if (failed == 0) {
         SDL_AddDisplayMode(display, mode);
         SDL_DFB_LOG("Mode %d x %d Added\n", mode->w, mode->h);
-    } else
+    }
+    else
         SDL_DFB_ERR("Mode %d x %d not available: %x\n", mode->w,
                       mode->h, failed);
 

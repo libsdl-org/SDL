@@ -94,7 +94,8 @@ ActionTimerCallback(Uint32 interval, void* param)
     /* calculate the new interval and return it */
     if(current->next)
         next_action_time = current->next->action.time - current->action.time;
-    else {
+    else
+    {
         next_action_time = 0;
         action_timer = 0;
     }
@@ -164,7 +165,8 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
             if(args) {
                 SDLTest_Log("Action: Launch process: %s with arguments: %s",
                             path, args);
-            } else
+            }
+            else
                 SDLTest_Log("Action: Launch process: %s", path);
             if(!SDL_LaunchProcess(path, args, &action_process)) {
                 SDLTest_LogError("SDL_LaunchProcess() failed");
@@ -218,12 +220,16 @@ ProcessAction(SDLVisualTest_Action* action, int* sut_running, char* args)
             if(ret == -1) {
                 SDLTest_LogError("SDLVisualTest_VerifyScreenshots() failed");
                 return TEST_ERROR;
-            } else if(ret == 0) {
+            }
+            else if(ret == 0)
+            {
                 SDLTest_Log("Verification failed: Images were not equal.");
                 return TEST_FAILED;
-            } else if(ret == 1)
+            }
+            else if(ret == 1)
                 SDLTest_Log("Verification successful.");
-            else {
+            else
+            {
                 SDLTest_Log("Verfication skipped.");
                 return TEST_FAILED;
             }
@@ -313,12 +319,16 @@ RunSUTAndTest(char* sutargs, int variation_num)
                             return_code = TEST_ERROR;
                             goto runsutandtest_cleanup_timer;
                     }
-                } else if(event.user.code == KILL_TIMER_EVENT) {
+                }
+                else if(event.user.code == KILL_TIMER_EVENT)
+                {
                     SDLTest_LogError("Maximum timeout reached. Force killing..");
                     return_code = TEST_FAILED;
                     goto runsutandtest_cleanup_timer;
                 }
-            } else if(event.type == SDL_QUIT) {
+            }
+            else if(event.type == SDL_QUIT)
+            {
                 SDLTest_LogError("Received QUIT event. Testharness is quitting..");
                 return_code = TEST_ERROR;
                 goto runsutandtest_cleanup_timer;
@@ -331,7 +341,9 @@ RunSUTAndTest(char* sutargs, int variation_num)
     if(sut_exitstatus.exit_status == 0) {
         return_code = TEST_PASSED;
         goto runsutandtest_cleanup_timer;
-    } else {
+    }
+    else
+    {
         return_code = TEST_FAILED;
         goto runsutandtest_cleanup_timer;
     }

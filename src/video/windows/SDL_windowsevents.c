@@ -278,7 +278,8 @@ WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_
     if (bSwapButtons) {
         if (button == SDL_BUTTON_LEFT) {
             button = SDL_BUTTON_RIGHT;
-        } else if (button == SDL_BUTTON_RIGHT) {
+        }
+        else if (button == SDL_BUTTON_RIGHT) {
             button = SDL_BUTTON_LEFT;
         }
     }

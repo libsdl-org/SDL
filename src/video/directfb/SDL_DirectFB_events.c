@@ -77,11 +77,13 @@ static void UnicodeToUtf8( Uint16 w , char *utf8buf)
     if ( w < 0x0080 ) {
         utf8s[0] = ( unsigned char ) w;
         utf8s[1] = 0;
-    } else if ( w < 0x0800 ) {
+    }
+    else if ( w < 0x0800 ) {
         utf8s[0] = 0xc0 | (( w ) >> 6 );
         utf8s[1] = 0x80 | (( w ) & 0x3f );
         utf8s[2] = 0;
-    } else {
+    }
+    else {
         utf8s[0] = 0xe0 | (( w ) >> 12 );
         utf8s[1] = 0x80 | (( ( w ) >> 6 ) & 0x3f );
         utf8s[2] = 0x80 | (( w ) & 0x3f );

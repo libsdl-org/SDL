@@ -743,13 +743,16 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                         else if (usage == HUG_DPAD_UP) {
                             dpad[0] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
-                        } else if (usage == HUG_DPAD_DOWN) {
+                        }
+                        else if (usage == HUG_DPAD_DOWN) {
                             dpad[1] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
-                        } else if (usage == HUG_DPAD_RIGHT) {
+                        }
+                        else if (usage == HUG_DPAD_RIGHT) {
                             dpad[2] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
-                        } else if (usage == HUG_DPAD_LEFT) {
+                        }
+                        else if (usage == HUG_DPAD_LEFT) {
                             dpad[3] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
                         }

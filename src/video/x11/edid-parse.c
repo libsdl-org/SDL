@@ -100,7 +100,9 @@ decode_vendor_and_product_identification (const uchar *edid, MonitorInfo *info)
     if (is_model_year) {
 	info->production_year = -1;
 	info->model_year = 1990 + edid[0x11];
-    } else {
+    }
+    else
+    {
 	info->production_year = 1990 + edid[0x11];
 	info->model_year = -1;
     }
@@ -145,7 +147,9 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 	    info->ad.digital.interface = interfaces[bits];
 	else
 	    info->ad.digital.interface = UNDEFINED;
-    } else {
+    }
+    else
+    {
 	int bits = get_bits (edid[0x14], 5, 6);
 	
 	static const double levels[][3] =
@@ -174,16 +178,22 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 	info->width_mm = -1;
 	info->height_mm = -1;
 	info->aspect_ratio = -1.0;
-    } else if (edid[0x16] == 0) {
+    }
+    else if (edid[0x16] == 0)
+    {
 	info->width_mm = -1;
 	info->height_mm = -1; 
 	info->aspect_ratio = 100.0 / (edid[0x15] + 99);
-    } else if (edid[0x15] == 0) {
+    }
+    else if (edid[0x15] == 0)
+    {
 	info->width_mm = -1;
 	info->height_mm = -1;
 	info->aspect_ratio = 100.0 / (edid[0x16] + 99);
 	info->aspect_ratio = 1/info->aspect_ratio; /* portrait */
-    } else {
+    }
+    else
+    {
 	info->width_mm = 10 * edid[0x15];
 	info->height_mm = 10 * edid[0x16];
     }
@@ -207,7 +217,9 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 	if (get_bit(edid[0x18], 4)) {
 	    info->ad.digital.ycrcb422 = 1;
 	}
-    } else {
+    }
+    else
+    {
 	int bits = get_bits (edid[0x18], 3, 4);
 	ColorType color_type[4] =
 	{
@@ -347,10 +359,14 @@ decode_lf_string (const uchar *s, int n_chars, char *result)
 	if (s[i] == 0x0a) {
 	    *result++ = '\0';
 	    break;
-	} else if (s[i] == 0x00) {
+	}
+	else if (s[i] == 0x00)
+	{
 	    /* Convert embedded 0's to spaces */
 	    *result++ = ' ';
-	} else {
+	}
+	else
+	{
 	    *result++ = s[i];
 	}
     }
@@ -438,13 +454,17 @@ decode_detailed_timing (const uchar *timing,
 	if (detailed->ad.digital.composite) {
 	    detailed->ad.digital.serrations = get_bit (bits, 2);
 	    detailed->ad.digital.negative_vsync = FALSE;
-	} else {
+	}
+	else
+	{
 	    detailed->ad.digital.serrations = FALSE;
 	    detailed->ad.digital.negative_vsync = !get_bit (bits, 2);
 	}
 
 	detailed->ad.digital.negative_hsync = !get_bit (bits, 0);
-    } else {
+    }
+    else
+    {
 	detailed->ad.analog.bipolar = get_bit (bits, 3);
 	detailed->ad.analog.serrations = get_bit (bits, 2);
 	detailed->ad.analog.sync_on_green = !get_bit (bits, 1);
@@ -464,7 +484,9 @@ decode_descriptors (const uchar *edid, MonitorInfo *info)
 
 	if (edid[index + 0] == 0x00 && edid[index + 1] == 0x00) {
 	    decode_display_descriptor (edid + index, info);
-	} else {
+	}
+	else
+	{
 	    decode_detailed_timing (
 		edid + index, &(info->detailed_timings[timing_idx++]));
 	}
@@ -568,7 +590,9 @@ dump_monitor_info (MonitorInfo *info)
 	printf ("RGB 4:4:4: %s\n", yesno (info->ad.digital.rgb444));
 	printf ("YCrCb 4:4:4: %s\n", yesno (info->ad.digital.ycrcb444));
 	printf ("YCrCb 4:2:2: %s\n", yesno (info->ad.digital.ycrcb422));
-    } else {
+    }
+    else
+    {
        const char *s;
 	printf ("Video Signal Level: %f\n", info->ad.analog.video_signal_level);
 	printf ("Sync Signal Level: %f\n", info->ad.analog.sync_signal_level);
@@ -700,7 +724,9 @@ dump_monitor_info (MonitorInfo *info)
 		    yesno (timing->ad.digital.negative_vsync));
 	    printf ("    negative hsync: %s\n",
 		    yesno (timing->ad.digital.negative_hsync));
-	} else {
+	}
+	else
+	{
 	    printf ("  Analog Sync:\n");
 	    printf ("    bipolar: %s\n", yesno (timing->ad.analog.bipolar));
 	    printf ("    serrations: %s\n", yesno (timing->ad.analog.serrations));

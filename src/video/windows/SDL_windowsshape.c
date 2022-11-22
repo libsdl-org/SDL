@@ -66,7 +66,8 @@ CombineRectRegions(SDL_ShapeTree* node,void* closure) {
         if(mask_region != NULL) {
             CombineRgn(mask_region,mask_region,temp_region,RGN_OR);
             DeleteObject(temp_region);
-        } else
+        }
+        else
             *((HRGN*)closure) = temp_region;
     }
 }

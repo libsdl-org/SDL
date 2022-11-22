@@ -47,10 +47,14 @@ main(int argc, char** argv)
                     exit_code = SDL_atoi(argv[i + 1]);
                     consumed = 2;
                 }
-            } else if(SDL_strcasecmp(argv[i], "--hang") == 0) {
+            }
+            else if(SDL_strcasecmp(argv[i], "--hang") == 0)
+            {
                 hang = SDL_TRUE;
                 consumed = 1;
-            } else if(SDL_strcasecmp(argv[i], "--crash") == 0) {
+            }
+            else if(SDL_strcasecmp(argv[i], "--crash") == 0)
+            {
                 crash = SDL_TRUE;
                 consumed = 1;
             }

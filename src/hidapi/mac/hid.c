@@ -85,7 +85,9 @@ static int pthread_barrier_wait(pthread_barrier_t *barrier)
 		pthread_cond_broadcast(&barrier->cond);
 		pthread_mutex_unlock(&barrier->mutex);
 		return 1;
-	} else {
+	}
+	else
+	{
 		pthread_cond_wait(&barrier->cond, &(barrier->mutex));
 		pthread_mutex_unlock(&barrier->mutex);
 		return 0;
@@ -183,7 +185,8 @@ static void free_hid_device(hid_device *dev)
 	if (device_list) {
 		if (device_list->dev == dev) {
 			device_list = device_list->next;
-		} else {
+		}
+		else {
 			struct hid_device_list_node *node = device_list;
 			while (node) {
 				if (node->next && node->next->dev == dev) {
@@ -281,7 +284,8 @@ static int get_string_property(IOHIDDeviceRef device, CFStringRef prop, wchar_t 
 		
 		buf[chars_copied] = 0;
 		return (int)chars_copied;
-	} else
+	}
+	else
 		return 0;
 	
 }
@@ -319,7 +323,8 @@ static int get_string_property_utf8(IOHIDDeviceRef device, CFStringRef prop, cha
 		
 		buf[chars_copied] = 0;
 		return (int)used_buf_len;
-	} else
+	}
+	else
 		return 0;
 }
 
@@ -591,7 +596,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			tmp = (struct hid_device_info *)calloc(1, sizeof(struct hid_device_info));
 			if (cur_dev) {
 				cur_dev->next = tmp;
-			} else {
+			}
+			else {
 				root = tmp;
 			}
 			cur_dev = tmp;
@@ -665,7 +671,8 @@ hid_device * HID_API_EXPORT hid_open(unsigned short vendor_id, unsigned short pr
 					path_to_open = cur_dev->path;
 					break;
 				}
-			} else {
+			}
+			else {
 				path_to_open = cur_dev->path;
 				break;
 			}
@@ -707,7 +714,8 @@ static void hid_report_callback(void *context, IOReturn result, void *sender,
 	if (dev->input_reports == NULL) {
 		/* The list is empty. Put it at the root. */
 		dev->input_reports = rpt;
-	} else {
+	}
+	else {
 		/* Find the end of the list and attach. */
 		struct input_report *cur = dev->input_reports;
 		int num_queued = 0;
@@ -875,7 +883,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				pthread_barrier_wait(&dev->barrier);
 				
 				return dev;
-			} else {
+			}
+			else {
 				goto return_error;
 			}
 		}
@@ -907,11 +916,13 @@ static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char
 		 Don't send the report number. */
 		data_to_send = data+1;
 		length_to_send = length-1;
-	} else if (length > 6 && memcmp(data, pass_through_magic, pass_through_magic_length) == 0) {
+	}
+	else if (length > 6 && memcmp(data, pass_through_magic, pass_through_magic_length) == 0) {
 		report_id = data[pass_through_magic_length];
 		data_to_send = data+pass_through_magic_length;
 		length_to_send = length-pass_through_magic_length;
-	} else {
+	}
+	else {
 		/* Using numbered Reports.
 		 Send the Report Number */
 		data_to_send = data;
@@ -926,10 +937,12 @@ static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char
 		
 		if (res == kIOReturnSuccess) {
 			return (int)length;
-		} else if (res == kIOReturnUnsupported) {
+		}
+		else if (res == kIOReturnUnsupported) {
 			/*printf("kIOReturnUnsupported\n");*/
 			return -1;
-		} else {
+		}
+		else {
 			/*printf("0x%x\n", res);*/
 			return -1;
 		}
@@ -1045,7 +1058,8 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 			/* There was an error, or a device disconnection. */
 			bytes_read = -1;
 		}
-	} else if (milliseconds > 0) {
+	}
+	else if (milliseconds > 0) {
 		/* Non-blocking, but called with timeout. */
 		int res;
 		struct timespec ts;
@@ -1066,7 +1080,8 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 			bytes_read = 0;
 		else
 			bytes_read = -1;
-	} else {
+	}
+	else {
 		/* Purely non-blocking */
 		bytes_read = 0;
 	}
