@@ -166,6 +166,35 @@ macro(CheckPulseAudio)
 endmacro()
 
 # Requires:
+# - PkgCheckModules
+# Optional:
+# - SDL_SNDIO_SHARED opt
+# - HAVE_SDL_LOADSO opt
+macro(CheckSNDIO)
+  if(SDL_SNDIO)
+    pkg_check_modules(PKG_SNDIO sndio)
+    if(PKG_SNDIO_FOUND)
+      set(HAVE_SNDIO TRUE)
+      file(GLOB SNDIO_SOURCES ${SDL3_SOURCE_DIR}/src/audio/sndio/*.c)
+      list(APPEND SOURCE_FILES ${SNDIO_SOURCES})
+      set(SDL_AUDIO_DRIVER_SNDIO 1)
+      list(APPEND EXTRA_CFLAGS ${PKG_SNDIO_CFLAGS})
+      if(SDL_SNDIO_SHARED AND NOT HAVE_SDL_LOADSO)
+        message_warn("You must have SDL_LoadObject() support for dynamic sndio loading")
+      endif()
+      FindLibraryAndSONAME("sndio" LIBDIRS ${PKG_SNDIO_LIBRARY_DIRS})
+      if(SDL_SNDIO_SHARED AND SNDIO_LIB AND HAVE_SDL_LOADSO)
+        set(SDL_AUDIO_DRIVER_SNDIO_DYNAMIC "\"${SNDIO_LIB_SONAME}\"")
+        set(HAVE_SNDIO_SHARED TRUE)
+      else()
+        list(APPEND EXTRA_LIBS ${PKG_SNDIO_LDFLAGS})
+      endif()
+      set(HAVE_SDL_AUDIO TRUE)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - SDL_LIBSAMPLERATE
 # Optional:
 # - SDL_LIBSAMPLERATE_SHARED opt

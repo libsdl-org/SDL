@@ -1068,6 +1068,43 @@ CheckPulseAudio()
     fi
 }
 
+dnl See if the sndio audio interface is supported
+CheckSNDIO()
+{
+    AC_ARG_ENABLE(sndio,
+[AS_HELP_STRING([--enable-sndio], [support the sndio audio API [default=yes]])],
+                  , enable_sndio=yes)
+    if test x$enable_audio = xyes -a x$enable_sndio = xyes; then
+        PKG_CHECK_MODULES([SNDIO], [sndio], audio_sndio=yes, audio_sndio=no)
+
+        if test x$audio_sndio = xyes; then
+            AC_ARG_ENABLE(sndio-shared,
+[AS_HELP_STRING([--enable-sndio-shared], [dynamically load sndio audio support [default=yes]])],
+                          , enable_sndio_shared=yes)
+            sndio_lib=[`find_lib "libsndio.so.*" "$SNDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+
+            if test x$have_loadso != xyes && \
+               test x$enable_sndio_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic sndio loading])
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_sndio_shared = xyes && test x$sndio_lib != x; then
+                echo "-- dynamic libsndio -> $sndio_lib"
+                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_SNDIO_DYNAMIC, "$sndio_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} sndio(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $SNDIO_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} sndio"
+            fi
+
+            AC_DEFINE(SDL_AUDIO_DRIVER_SNDIO, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/sndio/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $SNDIO_CFLAGS"
+            have_audio=yes
+        fi
+    fi
+}
+
 dnl rcg07142001 See if the user wants the disk writer audio driver...
 CheckDiskAudio()
 {
@@ -3382,6 +3419,7 @@ case "$host" in
         CheckALSA
         CheckPipewire
         CheckPulseAudio
+        CheckSNDIO
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI

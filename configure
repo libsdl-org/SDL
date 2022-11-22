@@ -704,6 +704,8 @@ RPI_LIBS
 RPI_CFLAGS
 DECOR_LIBS
 DECOR_CFLAGS
+SNDIO_LIBS
+SNDIO_CFLAGS
 PULSEAUDIO_LIBS
 PULSEAUDIO_CFLAGS
 PIPEWIRE_LIBS
@@ -870,6 +872,8 @@ enable_pipewire
 enable_pipewire_shared
 enable_pulseaudio
 enable_pulseaudio_shared
+enable_sndio
+enable_sndio_shared
 enable_diskaudio
 enable_dummyaudio
 enable_libsamplerate
@@ -948,6 +952,8 @@ PIPEWIRE_CFLAGS
 PIPEWIRE_LIBS
 PULSEAUDIO_CFLAGS
 PULSEAUDIO_LIBS
+SNDIO_CFLAGS
+SNDIO_LIBS
 DECOR_CFLAGS
 DECOR_LIBS
 RPI_CFLAGS
@@ -1642,6 +1648,8 @@ Optional Features:
   --enable-pulseaudio     use PulseAudio [default=yes]
   --enable-pulseaudio-shared
                           dynamically load PulseAudio support [default=yes]
+  --enable-sndio          support the sndio audio API [default=yes]
+  --enable-sndio-shared   dynamically load sndio audio support [default=yes]
   --enable-diskaudio      support the disk writer audio driver [default=yes]
   --enable-dummyaudio     support the dummy audio driver [default=yes]
   --enable-libsamplerate  use libsamplerate for audio rate conversion
@@ -1767,6 +1775,9 @@ Some influential environment variables:
               C compiler flags for PULSEAUDIO, overriding pkg-config
   PULSEAUDIO_LIBS
               linker flags for PULSEAUDIO, overriding pkg-config
+  SNDIO_CFLAGS
+              C compiler flags for SNDIO, overriding pkg-config
+  SNDIO_LIBS  linker flags for SNDIO, overriding pkg-config
   DECOR_CFLAGS
               C compiler flags for DECOR, overriding pkg-config
   DECOR_LIBS  linker flags for DECOR, overriding pkg-config
@@ -21489,6 +21500,127 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC \"$pulseaudio_lib\"" 
     fi
 }
 
+CheckSNDIO()
+{
+    # Check whether --enable-sndio was given.
+if test ${enable_sndio+y}
+then :
+  enableval=$enable_sndio;
+else $as_nop
+  enable_sndio=yes
+fi
+
+    if test x$enable_audio = xyes -a x$enable_sndio = xyes; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for sndio" >&5
+printf %s "checking for sndio... " >&6; }
+
+if test -n "$SNDIO_CFLAGS"; then
+    pkg_cv_SNDIO_CFLAGS="$SNDIO_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sndio\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sndio") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SNDIO_CFLAGS=`$PKG_CONFIG --cflags "sndio" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$SNDIO_LIBS"; then
+    pkg_cv_SNDIO_LIBS="$SNDIO_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sndio\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sndio") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SNDIO_LIBS=`$PKG_CONFIG --libs "sndio" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        SNDIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sndio" 2>&1`
+        else
+	        SNDIO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sndio" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$SNDIO_PKG_ERRORS" >&5
+
+	audio_sndio=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	audio_sndio=no
+else
+	SNDIO_CFLAGS=$pkg_cv_SNDIO_CFLAGS
+	SNDIO_LIBS=$pkg_cv_SNDIO_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	audio_sndio=yes
+fi
+
+        if test x$audio_sndio = xyes; then
+            # Check whether --enable-sndio-shared was given.
+if test ${enable_sndio_shared+y}
+then :
+  enableval=$enable_sndio_shared;
+else $as_nop
+  enable_sndio_shared=yes
+fi
+
+            sndio_lib=`find_lib "libsndio.so.*" "$SNDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+
+            if test x$have_loadso != xyes && \
+               test x$enable_sndio_shared = xyes; then
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic sndio loading" >&5
+printf "%s\n" "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic sndio loading" >&2;}
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_sndio_shared = xyes && test x$sndio_lib != x; then
+                echo "-- dynamic libsndio -> $sndio_lib"
+
+printf "%s\n" "#define SDL_AUDIO_DRIVER_SNDIO_DYNAMIC \"$sndio_lib\"" >>confdefs.h
+
+                SUMMARY_audio="${SUMMARY_audio} sndio(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $SNDIO_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} sndio"
+            fi
+
+
+printf "%s\n" "#define SDL_AUDIO_DRIVER_SNDIO 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/sndio/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $SNDIO_CFLAGS"
+            have_audio=yes
+        fi
+    fi
+}
+
 CheckDiskAudio()
 {
     # Check whether --enable-diskaudio was given.
@@ -27013,6 +27145,7 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckALSA
         CheckPipewire
         CheckPulseAudio
+        CheckSNDIO
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI

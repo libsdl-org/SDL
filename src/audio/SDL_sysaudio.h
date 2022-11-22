@@ -184,6 +184,7 @@ typedef struct AudioBootStrap
 extern AudioBootStrap PIPEWIRE_bootstrap;
 extern AudioBootStrap PULSEAUDIO_bootstrap;
 extern AudioBootStrap ALSA_bootstrap;
+extern AudioBootStrap SNDIO_bootstrap;
 extern AudioBootStrap NETBSDAUDIO_bootstrap;
 extern AudioBootStrap DSP_bootstrap;
 extern AudioBootStrap WASAPI_bootstrap;
