@@ -268,13 +268,6 @@ struct SDL_SysWMinfo
             struct xdg_positioner *xdg_positioner;  /**< Wayland xdg positioner, for popup */
         } wl;
 #endif
-#if defined(SDL_VIDEO_DRIVER_MIR)  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */
-        struct
-        {
-            void *connection;  /**< Mir display server connection */
-            void *surface;  /**< Mir surface */
-        } mir;
-#endif
 
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
         struct
