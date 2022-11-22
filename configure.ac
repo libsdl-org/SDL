@@ -2019,56 +2019,6 @@ dnl     Work around that we don't have Objective-C support in autoconf
     fi
 }
 
-dnl Find DirectFB
-CheckDirectFB()
-{
-    AC_ARG_ENABLE(video-directfb,
-[AS_HELP_STRING([--enable-video-directfb], [use DirectFB video driver [default=no]])],
-                  , enable_video_directfb=no)
-    if test x$enable_video = xyes -a x$enable_video_directfb = xyes; then
-        PKG_CHECK_MODULES([DIRECTFB], [directfb >= 1.0.0], video_directfb=yes, video_directfb=no)
-
-        if test x$video_directfb = xyes; then
-            # SuSE 11.1 installs directfb-config without directfb-devel
-            save_CPPFLAGS="$CPPFLAGS"
-            CPPFLAGS="$CPPFLAGS $DIRECTFB_CFLAGS"
-            AC_CHECK_HEADER(directfb.h, have_directfb_hdr=yes, have_directfb_hdr=no)
-            CPPFLAGS="$save_CPPFLAGS"
-            video_directfb=$have_directfb_hdr
-        fi
-
-        if test x$video_directfb = xyes; then
-            AC_ARG_ENABLE(directfb-shared,
-[AS_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [default=yes]])],
-                              , enable_directfb_shared=yes)
-
-            AC_DEFINE(SDL_VIDEO_DRIVER_DIRECTFB, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_RENDER_DIRECTFB, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
-
-            directfb_shared=no
-            directfb_lib=[`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-            if test x$have_loadso != xyes && \
-               test x$enable_directfb_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic directfb loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_directfb_shared = xyes && test x$directfb_lib != x; then
-                directfb_shared=yes
-                echo "-- dynamic libdirectfb -> $directfb_lib"
-                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC, "$directfb_lib", [ ])
-                SUMMARY_video="${SUMMARY_video} directfb(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DIRECTFB_LIBS"
-                SUMMARY_video="${SUMMARY_video} directfb"
-            fi
-            SDL_CFLAGS="$SDL_CFLAGS $DIRECTFB_CFLAGS"
-            have_video=yes
-        fi
-    fi
-}
-
 dnl Find KMSDRM
 CheckKMSDRM()
 {
@@ -3454,7 +3404,6 @@ case "$host" in
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
         CheckX11
-        CheckDirectFB
         # Need to check for EGL first because KMSDRM and Wayland depends on it.
         CheckEGL
         CheckKMSDRM

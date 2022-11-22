@@ -25,7 +25,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 
 - [Android](README-android.md)
 - [CMake](README-cmake.md)
-- [DirectFB](README-directfb.md)
 - [DynAPI](README-dynapi.md)
 - [Emscripten](README-emscripten.md)
 - [GDK](README-gdk.md)

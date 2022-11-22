@@ -695,8 +695,6 @@ LIBGBM_LIBS
 LIBGBM_CFLAGS
 LIBDRM_LIBS
 LIBDRM_CFLAGS
-DIRECTFB_LIBS
-DIRECTFB_CFLAGS
 X_EXTRA_LIBS
 X_LIBS
 X_PRE_LIBS
@@ -899,8 +897,6 @@ enable_video_vivante
 enable_video_cocoa
 enable_video_metal
 enable_render_metal
-enable_video_directfb
-enable_directfb_shared
 enable_video_kmsdrm
 enable_kmsdrm_shared
 enable_video_dummy
@@ -958,8 +954,6 @@ DECOR_LIBS
 RPI_CFLAGS
 RPI_LIBS
 XMKMF
-DIRECTFB_CFLAGS
-DIRECTFB_LIBS
 LIBDRM_CFLAGS
 LIBDRM_LIBS
 LIBGBM_CFLAGS
@@ -1689,9 +1683,6 @@ Optional Features:
   --enable-video-cocoa    use Cocoa video driver [default=yes]
   --enable-video-metal    include Metal support [default=yes]
   --enable-render-metal   enable the Metal render driver [default=yes]
-  --enable-video-directfb use DirectFB video driver [default=no]
-  --enable-directfb-shared
-                          dynamically load directfb support [default=yes]
   --enable-video-kmsdrm   use KMSDRM video driver [default=yes]
   --enable-kmsdrm-shared  dynamically load kmsdrm support [default=yes]
   --enable-video-dummy    use dummy video driver [default=yes]
@@ -1785,10 +1776,6 @@ Some influential environment variables:
   RPI_CFLAGS  C compiler flags for RPI, overriding pkg-config
   RPI_LIBS    linker flags for RPI, overriding pkg-config
   XMKMF       Path to xmkmf, Makefile generator for X Window System
-  DIRECTFB_CFLAGS
-              C compiler flags for DIRECTFB, overriding pkg-config
-  DIRECTFB_LIBS
-              linker flags for DIRECTFB, overriding pkg-config
   LIBDRM_CFLAGS
               C compiler flags for LIBDRM, overriding pkg-config
   LIBDRM_LIBS linker flags for LIBDRM, overriding pkg-config
@@ -24099,149 +24086,6 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_METAL 1" >>confdefs.h
     fi
 }
 
-CheckDirectFB()
-{
-    # Check whether --enable-video-directfb was given.
-if test ${enable_video_directfb+y}
-then :
-  enableval=$enable_video_directfb;
-else $as_nop
-  enable_video_directfb=no
-fi
-
-    if test x$enable_video = xyes -a x$enable_video_directfb = xyes; then
-
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for directfb >= 1.0.0" >&5
-printf %s "checking for directfb >= 1.0.0... " >&6; }
-
-if test -n "$DIRECTFB_CFLAGS"; then
-    pkg_cv_DIRECTFB_CFLAGS="$DIRECTFB_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"directfb >= 1.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "directfb >= 1.0.0") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_DIRECTFB_CFLAGS=`$PKG_CONFIG --cflags "directfb >= 1.0.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$DIRECTFB_LIBS"; then
-    pkg_cv_DIRECTFB_LIBS="$DIRECTFB_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"directfb >= 1.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "directfb >= 1.0.0") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_DIRECTFB_LIBS=`$PKG_CONFIG --libs "directfb >= 1.0.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        DIRECTFB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "directfb >= 1.0.0" 2>&1`
-        else
-	        DIRECTFB_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "directfb >= 1.0.0" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$DIRECTFB_PKG_ERRORS" >&5
-
-	video_directfb=no
-elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-	video_directfb=no
-else
-	DIRECTFB_CFLAGS=$pkg_cv_DIRECTFB_CFLAGS
-	DIRECTFB_LIBS=$pkg_cv_DIRECTFB_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-	video_directfb=yes
-fi
-
-        if test x$video_directfb = xyes; then
-            # SuSE 11.1 installs directfb-config without directfb-devel
-            save_CPPFLAGS="$CPPFLAGS"
-            CPPFLAGS="$CPPFLAGS $DIRECTFB_CFLAGS"
-            ac_fn_c_check_header_compile "$LINENO" "directfb.h" "ac_cv_header_directfb_h" "$ac_includes_default"
-if test "x$ac_cv_header_directfb_h" = xyes
-then :
-  have_directfb_hdr=yes
-else $as_nop
-  have_directfb_hdr=no
-fi
-
-            CPPFLAGS="$save_CPPFLAGS"
-            video_directfb=$have_directfb_hdr
-        fi
-
-        if test x$video_directfb = xyes; then
-            # Check whether --enable-directfb-shared was given.
-if test ${enable_directfb_shared+y}
-then :
-  enableval=$enable_directfb_shared;
-else $as_nop
-  enable_directfb_shared=yes
-fi
-
-
-
-printf "%s\n" "#define SDL_VIDEO_DRIVER_DIRECTFB 1" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_VIDEO_RENDER_DIRECTFB 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
-
-            directfb_shared=no
-            directfb_lib=`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
-            if test x$have_loadso != xyes && \
-               test x$enable_directfb_shared = xyes; then
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic directfb loading" >&5
-printf "%s\n" "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic directfb loading" >&2;}
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_directfb_shared = xyes && test x$directfb_lib != x; then
-                directfb_shared=yes
-                echo "-- dynamic libdirectfb -> $directfb_lib"
-
-printf "%s\n" "#define SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC \"$directfb_lib\"" >>confdefs.h
-
-                SUMMARY_video="${SUMMARY_video} directfb(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DIRECTFB_LIBS"
-                SUMMARY_video="${SUMMARY_video} directfb"
-            fi
-            SDL_CFLAGS="$SDL_CFLAGS $DIRECTFB_CFLAGS"
-            have_video=yes
-        fi
-    fi
-}
-
 CheckKMSDRM()
 {
     # Check whether --enable-video-kmsdrm was given.
@@ -27220,7 +27064,6 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
         CheckX11
-        CheckDirectFB
         # Need to check for EGL first because KMSDRM and Wayland depends on it.
         CheckEGL
         CheckKMSDRM

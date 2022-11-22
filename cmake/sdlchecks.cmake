@@ -560,37 +560,6 @@ macro(CheckCOCOA)
 endmacro()
 
 # Requires:
-# - PkgCheckModules
-# Optional:
-# - DIRECTFB_SHARED opt
-# - HAVE_SDL_LOADSO opt
-macro(CheckDirectFB)
-  if(SDL_DIRECTFB)
-    pkg_check_modules(PKG_DIRECTFB directfb>=1.0.0)
-    if(PKG_DIRECTFB_FOUND)
-      set(HAVE_DIRECTFB TRUE)
-      file(GLOB DIRECTFB_SOURCES ${SDL3_SOURCE_DIR}/src/video/directfb/*.c)
-      list(APPEND SOURCE_FILES ${DIRECTFB_SOURCES})
-      set(SDL_VIDEO_DRIVER_DIRECTFB 1)
-      set(SDL_VIDEO_RENDER_DIRECTFB 1)
-      list(APPEND EXTRA_CFLAGS ${PKG_DIRECTFB_CFLAGS})
-      list(APPEND SDL_CFLAGS ${PKG_DIRECTFB_CFLAGS})
-      if(SDL_DIRECTFB_SHARED AND NOT HAVE_SDL_LOADSO)
-        message_warn("You must have SDL_LoadObject() support for dynamic DirectFB loading")
-      endif()
-      FindLibraryAndSONAME("directfb" LIBDIRS ${PKG_DIRECTFB_LIBRARY_DIRS})
-      if(SDL_DIRECTFB_SHARED AND DIRECTFB_LIB AND HAVE_SDL_LOADSO)
-        set(SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC "\"${DIRECTFB_LIB_SONAME}\"")
-        set(HAVE_DIRECTFB_SHARED TRUE)
-      else()
-        list(APPEND EXTRA_LDFLAGS ${PKG_DIRECTFB_LDFLAGS})
-      endif()
-      set(HAVE_SDL_VIDEO TRUE)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
 # - n/a
 macro(CheckVivante)
   if(SDL_VIVANTE)

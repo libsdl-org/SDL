@@ -112,9 +112,6 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_OGL_ES
     &GLES_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_DIRECTFB
-    &DirectFB_RenderDriver,
-#endif
 #if SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED
     &PS2_RenderDriver,
 #endif
@@ -1481,18 +1478,6 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
         } else {
             SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
         }
-
-#if SDL_VIDEO_RENDER_DIRECTFB
-        /* DirectFB allows palette format for textures.
-         * Copy SDL_Surface palette to the texture */
-        if (SDL_ISPIXELFORMAT_INDEXED(format)) {
-            if (SDL_strcasecmp(renderer->info.name, "directfb") == 0) {
-                extern void DirectFB_SetTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Palette *pal);
-                DirectFB_SetTexturePalette(renderer, texture, surface->format->palette);
-            }
-        }
-#endif
-
     } else {
         SDL_PixelFormat *dst_fmt;
         SDL_Surface *temp = NULL;

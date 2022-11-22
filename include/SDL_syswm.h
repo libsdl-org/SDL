@@ -76,10 +76,6 @@ struct SDL_SysWMinfo;
 
 #endif /* defined(SDL_VIDEO_DRIVER_X11) */
 
-#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
-#include <directfb.h>
-#endif
-
 #if defined(SDL_VIDEO_DRIVER_COCOA)
 #ifdef __OBJC__
 @class NSWindow;
@@ -133,7 +129,6 @@ typedef enum
     SDL_SYSWM_UNKNOWN,
     SDL_SYSWM_WINDOWS,
     SDL_SYSWM_X11,
-    SDL_SYSWM_DIRECTFB,
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
     SDL_SYSWM_WAYLAND,
@@ -166,11 +161,6 @@ struct SDL_SysWMmsg
         struct {
             XEvent event;
         } x11;
-#endif
-#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
-        struct {
-            DFBEvent event;
-        } dfb;
 #endif
 #if defined(SDL_VIDEO_DRIVER_COCOA)
         struct
@@ -233,14 +223,6 @@ struct SDL_SysWMinfo
             Display *display;           /**< The X11 display */
             Window window;              /**< The X11 window */
         } x11;
-#endif
-#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
-        struct
-        {
-            IDirectFB *dfb;             /**< The directfb main interface */
-            IDirectFBWindow *window;    /**< The directfb window handle */
-            IDirectFBSurface *surface;  /**< The directfb client surface */
-        } dfb;
 #endif
 #if defined(SDL_VIDEO_DRIVER_COCOA)
         struct
