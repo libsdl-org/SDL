@@ -263,18 +263,14 @@ public:
 		if ( m_pFree ) {
 			pEntry = m_pFree;
 			m_pFree = m_pFree->m_pNext;
-		}
-		else
-		{
+		} else {
 			pEntry = new hid_buffer_entry;
 		}
 		pEntry->m_pNext = nullptr;
 
 		if ( m_pTail ) {
 			m_pTail->m_pNext = pEntry;
-		}
-		else
-		{
+		} else {
 			m_pHead = pEntry;
 		}
 		m_pTail = pEntry;
@@ -508,9 +504,7 @@ public:
 		if ( !m_bOpenResult ) {
 			if ( m_bIsWaitingForOpen ) {
 				LOGV( "Device open failed - timed out waiting for device permission" );
-			}
-			else
-			{
+			} else {
 				LOGV( "Device open failed" );
 			}
 			return false;
@@ -563,9 +557,7 @@ public:
 			data[0] = 0x03;
 			SDL_memcpy( data + 1, buffer.data(), nDataLen );
 			++nDataLen;
-		}
-		else
-		{
+		} else {
 			SDL_memcpy( data, buffer.data(), nDataLen );
 		}
 		m_vecData.pop_front();
@@ -591,9 +583,7 @@ public:
 			nRet = env->CallIntMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerSendOutputReport, m_nId, pBuf );
 			ExceptionCheck( env, "SendOutputReport" );
 			env->DeleteLocalRef( pBuf );
-		}
-		else
-		{
+		} else {
 			LOGV( "SendOutputReport without callback handler" );
 		}
 		return nRet;
@@ -612,9 +602,7 @@ public:
 			nRet = env->CallIntMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerSendFeatureReport, m_nId, pBuf );
 			ExceptionCheck( env, "SendFeatureReport" );
 			env->DeleteLocalRef( pBuf );
-		}
-		else
-		{
+		} else {
 			LOGV( "SendFeatureReport without callback handler" );
 		}
 		return nRet;
@@ -902,9 +890,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected)(JNI
 	}
 	if ( pLast ) {
 		pLast->next = pDevice;
-	}
-	else
-	{
+	} else {
 		g_Devices = pDevice;
 	}
 }
@@ -943,9 +929,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected)(
 
 				if ( pLast ) {
 					pLast->next = pCurr->next;
-				}
-				else
-				{
+				} else {
 					g_Devices = pCurr->next;
 				}
 			}
@@ -1210,9 +1194,7 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *device)
 			hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
 			if ( pDevice ) {
 				pDevice->Close( true );
-			}
-			else
-			{
+			} else {
 				delete device;
 			}
 			LOGD("Deleted device %p\n", device);

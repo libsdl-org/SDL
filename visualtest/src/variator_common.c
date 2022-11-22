@@ -27,9 +27,7 @@ SDLVisualTest_NextValue(SDLVisualTest_SUTOptionValue* var,
             if(var->bool_value) {
                 var->bool_value = SDL_FALSE;
                 return 1;
-            }
-            else
-            {
+            } else {
                 var->bool_value = SDL_TRUE;
                 return 0;
             }

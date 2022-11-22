@@ -167,15 +167,13 @@ void _testBlitBlendMode(int mode)
             if (ret != 0) {
                 checkFailCount2++;
             }
-        }
-        else if (mode == -3) {
+        } else if (mode == -3) {
             /* Set alpha mod. */
             ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
             if (ret != 0) {
                 checkFailCount3++;
             }
-        }
-        else if (mode == -4) {
+        } else if (mode == -4) {
             /* Crazy blending mode magic. */
             nmode = (i/4*j/4) % 4;
             if (nmode==0) {
@@ -772,8 +770,7 @@ surface_testOverflow(void *arg)
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-    }
-    else {
+    } else {
         SDLTest_Log("Can't easily overflow size_t on this platform");
     }
 

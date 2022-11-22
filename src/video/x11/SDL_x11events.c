@@ -1000,9 +1000,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 data->pending_focus = PENDING_FOCUS_NONE;
                 data->pending_focus_time = 0;
                 X11_DispatchFocusIn(_this, data);
-            }
-            else
-            {
+            } else {
                 data->pending_focus = PENDING_FOCUS_IN;
                 data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
             }
@@ -1035,9 +1033,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 data->pending_focus = PENDING_FOCUS_NONE;
                 data->pending_focus_time = 0;
                 X11_DispatchFocusOut(_this, data);
-            }
-            else
-            {
+            } else {
                 data->pending_focus = PENDING_FOCUS_OUT;
                 data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
             }
@@ -1223,8 +1219,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                     /* pick from list of three */
                     data->xdnd_req = X11_PickTargetFromAtoms(display, xevent->xclient.data.l[2], xevent->xclient.data.l[3], xevent->xclient.data.l[4]);
                 }
-            }
-            else if (xevent->xclient.message_type == videodata->XdndPosition) {
+            } else if (xevent->xclient.message_type == videodata->XdndPosition) {
 
 #ifdef DEBUG_XEVENTS
                 Atom act= videodata->XdndActionCopy;
@@ -1250,8 +1245,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 
                 X11_XSendEvent(display, xevent->xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
                 X11_XFlush(display);
-            }
-            else if(xevent->xclient.message_type == videodata->XdndDrop) {
+            } else if(xevent->xclient.message_type == videodata->XdndDrop) {
                 if (data->xdnd_req == None) {
                     /* say again - not interested! */
                     SDL_memset(&m, 0, sizeof(XClientMessageEvent));
@@ -1272,8 +1266,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                         X11_XConvertSelection(display, videodata->XdndSelection, data->xdnd_req, videodata->PRIMARY, data->xwindow, CurrentTime);
                     }
                 }
-            }
-            else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
+            } else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
                 (xevent->xclient.format == 32) &&
                 (xevent->xclient.data.l[0] == videodata->_NET_WM_PING)) {
                 Window root = DefaultRootWindow(display);
@@ -1295,8 +1288,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
                 break;
-            }
-            else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
+            } else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
                 (xevent->xclient.format == 32) &&
                 (xevent->xclient.data.l[0] == videodata->WM_TAKE_FOCUS)) {
 
@@ -1345,8 +1337,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                         SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
                         break;  /* don't pass this event on to app. */
                     }
-                }
-                else if(button > 7) {
+                } else if(button > 7) {
                     /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
                        => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
                     button -= (8-SDL_BUTTON_X1);

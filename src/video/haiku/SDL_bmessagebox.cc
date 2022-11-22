@@ -140,9 +140,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 
 		if (aMessageBoxData->numbuttons <= 0) {
 			AddButton(HAIKU_SDL_DefButton);
-		}
-		else
-		{
+		} else {
 			AddSdlButtons(aMessageBoxData->buttons, aMessageBoxData->numbuttons);
 		}
 
@@ -331,9 +329,7 @@ protected:
 	{
 		if (fComputedMessageBoxWidth > aNewWidth) {
 			ResizeTo(fComputedMessageBoxWidth, aNewHeight);
-		}
-		else
-		{
+		} else {
 			BAlert::FrameResized(aNewWidth, aNewHeight);
 		}
 	}

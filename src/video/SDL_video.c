@@ -3968,8 +3968,7 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         {
             if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
                 *value = 1;
-            }
-            else {
+            } else {
                 *value = 0;
             }
             return 0;

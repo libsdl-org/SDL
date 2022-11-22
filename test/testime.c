@@ -166,8 +166,7 @@ static int unifont_init(const char *fontname)
             codepointHexSize = 6;
         else if (hexBuffer[8] == ':')
             codepointHexSize = 8;
-        else
-        {
+        else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Could not find codepoint and glyph data separator symbol in hex file on line %d.\n", lineNumber);
             return -1;
         }
@@ -192,8 +191,7 @@ static int unifont_init(const char *fontname)
         }
         if (hexBuffer[32] == '\n')
             glyphWidth = 8;
-        else
-        {
+        else {
             glyphWidth = 16;
             bytesRead = SDL_RWread(hexFile, hexBuffer + 33, 1, 32);
             if (bytesRead < 32) {
@@ -210,8 +208,7 @@ static int unifont_init(const char *fontname)
         if (codepoint <= UNIFONT_MAX_CODEPOINT) {
             if (unifontGlyph[codepoint].width > 0)
                 SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Ignoring duplicate codepoint 0x%08" SDL_PRIx32 " in hex file on line %d.\n", codepoint, lineNumber);
-            else
-            {
+            else {
                 unifontGlyph[codepoint].width = glyphWidth;
                 /* Pack the hex data into a more compact form. */
                 for(i = 0; i < glyphWidth * 2; i++) {
@@ -242,9 +239,7 @@ static void unifont_make_rgba(Uint8 *src, Uint8 *dst, Uint8 width)
                 row[1] = textColor.g;
                 row[2] = textColor.b;
                 row[3] = textColor.a;
-            }
-            else
-            {
+            } else {
                 row[0] = 0;
                 row[1] = 0;
                 row[2] = 0;
@@ -415,8 +410,7 @@ Uint32 utf8_decode(char *p, size_t len)
     for (; i < len; ++i) {
         if (i == 0)
             codepoint = (0xff >> len) & *p;
-        else
-        {
+        else {
             codepoint <<= 6;
             codepoint |= 0x3f & *p;
         }
@@ -512,9 +506,7 @@ void _Redraw(int rendererID)
         /* Stop text input because we cannot hold any more characters */
         SDL_StopTextInput();
         return;
-    }
-    else
-    {
+    } else {
         SDL_StartTextInput();
     }
 
@@ -644,8 +636,7 @@ int main(int argc, char *argv[])
             return 0;
         }
 
-        else if (SDL_strcmp(argv[0], "--font") == 0)
-        {
+        else if (SDL_strcmp(argv[0], "--font") == 0) {
             argc--;
             argv++;
 

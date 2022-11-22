@@ -239,8 +239,7 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	/* determine interval */
 	    ix = j|0x3ff00000;		/* normalize ix */
 	    if(j<=0x3988E) k=0;		/* |x|<sqrt(3/2) */
-	    else if(j<0xBB67A) k=1;	/* |x|<sqrt(3)   */
-	    else {k=0;n+=1;ix -= 0x00100000;}
+	    else if(j<0xBB67A) k=1;	/* |x|<sqrt(3)   */ else {k=0;n+=1;ix -= 0x00100000;}
 	    SET_HIGH_WORD(ax,ix);
 
 	/* compute s = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */

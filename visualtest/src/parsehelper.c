@@ -32,9 +32,7 @@ CountTokens(char* args)
             if(ch == '\"') {
                 state = 1;
                 num_tokens++;
-            }
-            else if(!SDL_isspace(ch))
-            {
+            } else if(!SDL_isspace(ch)) {
                 state = 2;
                 num_tokens++;
             }
@@ -111,11 +109,9 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
             if(ch == '\"') {
                 state = 1;
                 st_index = index + 1;
-            }
-            else if(!ch)
+            } else if(!ch)
                 done = 1;
-            else if(ch && !SDL_isspace(ch))
-            {
+            else if(ch && !SDL_isspace(ch)) {
                 state = 2;
                 st_index = index;
             }
@@ -131,9 +127,7 @@ TokenizeHelper(char* str, char** tokens, int num_tokens, int max_token_len)
                 }
                 tokens[token_index][i - st_index] = '\0';
                 token_index++;
-            }
-            else if(!ch)
-            {
+            } else if(!ch) {
                 SDLTest_LogError("Parsing Error!");
                 done = 1;
             }

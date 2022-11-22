@@ -47,18 +47,14 @@ SDL_LaunchProcess(char* file, char* args, SDL_ProcessInfo* pinfo)
     if(pid == -1) {
         LogLastError("fork() failed");
         return 0;
-    }
-    else if(pid == 0)
-    {
+    } else if(pid == 0) {
         /* parse the arguments string */
         argv = SDLVisualTest_ParseArgsToArgv(args);
         argv[0] = file;
         execv(file, argv);
         LogLastError("execv() failed");
         return 0;
-    }
-    else
-    {
+    } else {
         pinfo->pid = pid;
         return 1;
     }
@@ -83,14 +79,10 @@ SDL_GetProcessExitStatus(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps)
     if(success == -1) {
         LogLastError("waitpid() failed");
         return 0;
-    }
-    else if(success == 0)
-    {
+    } else if(success == 0) {
         ps->exit_status = -1;
         ps->exit_success = 1;
-    }
-    else
-    {
+    } else {
         ps->exit_success = WIFEXITED(status);
         ps->exit_status = WEXITSTATUS(status);
     }
@@ -111,8 +103,7 @@ SDL_IsProcessRunning(SDL_ProcessInfo* pinfo)
     if(success == -1) {
         if(errno == ESRCH) /* process is not running */
             return 0;
-        else
-        {
+        else {
             LogLastError("kill() failed");
             return -1;
         }

@@ -366,8 +366,7 @@ MainWindow::getLengthFromTextField(FXTextField *tf)
 				return -1;
 			}
 			return len;
-		}
-		else
+		} else
 			return -1;
 	}
 

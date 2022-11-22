@@ -2041,8 +2041,7 @@ D3D12_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     pitchedDesc.Depth = 1;
     if (pitchedDesc.Format == DXGI_FORMAT_R8_UNORM) {
         bpp = 1;
-    }
-    else {
+    } else {
         bpp = 4;
     }
     pitchedDesc.RowPitch = D3D12_Align(rect->w * bpp, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
@@ -2101,8 +2100,7 @@ D3D12_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     pitchedDesc.Depth = 1;
     if (pitchedDesc.Format == DXGI_FORMAT_R8_UNORM) {
         bpp = 1;
-    }
-    else {
+    } else {
         bpp = 4;
     }
     pitchedDesc.RowPitch = D3D12_Align(textureData->lockedRect.w * bpp, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);

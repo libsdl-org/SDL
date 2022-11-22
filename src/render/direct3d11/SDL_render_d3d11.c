@@ -1882,8 +1882,7 @@ D3D11_GetCurrentRenderTargetView(SDL_Renderer * renderer)
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
     if (data->currentOffscreenRenderTargetView) {
         return data->currentOffscreenRenderTargetView;
-    }
-    else {
+    } else {
         return data->mainRenderTargetView;
     }
 }

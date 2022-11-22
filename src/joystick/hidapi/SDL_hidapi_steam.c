@@ -284,9 +284,7 @@ static int WriteSegmentToSteamControllerPacketAssembler( SteamControllerPacketAs
         }
         
         pAssembler->nExpectedSegmentNumber++;
-    }
-    else
-    {
+    } else {
         // Just pass through
         SDL_memcpy( pAssembler->uBuffer,
                pSegment,
@@ -646,9 +644,7 @@ static float RemapValClamped( float val, float A, float B, float C, float D)
 {
     if ( A == B ) {
         return ( val - B ) >= 0.0f ? D : C;
-    }
-    else
-    {
+    } else {
         float cVal = (val - A) / (B - A);
         cVal = clamp( cVal, 0.0f, 1.0f );
 
@@ -710,16 +706,12 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
             // The controller is interleaving both stick and pad data, both are active
             pState->sLeftStickX = pState->sPrevLeftStick[0];
             pState->sLeftStickY = pState->sPrevLeftStick[1];
-        }
-        else
-        {
+        } else {
             // The stick is not active
             pState->sPrevLeftStick[0] = 0;
             pState->sPrevLeftStick[1] = 0;
         }
-    }
-    else
-    {
+    } else {
         // Finger-down bit not set; "left pad" is actually joystick
 
         // XXX there's a firmware bug where sometimes padX is 0 and padY is a large number (acutally the battery voltage)
@@ -728,8 +720,7 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
         if ( m_eControllerType == k_eControllerType_SteamControllerV2 && pStatePacket->sLeftPadY > 900 ) {
             pState->sLeftStickX = pState->sPrevLeftStick[0];
             pState->sLeftStickY = pState->sPrevLeftStick[1];
-        }
-        else
+        } else
 */
         {
             pState->sPrevLeftStick[0] = pState->sLeftStickX = pStatePacket->sLeftPadX;
@@ -745,9 +736,7 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
             // The controller is interleaving both stick and pad data, both are active
             pState->sLeftPadX = pState->sPrevLeftPad[0];
             pState->sLeftPadY = pState->sPrevLeftPad[1];
-        }
-        else
-        {
+        } else {
             // The trackpad is not active
             pState->sPrevLeftPad[0] = 0;
             pState->sPrevLeftPad[1] = 0;
@@ -925,9 +914,7 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
         pState->sGyroY = pStatePacket->sGyroY;
         pState->sGyroZ = pStatePacket->sGyroZ;
 
-    }
-    else if ( pInReport->header.ucType == ID_CONTROLLER_BLE_STATE )
-    {
+    } else if ( pInReport->header.ucType == ID_CONTROLLER_BLE_STATE ) {
         ValveControllerBLEStatePacket_t *pBLEStatePacket = &pInReport->payload.controllerBLEState;
         ValveControllerStatePacket_t *pStatePacket = &pInReport->payload.controllerState;
 

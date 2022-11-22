@@ -262,14 +262,11 @@ static uint32_t get_bytes(uint8_t *rpt, size_t len, size_t num_bytes, size_t cur
 		return 0;
 	else if (num_bytes == 1) {
 		return rpt[cur + 1];
-	}
-	else if (num_bytes == 2) {
+	} else if (num_bytes == 2) {
 		return rpt[cur + 2] * 256 + rpt[cur + 1];
-	}
-	else if (num_bytes == 4) {
+	} else if (num_bytes == 4) {
 		return rpt[cur + 4] * 0x01000000 + rpt[cur + 3] * 0x00010000 + rpt[cur + 2] * 0x00000100 + rpt[cur + 1] * 0x00000001;
-	}
-	else
+	} else
 		return 0;
 }
 
@@ -301,8 +298,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 			else
 				data_len = 0; /* malformed report */
 			key_size = 3;
-		}
-		else {
+		} else {
 			/* This is a Short Item. The bottom two bits of the
 			   key contain the size code for the data section
 			   (value) for this key.  Refer to the HID
@@ -831,8 +827,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 								tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
 								if (cur_dev) {
 									cur_dev->next = tmp;
-								}
-								else {
+								} else {
 									root = tmp;
 								}
 								cur_dev = tmp;
@@ -907,16 +902,14 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 										get_usage(data, res,  &page, &usage);
 										cur_dev->usage_page = page;
 										cur_dev->usage = usage;
-									}
-									else
+									} else
 										LOG("libusb_control_transfer() for getting the HID report failed with %d\n", res);
 
 									/* Release the interface */
 									res = libusb_release_interface(handle, interface_num);
 									if (res < 0)
 										LOG("Can't release the interface.\n");
-								}
-								else
+								} else
 									LOG("Can't claim interface %d\n", res);
 #ifdef DETACH_KERNEL_DRIVER
 								/* Re-attach kernel driver if necessary. */
@@ -990,8 +983,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 					path_to_open = cur_dev->path;
 					break;
 				}
-			}
-			else {
+			} else {
 				path_to_open = cur_dev->path;
 				break;
 			}
@@ -1029,8 +1021,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 			/* The list is empty. Put it at the root. */
 			dev->input_reports = rpt;
 			SDL_CondSignal(dev->condition);
-		}
-		else {
+		} else {
 			/* Find the end of the list and attach. */
 			struct input_report *cur = dev->input_reports;
 			int num_queued = 0;
@@ -1048,17 +1039,13 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 			}
 		}
 		SDL_UnlockMutex(dev->mutex);
-	}
-	else if (transfer->status == LIBUSB_TRANSFER_CANCELLED) {
+	} else if (transfer->status == LIBUSB_TRANSFER_CANCELLED) {
 		dev->shutdown_thread = 1;
-	}
-	else if (transfer->status == LIBUSB_TRANSFER_NO_DEVICE) {
+	} else if (transfer->status == LIBUSB_TRANSFER_NO_DEVICE) {
 		dev->shutdown_thread = 1;
-	}
-	else if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT) {
+	} else if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT) {
 		//LOG("Timeout (normal)\n");
-	}
-	else {
+	} else {
 		LOG("Unknown transfer code: %d\n", transfer->status);
 	}
 
@@ -1375,8 +1362,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	/* If we have a good handle, return it. */
 	if (good_open) {
 		return dev;
-	}
-	else {
+	} else {
 		/* Unable to open any devices. */
 		free_hid_device(dev);
 		return NULL;
@@ -1416,8 +1402,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 		}
 
 		return length;
-	}
-	else {
+	} else {
 		/* Use the interrupt out endpoint */
 		int actual_length;
 		res = libusb_interrupt_transfer(dev->device_handle,
@@ -1496,8 +1481,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 		if (dev->input_reports) {
 			bytes_read = return_data(dev, data, length);
 		}
-	}
-	else if (milliseconds > 0) {
+	} else if (milliseconds > 0) {
 		/* Non-blocking, but called with timeout. */
 		int res;
 
@@ -1512,20 +1496,17 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 				/* If we're here, there was a spurious wake up
 				   or the read thread was shutdown. Run the
 				   loop again (ie: don't break). */
-			}
-			else if (res == SDL_MUTEX_TIMEDOUT) {
+			} else if (res == SDL_MUTEX_TIMEDOUT) {
 				/* Timed out. */
 				bytes_read = 0;
 				break;
-			}
-			else {
+			} else {
 				/* Error. */
 				bytes_read = -1;
 				break;
 			}
 		}
-	}
-	else {
+	} else {
 		/* Purely non-blocking */
 		bytes_read = 0;
 	}
@@ -1686,8 +1667,7 @@ int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index
 		string[maxlen-1] = L'\0';
 		free(str);
 		return 0;
-	}
-	else
+	} else
 		return -1;
 }
 

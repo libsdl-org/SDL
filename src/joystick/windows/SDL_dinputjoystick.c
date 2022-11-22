@@ -470,8 +470,7 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
             /* if we are replacing the front of the list then update it */
             if (pNewJoystick == *(JoyStick_DeviceData**)pContext) {
                 *(JoyStick_DeviceData**)pContext = pNewJoystick->pNext;
-            }
-            else if (pPrevJoystick) {
+            } else if (pPrevJoystick) {
                 pPrevJoystick->pNext = pNewJoystick->pNext;
             }
 

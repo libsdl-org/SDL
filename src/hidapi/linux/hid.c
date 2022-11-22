@@ -179,8 +179,7 @@ static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
 			else
 				data_len = 0; /* malformed report */
 			key_size = 3;
-		}
-		else {
+		} else {
 			/* This is a Short Item. The bottom two bits of the
 			   key contain the size code for the data section
 			   (value) for this key.  Refer to the HID
@@ -411,8 +410,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 						ret = -1;
 						break;
 				}
-			}
-			else {
+			} else {
 				/* This is a USB device. Find its parent USB Device node. */
 				parent = udev_device_get_parent_with_subsystem_devtype(
 					   udev_dev,
@@ -575,8 +573,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			tmp = (struct hid_device_info *)calloc(1, sizeof(struct hid_device_info));
 			if (cur_dev) {
 				cur_dev->next = tmp;
-			}
-			else {
+			} else {
 				root = tmp;
 			}
 			prev_dev = cur_dev;
@@ -622,8 +619,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						if (prev_dev) {
 							prev_dev->next = NULL;
 							cur_dev = prev_dev;
-						}
-						else {
+						} else {
 							cur_dev = root = NULL;
 						}
 
@@ -709,8 +705,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 					path_to_open = cur_dev->path;
 					break;
 				}
-			}
-			else {
+			} else {
 				path_to_open = cur_dev->path;
 				break;
 			}
@@ -770,8 +765,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		dev->needs_ble_hack = (is_BLE(dev) == 1);
 
 		return dev;
-	}
-	else {
+	} else {
 		/* Unable to open any devices. */
 		free(dev);
 		return NULL;
@@ -810,8 +804,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 		if (ret == -1 || ret == 0) {
 			/* Error or timeout */
 			return ret;
-		}
-		else {
+		} else {
 			/* Check for errors on the file descriptor. This will
 			   indicate a device disconnection. */
 			if (fds.revents & (POLLERR | POLLHUP | POLLNVAL)) {

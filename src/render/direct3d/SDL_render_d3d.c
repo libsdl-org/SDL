@@ -741,8 +741,7 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             (void *) ((Uint8 *) texturedata->pixels + rect->y * texturedata->pitch +
                       rect->x * SDL_BYTESPERPIXEL(texture->format));
         D3D_UpdateTexture(renderer, texture, rect, pixels, texturedata->pitch);
-    }
-    else
+    } else
 #endif
     {
         IDirect3DTexture9_UnlockRect(texturedata->texture.staging, 0);

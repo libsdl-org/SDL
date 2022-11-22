@@ -65,9 +65,7 @@ main(int argc, char *argv[])
             return 1;
         }
         SDLTest_RandomInit(&rndctx, (unsigned int)(seed >> 32), (unsigned int)(seed & 0xffffffff));
-    }
-    else
-    {
+    } else {
         SDLTest_RandomInitTime(&rndctx);
     }
     SDL_Log("Using random seed 0x%08x%08x\n", rndctx.x, rndctx.c);

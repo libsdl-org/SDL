@@ -91,9 +91,7 @@ int Android_Vulkan_LoadLibrary(_THIS, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
-    }
-    else if(!hasAndroidSurfaceExtension)
-    {
+    } else if(!hasAndroidSurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_ANDROID_SURFACE_EXTENSION_NAME "extension");
         goto fail;

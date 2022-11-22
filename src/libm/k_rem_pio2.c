@@ -210,9 +210,7 @@ recompute:
 	    i  = (iq[jz-1]>>(24-q0)); n += i;
 	    iq[jz-1] -= i<<(24-q0);
 	    ih = iq[jz-1]>>(23-q0);
-	}
-	else if(q0==0) ih = iq[jz-1]>>23;
-	else if (z >= 0.5) {
+	} else if(q0==0) ih = iq[jz-1]>>23; else if (z >= 0.5) {
 		ih = 2;
    }
 

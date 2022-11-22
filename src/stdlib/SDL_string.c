@@ -1751,8 +1751,7 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
 
             if (*fmt >= '0' && *fmt <= '9') {
                 info.width = SDL_strtol(fmt, (char **)&fmt, 0);
-            }
-            else if (*fmt == '*') {
+            } else if (*fmt == '*') {
                 ++fmt;
                 info.width = va_arg(ap, int);
             }

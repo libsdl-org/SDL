@@ -270,10 +270,7 @@ typedef struct { char * first; char * last; } stack_entry;
         if (l<Trunc) {				\
           if (r>=Trunc) doRight			\
           else pop				\
-        }					\
-        else if (l<=r) { pushLeft; doRight }	\
-        else if (r>=Trunc) { pushRight; doLeft }\
-        else doLeft				\
+        }					\ else if (l<=r) { pushLeft; doRight }	\ else if (r>=Trunc) { pushRight; doLeft }\ else doLeft				\
       }
 
 /* and so is the pivoting logic (note: last is inclusive): */
@@ -285,8 +282,7 @@ typedef struct { char * first; char * last; } stack_entry;
         swapper(mid,last);			\
         if (compare(first,mid)>0) swapper(first,mid);\
       }						\
-    }						\
-    else {					\
+    }						\ else {					\
       if (compare(mid,last)>0) swapper(first,last)\
       else {					\
         swapper(first,mid);			\

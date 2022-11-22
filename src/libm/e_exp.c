@@ -147,14 +147,12 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 		lo = t*ln2LO[0];
 	    }
 	    x  = hi - lo;
-	}
-	else if(hx < 0x3e300000)  {	/* when |x|<2**-28 */
+	} else if(hx < 0x3e300000)  {	/* when |x|<2**-28 */
 	    if (huge + x > one) {
 		return one + x; /* trigger inexact */
 	    }
 
-	}
-	else k = 0;
+	} else k = 0;
 
     /* x is now in primary range */
 	t  = x*x;

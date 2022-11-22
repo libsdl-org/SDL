@@ -100,9 +100,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
      */
     if (phdata->NGAGE_HasFrameBuffer && GetBpp(displayMode) == 8) {
         phdata->NGAGE_FrameBuffer += 512;
-    }
-    else
-    {
+    } else {
         phdata->NGAGE_FrameBuffer += 32;
     }
     #if 0
@@ -273,9 +271,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
                         bitmapLine   += sourceScanlineLength;
                         screenMemory += targetScanlineLength;
                     }
-                }
-                else
-                {
+                } else {
                     for(TInt y = 0 ; y < sourceRectHeight ; y++)
                     {
                         TUint16* bitmapPos           = bitmapLine;   /* 2 bytes per pixel */
@@ -319,9 +315,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16* screenBuffer)
                         bitmapLine   += sourceScanlineLength;
                         screenMemory += targetScanlineLength;
                     }
-                }
-                else
-                {
+                } else {
                     TUint8*  bitmapLine   = (TUint8*)screen->pixels + sourceStartOffset;
                     TUint32* screenMemory = reinterpret_cast<TUint32*>(screenBuffer + targetStartOffset);
                     for(TInt y = 0 ; y < sourceRectHeight ; y++)
@@ -363,8 +357,7 @@ void DirectUpdate(_THIS, int numrects, SDL_Rect *rects)
 #if 0
     if (phdata->NGAGE_ScreenOrientation == CFbsBitGc::EGraphicsOrientationRotated270) {
         // ...
-    }
-    else
+    } else
 #endif
     {
         DirectDraw(_this, numrects, rects, screenBuffer);

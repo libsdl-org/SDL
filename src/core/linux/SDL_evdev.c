@@ -195,8 +195,7 @@ SDL_EVDEV_Init(void)
                         SDL_EVDEV_device_added(endofcls + 1, cls);
                     }
                 }
-            }
-            else {
+            } else {
                 /* TODO: Scan the devices manually, like a caveman */
             }
         }

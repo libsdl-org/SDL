@@ -46,13 +46,11 @@ SDL_CreateShapedWindow(const char *title,unsigned int x,unsigned int y,unsigned 
             result->shaper->mode.parameters.binarizationCutoff = 1;
             result->shaper->hasshape = SDL_FALSE;
             return result;
-        }
-        else {
+        } else {
             SDL_DestroyWindow(result);
             return NULL;
         }
-    }
-    else
+    } else
         return NULL;
 }
 
@@ -246,8 +244,7 @@ SDL_TraverseShapeTree(SDL_ShapeTree *tree,SDL_TraversalFunction function,void* c
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upright,function,closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.downleft,function,closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.downright,function,closure);
-    }
-    else
+    } else
         function(tree,closure);
 }
 
@@ -340,13 +337,11 @@ SDL_GetShapedWindowMode(SDL_Window *window,SDL_WindowShapeMode *shape_mode)
             else
                 /* The window given is shapeable but lacks a shape. */
                 return SDL_WINDOW_LACKS_SHAPE;
-        }
-        else {
+        } else {
             *shape_mode = window->shaper->mode;
             return 0;
         }
-    }
-    else
+    } else
         /* The window given is not a valid shapeable window. */
         return SDL_NONSHAPEABLE_WINDOW;
 }
