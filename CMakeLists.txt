@@ -999,7 +999,6 @@ if(SDL_LIBC)
     endforeach()
     set(HAVE_ALLOCA 1)
     check_symbol_exists(M_PI math.h HAVE_M_PI)
-    target_compile_definitions(sdl-build-options INTERFACE "-D_USE_MATH_DEFINES") # needed for M_PI
     set(STDC_HEADERS 1)
   else()
     set(HAVE_LIBC TRUE)

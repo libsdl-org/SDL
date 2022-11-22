@@ -80,7 +80,7 @@
 # include <ctype.h>
 #endif
 #ifdef HAVE_MATH_H
-# if defined(_MSC_VER)
+# if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
 /* Defining _USE_MATH_DEFINES is required to get M_PI to be defined on
    Visual Studio.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
    for more information.
