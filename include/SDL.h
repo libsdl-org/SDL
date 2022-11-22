@@ -191,6 +191,8 @@ extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
  *
  *          The return value does not include SDL_INIT_NOPARACHUTE.
  *
+ * \since This function is available since SDL 3.0.0.
+ *
  * \sa SDL_Init
  * \sa SDL_InitSubSystem
  */
