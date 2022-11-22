@@ -81,8 +81,11 @@ double atan(double x)
 	    if (ix > 0x7ff00000 || (ix == 0x7ff00000 && (low != 0))) {
 		return x + x;
 	    }		/* NaN */
-	    if (hx>0) return  atanhi[3]+atanlo[3];
-	    else     return -atanhi[3]-atanlo[3];
+	    if (hx>0) {
+          return  atanhi[3]+atanlo[3];
+       } else {
+          return -atanhi[3]-atanlo[3];
+       }
 	} if (ix < 0x3fdc0000) {	/* |x| < 0.4375 */
 	    if (ix < 0x3e200000) {	/* |x| < 2^-29 */
 		if (huge + x > one) {

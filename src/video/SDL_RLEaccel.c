@@ -324,8 +324,9 @@
                         } else {                                \
                             blitter(2, Uint8, ALPHA_BLIT16_565); \
                         }                                       \
-                    } else                                      \
+                    } else {                                     \
                         goto general16;                         \
+                    }                                           \
                     break;                                      \
                                                                 \
                 case 0x7fff:                                    \
@@ -338,8 +339,9 @@
                             blitter(2, Uint8, ALPHA_BLIT16_555); \
                         }                                       \
                         break;                                  \
-                    } else                                      \
+                    } else {                                    \
                         goto general16;                         \
+                    }                                           \
                     break;                                      \
                                                                 \
                 default:                                        \
@@ -361,8 +363,9 @@
                     } else {                                    \
                         blitter(4, Uint16, ALPHA_BLIT32_888);   \
                     }                                           \
-                } else                                          \
+                } else {                                        \
                     blitter(4, Uint16, ALPHA_BLIT_ANY);         \
+                }                                               \
                 break;                                          \
             }                                                   \
         }                                                       \

@@ -224,7 +224,9 @@ recompute:
 		    if (j!=0) {
 			carry = 1; iq[i] = 0x1000000- j;
 		    }
-		} else  iq[i] = 0xffffff - j;
+      } else {
+         iq[i] = 0xffffff - j;
+      }
 	    }
 	    if (q0>0) {		/* rare case: chance is 1 in 12 */
 	        switch(q0) {

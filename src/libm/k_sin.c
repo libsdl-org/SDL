@@ -61,6 +61,9 @@ double attribute_hidden __kernel_sin(double x, double y, int iy)
 	z	=  x*x;
 	v	=  z*x;
 	r	=  S2+z*(S3+z*(S4+z*(S5+z*S6)));
-	if (iy==0) return x+v*(S1+z*r);
-	else      return x-((z*(half*y-v*r)-y)-v*S1);
+	if (iy==0) {
+      return x+v*(S1+z*r);
+   } else {
+      return x-((z*(half*y-v*r)-y)-v*S1);
+   }
 }

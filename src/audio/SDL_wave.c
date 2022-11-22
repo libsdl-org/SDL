@@ -820,7 +820,7 @@ IMA_ADPCM_Init(WaveFile *file, size_t datalength)
         /* There's no specification for this, but it's basically the same
          * format because the extensible header has wSampePerBlocks too.
          */
-    } else  {
+    } else {
         /* The Standards Update says there 'should' be 2 bytes for wSamplesPerBlock. */
         if (chunk->size >= 20 && format->extsize >= 2) {
             format->samplesperblock = chunk->data[18] | ((Uint16)chunk->data[19] << 8);

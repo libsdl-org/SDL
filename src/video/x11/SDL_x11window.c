@@ -1024,7 +1024,7 @@ X11_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
 
     if (opacity == 1.0f) {
         X11_XDeleteProperty(display, data->xwindow, _NET_WM_WINDOW_OPACITY);
-    } else  {
+    } else {
         const Uint32 FullyOpaque = 0xFFFFFFFF;
         const long alpha = (long) ((double)opacity * (double)FullyOpaque);
         X11_XChangeProperty(display, data->xwindow, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,

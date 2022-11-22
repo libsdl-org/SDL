@@ -2735,8 +2735,10 @@ do_check_free_chunk(mstate m, mchunkptr p)
             assert(next == m->top || cinuse(next));
             assert(p->fd->bk == p);
             assert(p->bk->fd == p);
-        } else                  /* markers are always of size SIZE_T_SIZE */
+        } else {
+            /* markers are always of size SIZE_T_SIZE */
             assert(sz == SIZE_T_SIZE);
+        }
     }
 }
 
