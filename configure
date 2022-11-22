@@ -22288,59 +22288,6 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR \"$decor_lib\""
     fi
 }
 
-CheckNativeClient()
-{
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-          #if !defined(__native_client__)
-          #error "NO NACL"
-          #endif
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-
-
-printf "%s\n" "#define SDL_VIDEO_DRIVER_NACL 1" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_AUDIO_DRIVER_NACL 1" >>confdefs.h
-
-
-printf "%s\n" "#define HAVE_POW 1" >>confdefs.h
-
-
-printf "%s\n" "#define HAVE_OPENGLES2 1" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
-
-
-printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
-
-
-        SDL_LIBS="-lppapi_simple -lppapi_gles2 $SDL_LIBS"
-
-        SDLMAIN_SOURCES="$srcdir/src/main/nacl/*.c"
-        SOURCES="$SOURCES $srcdir/src/audio/nacl/*.c"
-        SUMMARY_audio="${SUMMARY_audio} nacl"
-        have_audio=yes
-        SOURCES="$SOURCES $srcdir/src/video/nacl/*.c"
-        SUMMARY_video="${SUMMARY_video} nacl opengles2"
-        have_video=yes
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-}
-
 CheckRPI()
 {
     # Check whether --enable-video-rpi was given.
@@ -28099,33 +28046,6 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
         if test x$enable_video_metal = xyes -o x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,QuartzCore -Wl,-weak_framework,Metal"
-        fi
-        ;;
-    *-nacl|*-pnacl)
-        ARCH=nacl
-        CheckNativeClient
-        CheckDummyAudio
-        CheckDummyVideo
-        CheckOffscreenVideo
-        CheckInputEvents
-        CheckPTHREAD
-        CheckO_CLOEXEC
-
-        # Set up files for the timer library
-        if test x$enable_timers = xyes; then
-
-printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
-            have_timers=yes
-        fi
-
-        if test x$enable_filesystem = xyes; then
-
-printf "%s\n" "#define SDL_FILESYSTEM_NACL 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
-            have_filesystem=yes
         fi
         ;;
     *-*-emscripten* )
