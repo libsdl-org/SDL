@@ -111,10 +111,6 @@ typedef void *EGLSurface;
 #include "SDL_egl.h"
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_OS2)
-#define INCL_WIN
-#include <os2.h>
-#endif
 #endif /* SDL_PROTOTYPES_ONLY */
 
 #if defined(SDL_VIDEO_DRIVER_KMSDRM)
@@ -145,7 +141,6 @@ typedef enum
     SDL_SYSWM_WINRT,
     SDL_SYSWM_ANDROID,
     SDL_SYSWM_VIVANTE,
-    SDL_SYSWM_OS2,
     SDL_SYSWM_HAIKU,
     SDL_SYSWM_KMSDRM,
     SDL_SYSWM_RISCOS
@@ -201,16 +196,6 @@ struct SDL_SysWMmsg
             int dummy;
             /* No Vivante window events yet */
         } vivante;
-#endif
-#if defined(SDL_VIDEO_DRIVER_OS2)
-        struct
-        {
-            BOOL fFrame;                /**< TRUE if hwnd is a frame window */
-            HWND hwnd;                  /**< The window receiving the message */
-            ULONG msg;                  /**< The message identifier */
-            MPARAM mp1;                 /**< The first first message parameter */
-            MPARAM mp2;                 /**< The second first message parameter */
-        } os2;
 #endif
         /* Can't have an empty union */
         int dummy;
@@ -316,14 +301,6 @@ struct SDL_SysWMinfo
             ANativeWindow *window;
             EGLSurface surface;
         } android;
-#endif
-
-#if defined(SDL_VIDEO_DRIVER_OS2)
-        struct
-        {
-            HWND hwnd;                  /**< The window handle */
-            HWND hwndFrame;             /**< The frame window handle */
-        } os2;
 #endif
 
 #if defined(SDL_VIDEO_DRIVER_VIVANTE)

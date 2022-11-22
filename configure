@@ -27236,36 +27236,6 @@ printf "%s\n" "#define HAVE_SHELLSCALINGAPI_H 1" >>confdefs.h
     fi
 }
 
-CheckOS2()
-{
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking OS/2 compiler" >&5
-printf %s "checking OS/2 compiler... " >&6; }
-    have_os2_gcc=no
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <os2.h>
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  have_os2_gcc=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_os2_gcc" >&5
-printf "%s\n" "$have_os2_gcc" >&6; }
-    if test x$have_os2_gcc != xyes; then
-       as_fn_error $? "
-*** Your compiler ($CC) does not produce OS/2 executables!
-       " "$LINENO" 5
-    fi
-}
-
 CheckDIRECTX()
 {
     # Check whether --enable-directx was given.
@@ -28008,9 +27978,6 @@ fi
                 enable_hidapi_libusb=yes
                 require_hidapi_libusb=yes
                 ;;
-           *-*-os2* )
-                enable_hidapi_libusb=yes
-                ;;
         esac
 
         hidapi_support=yes
@@ -28122,9 +28089,6 @@ printf "%s\n" "$as_me: WARNING: You must have SDL_LoadObject() support for dynam
                             ;;
                         *-*-cygwin* | *-*-mingw* )
                             libusb_lib="libusb-1.0.dll"
-                            ;;
-                        *-*-os2* )
-                            libusb_lib="usb100.dll"
                             ;;
                     esac
                     if test x$libusb_lib = x; then
@@ -29359,100 +29323,6 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
-        fi
-        ;;
-    *-*-os2*)
-        ARCH=os2
-        if test "$build" != "$host"; then # cross-compiling
-            # Default cross-compile location
-            ac_default_prefix=/@unixroot/usr/local/cross-tools/$host
-        else
-            # Look for the location of the tools and install there
-            if test "$BUILD_PREFIX" != ""; then
-                ac_default_prefix=$BUILD_PREFIX
-            fi
-        fi
-        enable_static=no # disable static builds
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -DBUILD_SDL -DOS2EMX_PLAIN_CHAR"
-        CheckOS2
-        CheckWerror
-        CheckDeclarationAfterStatement
-        CheckDummyVideo
-        CheckDiskAudio
-        CheckDummyAudio
-        CheckHIDAPI
-
-        # Set up the core platform files
-        SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
-        if test x$enable_system_iconv = xyes; then
-            if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
-                SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
-            fi
-        fi
-        # Use the Unix locale APIs.
-        if test x$enable_locale = xyes; then
-            SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
-            have_locale=yes
-        fi
-        # Set up files for the video library
-        if test x$enable_video = xyes; then
-
-printf "%s\n" "#define SDL_VIDEO_DRIVER_OS2 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/video/os2/*.c"
-            have_video=yes
-            SUMMARY_video="${SUMMARY_video} os/2"
-        fi
-        # Set up files for the audio library
-        if test x$enable_audio = xyes; then
-
-printf "%s\n" "#define SDL_AUDIO_DRIVER_OS2 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/audio/os2/*.c"
-            have_audio=yes
-            SUMMARY_audio="${SUMMARY_audio} os/2"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
-        fi
-        # Set up files for the thread library
-        if test x$enable_threads = xyes; then
-
-printf "%s\n" "#define SDL_THREAD_OS2 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/thread/os2/*.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
-            have_threads=yes
-        fi
-        # Set up files for the timer library
-        if test x$enable_timers = xyes; then
-
-printf "%s\n" "#define SDL_TIMER_OS2 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/timer/os2/*.c"
-            have_timers=yes
-        fi
-        # Set up files for the shared object loading library
-        if test x$enable_loadso = xyes; then
-
-printf "%s\n" "#define SDL_LOADSO_OS2 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/loadso/os2/*.c"
-            have_loadso=yes
-        fi
-        # Set up files for the filesystem library
-        if test x$enable_filesystem = xyes; then
-
-printf "%s\n" "#define SDL_FILESYSTEM_OS2 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/filesystem/os2/*.c"
-            have_filesystem=yes
-        fi
-        # Set up files for the joystick library
-        if test x$enable_joystick = xyes; then
-
-printf "%s\n" "#define SDL_JOYSTICK_OS2 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
-            have_joystick=yes
         fi
         ;;
     *)

@@ -22,16 +22,8 @@
 
 #if defined(__WIN32__) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
-#elif defined(__OS2__)
-#include <stdlib.h> /* _exit() */
 #elif !defined(__WINRT__)
 #include <unistd.h> /* _exit(), etc. */
-#endif
-#if defined(__OS2__)
-#include "core/os2/SDL_os2.h"
-#if SDL_THREAD_OS2
-#include "thread/os2/SDL_systls_c.h"
-#endif
 #endif
 
 /* this checks for HAVE_DBUS_DBUS_H internally. */
@@ -198,10 +190,6 @@ SDL_InitSubSystem(Uint32 flags)
         flags |= SDL_INIT_EVENTS;
     }
 
-#if SDL_THREAD_OS2
-    SDL_OS2TLSAlloc(); /* thread/os2/SDL_systls.c */
-#endif
-
 #if SDL_VIDEO_DRIVER_WINDOWS
     if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
         if (SDL_HelperWindowCreate() < 0) {
@@ -359,13 +347,6 @@ SDL_Init(Uint32 flags)
 void
 SDL_QuitSubSystem(Uint32 flags)
 {
-#if defined(__OS2__)
-#if SDL_THREAD_OS2
-    SDL_OS2TLSFree(); /* thread/os2/SDL_systls.c */
-#endif
-    SDL_OS2Quit();
-#endif
-
     /* Shut down requested initialized subsystems */
 #if !SDL_SENSOR_DISABLED
     if ((flags & SDL_INIT_SENSOR)) {

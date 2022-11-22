@@ -33,9 +33,6 @@ static NativeWindowFactory *factories[] = {
 #ifdef TEST_NATIVE_COCOA
     &CocoaWindowFactory,
 #endif
-#ifdef TEST_NATIVE_OS2
-    &OS2WindowFactory,
-#endif
     NULL
 };
 static NativeWindowFactory *factory = NULL;

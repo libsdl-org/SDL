@@ -13,7 +13,6 @@
 /* Definitions for platform dependent windowing functions to test SDL
    integration with native windows
 */
-
 #include "SDL.h"
 
 /* This header includes all the necessary system headers for native windows */
@@ -43,9 +42,4 @@ extern NativeWindowFactory X11WindowFactory;
 */
 #define TEST_NATIVE_COCOA
 extern NativeWindowFactory CocoaWindowFactory;
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_OS2
-#define TEST_NATIVE_OS2
-extern NativeWindowFactory OS2WindowFactory;
 #endif

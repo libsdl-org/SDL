@@ -34,7 +34,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [iOS](README-ios.md)
 - [Linux](README-linux.md)
 - [macOS](README-macos.md)
-- [OS/2](README-os2.md)
 - [Native Client](README-nacl.md)
 - [Supported Platforms](README-platforms.md)
 - [Porting information](README-porting.md)

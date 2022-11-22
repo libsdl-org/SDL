@@ -3294,21 +3294,6 @@ CheckWINDOWS()
     fi
 }
 
-dnl Determine whether the compiler can produce OS/2 executables
-CheckOS2()
-{
-    AC_MSG_CHECKING(OS/2 compiler)
-    have_os2_gcc=no
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <os2.h>]],
-     [])],[have_os2_gcc=yes],[])
-    AC_MSG_RESULT($have_os2_gcc)
-    if test x$have_os2_gcc != xyes; then
-       AC_MSG_ERROR([
-*** Your compiler ($CC) does not produce OS/2 executables!
-       ])
-    fi
-}
-
 dnl Find the DirectX includes and libraries
 CheckDIRECTX()
 {
@@ -3607,9 +3592,6 @@ CheckHIDAPI()
                 enable_hidapi_libusb=yes
                 require_hidapi_libusb=yes
                 ;;
-           *-*-os2* )
-                enable_hidapi_libusb=yes
-                ;;
         esac
 
         hidapi_support=yes
@@ -3642,9 +3624,6 @@ CheckHIDAPI()
                             ;;
                         *-*-cygwin* | *-*-mingw* )
                             libusb_lib="libusb-1.0.dll"
-                            ;;
-                        *-*-os2* )
-                            libusb_lib="usb100.dll"
                             ;;
                     esac
                     if test x$libusb_lib = x; then
@@ -4578,86 +4557,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
-        fi
-        ;;
-    *-*-os2*)
-        ARCH=os2
-        if test "$build" != "$host"; then # cross-compiling
-            # Default cross-compile location
-            ac_default_prefix=/@unixroot/usr/local/cross-tools/$host
-        else
-            # Look for the location of the tools and install there
-            if test "$BUILD_PREFIX" != ""; then
-                ac_default_prefix=$BUILD_PREFIX
-            fi
-        fi
-        enable_static=no # disable static builds
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -DBUILD_SDL -DOS2EMX_PLAIN_CHAR"
-        CheckOS2
-        CheckWerror
-        CheckDeclarationAfterStatement
-        CheckDummyVideo
-        CheckDiskAudio
-        CheckDummyAudio
-        CheckHIDAPI
-
-        # Set up the core platform files
-        SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
-        if test x$enable_system_iconv = xyes; then
-            if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
-                SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
-            fi
-        fi
-        # Use the Unix locale APIs.
-        if test x$enable_locale = xyes; then
-            SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
-            have_locale=yes
-        fi
-        # Set up files for the video library
-        if test x$enable_video = xyes; then
-            AC_DEFINE(SDL_VIDEO_DRIVER_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/video/os2/*.c"
-            have_video=yes
-            SUMMARY_video="${SUMMARY_video} os/2"
-        fi
-        # Set up files for the audio library
-        if test x$enable_audio = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/os2/*.c"
-            have_audio=yes
-            SUMMARY_audio="${SUMMARY_audio} os/2"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
-        fi
-        # Set up files for the thread library
-        if test x$enable_threads = xyes; then
-            AC_DEFINE(SDL_THREAD_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/thread/os2/*.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
-            have_threads=yes
-        fi
-        # Set up files for the timer library
-        if test x$enable_timers = xyes; then
-            AC_DEFINE(SDL_TIMER_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/timer/os2/*.c"
-            have_timers=yes
-        fi
-        # Set up files for the shared object loading library
-        if test x$enable_loadso = xyes; then
-            AC_DEFINE(SDL_LOADSO_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/loadso/os2/*.c"
-            have_loadso=yes
-        fi
-        # Set up files for the filesystem library
-        if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/os2/*.c"
-            have_filesystem=yes
-        fi
-        # Set up files for the joystick library
-        if test x$enable_joystick = xyes; then
-            AC_DEFINE(SDL_JOYSTICK_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
-            have_joystick=yes
         fi
         ;;
     *)

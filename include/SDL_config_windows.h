@@ -89,7 +89,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_DDRAW_H 1
 #define HAVE_DINPUT_H 1
 #define HAVE_DSOUND_H 1
-#ifndef __WATCOMC__
 #define HAVE_DXGI_H 1
 #define HAVE_XINPUT_H 1
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0A00  /* Windows 10 SDK */
@@ -101,7 +100,6 @@ typedef unsigned int uintptr_t;
 #endif
 #if defined(WDK_NTDDI_VERSION) && WDK_NTDDI_VERSION > 0x0A000008 /* 10.0.19041.0 */
 #define HAVE_D3D12_H 1
-#endif
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0603  /* Windows 8.1 SDK */
 #define HAVE_SHELLSCALINGAPI_H 1
 #endif
@@ -136,11 +134,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_REALLOC 1
 #define HAVE_FREE 1
 #define HAVE_ALLOCA 1
-/* OpenWatcom requires specific calling conventions for qsort and bsearch */
-#ifndef __WATCOMC__
 #define HAVE_QSORT 1
 #define HAVE_BSEARCH 1
-#endif
 #define HAVE_ABS 1
 #define HAVE_MEMSET 1
 #define HAVE_MEMCPY 1
@@ -186,7 +181,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_SIN    1
 #define HAVE_SQRT   1
 #define HAVE_TAN    1
-#ifndef __WATCOMC__
 #define HAVE_ACOSF  1
 #define HAVE_ASINF  1
 #define HAVE_ATANF  1
@@ -204,7 +198,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_SINF   1
 #define HAVE_SQRTF  1
 #define HAVE_TANF   1
-#endif
 #if defined(_MSC_VER)
 /* These functions were added with the VC++ 2013 C runtime library */
 #if _MSC_VER >= 1800
@@ -227,14 +220,6 @@ typedef unsigned int uintptr_t;
 #ifdef _USE_MATH_DEFINES
 #define HAVE_M_PI 1
 #endif
-#elif defined(__WATCOMC__)
-#define HAVE__FSEEKI64 1
-#define HAVE_STRTOLL 1
-#define HAVE_STRTOULL 1
-#define HAVE_VSSCANF 1
-#define HAVE_ROUND 1
-#define HAVE_SCALBN 1
-#define HAVE_TRUNC  1
 #else
 #define HAVE_M_PI 1
 #endif

@@ -27,14 +27,6 @@
 #if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
-#if defined(__OS2__)
-#undef HAVE_SYSCTLBYNAME
-#define INCL_DOS
-#include <os2.h>
-#ifndef QSV_NUMPROCESSORS
-#define QSV_NUMPROCESSORS 26
-#endif
-#endif
 
 /* CPU feature detection for SDL */
 
@@ -680,12 +672,6 @@ SDL_GetCPUCount(void)
             SDL_CPUCount = info.dwNumberOfProcessors;
         }
 #endif
-#ifdef __OS2__
-        if (SDL_CPUCount <= 0) {
-            DosQuerySysInfo(QSV_NUMPROCESSORS, QSV_NUMPROCESSORS,
-                            &SDL_CPUCount, sizeof(SDL_CPUCount) );
-        }
-#endif
 #endif
         /* There has to be at least 1, right? :) */
         if (SDL_CPUCount <= 0) {
@@ -1062,13 +1048,6 @@ SDL_GetSystemRAM(void)
             if (GlobalMemoryStatusEx(&stat)) {
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }
-        }
-#endif
-#ifdef __OS2__
-        if (SDL_SystemRAM <= 0) {
-            Uint32 sysram = 0;
-            DosQuerySysInfo(QSV_TOTPHYSMEM, QSV_TOTPHYSMEM, &sysram, 4);
-            SDL_SystemRAM = (int) (sysram / 0x100000U);
         }
 #endif
 #ifdef __RISCOS__

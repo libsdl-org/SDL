@@ -18,7 +18,6 @@ dnl  (Haiku, for example, sets none of these.)
 ISUNIX="false"
 ISWINDOWS="false"
 ISMACOSX="false"
-ISOS2="false"
 
 dnl Figure out which math library to use
 case "$host" in
@@ -76,12 +75,6 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
-    *-*-os2*)
-        ISOS2="true"
-        EXE=".exe"
-        MATHLIB=""
-        SYS_GL_LIBS=""
-        ;;
     *)
         dnl Oh well, call it Unix...
         ISUNIX="true"
@@ -97,7 +90,6 @@ AC_SUBST(MATHLIB)
 AC_SUBST(ISMACOSX)
 AC_SUBST(ISWINDOWS)
 AC_SUBST(ISUNIX)
-AC_SUBST(ISOS2)
 
 dnl Check for SDL
 SDL_VERSION=3.0.0
