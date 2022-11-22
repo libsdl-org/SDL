@@ -996,88 +996,6 @@ CheckALSA()
     fi
 }
 
-dnl Find JACK Audio
-CheckJACK()
-{
-    AC_ARG_ENABLE(jack,
-[AS_HELP_STRING([--enable-jack], [use JACK audio [default=yes]])],
-                  , enable_jack=yes)
-    if test x$enable_audio = xyes -a x$enable_jack = xyes; then
-        PKG_CHECK_MODULES([JACK], [jack >= 0.125], audio_jack=yes, audio_jack=no)
-
-        if test x$audio_jack = xyes; then
-            AC_ARG_ENABLE(jack-shared,
-[AS_HELP_STRING([--enable-jack-shared], [dynamically load JACK audio support [default=yes]])],
-                          , enable_jack_shared=yes)
-            jack_lib=[`find_lib "libjack.so.*" "$JACK_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-            AC_DEFINE(SDL_AUDIO_DRIVER_JACK, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/jack/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $JACK_CFLAGS"
-            if test x$have_loadso != xyes && \
-               test x$enable_jack_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic JACK audio loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_jack_shared = xyes && test x$jack_lib != x; then
-                echo "-- dynamic libjack -> $jack_lib"
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_JACK_DYNAMIC, "$jack_lib", [ ])
-                SUMMARY_audio="${SUMMARY_audio} jack(dynamic)"
-
-                case "$host" in
-                    # On Solaris, jack must be linked deferred explicitly
-                    # to prevent undefined symbol failures.
-                    *-*-solaris*)
-                        JACK_LIBS=`echo $JACK_LIBS | sed 's/\-l/-Wl,-l/g'`
-                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-zdeferred $JACK_LIBS -Wl,-znodeferred"
-                esac
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $JACK_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} jack"
-            fi
-            have_audio=yes
-        fi
-    fi
-}
-
-dnl Find the ESD includes and libraries
-CheckESD()
-{
-    AC_ARG_ENABLE(esd,
-[AS_HELP_STRING([--enable-esd], [support the Enlightened Sound Daemon [default=yes]])],
-                  , enable_esd=yes)
-    if test x$enable_audio = xyes -a x$enable_esd = xyes; then
-        PKG_CHECK_MODULES([ESD], [esound >= 0.2.8], have_esd=yes, have_esd=no)
-        if test x$have_esd = xno; then
-           AM_PATH_ESD(0.2.8, have_esd=yes, have_esd=no)
-        fi
-        if test x$have_esd = xyes; then
-            AC_ARG_ENABLE(esd-shared,
-[AS_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [default=yes]])],
-                          , enable_esd_shared=yes)
-            esd_lib=[`find_lib "libesd.so.*" "$ESD_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-            AC_DEFINE(SDL_AUDIO_DRIVER_ESD, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/esd/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $ESD_CFLAGS"
-            if test x$have_loadso != xyes && \
-               test x$enable_esd_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic ESD loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_esd_shared = xyes && test x$esd_lib != x; then
-                echo "-- dynamic libesd -> $esd_lib"
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_ESD_DYNAMIC, "$esd_lib", [ ])
-                SUMMARY_audio="${SUMMARY_audio} esd(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ESD_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} esd"
-            fi
-            have_audio=yes
-        fi
-    fi
-}
-
 dnl Find Pipewire
 CheckPipewire()
 {
@@ -1153,187 +1071,6 @@ CheckPulseAudio()
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PULSEAUDIO_LIBS"
                 SUMMARY_audio="${SUMMARY_audio} pulse"
             fi
-            have_audio=yes
-        fi
-    fi
-}
-
-CheckARTSC()
-{
-    AC_ARG_ENABLE(arts,
-[AS_HELP_STRING([--enable-arts], [support the Analog Real Time Synthesizer [default=yes]])],
-                  , enable_arts=yes)
-    if test x$enable_audio = xyes -a x$enable_arts = xyes; then
-        AC_PATH_PROG(ARTSCONFIG, artsc-config)
-        if test x$ARTSCONFIG = x -o x$ARTSCONFIG = x'"$ARTSCONFIG"'; then
-            : # arts isn't installed
-        else
-            ARTS_CFLAGS=`$ARTSCONFIG --cflags`
-            ARTS_LIBS=`$ARTSCONFIG --libs`
-            AC_MSG_CHECKING(for aRts development environment)
-            audio_arts=no
-            save_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS $ARTS_CFLAGS"
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-             #include <artsc.h>
-            ]], [[
-             arts_stream_t stream;
-            ]])], [audio_arts=yes],[])
-            CFLAGS="$save_CFLAGS"
-            AC_MSG_RESULT($audio_arts)
-            if test x$audio_arts = xyes; then
-                AC_ARG_ENABLE(arts-shared,
-[AS_HELP_STRING([--enable-arts-shared], [dynamically load aRts audio support [default=yes]])],
-                              , enable_arts_shared=yes)
-                arts_lib=[`find_lib "libartsc.so.*" "$ARTS_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-                AC_DEFINE(SDL_AUDIO_DRIVER_ARTS, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/arts/*.c"
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $ARTS_CFLAGS"
-                if test x$have_loadso != xyes && \
-                   test x$enable_arts_shared = xyes; then
-                    AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic ARTS loading])
-                fi
-                if test x$have_loadso = xyes && \
-                   test x$enable_arts_shared = xyes && test x$arts_lib != x; then
-                    echo "-- dynamic libartsc -> $arts_lib"
-                    AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_ARTS_DYNAMIC, "$arts_lib", [ ])
-                    SUMMARY_audio="${SUMMARY_audio} arts(dynamic)"
-                else
-                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ARTS_LIBS"
-                    SUMMARY_audio="${SUMMARY_audio} arts"
-                fi
-                have_audio=yes
-            fi
-        fi
-    fi
-}
-
-dnl See if the NAS audio interface is supported
-CheckNAS()
-{
-    AC_ARG_ENABLE(nas,
-[AS_HELP_STRING([--enable-nas], [support the NAS audio API [default=yes]])],
-                  , enable_nas=yes)
-    if test x$enable_audio = xyes -a x$enable_nas = xyes; then
-        AC_CHECK_HEADER(audio/audiolib.h, have_nas_hdr=yes)
-        AC_CHECK_LIB(audio, AuOpenServer, have_nas_lib=yes)
-
-        AC_MSG_CHECKING(for NAS audio support)
-        have_nas=no
-
-        if test x$have_nas_hdr = xyes -a x$have_nas_lib = xyes; then
-            have_nas=yes
-            NAS_LIBS="-laudio"
-
-        elif test -r /usr/X11R6/include/audio/audiolib.h; then
-            have_nas=yes
-            NAS_CFLAGS="-I/usr/X11R6/include/"
-            NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
-
-        fi
-
-        AC_MSG_RESULT($have_nas)
-
-        if test x$have_nas = xyes; then
-            AC_ARG_ENABLE(nas-shared,
-[AS_HELP_STRING([--enable-nas-shared], [dynamically load NAS audio support [default=yes]])],
-                          , enable_nas_shared=yes)
-            nas_lib=[`find_lib "libaudio.so.*" "$NAS_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-            if test x$have_loadso != xyes && \
-               test x$enable_nas_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic NAS loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_nas_shared = xyes && test x$nas_lib != x; then
-                echo "-- dynamic libaudio -> $nas_lib"
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_NAS_DYNAMIC, "$nas_lib", [ ])
-                SUMMARY_audio="${SUMMARY_audio} nas(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $NAS_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} nas"
-            fi
-
-            AC_DEFINE(SDL_AUDIO_DRIVER_NAS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/nas/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $NAS_CFLAGS"
-            have_audio=yes
-        fi
-    fi
-}
-
-dnl See if the sndio audio interface is supported
-CheckSNDIO()
-{
-    AC_ARG_ENABLE(sndio,
-[AS_HELP_STRING([--enable-sndio], [support the sndio audio API [default=yes]])],
-                  , enable_sndio=yes)
-    if test x$enable_audio = xyes -a x$enable_sndio = xyes; then
-        PKG_CHECK_MODULES([SNDIO], [sndio], audio_sndio=yes, audio_sndio=no)
-
-        if test x$audio_sndio = xyes; then
-            AC_ARG_ENABLE(sndio-shared,
-[AS_HELP_STRING([--enable-sndio-shared], [dynamically load sndio audio support [default=yes]])],
-                          , enable_sndio_shared=yes)
-            sndio_lib=[`find_lib "libsndio.so.*" "$SNDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-            if test x$have_loadso != xyes && \
-               test x$enable_sndio_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic sndio loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_sndio_shared = xyes && test x$sndio_lib != x; then
-                echo "-- dynamic libsndio -> $sndio_lib"
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_SNDIO_DYNAMIC, "$sndio_lib", [ ])
-                SUMMARY_audio="${SUMMARY_audio} sndio(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $SNDIO_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} sndio"
-            fi
-
-            AC_DEFINE(SDL_AUDIO_DRIVER_SNDIO, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/sndio/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $SNDIO_CFLAGS"
-            have_audio=yes
-        fi
-    fi
-}
-
-dnl Find FusionSound
-CheckFusionSound()
-{
-    AC_ARG_ENABLE(fusionsound,
-[AS_HELP_STRING([--enable-fusionsound], [use FusionSound audio driver [default=no]])],
-                  , enable_fusionsound=no)
-    if test x$enable_audio = xyes -a x$enable_fusionsound = xyes; then
-        PKG_CHECK_MODULES([FUSIONSOUND], [fusionsound >= 1.1.1], fusionsound=yes, fusionsound=no)
-
-        if test x$fusionsound = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_FUSIONSOUND, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/fusionsound/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $FUSIONSOUND_CFLAGS"
-
-            AC_ARG_ENABLE(fusionsound-shared,
-[AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audio support [default=yes]])],
-                          , enable_fusionsound_shared=yes)
-            fusionsound_shared=no
-            AC_MSG_CHECKING(for FusionSound dynamic loading support)
-            if test x$have_loadso != xyes && \
-               test x$enable_fusionsound_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic fusionsound loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_fusionsound_shared = xyes; then
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC, "libfusionsound.so", [ ])
-                fusionsound_shared=yes
-                SUMMARY_audio="${SUMMARY_audio} fusionsound(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $FUSIONSOUND_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} fusionsound"
-            fi
-            AC_MSG_RESULT($fusionsound_shared)
-
             have_audio=yes
         fi
     fi
@@ -3779,12 +3516,6 @@ case "$host" in
         CheckALSA
         CheckPipewire
         CheckPulseAudio
-        CheckJACK
-        CheckARTSC
-        CheckESD
-        CheckNAS
-        CheckSNDIO
-        CheckFusionSound
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
@@ -3837,22 +3568,10 @@ case "$host" in
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
           case $ARCH in
-            sysv5|solaris|hpux)
-                AC_DEFINE(SDL_AUDIO_DRIVER_SUNAUDIO, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/sun/*.c"
-                SUMMARY_audio="${SUMMARY_audio} sun"
-                have_audio=yes
-            ;;
             netbsd)  # Don't use this on OpenBSD, it's busted.
                 AC_DEFINE(SDL_AUDIO_DRIVER_NETBSD, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/netbsd/*.c"
                 SUMMARY_audio="${SUMMARY_audio} netbsd"
-                have_audio=yes
-            ;;
-            aix)
-                AC_DEFINE(SDL_AUDIO_DRIVER_PAUDIO, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/paudio/*.c"
-                SUMMARY_audio="${SUMMARY_audio} paudio"
                 have_audio=yes
             ;;
             android)
@@ -4049,9 +3768,6 @@ case "$host" in
         fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_WINMM, 1, [ ])
-            SUMMARY_audio="${SUMMARY_audio} winmm"
-            SOURCES="$SOURCES $srcdir/src/audio/winmm/*.c"
             if test x$have_dsound = xyes; then
                 AC_DEFINE(SDL_AUDIO_DRIVER_DSOUND, 1, [ ])
                 SUMMARY_audio="${SUMMARY_audio} directsound"
