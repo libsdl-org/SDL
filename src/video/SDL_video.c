@@ -89,9 +89,6 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_HAIKU
     &HAIKU_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_PANDORA
-    &PND_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_UIKIT
     &UIKIT_bootstrap,
 #endif

@@ -36,7 +36,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [macOS](README-macos.md)
 - [OS/2](README-os2.md)
 - [Native Client](README-nacl.md)
-- [Pandora](README-pandora.md)
 - [Supported Platforms](README-platforms.md)
 - [Porting information](README-porting.md)
 - [PSP](README-psp.md)
