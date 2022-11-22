@@ -105,7 +105,7 @@ void PSP_PumpEvents(_THIS)
         SIrKeybScanCodeData *scanData;
 
             if (pspIrKeybReadinput(buffer, &length) >= 0) {
-                if ((length % sizeof(SIrKeybScanCodeData)) == 0){
+                if ((length % sizeof(SIrKeybScanCodeData)) == 0) {
                     count = length / sizeof(SIrKeybScanCodeData);
                     for ( i=0; i < count; i++ ) {
                 unsigned char raw, pressed;

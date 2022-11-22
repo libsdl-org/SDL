@@ -285,7 +285,7 @@ int render_testPrimitivesBlend (void *arg)
    checkFailCount1 = 0;
    checkFailCount2 = 0;
    checkFailCount3 = 0;
-   for (i=0; i<TESTRENDER_SCREEN_W; i+=2)  {
+   for (i=0; i<TESTRENDER_SCREEN_W; i+=2) {
       ret = SDL_SetRenderDrawColor(renderer, 60+2*i, 240-2*i, 50, 3*i );
       if (ret != 0) {
          checkFailCount1++;
@@ -309,7 +309,7 @@ int render_testPrimitivesBlend (void *arg)
    checkFailCount1 = 0;
    checkFailCount2 = 0;
    checkFailCount3 = 0;
-   for (i=0; i<TESTRENDER_SCREEN_H; i+=2)  {
+   for (i=0; i<TESTRENDER_SCREEN_H; i+=2) {
       ret = SDL_SetRenderDrawColor(renderer, 60+2*i, 240-2*i, 50, 3*i );
       if (ret != 0) {
          checkFailCount1++;

@@ -30,7 +30,7 @@ void reset_IOP() {
     SifInitRpc(0);
     while (!SifIopReset(NULL, 0)) {
     }
-    while (!SifIopSync()){
+    while (!SifIopSync()) {
     }
 }
 

@@ -148,7 +148,7 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	    }
 	    x  = hi - lo;
 	}
-	else if (hx < 0x3e300000)  {	/* when |x|<2**-28 */
+	else if (hx < 0x3e300000) {	/* when |x|<2**-28 */
 	    if (huge + x > one) {
 		return one + x; /* trigger inexact */
 	    }

@@ -478,7 +478,7 @@ KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata) {
    because it's ordered, while the list on the connector is mostly random.*/
 static drmModeModeInfo*
 KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay * display,
-uint32_t width, uint32_t height, uint32_t refresh_rate){
+uint32_t width, uint32_t height, uint32_t refresh_rate) {
 
     SDL_DisplayData *dispdata = (SDL_DisplayData *) display->driverdata;
     drmModeConnector *connector = dispdata->connector;

@@ -2344,7 +2344,7 @@ UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
     }
 
     hint = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
-    if (hint && (*hint == '1' || SDL_strcasecmp(hint, "overscan") == 0))  {
+    if (hint && (*hint == '1' || SDL_strcasecmp(hint, "overscan") == 0)) {
 #if SDL_VIDEO_RENDER_D3D
         SDL_bool overscan_supported = SDL_TRUE;
         /* Unfortunately, Direct3D 9 doesn't support negative viewport numbers
@@ -3999,7 +3999,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             x2 = xy2_[0]; y2 = xy2_[1];
 
             /* Check if triangle A B C is rectangle */
-            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
+            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)) {
                 /* ok */
             } else {
                 is_quad = 0;
@@ -4012,7 +4012,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             x2 = xy2_[0]; y2 = xy2_[1];
 
             /* Check if triangle A B C2 is rectangle */
-            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)){
+            if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)) {
                 /* ok */
             } else {
                 is_quad = 0;

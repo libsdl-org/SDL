@@ -195,7 +195,7 @@ static SDL_bool
 N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     /* There is only one possible mapping. */
-    *out = (SDL_GamepadMapping){
+    *out = (SDL_GamepadMapping) {
         .a = { EMappingKind_Button, 0 },
         .b = { EMappingKind_Button, 1 },
         .x = { EMappingKind_Button, 10 },

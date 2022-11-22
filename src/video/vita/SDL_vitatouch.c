@@ -75,7 +75,7 @@ VITA_InitTouch(void)
 }
 
 void 
-VITA_QuitTouch(void){
+VITA_QuitTouch(void) {
     sceTouchDisableTouchForce(SCE_TOUCH_PORT_FRONT);
     sceTouchDisableTouchForce(SCE_TOUCH_PORT_BACK);
 }

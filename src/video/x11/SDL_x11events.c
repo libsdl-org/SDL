@@ -1083,7 +1083,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
 #ifdef SDL_USE_IME
-            if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+            if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
                 handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
             }
 #endif
@@ -1176,7 +1176,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
                                     xevent->xconfigure.x, xevent->xconfigure.y);
 #ifdef SDL_USE_IME
-                if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
                     /* Update IME candidate list position */
                     SDL_IME_UpdateTextRect(NULL);
                 }
@@ -1680,7 +1680,7 @@ X11_WaitEventTimeout(_THIS, int timeout)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -1723,7 +1723,7 @@ X11_PumpEvents(_THIS)
     }
 
 #ifdef SDL_USE_IME
-    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+    if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
         SDL_IME_PumpEvents();
     }
 #endif

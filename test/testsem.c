@@ -136,7 +136,7 @@ TestOverheadUncontended(void)
     SDL_Log("Doing %d uncontended Post/Wait operations on semaphore\n", NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT);
 
     start_ticks = SDL_GetTicks();
-    for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++){
+    for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
             SDL_SemPost(sem);
         }

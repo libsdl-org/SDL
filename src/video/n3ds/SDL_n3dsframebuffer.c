@@ -94,8 +94,8 @@ SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rect
     framebuffer = (u32 *) gfxGetFramebuffer(drv_data->screen, GFX_LEFT, &width, &height);
     bufsize = width * height * 4;
 
-    CopyFramebuffertoN3DS(framebuffer, (Dimensions){ width, height },
-                          surface->pixels, (Dimensions){ surface->w, surface->h });
+    CopyFramebuffertoN3DS(framebuffer, (Dimensions) { width, height },
+                          surface->pixels, (Dimensions) { surface->w, surface->h });
     FlushN3DSBuffer(framebuffer, bufsize, drv_data->screen);
 
     return 0;

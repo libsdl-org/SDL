@@ -734,7 +734,7 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
             plane_skip = (dst_pitch - row_size);
 
             /* Write YUV plane, packed */
-            if (dst_format == SDL_PIXELFORMAT_YUY2)  {
+            if (dst_format == SDL_PIXELFORMAT_YUY2) {
                 for (j = 0; j < height; j++) {
                     for (i = 0; i < width_half; i++) {
                         READ_TWO_RGB_PIXELS;

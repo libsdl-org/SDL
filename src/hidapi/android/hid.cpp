@@ -1064,7 +1064,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
 		hid_mutex_guard r( &g_DevicesRefCountMutex );
 		hid_mutex_guard l( &g_DevicesMutex );
 		for ( hid_device_ref<CHIDDevice> pCurr = g_Devices; pCurr; pCurr = pCurr->next ) {
-			if ( SDL_strcmp( pCurr->GetDeviceInfo()->path, path ) == 0 )  {
+			if ( SDL_strcmp( pCurr->GetDeviceInfo()->path, path ) == 0 ) {
 				hid_device *pValue = pCurr->GetDevice();
 				if ( pValue ) {
 					++pValue->m_nDeviceRefCount;

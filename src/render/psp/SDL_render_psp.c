@@ -540,7 +540,7 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     psp_texture->pitch = psp_texture->textureWidth * SDL_BYTESPERPIXEL(texture->format);
     psp_texture->size = psp_texture->textureHeight*psp_texture->pitch;
     if (texture->access & SDL_TEXTUREACCESS_TARGET) {
-        if (TextureSpillTargetsForSpace(renderer->driverdata, psp_texture->size) < 0){
+        if (TextureSpillTargetsForSpace(renderer->driverdata, psp_texture->size) < 0) {
             SDL_free(psp_texture);
             return -1;
         }
@@ -1103,7 +1103,7 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
             case SDL_RENDERCMD_SETCLIPRECT: {
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
-                if (cmd->data.cliprect.enabled){
+                if (cmd->data.cliprect.enabled) {
                     sceGuEnable(GU_SCISSOR_TEST);
                     sceGuScissor(rect->x, rect->y, rect->w, rect->h);
                 } else {

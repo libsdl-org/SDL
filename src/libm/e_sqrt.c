@@ -122,7 +122,7 @@ double attribute_hidden __ieee754_sqrt(double x)
 	}
 	m -= 1023;	/* unbias exponent */
 	ix0 = (ix0&0x000fffff)|0x00100000;
-	if (m&1){	/* odd m, double x to make it even */
+	if (m&1) {	/* odd m, double x to make it even */
 	    ix0 += ix0 + ((ix1&sign)>>31);
 	    ix1 += ix1;
 	}

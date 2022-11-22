@@ -258,7 +258,7 @@ void HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
 }
 
 
-int HAIKU_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode){
+int HAIKU_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode) {
     /* Get the current screen */
     BScreen bscreen;
     if (!bscreen.IsValid()) {

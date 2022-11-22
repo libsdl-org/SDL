@@ -182,7 +182,7 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	ax   = fabs(x);
     /* special value of x */
 	if (lx==0) {
-	    if (ix==0x7ff00000||ix==0||ix==0x3ff00000){
+	    if (ix==0x7ff00000||ix==0||ix==0x3ff00000) {
 		z = ax;			/*x is +-0,+-inf,+-1*/
 		if (hy < 0) {
 		    z = one / z;
@@ -205,7 +205,7 @@ double attribute_hidden __ieee754_pow(double x, double y)
 
     /* |y| is huge */
 	if (iy>0x41e00000) { /* if |y| > 2**31 */
-	    if (iy>0x43f00000){	/* if |y| > 2**64, must o/uflow */
+	    if (iy>0x43f00000) {	/* if |y| > 2**64, must o/uflow */
 		if (ix <= 0x3fefffff) {
 		    return (hy < 0) ? huge * huge : tiny * tiny;
 		}

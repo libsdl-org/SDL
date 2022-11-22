@@ -626,7 +626,7 @@ void SDL_GestureProcessEvent(SDL_Event* event)
                 float error;
                 error = dollarRecognize(&inTouch->dollarPath,
                                         &bestTempl,inTouch);
-                if (bestTempl >= 0){
+                if (bestTempl >= 0) {
                     /* Send Event */
                     unsigned long gestureId = inTouch->dollarTemplate[bestTempl].hash;
                     SDL_SendGestureDollar(inTouch,gestureId,error);

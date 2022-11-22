@@ -104,7 +104,7 @@ main(int argc, char *argv[])
 
     /* Empty event queue */
     done = 0;
-    for (i=0; i<100; i++)  {
+    for (i=0; i<100; i++) {
       while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
       }
