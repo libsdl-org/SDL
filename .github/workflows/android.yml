@@ -50,7 +50,7 @@ jobs:
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
           cmake --install build --config Release
-          echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+          echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
           ( cd prefix; find ) | LC_ALL=C sort -u
       - name: Verify CMake configuration files
         if: ${{ matrix.platform.name == 'CMake' }}
@@ -60,22 +60,22 @@ jobs:
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
+            -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
           cmake --build cmake_config_build --verbose
-      - name: Verify sdl2-config
+      - name: Verify sdl3-config
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
           export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
-          export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+          export PATH=${{ env.SDL3_DIR }}/bin:$PATH
           cmake/test/test_sdlconfig.sh
-      - name: Verify sdl2.pc
+      - name: Verify sdl3.pc
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
           export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
-          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+          export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
       - name: Verify Android.mk
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |
-          export NDK_MODULE_PATH=${{ env.SDL2_DIR }}/share/ndk-modules
+          export NDK_MODULE_PATH=${{ env.SDL3_DIR }}/share/ndk-modules
           ndk-build -C ${{ github.workspace }}/cmake/test APP_PLATFORM=android-${{ matrix.platform.android_platform }} APP_ABI=${{ matrix.platform.android_abi }} NDK_OUT=$PWD NDK_LIBS_OUT=$PWD V=1

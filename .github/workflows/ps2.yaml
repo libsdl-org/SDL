@@ -36,7 +36,7 @@ jobs:
       run: |
         set -eu
         cmake --install build/ --config Release
-        echo "SDL2_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
+        echo "SDL3_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
         ( cd cmake_prefix; find ) | LC_ALL=C sort -u
 
     - name: Verify CMake configuration files
@@ -44,20 +44,20 @@ jobs:
         cmake -S cmake/test -B cmake_config_build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
           -DTEST_SHARED=FALSE \
-          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
+          -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
           -DCMAKE_BUILD_TYPE=Release
         cmake --build cmake_config_build --verbose
-    - name: Verify sdl2-config
+    - name: Verify sdl3-config
       run: |
         export CC=mips64r5900el-ps2-elf-gcc
-        export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+        export PATH=${{ env.SDL3_DIR }}/bin:$PATH
         export EXTRA_LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
         cmake/test/test_sdlconfig.sh
-    - name: Verify sdl2.pc
+    - name: Verify sdl3.pc
       run: |
         export CC=mips64r5900el-ps2-elf-gcc
         export EXTRA_LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
-        export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+        export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
     
     - name: Get short SHA
