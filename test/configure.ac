@@ -59,11 +59,6 @@ case "$host" in
             SYS_GL_LIBS="-lOSMesa"
         fi
         ;;
-    *-*-qnx*)
-        EXE=""
-        MATHLIB=""
-        SYS_GL_LIBS="-lGLES_CM"
-        ;;
     *-*-emscripten*)
         dnl This should really be .js, but we need to specify extra flags when compiling to js
         EXE=".bc"

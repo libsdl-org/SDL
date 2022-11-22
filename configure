@@ -18125,14 +18125,7 @@ case "$host" in
 esac
 
 INCLUDE="-I$srcdir/include"
-
-case "$host" in
-    *-*-nto-qnx*)
-        ;;
-    *)
-        INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
-        ;;
-esac
+INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
 
 case "$host" in
     *-*-haiku*)
@@ -24507,32 +24500,6 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_OFFSCREEN 1" >>confdefs.h
     fi
 }
 
-CheckQNXVideo()
-{
-    if test x$enable_video = xyes; then
-
-printf "%s\n" "#define SDL_VIDEO_DRIVER_QNX 1" >>confdefs.h
-
-        SOURCES="$SOURCES $srcdir/src/video/qnx/*.c"
-        have_video=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lscreen -lEGL -lGLESv2"
-        SUMMARY_video="${SUMMARY_video} qnx"
-    fi
-}
-
-CheckQNXAudio()
-{
-    if test x$enable_audio = xyes; then
-
-printf "%s\n" "#define SDL_AUDIO_DRIVER_QSA 1" >>confdefs.h
-
-        SOURCES="$SOURCES $srcdir/src/audio/qsa/*.c"
-        have_audio=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lasound"
-        SUMMARY_audio="${SUMMARY_audio} qsa"
-    fi
-}
-
 # Check whether --enable-video-opengl was given.
 if test ${enable_video_opengl+y}
 then :
@@ -25724,10 +25691,6 @@ fi
             pthread_lib="-L/usr/lib -lpthread"
             ;;
         *-*-haiku*)
-            pthread_cflags="-D_REENTRANT"
-            pthread_lib=""
-            ;;
-        *-*-nto*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib=""
             ;;
@@ -27201,7 +27164,7 @@ CheckEventSignals
 have_locale=no
 
 case "$host" in
-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
+    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
         case "$host" in
             *-*-android*)
                 # Android
@@ -27237,9 +27200,6 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
             *-*-hpux*)          ARCH=hpux ;;
             *-*-aix*)           ARCH=aix ;;
             *-*-minix*)         ARCH=minix ;;
-            *-*-nto*)           ARCH=nto
-                CheckQNXVideo
-                ;;
         esac
         CheckVisibilityHidden
         CheckWerror
@@ -27336,9 +27296,6 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_AAUDIO 1" >>confdefs.h
                 SUMMARY_audio="${SUMMARY_audio} aaudio"
 
                 have_audio=yes
-            ;;
-            nto)
-                CheckQNXAudio
             ;;
           esac
         fi

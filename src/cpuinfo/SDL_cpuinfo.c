@@ -54,10 +54,6 @@
 #include <setjmp.h>
 #endif
 
-#if defined(__QNXNTO__)
-#include <sys/syspage.h>
-#endif
-
 #if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__arm__)
 #include <unistd.h>
 #include <sys/types.h>
@@ -476,8 +472,6 @@ CPU_haveNEON(void)
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
         return 0;
     return ((hasneon & HWCAP_NEON) == HWCAP_NEON);
-#elif defined(__QNXNTO__)
-    return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
 #elif defined(__LINUX__)

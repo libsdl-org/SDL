@@ -3641,11 +3641,6 @@ fi
             SYS_GL_LIBS="-lOSMesa"
         fi
         ;;
-    *-*-qnx*)
-        EXE=""
-        MATHLIB=""
-        SYS_GL_LIBS="-lGLES_CM"
-        ;;
     *-*-emscripten*)
                 EXE=".bc"
         MATHLIB=""

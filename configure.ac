@@ -88,15 +88,7 @@ esac
 
 dnl Set up the compiler and linker flags
 INCLUDE="-I$srcdir/include"
-
-dnl Don't use our khronos headers on QNX.
-case "$host" in
-    *-*-nto-qnx*)
-        ;;
-    *)
-        INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
-        ;;
-esac
+INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
 
 dnl use CXX for linker on Haiku
 case "$host" in
@@ -2162,30 +2154,6 @@ CheckOffscreenVideo()
     fi
 }
 
-dnl Set up the QNX video driver if enabled
-CheckQNXVideo()
-{
-    if test x$enable_video = xyes; then
-        AC_DEFINE(SDL_VIDEO_DRIVER_QNX, 1, [ ])
-        SOURCES="$SOURCES $srcdir/src/video/qnx/*.c"
-        have_video=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lscreen -lEGL -lGLESv2"
-        SUMMARY_video="${SUMMARY_video} qnx"
-    fi
-}
-
-dnl Set up the QNX audio driver if enabled
-CheckQNXAudio()
-{
-    if test x$enable_audio = xyes; then
-        AC_DEFINE(SDL_AUDIO_DRIVER_QSA, 1, [ ])
-        SOURCES="$SOURCES $srcdir/src/audio/qsa/*.c"
-        have_audio=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lasound"
-        SUMMARY_audio="${SUMMARY_audio} qsa"
-    fi
-}
-
 dnl Check to see if OpenGL support is desired
 AC_ARG_ENABLE(video-opengl,
 [AS_HELP_STRING([--enable-video-opengl], [include OpenGL support [default=yes]])],
@@ -2803,10 +2771,6 @@ dnl This is used on Linux for glibc binary compatibility (Doh!)
             pthread_lib="-L/usr/lib -lpthread"
             ;;
         *-*-haiku*)
-            pthread_cflags="-D_REENTRANT"
-            pthread_lib=""
-            ;;
-        *-*-nto*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib=""
             ;;
@@ -3436,7 +3400,7 @@ have_locale=no
 
 dnl Set up the configuration based on the host platform!
 case "$host" in
-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
+    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
         case "$host" in
             *-*-android*)
                 # Android
@@ -3470,9 +3434,6 @@ case "$host" in
             *-*-hpux*)          ARCH=hpux ;;
             *-*-aix*)           ARCH=aix ;;
             *-*-minix*)         ARCH=minix ;;
-            *-*-nto*)           ARCH=nto
-                CheckQNXVideo
-                ;;
         esac
         CheckVisibilityHidden
         CheckWerror
@@ -3561,9 +3522,6 @@ case "$host" in
                 SUMMARY_audio="${SUMMARY_audio} aaudio"
 
                 have_audio=yes
-            ;;
-            nto)
-                CheckQNXAudio
             ;;
           esac
         fi

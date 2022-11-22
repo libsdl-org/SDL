@@ -200,11 +200,6 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 typedef void (*SDL_KernelMemoryBarrierFunc)();
 #define SDL_MemoryBarrierRelease()	((SDL_KernelMemoryBarrierFunc)0xffff0fa0)()
 #define SDL_MemoryBarrierAcquire()	((SDL_KernelMemoryBarrierFunc)0xffff0fa0)()
-#elif 0 /* defined(__QNXNTO__) */
-#include <sys/cpuinline.h>
-
-#define SDL_MemoryBarrierRelease()   __cpu_membarrier()
-#define SDL_MemoryBarrierAcquire()   __cpu_membarrier()
 #else
 #if defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) || defined(__ARM_ARCH_8A__)
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
