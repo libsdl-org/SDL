@@ -1,5 +1,5 @@
-projectfullname = SDL_mixer
-projectshortname = SDL_mixer
+projectfullname = SDL
+projectshortname = SDL
 incsubdir = include
 wikisubdir =
 apiprefixregex = (SDL_|SDLK_|KMOD_|AUDIO_)
