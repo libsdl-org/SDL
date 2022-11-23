@@ -988,6 +988,50 @@ CheckALSA()
     fi
 }
 
+dnl Find JACK Audio
+CheckJACK()
+{
+    AC_ARG_ENABLE(jack,
+[AS_HELP_STRING([--enable-jack], [use JACK audio [default=yes]])],
+                  , enable_jack=yes)
+    if test x$enable_audio = xyes -a x$enable_jack = xyes; then
+        PKG_CHECK_MODULES([JACK], [jack >= 0.125], audio_jack=yes, audio_jack=no)
+
+        if test x$audio_jack = xyes; then
+            AC_ARG_ENABLE(jack-shared,
+[AS_HELP_STRING([--enable-jack-shared], [dynamically load JACK audio support [default=yes]])],
+                          , enable_jack_shared=yes)
+            jack_lib=[`find_lib "libjack.so.*" "$JACK_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+
+            AC_DEFINE(SDL_AUDIO_DRIVER_JACK, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/jack/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $JACK_CFLAGS"
+            if test x$have_loadso != xyes && \
+               test x$enable_jack_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic JACK audio loading])
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_jack_shared = xyes && test x$jack_lib != x; then
+                echo "-- dynamic libjack -> $jack_lib"
+                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_JACK_DYNAMIC, "$jack_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} jack(dynamic)"
+
+                case "$host" in
+                    # On Solaris, jack must be linked deferred explicitly
+                    # to prevent undefined symbol failures.
+                    *-*-solaris*)
+                        JACK_LIBS=`echo $JACK_LIBS | sed 's/\-l/-Wl,-l/g'`
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-zdeferred $JACK_LIBS -Wl,-znodeferred"
+                esac
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $JACK_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} jack"
+            fi
+            have_audio=yes
+        fi
+    fi
+}
+
 dnl Find Pipewire
 CheckPipewire()
 {
@@ -3419,6 +3463,7 @@ case "$host" in
         CheckALSA
         CheckPipewire
         CheckPulseAudio
+        CheckJACK
         CheckSNDIO
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!

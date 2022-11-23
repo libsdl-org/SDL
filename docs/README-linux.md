@@ -16,7 +16,7 @@ Ubuntu 18.04, all available features enabled:
 
     sudo apt-get install build-essential git make autoconf automake libtool \
     pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
-    libaudio-dev libsamplerate0-dev libx11-dev libxext-dev \
+    libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev \
     libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev \
     libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
     libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
@@ -32,7 +32,7 @@ Fedora 35, all available features enabled:
     systemd-devel mesa-libGL-devel libxkbcommon-devel mesa-libGLES-devel \
     mesa-libEGL-devel vulkan-devel wayland-devel wayland-protocols-devel \
     libdrm-devel mesa-libgbm-devel libusb-devel libdecor-devel \
-    libsamplerate-devel
+    libsamplerate-devel pipewire-jack-audio-connection-kit-devel \
 
 NOTES:
 - This includes all the audio targets except arts and esd, because Ubuntu

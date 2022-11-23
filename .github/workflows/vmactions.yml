@@ -32,8 +32,10 @@ jobs:
               evdev-proto \
               libinotify \
               alsa-lib \
+              jackit \
               pipewire \
               pulseaudio \
+              sndio \
               dbus \
               zh-fcitx \
               ibus \

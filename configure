@@ -710,6 +710,8 @@ PULSEAUDIO_LIBS
 PULSEAUDIO_CFLAGS
 PIPEWIRE_LIBS
 PIPEWIRE_CFLAGS
+JACK_LIBS
+JACK_CFLAGS
 ALSA_LIBS
 ALSA_CFLAGS
 ALLOCA
@@ -868,6 +870,8 @@ with_alsa_prefix
 with_alsa_inc_prefix
 enable_alsatest
 enable_alsa_shared
+enable_jack
+enable_jack_shared
 enable_pipewire
 enable_pipewire_shared
 enable_pulseaudio
@@ -948,6 +952,8 @@ PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 CPP
+JACK_CFLAGS
+JACK_LIBS
 PIPEWIRE_CFLAGS
 PIPEWIRE_LIBS
 PULSEAUDIO_CFLAGS
@@ -1642,6 +1648,8 @@ Optional Features:
   --enable-alsa           support the ALSA audio API [default=yes]
   --disable-alsatest      Do not try to compile and run a test Alsa program
   --enable-alsa-shared    dynamically load ALSA audio support [default=yes]
+  --enable-jack           use JACK audio [default=yes]
+  --enable-jack-shared    dynamically load JACK audio support [default=yes]
   --enable-pipewire       use Pipewire audio [default=yes]
   --enable-pipewire-shared
                           dynamically load Pipewire support [default=yes]
@@ -1767,6 +1775,8 @@ Some influential environment variables:
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
   CPP         C preprocessor
+  JACK_CFLAGS C compiler flags for JACK, overriding pkg-config
+  JACK_LIBS   linker flags for JACK, overriding pkg-config
   PIPEWIRE_CFLAGS
               C compiler flags for PIPEWIRE, overriding pkg-config
   PIPEWIRE_LIBS
@@ -21252,6 +21262,134 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_ALSA_DYNAMIC \"$alsa_lib\"" >>confdefs.h
     fi
 }
 
+CheckJACK()
+{
+    # Check whether --enable-jack was given.
+if test ${enable_jack+y}
+then :
+  enableval=$enable_jack;
+else $as_nop
+  enable_jack=yes
+fi
+
+    if test x$enable_audio = xyes -a x$enable_jack = xyes; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jack >= 0.125" >&5
+printf %s "checking for jack >= 0.125... " >&6; }
+
+if test -n "$JACK_CFLAGS"; then
+    pkg_cv_JACK_CFLAGS="$JACK_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"jack >= 0.125\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "jack >= 0.125") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_JACK_CFLAGS=`$PKG_CONFIG --cflags "jack >= 0.125" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$JACK_LIBS"; then
+    pkg_cv_JACK_LIBS="$JACK_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"jack >= 0.125\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "jack >= 0.125") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_JACK_LIBS=`$PKG_CONFIG --libs "jack >= 0.125" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        JACK_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "jack >= 0.125" 2>&1`
+        else
+	        JACK_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "jack >= 0.125" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$JACK_PKG_ERRORS" >&5
+
+	audio_jack=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	audio_jack=no
+else
+	JACK_CFLAGS=$pkg_cv_JACK_CFLAGS
+	JACK_LIBS=$pkg_cv_JACK_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	audio_jack=yes
+fi
+
+        if test x$audio_jack = xyes; then
+            # Check whether --enable-jack-shared was given.
+if test ${enable_jack_shared+y}
+then :
+  enableval=$enable_jack_shared;
+else $as_nop
+  enable_jack_shared=yes
+fi
+
+            jack_lib=`find_lib "libjack.so.*" "$JACK_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+
+
+printf "%s\n" "#define SDL_AUDIO_DRIVER_JACK 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/jack/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $JACK_CFLAGS"
+            if test x$have_loadso != xyes && \
+               test x$enable_jack_shared = xyes; then
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic JACK audio loading" >&5
+printf "%s\n" "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic JACK audio loading" >&2;}
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_jack_shared = xyes && test x$jack_lib != x; then
+                echo "-- dynamic libjack -> $jack_lib"
+
+printf "%s\n" "#define SDL_AUDIO_DRIVER_JACK_DYNAMIC \"$jack_lib\"" >>confdefs.h
+
+                SUMMARY_audio="${SUMMARY_audio} jack(dynamic)"
+
+                case "$host" in
+                    # On Solaris, jack must be linked deferred explicitly
+                    # to prevent undefined symbol failures.
+                    *-*-solaris*)
+                        JACK_LIBS=`echo $JACK_LIBS | sed 's/\-l/-Wl,-l/g'`
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-zdeferred $JACK_LIBS -Wl,-znodeferred"
+                esac
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $JACK_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} jack"
+            fi
+            have_audio=yes
+        fi
+    fi
+}
+
 CheckPipewire()
 {
     # Check whether --enable-pipewire was given.
@@ -27145,6 +27283,7 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckALSA
         CheckPipewire
         CheckPulseAudio
+        CheckJACK
         CheckSNDIO
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!

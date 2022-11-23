@@ -195,6 +195,35 @@ macro(CheckSNDIO)
 endmacro()
 
 # Requires:
+# - PkgCheckModules
+# Optional:
+# - SDL_JACK_SHARED opt
+# - HAVE_SDL_LOADSO opt
+macro(CheckJACK)
+  if(SDL_JACK)
+    pkg_check_modules(PKG_JACK jack)
+    if(PKG_JACK_FOUND)
+      set(HAVE_JACK TRUE)
+      file(GLOB JACK_SOURCES ${SDL3_SOURCE_DIR}/src/audio/jack/*.c)
+      list(APPEND SOURCE_FILES ${JACK_SOURCES})
+      set(SDL_AUDIO_DRIVER_JACK 1)
+      list(APPEND EXTRA_CFLAGS ${PKG_JACK_CFLAGS})
+      if(SDL_JACK_SHARED AND NOT HAVE_SDL_LOADSO)
+        message_warn("You must have SDL_LoadObject() support for dynamic JACK audio loading")
+      endif()
+      FindLibraryAndSONAME("jack" LIBDIRS ${PKG_JACK_LIBRARY_DIRS})
+      if(SDL_JACK_SHARED AND JACK_LIB AND HAVE_SDL_LOADSO)
+        set(SDL_AUDIO_DRIVER_JACK_DYNAMIC "\"${JACK_LIB_SONAME}\"")
+        set(HAVE_JACK_SHARED TRUE)
+      else()
+        list(APPEND EXTRA_LDFLAGS ${PKG_JACK_LDFLAGS})
+      endif()
+      set(HAVE_SDL_AUDIO TRUE)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - SDL_LIBSAMPLERATE
 # Optional:
 # - SDL_LIBSAMPLERATE_SHARED opt
