@@ -148,7 +148,7 @@ UIKit_PumpEvents(_THIS)
     } while(result == kCFRunLoopRunHandledSource);
 
     /* See the comment in the function definition. */
-#if SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
     UIKit_GL_RestoreCurrentContext();
 #endif
 }

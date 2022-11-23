@@ -125,6 +125,7 @@ add_sdl_test_executable(testgamecontroller NEEDS_RESOURCES testgamecontroller.c 
 add_sdl_test_executable(testgeometry testgeometry.c testutils.c)
 add_sdl_test_executable(testgesture testgesture.c)
 add_sdl_test_executable(testgl2 testgl2.c)
+add_sdl_test_executable(testgles testgles.c)
 add_sdl_test_executable(testgles2 testgles2.c)
 add_sdl_test_executable(testhaptic testhaptic.c)
 add_sdl_test_executable(testhotplug testhotplug.c)

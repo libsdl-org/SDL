@@ -624,6 +624,7 @@ GLESLIB
 GLLIB
 OPENGL_TARGETS
 OPENGLES2_TARGETS
+OPENGLES1_TARGETS
 CPP
 XMKMF
 SDL3_CONFIG
@@ -4573,6 +4574,33 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_opengl" >&5
 printf "%s\n" "$have_opengl" >&6; }
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES support" >&5
+printf %s "checking for OpenGL ES support... " >&6; }
+have_opengles=no
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+ #include "SDL_opengles.h"
+ #ifndef SDL_VIDEO_OPENGL_ES
+ #error SDL_VIDEO_OPENGL_ES
+ #endif
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_opengles=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_opengles" >&5
+printf "%s\n" "$have_opengles" >&6; }
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES2 support" >&5
 printf %s "checking for OpenGL ES2 support... " >&6; }
 have_opengles2=no
@@ -4603,8 +4631,14 @@ printf "%s\n" "$have_opengles2" >&6; }
 GLLIB=""
 GLESLIB=""
 GLES2LIB=""
+OPENGLES1_TARGETS="UNUSED"
 OPENGLES2_TARGETS="UNUSED"
 OPENGL_TARGETS="UNUSED"
+if test x$have_opengles = xyes; then
+    CFLAGS="$CFLAGS -DHAVE_OPENGLES"
+    GLESLIB="$XPATH -lGLESv1_CM"
+    OPENGLES1_TARGETS="TARGETS"
+fi
 if test x$have_opengles2 = xyes; then
     CFLAGS="$CFLAGS -DHAVE_OPENGLES2"
     #GLES2LIB="$XPATH -lGLESv2"
@@ -4775,6 +4809,7 @@ printf "%s\n" "$have_gcc_werror" >&6; }
         fi
     	;;
 esac
+
 
 
 
