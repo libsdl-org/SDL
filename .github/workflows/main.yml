@@ -88,7 +88,7 @@ jobs:
         ctest -VV --test-dir build/
         if test "${{ runner.os }}" = "Linux"; then
           # This should show us the SDL_REVISION
-          strings build/libSDL3-3.0.so.0 | grep SDL-
+          strings build/libSDL3.so.0 | grep SDL-
         fi
     - name: Install (CMake)
       if: "! matrix.platform.autotools"
@@ -147,7 +147,7 @@ jobs:
         make -j"${parallel}" -C build-autotools/test check LD_LIBRARY_PATH="${curdir}/build-autotools/build/.libs"
         if test "${{ runner.os }}" = "Linux"; then
           # This should show us the SDL_REVISION
-          strings "${curdir}/build-autotools/build/.libs/libSDL3-3.0.so.0" | grep SDL-
+          strings "${curdir}/build-autotools/build/.libs/libSDL3.so.0" | grep SDL-
         fi
     - name: Install (Autotools)
       if: matrix.platform.autotools

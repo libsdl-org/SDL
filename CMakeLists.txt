@@ -113,11 +113,6 @@ set(LT_MAJOR "0")
 math(EXPR LT_AGE "${SDL_BINARY_AGE} - ${SDL_INTERFACE_AGE}")
 math(EXPR LT_CURRENT "${LT_MAJOR} + ${LT_AGE}")
 set(LT_REVISION "${SDL_INTERFACE_AGE}")
-# For historical reasons, the library name redundantly includes the major
-# version twice: libSDL3-3.0.so.0.
-# TODO: in SDL 3, set the OUTPUT_NAME to plain SDL3, which will simplify
-# it to libSDL3.so.0
-set(LT_RELEASE "3.0")
 set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
 
 # The following should match the versions in the Xcode project file.
@@ -133,7 +128,7 @@ set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.0.0")
 # To avoid generating them twice, these are added to a dummy target on which all sdl targets depend.
 set(SDL_GENERATED_HEADERS)
 
-#message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT} :: ${LT_RELEASE}")
+#message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT}")
 
 check_cpu_architecture(x86 SDL_CPU_X86)
 check_cpu_architecture(x64 SDL_CPU_X64)
@@ -3259,13 +3254,11 @@ if(SDL_SHARED)
     # FIXME: Remove SOVERSION in SDL3
     set_target_properties(SDL3 PROPERTIES
       MACOSX_RPATH 1
-      SOVERSION 0
-      OUTPUT_NAME "SDL3-${LT_RELEASE}")
+      SOVERSION 0)
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3 PROPERTIES
       VERSION ${LT_VERSION}
-      SOVERSION ${LT_MAJOR}
-      OUTPUT_NAME "SDL3-${LT_RELEASE}")
+      SOVERSION ${LT_MAJOR})
   else()
     if(WINDOWS OR CYGWIN)
       set_target_properties(SDL3 PROPERTIES
@@ -3273,8 +3266,7 @@ if(SDL_SHARED)
     endif()
     set_target_properties(SDL3 PROPERTIES
       VERSION ${SDL_VERSION}
-      SOVERSION ${LT_REVISION}
-      OUTPUT_NAME "SDL3")
+      SOVERSION ${LT_REVISION})
   endif()
   # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
   if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
