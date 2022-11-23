@@ -25,7 +25,6 @@
 
 /* SDL internals */
 #include "../SDL_sysvideo.h"
-#include "SDL_syswm.h"
 #include "SDL_log.h"
 #include "SDL_hints.h"
 #include "../../events/SDL_events_c.h"
@@ -37,6 +36,9 @@
 #elif defined SDL_INPUT_WSCONS
 #include "../../core/openbsd/SDL_wscons.h"
 #endif
+
+#define SDL_ENABLE_SYSWM_KMSDRM
+#include "SDL_syswm.h"
 
 /* KMS/DRM declarations */
 #include "SDL_kmsdrmvideo.h"
@@ -1638,25 +1640,17 @@ KMSDRM_RestoreWindow(_THIS, SDL_Window * window)
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
-SDL_bool
-KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
+int
+KMSDRM_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info)
 {
      SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
-     const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,
-                                           (Uint32)info->version.minor,
-                                           (Uint32)info->version.patch);
-
-     if (version < SDL_VERSIONNUM(2, 0, 15)) {
-         SDL_SetError("Version must be 2.0.15 or newer");
-         return SDL_FALSE;
-     }
 
      info->subsystem = SDL_SYSWM_KMSDRM;
      info->info.kmsdrm.dev_index = viddata->devindex;
      info->info.kmsdrm.drm_fd = viddata->drm_fd;
      info->info.kmsdrm.gbm_dev = viddata->gbm_dev;
 
-     return SDL_TRUE;
+     return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */

@@ -25,7 +25,6 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsshape.h"
 #include "SDL_system.h"
-#include "SDL_syswm.h"
 #include "SDL_timer.h"
 #include "SDL_vkeys.h"
 #include "SDL_hints.h"
@@ -35,6 +34,9 @@
 #include "../../events/scancodes_windows.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
+
+#define SDL_ENABLE_SYSWM_WINDOWS
+#include "SDL_syswm.h"
 
 /* Dropfile support */
 #include <shellapi.h>
@@ -641,7 +643,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
 
-        SDL_VERSION(&wmmsg.version);
+        wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
         wmmsg.subsystem = SDL_SYSWM_WINDOWS;
         wmmsg.msg.win.hwnd = hwnd;
         wmmsg.msg.win.msg = msg;

@@ -42,7 +42,7 @@
 /* Dropfile support */
 #include <shellapi.h>
 
-/* This is included after SDL_windowsvideo.h, which includes windows.h */
+#define SDL_ENABLE_SYSWM_WINDOWS
 #include "SDL_syswm.h"
 
 /* Windows CE compatibility */
@@ -1195,30 +1195,17 @@ WIN_DestroyWindow(_THIS, SDL_Window * window)
     CleanupWindowData(_this, window);
 }
 
-SDL_bool
-WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+int
+WIN_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
     const SDL_WindowData *data = (const SDL_WindowData *) window->driverdata;
-    if (info->version.major <= SDL_MAJOR_VERSION) {
-        int versionnum = SDL_VERSIONNUM(info->version.major, info->version.minor, info->version.patch);
 
-        info->subsystem = SDL_SYSWM_WINDOWS;
-        info->info.win.window = data->hwnd;
+    info->subsystem = SDL_SYSWM_WINDOWS;
+    info->info.win.window = data->hwnd;
+    info->info.win.hdc = data->hdc;
+    info->info.win.hinstance = data->hinstance;
 
-        if (versionnum >= SDL_VERSIONNUM(2, 0, 4)) {
-            info->info.win.hdc = data->hdc;
-        }
-
-        if (versionnum >= SDL_VERSIONNUM(2, 0, 5)) {
-            info->info.win.hinstance = data->hinstance;
-        }
-
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("Application not compiled with SDL %d",
-                     SDL_MAJOR_VERSION);
-        return SDL_FALSE;
-    }
+    return 0;
 }
 
 /*

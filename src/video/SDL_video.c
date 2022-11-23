@@ -4416,22 +4416,32 @@ SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask)
 }
 #endif
 
-SDL_bool
-SDL_GetWindowWMInfo(SDL_Window * window, struct SDL_SysWMinfo *info)
+int
+SDL_GetWindowWMInfo(SDL_Window *window, struct SDL_SysWMinfo *info, Uint32 version)
 {
-    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (!info) {
-        SDL_InvalidParamError("info");
-        return SDL_FALSE;
+        return SDL_InvalidParamError("info");
     }
-    info->subsystem = SDL_SYSWM_UNKNOWN;
 
-    if (!_this->GetWindowWMInfo) {
-        SDL_Unsupported();
-        return SDL_FALSE;
+    /* Set the version in the structure to the minimum of our version and the application expected version */
+    version = SDL_min(version, SDL_SYSWM_CURRENT_VERSION);
+
+    if (version == 1) {
+        SDL_memset(info, 0, SDL_SYSWM_INFO_SIZE_V1);
+    } else {
+        return SDL_SetError("Unknown info version");
     }
-    return (_this->GetWindowWMInfo(_this, window, info));
+
+    info->subsystem = SDL_SYSWM_UNKNOWN;
+    info->version = version;
+
+    if (_this->GetWindowWMInfo) {
+        return (_this->GetWindowWMInfo(_this, window, info));
+    } else {
+        return 0;
+    }
 }
 
 void
@@ -4569,12 +4579,7 @@ static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messagebo
     SDL_SysWMinfo info;
     SDL_Window *window = messageboxdata->window;
 
-    if (!window) {
-        return SDL_TRUE;
-    }
-
-    SDL_VERSION(&info.version);
-    if (!SDL_GetWindowWMInfo(window, &info)) {
+    if (!window || SDL_GetWindowWMInfo(window, &info, SDL_SYSWM_CURRENT_VERSION) < 0) {
         return SDL_TRUE;
     } else {
         return (info.subsystem == drivertype);

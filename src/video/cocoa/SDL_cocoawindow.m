@@ -26,7 +26,6 @@
 # error SDL for Mac OS X must be built with a 10.7 SDK or above.
 #endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1070 */
 
-#include "SDL_syswm.h"
 #include "SDL_timer.h"  /* For SDL_GetTicks() */
 #include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
@@ -35,11 +34,15 @@
 #include "../../events/SDL_touch_c.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "../../events/SDL_dropevents_c.h"
+
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoashape.h"
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
+
+#define SDL_ENABLE_SYSWM_COCOA
+#include "SDL_syswm.h"
 
 /* #define DEBUG_COCOAWINDOW */
 
@@ -2401,21 +2404,15 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
     window->driverdata = NULL;
 }}
 
-SDL_bool
-Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+int
+Cocoa_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 { @autoreleasepool
 {
     NSWindow *nswindow = ((__bridge SDL_WindowData *) window->driverdata).nswindow;
 
-    if (info->version.major <= SDL_MAJOR_VERSION) {
-        info->subsystem = SDL_SYSWM_COCOA;
-        info->info.cocoa.window = nswindow;
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("Application not compiled with SDL %d",
-                     SDL_MAJOR_VERSION);
-        return SDL_FALSE;
-    }
+    info->subsystem = SDL_SYSWM_COCOA;
+    info->info.cocoa.window = nswindow;
+    return 0;
 }}
 
 SDL_bool

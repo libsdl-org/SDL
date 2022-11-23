@@ -1152,94 +1152,36 @@ static const struct wl_surface_listener surface_listener = {
     handle_surface_leave
 };
 
-static void
-Wayland_FillEmptyShellInfo(SDL_SysWMinfo * info, const Uint32 version)
-{
-    info->info.wl.xdg_surface = NULL;
-    if (version >= SDL_VERSIONNUM(2, 0, 17)) {
-        info->info.wl.xdg_toplevel = NULL;
-        if (version >= SDL_VERSIONNUM(2, 0, 22)) {
-            info->info.wl.xdg_popup = NULL;
-            info->info.wl.xdg_positioner = NULL;
-        }
-    }
-}
-
-SDL_bool
-Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+int
+Wayland_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    const Uint32 version = SDL_VERSIONNUM((Uint32)info->version.major,
-                                          (Uint32)info->version.minor,
-                                          (Uint32)info->version.patch);
 
-    /* Before 2.0.6, it was possible to build an SDL with Wayland support
-       (SDL_SysWMinfo will be large enough to hold Wayland info), but build
-       your app against SDL headers that didn't have Wayland support
-       (SDL_SysWMinfo could be smaller than Wayland needs. This would lead
-       to an app properly using SDL_GetWindowWMInfo() but we'd accidentally
-       overflow memory on the stack or heap. To protect against this, we've
-       padded out the struct unconditionally in the headers and Wayland will
-       just return an error for older apps using this function. Those apps
-       will need to be recompiled against newer headers or not use Wayland,
-       maybe by forcing SDL_VIDEODRIVER=x11. */
-    if (version < SDL_VERSIONNUM(2, 0, 6)) {
-        info->subsystem = SDL_SYSWM_UNKNOWN;
-        SDL_SetError("Version must be 2.0.6 or newer");
-        return SDL_FALSE;
-    }
-
+    info->subsystem = SDL_SYSWM_WAYLAND;
     info->info.wl.display = data->waylandData->display;
     info->info.wl.surface = data->surface;
-
-    if (version >= SDL_VERSIONNUM(2, 0, 15)) {
-        info->info.wl.egl_window = data->egl_window;
+    info->info.wl.egl_window = data->egl_window;
 
 #ifdef HAVE_LIBDECOR_H
-        if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
-            if (data->shell_surface.libdecor.frame != NULL) {
-                info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
-                if (version >= SDL_VERSIONNUM(2, 0, 17)) {
-                    info->info.wl.xdg_toplevel = libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame);
-                    if (version >= SDL_VERSIONNUM(2, 0, 22)) {
-                        info->info.wl.xdg_popup = NULL;
-                        info->info.wl.xdg_positioner = NULL;
-                    }
-                }
-            } else {
-                /* Not mapped yet */
-                Wayland_FillEmptyShellInfo(info, version);
-            }
-        } else
+    if (data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
+        if (data->shell_surface.libdecor.frame != NULL) {
+            info->info.wl.xdg_surface = libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame);
+            info->info.wl.xdg_toplevel = libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame);
+        }
+    } else
 #endif
-        if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
-            info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
-            if (version >= SDL_VERSIONNUM(2, 0, 17)) {
-                SDL_bool popup = data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP;
-                info->info.wl.xdg_toplevel = popup ? NULL : data->shell_surface.xdg.roleobj.toplevel;
-                if (version >= SDL_VERSIONNUM(2, 0, 22)) {
-                    if (popup) {
-                        info->info.wl.xdg_popup = data->shell_surface.xdg.roleobj.popup.popup;
-                        info->info.wl.xdg_positioner = data->shell_surface.xdg.roleobj.popup.positioner;
-                    } else {
-                        info->info.wl.xdg_popup = NULL;
-                        info->info.wl.xdg_positioner = NULL;
-                    }
-                }
-            }
-        } else {
-            /* Either it's not mapped yet or we don't have a shell protocol */
-            Wayland_FillEmptyShellInfo(info, version);
+    if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
+        SDL_bool popup = (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ? SDL_TRUE : SDL_FALSE;
+        info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
+        info->info.wl.xdg_toplevel = popup ? NULL : data->shell_surface.xdg.roleobj.toplevel;
+        if (popup) {
+            info->info.wl.xdg_popup = data->shell_surface.xdg.roleobj.popup.popup;
+            info->info.wl.xdg_positioner = data->shell_surface.xdg.roleobj.popup.positioner;
         }
     }
 
-    /* Deprecated in 2.0.16 */
-    info->info.wl.shell_surface = NULL;
-
-    info->subsystem = SDL_SYSWM_WAYLAND;
-
-    return SDL_TRUE;
+    return 0;
 }
 
 int

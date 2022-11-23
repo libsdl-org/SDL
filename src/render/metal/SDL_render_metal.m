@@ -23,7 +23,6 @@
 #if SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED
 
 #include "SDL_hints.h"
-#include "SDL_syswm.h"
 #include "SDL_metal.h"
 #include "../SDL_sysrender.h"
 
@@ -31,10 +30,16 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-#ifdef __MACOSX__
+#ifdef SDL_VIDEO_DRIVER_COCOA
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSView.h>
+#define SDL_ENABLE_SYSWM_COCOA
 #endif
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+#import <UIKit/UIKit.h>
+#define SDL_ENABLE_SYSWM_UIKIT
+#endif
+#include "SDL_syswm.h"
 
 /* Regenerate these with build-metal-shaders.sh */
 #ifdef __MACOSX__
@@ -1599,9 +1604,8 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
 {
     SDL_SysWMinfo info;
 
-    SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(window, &info)) {
-#ifdef __MACOSX__
+    if (SDL_GetWindowWMInfo(window, &info, SDL_SYSWM_CURRENT_VERSION) == 0) {
+#ifdef SDL_ENABLE_SYSWM_COCOA
         if (info.subsystem == SDL_SYSWM_COCOA) {
             NSView *view = info.info.cocoa.window.contentView;
             if (view.subviews.count > 0) {
@@ -1611,7 +1615,8 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
                 }
             }
         }
-#else
+#endif
+#ifdef SDL_ENABLE_SYSWM_UIKIT
         if (info.subsystem == SDL_SYSWM_UIKIT) {
             UIView *view = info.info.uikit.window.rootViewController.view;
             if (view.tag == SDL_METALVIEW_TAG) {
@@ -1683,8 +1688,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         1.0000,  1.7720,  0.0000, 0.0,        /* Bcoeff */
     };
 
-    SDL_VERSION(&syswm.version);
-    if (!SDL_GetWindowWMInfo(window, &syswm)) {
+    if (SDL_GetWindowWMInfo(window, &syswm, SDL_SYSWM_CURRENT_VERSION) < 0) {
         return NULL;
     }
 

@@ -39,6 +39,8 @@
 
 #include "SDL_hints.h"
 #include "SDL_timer.h"
+
+#define SDL_ENABLE_SYSWM_X11
 #include "SDL_syswm.h"
 
 #include <stdio.h>
@@ -317,7 +319,7 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
         if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
             SDL_SysWMmsg wmmsg;
 
-            SDL_VERSION(&wmmsg.version);
+            wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
             wmmsg.subsystem = SDL_SYSWM_X11;
             wmmsg.msg.x11.event = *xev;
             SDL_SendSysWMEvent(&wmmsg);
@@ -812,7 +814,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
 
-        SDL_VERSION(&wmmsg.version);
+        wmmsg.version = SDL_SYSWM_CURRENT_VERSION;
         wmmsg.subsystem = SDL_SYSWM_X11;
         wmmsg.msg.x11.event = *xevent;
         SDL_SendSysWMEvent(&wmmsg);
