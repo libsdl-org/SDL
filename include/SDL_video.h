@@ -1929,6 +1929,8 @@ extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
  * \returns a pointer to the named EGL function. The returned pointer should
  *          be cast to the appropriate function signature.
  *
+ * \since This function is available since SDL 3.0.0.
+ *
  * \sa SDL_GL_GetCurrentEGLDisplay
  */
 extern DECLSPEC void *SDLCALL SDL_EGL_GetProcAddress(const char *proc);
@@ -2076,6 +2078,8 @@ extern DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
  *
  * \returns the currently active EGL display or NULL on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentEGLDisplay(void);
 
@@ -2084,6 +2088,8 @@ extern DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentEGLDisplay(void);
  *
  * \returns the currently active EGL config or NULL on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentEGLConfig(void);
 
@@ -2092,6 +2098,8 @@ extern DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentEGLConfig(void);
  *
  * \returns the EGLSurface pointer associated with the window, or NULL on
  *          failure.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface(SDL_Window * window);
 
@@ -2114,6 +2122,8 @@ extern DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface(SDL_Window * 
  *                              eglCreateSurface.
  * \param contextAttribCallback Callback for attributes to pass to
  *                              eglCreateContext.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
                                                               SDL_EGLIntArrayCallback surfaceAttribCallback,
