@@ -60,6 +60,10 @@ extern "C" {
  * - `parent`: the containing directory of the bundle. For example:
  *   `/Applications/SDLApp/`
  *
+ * **Nintendo 3DS Specific Functionality**: This function returns "romfs"
+ * directory of the application as it is uncommon to store resources outside
+ * the executable. As such it is not a writable directory.
+ *
  * The returned path is guaranteed to end with a path separator ('\' on
  * Windows, '/' on most other platforms).
  *
@@ -71,7 +75,7 @@ extern "C" {
  *          doesn't implement this functionality, call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.1.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPrefPath
  */
@@ -128,7 +132,7 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *          notation. NULL if there's a problem (creating directory failed,
  *          etc.).
  *
- * \since This function is available since SDL 2.0.1.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetBasePath
  */

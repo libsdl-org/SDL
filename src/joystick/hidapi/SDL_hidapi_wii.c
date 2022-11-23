@@ -170,9 +170,13 @@ HIDAPI_DriverWii_UnregisterHints(SDL_HintCallback callback, void *userdata)
 static SDL_bool
 HIDAPI_DriverWii_IsEnabled(void)
 {
+#if 1 /* This doesn't work with the dolphinbar, so don't enable by default right now */
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII, SDL_FALSE);
+#else
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII,
                SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
                    SDL_HIDAPI_DEFAULT));
+#endif
 }
 
 static SDL_bool

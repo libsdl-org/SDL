@@ -1085,12 +1085,25 @@ int hid_init(void)
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	struct hid_device_info *root = NULL;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
+
 	hid_mutex_guard l( &g_DevicesMutex );
 	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next )
 	{
 		const hid_device_info *info = pDevice->GetDeviceInfo();
-		if ( ( vendor_id == 0 && product_id == 0 ) ||
-			 ( vendor_id == info->vendor_id && product_id == info->product_id ) )
+
+		/* See if there are any devices we should skip in enumeration */
+		if (hint) {
+			char vendor_match[16], product_match[16];
+			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", info->vendor_id);
+			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", info->vendor_id, info->product_id);
+			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+				continue;
+			}
+		}
+
+		if ( ( vendor_id == 0x0 || info->vendor_id == vendor_id ) &&
+		     ( product_id == 0x0 || info->product_id == product_id ) )
 		{
 			hid_device_info *dev = CopyHIDDeviceInfo( info );
 			dev->next = root;

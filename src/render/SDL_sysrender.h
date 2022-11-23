@@ -231,7 +231,7 @@ struct SDL_Renderer
     SDL_DRect clip_rect;
     SDL_DRect clip_rect_backup;
 
-    /* Wether or not the clipping rectangle is used. */
+    /* Whether or not the clipping rectangle is used. */
     SDL_bool clipping_enabled;
     SDL_bool clipping_enabled_backup;
 
@@ -247,6 +247,9 @@ struct SDL_Renderer
 
     /* The method of drawing lines */
     SDL_RenderLineMethod line_method;
+
+    /* List of triangle indices to draw rects */
+    int rect_index_order[6];
 
     /* Remainder from scaled relative motion */
     float xrel;
@@ -297,7 +300,6 @@ extern SDL_RenderDriver D3D12_RenderDriver;
 extern SDL_RenderDriver GL_RenderDriver;
 extern SDL_RenderDriver GLES2_RenderDriver;
 extern SDL_RenderDriver GLES_RenderDriver;
-extern SDL_RenderDriver DirectFB_RenderDriver;
 extern SDL_RenderDriver METAL_RenderDriver;
 extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;

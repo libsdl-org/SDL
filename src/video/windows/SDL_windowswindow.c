@@ -34,8 +34,10 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
+#include "SDL_windowsshape.h"
 #include "SDL_hints.h"
 #include "SDL_timer.h"
+#include "SDL_version.h"
 
 /* Dropfile support */
 #include <shellapi.h>
@@ -738,15 +740,22 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 
     /* rcClient stores the size of the inner window, while rcWindow stores the outer size relative to the top-left
      * screen position; so the top/left values of rcClient are always {0,0} and bottom/right are {height,width} */
-    GetClientRect(hwnd, &rcClient);
-    GetWindowRect(hwnd, &rcWindow);
+    if (!GetClientRect(hwnd, &rcClient)) {
+        return SDL_SetError("GetClientRect() failed, error %08X", (unsigned int)GetLastError());
+    }
+
+    if (!GetWindowRect(hwnd, &rcWindow)) {
+        return SDL_SetError("GetWindowRect() failed, error %08X", (unsigned int)GetLastError());
+    }
 
     /* convert the top/left values to make them relative to
      * the window; they will end up being slightly negative */
     ptDiff.y = rcWindow.top;
     ptDiff.x = rcWindow.left;
 
-    ScreenToClient(hwnd, &ptDiff);
+    if (!ScreenToClient(hwnd, &ptDiff)) {
+        return SDL_SetError("ScreenToClient() failed, error %08X", (unsigned int)GetLastError());
+    }
 
     rcWindow.top  = ptDiff.y;
     rcWindow.left = ptDiff.x;
@@ -756,14 +765,16 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
     ptDiff.y = rcWindow.bottom;
     ptDiff.x = rcWindow.right;
 
-    ScreenToClient(hwnd, &ptDiff);
+    if (!ScreenToClient(hwnd, &ptDiff)) {
+        return SDL_SetError("ScreenToClient() failed, error %08X", (unsigned int)GetLastError());
+    }
 
     rcWindow.bottom = ptDiff.y;
     rcWindow.right  = ptDiff.x;
 
     /* Now that both the inner and outer rects use the same coordinate system we can substract them to get the border size.
      * Keep in mind that the top/left coordinates of rcWindow are negative because the border lies slightly before {0,0},
-     * so switch them around because SDL2 wants them in positive. */
+     * so switch them around because SDL3 wants them in positive. */
     *top    = rcClient.top    - rcWindow.top;
     *left   = rcClient.left   - rcWindow.left;
     *bottom = rcWindow.bottom - rcClient.bottom;
@@ -1168,6 +1179,18 @@ WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 void
 WIN_DestroyWindow(_THIS, SDL_Window * window)
 {
+    if (window->shaper) {
+        SDL_ShapeData *shapedata = (SDL_ShapeData *) window->shaper->driverdata;
+        if (shapedata) {
+            if (shapedata->mask_tree) {
+                SDL_FreeShapeTree(&shapedata->mask_tree);
+            }
+            SDL_free(shapedata);
+        }
+        SDL_free(window->shaper);
+        window->shaper = NULL;
+    }
+
     CleanupWindowData(_this, window);
 }
 

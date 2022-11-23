@@ -262,6 +262,7 @@ typedef struct {
     Uint32 m_unIMUSamples;
     Uint32 m_unIMUUpdateIntervalUS;
     Uint64 m_ulTimestampUS;
+    SDL_bool m_bVerticalMode;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -820,13 +821,13 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
     /* IMU scale gives us multipliers for converting raw values to real world values */
     pIMUScale = reply->spiReadData.rgucReadData;
 
-    sAccelRawX = ((pIMUScale[1] << 8) & 0xF00) | pIMUScale[0];
-    sAccelRawY = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
-    sAccelRawZ = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
+    sAccelRawX = (pIMUScale[1] << 8) | pIMUScale[0];
+    sAccelRawY = (pIMUScale[3] << 8) | pIMUScale[2];
+    sAccelRawZ = (pIMUScale[5] << 8) | pIMUScale[4];
 
-    sGyroRawX = ((pIMUScale[13] << 8) & 0xF00) | pIMUScale[12];
-    sGyroRawY = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
-    sGyroRawZ = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
+    sGyroRawX = (pIMUScale[13] << 8) | pIMUScale[12];
+    sGyroRawY = (pIMUScale[15] << 8) | pIMUScale[14];
+    sGyroRawZ = (pIMUScale[17] << 8) | pIMUScale[16];
 
     /* Check for user calibration data. If it's present and set, it'll override the factory settings */
     readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
@@ -834,13 +835,13 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
     if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t*)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
         pIMUScale = reply->spiReadData.rgucReadData;
         
-        sAccelRawX = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
-        sAccelRawY = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
-        sAccelRawZ = ((pIMUScale[7] << 8) & 0xF00) | pIMUScale[6];
+        sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
+        sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
+        sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
 
-        sGyroRawX = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
-        sGyroRawY = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
-        sGyroRawZ = ((pIMUScale[19] << 8) & 0xF00) | pIMUScale[18];
+        sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
+        sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
+        sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
     }
 
     /* Accelerometer scale */
@@ -1105,7 +1106,7 @@ static SDL_bool
 HIDAPI_DriverJoyCons_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO && device) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH_PRO && device && device->dev) {
             /* This might be a Kinvoca Joy-Con that reports VID/PID as a Switch Pro controller */
             ESwitchDeviceInfoControllerType eControllerType = ReadJoyConControllerType(device);
             if (eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
@@ -1410,7 +1411,7 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
                         SDL_PlayerLEDHintChanged, ctx);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = 16;
+    joystick->nbuttons = 20;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = device->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
 
@@ -1418,6 +1419,9 @@ HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joysti
     ctx->m_bSyncWrite = SDL_FALSE;
     ctx->m_unLastIMUReset = ctx->m_unLastInput = SDL_GetTicks();
     ctx->m_unIMUUpdateIntervalUS = 5 * 1000; /* Start off at 5 ms update rate */
+
+    /* Set up for vertical mode */
+    ctx->m_bVerticalMode = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_FALSE);
 
     return SDL_TRUE;
 }
@@ -1789,7 +1793,7 @@ static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *c
     }
 
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft &&
-        !ctx->device->parent) {
+        !ctx->device->parent && !ctx->m_bVerticalMode) {
         /* Mini-gamepad mode, swap some axes around */
         float tmp = data[2];
         data[2] = -data[0];
@@ -1797,7 +1801,7 @@ static void SendSensorUpdate(SDL_Joystick *joystick, SDL_DriverSwitch_Context *c
     }
 
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight &&
-        !ctx->device->parent) {
+        !ctx->device->parent && !ctx->m_bVerticalMode) {
         /* Mini-gamepad mode, swap some axes around */
         float tmp = data[2];
         data[2] = data[0];
@@ -1824,6 +1828,8 @@ static void HandleCombinedControllerStateL(SDL_Joystick *joystick, SDL_DriverSwi
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE4, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE2, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
         axis = (data & 0x80) ? 32767 : -32768;
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
@@ -1857,6 +1863,8 @@ static void HandleMiniControllerStateL(SDL_Joystick *joystick, SDL_DriverSwitch_
         SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_B), (data & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE2, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE4, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     axis = packet->controllerState.rgucJoystickLeft[0] | ((packet->controllerState.rgucJoystickLeft[1] & 0xF) << 8);
@@ -1878,6 +1886,8 @@ static void HandleCombinedControllerStateR(SDL_Joystick *joystick, SDL_DriverSwi
         SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_B), (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_X), (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_Y), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE1, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE3, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
         axis = (data & 0x80) ? 32767 : -32768;
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
@@ -1911,6 +1921,8 @@ static void HandleMiniControllerStateR(SDL_Joystick *joystick, SDL_DriverSwitch_
         SDL_PrivateJoystickButton(joystick, RemapButton(ctx, SDL_CONTROLLER_BUTTON_X), (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE1, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_PADDLE3, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (packet->controllerState.rgucButtons[1] != ctx->m_lastFullState.controllerState.rgucButtons[1]) {
@@ -1932,13 +1944,13 @@ static void HandleMiniControllerStateR(SDL_Joystick *joystick, SDL_DriverSwitch_
 static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)
 {
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-        if (ctx->device->parent) {
+        if (ctx->device->parent || ctx->m_bVerticalMode) {
             HandleCombinedControllerStateL(joystick, ctx, packet);
         } else {
             HandleMiniControllerStateL(joystick, ctx, packet);
         }
     } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-        if (ctx->device->parent) {
+        if (ctx->device->parent || ctx->m_bVerticalMode) {
             HandleCombinedControllerStateR(joystick, ctx, packet);
         } else {
             HandleMiniControllerStateR(joystick, ctx, packet);
@@ -2050,32 +2062,35 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
             if (!ctx->device->parent ||
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[2], &packet->imuState[0].sGyroX);
-
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, timestamp[0], &packet->imuState[2].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[1], &packet->imuState[1].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, timestamp[1], &packet->imuState[1].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[2], &packet->imuState[0].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, timestamp[2], &packet->imuState[0].sAccelX);
             }
 
             if (ctx->device->parent &&
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[2], &packet->imuState[0].sGyroX);
-
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp[0], &packet->imuState[2].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[1], &packet->imuState[1].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp[1], &packet->imuState[1].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[2], &packet->imuState[0].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp[2], &packet->imuState[0].sAccelX);
             }
             if (ctx->device->parent &&
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[2], &packet->imuState[0].sGyroX);
-
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp[0], &packet->imuState[2].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[1], &packet->imuState[1].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp[1], &packet->imuState[1].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[2], &packet->imuState[0].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp[2], &packet->imuState[0].sAccelX);
             }
 

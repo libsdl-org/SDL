@@ -893,7 +893,7 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         } else if (result == IDINVALPTRDLGITEM) {
             SDL_SetError("Couldn't find dialog control of the default enter-key button");
         } else {
-            SDL_SetError("An unknown error occured");
+            SDL_SetError("An unknown error occurred");
         }
         retval = -1;
     }

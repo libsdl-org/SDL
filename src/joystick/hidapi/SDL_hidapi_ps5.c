@@ -277,7 +277,7 @@ HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, 
     }
 
     if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
-        if (device) {
+        if (device && device->dev) {
             if ((size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
                 data[2] == 0x28) {
                 /* Supported third party controller */
@@ -746,7 +746,9 @@ HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
     data[0] = k_EPS5ReportIdBluetoothEffects;
     data[1] = 0x02;  /* Magic value */
 
-    SDL_HIDAPI_SendRumble(device, data, sizeof(data));
+    if (SDL_HIDAPI_LockRumble() == 0) {
+        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
+    }
 }
 
 static void

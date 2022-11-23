@@ -201,24 +201,13 @@
 #define __PS2__ 1
 #endif
 
-/* The NACL compiler defines __native_client__ and __pnacl__
- * Ref: http://www.chromium.org/nativeclient/pnacl/stability-of-the-pnacl-bitcode-abi
- */
-#if defined(__native_client__)
-#undef __LINUX__
-#undef __NACL__
-#define __NACL__ 1
-#endif
-#if defined(__pnacl__)
-#undef __LINUX__
-#undef __PNACL__
-#define __PNACL__ 1
-/* PNACL with newlib supports static linking only */
-#define __SDL_NOGETPROCADDR__
-#endif
-
 #if defined(__vita__)
 #define __VITA__ 1
+#endif
+
+#if defined(__3DS__)
+#undef __3DS__
+#define __3DS__ 1
 #endif
 
 #include "begin_code.h"
@@ -241,7 +230,7 @@ extern "C" {
  * \returns the name of the platform. If the correct platform name is not
  *          available, returns a string beginning with the text "Unknown".
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC const char * SDLCALL SDL_GetPlatform (void);
 

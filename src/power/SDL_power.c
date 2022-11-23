@@ -71,6 +71,9 @@ static SDL_GetPowerInfo_Impl implementations[] = {
 #ifdef SDL_POWER_VITA        /* handles PSVita. */
     SDL_GetPowerInfo_VITA,
 #endif
+#ifdef SDL_POWER_N3DS        /* handles N3DS. */
+    SDL_GetPowerInfo_N3DS,
+#endif
 #ifdef SDL_POWER_WINRT          /* handles WinRT */
     SDL_GetPowerInfo_WinRT,
 #endif

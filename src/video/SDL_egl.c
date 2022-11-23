@@ -244,37 +244,28 @@ SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext
 void *
 SDL_EGL_GetProcAddress(_THIS, const char *proc)
 {
-    const Uint32 eglver = (((Uint32) _this->egl_data->egl_version_major) << 16) | ((Uint32) _this->egl_data->egl_version_minor);
-    const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32) 1) << 16) | 5);
     void *retval = NULL;
+    if (_this->egl_data != NULL) {
+        const Uint32 eglver = (((Uint32) _this->egl_data->egl_version_major) << 16) | ((Uint32) _this->egl_data->egl_version_minor);
+        const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32) 1) << 16) | 5);
 
-    /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
-    if (!retval && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
-        retval = _this->egl_data->eglGetProcAddress(proc);
-    }
+        /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
+        if (!retval && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
+            retval = _this->egl_data->eglGetProcAddress(proc);
+        }
 
-    #if !defined(__EMSCRIPTEN__) && !defined(SDL_VIDEO_DRIVER_VITA)  /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
-    /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
-    if (!retval) {
-        static char procname[64];
-        retval = SDL_LoadFunction(_this->egl_data->opengl_dll_handle, proc);
-        /* just in case you need an underscore prepended... */
-        if (!retval && (SDL_strlen(proc) < (sizeof (procname) - 1))) {
-            procname[0] = '_';
-            SDL_strlcpy(procname + 1, proc, sizeof (procname) - 1);
-            retval = SDL_LoadFunction(_this->egl_data->opengl_dll_handle, procname);
+        #if !defined(__EMSCRIPTEN__) && !defined(SDL_VIDEO_DRIVER_VITA)  /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
+        /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
+        if (!retval) {
+            retval = SDL_LoadFunction(_this->egl_data->opengl_dll_handle, proc);
+        }
+        #endif
+
+        /* Try eglGetProcAddress if we're on <= 1.4 and still searching... */
+        if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
+            retval = _this->egl_data->eglGetProcAddress(proc);
         }
     }
-    #endif
-
-    /* Try eglGetProcAddress if we're on <= 1.4 and still searching... */
-    if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
-        retval = _this->egl_data->eglGetProcAddress(proc);
-        if (retval) {
-            return retval;
-        }
-    }
-
     return retval;
 }
 
@@ -301,8 +292,8 @@ SDL_EGL_UnloadLibrary(_THIS)
     }
 }
 
-int
-SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
+static int
+SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 {
     void *egl_dll_handle = NULL, *opengl_dll_handle = NULL;
     const char *path = NULL;
@@ -312,15 +303,6 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
 #if SDL_VIDEO_DRIVER_RPI
     SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
 #endif
-
-    if (_this->egl_data) {
-        return SDL_SetError("EGL context already created");
-    }
-
-    _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
-    if (!_this->egl_data) {
-        return SDL_OutOfMemory();
-    }
 
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
     d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
@@ -479,6 +461,26 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
         *_this->gl_config.driver_path = '\0';
     }
 
+    return 0;
+}
+
+int
+SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
+{
+    if (_this->egl_data) {
+        return SDL_SetError("EGL context already created");
+    }
+
+    _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
+    if (!_this->egl_data) {
+        return SDL_OutOfMemory();
+    }
+
+    if (SDL_EGL_LoadLibraryInternal(_this, egl_path) < 0) {
+        SDL_free(_this->egl_data);
+        _this->egl_data = NULL;
+        return -1;
+    }
     return 0;
 }
 

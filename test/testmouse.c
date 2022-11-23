@@ -202,10 +202,10 @@ loop(void *arg)
     /* Mouse wheel */
     SDL_SetRenderDrawColor(renderer, 0, 255, 128, 255);
     if (wheel_x_active) {
-            SDL_RenderDrawLine(renderer, wheel_x, 0, wheel_x, SCREEN_HEIGHT);
+        SDL_RenderDrawLine(renderer, (int)wheel_x, 0, (int)wheel_x, SCREEN_HEIGHT);
     }
     if (wheel_y_active) {
-            SDL_RenderDrawLine(renderer, 0, wheel_y, SCREEN_WIDTH, wheel_y);
+        SDL_RenderDrawLine(renderer, 0, (int)wheel_y, SCREEN_WIDTH, (int)wheel_y);
     }
 
     /* Objects from mouse clicks */

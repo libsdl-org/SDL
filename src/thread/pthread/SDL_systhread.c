@@ -60,13 +60,11 @@
 #endif
 
 
-#ifndef __NACL__
 /* List of signals to mask in the subthreads */
 static const int sig_list[] = {
     SIGHUP, SIGINT, SIGQUIT, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGWINCH,
     SIGVTALRM, SIGPROF, 0
 };
-#endif
 
 static void *
 RunThread(void *data)
@@ -125,10 +123,8 @@ SDL_SYS_CreateThread(SDL_Thread * thread)
 void
 SDL_SYS_SetupThread(const char *name)
 {
-#if !defined(__NACL__)
     int i;
     sigset_t mask;
-#endif /* !__NACL__ */
 
     if (name != NULL) {
         #if (defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
@@ -164,16 +160,12 @@ SDL_SYS_SetupThread(const char *name)
         #endif
     }
 
-   /* NativeClient does not yet support signals.*/
-#if !defined(__NACL__)
     /* Mask asynchronous signals for this thread */
     sigemptyset(&mask);
     for (i = 0; sig_list[i]; ++i) {
         sigaddset(&mask, sig_list[i]);
     }
     pthread_sigmask(SIG_BLOCK, &mask, 0);
-#endif /* !__NACL__ */
-
 
 #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
     /* Allow ourselves to be asynchronously cancelled */
@@ -193,8 +185,8 @@ SDL_ThreadID(void)
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#if __NACL__ || __RISCOS__ || __OS2__
-    /* FIXME: Setting thread priority does not seem to be supported in NACL */
+#if __RISCOS__
+    /* FIXME: Setting thread priority does not seem to be supported */
     return 0;
 #else
     struct sched_param sched;
@@ -287,7 +279,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     }
     return 0;
 #endif /* linux */
-#endif /* #if __NACL__ || __RISCOS__ */
+#endif /* #if __RISCOS__ */
 }
 
 void

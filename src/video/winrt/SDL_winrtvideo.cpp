@@ -154,6 +154,8 @@ WINRT_CreateDevice(void)
     device->ShowScreenKeyboard = WINRT_ShowScreenKeyboard;
     device->HideScreenKeyboard = WINRT_HideScreenKeyboard;
     device->IsScreenKeyboardShown = WINRT_IsScreenKeyboardShown;
+
+    WINTRT_InitialiseInputPaneEvents(device);
 #endif
 
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -524,7 +526,7 @@ WINRT_DetectWindowFlags(SDL_Window * window)
 
 #if SDL_WINRT_USE_APPLICATIONVIEW
     if (data->appView) {
-        is_fullscreen = data->appView->IsFullScreen;
+        is_fullscreen = data->appView->IsFullScreenMode;
     }
 #elif (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION == NTDDI_WIN8)
     is_fullscreen = true;

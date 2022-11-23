@@ -30,7 +30,7 @@ static int done = SDL_FALSE;
 static int frame_number = 0;
 static int width = 640;
 static int height = 480;
-static int max_frames = 200;
+static unsigned int max_frames = 200;
 
 void
 draw()
@@ -66,8 +66,8 @@ save_surface_to_bmp()
     surface = SDL_CreateRGBSurface(0, width, height, bbp, r_mask, g_mask, b_mask, a_mask);
     SDL_RenderReadPixels(renderer, NULL, pixel_format, (void*)surface->pixels, surface->pitch);
 
-    SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-        SDL_GetWindowID(window), ++frame_number);
+    SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
+                 SDL_GetWindowID(window), ++frame_number);
 
     SDL_SaveBMP(surface, file);
     SDL_FreeSurface(surface);
@@ -100,7 +100,9 @@ loop()
 int
 main(int argc, char *argv[])
 {
+#ifndef __EMSCRIPTEN__
     Uint32 then, now, frames;
+#endif
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -135,12 +137,14 @@ main(int argc, char *argv[])
 
     srand((unsigned int)time(NULL));
 
+#ifndef __EMSCRIPTEN__
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
+#endif
 
-    SDL_Log("Rendering %i frames offscreen\n", max_frames);
+    SDL_Log("Rendering %u frames offscreen\n", max_frames);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
@@ -154,7 +158,7 @@ main(int argc, char *argv[])
             now = SDL_GetTicks();
             if (now > then) {
                 double fps = ((double) frames * 1000) / (now - then);
-                SDL_Log("Frames remaining: %i rendering at %2.2f frames per second\n", max_frames - frames, fps);
+                SDL_Log("Frames remaining: %" SDL_PRIu32 " rendering at %2.2f frames per second\n", max_frames - frames, fps);
             }
         }
     }

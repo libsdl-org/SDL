@@ -75,28 +75,31 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         var w = $0;
         var h = $1;
         var pixels = $2;
+        var canvasId = UTF8ToString($3);
+        var canvas = document.querySelector(canvasId);
 
-        if (!Module['SDL2']) Module['SDL2'] = {};
-        var SDL2 = Module['SDL2'];
-        if (SDL2.ctxCanvas !== Module['canvas']) {
-            SDL2.ctx = Module['createContext'](Module['canvas'], false, true);
-            SDL2.ctxCanvas = Module['canvas'];
+        //TODO: this should store a context per canvas
+        if (!Module['SDL3']) Module['SDL3'] = {};
+        var SDL3 = Module['SDL3'];
+        if (SDL3.ctxCanvas !== canvas) {
+            SDL3.ctx = Module['createContext'](canvas, false, true);
+            SDL3.ctxCanvas = canvas;
         }
-        if (SDL2.w !== w || SDL2.h !== h || SDL2.imageCtx !== SDL2.ctx) {
-            SDL2.image = SDL2.ctx.createImageData(w, h);
-            SDL2.w = w;
-            SDL2.h = h;
-            SDL2.imageCtx = SDL2.ctx;
+        if (SDL3.w !== w || SDL3.h !== h || SDL3.imageCtx !== SDL3.ctx) {
+            SDL3.image = SDL3.ctx.createImageData(w, h);
+            SDL3.w = w;
+            SDL3.h = h;
+            SDL3.imageCtx = SDL3.ctx;
         }
-        var data = SDL2.image.data;
+        var data = SDL3.image.data;
         var src = pixels >> 2;
         var dst = 0;
         var num;
 
-        if (SDL2.data32Data !== data) {
-            SDL2.data32 = new Int32Array(data.buffer);
-            SDL2.data8 = new Uint8Array(data.buffer);
-            SDL2.data32Data = data;
+        if (SDL3.data32Data !== data) {
+            SDL3.data32 = new Int32Array(data.buffer);
+            SDL3.data8 = new Uint8Array(data.buffer);
+            SDL3.data32Data = data;
         }
         var data32 = SDL2.data32;
         num = data32.length;
@@ -109,7 +112,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         // native SDL_memcpy efficiencies, and the remaining loop
         // just stores, not load + store, so it is faster
         data32.set(HEAP32.subarray(src, src + num));
-        var data8 = SDL2.data8;
+        var data8 = SDL3.data8;
         var i = 3;
         var j = i + 4*num;
         if (num % 8 == 0) {
@@ -139,8 +142,8 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
             }
         }
 
-        SDL2.ctx.putImageData(SDL2.image, 0, 0);
-    }, surface->w, surface->h, surface->pixels);
+        SDL3.ctx.putImageData(SDL3.image, 0, 0);
+    }, surface->w, surface->h, surface->pixels, data->canvas_id);
 
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */

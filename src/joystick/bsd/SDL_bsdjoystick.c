@@ -677,9 +677,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                     xmin--;
                     xmax++;
                 }
-                v = (Sint32) x;
-                v -= (xmax + xmin + 1) / 2;
-                v *= 32768 / ((xmax - xmin + 1) / 2);
+                v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)x - xmin) ) / (xmax - xmin)) + SDL_JOYSTICK_AXIS_MIN;
                 SDL_PrivateJoystickAxis(joy, 0, v);
             }
             if (SDL_abs(y - gameport.y) > 8) {
@@ -694,9 +692,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                     ymin--;
                     ymax++;
                 }
-                v = (Sint32) y;
-                v -= (ymax + ymin + 1) / 2;
-                v *= 32768 / ((ymax - ymin + 1) / 2);
+                v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)y - ymin) ) / (ymax - ymin)) + SDL_JOYSTICK_AXIS_MIN;
                 SDL_PrivateJoystickAxis(joy, 1, v);
             }
             SDL_PrivateJoystickButton(joy, 0, gameport.b1);
@@ -731,11 +727,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                             naxe = joy->hwdata->axis_map[joyaxe];
                             /* scaleaxe */
                             v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-                            v -= (hitem.logical_maximum +
-                                  hitem.logical_minimum + 1) / 2;
-                            v *= 32768 /
-                                ((hitem.logical_maximum -
-                                  hitem.logical_minimum + 1) / 2);
+                            v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * (v - hitem.logical_minimum) ) / (hitem.logical_maximum - hitem.logical_minimum)) + SDL_JOYSTICK_AXIS_MIN;
                             SDL_PrivateJoystickAxis(joy, naxe, v);
                         } else if (usage == HUG_HAT_SWITCH) {
                             v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
@@ -765,7 +757,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                     }
                 case HUP_BUTTON:
                     v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-                    nbutton = HID_USAGE(hitem.usage) - 1;	/* SDL buttons are zero-based */
+                    nbutton = HID_USAGE(hitem.usage) - 1;    /* SDL buttons are zero-based */
                     SDL_PrivateJoystickButton(joy, nbutton, v);
                     break;
                 default:

@@ -102,6 +102,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define wl_proxy_get_tag (*WAYLAND_wl_proxy_get_tag)
 #define wl_proxy_marshal_flags (*WAYLAND_wl_proxy_marshal_flags)
 #define wl_proxy_marshal_array_flags (*WAYLAND_wl_proxy_marshal_array_flags)
+#define wl_display_reconnect (*WAYLAND_wl_display_reconnect)
 
 #define wl_seat_interface (*WAYLAND_wl_seat_interface)
 #define wl_surface_interface (*WAYLAND_wl_surface_interface)

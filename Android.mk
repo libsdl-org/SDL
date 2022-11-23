@@ -8,7 +8,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := SDL2
+LOCAL_MODULE := SDL3
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
@@ -75,7 +75,6 @@ LOCAL_CFLAGS += \
 	-Wstrict-prototypes \
 	-Wkeyword-macro \
 
-
 # Warnings we haven't fixed (yet)
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
 
@@ -91,15 +90,16 @@ LOCAL_STATIC_LIBRARIES := cpufeatures
 
 include $(BUILD_SHARED_LIBRARY)
 
+
 ###########################
 #
 # SDL static library
 #
 ###########################
 
-LOCAL_MODULE := SDL2_static
+LOCAL_MODULE := SDL3_static
 
-LOCAL_MODULE_FILENAME := libSDL2
+LOCAL_MODULE_FILENAME := libSDL3
 
 LOCAL_LDLIBS :=
 
@@ -108,6 +108,7 @@ LOCAL_LDFLAGS :=
 LOCAL_EXPORT_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 
 include $(BUILD_STATIC_LIBRARY)
+
 
 ###########################
 #
@@ -119,9 +120,9 @@ include $(CLEAR_VARS)
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
-LOCAL_MODULE := SDL2_main
+LOCAL_MODULE := SDL3_main
 
-LOCAL_MODULE_FILENAME := libSDL2main
+LOCAL_MODULE_FILENAME := libSDL3main
 
 include $(BUILD_STATIC_LIBRARY)
 

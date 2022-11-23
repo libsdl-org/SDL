@@ -55,7 +55,7 @@
 /* On GDK, SDL provides a main function that initializes the game runtime.
 
    Please note that #include'ing SDL_main.h is not enough to get a main()
-   function working. You must either link against SDL2main or, if not possible,
+   function working. You must either link against SDL3main or, if not possible,
    call the SDL_GDKRunApp function from your entry point.
 */
 #define SDL_MAIN_NEEDED
@@ -83,15 +83,6 @@
 /* We need to export SDL_main so it can be launched from Java */
 #define SDLMAIN_DECLSPEC    DECLSPEC
 
-#elif defined(__NACL__)
-/* On NACL we use ppapi_simple to set up the application helper code,
-   then wait for the first PSE_INSTANCE_DIDCHANGEVIEW event before 
-   starting the user main function.
-   All user code is run in a separate thread by ppapi_simple, thus 
-   allowing for blocking io to take place via nacl_io
-*/
-#define SDL_MAIN_NEEDED
-
 #elif defined(__PSP__)
 /* On PSP SDL provides a main function that sets the module info,
    activates the GPU and starts the thread required to be able to exit
@@ -107,6 +98,15 @@
 #define SDL_PS2_SKIP_IOP_RESET() \
    void reset_IOP(); \
    void reset_IOP() {}
+
+#elif defined(__3DS__)
+/*
+  On N3DS, SDL provides a main function that sets up the screens
+  and storage.
+
+  If you provide this yourself, you may define SDL_MAIN_HANDLED
+*/
+#define SDL_MAIN_AVAILABLE
 
 #endif
 #endif /* SDL_MAIN_HANDLED */
@@ -155,7 +155,7 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Init
  */
@@ -184,7 +184,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *              will use `GetModuleHandle(NULL)` instead.
  * \returns 0 on success, -1 on error. SDL_GetError() may have details.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 
@@ -201,7 +201,7 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  * deregistered when the registration counter in SDL_RegisterApp decrements to
  * zero through calls to this function.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
@@ -234,7 +234,7 @@ extern DECLSPEC int SDLCALL SDL_WinRTRunApp(SDL_main_func mainFunction, void * r
  * \param mainFunction The SDL app's C-style main(), an SDL_main_func
  * \return the return value from mainFunction
  *
- * \since This function is available since SDL 2.0.10.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
 
@@ -250,7 +250,7 @@ extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_fun
  * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
  *          more information on the failure.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
 

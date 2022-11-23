@@ -53,7 +53,7 @@
 static const AudioObjectPropertyAddress devlist_address = {
     kAudioHardwarePropertyDevices,
     kAudioObjectPropertyScopeGlobal,
-    kAudioObjectPropertyElementMaster
+    kAudioObjectPropertyElementMain
 };
 
 typedef void (*addDevFn)(const char *name, SDL_AudioSpec *spec, const int iscapture, AudioDeviceID devId, void *data);
@@ -131,17 +131,17 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         const AudioObjectPropertyAddress addr = {
             kAudioDevicePropertyStreamConfiguration,
             iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-            kAudioObjectPropertyElementMaster
+            kAudioObjectPropertyElementMain
         };
         const AudioObjectPropertyAddress nameaddr = {
             kAudioObjectPropertyName,
             iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-            kAudioObjectPropertyElementMaster
+            kAudioObjectPropertyElementMain
         };
         const AudioObjectPropertyAddress freqaddr = {
             kAudioDevicePropertyNominalSampleRate,
             iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-            kAudioObjectPropertyElementMaster
+            kAudioObjectPropertyElementMain
         };
 
         result = AudioObjectGetPropertyDataSize(dev, &addr, 0, NULL, &size);
@@ -642,7 +642,7 @@ static const AudioObjectPropertyAddress alive_address =
 {
     kAudioDevicePropertyDeviceIsAlive,
     kAudioObjectPropertyScopeGlobal,
-    kAudioObjectPropertyElementMaster
+    kAudioObjectPropertyElementMain
 };
 
 static OSStatus
@@ -701,6 +701,19 @@ COREAUDIO_CloseDevice(_THIS)
     }
 #endif
 
+    /* if callback fires again, feed silence; don't call into the app. */
+    SDL_AtomicSet(&this->paused, 1);
+
+    /* dispose of the audio queue before waiting on the thread, or it might stall for a long time! */
+    if (this->hidden->audioQueue) {
+        AudioQueueDispose(this->hidden->audioQueue, 0);
+    }
+
+    if (this->hidden->thread) {
+        SDL_assert(SDL_AtomicGet(&this->shutdown) != 0);  /* should have been set by SDL_audio.c */
+        SDL_WaitThread(this->hidden->thread, NULL);
+    }
+
     if (iscapture) {
         open_capture_devices--;
     } else {
@@ -723,18 +736,6 @@ COREAUDIO_CloseDevice(_THIS)
     if (num_open_devices == 0) {
         SDL_free(open_devices);
         open_devices = NULL;
-    }
-
-    /* if callback fires again, feed silence; don't call into the app. */
-    SDL_AtomicSet(&this->paused, 1);
-
-    if (this->hidden->audioQueue) {
-        AudioQueueDispose(this->hidden->audioQueue, 1);
-    }
-
-    if (this->hidden->thread) {
-        SDL_assert(SDL_AtomicGet(&this->shutdown) != 0);  /* should have been set by SDL_audio.c */
-        SDL_WaitThread(this->hidden->thread, NULL);
     }
 
     if (this->hidden->ready_semaphore) {
@@ -763,7 +764,7 @@ prepare_device(_THIS)
     AudioObjectPropertyAddress addr = {
         0,
         kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMaster
+        kAudioObjectPropertyElementMain
     };
 
     if (handle == NULL) {
@@ -810,7 +811,7 @@ assign_device_to_audioqueue(_THIS)
     const AudioObjectPropertyAddress prop = {
         kAudioDevicePropertyDeviceUID,
         this->iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-        kAudioObjectPropertyElementMaster
+        kAudioObjectPropertyElementMain
     };
 
     OSStatus result;
@@ -959,7 +960,7 @@ audioqueue_thread(void *arg)
     const AudioObjectPropertyAddress default_device_address = {
         this->iscapture ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice,
         kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMaster
+        kAudioObjectPropertyElementMain
     };
 
     if (this->handle == NULL) {  /* opened the default device? Register to know if the user picks a new default. */
@@ -1177,30 +1178,31 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     char *devname;
     int usable;
     double sampleRate;
+    CFIndex len;
 
     AudioObjectPropertyAddress addr = {
         iscapture ? kAudioHardwarePropertyDefaultInputDevice
                   : kAudioHardwarePropertyDefaultOutputDevice,
         iscapture ? kAudioDevicePropertyScopeInput
                   : kAudioDevicePropertyScopeOutput,
-        kAudioObjectPropertyElementMaster
+        kAudioObjectPropertyElementMain
     };
     AudioObjectPropertyAddress nameaddr = {
         kAudioObjectPropertyName,
         iscapture ? kAudioDevicePropertyScopeInput
                   : kAudioDevicePropertyScopeOutput,
-        kAudioObjectPropertyElementMaster
+        kAudioObjectPropertyElementMain
     };
     AudioObjectPropertyAddress freqaddr = {
         kAudioDevicePropertyNominalSampleRate,
         iscapture ? kAudioDevicePropertyScopeInput
                   : kAudioDevicePropertyScopeOutput,
-        kAudioObjectPropertyElementMaster
+        kAudioObjectPropertyElementMain
     };
     AudioObjectPropertyAddress bufaddr = {
         kAudioDevicePropertyStreamConfiguration,
         iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-        kAudioObjectPropertyElementMaster
+        kAudioObjectPropertyElementMain
     };
 
     /* Get the Device ID */
@@ -1222,7 +1224,7 @@ COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
             return SDL_SetError("%s: Default Device Name not found", "coreaudio");
         }
 
-        CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
+        len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
                                                         kCFStringEncodingUTF8);
         devname = (char *) SDL_malloc(len + 1);
         usable = ((devname != NULL) &&

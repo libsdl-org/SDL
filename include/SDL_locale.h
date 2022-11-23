@@ -86,7 +86,7 @@ typedef struct SDL_Locale
  * \return array of locales, terminated with a locale with a NULL language
  *         field. Will return NULL on error.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
 

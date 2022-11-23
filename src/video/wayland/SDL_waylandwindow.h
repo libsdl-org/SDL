@@ -32,12 +32,6 @@
 
 struct SDL_WaylandInput;
 
-/* TODO: Remove these helpers, they're from before we had shell_surface_type */
-#define WINDOW_IS_XDG_POPUP(window) \
-    (((SDL_WindowData*) window->driverdata)->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP)
-#define WINDOW_IS_LIBDECOR(ignoreme, window) \
-    (((SDL_WindowData*) window->driverdata)->shell_surface_type == WAYLAND_SURFACE_LIBDECOR)
-
 typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
@@ -105,9 +99,10 @@ typedef struct {
     float pointer_scale_y;
     int drawable_width, drawable_height;
     int fs_output_width, fs_output_height;
-    SDL_Rect viewport_rect;
+    int window_width, window_height;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
+    SDL_bool was_floating;
     SDL_bool is_fullscreen;
     SDL_bool in_fullscreen_transition;
     Uint32 fullscreen_flags;
@@ -141,6 +136,9 @@ extern SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
 extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern int Wayland_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
+
+extern void Wayland_InitWin(SDL_VideoData *data);
+extern void Wayland_QuitWin(SDL_VideoData *data);
 
 #endif /* SDL_waylandwindow_h_ */
 

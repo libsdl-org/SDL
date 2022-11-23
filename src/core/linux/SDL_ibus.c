@@ -37,16 +37,26 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-static const char IBUS_SERVICE[]         = "org.freedesktop.IBus";
 static const char IBUS_PATH[]            = "/org/freedesktop/IBus";
+
+static const char IBUS_SERVICE[]         = "org.freedesktop.IBus";
 static const char IBUS_INTERFACE[]       = "org.freedesktop.IBus";
 static const char IBUS_INPUT_INTERFACE[] = "org.freedesktop.IBus.InputContext";
 
+static const char IBUS_PORTAL_SERVICE[]         = "org.freedesktop.portal.IBus";
+static const char IBUS_PORTAL_INTERFACE[]       = "org.freedesktop.IBus.Portal";
+static const char IBUS_PORTAL_INPUT_INTERFACE[] = "org.freedesktop.IBus.InputContext";
+
+static const char *ibus_service = NULL;
+static const char *ibus_interface = NULL;
+static const char *ibus_input_interface = NULL;
 static char *input_ctx_path = NULL;
 static SDL_Rect ibus_cursor_rect = { 0, 0, 0, 0 };
 static DBusConnection *ibus_conn = NULL;
+static SDL_bool ibus_is_portal_interface = SDL_FALSE;
 static char *ibus_addr_file = NULL;
 static int inotify_fd = -1, inotify_wd = -1;
+
 
 static Uint32
 IBus_ModState(void)
@@ -202,7 +212,7 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
     SDL_DBusContext *dbus = (SDL_DBusContext *)user_data;
 
-    if (dbus->message_is_signal(msg, IBUS_INPUT_INTERFACE, "CommitText")) {
+    if (dbus->message_is_signal(msg, ibus_input_interface, "CommitText")) {
         DBusMessageIter iter;
         const char *text;
 
@@ -224,7 +234,7 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    if (dbus->message_is_signal(msg, IBUS_INPUT_INTERFACE, "UpdatePreeditText")) {
+    if (dbus->message_is_signal(msg, ibus_input_interface, "UpdatePreeditText")) {
         DBusMessageIter iter;
         const char *text;
 
@@ -273,7 +283,7 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    if (dbus->message_is_signal(msg, IBUS_INPUT_INTERFACE, "HidePreeditText")) {
+    if (dbus->message_is_signal(msg, ibus_input_interface, "HidePreeditText")) {
         SDL_SendEditingText("", 0, 0);
         return DBUS_HANDLER_RESULT_HANDLED;
     }
@@ -415,7 +425,7 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
             caps |= IBUS_CAP_PREEDIT_TEXT;
         }
 
-        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "SetCapabilities",
+        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "SetCapabilities",
                                 DBUS_TYPE_UINT32, &caps, DBUS_TYPE_INVALID);
     }
 }
@@ -424,40 +434,60 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
 static SDL_bool
 IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 {
-    const char *client_name = "SDL2_Application";
+    const char *client_name = "SDL3_Application";
     const char *path = NULL;
     SDL_bool result = SDL_FALSE;
     DBusObjectPathVTable ibus_vtable;
-
+    
     SDL_zero(ibus_vtable);
     ibus_vtable.message_function = &IBus_MessageHandler;
 
-    ibus_conn = dbus->connection_open_private(addr, NULL);
+    /* try the portal interface first. Modern systems have this in general,
+       and sandbox things like FlakPak and Snaps, etc, require it. */
 
-    if (!ibus_conn) {
-        return SDL_FALSE;
+    ibus_is_portal_interface = SDL_TRUE;
+    ibus_service = IBUS_PORTAL_SERVICE;
+    ibus_interface = IBUS_PORTAL_INTERFACE;
+    ibus_input_interface = IBUS_PORTAL_INPUT_INTERFACE;
+    ibus_conn = dbus->session_conn;
+
+    result = SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, IBUS_PATH, ibus_interface, "CreateInputContext",
+                                             DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
+                                             DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
+    if (!result) {
+        ibus_is_portal_interface = SDL_FALSE;
+        ibus_service = IBUS_SERVICE;
+        ibus_interface = IBUS_INTERFACE;
+        ibus_input_interface = IBUS_INPUT_INTERFACE;
+        ibus_conn = dbus->connection_open_private(addr, NULL);
+
+        if (!ibus_conn) {
+            return SDL_FALSE;  /* oh well. */
+        }
+
+        dbus->connection_flush(ibus_conn);
+    
+        if (!dbus->bus_register(ibus_conn, NULL)) {
+            ibus_conn = NULL;
+            return SDL_FALSE;
+        }
+    
+        dbus->connection_flush(ibus_conn);
+
+        result = SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, IBUS_PATH, ibus_interface, "CreateInputContext",
+                                                 DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
+                                                 DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
     }
 
-    dbus->connection_flush(ibus_conn);
-    
-    if (!dbus->bus_register(ibus_conn, NULL)) {
-        ibus_conn = NULL;
-        return SDL_FALSE;
-    }
-    
-    dbus->connection_flush(ibus_conn);
-
-    if (SDL_DBus_CallMethodOnConnection(ibus_conn, IBUS_SERVICE, IBUS_PATH, IBUS_INTERFACE, "CreateInputContext",
-            DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
-            DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID)) {
+    if (result) {
+        char matchstr[128];
+        SDL_snprintf(matchstr, sizeof (matchstr), "type='signal',interface='%s'", ibus_input_interface);
         SDL_free(input_ctx_path);
         input_ctx_path = SDL_strdup(path);
         SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
-        
-        dbus->bus_add_match(ibus_conn, "type='signal',interface='org.freedesktop.IBus.InputContext'", NULL);
+        dbus->bus_add_match(ibus_conn, matchstr, NULL);
         dbus->connection_try_register_object_path(ibus_conn, input_ctx_path, &ibus_vtable, dbus, NULL);
         dbus->connection_flush(ibus_conn);
-        result = SDL_TRUE;
     }
 
     SDL_IBus_SetFocus(SDL_GetKeyboardFocus() != NULL);
@@ -549,9 +579,19 @@ SDL_IBus_Init(void)
         inotify_wd = inotify_add_watch(inotify_fd, addr_file, IN_CREATE | IN_MODIFY);
         SDL_free(addr_file);
         
-        if (addr) {
-            result = IBus_SetupConnection(dbus, addr);
-            SDL_free(addr);
+        result = IBus_SetupConnection(dbus, addr);
+        SDL_free(addr);
+
+        /* don't use the addr_file if using the portal interface. */
+        if (result && ibus_is_portal_interface) {
+            if (inotify_fd > 0) {
+                if (inotify_wd > 0) {
+                    inotify_rm_watch(inotify_fd, inotify_wd);
+                    inotify_wd = -1;
+                }
+                close(inotify_fd);
+                inotify_fd = -1;
+            }
         }
     }
     
@@ -575,16 +615,25 @@ SDL_IBus_Quit(void)
     
     dbus = SDL_DBus_GetContext();
     
-    if (dbus && ibus_conn) {
+    /* if using portal, ibus_conn == session_conn; don't release it here. */
+    if (dbus && ibus_conn && !ibus_is_portal_interface) {
         dbus->connection_close(ibus_conn);
         dbus->connection_unref(ibus_conn);
     }
-    
+
+    ibus_conn = NULL;
+    ibus_service = NULL;
+    ibus_interface = NULL;
+    ibus_input_interface = NULL;
+    ibus_is_portal_interface = SDL_FALSE;
+
     if (inotify_fd > 0 && inotify_wd > 0) {
         inotify_rm_watch(inotify_fd, inotify_wd);
         inotify_wd = -1;
     }
-    
+
+    /* !!! FIXME: should we close(inotify_fd) here? */
+
     SDL_DelHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
     
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
@@ -596,7 +645,7 @@ IBus_SimpleMessage(const char *method)
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     
     if ((input_ctx_path != NULL) && (IBus_CheckConnection(dbus))) {
-        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, method, DBUS_TYPE_INVALID);
+        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, method, DBUS_TYPE_INVALID);
     }
 }
 
@@ -626,7 +675,7 @@ SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
         if (state == SDL_RELEASED) {
             mods |= (1 << 30); // IBUS_RELEASE_MASK
         }
-        if (!SDL_DBus_CallMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "ProcessKeyEvent",
+        if (!SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "ProcessKeyEvent",
                 DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &ibus_keycode, DBUS_TYPE_UINT32, &mods, DBUS_TYPE_INVALID,
                 DBUS_TYPE_BOOLEAN, &result, DBUS_TYPE_INVALID)) {
             result = 0;
@@ -681,7 +730,7 @@ SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
     dbus = SDL_DBus_GetContext();
     
     if (IBus_CheckConnection(dbus)) {
-        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "SetCursorLocation",
+        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "SetCursorLocation",
                 DBUS_TYPE_INT32, &x, DBUS_TYPE_INT32, &y, DBUS_TYPE_INT32, &ibus_cursor_rect.w, DBUS_TYPE_INT32, &ibus_cursor_rect.h, DBUS_TYPE_INVALID);
     }
 }

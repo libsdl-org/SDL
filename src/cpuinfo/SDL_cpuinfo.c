@@ -27,14 +27,6 @@
 #if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
-#if defined(__OS2__)
-#undef HAVE_SYSCTLBYNAME
-#define INCL_DOS
-#include <os2.h>
-#ifndef QSV_NUMPROCESSORS
-#define QSV_NUMPROCESSORS 26
-#endif
-#endif
 
 /* CPU feature detection for SDL */
 
@@ -60,10 +52,6 @@
 #elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
 #include <signal.h>
 #include <setjmp.h>
-#endif
-
-#if defined(__QNXNTO__)
-#include <sys/syspage.h>
 #endif
 
 #if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__arm__)
@@ -468,6 +456,8 @@ CPU_haveNEON(void)
     return 1;  /* ARMv8 always has non-optional NEON support. */
 #elif __VITA__
     return 1;
+#elif __3DS__
+    return 0;
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
     return 1;  /* all Apple ARMv7 chips and later have NEON. */
@@ -482,8 +472,6 @@ CPU_haveNEON(void)
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
         return 0;
     return ((hasneon & HWCAP_NEON) == HWCAP_NEON);
-#elif defined(__QNXNTO__)
-    return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
 #elif defined(__LINUX__)
@@ -676,12 +664,6 @@ SDL_GetCPUCount(void)
             SYSTEM_INFO info;
             GetSystemInfo(&info);
             SDL_CPUCount = info.dwNumberOfProcessors;
-        }
-#endif
-#ifdef __OS2__
-        if (SDL_CPUCount <= 0) {
-            DosQuerySysInfo(QSV_NUMPROCESSORS, QSV_NUMPROCESSORS,
-                            &SDL_CPUCount, sizeof(SDL_CPUCount) );
         }
 #endif
 #endif
@@ -1062,13 +1044,6 @@ SDL_GetSystemRAM(void)
             }
         }
 #endif
-#ifdef __OS2__
-        if (SDL_SystemRAM <= 0) {
-            Uint32 sysram = 0;
-            DosQuerySysInfo(QSV_TOTPHYSMEM, QSV_TOTPHYSMEM, &sysram, 4);
-            SDL_SystemRAM = (int) (sysram / 0x100000U);
-        }
-#endif
 #ifdef __RISCOS__
         if (SDL_SystemRAM <= 0) {
             _kernel_swi_regs regs;
@@ -1150,8 +1125,6 @@ SDL_SIMDRealloc(void *mem, const size_t len)
     }
 
     if (mem) {
-        void **realptr = (void **) mem;
-        realptr--;
         mem = *(((void **) mem) - 1);
 
         /* Check the delta between the real pointer and user pointer */
@@ -1191,8 +1164,6 @@ void
 SDL_SIMDFree(void *ptr)
 {
     if (ptr) {
-        void **realptr = (void **) ptr;
-        realptr--;
         SDL_free(*(((void **) ptr) - 1));
     }
 }

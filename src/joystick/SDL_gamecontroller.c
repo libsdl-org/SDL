@@ -125,6 +125,7 @@ struct _SDL_GameController
     int ref_count;
 
     const char *name;
+    ControllerMapping_t *mapping;
     int num_bindings;
     SDL_ExtendedGameControllerBind *bindings;
     SDL_ExtendedGameControllerBind **last_match_axis;
@@ -606,8 +607,21 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             }
             break;
         default:
-            /* Mini gamepad mode */
-            SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_FALSE)) {
+                /* Vertical mode */
+                if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                    SDL_strlcat(mapping_string, "back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b15,paddle2:b17,paddle4:b19,", sizeof(mapping_string));
+                } else {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof(mapping_string));
+                }
+            } else {
+                /* Mini gamepad mode */
+                if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle2:b17,paddle4:b19,", sizeof(mapping_string));
+                } else {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof(mapping_string));
+                }
+            }
             break;
         }
     } else {
@@ -624,8 +638,8 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             /* Steam controllers have 2 back paddle buttons */
             SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
-            /* The Nintendo Switch Joy-Con combined controller has a share button */
-            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+            /* The Nintendo Switch Joy-Con combined controller has a share button and paddles */
+            SDL_strlcat(mapping_string, "misc1:b15,paddle1:b16,paddle2:b17,paddle3:b18,paddle4:b19,", sizeof(mapping_string));
         } else {
             switch (SDL_GetJoystickGameControllerTypeFromGUID(guid, NULL)) {
             case SDL_CONTROLLER_TYPE_PS4:
@@ -651,6 +665,11 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD:
                 /* The NVIDIA SHIELD controller has a share button between back and start buttons */
                 SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+
+                if (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
+                    /* The original SHIELD controller has a touchpad as well */
+                    SDL_strlcat(mapping_string, "touchpad:b16,", sizeof(mapping_string));
+                }
                 break;
             default:
                 if (vendor == 0 && product == 0) {
@@ -721,6 +740,10 @@ static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_Joystic
 
     for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
         SDL_JoystickGUID mapping_guid;
+
+        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+            continue;
+        }
 
         SDL_memcpy(&mapping_guid, &mapping->guid, sizeof(mapping_guid));
         if (!match_version) {
@@ -1052,19 +1075,20 @@ SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecon
 /*
  * Make a new button mapping struct
  */
-static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, const char *pchName, const char *pchMapping)
+static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, ControllerMapping_t *pControllerMapping)
 {
     int i;
 
     CHECK_GAMECONTROLLER_MAGIC(gamecontroller, );
 
-    gamecontroller->name = pchName;
+    gamecontroller->name = pControllerMapping->name;
     gamecontroller->num_bindings = 0;
+    gamecontroller->mapping = pControllerMapping;
     if (gamecontroller->joystick->naxes) {
         SDL_memset(gamecontroller->last_match_axis, 0, gamecontroller->joystick->naxes * sizeof(*gamecontroller->last_match_axis));
     }
 
-    SDL_PrivateGameControllerParseControllerConfigString(gamecontroller, pchMapping);
+    SDL_PrivateGameControllerParseControllerConfigString(gamecontroller, pControllerMapping->mapping);
 
     /* Set the zero point for triggers */
     for (i = 0; i < gamecontroller->num_bindings; ++i) {
@@ -1173,9 +1197,9 @@ static void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pContro
 {
     SDL_GameController *gamecontrollerlist = SDL_gamecontrollers;
     while (gamecontrollerlist) {
-        if (!SDL_memcmp(&gamecontrollerlist->joystick->guid, &pControllerMapping->guid, sizeof(pControllerMapping->guid))) {
+        if (gamecontrollerlist->mapping == pControllerMapping) {
             /* Not really threadsafe.  Should this lock access within SDL_GameControllerEventWatcher? */
-            SDL_PrivateLoadButtonMapping(gamecontrollerlist, pControllerMapping->name, pControllerMapping->mapping);
+            SDL_PrivateLoadButtonMapping(gamecontrollerlist, pControllerMapping);
 
             {
                 SDL_Event event;
@@ -1312,7 +1336,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
             /* The Linux driver xpad.c maps the wireless dpad to buttons */
             SDL_bool existing;
             mapping = SDL_PrivateAddMappingForGUID(guid,
-"none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3",
+"none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
                           &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
         } else if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box") || SDL_strstr(name, "XBOX")) {
             mapping = s_pXInputMapping;
@@ -1401,16 +1425,6 @@ static ControllerMapping_t *SDL_PrivateGenerateAutomaticControllerMapping(const 
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righty", &raw_map->righty);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefttrigger", &raw_map->lefttrigger);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righttrigger", &raw_map->righttrigger);
-
-    /* Remove trailing comma */
-    {
-        int pos = (int)SDL_strlen(mapping) - 1;
-        if (pos >= 0) {
-            if (mapping[pos] == ',') {
-                mapping[pos] = '\0';
-            }
-        }
-    }
 
     return SDL_PrivateAddMappingForGUID(guid, mapping,
                       &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
@@ -1747,7 +1761,7 @@ SDL_GameControllerMapping(SDL_GameController *gamecontroller)
 {
     CHECK_GAMECONTROLLER_MAGIC(gamecontroller, NULL);
 
-    return SDL_GameControllerMappingForGUID(gamecontroller->joystick->guid);
+    return CreateMappingString(gamecontroller->mapping, gamecontroller->joystick->guid);
 }
 
 static void
@@ -1985,6 +1999,10 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         /* Don't treat the PS3 and PS4 motion controls as a separate game controller */
         return SDL_TRUE;
     }
+    if (SDL_strncmp(name, "Nintendo ", 9) == 0 && SDL_strstr(name, " IMU") != NULL) {
+        /* Don't treat the Nintendo IMU as a separate game controller */
+        return SDL_TRUE;
+    }
     if (SDL_endswith(name, " Accelerometer") ||
         SDL_endswith(name, " IR") ||
         SDL_endswith(name, " Motion Plus") ||
@@ -2118,7 +2136,7 @@ SDL_GameControllerOpen(int device_index)
         }
     }
 
-    SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController->name, pSupportedController->mapping);
+    SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController);
 
     /* Add the controller to list */
     ++gamecontroller->ref_count;
@@ -2991,7 +3009,7 @@ SDL_GameControllerEventState(int state)
         break;
     default:
         for (i = 0; i < SDL_arraysize(event_list); ++i) {
-            SDL_EventState(event_list[i], state);
+            (void)SDL_EventState(event_list[i], state);
         }
         break;
     }

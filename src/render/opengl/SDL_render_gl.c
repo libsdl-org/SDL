@@ -1932,6 +1932,13 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
 #endif
 
+    renderer->rect_index_order[0] = 0;
+    renderer->rect_index_order[1] = 1;
+    renderer->rect_index_order[2] = 3;
+    renderer->rect_index_order[3] = 1;
+    renderer->rect_index_order[4] = 3;
+    renderer->rect_index_order[5] = 2;
+
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         data->GL_EXT_framebuffer_object_supported = SDL_TRUE;
         data->glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)

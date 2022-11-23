@@ -648,9 +648,7 @@ SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *second
         check_upower_device(dbus->system_conn, paths[i], state, seconds, percent);
     }
 
-    if (dbus) {
-        dbus->free_string_array(paths);
-    }
+    dbus->free_string_array(paths);
 #endif  /* SDL_USE_LIBDBUS */
 
     return retval;

@@ -25,8 +25,6 @@
 
 #include "SDL_mouse.h"
 
-typedef Uint32 SDL_MouseID;
-
 struct SDL_Cursor
 {
     struct SDL_Cursor *next;
@@ -163,6 +161,11 @@ extern int SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x,
 
 /* Warp the mouse within the window, potentially overriding relative mode */
 extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode);
+
+/* TODO RECONNECT: Set mouse state to "zero" */
+#if 0
+extern void SDL_ResetMouse(void);
+#endif /* 0 */
 
 /* Shutdown the mouse subsystem */
 extern void SDL_MouseQuit(void);

@@ -60,7 +60,7 @@ jobs:
       run: |
         brew install \
           ninja
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Check that versioning is consistent
       # We only need to run this once: arbitrarily use the Linux/CMake build
       if: "runner.os == 'Linux' && ! matrix.platform.autotools"
@@ -70,7 +70,9 @@ jobs:
       run: |
         cmake -S . -B build -G Ninja \
         -DSDL_TESTS=ON \
+        -DSDL_WERROR=ON \
         -DSDL_INSTALL_TESTS=ON \
+        -DSDL_VENDOR_INFO="Github Workflow" \
         -DCMAKE_INSTALL_PREFIX=cmake_prefix \
         -DCMAKE_BUILD_TYPE=Release \
         ${{ matrix.platform.cmake }}
@@ -84,13 +86,17 @@ jobs:
         set -eu
         export SDL_TESTS_QUICK=1
         ctest -VV --test-dir build/
+        if test "${{ runner.os }}" = "Linux"; then
+          # This should show us the SDL_REVISION
+          strings build/libSDL3-3.0.so.0 | grep SDL-
+        fi
     - name: Install (CMake)
       if: "! matrix.platform.autotools"
       run: |
         set -eu
         cmake --install build/ --config Release
-        echo "SDL2_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
-        ( cd cmake_prefix; find ) | LC_ALL=C sort -u
+        echo "SDL3_DIR=$(pwd)/cmake_prefix" >> $GITHUB_ENV
+        ( cd cmake_prefix; find . ) | LC_ALL=C sort -u
     - name: Configure (Autotools)
       if: matrix.platform.autotools
       run: |
@@ -101,6 +107,8 @@ jobs:
         (
           cd build-autotools
           ${{ github.workspace }}/configure \
+            --enable-vendor-info="Github Workflow" \
+            --enable-werror \
             --prefix=${{ github.workspace }}/autotools_prefix \
         )
         if test "${{ runner.os }}" != "macOS" ; then
@@ -110,12 +118,13 @@ jobs:
             mkdir -p build-autotools/test
             cd build-autotools/test
             ${{ github.workspace }}/test/configure \
+              --enable-werror \
               --x-includes=/usr/include \
               --x-libraries="/usr/lib/${multiarch}" \
               --prefix=${{ github.workspace }}/autotools_prefix \
               SDL_CFLAGS="-I${curdir}/include" \
-              SDL_LIBS="-L${curdir}/build-autotools/build/.libs -lSDL2" \
-              ac_cv_lib_SDL2_ttf_TTF_Init=no \
+              SDL_LIBS="-L${curdir}/build-autotools/build/.libs -lSDL3" \
+              ac_cv_lib_SDL3_ttf_TTF_Init=no \
               ${NULL+}
           )
         fi
@@ -136,6 +145,10 @@ jobs:
         parallel="$(getconf _NPROCESSORS_ONLN)"
         export SDL_TESTS_QUICK=1
         make -j"${parallel}" -C build-autotools/test check LD_LIBRARY_PATH="${curdir}/build-autotools/build/.libs"
+        if test "${{ runner.os }}" = "Linux"; then
+          # This should show us the SDL_REVISION
+          strings "${curdir}/build-autotools/build/.libs/libSDL3-3.0.so.0" | grep SDL-
+        fi
     - name: Install (Autotools)
       if: matrix.platform.autotools
       run: |
@@ -147,20 +160,20 @@ jobs:
           make -j"${parallel}" -C build-autotools/test install V=1
         fi
         ( cd autotools_prefix; find . ) | LC_ALL=C sort -u
-        echo "SDL2_DIR=$(pwd)/autotools_prefix" >> $GITHUB_ENV
+        echo "SDL3_DIR=$(pwd)/autotools_prefix" >> $GITHUB_ENV
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B cmake_config_build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
+          -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
         cmake --build cmake_config_build --verbose
-    - name: Verify sdl2-config
+    - name: Verify sdl3-config
       run: |
-        export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+        export PATH=${{ env.SDL3_DIR }}/bin:$PATH
         cmake/test/test_sdlconfig.sh
-    - name: Verify sdl2.pc
+    - name: Verify sdl3.pc
       run: |
-        export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+        export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh
     - name: Distcheck (Autotools)
       if: matrix.platform.autotools
@@ -171,9 +184,9 @@ jobs:
         # Similar to Automake `make distcheck`: check that the tarball
         # release is sufficient to do a new build
         mkdir distcheck
-        tar -C distcheck -zxf build-autotools/SDL2-*.tar.gz
-        ( cd distcheck/SDL2-* && ./configure )
-        make -j"${parallel}" -C distcheck/SDL2-*
+        tar -C distcheck -zxf build-autotools/SDL3-*.tar.gz
+        ( cd distcheck/SDL3-* && ./configure )
+        make -j"${parallel}" -C distcheck/SDL3-*
     - name: Run installed-tests (Autotools)
       if: "runner.os == 'Linux' && matrix.platform.autotools"
       run: |
@@ -190,4 +203,4 @@ jobs:
             LD_LIBRARY_PATH=/usr/local/lib \
             SDL_AUDIODRIVER=dummy \
             SDL_VIDEODRIVER=dummy \
-            ginsttest-runner --tap SDL2
+            ginsttest-runner --tap SDL3

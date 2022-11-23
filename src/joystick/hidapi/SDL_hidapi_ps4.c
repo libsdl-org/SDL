@@ -194,7 +194,7 @@ HIDAPI_DriverPS4_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, 
     }
 
     if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
-        if (device) {
+        if (device && device->dev) {
             if ((size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
                 data[2] == 0x27) {
                 /* Supported third party controller */
@@ -374,6 +374,11 @@ HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         /* The Razer Raiju doesn't respond to the detection protocol, but has a touchpad and vibration */
         ctx->vibration_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
+
+        if (device->product_id == USB_PRODUCT_RAZER_TOURNAMENT_EDITION_BLUETOOTH ||
+            device->product_id == USB_PRODUCT_RAZER_ULTIMATE_EDITION_BLUETOOTH) {
+            device->is_bluetooth = SDL_TRUE;
+        }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported);
 
@@ -610,7 +615,9 @@ HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
     data[0] = k_EPS4ReportIdBluetoothEffects;
     data[1] = 0xC0;  /* Magic value HID + CRC */
 
-    SDL_HIDAPI_SendRumble(device, data, sizeof(data));
+    if (SDL_HIDAPI_LockRumble() == 0) {
+        SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
+    }
 }
 
 static void
@@ -679,7 +686,14 @@ HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     /* Initialize the joystick capabilities */
     joystick->nbuttons = ctx->touchpad_supported ? 16 : 15;
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
-    joystick->epowerlevel = device->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
+    if (device->is_bluetooth && ctx->official_controller) {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+    } else if (device->is_bluetooth) {
+        /* We can't get the power status, assume it's full */
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
+    } else {
+        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+    }
 
     if (ctx->enhanced_mode) {
         /* Force initialization when opening the joystick */
@@ -765,7 +779,7 @@ HIDAPI_DriverPS4_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 
     SDL_zeroa(data);
 
-    if (device->is_bluetooth) {
+    if (device->is_bluetooth && ctx->official_controller) {
         data[0] = k_EPS4ReportIdBluetoothEffects;
         data[1] = 0xC0 | 0x04;  /* Magic value HID + CRC, also sets interval to 4ms for samples */
         data[3] = 0x03;  /* 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval */
@@ -919,19 +933,21 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, 
     axis = ((int)packet->ucRightJoystickY * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
-    if (packet->ucBatteryLevel & 0x10) {
-        SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
-    } else {
-        /* Battery level ranges from 0 to 10 */
-        int level = (packet->ucBatteryLevel & 0xF);
-        if (level == 0) {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
-        } else if (level <= 2) {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-        } else if (level <= 7) {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+    if (ctx->device->is_bluetooth && ctx->official_controller) {
+        if (packet->ucBatteryLevel & 0x10) {
+            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
         } else {
-            SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            /* Battery level ranges from 0 to 10 */
+            int level = (packet->ucBatteryLevel & 0xF);
+            if (level == 0) {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
+            } else if (level <= 2) {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+            } else if (level <= 7) {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+            } else {
+                SDL_PrivateJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            }
         }
     }
 
@@ -1008,8 +1024,10 @@ HIDAPI_DriverPS4_IsPacketValid(SDL_DriverPS4_Context *ctx, Uint8 *data, int size
     case k_EPS4ReportIdUsbState:
         /* In the case of a DS4 USB dongle, bit[2] of byte 31 indicates if a DS4 is actually connected (indicated by '0').
          * For non-dongle, this bit is always 0 (connected).
+		 * This is usually the ID over USB, but the DS4v2 that started shipping with the PS4 Slim will also send this
+		 * packet over BT with a size of 128
          */
-        if (size == 64 && (data[31] & 0x04) == 0) {
+        if (size >= 64 && (data[31] & 0x04) == 0) {
             return SDL_TRUE;
         }
         break;

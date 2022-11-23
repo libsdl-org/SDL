@@ -101,7 +101,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
         pTimeout = &timeout;
     }
 
-    res = sceKernelWaitSema(sem->semid, 1, pTimeout);
+    res = sceKernelWaitSema(sem->semid, 1, (SceUInt *) pTimeout);
        switch (res) {
                case SCE_KERNEL_ERROR_OK:
                        return 0;

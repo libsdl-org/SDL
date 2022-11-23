@@ -70,12 +70,13 @@ open_audio()
     SDL_PauseAudioDevice(device, SDL_FALSE);
 }
 
+#ifndef __EMSCRIPTEN__
 static void reopen_audio()
 {
     close_audio();
     open_audio();
 }
-
+#endif
 
 void SDLCALL
 fillerup(void *unused, Uint8 * stream, int len)

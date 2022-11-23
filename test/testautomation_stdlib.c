@@ -7,7 +7,6 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
-
 /* Test case functions */
 
 /**
@@ -35,6 +34,16 @@ stdlib_strlcpy(void *arg)
 
   return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic push
+#if defined(HAVE_WFORMAT)
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+#endif
 
 /**
  * @brief Call to SDL_snprintf
@@ -158,6 +167,10 @@ stdlib_snprintf(void *arg)
 
   return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic pop
+#endif
 
 /**
  * @brief Call to SDL_getenv and SDL_setenv
@@ -293,6 +306,16 @@ stdlib_getsetenv(void *arg)
   return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic push
+#if defined(HAVE_WFORMAT)
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+#endif
+
 /**
  * @brief Call to SDL_sscanf
  */
@@ -374,6 +397,10 @@ stdlib_sscanf(void *arg)
 
   return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic pop
+#endif
 
 #if defined(_WIN64)
 # define SIZE_FORMAT "I64u"

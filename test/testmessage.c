@@ -62,7 +62,7 @@ button_messagebox(void *eventNumber)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
         if (eventNumber) {
             SDL_Event event;
-            event.type = (intptr_t)eventNumber;
+            event.type = (Uint32)(intptr_t)eventNumber;
             SDL_PushEvent(&event);
             return 1;
         } else {
@@ -73,7 +73,7 @@ button_messagebox(void *eventNumber)
 
     if (eventNumber) {
         SDL_Event event;
-        event.type = (intptr_t)eventNumber;
+        event.type = (Uint32)(intptr_t)eventNumber;
         SDL_PushEvent(&event);
     }
 

@@ -855,6 +855,11 @@ RAWINPUT_JoystickInit(void)
 
     SDL_assert(!SDL_RAWINPUT_inited);
 
+    if (!WIN_IsWindowsVistaOrGreater()) {
+        /* According to bug 6400, this doesn't work on Windows XP */
+        return -1;
+    }
+
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
         return -1;
     }
@@ -1770,7 +1775,8 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
             has_trigger_data = SDL_TRUE;
 
-            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN) {
+            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN &&
+                battery_info->BatteryType != BATTERY_TYPE_DISCONNECTED) {
                 SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
                 if (battery_info->BatteryType == BATTERY_TYPE_WIRED) {
                     ePowerLevel = SDL_JOYSTICK_POWER_WIRED;

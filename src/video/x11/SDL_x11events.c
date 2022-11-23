@@ -100,7 +100,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != 0) X11_XFree(ret);
+        if (ret != NULL) X11_XFree(ret);
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
         bytes_fetch += bytes_left;
     } while (bytes_left != 0);
@@ -402,7 +402,7 @@ X11_ReconcileKeyboardState(_THIS)
     }
 
     keyboardState = SDL_GetKeyboardState(0);
-    for (keycode = 0; keycode < 256; ++keycode) {
+    for (keycode = 0; keycode < SDL_arraysize(viddata->key_layout); ++keycode) {
         SDL_Scancode scancode = viddata->key_layout[keycode];
         SDL_bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
         SDL_bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
@@ -1046,18 +1046,17 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: %s (X11 keycode = 0x%X)\n", data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
 #endif
-#if 1
+#ifdef DEBUG_SCANCODES
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
                 int min_keycode, max_keycode;
                 X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
                 keysym = X11_KeyCodeToSym(_this, keycode, xevent->xkey.state >> 13);
-                fprintf(stderr,
-                        "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
+                SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
                         keycode, keycode - min_keycode, keysym,
                         X11_XKeysymToString(keysym));
             }
-#endif
-            /* */
+#endif /* DEBUG SCANCODES */
+
             SDL_zeroa(text);
 #ifdef X_HAVE_UTF8_STRING
             if (data->ic && xevent->type == KeyPress) {
@@ -1461,7 +1460,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                    without ever mapping / unmapping them, so we handle that here,
                    because they use the NETWM protocol to notify us of changes.
                  */
-                const Uint32 flags = X11_GetNetWMState(_this, xevent->xproperty.window);
+                const Uint32 flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
                 const Uint32 changed = flags ^ data->window->flags;
 
                 if ((changed & SDL_WINDOW_HIDDEN) || (changed & SDL_WINDOW_FULLSCREEN)) {

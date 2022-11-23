@@ -28,8 +28,10 @@
 #define SCREEN_WIDTH    512
 #define SCREEN_HEIGHT   320
 
-#define MARKER_BUTTON 1
-#define MARKER_AXIS 2
+enum marker_type {
+    MARKER_BUTTON,
+    MARKER_AXIS,
+};
 
 enum
 {
@@ -48,11 +50,11 @@ enum
 
 #define BINDING_COUNT (SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_MAX)
 
-static struct 
+static struct
 {
     int x, y;
     double angle;
-    int marker;
+    enum marker_type marker;
 
 } s_arrBindingDisplay[] = {
     { 387, 167, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_A */
@@ -352,7 +354,7 @@ BMergeAxisBindings(int iIndex)
 static void
 WatchJoystick(SDL_Joystick * joystick)
 {
-    SDL_Texture *background_front, *background_back, *button, *axis, *marker;
+    SDL_Texture *background_front, *background_back, *button, *axis, *marker=NULL;
     const char *name = NULL;
     SDL_Event event;
     SDL_Rect dst;
@@ -371,8 +373,8 @@ WatchJoystick(SDL_Joystick * joystick)
 
     /* Print info about the joystick we are watching */
     name = SDL_JoystickName(joystick);
-    SDL_Log("Watching joystick %d: (%s)\n", SDL_JoystickInstanceID(joystick),
-           name ? name : "Unknown Joystick");
+    SDL_Log("Watching joystick %" SDL_PRIs32 ": (%s)\n", SDL_JoystickInstanceID(joystick),
+            name ? name : "Unknown Joystick");
     SDL_Log("Joystick has %d axes, %d hats, %d balls, and %d buttons\n",
            SDL_JoystickNumAxes(joystick), SDL_JoystickNumHats(joystick),
            SDL_JoystickNumBalls(joystick), SDL_JoystickNumButtons(joystick));
@@ -406,8 +408,6 @@ WatchJoystick(SDL_Joystick * joystick)
                 break;
             case MARKER_BUTTON:
                 marker = button;
-                break;
-            default:
                 break;
         }
         
@@ -611,7 +611,7 @@ WatchJoystick(SDL_Joystick * joystick)
                 SDL_GameControllerButton eButton = (SDL_GameControllerButton)iIndex;
                 SDL_strlcat(mapping, SDL_GameControllerGetStringForButton(eButton), SDL_arraysize(mapping));
             } else {
-                const char *pszAxisName;
+                const char *pszAxisName = NULL;
                 switch (iIndex - SDL_CONTROLLER_BUTTON_MAX) {
                 case SDL_CONTROLLER_BINDING_AXIS_LEFTX_NEGATIVE:
                     if (!BMergeAxisBindings(iIndex)) {
@@ -660,7 +660,9 @@ WatchJoystick(SDL_Joystick * joystick)
                     pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
                     break;
                 }
-                SDL_strlcat(mapping, pszAxisName, SDL_arraysize(mapping));
+                if (pszAxisName) {
+                    SDL_strlcat(mapping, pszAxisName, SDL_arraysize(mapping));
+                }
             }
             SDL_strlcat(mapping, ":", SDL_arraysize(mapping));
 
@@ -781,7 +783,7 @@ main(int argc, char *argv[])
             SDL_Log("      balls: %d\n", SDL_JoystickNumBalls(joystick));
             SDL_Log("       hats: %d\n", SDL_JoystickNumHats(joystick));
             SDL_Log("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
-            SDL_Log("instance id: %d\n", SDL_JoystickInstanceID(joystick));
+            SDL_Log("instance id: %" SDL_PRIu32 "\n", SDL_JoystickInstanceID(joystick));
             SDL_Log("       guid: %s\n", guid);
             SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
             SDL_JoystickClose(joystick);

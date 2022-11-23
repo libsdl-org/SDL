@@ -86,7 +86,7 @@ typedef struct _SDL_SysWMEntry
 static struct
 {
     SDL_mutex *lock;
-    SDL_atomic_t active;
+    SDL_bool active;
     SDL_atomic_t count;
     int max_events_seen;
     SDL_EventEntry *head;
@@ -94,7 +94,7 @@ static struct
     SDL_EventEntry *free;
     SDL_SysWMEntry *wmmsg_used;
     SDL_SysWMEntry *wmmsg_free;
-} SDL_EventQ = { NULL, { 1 }, { 0 }, 0, NULL, NULL, NULL, NULL, NULL };
+} SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL, NULL, NULL };
 
 
 #if !SDL_JOYSTICK_DISABLED
@@ -147,7 +147,7 @@ SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldVa
 static void SDLCALL
 SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
+    (void)SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
 /**
@@ -406,7 +406,7 @@ SDL_LogEvent(const SDL_Event *event)
             SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%"SDL_PRIs64" gestureid=%"SDL_PRIs64" numfingers=%u error=%f x=%f y=%f)", \
                 (uint) event->dgesture.timestamp, (long long)event->dgesture.touchId, \
                 (long long)event->dgesture.gestureId, (uint) event->dgesture.numFingers, \
-                event->dgesture.error, event->dgesture.x, event->dgesture.y);
+                event->dgesture.error, event->dgesture.x, event->dgesture.y)
         SDL_EVENT_CASE(SDL_DOLLARGESTURE) PRINT_DOLLAR_EVENT(event); break;
         SDL_EVENT_CASE(SDL_DOLLARRECORD) PRINT_DOLLAR_EVENT(event); break;
         #undef PRINT_DOLLAR_EVENT
@@ -425,7 +425,7 @@ SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_DROPCOMPLETE) PRINT_DROP_EVENT(event); break;
         #undef PRINT_DROP_EVENT
 
-        #define PRINT_AUDIODEV_EVENT(event) SDL_snprintf(details, sizeof (details), " (timestamp=%u which=%u iscapture=%s)", (uint) event->adevice.timestamp, (uint) event->adevice.which, event->adevice.iscapture ? "true" : "false");
+        #define PRINT_AUDIODEV_EVENT(event) SDL_snprintf(details, sizeof (details), " (timestamp=%u which=%u iscapture=%s)", (uint) event->adevice.timestamp, (uint) event->adevice.which, event->adevice.iscapture ? "true" : "false")
         SDL_EVENT_CASE(SDL_AUDIODEVICEADDED) PRINT_AUDIODEV_EVENT(event); break;
         SDL_EVENT_CASE(SDL_AUDIODEVICEREMOVED) PRINT_AUDIODEV_EVENT(event); break;
         #undef PRINT_AUDIODEV_EVENT
@@ -474,7 +474,7 @@ SDL_StopEventLoop(void)
         SDL_LockMutex(SDL_EventQ.lock);
     }
 
-    SDL_AtomicSet(&SDL_EventQ.active, 0);
+    SDL_EventQ.active = SDL_FALSE;
 
     if (report && SDL_atoi(report)) {
         SDL_Log("SDL EVENT QUEUE: Maximum events in-flight: %d\n",
@@ -554,26 +554,30 @@ SDL_StartEventLoop(void)
             return -1;
         }
     }
+    SDL_LockMutex(SDL_EventQ.lock);
 
     if (!SDL_event_watchers_lock) {
         SDL_event_watchers_lock = SDL_CreateMutex();
         if (SDL_event_watchers_lock == NULL) {
+            SDL_UnlockMutex(SDL_EventQ.lock);
             return -1;
         }
     }
 #endif /* !SDL_THREADS_DISABLED */
 
     /* Process most event types */
-    SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
-    SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
-    SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
+    (void)SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
 #if 0 /* Leave these events enabled so apps can respond to items being dragged onto them at startup */
-    SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
-    SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
+    (void)SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
 #endif
 
-    SDL_AtomicSet(&SDL_EventQ.active, 1);
-
+    SDL_EventQ.active = SDL_TRUE;
+    if (SDL_EventQ.lock) {
+        SDL_UnlockMutex(SDL_EventQ.lock);
+    }
     return 0;
 }
 
@@ -692,17 +696,20 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
 {
     int i, used, sentinels_expected = 0;
 
-    /* Don't look after we've quit */
-    if (!SDL_AtomicGet(&SDL_EventQ.active)) {
-        /* We get a few spurious events at shutdown, so don't warn then */
-        if (action == SDL_GETEVENT) {
-            SDL_SetError("The event system has been shut down");
-        }
-        return (-1);
-    }
     /* Lock the event queue */
     used = 0;
     if (!SDL_EventQ.lock || SDL_LockMutex(SDL_EventQ.lock) == 0) {
+        /* Don't look after we've quit */
+        if (!SDL_EventQ.active) {
+            if (SDL_EventQ.lock) {
+                SDL_UnlockMutex(SDL_EventQ.lock);
+            }
+            /* We get a few spurious events at shutdown, so don't warn then */
+            if (action == SDL_GETEVENT) {
+                SDL_SetError("The event system has been shut down");
+            }
+            return (-1);
+        }
         if (action == SDL_ADDEVENT) {
             for (i = 0; i < numevents; ++i) {
                 used += SDL_AddEvent(&events[i]);
@@ -810,14 +817,11 @@ SDL_FlushEvent(Uint32 type)
 void
 SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 {
+    SDL_EventEntry *entry, *next;
+    Uint32 type;
     /* !!! FIXME: we need to manually SDL_free() the strings in TEXTINPUT and
        drag'n'drop events if we're flushing them without passing them to the
        app, but I don't know if this is the right place to do that. */
-
-    /* Don't look after we've quit */
-    if (!SDL_AtomicGet(&SDL_EventQ.active)) {
-        return;
-    }
 
     /* Make sure the events are current */
 #if 0
@@ -829,8 +833,13 @@ SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 
     /* Lock the event queue */
     if (!SDL_EventQ.lock || SDL_LockMutex(SDL_EventQ.lock) == 0) {
-        SDL_EventEntry *entry, *next;
-        Uint32 type;
+        /* Don't look after we've quit */
+        if (!SDL_EventQ.active) {
+            if (SDL_EventQ.lock) {
+                SDL_UnlockMutex(SDL_EventQ.lock);
+            }
+            return;
+        }
         for (entry = SDL_EventQ.head; entry; entry = next) {
             next = entry->next;
             type = entry->event.type;

@@ -45,7 +45,7 @@ extern "C" {
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetClipboardText
  * \sa SDL_HasClipboardText
@@ -63,7 +63,7 @@ extern DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
  *          on the returned pointer when done with it (even if there was an
  *          error).
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasClipboardText
  * \sa SDL_SetClipboardText
@@ -75,7 +75,7 @@ extern DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
  *
  * \returns SDL_TRUE if the clipboard has text, or SDL_FALSE if it does not.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
@@ -89,7 +89,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_HasPrimarySelectionText
@@ -108,7 +108,7 @@ extern DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
  *          call SDL_free() on the returned pointer when done with it (even if
  *          there was an error).
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
@@ -122,7 +122,7 @@ extern DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  * \returns SDL_TRUE if the primary selection has text, or SDL_FALSE if it
  *          does not.
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText

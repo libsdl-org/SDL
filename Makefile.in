@@ -13,7 +13,7 @@ datarootdir = @datarootdir@
 datadir	= @datadir@
 auxdir	= @ac_aux_dir@
 distpath = $(srcdir)/..
-distdir = SDL2-@SDL_VERSION@
+distdir = SDL3-@SDL_VERSION@
 distfile = $(distdir).tar.gz
 
 @SET_MAKE@
@@ -32,26 +32,27 @@ RANLIB	= @RANLIB@
 RC	= @RC@
 LINKER = @LINKER@
 LIBTOOLLINKERTAG = @LIBTOOLLINKERTAG@
+SDL_VENDOR_INFO = @SDL_VENDOR_INFO@
 
-TARGET  = libSDL2.la
+TARGET  = libSDL3.la
 OBJECTS = @OBJECTS@
 GEN_HEADERS = @GEN_HEADERS@
 GEN_OBJECTS = @GEN_OBJECTS@
 VERSION_OBJECTS = @VERSION_OBJECTS@
 
-SDLMAIN_TARGET = libSDL2main.la
+SDLMAIN_TARGET = libSDL3main.la
 SDLMAIN_OBJECTS = @SDLMAIN_OBJECTS@
 
-SDLTEST_TARGET = libSDL2_test.la
+SDLTEST_TARGET = libSDL3_test.la
 SDLTEST_OBJECTS = @SDLTEST_OBJECTS@
 
 WAYLAND_SCANNER = @WAYLAND_SCANNER@
 WAYLAND_SCANNER_CODE_MODE = @WAYLAND_SCANNER_CODE_MODE@
 
-INSTALL_SDL2_CONFIG = @INSTALL_SDL2_CONFIG@
+INSTALL_SDL3_CONFIG = @INSTALL_SDL3_CONFIG@
 
-SRC_DIST = *.md *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac docs include Makefile.* mingw sdl2-config.cmake.in sdl2-config-version.cmake.in sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in SDL2Config.cmake.in src test VisualC VisualC-WinRT Xcode Xcode-iOS wayland-protocols
-GEN_DIST = SDL2.spec
+SRC_DIST = *.md *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac docs include Makefile.* mingw sdl3-config.cmake.in sdl3-config-version.cmake.in sdl3-config.in sdl3.m4 sdl3.pc.in SDL3.spec.in SDL3Config.cmake.in src test VisualC VisualC-WinRT Xcode Xcode-iOS wayland-protocols
+GEN_DIST = SDL3.spec
 
 ifneq ($V,1)
 RUN_CMD_AR     = @echo "  AR    " $@;
@@ -152,7 +153,7 @@ $(objects)/.created:
 	touch $@
 
 update-revision:
-	$(SHELL) $(auxdir)/updaterev.sh
+	$(SHELL) $(auxdir)/updaterev.sh --vendor "$(SDL_VENDOR_INFO)"
 
 .PHONY: all update-revision install install-bin install-hdrs install-lib install-data uninstall uninstall-bin uninstall-hdrs uninstall-lib uninstall-data clean distclean dist $(OBJECTS:.lo=.d)
 
@@ -167,21 +168,21 @@ $(objects)/$(SDLTEST_TARGET): $(SDLTEST_OBJECTS)
 
 install: all install-bin install-hdrs install-lib install-data
 install-bin:
-ifeq ($(INSTALL_SDL2_CONFIG),TRUE)
+ifeq ($(INSTALL_SDL3_CONFIG),TRUE)
 	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(bindir)
-	$(INSTALL) -m 755 sdl2-config $(DESTDIR)$(bindir)/sdl2-config
+	$(INSTALL) -m 755 sdl3-config $(DESTDIR)$(bindir)/sdl3-config
 endif
 
 install-hdrs: update-revision
-	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(includedir)/SDL2
+	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(includedir)/SDL3
 	for file in $(HDRS) $(SDLTEST_HDRS); do \
-	    $(INSTALL) -m 644 $(srcdir)/include/$$file $(DESTDIR)$(includedir)/SDL2/$$file; \
+	    $(INSTALL) -m 644 $(srcdir)/include/$$file $(DESTDIR)$(includedir)/SDL3/$$file; \
 	done
-	$(INSTALL) -m 644 include/SDL_config.h $(DESTDIR)$(includedir)/SDL2/SDL_config.h
+	$(INSTALL) -m 644 include/SDL_config.h $(DESTDIR)$(includedir)/SDL3/SDL_config.h
 	if test -f include/SDL_revision.h; then \
-	    $(INSTALL) -m 644 include/SDL_revision.h $(DESTDIR)$(includedir)/SDL2/SDL_revision.h; \
+	    $(INSTALL) -m 644 include/SDL_revision.h $(DESTDIR)$(includedir)/SDL3/SDL_revision.h; \
 	else \
-	    $(INSTALL) -m 644 $(srcdir)/include/SDL_revision.h $(DESTDIR)$(includedir)/SDL2/SDL_revision.h; \
+	    $(INSTALL) -m 644 $(srcdir)/include/SDL_revision.h $(DESTDIR)$(includedir)/SDL3/SDL_revision.h; \
 	fi
 
 install-lib: $(objects)/$(TARGET) $(objects)/$(SDLMAIN_TARGET) $(objects)/$(SDLTEST_TARGET)
@@ -191,34 +192,34 @@ install-lib: $(objects)/$(TARGET) $(objects)/$(SDLMAIN_TARGET) $(objects)/$(SDLT
 	$(LIBTOOL) --mode=install $(INSTALL) $(objects)/$(SDLTEST_TARGET) $(DESTDIR)$(libdir)/$(SDLTEST_TARGET)
 install-data:
 	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(datadir)/aclocal
-	$(INSTALL) -m 644 $(srcdir)/sdl2.m4 $(DESTDIR)$(datadir)/aclocal/sdl2.m4
+	$(INSTALL) -m 644 $(srcdir)/sdl3.m4 $(DESTDIR)$(datadir)/aclocal/sdl3.m4
 	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(libdir)/pkgconfig
-	$(INSTALL) -m 644 sdl2.pc $(DESTDIR)$(libdir)/pkgconfig
-ifeq ($(INSTALL_SDL2_CONFIG),TRUE)
-	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(libdir)/cmake/SDL2
-	$(INSTALL) -m 644 sdl2-config.cmake $(DESTDIR)$(libdir)/cmake/SDL2
-	$(INSTALL) -m 644 sdl2-config-version.cmake $(DESTDIR)$(libdir)/cmake/SDL2
+	$(INSTALL) -m 644 sdl3.pc $(DESTDIR)$(libdir)/pkgconfig
+ifeq ($(INSTALL_SDL3_CONFIG),TRUE)
+	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(libdir)/cmake/SDL3
+	$(INSTALL) -m 644 sdl3-config.cmake $(DESTDIR)$(libdir)/cmake/SDL3
+	$(INSTALL) -m 644 sdl3-config-version.cmake $(DESTDIR)$(libdir)/cmake/SDL3
 endif
 
 uninstall: uninstall-bin uninstall-hdrs uninstall-lib uninstall-data
 uninstall-bin:
-	rm -f $(DESTDIR)$(bindir)/sdl2-config
+	rm -f $(DESTDIR)$(bindir)/sdl3-config
 uninstall-hdrs:
 	for file in $(HDRS) $(SDLTEST_HDRS); do \
-	    rm -f $(DESTDIR)$(includedir)/SDL2/$$file; \
+	    rm -f $(DESTDIR)$(includedir)/SDL3/$$file; \
 	done
-	rm -f $(DESTDIR)$(includedir)/SDL2/SDL_config.h
-	rm -f $(DESTDIR)$(includedir)/SDL2/SDL_revision.h
-	-rmdir $(DESTDIR)$(includedir)/SDL2
+	rm -f $(DESTDIR)$(includedir)/SDL3/SDL_config.h
+	rm -f $(DESTDIR)$(includedir)/SDL3/SDL_revision.h
+	-rmdir $(DESTDIR)$(includedir)/SDL3
 uninstall-lib:
 	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(libdir)/$(TARGET)
 	rm -f $(DESTDIR)$(libdir)/$(SDLMAIN_TARGET)
 	rm -f $(DESTDIR)$(libdir)/$(SDLTEST_TARGET)
 uninstall-data:
-	rm -f $(DESTDIR)$(datadir)/aclocal/sdl2.m4
-	rm -f $(DESTDIR)$(libdir)/pkgconfig/sdl2.pc
-	rm -f $(DESTDIR)$(libdir)/cmake/SDL2/sdl2-config.cmake
-	rm -f $(DESTDIR)$(libdir)/cmake/SDL2/sdl2-config-version.cmake
+	rm -f $(DESTDIR)$(datadir)/aclocal/sdl3.m4
+	rm -f $(DESTDIR)$(libdir)/pkgconfig/sdl3.pc
+	rm -f $(DESTDIR)$(libdir)/cmake/SDL3/sdl3-config.cmake
+	rm -f $(DESTDIR)$(libdir)/cmake/SDL3/sdl3-config-version.cmake
 
 clean:
 	rm -rf $(objects)
@@ -226,7 +227,7 @@ clean:
 	if test -f test/Makefile; then (cd test; $(MAKE) $@); fi
 
 distclean: clean
-	rm -f Makefile Makefile.rules sdl2-config
+	rm -f Makefile Makefile.rules sdl3-config
 	rm -f config.status config.cache config.log libtool
 	rm -rf $(srcdir)/autom4te*
 	find $(srcdir) \( \
@@ -252,7 +253,8 @@ dist $(distfile):
 	    -name '.#*' \) \
 	    -exec rm -f {} \;
 	if test -f $(distdir)/test/Makefile; then (cd $(distdir)/test && make distclean); fi
-	(cd $(distdir); build-scripts/updaterev.sh)
+	# Intentionally no vendor suffix: that's a property of the build, not the source
+	(cd $(distdir); $(srcdir)/build-scripts/updaterev.sh --dist)
 	tar cvf - $(distdir) | gzip --best >$(distfile)
 	rm -rf $(distdir)
 
