@@ -317,23 +317,25 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     SDL_JoystickGUID guid;
     int i;
     int axis_mask;
+    int result = -1;
 
+    SDL_LockJoysticks();
 
     if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
         /* Ignore devices that aren't actually controllers (e.g. remotes), they'll be handled as keyboard input */
         if (naxes < 2 && nhats < 1) {
-            return -1;
+            goto done;
         }
     }
-    
+
     if (JoystickByDeviceId(device_id) != NULL || name == NULL) {
-        return -1;
+        goto done;
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
     if (HIDAPI_IsDevicePresent(vendor_id, product_id, 0, name)) {
         /* The HIDAPI driver is taking care of this device */
-        return -1;
+        goto done;
     }
 #endif
 
@@ -377,7 +379,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
 
     item = (SDL_joylist_item *) SDL_malloc(sizeof (SDL_joylist_item));
     if (item == NULL) {
-        return -1;
+        goto done;
     }
 
     SDL_zerop(item);
@@ -385,8 +387,8 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     item->device_id = device_id;
     item->name = SDL_CreateJoystickName(vendor_id, product_id, NULL, name);
     if (item->name == NULL) {
-         SDL_free(item);
-         return -1;
+        SDL_free(item);
+        goto done;
     }
     
     item->is_accelerometer = is_accelerometer;
@@ -415,11 +417,16 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
 
     SDL_PrivateJoystickAdded(item->device_instance);
 
+    result = numjoysticks;
+
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick %s with device_id %d", item->name, device_id);
 #endif
 
-    return numjoysticks;
+done:
+    SDL_UnlockJoysticks();
+
+    return result;
 }
 
 int 
@@ -427,7 +434,10 @@ Android_RemoveJoystick(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
+    int result = -1;
     
+    SDL_LockJoysticks();
+
     /* Don't call JoystickByDeviceId here or there'll be an infinite loop! */
     while (item != NULL) {
         if (item->device_id == device_id) {
@@ -438,7 +448,7 @@ Android_RemoveJoystick(int device_id)
     }
     
     if (item == NULL) {
-        return -1;
+        goto done;
     }
 
     if (item->joystick) {
@@ -460,13 +470,19 @@ Android_RemoveJoystick(int device_id)
 
     SDL_PrivateJoystickRemoved(item->device_instance);
 
+    result = numjoysticks;
+
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Removed joystick with device_id %d", device_id);
 #endif
-    
+
     SDL_free(item->name);
     SDL_free(item);
-    return numjoysticks;
+
+done:
+    SDL_UnlockJoysticks();
+
+    return result;
 }
 
 

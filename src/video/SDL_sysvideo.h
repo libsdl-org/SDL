@@ -450,7 +450,6 @@ typedef struct VideoBootStrap
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
 extern VideoBootStrap COCOA_bootstrap;
 extern VideoBootStrap X11_bootstrap;
-extern VideoBootStrap DirectFB_bootstrap;
 extern VideoBootStrap WINDOWS_bootstrap;
 extern VideoBootStrap WINRT_bootstrap;
 extern VideoBootStrap HAIKU_bootstrap;
@@ -461,20 +460,17 @@ extern VideoBootStrap PS2_bootstrap;
 extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;
 extern VideoBootStrap RISCOS_bootstrap;
+extern VideoBootStrap N3DS_bootstrap;
 extern VideoBootStrap RPI_bootstrap;
 extern VideoBootStrap KMSDRM_bootstrap;
 extern VideoBootStrap KMSDRM_LEGACY_bootstrap;
 extern VideoBootStrap DUMMY_bootstrap;
 extern VideoBootStrap DUMMY_evdev_bootstrap;
 extern VideoBootStrap Wayland_bootstrap;
-extern VideoBootStrap NACL_bootstrap;
 extern VideoBootStrap VIVANTE_bootstrap;
 extern VideoBootStrap Emscripten_bootstrap;
-extern VideoBootStrap QNX_bootstrap;
 extern VideoBootStrap OFFSCREEN_bootstrap;
 extern VideoBootStrap NGAGE_bootstrap;
-extern VideoBootStrap OS2DIVE_bootstrap;
-extern VideoBootStrap OS2VMAN_bootstrap;
 
 /* Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work */
 extern SDL_bool SDL_OnVideoThread(void);
@@ -518,6 +514,8 @@ extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vin
 extern void SDL_ToggleDragAndDropSupport(void);
 
 extern int SDL_GetPointDisplayIndex(const SDL_Point * point);
+
+extern int SDL_GL_SwapWindowWithResult(SDL_Window * window);
 
 #endif /* SDL_sysvideo_h_ */
 

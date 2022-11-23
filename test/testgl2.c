@@ -45,8 +45,6 @@ static int LoadContext(GL_Context * data)
 #define __SDL_NOGETPROCADDR__
 #elif SDL_VIDEO_DRIVER_ANDROID
 #define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_PANDORA
-#define __SDL_NOGETPROCADDR__
 #endif
 
 #if defined __SDL_NOGETPROCADDR__
@@ -302,7 +300,7 @@ main(int argc, char *argv[])
     }
 
     SDL_GetCurrentDisplayMode(0, &mode);
-    SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
+    SDL_Log("Screen BPP    : %" SDL_PRIu32 "\n", SDL_BITSPERPIXEL(mode.format));
     SDL_Log("Swap Interval : %d\n", SDL_GL_GetSwapInterval());
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);

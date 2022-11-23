@@ -117,7 +117,7 @@ main(int argc, char *argv[])
     }
 
     /* Initialize the sprite positions */
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
         positions[i].x = rand() % (WINDOW_WIDTH - sprite_w);
         positions[i].y = rand() % (WINDOW_HEIGHT - sprite_h);

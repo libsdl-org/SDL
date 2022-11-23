@@ -265,9 +265,6 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         BOOL is_ps5 = IsControllerPS5(controller);
         BOOL is_switch_pro = IsControllerSwitchPro(controller);
         BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
-#if TARGET_OS_TV
-        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5 && !is_switch_pro && !is_switch_joycon_pair);
-#endif
         int nbuttons = 0;
         BOOL has_direct_menu;
 
@@ -310,18 +307,19 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_GUIDE);
             ++nbuttons;
         }
-        has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
-#if TARGET_OS_TV
-        /* On tvOS MFi controller menu button brings you to the home screen */
-        if (is_MFi) {
-            has_direct_menu = FALSE;
-        }
-#endif
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
         ++nbuttons;
+
+        has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
         if (!has_direct_menu) {
             device->uses_pause_handler = SDL_TRUE;
         }
+#if TARGET_OS_TV
+        /* The single menu button isn't very reliable, at least as of tvOS 16.1 */
+        if ((device->button_mask & (1 << SDL_CONTROLLER_BUTTON_BACK)) == 0) {
+            device->uses_pause_handler = SDL_TRUE;
+        }
+#endif
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
         if ([controller respondsToSelector:@selector(physicalInputProfile)]) {
@@ -440,9 +438,14 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_Y);
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+#if TARGET_OS_TV
+        /* The menu button is used by the OS and not available to applications */
+        nbuttons += 6;
+#else
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_START);
         nbuttons += 7;
         device->uses_pause_handler = SDL_TRUE;
+#endif
 
         device->naxes = 0; /* no traditional analog inputs */
         device->nhats = 1; /* d-pad */
@@ -632,18 +635,13 @@ SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *
 }
 #endif /* TARGET_OS_TV */
 
-#if defined(__MACOSX__)
-static int is_macos11(void)
-{
-    return (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_15);
-}
-#endif
-
 static int
 IOS_JoystickInit(void)
 {
 #if defined(__MACOSX__)
-    if (!is_macos11()) {
+    if (@available(macOS 10.16, *)) {
+        /* Continue with initialization on macOS 11+ */
+    } else {
         return 0;
     }
 #endif
@@ -683,7 +681,9 @@ IOS_JoystickInit(void)
                                                queue:nil
                                           usingBlock:^(NSNotification *note) {
                                               GCController *controller = note.object;
+                                              SDL_LockJoysticks();
                                               IOS_AddJoystickDevice(controller, SDL_FALSE);
+                                              SDL_UnlockJoysticks();
                                           }];
 
         disconnectObserver = [center addObserverForName:GCControllerDidDisconnectNotification
@@ -691,14 +691,15 @@ IOS_JoystickInit(void)
                                                   queue:nil
                                              usingBlock:^(NSNotification *note) {
                                                  GCController *controller = note.object;
-                                                 SDL_JoystickDeviceItem *device = deviceList;
-                                                 while (device != NULL) {
+                                                 SDL_JoystickDeviceItem *device;
+                                                 SDL_LockJoysticks();
+                                                 for (device = deviceList; device != NULL; device = device->next) {
                                                      if (device->controller == controller) {
                                                          IOS_RemoveJoystickDevice(device);
                                                          break;
                                                      }
-                                                     device = device->next;
                                                  }
+                                                 SDL_UnlockJoysticks();
                                              }];
 #endif /* SDL_JOYSTICK_MFI */
     }
@@ -1069,14 +1070,14 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                         data[0] = rate.x;
                         data[1] = rate.z;
                         data[2] = -rate.y;
-                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, data, 3);
+                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, 0, data, 3);
                     }
                     if (motion.hasGravityAndUserAcceleration) {
                         GCAcceleration accel = motion.acceleration;
                         data[0] = -accel.x * SDL_STANDARD_GRAVITY;
                         data[1] = -accel.y * SDL_STANDARD_GRAVITY;
                         data[2] = -accel.z * SDL_STANDARD_GRAVITY;
-                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, data, 3);
+                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, 0, data, 3);
                     }
                 }
             }
@@ -1654,7 +1655,7 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 #if defined(SDL_JOYSTICK_MFI) && defined(__MACOSX__)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
-    if (is_macos11()) {
+    if (@available(macOS 10.16, *)) {
         if ([GCController supportsHIDDevice:device]) {
             return SDL_TRUE;
         }

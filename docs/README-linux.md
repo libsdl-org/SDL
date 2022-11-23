@@ -42,9 +42,6 @@ NOTES:
   for higher-quality audio resampling. SDL will work without it if the library
   is missing, so it's safe to build in support even if the end user doesn't
   have this library installed.
-- DirectFB isn't included because the configure script (currently) fails to find
-  it at all. You can do "sudo apt-get install libdirectfb-dev" and fix the 
-  configure script to include DirectFB support. Send patches.  :)
 
 
 Joystick does not work

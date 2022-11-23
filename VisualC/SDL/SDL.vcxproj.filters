@@ -76,9 +76,6 @@
     <Filter Include="audio\dummy">
       <UniqueIdentifier>{4c8ad943-c2fb-4014-9ca3-041e0ad08426}</UniqueIdentifier>
     </Filter>
-    <Filter Include="audio\winmm">
-      <UniqueIdentifier>{e90fa293-2828-4927-8113-35bf561024a9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="audio\wasapi">
       <UniqueIdentifier>{3d68ae70-a9ff-46cf-be69-069f0b02aca0}</UniqueIdentifier>
     </Filter>
@@ -495,9 +492,6 @@
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h">
       <Filter>haptic</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\hidapi\SDL_hidapi.h">
-      <Filter>hidapi</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h">
       <Filter>joystick</Filter>
     </ClInclude>
@@ -536,9 +530,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\audio\dummy\SDL_dummyaudio.h">
       <Filter>audio\dummy</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\audio\winmm\SDL_winmm.h">
-      <Filter>audio\winmm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\audio\wasapi\SDL_wasapi.h">
       <Filter>audio\wasapi</Filter>
@@ -673,9 +664,6 @@
       <Filter>video\windows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengles.h">
-      <Filter>video\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\video\windows\SDL_windowstaskdialog.h">
       <Filter>video\windows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\timer\SDL_timer_c.h">
@@ -835,6 +823,7 @@
     <ClInclude Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.h">
       <Filter>render\direct3d12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1023,9 +1012,6 @@
     <ClCompile Include="..\..\src\audio\dummy\SDL_dummyaudio.c">
       <Filter>audio\dummy</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\audio\winmm\SDL_winmm.c">
-      <Filter>audio\winmm</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c">
       <Filter>audio\wasapi</Filter>
     </ClCompile>
@@ -1072,6 +1058,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_stadia.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c">
@@ -1357,6 +1346,7 @@
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.c">
       <Filter>render\direct3d12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />

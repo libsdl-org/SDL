@@ -329,6 +329,7 @@ QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_
     dipdw.diph.dwHeaderSize = sizeof(dipdw.diph);
     dipdw.diph.dwObj = 0;
     dipdw.diph.dwHow = DIPH_DEVICE;
+    dipdw.dwData = 0;
 
     if (FAILED(IDirectInputDevice8_GetProperty(device, DIPROP_VIDPID, &dipdw.diph))) {
         return SDL_FALSE;

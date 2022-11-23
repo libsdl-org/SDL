@@ -31,10 +31,6 @@
 #if defined(__WIN32__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"    // For GetDoubleClickTime()
 #endif
-#if defined(__OS2__)
-#define INCL_WIN
-#include <os2.h>
-#endif
 
 /* #define DEBUG_MOUSE */
 
@@ -57,8 +53,6 @@ SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *ol
     } else {
 #if defined(__WIN32__) || defined(__WINGDK__)
         mouse->double_click_time = GetDoubleClickTime();
-#elif defined(__OS2__)
-        mouse->double_click_time = WinQuerySysValue(HWND_DESKTOP, SV_DBLCLKTIME);
 #else
         mouse->double_click_time = 500;
 #endif
@@ -265,6 +259,30 @@ SDL_GetMouseFocus(void)
 
     return mouse->focus;
 }
+
+/* TODO RECONNECT: Hello from the Wayland video driver!
+ * This was once removed from SDL, but it's been added back in comment form
+ * because we will need it when Wayland adds compositor reconnect support.
+ * If you need this before we do, great! Otherwise, leave this alone, we'll
+ * uncomment it at the right time.
+ * -flibit
+ */
+#if 0
+void
+SDL_ResetMouse(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    Uint32 buttonState = GetButtonState(mouse, SDL_FALSE);
+    int i;
+
+    for (i = 1; i <= sizeof(buttonState)*8; ++i) {
+        if (buttonState & SDL_BUTTON(i)) {
+            SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, i);
+        }
+    }
+    SDL_assert(GetButtonState(mouse, SDL_FALSE) == 0);
+}
+#endif /* 0 */
 
 void
 SDL_SetMouseFocus(SDL_Window * window)
@@ -868,6 +886,8 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         event.wheel.preciseX = x;
         event.wheel.preciseY = y;
         event.wheel.direction = (Uint32)direction;
+        event.wheel.mouseX = mouse->x;
+        event.wheel.mouseY = mouse->y;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;

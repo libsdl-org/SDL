@@ -2580,7 +2580,7 @@ init_mparams(void)
 #else /* (FOOTERS && !INSECURE) */
         s = (size_t) 0x58585858U;
 #endif /* (FOOTERS && !INSECURE) */
-        ACQUIRE_MAGIC_INIT_LOCK();
+        (void)ACQUIRE_MAGIC_INIT_LOCK();
         if (mparams.magic == 0) {
             mparams.magic = s;
             /* Set up lock for main malloc area */
@@ -3017,6 +3017,8 @@ internal_malloc_stats(mstate m)
                 (unsigned long) (maxfp));
         fprintf(stderr, "system bytes     = %10lu\n", (unsigned long) (fp));
         fprintf(stderr, "in use bytes     = %10lu\n", (unsigned long) (used));
+#else
+        (void)used;
 #endif
 
         POSTACTION(m);
@@ -3461,7 +3463,9 @@ add_segment(mstate m, char *tbase, size_t tsize, flag_t mmapped)
     msegmentptr ss = (msegmentptr) (chunk2mem(sp));
     mchunkptr tnext = chunk_plus_offset(sp, ssize);
     mchunkptr p = tnext;
+#ifdef DEBUG
     int nfences = 0;
+#endif
 
     /* reset top to new space */
     init_top(m, (mchunkptr) tbase, tsize - TOP_FOOT_SIZE);
@@ -3479,13 +3483,17 @@ add_segment(mstate m, char *tbase, size_t tsize, flag_t mmapped)
     for (;;) {
         mchunkptr nextp = chunk_plus_offset(p, SIZE_T_SIZE);
         p->head = FENCEPOST_HEAD;
+#ifdef DEBUG
         ++nfences;
+#endif
         if ((char *) (&(nextp->head)) < old_end)
             p = nextp;
         else
             break;
     }
+#ifdef DEBUG
     assert(nfences >= 2);
+#endif
 
     /* Insert the rest of old top into a bin as an ordinary free chunk */
     if (csp != old_top) {

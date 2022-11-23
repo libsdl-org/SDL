@@ -162,7 +162,8 @@ loop()
     fprintf(stderr, "starting loop\n"); fflush(stderr);
     // while (SDL_PollEvent(&event)) {
     while (!done && SDL_WaitEvent(&event)) {
-        fprintf(stderr, "got event type: %d\n", event.type); fflush(stderr);
+        fprintf(stderr, "got event type: %" SDL_PRIu32 "\n", event.type);
+        fflush(stderr);
         switch (event.type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:

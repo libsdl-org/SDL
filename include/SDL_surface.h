@@ -151,7 +151,7 @@ typedef enum
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRGBSurfaceFrom
  * \sa SDL_CreateRGBSurfaceWithFormat
@@ -179,7 +179,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.5.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRGBSurface
  * \sa SDL_CreateRGBSurfaceFrom
@@ -210,7 +210,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRGBSurface
  * \sa SDL_CreateRGBSurfaceWithFormat
@@ -248,7 +248,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.5.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRGBSurfaceFrom
  * \sa SDL_CreateRGBSurfaceWithFormat
@@ -264,7 +264,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormatFrom
  *
  * \param surface the SDL_Surface to free.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRGBSurface
  * \sa SDL_CreateRGBSurfaceFrom
@@ -283,7 +283,7 @@ extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface * surface,
                                                   SDL_Palette * palette);
@@ -304,7 +304,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface * surface,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_MUSTLOCK
  * \sa SDL_UnlockSurface
@@ -316,7 +316,7 @@ extern DECLSPEC int SDLCALL SDL_LockSurface(SDL_Surface * surface);
  *
  * \param surface the SDL_Surface structure to be unlocked
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LockSurface
  */
@@ -337,7 +337,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
  * \returns a pointer to a new SDL_Surface structure or NULL if there was an
  *          error; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_FreeSurface
  * \sa SDL_RWFromFile
@@ -369,7 +369,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops * src,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LoadBMP_RW
  * \sa SDL_SaveBMP
@@ -396,7 +396,7 @@ extern DECLSPEC int SDLCALL SDL_SaveBMP_RW
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  * \sa SDL_LockSurface
@@ -413,7 +413,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface * surface,
  * \param surface the SDL_Surface structure to query
  * \returns SDL_TRUE if the surface is RLE enabled, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetSurfaceRLE
  */
@@ -438,7 +438,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSurfaceRLE(SDL_Surface * surface);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  * \sa SDL_GetColorKey
@@ -454,7 +454,7 @@ extern DECLSPEC int SDLCALL SDL_SetColorKey(SDL_Surface * surface,
  * \param surface the SDL_Surface structure to query
  * \return SDL_TRUE if the surface has a color key, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.9.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetColorKey
  * \sa SDL_GetColorKey
@@ -474,7 +474,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasColorKey(SDL_Surface * surface);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  * \sa SDL_SetColorKey
@@ -498,7 +498,7 @@ extern DECLSPEC int SDLCALL SDL_GetColorKey(SDL_Surface * surface,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetSurfaceColorMod
  * \sa SDL_SetSurfaceAlphaMod
@@ -517,7 +517,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceColorMod(SDL_Surface * surface,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetSurfaceAlphaMod
  * \sa SDL_SetSurfaceColorMod
@@ -539,7 +539,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceColorMod(SDL_Surface * surface,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetSurfaceAlphaMod
  * \sa SDL_SetSurfaceColorMod
@@ -555,7 +555,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface * surface,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetSurfaceColorMod
  * \sa SDL_SetSurfaceAlphaMod
@@ -575,7 +575,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceAlphaMod(SDL_Surface * surface,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetSurfaceBlendMode
  */
@@ -590,7 +590,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface * surface,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetSurfaceBlendMode
  */
@@ -612,7 +612,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface * surface,
  * \returns SDL_TRUE if the rectangle intersects the surface, otherwise
  *          SDL_FALSE and blits will be completely clipped.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  * \sa SDL_GetClipRect
@@ -631,7 +631,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetClipRect(SDL_Surface * surface,
  * \param rect an SDL_Rect structure filled in with the clipping rectangle for
  *             the surface
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  * \sa SDL_SetClipRect
@@ -666,7 +666,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AllocFormat
  * \sa SDL_ConvertSurfaceFormat
@@ -691,7 +691,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AllocFormat
  * \sa SDL_ConvertSurface
@@ -714,7 +714,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height,
                                               Uint32 src_format,
@@ -740,7 +740,7 @@ extern DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height,
                                                  Uint32 src_format,
@@ -767,7 +767,7 @@ extern DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_FillRects
  */
@@ -793,7 +793,7 @@ extern DECLSPEC int SDLCALL SDL_FillRect
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_FillRect
  */
@@ -866,7 +866,7 @@ extern DECLSPEC int SDLCALL SDL_FillRects
  * SDL_UpperBlit() has been replaced by SDL_BlitSurface(), which is merely a
  * macro for this function with a less confusing name.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  */
@@ -892,7 +892,7 @@ extern DECLSPEC int SDLCALL SDL_UpperBlit
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
  */
@@ -907,7 +907,7 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
  *
  * Please use SDL_BlitScaled() instead.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
                                             const SDL_Rect * srcrect,
@@ -917,7 +917,7 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
 /**
  * Perform bilinear scaling between two surfaces of the same format, 32BPP.
  *
- * \since This function is available since SDL 2.0.16.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface * src,
                                             const SDL_Rect * srcrect,
@@ -933,7 +933,7 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface * src,
  * SDL_UpperBlitScaled() has been replaced by SDL_BlitScaled(), which is
  * merely a macro for this function with a less confusing name.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitScaled
  */
@@ -956,7 +956,7 @@ extern DECLSPEC int SDLCALL SDL_UpperBlitScaled
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitScaled
  */
@@ -967,14 +967,14 @@ extern DECLSPEC int SDLCALL SDL_LowerBlitScaled
 /**
  * Set the YUV conversion mode
  *
- * \since This function is available since SDL 2.0.8.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mode);
 
 /**
  * Get the YUV conversion mode
  *
- * \since This function is available since SDL 2.0.8.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
 
@@ -982,7 +982,7 @@ extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
  * Get the YUV conversion mode, returning the correct mode for the resolution
  * when the current conversion mode is SDL_YUV_CONVERSION_AUTOMATIC
  *
- * \since This function is available since SDL 2.0.8.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionModeForResolution(int width, int height);
 

@@ -127,7 +127,7 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
     if (vinfo->class == PseudoColor || vinfo->class == StaticColor) {
         switch (vinfo->depth) {
         case 8:
-            return SDL_PIXELTYPE_INDEX8;
+            return SDL_PIXELFORMAT_INDEX8;
         case 4:
             if (BitmapBitOrder(display) == LSBFirst) {
                 return SDL_PIXELFORMAT_INDEX4LSB;
@@ -833,6 +833,8 @@ freeInfo:
             return SDL_SetError("X11_XRRSetCrtcConfig failed");
         }
     }
+#else
+    (void)data;
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
 
     return 0;

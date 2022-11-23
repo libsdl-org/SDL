@@ -45,6 +45,9 @@ extern SDL_bool SDL_JoysticksInitialized(void);
 /* Return whether the joystick system is shutting down */
 extern SDL_bool SDL_JoysticksQuitting(void);
 
+/* Return whether the joysticks are currently locked */
+extern SDL_bool SDL_JoysticksLocked(void);
+
 /* Make sure we currently have the joysticks locked */
 extern void SDL_AssertJoysticksLocked(void);
 
@@ -149,6 +152,7 @@ extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
 extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate);
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
+extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern int SDL_PrivateJoystickAxis(SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
 extern int SDL_PrivateJoystickBall(SDL_Joystick *joystick,
@@ -160,7 +164,7 @@ extern int SDL_PrivateJoystickButton(SDL_Joystick *joystick,
 extern int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick,
                                        int touchpad, int finger, Uint8 state, float x, float y, float pressure);
 extern int SDL_PrivateJoystickSensor(SDL_Joystick *joystick,
-                                     SDL_SensorType type, const float *data, int num_values);
+                                     SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values);
 extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 

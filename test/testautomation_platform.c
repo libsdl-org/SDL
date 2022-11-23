@@ -106,7 +106,7 @@ int platform_testEndianessAndSwap(void *arg)
 
     /* Test 32 swap. */
     SDLTest_AssertCheck( SDL_Swap32(value32) == swapped32,
-             "SDL_Swap32(): 32 bit swapped: 0x%X => 0x%X",
+             "SDL_Swap32(): 32 bit swapped: 0x%" SDL_PRIX32 " => 0x%" SDL_PRIX32,
              value32, SDL_Swap32(value32) );
 
     /* Test 64 swap. */
@@ -376,6 +376,11 @@ int platform_testSetErrorEmptyInput(void *arg)
    return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT_OVERFLOW)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow"
+#endif
+
 /* !
  * \brief Tests SDL_SetError with invalid input
  * \sa
@@ -451,13 +456,17 @@ int platform_testSetErrorInvalidInput(void *arg)
              probeError,
              lastError);
    }
-   
+
    /* Clean up */
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
 
    return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT_OVERFLOW)
+#pragma GCC diagnostic pop
+#endif
 
 /* !
  * \brief Tests SDL_GetPowerInfo

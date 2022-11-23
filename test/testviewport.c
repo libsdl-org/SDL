@@ -99,14 +99,14 @@ DrawOnViewport(SDL_Renderer * renderer)
 void
 loop()
 {
+    SDL_Event event;
+    int i;
 #ifdef __EMSCRIPTEN__
     /* Avoid using delays */
     if(SDL_GetTicks() - wait_start < 1000)
         return;
     wait_start = SDL_GetTicks();
 #endif
-    SDL_Event event;
-    int i;
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);

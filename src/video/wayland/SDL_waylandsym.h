@@ -86,6 +86,12 @@ SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_flags, (struct wl_proxy *prox
 SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
 #endif
 
+#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
+#if SDL_WAYLAND_CHECK_VERSION(broken, on, purpose)
+SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display*));
+#endif
+#endif /* 0 */
+
 SDL_WAYLAND_INTERFACE(wl_seat_interface)
 SDL_WAYLAND_INTERFACE(wl_surface_interface)
 SDL_WAYLAND_INTERFACE(wl_shm_pool_interface)
@@ -149,6 +155,7 @@ SDL_WAYLAND_SYM(int, xkb_keymap_key_get_syms_by_level, (struct xkb_keymap *,
 SDL_WAYLAND_SYM(uint32_t, xkb_keysym_to_utf32, (xkb_keysym_t) )
 SDL_WAYLAND_SYM(uint32_t, xkb_keymap_mod_get_index, (struct xkb_keymap *,
                                                       const char *) )
+SDL_WAYLAND_SYM(const char *, xkb_keymap_layout_get_name, (struct xkb_keymap*, xkb_layout_index_t))
 
 #ifdef HAVE_LIBDECOR_H
 SDL_WAYLAND_MODULE(WAYLAND_LIBDECOR)

@@ -141,13 +141,12 @@ SDL_HasPrimarySelectionText(void)
 
     if (_this->HasPrimarySelectionText) {
         return _this->HasPrimarySelectionText(_this);
-    } else {
-        if (_this->primary_selection_text && _this->primary_selection_text[0] != '\0') {
-            return SDL_TRUE;
-        } else {
-            return SDL_FALSE;
-        }
     }
+
+    if (_this->primary_selection_text && _this->primary_selection_text[0] != '\0') {
+        return SDL_TRUE;
+    }
+
     return SDL_FALSE;
 }
 

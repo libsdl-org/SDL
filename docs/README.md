@@ -1,12 +1,6 @@
-Simple DirectMedia Layer {#mainpage}
-========================
+# Simple DirectMedia Layer
 
-                                  (SDL)
-
-                                Version 2.0
-
----
-http://www.libsdl.org/
+https://www.libsdl.org/
 
 Simple DirectMedia Layer is a cross-platform development library designed
 to provide low level access to audio, keyboard, mouse, joystick, and graphics
@@ -31,7 +25,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 
 - [Android](README-android.md)
 - [CMake](README-cmake.md)
-- [DirectFB](README-directfb.md)
 - [DynAPI](README-dynapi.md)
 - [Emscripten](README-emscripten.md)
 - [GDK](README-gdk.md)
@@ -40,9 +33,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [iOS](README-ios.md)
 - [Linux](README-linux.md)
 - [macOS](README-macos.md)
-- [OS/2](README-os2.md)
-- [Native Client](README-nacl.md)
-- [Pandora](README-pandora.md)
 - [Supported Platforms](README-platforms.md)
 - [Porting information](README-porting.md)
 - [PSP](README-psp.md)
@@ -50,7 +40,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [Raspberry Pi](README-raspberrypi.md)
 - [Touch](README-touch.md)
 - [Versions](README-versions.md)
-- [WinCE](README-wince.md)
 - [Windows](README-windows.md)
 - [WinRT](README-winrt.md)
 - [PSVita](README-vita.md)

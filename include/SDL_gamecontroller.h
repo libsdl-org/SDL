@@ -156,7 +156,7 @@ typedef struct SDL_GameControllerButtonBind
  * \returns the number of mappings added or -1 on error; call SDL_GetError()
  *          for more information.
  *
- * \since This function is available since SDL 2.0.2.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerAddMapping
  * \sa SDL_GameControllerAddMappingsFromFile
@@ -193,7 +193,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, 
  * \returns 1 if a new mapping is added, 0 if an existing mapping is updated,
  *          -1 on error; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerMapping
  * \sa SDL_GameControllerMappingForGUID
@@ -205,7 +205,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMapping(const char* mappingStri
  *
  * \returns the number of mappings.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerNumMappings(void);
 
@@ -215,7 +215,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerNumMappings(void);
  * \returns the mapping string. Must be freed with SDL_free(). Returns NULL if
  *          the index is out of range.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForIndex(int mapping_index);
 
@@ -228,7 +228,7 @@ extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForIndex(int mapping_ind
  * \returns a mapping string or NULL on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetDeviceGUID
  * \sa SDL_JoystickGetGUID
@@ -247,7 +247,7 @@ extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForGUID(SDL_JoystickGUID
  * \returns a string that has the controller's mapping or NULL if no mapping
  *          is available; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerAddMapping
  * \sa SDL_GameControllerMappingForGUID
@@ -265,7 +265,7 @@ extern DECLSPEC char * SDLCALL SDL_GameControllerMapping(SDL_GameController *gam
  * \returns SDL_TRUE if the given joystick is supported by the game controller
  *          interface, SDL_FALSE if it isn't or it's an invalid index.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerNameForIndex
  * \sa SDL_GameControllerOpen
@@ -285,7 +285,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsGameController(int joystick_index);
  * \returns the implementation-dependent name for the game controller, or NULL
  *          if there is no name or the index is invalid.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerName
  * \sa SDL_GameControllerOpen
@@ -306,7 +306,7 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_
  * \returns the implementation-dependent path for the game controller, or NULL
  *          if there is no path or the index is invalid.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerPath
  */
@@ -321,7 +321,7 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerPathForIndex(int joystick_
  *                       SDL_NumJoysticks()-1
  * \returns the controller type.
  *
- * \since This function is available since SDL 2.0.12.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerTypeForIndex(int joystick_index);
 
@@ -335,7 +335,7 @@ extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerTypeForIndex(in
  * \returns the mapping string. Must be freed with SDL_free(). Returns NULL if
  *          no mapping is available.
  *
- * \since This function is available since SDL 2.0.9.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC char *SDLCALL SDL_GameControllerMappingForDeviceIndex(int joystick_index);
 
@@ -355,7 +355,7 @@ extern DECLSPEC char *SDLCALL SDL_GameControllerMappingForDeviceIndex(int joysti
  * \returns a gamecontroller identifier or NULL if an error occurred; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerClose
  * \sa SDL_GameControllerNameForIndex
@@ -370,7 +370,7 @@ extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerOpen(int joystick_
  * \returns an SDL_GameController on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.4.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromInstanceID(SDL_JoystickID joyid);
 
@@ -384,7 +384,7 @@ extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromInstanceID(SDL
  *                     instance id!
  * \returns the SDL_GameController associated with a player index.
  *
- * \since This function is available since SDL 2.0.12.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetPlayerIndex
  * \sa SDL_GameControllerSetPlayerIndex
@@ -402,7 +402,7 @@ extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromPlayerIndex(in
  * \returns the implementation dependent name for the game controller, or NULL
  *          if there is no name or the identifier passed is invalid.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerNameForIndex
  * \sa SDL_GameControllerOpen
@@ -420,7 +420,7 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerName(SDL_GameController *g
  * \returns the implementation dependent path for the game controller, or NULL
  *          if there is no path or the identifier passed is invalid.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerPathForIndex
  */
@@ -435,7 +435,7 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerPath(SDL_GameController *g
  * \param gamecontroller the game controller object to query.
  * \returns the controller type.
  *
- * \since This function is available since SDL 2.0.12.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerGetType(SDL_GameController *gamecontroller);
 
@@ -447,7 +447,7 @@ extern DECLSPEC SDL_GameControllerType SDLCALL SDL_GameControllerGetType(SDL_Gam
  * \param gamecontroller the game controller object to query.
  * \returns the player index for controller, or -1 if it's not available.
  *
- * \since This function is available since SDL 2.0.9.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller);
 
@@ -458,7 +458,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetPlayerIndex(SDL_GameController 
  * \param player_index Player index to assign to this controller, or -1 to
  *                     clear the player index and turn off player LEDs.
  *
- * \since This function is available since SDL 2.0.12.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_GameControllerSetPlayerIndex(SDL_GameController *gamecontroller, int player_index);
 
@@ -470,7 +470,7 @@ extern DECLSPEC void SDLCALL SDL_GameControllerSetPlayerIndex(SDL_GameController
  * \param gamecontroller the game controller object to query.
  * \return the USB vendor ID, or zero if unavailable.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetVendor(SDL_GameController *gamecontroller);
 
@@ -482,7 +482,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetVendor(SDL_GameController *g
  * \param gamecontroller the game controller object to query.
  * \return the USB product ID, or zero if unavailable.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProduct(SDL_GameController *gamecontroller);
 
@@ -494,7 +494,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProduct(SDL_GameController *
  * \param gamecontroller the game controller object to query.
  * \return the USB product version, or zero if unavailable.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProductVersion(SDL_GameController *gamecontroller);
 
@@ -506,7 +506,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProductVersion(SDL_GameContr
  * \param gamecontroller the game controller object to query.
  * \return the controller firmware version, or zero if unavailable.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetFirmwareVersion(SDL_GameController *gamecontroller);
 
@@ -519,7 +519,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetFirmwareVersion(SDL_GameCont
  * \param gamecontroller the game controller object to query.
  * \return the serial number, or NULL if unavailable.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC const char * SDLCALL SDL_GameControllerGetSerial(SDL_GameController *gamecontroller);
 
@@ -531,7 +531,7 @@ extern DECLSPEC const char * SDLCALL SDL_GameControllerGetSerial(SDL_GameControl
  * \returns SDL_TRUE if the controller has been opened and is currently
  *          connected, or SDL_FALSE if not.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerClose
  * \sa SDL_GameControllerOpen
@@ -555,7 +555,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerGetAttached(SDL_GameControlle
  *                       joystick from
  * \returns a SDL_Joystick object; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_GameControllerGetJoystick(SDL_GameController *gamecontroller);
 
@@ -573,7 +573,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_GameControllerGetJoystick(SDL_GameCont
  * \returns the same value passed to the function, with exception to -1
  *          (SDL_QUERY), which will return the current state.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickEventState
  */
@@ -586,7 +586,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerEventState(int state);
  * enabled. Under such circumstances, it will not be necessary to call this
  * function.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_GameControllerUpdate(void);
 
@@ -628,7 +628,7 @@ typedef enum
  * \returns the SDL_GameControllerAxis enum corresponding to the input string,
  *          or `SDL_CONTROLLER_AXIS_INVALID` if no match was found.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetStringForAxis
  */
@@ -644,7 +644,7 @@ extern DECLSPEC SDL_GameControllerAxis SDLCALL SDL_GameControllerGetAxisFromStri
  *          specified. The string returned is of the format used by
  *          SDL_GameController mapping strings.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetAxisFromString
  */
@@ -659,7 +659,7 @@ extern DECLSPEC const char* SDLCALL SDL_GameControllerGetStringForAxis(SDL_GameC
  *          (like the given Controller axis doesn't exist on the device), its
  *          `.bindType` will be `SDL_CONTROLLER_BINDTYPE_NONE`.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetBindForButton
  */
@@ -677,7 +677,7 @@ SDL_GameControllerGetBindForAxis(SDL_GameController *gamecontroller,
  * \param axis an axis enum value (an SDL_GameControllerAxis value)
  * \returns SDL_TRUE if the controller has this axis, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL
 SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
@@ -695,7 +695,7 @@ SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameController
  * \returns axis state (including 0) on success or 0 (also) on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetButton
  */
@@ -744,7 +744,7 @@ typedef enum
  * \returns the SDL_GameControllerButton enum corresponding to the input
  *          string, or `SDL_CONTROLLER_AXIS_INVALID` if no match was found.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_GameControllerButton SDLCALL SDL_GameControllerGetButtonFromString(const char *str);
 
@@ -754,11 +754,11 @@ extern DECLSPEC SDL_GameControllerButton SDLCALL SDL_GameControllerGetButtonFrom
  * The caller should not SDL_free() the returned string.
  *
  * \param button an enum value for a given SDL_GameControllerButton
- * \returns a string for the given button, or NULL if an invalid axis is
+ * \returns a string for the given button, or NULL if an invalid button is
  *          specified. The string returned is of the format used by
  *          SDL_GameController mapping strings.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetButtonFromString
  */
@@ -773,7 +773,7 @@ extern DECLSPEC const char* SDLCALL SDL_GameControllerGetStringForButton(SDL_Gam
  *          (like the given Controller button doesn't exist on the device),
  *          its `.bindType` will be `SDL_CONTROLLER_BINDTYPE_NONE`.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetBindForAxis
  */
@@ -791,7 +791,7 @@ SDL_GameControllerGetBindForButton(SDL_GameController *gamecontroller,
  * \param button a button enum value (an SDL_GameControllerButton value)
  * \returns SDL_TRUE if the controller has this button, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasButton(SDL_GameController *gamecontroller,
                                                              SDL_GameControllerButton button);
@@ -804,7 +804,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasButton(SDL_GameController 
  * \returns 1 for pressed state or 0 for not pressed state or error; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetAxis
  */
@@ -814,7 +814,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *ga
 /**
  * Get the number of touchpads on a game controller.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetNumTouchpads(SDL_GameController *gamecontroller);
 
@@ -822,14 +822,14 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetNumTouchpads(SDL_GameController
  * Get the number of supported simultaneous fingers on a touchpad on a game
  * controller.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetNumTouchpadFingers(SDL_GameController *gamecontroller, int touchpad);
 
 /**
  * Get the current state of a finger on a touchpad on a game controller.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetTouchpadFinger(SDL_GameController *gamecontroller, int touchpad, int finger, Uint8 *state, float *x, float *y, float *pressure);
 
@@ -840,7 +840,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetTouchpadFinger(SDL_GameControll
  * \param type The type of sensor to query
  * \returns SDL_TRUE if the sensor exists, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasSensor(SDL_GameController *gamecontroller, SDL_SensorType type);
 
@@ -852,7 +852,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasSensor(SDL_GameController 
  * \param enabled Whether data reporting should be enabled
  * \returns 0 or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type, SDL_bool enabled);
 
@@ -863,7 +863,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameControlle
  * \param type The type of sensor to query
  * \returns SDL_TRUE if the sensor is enabled, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type);
 
@@ -875,7 +875,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerIsSensorEnabled(SDL_GameContr
  * \param type The type of sensor to query
  * \return the data rate, or 0.0f if the data rate is not available.
  *
- * \since This function is available since SDL 2.0.16.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC float SDLCALL SDL_GameControllerGetSensorDataRate(SDL_GameController *gamecontroller, SDL_SensorType type);
 
@@ -891,9 +891,28 @@ extern DECLSPEC float SDLCALL SDL_GameControllerGetSensorDataRate(SDL_GameContro
  * \param num_values The number of values to write to data
  * \return 0 or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorType type, float *data, int num_values);
+
+/**
+ * Get the current state of a game controller sensor with the timestamp of the
+ * last update.
+ *
+ * The number of values and interpretation of the data is sensor dependent.
+ * See SDL_sensor.h for the details for each type of sensor.
+ *
+ * \param gamecontroller The controller to query
+ * \param type The type of sensor to query
+ * \param timestamp A pointer filled with the timestamp in microseconds of the
+ *                  current sensor reading if available, or 0 if not
+ * \param data A pointer filled with the current sensor state
+ * \param num_values The number of values to write to data
+ * \return 0 or -1 if an error occurred.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorDataWithTimestamp(SDL_GameController *gamecontroller, SDL_SensorType type, Uint64 *timestamp, float *data, int num_values);
 
 /**
  * Start a rumble effect on a game controller.
@@ -909,7 +928,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *
  * \param duration_ms The duration of the rumble effect, in milliseconds
  * \returns 0, or -1 if rumble isn't supported on this controller
  *
- * \since This function is available since SDL 2.0.9.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerHasRumble
  */
@@ -934,7 +953,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecon
  * \param duration_ms The duration of the rumble effect, in milliseconds
  * \returns 0, or -1 if trigger rumble isn't supported on this controller
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerHasRumbleTriggers
  */
@@ -947,7 +966,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerRumbleTriggers(SDL_GameController 
  * \returns SDL_TRUE, or SDL_FALSE if this controller does not have a
  *          modifiable LED
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *gamecontroller);
 
@@ -958,7 +977,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *ga
  * \returns SDL_TRUE, or SDL_FALSE if this controller does not have rumble
  *          support
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerRumble
  */
@@ -971,7 +990,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumble(SDL_GameController 
  * \returns SDL_TRUE, or SDL_FALSE if this controller does not have trigger
  *          rumble support
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerRumbleTriggers
  */
@@ -986,7 +1005,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumbleTriggers(SDL_GameCon
  * \param blue The intensity of the blue LED
  * \returns 0, or -1 if this controller does not have a modifiable LED
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 green, Uint8 blue);
 
@@ -999,7 +1018,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSetLED(SDL_GameController *gamecon
  * \returns 0, or -1 if this controller or driver doesn't support effect
  *          packets
  *
- * \since This function is available since SDL 2.0.16.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GameControllerSendEffect(SDL_GameController *gamecontroller, const void *data, int size);
 
@@ -1009,7 +1028,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSendEffect(SDL_GameController *gam
  * \param gamecontroller a game controller identifier previously returned by
  *                       SDL_GameControllerOpen()
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerOpen
  */
@@ -1023,7 +1042,7 @@ extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecon
  * \param button a button on the game controller
  * \returns the sfSymbolsName or NULL if the name can't be found
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetAppleSFSymbolsNameForAxis
  */
@@ -1037,7 +1056,7 @@ extern DECLSPEC const char* SDLCALL SDL_GameControllerGetAppleSFSymbolsNameForBu
  * \param axis an axis on the game controller
  * \returns the sfSymbolsName or NULL if the name can't be found
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerGetAppleSFSymbolsNameForButton
  */

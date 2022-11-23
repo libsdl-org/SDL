@@ -272,8 +272,8 @@ To include these files for C/C++ projects:
 2. navigate to the directory containing SDL's source code, then into its
    subdirectory, 'src/main/winrt/'.  Select, then add, the following files:
    - `SDL_winrt_main_NonXAML.cpp`
-   - `SDL2-WinRTResources.rc`
-   - `SDL2-WinRTResource_BlankCursor.cur`
+   - `SDL3-WinRTResources.rc`
+   - `SDL3-WinRTResource_BlankCursor.cur`
 3. right-click on the file `SDL_winrt_main_NonXAML.cpp` (as listed in your
    project), then click on "Properties...".
 4. in the drop-down box next to "Configuration", choose, "All Configurations"
@@ -287,7 +287,7 @@ app's project.  This is to make sure that Visual C++'s linker builds a 'Windows
 Metadata' file (.winmd) for your app.  Not doing so can lead to build errors.**
 
 For non-C++ projects, you will need to call SDL_WinRTRunApp from your language's
-main function, and generate SDL2-WinRTResources.res manually by using `rc` via
+main function, and generate SDL3-WinRTResources.res manually by using `rc` via
 the Developer Command Prompt and including it as a <Win32Resource> within the
 first <PropertyGroup> block in your Visual Studio project file.
 

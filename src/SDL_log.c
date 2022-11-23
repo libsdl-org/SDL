@@ -485,12 +485,17 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
         fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
         fclose (pFile);
     }
+#elif defined(__3DS__)
+    {
+        FILE *pFile;
+        pFile = fopen("sdmc:/3ds/SDL_Log.txt", "a");
+        fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
+        fclose(pFile);
+    }
 #endif
-#if HAVE_STDIO_H
+#if HAVE_STDIO_H && \
+    !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
     fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
-#if __NACL__
-    fflush(stderr);
-#endif
 #endif
 }
 

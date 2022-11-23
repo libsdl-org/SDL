@@ -71,6 +71,7 @@ typedef struct {
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
+    uint32_t key;
     uint32_t wl_press_time; // Key press time as reported by the Wayland API
     uint32_t sdl_press_time; // Key press time expressed in SDL ticks
     uint32_t next_repeat_ms;
@@ -131,6 +132,12 @@ struct SDL_WaylandInput {
     SDL_WaylandKeyboardRepeat keyboard_repeat;
 
     struct SDL_WaylandTabletInput* tablet;
+
+    /* are we forcing relative mouse mode? */
+    SDL_bool cursor_visible;
+    SDL_bool relative_mode_override;
+    SDL_bool warp_emulation_prohibited;
+    SDL_bool keyboard_is_virtual;
 };
 
 extern void Wayland_PumpEvents(_THIS);

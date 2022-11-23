@@ -23,6 +23,7 @@
 #if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
 
 #include "SDL_hints.h"
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
 #include "SDL_opengles2.h"
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_blit.h"
@@ -63,7 +64,7 @@ struct GLES2_FBOList
 
 typedef struct GLES2_TextureData
 {
-    GLenum texture;
+    GLuint texture;
     GLenum texture_type;
     GLenum pixel_format;
     GLenum pixel_type;
@@ -73,8 +74,8 @@ typedef struct GLES2_TextureData
     /* YUV texture support */
     SDL_bool yuv;
     SDL_bool nv12;
-    GLenum texture_v;
-    GLenum texture_u;
+    GLuint texture_v;
+    GLuint texture_u;
 #endif
     GLES2_FBOList *fbo;
 } GLES2_TextureData;
@@ -247,8 +248,6 @@ static int GLES2_LoadFunctions(GLES2_RenderData * data)
 #if SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
 #elif SDL_VIDEO_DRIVER_ANDROID
-#define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_PANDORA
 #define __SDL_NOGETPROCADDR__
 #endif
 
@@ -578,7 +577,7 @@ static int GLES2_CacheShaders(GLES2_RenderData * data)
 
     data->texcoord_precision_hint = GLES2_GetTexCoordPrecisionEnumFromHint();
 
-    for (shader = 0; shader < GLES2_SHADER_COUNT; ++shader) {
+    for (shader = 0; shader < GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES; ++shader) {
         GLenum shader_type;
 
         if (shader == GLES2_SHADER_VERTEX_DEFAULT) {
@@ -1983,11 +1982,11 @@ GLES2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }
 
-static void
+static int
 GLES2_RenderPresent(SDL_Renderer *renderer)
 {
     /* Tell the video driver to swap buffers */
-    SDL_GL_SwapWindow(renderer->window);
+    return SDL_GL_SwapWindowWithResult(renderer->window);
 }
 
 static int
@@ -2022,6 +2021,23 @@ static int GLES2_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, flo
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
     GLES2_TextureData *texturedata = (GLES2_TextureData *)texture->driverdata;
     GLES2_ActivateRenderer(renderer);
+
+#if SDL_HAVE_YUV
+    if (texturedata->yuv) {
+        data->glActiveTexture(GL_TEXTURE2);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_v);
+
+        data->glActiveTexture(GL_TEXTURE1);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
+
+        data->glActiveTexture(GL_TEXTURE0);
+    } else if (texturedata->nv12) {
+        data->glActiveTexture(GL_TEXTURE1);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
+
+        data->glActiveTexture(GL_TEXTURE0);
+    }
+#endif
 
     data->glBindTexture(texturedata->texture_type, texturedata->texture);
     data->drawstate.texture = texture;
@@ -2209,8 +2225,17 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
 #endif
 #ifdef GL_TEXTURE_EXTERNAL_OES
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
+    if (GLES2_CacheShader(data, GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES, GL_FRAGMENT_SHADER)) {
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
+    }
 #endif
+
+    renderer->rect_index_order[0] = 0;
+    renderer->rect_index_order[1] = 1;
+    renderer->rect_index_order[2] = 3;
+    renderer->rect_index_order[3] = 1;
+    renderer->rect_index_order[4] = 3;
+    renderer->rect_index_order[5] = 2;
 
     /* Set up parameters for rendering */
     data->glActiveTexture(GL_TEXTURE0);

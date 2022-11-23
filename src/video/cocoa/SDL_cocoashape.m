@@ -47,11 +47,17 @@ Cocoa_CreateShaper(SDL_Window* window)
     SDL_ShapeData* data;
     int resized_properly;
     SDL_WindowData* windata = (__bridge SDL_WindowData*)window->driverdata;
+
+    result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
+    if (!result) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
     [windata.nswindow setOpaque:NO];
 
     [windata.nswindow setStyleMask:NSWindowStyleMaskBorderless];
 
-    result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;

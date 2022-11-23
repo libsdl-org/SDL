@@ -154,7 +154,24 @@ SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
     {
         if (sensor->hwdata->counter < motionState[i].counter)
         {
+            unsigned int timestamp = motionState[i].timestamp;
+
             sensor->hwdata->counter = motionState[i].counter;
+
+            if (sensor->hwdata->timestamp_us) {
+                unsigned int delta;
+                if (sensor->hwdata->last_timestamp > timestamp) {
+                    SDL_COMPILE_TIME_ASSERT(timestamp, sizeof(timestamp) == sizeof(Uint32));
+                    delta = (SDL_MAX_UINT32 - sensor->hwdata->last_timestamp + timestamp + 1);
+                } else {
+                    delta = (timestamp - sensor->hwdata->last_timestamp);
+                }
+                sensor->hwdata->timestamp_us += delta;
+            } else {
+                sensor->hwdata->timestamp_us = timestamp;
+            }
+            sensor->hwdata->last_timestamp = timestamp;
+
             switch (sensor->type)
             {
                 case SDL_SENSOR_ACCEL:
@@ -163,10 +180,7 @@ SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
                     data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
                     data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
                     data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
-                    if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                       SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
-                       SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
-                    }
+                    SDL_PrivateSensorUpdate(sensor, sensor->hwdata->timestamp_us, data, SDL_arraysize(data));
                 }
                 break;
                 case SDL_SENSOR_GYRO:
@@ -175,10 +189,7 @@ SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
                     data[0] = motionState[i].gyro.x;
                     data[1] = motionState[i].gyro.y;
                     data[2] = motionState[i].gyro.z;
-                    if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                       SDL_PrivateSensorUpdate(sensor, data, SDL_arraysize(data));
-                       SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
-                    }
+                    SDL_PrivateSensorUpdate(sensor, sensor->hwdata->timestamp_us, data, SDL_arraysize(data));
                 }
                 break;
                 default:

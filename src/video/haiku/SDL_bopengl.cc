@@ -94,8 +94,7 @@ int HAIKU_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context) {
     // printf("HAIKU_GL_MakeCurrent(%llx), win = %llx, thread = %d\n", (uint64)context, (uint64)window, find_thread(NULL));
     if (glView != NULL) {
         if ((glView->Window() == NULL) || (window == NULL) || (_ToBeWin(window)->GetGLView() != glView)) {
-            SDL_SetError("MakeCurrent failed");
-            return -1;
+            return SDL_SetError("MakeCurrent failed");
         }
     }
     _GetBeApp()->SetCurrentContext(glView);

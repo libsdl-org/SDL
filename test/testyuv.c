@@ -354,7 +354,7 @@ main(int argc, char **argv)
         SDL_ConvertPixels(original->w, original->h, yuv_format, raw_yuv, pitch, rgb_format, converted->pixels, converted->pitch);
     }
     now = SDL_GetTicks();
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%d iterations in %d ms, %.2fms each\n", iterations, (now - then), (float)(now - then)/iterations);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%" SDL_PRIu32 " iterations in %" SDL_PRIu32 " ms, %.2fms each\n", iterations, (now - then), (float) (now - then) / iterations);
 
     window = SDL_CreateWindow("YUV test",
                               SDL_WINDOWPOS_UNDEFINED,

@@ -47,6 +47,11 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/usb/USBSpec.h>
+#include <AvailabilityMacros.h>
+/* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
+#define kIOMainPortDefault kIOMasterPortDefault
+#endif
 #endif
 
 #include "../core/linux/SDL_udev.h"
@@ -250,7 +255,7 @@ HIDAPI_InitializeDiscovery()
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 #if defined(__MACOSX__)
-    SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMasterPortDefault);
+    SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMainPortDefault);
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         {
             io_iterator_t portIterator = 0;
@@ -551,7 +556,6 @@ HIDAPI_ShutdownDiscovery()
 #undef HIDAPI_H__
 #if __LINUX__
 
-#include "../core/linux/SDL_udev.h"
 #if SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
@@ -738,6 +742,7 @@ static struct
     );
     int (LIBUSB_CALL *handle_events)(libusb_context *ctx);
     int (LIBUSB_CALL *handle_events_completed)(libusb_context *ctx, int *completed);
+    const char * (LIBUSB_CALL *error_name)(int errcode);
 } libusb_ctx;
 
 #define libusb_init                            libusb_ctx.init
@@ -766,6 +771,7 @@ static struct
 #define libusb_interrupt_transfer              libusb_ctx.interrupt_transfer
 #define libusb_handle_events                   libusb_ctx.handle_events
 #define libusb_handle_events_completed         libusb_ctx.handle_events_completed
+#define libusb_error_name                      libusb_ctx.error_name
 
 #define hid_device                      LIBUSB_hid_device
 #define hid_device_                     LIBUSB_hid_device_
@@ -843,6 +849,7 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #undef libusb_interrupt_transfer
 #undef libusb_handle_events
 #undef libusb_handle_events_completed
+#undef libusb_error_name
 
 #undef hid_device
 #undef hid_device_
@@ -1072,13 +1079,8 @@ int SDL_hid_init(void)
         if (libusb_ctx.libhandle != NULL) {
             SDL_bool loaded = SDL_TRUE;
 #ifdef SDL_LIBUSB_DYNAMIC
-            #ifdef __OS2__
-            #define LOAD_LIBUSB_SYMBOL(func) \
-                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
-            #else
             #define LOAD_LIBUSB_SYMBOL(func) \
                 if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
-            #endif
 #else
             #define LOAD_LIBUSB_SYMBOL(func) \
                 libusb_ctx.func = libusb_##func;
@@ -1109,6 +1111,7 @@ int SDL_hid_init(void)
             LOAD_LIBUSB_SYMBOL(interrupt_transfer)
             LOAD_LIBUSB_SYMBOL(handle_events)
             LOAD_LIBUSB_SYMBOL(handle_events_completed)
+            LOAD_LIBUSB_SYMBOL(error_name)
             #undef LOAD_LIBUSB_SYMBOL
 
             if (!loaded) {

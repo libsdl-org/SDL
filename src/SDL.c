@@ -22,16 +22,8 @@
 
 #if defined(__WIN32__) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
-#elif defined(__OS2__)
-#include <stdlib.h> /* _exit() */
 #elif !defined(__WINRT__)
 #include <unistd.h> /* _exit(), etc. */
-#endif
-#if defined(__OS2__)
-#include "core/os2/SDL_os2.h"
-#if SDL_THREAD_OS2
-#include "thread/os2/SDL_systls_c.h"
-#endif
 #endif
 
 /* this checks for HAVE_DBUS_DBUS_H internally. */
@@ -124,17 +116,19 @@ static Uint8 SDL_SubsystemRefCount[ 32 ];
 static void
 SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
 {
-    int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    SDL_assert(SDL_SubsystemRefCount[subsystem_index] < 255);
-    ++SDL_SubsystemRefCount[subsystem_index];
+    const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
+    SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
+    if (subsystem_index >= 0) {
+        ++SDL_SubsystemRefCount[subsystem_index];
+    }
 }
 
 /* Private helper to decrement a subsystem's ref counter. */
 static void
 SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 {
-    int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    if (SDL_SubsystemRefCount[subsystem_index] > 0) {
+    const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
+    if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] > 0)) {
         --SDL_SubsystemRefCount[subsystem_index];
     }
 }
@@ -143,23 +137,23 @@ SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 static SDL_bool
 SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 {
-    int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    SDL_assert(SDL_SubsystemRefCount[subsystem_index] < 255);
-    return (SDL_SubsystemRefCount[subsystem_index] == 0) ? SDL_TRUE : SDL_FALSE;
+    const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
+    SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
+    return ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) ? SDL_TRUE : SDL_FALSE;
 }
 
 /* Private helper to check if a system needs to be quit. */
 static SDL_bool
 SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
-    int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
-    if (SDL_SubsystemRefCount[subsystem_index] == 0) {
-      return SDL_FALSE;
+    const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
+    if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) {
+        return SDL_FALSE;
     }
 
     /* If we're in SDL_Quit, we shut down every subsystem, even if refcount
      * isn't zero.
      */
-    return (SDL_SubsystemRefCount[subsystem_index] == 1 || SDL_bInMainQuit) ? SDL_TRUE : SDL_FALSE;
+    return (((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 1)) || SDL_bInMainQuit) ? SDL_TRUE : SDL_FALSE;
 }
 
 void
@@ -195,10 +189,6 @@ SDL_InitSubSystem(Uint32 flags)
         /* video or joystick or audio implies events */
         flags |= SDL_INIT_EVENTS;
     }
-
-#if SDL_THREAD_OS2
-    SDL_OS2TLSAlloc(); /* thread/os2/SDL_systls.c */
-#endif
 
 #if SDL_VIDEO_DRIVER_WINDOWS
     if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
@@ -357,13 +347,6 @@ SDL_Init(Uint32 flags)
 void
 SDL_QuitSubSystem(Uint32 flags)
 {
-#if defined(__OS2__)
-#if SDL_THREAD_OS2
-    SDL_OS2TLSFree(); /* thread/os2/SDL_systls.c */
-#endif
-    SDL_OS2Quit();
-#endif
-
     /* Shut down requested initialized subsystems */
 #if !SDL_SENSOR_DISABLED
     if ((flags & SDL_INIT_SENSOR)) {
@@ -407,6 +390,9 @@ SDL_QuitSubSystem(Uint32 flags)
 
 #if !SDL_AUDIO_DISABLED
     if ((flags & SDL_INIT_AUDIO)) {
+        /* audio implies events */
+        flags |= SDL_INIT_EVENTS;
+
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_AUDIO)) {
             SDL_AudioQuit();
         }
@@ -514,7 +500,17 @@ SDL_Quit(void)
 void
 SDL_GetVersion(SDL_version * ver)
 {
+    if (!ver) {
+        return;
+    }
+
     SDL_VERSION(ver);
+
+    if (SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE)) {
+        /* Prior to SDL 2.24.0, the patch version was incremented with every release */
+        ver->patch = ver->minor;
+        ver->minor = 0;
+    }
 }
 
 /* Get the library source revision */
@@ -586,7 +582,7 @@ SDL_GetPlatform(void)
 #elif __XBOXONE__
     return "Xbox One";
 #elif __XBOXSERIES__
-    return "Xbox Series";
+    return "Xbox Series X|S";
 #elif __TVOS__
     return "tvOS";
 #elif __IPHONEOS__
@@ -599,6 +595,8 @@ SDL_GetPlatform(void)
     return "PlayStation Vita";
 #elif __NGAGE__
     return "Nokia N-Gage";
+#elif __3DS__
+    return "Nintendo 3DS";
 #else
     return "Unknown (see SDL_platform.h)";
 #endif

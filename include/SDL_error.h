@@ -58,7 +58,7 @@ extern "C" {
  *            any
  * \returns always -1.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
@@ -95,7 +95,7 @@ extern DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fm
  *          return values of SDL function calls to determine when to
  *          appropriately call SDL_GetError().
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_SetError
@@ -113,7 +113,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetError(void);
  * \param maxlen The size of the buffer pointed to by the errstr parameter
  * \returns the pointer passed in as the `errstr` parameter.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetError
  */
@@ -122,7 +122,7 @@ extern DECLSPEC char * SDLCALL SDL_GetErrorMsg(char *errstr, int maxlen);
 /**
  * Clear any previous error message for this thread.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError

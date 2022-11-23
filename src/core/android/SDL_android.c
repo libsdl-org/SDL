@@ -25,6 +25,7 @@
 #include "SDL_hints.h"
 #include "SDL_main.h"
 #include "SDL_timer.h"
+#include "SDL_version.h"
 
 #ifdef __ANDROID__
 
@@ -63,6 +64,9 @@
 #define ENCODING_PCM_FLOAT  4
 
 /* Java class SDLActivity */
+JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(
+        JNIEnv *env, jclass cls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(
         JNIEnv *env, jclass cls);
 
@@ -167,6 +171,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         jint requestCode, jboolean result);
 
 static JNINativeMethod SDLActivity_tab[] = {
+    { "nativeGetVersion",           "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI",             "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeRunMain",              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile",           "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
@@ -207,14 +212,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
         JNIEnv *env, jclass cls,
         jchar chUnicode);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-        JNIEnv *env, jclass cls,
-        jstring text, jint newCursorPosition);
-
 static JNINativeMethod SDLInputConnection_tab[] = {
     { "nativeCommitText",                   "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText) },
-    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) },
-    { "nativeSetComposingText",             "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText) }
+    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) }
 };
 
 /* Java class SDLAudioManager */
@@ -534,6 +534,16 @@ void checkJNIReady(void)
     }
 
     SDL_SetMainReady();
+}
+
+/* Get SDL version -- called before SDL_main() to verify JNI bindings */
+JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jclass cls)
+{
+    char version[128];
+
+    SDL_snprintf(version, sizeof(version), "%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+
+    return (*env)->NewStringUTF(env, version);
 }
 
 /* Activity initialization -- called before SDL_main() to initialize JNI bindings */
@@ -1269,17 +1279,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
                                     jchar chUnicode)
 {
     SDL_SendKeyboardUnicodeKey(chUnicode);
-}
-
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-                                    JNIEnv *env, jclass cls,
-                                    jstring text, jint newCursorPosition)
-{
-    const char *utftext = (*env)->GetStringUTFChars(env, text, NULL);
-
-    SDL_SendEditingText(utftext, 0, 0);
-
-    (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
 
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(

@@ -24,7 +24,7 @@
  *
  *  Include file for SDL test framework.
  *
- *  This code is a part of the SDL2_test library, not the main SDL library.
+ *  This code is a part of the SDL test library, not the main SDL library.
  */
 
 /* Ported from original test\common.h file. */

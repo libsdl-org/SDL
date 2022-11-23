@@ -25,8 +25,12 @@
 #define _INCLUDED_WINDOWS_H
 
 #if defined(__WIN32__)
-#define WIN32_LEAN_AND_MEAN
-#define STRICT
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#ifndef STRICT
+#define STRICT 1
+#endif
 #ifndef UNICODE
 #define UNICODE 1
 #endif
@@ -40,9 +44,14 @@
 #define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
 #endif
 #define WINVER        _WIN32_WINNT
+
 #elif defined(__WINGDK__)
-#define WIN32_LEAN_AND_MEAN
-#define STRICT
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#ifndef STRICT
+#define STRICT 1
+#endif
 #ifndef UNICODE
 #define UNICODE 1
 #endif
@@ -50,12 +59,13 @@
 #undef _WIN32_WINNT
 #define _WIN32_WINNT  0xA00
 #define WINVER        _WIN32_WINNT
+
 #elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
 #endif
 #ifndef STRICT
-#define STRICT
+#define STRICT 1
 #endif
 #ifndef UNICODE
 #define UNICODE 1

@@ -278,10 +278,7 @@ extern "C" {
  *  If this hint isn't specified to a valid setting, or libsamplerate isn't
  *  available, SDL will use the default, internal resampling algorithm.
  *
- *  Note that this is currently only applicable to resampling audio that is
- *  being written to a device for playback or audio being read from a device
- *  for capture. SDL_AudioCVT always uses the default resampler (although this
- *  might change for SDL 2.1).
+ *  As of SDL 2.26, SDL_ConvertAudio() respects this hint when libsamplerate is available.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *
@@ -355,7 +352,7 @@ extern "C" {
  *  \brief Disable giving back control to the browser automatically
  *  when running with asyncify
  *
- * With -s ASYNCIFY, SDL2 calls emscripten_sleep during operations
+ * With -s ASYNCIFY, SDL calls emscripten_sleep during operations
  * such as refreshing the screen or polling events.
  *
  * This hint only applies to the emscripten platform
@@ -365,6 +362,15 @@ extern "C" {
  *    "1"       - Enable emscripten_sleep calls (the default)
  */
 #define SDL_HINT_EMSCRIPTEN_ASYNCIFY   "SDL_EMSCRIPTEN_ASYNCIFY"
+
+/**
+ *  \brief Specify the CSS selector used for the "default" window/canvas
+ *
+ * This hint only applies to the emscripten platform
+ *
+ * The default value is "#canvas"
+ */
+#define SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR "SDL_EMSCRIPTEN_CANVAS_SELECTOR"
 
 /**
  *  \brief override the binding element for keyboard inputs for Emscripten builds
@@ -543,6 +549,14 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
+ *  \brief  A variable containing a list of devices to ignore in SDL_hid_enumerate()
+ *
+ *  For example, to ignore the Shanwan DS3 controller and any Valve controller, you might
+ *  have the string "0x2563/0x0523,0x28de/0x0000"
+ */
+#define SDL_HINT_HIDAPI_IGNORE_DEVICES "SDL_HIDAPI_IGNORE_DEVICES"
+
+/**
  *  \brief  A variable controlling whether the idle timer is disabled on iOS.
  *
  *  When an iOS app does not receive touches for some time, the screen is
@@ -673,6 +687,17 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"
 
 /**
+  *  \brief  A variable controlling whether Nintendo Switch Joy-Con controllers will be in vertical mode when using the HIDAPI driver
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Left and right Joy-Con controllers will not be in vertical mode (the default)
+  *    "1"       - Left and right Joy-Con controllers will be in vertical mode
+  *
+  *  This hint must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS "SDL_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS"
+
+/**
   *  \brief  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
   *
   *  This variable can be set to the following values:
@@ -801,7 +826,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STADIA "SDL_JOYSTICK_HIDAPI_STADIA"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Steam Controllers should be used.
+ *  \brief  A variable controlling whether the HIDAPI driver for Bluetooth Steam Controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -861,7 +886,7 @@ extern "C" {
  *    "0"       - HIDAPI driver is not used
  *    "1"       - HIDAPI driver is used
  *
- *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ *  This driver doesn't work with the dolphinbar, so the default is SDL_FALSE for now.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_WII "SDL_JOYSTICK_HIDAPI_WII"
 
@@ -917,7 +942,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS   "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox One should be used.
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox One controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -926,6 +951,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE   "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
+
+/**
+ *  \brief  A variable controlling whether the Home button LED should be turned on when an Xbox One controller is opened
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed. This hint can also be set to a floating point value between 0.0 and 1.0 which controls the brightness of the Home button LED. The default brightness is 0.4.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
 
 /**
   *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
@@ -1249,7 +1285,7 @@ extern "C" {
  *  When polling for events, SDL_PumpEvents is used to gather new events from devices.
  *  If a device keeps producing new events between calls to SDL_PumpEvents, a poll loop will
  *  become stuck until the new events stop.
- *  This is most noticable when moving a high frequency mouse.
+ *  This is most noticeable when moving a high frequency mouse.
  *
  *  By default, poll sentinels are enabled.
  */
@@ -1700,6 +1736,23 @@ extern "C" {
  *  By default video mode emulation is enabled.
  */
 #define SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION "SDL_VIDEO_WAYLAND_MODE_EMULATION"
+
+/**
+ *  \brief  Enable or disable mouse pointer warp emulation, needed by some older games.
+ *
+ *  When this hint is set, any SDL will emulate mouse warps using relative mouse mode.
+ *  This is required for some older games (such as Source engine games), which warp the
+ *  mouse to the centre of the screen rather than using relative mouse motion. Note that
+ *  relative mouse mode may have different mouse acceleration behaviour than pointer warps.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - All mouse warps fail, as mouse warping is not available under wayland.
+ *    "1"       - Some mouse warps will be emulated by forcing relative mouse mode.
+ *
+ *  If not set, this is automatically enabled unless an application uses relative mouse
+ *  mode directly.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP "SDL_VIDEO_WAYLAND_EMULATE_MOUSE_WARP"
 
 /**
 *  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
@@ -2367,7 +2420,7 @@ typedef enum
  * \param priority the SDL_HintPriority level for the hint
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2387,7 +2440,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \param value the value of the hint variable
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
@@ -2405,7 +2458,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * \param name the hint to set
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2413,12 +2466,27 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
 extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
+ * Reset all hints to the default values.
+ *
+ * This will reset all hints to the value of the associated environment
+ * variable, or NULL if the environment isn't set. Callbacks will be called
+ * normally with this change.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetHint
+ * \sa SDL_SetHint
+ * \sa SDL_ResetHint
+ */
+extern DECLSPEC void SDLCALL SDL_ResetHints(void);
+
+/**
  * Get the value of a hint.
  *
  * \param name the hint to query
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
@@ -2433,7 +2501,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
  *
- * \since This function is available since SDL 2.0.5.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2458,7 +2526,7 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *                 hint value changes
  * \param userdata a pointer to pass to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelHintCallback
  */
@@ -2474,7 +2542,7 @@ extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
  *                 hint value changes
  * \param userdata a pointer being passed to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddHintCallback
  */
@@ -2485,9 +2553,16 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
 /**
  * Clear all hints.
  *
- * This function is automatically called during SDL_Quit().
+ * This function is automatically called during SDL_Quit(), and deletes all
+ * callbacks without calling them and frees all memory associated with hints.
+ * If you're calling this from application code you probably want to call
+ * SDL_ResetHints() instead.
  *
- * \since This function is available since SDL 2.0.0.
+ * This function will be removed from the API the next time we rev the ABI.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_ResetHints
  */
 extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 

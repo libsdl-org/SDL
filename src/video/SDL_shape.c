@@ -77,8 +77,12 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
     int bytes_per_scanline = (shape->w + (ppb - 1)) / ppb;
     Uint8 *bitmap_scanline;
     SDL_Color key;
+
     if(SDL_MUSTLOCK(shape))
         SDL_LockSurface(shape);
+
+    SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
+
     for(y = 0;y<shape->h;y++) {
         bitmap_scanline = bitmap + y * bytes_per_scanline;
         for(x=0;x<shape->w;x++) {
@@ -118,6 +122,7 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
             bitmap_scanline[x / ppb] |= mask_value << (x % ppb);
         }
     }
+
     if(SDL_MUSTLOCK(shape))
         SDL_UnlockSurface(shape);
 }
@@ -257,20 +262,53 @@ SDL_FreeShapeTree(SDL_ShapeTree** shape_tree)
 int
 SDL_SetWindowShape(SDL_Window *window,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode)
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int result;
-    if(window == NULL || !SDL_IsShapedWindow(window))
+
+    if (window == NULL || !SDL_IsShapedWindow(window)) {
         /* The window given was not a shapeable window. */
         return SDL_NONSHAPEABLE_WINDOW;
-    if(shape == NULL)
+    }
+    if (shape == NULL) {
         /* Invalid shape argument. */
         return SDL_INVALID_SHAPE_ARGUMENT;
+    }
 
-    if(shape_mode != NULL)
+    if (shape_mode != NULL) {
         window->shaper->mode = *shape_mode;
-    result = SDL_GetVideoDevice()->shape_driver.SetWindowShape(window->shaper,shape,shape_mode);
+    }
+    result = _this->shape_driver.SetWindowShape(window->shaper, shape, shape_mode);
     window->shaper->hasshape = SDL_TRUE;
-    if(window->shaper->userx != 0 && window->shaper->usery != 0) {
-        SDL_SetWindowPosition(window,window->shaper->userx,window->shaper->usery);
+    if (window->shaper->userx != 0 && window->shaper->usery != 0) {
+        int x = window->shaper->userx;
+        int y = window->shaper->usery;
+
+        if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISUNDEFINED(y) ||
+            SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
+            int displayIndex;
+            SDL_Rect bounds;
+
+            if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
+                displayIndex = (x & 0xFFFF);
+                if (displayIndex >= _this->num_displays) {
+                    displayIndex = 0;
+                }
+            } else {
+                displayIndex = (y & 0xFFFF);
+                if (displayIndex >= _this->num_displays) {
+                    displayIndex = 0;
+                }
+            }
+
+            SDL_GetDisplayBounds(displayIndex, &bounds);
+            if (SDL_WINDOWPOS_ISUNDEFINED(x) || SDL_WINDOWPOS_ISCENTERED(x)) {
+                window->x = bounds.x + (bounds.w - window->w) / 2;
+            }
+            if (SDL_WINDOWPOS_ISUNDEFINED(y) || SDL_WINDOWPOS_ISCENTERED(y)) {
+                window->y = bounds.y + (bounds.h - window->h) / 2;
+            }
+        }
+        SDL_SetWindowPosition(window, x, y);
         window->shaper->userx = 0;
         window->shaper->usery = 0;
     }

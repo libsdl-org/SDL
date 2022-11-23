@@ -50,8 +50,6 @@ SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF
 
 #if defined(__WIN32__) || defined(__GDK__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
-#elif defined(__OS2__)
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c),(a,b,c),return)
 #endif
@@ -749,8 +747,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_HasColorKey,(SDL_Surface *a),(a),return)
 
 #if defined(__WIN32__) || defined(__GDK__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
-#elif defined(__OS2__)
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d),(a,b,c,d),return)
 #endif
@@ -972,3 +968,7 @@ SDL_DYNAPI_PROC(void,SDL_GetJoystickGUIDInfo,(SDL_JoystickGUID a, Uint16 *b, Uin
 SDL_DYNAPI_PROC(int,SDL_SetPrimarySelectionText,(const char *a),(a),return)
 SDL_DYNAPI_PROC(char*,SDL_GetPrimarySelectionText,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasPrimarySelectionText,(void),(),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerGetSensorDataWithTimestamp,(SDL_GameController *a, SDL_SensorType b, Uint64 *c, float *d, int e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_SensorGetDataWithTimestamp,(SDL_Sensor *a, Uint64 *b, float *c, int d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(void,SDL_ResetHints,(void),(),)
+SDL_DYNAPI_PROC(char*,SDL_strcasestr,(const char *a, const char *b),(a,b),return)

@@ -27,7 +27,6 @@
 #include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
-#include "../SDL_egl_c.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_emscriptenvideo.h"
@@ -110,7 +109,6 @@ Emscripten_CreateDevice(void)
     device->UpdateWindowFramebuffer = Emscripten_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = Emscripten_DestroyWindowFramebuffer;
 
-#if SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = Emscripten_GLES_LoadLibrary;
     device->GL_GetProcAddress = Emscripten_GLES_GetProcAddress;
     device->GL_UnloadLibrary = Emscripten_GLES_UnloadLibrary;
@@ -120,7 +118,6 @@ Emscripten_CreateDevice(void)
     device->GL_GetSwapInterval = Emscripten_GLES_GetSwapInterval;
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DeleteContext = Emscripten_GLES_DeleteContext;
-#endif
 
     device->free = Emscripten_DeleteDevice;
 
@@ -218,6 +215,7 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
     SDL_WindowData *wdata;
     double scaled_w, scaled_h;
     double css_w, css_h;
+    const char *selector;
 
     /* Allocate window internal data */
     wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
@@ -225,7 +223,12 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
         return SDL_OutOfMemory();
     }
 
-    wdata->canvas_id = SDL_strdup("#canvas");
+    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
+    if (!selector) {
+        selector = "#canvas";
+    }
+
+    wdata->canvas_id = SDL_strdup(selector);
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
@@ -258,21 +261,6 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
             emscripten_set_element_css_size(wdata->canvas_id, window->w, window->h);
         }
     }
-
-#if SDL_VIDEO_OPENGL_EGL
-    if (window->flags & SDL_WINDOW_OPENGL) {
-        if (!_this->egl_data) {
-            if (SDL_GL_LoadLibrary(NULL) < 0) {
-                return -1;
-            }
-        }
-        wdata->egl_surface = SDL_EGL_CreateSurface(_this, 0);
-
-        if (wdata->egl_surface == EGL_NO_SURFACE) {
-            return SDL_SetError("Could not create GLES window surface");
-        }
-    }
-#endif
 
     wdata->window = window;
 
@@ -329,12 +317,6 @@ Emscripten_DestroyWindow(_THIS, SDL_Window * window)
         data = (SDL_WindowData *) window->driverdata;
 
         Emscripten_UnregisterEventHandlers(data);
-#if SDL_VIDEO_OPENGL_EGL
-        if (data->egl_surface != EGL_NO_SURFACE) {
-            SDL_EGL_DestroySurface(_this, data->egl_surface);
-            data->egl_surface = EGL_NO_SURFACE;
-        }
-#endif
 
         /* We can't destroy the canvas, so resize it to zero instead */
         emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
