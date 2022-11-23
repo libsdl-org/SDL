@@ -25,6 +25,8 @@
 
 #include "SDL_windows.h"
 
+#ifndef __WINRT__
+
 typedef LONG NTSTATUS;
 typedef USHORT USAGE;
 typedef struct _HIDP_PREPARSED_DATA *PHIDP_PREPARSED_DATA;
@@ -194,6 +196,8 @@ extern HidP_GetButtonCaps_t SDL_HidP_GetButtonCaps;
 extern HidP_GetValueCaps_t SDL_HidP_GetValueCaps;
 extern HidP_MaxDataListLength_t SDL_HidP_MaxDataListLength;
 extern HidP_GetData_t SDL_HidP_GetData;
+
+#endif /* !__WINRT__ */
 
 #endif /* SDL_hid_h_ */
 

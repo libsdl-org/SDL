@@ -41,6 +41,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [Touch](README-touch.md)
 - [Versions](README-versions.md)
 - [Windows](README-windows.md)
+- [WinRT](README-winrt.md)
 - [PSVita](README-vita.md)
 - [Nokia N-Gage](README-ngage.md)
 

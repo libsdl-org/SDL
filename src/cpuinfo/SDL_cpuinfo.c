@@ -24,7 +24,7 @@
 #include "../SDL_internal.h"
 #endif
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -444,7 +444,7 @@ CPU_haveNEON(void)
    query the OS kernel in a platform-specific way. :/ */
 #if defined(SDL_CPUINFO_DISABLED)
    return 0; /* disabled */
-#elif (defined(__WINDOWS__) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
+#elif (defined(__WINDOWS__) || defined(__WINRT__) || defined(__GDK__)) && (defined(_M_ARM) || defined(_M_ARM64))
 /* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
 /* Seems to have been removed */
 #  if !defined(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)

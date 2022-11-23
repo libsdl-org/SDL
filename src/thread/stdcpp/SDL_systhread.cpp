@@ -32,6 +32,10 @@ extern "C" {
 #include <thread>
 #include <system_error>
 
+#ifdef __WINRT__
+#include <Windows.h>
+#endif
+
 static void
 RunThread(void *args)
 {
@@ -67,6 +71,9 @@ extern "C"
 SDL_threadID
 SDL_ThreadID(void)
 {
+#ifdef __WINRT__
+    return GetCurrentThreadId();
+#else
     // HACK: Mimick a thread ID, if one isn't otherwise available.
     static thread_local SDL_threadID current_thread_id = 0;
     static SDL_threadID next_thread_id = 1;
@@ -79,13 +86,37 @@ SDL_ThreadID(void)
     }
 
     return current_thread_id;
+#endif
 }
 
 extern "C"
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
+#ifdef __WINRT__
+    int value;
+
+    if (priority == SDL_THREAD_PRIORITY_LOW) {
+        value = THREAD_PRIORITY_LOWEST;
+    }
+    else if (priority == SDL_THREAD_PRIORITY_HIGH) {
+        value = THREAD_PRIORITY_HIGHEST;
+    }
+    else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+        // FIXME: WinRT does not support TIME_CRITICAL! -flibit
+        SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "TIME_CRITICAL unsupported, falling back to HIGHEST");
+        value = THREAD_PRIORITY_HIGHEST;
+    }
+    else {
+        value = THREAD_PRIORITY_NORMAL;
+    }
+    if (!SetThreadPriority(GetCurrentThread(), value)) {
+        return WIN_SetError("SetThreadPriority()");
+    }
+    return 0;
+#else
     return SDL_Unsupported();
+#endif
 }
 
 extern "C"

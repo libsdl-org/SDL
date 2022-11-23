@@ -41,7 +41,7 @@ static LARGE_INTEGER ticks_per_second;
 static void
 SDL_SetSystemTimerResolution(const UINT uPeriod)
 {
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     static UINT timer_period = 0;
 
     if (uPeriod != timer_period) {
@@ -146,11 +146,31 @@ SDL_GetPerformanceFrequency(void)
 void
 SDL_Delay(Uint32 ms)
 {
+    /* Sleep() is not publicly available to apps in early versions of WinRT.
+     *
+     * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
+     * Windows Phone 8.1.
+     *
+     * Use the compiler version to determine availability.
+     *
+     * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
+     * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
+     *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
+     *    apps and libraries.
+     */
+#if defined(__WINRT__) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
+    static HANDLE mutex = 0;
+    if (!mutex) {
+        mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);
+    }
+    WaitForSingleObjectEx(mutex, ms, FALSE);
+#else
     if (!ticks_started) {
         SDL_TicksInit();
     }
 
     Sleep(ms);
+#endif
 }
 
 #endif /* SDL_TIMER_WINDOWS */

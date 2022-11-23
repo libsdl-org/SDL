@@ -76,11 +76,17 @@ static SDL_sem_impl_t SDL_sem_impl_active = {0};
 #endif
 
 #if !SDL_WINAPI_FAMILY_PHONE
+#if __WINRT__
+/* Functions are guaranteed to be available */
+#define pWaitOnAddress WaitOnAddress
+#define pWakeByAddressSingle WakeByAddressSingle
+#else
 typedef BOOL(WINAPI *pfnWaitOnAddress)(volatile VOID*, PVOID, SIZE_T, DWORD);
 typedef VOID(WINAPI *pfnWakeByAddressSingle)(PVOID);
 
 static pfnWaitOnAddress pWaitOnAddress = NULL;
 static pfnWakeByAddressSingle pWakeByAddressSingle = NULL;
+#endif
 
 typedef struct SDL_semaphore_atom
 {
@@ -268,7 +274,11 @@ SDL_CreateSemaphore_kern(Uint32 initial_value)
     sem = (SDL_sem_kern *) SDL_malloc(sizeof(*sem));
     if (sem) {
         /* Create the semaphore, with max value 32K */
+#if __WINRT__
+        sem->id = CreateSemaphoreEx(NULL, initial_value, 32 * 1024, NULL, 0, SEMAPHORE_ALL_ACCESS);
+#else
         sem->id = CreateSemaphore(NULL, initial_value, 32 * 1024, NULL);
+#endif
         sem->count = initial_value;
         if (!sem->id) {
             SDL_SetError("Couldn't create semaphore");
@@ -395,6 +405,10 @@ SDL_CreateSemaphore(Uint32 initial_value)
 
 #if !SDL_WINAPI_FAMILY_PHONE
         if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL, SDL_FALSE)) {
+#if __WINRT__
+            /* Link statically on this platform */
+            impl = &SDL_sem_impl_atom;
+#else
             /* We already statically link to features from this Api
              * Set (e.g. WaitForSingleObject). Dynamically loading
              * API Sets is not explicitly documented but according to
@@ -411,6 +425,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
                     impl = &SDL_sem_impl_atom;
                 }
             }
+#endif
         }
 #endif
 

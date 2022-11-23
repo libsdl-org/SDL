@@ -41,7 +41,7 @@
 #include "../SDL_sysjoystick.h"
 #include "../../thread/SDL_systhread.h"
 #include "../../core/windows/SDL_windows.h"
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include <dbt.h>
 #endif
 
@@ -146,7 +146,7 @@ static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB,
 
 JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static HMODULE cfgmgr32_lib_handle;
 static CM_Register_NotificationFunc CM_Register_Notification;
 static CM_Unregister_NotificationFunc CM_Unregister_Notification;
@@ -332,8 +332,10 @@ SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex
     return (lastret != -1) ? SDL_TRUE : SDL_FALSE;
 }
 
-#endif /* !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
+#endif /* !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
+
+#if !defined(__WINRT__)
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static SDL_DeviceNotificationData s_notification_data;
@@ -443,6 +445,8 @@ SDL_StopJoystickThread(void)
     s_joystickThread = NULL;
 }
 
+#endif /* !defined(__WINRT__) */
+
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
     device->send_add_event = SDL_TRUE;
@@ -475,7 +479,7 @@ WINDOWS_JoystickInit(void)
 
     WINDOWS_JoystickDetect();
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_CreateDeviceNotificationFunc();
 
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_FALSE);
@@ -767,7 +771,7 @@ WINDOWS_JoystickQuit(void)
     }
     SYS_Joystick = NULL;
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (s_bJoystickThread) {
         SDL_StopJoystickThread();
     } else {

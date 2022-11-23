@@ -58,6 +58,12 @@ typedef struct CONDITION_VARIABLE {
 } CONDITION_VARIABLE, *PCONDITION_VARIABLE;
 #endif
 
+#if __WINRT__
+#define pWakeConditionVariable WakeConditionVariable
+#define pWakeAllConditionVariable WakeAllConditionVariable
+#define pSleepConditionVariableSRW SleepConditionVariableSRW
+#define pSleepConditionVariableCS SleepConditionVariableCS
+#else
 typedef VOID(WINAPI *pfnWakeConditionVariable)(PCONDITION_VARIABLE);
 typedef VOID(WINAPI *pfnWakeAllConditionVariable)(PCONDITION_VARIABLE);
 typedef BOOL(WINAPI *pfnSleepConditionVariableSRW)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
@@ -67,6 +73,7 @@ static pfnWakeConditionVariable pWakeConditionVariable = NULL;
 static pfnWakeAllConditionVariable pWakeAllConditionVariable = NULL;
 static pfnSleepConditionVariableSRW pSleepConditionVariableSRW = NULL;
 static pfnSleepConditionVariableCS pSleepConditionVariableCS = NULL;
+#endif
 
 typedef struct SDL_cond_cv
 {
@@ -235,6 +242,10 @@ SDL_CreateCond(void)
             SDL_assert(SDL_mutex_impl_active.Type != SDL_MUTEX_INVALID);
         }
 
+#if __WINRT__
+        /* Link statically on this platform */
+        impl = &SDL_cond_impl_cv;
+#else
         {
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
@@ -248,6 +259,7 @@ SDL_CreateCond(void)
                 }
             }
         }
+#endif
 
         SDL_copyp(&SDL_cond_impl_active, impl);
     }

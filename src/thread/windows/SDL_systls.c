@@ -28,6 +28,18 @@
 #include "SDL_thread.h"
 #include "../SDL_thread_c.h"
 
+#if WINAPI_FAMILY_WINRT
+#include <fibersapi.h>
+
+#ifndef TLS_OUT_OF_INDEXES
+#define TLS_OUT_OF_INDEXES  FLS_OUT_OF_INDEXES
+#endif
+
+#define TlsAlloc()  FlsAlloc(NULL)
+#define TlsSetValue FlsSetValue
+#define TlsGetValue FlsGetValue
+#endif
+
 static DWORD thread_local_storage = TLS_OUT_OF_INDEXES;
 static SDL_bool generic_local_storage = SDL_FALSE;
 

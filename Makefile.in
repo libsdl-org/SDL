@@ -51,7 +51,7 @@ WAYLAND_SCANNER_CODE_MODE = @WAYLAND_SCANNER_CODE_MODE@
 
 INSTALL_SDL3_CONFIG = @INSTALL_SDL3_CONFIG@
 
-SRC_DIST = *.md *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac docs include Makefile.* mingw sdl3-config.cmake.in sdl3-config-version.cmake.in sdl3-config.in sdl3.m4 sdl3.pc.in SDL3.spec.in SDL3Config.cmake.in src test VisualC Xcode Xcode-iOS wayland-protocols
+SRC_DIST = *.md *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.ac docs include Makefile.* mingw sdl3-config.cmake.in sdl3-config-version.cmake.in sdl3-config.in sdl3.m4 sdl3.pc.in SDL3.spec.in SDL3Config.cmake.in src test VisualC VisualC-WinRT Xcode Xcode-iOS wayland-protocols
 GEN_DIST = SDL3.spec
 
 ifneq ($V,1)

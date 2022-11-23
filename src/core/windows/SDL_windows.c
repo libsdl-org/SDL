@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__GDK__)
+#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
 
 #include "SDL_windows.h"
 #include "SDL_error.h"
@@ -89,7 +89,14 @@ WIN_CoInitialize(void)
 
        If you need multi-threaded mode, call CoInitializeEx() before SDL_Init()
     */
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#ifdef __WINRT__
+    /* DLudwig: On WinRT, it is assumed that COM was initialized in main().
+       CoInitializeEx is available (not CoInitialize though), however
+       on WinRT, main() is typically declared with the [MTAThread]
+       attribute, which, AFAIK, should initialize COM.
+    */
+    return S_OK;
+#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
     /* On Xbox, there's no need to call CoInitializeEx (and it's not implemented) */
     return S_OK;
 #else
@@ -111,9 +118,12 @@ WIN_CoInitialize(void)
 void
 WIN_CoUninitialize(void)
 {
+#ifndef __WINRT__
     CoUninitialize();
+#endif
 }
 
+#ifndef __WINRT__
 void *
 WIN_LoadComBaseFunction(const char *name)
 {
@@ -130,10 +140,14 @@ WIN_LoadComBaseFunction(const char *name)
         return NULL;
     }
 }
+#endif
 
 HRESULT
 WIN_RoInitialize(void)
 {
+#ifdef __WINRT__
+    return S_OK;
+#else
     typedef HRESULT (WINAPI *RoInitialize_t)(RO_INIT_TYPE initType);
     RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
     if (RoInitializeFunc) {
@@ -153,19 +167,22 @@ WIN_RoInitialize(void)
     } else {
         return E_NOINTERFACE;
     }
+#endif
 }
 
 void
 WIN_RoUninitialize(void)
 {
+#ifndef __WINRT__
     typedef void (WINAPI *RoUninitialize_t)(void);
     RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
     if (RoUninitializeFunc) {
         RoUninitializeFunc();
     }
+#endif
 }
 
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static BOOL
 IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
@@ -189,7 +206,7 @@ IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServiceP
 
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
@@ -198,7 +215,7 @@ BOOL WIN_IsWindowsVistaOrGreater(void)
 
 BOOL WIN_IsWindows7OrGreater(void)
 {
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
@@ -207,7 +224,7 @@ BOOL WIN_IsWindows7OrGreater(void)
 
 BOOL WIN_IsWindows8OrGreater(void)
 {
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return TRUE;
 #else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
@@ -238,8 +255,8 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 char *
 WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return WIN_StringToUTF8(name);  /* No registry access on Xbox, go with what we've got. */
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    return WIN_StringToUTF8(name);  /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
 #else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;
@@ -291,7 +308,7 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     retval = WIN_StringToUTF8(strw);
     SDL_free(strw);
     return retval ? retval : WIN_StringToUTF8(name);
-#endif /**/
+#endif /* if __WINRT__ / else */
 }
 
 BOOL
@@ -324,6 +341,6 @@ WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
     winrect->bottom = sdlrect->y + sdlrect->h - 1;
 }
 
-#endif /* defined(__WIN32__) || defined(__GDK__) */
+#endif /* defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__) */
 
 /* vi: set ts=4 sw=4 expandtab: */
