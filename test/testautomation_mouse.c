@@ -559,6 +559,49 @@ mouse_getMouseFocus(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * @brief Check call to SDL_GetDefaultCursor
+ *
+ * @sa http://wiki.libsdl.org/SDL_GetDefaultCursor
+ */
+int
+mouse_getDefaultCursor(void *arg)
+{
+    SDL_Cursor *cursor;
+
+    /* Get current cursor */
+    cursor = SDL_GetDefaultCursor();
+    SDLTest_AssertPass("Call to SDL_GetDefaultCursor()");
+    SDLTest_AssertCheck(cursor != NULL, "Validate result from SDL_GetDefaultCursor() is not NULL");
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * @brief Check call to SDL_GetGlobalMouseState
+ *
+ * @sa http://wiki.libsdl.org/SDL_GetGlobalMouseState
+ */
+int
+mouse_getGlobalMouseState(void *arg)
+{
+    int x;
+    int y;
+    Uint32 state;
+
+    x = INT_MIN;
+    y = INT_MIN;
+
+    /* Get current cursor */
+    state = SDL_GetGlobalMouseState(&x, &y);
+    SDLTest_AssertPass("Call to SDL_GetGlobalMouseState()");
+    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
+    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
+    SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Mouse test cases */
@@ -592,10 +635,17 @@ static const SDLTest_TestCaseReference mouseTest9 =
 static const SDLTest_TestCaseReference mouseTest10 =
         { (SDLTest_TestCaseFp)mouse_getSetRelativeMouseMode, "mouse_getSetRelativeMouseMode", "Check call to SDL_GetRelativeMouseMode and SDL_SetRelativeMouseMode", TEST_ENABLED };
 
-/* Sequence of Mouse test cases */
+static const SDLTest_TestCaseReference mouseTest11 = 
+        { (SDLTest_TestCaseFp) mouse_getDefaultCursor, "mouse_getDefaultCursor", "Check call to mouse_getDefaultCursor", TEST_ENABLED };
+
+static const SDLTest_TestCaseReference mouseTest12 = 
+        { (SDLTest_TestCaseFp) mouse_getGlobalMouseState, "mouse_getGlobalMouseState", "Check call to mouse_getGlobalMouseState", TEST_ENABLED };
+
+
+    /* Sequence of Mouse test cases */
 static const SDLTest_TestCaseReference *mouseTests[] =  {
     &mouseTest1, &mouseTest2, &mouseTest3, &mouseTest4, &mouseTest5, &mouseTest6,
-    &mouseTest7, &mouseTest8, &mouseTest9, &mouseTest10, NULL
+    &mouseTest7, &mouseTest8, &mouseTest9, &mouseTest10, &mouseTest11, &mouseTest12, NULL
 };
 
 /* Mouse test suite (global) */
