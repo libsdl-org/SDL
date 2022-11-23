@@ -1926,8 +1926,8 @@ extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
  * extension loader.
  *
  * \param proc the name of an EGL function
- * \returns a pointer to the named EGL function. The returned pointer should be
- *          cast to the appropriate function signature.
+ * \returns a pointer to the named EGL function. The returned pointer should
+ *          be cast to the appropriate function signature.
  *
  * \sa SDL_GL_GetCurrentEGLDisplay
  */
@@ -2076,7 +2076,6 @@ extern DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
  *
  * \returns the currently active EGL display or NULL on failure; call
  *          SDL_GetError() for more information.
- *
  */
 extern DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentEGLDisplay(void);
 
@@ -2085,7 +2084,6 @@ extern DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentEGLDisplay(void);
  *
  * \returns the currently active EGL config or NULL on failure; call
  *          SDL_GetError() for more information.
- *
  */
 extern DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentEGLConfig(void);
 
