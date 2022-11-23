@@ -20,15 +20,23 @@
 */
 #include "../../SDL_internal.h"
 
+extern "C" {
 #include "SDL_system.h"
 #include "../windows/SDL_windows.h"
 #include "SDL_messagebox.h"
 #include "SDL_main.h"
+#include "SDL_events.h"
+#include "../../events/SDL_events_c.h"
+}
 #include <XGameRuntime.h>
 #include <xsapi-c/services_c.h>
 #include <shellapi.h> /* CommandLineToArgvW() */
+#include <appnotify.h>
 
 static XTaskQueueHandle GDK_GlobalTaskQueue;
+
+PAPPSTATE_REGISTRATION hPLM = {};
+HANDLE plmSuspendComplete = nullptr;
 
 extern "C" DECLSPEC int
 SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue)
@@ -144,8 +152,39 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
 
         SDL_SetMainReady();
 
+        /* Register suspend/resume handling */
+        plmSuspendComplete = CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
+        if (!plmSuspendComplete ) {
+            SDL_SetError("[GDK] Unable to create plmSuspendComplete event");
+            return -1;
+        }
+        auto rascn = [](BOOLEAN quiesced, PVOID context)
+        {
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler");
+            if (quiesced) {
+                ResetEvent(plmSuspendComplete);
+                SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+
+                // To defer suspension, we must wait to exit this callback.
+                // IMPORTANT: The app must call SDL_GDKSuspendComplete() to release this lock.
+                (void)WaitForSingleObject(plmSuspendComplete, INFINITE);
+
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler: plmSuspendComplete event signaled.");
+            } else {
+                SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+            }
+        };
+        if (RegisterAppStateChangeNotification(rascn, NULL, &hPLM)) {
+            SDL_SetError("[GDK] Unable to call RegisterAppStateChangeNotification");
+            return -1;
+        }
+
         /* Run the application main() code */
         result = mainFunction(argc, argv);
+
+        /* Unregister suspend/resume handling */
+        UnregisterAppStateChangeNotification(hPLM);
+        CloseHandle(plmSuspendComplete);
 
         /* !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit? */
         /* Terminate the task queue and dispatch any pending tasks */
@@ -172,4 +211,11 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
     HeapFree(GetProcessHeap(), 0, argv);
 
     return result;
+}
+
+extern "C" DECLSPEC void
+SDL_GDKSuspendComplete() {
+    if (plmSuspendComplete) {
+        SetEvent(plmSuspendComplete);
+    }
 }

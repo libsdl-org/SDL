@@ -877,6 +877,7 @@
 #define SDL_utf8strnlen SDL_utf8strnlen_REAL
 #define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
 #define SDL_GDKRunApp SDL_GDKRunApp_REAL
+#define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
 #define SDL_ResetKeyboard SDL_ResetKeyboard_REAL
 #define SDL_GetDefaultAudioInfo SDL_GetDefaultAudioInfo_REAL
