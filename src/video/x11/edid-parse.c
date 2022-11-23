@@ -623,7 +623,7 @@ dump_monitor_info (MonitorInfo *info)
 	case RGB: s = "rgb"; break;
 	case OTHER_COLOR: s = "other color"; break;
 	default: s = "unknown"; break;
-	};
+	}
 	
 	printf ("Color: %s\n", s);
     }

@@ -309,7 +309,7 @@ public:
 		  fComputedMessageBoxWidth(0.0f),
 		  fCloseButton(G_CLOSE_BUTTON_ID), fDefaultButton(G_DEFAULT_BUTTON_ID),
 		  fCustomColorScheme(false), fThereIsLongLine(false),
-		  HAIKU_SDL_DefTitle("SDL2 MessageBox"),
+		  HAIKU_SDL_DefTitle("SDL MessageBox"),
 		  HAIKU_SDL_DefMessage("Some information has been lost."),
 		  HAIKU_SDL_DefButton("OK")
 	{

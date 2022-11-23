@@ -571,10 +571,7 @@
 #define SDL_GetAssertionHandler SDL_GetAssertionHandler_REAL
 #define SDL_DXGIGetOutputInfo SDL_DXGIGetOutputInfo_REAL
 #define SDL_RenderIsClipEnabled SDL_RenderIsClipEnabled_REAL
-#define SDL_WinRTRunApp SDL_WinRTRunApp_REAL
 #define SDL_WarpMouseGlobal SDL_WarpMouseGlobal_REAL
-#define SDL_WinRTGetFSPathUNICODE SDL_WinRTGetFSPathUNICODE_REAL
-#define SDL_WinRTGetFSPathUTF8 SDL_WinRTGetFSPathUTF8_REAL
 #define SDL_sqrtf SDL_sqrtf_REAL
 #define SDL_tan SDL_tan_REAL
 #define SDL_tanf SDL_tanf_REAL
@@ -663,7 +660,6 @@
 #define SDL_RenderGetMetalLayer SDL_RenderGetMetalLayer_REAL
 #define SDL_RenderGetMetalCommandEncoder SDL_RenderGetMetalCommandEncoder_REAL
 #define SDL_IsAndroidTV SDL_IsAndroidTV_REAL
-#define SDL_WinRTGetDeviceFamily SDL_WinRTGetDeviceFamily_REAL
 #define SDL_log10 SDL_log10_REAL
 #define SDL_log10f SDL_log10f_REAL
 #define SDL_GameControllerMappingForDeviceIndex SDL_GameControllerMappingForDeviceIndex_REAL
@@ -885,3 +881,11 @@
 #define SDL_ResetHint SDL_ResetHint_REAL
 #define SDL_crc16 SDL_crc16_REAL
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
+#define SDL_GetJoystickGUIDInfo SDL_GetJoystickGUIDInfo_REAL
+#define SDL_SetPrimarySelectionText SDL_SetPrimarySelectionText_REAL
+#define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
+#define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL
+#define SDL_GameControllerGetSensorDataWithTimestamp SDL_GameControllerGetSensorDataWithTimestamp_REAL
+#define SDL_SensorGetDataWithTimestamp SDL_SensorGetDataWithTimestamp_REAL
+#define SDL_ResetHints SDL_ResetHints_REAL
+#define SDL_strcasestr SDL_strcasestr_REAL

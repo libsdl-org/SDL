@@ -99,6 +99,9 @@
 #ifndef WM_GETDPISCALEDSIZE
 #define WM_GETDPISCALEDSIZE 0x02E4
 #endif
+#ifndef TOUCHEVENTF_PEN
+#define TOUCHEVENTF_PEN 0x0040
+#endif
 
 #ifndef IS_HIGH_SURROGATE
 #define IS_HIGH_SURROGATE(x)   (((x) >= 0xd800) && ((x) <= 0xdbff))
@@ -428,9 +431,13 @@ WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 
         /* In relative mode we are guaranteed to have mouse focus if we have keyboard focus */
         if (!SDL_GetMouse()->relative_mode) {
+            SDL_Point point;
             GetCursorPos(&cursorPos);
             ScreenToClient(hwnd, &cursorPos);
-            SDL_SendMouseMotion(window, 0, 0, cursorPos.x, cursorPos.y);
+            point.x = cursorPos.x;
+            point.y = cursorPos.y;
+            WIN_ClientPointToSDL(data->window, &point.x, &point.y);
+            SDL_SendMouseMotion(window, 0, 0, point.x, point.y);
         }
 
         WIN_CheckAsyncMouseRelease(data);
@@ -445,6 +452,7 @@ WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
         SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
         SDL_ToggleModState(KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) != 0);
 
+        WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
     } else {
         RECT rect;
 
@@ -693,7 +701,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                actually being the foreground window, but this appears to get called in all cases where
                the global foreground window changes to and from this window. */
             WIN_UpdateFocus(data->window, !!wParam);
-            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
         }
         break;
 
@@ -909,17 +916,21 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !IsIconic(hwnd)) {
                 SDL_Mouse *mouse;
                 POINT cursorPos;
+                SDL_Point point;
                 GetCursorPos(&cursorPos);
                 ScreenToClient(hwnd, &cursorPos);
+                point.x = cursorPos.x;
+                point.y = cursorPos.y;
+                WIN_ClientPointToSDL(data->window, &point.x, &point.y);
                 mouse = SDL_GetMouse();
                 if (!mouse->was_touch_mouse_events) { /* we're not a touch handler causing a mouse leave? */
-                    SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+                    SDL_SendMouseMotion(data->window, 0, 0, point.x, point.y);
                 } else { /* touch handling? */
                     mouse->was_touch_mouse_events = SDL_FALSE; /* not anymore */
                     if (mouse->touch_mouse_events) { /* convert touch to mouse events */
-                        SDL_SendMouseMotion(data->window, SDL_TOUCH_MOUSEID, 0, cursorPos.x, cursorPos.y);
+                        SDL_SendMouseMotion(data->window, SDL_TOUCH_MOUSEID, 0, point.x, point.y);
                     } else { /* normal handling */
-                        SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+                        SDL_SendMouseMotion(data->window, 0, 0, point.x, point.y);
                     }
                }
             }
@@ -1163,6 +1174,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             int x, y;
             int w, h;
+            int display_index = data->window->display_index;
 
             if (data->initializing || data->in_border_change) {
                 break;
@@ -1203,7 +1215,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Forces a WM_PAINT event */
             InvalidateRect(hwnd, NULL, FALSE);
 
-            WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
+            if (data->window->display_index != display_index) {
+                /* Display changed, check ICC profile */
+                WIN_UpdateWindowICCProfile(data->window, SDL_TRUE);
+            }
         }
         break;
 
@@ -1259,7 +1274,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* We'll do our own drawing, prevent flicker */
     case WM_ERASEBKGND:
+        if (!data->videodata->cleared)
         {
+            RECT client_rect;
+            HBRUSH brush;
+            data->videodata->cleared = SDL_TRUE;
+            GetClientRect(hwnd, &client_rect);
+            brush = CreateSolidBrush(0);
+            FillRect(GetDC(hwnd), &client_rect, brush);
+            DeleteObject(brush);
         }
         return (1);
 
@@ -1319,7 +1342,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     /* TODO: Can we use GetRawInputDeviceInfo and HID info to
                        determine if this is a direct or indirect touch device?
                      */
-                    if (SDL_AddTouch(touchId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
+                    if (SDL_AddTouch(touchId, SDL_TOUCH_DEVICE_DIRECT, (input->dwFlags & TOUCHEVENTF_PEN) == TOUCHEVENTF_PEN ? "pen" : "touch") < 0) {
                         continue;
                     }
 
@@ -1679,13 +1702,17 @@ static void WIN_UpdateMouseCapture()
         SDL_WindowData *data = (SDL_WindowData *) focusWindow->driverdata;
 
         if (!data->mouse_tracked) {
-            POINT pt;
+            POINT cursorPos;
 
-            if (GetCursorPos(&pt) && ScreenToClient(data->hwnd, &pt)) {
+            if (GetCursorPos(&cursorPos) && ScreenToClient(data->hwnd, &cursorPos)) {
                 SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
                 SDL_MouseID mouseID = SDL_GetMouse()->mouseID;
+                SDL_Point point;
+                point.x = cursorPos.x;
+                point.y = cursorPos.y;
+                WIN_ClientPointToSDL(data->window, &point.x, &point.y);
 
-                SDL_SendMouseMotion(data->window, mouseID, 0, (int)pt.x, (int)pt.y);
+                SDL_SendMouseMotion(data->window, mouseID, 0, point.x, point.y);
                 SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT);
                 SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, !swapButtons ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT);
                 SDL_SendMouseButton(data->window, mouseID, GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE);

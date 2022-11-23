@@ -21,6 +21,8 @@
 ********************************************************/
 #include "../../SDL_internal.h"
 
+#include "SDL_hints.h"
+
 #include <windows.h>
 
 #ifndef _WIN32_WINNT_WIN8
@@ -371,6 +373,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 	SP_DEVICE_INTERFACE_DETAIL_DATA_A *device_interface_detail_data = NULL;
 	HDEVINFO device_info_set = INVALID_HANDLE_VALUE;
 	int device_index = 0;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
 	if (hid_init() < 0)
 		return NULL;
@@ -487,6 +490,16 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		attrib.Size = sizeof(HIDD_ATTRIBUTES);
 		HidD_GetAttributes(write_handle, &attrib);
 		//wprintf(L"Product/Vendor: %x %x\n", attrib.ProductID, attrib.VendorID);
+
+		/* See if there are any devices we should skip in enumeration */
+		if (hint) {
+			char vendor_match[16], product_match[16];
+			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", attrib.VendorID);
+			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", attrib.VendorID, attrib.ProductID);
+			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+				continue;
+			}
+		}
 
 		/* Check the VID/PID to see if we should add this
 		   device to the enumeration list. */

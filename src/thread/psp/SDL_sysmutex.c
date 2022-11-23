@@ -57,7 +57,7 @@ SDL_CreateMutex(void)
         );
 
         if (res < 0) {
-            SDL_SetError("Error trying to create mutex: %x", res);
+            SDL_SetError("Error trying to create mutex: %lx", res);
         }
     } else {
         SDL_OutOfMemory();
@@ -96,7 +96,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
             return SDL_MUTEX_TIMEDOUT;
             break;
         default:
-            return SDL_SetError("Error trying to lock mutex: %x", res);
+            return SDL_SetError("Error trying to lock mutex: %lx", res);
             break;
     }
 
@@ -119,7 +119,7 @@ SDL_mutexP(SDL_mutex * mutex)
 
     res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
     if (res != SCE_KERNEL_ERROR_OK) {
-        return SDL_SetError("Error trying to lock mutex: %x", res);
+        return SDL_SetError("Error trying to lock mutex: %lx", res);
     }
 
     return 0;
@@ -141,7 +141,7 @@ SDL_mutexV(SDL_mutex * mutex)
 
     res = sceKernelUnlockLwMutex(&mutex->lock, 1);
     if (res != 0) {
-        return SDL_SetError("Error trying to unlock mutex: %x", res);
+        return SDL_SetError("Error trying to unlock mutex: %lx", res);
     }
 
     return 0;

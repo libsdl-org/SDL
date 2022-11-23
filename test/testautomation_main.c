@@ -125,6 +125,11 @@ static int main_testImpliedJoystickQuit (void *arg)
 #endif
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-zero-length"
+#endif
+
 static int
 main_testSetError(void *arg)
 {
@@ -144,6 +149,10 @@ main_testSetError(void *arg)
 
     return TEST_COMPLETED;
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 static const SDLTest_TestCaseReference mainTest1 =
         { (SDLTest_TestCaseFp)main_testInitQuitJoystickHaptic, "main_testInitQuitJoystickHaptic", "Tests SDL_Init/Quit of Joystick and Haptic subsystem", TEST_ENABLED};

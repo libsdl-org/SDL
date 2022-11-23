@@ -236,7 +236,7 @@ KMSDRM_CreateDevice(void)
 
     devindex = get_driindex();
     if (devindex < 0) {
-        SDL_SetError("devindex (%d) must be between 0 and 99.", devindex);
+        SDL_SetError("devindex (%d) must not be negative.", devindex);
         return NULL;
     }
 
@@ -308,8 +308,8 @@ KMSDRM_CreateDevice(void)
     return device;
 
 cleanup:
-    if (device)
-        SDL_free(device);
+    SDL_free(device);
+
     if (viddata)
         SDL_free(viddata);
     return NULL;
@@ -666,8 +666,8 @@ KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
    list of SDL Displays in _this->displays[]  */
 static void
-KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
-
+KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources)
+{
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata = NULL;
     SDL_VideoDisplay display = {0};
@@ -770,14 +770,37 @@ KMSDRM_AddDisplay (_THIS, drmModeConnector *connector, drmModeRes *resources) {
         drmModeModeInfo *mode = &connector->modes[i];
 
         if (!SDL_memcmp(mode, &crtc->mode, sizeof(crtc->mode))) {
-          mode_index = i;
-          break;
+            mode_index = i;
+            break;
         }
     }
 
     if (mode_index == -1) {
-      ret = SDL_SetError("Failed to find index of mode attached to the CRTC.");
-      goto cleanup;
+        int current_area, largest_area = 0;
+
+        /* Find the preferred mode or the highest resolution mode */
+        for (i = 0; i < connector->count_modes; i++) {
+            drmModeModeInfo *mode = &connector->modes[i];
+
+            if (mode->type & DRM_MODE_TYPE_PREFERRED) {
+                mode_index = i;
+                break;
+            }
+
+            current_area = mode->hdisplay * mode->vdisplay;
+            if (current_area > largest_area) {
+                mode_index = i;
+                largest_area = current_area;
+            }
+        }
+        if (mode_index != -1) {
+            crtc->mode = connector->modes[mode_index];
+        }
+    }
+
+    if (mode_index == -1) {
+        ret = SDL_SetError("Failed to find index of mode attached to the CRTC.");
+        goto cleanup;
     }
 
     /*********************************************/
@@ -1412,7 +1435,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
         if (!(viddata->gbm_init)) {
 
-            /* After SDL_CreateWindow, most SDL2 programs will do SDL_CreateRenderer(),
+            /* After SDL_CreateWindow, most SDL programs will do SDL_CreateRenderer(),
                which will in turn call GL_CreateRenderer() or GLES2_CreateRenderer().
                In order for the GL_CreateRenderer() or GLES2_CreateRenderer() call to
                succeed without an unnecessary window re-creation, we must: 
@@ -1433,28 +1456,34 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             }
         }
 
-	/* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
-	   been called by SDL_CreateWindow() but we don't do anything there,
-	   out KMSDRM_EGL_LoadLibrary() is a dummy precisely to be able to load it here.
-	   If we let SDL_CreateWindow() load the lib, it would be loaded
-	   before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
-	if (!_this->egl_data) {
-	    egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
-	    if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
-                return (SDL_SetError("Can't load EGL/GL library on window creation."));
-	    }
+        /* Manually load the GL library. KMSDRM_EGL_LoadLibrary() has already
+           been called by SDL_CreateWindow() but we don't do anything there,
+           our KMSDRM_EGL_LoadLibrary() is a dummy precisely to be able to load it here.
+           If we let SDL_CreateWindow() load the lib, it would be loaded
+           before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
+        if (!_this->egl_data) {
+            egl_display = (NativeDisplayType)((SDL_VideoData *)_this->driverdata)->gbm_dev;
+            if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA) < 0) {
+                /* Try again with OpenGL ES 2.0 */
+                _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+                _this->gl_config.major_version = 2;
+                _this->gl_config.minor_version = 0;
+                if (SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA) < 0) {
+                    return (SDL_SetError("Can't load EGL/GL library on window creation."));
+                }
+            }
 
-	    _this->gl_config.driver_loaded = 1;
+            _this->gl_config.driver_loaded = 1;
 
-	}
+        }
 
-	/* Create the cursor BO for the display of this window,
-	   now that we know this is not a VK window. */
-	KMSDRM_CreateCursorBO(display);
+        /* Create the cursor BO for the display of this window,
+           now that we know this is not a VK window. */
+        KMSDRM_CreateCursorBO(display);
 
-	/* Create and set the default cursor for the display
+        /* Create and set the default cursor for the display
            of this window, now that we know this is not a VK window. */
-	KMSDRM_InitMouse(_this, display);
+        KMSDRM_InitMouse(_this, display);
 
         /* The FULLSCREEN flags are cut out from window->flags at this point,
            so we can't know if a window is fullscreen or not, hence all windows

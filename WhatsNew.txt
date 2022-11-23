@@ -2,6 +2,47 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.26.0:
+---------------------------------------------------------------------------
+
+General:
+* Updated OpenGL headers to the latest API from The Khronos Group Inc.
+* Added SDL_GetWindowSizeInPixels() to get the window size in pixels, which may differ from the window coordinate size for windows with high-DPI support
+* Added simulated vsync synchronization for the software renderer
+* Added the mouse position to SDL_MouseWheelEvent
+* Added SDL_ResetHints() to reset all hints to their default values
+* Added SDL_GetJoystickGUIDInfo() to get device information encoded in a joystick GUID
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_XBOX_360 to control whether the HIDAPI driver for XBox 360 controllers should be used
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED to control whether the player LEDs should be lit to indicate which player is associated with an Xbox 360 controller
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS to control whether the HIDAPI driver for XBox 360 wireless controllers should be used
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE to control whether the HIDAPI driver for XBox One controllers should be used
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED to control the brightness of the XBox One guide button LED
+* Added support for PS3 controllers to the HIDAPI driver, enabled by default on macOS, controlled by the SDL_HINT_JOYSTICK_HIDAPI_PS3 hint
+* Added support for Nintendo Wii controllers to the HIDAPI driver, not enabled by default, controlled by the SDL_HINT_JOYSTICK_HIDAPI_WII hint
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED to control whether the player LED should be lit on the Nintendo Wii controllers
+* Added the hint SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS to control whether Nintendo Switch Joy-Con controllers will be in vertical mode when using the HIDAPI driver
+* Added access to the individual left and right gyro sensors of the combined Joy-Cons controller
+* Added a microsecond timestamp to SDL_SensorEvent and SDL_ControllerSensorEvent, when the hardware provides that information
+* Added SDL_SensorGetDataWithTimestamp() and SDL_GameControllerGetSensorDataWithTimestamp() to retrieve the last sensor data with the associated microsecond timestamp
+* Added the hint SDL_HINT_HIDAPI_IGNORE_DEVICES to have the SDL HID API ignore specific devices 
+* SDL_GetRevision() now includes more information about the SDL build, including the git commit hash if available
+
+Windows:
+* Added the hint SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE to control whether the system mouse acceleration curve is used for relative mouse motion
+
+macOS:
+* Implemented vsync synchronization on macOS 12
+
+Linux:
+* Added SDL_SetPrimarySelectionText(), SDL_GetPrimarySelectionText(), and SDL_HasPrimarySelectionText() to interact with the X11 primary selection clipboard
+* Added the hint SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP to control whether mouse pointer warp emulation is enabled under Wayland
+
+Android:
+* Enabled IME soft keyboard input
+* Added version checking to make sure the SDL Java and C code are compatible
+
+
+---------------------------------------------------------------------------
 2.24.0:
 ---------------------------------------------------------------------------
 

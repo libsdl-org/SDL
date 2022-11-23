@@ -30,7 +30,11 @@
 #include <gsKit.h>
 #include <dmaKit.h>
 #include <gsToolkit.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
 #include <gsInline.h>
+#pragma GCC diagnostic pop
 
 /* turn black GS Screen */
 #define GS_BLACK GS_SETREG_RGBA(0x00, 0x00, 0x00, 0x80)
@@ -39,31 +43,12 @@
 /* Size of Oneshot drawbuffer (Double Buffered, so it uses this size * 2) */
 #define RENDER_QUEUE_OS_POOLSIZE 1024 * 1024 * 2 // 2048K of oneshot renderqueue
 
-typedef struct clear_vertex {
-    float x;
-    float y;
-} clear_vertex;
-
-typedef struct texture_vertex {
-    float x;
-    float y;
-    float u;
-    float v;
-    uint64_t color;
-} texture_vertex;
-
-typedef struct color_vertex {
-    float x;
-    float y;
-    uint64_t color;
-} color_vertex;
-
 typedef struct
 {
     GSGLOBAL *gsGlobal;
     uint64_t drawColor;
     int32_t vsync_callback_id;
-    SDL_bool vsync; /* wether we do vsync */
+    uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
 } PS2_RenderData;
 
 
@@ -222,44 +207,29 @@ PS2_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 }
 
 static int
-PS2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
-{
-    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
-    uint64_t color = data->drawColor;
-    color_vertex *vertex = (color_vertex *) SDL_AllocateRenderVertices(renderer, (count-1) * sizeof (color_vertex) * 2, 4, &cmd->data.draw.first);
-
-    cmd->data.draw.first = (size_t)vertex;
-    cmd->data.draw.count = (count-1) * 2;
-
-    for (int i = 0; i < count-1; i++)
-    {
-        vertex[i*2].x = points[i].x;
-        vertex[i*2].y = points[i].y;
-        vertex[i*2].color = color;
-
-        vertex[i*2+1].x = points[i+1].x;
-        vertex[i*2+1].y = points[i+1].y;
-        vertex[i*2+1].color = color;
-    }
-
-    return 0;
-}
-
-static int
 PS2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
-    clear_vertex *verts = (clear_vertex *) SDL_AllocateRenderVertices(renderer, count * sizeof (clear_vertex), 4, &cmd->data.draw.first);
+    PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
+    GSPRIMPOINT *vertices = (GSPRIMPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMPOINT), 4, &cmd->data.draw.first);
+    uint8_t colorR, colorG, colorB, colorA;
+    gs_rgbaq rgbaq;
     int i;
 
-    if (!verts) {
+    if (!vertices) {
         return -1;
     }
 
     cmd->data.draw.count = count;
 
-    for (i = 0; i < count; i++, verts++, points++) {
-        verts->x = points->x;
-        verts->y = points->y;
+    colorR = cmd->data.draw.r >> 1;
+    colorG = cmd->data.draw.g >> 1;
+    colorB = cmd->data.draw.b >> 1;
+    colorA = cmd->data.draw.a >> 1;
+    rgbaq = color_to_RGBAQ(colorR, colorG, colorB, colorA, 0.0f);
+
+    for (i = 0; i < count; i++, vertices++, points++) {
+        vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, points->x, points->y, 0);
+        vertices->rgbaq = rgbaq;
     }
     return 0;
 }
@@ -272,22 +242,17 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
 {
     int i;
     int count = indices ? num_indices : num_vertices;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
     cmd->data.draw.count = count;
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        texture_vertex *vertices;
-
-        vertices = (texture_vertex *)SDL_AllocateRenderVertices(renderer, 
-                                                                count * sizeof(texture_vertex), 
-                                                                4, 
-                                                                &cmd->data.draw.first);
-
+        GSPRIMSTQPOINT *vertices = (GSPRIMSTQPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMSTQPOINT), 4, &cmd->data.draw.first);
+        
         if (!vertices) {
             return -1;
         }
-
 
         for (i = 0; i < count; i++) {
             int j;
@@ -308,27 +273,19 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             col_ = *(SDL_Color *)((char*)color + j * color_stride);
             uv_ = (float *)((char*)uv + j * uv_stride);
 
-            vertices->x = xy_[0] * scale_x;
-            vertices->y = xy_[1] * scale_y;
-            vertices->u = uv_[0];
-            vertices->v = uv_[1];
-            vertices->color = GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);
+            vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
+            vertices->stq = vertex_to_STQ(uv_[0], uv_[1]);
+            vertices->rgbaq = color_to_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 1.0f);
 
             vertices++;
         }
-
+        
     } else {
-        color_vertex *vertices;
-
-        vertices = (color_vertex *)SDL_AllocateRenderVertices(renderer, 
-                                                        count * sizeof(color_vertex), 
-                                                        4, 
-                                                        &cmd->data.draw.first);
+        GSPRIMPOINT *vertices = (GSPRIMPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMPOINT), 4, &cmd->data.draw.first);
 
         if (!vertices) {
             return -1;
         }
-
 
         for (i = 0; i < count; i++) {
             int j;
@@ -347,17 +304,14 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
             xy_ = (float *)((char*)xy + j * xy_stride);
             col_ = *(SDL_Color *)((char*)color + j * color_stride);
 
-            vertices->x = xy_[0] * scale_x;
-            vertices->y = xy_[1] * scale_y;
-            vertices->color =  GS_SETREG_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0x00);;
+            vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
+            vertices->rgbaq = color_to_RGBAQ(col_.r >> 1, col_.g >> 1, col_.b >> 1, col_.a >> 1, 0.0f);
 
             vertices++;
         }
-
     }
 
     return 0;
-
 }
 
 static int
@@ -459,84 +413,20 @@ PS2_SetBlendMode(PS2_RenderData *data, int blendMode)
 static int
 PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
-
-    int i;
-    uint64_t c1, c2, c3;
-    float x1, y1, x2, y2, x3, y3;
-    float u1, v1, u2, v2, u3, v3;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    
     const size_t count = cmd->data.draw.count;
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     if (cmd->data.draw.texture) {
-        const texture_vertex *verts = (texture_vertex *) (vertices + cmd->data.draw.first);
+        const GSPRIMSTQPOINT *verts = (GSPRIMSTQPOINT *) (vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *) cmd->data.draw.texture->driverdata;
-        
-        for (i = 0; i < count/3; i++) {
-            x1 = verts->x;
-            y1 = verts->y;
 
-            u1 = verts->u * ps2_tex->Width;
-            v1 = verts->v * ps2_tex->Height;
-
-            c1 = verts->color;
-
-            verts++;
-
-            x2 = verts->x;
-            y2 = verts->y;
-
-            u2 = verts->u * ps2_tex->Width;
-            v2 = verts->v * ps2_tex->Height;
-
-            c2 = verts->color;
-
-            verts++;
-
-            x3 = verts->x;
-            y3 = verts->y;
-
-            u3 = verts->u * ps2_tex->Width;
-            v3 = verts->v * ps2_tex->Height;
-
-            c3 = verts->color;
-
-            verts++;
-
-	        gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
-
-            gsKit_prim_triangle_goraud_texture(data->gsGlobal, ps2_tex, x1, y1, u1, v1, x2, y2, u2, v2, x3, y3, u3, v3, 0, c1, c2, c3);
-        }
+        gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
+        gsKit_prim_list_triangle_goraud_texture_stq_3d(data->gsGlobal, ps2_tex, count, verts);
     } else {
-        const color_vertex *verts = (color_vertex *) (vertices + cmd->data.draw.first);
-
-        for (i = 0; i < count/3; i++) {
-            x1 = verts->x;
-            y1 = verts->y;
-
-            c1 = verts->color;
-
-            verts++;
-
-            x2 = verts->x;
-            y2 = verts->y;
-            
-            c2 = verts->color;
-
-            verts++;
-
-            x3 = verts->x;
-            y3 = verts->y;
-            
-            c3 = verts->color;
-
-            verts++;
-
-            gsKit_prim_triangle_gouraud(data->gsGlobal, x1, y1, x2, y2, x3, y3, 0, c1, c2, c3);
-            
-        }
+        const GSPRIMPOINT *verts = (GSPRIMPOINT *) (vertices + cmd->data.draw.first);
+        gsKit_prim_list_triangle_gouraud_3d(data->gsGlobal, count, verts);
     } 
     
     return 0;
@@ -547,26 +437,11 @@ int
 PS2_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand * cmd)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    float x1, y1, x2, y2;
-    uint64_t c1, c2;
-    int i;
-
     const size_t count = cmd->data.draw.count;
-
-    const color_vertex *verts = (color_vertex *) (vertices + cmd->data.draw.first);
+    const GSPRIMPOINT *verts = (GSPRIMPOINT *) (vertices + cmd->data.draw.first);
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
-
-    for (i = 0; i < count-1; i++, verts++) {
-        x1 = verts[i*2].x;
-        y1 = verts[i*2].y;
-        c1 = verts[i*2].color;
-
-        x2 = verts[i*2+1].x;
-        y2 = verts[i*2+1].y;
-        c2 = verts[i*2+1].color;
-        gsKit_prim_line_goraud(data->gsGlobal, x1, y1, x2, y2, 0, c1, c2);
-    }
+    gsKit_prim_list_line_goraud_3d(data->gsGlobal, count, verts);
 
     /* We're done! */
     return 0;
@@ -576,25 +451,11 @@ int
 PS2_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand * cmd)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    uint64_t color;
-    int i;
-
     const size_t count = cmd->data.draw.count;
-
-    const uint8_t ColorR = cmd->data.draw.r >> 1;
-    const uint8_t ColorG = cmd->data.draw.g >> 1;
-    const uint8_t ColorB = cmd->data.draw.b >> 1;
-    const uint8_t ColorA = cmd->data.draw.a >> 1;
-
-    const clear_vertex *verts = (clear_vertex *) (vertices + cmd->data.draw.first);
+    const GSPRIMPOINT *verts = (GSPRIMPOINT *) (vertices + cmd->data.draw.first);
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
-
-    color = GS_SETREG_RGBAQ(ColorR, ColorG, ColorB, ColorA, 0x00);
-
-    for (i = 0; i < count; i++, verts++) {
-        gsKit_prim_point(data->gsGlobal, verts->x, verts->y, 0, color);
-    }
+    gsKit_prim_list_points(data->gsGlobal, count, verts);
 
     /* We're done! */
     return 0;
@@ -654,24 +515,29 @@ PS2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return SDL_Unsupported();
 }
 
-static void
+static int
 PS2_RenderPresent(SDL_Renderer * renderer)
 {
     PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
 
     if (data->gsGlobal->DoubleBuffering == GS_SETTING_OFF) {
-		if (data->vsync)
+		if (data->vsync == 2) // Dynamic
             gsKit_sync(data->gsGlobal);
+        else if (data->vsync == 1)
+            gsKit_vsync_wait();
 		gsKit_queue_exec(data->gsGlobal);
     } else {
 		gsKit_queue_exec(data->gsGlobal);
 		gsKit_finish();
-		if (data->vsync)
+		if (data->vsync == 2) // Dynamic
             gsKit_sync(data->gsGlobal);
+        else if (data->vsync == 1)
+            gsKit_vsync_wait();
 		gsKit_flip(data->gsGlobal);
 	}
 	gsKit_TexManager_nextFrame(data->gsGlobal);
     gsKit_clear(data->gsGlobal, GS_BLACK);
+    return 0;
 }
 
 static void
@@ -680,10 +546,10 @@ PS2_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    if (data == 0)
+    if (data == NULL)
         return;
 
-    if(ps2_texture == 0)
+    if(ps2_texture == NULL)
         return;
 
     // Free from vram
@@ -718,7 +584,8 @@ static int
 PS2_SetVSync(SDL_Renderer * renderer, const int vsync)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    data->vsync = vsync;
+    SDL_bool dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
+    data->vsync = vsync ? (dynamicVsync ? 2 : 1) : 0;
     return 0;
 }
 
@@ -729,6 +596,7 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     PS2_RenderData *data;
     GSGLOBAL *gsGlobal;
     ee_sema_t sema;
+    SDL_bool dynamicVsync;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
@@ -781,11 +649,8 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     gsKit_clear(gsGlobal, GS_BLACK);
 
     data->gsGlobal = gsGlobal;
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
-        data->vsync = SDL_TRUE;
-    } else {
-        data->vsync = SDL_FALSE;
-    }	
+    dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
+    data->vsync = flags & SDL_RENDERER_PRESENTVSYNC ? (dynamicVsync ? 2 : 1) : 0;
 
     renderer->WindowEvent = PS2_WindowEvent;
     renderer->CreateTexture = PS2_CreateTexture;
@@ -797,7 +662,7 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = PS2_QueueSetViewport;
     renderer->QueueSetDrawColor = PS2_QueueSetViewport;
     renderer->QueueDrawPoints = PS2_QueueDrawPoints;
-    renderer->QueueDrawLines = PS2_QueueDrawLines;
+    renderer->QueueDrawLines = PS2_QueueDrawPoints;
     renderer->QueueGeometry = PS2_QueueGeometry;
     renderer->RunCommandQueue = PS2_RunCommandQueue;
     renderer->RenderReadPixels = PS2_RenderReadPixels;

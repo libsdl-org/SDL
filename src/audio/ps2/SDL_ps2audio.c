@@ -48,15 +48,30 @@ PS2AUDIO_OpenDevice(_THIS, const char *devname)
     }
     SDL_zerop(this->hidden);
 
-    /* This is the native supported audio PS2 config  */
-    this->spec.freq = 48000;
+
+    /* These are the native supported audio PS2 configs  */
+    switch (this->spec.freq) {
+        case 11025:
+        case 12000:
+        case 22050:
+        case 24000:
+        case 32000:
+        case 44100:
+        case 48000:
+            this->spec.freq = this->spec.freq;
+            break;
+        default: 
+            this->spec.freq = 48000;
+            break;
+    }
+
     this->spec.samples = 512;
-    this->spec.channels = 2;
-    this->spec.format = AUDIO_S16LSB;
+    this->spec.channels = this->spec.channels == 1 ? 1 : 2;
+    this->spec.format = this->spec.format == AUDIO_S8 ? AUDIO_S8 : AUDIO_S16;
 
     SDL_CalculateAudioSpec(&this->spec);
 
-    format.bits     = 16;
+    format.bits     = this->spec.format == AUDIO_S8 ? 8 : 16;
     format.freq     = this->spec.freq;
     format.channels = this->spec.channels;
 

@@ -27,7 +27,7 @@ static SDLTest_CommonState *state;
 static SDL_bool use_texture = SDL_FALSE;
 static SDL_Texture **sprites;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
-static double angle = 0.0;
+static float angle = 0.0f;
 static int sprite_w, sprite_h;
 
 int done;
@@ -107,8 +107,8 @@ loop()
         {
             SDL_Rect viewport;
             SDL_Vertex verts[3];
-            double a;
-            double d;
+            float a;
+            float d;
             int cx, cy;
 
             /* Query the sizes */
@@ -116,39 +116,39 @@ loop()
             SDL_zeroa(verts);
             cx = viewport.x + viewport.w / 2;
             cy = viewport.y + viewport.h / 2;
-            d = (viewport.w + viewport.h) / 5;
+            d = (viewport.w + viewport.h) / 5.f;
 
-            a = (angle * 3.1415) / 180.0; 
-            verts[0].position.x = cx + d * SDL_cos(a);
-            verts[0].position.y = cy + d * SDL_sin(a);
+            a = (angle * 3.1415f) / 180.0f;
+            verts[0].position.x = cx + d * SDL_cosf(a);
+            verts[0].position.y = cy + d * SDL_sinf(a);
             verts[0].color.r = 0xFF;
             verts[0].color.g = 0;
             verts[0].color.b = 0;
             verts[0].color.a = 0xFF;
 
-            a = ((angle + 120) * 3.1415) / 180.0; 
-            verts[1].position.x = cx + d * SDL_cos(a);
-            verts[1].position.y = cy + d * SDL_sin(a);
+            a = ((angle + 120) * 3.1415f) / 180.0f;
+            verts[1].position.x = cx + d * SDL_cosf(a);
+            verts[1].position.y = cy + d * SDL_sinf(a);
             verts[1].color.r = 0;
             verts[1].color.g = 0xFF;
             verts[1].color.b = 0;
             verts[1].color.a = 0xFF;
 
-            a = ((angle + 240) * 3.1415) / 180.0; 
-            verts[2].position.x = cx + d * SDL_cos(a);
-            verts[2].position.y = cy + d * SDL_sin(a);
+            a = ((angle + 240) * 3.1415f) / 180.0f;
+            verts[2].position.x = cx + d * SDL_cosf(a);
+            verts[2].position.y = cy + d * SDL_sinf(a);
             verts[2].color.r = 0;
             verts[2].color.g = 0;
             verts[2].color.b = 0xFF;
             verts[2].color.a = 0xFF;
 
             if (use_texture) {
-                verts[0].tex_coord.x = 0.5;
-                verts[0].tex_coord.y = 0.0;
-                verts[1].tex_coord.x = 1.0;
-                verts[1].tex_coord.y = 1.0;
-                verts[2].tex_coord.x = 0.0;
-                verts[2].tex_coord.y = 1.0;
+                verts[0].tex_coord.x = 0.5f;
+                verts[0].tex_coord.y = 0.0f;
+                verts[1].tex_coord.x = 1.0f;
+                verts[1].tex_coord.y = 1.0f;
+                verts[2].tex_coord.x = 0.0f;
+                verts[2].tex_coord.y = 1.0f;
             }
 
             SDL_RenderGeometry(renderer, sprites[i], verts, 3, NULL, 0);

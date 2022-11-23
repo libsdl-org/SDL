@@ -19,13 +19,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
 #ifndef SDL_evdev_capabilities_h_
 #define SDL_evdev_capabilities_h_
 
-#if HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)
+#if HAVE_LINUX_INPUT_H
 
 #include <linux/input.h>
 
@@ -53,7 +52,7 @@ extern int SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
                                       unsigned long bitmask_key[NBITS(KEY_MAX)],
                                       unsigned long bitmask_rel[NBITS(REL_MAX)]);
 
-#endif /* HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX) */
+#endif /* HAVE_LINUX_INPUT_H */
 
 #endif /* SDL_evdev_capabilities_h_ */
 

@@ -72,6 +72,7 @@
 #cmakedefine HAVE_STRING_H 1
 #cmakedefine HAVE_SYS_TYPES_H 1
 #cmakedefine HAVE_WCHAR_H 1
+#cmakedefine HAVE_LINUX_INPUT_H 1
 #cmakedefine HAVE_PTHREAD_NP_H 1
 #cmakedefine HAVE_LIBUNWIND_H 1
 
@@ -139,6 +140,7 @@
 #cmakedefine HAVE_STRCASECMP 1
 #cmakedefine HAVE__STRNICMP 1
 #cmakedefine HAVE_STRNCASECMP 1
+#cmakedefine HAVE_STRCASESTR 1
 #cmakedefine HAVE_SSCANF 1
 #cmakedefine HAVE_VSSCANF 1
 #cmakedefine HAVE_VSNPRINTF 1
@@ -206,14 +208,11 @@
 #cmakedefine HAVE_POLL 1
 #cmakedefine HAVE__EXIT 1
 
-#elif defined(__WIN32__)
+#else
 #cmakedefine HAVE_STDARG_H 1
 #cmakedefine HAVE_STDDEF_H 1
+#cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_FLOAT_H 1
-
-#else
-/* We may need some replacement for stdarg.h here */
-#include <stdarg.h>
 #endif /* HAVE_LIBC */
 
 #cmakedefine HAVE_ALTIVEC_H 1
@@ -224,6 +223,7 @@
 #cmakedefine HAVE_INOTIFY_INIT 1
 #cmakedefine HAVE_INOTIFY_INIT1 1
 #cmakedefine HAVE_INOTIFY 1
+#cmakedefine HAVE_LIBUSB 1
 #cmakedefine HAVE_O_CLOEXEC 1
 
 /* Apple platforms might be building universal binaries, where Intel builds
@@ -293,40 +293,27 @@
 #cmakedefine SDL_AUDIO_DRIVER_ANDROID @SDL_AUDIO_DRIVER_ANDROID@
 #cmakedefine SDL_AUDIO_DRIVER_OPENSLES @SDL_AUDIO_DRIVER_OPENSLES@
 #cmakedefine SDL_AUDIO_DRIVER_AAUDIO @SDL_AUDIO_DRIVER_AAUDIO@
-#cmakedefine SDL_AUDIO_DRIVER_ARTS @SDL_AUDIO_DRIVER_ARTS@
-#cmakedefine SDL_AUDIO_DRIVER_ARTS_DYNAMIC @SDL_AUDIO_DRIVER_ARTS_DYNAMIC@
 #cmakedefine SDL_AUDIO_DRIVER_COREAUDIO @SDL_AUDIO_DRIVER_COREAUDIO@
 #cmakedefine SDL_AUDIO_DRIVER_DISK @SDL_AUDIO_DRIVER_DISK@
 #cmakedefine SDL_AUDIO_DRIVER_DSOUND @SDL_AUDIO_DRIVER_DSOUND@
 #cmakedefine SDL_AUDIO_DRIVER_DUMMY @SDL_AUDIO_DRIVER_DUMMY@
 #cmakedefine SDL_AUDIO_DRIVER_EMSCRIPTEN @SDL_AUDIO_DRIVER_EMSCRIPTEN@
-#cmakedefine SDL_AUDIO_DRIVER_ESD @SDL_AUDIO_DRIVER_ESD@
-#cmakedefine SDL_AUDIO_DRIVER_ESD_DYNAMIC @SDL_AUDIO_DRIVER_ESD_DYNAMIC@
-#cmakedefine SDL_AUDIO_DRIVER_FUSIONSOUND @SDL_AUDIO_DRIVER_FUSIONSOUND@
-#cmakedefine SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC @SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC@
 #cmakedefine SDL_AUDIO_DRIVER_HAIKU @SDL_AUDIO_DRIVER_HAIKU@
 #cmakedefine SDL_AUDIO_DRIVER_JACK @SDL_AUDIO_DRIVER_JACK@
 #cmakedefine SDL_AUDIO_DRIVER_JACK_DYNAMIC @SDL_AUDIO_DRIVER_JACK_DYNAMIC@
-#cmakedefine SDL_AUDIO_DRIVER_NAS @SDL_AUDIO_DRIVER_NAS@
-#cmakedefine SDL_AUDIO_DRIVER_NAS_DYNAMIC @SDL_AUDIO_DRIVER_NAS_DYNAMIC@
 #cmakedefine SDL_AUDIO_DRIVER_NETBSD @SDL_AUDIO_DRIVER_NETBSD@
 #cmakedefine SDL_AUDIO_DRIVER_OSS @SDL_AUDIO_DRIVER_OSS@
-#cmakedefine SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H @SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H@
-#cmakedefine SDL_AUDIO_DRIVER_PAUDIO @SDL_AUDIO_DRIVER_PAUDIO@
 #cmakedefine SDL_AUDIO_DRIVER_PIPEWIRE @SDL_AUDIO_DRIVER_PIPEWIRE@
 #cmakedefine SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC @SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC@
 #cmakedefine SDL_AUDIO_DRIVER_PULSEAUDIO @SDL_AUDIO_DRIVER_PULSEAUDIO@
 #cmakedefine SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC @SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC@
-#cmakedefine SDL_AUDIO_DRIVER_QSA @SDL_AUDIO_DRIVER_QSA@
 #cmakedefine SDL_AUDIO_DRIVER_SNDIO @SDL_AUDIO_DRIVER_SNDIO@
 #cmakedefine SDL_AUDIO_DRIVER_SNDIO_DYNAMIC @SDL_AUDIO_DRIVER_SNDIO_DYNAMIC@
-#cmakedefine SDL_AUDIO_DRIVER_SUNAUDIO @SDL_AUDIO_DRIVER_SUNAUDIO@
 #cmakedefine SDL_AUDIO_DRIVER_WASAPI @SDL_AUDIO_DRIVER_WASAPI@
-#cmakedefine SDL_AUDIO_DRIVER_WINMM @SDL_AUDIO_DRIVER_WINMM@
-#cmakedefine SDL_AUDIO_DRIVER_OS2 @SDL_AUDIO_DRIVER_OS2@
 #cmakedefine SDL_AUDIO_DRIVER_VITA @SDL_AUDIO_DRIVER_VITA@
 #cmakedefine SDL_AUDIO_DRIVER_PSP @SDL_AUDIO_DRIVER_PSP@
 #cmakedefine SDL_AUDIO_DRIVER_PS2 @SDL_AUDIO_DRIVER_PS2@
+#cmakedefine SDL_AUDIO_DRIVER_N3DS @SDL_AUDIO_DRIVER_N3DS@
 
 /* Enable various input drivers */
 #cmakedefine SDL_INPUT_LINUXEV @SDL_INPUT_LINUXEV@
@@ -341,7 +328,6 @@
 #cmakedefine SDL_JOYSTICK_IOKIT @SDL_JOYSTICK_IOKIT@
 #cmakedefine SDL_JOYSTICK_MFI @SDL_JOYSTICK_MFI@
 #cmakedefine SDL_JOYSTICK_LINUX @SDL_JOYSTICK_LINUX@
-#cmakedefine SDL_JOYSTICK_OS2 @SDL_JOYSTICK_OS2@
 #cmakedefine SDL_JOYSTICK_USBHID @SDL_JOYSTICK_USBHID@
 #cmakedefine SDL_HAVE_MACHINE_JOYSTICK_H @SDL_HAVE_MACHINE_JOYSTICK_H@
 #cmakedefine SDL_JOYSTICK_HIDAPI @SDL_JOYSTICK_HIDAPI@
@@ -351,6 +337,7 @@
 #cmakedefine SDL_JOYSTICK_VITA @SDL_JOYSTICK_VITA@
 #cmakedefine SDL_JOYSTICK_PSP @SDL_JOYSTICK_PSP@
 #cmakedefine SDL_JOYSTICK_PS2 @SDL_JOYSTICK_PS2@
+#cmakedefine SDL_JOYSTICK_N3DS @SDL_JOYSTICK_N3DS@
 #cmakedefine SDL_HAPTIC_DUMMY @SDL_HAPTIC_DUMMY@
 #cmakedefine SDL_HAPTIC_LINUX @SDL_HAPTIC_LINUX@
 #cmakedefine SDL_HAPTIC_IOKIT @SDL_HAPTIC_IOKIT@
@@ -365,13 +352,13 @@
 #cmakedefine SDL_SENSOR_WINDOWS @SDL_SENSOR_WINDOWS@
 #cmakedefine SDL_SENSOR_DUMMY @SDL_SENSOR_DUMMY@
 #cmakedefine SDL_SENSOR_VITA @SDL_SENSOR_VITA@
+#cmakedefine SDL_SENSOR_N3DS @SDL_SENSOR_N3DS@
 
 /* Enable various shared object loading systems */
 #cmakedefine SDL_LOADSO_DLOPEN @SDL_LOADSO_DLOPEN@
 #cmakedefine SDL_LOADSO_DUMMY @SDL_LOADSO_DUMMY@
 #cmakedefine SDL_LOADSO_LDG @SDL_LOADSO_LDG@
 #cmakedefine SDL_LOADSO_WINDOWS @SDL_LOADSO_WINDOWS@
-#cmakedefine SDL_LOADSO_OS2 @SDL_LOADSO_OS2@
 
 /* Enable various threading systems */
 #cmakedefine SDL_THREAD_GENERIC_COND_SUFFIX @SDL_THREAD_GENERIC_COND_SUFFIX@
@@ -379,20 +366,20 @@
 #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX@
 #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP@
 #cmakedefine SDL_THREAD_WINDOWS @SDL_THREAD_WINDOWS@
-#cmakedefine SDL_THREAD_OS2 @SDL_THREAD_OS2@
 #cmakedefine SDL_THREAD_VITA @SDL_THREAD_VITA@
 #cmakedefine SDL_THREAD_PSP @SDL_THREAD_PSP@
 #cmakedefine SDL_THREAD_PS2 @SDL_THREAD_PS2@
+#cmakedefine SDL_THREAD_N3DS @SDL_THREAD_N3DS@
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU @SDL_TIMER_HAIKU@
 #cmakedefine SDL_TIMER_DUMMY @SDL_TIMER_DUMMY@
 #cmakedefine SDL_TIMER_UNIX @SDL_TIMER_UNIX@
 #cmakedefine SDL_TIMER_WINDOWS @SDL_TIMER_WINDOWS@
-#cmakedefine SDL_TIMER_OS2 @SDL_TIMER_OS2@
 #cmakedefine SDL_TIMER_VITA @SDL_TIMER_VITA@
 #cmakedefine SDL_TIMER_PSP @SDL_TIMER_PSP@
 #cmakedefine SDL_TIMER_PS2 @SDL_TIMER_PS2@
+#cmakedefine SDL_TIMER_N3DS @SDL_TIMER_N3DS@
 
 /* Enable various video drivers */
 #cmakedefine SDL_VIDEO_DRIVER_ANDROID @SDL_VIDEO_DRIVER_ANDROID@
@@ -400,18 +387,13 @@
 #cmakedefine SDL_VIDEO_DRIVER_HAIKU @SDL_VIDEO_DRIVER_HAIKU@
 #cmakedefine SDL_VIDEO_DRIVER_COCOA @SDL_VIDEO_DRIVER_COCOA@
 #cmakedefine SDL_VIDEO_DRIVER_UIKIT @SDL_VIDEO_DRIVER_UIKIT@
-#cmakedefine SDL_VIDEO_DRIVER_DIRECTFB @SDL_VIDEO_DRIVER_DIRECTFB@
-#cmakedefine SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC @SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC@
 #cmakedefine SDL_VIDEO_DRIVER_DUMMY @SDL_VIDEO_DRIVER_DUMMY@
 #cmakedefine SDL_VIDEO_DRIVER_OFFSCREEN @SDL_VIDEO_DRIVER_OFFSCREEN@
 #cmakedefine SDL_VIDEO_DRIVER_WINDOWS @SDL_VIDEO_DRIVER_WINDOWS@
-#cmakedefine SDL_VIDEO_DRIVER_WINRT @SDL_VIDEO_DRIVER_WINRT@
 #cmakedefine SDL_VIDEO_DRIVER_WAYLAND @SDL_VIDEO_DRIVER_WAYLAND@
 #cmakedefine SDL_VIDEO_DRIVER_RPI @SDL_VIDEO_DRIVER_RPI@
 #cmakedefine SDL_VIDEO_DRIVER_VIVANTE @SDL_VIDEO_DRIVER_VIVANTE@
 #cmakedefine SDL_VIDEO_DRIVER_VIVANTE_VDK @SDL_VIDEO_DRIVER_VIVANTE_VDK@
-#cmakedefine SDL_VIDEO_DRIVER_OS2 @SDL_VIDEO_DRIVER_OS2@
-#cmakedefine SDL_VIDEO_DRIVER_QNX @SDL_VIDEO_DRIVER_QNX@
 #cmakedefine SDL_VIDEO_DRIVER_RISCOS @SDL_VIDEO_DRIVER_RISCOS@
 #cmakedefine SDL_VIDEO_DRIVER_PSP @SDL_VIDEO_DRIVER_PSP@
 #cmakedefine SDL_VIDEO_DRIVER_PS2 @SDL_VIDEO_DRIVER_PS2@
@@ -446,6 +428,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS @SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS@
 #cmakedefine SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM @SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM@
 #cmakedefine SDL_VIDEO_DRIVER_VITA @SDL_VIDEO_DRIVER_VITA@
+#cmakedefine SDL_VIDEO_DRIVER_N3DS @SDL_VIDEO_DRIVER_N3DS@
 
 #cmakedefine SDL_VIDEO_RENDER_D3D @SDL_VIDEO_RENDER_D3D@
 #cmakedefine SDL_VIDEO_RENDER_D3D11 @SDL_VIDEO_RENDER_D3D11@
@@ -453,7 +436,6 @@
 #cmakedefine SDL_VIDEO_RENDER_OGL @SDL_VIDEO_RENDER_OGL@
 #cmakedefine SDL_VIDEO_RENDER_OGL_ES @SDL_VIDEO_RENDER_OGL_ES@
 #cmakedefine SDL_VIDEO_RENDER_OGL_ES2 @SDL_VIDEO_RENDER_OGL_ES2@
-#cmakedefine SDL_VIDEO_RENDER_DIRECTFB @SDL_VIDEO_RENDER_DIRECTFB@
 #cmakedefine SDL_VIDEO_RENDER_METAL @SDL_VIDEO_RENDER_METAL@
 #cmakedefine SDL_VIDEO_RENDER_VITA_GXM @SDL_VIDEO_RENDER_VITA_GXM@
 #cmakedefine SDL_VIDEO_RENDER_PS2 @SDL_VIDEO_RENDER_PS2@
@@ -481,7 +463,6 @@
 #cmakedefine SDL_POWER_ANDROID @SDL_POWER_ANDROID@
 #cmakedefine SDL_POWER_LINUX @SDL_POWER_LINUX@
 #cmakedefine SDL_POWER_WINDOWS @SDL_POWER_WINDOWS@
-#cmakedefine SDL_POWER_WINRT @SDL_POWER_WINRT@
 #cmakedefine SDL_POWER_MACOSX @SDL_POWER_MACOSX@
 #cmakedefine SDL_POWER_UIKIT @SDL_POWER_UIKIT@
 #cmakedefine SDL_POWER_HAIKU @SDL_POWER_HAIKU@
@@ -489,6 +470,7 @@
 #cmakedefine SDL_POWER_HARDWIRED @SDL_POWER_HARDWIRED@
 #cmakedefine SDL_POWER_VITA @SDL_POWER_VITA@
 #cmakedefine SDL_POWER_PSP @SDL_POWER_PSP@
+#cmakedefine SDL_POWER_N3DS @SDL_POWER_N3DS@
 
 /* Enable system filesystem support */
 #cmakedefine SDL_FILESYSTEM_ANDROID @SDL_FILESYSTEM_ANDROID@
@@ -499,10 +481,10 @@
 #cmakedefine SDL_FILESYSTEM_UNIX @SDL_FILESYSTEM_UNIX@
 #cmakedefine SDL_FILESYSTEM_WINDOWS @SDL_FILESYSTEM_WINDOWS@
 #cmakedefine SDL_FILESYSTEM_EMSCRIPTEN @SDL_FILESYSTEM_EMSCRIPTEN@
-#cmakedefine SDL_FILESYSTEM_OS2 @SDL_FILESYSTEM_OS2@
 #cmakedefine SDL_FILESYSTEM_VITA @SDL_FILESYSTEM_VITA@
 #cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
 #cmakedefine SDL_FILESYSTEM_PS2 @SDL_FILESYSTEM_PS2@
+#cmakedefine SDL_FILESYSTEM_N3DS @SDL_FILESYSTEM_N3DS@
 
 /* Enable misc subsystem */
 #cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
@@ -532,24 +514,9 @@
 #cmakedefine SDL_VIDEO_VITA_PVR @SDL_VIDEO_VITA_PVR@
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL @SDL_VIDEO_VITA_PVR_OGL@
 
-#if !defined(__WIN32__) && !defined(__WINRT__)
-#  if !defined(_STDINT_H_) && !defined(_STDINT_H) && !defined(HAVE_STDINT_H) && !defined(_HAVE_STDINT_H)
-typedef unsigned int size_t;
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-typedef signed long long int64_t;
-typedef unsigned long long uint64_t;
-typedef unsigned long uintptr_t;
-#  endif /* if (stdint.h isn't available) */
-#else /* __WIN32__ */
-#  if !defined(_STDINT_H_) && !defined(HAVE_STDINT_H) && !defined(_HAVE_STDINT_H)
-#    if defined(__GNUC__) || defined(__DMC__) || defined(__WATCOMC__) || defined(__BORLANDC__) || defined(__CODEGEARC__)
-#define HAVE_STDINT_H	1
-#    elif defined(_MSC_VER)
+#if !defined(_STDINT_H_) && (!defined(HAVE_STDINT_H) || !_HAVE_STDINT_H)
+/* Most everything except Visual Studio 2008 and earlier has stdint.h now */
+#if defined(_MSC_VER) && (_MSC_VER < 1600)
 typedef signed __int8 int8_t;
 typedef unsigned __int8 uint8_t;
 typedef signed __int16 int16_t;
@@ -558,37 +525,15 @@ typedef signed __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef signed __int64 int64_t;
 typedef unsigned __int64 uint64_t;
-#      ifndef _UINTPTR_T_DEFINED
-#        ifdef  _WIN64
+#ifndef _UINTPTR_T_DEFINED
+#ifdef  _WIN64
 typedef unsigned __int64 uintptr_t;
-#          else
+#else
 typedef unsigned int uintptr_t;
-#        endif
+#endif
 #define _UINTPTR_T_DEFINED
-#      endif
-/* Older Visual C++ headers don't have the Win64-compatible typedefs... */
-#      if ((_MSC_VER <= 1200) && (!defined(DWORD_PTR)))
-#define DWORD_PTR DWORD
-#      endif
-#      if ((_MSC_VER <= 1200) && (!defined(LONG_PTR)))
-#define LONG_PTR LONG
-#      endif
-#    else /* !__GNUC__ && !_MSC_VER */
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-typedef signed long long int64_t;
-typedef unsigned long long uint64_t;
-#      ifndef _SIZE_T_DEFINED_
-#define _SIZE_T_DEFINED_
-typedef unsigned int size_t;
-#      endif
-typedef unsigned int uintptr_t;
-#    endif /* __GNUC__ || _MSC_VER */
-#  endif /* !_STDINT_H_ && !HAVE_STDINT_H */
-#endif /* __WIN32__ */
+#endif
+#endif /* Visual Studio 2008 */
+#endif /* !_STDINT_H_ && !HAVE_STDINT_H */
 
 #endif /* SDL_config_h_ */

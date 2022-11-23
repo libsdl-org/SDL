@@ -7,7 +7,6 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
-
 /* Test case functions */
 
 /**
@@ -36,6 +35,16 @@ stdlib_strlcpy(void *arg)
   return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic push
+#if defined(HAVE_WFORMAT)
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+#endif
+
 /**
  * @brief Call to SDL_snprintf
  */
@@ -47,6 +56,7 @@ stdlib_snprintf(void *arg)
   int predicted;
   char text[1024];
   const char *expected;
+  size_t size;
 
   result = SDL_snprintf(text, sizeof(text), "%s", "foo");
   expected = "foo";
@@ -148,8 +158,19 @@ stdlib_snprintf(void *arg)
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
   SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
 
+  size = 64;
+  result = SDL_snprintf(text, sizeof(text), "%zu %s", size, "test"); 
+  expected = "64 test";
+  SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"%%zu %%s\", size, \"test\")");
+  SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+  SDLTest_AssertCheck(result == 7, "Check result value, expected: 7, got: %d", result);
+
   return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic pop
+#endif
 
 /**
  * @brief Call to SDL_getenv and SDL_setenv
@@ -285,6 +306,16 @@ stdlib_getsetenv(void *arg)
   return TEST_COMPLETED;
 }
 
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic push
+#if defined(HAVE_WFORMAT)
+#pragma GCC diagnostic ignored "-Wformat"
+#endif
+#if defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+#endif
+
 /**
  * @brief Call to SDL_sscanf
  */
@@ -296,6 +327,11 @@ stdlib_sscanf(void *arg)
   int result;
   int expected_output;
   int expected_result;
+  short short_output, expected_short_output;
+  long long_output, expected_long_output;
+  long long long_long_output, expected_long_long_output;
+  size_t size_output, expected_size_output;
+  char text[128];
 
   expected_output = output = 123;
   expected_result = -1;
@@ -327,8 +363,44 @@ stdlib_sscanf(void *arg)
   SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
   SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
 
+#define SIZED_TEST_CASE(type, var, format_specifier) \
+  var##_output = 123; \
+  expected_##var##_output = (type)(((unsigned type)(~0)) >> 1); \
+  expected_result = 1; \
+  result = SDL_snprintf(text, sizeof(text), format_specifier, expected_##var##_output); \
+  result = SDL_sscanf(text, format_specifier, &var##_output); \
+  SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%s\", &output)", text, #format_specifier); \
+  SDLTest_AssertCheck(expected_##var##_output == var##_output, "Check output, expected: " format_specifier ", got: " format_specifier, expected_##var##_output, var##_output); \
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result); \
+ \
+  var##_output = 123; \
+  expected_##var##_output = ~(type)(((unsigned type)(~0)) >> 1); \
+  expected_result = 1; \
+  result = SDL_snprintf(text, sizeof(text), format_specifier, expected_##var##_output); \
+  result = SDL_sscanf(text, format_specifier, &var##_output); \
+  SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%s\", &output)", text, #format_specifier); \
+  SDLTest_AssertCheck(expected_##var##_output == var##_output, "Check output, expected: " format_specifier ", got: " format_specifier, expected_##var##_output, var##_output); \
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result); \
+
+  SIZED_TEST_CASE(short, short, "%hd")
+  SIZED_TEST_CASE(long, long, "%ld")
+  SIZED_TEST_CASE(long long, long_long, "%lld")
+
+  size_output = 123;
+  expected_size_output = (size_t)~0;
+  expected_result = 1;
+  result = SDL_snprintf(text, sizeof(text), "%zu", expected_size_output);
+  result = SDL_sscanf(text, "%zu", &size_output);
+  SDLTest_AssertPass("Call to SDL_sscanf(\"%s\", \"%%zu\", &output)", text);
+  SDLTest_AssertCheck(expected_size_output == size_output, "Check output, expected: %zu, got: %zu", expected_size_output, size_output);
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
   return TEST_COMPLETED;
 }
+
+#if defined(HAVE_WFORMAT) || defined(HAVE_WFORMAT_EXTRA_ARGS)
+#pragma GCC diagnostic pop
+#endif
 
 #if defined(_WIN64)
 # define SIZE_FORMAT "I64u"

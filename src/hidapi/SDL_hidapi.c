@@ -47,12 +47,18 @@
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/usb/USBSpec.h>
+#include <AvailabilityMacros.h>
+/* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
+#define kIOMainPortDefault kIOMasterPortDefault
+#endif
 #endif
 
 #include "../core/linux/SDL_udev.h"
 #ifdef SDL_USE_LIBUDEV
 #include <poll.h>
 #include <unistd.h>
+#include "../core/linux/SDL_sandbox.h"
 #endif
 
 #ifdef HAVE_INOTIFY
@@ -249,7 +255,7 @@ HIDAPI_InitializeDiscovery()
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
 #if defined(__MACOSX__)
-    SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMasterPortDefault);
+    SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMainPortDefault);
     if (SDL_HIDAPI_discovery.m_notificationPort) {
         {
             io_iterator_t portIterator = 0;
@@ -550,7 +556,6 @@ HIDAPI_ShutdownDiscovery()
 #undef HIDAPI_H__
 #if __LINUX__
 
-#include "../core/linux/SDL_udev.h"
 #if SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
@@ -681,7 +686,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #endif /* HAVE_DRIVER_BACKEND */
 
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
 /* libusb HIDAPI Implementation */
 
 /* Include this now, for our dynamically-loaded libusb context */
@@ -737,6 +742,7 @@ static struct
     );
     int (LIBUSB_CALL *handle_events)(libusb_context *ctx);
     int (LIBUSB_CALL *handle_events_completed)(libusb_context *ctx, int *completed);
+    const char * (LIBUSB_CALL *error_name)(int errcode);
 } libusb_ctx;
 
 #define libusb_init                            libusb_ctx.init
@@ -765,6 +771,7 @@ static struct
 #define libusb_interrupt_transfer              libusb_ctx.interrupt_transfer
 #define libusb_handle_events                   libusb_ctx.handle_events
 #define libusb_handle_events_completed         libusb_ctx.handle_events_completed
+#define libusb_error_name                      libusb_ctx.error_name
 
 #define hid_device                      LIBUSB_hid_device
 #define hid_device_                     LIBUSB_hid_device_
@@ -816,6 +823,34 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #undef HIDAPI_H__
 #include "libusb/hid.c"
 
+#undef libusb_init
+#undef libusb_exit
+#undef libusb_get_device_list
+#undef libusb_free_device_list
+#undef libusb_get_device_descriptor
+#undef libusb_get_active_config_descriptor
+#undef libusb_get_config_descriptor
+#undef libusb_free_config_descriptor
+#undef libusb_get_bus_number
+#undef libusb_get_device_address
+#undef libusb_open
+#undef libusb_close
+#undef libusb_claim_interface
+#undef libusb_release_interface
+#undef libusb_kernel_driver_active
+#undef libusb_detach_kernel_driver
+#undef libusb_attach_kernel_driver
+#undef libusb_set_interface_alt_setting
+#undef libusb_alloc_transfer
+#undef libusb_submit_transfer
+#undef libusb_cancel_transfer
+#undef libusb_free_transfer
+#undef libusb_control_transfer
+#undef libusb_interrupt_transfer
+#undef libusb_handle_events
+#undef libusb_handle_events_completed
+#undef libusb_error_name
+
 #undef hid_device
 #undef hid_device_
 #undef hid_init
@@ -843,7 +878,7 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 #undef make_path
 #undef read_thread
 
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 
 #endif /* !SDL_HIDAPI_DISABLED */
 
@@ -898,7 +933,7 @@ static const struct hidapi_backend DRIVER_Backend = {
 };
 #endif /* HAVE_DRIVER_BACKEND */
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
 static const struct hidapi_backend LIBUSB_Backend = {
     (void*)LIBUSB_hid_write,
     (void*)LIBUSB_hid_read_timeout,
@@ -913,7 +948,7 @@ static const struct hidapi_backend LIBUSB_Backend = {
     (void*)LIBUSB_hid_get_indexed_string,
     (void*)LIBUSB_hid_error
 };
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 
 struct SDL_hid_device_
 {
@@ -923,7 +958,7 @@ struct SDL_hid_device_
 };
 static char device_magic;
 
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
 
 static SDL_hid_device *
 CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
@@ -935,7 +970,7 @@ CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
     return wrapper;
 }
 
-#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB */
 
 static void
 DeleteHIDDeviceWrapper(SDL_hid_device *device)
@@ -951,7 +986,7 @@ DeleteHIDDeviceWrapper(SDL_hid_device *device)
     }
 
 #if !SDL_HIDAPI_DISABLED
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
 
 #define COPY_IF_EXISTS(var) \
     if (pSrc->var != NULL) { \
@@ -988,7 +1023,7 @@ CopyHIDDeviceInfo(struct SDL_hid_device_info *pSrc, struct SDL_hid_device_info *
 #undef COPY_IF_EXISTS
 #undef WCOPY_IF_EXISTS
 
-#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB */
 #endif /* !SDL_HIDAPI_DISABLED */
 
 static int SDL_hidapi_refcount = 0;
@@ -1018,11 +1053,7 @@ int SDL_hid_init(void)
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "udev disabled by SDL_HIDAPI_JOYSTICK_DISABLE_UDEV");
         linux_enumeration_method = ENUMERATION_FALLBACK;
-    } else if (access("/.flatpak-info", F_OK) == 0
-               || access("/run/host/container-manager", F_OK) == 0) {
-        /* Explicitly check `/.flatpak-info` because, for old versions of
-         * Flatpak, this was the only available way to tell if we were in
-         * a Flatpak container. */
+    } else if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "Container detected, disabling HIDAPI udev integration");
         linux_enumeration_method = ENUMERATION_FALLBACK;
@@ -1033,23 +1064,27 @@ int SDL_hid_init(void)
     }
 #endif
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
     if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "libusb disabled by SDL_HIDAPI_DISABLE_LIBUSB");
         libusb_ctx.libhandle = NULL;
     } else {
         ++attempts;
+#ifdef SDL_LIBUSB_DYNAMIC
         libusb_ctx.libhandle = SDL_LoadObject(SDL_LIBUSB_DYNAMIC);
+#else
+        libusb_ctx.libhandle = (void *)1;
+#endif
         if (libusb_ctx.libhandle != NULL) {
             SDL_bool loaded = SDL_TRUE;
-            #ifdef __OS2__
-            #define LOAD_LIBUSB_SYMBOL(func) \
-                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle,"_libusb_" #func))) {loaded = SDL_FALSE;}
-            #else
+#ifdef SDL_LIBUSB_DYNAMIC
             #define LOAD_LIBUSB_SYMBOL(func) \
                 if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
-            #endif
+#else
+            #define LOAD_LIBUSB_SYMBOL(func) \
+                libusb_ctx.func = libusb_##func;
+#endif
             LOAD_LIBUSB_SYMBOL(init)
             LOAD_LIBUSB_SYMBOL(exit)
             LOAD_LIBUSB_SYMBOL(get_device_list)
@@ -1076,21 +1111,26 @@ int SDL_hid_init(void)
             LOAD_LIBUSB_SYMBOL(interrupt_transfer)
             LOAD_LIBUSB_SYMBOL(handle_events)
             LOAD_LIBUSB_SYMBOL(handle_events_completed)
+            LOAD_LIBUSB_SYMBOL(error_name)
             #undef LOAD_LIBUSB_SYMBOL
 
             if (!loaded) {
+#ifdef SDL_LIBUSB_DYNAMIC
                 SDL_UnloadObject(libusb_ctx.libhandle);
+#endif
                 libusb_ctx.libhandle = NULL;
                 /* SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, SDL_LIBUSB_DYNAMIC " found but could not load function"); */
             } else if (LIBUSB_hid_init() < 0) {
+#ifdef SDL_LIBUSB_DYNAMIC
                 SDL_UnloadObject(libusb_ctx.libhandle);
+#endif
                 libusb_ctx.libhandle = NULL;
             } else {
                 ++success;
             }
         }
     }
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 
 #if HAVE_PLATFORM_BACKEND
     ++attempts;
@@ -1136,13 +1176,15 @@ int SDL_hid_exit(void)
 #endif /* __LINUX __ */
 #endif /* HAVE_PLATFORM_BACKEND */
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
     if (libusb_ctx.libhandle) {
         result |= LIBUSB_hid_exit();
+#ifdef SDL_LIBUSB_DYNAMIC
         SDL_UnloadObject(libusb_ctx.libhandle);
+#endif
         libusb_ctx.libhandle = NULL;
     }
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 
     return result;
 }
@@ -1171,8 +1213,8 @@ Uint32 SDL_hid_device_change_count(void)
 
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
-#ifdef SDL_LIBUSB_DYNAMIC
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
+#ifdef HAVE_LIBUSB
     struct SDL_hid_device_info *usb_devs = NULL;
     struct SDL_hid_device_info *usb_dev;
 #endif
@@ -1190,7 +1232,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
         return NULL;
     }
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
     if (libusb_ctx.libhandle) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
 #ifdef DEBUG_HIDAPI
@@ -1219,7 +1261,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
             last = new_dev;
         }
     }
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 
 #ifdef HAVE_DRIVER_BACKEND
     driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
@@ -1249,7 +1291,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
                     raw_dev->manufacturer_string, raw_dev->product_string,
                     raw_dev->vendor_id, raw_dev->product_id);
 #endif
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
             for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
                 if (raw_dev->vendor_id == usb_dev->vendor_id &&
                     raw_dev->product_id == usb_dev->product_id &&
@@ -1272,7 +1314,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
             if (!bFound) {
                 new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
                 if (!new_dev) {
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
                     if (libusb_ctx.libhandle) {
                         LIBUSB_hid_free_enumeration(usb_devs);
                     }
@@ -1297,7 +1339,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
     if (libusb_ctx.libhandle) {
         LIBUSB_hid_free_enumeration(usb_devs);
     }
@@ -1306,7 +1348,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 
 #else
     return NULL;
-#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB */
 }
 
 void SDL_hid_free_enumeration(struct SDL_hid_device_info *devs)
@@ -1324,7 +1366,7 @@ void SDL_hid_free_enumeration(struct SDL_hid_device_info *devs)
 
 SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
@@ -1344,21 +1386,21 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
     if (libusb_ctx.libhandle &&
         (pDevice = LIBUSB_hid_open(vendor_id, product_id, serial_number)) != NULL) {
         return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
     }
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 
-#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB */
 
     return NULL;
 }
 
 SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */)
 {
-#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(SDL_LIBUSB_DYNAMIC)
+#if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
     if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
@@ -1378,14 +1420,14 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
     if (libusb_ctx.libhandle &&
         (pDevice = LIBUSB_hid_open_path(path, bExclusive)) != NULL) {
         return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
     }
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 
-#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB */
 
     return NULL;
 }
@@ -1539,7 +1581,7 @@ void SDL_hid_ble_scan(SDL_bool active)
 /* This is needed to enable input for Nyko and EVORETRO GameCube adaptors */
 void SDL_EnableGameCubeAdaptors(void)
 {
-#ifdef SDL_LIBUSB_DYNAMIC
+#ifdef HAVE_LIBUSB
     libusb_context *context = NULL;
     libusb_device **devs = NULL;
     libusb_device_handle *handle = NULL;
@@ -1551,10 +1593,10 @@ void SDL_EnableGameCubeAdaptors(void)
         return;
     }
 
-    if (libusb_init(&context) == 0) {
-        num_devs = libusb_get_device_list(context, &devs);
+    if (libusb_ctx.init(&context) == 0) {
+        num_devs = libusb_ctx.get_device_list(context, &devs);
         for (i = 0; i < num_devs; ++i) {
-            if (libusb_get_device_descriptor(devs[i], &desc) != 0) {
+            if (libusb_ctx.get_device_descriptor(devs[i], &desc) != 0) {
                 continue;
             }
 
@@ -1562,33 +1604,33 @@ void SDL_EnableGameCubeAdaptors(void)
                 continue;
             }
 
-            if (libusb_open(devs[i], &handle) != 0) {
+            if (libusb_ctx.open(devs[i], &handle) != 0) {
                 continue;
             }
 
-            if (libusb_kernel_driver_active(handle, 0)) {
-                if (libusb_detach_kernel_driver(handle, 0) == 0) {
+            if (libusb_ctx.kernel_driver_active(handle, 0)) {
+                if (libusb_ctx.detach_kernel_driver(handle, 0) == 0) {
                     kernel_detached = 1;
                 }
             }
 
-            if (libusb_claim_interface(handle, 0) == 0) {
-                libusb_control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
-                libusb_release_interface(handle, 0);
+            if (libusb_ctx.claim_interface(handle, 0) == 0) {
+                libusb_ctx.control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
+                libusb_ctx.release_interface(handle, 0);
             }
 
             if (kernel_detached) {
-                libusb_attach_kernel_driver(handle, 0);
+                libusb_ctx.attach_kernel_driver(handle, 0);
             }
 
-            libusb_close(handle);
+            libusb_ctx.close(handle);
         }
 
-        libusb_free_device_list(devs, 1);
+        libusb_ctx.free_device_list(devs, 1);
 
-        libusb_exit(context);
+        libusb_ctx.exit(context);
     }
-#endif /* SDL_LIBUSB_DYNAMIC */
+#endif /* HAVE_LIBUSB */
 }
 #endif /* HAVE_ENABLE_GAMECUBE_ADAPTORS */
 

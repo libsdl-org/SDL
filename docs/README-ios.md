@@ -20,7 +20,7 @@ Using the Simple DirectMedia Layer for iOS
 3. Right click the project in the main view, select "Add Files...", and add the SDL project, Xcode/SDL/SDL.xcodeproj
 4. Select the project in the main view, go to the "Info" tab and under "Custom iOS Target Properties" remove the line "Main storyboard file base name"
 5. Select the project in the main view, go to the "Build Settings" tab, select "All", and edit "Header Search Path" and drag over the SDL "Public Headers" folder from the left
-6. Select the project in the main view, go to the "Build Phases" tab, select "Link Binary With Libraries", and add SDL2.framework from "Framework-iOS"
+6. Select the project in the main view, go to the "Build Phases" tab, select "Link Binary With Libraries", and add SDL3.framework from "Framework-iOS"
 7. Select the project in the main view, go to the "General" tab, scroll down to "Frameworks, Libraries, and Embedded Content", and select "Embed & Sign" for the SDL library.
 8. In the main view, expand SDL -> Library Source -> main -> uikit and drag SDL_uikit_main.c into your game files
 9. Add the source files that you would normally have for an SDL program, making sure to have #include "SDL.h" at the top of the file containing your main() function.
@@ -191,6 +191,38 @@ More information on this subject is available here:
 http://developer.apple.com/library/ios/#documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/Introduction/Introduction.html
 
 
+Notes -- xcFramework
+==============================================================================
+
+The SDL.xcodeproj file now includes a target to build SDL3.xcframework. An xcframework is a new (Xcode 11) uber-framework which can handle any combination of processor type and target OS platform. 
+
+In the past, iOS devices were always an ARM variant processor, and the simulator was always i386 or x86_64, and thus libraries could be combined into a single framework for both simulator and device. With the introduction of the Apple Silicon ARM-based machines, regular frameworks would collide as CPU type was no longer sufficient to differentiate the platform. So Apple created the new xcframework library package.
+
+The xcframework target builds into a Products directory alongside the SDL.xcodeproj file, as SDL3.xcframework. This can be brought in to any iOS project and will function properly for both simulator and device, no matter their CPUs. Note that Intel Macs cannot cross-compile for Apple Silicon Macs. If you need AS compatibility, perform this build on an Apple Silicon Mac.
+
+This target requires Xcode 11 or later. The target will simply fail to build if attempted on older Xcodes.
+
+In addition, on Apple platforms, main() cannot be in a dynamically loaded library. This means that iOS apps which used the statically-linked libSDL3.lib and now link with the xcframwork will need to define their own main() to call SDL_UIKitRunApp(), like this:
+
+#ifndef SDL_MAIN_HANDLED
+#ifdef main
+#undef main
+#endif
+
+int
+main(int argc, char *argv[])
+{
+	return SDL_UIKitRunApp(argc, argv, SDL_main);
+}
+#endif /* !SDL_MAIN_HANDLED */
+
+Using an xcFramework is similar to using a regular framework. However, issues have been seen with the build system not seeing the headers in the xcFramework. To remedy this, add the path to the xcFramework in your app's target ==> Build Settings ==> Framework Search Paths and mark it recursive (this is critical). Also critical is to remove "*.framework" from Build Settings ==> Sub-Directories to Exclude in Recursive Searches. Clean the build folder, and on your next build the build system should be able to see any of these in your code, as expected: 
+
+#include "SDL_main.h"
+#include <SDL.h>
+#include <SDL_main.h>
+
+
 Notes -- iPhone SDL limitations
 ==============================================================================
 
@@ -261,7 +293,7 @@ e.g.
 Deploying to older versions of iOS
 ==============================================================================
 
-SDL supports deploying to older versions of iOS than are supported by the latest version of Xcode, all the way back to iOS 6.1
+SDL supports deploying to older versions of iOS than are supported by the latest version of Xcode, all the way back to iOS 8.0
 
 In order to do that you need to download an older version of Xcode:
 https://developer.apple.com/download/more/?name=Xcode

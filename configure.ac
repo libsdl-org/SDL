@@ -11,18 +11,18 @@ orig_CFLAGS="$CFLAGS"
 
 dnl Set various version strings - taken gratefully from the GTk sources
 # See docs/release_checklist.md
-SDL_MAJOR_VERSION=2
-SDL_MINOR_VERSION=25
+SDL_MAJOR_VERSION=3
+SDL_MINOR_VERSION=0
 SDL_MICRO_VERSION=0
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 SDL_BINARY_AGE=`expr $SDL_MINOR_VERSION \* 100 + $SDL_MICRO_VERSION`
 AS_CASE(["$SDL_MINOR_VERSION"],
   [*@<:@02468@:>@],
-    dnl Stable branch, 2.24.1 -> libSDL2-2.0.so.0.2400.1
+    dnl Stable branch, 3.24.1 -> libSDL3-3.0.so.0.2400.1
     [SDL_INTERFACE_AGE="$SDL_MICRO_VERSION"],
   [*],
-    dnl Development branch, 2.23.1 -> libSDL2-2.0.so.0.2301.0
+    dnl Development branch, 3.23.1 -> libSDL3-3.0.so.0.2301.0
     [SDL_INTERFACE_AGE=0])
 
 AC_SUBST(SDL_MAJOR_VERSION)
@@ -37,9 +37,9 @@ LT_INIT([win32-dll])
 LT_LANG([Windows Resource])
 
 # For historical reasons, the library name redundantly includes the major
-# version twice: libSDL2-2.0.so.0.
+# version twice: libSDL3-3.0.so.0.
 # TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
-LT_RELEASE=2.0
+LT_RELEASE=3.0
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL2 to SDL3, at which point this would
 # reset to 0 anyway.
@@ -70,6 +70,9 @@ if [ test -z "$AWK" ]; then
     AC_MSG_ERROR([*** awk not found, aborting])
 fi
 
+AC_CHECK_PROGS([SORT], [gsort sort], [false])
+AS_IF([! "$SORT" -V </dev/null >/dev/null], [AC_MSG_WARN([sort(1) that supports the -V option is required to find dynamic libraries])])
+
 dnl 64-bit file offsets if possible unless --disable-largefile is specified
 AC_SYS_LARGEFILE
 
@@ -85,15 +88,7 @@ esac
 
 dnl Set up the compiler and linker flags
 INCLUDE="-I$srcdir/include"
-
-dnl Don't use our khronos headers on QNX.
-case "$host" in
-    *-*-nto-qnx*)
-        ;;
-    *)
-        INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
-        ;;
-esac
+INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
 
 dnl use CXX for linker on Haiku
 case "$host" in
@@ -159,7 +154,7 @@ EXTRA_LDFLAGS="$BASE_LDFLAGS"
 #    fi
 #done
 SDL_CFLAGS="$BASE_CFLAGS"
-SDL_LIBS="-lSDL2"
+SDL_LIBS="-lSDL3"
 if test "x$BASE_LDFLAGS" != x; then
     SDL_LIBS="$SDL_LIBS $BASE_LDFLAGS"
 fi
@@ -186,7 +181,7 @@ find_lib()
         host_lib_path="/usr/$base_libdir /usr/local/$base_libdir"
     fi
     for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
-        lib=[`ls -- $path/$1 2>/dev/null | sed 's,.*/,,' | sort -V -r | $AWK 'BEGIN{FS="."}{ print NF, $0 }' | sort -n -s | sed 's,[0-9]* ,,' | head -1`]
+        lib=[`ls -- $path/$1 2>/dev/null | sed 's,.*/,,' | "$SORT" -V -r | $AWK 'BEGIN{FS="."}{ print NF, $0 }' | "$SORT" -n -s | sed 's,[0-9]* ,,' | head -1`]
         if test x$lib != x; then
             echo $lib
             return
@@ -314,13 +309,19 @@ dnl See whether we are allowed to use the system C library
 AC_ARG_ENABLE(libc,
 [AS_HELP_STRING([--enable-libc], [Use the system C library [default=yes]])],
               , enable_libc=yes)
+
+dnl See whether we are allowed to use libiconv
+AC_ARG_ENABLE(system-iconv,
+[AS_HELP_STRING([--enable-system-iconv], [Use iconv() from system-installed libraries [default=yes]])],
+              , enable_system_iconv=yes)
+
 if test x$enable_libc = xyes; then
     AC_DEFINE(HAVE_LIBC, 1, [ ])
 
 dnl Check for C library headers
 dnl AC_CHECK_INCLUDES_DEFAULT is an autoconf-2.7x thing where AC_HEADER_STDC is deprecated.
     m4_ifdef([AC_CHECK_INCLUDES_DEFAULT], [AC_CHECK_INCLUDES_DEFAULT], [AC_HEADER_STDC])
-    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h)
+    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h linux/input.h)
 
 dnl Check for typedefs, structures, etc.
     AC_TYPE_SIZE_T
@@ -331,14 +332,6 @@ dnl Check for defines
     AC_FUNC_ALLOCA
 
 dnl Checks for library functions.
-    AC_FUNC_MEMCMP
-    if test x$ac_cv_func_memcmp_working = xyes; then
-        AC_DEFINE(HAVE_MEMCMP, 1, [ ])
-    fi
-    AC_FUNC_STRTOD
-    if test x$ac_cv_func_strtod = xyes; then
-        AC_DEFINE(HAVE_STRTOD, 1, [ ])
-    fi
     AC_CHECK_FUNC(mprotect,
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
           #include <sys/types.h>
@@ -347,13 +340,15 @@ dnl Checks for library functions.
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
         ],[]),
     )
-    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
+    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcmp memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtod strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll _Exit)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
 
-    AC_CHECK_LIB(iconv, iconv_open, [LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
-    AC_CHECK_FUNCS(iconv)
+    if test x$enable_system_iconv = xyes; then
+        AC_CHECK_LIB(iconv, iconv_open, [LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
+        AC_CHECK_FUNCS(iconv)
+    fi
 
     AC_CHECK_MEMBER(struct sigaction.sa_sigaction,[AC_DEFINE([HAVE_SA_SIGACTION], 1, [ ])], ,[#include <signal.h>])
 
@@ -924,16 +919,8 @@ CheckOSS()
     AC_ARG_ENABLE(oss,
 [AS_HELP_STRING([--enable-oss], [support the OSS audio API [default=maybe]])],
                   , enable_oss=maybe)
-
-    # OpenBSD "has" OSS, but it's not really for app use. They want you to
-    #  use sndio instead. So on there, we default to disabled. You can force
-    #  it on if you really want, though.
     if test x$enable_oss = xmaybe; then
         enable_oss=yes
-        case "$host" in
-            *-*-openbsd*)
-                enable_oss=no;;
-        esac
     fi
 
     if test x$enable_audio = xyes -a x$enable_oss = xyes; then
@@ -946,16 +933,6 @@ CheckOSS()
               int arg = SNDCTL_DSP_SETFRAGMENT;
             ]])], [have_oss=yes],[])
         fi
-        if test x$have_oss != xyes; then
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-              #include <soundcard.h>
-            ]], [[
-              int arg = SNDCTL_DSP_SETFRAGMENT;
-            ]])], [
-            have_oss=yes
-            AC_DEFINE(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H, 1, [ ])
-            ],[])
-        fi
         AC_MSG_RESULT($have_oss)
         if test x$have_oss = xyes; then
             SUMMARY_audio="${SUMMARY_audio} oss"
@@ -965,7 +942,7 @@ CheckOSS()
 
             # We may need to link with ossaudio emulation library
             case "$host" in
-                *-*-openbsd*|*-*-netbsd*)
+                *-*-netbsd*)
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lossaudio";;
             esac
         fi
@@ -1055,41 +1032,6 @@ CheckJACK()
     fi
 }
 
-dnl Find the ESD includes and libraries
-CheckESD()
-{
-    AC_ARG_ENABLE(esd,
-[AS_HELP_STRING([--enable-esd], [support the Enlightened Sound Daemon [default=yes]])],
-                  , enable_esd=yes)
-    if test x$enable_audio = xyes -a x$enable_esd = xyes; then
-        AM_PATH_ESD(0.2.8, have_esd=yes, have_esd=no)
-        if test x$have_esd = xyes; then
-            AC_ARG_ENABLE(esd-shared,
-[AS_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [default=yes]])],
-                          , enable_esd_shared=yes)
-            esd_lib=[`find_lib "libesd.so.*" "$ESD_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-            AC_DEFINE(SDL_AUDIO_DRIVER_ESD, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/esd/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $ESD_CFLAGS"
-            if test x$have_loadso != xyes && \
-               test x$enable_esd_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic ESD loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_esd_shared = xyes && test x$esd_lib != x; then
-                echo "-- dynamic libesd -> $esd_lib"
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_ESD_DYNAMIC, "$esd_lib", [ ])
-                SUMMARY_audio="${SUMMARY_audio} esd(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ESD_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} esd"
-            fi
-            have_audio=yes
-        fi
-    fi
-}
-
 dnl Find Pipewire
 CheckPipewire()
 {
@@ -1170,111 +1112,6 @@ CheckPulseAudio()
     fi
 }
 
-CheckARTSC()
-{
-    AC_ARG_ENABLE(arts,
-[AS_HELP_STRING([--enable-arts], [support the Analog Real Time Synthesizer [default=yes]])],
-                  , enable_arts=yes)
-    if test x$enable_audio = xyes -a x$enable_arts = xyes; then
-        AC_PATH_PROG(ARTSCONFIG, artsc-config)
-        if test x$ARTSCONFIG = x -o x$ARTSCONFIG = x'"$ARTSCONFIG"'; then
-            : # arts isn't installed
-        else
-            ARTS_CFLAGS=`$ARTSCONFIG --cflags`
-            ARTS_LIBS=`$ARTSCONFIG --libs`
-            AC_MSG_CHECKING(for aRts development environment)
-            audio_arts=no
-            save_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS $ARTS_CFLAGS"
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-             #include <artsc.h>
-            ]], [[
-             arts_stream_t stream;
-            ]])], [audio_arts=yes],[])
-            CFLAGS="$save_CFLAGS"
-            AC_MSG_RESULT($audio_arts)
-            if test x$audio_arts = xyes; then
-                AC_ARG_ENABLE(arts-shared,
-[AS_HELP_STRING([--enable-arts-shared], [dynamically load aRts audio support [default=yes]])],
-                              , enable_arts_shared=yes)
-                arts_lib=[`find_lib "libartsc.so.*" "$ARTS_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-                AC_DEFINE(SDL_AUDIO_DRIVER_ARTS, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/arts/*.c"
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $ARTS_CFLAGS"
-                if test x$have_loadso != xyes && \
-                   test x$enable_arts_shared = xyes; then
-                    AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic ARTS loading])
-                fi
-                if test x$have_loadso = xyes && \
-                   test x$enable_arts_shared = xyes && test x$arts_lib != x; then
-                    echo "-- dynamic libartsc -> $arts_lib"
-                    AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_ARTS_DYNAMIC, "$arts_lib", [ ])
-                    SUMMARY_audio="${SUMMARY_audio} arts(dynamic)"
-                else
-                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ARTS_LIBS"
-                    SUMMARY_audio="${SUMMARY_audio} arts"
-                fi
-                have_audio=yes
-            fi
-        fi
-    fi
-}
-
-dnl See if the NAS audio interface is supported
-CheckNAS()
-{
-    AC_ARG_ENABLE(nas,
-[AS_HELP_STRING([--enable-nas], [support the NAS audio API [default=yes]])],
-                  , enable_nas=yes)
-    if test x$enable_audio = xyes -a x$enable_nas = xyes; then
-        AC_CHECK_HEADER(audio/audiolib.h, have_nas_hdr=yes)
-        AC_CHECK_LIB(audio, AuOpenServer, have_nas_lib=yes)
-
-        AC_MSG_CHECKING(for NAS audio support)
-        have_nas=no
-
-        if test x$have_nas_hdr = xyes -a x$have_nas_lib = xyes; then
-            have_nas=yes
-            NAS_LIBS="-laudio"
-
-        elif test -r /usr/X11R6/include/audio/audiolib.h; then
-            have_nas=yes
-            NAS_CFLAGS="-I/usr/X11R6/include/"
-            NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
-
-        fi
-
-        AC_MSG_RESULT($have_nas)
-
-        if test x$have_nas = xyes; then
-            AC_ARG_ENABLE(nas-shared,
-[AS_HELP_STRING([--enable-nas-shared], [dynamically load NAS audio support [default=yes]])],
-                          , enable_nas_shared=yes)
-            nas_lib=[`find_lib "libaudio.so.*" "$NAS_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-
-            if test x$have_loadso != xyes && \
-               test x$enable_nas_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic NAS loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_nas_shared = xyes && test x$nas_lib != x; then
-                echo "-- dynamic libaudio -> $nas_lib"
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_NAS_DYNAMIC, "$nas_lib", [ ])
-                SUMMARY_audio="${SUMMARY_audio} nas(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $NAS_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} nas"
-            fi
-
-            AC_DEFINE(SDL_AUDIO_DRIVER_NAS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/nas/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $NAS_CFLAGS"
-            have_audio=yes
-        fi
-    fi
-}
-
 dnl See if the sndio audio interface is supported
 CheckSNDIO()
 {
@@ -1282,20 +1119,9 @@ CheckSNDIO()
 [AS_HELP_STRING([--enable-sndio], [support the sndio audio API [default=yes]])],
                   , enable_sndio=yes)
     if test x$enable_audio = xyes -a x$enable_sndio = xyes; then
-        AC_CHECK_HEADER(sndio.h, have_sndio_hdr=yes)
-        AC_CHECK_LIB(sndio, sio_open, have_sndio_lib=yes)
+        PKG_CHECK_MODULES([SNDIO], [sndio], audio_sndio=yes, audio_sndio=no)
 
-        AC_MSG_CHECKING(for sndio audio support)
-        have_sndio=no
-
-        if test x$have_sndio_hdr = xyes -a x$have_sndio_lib = xyes; then
-            have_sndio=yes
-            SNDIO_LIBS="-lsndio"
-        fi
-
-        AC_MSG_RESULT($have_sndio)
-
-        if test x$have_sndio = xyes; then
+        if test x$audio_sndio = xyes; then
             AC_ARG_ENABLE(sndio-shared,
 [AS_HELP_STRING([--enable-sndio-shared], [dynamically load sndio audio support [default=yes]])],
                           , enable_sndio_shared=yes)
@@ -1318,45 +1144,6 @@ CheckSNDIO()
             AC_DEFINE(SDL_AUDIO_DRIVER_SNDIO, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/audio/sndio/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $SNDIO_CFLAGS"
-            have_audio=yes
-        fi
-    fi
-}
-
-dnl Find FusionSound
-CheckFusionSound()
-{
-    AC_ARG_ENABLE(fusionsound,
-[AS_HELP_STRING([--enable-fusionsound], [use FusionSound audio driver [default=no]])],
-                  , enable_fusionsound=no)
-    if test x$enable_audio = xyes -a x$enable_fusionsound = xyes; then
-        PKG_CHECK_MODULES([FUSIONSOUND], [fusionsound >= 1.1.1], fusionsound=yes, fusionsound=no)
-
-        if test x$fusionsound = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_FUSIONSOUND, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/fusionsound/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $FUSIONSOUND_CFLAGS"
-
-            AC_ARG_ENABLE(fusionsound-shared,
-[AS_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audio support [default=yes]])],
-                          , enable_fusionsound_shared=yes)
-            fusionsound_shared=no
-            AC_MSG_CHECKING(for FusionSound dynamic loading support)
-            if test x$have_loadso != xyes && \
-               test x$enable_fusionsound_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic fusionsound loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_fusionsound_shared = xyes; then
-                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC, "libfusionsound.so", [ ])
-                fusionsound_shared=yes
-                SUMMARY_audio="${SUMMARY_audio} fusionsound(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $FUSIONSOUND_LIBS"
-                SUMMARY_audio="${SUMMARY_audio} fusionsound"
-            fi
-            AC_MSG_RESULT($fusionsound_shared)
-
             have_audio=yes
         fi
     fi
@@ -1517,6 +1304,26 @@ CheckObjectiveCARC()
     fi
 }
 
+dnl See if GCC's -gdwarf-4 is supported
+dnl See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101377 for why this is needed on Windows
+CheckGDwarf4()
+{
+    AC_MSG_CHECKING(for GCC -gdwarf-4 option)
+    have_gcc_gdwarf4=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -gdwarf-4"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    int x = 0;
+    ]],[])], [have_gcc_gdwarf4=yes],[])
+    AC_MSG_RESULT($have_gcc_gdwarf4)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_gdwarf4 = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -gdwarf-4"
+    fi
+}
+
 dnl See if GCC's -fvisibility=hidden is supported (gcc4 and later, usually).
 dnl  Details of this flag are here: http://gcc.gnu.org/wiki/Visibility
 CheckVisibilityHidden()
@@ -1577,6 +1384,49 @@ CheckStackBoundary()
 
     if test x$have_gcc_preferred_stack_boundary = xyes; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -mpreferred-stack-boundary=2"
+    fi
+}
+
+dnl See if GCC's -Werror is supported.
+CheckWerror()
+{
+    AC_ARG_ENABLE(werror,
+[AS_HELP_STRING([--enable-werror], [treat warnings as errors [default=no]])],
+                  enable_werror=$enableval, enable_werror=no)
+    if test x$enable_werror = xyes; then
+        AC_MSG_CHECKING(for GCC -Werror option)
+        have_gcc_werror=no
+
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS -Werror"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+        int x = 0;
+        ]],[])], [have_gcc_werror=yes],[])
+        AC_MSG_RESULT($have_gcc_werror)
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_werror = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -Werror"
+        fi
+    fi
+}
+
+dnl See if GCC's -Wno-error=deprecated-declarations is supported.
+CheckNoErrorDeprecatedDeclarationsWerror()
+{
+    AC_MSG_CHECKING(for GCC -Wno-error=deprecated-declarations option)
+    have_gcc_no_werror_deprecated_declarations=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wno-error=deprecated-declarations"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    int x = 0;
+    ]],[])], [have_gcc_no_werror_deprecated_declarations=yes],[])
+    AC_MSG_RESULT($have_gcc_werror)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_no_werror_deprecated_declarations = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wno-error=deprecated-declarations"
     fi
 }
 
@@ -1752,33 +1602,6 @@ dnl See if libdecor is available
     fi
 }
 
-dnl Check for Native Client stuff
-CheckNativeClient()
-{
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-          #if !defined(__native_client__)
-          #error "NO NACL"
-          #endif
-        ]],[])], [
-        AC_DEFINE(SDL_VIDEO_DRIVER_NACL, 1, [ ])
-        AC_DEFINE(SDL_AUDIO_DRIVER_NACL, 1, [ ])
-        AC_DEFINE(HAVE_POW, 1, [ ])
-        AC_DEFINE(HAVE_OPENGLES2, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
-
-        SDL_LIBS="-lppapi_simple -lppapi_gles2 $SDL_LIBS"
-
-        SDLMAIN_SOURCES="$srcdir/src/main/nacl/*.c"
-        SOURCES="$SOURCES $srcdir/src/audio/nacl/*.c"
-        SUMMARY_audio="${SUMMARY_audio} nacl"
-        have_audio=yes
-        SOURCES="$SOURCES $srcdir/src/video/nacl/*.c"
-        SUMMARY_video="${SUMMARY_video} nacl opengles2"
-        have_video=yes
-        ],[])
-}
-
 CheckRPI()
 {
     AC_ARG_ENABLE(video-rpi,
@@ -1834,8 +1657,15 @@ dnl Find the X11 include and library directories
 CheckX11()
 {
     AC_ARG_ENABLE(video-x11,
-[AS_HELP_STRING([--enable-video-x11], [use X11 video driver [default=yes]])],
-                  , enable_video_x11=yes)
+[AS_HELP_STRING([--enable-video-x11], [use X11 video driver [default=maybe]])],
+                  ,[
+    enable_video_x11=yes
+    case "$host" in
+        *-*-darwin*|*-ios-*)
+            enable_video_x11=no
+            ;;
+    esac])
+
     if test x$enable_video = xyes -a x$enable_video_x11 = xyes; then
         case "$host" in
             *-*-darwin*)
@@ -2270,56 +2100,6 @@ dnl     Work around that we don't have Objective-C support in autoconf
     fi
 }
 
-dnl Find DirectFB
-CheckDirectFB()
-{
-    AC_ARG_ENABLE(video-directfb,
-[AS_HELP_STRING([--enable-video-directfb], [use DirectFB video driver [default=no]])],
-                  , enable_video_directfb=no)
-    if test x$enable_video = xyes -a x$enable_video_directfb = xyes; then
-        PKG_CHECK_MODULES([DIRECTFB], [directfb >= 1.0.0], video_directfb=yes, video_directfb=no)
-
-        if test x$video_directfb = xyes; then
-            # SuSE 11.1 installs directfb-config without directfb-devel
-            save_CPPFLAGS="$CPPFLAGS"
-            CPPFLAGS="$CPPFLAGS $DIRECTFB_CFLAGS"
-            AC_CHECK_HEADER(directfb.h, have_directfb_hdr=yes, have_directfb_hdr=no)
-            CPPFLAGS="$save_CPPFLAGS"
-            video_directfb=$have_directfb_hdr
-        fi
-
-        if test x$video_directfb = xyes; then
-            AC_ARG_ENABLE(directfb-shared,
-[AS_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [default=yes]])],
-                              , enable_directfb_shared=yes)
-
-            AC_DEFINE(SDL_VIDEO_DRIVER_DIRECTFB, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_RENDER_DIRECTFB, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
-
-            directfb_shared=no
-            directfb_lib=[`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
-            if test x$have_loadso != xyes && \
-               test x$enable_directfb_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic directfb loading])
-            fi
-            if test x$have_loadso = xyes && \
-               test x$enable_directfb_shared = xyes && test x$directfb_lib != x; then
-                directfb_shared=yes
-                echo "-- dynamic libdirectfb -> $directfb_lib"
-                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC, "$directfb_lib", [ ])
-                SUMMARY_video="${SUMMARY_video} directfb(dynamic)"
-            else
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DIRECTFB_LIBS"
-                SUMMARY_video="${SUMMARY_video} directfb"
-            fi
-            SDL_CFLAGS="$SDL_CFLAGS $DIRECTFB_CFLAGS"
-            have_video=yes
-        fi
-    fi
-}
-
 dnl Find KMSDRM
 CheckKMSDRM()
 {
@@ -2395,37 +2175,13 @@ CheckDummyVideo()
 CheckOffscreenVideo()
 {
     AC_ARG_ENABLE(video-offscreen,
-[AS_HELP_STRING([--enable-video-offscreen], [use offscreen video driver [default=no]])],
-                  , enable_video_offscreen=no)
+[AS_HELP_STRING([--enable-video-offscreen], [use offscreen video driver [default=yes]])],
+                  , enable_video_offscreen=yes)
     if test x$enable_video_offscreen = xyes; then
         AC_DEFINE(SDL_VIDEO_DRIVER_OFFSCREEN, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/offscreen/*.c"
         have_video=yes
         SUMMARY_video="${SUMMARY_video} offscreen"
-    fi
-}
-
-dnl Set up the QNX video driver if enabled
-CheckQNXVideo()
-{
-    if test x$enable_video = xyes; then
-        AC_DEFINE(SDL_VIDEO_DRIVER_QNX, 1, [ ])
-        SOURCES="$SOURCES $srcdir/src/video/qnx/*.c"
-        have_video=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lscreen -lEGL -lGLESv2"
-        SUMMARY_video="${SUMMARY_video} qnx"
-    fi
-}
-
-dnl Set up the QNX audio driver if enabled
-CheckQNXAudio()
-{
-    if test x$enable_audio = xyes; then
-        AC_DEFINE(SDL_AUDIO_DRIVER_QSA, 1, [ ])
-        SOURCES="$SOURCES $srcdir/src/audio/qsa/*.c"
-        have_audio=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lasound"
-        SUMMARY_audio="${SUMMARY_audio} qsa"
     fi
 }
 
@@ -2725,6 +2481,7 @@ CheckInputKD()
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
       #include <linux/kd.h>
       #include <linux/keyboard.h>
+      #include <sys/ioctl.h>
     ]], [[
         struct kbentry kbe;
         kbe.kb_table = KG_CTRL;
@@ -3015,7 +2772,7 @@ dnl This is used on Linux for glibc binary compatibility (Doh!)
             ;;
         *-*-openbsd*)
             pthread_cflags="-D_REENTRANT"
-            pthread_lib="-pthread"
+            pthread_lib="-lpthread"
             ;;
         *-*-solaris2.9)
             # From Solaris 9+, posix4's preferred name is rt.
@@ -3045,10 +2802,6 @@ dnl This is used on Linux for glibc binary compatibility (Doh!)
             pthread_lib="-L/usr/lib -lpthread"
             ;;
         *-*-haiku*)
-            pthread_cflags="-D_REENTRANT"
-            pthread_lib=""
-            ;;
-        *-*-nto*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib=""
             ;;
@@ -3243,21 +2996,6 @@ CheckWINDOWS()
     AC_CHECK_HEADER(shellscalingapi.h,have_shellscalingapi_h=yes)
     if test x$shellscalingapi_h = xyes; then
         AC_DEFINE(HAVE_SHELLSCALINGAPI_H, 1, [ ])
-    fi
-}
-
-dnl Determine whether the compiler can produce OS/2 executables
-CheckOS2()
-{
-    AC_MSG_CHECKING(OS/2 compiler)
-    have_os2_gcc=no
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <os2.h>]],
-     [])],[have_os2_gcc=yes],[])
-    AC_MSG_RESULT($have_os2_gcc)
-    if test x$have_os2_gcc != xyes; then
-       AC_MSG_ERROR([
-*** Your compiler ($CC) does not produce OS/2 executables!
-       ])
     fi
 }
 
@@ -3559,9 +3297,6 @@ CheckHIDAPI()
                 enable_hidapi_libusb=yes
                 require_hidapi_libusb=yes
                 ;;
-           *-*-os2* )
-                enable_hidapi_libusb=yes
-                ;;
         esac
 
         hidapi_support=yes
@@ -3578,6 +3313,7 @@ CheckHIDAPI()
 
         if test x$hidapi_support = xyes; then
             if test x$have_libusb_h = xyes; then
+                AC_DEFINE(HAVE_LIBUSB)
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
                 if test x$require_hidapi_libusb = xyes; then
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
@@ -3593,9 +3329,6 @@ CheckHIDAPI()
                             ;;
                         *-*-cygwin* | *-*-mingw* )
                             libusb_lib="libusb-1.0.dll"
-                            ;;
-                        *-*-os2* )
-                            libusb_lib="usb100.dll"
                             ;;
                     esac
                     if test x$libusb_lib = x; then
@@ -3698,7 +3431,7 @@ have_locale=no
 
 dnl Set up the configuration based on the host platform!
 case "$host" in
-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
+    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
         case "$host" in
             *-*-android*)
                 # Android
@@ -3732,11 +3465,9 @@ case "$host" in
             *-*-hpux*)          ARCH=hpux ;;
             *-*-aix*)           ARCH=aix ;;
             *-*-minix*)         ARCH=minix ;;
-            *-*-nto*)           ARCH=nto
-                CheckQNXVideo
-                ;;
         esac
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -3751,16 +3482,11 @@ case "$host" in
         CheckPipewire
         CheckPulseAudio
         CheckJACK
-        CheckARTSC
-        CheckESD
-        CheckNAS
         CheckSNDIO
-        CheckFusionSound
         CheckLibSampleRate
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
         CheckX11
-        CheckDirectFB
         # Need to check for EGL first because KMSDRM and Wayland depends on it.
         CheckEGL
         CheckKMSDRM
@@ -3808,22 +3534,10 @@ case "$host" in
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
           case $ARCH in
-            sysv5|solaris|hpux)
-                AC_DEFINE(SDL_AUDIO_DRIVER_SUNAUDIO, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/sun/*.c"
-                SUMMARY_audio="${SUMMARY_audio} sun"
-                have_audio=yes
-            ;;
             netbsd)  # Don't use this on OpenBSD, it's busted.
                 AC_DEFINE(SDL_AUDIO_DRIVER_NETBSD, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/netbsd/*.c"
                 SUMMARY_audio="${SUMMARY_audio} netbsd"
-                have_audio=yes
-            ;;
-            aix)
-                AC_DEFINE(SDL_AUDIO_DRIVER_PAUDIO, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/paudio/*.c"
-                SUMMARY_audio="${SUMMARY_audio} paudio"
                 have_audio=yes
             ;;
             android)
@@ -3841,22 +3555,21 @@ case "$host" in
 
                 have_audio=yes
             ;;
-            nto)
-                CheckQNXAudio
-            ;;
           esac
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
           case $ARCH in
             linux)
-                AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
-                SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
-                have_joystick=yes
+                if test "x$ac_cv_header_linux_input_h" = xyes; then
+                    AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+                    SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
+                    have_joystick=yes
+                fi
             ;;
             freebsd)
-                if test x$use_input_events = xyes; then
+                if test x$use_input_events = xyes -a x$ac_cv_header_linux_input_h = xyes; then
                     AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                     SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
                     SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
@@ -3952,6 +3665,7 @@ case "$host" in
         # Set up other core UNIX files
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
+        SOURCES="$SOURCES $srcdir/src/core/linux/SDL_sandbox.c"
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;
     *-*-cygwin* | *-*-mingw*)
@@ -3968,6 +3682,8 @@ case "$host" in
         if test x$enable_loadso = xyes; then
             have_loadso=yes
         fi
+        CheckGDwarf4
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4015,9 +3731,6 @@ case "$host" in
         fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_WINMM, 1, [ ])
-            SUMMARY_audio="${SUMMARY_audio} winmm"
-            SOURCES="$SOURCES $srcdir/src/audio/winmm/*.c"
             if test x$have_dsound = xyes; then
                 AC_DEFINE(SDL_AUDIO_DRIVER_DSOUND, 1, [ ])
                 SUMMARY_audio="${SUMMARY_audio} directsound"
@@ -4113,7 +3826,7 @@ case "$host" in
         VERSION_SOURCES="$srcdir/src/main/windows/*.rc"
         SDLMAIN_SOURCES="$srcdir/src/main/windows/*.c"
         SDL_CFLAGS="$SDL_CFLAGS -Dmain=SDL_main"
-        SDL_LIBS="-lSDL2main $SDL_LIBS -mwindows"
+        SDL_LIBS="-lSDL3main $SDL_LIBS -mwindows"
 
         # Check to see if this is a mingw or cygwin build
         have_mingw32=
@@ -4192,6 +3905,8 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         ARCH=ios
 
         CheckVisibilityHidden
+        CheckWerror
+        CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4275,7 +3990,11 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         SOURCES="$SOURCES $srcdir/src/video/uikit/*.m"
         SUMMARY_video="${SUMMARY_video} uikit"
         have_video=yes
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm -liconv -lobjc"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"
+        if test x$enable_system_iconv = xyes; then
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"
+        fi
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lobjc"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AudioToolbox"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio"
@@ -4303,6 +4022,8 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
 
         CheckObjectiveCARC
         CheckVisibilityHidden
+        CheckWerror
+        CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4389,29 +4110,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,QuartzCore -Wl,-weak_framework,Metal"
         fi
         ;;
-    *-nacl|*-pnacl)
-        ARCH=nacl
-        CheckNativeClient
-        CheckDummyAudio
-        CheckDummyVideo
-        CheckOffscreenVideo
-        CheckInputEvents
-        CheckPTHREAD
-        CheckO_CLOEXEC
-
-        # Set up files for the timer library
-        if test x$enable_timers = xyes; then
-            AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
-            have_timers=yes
-        fi
-
-        if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_NACL, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
-            have_filesystem=yes
-        fi
-        ;;
     *-*-emscripten* )
         if test x$enable_video = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_EMSCRIPTEN, 1, [ ])
@@ -4428,6 +4126,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
         fi
 
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4479,6 +4178,7 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
     *-*-riscos*)
         ARCH=riscos
         CheckVisibilityHidden
+        CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckOffscreenVideo
@@ -4515,83 +4215,6 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
             have_timers=yes
         fi
         ;;
-    *-*-os2*)
-        ARCH=os2
-        if test "$build" != "$host"; then # cross-compiling
-            # Default cross-compile location
-            ac_default_prefix=/@unixroot/usr/local/cross-tools/$host
-        else
-            # Look for the location of the tools and install there
-            if test "$BUILD_PREFIX" != ""; then
-                ac_default_prefix=$BUILD_PREFIX
-            fi
-        fi
-        enable_static=no # disable static builds
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -DBUILD_SDL -DOS2EMX_PLAIN_CHAR"
-        CheckOS2
-        CheckDeclarationAfterStatement
-        CheckDummyVideo
-        CheckDiskAudio
-        CheckDummyAudio
-        CheckHIDAPI
-
-        # Set up the core platform files
-        SOURCES="$SOURCES $srcdir/src/core/os2/*.c"
-        if test x$ac_cv_func_iconv != xyes -o x$ac_cv_header_iconv_h != xyes; then
-            SOURCES="$SOURCES $srcdir/src/core/os2/geniconv/*.c"
-        fi
-        # Use the Unix locale APIs.
-        if test x$enable_locale = xyes; then
-            SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
-            have_locale=yes
-        fi
-        # Set up files for the video library
-        if test x$enable_video = xyes; then
-            AC_DEFINE(SDL_VIDEO_DRIVER_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/video/os2/*.c"
-            have_video=yes
-            SUMMARY_video="${SUMMARY_video} os/2"
-        fi
-        # Set up files for the audio library
-        if test x$enable_audio = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/os2/*.c"
-            have_audio=yes
-            SUMMARY_audio="${SUMMARY_audio} os/2"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
-        fi
-        # Set up files for the thread library
-        if test x$enable_threads = xyes; then
-            AC_DEFINE(SDL_THREAD_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/thread/os2/*.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
-            have_threads=yes
-        fi
-        # Set up files for the timer library
-        if test x$enable_timers = xyes; then
-            AC_DEFINE(SDL_TIMER_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/timer/os2/*.c"
-            have_timers=yes
-        fi
-        # Set up files for the shared object loading library
-        if test x$enable_loadso = xyes; then
-            AC_DEFINE(SDL_LOADSO_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/loadso/os2/*.c"
-            have_loadso=yes
-        fi
-        # Set up files for the filesystem library
-        if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/os2/*.c"
-            have_filesystem=yes
-        fi
-        # Set up files for the joystick library
-        if test x$enable_joystick = xyes; then
-            AC_DEFINE(SDL_JOYSTICK_OS2, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
-            have_joystick=yes
-        fi
-        ;;
     *)
         AC_MSG_ERROR([
 *** Unsupported host:  Please add to configure.ac
@@ -4602,21 +4225,27 @@ esac
 dnl Permit use of virtual joystick APIs on any platform (subject to configure options)
 CheckVirtualJoystick
 
-# Check whether to install sdl2-config
-AC_MSG_CHECKING(whether to install sdl2-config)
-AC_ARG_ENABLE([sdl2-config],
-    [AS_HELP_STRING([--enable-sdl2-config],[Install sdl2-config [default=yes]])],
+# Check whether to install sdl3-config
+AC_MSG_CHECKING(whether to install sdl3-config)
+AC_ARG_ENABLE([sdl3-config],
+    [AS_HELP_STRING([--enable-sdl3-config],[Install sdl3-config [default=yes]])],
     [case "${enableval}" in
-        yes) enable_sdl2_config="TRUE" ;;
-        no) enable_sdl2_config="FALSE" ;;
-        *) AC_MSG_ERROR([bad value '${enableval}' for --enable-sdl2-config]) ;;
-    esac], [enable_sdl2_config="TRUE"])
-if test "$enable_sdl2_config" = "TRUE"; then
+        yes) enable_sdl3_config="TRUE" ;;
+        no) enable_sdl3_config="FALSE" ;;
+        *) AC_MSG_ERROR([bad value '${enableval}' for --enable-sdl3-config]) ;;
+    esac], [enable_sdl3_config="TRUE"])
+if test "$enable_sdl3_config" = "TRUE"; then
     AC_MSG_RESULT(yes)
 else
     AC_MSG_RESULT(no)
 fi
-AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
+AC_SUBST([INSTALL_SDL3_CONFIG], [$enable_sdl3_config])
+
+AC_ARG_ENABLE([vendor-info],
+    [AS_HELP_STRING([--enable-vendor-info=STRING], [Add vendor info to SDL_REVISION])],
+    [enable_vendor_info="$enableval"], [enable_vendor_info=])
+AS_IF([test "$enable_vendor_info" = no], [enable_vendor_info=])
+AC_SUBST([SDL_VENDOR_INFO], [$enable_vendor_info])
 
 # Verify that we have all the platform specific files we need
 
@@ -4776,7 +4405,7 @@ SDL_STATIC_LIBS="$EXTRA_LDFLAGS"
 
 dnl Calculate the location of the prefix, relative to the cmake folder
 dnl Calculate the location of the prefix, relative to bindir
-pkg_cmakedir='$libdir/cmake/SDL2'
+pkg_cmakedir='$libdir/cmake/SDL3'
 AX_COMPUTE_RELATIVE_PATHS([pkg_cmakedir:prefix:cmake_prefix_relpath bindir:prefix:bin_prefix_relpath])
 AC_SUBST([cmake_prefix_relpath])
 AC_SUBST([bin_prefix_relpath])
@@ -4840,11 +4469,11 @@ $WAYLAND_PROTOCOLS_DEPENDS
 __EOF__
 
 AC_CONFIG_FILES([
-    Makefile:Makefile.in:Makefile.rules sdl2-config sdl2-config.cmake sdl2-config-version.cmake SDL2.spec sdl2.pc
+    Makefile:Makefile.in:Makefile.rules sdl3-config sdl3-config.cmake sdl3-config-version.cmake SDL3.spec sdl3.pc
 ])
-AC_CONFIG_COMMANDS([sdl2_config],[chmod a+x sdl2-config])
+AC_CONFIG_COMMANDS([sdl3_config],[chmod a+x sdl3-config])
 
-SUMMARY="SDL2 Configure Summary:\n"
+SUMMARY="SDL3 Configure Summary:\n"
 if test x$enable_shared = xyes; then
     SUMMARY="${SUMMARY}Building Shared Libraries\n"
 fi

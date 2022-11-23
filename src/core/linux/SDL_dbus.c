@@ -22,6 +22,7 @@
 #include "SDL_hints.h"
 #include "SDL_dbus.h"
 #include "SDL_atomic.h"
+#include "SDL_sandbox.h"
 #include "../../stdlib/SDL_vacopy.h"
 
 #if SDL_USE_LIBDBUS
@@ -29,6 +30,7 @@
 #include "SDL_loadso.h"
 static const char *dbus_library = "libdbus-1.so.3";
 static void *dbus_handle = NULL;
+static char *inhibit_handle = NULL;
 static unsigned int screensaver_cookie = 0;
 static SDL_DBusContext dbus;
 
@@ -192,6 +194,8 @@ SDL_DBus_Quit(void)
 #endif
     SDL_zero(dbus);
     UnloadDBUSLibrary();
+    SDL_free(inhibit_handle);
+    inhibit_handle = NULL;
 }
 
 SDL_DBusContext *
@@ -287,6 +291,32 @@ SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *node, const ch
     return retval;
 }
 
+static SDL_bool
+SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage *msg, const int expectedtype, void *result)
+{
+    SDL_bool retval = SDL_FALSE;
+
+    DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
+    if (reply) {
+        DBusMessageIter iter, actual_iter;
+        dbus.message_iter_init(reply, &iter);
+        if (dbus.message_iter_get_arg_type(&iter) == DBUS_TYPE_VARIANT) {
+            dbus.message_iter_recurse(&iter, &actual_iter);
+        } else {
+            actual_iter = iter;
+        }
+
+        if (dbus.message_iter_get_arg_type(&actual_iter) == expectedtype) {
+            dbus.message_iter_get_basic(&actual_iter, result);
+            retval = SDL_TRUE;
+        }
+
+        dbus.message_unref(reply);
+    }
+
+    return retval;
+}
+
 SDL_bool
 SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...)
 {
@@ -318,19 +348,7 @@ SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const
         DBusMessage *msg = dbus.message_new_method_call(node, path, "org.freedesktop.DBus.Properties", "Get");
         if (msg) {
             if (dbus.message_append_args(msg, DBUS_TYPE_STRING, &interface, DBUS_TYPE_STRING, &property, DBUS_TYPE_INVALID)) {
-                DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
-                if (reply) {
-                    DBusMessageIter iter, sub;
-                    dbus.message_iter_init(reply, &iter);
-                    if (dbus.message_iter_get_arg_type(&iter) == DBUS_TYPE_VARIANT) {
-                        dbus.message_iter_recurse(&iter, &sub);
-                        if (dbus.message_iter_get_arg_type(&sub) == expectedtype) {
-                            dbus.message_iter_get_basic(&sub, result);
-                            retval = SDL_TRUE;
-                        }
-                    }
-                    dbus.message_unref(reply);
-                }
+                retval = SDL_DBus_CallWithBasicReply(conn, msg, expectedtype, result);
             }
             dbus.message_unref(msg);
         }
@@ -349,20 +367,114 @@ SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface
 void
 SDL_DBus_ScreensaverTickle(void)
 {
-    if (screensaver_cookie == 0) {  /* no need to tickle if we're inhibiting. */
+    if (screensaver_cookie == 0 && inhibit_handle == NULL) {  /* no need to tickle if we're inhibiting. */
         /* org.gnome.ScreenSaver is the legacy interface, but it'll either do nothing or just be a second harmless tickle on newer systems, so we leave it for now. */
         SDL_DBus_CallVoidMethod("org.gnome.ScreenSaver", "/org/gnome/ScreenSaver", "org.gnome.ScreenSaver", "SimulateUserActivity", DBUS_TYPE_INVALID);
         SDL_DBus_CallVoidMethod("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", "SimulateUserActivity", DBUS_TYPE_INVALID);
     }
 }
 
+static SDL_bool
+SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
+{
+    DBusMessageIter iterDict, iterEntry, iterValue;
+
+    if (!dbus.message_iter_open_container(iterInit, DBUS_TYPE_ARRAY, "{sv}", &iterDict))
+        goto failed;
+
+    if (!dbus.message_iter_open_container(&iterDict, DBUS_TYPE_DICT_ENTRY, NULL, &iterEntry))
+        goto failed;
+
+    if (!dbus.message_iter_append_basic(&iterEntry, DBUS_TYPE_STRING, &key))
+        goto failed;
+
+    if (!dbus.message_iter_open_container(&iterEntry, DBUS_TYPE_VARIANT, DBUS_TYPE_STRING_AS_STRING, &iterValue))
+        goto failed;
+
+    if (!dbus.message_iter_append_basic(&iterValue, DBUS_TYPE_STRING, &value))
+        goto failed;
+
+    if (!dbus.message_iter_close_container(&iterEntry, &iterValue)
+        || !dbus.message_iter_close_container(&iterDict, &iterEntry)
+        || !dbus.message_iter_close_container(iterInit, &iterDict)) {
+        goto failed;
+    }
+
+    return SDL_TRUE;
+
+failed:
+    /* message_iter_abandon_container_if_open() and message_iter_abandon_container() might be
+     * missing if libdbus is too old. Instead, we just return without cleaning up any eventual
+     * open container */
+    return SDL_FALSE;
+}
+
 SDL_bool
 SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
 {
-    if ( (inhibit && (screensaver_cookie != 0)) || (!inhibit && (screensaver_cookie == 0)) ) {
+    const char *default_inhibit_reason = "Playing a game";
+
+    if ( (inhibit && (screensaver_cookie != 0 || inhibit_handle != NULL))
+        || (!inhibit && (screensaver_cookie == 0 && inhibit_handle == NULL)) ) {
         return SDL_TRUE;
+    }
+
+    if (!dbus.session_conn) {
+        /* We either lost connection to the session bus or were not able to
+         * load the D-Bus library at all. */
+        return SDL_FALSE;
+    }
+
+    if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
+        const char *bus_name = "org.freedesktop.portal.Desktop";
+        const char *path = "/org/freedesktop/portal/desktop";
+        const char *interface = "org.freedesktop.portal.Inhibit";
+        const char *window = ""; /* As a future improvement we could gather the X11 XID or Wayland surface identifier */
+        static const unsigned int INHIBIT_IDLE = 8; /* Taken from the portal API reference */
+        DBusMessageIter iterInit;
+
+        if (inhibit) {
+            DBusMessage *msg;
+            SDL_bool retval = SDL_FALSE;
+            const char *key = "reason";
+            const char *reply = NULL;
+            const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
+            if (!reason || !reason[0]) {
+                reason = default_inhibit_reason;
+            }
+
+            msg = dbus.message_new_method_call(bus_name, path, interface, "Inhibit");
+            if (!msg) {
+                return SDL_FALSE;
+            }
+
+            if (!dbus.message_append_args(msg, DBUS_TYPE_STRING, &window, DBUS_TYPE_UINT32, &INHIBIT_IDLE, DBUS_TYPE_INVALID)) {
+                dbus.message_unref(msg);
+                return SDL_FALSE;
+            }
+
+            dbus.message_iter_init_append(msg, &iterInit);
+            if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, key, reason)) {
+                dbus.message_unref(msg);
+                return SDL_FALSE;
+            }
+
+            if (SDL_DBus_CallWithBasicReply(dbus.session_conn, msg, DBUS_TYPE_OBJECT_PATH, &reply)) {
+                inhibit_handle = SDL_strdup(reply);
+                retval = SDL_TRUE;
+            }
+
+            dbus.message_unref(msg);
+            return retval;
+        } else {
+            if (!SDL_DBus_CallVoidMethod(bus_name, inhibit_handle, "org.freedesktop.portal.Request", "Close", DBUS_TYPE_INVALID)) {
+                return SDL_FALSE;
+            }
+            SDL_free(inhibit_handle);
+            inhibit_handle = NULL;
+        }
     } else {
-        const char *node = "org.freedesktop.ScreenSaver";
+        const char *bus_name = "org.freedesktop.ScreenSaver";
         const char *path = "/org/freedesktop/ScreenSaver";
         const char *interface = "org.freedesktop.ScreenSaver";
 
@@ -373,17 +485,17 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
                app  = "My SDL application";
             }
             if (!reason || !reason[0]) {
-                reason = "Playing a game";
+                reason = default_inhibit_reason;
             }
 
-            if (!SDL_DBus_CallMethod(node, path, interface, "Inhibit",
+            if (!SDL_DBus_CallMethod(bus_name, path, interface, "Inhibit",
                     DBUS_TYPE_STRING, &app, DBUS_TYPE_STRING, &reason, DBUS_TYPE_INVALID,
                     DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
                 return SDL_FALSE;
             }
             return (screensaver_cookie != 0) ? SDL_TRUE : SDL_FALSE;
         } else {
-            if (!SDL_DBus_CallVoidMethod(node, path, interface, "UnInhibit", DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
+            if (!SDL_DBus_CallVoidMethod(bus_name, path, interface, "UnInhibit", DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
                 return SDL_FALSE;
             }
             screensaver_cookie = 0;

@@ -46,16 +46,10 @@ HIDAPI_DriverCombined_IsEnabled(void)
 }
 
 static SDL_bool
-HIDAPI_DriverCombined_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     /* This is always explicitly created for combined devices */
     return SDL_FALSE;
-}
-
-static const char *
-HIDAPI_DriverCombined_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
-{
-    return NULL;
 }
 
 static SDL_bool
@@ -241,7 +235,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined =
     HIDAPI_DriverCombined_UnregisterHints,
     HIDAPI_DriverCombined_IsEnabled,
     HIDAPI_DriverCombined_IsSupportedDevice,
-    HIDAPI_DriverCombined_GetDeviceName,
     HIDAPI_DriverCombined_InitDevice,
     HIDAPI_DriverCombined_GetDevicePlayerIndex,
     HIDAPI_DriverCombined_SetDevicePlayerIndex,

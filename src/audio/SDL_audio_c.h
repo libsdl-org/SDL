@@ -45,6 +45,7 @@ extern int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data);
 extern int (*SRC_src_reset)(SRC_STATE *state);
 extern SRC_STATE* (*SRC_src_delete)(SRC_STATE *state);
 extern const char* (*SRC_src_strerror)(int error);
+extern int (*SRC_src_simple)(SRC_DATA *data, int converter_type, int channels);
 #endif
 
 /* Functions to get a list of "close" audio formats */

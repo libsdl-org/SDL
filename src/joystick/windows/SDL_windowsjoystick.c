@@ -41,7 +41,7 @@
 #include "../SDL_sysjoystick.h"
 #include "../../thread/SDL_systhread.h"
 #include "../../core/windows/SDL_windows.h"
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include <dbt.h>
 #endif
 
@@ -146,7 +146,7 @@ static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB,
 
 JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
 
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static HMODULE cfgmgr32_lib_handle;
 static CM_Register_NotificationFunc CM_Register_Notification;
 static CM_Unregister_NotificationFunc CM_Unregister_Notification;
@@ -332,10 +332,8 @@ SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex
     return (lastret != -1) ? SDL_TRUE : SDL_FALSE;
 }
 
-#endif /* !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
+#endif /* !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
 
-
-#if !defined(__WINRT__)
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static SDL_DeviceNotificationData s_notification_data;
@@ -429,7 +427,12 @@ SDL_StopJoystickThread(void)
     SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
     SDL_UnlockMutex(s_mutexJoyStickEnum);
     PostThreadMessage(SDL_GetThreadID(s_joystickThread), WM_QUIT, 0, 0);
+
+    /* Unlock joysticks while the joystick thread finishes processing messages */
+    SDL_AssertJoysticksLocked();
+    SDL_UnlockJoysticks();
     SDL_WaitThread(s_joystickThread, NULL); /* wait for it to bugger off */
+    SDL_LockJoysticks();
 
     SDL_DestroyCond(s_condJoystickThread);
     s_condJoystickThread = NULL;
@@ -439,8 +442,6 @@ SDL_StopJoystickThread(void)
 
     s_joystickThread = NULL;
 }
-
-#endif /* !defined(__WINRT__) */
 
 void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
@@ -474,7 +475,7 @@ WINDOWS_JoystickInit(void)
 
     WINDOWS_JoystickDetect();
 
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     SDL_CreateDeviceNotificationFunc();
 
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, SDL_FALSE);
@@ -517,7 +518,6 @@ WINDOWS_JoystickGetCount(void)
 static void
 WINDOWS_JoystickDetect(void)
 {
-    int device_index = 0;
     JoyStick_DeviceData *pCurList = NULL;
 
     /* only enum the devices if the joystick thread told us something changed */
@@ -565,7 +565,7 @@ WINDOWS_JoystickDetect(void)
         pCurList = pListNext;
     }
 
-    for (device_index = 0, pCurList = SYS_Joystick; pCurList; ++device_index, pCurList = pCurList->pNext) {
+    for (pCurList = SYS_Joystick; pCurList; pCurList = pCurList->pNext) {
         if (pCurList->send_add_event) {
             if (pCurList->bXInputDevice) {
 #if SDL_HAPTIC_XINPUT
@@ -767,7 +767,7 @@ WINDOWS_JoystickQuit(void)
     }
     SYS_Joystick = NULL;
 
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (s_bJoystickThread) {
         SDL_StopJoystickThread();
     } else {

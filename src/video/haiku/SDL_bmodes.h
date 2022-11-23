@@ -28,8 +28,7 @@ extern "C" {
 
 #include "../SDL_sysvideo.h"
 
-extern int32 HAIKU_ColorSpaceToBitsPerPixel(uint32 colorspace);
-extern int32 HAIKU_BPPToSDLPxFormat(int32 bpp);
+extern int32 HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace);
 
 extern int HAIKU_InitModes(_THIS);
 extern int HAIKU_QuitModes(_THIS);

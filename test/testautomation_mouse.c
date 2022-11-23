@@ -41,21 +41,21 @@ mouse_getMouseState(void *arg)
    /* Case where x, y pointer is NULL */
    state = SDL_GetMouseState(NULL, NULL);
    SDLTest_AssertPass("Call to SDL_GetMouseState(NULL, NULL)");
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    /* Case where x pointer is not NULL */
    x = INT_MIN;
    state = SDL_GetMouseState(&x, NULL);
    SDLTest_AssertPass("Call to SDL_GetMouseState(&x, NULL)");
    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    /* Case where y pointer is not NULL */
    y = INT_MIN;
    state = SDL_GetMouseState(NULL, &y);
    SDLTest_AssertPass("Call to SDL_GetMouseState(NULL, &y)");
    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    /* Case where x and y pointer is not NULL */
    x = INT_MIN;
@@ -64,7 +64,7 @@ mouse_getMouseState(void *arg)
    SDLTest_AssertPass("Call to SDL_GetMouseState(&x, &y)");
    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    return TEST_COMPLETED;
 }
@@ -87,21 +87,21 @@ mouse_getRelativeMouseState(void *arg)
    /* Case where x, y pointer is NULL */
    state = SDL_GetRelativeMouseState(NULL, NULL);
    SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(NULL, NULL)");
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    /* Case where x pointer is not NULL */
    x = INT_MIN;
    state = SDL_GetRelativeMouseState(&x, NULL);
    SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, NULL)");
    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    /* Case where y pointer is not NULL */
    y = INT_MIN;
    state = SDL_GetRelativeMouseState(NULL, &y);
    SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(NULL, &y)");
    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    /* Case where x and y pointer is not NULL */
    x = INT_MIN;
@@ -110,7 +110,7 @@ mouse_getRelativeMouseState(void *arg)
    SDLTest_AssertPass("Call to SDL_GetRelativeMouseState(&x, &y)");
    SDLTest_AssertCheck(x > INT_MIN, "Validate that value of x is > INT_MIN, got: %i", x);
    SDLTest_AssertCheck(y > INT_MIN, "Validate that value of y is > INT_MIN, got: %i", y);
-   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %i", state);
+   SDLTest_AssertCheck(_mouseStateCheck(state), "Validate state returned from function, got: %" SDL_PRIu32, state);
 
    return TEST_COMPLETED;
 }

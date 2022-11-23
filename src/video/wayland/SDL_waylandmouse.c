@@ -40,6 +40,11 @@
 #include "wayland-cursor.h"
 #include "SDL_waylandmouse.h"
 
+#include "SDL_hints.h"
+#include "../../SDL_hints_c.h"
+
+static int
+Wayland_SetRelativeMouseMode(SDL_bool enabled);
 
 typedef struct {
     struct wl_buffer   *buffer;
@@ -194,8 +199,10 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
         return SDL_FALSE;
     }
     focusdata = focus->driverdata;
-    *scale = focusdata->scale_factor;
-    size *= focusdata->scale_factor;
+
+    /* Cursors use integer scaling. */
+    *scale = SDL_ceilf(focusdata->scale_factor);
+    size *= *scale;
     for (i = 0; i < vdata->num_cursor_themes; i += 1) {
         if (vdata->cursor_themes[i].size == size) {
             theme = vdata->cursor_themes[i].theme;
@@ -241,31 +248,31 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "tcross");
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
         cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "watch");
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_left_corner");
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "top_right_corner");
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_h_double_arrow");
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "sb_v_double_arrow");
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "fleur");
         break;
     case SDL_SYSTEM_CURSOR_NO:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "xterm");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "pirate");
         break;
     case SDL_SYSTEM_CURSOR_HAND:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "hand2");
         break;
     default:
         SDL_assert(0);
@@ -454,24 +461,34 @@ Wayland_CreateDefaultCursor()
 }
 
 static void
+Wayland_FreeCursorData(Wayland_CursorData *d)
+{
+    if (d->buffer) {
+        if (d->shm_data) {
+            wl_buffer_destroy(d->buffer);
+        }
+        d->buffer = NULL;
+    }
+
+    if (d->surface) {
+        wl_surface_destroy(d->surface);
+        d->surface = NULL;
+    }
+}
+
+static void
 Wayland_FreeCursor(SDL_Cursor *cursor)
 {
-    Wayland_CursorData *d;
-
-    if (!cursor)
+    if (!cursor) {
         return;
-
-    d = cursor->driverdata;
+    }
 
     /* Probably not a cursor we own */
-    if (!d)
+    if (!cursor->driverdata) {
         return;
+    }
 
-    if (d->buffer && d->shm_data)
-        wl_buffer_destroy(d->buffer);
-
-    if (d->surface)
-        wl_surface_destroy(d->surface);
+    Wayland_FreeCursorData((Wayland_CursorData *) cursor->driverdata);
 
     /* Not sure what's meant to happen to shm_data */
     SDL_free(cursor->driverdata);
@@ -510,9 +527,18 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
         wl_surface_attach(data->surface, data->buffer, 0, 0);
         wl_surface_damage(data->surface, 0, 0, data->w, data->h);
         wl_surface_commit(data->surface);
+
+        input->cursor_visible = SDL_TRUE;
+
+        if (input->relative_mode_override) {
+            Wayland_input_unlock_pointer(input);
+            input->relative_mode_override = SDL_FALSE;
+        }
+	    
     }
     else
     {
+        input->cursor_visible = SDL_FALSE;
         wl_pointer_set_cursor(pointer, input->pointer_enter_serial, NULL, 0, 0);
     }
     
@@ -522,7 +548,20 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
 static void
 Wayland_WarpMouse(SDL_Window *window, int x, int y)
 {
-    SDL_Unsupported();
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = vd->driverdata;
+    struct SDL_WaylandInput *input = d->input;
+
+    if (input->cursor_visible == SDL_TRUE) {
+        SDL_Unsupported();
+    } else if (input->warp_emulation_prohibited) {
+        SDL_Unsupported();
+    } else {
+        if (!d->relative_mouse_mode) {
+            Wayland_input_lock_pointer(input);
+            input->relative_mode_override = SDL_TRUE;
+        }
+    }
 }
 
 static int
@@ -537,16 +576,96 @@ Wayland_SetRelativeMouseMode(SDL_bool enabled)
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = (SDL_VideoData *) vd->driverdata;
 
-    if (enabled)
+
+    if (enabled) {
+        /* Disable mouse warp emulation if it's enabled. */
+        if (data->input->relative_mode_override)
+            data->input->relative_mode_override = SDL_FALSE;
+
+        /* If the app has used relative mode before, it probably shouldn't
+         * also be emulating it using repeated mouse warps, so disable
+         * mouse warp emulation by default.
+         */
+        data->input->warp_emulation_prohibited = SDL_TRUE;
         return Wayland_input_lock_pointer(data->input);
-    else
+    } else {
         return Wayland_input_unlock_pointer(data->input);
+    }
 }
+
+static void SDLCALL
+Wayland_EmulateMouseWarpChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)userdata;
+
+    input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
+}
+
+#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
+static void
+Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
+{
+    Wayland_CursorData *cdata = (Wayland_CursorData *) cursor->driverdata;
+
+    /* Probably not a cursor we own */
+    if (cdata == NULL) {
+        return;
+    }
+
+    Wayland_FreeCursorData(cdata);
+
+    /* We're not currently freeing this, so... yolo? */
+    if (cdata->shm_data != NULL) {
+        void *old_data_pointer = cdata->shm_data;
+        int stride = cdata->w * 4;
+
+        create_buffer_from_shm(cdata, cdata->w, cdata->h, WL_SHM_FORMAT_ARGB8888);
+
+        SDL_memcpy(cdata->shm_data, old_data_pointer, stride * cdata->h);
+    }
+    cdata->surface = wl_compositor_create_surface(vdata->compositor);
+    wl_surface_set_user_data(cdata->surface, NULL);
+}
+
+void
+Wayland_RecreateCursors(void)
+{
+    SDL_Cursor *cursor;
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_VideoData *vdata = SDL_GetVideoDevice()->driverdata;
+
+    if (vdata && vdata->cursor_themes) {
+        SDL_free(vdata->cursor_themes);
+        vdata->cursor_themes = NULL;
+        vdata->num_cursor_themes = 0;
+    }
+
+    if (mouse == NULL) {
+        return;
+    }
+
+    for (cursor = mouse->cursors; cursor != NULL; cursor = cursor->next) {
+        Wayland_RecreateCursor(cursor, vdata);
+    }
+    if (mouse->def_cursor) {
+        Wayland_RecreateCursor(mouse->def_cursor, vdata);
+    }
+    if (mouse->cur_cursor) {
+        Wayland_RecreateCursor(mouse->cur_cursor, vdata);
+        if (mouse->cursor_shown) {
+            Wayland_ShowCursor(mouse->cur_cursor);
+        }
+    }
+}
+#endif /* 0 */
 
 void
 Wayland_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = vd->driverdata;
+    struct SDL_WaylandInput *input = d->input;
 
     mouse->CreateCursor = Wayland_CreateCursor;
     mouse->CreateSystemCursor = Wayland_CreateSystemCursor;
@@ -556,17 +675,29 @@ Wayland_InitMouse(void)
     mouse->WarpMouseGlobal = Wayland_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = Wayland_SetRelativeMouseMode;
 
+    input->relative_mode_override = SDL_FALSE;
+    input->cursor_visible = SDL_TRUE;
+
     SDL_SetDefaultCursor(Wayland_CreateDefaultCursor());
+
+    SDL_AddHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP, 
+                        Wayland_EmulateMouseWarpChanged, input);
 }
 
 void
 Wayland_FiniMouse(SDL_VideoData *data)
 {
+    struct SDL_WaylandInput *input = data->input;
     int i;
     for (i = 0; i < data->num_cursor_themes; i += 1) {
         WAYLAND_wl_cursor_theme_destroy(data->cursor_themes[i].theme);
     }
+    data->num_cursor_themes = 0;
     SDL_free(data->cursor_themes);
+    data->cursor_themes = NULL;
+
+    SDL_DelHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP, 
+                        Wayland_EmulateMouseWarpChanged, input);
 }
 
 #endif  /* SDL_VIDEO_DRIVER_WAYLAND */

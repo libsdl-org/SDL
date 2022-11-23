@@ -36,7 +36,6 @@
 #include "SDL_endian.h"
 #include "SDL_events.h"
 #include "SDL_hints.h"
-#include "SDL_mutex.h"
 #include "SDL_timer.h"
 #include "../usb_ids.h"
 #include "../SDL_sysjoystick.h"
@@ -96,7 +95,6 @@ typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
 
 static SDL_bool SDL_RAWINPUT_inited = SDL_FALSE;
 static int SDL_RAWINPUT_numjoysticks = 0;
-static SDL_mutex *SDL_RAWINPUT_mutex = NULL;
 
 static void RAWINPUT_JoystickClose(SDL_Joystick *joystick);
 
@@ -579,13 +577,8 @@ RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
             typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
             typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
 
-#ifdef __WINRT__
-            WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = WindowsCreateStringReference;
-            RoGetActivationFactory_t RoGetActivationFactoryFunc = RoGetActivationFactory;
-#else
             WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = (WindowsCreateStringReference_t)WIN_LoadComBaseFunction("WindowsCreateStringReference");
             RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)WIN_LoadComBaseFunction("RoGetActivationFactory");
-#endif
             if (WindowsCreateStringReferenceFunc && RoGetActivationFactoryFunc) {
                 PCWSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
                 HSTRING_HEADER hNamespaceStringHeader;
@@ -857,6 +850,11 @@ RAWINPUT_JoystickInit(void)
 
     SDL_assert(!SDL_RAWINPUT_inited);
 
+    if (!WIN_IsWindowsVistaOrGreater()) {
+        /* According to bug 6400, this doesn't work on Windows XP */
+        return -1;
+    }
+
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE)) {
         return -1;
     }
@@ -865,7 +863,6 @@ RAWINPUT_JoystickInit(void)
         return -1;
     }
 
-    SDL_RAWINPUT_mutex = SDL_CreateMutex();
     SDL_RAWINPUT_inited = SDL_TRUE;
 
     if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) != -1) && device_count > 0) {
@@ -1773,7 +1770,8 @@ RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
             has_trigger_data = SDL_TRUE;
 
-            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN) {
+            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN &&
+                battery_info->BatteryType != BATTERY_TYPE_DISCONNECTED) {
                 SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
                 if (battery_info->BatteryType == BATTERY_TYPE_WIRED) {
                     ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
@@ -1927,7 +1925,7 @@ RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     LRESULT result = -1;
 
     if (SDL_RAWINPUT_inited) {
-        SDL_LockMutex(SDL_RAWINPUT_mutex);
+        SDL_LockJoysticks();
 
         switch (msg) {
             case WM_INPUT_DEVICE_CHANGE:
@@ -1973,7 +1971,7 @@ RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         }
 
-        SDL_UnlockMutex(SDL_RAWINPUT_mutex);
+        SDL_UnlockJoysticks();
     }
 
     if (result >= 0) {
@@ -1998,9 +1996,6 @@ RAWINPUT_JoystickQuit(void)
     SDL_RAWINPUT_numjoysticks = 0;
 
     SDL_RAWINPUT_inited = SDL_FALSE;
-
-    SDL_DestroyMutex(SDL_RAWINPUT_mutex);
-    SDL_RAWINPUT_mutex = NULL;
 }
 
 static SDL_bool

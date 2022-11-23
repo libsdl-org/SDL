@@ -45,6 +45,27 @@ SDL_SetClipboardText(const char *text)
     }
 }
 
+int
+SDL_SetPrimarySelectionText(const char *text)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    if (!_this) {
+        return SDL_SetError("Video subsystem must be initialized to set primary selection text");
+    }
+
+    if (!text) {
+        text = "";
+    }
+    if (_this->SetPrimarySelectionText) {
+        return _this->SetPrimarySelectionText(_this, text);
+    } else {
+        SDL_free(_this->primary_selection_text);
+        _this->primary_selection_text = SDL_strdup(text);
+        return 0;
+    }
+}
+
 char *
 SDL_GetClipboardText(void)
 {
@@ -59,6 +80,27 @@ SDL_GetClipboardText(void)
         return _this->GetClipboardText(_this);
     } else {
         const char *text = _this->clipboard_text;
+        if (!text) {
+            text = "";
+        }
+        return SDL_strdup(text);
+    }
+}
+
+char *
+SDL_GetPrimarySelectionText(void)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    if (!_this) {
+        SDL_SetError("Video subsystem must be initialized to get primary selection text");
+        return SDL_strdup("");
+    }
+
+    if (_this->GetPrimarySelectionText) {
+        return _this->GetPrimarySelectionText(_this);
+    } else {
+        const char *text = _this->primary_selection_text;
         if (!text) {
             text = "";
         }
@@ -85,6 +127,27 @@ SDL_HasClipboardText(void)
             return SDL_FALSE;
         }
     }
+}
+
+SDL_bool
+SDL_HasPrimarySelectionText(void)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    if (!_this) {
+        SDL_SetError("Video subsystem must be initialized to check primary selection text");
+        return SDL_FALSE;
+    }
+
+    if (_this->HasPrimarySelectionText) {
+        return _this->HasPrimarySelectionText(_this);
+    }
+
+    if (_this->primary_selection_text && _this->primary_selection_text[0] != '\0') {
+        return SDL_TRUE;
+    }
+
+    return SDL_FALSE;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

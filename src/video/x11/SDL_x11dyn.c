@@ -120,7 +120,9 @@ SDL_X11_UnloadSymbols(void)
     /* Don't actually unload if more than one module is using the libs... */
     if (x11_load_refcount > 0) {
         if (--x11_load_refcount == 0) {
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
             int i;
+#endif
 
             /* set all the function pointers to NULL. */
 #define SDL_X11_MODULE(modname) SDL_X11_HAVE_##modname = 0;

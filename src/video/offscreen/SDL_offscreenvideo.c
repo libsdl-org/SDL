@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_OFFSCREEN
@@ -32,15 +31,12 @@
  */
 
 #include "SDL_video.h"
-#include "SDL_mouse.h"
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
-#include "../../events/SDL_events_c.h"
 
 #include "SDL_offscreenvideo.h"
 #include "SDL_offscreenevents_c.h"
 #include "SDL_offscreenframebuffer_c.h"
-#include "SDL_offscreenopengl.h"
+#include "SDL_offscreenopengles.h"
+#include "SDL_offscreenwindow.h"
 
 #define OFFSCREENVID_DRIVER_NAME "offscreen"
 
@@ -79,16 +75,18 @@ OFFSCREEN_CreateDevice(void)
     device->DestroyWindowFramebuffer = SDL_OFFSCREEN_DestroyWindowFramebuffer;
     device->free = OFFSCREEN_DeleteDevice;
 
+#if SDL_VIDEO_OPENGL_EGL
     /* GL context */
-    device->GL_SwapWindow = OFFSCREEN_GL_SwapWindow;
-    device->GL_MakeCurrent = OFFSCREEN_GL_MakeCurrent;
-    device->GL_CreateContext = OFFSCREEN_GL_CreateContext;
-    device->GL_DeleteContext = OFFSCREEN_GL_DeleteContext;
-    device->GL_LoadLibrary = OFFSCREEN_GL_LoadLibrary;
-    device->GL_UnloadLibrary = OFFSCREEN_GL_UnloadLibrary;
-    device->GL_GetProcAddress = OFFSCREEN_GL_GetProcAddress;
-    device->GL_GetSwapInterval = OFFSCREEN_GL_GetSwapInterval;
-    device->GL_SetSwapInterval = OFFSCREEN_GL_SetSwapInterval;
+    device->GL_SwapWindow = OFFSCREEN_GLES_SwapWindow;
+    device->GL_MakeCurrent = OFFSCREEN_GLES_MakeCurrent;
+    device->GL_CreateContext = OFFSCREEN_GLES_CreateContext;
+    device->GL_DeleteContext = OFFSCREEN_GLES_DeleteContext;
+    device->GL_LoadLibrary = OFFSCREEN_GLES_LoadLibrary;
+    device->GL_UnloadLibrary = OFFSCREEN_GLES_UnloadLibrary;
+    device->GL_GetProcAddress = OFFSCREEN_GLES_GetProcAddress;
+    device->GL_GetSwapInterval = OFFSCREEN_GLES_GetSwapInterval;
+    device->GL_SetSwapInterval = OFFSCREEN_GLES_SetSwapInterval;
+#endif
 
     /* "Window" */
     device->CreateSDLWindow = OFFSCREEN_CreateWindow;
@@ -106,7 +104,6 @@ int
 OFFSCREEN_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
-    SDL_Mouse *mouse = NULL;
 
     /* Use a fake 32-bpp desktop mode */
     mode.format = SDL_PIXELFORMAT_RGB888;

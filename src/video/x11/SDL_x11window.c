@@ -173,7 +173,7 @@ X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
 }
 
 Uint32
-X11_GetNetWMState(_THIS, Window xwindow)
+X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display = videodata->display;
@@ -211,13 +211,27 @@ X11_GetNetWMState(_THIS, Window xwindow)
                 fullscreen = 1;
             }
         }
-        if (maximized == 3) {
-            flags |= SDL_WINDOW_MAXIMIZED;
-        }
 
         if (fullscreen == 1) {
             flags |= SDL_WINDOW_FULLSCREEN;
         }
+
+        if (maximized == 3) {
+            /* Fullscreen windows are maximized on some window managers,
+               and this is functional behavior - if maximized is removed,
+               the windows remain floating centered and not covering the
+               rest of the desktop. So we just won't change the maximize
+               state for fullscreen windows here, otherwise SDL would think
+               we're always maximized when fullscreen and not restore the
+               correct state when leaving fullscreen.
+            */
+            if (fullscreen) {
+                flags |= (window->flags & SDL_WINDOW_MAXIMIZED);
+            } else {
+                flags |= SDL_WINDOW_MAXIMIZED;
+            }
+        }
+
 
         /* If the window is unmapped, numItems will be zero and _NET_WM_STATE_HIDDEN
          * will not be set. Do an additional check to see if the window is unmapped
@@ -306,7 +320,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
         data->colormap = attrib.colormap;
     }
 
-    window->flags |= X11_GetNetWMState(_this, w);
+    window->flags |= X11_GetNetWMState(_this, window, w);
 
     {
         Window FocalWindow;
@@ -1252,6 +1266,14 @@ SetWindowMaximized(_THIS, SDL_Window * window, SDL_bool maximized)
         window->flags |= SDL_WINDOW_MAXIMIZED;
     } else {
         window->flags &= ~SDL_WINDOW_MAXIMIZED;
+
+        if ((window->flags & SDL_WINDOW_FULLSCREEN) != 0) {
+            /* Fullscreen windows are maximized on some window managers,
+               and this is functional behavior, so don't remove that state
+               now, we'll take care of it when we leave fullscreen mode.
+             */
+            return;
+        }
     }
 
     if (X11_IsWindowMapped(_this, window)) {
@@ -1366,13 +1388,17 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
 
         /* Fullscreen windows sometimes end up being marked maximized by
             window managers. Force it back to how we expect it to be. */
-        if (!fullscreen && ((window->flags & SDL_WINDOW_MAXIMIZED) == 0)) {
+        if (!fullscreen) {
             SDL_zero(e);
             e.xany.type = ClientMessage;
             e.xclient.message_type = _NET_WM_STATE;
             e.xclient.format = 32;
             e.xclient.window = data->xwindow;
-            e.xclient.data.l[0] = _NET_WM_STATE_REMOVE;
+            if ((window->flags & SDL_WINDOW_MAXIMIZED) != 0) {
+                e.xclient.data.l[0] = _NET_WM_STATE_ADD;
+            } else {
+                e.xclient.data.l[0] = _NET_WM_STATE_REMOVE;
+            }
             e.xclient.data.l[1] = data->videodata->_NET_WM_STATE_MAXIMIZED_VERT;
             e.xclient.data.l[2] = data->videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
             e.xclient.data.l[3] = 0l;
@@ -1536,7 +1562,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != 0) X11_XFree(ret);
+        if (ret != NULL) X11_XFree(ret);
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
         bytes_fetch += bytes_left;
     } while (bytes_left != 0);
@@ -1685,6 +1711,16 @@ void
 X11_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (window->shaper) {
+        SDL_ShapeData *shapedata = (SDL_ShapeData *) window->shaper->driverdata;
+        if (shapedata) {
+            SDL_free(shapedata->bitmap);
+            SDL_free(shapedata);
+        }
+        SDL_free(window->shaper);
+        window->shaper = NULL;
+    }
 
     if (data) {
         SDL_VideoData *videodata = (SDL_VideoData *) data->videodata;

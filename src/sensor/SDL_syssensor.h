@@ -37,6 +37,7 @@ struct _SDL_Sensor
     SDL_SensorType type;            /* Type of the sensor */
     int non_portable_type;          /* Platform dependent type of the sensor */
 
+    Uint64 timestamp_us;            /* The timestamp of the last sensor update */
     float data[16];                 /* The current state of the sensor */
 
     struct _SDL_SensorDriver *driver;
@@ -101,6 +102,7 @@ extern SDL_SensorDriver SDL_COREMOTION_SensorDriver;
 extern SDL_SensorDriver SDL_WINDOWS_SensorDriver;
 extern SDL_SensorDriver SDL_DUMMY_SensorDriver;
 extern SDL_SensorDriver SDL_VITA_SensorDriver;
+extern SDL_SensorDriver SDL_N3DS_SensorDriver;
 
 #endif /* SDL_syssensor_h_ */
 

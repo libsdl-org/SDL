@@ -249,6 +249,9 @@ Uint32 format_to_pixelFormat(int format) {
         pf = SDL_PIXELFORMAT_RGBA5551;
     } else if (format == 7) {
         pf = SDL_PIXELFORMAT_RGBA4444;
+    } else if (format == 0x115) {
+        /* HAL_PIXEL_FORMAT_BGR_565 */
+        pf = SDL_PIXELFORMAT_RGB565;
     } else {
         pf = SDL_PIXELFORMAT_UNKNOWN;
     }

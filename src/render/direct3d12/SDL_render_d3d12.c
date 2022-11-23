@@ -173,6 +173,7 @@ typedef struct
     ID3D12CommandQueue *commandQueue;
     ID3D12GraphicsCommandList2 *commandList;
     DXGI_SWAP_EFFECT swapEffect;
+    UINT swapFlags;
 
     /* Descriptor heaps */
     ID3D12DescriptorHeap* rtvDescriptorHeap;
@@ -234,7 +235,7 @@ typedef struct
 
 /* Define D3D GUIDs here so we don't have to include uuid.lib. */
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-const-variable"
 #endif
@@ -259,7 +260,7 @@ static const GUID SDL_IID_ID3D12PipelineState = { 0x765a30f3, 0xf624, 0x4c6f, { 
 static const GUID SDL_IID_ID3D12Heap = { 0x6b3b2502, 0x6e51, 0x45b3, { 0x90, 0xee, 0x98, 0x84, 0x26, 0x5e, 0x8d, 0xf3 } };
 static const GUID SDL_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9, 0x46, 0x30, 0xa7, 0xe4, 0xe6, 0x14, 0x58 } };
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 
@@ -352,9 +353,11 @@ D3D12_ReleaseAll(SDL_Renderer * renderer)
 
         for (i = 0; i < SDL_D3D12_NUM_VERTEX_BUFFERS; ++i) {
             SAFE_RELEASE(data->vertexBuffers[i].resource);
+            data->vertexBuffers[i].size = 0;
         }
         
         data->swapEffect = (DXGI_SWAP_EFFECT) 0;
+        data->swapFlags = 0;
         data->currentRenderTargetView.ptr = 0;
         data->currentSampler.ptr = 0;
 
@@ -720,6 +723,9 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc;
     PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
 #endif
+    typedef HANDLE(WINAPI* PFN_CREATE_EVENT_EX)(LPSECURITY_ATTRIBUTES lpEventAttributes, LPCWSTR lpName, DWORD dwFlags, DWORD dwDesiredAccess);
+    PFN_CREATE_EVENT_EX CreateEventExFunc;
+
     D3D12_RenderData* data = (D3D12_RenderData*)renderer->driverdata;
     ID3D12Device* d3dDevice = NULL;
     HRESULT result = S_OK;
@@ -747,6 +753,23 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
 
     /* See if we need debug interfaces */
     createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
+
+#ifdef __GDK__
+    CreateEventExFunc = CreateEventExW;
+#else
+    /* CreateEventEx() arrived in Vista, so we need to load it with GetProcAddress for XP. */
+    {
+        HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
+        CreateEventExFunc = NULL;
+        if (kernel32) {
+            CreateEventExFunc = (PFN_CREATE_EVENT_EX) GetProcAddress(kernel32, "CreateEventExW");
+        }
+    }
+#endif
+    if (!CreateEventExFunc) {
+        result = E_FAIL;
+        goto done;
+    }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     data->hDXGIMod = SDL_LoadObject("dxgi.dll");
@@ -999,7 +1022,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
 
     data->fenceValue++;
 
-    data->fenceEvent = CreateEventEx(NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
+    data->fenceEvent = CreateEventExFunc(NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
     if (!data->fenceEvent) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateEventEx"), result);
         goto done;
@@ -1210,6 +1233,7 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     }
 
     data->swapEffect = swapChainDesc.SwapEffect;
+    data->swapFlags = swapChainDesc.Flags;
 
 done:
     SAFE_RELEASE(swapChain);
@@ -1260,10 +1284,15 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc;
     D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor;
 
+    /* Release resources in the current command list */
+    D3D12_IssueBatch(data);
+    D3D_CALL(data->commandList, OMSetRenderTargets, 0, NULL, FALSE, NULL);
+
     /* Release render targets */
     for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
         SAFE_RELEASE(data->renderTargets[i]);
     }
+
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
@@ -1282,7 +1311,7 @@ D3D12_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             0,
             w, h,
             DXGI_FORMAT_UNKNOWN,
-            0
+            data->swapFlags
             );
         if (result == DXGI_ERROR_DEVICE_REMOVED) {
             /* If the device was removed for any reason, a new device and swap chain will need to be created. */
@@ -2912,7 +2941,7 @@ done:
     return status;
 }
 
-static void
+static int
 D3D12_RenderPresent(SDL_Renderer * renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *) renderer->driverdata;
@@ -2962,6 +2991,7 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
         } else {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
         }
+        return -1;
     } else {
         /* Wait for the GPU and move to the next frame */
         result = D3D_CALL(data->commandQueue, Signal, data->fence, data->fenceValue);
@@ -2993,6 +3023,7 @@ D3D12_RenderPresent(SDL_Renderer * renderer)
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
         D3D12_XBOX_StartFrame(data->d3dDevice, &data->frameToken);
 #endif
+        return 0;
     }
 }
 

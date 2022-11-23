@@ -1,6 +1,6 @@
 /*
   Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
-  Copyright (C) 2020 Collabora Ltd.
+  Copyright (C) 2020-2022 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -935,12 +935,22 @@ static const GuessTest guess_tests[] =
     }
 };
 
-#if ULONG_MAX == 0xFFFFFFFFUL
-#   define SwapLongLE(X) SDL_SwapLE32(X)
-#else
-    /* assume 64-bit */
-#   define SwapLongLE(X) SDL_SwapLE64(X)
-#endif
+/* The Linux kernel provides capability info in EVIOCGBIT and in /sys
+ * as an array of unsigned long in native byte order, rather than an array
+ * of bytes, an array of native-endian 32-bit words or an array of
+ * native-endian 64-bit words like you might have reasonably expected.
+ * The order of words in the array is always lowest-valued first: for
+ * instance, the first unsigned long in abs[] contains the bit representing
+ * absolute axis 0 (ABS_X).
+ *
+ * The constant arrays above provide test data in little-endian, because
+ * that's the easiest representation for hard-coding into a test like this.
+ * On a big-endian platform we need to byteswap it, one unsigned long at a
+ * time, to match what the kernel would produce. This requires us to choose
+ * an appropriate byteswapping function for the architecture's word size. */
+SDL_COMPILE_TIME_ASSERT(sizeof_long, sizeof(unsigned long) == 4 || sizeof(unsigned long) == 8);
+#define SwapLongLE(X) \
+	((sizeof(unsigned long) == 4) ? SDL_SwapLE32(X) : SDL_SwapLE64(X))
 
 static int
 run_test(void)

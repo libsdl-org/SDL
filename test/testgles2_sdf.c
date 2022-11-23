@@ -20,8 +20,7 @@
 
 #include "SDL_test_common.h"
 
-#if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__NACL__) \
-    || defined(__WINDOWS__) || defined(__LINUX__)
+#if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
 #define HAVE_OPENGLES2
 #endif
 
@@ -71,8 +70,6 @@ static int LoadContext(GLES2_Context * data)
 #if SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
 #elif SDL_VIDEO_DRIVER_ANDROID
-#define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_PANDORA
 #define __SDL_NOGETPROCADDR__
 #endif
 
@@ -522,7 +519,7 @@ main(int argc, char *argv[])
         return 0;
     }
 
-    context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(context));
+    context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(*context));
     if (context == NULL) {
         SDL_Log("Out of memory!\n");
         quit(2);
@@ -797,9 +794,9 @@ main(int argc, char *argv[])
         SDL_Log("%2.2f frames per second\n",
                ((double) frames * 1000) / (now - then));
     }
-#if !defined(__ANDROID__) && !defined(__NACL__)  
+#if !defined(__ANDROID__)
     quit(0);
-#endif    
+#endif
     return 0;
 }
 

@@ -23,6 +23,7 @@
 #if SDL_VIDEO_RENDER_OGL_ES && !SDL_RENDER_DISABLED
 
 #include "SDL_hints.h"
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
 #include "SDL_opengles.h"
 #include "../SDL_sysrender.h"
 #include "../../SDL_utils_c.h"
@@ -33,18 +34,6 @@
 
 #define RENDERER_CONTEXT_MAJOR 1
 #define RENDERER_CONTEXT_MINOR 1
-
-#if defined(SDL_VIDEO_DRIVER_PANDORA)
-
-/* Empty function stub to get OpenGL ES 1.x support without  */
-/* OpenGL ES extension GL_OES_draw_texture supported         */
-GL_API void GL_APIENTRY
-glDrawTexiOES(GLint x, GLint y, GLint z, GLint width, GLint height)
-{
-    return;
-}
-
-#endif /* SDL_VIDEO_DRIVER_PANDORA */
 
 /* OpenGL ES 1.1 renderer implementation, based on the OpenGL renderer */
 
@@ -152,8 +141,6 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
 #if SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
 #elif SDL_VIDEO_DRIVER_ANDROID
-#define __SDL_NOGETPROCADDR__
-#elif SDL_VIDEO_DRIVER_PANDORA
 #define __SDL_NOGETPROCADDR__
 #endif
 
@@ -358,6 +345,9 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     renderdata->glGenTextures(1, &data->texture);
     result = renderdata->glGetError();
     if (result != GL_NO_ERROR) {
+        if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+            SDL_free(data->pixels);
+        }
         SDL_free(data);
         return GLES_SetError("glGenTextures()", result);
     }
@@ -386,6 +376,9 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     result = renderdata->glGetError();
     if (result != GL_NO_ERROR) {
+        if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+            SDL_free(data->pixels);
+        }
         SDL_free(data);
         return GLES_SetError("glTexImage2D()", result);
     }
@@ -948,12 +941,12 @@ GLES_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }
 
-static void
+static int
 GLES_RenderPresent(SDL_Renderer * renderer)
 {
     GLES_ActivateRenderer(renderer);
 
-    SDL_GL_SwapWindow(renderer->window);
+    return SDL_GL_SwapWindowWithResult(renderer->window);
 }
 
 static void

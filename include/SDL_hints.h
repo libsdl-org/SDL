@@ -278,10 +278,7 @@ extern "C" {
  *  If this hint isn't specified to a valid setting, or libsamplerate isn't
  *  available, SDL will use the default, internal resampling algorithm.
  *
- *  Note that this is currently only applicable to resampling audio that is
- *  being written to a device for playback or audio being read from a device
- *  for capture. SDL_AudioCVT always uses the default resampler (although this
- *  might change for SDL 2.1).
+ *  As of SDL 2.26, SDL_ConvertAudio() respects this hint when libsamplerate is available.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *
@@ -355,7 +352,7 @@ extern "C" {
  *  \brief Disable giving back control to the browser automatically
  *  when running with asyncify
  *
- * With -s ASYNCIFY, SDL2 calls emscripten_sleep during operations
+ * With -s ASYNCIFY, SDL calls emscripten_sleep during operations
  * such as refreshing the screen or polling events.
  *
  * This hint only applies to the emscripten platform
@@ -552,6 +549,14 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
+ *  \brief  A variable containing a list of devices to ignore in SDL_hid_enumerate()
+ *
+ *  For example, to ignore the Shanwan DS3 controller and any Valve controller, you might
+ *  have the string "0x2563/0x0523,0x28de/0x0000"
+ */
+#define SDL_HINT_HIDAPI_IGNORE_DEVICES "SDL_HIDAPI_IGNORE_DEVICES"
+
+/**
  *  \brief  A variable controlling whether the idle timer is disabled on iOS.
  *
  *  When an iOS app does not receive touches for some time, the screen is
@@ -682,6 +687,17 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"
 
 /**
+  *  \brief  A variable controlling whether Nintendo Switch Joy-Con controllers will be in vertical mode when using the HIDAPI driver
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Left and right Joy-Con controllers will not be in vertical mode (the default)
+  *    "1"       - Left and right Joy-Con controllers will be in vertical mode
+  *
+  *  This hint must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS "SDL_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS"
+
+/**
   *  \brief  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
   *
   *  This variable can be set to the following values:
@@ -810,7 +826,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STADIA "SDL_JOYSTICK_HIDAPI_STADIA"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Steam Controllers should be used.
+ *  \brief  A variable controlling whether the HIDAPI driver for Bluetooth Steam Controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -864,6 +880,26 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED "SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"
 
 /**
+ *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Wii and Wii U controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  This driver doesn't work with the dolphinbar, so the default is SDL_FALSE for now.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_WII "SDL_JOYSTICK_HIDAPI_WII"
+
+/**
+ *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a Wii controller.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - player LEDs are not enabled
+ *    "1"       - player LEDs are enabled (the default)
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED "SDL_JOYSTICK_HIDAPI_WII_PLAYER_LED"
+
+/**
  *  \brief  A variable controlling whether the HIDAPI driver for XBox controllers should be used.
  *
  *  This variable can be set to the following values:
@@ -906,7 +942,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS   "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox One should be used.
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox One controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -915,6 +951,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE   "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
+
+/**
+ *  \brief  A variable controlling whether the Home button LED should be turned on when an Xbox One controller is opened
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed. This hint can also be set to a floating point value between 0.0 and 1.0 which controls the brightness of the Home button LED. The default brightness is 0.4.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
 
 /**
   *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
@@ -1238,7 +1285,7 @@ extern "C" {
  *  When polling for events, SDL_PumpEvents is used to gather new events from devices.
  *  If a device keeps producing new events between calls to SDL_PumpEvents, a poll loop will
  *  become stuck until the new events stop.
- *  This is most noticable when moving a high frequency mouse.
+ *  This is most noticeable when moving a high frequency mouse.
  *
  *  By default, poll sentinels are enabled.
  */
@@ -1413,6 +1460,17 @@ extern "C" {
  *  By default SDL does not sync screen surface updates with vertical refresh.
  */
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
+
+/**
+ *  \brief  A variable controlling if VSYNC is automatically disable if doesn't reach the enough FPS
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - It will be using VSYNC as defined in the main flag. Default
+ *    "1"       - If VSYNC was previously enabled, then it will disable VSYNC if doesn't reach enough speed
+ *
+ *  By default SDL does not enable the automatic VSYNC
+ */
+#define SDL_HINT_PS2_DYNAMIC_VSYNC    "SDL_PS2_DYNAMIC_VSYNC"
 
 /**
  * \brief A variable to control whether the return key on the soft keyboard
@@ -1678,6 +1736,23 @@ extern "C" {
  *  By default video mode emulation is enabled.
  */
 #define SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION "SDL_VIDEO_WAYLAND_MODE_EMULATION"
+
+/**
+ *  \brief  Enable or disable mouse pointer warp emulation, needed by some older games.
+ *
+ *  When this hint is set, any SDL will emulate mouse warps using relative mouse mode.
+ *  This is required for some older games (such as Source engine games), which warp the
+ *  mouse to the centre of the screen rather than using relative mouse motion. Note that
+ *  relative mouse mode may have different mouse acceleration behaviour than pointer warps.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - All mouse warps fail, as mouse warping is not available under wayland.
+ *    "1"       - Some mouse warps will be emulated by forcing relative mouse mode.
+ *
+ *  If not set, this is automatically enabled unless an application uses relative mouse
+ *  mode directly.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP "SDL_VIDEO_WAYLAND_EMULATE_MOUSE_WARP"
 
 /**
 *  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
@@ -2037,105 +2112,6 @@ extern "C" {
 */
 #define SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN    "SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"
 
-/** \brief Allows back-button-press events on Windows Phone to be marked as handled
- *
- *  Windows Phone devices typically feature a Back button.  When pressed,
- *  the OS will emit back-button-press events, which apps are expected to
- *  handle in an appropriate manner.  If apps do not explicitly mark these
- *  events as 'Handled', then the OS will invoke its default behavior for
- *  unhandled back-button-press events, which on Windows Phone 8 and 8.1 is to
- *  terminate the app (and attempt to switch to the previous app, or to the
- *  device's home screen).
- *
- *  Setting the SDL_HINT_WINRT_HANDLE_BACK_BUTTON hint to "1" will cause SDL
- *  to mark back-button-press events as Handled, if and when one is sent to
- *  the app.
- *
- *  Internally, Windows Phone sends back button events as parameters to
- *  special back-button-press callback functions.  Apps that need to respond
- *  to back-button-press events are expected to register one or more
- *  callback functions for such, shortly after being launched (during the
- *  app's initialization phase).  After the back button is pressed, the OS
- *  will invoke these callbacks.  If the app's callback(s) do not explicitly
- *  mark the event as handled by the time they return, or if the app never
- *  registers one of these callback, the OS will consider the event
- *  un-handled, and it will apply its default back button behavior (terminate
- *  the app).
- *
- *  SDL registers its own back-button-press callback with the Windows Phone
- *  OS.  This callback will emit a pair of SDL key-press events (SDL_KEYDOWN
- *  and SDL_KEYUP), each with a scancode of SDL_SCANCODE_AC_BACK, after which
- *  it will check the contents of the hint, SDL_HINT_WINRT_HANDLE_BACK_BUTTON.
- *  If the hint's value is set to "1", the back button event's Handled
- *  property will get set to 'true'.  If the hint's value is set to something
- *  else, or if it is unset, SDL will leave the event's Handled property
- *  alone.  (By default, the OS sets this property to 'false', to note.)
- *
- *  SDL apps can either set SDL_HINT_WINRT_HANDLE_BACK_BUTTON well before a
- *  back button is pressed, or can set it in direct-response to a back button
- *  being pressed.
- *
- *  In order to get notified when a back button is pressed, SDL apps should
- *  register a callback function with SDL_AddEventWatch(), and have it listen
- *  for SDL_KEYDOWN events that have a scancode of SDL_SCANCODE_AC_BACK.
- *  (Alternatively, SDL_KEYUP events can be listened-for.  Listening for
- *  either event type is suitable.)  Any value of SDL_HINT_WINRT_HANDLE_BACK_BUTTON
- *  set by such a callback, will be applied to the OS' current
- *  back-button-press event.
- *
- *  More details on back button behavior in Windows Phone apps can be found
- *  at the following page, on Microsoft's developer site:
- *  http://msdn.microsoft.com/en-us/library/windowsphone/develop/jj247550(v=vs.105).aspx
- */
-#define SDL_HINT_WINRT_HANDLE_BACK_BUTTON "SDL_WINRT_HANDLE_BACK_BUTTON"
-
-/** \brief Label text for a WinRT app's privacy policy link
- *
- *  Network-enabled WinRT apps must include a privacy policy.  On Windows 8, 8.1, and RT,
- *  Microsoft mandates that this policy be available via the Windows Settings charm.
- *  SDL provides code to add a link there, with its label text being set via the
- *  optional hint, SDL_HINT_WINRT_PRIVACY_POLICY_LABEL.
- *
- *  Please note that a privacy policy's contents are not set via this hint.  A separate
- *  hint, SDL_HINT_WINRT_PRIVACY_POLICY_URL, is used to link to the actual text of the
- *  policy.
- *
- *  The contents of this hint should be encoded as a UTF8 string.
- *
- *  The default value is "Privacy Policy".  This hint should only be set during app
- *  initialization, preferably before any calls to SDL_Init().
- *
- *  For additional information on linking to a privacy policy, see the documentation for
- *  SDL_HINT_WINRT_PRIVACY_POLICY_URL.
- */
-#define SDL_HINT_WINRT_PRIVACY_POLICY_LABEL "SDL_WINRT_PRIVACY_POLICY_LABEL"
-
-/**
- *  \brief A URL to a WinRT app's privacy policy
- *
- *  All network-enabled WinRT apps must make a privacy policy available to its
- *  users.  On Windows 8, 8.1, and RT, Microsoft mandates that this policy be
- *  be available in the Windows Settings charm, as accessed from within the app.
- *  SDL provides code to add a URL-based link there, which can point to the app's
- *  privacy policy.
- *
- *  To setup a URL to an app's privacy policy, set SDL_HINT_WINRT_PRIVACY_POLICY_URL
- *  before calling any SDL_Init() functions.  The contents of the hint should
- *  be a valid URL.  For example, "http://www.example.com".
- *
- *  The default value is "", which will prevent SDL from adding a privacy policy
- *  link to the Settings charm.  This hint should only be set during app init.
- *
- *  The label text of an app's "Privacy Policy" link may be customized via another
- *  hint, SDL_HINT_WINRT_PRIVACY_POLICY_LABEL.
- *
- *  Please note that on Windows Phone, Microsoft does not provide standard UI
- *  for displaying a privacy policy link, and as such, SDL_HINT_WINRT_PRIVACY_POLICY_URL
- *  will not get used on that platform.  Network-enabled phone apps should display
- *  their privacy policy through some other, in-app means.
- */
-#define SDL_HINT_WINRT_PRIVACY_POLICY_URL "SDL_WINRT_PRIVACY_POLICY_URL"
-
 /**
  *  \brief Mark X11 windows as override-redirect.
  *
@@ -2345,7 +2321,7 @@ typedef enum
  * \param priority the SDL_HintPriority level for the hint
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2365,7 +2341,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \param value the value of the hint variable
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
@@ -2383,7 +2359,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * \param name the hint to set
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2391,12 +2367,27 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
 extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
+ * Reset all hints to the default values.
+ *
+ * This will reset all hints to the value of the associated environment
+ * variable, or NULL if the environment isn't set. Callbacks will be called
+ * normally with this change.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetHint
+ * \sa SDL_SetHint
+ * \sa SDL_ResetHint
+ */
+extern DECLSPEC void SDLCALL SDL_ResetHints(void);
+
+/**
  * Get the value of a hint.
  *
  * \param name the hint to query
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
@@ -2411,7 +2402,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
  *
- * \since This function is available since SDL 2.0.5.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2436,7 +2427,7 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *                 hint value changes
  * \param userdata a pointer to pass to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelHintCallback
  */
@@ -2452,7 +2443,7 @@ extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
  *                 hint value changes
  * \param userdata a pointer being passed to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddHintCallback
  */
@@ -2463,9 +2454,16 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
 /**
  * Clear all hints.
  *
- * This function is automatically called during SDL_Quit().
+ * This function is automatically called during SDL_Quit(), and deletes all
+ * callbacks without calling them and frees all memory associated with hints.
+ * If you're calling this from application code you probably want to call
+ * SDL_ResetHints() instead.
  *
- * \since This function is available since SDL 2.0.0.
+ * This function will be removed from the API the next time we rev the ABI.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_ResetHints
  */
 extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 

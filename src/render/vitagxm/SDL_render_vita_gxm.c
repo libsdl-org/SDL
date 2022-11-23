@@ -100,7 +100,7 @@ static int VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rec
     Uint32 pixel_format, void *pixels, int pitch);
 
 
-static void VITA_GXM_RenderPresent(SDL_Renderer *renderer);
+static int VITA_GXM_RenderPresent(SDL_Renderer *renderer);
 static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer);
 
@@ -269,8 +269,6 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->driverdata = data;
     renderer->window = window;
 
-    if (data->initialized != SDL_FALSE)
-        return 0;
     data->initialized = SDL_TRUE;
 
     if (flags & SDL_RENDERER_PRESENTVSYNC) {
@@ -286,6 +284,8 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     if (gxm_init(renderer) != 0)
     {
+        SDL_free(data);
+        SDL_free(renderer);
         return NULL;
     }
 
@@ -1185,7 +1185,7 @@ VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 }
 
 
-static void
+static int
 VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
@@ -1227,6 +1227,7 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
     data->pool_index = 0;
 
     data->current_pool = (data->current_pool + 1) % 2;
+    return 0;
 }
 
 static void
@@ -1235,13 +1236,13 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
 
-    if (data == 0)
+    if (data == NULL)
         return;
 
-    if(vita_texture == 0)
+    if(vita_texture == NULL)
         return;
 
-    if(vita_texture->tex == 0)
+    if(vita_texture->tex == NULL)
         return;
 
     sceGxmFinish(data->gxm_context);

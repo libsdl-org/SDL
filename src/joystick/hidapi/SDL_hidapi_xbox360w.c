@@ -41,7 +41,6 @@
 typedef struct {
     SDL_HIDAPI_Device *device;
     SDL_bool connected;
-    SDL_bool opened;
     int player_index;
     SDL_bool player_lights;
     Uint8 last_state[USB_PACKET_LENGTH];
@@ -75,7 +74,7 @@ HIDAPI_DriverXbox360W_IsEnabled(void)
 }
 
 static SDL_bool
-HIDAPI_DriverXbox360W_IsSupportedDevice(const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+HIDAPI_DriverXbox360W_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
 
@@ -84,12 +83,6 @@ HIDAPI_DriverXbox360W_IsSupportedDevice(const char *name, SDL_GameControllerType
         return SDL_TRUE;
     }
     return SDL_FALSE;
-}
-
-static const char *
-HIDAPI_DriverXbox360W_GetDeviceName(const char *name, Uint16 vendor_id, Uint16 product_id)
-{
-    return "Xbox 360 Wireless Controller";
 }
 
 static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, SDL_bool on)
@@ -150,6 +143,8 @@ HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
     /* Requests controller presence information from the wireless dongle */
     const Uint8 init_packet[] = { 0x08, 0x00, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
+    HIDAPI_SetDeviceName(device, "Xbox 360 Wireless Controller");
+
     ctx = (SDL_DriverXbox360W_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         SDL_OutOfMemory();
@@ -157,18 +152,14 @@ HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
     }
     ctx->device = device;
 
-    device->dev = SDL_hid_open_path(device->path, 0);
-    if (!device->dev) {
-        SDL_free(ctx);
-        SDL_SetError("Couldn't open %s", device->path);
-        return SDL_FALSE;
-    }
     device->context = ctx;
 
     if (SDL_hid_write(device->dev, init_packet, sizeof(init_packet)) != sizeof(init_packet)) {
         SDL_SetError("Couldn't write init packet");
         return SDL_FALSE;
     }
+
+    device->type = SDL_CONTROLLER_TYPE_XBOX360;
 
     return SDL_TRUE;
 }
@@ -199,8 +190,6 @@ HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
 
     SDL_zeroa(ctx->last_state);
-
-    ctx->opened = SDL_TRUE;
 
     /* Initialize player index (needed for setting LEDs) */
     ctx->player_index = SDL_JoystickGetPlayerIndex(joystick);
@@ -367,11 +356,9 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (joystick) {
-        if (size < 0) {
-            /* Read error, device is disconnected */
-            HIDAPI_JoystickDisconnected(device, joystick->instance_id);
-        }
+    if (size < 0 && device->num_joysticks > 0) {
+        /* Read error, device is disconnected */
+        HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return (size >= 0);
 }
@@ -383,22 +370,11 @@ HIDAPI_DriverXbox360W_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED,
                         SDL_PlayerLEDHintChanged, ctx);
-
-    ctx->opened = SDL_FALSE;
 }
 
 static void
 HIDAPI_DriverXbox360W_FreeDevice(SDL_HIDAPI_Device *device)
 {
-    SDL_LockMutex(device->dev_lock);
-    {
-        SDL_hid_close(device->dev);
-        device->dev = NULL;
-
-        SDL_free(device->context);
-        device->context = NULL;
-    }
-    SDL_UnlockMutex(device->dev_lock);
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W =
@@ -409,7 +385,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W =
     HIDAPI_DriverXbox360W_UnregisterHints,
     HIDAPI_DriverXbox360W_IsEnabled,
     HIDAPI_DriverXbox360W_IsSupportedDevice,
-    HIDAPI_DriverXbox360W_GetDeviceName,
     HIDAPI_DriverXbox360W_InitDevice,
     HIDAPI_DriverXbox360W_GetDevicePlayerIndex,
     HIDAPI_DriverXbox360W_SetDevicePlayerIndex,

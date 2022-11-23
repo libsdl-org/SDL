@@ -77,6 +77,7 @@
 
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
+#include "../../core/linux/SDL_sandbox.h"
 
 #if 0
 #define DEBUG_INPUT_EVENTS 1
@@ -102,7 +103,7 @@ static int MaybeRemoveDevice(const char *path);
 /* A linked list of available joysticks */
 typedef struct SDL_joylist_item
 {
-    int device_instance;
+    SDL_JoystickID device_instance;
     char *path;   /* "/dev/input/event2" or whatever */
     char *name;   /* "SideWinder 3D Pro" or whatever */
     SDL_JoystickGUID guid;
@@ -266,6 +267,10 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
                     return;
                 }
             }
+
+            /* Wait a bit for the hidraw udev node to initialize */
+            SDL_Delay(10);
+
             MaybeAddDevice(devpath);
             break;
             
@@ -331,6 +336,7 @@ MaybeAddDevice(const char *path)
 
     item = (SDL_joylist_item *) SDL_calloc(1, sizeof (SDL_joylist_item));
     if (item == NULL) {
+        SDL_free(name);
         return -1;
     }
 
@@ -755,12 +761,7 @@ LINUX_JoystickInit(void)
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
             enumeration_method = ENUMERATION_FALLBACK;
-
-        } else if (access("/.flatpak-info", F_OK) == 0
-                 || access("/run/host/container-manager", F_OK) == 0) {
-            /* Explicitly check `/.flatpak-info` because, for old versions of
-             * Flatpak, this was the only available way to tell if we were in
-             * a Flatpak container. */
+        } else if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "Container detected, disabling udev integration");
             enumeration_method = ENUMERATION_FALLBACK;

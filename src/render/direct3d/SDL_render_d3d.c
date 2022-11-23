@@ -41,13 +41,6 @@
 
 #include "SDL_shaders_d3d.h"
 
-#ifdef __WATCOMC__
-/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/868 is merged */
-#define D3DBLENDOP_REVSUBTRACT 3
-/* FIXME: Remove this once https://github.com/open-watcom/open-watcom-v2/pull/869 is merged */
-#define D3DERR_UNSUPPORTEDCOLOROPERATION MAKE_D3DHRESULT( 2073 )
-#endif
-
 typedef struct
 {
     SDL_Rect viewport;
@@ -1384,7 +1377,7 @@ D3D_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }
 
-static void
+static int
 D3D_RenderPresent(SDL_Renderer * renderer)
 {
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
@@ -1398,15 +1391,16 @@ D3D_RenderPresent(SDL_Renderer * renderer)
     result = IDirect3DDevice9_TestCooperativeLevel(data->device);
     if (result == D3DERR_DEVICELOST) {
         /* We'll reset later */
-        return;
+        return -1;
     }
     if (result == D3DERR_DEVICENOTRESET) {
         D3D_Reset(renderer);
     }
     result = IDirect3DDevice9_Present(data->device, NULL, NULL, NULL, NULL);
     if (FAILED(result)) {
-        D3D_SetError("Present()", result);
+        return D3D_SetError("Present()", result);
     }
+    return 0;
 }
 
 static void

@@ -25,6 +25,7 @@
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
 
 #include <emscripten/html5.h>
+#include <emscripten/dom_pk_codes.h>
 
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -38,236 +39,546 @@
 #define FULLSCREEN_MASK ( SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN )
 
 /*
-.keyCode to scancode
+.keyCode to SDL keycode
 https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
 https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 */
-static const SDL_Scancode emscripten_scancode_table[] = {
-    /*  0 */    SDL_SCANCODE_UNKNOWN,
-    /*  1 */    SDL_SCANCODE_UNKNOWN,
-    /*  2 */    SDL_SCANCODE_UNKNOWN,
-    /*  3 */    SDL_SCANCODE_CANCEL,
-    /*  4 */    SDL_SCANCODE_UNKNOWN,
-    /*  5 */    SDL_SCANCODE_UNKNOWN,
-    /*  6 */    SDL_SCANCODE_HELP,
-    /*  7 */    SDL_SCANCODE_UNKNOWN,
-    /*  8 */    SDL_SCANCODE_BACKSPACE,
-    /*  9 */    SDL_SCANCODE_TAB,
-    /*  10 */   SDL_SCANCODE_UNKNOWN,
-    /*  11 */   SDL_SCANCODE_UNKNOWN,
-    /*  12 */   SDL_SCANCODE_KP_5,
-    /*  13 */   SDL_SCANCODE_RETURN,
-    /*  14 */   SDL_SCANCODE_UNKNOWN,
-    /*  15 */   SDL_SCANCODE_UNKNOWN,
-    /*  16 */   SDL_SCANCODE_LSHIFT,
-    /*  17 */   SDL_SCANCODE_LCTRL,
-    /*  18 */   SDL_SCANCODE_LALT,
-    /*  19 */   SDL_SCANCODE_PAUSE,
-    /*  20 */   SDL_SCANCODE_CAPSLOCK,
-    /*  21 */   SDL_SCANCODE_UNKNOWN,
-    /*  22 */   SDL_SCANCODE_UNKNOWN,
-    /*  23 */   SDL_SCANCODE_UNKNOWN,
-    /*  24 */   SDL_SCANCODE_UNKNOWN,
-    /*  25 */   SDL_SCANCODE_UNKNOWN,
-    /*  26 */   SDL_SCANCODE_UNKNOWN,
-    /*  27 */   SDL_SCANCODE_ESCAPE,
-    /*  28 */   SDL_SCANCODE_UNKNOWN,
-    /*  29 */   SDL_SCANCODE_UNKNOWN,
-    /*  30 */   SDL_SCANCODE_UNKNOWN,
-    /*  31 */   SDL_SCANCODE_UNKNOWN,
-    /*  32 */   SDL_SCANCODE_SPACE,
-    /*  33 */   SDL_SCANCODE_PAGEUP,
-    /*  34 */   SDL_SCANCODE_PAGEDOWN,
-    /*  35 */   SDL_SCANCODE_END,
-    /*  36 */   SDL_SCANCODE_HOME,
-    /*  37 */   SDL_SCANCODE_LEFT,
-    /*  38 */   SDL_SCANCODE_UP,
-    /*  39 */   SDL_SCANCODE_RIGHT,
-    /*  40 */   SDL_SCANCODE_DOWN,
-    /*  41 */   SDL_SCANCODE_UNKNOWN,
-    /*  42 */   SDL_SCANCODE_UNKNOWN,
-    /*  43 */   SDL_SCANCODE_UNKNOWN,
-    /*  44 */   SDL_SCANCODE_UNKNOWN,
-    /*  45 */   SDL_SCANCODE_INSERT,
-    /*  46 */   SDL_SCANCODE_DELETE,
-    /*  47 */   SDL_SCANCODE_UNKNOWN,
-    /*  48 */   SDL_SCANCODE_0,
-    /*  49 */   SDL_SCANCODE_1,
-    /*  50 */   SDL_SCANCODE_2,
-    /*  51 */   SDL_SCANCODE_3,
-    /*  52 */   SDL_SCANCODE_4,
-    /*  53 */   SDL_SCANCODE_5,
-    /*  54 */   SDL_SCANCODE_6,
-    /*  55 */   SDL_SCANCODE_7,
-    /*  56 */   SDL_SCANCODE_8,
-    /*  57 */   SDL_SCANCODE_9,
-    /*  58 */   SDL_SCANCODE_UNKNOWN,
-    /*  59 */   SDL_SCANCODE_SEMICOLON,
-    /*  60 */   SDL_SCANCODE_NONUSBACKSLASH,
-    /*  61 */   SDL_SCANCODE_EQUALS,
-    /*  62 */   SDL_SCANCODE_UNKNOWN,
-    /*  63 */   SDL_SCANCODE_MINUS,
-    /*  64 */   SDL_SCANCODE_UNKNOWN,
-    /*  65 */   SDL_SCANCODE_A,
-    /*  66 */   SDL_SCANCODE_B,
-    /*  67 */   SDL_SCANCODE_C,
-    /*  68 */   SDL_SCANCODE_D,
-    /*  69 */   SDL_SCANCODE_E,
-    /*  70 */   SDL_SCANCODE_F,
-    /*  71 */   SDL_SCANCODE_G,
-    /*  72 */   SDL_SCANCODE_H,
-    /*  73 */   SDL_SCANCODE_I,
-    /*  74 */   SDL_SCANCODE_J,
-    /*  75 */   SDL_SCANCODE_K,
-    /*  76 */   SDL_SCANCODE_L,
-    /*  77 */   SDL_SCANCODE_M,
-    /*  78 */   SDL_SCANCODE_N,
-    /*  79 */   SDL_SCANCODE_O,
-    /*  80 */   SDL_SCANCODE_P,
-    /*  81 */   SDL_SCANCODE_Q,
-    /*  82 */   SDL_SCANCODE_R,
-    /*  83 */   SDL_SCANCODE_S,
-    /*  84 */   SDL_SCANCODE_T,
-    /*  85 */   SDL_SCANCODE_U,
-    /*  86 */   SDL_SCANCODE_V,
-    /*  87 */   SDL_SCANCODE_W,
-    /*  88 */   SDL_SCANCODE_X,
-    /*  89 */   SDL_SCANCODE_Y,
-    /*  90 */   SDL_SCANCODE_Z,
-    /*  91 */   SDL_SCANCODE_LGUI,
-    /*  92 */   SDL_SCANCODE_UNKNOWN,
-    /*  93 */   SDL_SCANCODE_APPLICATION,
-    /*  94 */   SDL_SCANCODE_UNKNOWN,
-    /*  95 */   SDL_SCANCODE_UNKNOWN,
-    /*  96 */   SDL_SCANCODE_KP_0,
-    /*  97 */   SDL_SCANCODE_KP_1,
-    /*  98 */   SDL_SCANCODE_KP_2,
-    /*  99 */   SDL_SCANCODE_KP_3,
-    /* 100 */   SDL_SCANCODE_KP_4,
-    /* 101 */   SDL_SCANCODE_KP_5,
-    /* 102 */   SDL_SCANCODE_KP_6,
-    /* 103 */   SDL_SCANCODE_KP_7,
-    /* 104 */   SDL_SCANCODE_KP_8,
-    /* 105 */   SDL_SCANCODE_KP_9,
-    /* 106 */   SDL_SCANCODE_KP_MULTIPLY,
-    /* 107 */   SDL_SCANCODE_KP_PLUS,
-    /* 108 */   SDL_SCANCODE_UNKNOWN,
-    /* 109 */   SDL_SCANCODE_KP_MINUS,
-    /* 110 */   SDL_SCANCODE_KP_PERIOD,
-    /* 111 */   SDL_SCANCODE_KP_DIVIDE,
-    /* 112 */   SDL_SCANCODE_F1,
-    /* 113 */   SDL_SCANCODE_F2,
-    /* 114 */   SDL_SCANCODE_F3,
-    /* 115 */   SDL_SCANCODE_F4,
-    /* 116 */   SDL_SCANCODE_F5,
-    /* 117 */   SDL_SCANCODE_F6,
-    /* 118 */   SDL_SCANCODE_F7,
-    /* 119 */   SDL_SCANCODE_F8,
-    /* 120 */   SDL_SCANCODE_F9,
-    /* 121 */   SDL_SCANCODE_F10,
-    /* 122 */   SDL_SCANCODE_F11,
-    /* 123 */   SDL_SCANCODE_F12,
-    /* 124 */   SDL_SCANCODE_F13,
-    /* 125 */   SDL_SCANCODE_F14,
-    /* 126 */   SDL_SCANCODE_F15,
-    /* 127 */   SDL_SCANCODE_F16,
-    /* 128 */   SDL_SCANCODE_F17,
-    /* 129 */   SDL_SCANCODE_F18,
-    /* 130 */   SDL_SCANCODE_F19,
-    /* 131 */   SDL_SCANCODE_F20,
-    /* 132 */   SDL_SCANCODE_F21,
-    /* 133 */   SDL_SCANCODE_F22,
-    /* 134 */   SDL_SCANCODE_F23,
-    /* 135 */   SDL_SCANCODE_F24,
-    /* 136 */   SDL_SCANCODE_UNKNOWN,
-    /* 137 */   SDL_SCANCODE_UNKNOWN,
-    /* 138 */   SDL_SCANCODE_UNKNOWN,
-    /* 139 */   SDL_SCANCODE_UNKNOWN,
-    /* 140 */   SDL_SCANCODE_UNKNOWN,
-    /* 141 */   SDL_SCANCODE_UNKNOWN,
-    /* 142 */   SDL_SCANCODE_UNKNOWN,
-    /* 143 */   SDL_SCANCODE_UNKNOWN,
-    /* 144 */   SDL_SCANCODE_NUMLOCKCLEAR,
-    /* 145 */   SDL_SCANCODE_SCROLLLOCK,
-    /* 146 */   SDL_SCANCODE_UNKNOWN,
-    /* 147 */   SDL_SCANCODE_UNKNOWN,
-    /* 148 */   SDL_SCANCODE_UNKNOWN,
-    /* 149 */   SDL_SCANCODE_UNKNOWN,
-    /* 150 */   SDL_SCANCODE_UNKNOWN,
-    /* 151 */   SDL_SCANCODE_UNKNOWN,
-    /* 152 */   SDL_SCANCODE_UNKNOWN,
-    /* 153 */   SDL_SCANCODE_UNKNOWN,
-    /* 154 */   SDL_SCANCODE_UNKNOWN,
-    /* 155 */   SDL_SCANCODE_UNKNOWN,
-    /* 156 */   SDL_SCANCODE_UNKNOWN,
-    /* 157 */   SDL_SCANCODE_UNKNOWN,
-    /* 158 */   SDL_SCANCODE_UNKNOWN,
-    /* 159 */   SDL_SCANCODE_UNKNOWN,
-    /* 160 */   SDL_SCANCODE_GRAVE,
-    /* 161 */   SDL_SCANCODE_UNKNOWN,
-    /* 162 */   SDL_SCANCODE_UNKNOWN,
-    /* 163 */   SDL_SCANCODE_KP_HASH, /*KaiOS phone keypad*/
-    /* 164 */   SDL_SCANCODE_UNKNOWN,
-    /* 165 */   SDL_SCANCODE_UNKNOWN,
-    /* 166 */   SDL_SCANCODE_UNKNOWN,
-    /* 167 */   SDL_SCANCODE_UNKNOWN,
-    /* 168 */   SDL_SCANCODE_UNKNOWN,
-    /* 169 */   SDL_SCANCODE_UNKNOWN,
-    /* 170 */   SDL_SCANCODE_KP_MULTIPLY, /*KaiOS phone keypad*/
-    /* 171 */   SDL_SCANCODE_RIGHTBRACKET,
-    /* 172 */   SDL_SCANCODE_UNKNOWN,
-    /* 173 */   SDL_SCANCODE_MINUS, /*FX*/
-    /* 174 */   SDL_SCANCODE_VOLUMEDOWN, /*IE, Chrome*/
-    /* 175 */   SDL_SCANCODE_VOLUMEUP, /*IE, Chrome*/
-    /* 176 */   SDL_SCANCODE_AUDIONEXT, /*IE, Chrome*/
-    /* 177 */   SDL_SCANCODE_AUDIOPREV, /*IE, Chrome*/
-    /* 178 */   SDL_SCANCODE_UNKNOWN,
-    /* 179 */   SDL_SCANCODE_AUDIOPLAY, /*IE, Chrome*/
-    /* 180 */   SDL_SCANCODE_UNKNOWN,
-    /* 181 */   SDL_SCANCODE_AUDIOMUTE, /*FX*/
-    /* 182 */   SDL_SCANCODE_VOLUMEDOWN, /*FX*/
-    /* 183 */   SDL_SCANCODE_VOLUMEUP, /*FX*/
-    /* 184 */   SDL_SCANCODE_UNKNOWN,
-    /* 185 */   SDL_SCANCODE_UNKNOWN,
-    /* 186 */   SDL_SCANCODE_SEMICOLON, /*IE, Chrome, D3E legacy*/
-    /* 187 */   SDL_SCANCODE_EQUALS, /*IE, Chrome, D3E legacy*/
-    /* 188 */   SDL_SCANCODE_COMMA,
-    /* 189 */   SDL_SCANCODE_MINUS, /*IE, Chrome, D3E legacy*/
-    /* 190 */   SDL_SCANCODE_PERIOD,
-    /* 191 */   SDL_SCANCODE_SLASH,
-    /* 192 */   SDL_SCANCODE_GRAVE, /*FX, D3E legacy (SDL_SCANCODE_APOSTROPHE in IE/Chrome)*/
-    /* 193 */   SDL_SCANCODE_UNKNOWN,
-    /* 194 */   SDL_SCANCODE_UNKNOWN,
-    /* 195 */   SDL_SCANCODE_UNKNOWN,
-    /* 196 */   SDL_SCANCODE_UNKNOWN,
-    /* 197 */   SDL_SCANCODE_UNKNOWN,
-    /* 198 */   SDL_SCANCODE_UNKNOWN,
-    /* 199 */   SDL_SCANCODE_UNKNOWN,
-    /* 200 */   SDL_SCANCODE_UNKNOWN,
-    /* 201 */   SDL_SCANCODE_UNKNOWN,
-    /* 202 */   SDL_SCANCODE_UNKNOWN,
-    /* 203 */   SDL_SCANCODE_UNKNOWN,
-    /* 204 */   SDL_SCANCODE_UNKNOWN,
-    /* 205 */   SDL_SCANCODE_UNKNOWN,
-    /* 206 */   SDL_SCANCODE_UNKNOWN,
-    /* 207 */   SDL_SCANCODE_UNKNOWN,
-    /* 208 */   SDL_SCANCODE_UNKNOWN,
-    /* 209 */   SDL_SCANCODE_UNKNOWN,
-    /* 210 */   SDL_SCANCODE_UNKNOWN,
-    /* 211 */   SDL_SCANCODE_UNKNOWN,
-    /* 212 */   SDL_SCANCODE_UNKNOWN,
-    /* 213 */   SDL_SCANCODE_UNKNOWN,
-    /* 214 */   SDL_SCANCODE_UNKNOWN,
-    /* 215 */   SDL_SCANCODE_UNKNOWN,
-    /* 216 */   SDL_SCANCODE_UNKNOWN,
-    /* 217 */   SDL_SCANCODE_UNKNOWN,
-    /* 218 */   SDL_SCANCODE_UNKNOWN,
-    /* 219 */   SDL_SCANCODE_LEFTBRACKET,
-    /* 220 */   SDL_SCANCODE_BACKSLASH,
-    /* 221 */   SDL_SCANCODE_RIGHTBRACKET,
-    /* 222 */   SDL_SCANCODE_APOSTROPHE, /*FX, D3E legacy*/
+static const SDL_Keycode emscripten_keycode_table[] = {
+    /*  0 */    SDLK_UNKNOWN,
+    /*  1 */    SDLK_UNKNOWN,
+    /*  2 */    SDLK_UNKNOWN,
+    /*  3 */    SDLK_CANCEL,
+    /*  4 */    SDLK_UNKNOWN,
+    /*  5 */    SDLK_UNKNOWN,
+    /*  6 */    SDLK_HELP,
+    /*  7 */    SDLK_UNKNOWN,
+    /*  8 */    SDLK_BACKSPACE,
+    /*  9 */    SDLK_TAB,
+    /*  10 */   SDLK_UNKNOWN,
+    /*  11 */   SDLK_UNKNOWN,
+    /*  12 */   SDLK_KP_5,
+    /*  13 */   SDLK_RETURN,
+    /*  14 */   SDLK_UNKNOWN,
+    /*  15 */   SDLK_UNKNOWN,
+    /*  16 */   SDLK_LSHIFT,
+    /*  17 */   SDLK_LCTRL,
+    /*  18 */   SDLK_LALT,
+    /*  19 */   SDLK_PAUSE,
+    /*  20 */   SDLK_CAPSLOCK,
+    /*  21 */   SDLK_UNKNOWN,
+    /*  22 */   SDLK_UNKNOWN,
+    /*  23 */   SDLK_UNKNOWN,
+    /*  24 */   SDLK_UNKNOWN,
+    /*  25 */   SDLK_UNKNOWN,
+    /*  26 */   SDLK_UNKNOWN,
+    /*  27 */   SDLK_ESCAPE,
+    /*  28 */   SDLK_UNKNOWN,
+    /*  29 */   SDLK_UNKNOWN,
+    /*  30 */   SDLK_UNKNOWN,
+    /*  31 */   SDLK_UNKNOWN,
+    /*  32 */   SDLK_SPACE,
+    /*  33 */   SDLK_PAGEUP,
+    /*  34 */   SDLK_PAGEDOWN,
+    /*  35 */   SDLK_END,
+    /*  36 */   SDLK_HOME,
+    /*  37 */   SDLK_LEFT,
+    /*  38 */   SDLK_UP,
+    /*  39 */   SDLK_RIGHT,
+    /*  40 */   SDLK_DOWN,
+    /*  41 */   SDLK_UNKNOWN,
+    /*  42 */   SDLK_UNKNOWN,
+    /*  43 */   SDLK_UNKNOWN,
+    /*  44 */   SDLK_UNKNOWN,
+    /*  45 */   SDLK_INSERT,
+    /*  46 */   SDLK_DELETE,
+    /*  47 */   SDLK_UNKNOWN,
+    /*  48 */   SDLK_0,
+    /*  49 */   SDLK_1,
+    /*  50 */   SDLK_2,
+    /*  51 */   SDLK_3,
+    /*  52 */   SDLK_4,
+    /*  53 */   SDLK_5,
+    /*  54 */   SDLK_6,
+    /*  55 */   SDLK_7,
+    /*  56 */   SDLK_8,
+    /*  57 */   SDLK_9,
+    /*  58 */   SDLK_UNKNOWN,
+    /*  59 */   SDLK_SEMICOLON,
+    /*  60 */   SDLK_BACKSLASH /*SDL_SCANCODE_NONUSBACKSLASH*/,
+    /*  61 */   SDLK_EQUALS,
+    /*  62 */   SDLK_UNKNOWN,
+    /*  63 */   SDLK_MINUS,
+    /*  64 */   SDLK_UNKNOWN,
+    /*  65 */   SDLK_a,
+    /*  66 */   SDLK_b,
+    /*  67 */   SDLK_c,
+    /*  68 */   SDLK_d,
+    /*  69 */   SDLK_e,
+    /*  70 */   SDLK_f,
+    /*  71 */   SDLK_g,
+    /*  72 */   SDLK_h,
+    /*  73 */   SDLK_i,
+    /*  74 */   SDLK_j,
+    /*  75 */   SDLK_k,
+    /*  76 */   SDLK_l,
+    /*  77 */   SDLK_m,
+    /*  78 */   SDLK_n,
+    /*  79 */   SDLK_o,
+    /*  80 */   SDLK_p,
+    /*  81 */   SDLK_q,
+    /*  82 */   SDLK_r,
+    /*  83 */   SDLK_s,
+    /*  84 */   SDLK_t,
+    /*  85 */   SDLK_u,
+    /*  86 */   SDLK_v,
+    /*  87 */   SDLK_w,
+    /*  88 */   SDLK_x,
+    /*  89 */   SDLK_y,
+    /*  90 */   SDLK_z,
+    /*  91 */   SDLK_LGUI,
+    /*  92 */   SDLK_UNKNOWN,
+    /*  93 */   SDLK_APPLICATION,
+    /*  94 */   SDLK_UNKNOWN,
+    /*  95 */   SDLK_UNKNOWN,
+    /*  96 */   SDLK_KP_0,
+    /*  97 */   SDLK_KP_1,
+    /*  98 */   SDLK_KP_2,
+    /*  99 */   SDLK_KP_3,
+    /* 100 */   SDLK_KP_4,
+    /* 101 */   SDLK_KP_5,
+    /* 102 */   SDLK_KP_6,
+    /* 103 */   SDLK_KP_7,
+    /* 104 */   SDLK_KP_8,
+    /* 105 */   SDLK_KP_9,
+    /* 106 */   SDLK_KP_MULTIPLY,
+    /* 107 */   SDLK_KP_PLUS,
+    /* 108 */   SDLK_UNKNOWN,
+    /* 109 */   SDLK_KP_MINUS,
+    /* 110 */   SDLK_KP_PERIOD,
+    /* 111 */   SDLK_KP_DIVIDE,
+    /* 112 */   SDLK_F1,
+    /* 113 */   SDLK_F2,
+    /* 114 */   SDLK_F3,
+    /* 115 */   SDLK_F4,
+    /* 116 */   SDLK_F5,
+    /* 117 */   SDLK_F6,
+    /* 118 */   SDLK_F7,
+    /* 119 */   SDLK_F8,
+    /* 120 */   SDLK_F9,
+    /* 121 */   SDLK_F10,
+    /* 122 */   SDLK_F11,
+    /* 123 */   SDLK_F12,
+    /* 124 */   SDLK_F13,
+    /* 125 */   SDLK_F14,
+    /* 126 */   SDLK_F15,
+    /* 127 */   SDLK_F16,
+    /* 128 */   SDLK_F17,
+    /* 129 */   SDLK_F18,
+    /* 130 */   SDLK_F19,
+    /* 131 */   SDLK_F20,
+    /* 132 */   SDLK_F21,
+    /* 133 */   SDLK_F22,
+    /* 134 */   SDLK_F23,
+    /* 135 */   SDLK_F24,
+    /* 136 */   SDLK_UNKNOWN,
+    /* 137 */   SDLK_UNKNOWN,
+    /* 138 */   SDLK_UNKNOWN,
+    /* 139 */   SDLK_UNKNOWN,
+    /* 140 */   SDLK_UNKNOWN,
+    /* 141 */   SDLK_UNKNOWN,
+    /* 142 */   SDLK_UNKNOWN,
+    /* 143 */   SDLK_UNKNOWN,
+    /* 144 */   SDLK_NUMLOCKCLEAR,
+    /* 145 */   SDLK_SCROLLLOCK,
+    /* 146 */   SDLK_UNKNOWN,
+    /* 147 */   SDLK_UNKNOWN,
+    /* 148 */   SDLK_UNKNOWN,
+    /* 149 */   SDLK_UNKNOWN,
+    /* 150 */   SDLK_UNKNOWN,
+    /* 151 */   SDLK_UNKNOWN,
+    /* 152 */   SDLK_UNKNOWN,
+    /* 153 */   SDLK_UNKNOWN,
+    /* 154 */   SDLK_UNKNOWN,
+    /* 155 */   SDLK_UNKNOWN,
+    /* 156 */   SDLK_UNKNOWN,
+    /* 157 */   SDLK_UNKNOWN,
+    /* 158 */   SDLK_UNKNOWN,
+    /* 159 */   SDLK_UNKNOWN,
+    /* 160 */   SDLK_BACKQUOTE,
+    /* 161 */   SDLK_UNKNOWN,
+    /* 162 */   SDLK_UNKNOWN,
+    /* 163 */   SDLK_KP_HASH, /*KaiOS phone keypad*/
+    /* 164 */   SDLK_UNKNOWN,
+    /* 165 */   SDLK_UNKNOWN,
+    /* 166 */   SDLK_UNKNOWN,
+    /* 167 */   SDLK_UNKNOWN,
+    /* 168 */   SDLK_UNKNOWN,
+    /* 169 */   SDLK_UNKNOWN,
+    /* 170 */   SDLK_KP_MULTIPLY, /*KaiOS phone keypad*/
+    /* 171 */   SDLK_RIGHTBRACKET,
+    /* 172 */   SDLK_UNKNOWN,
+    /* 173 */   SDLK_MINUS, /*FX*/
+    /* 174 */   SDLK_VOLUMEDOWN, /*IE, Chrome*/
+    /* 175 */   SDLK_VOLUMEUP, /*IE, Chrome*/
+    /* 176 */   SDLK_AUDIONEXT, /*IE, Chrome*/
+    /* 177 */   SDLK_AUDIOPREV, /*IE, Chrome*/
+    /* 178 */   SDLK_UNKNOWN,
+    /* 179 */   SDLK_AUDIOPLAY, /*IE, Chrome*/
+    /* 180 */   SDLK_UNKNOWN,
+    /* 181 */   SDLK_AUDIOMUTE, /*FX*/
+    /* 182 */   SDLK_VOLUMEDOWN, /*FX*/
+    /* 183 */   SDLK_VOLUMEUP, /*FX*/
+    /* 184 */   SDLK_UNKNOWN,
+    /* 185 */   SDLK_UNKNOWN,
+    /* 186 */   SDLK_SEMICOLON, /*IE, Chrome, D3E legacy*/
+    /* 187 */   SDLK_EQUALS, /*IE, Chrome, D3E legacy*/
+    /* 188 */   SDLK_COMMA,
+    /* 189 */   SDLK_MINUS, /*IE, Chrome, D3E legacy*/
+    /* 190 */   SDLK_PERIOD,
+    /* 191 */   SDLK_SLASH,
+    /* 192 */   SDLK_BACKQUOTE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
+    /* 193 */   SDLK_UNKNOWN,
+    /* 194 */   SDLK_UNKNOWN,
+    /* 195 */   SDLK_UNKNOWN,
+    /* 196 */   SDLK_UNKNOWN,
+    /* 197 */   SDLK_UNKNOWN,
+    /* 198 */   SDLK_UNKNOWN,
+    /* 199 */   SDLK_UNKNOWN,
+    /* 200 */   SDLK_UNKNOWN,
+    /* 201 */   SDLK_UNKNOWN,
+    /* 202 */   SDLK_UNKNOWN,
+    /* 203 */   SDLK_UNKNOWN,
+    /* 204 */   SDLK_UNKNOWN,
+    /* 205 */   SDLK_UNKNOWN,
+    /* 206 */   SDLK_UNKNOWN,
+    /* 207 */   SDLK_UNKNOWN,
+    /* 208 */   SDLK_UNKNOWN,
+    /* 209 */   SDLK_UNKNOWN,
+    /* 210 */   SDLK_UNKNOWN,
+    /* 211 */   SDLK_UNKNOWN,
+    /* 212 */   SDLK_UNKNOWN,
+    /* 213 */   SDLK_UNKNOWN,
+    /* 214 */   SDLK_UNKNOWN,
+    /* 215 */   SDLK_UNKNOWN,
+    /* 216 */   SDLK_UNKNOWN,
+    /* 217 */   SDLK_UNKNOWN,
+    /* 218 */   SDLK_UNKNOWN,
+    /* 219 */   SDLK_LEFTBRACKET,
+    /* 220 */   SDLK_BACKSLASH,
+    /* 221 */   SDLK_RIGHTBRACKET,
+    /* 222 */   SDLK_QUOTE, /*FX, D3E legacy*/
 };
 
+
+/*
+Emscripten PK code to scancode
+https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
+*/
+static const SDL_Scancode emscripten_scancode_table[] = {
+    /* 0x00 "Unidentified"   */ SDL_SCANCODE_UNKNOWN,
+    /* 0x01 "Escape"         */ SDL_SCANCODE_ESCAPE,
+    /* 0x02 "Digit0"         */ SDL_SCANCODE_0,
+    /* 0x03 "Digit1"         */ SDL_SCANCODE_1,
+    /* 0x04 "Digit2"         */ SDL_SCANCODE_2,
+    /* 0x05 "Digit3"         */ SDL_SCANCODE_3,
+    /* 0x06 "Digit4"         */ SDL_SCANCODE_4,
+    /* 0x07 "Digit5"         */ SDL_SCANCODE_5,
+    /* 0x08 "Digit6"         */ SDL_SCANCODE_6,
+    /* 0x09 "Digit7"         */ SDL_SCANCODE_7,
+    /* 0x0A "Digit8"         */ SDL_SCANCODE_8,
+    /* 0x0B "Digit9"         */ SDL_SCANCODE_9,
+    /* 0x0C "Minus"          */ SDL_SCANCODE_MINUS,
+    /* 0x0D "Equal"          */ SDL_SCANCODE_EQUALS,
+    /* 0x0E "Backspace"      */ SDL_SCANCODE_BACKSPACE,
+    /* 0x0F "Tab"            */ SDL_SCANCODE_TAB,
+    /* 0x10 "KeyQ"           */ SDL_SCANCODE_Q,
+    /* 0x11 "KeyW"           */ SDL_SCANCODE_W,
+    /* 0x12 "KeyE"           */ SDL_SCANCODE_E,
+    /* 0x13 "KeyR"           */ SDL_SCANCODE_R,
+    /* 0x14 "KeyT"           */ SDL_SCANCODE_T,
+    /* 0x15 "KeyY"           */ SDL_SCANCODE_Y,
+    /* 0x16 "KeyU"           */ SDL_SCANCODE_U,
+    /* 0x17 "KeyI"           */ SDL_SCANCODE_I,
+    /* 0x18 "KeyO"           */ SDL_SCANCODE_O,
+    /* 0x19 "KeyP"           */ SDL_SCANCODE_P,
+    /* 0x1A "BracketLeft"    */ SDL_SCANCODE_LEFTBRACKET,
+    /* 0x1B "BracketRight"   */ SDL_SCANCODE_RIGHTBRACKET,
+    /* 0x1C "Enter"          */ SDL_SCANCODE_RETURN,
+    /* 0x1D "ControlLeft"    */ SDL_SCANCODE_LCTRL,
+    /* 0x1E "KeyA"           */ SDL_SCANCODE_A,
+    /* 0x1F "KeyS"           */ SDL_SCANCODE_S,
+    /* 0x20 "KeyD"           */ SDL_SCANCODE_D,
+    /* 0x21 "KeyF"           */ SDL_SCANCODE_F,
+    /* 0x22 "KeyG"           */ SDL_SCANCODE_G,
+    /* 0x23 "KeyH"           */ SDL_SCANCODE_H,
+    /* 0x24 "KeyJ"           */ SDL_SCANCODE_J,
+    /* 0x25 "KeyK"           */ SDL_SCANCODE_K,
+    /* 0x26 "KeyL"           */ SDL_SCANCODE_L,
+    /* 0x27 "Semicolon"      */ SDL_SCANCODE_SEMICOLON,
+    /* 0x28 "Quote"          */ SDL_SCANCODE_APOSTROPHE,
+    /* 0x29 "Backquote"      */ SDL_SCANCODE_GRAVE,
+    /* 0x2A "ShiftLeft"      */ SDL_SCANCODE_LSHIFT,
+    /* 0x2B "Backslash"      */ SDL_SCANCODE_BACKSLASH,
+    /* 0x2C "KeyZ"           */ SDL_SCANCODE_Z,
+    /* 0x2D "KeyX"           */ SDL_SCANCODE_X,
+    /* 0x2E "KeyC"           */ SDL_SCANCODE_C,
+    /* 0x2F "KeyV"           */ SDL_SCANCODE_V,
+    /* 0x30 "KeyB"           */ SDL_SCANCODE_B,
+    /* 0x31 "KeyN"           */ SDL_SCANCODE_N,
+    /* 0x32 "KeyM"           */ SDL_SCANCODE_M,
+    /* 0x33 "Comma"          */ SDL_SCANCODE_COMMA,
+    /* 0x34 "Period"         */ SDL_SCANCODE_PERIOD,
+    /* 0x35 "Slash"          */ SDL_SCANCODE_SLASH,
+    /* 0x36 "ShiftRight"     */ SDL_SCANCODE_RSHIFT,
+    /* 0x37 "NumpadMultiply" */ SDL_SCANCODE_KP_MULTIPLY,
+    /* 0x38 "AltLeft"        */ SDL_SCANCODE_LALT,
+    /* 0x39 "Space"          */ SDL_SCANCODE_SPACE,
+    /* 0x3A "CapsLock"       */ SDL_SCANCODE_CAPSLOCK,
+    /* 0x3B "F1"             */ SDL_SCANCODE_F1,
+    /* 0x3C "F2"             */ SDL_SCANCODE_F2,
+    /* 0x3D "F3"             */ SDL_SCANCODE_F3,
+    /* 0x3E "F4"             */ SDL_SCANCODE_F4,
+    /* 0x3F "F5"             */ SDL_SCANCODE_F5,
+    /* 0x40 "F6"             */ SDL_SCANCODE_F6,
+    /* 0x41 "F7"             */ SDL_SCANCODE_F7,
+    /* 0x42 "F8"             */ SDL_SCANCODE_F8,
+    /* 0x43 "F9"             */ SDL_SCANCODE_F9,
+    /* 0x44 "F10"            */ SDL_SCANCODE_F10,
+    /* 0x45 "Pause"          */ SDL_SCANCODE_PAUSE,
+    /* 0x46 "ScrollLock"     */ SDL_SCANCODE_SCROLLLOCK,
+    /* 0x47 "Numpad7"        */ SDL_SCANCODE_KP_7,
+    /* 0x48 "Numpad8"        */ SDL_SCANCODE_KP_8,
+    /* 0x49 "Numpad9"        */ SDL_SCANCODE_KP_9,
+    /* 0x4A "NumpadSubtract" */ SDL_SCANCODE_KP_MINUS,
+    /* 0x4B "Numpad4"        */ SDL_SCANCODE_KP_4,
+    /* 0x4C "Numpad5"        */ SDL_SCANCODE_KP_5,
+    /* 0x4D "Numpad6"        */ SDL_SCANCODE_KP_6,
+    /* 0x4E "NumpadAdd"      */ SDL_SCANCODE_KP_PLUS,
+    /* 0x4F "Numpad1"        */ SDL_SCANCODE_KP_1,
+    /* 0x50 "Numpad2"        */ SDL_SCANCODE_KP_2,
+    /* 0x51 "Numpad3"        */ SDL_SCANCODE_KP_3,
+    /* 0x52 "Numpad0"        */ SDL_SCANCODE_KP_0,
+    /* 0x53 "NumpadDecimal"  */ SDL_SCANCODE_KP_PERIOD,
+    /* 0x54 "PrintScreen"    */ SDL_SCANCODE_PRINTSCREEN,
+    /* 0x55                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x56 "IntlBackslash"  */ SDL_SCANCODE_NONUSBACKSLASH,
+    /* 0x57 "F11"            */ SDL_SCANCODE_F11,
+    /* 0x58 "F12"            */ SDL_SCANCODE_F12,
+    /* 0x59 "NumpadEqual"    */ SDL_SCANCODE_KP_EQUALS,
+    /* 0x5A                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x5B                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x5C                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x5D                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x5E                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x5F                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x60                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x61                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x62                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x63                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x64 "F13"            */ SDL_SCANCODE_F13,
+    /* 0x65 "F14"            */ SDL_SCANCODE_F14,
+    /* 0x66 "F15"            */ SDL_SCANCODE_F15,
+    /* 0x67 "F16"            */ SDL_SCANCODE_F16,
+    /* 0x68 "F17"            */ SDL_SCANCODE_F17,
+    /* 0x69 "F18"            */ SDL_SCANCODE_F18,
+    /* 0x6A "F19"            */ SDL_SCANCODE_F19,
+    /* 0x6B "F20"            */ SDL_SCANCODE_F20,
+    /* 0x6C "F21"            */ SDL_SCANCODE_F21,
+    /* 0x6D "F22"            */ SDL_SCANCODE_F22,
+    /* 0x6E "F23"            */ SDL_SCANCODE_F23,
+    /* 0x6F                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x70 "KanaMode"       */ SDL_SCANCODE_INTERNATIONAL2,
+    /* 0x71 "Lang2"          */ SDL_SCANCODE_LANG2,
+    /* 0x72 "Lang1"          */ SDL_SCANCODE_LANG1,
+    /* 0x73 "IntlRo"         */ SDL_SCANCODE_INTERNATIONAL1,
+    /* 0x74                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x75                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x76 "F24"            */ SDL_SCANCODE_F24,
+    /* 0x77                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x78                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x79 "Convert"        */ SDL_SCANCODE_INTERNATIONAL4,
+    /* 0x7A                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x7B "NonConvert"     */ SDL_SCANCODE_INTERNATIONAL5,
+    /* 0x7C                  */ SDL_SCANCODE_UNKNOWN,
+    /* 0x7D "IntlYen"        */ SDL_SCANCODE_INTERNATIONAL3,
+    /* 0x7E "NumpadComma"    */ SDL_SCANCODE_KP_COMMA
+};
+
+static SDL_Scancode
+Emscripten_MapScanCode(const char *code)
+{
+    const DOM_PK_CODE_TYPE pk_code = emscripten_compute_dom_pk_code(code);
+    if (pk_code < SDL_arraysize(emscripten_scancode_table)) {
+        return emscripten_scancode_table[pk_code];
+    }
+
+    switch (pk_code) {
+        case DOM_PK_PASTE:
+            return SDL_SCANCODE_PASTE;
+        case DOM_PK_MEDIA_TRACK_PREVIOUS:
+            return SDL_SCANCODE_AUDIOPREV;
+        case DOM_PK_CUT:
+            return SDL_SCANCODE_CUT;
+        case DOM_PK_COPY:
+            return SDL_SCANCODE_COPY;
+        case DOM_PK_MEDIA_TRACK_NEXT:
+            return SDL_SCANCODE_AUDIONEXT;
+        case DOM_PK_NUMPAD_ENTER:
+            return SDL_SCANCODE_KP_ENTER;
+        case DOM_PK_CONTROL_RIGHT:
+            return SDL_SCANCODE_RCTRL;
+        case DOM_PK_AUDIO_VOLUME_MUTE:
+            return SDL_SCANCODE_AUDIOMUTE;
+        case DOM_PK_LAUNCH_APP_2:
+            return SDL_SCANCODE_CALCULATOR;
+        case DOM_PK_MEDIA_PLAY_PAUSE:
+            return SDL_SCANCODE_AUDIOPLAY;
+        case DOM_PK_MEDIA_STOP:
+            return SDL_SCANCODE_AUDIOSTOP;
+        case DOM_PK_EJECT:
+            return SDL_SCANCODE_EJECT;
+        case DOM_PK_AUDIO_VOLUME_DOWN:
+            return SDL_SCANCODE_VOLUMEDOWN;
+        case DOM_PK_AUDIO_VOLUME_UP:
+            return SDL_SCANCODE_VOLUMEUP;
+        case DOM_PK_BROWSER_HOME:
+            return SDL_SCANCODE_AC_HOME;
+        case DOM_PK_NUMPAD_DIVIDE:
+            return SDL_SCANCODE_KP_DIVIDE;
+        case DOM_PK_ALT_RIGHT:
+            return SDL_SCANCODE_RALT;
+        case DOM_PK_HELP:
+            return SDL_SCANCODE_HELP;
+        case DOM_PK_NUM_LOCK:
+            return SDL_SCANCODE_NUMLOCKCLEAR;
+        case DOM_PK_HOME:
+            return SDL_SCANCODE_HOME;
+        case DOM_PK_ARROW_UP:
+            return SDL_SCANCODE_UP;
+        case DOM_PK_PAGE_UP:
+            return SDL_SCANCODE_PAGEUP;
+        case DOM_PK_ARROW_LEFT:
+            return SDL_SCANCODE_LEFT;
+        case DOM_PK_ARROW_RIGHT:
+            return SDL_SCANCODE_RIGHT;
+        case DOM_PK_END:
+            return SDL_SCANCODE_END;
+        case DOM_PK_ARROW_DOWN:
+            return SDL_SCANCODE_DOWN;
+        case DOM_PK_PAGE_DOWN:
+            return SDL_SCANCODE_PAGEDOWN;
+        case DOM_PK_INSERT:
+            return SDL_SCANCODE_INSERT;
+        case DOM_PK_DELETE:
+            return SDL_SCANCODE_DELETE;
+        case DOM_PK_META_LEFT:
+            return SDL_SCANCODE_LGUI;
+        case DOM_PK_META_RIGHT:
+            return SDL_SCANCODE_RGUI;
+        case DOM_PK_CONTEXT_MENU:
+            return SDL_SCANCODE_APPLICATION;
+        case DOM_PK_POWER:
+            return SDL_SCANCODE_POWER;
+        case DOM_PK_BROWSER_SEARCH:
+            return SDL_SCANCODE_AC_SEARCH;
+        case DOM_PK_BROWSER_FAVORITES:
+            return SDL_SCANCODE_AC_BOOKMARKS;
+        case DOM_PK_BROWSER_REFRESH:
+            return SDL_SCANCODE_AC_REFRESH;
+        case DOM_PK_BROWSER_STOP:
+            return SDL_SCANCODE_AC_STOP;
+        case DOM_PK_BROWSER_FORWARD:
+            return SDL_SCANCODE_AC_FORWARD;
+        case DOM_PK_BROWSER_BACK:
+            return SDL_SCANCODE_AC_BACK;
+        case DOM_PK_LAUNCH_APP_1:
+            return SDL_SCANCODE_COMPUTER;
+        case DOM_PK_LAUNCH_MAIL:
+            return SDL_SCANCODE_MAIL;
+        case DOM_PK_MEDIA_SELECT:
+            return SDL_SCANCODE_MEDIASELECT;
+    }
+
+    return SDL_SCANCODE_UNKNOWN;
+}
+
+static SDL_Keycode
+Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent)
+{
+    SDL_Keycode keycode = SDLK_UNKNOWN;
+    if (keyEvent->keyCode < SDL_arraysize(emscripten_keycode_table)) {
+        keycode = emscripten_keycode_table[keyEvent->keyCode];
+        if (keycode != SDLK_UNKNOWN) {
+            if (keyEvent->location == DOM_KEY_LOCATION_RIGHT) {
+                switch (keycode) {
+                    case SDLK_LSHIFT:
+                        keycode = SDLK_RSHIFT;
+                        break;
+                    case SDLK_LCTRL:
+                        keycode = SDLK_RCTRL;
+                        break;
+                    case SDLK_LALT:
+                        keycode = SDLK_RALT;
+                        break;
+                    case SDLK_LGUI:
+                        keycode = SDLK_RGUI;
+                        break;
+                }
+            } else if (keyEvent->location == DOM_KEY_LOCATION_NUMPAD) {
+                switch (keycode) {
+                    case SDLK_0:
+                    case SDLK_INSERT:
+                        keycode = SDLK_KP_0;
+                        break;
+                    case SDLK_1:
+                    case SDLK_END:
+                        keycode = SDLK_KP_1;
+                        break;
+                    case SDLK_2:
+                    case SDLK_DOWN:
+                        keycode = SDLK_KP_2;
+                        break;
+                    case SDLK_3:
+                    case SDLK_PAGEDOWN:
+                        keycode = SDLK_KP_3;
+                        break;
+                    case SDLK_4:
+                    case SDLK_LEFT:
+                        keycode = SDLK_KP_4;
+                        break;
+                    case SDLK_5:
+                        keycode = SDLK_KP_5;
+                        break;
+                    case SDLK_6:
+                    case SDLK_RIGHT:
+                        keycode = SDLK_KP_6;
+                        break;
+                    case SDLK_7:
+                    case SDLK_HOME:
+                        keycode = SDLK_KP_7;
+                        break;
+                    case SDLK_8:
+                    case SDLK_UP:
+                        keycode = SDLK_KP_8;
+                        break;
+                    case SDLK_9:
+                    case SDLK_PAGEUP:
+                        keycode = SDLK_KP_9;
+                        break;
+                    case SDLK_RETURN:
+                        keycode = SDLK_KP_ENTER;
+                        break;
+                    case SDLK_DELETE:
+                        keycode = SDLK_KP_PERIOD;
+                        break;
+                }
+            }
+        }
+    }
+
+    return keycode;
+}
 
 /* "borrowed" from SDL_windowsevents.c */
 static int
@@ -492,109 +803,41 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
 static EM_BOOL
 Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
-    Uint32 scancode;
-    SDL_bool prevent_default = SDL_FALSE;
-    SDL_bool is_nav_key;
+    const SDL_Keycode keycode = Emscripten_MapKeyCode(keyEvent);
+    SDL_Scancode scancode = Emscripten_MapScanCode(keyEvent->code);
+    SDL_bool prevent_default = SDL_TRUE;
+    SDL_bool is_nav_key = SDL_FALSE;
 
-    /* .keyCode is deprecated, but still the most reliable way to get keys */
-    if (keyEvent->keyCode < SDL_arraysize(emscripten_scancode_table)) {
-        scancode = emscripten_scancode_table[keyEvent->keyCode];
-
-        if (keyEvent->keyCode == 0) {
-            /* KaiOS Left Soft Key and Right Soft Key, they act as OK/Next/Menu and Cancel/Back/Clear */
-            if (SDL_strncmp(keyEvent->key, "SoftLeft", 9) == 0) {
-                scancode = SDL_SCANCODE_AC_FORWARD;
-            }
-            if (SDL_strncmp(keyEvent->key, "SoftRight", 10) == 0) {
-                scancode = SDL_SCANCODE_AC_BACK;
-            }
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
+        /* KaiOS Left Soft Key and Right Soft Key, they act as OK/Next/Menu and Cancel/Back/Clear */
+        if (SDL_strncmp(keyEvent->key, "SoftLeft", 9) == 0) {
+            scancode = SDL_SCANCODE_AC_FORWARD;
+        } else if (SDL_strncmp(keyEvent->key, "SoftRight", 10) == 0) {
+            scancode = SDL_SCANCODE_AC_BACK;
         }
+    }
 
-        if (scancode != SDL_SCANCODE_UNKNOWN) {
-
-            if (keyEvent->location == DOM_KEY_LOCATION_RIGHT) {
-                switch (scancode) {
-                    case SDL_SCANCODE_LSHIFT:
-                        scancode = SDL_SCANCODE_RSHIFT;
-                        break;
-                    case SDL_SCANCODE_LCTRL:
-                        scancode = SDL_SCANCODE_RCTRL;
-                        break;
-                    case SDL_SCANCODE_LALT:
-                        scancode = SDL_SCANCODE_RALT;
-                        break;
-                    case SDL_SCANCODE_LGUI:
-                        scancode = SDL_SCANCODE_RGUI;
-                        break;
-                }
-            }
-            else if (keyEvent->location == DOM_KEY_LOCATION_NUMPAD) {
-                switch (scancode) {
-                    case SDL_SCANCODE_0:
-                    case SDL_SCANCODE_INSERT:
-                        scancode = SDL_SCANCODE_KP_0;
-                        break;
-                    case SDL_SCANCODE_1:
-                    case SDL_SCANCODE_END:
-                        scancode = SDL_SCANCODE_KP_1;
-                        break;
-                    case SDL_SCANCODE_2:
-                    case SDL_SCANCODE_DOWN:
-                        scancode = SDL_SCANCODE_KP_2;
-                        break;
-                    case SDL_SCANCODE_3:
-                    case SDL_SCANCODE_PAGEDOWN:
-                        scancode = SDL_SCANCODE_KP_3;
-                        break;
-                    case SDL_SCANCODE_4:
-                    case SDL_SCANCODE_LEFT:
-                        scancode = SDL_SCANCODE_KP_4;
-                        break;
-                    case SDL_SCANCODE_5:
-                        scancode = SDL_SCANCODE_KP_5;
-                        break;
-                    case SDL_SCANCODE_6:
-                    case SDL_SCANCODE_RIGHT:
-                        scancode = SDL_SCANCODE_KP_6;
-                        break;
-                    case SDL_SCANCODE_7:
-                    case SDL_SCANCODE_HOME:
-                        scancode = SDL_SCANCODE_KP_7;
-                        break;
-                    case SDL_SCANCODE_8:
-                    case SDL_SCANCODE_UP:
-                        scancode = SDL_SCANCODE_KP_8;
-                        break;
-                    case SDL_SCANCODE_9:
-                    case SDL_SCANCODE_PAGEUP:
-                        scancode = SDL_SCANCODE_KP_9;
-                        break;
-                    case SDL_SCANCODE_RETURN:
-                        scancode = SDL_SCANCODE_KP_ENTER;
-                        break;
-                    case SDL_SCANCODE_DELETE:
-                        scancode = SDL_SCANCODE_KP_PERIOD;
-                        break;
-                }
-            }
-            prevent_default = SDL_SendKeyboardKey(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED, scancode);
-        }
+    if (scancode != SDL_SCANCODE_UNKNOWN) {
+        SDL_SendKeyboardKeyAndKeycode(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED, scancode, keycode);
     }
 
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
      * we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
      */
-    is_nav_key = keyEvent->keyCode == 8 /* backspace */ ||
-                 keyEvent->keyCode == 9 /* tab */ ||
-                 keyEvent->keyCode == 37 /* left */ ||
-                 keyEvent->keyCode == 38 /* up */ ||
-                 keyEvent->keyCode == 39 /* right */ ||
-                 keyEvent->keyCode == 40 /* down */ ||
-                 (keyEvent->keyCode >= 112 && keyEvent->keyCode <= 135) /* F keys*/ ||
-                 keyEvent->ctrlKey;
+    if ( (scancode == SDL_SCANCODE_BACKSPACE) ||
+         (scancode == SDL_SCANCODE_TAB) ||
+         (scancode == SDL_SCANCODE_LEFT) ||
+         (scancode == SDL_SCANCODE_UP) ||
+         (scancode == SDL_SCANCODE_RIGHT) ||
+         (scancode == SDL_SCANCODE_DOWN) ||
+         ((scancode >= SDL_SCANCODE_F1) && (scancode <= SDL_SCANCODE_F15)) ||
+         keyEvent->ctrlKey ) {
+        is_nav_key = SDL_TRUE;
+    }
 
-    if (eventType == EMSCRIPTEN_EVENT_KEYDOWN && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE && !is_nav_key)
+    if ((eventType == EMSCRIPTEN_EVENT_KEYDOWN) && (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) && !is_nav_key) {
         prevent_default = SDL_FALSE;
+    }
 
     return prevent_default;
 }

@@ -59,7 +59,7 @@ main(int argc, char **argv)
             return 0;
         }
 
-        i = SDL_strlen(name);
+        i = (int)SDL_strlen(name);
         if ((i < 3) && SDL_isdigit(name[0]) && ((i == 1) || SDL_isdigit(name[1]))) {
             index = SDL_atoi(name);
             name = NULL;
@@ -106,7 +106,7 @@ main(int argc, char **argv)
     SDL_ClearError();
 
     /* Create effects. */
-    SDL_memset(&efx, 0, sizeof(efx));
+    SDL_memset(efx, 0, sizeof(efx));
     nefx = 0;
     supported = SDL_HapticQuery(haptic);
 

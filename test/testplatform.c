@@ -149,8 +149,9 @@ TestEndian(SDL_bool verbose)
         ++error;
     }
     if (verbose) {
-        SDL_Log("Value 32 = 0x%X, swapped = 0x%X\n", value32,
-               SDL_Swap32(value32));
+        SDL_Log("Value 32 = 0x%" SDL_PRIX32 ", swapped = 0x%" SDL_PRIX32 "\n",
+                value32,
+                SDL_Swap32(value32));
     }
     if (SDL_Swap32(value32) != swapped32) {
         if (verbose) {
@@ -406,6 +407,8 @@ TestCPUInfo(SDL_bool verbose)
         SDL_Log("AVX-512F %s\n", SDL_HasAVX512F()? "detected" : "not detected");
         SDL_Log("ARM SIMD %s\n", SDL_HasARMSIMD()? "detected" : "not detected");
         SDL_Log("NEON %s\n", SDL_HasNEON()? "detected" : "not detected");
+        SDL_Log("LSX %s\n", SDL_HasLSX()? "detected" : "not detected");
+        SDL_Log("LASX %s\n", SDL_HasLASX()? "detected" : "not detected");
         SDL_Log("System RAM %d MB\n", SDL_GetSystemRAM());
     }
     return (0);

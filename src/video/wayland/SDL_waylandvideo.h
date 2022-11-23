@@ -68,6 +68,7 @@ typedef struct {
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
     struct wl_data_device_manager *data_device_manager;
+    struct zwp_primary_selection_device_manager_v1 *primary_selection_device_manager;
     struct zxdg_decoration_manager_v1 *decoration_manager;
     struct zwp_keyboard_shortcuts_inhibit_manager_v1 *key_inhibitor_manager;
     struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager;
@@ -94,6 +95,7 @@ typedef struct {
     char *classname;
 
     int relative_mouse_mode;
+    SDL_bool egl_transparency_enabled;
 } SDL_VideoData;
 
 struct SDL_WaylandOutputData {
@@ -123,6 +125,8 @@ extern SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
 extern SDL_bool SDL_WAYLAND_own_output(struct wl_output *output);
 
 extern SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg);
+
+extern SDL_bool Wayland_VideoReconnect(_THIS);
 
 #endif /* SDL_waylandvideo_h_ */
 

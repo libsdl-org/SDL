@@ -51,24 +51,7 @@ struct SDL_PrivateAudioData
     int framesize;
     int default_device_generation;
     SDL_bool device_lost;
-    void *activation_handler;
-    SDL_atomic_t just_activated;
 };
-
-/* win32 and winrt implementations call into these. */
-int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream);
-void WASAPI_RefDevice(_THIS);
-void WASAPI_UnrefDevice(_THIS);
-
-/* These are functions that are implemented differently for Windows vs WinRT. */
-int WASAPI_PlatformInit(void);
-void WASAPI_PlatformDeinit(void);
-void WASAPI_EnumerateEndpoints(void);
-int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
-int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
-void WASAPI_PlatformThreadInit(_THIS);
-void WASAPI_PlatformThreadDeinit(_THIS);
-void WASAPI_PlatformDeleteActivationHandler(void *handler);
 
 #ifdef __cplusplus
 }

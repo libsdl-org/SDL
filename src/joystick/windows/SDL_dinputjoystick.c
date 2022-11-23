@@ -238,6 +238,7 @@ SetDIerror(const char *function, HRESULT code)
 static SDL_bool
 SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
 {
+#ifdef SDL_JOYSTICK_XINPUT
     SDL_GameControllerType type;
 
     /* XInput and RawInput backends will pick up XInput-compatible devices */
@@ -261,6 +262,7 @@ SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
         (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
         return SDL_TRUE;
     }
+#endif /* SDL_JOYSTICK_XINPUT */
 
     return SDL_FALSE;
 }
@@ -327,6 +329,7 @@ QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_
     dipdw.diph.dwHeaderSize = sizeof(dipdw.diph);
     dipdw.diph.dwObj = 0;
     dipdw.diph.dwHow = DIPH_DEVICE;
+    dipdw.dwData = 0;
 
     if (FAILED(IDirectInputDevice8_GetProperty(device, DIPROP_VIDPID, &dipdw.diph))) {
         return SDL_FALSE;

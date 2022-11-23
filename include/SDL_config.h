@@ -31,8 +31,6 @@
 /* Add any platform that doesn't build using the configure system. */
 #if defined(__WIN32__)
 #include "SDL_config_windows.h"
-#elif defined(__WINRT__)
-#include "SDL_config_winrt.h"
 #elif defined(__WINGDK__)
 #include "SDL_config_wingdk.h"
 #elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
@@ -43,8 +41,6 @@
 #include "SDL_config_iphoneos.h"
 #elif defined(__ANDROID__)
 #include "SDL_config_android.h"
-#elif defined(__OS2__)
-#include "SDL_config_os2.h"
 #elif defined(__EMSCRIPTEN__)
 #include "SDL_config_emscripten.h"
 #elif defined(__NGAGE__)

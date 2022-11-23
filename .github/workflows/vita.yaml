@@ -12,15 +12,16 @@ jobs:
     container: 
       image: vitasdk/vitasdk:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install build requirements
       run: |
         apk update 
-        apk add cmake ninja pkgconf
+        apk add cmake ninja pkgconf bash
     - name: Configure CMake
       run: |
         cmake -S . -B build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake \
+          -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
           -DCMAKE_BUILD_TYPE=Release \
@@ -29,7 +30,7 @@ jobs:
       run: cmake --build build --verbose
     - name: Install CMake
       run: |
-        echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+        echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
         cmake --install build/
         ( cd prefix; find ) | LC_ALL=C sort -u
     - name: Verify CMake configuration files
@@ -37,16 +38,16 @@ jobs:
         cmake -S cmake/test -B cmake_config_build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=${VITASDK}/share/vita.toolchain.cmake \
           -DTEST_SHARED=FALSE \
-          -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
+          -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
           -DCMAKE_BUILD_TYPE=Release
         cmake --build cmake_config_build --verbose
-    - name: Verify sdl2-config
+    - name: Verify sdl3-config
       run: |
         export CC=arm-vita-eabi-gcc
-        export PATH=${{ env.SDL2_DIR }}/bin:$PATH
+        export PATH=${{ env.SDL3_DIR }}/bin:$PATH
         cmake/test/test_sdlconfig.sh
-    - name: Verify sdl2.pc
+    - name: Verify sdl3.pc
       run: |
         export CC=arm-vita-eabi-gcc
-        export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
+        export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
         cmake/test/test_pkgconfig.sh

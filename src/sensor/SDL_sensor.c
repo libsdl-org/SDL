@@ -41,11 +41,14 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #ifdef SDL_SENSOR_WINDOWS
     &SDL_WINDOWS_SensorDriver,
 #endif
+#ifdef SDL_SENSOR_VITA
+    &SDL_VITA_SensorDriver,
+#endif
+#ifdef SDL_SENSOR_N3DS
+    &SDL_N3DS_SensorDriver,
+#endif
 #if defined(SDL_SENSOR_DUMMY) || defined(SDL_SENSOR_DISABLED)
     &SDL_DUMMY_SensorDriver
-#endif
-#if defined(SDL_SENSOR_VITA)
-    &SDL_VITA_SensorDriver
 #endif
 };
 static SDL_Sensor *SDL_sensors = NULL;
@@ -307,7 +310,7 @@ SDL_SensorFromInstanceID(SDL_SensorID instance_id)
  * Checks to make sure the sensor is valid.
  */
 static int
-SDL_PrivateSensorValid(SDL_Sensor * sensor)
+SDL_PrivateSensorValid(SDL_Sensor *sensor)
 {
     int valid;
 
@@ -325,7 +328,7 @@ SDL_PrivateSensorValid(SDL_Sensor * sensor)
  * Get the friendly name of this sensor
  */
 const char *
-SDL_SensorGetName(SDL_Sensor * sensor)
+SDL_SensorGetName(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return NULL;
@@ -338,7 +341,7 @@ SDL_SensorGetName(SDL_Sensor * sensor)
  * Get the type of this sensor
  */
 SDL_SensorType
-SDL_SensorGetType(SDL_Sensor * sensor)
+SDL_SensorGetType(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return SDL_SENSOR_INVALID;
@@ -351,7 +354,7 @@ SDL_SensorGetType(SDL_Sensor * sensor)
  * Get the platform dependent type of this sensor
  */
 int
-SDL_SensorGetNonPortableType(SDL_Sensor * sensor)
+SDL_SensorGetNonPortableType(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return -1;
@@ -364,7 +367,7 @@ SDL_SensorGetNonPortableType(SDL_Sensor * sensor)
  * Get the instance id for this opened sensor
  */
 SDL_SensorID
-SDL_SensorGetInstanceID(SDL_Sensor * sensor)
+SDL_SensorGetInstanceID(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return -1;
@@ -377,7 +380,16 @@ SDL_SensorGetInstanceID(SDL_Sensor * sensor)
  * Get the current state of this sensor
  */
 int
-SDL_SensorGetData(SDL_Sensor * sensor, float *data, int num_values)
+SDL_SensorGetData(SDL_Sensor *sensor, float *data, int num_values)
+{
+    return SDL_SensorGetDataWithTimestamp(sensor, NULL, data, num_values);
+}
+
+/*
+ * Get the current state of this sensor
+ */
+int
+SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *data, int num_values)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return -1;
@@ -385,6 +397,9 @@ SDL_SensorGetData(SDL_Sensor * sensor, float *data, int num_values)
 
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
     SDL_memcpy(data, sensor->data, num_values*sizeof(*data));
+    if (timestamp) {
+        *timestamp = sensor->timestamp_us;
+    }
     return 0;
 }
 
@@ -392,7 +407,7 @@ SDL_SensorGetData(SDL_Sensor * sensor, float *data, int num_values)
  * Close a sensor previously opened with SDL_SensorOpen()
  */
 void
-SDL_SensorClose(SDL_Sensor * sensor)
+SDL_SensorClose(SDL_Sensor *sensor)
 {
     SDL_Sensor *sensorlist;
     SDL_Sensor *sensorlistprev;
@@ -478,7 +493,7 @@ SDL_SensorQuit(void)
 /* These are global for SDL_syssensor.c and SDL_events.c */
 
 int
-SDL_PrivateSensorUpdate(SDL_Sensor *sensor, float *data, int num_values)
+SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, int num_values)
 {
     int posted;
 
@@ -487,6 +502,7 @@ SDL_PrivateSensorUpdate(SDL_Sensor *sensor, float *data, int num_values)
     /* Update internal sensor state */
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
     SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+    sensor->timestamp_us = timestamp_us;
 
     /* Post the event, if desired */
     posted = 0;
@@ -498,6 +514,7 @@ SDL_PrivateSensorUpdate(SDL_Sensor *sensor, float *data, int num_values)
         num_values = SDL_min(num_values, SDL_arraysize(event.sensor.data));
         SDL_memset(event.sensor.data, 0, sizeof(event.sensor.data));
         SDL_memcpy(event.sensor.data, data, num_values*sizeof(*data));
+        event.sensor.timestamp_us = timestamp_us;
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */

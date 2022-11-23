@@ -63,7 +63,7 @@ initializeTexture(SDL_Renderer *renderer)
     brush =
         SDL_CreateTextureFromSurface(renderer, bmp_surface);
     SDL_FreeSurface(bmp_surface);
-    if (brush == 0) {
+    if (!brush) {
         fatalError("could not create brush texture");
     }
     /* additive blending -- laying strokes on top of eachother makes them brighter */

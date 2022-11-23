@@ -39,6 +39,18 @@ struct _SDL_JoystickDriver;
 extern int SDL_JoystickInit(void);
 extern void SDL_JoystickQuit(void);
 
+/* Return whether the joystick system is currently initialized */
+extern SDL_bool SDL_JoysticksInitialized(void);
+
+/* Return whether the joystick system is shutting down */
+extern SDL_bool SDL_JoysticksQuitting(void);
+
+/* Return whether the joysticks are currently locked */
+extern SDL_bool SDL_JoysticksLocked(void);
+
+/* Make sure we currently have the joysticks locked */
+extern void SDL_AssertJoysticksLocked(void);
+
 /* Function to get the next available joystick instance ID */
 extern SDL_JoystickID SDL_GetNextJoystickInstanceID(void);
 
@@ -48,14 +60,8 @@ extern void SDL_GameControllerQuitMappings(void);
 extern int SDL_GameControllerInit(void);
 extern void SDL_GameControllerQuit(void);
 
-/* Function to get the joystick driver and device index for an API device index */
-extern SDL_bool SDL_GetDriverAndJoystickIndex(int device_index, struct _SDL_JoystickDriver **driver, int *driver_index);
-
 /* Function to return the device index for a joystick ID, or -1 if not found */
 extern int SDL_JoystickGetDeviceIndexFromInstanceID(SDL_JoystickID instance_id);
-
-/* Function to extract information from an SDL joystick GUID */
-extern void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16);
 
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed
@@ -67,6 +73,18 @@ extern SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16
 
 /* Function to create a GUID for a joystick based on the name, with no VID/PID information */
 extern SDL_JoystickGUID SDL_CreateJoystickGUIDForName(const char *name);
+
+/* Function to set the vendor field of a joystick GUID */
+extern void SDL_SetJoystickGUIDVendor(SDL_JoystickGUID *guid, Uint16 vendor);
+
+/* Function to set the product field of a joystick GUID */
+extern void SDL_SetJoystickGUIDProduct(SDL_JoystickGUID *guid, Uint16 product);
+
+/* Function to set the version field of a joystick GUID */
+extern void SDL_SetJoystickGUIDVersion(SDL_JoystickGUID *guid, Uint16 version);
+
+/* Function to set the CRC field of a joystick GUID */
+extern void SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc);
 
 /* Function to return the type of a controller */
 extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI);
@@ -134,6 +152,7 @@ extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
 extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate);
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
+extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern int SDL_PrivateJoystickAxis(SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
 extern int SDL_PrivateJoystickBall(SDL_Joystick *joystick,
@@ -145,7 +164,7 @@ extern int SDL_PrivateJoystickButton(SDL_Joystick *joystick,
 extern int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick,
                                        int touchpad, int finger, Uint8 state, float x, float y, float pressure);
 extern int SDL_PrivateJoystickSensor(SDL_Joystick *joystick,
-                                     SDL_SensorType type, const float *data, int num_values);
+                                     SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values);
 extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 

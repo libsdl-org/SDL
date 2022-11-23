@@ -1,6 +1,8 @@
-#cmakedefine SDL_REVISION "@SDL_REVISION@"
+#cmakedefine SDL_VENDOR_INFO "@SDL_VENDOR_INFO@"
 #define SDL_REVISION_NUMBER 0
 
-#ifndef SDL_REVISION
-#define SDL_REVISION ""
+#ifdef SDL_VENDOR_INFO
+#define SDL_REVISION "@SDL_REVISION@ (" SDL_VENDOR_INFO ")"
+#else
+#define SDL_REVISION "@SDL_REVISION@"
 #endif

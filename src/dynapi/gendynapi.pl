@@ -33,7 +33,6 @@ use File::Basename;
 chdir(dirname(__FILE__) . '/../..');
 my $sdl_dynapi_procs_h = "src/dynapi/SDL_dynapi_procs.h";
 my $sdl_dynapi_overrides_h = "src/dynapi/SDL_dynapi_overrides.h";
-my $sdl2_exports = "src/dynapi/SDL2.exports";
 
 my %existing = ();
 if (-f $sdl_dynapi_procs_h) {
@@ -48,7 +47,6 @@ if (-f $sdl_dynapi_procs_h) {
 
 open(SDL_DYNAPI_PROCS_H, '>>', $sdl_dynapi_procs_h) or die("Can't open $sdl_dynapi_procs_h: $!\n");
 open(SDL_DYNAPI_OVERRIDES_H, '>>', $sdl_dynapi_overrides_h) or die("Can't open $sdl_dynapi_overrides_h: $!\n");
-open(SDL2_EXPORTS, '>>', $sdl2_exports) or die("Can't open $sdl2_exports: $!\n");
 
 opendir(HEADERS, 'include') or die("Can't open include dir: $!\n");
 while (my $d = readdir(HEADERS)) {
@@ -135,7 +133,6 @@ while (my $d = readdir(HEADERS)) {
             print("NEW: $decl\n");
             print SDL_DYNAPI_PROCS_H "SDL_DYNAPI_PROC($rc,$fn,$paramstr,$argstr,$retstr)\n";
             print SDL_DYNAPI_OVERRIDES_H "#define $fn ${fn}_REAL\n";
-            print SDL2_EXPORTS "++'_${fn}'.'SDL2.dll'.'${fn}'\n";
         } else {
             print("Failed to parse decl [$decl]!\n");
         }
@@ -146,6 +143,5 @@ closedir(HEADERS);
 
 close(SDL_DYNAPI_PROCS_H);
 close(SDL_DYNAPI_OVERRIDES_H);
-close(SDL2_EXPORTS);
 
 # vi: set ts=4 sw=4 expandtab:

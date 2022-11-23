@@ -33,9 +33,6 @@ static NativeWindowFactory *factories[] = {
 #ifdef TEST_NATIVE_COCOA
     &CocoaWindowFactory,
 #endif
-#ifdef TEST_NATIVE_OS2
-    &OS2WindowFactory,
-#endif
     NULL
 };
 static NativeWindowFactory *factory = NULL;
@@ -164,7 +161,7 @@ main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
         positions[i].x = rand() % (window_w - sprite_w);
         positions[i].y = rand() % (window_h - sprite_h);

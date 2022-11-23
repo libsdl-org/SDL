@@ -60,8 +60,7 @@ int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
     /* format */
     display_mode bmode;
     bscreen.GetMode(&bmode);
-    int32 bpp = HAIKU_ColorSpaceToBitsPerPixel(bmode.space);
-    *format = HAIKU_BPPToSDLPxFormat(bpp);
+    *format = HAIKU_ColorSpaceToSDLPxFormat(bmode.space);
 
     /* Create the new bitmap object */
     BBitmap *bitmap = bwin->GetBitmap();
