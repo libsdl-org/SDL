@@ -83,10 +83,6 @@ void RPI_MinimizeWindow(_THIS, SDL_Window * window);
 void RPI_RestoreWindow(_THIS, SDL_Window * window);
 void RPI_DestroyWindow(_THIS, SDL_Window * window);
 
-/* Window manager function */
-SDL_bool RPI_GetWindowWMInfo(_THIS, SDL_Window * window,
-                             struct SDL_SysWMinfo *info);
-
 /* OpenGL/OpenGL ES functions */
 int RPI_GLES_LoadLibrary(_THIS, const char *path);
 void *RPI_GLES_GetProcAddress(_THIS, const char *proc);

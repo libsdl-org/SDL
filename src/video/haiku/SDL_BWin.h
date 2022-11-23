@@ -28,8 +28,9 @@ extern "C" {
 
 #include "../../SDL_internal.h"
 #include "SDL.h"
-#include "SDL_syswm.h"
 #include "SDL_bframebuffer.h"
+
+#include "SDL_syswm.h"
 
 #ifdef __cplusplus
 }

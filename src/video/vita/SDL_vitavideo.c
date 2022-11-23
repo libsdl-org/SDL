@@ -26,11 +26,12 @@
 /* SDL internals */
 #include "../SDL_sysvideo.h"
 #include "SDL_version.h"
-#include "SDL_syswm.h"
 #include "SDL_loadso.h"
 #include "SDL_events.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
+
+#include "SDL_syswm.h"
 
 /* VITA declarations */
 #include <psp2/kernel/processmgr.h>
@@ -132,7 +133,6 @@ VITA_Create()
     device->SetWindowMouseGrab = VITA_SetWindowGrab;
     device->SetWindowKeyboardGrab = VITA_SetWindowGrab;
     device->DestroyWindow = VITA_DestroyWindow;
-    device->GetWindowWMInfo = VITA_GetWindowWMInfo;
 
 /*
     // Disabled, causes issues on high-framerate updates. SDL still emulates this.
@@ -393,24 +393,6 @@ VITA_DestroyWindow(_THIS, SDL_Window * window)
 
     window->driverdata = NULL;
     Vita_Window = NULL;
-}
-
-/*****************************************************************************/
-/* SDL Window Manager function                                               */
-/*****************************************************************************/
-SDL_bool
-VITA_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
-{
-    if (info->version.major <= SDL_MAJOR_VERSION) {
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("application not compiled with SDL %d\n",
-                     SDL_MAJOR_VERSION);
-        return SDL_FALSE;
-    }
-
-    /* Failed to get window manager information */
-    return SDL_FALSE;
 }
 
 SDL_bool VITA_HasScreenKeyboardSupport(_THIS)

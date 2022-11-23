@@ -468,7 +468,6 @@
 #define SDL_SoftStretch SDL_SoftStretch_REAL
 #define SDL_UpperBlitScaled SDL_UpperBlitScaled_REAL
 #define SDL_LowerBlitScaled SDL_LowerBlitScaled_REAL
-#define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
 #define SDL_GetThreadName SDL_GetThreadName_REAL
 #define SDL_ThreadID SDL_ThreadID_REAL
 #define SDL_GetThreadID SDL_GetThreadID_REAL

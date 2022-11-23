@@ -29,10 +29,12 @@
 
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
-#include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
+
+#define SDL_ENABLE_SYSWM_WINDOWS
+#include "SDL_syswm.h"
 
 #if SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
@@ -1596,6 +1598,12 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_DisplayMode fullscreen_mode;
     int displayIndex;
 
+    if (SDL_GetWindowWMInfo(window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
+        windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
+        SDL_SetError("Couldn't get window handle");
+        return NULL;
+    }
+
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         SDL_OutOfMemory();
@@ -1642,9 +1650,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->info = D3D_RenderDriver.info;
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
-
-    SDL_VERSION(&windowinfo.version);
-    SDL_GetWindowWMInfo(window, &windowinfo);
 
     window_flags = SDL_GetWindowFlags(window);
     SDL_GetWindowSizeInPixels(window, &w, &h);

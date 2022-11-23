@@ -34,6 +34,8 @@
 #include "SDL_loadso.h"
 #include "SDL_uikitvulkan.h"
 #include "SDL_uikitmetalview.h"
+
+#define SDL_ENABLE_SYSWM_UIKIT
 #include "SDL_syswm.h"
 
 #include <dlfcn.h>

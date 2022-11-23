@@ -33,7 +33,7 @@ extern void Android_MinimizeWindow(_THIS, SDL_Window *window);
 extern void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
 
 extern void Android_DestroyWindow(_THIS, SDL_Window *window);
-extern SDL_bool Android_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern int Android_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern SDL_Window *Android_Window;
 
 typedef struct

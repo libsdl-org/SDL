@@ -33,6 +33,8 @@
 
 #include "SDL_loadso.h"
 #include "SDL_waylandvulkan.h"
+
+#define SDL_ENABLE_SYSWM_WAYLAND
 #include "SDL_syswm.h"
 
 #if defined(__OpenBSD__)
