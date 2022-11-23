@@ -639,11 +639,16 @@ static int
 IOS_JoystickInit(void)
 {
 #if defined(__MACOSX__)
+#if _SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 10.16, *)) {
         /* Continue with initialization on macOS 11+ */
     } else {
         return 0;
     }
+#else
+    /* No @available, must be an older macOS version */
+    return 0;
+#endif
 #endif
 
     @autoreleasepool {
