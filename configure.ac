@@ -36,10 +36,6 @@ AC_SUBST(SDL_VERSION)
 LT_INIT([win32-dll])
 LT_LANG([Windows Resource])
 
-# For historical reasons, the library name redundantly includes the major
-# version twice: libSDL3-3.0.so.0.
-# TODO: in SDL 3, stop using -release, which will simplify it to libSDL3.so.0
-LT_RELEASE=3.0
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL2 to SDL3, at which point this would
 # reset to 0 anyway.
@@ -49,7 +45,6 @@ LT_CURRENT=`expr $LT_MAJOR + $LT_AGE`
 LT_REVISION=$SDL_INTERFACE_AGE
 m4_pattern_allow([^LT_])
 
-AC_SUBST(LT_RELEASE)
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
