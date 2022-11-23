@@ -979,3 +979,4 @@ SDL_DYNAPI_PROC(void,SDL_EGL_SetEGLAttributeCallbacks,(SDL_EGLAttribArrayCallbac
 #if defined(__GDK__)
 SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),return)
 #endif
+SDL_DYNAPI_PROC(int,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b, Uint32 c),(a,b,c),return)

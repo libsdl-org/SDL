@@ -898,3 +898,4 @@
 #define SDL_EGL_GetWindowEGLSurface SDL_EGL_GetWindowEGLSurface_REAL
 #define SDL_EGL_SetEGLAttributeCallbacks SDL_EGL_SetEGLAttributeCallbacks_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
+#define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
