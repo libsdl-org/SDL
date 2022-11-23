@@ -247,7 +247,8 @@ typedef struct SDL_SysWMinfo SDL_SysWMinfo;
  *
  * \param window the window about which information is being requested
  * \param info an SDL_SysWMinfo structure filled in with window information
- * \param version the version of info being requested, should be SDL_SYSWM_CURRENT_VERSION
+ * \param version the version of info being requested, should be
+ *                SDL_SYSWM_CURRENT_VERSION
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
