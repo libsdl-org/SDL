@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A7D88A1423E2437C00DCD162"
-               BuildableName = "SDL2.framework"
+               BuildableName = "SDL3.framework"
                BlueprintName = "Framework-iOS"
                ReferencedContainer = "container:SDL.xcodeproj">
             </BuildableReference>
@@ -51,7 +51,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A7D88A1423E2437C00DCD162"
-            BuildableName = "SDL2.framework"
+            BuildableName = "SDL3.framework"
             BlueprintName = "Framework-iOS"
             ReferencedContainer = "container:SDL.xcodeproj">
          </BuildableReference>

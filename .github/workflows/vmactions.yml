@@ -33,7 +33,6 @@ jobs:
               libinotify \
               alsa-lib \
               jackit \
-              nas \
               pipewire \
               pulseaudio \
               sndio \

@@ -27,7 +27,7 @@ jobs:
         run: cmake --build build --verbose
       - name: Install CMake
         run: |
-          echo "SDL2_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+          echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
           cmake --install build/
           ( cd prefix; find ) | LC_ALL=C sort -u
       - name: Verify CMake configuration files
@@ -35,7 +35,7 @@ jobs:
           cmake -S cmake/test -B cmake_config_build -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
             -DTEST_SHARED=FALSE \
-            -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }} \
+            -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
             -DCMAKE_BUILD_TYPE=Release
           cmake --build cmake_config_build --verbose
       # Not running test_pkgconfig.sh and test_sdlconfig.sh

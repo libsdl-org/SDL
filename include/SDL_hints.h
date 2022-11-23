@@ -278,7 +278,7 @@ extern "C" {
  *  If this hint isn't specified to a valid setting, or libsamplerate isn't
  *  available, SDL will use the default, internal resampling algorithm.
  *
- *  As of SDL 2.26, SDL_AudioCVT now respects this hint.
+ *  As of SDL 2.26, SDL_ConvertAudio() respects this hint when libsamplerate is available.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *
@@ -352,7 +352,7 @@ extern "C" {
  *  \brief Disable giving back control to the browser automatically
  *  when running with asyncify
  *
- * With -s ASYNCIFY, SDL2 calls emscripten_sleep during operations
+ * With -s ASYNCIFY, SDL calls emscripten_sleep during operations
  * such as refreshing the screen or polling events.
  *
  * This hint only applies to the emscripten platform
@@ -362,6 +362,15 @@ extern "C" {
  *    "1"       - Enable emscripten_sleep calls (the default)
  */
 #define SDL_HINT_EMSCRIPTEN_ASYNCIFY   "SDL_EMSCRIPTEN_ASYNCIFY"
+
+/**
+ *  \brief Specify the CSS selector used for the "default" window/canvas
+ *
+ * This hint only applies to the emscripten platform
+ *
+ * The default value is "#canvas"
+ */
+#define SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR "SDL_EMSCRIPTEN_CANVAS_SELECTOR"
 
 /**
  *  \brief override the binding element for keyboard inputs for Emscripten builds
@@ -817,7 +826,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STADIA "SDL_JOYSTICK_HIDAPI_STADIA"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for Steam Controllers should be used.
+ *  \brief  A variable controlling whether the HIDAPI driver for Bluetooth Steam Controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -933,7 +942,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS   "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
 
 /**
- *  \brief  A variable controlling whether the HIDAPI driver for XBox One should be used.
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox One controllers should be used.
  *
  *  This variable can be set to the following values:
  *    "0"       - HIDAPI driver is not used
@@ -2438,7 +2447,7 @@ typedef enum
  * \param priority the SDL_HintPriority level for the hint
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2458,7 +2467,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \param value the value of the hint variable
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
@@ -2476,7 +2485,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * \param name the hint to set
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2490,7 +2499,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  * variable, or NULL if the environment isn't set. Callbacks will be called
  * normally with this change.
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2504,7 +2513,7 @@ extern DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \param name the hint to query
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
@@ -2519,7 +2528,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
  *
- * \since This function is available since SDL 2.0.5.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2544,7 +2553,7 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *                 hint value changes
  * \param userdata a pointer to pass to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelHintCallback
  */
@@ -2560,7 +2569,7 @@ extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
  *                 hint value changes
  * \param userdata a pointer being passed to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddHintCallback
  */
@@ -2578,7 +2587,7 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
  *
  * This function will be removed from the API the next time we rev the ABI.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ResetHints
  */

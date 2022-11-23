@@ -260,12 +260,6 @@ static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 static void
 ScheduleContextUpdates(SDL_WindowData *data)
 {
-    NSOpenGLContext *currentContext;
-    NSMutableArray *contexts;
-    if (!data || !data.nscontexts) {
-        return;
-    }
-
     /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
     #if SDL_VIDEO_OPENGL
 
@@ -273,6 +267,12 @@ ScheduleContextUpdates(SDL_WindowData *data)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     #endif
+
+    NSOpenGLContext *currentContext;
+    NSMutableArray *contexts;
+    if (!data || !data.nscontexts) {
+        return;
+    }
 
     currentContext = [NSOpenGLContext currentContext];
     contexts = data.nscontexts;
@@ -500,6 +500,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         [center addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:window];
         [center addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
         [center addObserver:self selector:@selector(windowDidChangeScreenProfile:) name:NSWindowDidChangeScreenProfileNotification object:window];
+        [center addObserver:self selector:@selector(windowDidChangeScreen:) name:NSWindowDidChangeScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillEnterFullScreen:) name:NSWindowWillEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillExitFullScreen:) name:NSWindowWillExitFullScreenNotification object:window];
@@ -632,6 +633,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         [center removeObserver:self name:NSWindowDidResignKeyNotification object:window];
         [center removeObserver:self name:NSWindowDidChangeBackingPropertiesNotification object:window];
         [center removeObserver:self name:NSWindowDidChangeScreenProfileNotification object:window];
+        [center removeObserver:self name:NSWindowDidChangeScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillExitFullScreenNotification object:window];
@@ -918,6 +920,16 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 - (void)windowDidChangeScreenProfile:(NSNotification *)aNotification
 {
     SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+}
+
+- (void)windowDidChangeScreen:(NSNotification *)aNotification
+{
+    /*printf("WINDOWDIDCHANGESCREEN\n");*/
+    if (_data && _data.nscontexts) {
+        for (SDLOpenGLContext *context in _data.nscontexts) {
+            [context movedToNewScreen];
+        }
+    }
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification *)aNotification
@@ -2269,7 +2281,9 @@ Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window * window)
 
     /* Not recognized via CHECK_WINDOW_MAGIC */
     if (data == nil) {
-        return SDL_SetError("Window data not set");
+        /* Don't set the error here, it hides other errors and is ignored anyway */
+        /*return SDL_SetError("Window data not set");*/
+        return -1;
     }
 
     /* NSWindow.screen may be nil when the window is off-screen. */

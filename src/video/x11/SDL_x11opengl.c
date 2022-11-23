@@ -41,8 +41,6 @@
 #define DEFAULT_OPENGL  "libGL.so"
 #elif defined(__MACOSX__)
 #define DEFAULT_OPENGL  "/opt/X11/lib/libGL.1.dylib"
-#elif defined(__QNXNTO__)
-#define DEFAULT_OPENGL  "libGL.so.3"
 #else
 #define DEFAULT_OPENGL  "libGL.so.1"
 #endif

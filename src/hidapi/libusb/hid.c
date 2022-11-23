@@ -322,7 +322,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 				/* Can't ever happen since size_code is & 0x3 */
 				data_len = 0;
 				break;
-			};
+			}
 			key_size = 1;
 		}
 
@@ -418,9 +418,6 @@ static int is_language_supported(libusb_device_handle *dev, uint16_t lang)
 /* This function returns a newly allocated wide string containing the USB
    device string numbered by the index. The returned string must be freed
    by using free(). */
-#if defined(__OS2__) /* don't use iconv on OS/2: no support for wchar_t. */
-#define NO_ICONV
-#endif
 static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 {
 	char buf[512];

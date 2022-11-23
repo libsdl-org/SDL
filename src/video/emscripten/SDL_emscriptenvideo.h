@@ -28,17 +28,12 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
 
-#if SDL_VIDEO_OPENGL_EGL
-#include <EGL/egl.h>
-#endif
-
 typedef struct SDL_WindowData
 {
-#if SDL_VIDEO_OPENGL_EGL
-    EGLSurface egl_surface;
-#endif
     SDL_Window *window;
     SDL_Surface *surface;
+
+    SDL_GLContext gl_context;
 
     char *canvas_id;
 

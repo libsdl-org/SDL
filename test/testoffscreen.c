@@ -100,7 +100,9 @@ loop()
 int
 main(int argc, char *argv[])
 {
+#ifndef __EMSCRIPTEN__
     Uint32 then, now, frames;
+#endif
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -135,10 +137,12 @@ main(int argc, char *argv[])
 
     srand((unsigned int)time(NULL));
 
+#ifndef __EMSCRIPTEN__
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
+#endif
 
     SDL_Log("Rendering %u frames offscreen\n", max_frames);
 

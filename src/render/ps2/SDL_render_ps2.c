@@ -546,10 +546,10 @@ PS2_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    if (data == 0)
+    if (data == NULL)
         return;
 
-    if(ps2_texture == 0)
+    if(ps2_texture == NULL)
         return;
 
     // Free from vram

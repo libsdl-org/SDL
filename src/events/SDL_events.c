@@ -147,7 +147,7 @@ SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldVa
 static void SDLCALL
 SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
+    (void)SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
 /**
@@ -406,7 +406,7 @@ SDL_LogEvent(const SDL_Event *event)
             SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%"SDL_PRIs64" gestureid=%"SDL_PRIs64" numfingers=%u error=%f x=%f y=%f)", \
                 (uint) event->dgesture.timestamp, (long long)event->dgesture.touchId, \
                 (long long)event->dgesture.gestureId, (uint) event->dgesture.numFingers, \
-                event->dgesture.error, event->dgesture.x, event->dgesture.y);
+                event->dgesture.error, event->dgesture.x, event->dgesture.y)
         SDL_EVENT_CASE(SDL_DOLLARGESTURE) PRINT_DOLLAR_EVENT(event); break;
         SDL_EVENT_CASE(SDL_DOLLARRECORD) PRINT_DOLLAR_EVENT(event); break;
         #undef PRINT_DOLLAR_EVENT
@@ -425,7 +425,7 @@ SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_DROPCOMPLETE) PRINT_DROP_EVENT(event); break;
         #undef PRINT_DROP_EVENT
 
-        #define PRINT_AUDIODEV_EVENT(event) SDL_snprintf(details, sizeof (details), " (timestamp=%u which=%u iscapture=%s)", (uint) event->adevice.timestamp, (uint) event->adevice.which, event->adevice.iscapture ? "true" : "false");
+        #define PRINT_AUDIODEV_EVENT(event) SDL_snprintf(details, sizeof (details), " (timestamp=%u which=%u iscapture=%s)", (uint) event->adevice.timestamp, (uint) event->adevice.which, event->adevice.iscapture ? "true" : "false")
         SDL_EVENT_CASE(SDL_AUDIODEVICEADDED) PRINT_AUDIODEV_EVENT(event); break;
         SDL_EVENT_CASE(SDL_AUDIODEVICEREMOVED) PRINT_AUDIODEV_EVENT(event); break;
         #undef PRINT_AUDIODEV_EVENT
@@ -566,12 +566,12 @@ SDL_StartEventLoop(void)
 #endif /* !SDL_THREADS_DISABLED */
 
     /* Process most event types */
-    SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
-    SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
-    SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
+    (void)SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
 #if 0 /* Leave these events enabled so apps can respond to items being dragged onto them at startup */
-    SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
-    SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
+    (void)SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
 #endif
 
     SDL_EventQ.active = SDL_TRUE;

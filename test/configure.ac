@@ -18,7 +18,6 @@ dnl  (Haiku, for example, sets none of these.)
 ISUNIX="false"
 ISWINDOWS="false"
 ISMACOSX="false"
-ISOS2="false"
 
 dnl Figure out which math library to use
 case "$host" in
@@ -60,11 +59,6 @@ case "$host" in
             SYS_GL_LIBS="-lOSMesa"
         fi
         ;;
-    *-*-qnx*)
-        EXE=""
-        MATHLIB=""
-        SYS_GL_LIBS="-lGLES_CM"
-        ;;
     *-*-emscripten*)
         dnl This should really be .js, but we need to specify extra flags when compiling to js
         EXE=".bc"
@@ -73,12 +67,6 @@ case "$host" in
         ;;
     *-*-riscos*)
         EXE=",e1f"
-        MATHLIB=""
-        SYS_GL_LIBS=""
-        ;;
-    *-*-os2*)
-        ISOS2="true"
-        EXE=".exe"
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
@@ -97,16 +85,15 @@ AC_SUBST(MATHLIB)
 AC_SUBST(ISMACOSX)
 AC_SUBST(ISWINDOWS)
 AC_SUBST(ISUNIX)
-AC_SUBST(ISOS2)
 
 dnl Check for SDL
-SDL_VERSION=2.0.18
-AM_PATH_SDL2($SDL_VERSION,
+SDL_VERSION=3.0.0
+AM_PATH_SDL3($SDL_VERSION,
             :,
 	    AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
 )
 CFLAGS="$CFLAGS $SDL_CFLAGS"
-LIBS="$LIBS -lSDL2_test $SDL_LIBS"
+LIBS="$LIBS -lSDL3_test $SDL_LIBS"
 
 dnl Check for X11 path, needed for OpenGL on some systems
 AC_PATH_X
@@ -267,18 +254,18 @@ AC_SUBST(GLES2LIB)
 AC_SUBST(XLIB)
 
 dnl Check for SDL_ttf
-AC_CHECK_LIB(SDL2_ttf, TTF_Init, have_SDL_ttf=yes)
+AC_CHECK_LIB(SDL3_ttf, TTF_Init, have_SDL_ttf=yes)
 if test x$have_SDL_ttf = xyes; then
     CFLAGS="$CFLAGS -DHAVE_SDL_TTF"
-    SDL_TTF_LIB="-lSDL2_ttf"
+    SDL_TTF_LIB="-lSDL3_ttf"
 fi
 AC_SUBST(SDL_TTF_LIB)
 
-dnl Really, SDL2_test should be linking against libunwind (if it found
-dnl libunwind.h when configured), but SDL2_test is a static library, so
-dnl there's no way for it to link against it. We could make SDL2 depend on
-dnl it, but we don't want all SDL2 build to suddenly gain an extra dependency,
-dnl so just assume that if it's here now, SDL2_test was probably built with it.
+dnl Really, SDL3_test should be linking against libunwind (if it found
+dnl libunwind.h when configured), but SDL3_test is a static library, so
+dnl there's no way for it to link against it. We could make SDL3 depend on
+dnl it, but we don't want all SDL3 build to suddenly gain an extra dependency,
+dnl so just assume that if it's here now, SDL3_test was probably built with it.
 PKG_CHECK_MODULES(LIBUNWIND, libunwind, have_libunwind=yes, have_libunwind=no)
 if test x$have_libunwind = xyes ; then
    LIBS="$LIBS $LIBUNWIND_LIBS"

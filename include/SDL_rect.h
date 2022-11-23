@@ -139,7 +139,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEquals(const SDL_Rect *a, const SDL_Rect *b)
  * \param B an SDL_Rect structure representing the second rectangle
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_IntersectRect
  */
@@ -157,7 +157,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasIntersection(const SDL_Rect * A,
  *               rectangles `A` and `B`
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasIntersection
  */
@@ -173,7 +173,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IntersectRect(const SDL_Rect * A,
  * \param result an SDL_Rect structure filled in with the union of rectangles
  *               `A` and `B`
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_UnionRect(const SDL_Rect * A,
                                            const SDL_Rect * B,
@@ -194,7 +194,7 @@ extern DECLSPEC void SDLCALL SDL_UnionRect(const SDL_Rect * A,
  * \returns SDL_TRUE if any points were enclosed or SDL_FALSE if all the
  *          points were outside of the clipping rectangle.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_EnclosePoints(const SDL_Point * points,
                                                    int count,
@@ -217,7 +217,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EnclosePoints(const SDL_Point * points,
  * \param Y2 a pointer to the ending Y-coordinate of the line
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IntersectRectAndLine(const SDL_Rect *
                                                           rect, int *X1,
@@ -278,7 +278,7 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEquals(const SDL_FRect *a, const SDL_FRect *b
  * \param B an SDL_FRect structure representing the second rectangle
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.22.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_IntersectRect
  */
@@ -296,7 +296,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasIntersectionF(const SDL_FRect * A,
  *               rectangles `A` and `B`
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.22.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasIntersectionF
  */
@@ -312,7 +312,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IntersectFRect(const SDL_FRect * A,
  * \param result an SDL_FRect structure filled in with the union of rectangles
  *               `A` and `B`
  *
- * \since This function is available since SDL 2.0.22.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_UnionFRect(const SDL_FRect * A,
                                             const SDL_FRect * B,
@@ -334,7 +334,7 @@ extern DECLSPEC void SDLCALL SDL_UnionFRect(const SDL_FRect * A,
  * \returns SDL_TRUE if any points were enclosed or SDL_FALSE if all the
  *          points were outside of the clipping rectangle.
  *
- * \since This function is available since SDL 2.0.22.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_EncloseFPoints(const SDL_FPoint * points,
                                                     int count,
@@ -358,7 +358,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EncloseFPoints(const SDL_FPoint * points,
  * \param Y2 a pointer to the ending Y-coordinate of the line
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.22.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IntersectFRectAndLine(const SDL_FRect *
                                                            rect, float *X1,

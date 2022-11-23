@@ -152,6 +152,10 @@ typedef struct SDL_VideoData
     PFN_XGetXCBConnection vulkan_XGetXCBConnection;
 #endif
 
+    /* Used to interact with the on-screen keyboard */
+    SDL_bool is_steam_deck;
+    SDL_bool steam_keyboard_open;
+
 } SDL_VideoData;
 
 extern SDL_bool X11_UseDirectColorVisuals(void);

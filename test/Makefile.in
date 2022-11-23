@@ -90,8 +90,8 @@ TARGETS = \
 
 all: Makefile $(TARGETS) copydatafiles generatetestmeta
 
-installedtestsdir = $(libexecdir)/installed-tests/SDL2
-installedtestsmetadir = $(datadir)/installed-tests/SDL2
+installedtestsdir = $(libexecdir)/installed-tests/SDL3
+installedtestsmetadir = $(datadir)/installed-tests/SDL3
 
 generatetestmeta:
 	rm -f *.test
@@ -269,19 +269,11 @@ testnative$(EXE): $(srcdir)/testnative.c \
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @XLIB@
 endif
 
-ifeq (@ISOS2@,true)
-testnative$(EXE): $(srcdir)/testnative.c \
-			$(srcdir)/testnativeos2.c
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
-endif
-
 #there's probably a better way of doing this
 ifeq (@ISMACOSX@,false)
 ifeq (@ISWINDOWS@,false)
 ifeq (@ISUNIX@,false)
-ifeq (@ISOS2@,false)
 testnative$(EXE): ;
-endif
 endif
 endif
 endif

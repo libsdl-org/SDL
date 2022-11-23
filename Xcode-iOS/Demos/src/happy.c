@@ -117,7 +117,7 @@ initializeTexture(SDL_Renderer *renderer)
 
     /* convert RGBA surface to texture */
     texture = SDL_CreateTextureFromSurface(renderer, bmp_surface);
-    if (texture == 0) {
+    if (!texture) {
         fatalError("could not create texture");
     }
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);

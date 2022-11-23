@@ -24,7 +24,7 @@
 #ifndef SDL_udev_h_
 #define SDL_udev_h_
 
-#if HAVE_LIBUDEV_H
+#if HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H
 
 #ifndef SDL_USE_LIBUDEV
 #define SDL_USE_LIBUDEV 1
@@ -108,7 +108,7 @@ extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);
 extern void SDL_UDEV_ReleaseUdevSyms(void);
 
 
-#endif /* HAVE_LIBUDEV_H */
+#endif /* HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H */
 
 #endif /* SDL_udev_h_ */
 

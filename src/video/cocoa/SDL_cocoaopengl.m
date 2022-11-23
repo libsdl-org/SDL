@@ -52,6 +52,23 @@ SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *name, const char *old
     SDL_opengl_async_dispatch = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
+static CVReturn
+DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext)
+{
+    SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *) displayLinkContext;
+
+    /*printf("DISPLAY LINK! %u\n", (unsigned int) SDL_GetTicks()); */
+    const int setting = SDL_AtomicGet(&nscontext->swapIntervalSetting);
+    if (setting != 0) { /* nothing to do if vsync is disabled, don't even lock */
+        SDL_LockMutex(nscontext->swapIntervalMutex);
+        SDL_AtomicAdd(&nscontext->swapIntervalsPassed, 1);
+        SDL_CondSignal(nscontext->swapIntervalCond);
+        SDL_UnlockMutex(nscontext->swapIntervalMutex);
+    }
+
+    return kCVReturnSuccess;
+}
+
 @implementation SDLOpenGLContext : NSOpenGLContext
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format
@@ -61,10 +78,30 @@ SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *name, const char *old
     if (self) {
         SDL_AtomicSet(&self->dirty, 0);
         self->window = NULL;
+        SDL_AtomicSet(&self->swapIntervalSetting, 0);
+        SDL_AtomicSet(&self->swapIntervalsPassed, 0);
+        self->swapIntervalCond = SDL_CreateCond();
+        self->swapIntervalMutex = SDL_CreateMutex();
+        if (!self->swapIntervalCond || !self->swapIntervalMutex) {
+            return nil;
+        }
+
+        /* !!! FIXME: check return values. */
+        CVDisplayLinkCreateWithActiveCGDisplays(&self->displayLink);
+        CVDisplayLinkSetOutputCallback(self->displayLink, &DisplayLinkCallback, (__bridge void * _Nullable) self);
+        CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(self->displayLink, [self CGLContextObj], [format CGLPixelFormatObj]);
+        CVDisplayLinkStart(displayLink);
     }
 
     SDL_AddHintCallback(SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH, SDL_OpenGLAsyncDispatchChanged, NULL);
     return self;
+}
+
+- (void)movedToNewScreen
+{
+    if (self->displayLink) {
+        CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(self->displayLink, [self CGLContextObj], [[self pixelFormat] CGLPixelFormatObj]);
+    }
 }
 
 - (void)scheduleUpdate
@@ -158,6 +195,15 @@ SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *name, const char *old
 - (void)dealloc
 {
     SDL_DelHintCallback(SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH, SDL_OpenGLAsyncDispatchChanged, NULL);
+    if (self->displayLink) {
+        CVDisplayLinkRelease(self->displayLink);
+    }
+    if (self->swapIntervalCond) {
+        SDL_DestroyCond(self->swapIntervalCond);
+    }
+    if (self->swapIntervalMutex) {
+        SDL_DestroyMutex(self->swapIntervalMutex);
+    }
 }
 
 @end
@@ -211,6 +257,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     int glversion_major;
     int glversion_minor;
     NSOpenGLPixelFormatAttribute profile;
+    int interval;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #if SDL_VIDEO_OPENGL_EGL
@@ -318,6 +365,10 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     sdlcontext = (SDL_GLContext)CFBridgingRetain(context);
 
+    /* vsync is handled separately by synchronizing with a display link. */
+    interval = 0;
+    [context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
+
     if ( Cocoa_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext)context) < 0 ) {
         Cocoa_GL_DeleteContext(_this, (__bridge SDL_GLContext)context);
         SDL_SetError("Failed making OpenGL context current");
@@ -389,21 +440,17 @@ int
 Cocoa_GL_SetSwapInterval(_THIS, int interval)
 { @autoreleasepool
 {
-    NSOpenGLContext *nscontext;
-    GLint value;
+    SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *) SDL_GL_GetCurrentContext();
     int status;
 
-    if (interval < 0) {  /* no extension for this on Mac OS X at the moment. */
-        return SDL_SetError("Late swap tearing currently unsupported");
-    }
-
-    nscontext = (__bridge NSOpenGLContext*)SDL_GL_GetCurrentContext();
-    if (nscontext != nil) {
-        value = interval;
-        [nscontext setValues:&value forParameter:NSOpenGLCPSwapInterval];
-        status = 0;
-    } else {
+    if (nscontext == nil) {
         status = SDL_SetError("No current OpenGL context");
+    } else {
+        SDL_LockMutex(nscontext->swapIntervalMutex);
+        SDL_AtomicSet(&nscontext->swapIntervalsPassed, 0);
+        SDL_AtomicSet(&nscontext->swapIntervalSetting, interval);
+        SDL_UnlockMutex(nscontext->swapIntervalMutex);
+        status = 0;
     }
 
     return status;
@@ -413,17 +460,8 @@ int
 Cocoa_GL_GetSwapInterval(_THIS)
 { @autoreleasepool
 {
-    NSOpenGLContext *nscontext;
-    GLint value;
-    int status = 0;
-
-    nscontext = (__bridge NSOpenGLContext*)SDL_GL_GetCurrentContext();
-    if (nscontext != nil) {
-        [nscontext getValues:&value forParameter:NSOpenGLCPSwapInterval];
-        status = (int)value;
-    }
-
-    return status;
+    SDLOpenGLContext* nscontext = (__bridge SDLOpenGLContext*)SDL_GL_GetCurrentContext();
+    return nscontext ? SDL_AtomicGet(&nscontext->swapIntervalSetting) : 0;
 }}
 
 int
@@ -432,6 +470,27 @@ Cocoa_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     SDLOpenGLContext* nscontext = (__bridge SDLOpenGLContext*)SDL_GL_GetCurrentContext();
     SDL_VideoData *videodata = (__bridge SDL_VideoData *) _this->driverdata;
+    const int setting = SDL_AtomicGet(&nscontext->swapIntervalSetting);
+
+    if (setting == 0) {
+        /* nothing to do if vsync is disabled, don't even lock */
+    } else if (setting < 0) {  /* late swap tearing */
+        SDL_LockMutex(nscontext->swapIntervalMutex);
+        while (SDL_AtomicGet(&nscontext->swapIntervalsPassed) == 0) {
+            SDL_CondWait(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
+        }
+        SDL_AtomicSet(&nscontext->swapIntervalsPassed, 0);
+        SDL_UnlockMutex(nscontext->swapIntervalMutex);
+    } else {
+        SDL_LockMutex(nscontext->swapIntervalMutex);
+        do {  /* always wait here so we know we just hit a swap interval. */
+            SDL_CondWait(nscontext->swapIntervalCond, nscontext->swapIntervalMutex);
+        } while ((SDL_AtomicGet(&nscontext->swapIntervalsPassed) % setting) != 0);
+        SDL_AtomicSet(&nscontext->swapIntervalsPassed, 0);
+        SDL_UnlockMutex(nscontext->swapIntervalMutex);
+    }
+
+    /*{ static Uint64 prev = 0; const Uint64 now = SDL_GetTicks64(); const unsigned int diff = (unsigned int) (now - prev); prev = now; printf("GLSWAPBUFFERS TICKS %u\n", diff); }*/
 
     /* on 10.14 ("Mojave") and later, this deadlocks if two contexts in two
        threads try to swap at the same time, so put a mutex around it. */

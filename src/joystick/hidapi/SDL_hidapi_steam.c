@@ -356,30 +356,41 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
     if ( bBle )
     {
         int nRetries = 0;
-        uint8_t uSegmentBuffer[ MAX_REPORT_SEGMENT_SIZE ];
+        uint8_t uSegmentBuffer[ MAX_REPORT_SEGMENT_SIZE + 1 ];
+        uint8_t ucBytesToRead = MAX_REPORT_SEGMENT_SIZE;
+        uint8_t ucDataStartOffset = 0;
 
         SteamControllerPacketAssembler assembler;
         InitializeSteamControllerPacketAssembler( &assembler );
         
+        // On Windows and macOS, BLE devices get 2 copies of the feature report ID, one that is removed by ReadFeatureReport,
+        // and one that's included in the buffer we receive. We pad the bytes to read and skip over the report ID
+        // if necessary.
+#if defined(__WIN32__) || defined(__MACOSX__)
+        ++ucBytesToRead;
+        ++ucDataStartOffset;
+#endif
+
         while( nRetries < BLE_MAX_READ_RETRIES )
         {
             SDL_memset( uSegmentBuffer, 0, sizeof( uSegmentBuffer ) );
             uSegmentBuffer[ 0 ] = BLE_REPORT_NUMBER;
-            nRet = SDL_hid_get_feature_report( dev, uSegmentBuffer, sizeof( uSegmentBuffer ) );
+            nRet = SDL_hid_get_feature_report( dev, uSegmentBuffer, ucBytesToRead );
+
             DPRINTF( "GetFeatureReport ble ret=%d\n", nRet );
             HEXDUMP( uSegmentBuffer, nRet );
             
             // Zero retry counter if we got data
-            if ( nRet > 2 && ( uSegmentBuffer[ 1 ] & REPORT_SEGMENT_DATA_FLAG ) )
+            if ( nRet > 2 && ( uSegmentBuffer[ ucDataStartOffset + 1 ] & REPORT_SEGMENT_DATA_FLAG ) )
                 nRetries = 0;
             else
                 nRetries++;
-            
+
             if ( nRet > 0 )
             {
                 int nPacketLength = WriteSegmentToSteamControllerPacketAssembler( &assembler,
-                                                                                 uSegmentBuffer,
-                                                                                 nRet );
+                                                                                 uSegmentBuffer + ucDataStartOffset,
+                                                                                 nRet - ucDataStartOffset );
                 
                 if ( nPacketLength > 0 && nPacketLength < 65 )
                 {
@@ -424,7 +435,8 @@ static bool ResetSteamController( SDL_hid_device *dev, bool bSuppressErrorSpew, 
 {
     // Firmware quirk: Set Feature and Get Feature requests always require a 65-byte buffer.
     unsigned char buf[65];
-    int res = -1, i;
+    unsigned int i;
+    int res = -1;
     int nSettings = 0;
     int nAttributesLength;
     FeatureReportMsg *msg;
@@ -803,8 +815,8 @@ static void FormatStatePacketUntilGyro( SteamControllerStateInternal_t *pState, 
     pState->sRightPadX = clamp(nRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
     pState->sRightPadY = clamp(nRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
 
-    pState->sTriggerL = (unsigned short)RemapValClamped( (pStatePacket->ButtonTriggerData.Triggers.nLeft << 7) | pStatePacket->ButtonTriggerData.Triggers.nLeft, 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
-    pState->sTriggerR = (unsigned short)RemapValClamped( (pStatePacket->ButtonTriggerData.Triggers.nRight << 7) | pStatePacket->ButtonTriggerData.Triggers.nRight, 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
+    pState->sTriggerL = (unsigned short)RemapValClamped( (float)((pStatePacket->ButtonTriggerData.Triggers.nLeft << 7) | pStatePacket->ButtonTriggerData.Triggers.nLeft), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
+    pState->sTriggerR = (unsigned short)RemapValClamped( (float)((pStatePacket->ButtonTriggerData.Triggers.nRight << 7) | pStatePacket->ButtonTriggerData.Triggers.nRight), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
 }
 
 
@@ -827,8 +839,8 @@ static bool UpdateBLESteamControllerState( const uint8_t *pData, int nDataSize, 
     if ( ucOptionDataMask & k_EBLEButtonChunk2 )
     {
         // The middle 2 bytes of the button bits over the wire are triggers when over the wire and non-SC buttons in the internal controller state packet
-        pState->sTriggerL = (unsigned short)RemapValClamped( ( pData[ 0 ] << 7 ) | pData[ 0 ], 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
-        pState->sTriggerR = (unsigned short)RemapValClamped( ( pData[ 1 ] << 7 ) | pData[ 1 ], 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
+        pState->sTriggerL = (unsigned short)RemapValClamped( (float)(( pData[ 0 ] << 7 ) | pData[ 0 ]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
+        pState->sTriggerR = (unsigned short)RemapValClamped( (float)(( pData[ 1 ] << 7 ) | pData[ 1 ]), 0, STEAMCONTROLLER_TRIGGER_MAX_ANALOG, 0, SDL_MAX_SINT16 );
         pData += 2;
     }
     if ( ucOptionDataMask & k_EBLEButtonChunk3 )
@@ -1035,6 +1047,14 @@ HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
+#if defined(__WIN32__)
+    if (device->serial) {
+        /* We get a garbage serial number on Windows */
+        SDL_free(device->serial);
+        device->serial = NULL;
+    }
+#endif /* __WIN32__ */
+
     HIDAPI_SetDeviceName(device, "Steam Controller");
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -1240,9 +1260,9 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
                 ctx->timestamp_us += ctx->update_rate_in_us;
 
-                values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (M_PI / 180.0f));
-                values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (M_PI / 180.0f));
-                values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (M_PI / 180.0f));
+                values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
+                values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
+                values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
                 SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, ctx->timestamp_us, values, 3);
 
                 values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;

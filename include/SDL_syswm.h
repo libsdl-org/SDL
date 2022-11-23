@@ -76,10 +76,6 @@ struct SDL_SysWMinfo;
 
 #endif /* defined(SDL_VIDEO_DRIVER_X11) */
 
-#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
-#include <directfb.h>
-#endif
-
 #if defined(SDL_VIDEO_DRIVER_COCOA)
 #ifdef __OBJC__
 @class NSWindow;
@@ -111,10 +107,6 @@ typedef void *EGLSurface;
 #include "SDL_egl.h"
 #endif
 
-#if defined(SDL_VIDEO_DRIVER_OS2)
-#define INCL_WIN
-#include <os2.h>
-#endif
 #endif /* SDL_PROTOTYPES_ONLY */
 
 #if defined(SDL_VIDEO_DRIVER_KMSDRM)
@@ -137,15 +129,12 @@ typedef enum
     SDL_SYSWM_UNKNOWN,
     SDL_SYSWM_WINDOWS,
     SDL_SYSWM_X11,
-    SDL_SYSWM_DIRECTFB,
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
     SDL_SYSWM_WAYLAND,
-    SDL_SYSWM_MIR,  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */
     SDL_SYSWM_WINRT,
     SDL_SYSWM_ANDROID,
     SDL_SYSWM_VIVANTE,
-    SDL_SYSWM_OS2,
     SDL_SYSWM_HAIKU,
     SDL_SYSWM_KMSDRM,
     SDL_SYSWM_RISCOS
@@ -173,11 +162,6 @@ struct SDL_SysWMmsg
             XEvent event;
         } x11;
 #endif
-#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
-        struct {
-            DFBEvent event;
-        } dfb;
-#endif
 #if defined(SDL_VIDEO_DRIVER_COCOA)
         struct
         {
@@ -201,16 +185,6 @@ struct SDL_SysWMmsg
             int dummy;
             /* No Vivante window events yet */
         } vivante;
-#endif
-#if defined(SDL_VIDEO_DRIVER_OS2)
-        struct
-        {
-            BOOL fFrame;                /**< TRUE if hwnd is a frame window */
-            HWND hwnd;                  /**< The window receiving the message */
-            ULONG msg;                  /**< The message identifier */
-            MPARAM mp1;                 /**< The first first message parameter */
-            MPARAM mp2;                 /**< The second first message parameter */
-        } os2;
 #endif
         /* Can't have an empty union */
         int dummy;
@@ -249,14 +223,6 @@ struct SDL_SysWMinfo
             Display *display;           /**< The X11 display */
             Window window;              /**< The X11 window */
         } x11;
-#endif
-#if defined(SDL_VIDEO_DRIVER_DIRECTFB)
-        struct
-        {
-            IDirectFB *dfb;             /**< The directfb main interface */
-            IDirectFBWindow *window;    /**< The directfb window handle */
-            IDirectFBSurface *surface;  /**< The directfb client surface */
-        } dfb;
 #endif
 #if defined(SDL_VIDEO_DRIVER_COCOA)
         struct
@@ -302,13 +268,6 @@ struct SDL_SysWMinfo
             struct xdg_positioner *xdg_positioner;  /**< Wayland xdg positioner, for popup */
         } wl;
 #endif
-#if defined(SDL_VIDEO_DRIVER_MIR)  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */
-        struct
-        {
-            void *connection;  /**< Mir display server connection */
-            void *surface;  /**< Mir surface */
-        } mir;
-#endif
 
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
         struct
@@ -316,14 +275,6 @@ struct SDL_SysWMinfo
             ANativeWindow *window;
             EGLSurface surface;
         } android;
-#endif
-
-#if defined(SDL_VIDEO_DRIVER_OS2)
-        struct
-        {
-            HWND hwnd;                  /**< The window handle */
-            HWND hwndFrame;             /**< The frame window handle */
-        } os2;
 #endif
 
 #if defined(SDL_VIDEO_DRIVER_VIVANTE)
@@ -369,7 +320,7 @@ typedef struct SDL_SysWMinfo SDL_SysWMinfo;
  *          of the `info` struct is valid, or SDL_FALSE if the information
  *          could not be retrieved; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowWMInfo(SDL_Window * window,
                                                      SDL_SysWMinfo * info);

@@ -28,8 +28,10 @@
 __attribute__((weak))
 void reset_IOP() {
     SifInitRpc(0);
-    while(!SifIopReset(NULL, 0)){};
-    while(!SifIopSync()){};
+    while(!SifIopReset(NULL, 0)) {
+    }
+    while(!SifIopSync()){
+    }
 }
 
 static void prepare_IOP()

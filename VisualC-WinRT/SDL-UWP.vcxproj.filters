@@ -842,5 +842,8 @@
     <ClCompile Include="..\src\joystick\controller_type.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\stdlib\SDL_mslibc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

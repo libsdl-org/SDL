@@ -48,44 +48,17 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_NETBSD
     &NETBSDAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_QSA
-    &QSAAUDIO_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_SUNAUDIO
-    &SUNAUDIO_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_ARTS
-    &ARTS_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_ESD
-    &ESD_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_NACL
-    &NACLAUDIO_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_NAS
-    &NAS_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_WASAPI
     &WASAPI_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DSOUND
     &DSOUND_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_WINMM
-    &WINMM_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_PAUDIO
-    &PAUDIO_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_HAIKU
     &HAIKUAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_COREAUDIO
     &COREAUDIO_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_FUSIONSOUND
-    &FUSIONSOUND_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_AAUDIO
     &aaudio_bootstrap,
@@ -119,9 +92,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_OSS
     &DSP_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_OS2
-    &OS2AUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DISK
     &DISKAUDIO_bootstrap,

@@ -25,7 +25,7 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
     * Initializing/uninitializing the game runtime, and initializing Xbox Live services
     * Creating a global task queue and setting it as the default for the process. When running any async operations, passing in `NULL` as the task queue will make the task get added to the global task queue.
   
-  * An implementation on `WinMain` that performs the above GDK setup (you should link against SDL2main.lib, as in Windows x64). If you are unable to do this, you can instead manually call `SDL_GDKRunApp` from your entry point, passing in your `SDL_main` function and `NULL` as the parameters.
+  * An implementation on `WinMain` that performs the above GDK setup (you should link against SDL3main.lib, as in Windows x64). If you are unable to do this, you can instead manually call `SDL_GDKRunApp` from your entry point, passing in your `SDL_main` function and `NULL` as the parameters.
   * Global task queue callbacks are dispatched during `SDL_PumpEvents` (which is also called internally if using `SDL_PollEvent`).
   * You can get the handle of the global task queue through `SDL_GDKGetTaskQueue`, if needed. When done with the queue, be sure to use `XTaskQueueCloseHandle` to decrement the reference count (otherwise it will cause a resource leak).
   
@@ -36,8 +36,8 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
 
 The included `VisualC-GDK/SDL.sln` solution includes the following targets for the Gaming.Desktop.x64 configuration:
 
-* SDL2 (DLL) - This is the typical SDL2.dll, but for Gaming.Desktop.x64.
-* SDL2main (lib) - This contains a drop-in implementation of `WinMain` that is used as the entry point for GDK programs.
+* SDL3 (DLL) - This is the typical SDL3.dll, but for Gaming.Desktop.x64.
+* SDL3main (lib) - This contains a drop-in implementation of `WinMain` that is used as the entry point for GDK programs.
 * tests/testgamecontroller - Standard SDL test program demonstrating controller functionality.
 * tests/testgdk - GDK-specific test program that demonstrates using the global task queue to login a user into Xbox Live.
   *NOTE*: As of the June 2022 GDK, you cannot test user logins without a valid Title ID and MSAAppId. You will need to manually change the identifiers in the `MicrosoftGame.config` to your valid IDs from Partner Center if you wish to test this.
@@ -54,21 +54,21 @@ These steps assume you already have a game using SDL that runs on Windows x64 al
 
 In your game's existing Visual Studio Solution, go to Build > Configuration Manager. From the "Active solution platform" drop-down select "New...". From the drop-down list, select Gaming.Desktop.x64 and copy the settings from the x64 configuration.
 
-### 2. Build SDL2 and SDL2main for GDK ###
+### 2. Build SDL3 and SDL3main for GDK ###
 
-Open `VisualC-GDK/SDL.sln` in Visual Studio, you need to build the SDL2 and SDL2main targets for the Gaming.Desktop.x64 platform (Release is recommended). You will need to copy/keep track of the `SDL2.dll`, `XCurl.dll` (which is output by Gaming.Desktop.x64), `SDL2.lib`, and `SDL2main.lib` output files for your game project.
+Open `VisualC-GDK/SDL.sln` in Visual Studio, you need to build the SDL3 and SDL3main targets for the Gaming.Desktop.x64 platform (Release is recommended). You will need to copy/keep track of the `SDL3.dll`, `XCurl.dll` (which is output by Gaming.Desktop.x64), `SDL3.lib`, and `SDL3main.lib` output files for your game project.
 
-*Alternatively*, you could setup your solution file to instead reference the SDL2/SDL2main project file targets from the SDL source, and add those projects as a dependency. This would mean that SDL2 and SDL2main would both be built when your game is built. 
+*Alternatively*, you could setup your solution file to instead reference the SDL3/SDL3main project file targets from the SDL source, and add those projects as a dependency. This would mean that SDL3 and SDL3main would both be built when your game is built. 
 
 ### 3. Configuring Project Settings ###
 
 While the Gaming.Desktop.x64 configuration sets most of the required settings, there are some additional items to configure for your game project under the Gaming.Desktop.x64 Configuration:
 
 *  Under C/C++ > General > Additional Include Directories, make sure the `SDL/include` path is referenced
-* Under Linker > General > Additional Library Directories, make sure to reference the path where the newly-built SDL2.lib and SDL2main.lib are
+* Under Linker > General > Additional Library Directories, make sure to reference the path where the newly-built SDL3.lib and SDL3main.lib are
 * Under Linker > Input > Additional Dependencies, you need the following:
-  * `SDL2.lib`
-  * `SDL2main.lib` (unless not using)
+  * `SDL3.lib`
+  * `SDL3main.lib` (unless not using)
   * `xgameruntime.lib`
   * `../Microsoft.Xbox.Services.141.GDK.C.Thunks.lib`
 * Note that in general, the GDK libraries depend on the MSVC C/C++ runtime, so there is no way to remove this dependency from a GDK program that links against GDK.
@@ -81,7 +81,7 @@ Rather than using your own implementation of `WinMain`, it's recommended that yo
 
 The game will not launch in the debugger unless required DLLs are included in the directory that contains the game's .exe file. You need to make sure that the following files are copied into the directory:
 
-* Your SDL2.dll
+* Your SDL3.dll
 * "$(Console_GRDKExtLibRoot)Xbox.Services.API.C\DesignTime\CommonConfiguration\Neutral\Lib\Release\Microsoft.Xbox.Services.141.GDK.C.Thunks.dll"
 * XCurl.dll
 

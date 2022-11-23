@@ -230,7 +230,7 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
 
     minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
 
-    if (pitch < 0 || ((size_t) pitch) < minimalPitch) {
+    if (pitch < 0 || (pitch > 0 && ((size_t) pitch) < minimalPitch)) {
         SDL_InvalidParamError("pitch");
         return NULL;
     }
@@ -272,7 +272,7 @@ SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
 
     minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
 
-    if (pitch < 0 || ((size_t) pitch) < minimalPitch) {
+    if (pitch < 0 || (pitch > 0 && ((size_t) pitch) < minimalPitch)) {
         SDL_InvalidParamError("pitch");
         return NULL;
     }

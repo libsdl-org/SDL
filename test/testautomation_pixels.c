@@ -330,6 +330,7 @@ pixels_allocFreePalette(void *arg)
   for (variation = 1; variation <= 3; variation++) {
     switch (variation) {
       /* Just one color */
+      default:
       case 1:
         ncolors = 1;
         break;
@@ -426,6 +427,7 @@ pixels_calcGammaRamp(void *arg)
   for (variation = 0; variation < 4; variation++) {
     switch (variation) {
       /* gamma = 0 all black */
+      default:
       case 0:
         gamma = 0.0f;
         break;

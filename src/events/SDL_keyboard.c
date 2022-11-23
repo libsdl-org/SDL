@@ -1058,11 +1058,6 @@ SDL_SendEditingText(const char *text, int start, int length)
     posted = 0;
     if (SDL_GetEventState(SDL_TEXTEDITING) == SDL_ENABLE) {
         SDL_Event event;
-        event.edit.type = SDL_TEXTEDITING;
-        event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
-        event.edit.start = start;
-        event.edit.length = length;
-        SDL_utf8strlcpy(event.edit.text, text, SDL_arraysize(event.edit.text));
 
         if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE) &&
             SDL_strlen(text) >= SDL_arraysize(event.text.text)) {
@@ -1140,6 +1135,17 @@ SDL_GetKeyFromScancode(SDL_Scancode scancode)
     }
 
     return keyboard->keymap[scancode];
+}
+
+SDL_Keycode
+SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
+{
+    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
+        SDL_InvalidParamError("scancode");
+        return 0;
+    }
+
+    return SDL_default_keymap[scancode];
 }
 
 SDL_Scancode

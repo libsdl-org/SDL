@@ -43,8 +43,6 @@
 #include "SDL_filesystem.h"
 #include "SDL_rwops.h"
 
-/* QNX's /proc/self/exefile is a text file and not a symlink. */
-#if !defined(__QNXNTO__)
 static char *
 readSymLink(const char *path)
 {
@@ -76,8 +74,6 @@ readSymLink(const char *path)
     SDL_free(retval);
     return NULL;
 }
-#endif
-
 
 #if defined(__OPENBSD__)
 static char *search_path_for_binary(const char *bin)
@@ -228,8 +224,6 @@ SDL_GetBasePath(void)
         retval = readSymLink("/proc/curproc/file");
 #elif defined(__NETBSD__)
         retval = readSymLink("/proc/curproc/exe");
-#elif defined(__QNXNTO__)
-        retval = SDL_LoadFile("/proc/self/exefile", NULL);
 #else
         retval = readSymLink("/proc/self/exe");  /* linux. */
         if (retval == NULL) {

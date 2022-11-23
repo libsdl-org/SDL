@@ -16,7 +16,7 @@ indent_style = space
 indent_size = 4
 indent_style = space
 
-[{CMakeLists.txt,sdl2-config*.cmake.in,cmake/*.cmake}]
+[{CMakeLists.txt,sdl3-config*.cmake.in,cmake/*.cmake}]
 indent_size = 2
 indent_style = space
 

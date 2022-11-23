@@ -456,10 +456,16 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
 void
 SDL_DelTouch(SDL_TouchID id)
 {
-    int i;
-    int index = SDL_GetTouchIndex(id);
-    SDL_Touch *touch = SDL_GetTouch(id);
+    int i, index;
+    SDL_Touch *touch;
 
+    if (SDL_num_touch == 0) {
+        /* We've already cleaned up, we won't find this device */
+        return;
+    }
+
+    index = SDL_GetTouchIndex(id);
+    touch = SDL_GetTouch(id);
     if (!touch) {
         return;
     }

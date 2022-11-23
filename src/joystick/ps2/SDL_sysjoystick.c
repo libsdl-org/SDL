@@ -275,7 +275,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     struct JoyInfo *info = &joyInfo[index];
     int state = padGetState(info->port, info->slot);
 
-    if (state != PAD_STATE_DISCONN || state != PAD_STATE_EXECCMD || state != PAD_STATE_ERROR) {
+    if (state != PAD_STATE_DISCONN && state != PAD_STATE_EXECCMD && state != PAD_STATE_ERROR) {
         int ret = padRead(info->port, info->slot, &buttons); /* port, slot, buttons */
         if (ret != 0) {
             /* Buttons */

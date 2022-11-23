@@ -38,16 +38,12 @@
 #define SDL_JOYSTICK_HIDAPI_PS4
 #define SDL_JOYSTICK_HIDAPI_PS5
 #define SDL_JOYSTICK_HIDAPI_STADIA
+#define SDL_JOYSTICK_HIDAPI_STEAM   /* Simple support for BLE Steam Controller, hint is disabled by default */
 #define SDL_JOYSTICK_HIDAPI_SWITCH
 #define SDL_JOYSTICK_HIDAPI_WII
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
 #define SDL_JOYSTICK_HIDAPI_SHIELD
-
-#if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
-/* Very basic Steam Controller support on mobile devices */
-#define SDL_JOYSTICK_HIDAPI_STEAM
-#endif
 
 /* Whether HIDAPI is enabled by default */
 #define SDL_HIDAPI_DEFAULT  SDL_TRUE

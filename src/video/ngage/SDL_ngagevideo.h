@@ -30,7 +30,16 @@
 #include <e32svr.h>
 #include <bitdev.h>
 #include <w32std.h>
-#include <bitdraw.h> // CFbsDrawDevice
+
+class CFbsDrawDevice : public CBase
+{
+public:
+public:
+    IMPORT_C static CFbsDrawDevice* NewScreenDeviceL(TScreenInfoV01 aInfo,TDisplayMode aDispMode);
+public:
+    virtual void Update() {}
+    virtual void UpdateRegion(const TRect&) {}
+};
 
 #define _THIS SDL_VideoDevice *_this
 
@@ -46,10 +55,7 @@ typedef struct SDL_VideoData
     TRequestStatus   NGAGE_WsEventStatus;
     TRequestStatus   NGAGE_RedrawEventStatus;
     TWsEvent         NGAGE_WsEvent;
-    //TWsRedrawEvent   NGAGE_RedrawEvent;
-
     CFbsDrawDevice*  NGAGE_DrawDevice;
-
     TBool            NGAGE_IsWindowFocused; /* Not used yet */
 
     /* Screen hardware frame buffer info */
@@ -63,10 +69,6 @@ typedef struct SDL_VideoData
     TPoint           NGAGE_ScreenOffset;
 
     CFbsBitGc::TGraphicsOrientation NGAGE_ScreenOrientation;
-
-    /* Simulate double screen height */
-    //TInt             NGAGE_ScreenXScaleValue;
-    //TInt             NGAGE_ScreenYScaleValue;
 
 } SDL_VideoData;
 

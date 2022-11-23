@@ -1236,13 +1236,13 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
 
-    if (data == 0)
+    if (data == NULL)
         return;
 
-    if(vita_texture == 0)
+    if(vita_texture == NULL)
         return;
 
-    if(vita_texture->tex == 0)
+    if(vita_texture->tex == NULL)
         return;
 
     sceGxmFinish(data->gxm_context);

@@ -29,6 +29,10 @@ extern void X11_QuitKeyboard(_THIS);
 extern void X11_StartTextInput(_THIS);
 extern void X11_StopTextInput(_THIS);
 extern void X11_SetTextInputRect(_THIS, const SDL_Rect *rect);
+extern SDL_bool X11_HasScreenKeyboardSupport(_THIS);
+extern void X11_ShowScreenKeyboard(_THIS, SDL_Window *window);
+extern void X11_HideScreenKeyboard(_THIS, SDL_Window *window);
+extern SDL_bool X11_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 extern KeySym X11_KeyCodeToSym(_THIS, KeyCode, unsigned char group);
 
 #endif /* SDL_x11keyboard_h_ */

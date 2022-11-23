@@ -59,11 +59,11 @@ Or with cmake:
 To build one of the tests:
 
     $ cd test/
-    $ emcc -O2 --js-opts 0 -g4 testdraw2.c -I../include ../build/.libs/libSDL2.a ../build/libSDL2_test.a -o a.html
+    $ emcc -O2 --js-opts 0 -g4 testdraw2.c -I../include ../build/.libs/libSDL3.a ../build/libSDL3_test.a -o a.html
 
 Uses GLES2 renderer or software
 
-Some other SDL2 libraries can be easily built (assuming SDL2 is installed somewhere):
+Some other SDL3 libraries can be easily built (assuming SDL3 is installed somewhere):
 
 SDL_mixer (http://www.libsdl.org/projects/SDL_mixer/):
 

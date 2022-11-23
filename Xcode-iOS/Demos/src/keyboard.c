@@ -183,7 +183,7 @@ loadFont(void)
         SDL_BlitSurface(surface, NULL, converted, NULL);
         /* create our texture */
         texture = SDL_CreateTextureFromSurface(renderer, converted);
-        if (texture == 0) {
+        if (!texture) {
             printf("texture creation failed: %s\n", SDL_GetError());
         } else {
             /* set blend mode for our texture */

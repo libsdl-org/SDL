@@ -133,10 +133,13 @@ using namespace XInputOnGameInput;
 #ifndef BATTERY_DEVTYPE_GAMEPAD
 #define BATTERY_DEVTYPE_GAMEPAD         0x00
 #endif
+
+#ifndef BATTERY_TYPE_DISCONNECTED
+#define BATTERY_TYPE_DISCONNECTED       0x00
+#endif
 #ifndef BATTERY_TYPE_WIRED
 #define BATTERY_TYPE_WIRED              0x01
 #endif
-
 #ifndef BATTERY_TYPE_UNKNOWN
 #define BATTERY_TYPE_UNKNOWN            0xFF
 #endif

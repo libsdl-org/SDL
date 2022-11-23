@@ -129,7 +129,7 @@ typedef enum
  * uninitialized state. However, all open joysticks will be closed and SDL
  * functions called with them will fail.
  *
- * \since This function is available since SDL 2.0.7.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_LockJoysticks(void);
 
@@ -144,7 +144,7 @@ extern DECLSPEC void SDLCALL SDL_LockJoysticks(void);
  * the API functions that take a joystick index will be valid, and joystick
  * and game controller events will not be delivered.
  *
- * \since This function is available since SDL 2.0.7.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void);
 
@@ -154,7 +154,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void);
  * \returns the number of attached joysticks on success or a negative error
  *          code on failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickName
  * \sa SDL_JoystickPath
@@ -172,7 +172,7 @@ extern DECLSPEC int SDLCALL SDL_NumJoysticks(void);
  * \returns the name of the selected joystick. If no name can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickName
  * \sa SDL_JoystickOpen
@@ -189,7 +189,7 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
  * \returns the path of the selected joystick. If no path can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickPath
  * \sa SDL_JoystickOpen
@@ -200,7 +200,7 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickPathForIndex(int device_index);
  * Get the player index of a joystick, or -1 if it's not available This can be
  * called before any joysticks are opened.
  *
- * \since This function is available since SDL 2.0.9.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickGetDevicePlayerIndex(int device_index);
 
@@ -215,7 +215,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickGetDevicePlayerIndex(int device_index);
  * \returns the GUID of the selected joystick. If called on an invalid index,
  *          this function returns a zero GUID
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetGUID
  * \sa SDL_JoystickGetGUIDString
@@ -233,7 +233,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetDeviceGUID(int device_in
  * \returns the USB vendor ID of the selected joystick. If called on an
  *          invalid index, this function returns zero
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceVendor(int device_index);
 
@@ -248,7 +248,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceVendor(int device_index);
  * \returns the USB product ID of the selected joystick. If called on an
  *          invalid index, this function returns zero
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceProduct(int device_index);
 
@@ -263,7 +263,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceProduct(int device_index);
  * \returns the product version of the selected joystick. If called on an
  *          invalid index, this function returns zero
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceProductVersion(int device_index);
 
@@ -277,7 +277,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceProductVersion(int device_in
  * \returns the SDL_JoystickType of the selected joystick. If called on an
  *          invalid index, this function returns `SDL_JOYSTICK_TYPE_UNKNOWN`
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_JoystickType SDLCALL SDL_JoystickGetDeviceType(int device_index);
 
@@ -292,7 +292,7 @@ extern DECLSPEC SDL_JoystickType SDLCALL SDL_JoystickGetDeviceType(int device_in
  * \returns the instance id of the selected joystick. If called on an invalid
  *          index, this function returns zero
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_JoystickID SDLCALL SDL_JoystickGetDeviceInstanceID(int device_index);
 
@@ -311,7 +311,7 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_JoystickGetDeviceInstanceID(int devic
  * \returns a joystick identifier or NULL if an error occurred; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickClose
  * \sa SDL_JoystickInstanceID
@@ -325,7 +325,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickOpen(int device_index);
  * \returns an SDL_Joystick on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
- * \since This function is available since SDL 2.0.4.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromInstanceID(SDL_JoystickID instance_id);
 
@@ -336,7 +336,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromInstanceID(SDL_JoystickID 
  * \returns an SDL_Joystick on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
- * \since This function is available since SDL 2.0.12.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromPlayerIndex(int player_index);
 
@@ -345,7 +345,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromPlayerIndex(int player_ind
  *
  * \returns the joystick's device index, or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtual(SDL_JoystickType type,
                                                       int naxes,
@@ -396,7 +396,7 @@ typedef struct SDL_VirtualJoystickDesc
  *
  * \returns the joystick's device index, or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc);
 
@@ -407,7 +407,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystic
  *                     SDL_JoystickAttachVirtual()
  * \returns 0 on success, or -1 if an error occurred.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickDetachVirtual(int device_index);
 
@@ -417,7 +417,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickDetachVirtual(int device_index);
  * \param device_index a joystick device index.
  * \returns SDL_TRUE if the joystick is virtual, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
 
@@ -439,7 +439,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
  * \param value the new value for the specified axis.
  * \returns 0 on success, -1 on error.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value);
 
@@ -457,7 +457,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualAxis(SDL_Joystick *joystick, i
  * \param value the new value for the specified button.
  * \returns 0 on success, -1 on error.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualButton(SDL_Joystick *joystick, int button, Uint8 value);
 
@@ -475,7 +475,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualButton(SDL_Joystick *joystick,
  * \param value the new value for the specified hat.
  * \returns 0 on success, -1 on error.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value);
 
@@ -486,7 +486,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, in
  * \returns the name of the selected joystick. If no name can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickNameForIndex
  * \sa SDL_JoystickOpen
@@ -500,7 +500,7 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickName(SDL_Joystick *joystick);
  * \returns the path of the selected joystick. If no path can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickPathForIndex
  */
@@ -515,7 +515,7 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickPath(SDL_Joystick *joystick);
  * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
  * \returns the player index, or -1 if it's not available.
  *
- * \since This function is available since SDL 2.0.9.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickGetPlayerIndex(SDL_Joystick *joystick);
 
@@ -526,7 +526,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickGetPlayerIndex(SDL_Joystick *joystick);
  * \param player_index Player index to assign to this joystick, or -1 to clear
  *                     the player index and turn off player LEDs.
  *
- * \since This function is available since SDL 2.0.12.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_JoystickSetPlayerIndex(SDL_Joystick *joystick, int player_index);
 
@@ -540,7 +540,7 @@ extern DECLSPEC void SDLCALL SDL_JoystickSetPlayerIndex(SDL_Joystick *joystick, 
  *          this function returns a zero GUID; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetDeviceGUID
  * \sa SDL_JoystickGetGUIDString
@@ -555,7 +555,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUID(SDL_Joystick *joyst
  * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
  * \returns the USB vendor ID of the selected joystick, or 0 if unavailable.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetVendor(SDL_Joystick *joystick);
 
@@ -567,7 +567,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetVendor(SDL_Joystick *joystick);
  * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
  * \returns the USB product ID of the selected joystick, or 0 if unavailable.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProduct(SDL_Joystick *joystick);
 
@@ -579,7 +579,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProduct(SDL_Joystick *joystick);
  * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
  * \returns the product version of the selected joystick, or 0 if unavailable.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProductVersion(SDL_Joystick *joystick);
 
@@ -592,7 +592,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProductVersion(SDL_Joystick *joyst
  * \returns the firmware version of the selected joystick, or 0 if
  *          unavailable.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetFirmwareVersion(SDL_Joystick *joystick);
 
@@ -605,7 +605,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetFirmwareVersion(SDL_Joystick *joys
  * \returns the serial number of the selected joystick, or NULL if
  *          unavailable.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC const char * SDLCALL SDL_JoystickGetSerial(SDL_Joystick *joystick);
 
@@ -615,7 +615,7 @@ extern DECLSPEC const char * SDLCALL SDL_JoystickGetSerial(SDL_Joystick *joystic
  * \param joystick the SDL_Joystick obtained from SDL_JoystickOpen()
  * \returns the SDL_JoystickType of the selected joystick.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_JoystickType SDLCALL SDL_JoystickGetType(SDL_Joystick *joystick);
 
@@ -628,7 +628,7 @@ extern DECLSPEC SDL_JoystickType SDLCALL SDL_JoystickGetType(SDL_Joystick *joyst
  * \param pszGUID buffer in which to write the ASCII string
  * \param cbGUID the size of pszGUID
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetDeviceGUID
  * \sa SDL_JoystickGetGUID
@@ -646,7 +646,7 @@ extern DECLSPEC void SDLCALL SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, ch
  * \param pchGUID string containing an ASCII representation of a GUID
  * \returns a SDL_JoystickGUID structure.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetGUIDString
  */
@@ -665,7 +665,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUIDFromString(const cha
  * \param crc16 A pointer filled in with a CRC used to distinguish different
  *              products with the same VID/PID, or 0 if not available
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetDeviceGUID
  */
@@ -678,7 +678,7 @@ extern DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint
  * \returns SDL_TRUE if the joystick has been opened, SDL_FALSE if it has not;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickClose
  * \sa SDL_JoystickOpen
@@ -692,7 +692,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAttached(SDL_Joystick *joystick)
  * \returns the instance ID of the specified joystick on success or a negative
  *          error code on failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickOpen
  */
@@ -710,7 +710,7 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_JoystickInstanceID(SDL_Joystick *joys
  *          negative error code on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetAxis
  * \sa SDL_JoystickOpen
@@ -729,7 +729,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickNumAxes(SDL_Joystick *joystick);
  * \returns the number of trackballs on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetBall
  */
@@ -742,7 +742,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickNumBalls(SDL_Joystick *joystick);
  * \returns the number of POV hats on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetHat
  * \sa SDL_JoystickOpen
@@ -756,7 +756,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickNumHats(SDL_Joystick *joystick);
  * \returns the number of buttons on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickGetButton
  * \sa SDL_JoystickOpen
@@ -769,7 +769,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickNumButtons(SDL_Joystick *joystick);
  * This is called automatically by the event loop if any joystick events are
  * enabled.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickEventState
  */
@@ -794,7 +794,7 @@ extern DECLSPEC void SDLCALL SDL_JoystickUpdate(void);
  *          If `state` is `SDL_QUERY` then the current state is returned,
  *          otherwise the new processing state is returned.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GameControllerEventState
  */
@@ -821,7 +821,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickEventState(int state);
  * \returns a 16-bit signed integer representing the current position of the
  *          axis or 0 on failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickNumAxes
  */
@@ -840,7 +840,7 @@ extern DECLSPEC Sint16 SDLCALL SDL_JoystickGetAxis(SDL_Joystick *joystick,
  * \param state Upon return, the initial value is supplied here.
  * \return SDL_TRUE if this axis has any initial value, or SDL_FALSE if not.
  *
- * \since This function is available since SDL 2.0.6.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick *joystick,
                                                    int axis, Sint16 *state);
@@ -879,7 +879,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick *j
  * \param hat the hat index to get the state from; indices start at index 0
  * \returns the current hat position.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickNumHats
  */
@@ -901,7 +901,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetHat(SDL_Joystick *joystick,
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickNumBalls
  */
@@ -916,7 +916,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickGetBall(SDL_Joystick *joystick,
  *               index 0
  * \returns 1 if the specified button is pressed, 0 otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickNumButtons
  */
@@ -937,7 +937,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetButton(SDL_Joystick *joystick,
  * \param duration_ms The duration of the rumble effect, in milliseconds
  * \returns 0, or -1 if rumble isn't supported on this joystick
  *
- * \since This function is available since SDL 2.0.9.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickHasRumble
  */
@@ -962,7 +962,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 lo
  * \param duration_ms The duration of the rumble effect, in milliseconds
  * \returns 0, or -1 if trigger rumble isn't supported on this joystick
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickHasRumbleTriggers
  */
@@ -977,7 +977,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, U
  * \param joystick The joystick to query
  * \return SDL_TRUE if the joystick has a modifiable LED, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
 
@@ -987,7 +987,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
  * \param joystick The joystick to query
  * \return SDL_TRUE if the joystick has rumble, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickRumble
  */
@@ -999,7 +999,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumble(SDL_Joystick *joystick);
  * \param joystick The joystick to query
  * \return SDL_TRUE if the joystick has trigger rumble, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickRumbleTriggers
  */
@@ -1017,7 +1017,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumbleTriggers(SDL_Joystick *joy
  * \param blue The intensity of the blue LED
  * \returns 0 on success, -1 if this joystick does not have a modifiable LED
  *
- * \since This function is available since SDL 2.0.14.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
@@ -1029,7 +1029,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red
  * \param size The size of the data to send to the joystick
  * \returns 0, or -1 if this joystick or driver doesn't support effect packets
  *
- * \since This function is available since SDL 2.0.16.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size);
 
@@ -1038,7 +1038,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickSendEffect(SDL_Joystick *joystick, const
  *
  * \param joystick The joystick device to close
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_JoystickOpen
  */
@@ -1051,7 +1051,7 @@ extern DECLSPEC void SDLCALL SDL_JoystickClose(SDL_Joystick *joystick);
  * \returns the current battery level as SDL_JoystickPowerLevel on success or
  *          `SDL_JOYSTICK_POWER_UNKNOWN` if it is unknown
  *
- * \since This function is available since SDL 2.0.4.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_JoystickCurrentPowerLevel(SDL_Joystick *joystick);
 

@@ -78,9 +78,6 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_DIRECTFB
-    &DirectFB_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_WINDOWS
     &WINDOWS_bootstrap,
 #endif
@@ -89,9 +86,6 @@ static VideoBootStrap *bootstrap[] = {
 #endif
 #if SDL_VIDEO_DRIVER_HAIKU
     &HAIKU_bootstrap,
-#endif
-#if SDL_VIDEO_DRIVER_PANDORA
-    &PND_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_UIKIT
     &UIKIT_bootstrap,
@@ -120,24 +114,14 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_RPI
     &RPI_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_NACL
-    &NACL_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
     &Emscripten_bootstrap,
-#endif
-#if SDL_VIDEO_DRIVER_QNX
-    &QNX_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_OFFSCREEN
     &OFFSCREEN_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_NGAGE
     &NGAGE_bootstrap,
-#endif
-#if SDL_VIDEO_DRIVER_OS2
-    &OS2DIVE_bootstrap,
-    &OS2VMAN_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
@@ -202,6 +186,22 @@ typedef struct {
     int bytes_per_pixel;
 } SDL_WindowTextureData;
 
+
+static Uint32
+SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
+{
+#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__
+    if (_this->GL_CreateContext != NULL) {
+        return SDL_WINDOW_OPENGL;
+    }
+#endif
+#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
+    if (_this->Metal_CreateView != NULL) {
+        return SDL_WINDOW_METAL;
+    }
+#endif
+    return 0;
+}
 
 static int
 SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
@@ -1303,9 +1303,8 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
         return SDL_SetError("Couldn't find display mode match");
     }
 
-    if (mode) {
-        *mode = fullscreen_mode;
-    }
+    *mode = fullscreen_mode;
+
     return 0;
 }
 
@@ -1588,11 +1587,17 @@ SDL_ContextNotSupported(const char *name)
                  "(%s) or platform", name, _this->name);
 }
 
+static int
+SDL_DllNotSupported(const char *name)
+{
+    return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
+}
+
 SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
-    Uint32 graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    Uint32 type_flags, graphics_flags;
 
     if (!_this) {
         /* Initialize the video system if needed */
@@ -1601,7 +1606,9 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         }
     }
 
-    if ((((flags & SDL_WINDOW_UTILITY) != 0) + ((flags & SDL_WINDOW_TOOLTIP) != 0) + ((flags & SDL_WINDOW_POPUP_MENU) != 0)) > 1) {
+    /* ensure no more than one of these flags is set */
+    type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
+    if ((type_flags & (type_flags - 1)) != 0) {
         SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
@@ -1620,18 +1627,16 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         return NULL;
     }
 
+    /* ensure no more than one of these flags is set */
+    graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+        SDL_SetError("Conflicting window flags specified");
+        return NULL;
+    }
+
     /* Some platforms have certain graphics backends enabled by default */
     if (!graphics_flags && !SDL_IsVideoContextExternal()) {
-#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
-        if (_this->GL_CreateContext != NULL) {
-            flags |= SDL_WINDOW_OPENGL;
-        }
-#endif
-#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
-        if (_this->Metal_CreateView != NULL) {
-            flags |= SDL_WINDOW_METAL;
-        }
-#endif
+        flags |= SDL_DefaultGraphicsBackends(_this);
     }
 
     if (flags & SDL_WINDOW_OPENGL) {
@@ -1649,10 +1654,6 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
             SDL_ContextNotSupported("Vulkan");
             return NULL;
         }
-        if (graphics_flags & SDL_WINDOW_OPENGL) {
-            SDL_SetError("Vulkan and OpenGL not supported on same window");
-            return NULL;
-        }
         if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
             return NULL;
         }
@@ -1661,16 +1662,6 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     if (flags & SDL_WINDOW_METAL) {
         if (!_this->Metal_CreateView) {
             SDL_ContextNotSupported("Metal");
-            return NULL;
-        }
-        /* 'flags' may have default flags appended, don't check against that. */
-        if (graphics_flags & SDL_WINDOW_OPENGL) {
-            SDL_SetError("Metal and OpenGL not supported on same window");
-            return NULL;
-        }
-        if (graphics_flags & SDL_WINDOW_VULKAN) {
-            SDL_SetError("Metal and Vulkan not supported on same window. "
-                         "To use MoltenVK, set SDL_WINDOW_VULKAN only.");
             return NULL;
         }
     }
@@ -1874,6 +1865,13 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     SDL_bool loaded_vulkan = SDL_FALSE;
     SDL_bool need_vulkan_unload = SDL_FALSE;
     SDL_bool need_vulkan_load = SDL_FALSE;
+    Uint32 graphics_flags;
+
+    /* ensure no more than one of these flags is set */
+    graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+        return SDL_SetError("Conflicting window flags specified");
+    }
 
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
         return SDL_ContextNotSupported("OpenGL");
@@ -1925,18 +1923,6 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     } else if (window->flags & SDL_WINDOW_VULKAN) {
         need_vulkan_unload = SDL_TRUE;
         need_vulkan_load  = SDL_TRUE;
-    }
-
-    if ((flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("Vulkan and OpenGL not supported on same window");
-    }
-
-    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("Metal and OpenGL not supported on same window");
-    }
-
-    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_VULKAN)) {
-        return SDL_SetError("Metal and Vulkan not supported on same window");
     }
 
     if (need_gl_unload) {
@@ -3445,7 +3431,7 @@ SDL_GL_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->GL_LoadLibrary) {
-            return SDL_SetError("No dynamic GL support in current SDL video driver (%s)", _this->name);
+            return SDL_DllNotSupported("OpenGL");
         }
         retval = _this->GL_LoadLibrary(_this, path);
     }
@@ -3796,7 +3782,7 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
         } else {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
-        };
+        }
         break;
     case SDL_GL_CONTEXT_FLAGS:
         if (value & ~(SDL_GL_CONTEXT_DEBUG_FLAG |
@@ -4114,6 +4100,8 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 #endif /* SDL_VIDEO_OPENGL */
 }
 
+#define NOT_AN_OPENGL_WINDOW "The specified window isn't an OpenGL window"
+
 SDL_GLContext
 SDL_GL_CreateContext(SDL_Window * window)
 {
@@ -4121,7 +4109,7 @@ SDL_GL_CreateContext(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, NULL);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("The specified window isn't an OpenGL window");
+        SDL_SetError(NOT_AN_OPENGL_WINDOW);
         return NULL;
     }
 
@@ -4158,7 +4146,7 @@ SDL_GL_MakeCurrent(SDL_Window * window, SDL_GLContext ctx)
         CHECK_WINDOW_MAGIC(window, -1);
 
         if (!(window->flags & SDL_WINDOW_OPENGL)) {
-            return SDL_SetError("The specified window isn't an OpenGL window");
+            return SDL_SetError(NOT_AN_OPENGL_WINDOW);
         }
     } else if (!_this->gl_allow_no_surface) {
         return SDL_SetError("Use of OpenGL without a window is not supported on this platform");
@@ -4299,7 +4287,7 @@ SDL_GL_SwapWindowWithResult(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("The specified window isn't an OpenGL window");
+        return SDL_SetError(NOT_AN_OPENGL_WINDOW);
     }
 
     if (SDL_GL_GetCurrentWindow() != window) {
@@ -4452,8 +4440,8 @@ SDL_StartTextInput(void)
     SDL_Window *window;
 
     /* First, enable text events */
-    SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
-    SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
+    (void)SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
 
     /* Then show the on-screen keyboard, if any */
     window = SDL_GetFocusWindow();
@@ -4508,8 +4496,8 @@ SDL_StopTextInput(void)
     }
 
     /* Finally disable text events */
-    SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
-    SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
 }
 
 void
@@ -4568,9 +4556,6 @@ SDL_GetMessageBoxCount(void)
 #if SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_OS2
-#include "os2/SDL_os2messagebox.h"
-#endif
 #if SDL_VIDEO_DRIVER_RISCOS
 #include "riscos/SDL_riscosmessagebox.h"
 #endif
@@ -4578,7 +4563,7 @@ SDL_GetMessageBoxCount(void)
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2 || SDL_VIDEO_DRIVER_RISCOS
+#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_RISCOS
 static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
@@ -4690,13 +4675,6 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
         HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
-        retval = 0;
-    }
-#endif
-#if SDL_VIDEO_DRIVER_OS2
-    if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_OS2) &&
-        OS2_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif
@@ -4868,7 +4846,7 @@ int SDL_Vulkan_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->Vulkan_LoadLibrary) {
-            return SDL_ContextNotSupported("Vulkan");
+            return SDL_DllNotSupported("Vulkan");
         }
         retval = _this->Vulkan_LoadLibrary(_this, path);
     }
@@ -4968,16 +4946,19 @@ SDL_Metal_CreateView(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, NULL);
 
     if (!(window->flags & SDL_WINDOW_METAL)) {
-        SDL_SetError("The specified window isn't a Metal window");
-        return NULL;
+        /* No problem, we can convert to Metal */
+        if (window->flags & SDL_WINDOW_OPENGL) {
+            window->flags &= ~SDL_WINDOW_OPENGL;
+            SDL_GL_UnloadLibrary();
+        }
+        if (window->flags & SDL_WINDOW_VULKAN) {
+            window->flags &= ~SDL_WINDOW_VULKAN;
+            SDL_Vulkan_UnloadLibrary();
+        }
+        window->flags |= SDL_WINDOW_METAL;
     }
 
-    if (_this->Metal_CreateView) {
-        return _this->Metal_CreateView(_this, window);
-    } else {
-        SDL_SetError("Metal is not supported.");
-        return NULL;
-    }
+    return _this->Metal_CreateView(_this, window);
 }
 
 void

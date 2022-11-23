@@ -25,8 +25,6 @@
 
 #include "SDL_mouse.h"
 
-typedef Uint32 SDL_MouseID;
-
 struct SDL_Cursor
 {
     struct SDL_Cursor *next;

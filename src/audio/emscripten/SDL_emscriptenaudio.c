@@ -38,10 +38,10 @@ FeedAudioDevice(_THIS, const void *buf, const int buflen)
 {
     const int framelen = (SDL_AUDIO_BITSIZE(this->spec.format) / 8) * this->spec.channels;
     MAIN_THREAD_EM_ASM({
-        var SDL2 = Module['SDL2'];
-        var numChannels = SDL2.audio.currentOutputBuffer['numberOfChannels'];
+        var SDL3 = Module['SDL3'];
+        var numChannels = SDL3.audio.currentOutputBuffer['numberOfChannels'];
         for (var c = 0; c < numChannels; ++c) {
-            var channelData = SDL2.audio.currentOutputBuffer['getChannelData'](c);
+            var channelData = SDL3.audio.currentOutputBuffer['getChannelData'](c);
             if (channelData.length != $1) {
                 throw 'Web Audio output buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!';
             }
@@ -107,10 +107,10 @@ HandleCaptureProcess(_THIS)
     }
 
     MAIN_THREAD_EM_ASM({
-        var SDL2 = Module['SDL2'];
-        var numChannels = SDL2.capture.currentCaptureBuffer.numberOfChannels;
+        var SDL3 = Module['SDL3'];
+        var numChannels = SDL3.capture.currentCaptureBuffer.numberOfChannels;
         for (var c = 0; c < numChannels; ++c) {
-            var channelData = SDL2.capture.currentCaptureBuffer.getChannelData(c);
+            var channelData = SDL3.capture.currentCaptureBuffer.getChannelData(c);
             if (channelData.length != $1) {
                 throw 'Web Audio capture buffer length mismatch! Destination size: ' + channelData.length + ' samples vs expected ' + $1 + ' samples!';
             }
@@ -153,45 +153,45 @@ static void
 EMSCRIPTENAUDIO_CloseDevice(_THIS)
 {
     MAIN_THREAD_EM_ASM({
-        var SDL2 = Module['SDL2'];
+        var SDL3 = Module['SDL3'];
         if ($0) {
-            if (SDL2.capture.silenceTimer !== undefined) {
-                clearTimeout(SDL2.capture.silenceTimer);
+            if (SDL3.capture.silenceTimer !== undefined) {
+                clearTimeout(SDL3.capture.silenceTimer);
             }
-            if (SDL2.capture.stream !== undefined) {
-                var tracks = SDL2.capture.stream.getAudioTracks();
+            if (SDL3.capture.stream !== undefined) {
+                var tracks = SDL3.capture.stream.getAudioTracks();
                 for (var i = 0; i < tracks.length; i++) {
-                    SDL2.capture.stream.removeTrack(tracks[i]);
+                    SDL3.capture.stream.removeTrack(tracks[i]);
                 }
-                SDL2.capture.stream = undefined;
+                SDL3.capture.stream = undefined;
             }
-            if (SDL2.capture.scriptProcessorNode !== undefined) {
-                SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {};
-                SDL2.capture.scriptProcessorNode.disconnect();
-                SDL2.capture.scriptProcessorNode = undefined;
+            if (SDL3.capture.scriptProcessorNode !== undefined) {
+                SDL3.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {};
+                SDL3.capture.scriptProcessorNode.disconnect();
+                SDL3.capture.scriptProcessorNode = undefined;
             }
-            if (SDL2.capture.mediaStreamNode !== undefined) {
-                SDL2.capture.mediaStreamNode.disconnect();
-                SDL2.capture.mediaStreamNode = undefined;
+            if (SDL3.capture.mediaStreamNode !== undefined) {
+                SDL3.capture.mediaStreamNode.disconnect();
+                SDL3.capture.mediaStreamNode = undefined;
             }
-            if (SDL2.capture.silenceBuffer !== undefined) {
-                SDL2.capture.silenceBuffer = undefined
+            if (SDL3.capture.silenceBuffer !== undefined) {
+                SDL3.capture.silenceBuffer = undefined
             }
-            SDL2.capture = undefined;
+            SDL3.capture = undefined;
         } else {
-            if (SDL2.audio.scriptProcessorNode != undefined) {
-                SDL2.audio.scriptProcessorNode.disconnect();
-                SDL2.audio.scriptProcessorNode = undefined;
+            if (SDL3.audio.scriptProcessorNode != undefined) {
+                SDL3.audio.scriptProcessorNode.disconnect();
+                SDL3.audio.scriptProcessorNode = undefined;
             }
-            SDL2.audio = undefined;
+            SDL3.audio = undefined;
         }
-        if ((SDL2.audioContext !== undefined) && (SDL2.audio === undefined) && (SDL2.capture === undefined)) {
-            SDL2.audioContext.close();
-            SDL2.audioContext = undefined;
+        if ((SDL3.audioContext !== undefined) && (SDL3.audio === undefined) && (SDL3.capture === undefined)) {
+            SDL3.audioContext.close();
+            SDL3.audioContext = undefined;
         }
     }, this->iscapture);
 
-#if 0  /* !!! FIXME: currently not used. Can we move some stuff off the SDL2 namespace? --ryan. */
+#if 0  /* !!! FIXME: currently not used. Can we move some stuff off the SDL3 namespace? --ryan. */
     SDL_free(this->hidden);
 #endif
 }
@@ -207,27 +207,27 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* create context */
     result = MAIN_THREAD_EM_ASM_INT({
-        if(typeof(Module['SDL2']) === 'undefined') {
-            Module['SDL2'] = {};
+        if(typeof(Module['SDL3']) === 'undefined') {
+            Module['SDL3'] = {};
         }
-        var SDL2 = Module['SDL2'];
+        var SDL3 = Module['SDL3'];
         if (!$0) {
-            SDL2.audio = {};
+            SDL3.audio = {};
         } else {
-            SDL2.capture = {};
+            SDL3.capture = {};
         }
 
-        if (!SDL2.audioContext) {
+        if (!SDL3.audioContext) {
             if (typeof(AudioContext) !== 'undefined') {
-                SDL2.audioContext = new AudioContext();
+                SDL3.audioContext = new AudioContext();
             } else if (typeof(webkitAudioContext) !== 'undefined') {
-                SDL2.audioContext = new webkitAudioContext();
+                SDL3.audioContext = new webkitAudioContext();
             }
-            if (SDL2.audioContext) {
-                autoResumeAudioContext(SDL2.audioContext);
+            if (SDL3.audioContext) {
+                autoResumeAudioContext(SDL3.audioContext);
             }
         }
-        return SDL2.audioContext === undefined ? -1 : 0;
+        return SDL3.audioContext === undefined ? -1 : 0;
     }, iscapture);
     if (result < 0) {
         return SDL_SetError("Web Audio API is not available!");
@@ -250,7 +250,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
     this->spec.format = test_format;
 
     /* Initialize all variables that we clean on shutdown */
-#if 0  /* !!! FIXME: currently not used. Can we move some stuff off the SDL2 namespace? --ryan. */
+#if 0  /* !!! FIXME: currently not used. Can we move some stuff off the SDL3 namespace? --ryan. */
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc((sizeof *this->hidden));
     if (this->hidden == NULL) {
@@ -262,8 +262,8 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 
     /* limit to native freq */
     this->spec.freq = EM_ASM_INT_V({
-      var SDL2 = Module['SDL2'];
-      return SDL2.audioContext.sampleRate;
+      var SDL3 = Module['SDL3'];
+      return SDL3.audioContext.sampleRate;
     });
 
     SDL_CalculateAudioSpec(&this->spec);
@@ -286,24 +286,24 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
            to be honest. */
 
         MAIN_THREAD_EM_ASM({
-            var SDL2 = Module['SDL2'];
+            var SDL3 = Module['SDL3'];
             var have_microphone = function(stream) {
                 //console.log('SDL audio capture: we have a microphone! Replacing silence callback.');
-                if (SDL2.capture.silenceTimer !== undefined) {
-                    clearTimeout(SDL2.capture.silenceTimer);
-                    SDL2.capture.silenceTimer = undefined;
+                if (SDL3.capture.silenceTimer !== undefined) {
+                    clearTimeout(SDL3.capture.silenceTimer);
+                    SDL3.capture.silenceTimer = undefined;
                 }
-                SDL2.capture.mediaStreamNode = SDL2.audioContext.createMediaStreamSource(stream);
-                SDL2.capture.scriptProcessorNode = SDL2.audioContext.createScriptProcessor($1, $0, 1);
-                SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {
-                    if ((SDL2 === undefined) || (SDL2.capture === undefined)) { return; }
+                SDL3.capture.mediaStreamNode = SDL3.audioContext.createMediaStreamSource(stream);
+                SDL3.capture.scriptProcessorNode = SDL3.audioContext.createScriptProcessor($1, $0, 1);
+                SDL3.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {
+                    if ((SDL3 === undefined) || (SDL3.capture === undefined)) { return; }
                     audioProcessingEvent.outputBuffer.getChannelData(0).fill(0.0);
-                    SDL2.capture.currentCaptureBuffer = audioProcessingEvent.inputBuffer;
+                    SDL3.capture.currentCaptureBuffer = audioProcessingEvent.inputBuffer;
                     dynCall('vi', $2, [$3]);
                 };
-                SDL2.capture.mediaStreamNode.connect(SDL2.capture.scriptProcessorNode);
-                SDL2.capture.scriptProcessorNode.connect(SDL2.audioContext.destination);
-                SDL2.capture.stream = stream;
+                SDL3.capture.mediaStreamNode.connect(SDL3.capture.scriptProcessorNode);
+                SDL3.capture.scriptProcessorNode.connect(SDL3.audioContext.destination);
+                SDL3.capture.stream = stream;
             };
 
             var no_microphone = function(error) {
@@ -311,14 +311,14 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
             };
 
             /* we write silence to the audio callback until the microphone is available (user approves use, etc). */
-            SDL2.capture.silenceBuffer = SDL2.audioContext.createBuffer($0, $1, SDL2.audioContext.sampleRate);
-            SDL2.capture.silenceBuffer.getChannelData(0).fill(0.0);
+            SDL3.capture.silenceBuffer = SDL3.audioContext.createBuffer($0, $1, SDL3.audioContext.sampleRate);
+            SDL3.capture.silenceBuffer.getChannelData(0).fill(0.0);
             var silence_callback = function() {
-                SDL2.capture.currentCaptureBuffer = SDL2.capture.silenceBuffer;
+                SDL3.capture.currentCaptureBuffer = SDL3.capture.silenceBuffer;
                 dynCall('vi', $2, [$3]);
             };
 
-            SDL2.capture.silenceTimer = setTimeout(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000);
+            SDL3.capture.silenceTimer = setTimeout(silence_callback, ($1 / SDL3.audioContext.sampleRate) * 1000);
 
             if ((navigator.mediaDevices !== undefined) && (navigator.mediaDevices.getUserMedia !== undefined)) {
                 navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(have_microphone).catch(no_microphone);
@@ -329,14 +329,14 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
     } else {
         /* setup a ScriptProcessorNode */
         MAIN_THREAD_EM_ASM({
-            var SDL2 = Module['SDL2'];
-            SDL2.audio.scriptProcessorNode = SDL2.audioContext['createScriptProcessor']($1, 0, $0);
-            SDL2.audio.scriptProcessorNode['onaudioprocess'] = function (e) {
-                if ((SDL2 === undefined) || (SDL2.audio === undefined)) { return; }
-                SDL2.audio.currentOutputBuffer = e['outputBuffer'];
+            var SDL3 = Module['SDL3'];
+            SDL3.audio.scriptProcessorNode = SDL3.audioContext['createScriptProcessor']($1, 0, $0);
+            SDL3.audio.scriptProcessorNode['onaudioprocess'] = function (e) {
+                if ((SDL3 === undefined) || (SDL3.audio === undefined)) { return; }
+                SDL3.audio.currentOutputBuffer = e['outputBuffer'];
                 dynCall('vi', $2, [$3]);
             };
-            SDL2.audio.scriptProcessorNode['connect'](SDL2.audioContext['destination']);
+            SDL3.audio.scriptProcessorNode['connect'](SDL3.audioContext['destination']);
         }, this->spec.channels, this->spec.samples, HandleAudioProcess, this);
     }
 

@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>SDL2test</ProjectName>
+    <ProjectName>SDL3test</ProjectName>
     <ProjectGuid>{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}</ProjectGuid>
     <RootNamespace>SDLtest</RootNamespace>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
