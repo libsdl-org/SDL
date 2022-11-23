@@ -563,7 +563,7 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
  *
  * \returns a value from the SDL_WinRT_DeviceFamily enum.
  *
- * \since This function is available since SDL 2.0.8.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
