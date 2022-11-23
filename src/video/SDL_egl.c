@@ -76,6 +76,7 @@
 #elif SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
 /* EGL AND OpenGL ES support via ANGLE */
 #define DEFAULT_EGL "libEGL.dll"
+#define DEFAULT_OGL "opengl32.dll"
 #define DEFAULT_OGL_ES2 "libGLESv2.dll"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.dll"
 #define DEFAULT_OGL_ES "libGLESv1_CM.dll"
@@ -242,7 +243,7 @@ SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext
 }
 
 void *
-SDL_EGL_GetProcAddress(_THIS, const char *proc)
+SDL_EGL_GetProcAddressInternal(_THIS, const char *proc)
 {
     void *retval = NULL;
     if (_this->egl_data != NULL) {
@@ -518,7 +519,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
          * Khronos doc: "EGL_BAD_DISPLAY is generated if display is not an EGL display connection, unless display is EGL_NO_DISPLAY and name is EGL_EXTENSIONS."
          * Therefore SDL_EGL_GetVersion() shouldn't work with uninitialized display.
          * - it actually doesn't work on Android that has 1.5 egl client
-         * - it works on desktop X11 (using SDL_VIDEO_X11_FORCE_EGL=1) */
+         * - it works on desktop X11 (using SDL_VIDEO_FORCE_EGL=1) */
         SDL_EGL_GetVersion(_this);
 
         if (_this->egl_data->egl_version_major == 1 && _this->egl_data->egl_version_minor == 5) {
@@ -526,10 +527,19 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         }
 
         if (_this->egl_data->eglGetPlatformDisplay) {
-            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(uintptr_t)native_display, NULL);
+            EGLAttrib *attribs = NULL;
+            if (_this->egl_platformattrib_callback) {
+                attribs = _this->egl_platformattrib_callback();
+                if (!attribs) {
+                    _this->gl_config.driver_loaded = 0;
+                    *_this->gl_config.driver_path = '\0';
+                    return SDL_SetError("EGL platform attribute callback returned NULL pointer");
+                }
+            }
+            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)(uintptr_t)native_display, attribs);
         } else {
             if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
-                _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddress(_this, "eglGetPlatformDisplayEXT");
+                _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddressInternal(_this, "eglGetPlatformDisplayEXT");
                 if (_this->egl_data->eglGetPlatformDisplayEXT) {
                     _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, (void *)(uintptr_t)native_display, NULL);
                 }
@@ -538,7 +548,9 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 #endif
     /* Try the implementation-specific eglGetDisplay even if eglGetPlatformDisplay fails */
-    if ((_this->egl_data->egl_display == EGL_NO_DISPLAY) && (_this->egl_data->eglGetDisplay != NULL)) {
+    if ((_this->egl_data->egl_display == EGL_NO_DISPLAY) &&
+        (_this->egl_data->eglGetDisplay != NULL) &&
+        SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK, SDL_TRUE)) {
         _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
     }
     if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
@@ -944,8 +956,8 @@ SDL_EGL_ChooseConfig(_THIS)
 SDL_GLContext
 SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
 {
-    /* max 14 values plus terminator. */
-    EGLint attribs[15];
+    /* max 16 key+value pairs plus terminator. */
+    EGLint attribs[33];
     int attr = 0;
 
     EGLContext egl_context, share_context = EGL_NO_CONTEXT;
@@ -1033,6 +1045,29 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         }
     }
 #endif
+
+    if (_this->egl_contextattrib_callback) {
+        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        EGLint *userAttribs, *userAttribP;
+        userAttribs = _this->egl_contextattrib_callback();
+        if (!userAttribs) {
+            _this->gl_config.driver_loaded = 0;
+            *_this->gl_config.driver_path = '\0';
+            SDL_SetError("EGL context attribute callback returned NULL pointer");
+            return NULL;
+        }
+
+        for (userAttribP = userAttribs; *userAttribP != EGL_NONE; ) {
+            if (attr + 3 >= maxAttribs) {
+                _this->gl_config.driver_loaded = 0;
+                *_this->gl_config.driver_path = '\0';
+                SDL_SetError("EGL context attribute callback returned too many attributes");
+                return NULL;
+            }
+            attribs[attr++] = *userAttribP++;
+            attribs[attr++] = *userAttribP++;
+        }
+    }
 
     attribs[attr++] = EGL_NONE;
 
@@ -1200,8 +1235,8 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
     EGLint format_wanted;
     EGLint format_got;
 #endif
-    /* max 2 key+value pairs, plus terminator. */
-    EGLint attribs[5];
+    /* max 16 key+value pairs, plus terminator. */
+    EGLint attribs[33];
     int attr = 0;
 
     EGLSurface * surface;
@@ -1241,6 +1276,29 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         attribs[attr++] = allow_transparent ? EGL_FALSE : EGL_TRUE;
     }
 #endif
+
+    if (_this->egl_surfaceattrib_callback) {
+        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        EGLint *userAttribs, *userAttribP;
+        userAttribs = _this->egl_surfaceattrib_callback();
+        if (!userAttribs) {
+            _this->gl_config.driver_loaded = 0;
+            *_this->gl_config.driver_path = '\0';
+            SDL_SetError("EGL surface attribute callback returned NULL pointer");
+            return EGL_NO_SURFACE;
+        }
+
+        for (userAttribP = userAttribs; *userAttribP != EGL_NONE; ) {
+            if (attr + 3 >= maxAttribs) {
+                _this->gl_config.driver_loaded = 0;
+                *_this->gl_config.driver_path = '\0';
+                SDL_SetError("EGL surface attribute callback returned too many attributes");
+                return EGL_NO_SURFACE;
+            }
+            attribs[attr++] = *userAttribP++;
+            attribs[attr++] = *userAttribP++;
+        }
+    }
 
     attribs[attr++] = EGL_NONE;
     

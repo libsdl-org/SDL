@@ -33,7 +33,7 @@ typedef struct SDL_PrivateGLESData
 
 /* OpenGLES functions */
 #define Wayland_GLES_GetAttribute SDL_EGL_GetAttribute
-#define Wayland_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define Wayland_GLES_GetProcAddress SDL_EGL_GetProcAddressInternal
 #define Wayland_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 
 extern int Wayland_GLES_LoadLibrary(_THIS, const char *path);
@@ -43,6 +43,7 @@ extern int Wayland_GLES_GetSwapInterval(_THIS);
 extern int Wayland_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 extern void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context);
+extern SDL_EGLSurface Wayland_GLES_GetEGLSurface(_THIS, SDL_Window * window);
 
 #endif /* SDL_waylandopengles_h_ */
 

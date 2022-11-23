@@ -37,7 +37,7 @@ typedef struct SDL_PrivateGLESData
 
 /* OpenGLES functions */
 #define X11_GLES_GetAttribute SDL_EGL_GetAttribute
-#define X11_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define X11_GLES_GetProcAddress SDL_EGL_GetProcAddressInternal
 #define X11_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define X11_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define X11_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
@@ -48,6 +48,7 @@ extern XVisualInfo *X11_GLES_GetVisual(_THIS, Display * display, int screen);
 extern SDL_GLContext X11_GLES_CreateContext(_THIS, SDL_Window * window);
 extern int X11_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int X11_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+extern SDL_EGLSurface X11_GLES_GetEGLSurface(_THIS, SDL_Window * window);
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 

@@ -47,7 +47,7 @@
 #if defined(SDL_VIDEO_VITA_PVR_OGL)
   #include "SDL_vitagl_pvr_c.h"
 #endif
-  #define VITA_GLES_GetProcAddress SDL_EGL_GetProcAddress
+  #define VITA_GLES_GetProcAddress SDL_EGL_GetProcAddressInternal
   #define VITA_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
   #define VITA_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
   #define VITA_GLES_GetSwapInterval SDL_EGL_GetSwapInterval

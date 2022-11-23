@@ -50,7 +50,7 @@ static void Android_VideoQuit(_THIS);
 int Android_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 
 #include "../SDL_egl_c.h"
-#define Android_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define Android_GLES_GetProcAddress SDL_EGL_GetProcAddressInternal
 #define Android_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define Android_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define Android_GLES_GetSwapInterval SDL_EGL_GetSwapInterval

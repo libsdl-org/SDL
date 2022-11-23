@@ -218,6 +218,21 @@ typedef enum
 typedef void *SDL_GLContext;
 
 /**
+ *  \brief Opaque EGL types.
+ */
+typedef void *SDL_EGLDisplay;
+typedef void *SDL_EGLConfig;
+typedef void *SDL_EGLSurface;
+typedef intptr_t SDL_EGLAttrib;
+typedef int SDL_EGLint;
+
+/**
+ *  \brief EGL attribute initialization callback types.
+ */
+typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void);
+typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);
+
+/**
  *  \brief OpenGL configuration attributes
  */
 typedef enum
@@ -249,7 +264,8 @@ typedef enum
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR,
     SDL_GL_CONTEXT_RESET_NOTIFICATION,
     SDL_GL_CONTEXT_NO_ERROR,
-    SDL_GL_FLOATBUFFERS
+    SDL_GL_FLOATBUFFERS,
+    SDL_GL_EGL_PLATFORM
 } SDL_GLattr;
 
 typedef enum
@@ -1903,6 +1919,21 @@ extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
 extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
 
 /**
+ * Get an EGL library function by name.
+ *
+ * If an EGL library is loaded, this function allows applications to get entry
+ * points for EGL functions. This is useful to provide to an EGL API and
+ * extension loader.
+ *
+ * \param proc the name of an EGL function
+ * \returns a pointer to the named EGL function. The returned pointer should be
+ *          cast to the appropriate function signature.
+ *
+ * \sa SDL_GL_GetCurrentEGLDisplay
+ */
+extern DECLSPEC void *SDLCALL SDL_EGL_GetProcAddress(const char *proc);
+
+/**
  * Unload the OpenGL library previously loaded by SDL_GL_LoadLibrary().
  *
  * \since This function is available since SDL 3.0.0.
@@ -2039,6 +2070,56 @@ extern DECLSPEC SDL_Window* SDLCALL SDL_GL_GetCurrentWindow(void);
  * \sa SDL_GL_MakeCurrent
  */
 extern DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
+
+/**
+ * Get the currently active EGL display.
+ *
+ * \returns the currently active EGL display or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ */
+extern DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentEGLDisplay(void);
+
+/**
+ * Get the currently active EGL config.
+ *
+ * \returns the currently active EGL config or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ */
+extern DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentEGLConfig(void);
+
+/**
+ * Get the EGL surface associated with the window.
+ *
+ * \returns the EGLSurface pointer associated with the window, or NULL on
+ *          failure.
+ */
+extern DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface(SDL_Window * window);
+
+/**
+ * Sets the callbacks for defining custom EGLAttrib arrays for EGL
+ * initialization.
+ *
+ * Each callback should return a pointer to an EGL attribute array terminated
+ * with EGL_NONE. Callbacks may return NULL pointers to signal an error, which
+ * will cause the SDL_CreateWindow process to fail gracefully.
+ *
+ * The arrays returned by each callback will be appended to the existing
+ * attribute arrays defined by SDL.
+ *
+ * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
+ *
+ * \param platformAttribCallback Callback for attributes to pass to
+ *                               eglGetPlatformDisplay.
+ * \param surfaceAttribCallback Callback for attributes to pass to
+ *                              eglCreateSurface.
+ * \param contextAttribCallback Callback for attributes to pass to
+ *                              eglCreateContext.
+ */
+extern DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
+                                                              SDL_EGLIntArrayCallback surfaceAttribCallback,
+                                                              SDL_EGLIntArrayCallback contextAttribCallback);
 
 /**
  * Get the size of a window's underlying drawable in pixels.

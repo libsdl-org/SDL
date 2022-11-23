@@ -30,7 +30,7 @@
 
 /* OpenGLES functions */
 #define RPI_GLES_GetAttribute SDL_EGL_GetAttribute
-#define RPI_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define RPI_GLES_GetProcAddress SDL_EGL_GetProcAddressInternal
 #define RPI_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define RPI_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define RPI_GLES_GetSwapInterval SDL_EGL_GetSwapInterval

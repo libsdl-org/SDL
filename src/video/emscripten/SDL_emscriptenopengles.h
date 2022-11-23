@@ -28,7 +28,6 @@
 #include "../SDL_sysvideo.h"
 
 /* OpenGLES functions */
-
 extern int Emscripten_GLES_LoadLibrary(_THIS, const char *path);
 extern void Emscripten_GLES_UnloadLibrary(_THIS);
 extern void * Emscripten_GLES_GetProcAddress(_THIS, const char *proc);
