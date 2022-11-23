@@ -973,3 +973,8 @@ SDL_DYNAPI_PROC(int,SDL_GameControllerGetSensorDataWithTimestamp,(SDL_GameContro
 SDL_DYNAPI_PROC(int,SDL_SensorGetDataWithTimestamp,(SDL_Sensor *a, Uint64 *b, float *c, int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_ResetHints,(void),(),)
 SDL_DYNAPI_PROC(char*,SDL_strcasestr,(const char *a, const char *b),(a,b),return)
+SDL_DYNAPI_PROC(void*,SDL_EGL_GetProcAddress,(const char *a),(a),return)
+SDL_DYNAPI_PROC(SDL_EGLDisplay,SDL_EGL_GetCurrentEGLDisplay,(void),(),return)
+SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
+SDL_DYNAPI_PROC(SDL_EGLSurface,SDL_EGL_GetWindowEGLSurface,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_EGL_SetEGLAttributeCallbacks,(SDL_EGLAttribArrayCallback a, SDL_EGLIntArrayCallback b, SDL_EGLIntArrayCallback c),(a,b,c),)
