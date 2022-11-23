@@ -27,6 +27,7 @@
 
 #include "SDL_atomic.h"
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/CVDisplayLink.h>
 
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
 #ifdef __clang__
