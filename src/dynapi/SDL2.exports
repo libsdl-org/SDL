@@ -851,7 +851,6 @@
 ++'_SDL_utf8strnlen'.'SDL2.dll'.'SDL_utf8strnlen'
 # ++'_SDL_GDKGetTaskQueue'.'SDL2.dll'.'SDL_GDKGetTaskQueue'
 # ++'_SDL_GDKRunApp'.'SDL2.dll'.'SDL_GDKRunApp'
-# ++'_SDL_GDKSuspendComplete'.'SDL2.dll'.'SDL_GDKSuspendComplete'
 ++'_SDL_GetOriginalMemoryFunctions'.'SDL2.dll'.'SDL_GetOriginalMemoryFunctions'
 ++'_SDL_ResetKeyboard'.'SDL2.dll'.'SDL_ResetKeyboard'
 ++'_SDL_GetDefaultAudioInfo'.'SDL2.dll'.'SDL_GetDefaultAudioInfo'
@@ -868,3 +867,4 @@
 ++'_SDL_SensorGetDataWithTimestamp'.'SDL2.dll'.'SDL_SensorGetDataWithTimestamp'
 ++'_SDL_ResetHints'.'SDL2.dll'.'SDL_ResetHints'
 ++'_SDL_strcasestr'.'SDL2.dll'.'SDL_strcasestr'
+# ++'_SDL_GDKSuspendComplete'.'SDL2.dll'.'SDL_GDKSuspendComplete'
