@@ -519,14 +519,15 @@ set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
 
 if(SDL_WERROR)
   if(MSVC)
-    cmake_push_check_state(RESET)
+    cmake_push_check_state()
     check_c_compiler_flag(/WX HAVE_WX)
     if(HAVE_WX)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
     endif()
+    cmake_pop_check_state()
   elseif(USE_GCC OR USE_CLANG)
-    cmake_push_check_state(RESET)
+    cmake_push_check_state()
     check_c_compiler_flag(-Werror HAVE_WERROR)
     if(HAVE_WERROR)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
@@ -682,7 +683,7 @@ if(USE_GCC OR USE_CLANG)
   endif()
 
   if(APPLE)
-    cmake_push_check_state(RESET)
+    cmake_push_check_state()
     # FIXME: don't use deprecated declarations
     check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
     if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
@@ -705,7 +706,7 @@ if(USE_GCC OR USE_CLANG)
   if(MINGW)
     # See if GCC's -gdwarf-4 is supported
     # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101377 for why this is needed on Windows
-    cmake_push_check_state(RESET)
+    cmake_push_check_state()
     check_c_compiler_flag("-gdwarf-4" HAVE_GDWARF_4)
     if(HAVE_GDWARF_4)
       set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -gdwarf-4")
@@ -1195,7 +1196,7 @@ if(ANDROID)
   # There seems to be no better way currently to set the ARM mode.
   # see: https://issuetracker.google.com/issues/62264618
   # Another option would be to set ARM mode to all compiled files
-  cmake_push_check_state(RESET)
+  cmake_push_check_state()
   set(CMAKE_REQUIRED_FLAGS "-Werror=unused-command-line-argument")
   check_c_compiler_flag(-marm HAVE_ARM_MODE)
   if(HAVE_ARM_MODE)
@@ -2366,7 +2367,7 @@ elseif(RISCOS)
 
 elseif(VITA)
   # SDL_spinlock.c Needs to be compiled in ARM mode.
-  cmake_push_check_state(RESET)
+  cmake_push_check_state()
   set(CMAKE_REQUIRED_FLAGS "-Werror=unused-command-line-argument")
   check_c_compiler_flag(-marm HAVE_ARM_MODE)
   if(HAVE_ARM_MODE)

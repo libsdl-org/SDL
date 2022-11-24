@@ -148,7 +148,7 @@ if(APPLE)
         testutils.c
     )
 
-    cmake_push_check_state(RESET)
+    cmake_push_check_state()
     check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
     cmake_pop_check_state()
     if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
@@ -191,7 +191,7 @@ add_sdl_test_executable(controllermap NEEDS_RESOURCES controllermap.c testutils.
 add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
 
-cmake_push_check_state(RESET)
+cmake_push_check_state()
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
 if(HAVE_WFORMAT_OVERFLOW)

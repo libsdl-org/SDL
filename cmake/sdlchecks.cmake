@@ -33,7 +33,7 @@ macro(FindLibraryAndSONAME _LIB)
 endmacro()
 
 macro(CheckDLOPEN)
-  cmake_push_check_state(RESET)
+  cmake_push_check_state()
   check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBC)
   if(NOT HAVE_DLOPEN_IN_LIBC)
     set(CMAKE_REQUIRED_LIBRARIES dl)
@@ -278,7 +278,7 @@ endmacro()
 # - SDL_X11_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckX11)
-  cmake_push_check_state(RESET)
+  cmake_push_check_state()
   if(SDL_X11)
     foreach(_LIB X11 Xext Xcursor Xi Xfixes Xrandr Xrender Xss)
         FindLibraryAndSONAME("${_LIB}")

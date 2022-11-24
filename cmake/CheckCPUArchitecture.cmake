@@ -2,7 +2,7 @@ include(CheckCSourceCompiles)
 include(CMakePushCheckState)
 
 function(_internal_check_cpu_architecture macro_check NAME VARIABLE)
-  cmake_push_check_state(RESET)
+  cmake_push_check_state()
   string(TOUPPER "${NAME}" UPPER_NAME)
   set(CACHE_VARIABLE "CHECK_CPU_ARCHITECTURE_${UPPER_NAME}")
   set(test_src "
