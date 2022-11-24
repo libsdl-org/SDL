@@ -80,7 +80,7 @@ LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
 
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 
-LOCAL_LDFLAGS := -Wl,--no-undefined
+LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--version-script=$(LOCAL_PATH)/src/dynapi/SDL_dynapi.sym
 
 ifeq ($(NDK_DEBUG),1)
     cmd-strip :=
