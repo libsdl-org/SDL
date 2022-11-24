@@ -4,18 +4,20 @@ To compile and install SDL:
     1.  Windows with Visual Studio:
         * Read ./docs/README-visualc.md
 
-        Windows with gcc, either native or cross-compiling:
-        * Read the FAQ at https://wiki.libsdl.org/FAQWindows
-        * Run 'cmake -S . -B build && cmake --build build && cmake --install install'
+        Windows building with mingw64 for x86:
+        * Run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-mingw64-i686.cmake && cmake --build build && cmake --install install
+
+        Windows building with mingw64 for x64:
+        * Run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-mingw64-x86_64.cmake && cmake --build build && cmake --install install
 
         macOS with Xcode:
         * Read docs/README-macosx.md
 
         macOS from the command line:
-        * Run 'cmake -S . -B build && cmake --build build && cmake --install install'
+        * Run: cmake -S . -B build && cmake --build build && cmake --install install
 
         Linux and other UNIX systems:
-        * Run 'cmake -S . -B build && cmake --build build && cmake --install install'
+        * Run: cmake -S . -B build && cmake --build build && cmake --install install
 
         Android:
         * Read docs/README-android.md
