@@ -17598,6 +17598,79 @@ printf "%s\n" "$ac_cv_path_EGREP" >&6; }
  EGREP="$ac_cv_path_EGREP"
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fgrep" >&5
+printf %s "checking for fgrep... " >&6; }
+if test ${ac_cv_path_FGREP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if echo 'ab*c' | $GREP -F 'ab*c' >/dev/null 2>&1
+   then ac_cv_path_FGREP="$GREP -F"
+   else
+     if test -z "$FGREP"; then
+  ac_path_FGREP_found=false
+  # Loop through the user's path and test for each of PROGNAME-LIST
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_prog in fgrep
+   do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      ac_path_FGREP="$as_dir$ac_prog$ac_exec_ext"
+      as_fn_executable_p "$ac_path_FGREP" || continue
+# Check for GNU ac_path_FGREP and select it if it is found.
+  # Check for GNU $ac_path_FGREP
+case `"$ac_path_FGREP" --version 2>&1` in
+*GNU*)
+  ac_cv_path_FGREP="$ac_path_FGREP" ac_path_FGREP_found=:;;
+*)
+  ac_count=0
+  printf %s 0123456789 >"conftest.in"
+  while :
+  do
+    cat "conftest.in" "conftest.in" >"conftest.tmp"
+    mv "conftest.tmp" "conftest.in"
+    cp "conftest.in" "conftest.nl"
+    printf "%s\n" 'FGREP' >> "conftest.nl"
+    "$ac_path_FGREP" FGREP < "conftest.nl" >"conftest.out" 2>/dev/null || break
+    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+    as_fn_arith $ac_count + 1 && ac_count=$as_val
+    if test $ac_count -gt ${ac_path_FGREP_max-0}; then
+      # Best one so far, save it but keep looking for a better one
+      ac_cv_path_FGREP="$ac_path_FGREP"
+      ac_path_FGREP_max=$ac_count
+    fi
+    # 10*(2^10) chars as input seems more than enough
+    test $ac_count -gt 10 && break
+  done
+  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+esac
+
+      $ac_path_FGREP_found && break 3
+    done
+  done
+  done
+IFS=$as_save_IFS
+  if test -z "$ac_cv_path_FGREP"; then
+    as_fn_error $? "no acceptable fgrep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
+  fi
+else
+  ac_cv_path_FGREP=$FGREP
+fi
+
+   fi
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_FGREP" >&5
+printf "%s\n" "$ac_cv_path_FGREP" >&6; }
+ FGREP="$ac_cv_path_FGREP"
+
+
 
   # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -18231,8 +18304,8 @@ base_libdir=`echo \${libdir} | sed 's/.*\/\(.*\)/\1/; q'`
 
 find_lib()
 {
-    gcc_bin_path=`$CC -print-search-dirs 2>/dev/null | fgrep programs: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`
-    gcc_lib_path=`$CC -print-search-dirs 2>/dev/null | fgrep libraries: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`
+    gcc_bin_path=`$CC -print-search-dirs 2>/dev/null | $FGREP programs: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`
+    gcc_lib_path=`$CC -print-search-dirs 2>/dev/null | $FGREP libraries: | sed 's/[^=]*=\(.*\)/\1/' | sed 's/:/ /g'`
     env_lib_path=`echo $LIBS $LDFLAGS $* | sed 's/-L[ ]*//g'`
     if test "$cross_compiling" = yes; then
         host_lib_path=""
@@ -24604,7 +24677,11 @@ else $as_nop
   enable_video_offscreen=yes
 fi
 
-    if test x$enable_video_offscreen = xyes; then
+
+    if  test x$enable_video = xyes && \
+        test x$enable_video_offscreen = xyes && \
+        test x$video_opengl_egl = xyes; then
+
 
 printf "%s\n" "#define SDL_VIDEO_DRIVER_OFFSCREEN 1" >>confdefs.h
 
@@ -25672,6 +25749,8 @@ printf %s "checking for GameController framework... " >&6; }
 
           #include <AvailabilityMacros.h>
           #include <TargetConditionals.h>
+          #import <Foundation/Foundation.h>
+          #import <CoreHaptics/CoreHaptics.h>
           #import <GameController/GameController.h>
 
 int
@@ -27319,7 +27398,6 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -27336,8 +27414,9 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
         CheckRPI
         CheckX11
-        # Need to check for EGL first because KMSDRM and Wayland depends on it.
+        # Need to check for EGL first because Offscreen, KMSDRM and Wayland depend on it.
         CheckEGL
+        CheckOffscreenVideo
         CheckKMSDRM
         CheckGLX
         CheckOpenGL
@@ -27565,12 +27644,12 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckWINDOWS
         CheckWINDOWSGL
         CheckWINDOWSGLES
+        CheckOffscreenVideo
         CheckVulkan
         CheckDIRECTX
         CheckHIDAPI
@@ -27813,7 +27892,6 @@ fi
         ARCH=haiku
         ac_default_prefix=/boot/system
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -27885,7 +27963,6 @@ printf "%s\n" "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -27997,6 +28074,7 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AudioToolbox"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreGraphics"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreHaptics"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreMotion"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Foundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,GameController"
@@ -28024,7 +28102,6 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckNoErrorDeprecatedDeclarationsWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
@@ -28036,6 +28113,7 @@ printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckMacGLES
         CheckGLX
         CheckOpenGL
+        CheckOffscreenVideo
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
@@ -28143,13 +28221,13 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
         CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckPTHREAD
         CheckDLOPEN
         CheckClockGettime
         CheckEmscriptenGLES
+        CheckOffscreenVideo
 
         # Set up files for the misc library
         if test x$enable_misc = xyes; then
@@ -28203,7 +28281,6 @@ printf "%s\n" "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckWerror
         CheckDeclarationAfterStatement
         CheckDummyVideo
-        CheckOffscreenVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
