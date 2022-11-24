@@ -3035,8 +3035,6 @@ configure_file("${SDL3_SOURCE_DIR}/sdl3.pc.in"
   "${SDL3_BINARY_DIR}/sdl3.pc" @ONLY)
 configure_file("${SDL3_SOURCE_DIR}/sdl3-config.in"
   "${SDL3_BINARY_DIR}/sdl3-config" @ONLY)
-configure_file("${SDL3_SOURCE_DIR}/SDL3.spec.in"
-  "${SDL3_BINARY_DIR}/SDL3.spec" @ONLY)
 
 macro(check_add_debug_flag FLAG SUFFIX)
     check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
