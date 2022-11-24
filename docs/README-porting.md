@@ -11,14 +11,14 @@ on based on C preprocessor symbols.
 
 There are two basic ways of building SDL at the moment:
 
-1. The "UNIX" way:  ./configure; make; make install
+1. CMake:  cmake -S . -B build && cmake --build build && cmake --install install
 
-   If you have a GNUish system, then you might try this.  Edit configure.ac,
+   If you have a GNUish system, then you might try this.  Edit CMakeLists.txt,
    take a look at the large section labelled:
 
-	"Set up the configuration based on the host platform!"
+	"Platform-specific options and settings!"
 
-   Add a section for your platform, and then re-run autogen.sh and build!
+   Add a section for your platform, and then re-run 'cmake -S . -B build' and build!
 
 2. Using an IDE:
 

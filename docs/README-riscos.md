@@ -12,19 +12,13 @@ Requirements:
 Compiling:
 ----------
 
-Currently, SDL for RISC OS only supports compiling with GCCSDK under Linux. Both the autoconf and CMake build systems are supported.
-
-The following commands can be used to build SDL for RISC OS using autoconf:
-
-    ./configure --host=arm-unknown-riscos --prefix=$GCCSDK_INSTALL_ENV
-    make
-    make install
+Currently, SDL for RISC OS only supports compiling with GCCSDK under Linux.
 
 The following commands can be used to build SDL for RISC OS using CMake:
 
     cmake -Bbuild-riscos -DCMAKE_TOOLCHAIN_FILE=$GCCSDK_INSTALL_ENV/toolchain-riscos.cmake -DRISCOS=ON -DCMAKE_INSTALL_PREFIX=$GCCSDK_INSTALL_ENV -DCMAKE_BUILD_TYPE=Release
     cmake --build build-riscos
-    cmake --build build-riscos --target install
+    cmake --install build-riscos
 
 When using GCCSDK 4.7.4 release 6 or earlier versions, the builtin atomic functions are broken, meaning it's currently necessary to compile with `--disable-gcc-atomics` using autotools or `-DSDL_GCC_ATOMICS=OFF` using CMake. Newer versions of GCCSDK don't have this problem.
 

@@ -9,25 +9,14 @@ command line tools or Apple's IDE Xcode.
 
 # Command Line Build
 
-To build SDL using the command line, use the standard configure and make
-process:
+To build SDL using the command line, use the CMake build script:
 
 ```bash
 mkdir build
 cd build
-../configure
-make
-sudo make install
-```
-
-CMake is also known to work, although it continues to be a work in progress:
-
-```bash
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
-sudo make install
+cmake ..
+cmake --build .
+sudo cmake --install .
 ```
 
 
@@ -38,9 +27,9 @@ script.
 ```bash
 mkdir build
 cd build
-CC=$PWD/../build-scripts/clang-fat.sh ../configure
-make
-sudo make install
+cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+cmake --build .
+sudo cmake --install .
 ```
 
 This script builds SDL with 10.9 ABI compatibility on 64-bit Intel and 11.0
@@ -93,7 +82,7 @@ NSApplicationDelegate implementation:
 
 # Using the Simple DirectMedia Layer with a traditional Makefile
 
-An existing autoconf/automake build system for your SDL app has good chances
+An existing CMake build system for your SDL app has good chances
 to work almost unchanged on macOS. However, to produce a "real" Mac binary
 that you can distribute to users, you need to put the generated binary into a
 so called "bundle", which is basically a fancy folder with a name like
