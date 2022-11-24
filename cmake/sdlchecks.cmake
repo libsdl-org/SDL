@@ -400,6 +400,7 @@ endmacro()
 # - SDL_X11_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckX11)
+  cmake_push_check_state(RESET)
   if(SDL_X11)
     foreach(_LIB X11 Xext Xcursor Xi Xfixes Xrandr Xrender Xss)
         FindLibraryAndSONAME("${_LIB}")
@@ -422,6 +423,7 @@ macro(CheckX11)
 
     if(X_INCLUDEDIR)
       list(APPEND EXTRA_CFLAGS "-I${X_INCLUDEDIR}")
+      list(APPEND CMAKE_REQUIRED_INCLUDES ${X_INCLUDEDIR})
     endif()
 
     find_file(HAVE_XCURSOR_H NAMES "X11/Xcursor/Xcursor.h" HINTS "${X_INCLUDEDIR}")
@@ -597,6 +599,7 @@ macro(CheckX11)
     # Prevent Mesa from including X11 headers
     list(APPEND EXTRA_CFLAGS "-DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11")
   endif()
+  cmake_pop_check_state()
 endmacro()
 
 macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
