@@ -30,16 +30,7 @@
 #include <e32svr.h>
 #include <bitdev.h>
 #include <w32std.h>
-
-class CFbsDrawDevice : public CBase
-{
-public:
-public:
-    IMPORT_C static CFbsDrawDevice* NewScreenDeviceL(TScreenInfoV01 aInfo,TDisplayMode aDispMode);
-public:
-    virtual void Update() {}
-    virtual void UpdateRegion(const TRect&) {}
-};
+#include "bitdraw.h" // CFbsDrawDevice
 
 #define _THIS SDL_VideoDevice *_this
 
