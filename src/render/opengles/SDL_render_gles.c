@@ -100,6 +100,7 @@ typedef struct
     void *pixels;
     int pitch;
     GLES_FBOList *fbo;
+    SDL_bool mipmap;
 } GLES_TextureData;
 
 static int
@@ -299,7 +300,8 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GLint internalFormat;
     GLenum format, type;
     int texture_w, texture_h;
-    GLenum scaleMode;
+    GLenum magnificationScaleMode;
+    GLenum minificationScaleMode;
     GLenum result;
 
     GLES_ActivateRenderer(renderer);
@@ -361,10 +363,32 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     data->format = format;
     data->formattype = type;
-    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+
+    /* Check mipmap texture filtering */
+    data->mipmap = (type == GL_TEXTURE_2D) && SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_FILTER_MIPMAP, SDL_FALSE);
+
+    switch(texture->scaleMode) {
+        case SDL_ScaleModeNearest:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = data->mipmap ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
+            break;
+        case SDL_ScaleModeLinear:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = data->mipmap ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR;
+            break;
+        case SDL_ScaleModeBest:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = data->mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+            break;
+        default:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+    }
     renderdata->glBindTexture(data->type, data->texture);
-    renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER, scaleMode);
-    renderdata->glTexParameteri(data->type, GL_TEXTURE_MAG_FILTER, scaleMode);
+    renderdata->glTexParameteri(data->type, GL_GENERATE_MIPMAP, data->mipmap ? GL_TRUE : GL_FALSE);
+    renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+    renderdata->glTexParameteri(data->type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     renderdata->glTexParameteri(data->type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     renderdata->glTexParameteri(data->type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -480,11 +504,33 @@ GLES_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Sca
 {
     GLES_RenderData *renderdata = (GLES_RenderData *) renderer->driverdata;
     GLES_TextureData *data = (GLES_TextureData *) texture->driverdata;
-    GLenum glScaleMode = (scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    GLenum magnificationScaleMode;
+    GLenum minificationScaleMode;
+
+    texture->scaleMode = scaleMode;
+    switch(texture->scaleMode) {
+        case SDL_ScaleModeNearest:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = data->mipmap ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
+            break;
+        case SDL_ScaleModeLinear:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = data->mipmap ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR;
+            break;
+        case SDL_ScaleModeBest:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = data->mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+            break;
+        default:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+    }
 
     renderdata->glBindTexture(data->type, data->texture);
-    renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER, glScaleMode);
-    renderdata->glTexParameteri(data->type, GL_TEXTURE_MAG_FILTER, glScaleMode);
+    renderdata->glTexParameteri(data->type, GL_GENERATE_MIPMAP, data->mipmap ? GL_TRUE : GL_FALSE);
+    renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+    renderdata->glTexParameteri(data->type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
 }
 
 static int
