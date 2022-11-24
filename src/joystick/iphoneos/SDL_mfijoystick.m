@@ -956,6 +956,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 #endif
 
         if (controller.extendedGamepad) {
+            SDL_bool isstack;
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
             /* Axis order matches the XInput Windows mappings. */
@@ -969,8 +970,13 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             };
 
             /* Button order matches the XInput Windows mappings. */
-            Uint8 buttons[joystick->nbuttons];
+            Uint8 *buttons = SDL_small_alloc(Uint8, joystick->nbuttons, &isstack);
             int button_count = 0;
+
+            if (buttons == NULL) {
+                SDL_OutOfMemory();
+                return;
+            }
 
             /* These buttons are part of the original MFi spec */
             buttons[button_count++] = gamepad.buttonA.isPressed;
@@ -1088,12 +1094,20 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             }
 #endif /* ENABLE_MFI_SENSORS */
 
+            SDL_small_free(buttons, isstack);
         } else if (controller.gamepad) {
+            SDL_bool isstack;
             GCGamepad *gamepad = controller.gamepad;
 
             /* Button order matches the XInput Windows mappings. */
-            Uint8 buttons[joystick->nbuttons];
+            Uint8 *buttons = SDL_small_alloc(Uint8, joystick->nbuttons, &isstack);
             int button_count = 0;
+
+            if (buttons == NULL) {
+                SDL_OutOfMemory();
+                return;
+            }
+
             buttons[button_count++] = gamepad.buttonA.isPressed;
             buttons[button_count++] = gamepad.buttonB.isPressed;
             buttons[button_count++] = gamepad.buttonX.isPressed;
@@ -1108,6 +1122,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             for (i = 0; i < button_count; i++) {
                 SDL_PrivateJoystickButton(joystick, i, buttons[i]);
             }
+
+            SDL_small_free(buttons, isstack);
         }
 #if TARGET_OS_TV
         else if (controller.microGamepad) {
