@@ -14,7 +14,8 @@ jobs:
         usesh: true
         prepare: |
           pkg install -y \
-              gmake \
+              cmake \
+              ninja \
               pkgconf \
               libXcursor \
               libXext \
@@ -43,6 +44,5 @@ jobs:
               libudev-devd
 
         run: |
-          mkdir build_autotools
-          (cd build_autotools && CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ../configure)
-          gmake -C build_autotools -j`sysctl -n hw.ncpu` V=1
+          cmake -S . -B build -GNinja
+          cmake --build build --verbose -- -j`sysctl -n hw.ncpu`
