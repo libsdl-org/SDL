@@ -25,28 +25,6 @@ not_ok () {
     failed=1
 }
 
-major=$(sed -ne 's/^SDL_MAJOR_VERSION=//p' configure.ac)
-minor=$(sed -ne 's/^SDL_MINOR_VERSION=//p' configure.ac)
-micro=$(sed -ne 's/^SDL_MICRO_VERSION=//p' configure.ac)
-version="${major}.${minor}.${micro}"
-
-if [ "$ref_version" = "$version" ]; then
-    ok "configure.ac $version"
-else
-    not_ok "configure.ac $version disagrees with SDL_version.h $ref_version"
-fi
-
-major=$(sed -ne 's/^SDL_MAJOR_VERSION=//p' configure)
-minor=$(sed -ne 's/^SDL_MINOR_VERSION=//p' configure)
-micro=$(sed -ne 's/^SDL_MICRO_VERSION=//p' configure)
-version="${major}.${minor}.${micro}"
-
-if [ "$ref_version" = "$version" ]; then
-    ok "configure $version"
-else
-    not_ok "configure $version disagrees with SDL_version.h $ref_version"
-fi
-
 major=$(sed -ne 's/^set(SDL_MAJOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
 minor=$(sed -ne 's/^set(SDL_MINOR_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
 micro=$(sed -ne 's/^set(SDL_MICRO_VERSION \([0-9]*\))$/\1/p' CMakeLists.txt)
