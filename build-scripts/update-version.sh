@@ -54,10 +54,6 @@ if [ "x$PATCH" != "x0" ]; then
     fi
 fi
 
-perl -w -pi -e 's/\A(SDL_MAJOR_VERSION=)\d+/${1}'$MAJOR'/;' configure.ac
-perl -w -pi -e 's/\A(SDL_MINOR_VERSION=)\d+/${1}'$MINOR'/;' configure.ac
-perl -w -pi -e 's/\A(SDL_MICRO_VERSION=)\d+/${1}'$PATCH'/;' configure.ac
-
 perl -w -pi -e 's/\A(set\(SDL_MAJOR_VERSION\s+)\d+/${1}'$MAJOR'/;' CMakeLists.txt
 perl -w -pi -e 's/\A(set\(SDL_MINOR_VERSION\s+)\d+/${1}'$MINOR'/;' CMakeLists.txt
 perl -w -pi -e 's/\A(set\(SDL_MICRO_VERSION\s+)\d+/${1}'$PATCH'/;' CMakeLists.txt
@@ -74,9 +70,6 @@ perl -w -pi -e 's/(FILEVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$PATCH'/;' 
 perl -w -pi -e 's/(PRODUCTVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$PATCH'/;' src/main/windows/version.rc
 perl -w -pi -e 's/(VALUE "FileVersion", ")\d+, \d+, \d+/${1}'$MAJOR', '$MINOR', '$PATCH'/;' src/main/windows/version.rc
 perl -w -pi -e 's/(VALUE "ProductVersion", ")\d+, \d+, \d+/${1}'$MAJOR', '$MINOR', '$PATCH'/;' src/main/windows/version.rc
-
-echo "Regenerating configure script with new version..."
-./autogen.sh |grep -v 'Now you are ready to run ./configure'
 
 echo "Running build-scripts/test-versioning.sh to verify changes..."
 ./build-scripts/test-versioning.sh
