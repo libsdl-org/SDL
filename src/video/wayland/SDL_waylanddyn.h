@@ -166,6 +166,13 @@ void SDL_WAYLAND_UnloadSymbols(void);
 
 #else /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
 
+/*
+ * These must be included before libdecor.h, otherwise the libdecor header
+ * pulls in the system Wayland protocol headers instead of ours.
+ */
+#include "wayland-client-protocol.h"
+#include "wayland-egl.h"
+
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
 #endif
