@@ -33,6 +33,7 @@ use File::Basename;
 chdir(dirname(__FILE__) . '/../..');
 my $sdl_dynapi_procs_h = "src/dynapi/SDL_dynapi_procs.h";
 my $sdl_dynapi_overrides_h = "src/dynapi/SDL_dynapi_overrides.h";
+my $sdl_dynapi_sym = "src/dynapi/SDL_dynapi.sym";
 
 my %existing = ();
 if (-f $sdl_dynapi_procs_h) {
@@ -47,6 +48,10 @@ if (-f $sdl_dynapi_procs_h) {
 
 open(SDL_DYNAPI_PROCS_H, '>>', $sdl_dynapi_procs_h) or die("Can't open $sdl_dynapi_procs_h: $!\n");
 open(SDL_DYNAPI_OVERRIDES_H, '>>', $sdl_dynapi_overrides_h) or die("Can't open $sdl_dynapi_overrides_h: $!\n");
+
+open(SDL_DYNAPI_SYM, '<', $sdl_dynapi_sym) or die("Can't open $sdl_dynapi_sym: $!\n");
+read(SDL_DYNAPI_SYM, my $sdl_dynapi_sym_contents, -s SDL_DYNAPI_SYM);
+close(SDL_DYNAPI_SYM);
 
 opendir(HEADERS, 'include/SDL3') or die("Can't open include dir: $!\n");
 while (my $d = readdir(HEADERS)) {
@@ -75,6 +80,8 @@ while (my $d = readdir(HEADERS)) {
             my $fn = $6;
 
             next if $existing{$fn};   # already slotted into the jump table.
+
+            $sdl_dynapi_sym_contents =~ s/# extra symbols go here/$fn;\n    # extra symbols go here/;
 
             my @params = split(',', $7);
 
@@ -143,5 +150,9 @@ closedir(HEADERS);
 
 close(SDL_DYNAPI_PROCS_H);
 close(SDL_DYNAPI_OVERRIDES_H);
+
+open(SDL_DYNAPI_SYM, '>', $sdl_dynapi_sym) or die("Can't open $sdl_dynapi_sym: $!\n");
+print SDL_DYNAPI_SYM $sdl_dynapi_sym_contents;
+close(SDL_DYNAPI_SYM);
 
 # vi: set ts=4 sw=4 expandtab:

@@ -276,6 +276,15 @@ if(WINDOWS)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif()
 
+check_linker_flag(C "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym" HAVE_WL_VERSION_SCRIPT)
+if(HAVE_WL_VERSION_SCRIPT)
+  list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
+else()
+  if((LINUX AND LIBC_IS_GLIBC) OR ANDROID)
+    message(FATAL_ERROR "Linker does not support '-Wl,--version-script=xxx.sym'. This is required on the current host platform (${SDL_CMAKE_PLATFORM}).")
+  endif()
+endif()
+
 # Emscripten toolchain has a nonempty default value for this, and the checks
 # in this file need to change that, so remember the original value, and
 # restore back to that afterwards. For check_function_exists() to work in
@@ -3182,6 +3191,8 @@ if(SDL_SHARED)
   # alias target for in-tree builds
   add_library(SDL3::SDL3 ALIAS SDL3)
   set_target_properties(SDL3 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  set_target_properties(SDL3 PROPERTIES LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
+  set_target_properties(SDL3 PROPERTIES INTERFACE_LINK_DEPENDS "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym>")
   if(NOT SDL_LIBC)
     if(MSVC AND SDL_CPU_X86)
       # FIXME: should be added for all architectures (missing symbols for ARM)
