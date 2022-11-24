@@ -1059,7 +1059,7 @@ SDL_SendEditingText(const char *text, int start, int length)
     if (SDL_GetEventState(SDL_TEXTEDITING) == SDL_ENABLE) {
         SDL_Event event;
 
-        if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE) &&
+        if (SDL_GetEventState(SDL_TEXTEDITING_EXT) == SDL_ENABLE &&
             SDL_strlen(text) >= SDL_arraysize(event.edit.text)) {
             event.editExt.type = SDL_TEXTEDITING_EXT;
             event.editExt.windowID = keyboard->focus ? keyboard->focus->id : 0;

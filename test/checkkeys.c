@@ -247,14 +247,14 @@ main(int argc, char *argv[])
     /* Disable mouse emulation */
     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 
-    /* Enable extended text editing events */
-    SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
-
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
+
+    /* Enable extended text editing events */
+    SDL_EventState(SDL_TEXTEDITING_EXT, SDL_ENABLE);
 
     /* Set 640x480 video mode */
     window = SDL_CreateWindow("CheckKeys Test",

@@ -568,6 +568,7 @@ SDL_StartEventLoop(void)
     /* Process most event types */
     (void)SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
     (void)SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING_EXT, SDL_DISABLE); /* Disabled by default since `SDL_TextEditingExtEvent.text` needs to be freed by the application */
     (void)SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
 #if 0 /* Leave these events enabled so apps can respond to items being dragged onto them at startup */
     (void)SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
