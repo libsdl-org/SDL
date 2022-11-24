@@ -203,6 +203,11 @@ elseif(NINTENDO_3DS)
   set(N3DS TRUE)
 endif()
 
+if(FREEBSD OR NETBSD OR OPENBSD OR BSDI)
+  list(APPEND CMAKE_REQUIRED_INCLUDES /usr/local/include)
+  list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "-L/usr/local/lib")
+endif()
+
 # Don't mistake osx for unix
 if(UNIX AND NOT ANDROID AND NOT APPLE AND NOT RISCOS)
   set(UNIX_SYS ON)
