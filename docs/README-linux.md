@@ -14,7 +14,7 @@ Build Dependencies
 
 Ubuntu 18.04, all available features enabled:
 
-    sudo apt-get install build-essential git make autoconf automake libtool \
+    sudo apt-get install build-essential git make \
     pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
     libaudio-dev libjack-dev libsndio-dev libsamplerate0-dev libx11-dev libxext-dev \
     libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libwayland-dev \
@@ -25,7 +25,7 @@ Ubuntu 22.04+ can also add `libpipewire-0.3-dev libdecor-0-dev` to that command 
 
 Fedora 35, all available features enabled:
 
-    sudo yum install gcc git-core make cmake autoconf automake libtool \
+    sudo yum install gcc git-core make cmake \
     alsa-lib-devel pulseaudio-libs-devel nas-devel pipewire-devel \
     libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXfixes-devel \
     libXi-devel libXScrnSaver-devel dbus-devel ibus-devel fcitx-devel \

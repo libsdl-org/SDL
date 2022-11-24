@@ -6,16 +6,16 @@ To compile and install SDL:
 
         Windows with gcc, either native or cross-compiling:
         * Read the FAQ at https://wiki.libsdl.org/FAQWindows
-        * Run './configure; make; make install'
+        * Run 'cmake -S . -B build && cmake --build build && cmake --install install'
 
         macOS with Xcode:
         * Read docs/README-macosx.md
 
         macOS from the command line:
-        * Run './configure; make; make install'
+        * Run 'cmake -S . -B build && cmake --build build && cmake --install install'
 
         Linux and other UNIX systems:
-        * Run './configure; make; make install'
+        * Run 'cmake -S . -B build && cmake --build build && cmake --install install'
 
         Android:
         * Read docs/README-android.md
