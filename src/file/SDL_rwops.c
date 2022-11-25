@@ -386,8 +386,8 @@ stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
     }
 #endif
 
-    if (fseek(context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
-        Sint64 pos = ftell(context->hidden.stdio.fp);
+    if (fseek((FILE *)context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
+        Sint64 pos = ftell((FILE *)context->hidden.stdio.fp);
         if (pos < 0) {
             return SDL_SetError("Couldn't get stream offset");
         }
@@ -401,8 +401,8 @@ stdio_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
 {
     size_t nread;
 
-    nread = fread(ptr, size, maxnum, context->hidden.stdio.fp);
-    if (nread == 0 && ferror(context->hidden.stdio.fp)) {
+    nread = fread(ptr, size, maxnum, (FILE *)context->hidden.stdio.fp);
+    if (nread == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
         SDL_Error(SDL_EFREAD);
     }
     return nread;
@@ -413,8 +413,8 @@ stdio_write(SDL_RWops * context, const void *ptr, size_t size, size_t num)
 {
     size_t nwrote;
 
-    nwrote = fwrite(ptr, size, num, context->hidden.stdio.fp);
-    if (nwrote == 0 && ferror(context->hidden.stdio.fp)) {
+    nwrote = fwrite(ptr, size, num, (FILE *)context->hidden.stdio.fp);
+    if (nwrote == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
         SDL_Error(SDL_EFWRITE);
     }
     return nwrote;
@@ -427,7 +427,7 @@ stdio_close(SDL_RWops * context)
     if (context) {
         if (context->hidden.stdio.autoclose) {
             /* WARNING:  Check the return value here! */
-            if (fclose(context->hidden.stdio.fp) != 0) {
+            if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
                 status = SDL_Error(SDL_EFWRITE);
             }
         }
@@ -616,7 +616,7 @@ SDL_RWFromFile(const char *file, const char *mode)
 
 #ifdef HAVE_STDIO_H
 SDL_RWops *
-SDL_RWFromFP(FILE * fp, SDL_bool autoclose)
+SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
 
@@ -635,7 +635,7 @@ SDL_RWFromFP(FILE * fp, SDL_bool autoclose)
 }
 #else
 SDL_RWops *
-SDL_RWFromFP(void * fp, SDL_bool autoclose)
+SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_SetError("SDL not compiled with stdio support");
     return NULL;

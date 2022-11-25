@@ -55,7 +55,7 @@ SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *
 #endif
 
 #ifdef HAVE_STDIO_H
-SDL_DYNAPI_PROC(SDL_RWops*,SDL_RWFromFP,(FILE *a, SDL_bool b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_RWops*,SDL_RWFromFP,(void *a, SDL_bool b),(a,b),return)
 #else
 SDL_DYNAPI_PROC(SDL_RWops*,SDL_RWFromFP,(void *a, SDL_bool b),(a,b),return)
 #endif
