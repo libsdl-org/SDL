@@ -20,7 +20,7 @@ The following commands can be used to build SDL for RISC OS using CMake:
     cmake --build build-riscos
     cmake --install build-riscos
 
-When using GCCSDK 4.7.4 release 6 or earlier versions, the builtin atomic functions are broken, meaning it's currently necessary to compile with `--disable-gcc-atomics` using autotools or `-DSDL_GCC_ATOMICS=OFF` using CMake. Newer versions of GCCSDK don't have this problem.
+When using GCCSDK 4.7.4 release 6 or earlier versions, the builtin atomic functions are broken, meaning it's currently necessary to compile with `-DSDL_GCC_ATOMICS=OFF` using CMake. Newer versions of GCCSDK don't have this problem.
 
 
 Current level of implementation
