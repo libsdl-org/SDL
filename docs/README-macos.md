@@ -82,7 +82,8 @@ NSApplicationDelegate implementation:
 
 # Using the Simple DirectMedia Layer with a traditional Makefile
 
-An existing CMake build system for your SDL app has good chances
+An existing build system for your SDL app has good chances
+
 to work almost unchanged on macOS. However, to produce a "real" Mac binary
 that you can distribute to users, you need to put the generated binary into a
 so called "bundle", which is basically a fancy folder with a name like
