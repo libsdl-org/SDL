@@ -44,5 +44,7 @@ jobs:
               libudev-devd
 
         run: |
-          cmake -S . -B build -GNinja
+          cmake -S . -B build -GNinja \
+            -DSDL_EXTRA_CHECK_INCLUDES="/usr/local/include" \
+            -DSDL_EXTRA_CHECK_LINK_OPTIONS="-L/usr/local/lib"
           cmake --build build --verbose -- -j`sysctl -n hw.ncpu`
