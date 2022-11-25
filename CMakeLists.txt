@@ -139,6 +139,7 @@ check_cpu_architecture(x86 SDL_CPU_X86)
 check_cpu_architecture(x64 SDL_CPU_X64)
 check_cpu_architecture(arm32 SDL_CPU_ARM32)
 check_cpu_architecture(arm64 SDL_CPU_ARM64)
+check_cpu_architecture(loongarch64 SDL_CPU_LOONGARCH64)
 
 # Check for 64 or 32 bit
 set(SIZEOF_VOIDP ${CMAKE_SIZEOF_VOID_P})
@@ -447,6 +448,8 @@ dep_option(SDL_3DNOW               "Use 3Dnow! MMX assembly routines" ON "SDL_AS
 dep_option(SDL_ALTIVEC             "Use Altivec assembly routines" ON "SDL_ASSEMBLY" OFF)
 dep_option(SDL_ARMSIMD             "Use SIMD assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
 dep_option(SDL_ARMNEON             "Use NEON assembly blitters on ARM" OFF "SDL_ASSEMBLY;SDL_CPU_ARM32" OFF)
+dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
+dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
 set_option(SDL_LIBC                "Use the system C library" ${OPT_DEF_LIBC})
 set_option(SDL_GCC_ATOMICS         "Use gcc builtin atomics" ${OPT_DEF_GCC_ATOMICS})
@@ -899,6 +902,39 @@ if(SDL_ASSEMBLY)
         if(HAVE_ALTIVEC_H_HDR)
           set(HAVE_ALTIVEC_H 1)
         endif()
+      endif()
+    endif()
+
+    if(SDL_LSX)
+      cmake_push_check_state()
+      list(APPEND CMAKE_REQUIRED_FLAGS "-mlsx")
+      check_c_source_compiles([[
+          #ifndef __loongarch_sx
+          #error Assembler CPP flag not enabled
+          #endif
+        ]] CPU_HAS_LSX)
+      check_include_file("lsxintrin.h" HAVE_LSXINTRIN_H)
+      cmake_pop_check_state()
+
+      if(CPU_HAS_LSX AND HAVE_LSXINTRIN_H)
+        list(APPEND EXTRA_CFLAGS "-mlsx")
+        set(HAS_LSX TRUE)
+      endif()
+    endif()
+
+    if(SDL_LASX)
+      cmake_push_check_state()
+      list(APPEND CMAKE_REQUIRED_FLAGS "-mlasx")
+      check_c_source_compiles([[
+          #ifndef __loongarch_asx
+          #error Assembler CPP flag not enabled
+          #endif
+        ]] CPU_HAS_LASX)
+      check_include_file("lasxintrin.h" HAVE_LASXINTRIN_H)
+      cmake_pop_check_state()
+      if(CPU_HAS_LASX AND HAVE_LASXINTRIN_H)
+        list(APPEND EXTRA_CFLAGS "-mlasx")
+        set(HAS_LASX TRUE)
       endif()
     endif()
 
