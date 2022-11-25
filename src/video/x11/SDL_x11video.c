@@ -254,7 +254,6 @@ X11_CreateDevice(void)
     device->SetWindowResizable = X11_SetWindowResizable;
     device->SetWindowAlwaysOnTop = X11_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = X11_SetWindowFullscreen;
-    device->SetWindowGammaRamp = X11_SetWindowGammaRamp;
     device->SetWindowMouseGrab = X11_SetWindowMouseGrab;
     device->SetWindowKeyboardGrab = X11_SetWindowKeyboardGrab;
     device->DestroyWindow = X11_DestroyWindow;

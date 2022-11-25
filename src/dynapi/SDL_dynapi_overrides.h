@@ -538,10 +538,6 @@
 #define SDL_UpdateWindowSurfaceRects SDL_UpdateWindowSurfaceRects_REAL
 #define SDL_SetWindowGrab SDL_SetWindowGrab_REAL
 #define SDL_GetWindowGrab SDL_GetWindowGrab_REAL
-#define SDL_SetWindowBrightness SDL_SetWindowBrightness_REAL
-#define SDL_GetWindowBrightness SDL_GetWindowBrightness_REAL
-#define SDL_SetWindowGammaRamp SDL_SetWindowGammaRamp_REAL
-#define SDL_GetWindowGammaRamp SDL_GetWindowGammaRamp_REAL
 #define SDL_DestroyWindow SDL_DestroyWindow_REAL
 #define SDL_IsScreenSaverEnabled SDL_IsScreenSaverEnabled_REAL
 #define SDL_EnableScreenSaver SDL_EnableScreenSaver_REAL

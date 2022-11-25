@@ -91,8 +91,6 @@ HAIKU_CreateDevice(void)
     device->SetWindowBordered = HAIKU_SetWindowBordered;
     device->SetWindowResizable = HAIKU_SetWindowResizable;
     device->SetWindowFullscreen = HAIKU_SetWindowFullscreen;
-    device->SetWindowGammaRamp = HAIKU_SetWindowGammaRamp;
-    device->GetWindowGammaRamp = HAIKU_GetWindowGammaRamp;
     device->SetWindowMouseGrab = HAIKU_SetWindowMouseGrab;
     device->SetWindowMinimumSize = HAIKU_SetWindowMinimumSize;
     device->DestroyWindow = HAIKU_DestroyWindow;

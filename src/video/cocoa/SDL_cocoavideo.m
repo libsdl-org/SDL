@@ -112,8 +112,6 @@ Cocoa_CreateDevice(void)
     device->SetWindowResizable = Cocoa_SetWindowResizable;
     device->SetWindowAlwaysOnTop = Cocoa_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = Cocoa_SetWindowFullscreen;
-    device->SetWindowGammaRamp = Cocoa_SetWindowGammaRamp;
-    device->GetWindowGammaRamp = Cocoa_GetWindowGammaRamp;
     device->GetWindowICCProfile = Cocoa_GetWindowICCProfile;
     device->GetWindowDisplayIndex = Cocoa_GetWindowDisplayIndex;
     device->SetWindowMouseRect = Cocoa_SetWindowMouseRect;

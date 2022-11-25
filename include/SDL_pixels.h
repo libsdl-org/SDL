@@ -627,8 +627,6 @@ extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel,
  * \param ramp an array of 256 values filled in with the gamma ramp
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetWindowGammaRamp
  */
 extern DECLSPEC void SDLCALL SDL_CalculateGammaRamp(float gamma, Uint16 * ramp);
 

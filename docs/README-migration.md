@@ -139,3 +139,8 @@ The structures in this file are versioned separately from the rest of SDL, allow
 
 This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass `SDL_SYSWM_CURRENT_VERSION` as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
 
+## SDL_video.h
+
+SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
+
+Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
