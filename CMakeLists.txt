@@ -261,7 +261,7 @@ endif()
 # Compiler info
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(USE_CLANG TRUE)
-  set(OPT_DEF_ASM TRUE)
+  set(SDL_ASSEMBLY_DEFAULT TRUE)
   # Visual Studio 2019 v16.2 added support for Clang/LLVM.
   # Check if a Visual Studio project is being generated with the Clang toolset.
   if(MSVC)
@@ -269,12 +269,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC)
   set(USE_GCC TRUE)
-  set(OPT_DEF_ASM TRUE)
+  set(SDL_ASSEMBLY_DEFAULT TRUE)
 elseif(MSVC_VERSION GREATER 1400) # VisualStudio 8.0+
-  set(OPT_DEF_ASM TRUE)
+  set(SDL_ASSEMBLY_DEFAULT TRUE)
   #set(CMAKE_C_FLAGS "/ZI /WX- /
 else()
-  set(OPT_DEF_ASM FALSE)
+  set(SDL_ASSEMBLY_DEFAULT FALSE)
 endif()
 
 if(USE_GCC OR USE_CLANG)
@@ -377,7 +377,7 @@ if(EMSCRIPTEN)
   # SDL_THREADS_ENABLED_BY_DEFAULT now defaults to ON, but pthread support might be disabled by default.
   # !!! FIXME: most of these subsystems should default to ON if there are dummy implementations to be used.
 
-  set(OPT_DEF_ASM FALSE)
+  set(SDL_ASSEMBLY_DEFAULT FALSE)
   set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
   set(SDL_ATOMIC_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
@@ -432,7 +432,7 @@ set_option(SDL3_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
 #set_option(SDL_DEPENDENCY_TRACKING "Use gcc -MMD -MT dependency tracking" ON)
-set_option(SDL_ASSEMBLY            "Enable assembly routines" ${OPT_DEF_ASM})
+set_option(SDL_ASSEMBLY            "Enable assembly routines" ${SDL_ASSEMBLY_DEFAULT})
 dep_option(SDL_SSEMATH             "Allow GCC to use SSE floating point math" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE                 "Use SSE assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_SSE2                "Use SSE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
