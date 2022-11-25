@@ -92,7 +92,7 @@
 #ifdef HAVE_FLOAT_H
 # include <float.h>
 #endif
-#if defined(HAVE_ALLOCA) && !defined(alloca)
+#if !defined(alloca)
 # if defined(HAVE_ALLOCA_H)
 #  include <alloca.h>
 # elif defined(__GNUC__)
