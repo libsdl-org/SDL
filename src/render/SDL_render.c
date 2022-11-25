@@ -3679,7 +3679,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         float s_minx, s_miny, s_maxx, s_maxy;
         float c_minx, c_miny, c_maxx, c_maxy;
 
-        const float radian_angle = (float)((SDL_M_PIl * angle) / 180.0);
+        const float radian_angle = (float)((SDL_PI_D * angle) / 180.0);
         const float s = SDL_sinf(radian_angle);
         const float c = SDL_cosf(radian_angle);
 

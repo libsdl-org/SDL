@@ -119,7 +119,7 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 
 ## SDL_stdinc.h
 
-M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_M_PIl (double) and SDL_M_PIf (float) instead.
+M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
 ## SDL_syswm.h
 

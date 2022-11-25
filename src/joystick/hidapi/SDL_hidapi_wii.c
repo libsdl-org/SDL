@@ -1192,9 +1192,9 @@ static void HandleMotionPlusData(SDL_DriverWii_Context *ctx, SDL_Joystick *joyst
             z *= 2000;
         }
 
-        values[0] = -((float)z / GYRO_RES_PER_DEGREE) * SDL_M_PIf / 180.0f;
-        values[1] = ((float)x / GYRO_RES_PER_DEGREE) * SDL_M_PIf / 180.0f;
-        values[2] = ((float)y / GYRO_RES_PER_DEGREE) * SDL_M_PIf / 180.0f;
+        values[0] = -((float)z / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
+        values[1] = ((float)x / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
+        values[2] = ((float)y / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
         SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, 0, values, 3);
     }
 }

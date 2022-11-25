@@ -127,7 +127,7 @@ rotate_matrix(float angle, float x, float y, float z, float *r)
     float radians, c, s, c1, u[3], length;
     int i, j;
 
-    radians = (angle * SDL_M_PIf) / 180.0f;
+    radians = (angle * SDL_PI_F) / 180.0f;
 
     c = SDL_cosf(radians);
     s = SDL_sinf(radians);

@@ -608,11 +608,11 @@ extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size
 extern DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, const char *fmt, va_list ap);
 
-#ifndef SDL_M_PIl
-#define SDL_M_PIl   3.141592653589793238462643383279502884L         /**< pi (double) */
+#ifndef SDL_PI_D
+#define SDL_PI_D   3.141592653589793238462643383279502884L      /**< pi (double) */
 #endif
-#ifndef SDL_M_PIf
-#define SDL_M_PIf   ((float)3.141592653589793238462643383279502884) /**< pi (float) */
+#ifndef SDL_PI_F
+#define SDL_PI_F   3.141592653589793238462643383279502884F      /**< pi (float) */
 #endif
 
 /**

@@ -1260,9 +1260,9 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
                 ctx->timestamp_us += ctx->update_rate_in_us;
 
-                values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (SDL_M_PIf / 180.0f));
-                values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (SDL_M_PIf / 180.0f));
-                values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (SDL_M_PIf / 180.0f));
+                values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
+                values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
+                values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
                 SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, ctx->timestamp_us, values, 3);
 
                 values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;

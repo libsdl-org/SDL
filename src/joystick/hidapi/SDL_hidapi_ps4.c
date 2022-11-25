@@ -567,7 +567,7 @@ HIDAPI_DriverPS4_ApplyCalibrationData(SDL_DriverPS4_Context *ctx, int index, Sin
 
     /* Convert the raw data to the units expected by SDL */
     if (index < 3) {
-        result = (result / GYRO_RES_PER_DEGREE) * SDL_M_PIf / 180.0f;
+        result = (result / GYRO_RES_PER_DEGREE) * SDL_PI_F / 180.0f;
     } else {
         result = (result / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     }

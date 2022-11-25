@@ -1821,13 +1821,13 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
             projection = MatrixIdentity();
             break;
         case DXGI_MODE_ROTATION_ROTATE270:
-            projection = MatrixRotationZ(SDL_M_PIf * 0.5f);
+            projection = MatrixRotationZ(SDL_PI_F * 0.5f);
             break;
         case DXGI_MODE_ROTATION_ROTATE180:
-            projection = MatrixRotationZ(SDL_M_PIf);
+            projection = MatrixRotationZ(SDL_PI_F);
             break;
         case DXGI_MODE_ROTATION_ROTATE90:
-            projection = MatrixRotationZ(-SDL_M_PIf * 0.5f);
+            projection = MatrixRotationZ(-SDL_PI_F * 0.5f);
             break;
         default:
             return SDL_SetError("An unknown DisplayOrientation is being used");
