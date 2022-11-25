@@ -806,8 +806,9 @@ if(SDL_ASSEMBLY)
           #ifndef __SSE__
           #error Assembler CPP flag not enabled
           #endif
-          int main(int argc, char **argv) { return 0; }" HAVE_SSE)
-      if(HAVE_SSE)
+          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_SSE)
+      if(CPU_SUPPORTS_SSE)
+        set(HAVE_SSE ON)
         list(APPEND EXTRA_CFLAGS "-msse")
       endif()
       set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
