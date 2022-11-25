@@ -1485,6 +1485,18 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
               ioctl(0, KDENABIO, 1);
               return 0;
           }" HAVE_INPUT_KBIO)
+    elseif(OPENBSD OR NETBSD)
+      check_c_source_compiles("
+          #include <sys/time.h>
+          #include <dev/wscons/wsconsio.h>
+          #include <dev/wscons/wsksymdef.h>
+          #include <dev/wscons/wsksymvar.h>
+          #include <sys/ioctl.h>
+          int main(int argc, char **argv) {
+              struct wskbd_map_data data;
+              ioctl(0, WSKBDIO_GETMAP, &data);
+              return 0;
+          }" HAVE_INPUT_WSCONS)
     endif()
 
     if(HAVE_INPUT_EVENTS)
@@ -1504,6 +1516,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
 
     if(HAVE_INPUT_KBIO)
       set(SDL_INPUT_FBSDKBIO 1)
+    endif()
+
+    if(HAVE_INPUT_WSCONS)
+      set(SDL_INPUT_WSCONS 1)
     endif()
 
     check_include_file("libudev.h" HAVE_LIBUDEV_H)
