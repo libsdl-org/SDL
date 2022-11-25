@@ -313,7 +313,6 @@ SDL_DYNAPI_PROC(Uint32,SDL_MapRGB,(const SDL_PixelFormat *a, Uint8 b, Uint8 c, U
 SDL_DYNAPI_PROC(Uint32,SDL_MapRGBA,(const SDL_PixelFormat *a, Uint8 b, Uint8 c, Uint8 d, Uint8 e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(void,SDL_GetRGB,(Uint32 a, const SDL_PixelFormat *b, Uint8 *c, Uint8 *d, Uint8 *e),(a,b,c,d,e),)
 SDL_DYNAPI_PROC(void,SDL_GetRGBA,(Uint32 a, const SDL_PixelFormat *b, Uint8 *c, Uint8 *d, Uint8 *e, Uint8 *f),(a,b,c,d,e,f),)
-SDL_DYNAPI_PROC(void,SDL_CalculateGammaRamp,(float a, Uint16 *b),(a,b),)
 SDL_DYNAPI_PROC(const char*,SDL_GetPlatform,(void),(),return)
 SDL_DYNAPI_PROC(SDL_PowerState,SDL_GetPowerInfo,(int *a, int *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasIntersection,(const SDL_Rect *a, const SDL_Rect *b),(a,b),return)

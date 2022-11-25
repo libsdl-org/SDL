@@ -286,7 +286,6 @@
 #define SDL_MapRGBA SDL_MapRGBA_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL
 #define SDL_GetRGBA SDL_GetRGBA_REAL
-#define SDL_CalculateGammaRamp SDL_CalculateGammaRamp_REAL
 #define SDL_GetPlatform SDL_GetPlatform_REAL
 #define SDL_GetPowerInfo SDL_GetPowerInfo_REAL
 #define SDL_HasIntersection SDL_HasIntersection_REAL
