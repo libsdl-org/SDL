@@ -3460,13 +3460,6 @@ if(NOT SDL3_DISABLE_INSTALL)
       "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3)
 
-  string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
-  if (UPPER_BUILD_TYPE MATCHES DEBUG)
-    set(SOPOSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  else()
-    set(SOPOSTFIX "")
-  endif()
-
   install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
   if(FREEBSD)
     # FreeBSD uses ${PREFIX}/libdata/pkgconfig
@@ -3476,17 +3469,6 @@ if(NOT SDL3_DISABLE_INSTALL)
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
   endif()
   if(NOT (WINDOWS OR CYGWIN) OR MINGW)
-    if(SDL_SHARED)
-      set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
-      get_target_property(SONAME SDL3 OUTPUT_NAME)
-      if(NOT ANDROID AND NOT MINGW)
-          install(CODE "
-            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-              \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL3${SOPOSTFIX}${SOEXT}\"
-              WORKING_DIRECTORY \"${SDL3_BINARY_DIR}\")")
-          install(FILES ${SDL3_BINARY_DIR}/libSDL3${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-      endif()
-    endif()
     install(PROGRAMS ${SDL3_BINARY_DIR}/sdl3-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
     # TODO: what about the .spec file? Is it only needed for RPM creation?
     install(FILES "${SDL3_SOURCE_DIR}/sdl3.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
