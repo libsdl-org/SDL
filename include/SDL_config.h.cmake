@@ -144,7 +144,6 @@
 #cmakedefine HAVE_SSCANF 1
 #cmakedefine HAVE_VSSCANF 1
 #cmakedefine HAVE_VSNPRINTF 1
-#cmakedefine HAVE_M_PI 1
 #cmakedefine HAVE_ACOS 1
 #cmakedefine HAVE_ACOSF 1
 #cmakedefine HAVE_ASIN 1

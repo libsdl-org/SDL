@@ -996,7 +996,6 @@ if(SDL_LIBC)
       set(HAVE_${_UPPER} 1)
     endforeach()
     set(HAVE_ALLOCA 1)
-    check_symbol_exists(M_PI math.h HAVE_M_PI)
     set(STDC_HEADERS 1)
   else()
     set(HAVE_LIBC TRUE)
@@ -1032,7 +1031,6 @@ if(SDL_LIBC)
 
     set(STDC_HEADER_NAMES "stddef.h;stdarg.h;stdlib.h;string.h;stdio.h;wchar.h;float.h")
     check_include_files("${STDC_HEADER_NAMES}" STDC_HEADERS)
-    check_symbol_exists(M_PI math.h HAVE_M_PI)
     # TODO: refine the mprotect check
     check_c_source_compiles("#include <sys/types.h>
                              #include <sys/mman.h>
