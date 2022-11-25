@@ -4,6 +4,119 @@ This guide provides useful information for migrating applications from SDL 2.0 t
 
 We have provided a handy Python script to automate some of this work for you [link to script], and details on the changes are organized by SDL 2.0 header below.
 
+## SDL_rwops.h
+
+SDL_RWFromFP has been removed from the API, due to issues when the SDL library uses a different C runtime from the application.
+
+You can implement this in your own code easily:
+```c
+#include <stdio.h>
+
+
+static Sint64 SDLCALL
+stdio_size(SDL_RWops * context)
+{
+    Sint64 pos, size;
+
+    pos = SDL_RWseek(context, 0, RW_SEEK_CUR);
+    if (pos < 0) {
+        return -1;
+    }
+    size = SDL_RWseek(context, 0, RW_SEEK_END);
+
+    SDL_RWseek(context, pos, RW_SEEK_SET);
+    return size;
+}
+
+static Sint64 SDLCALL
+stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
+{
+    int stdiowhence;
+
+    switch (whence) {
+    case RW_SEEK_SET:
+        stdiowhence = SEEK_SET;
+        break;
+    case RW_SEEK_CUR:
+        stdiowhence = SEEK_CUR;
+        break;
+    case RW_SEEK_END:
+        stdiowhence = SEEK_END;
+        break;
+    default:
+        return SDL_SetError("Unknown value for 'whence'");
+    }
+
+    if (fseek((FILE *)context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
+        Sint64 pos = ftell((FILE *)context->hidden.stdio.fp);
+        if (pos < 0) {
+            return SDL_SetError("Couldn't get stream offset");
+        }
+        return pos;
+    }
+    return SDL_Error(SDL_EFSEEK);
+}
+
+static size_t SDLCALL
+stdio_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
+{
+    size_t nread;
+
+    nread = fread(ptr, size, maxnum, (FILE *)context->hidden.stdio.fp);
+    if (nread == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+        SDL_Error(SDL_EFREAD);
+    }
+    return nread;
+}
+
+static size_t SDLCALL
+stdio_write(SDL_RWops * context, const void *ptr, size_t size, size_t num)
+{
+    size_t nwrote;
+
+    nwrote = fwrite(ptr, size, num, (FILE *)context->hidden.stdio.fp);
+    if (nwrote == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
+        SDL_Error(SDL_EFWRITE);
+    }
+    return nwrote;
+}
+
+static int SDLCALL
+stdio_close(SDL_RWops * context)
+{
+    int status = 0;
+    if (context) {
+        if (context->hidden.stdio.autoclose) {
+            /* WARNING:  Check the return value here! */
+            if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
+                status = SDL_Error(SDL_EFWRITE);
+            }
+        }
+        SDL_FreeRW(context);
+    }
+    return status;
+}
+
+SDL_RWops *
+SDL_RWFromFP(void *fp, SDL_bool autoclose)
+{
+    SDL_RWops *rwops = NULL;
+
+    rwops = SDL_AllocRW();
+    if (rwops != NULL) {
+        rwops->size = stdio_size;
+        rwops->seek = stdio_seek;
+        rwops->read = stdio_read;
+        rwops->write = stdio_write;
+        rwops->close = stdio_close;
+        rwops->hidden.stdio.fp = fp;
+        rwops->hidden.stdio.autoclose = autoclose;
+        rwops->type = SDL_RWOPS_STDFILE;
+    }
+    return rwops;
+}
+```
+
 ## SDL_stdinc.h
 
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_M_PIl (double) and SDL_M_PIf (float) instead.

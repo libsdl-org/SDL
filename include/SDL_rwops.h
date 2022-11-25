@@ -195,7 +195,6 @@ typedef struct SDL_RWops
  *
  * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
  * \sa SDL_RWseek
@@ -204,34 +203,6 @@ typedef struct SDL_RWops
  */
 extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFile(const char *file,
                                                   const char *mode);
-
-/**
- * Use this function to create an SDL_RWops structure from a standard I/O file
- * pointer (stdio.h's `FILE *`).
- *
- * This function is not available on Windows, since files opened in an
- * application on that platform cannot be used by a dynamically linked
- * library.
- *
- * \param fp the `FILE *` that feeds the SDL_RWops stream
- * \param autoclose SDL_TRUE to close the `FILE*` when closing the SDL_RWops,
- *                  SDL_FALSE to leave the `FILE*` open when the RWops is
- *                  closed
- * \returns a pointer to the SDL_RWops structure that is created, or NULL on
- *          failure; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RWclose
- * \sa SDL_RWFromConstMem
- * \sa SDL_RWFromFile
- * \sa SDL_RWFromMem
- * \sa SDL_RWread
- * \sa SDL_RWseek
- * \sa SDL_RWtell
- * \sa SDL_RWwrite
- */
-extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFP(void *fp, SDL_bool autoclose);
 
 /**
  * Use this function to prepare a read-write memory buffer for use with
@@ -257,7 +228,6 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromFP(void *fp, SDL_bool autoclose);
  * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
  * \sa SDL_RWseek
@@ -292,7 +262,6 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_RWFromMem(void *mem, int size);
  * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
  * \sa SDL_RWseek
@@ -400,7 +369,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWsize(SDL_RWops *context);
  * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
  * \sa SDL_RWtell
@@ -428,7 +396,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWseek(SDL_RWops *context,
  * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
  * \sa SDL_RWseek
@@ -461,7 +428,6 @@ extern DECLSPEC Sint64 SDLCALL SDL_RWtell(SDL_RWops *context);
  * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWseek
  * \sa SDL_RWwrite
@@ -495,7 +461,6 @@ extern DECLSPEC size_t SDLCALL SDL_RWread(SDL_RWops *context,
  * \sa SDL_RWclose
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
  * \sa SDL_RWseek
@@ -525,7 +490,6 @@ extern DECLSPEC size_t SDLCALL SDL_RWwrite(SDL_RWops *context,
  *
  * \sa SDL_RWFromConstMem
  * \sa SDL_RWFromFile
- * \sa SDL_RWFromFP
  * \sa SDL_RWFromMem
  * \sa SDL_RWread
  * \sa SDL_RWseek

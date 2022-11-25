@@ -39,7 +39,6 @@
 #define SDL_sscanf SDL_sscanf_REAL
 #define SDL_snprintf SDL_snprintf_REAL
 #define SDL_CreateThread SDL_CreateThread_REAL
-#define SDL_RWFromFP SDL_RWFromFP_REAL
 #define SDL_RegisterApp SDL_RegisterApp_REAL
 #define SDL_UnregisterApp SDL_UnregisterApp_REAL
 #define SDL_Direct3D9GetAdapterIndex SDL_Direct3D9GetAdapterIndex_REAL

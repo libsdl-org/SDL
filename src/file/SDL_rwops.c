@@ -525,6 +525,27 @@ mem_close(SDL_RWops * context)
 
 /* Functions to create SDL_RWops structures from various data sources */
 
+#ifdef HAVE_STDIO_H
+static SDL_RWops *
+SDL_RWFromFP(void *fp, SDL_bool autoclose)
+{
+    SDL_RWops *rwops = NULL;
+
+    rwops = SDL_AllocRW();
+    if (rwops != NULL) {
+        rwops->size = stdio_size;
+        rwops->seek = stdio_seek;
+        rwops->read = stdio_read;
+        rwops->write = stdio_write;
+        rwops->close = stdio_close;
+        rwops->hidden.stdio.fp = fp;
+        rwops->hidden.stdio.autoclose = autoclose;
+        rwops->type = SDL_RWOPS_STDFILE;
+    }
+    return rwops;
+}
+#endif /* HAVE_STDIO_H */
+
 SDL_RWops *
 SDL_RWFromFile(const char *file, const char *mode)
 {
@@ -613,34 +634,6 @@ SDL_RWFromFile(const char *file, const char *mode)
 
     return rwops;
 }
-
-#ifdef HAVE_STDIO_H
-SDL_RWops *
-SDL_RWFromFP(void *fp, SDL_bool autoclose)
-{
-    SDL_RWops *rwops = NULL;
-
-    rwops = SDL_AllocRW();
-    if (rwops != NULL) {
-        rwops->size = stdio_size;
-        rwops->seek = stdio_seek;
-        rwops->read = stdio_read;
-        rwops->write = stdio_write;
-        rwops->close = stdio_close;
-        rwops->hidden.stdio.fp = fp;
-        rwops->hidden.stdio.autoclose = autoclose;
-        rwops->type = SDL_RWOPS_STDFILE;
-    }
-    return rwops;
-}
-#else
-SDL_RWops *
-SDL_RWFromFP(void *fp, SDL_bool autoclose)
-{
-    SDL_SetError("SDL not compiled with stdio support");
-    return NULL;
-}
-#endif /* HAVE_STDIO_H */
 
 SDL_RWops *
 SDL_RWFromMem(void *mem, int size)
