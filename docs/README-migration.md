@@ -148,3 +148,10 @@ This function now returns a standard int result instead of SDL_bool, returning 0
 SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
 
 Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
+
+## SDL_hints.h
+
+The following hints have been removed:
+* SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
+* SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
+* SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
