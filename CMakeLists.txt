@@ -783,8 +783,9 @@ if(SDL_ASSEMBLY)
             void *p = 0;
             _m_prefetch(p);
             return 0;
-          }" HAVE_3DNOW)
-      if(HAVE_3DNOW)
+          }" CPU_SUPPORTS_3DNOW)
+      if(CPU_SUPPORTS_3DNOW)
+        set(HAVE_3DNOW TRUE)
         list(APPEND EXTRA_CFLAGS "-m3dnow")
       endif()
       set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
