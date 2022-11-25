@@ -4,6 +4,10 @@ This guide provides useful information for migrating applications from SDL 2.0 t
 
 We have provided a handy Python script to automate some of this work for you [link to script], and details on the changes are organized by SDL 2.0 header below.
 
+## SDL_stdinc.h
+
+M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_M_PIl (double) and SDL_M_PIf (float) instead.
+
 ## SDL_syswm.h
 
 This header no longer includes platform specific headers and type definitions, instead allowing you to include the ones appropriate for your use case. You should define one or more of the following to enable the relevant platform-specific support:

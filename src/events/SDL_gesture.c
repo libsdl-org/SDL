@@ -304,9 +304,9 @@ static float bestDollarDifference(SDL_FloatPoint* points,SDL_FloatPoint* templ)
       -TRANSLATED DIRECTLY FROM PSUDEO-CODE AVAILABLE AT-
       -"http://depts.washington.edu/aimgroup/proj/dollar/"
     */
-    double ta = -M_PI/4;
-    double tb = M_PI/4;
-    double dt = M_PI/90;
+    double ta = -SDL_M_PIl/4;
+    double tb = SDL_M_PIl/4;
+    double dt = SDL_M_PIl/90;
     float x1 = (float)(PHI*ta + (1-PHI)*tb);
     float f1 = dollarDifference(points,templ,x1);
     float x2 = (float)((1-PHI)*ta + PHI*tb);
