@@ -306,7 +306,7 @@ windows_file_close(SDL_RWops * context)
 }
 #endif /* defined(__WIN32__) || defined(__GDK__) */
 
-#ifdef HAVE_STDIO_H && !(defined(__WIN32__) || defined(__GDK__))
+#if defined(HAVE_STDIO_H)  && !(defined(__WIN32__) || defined(__GDK__))
 
 #ifdef HAVE_FOPEN64
 #define fopen   fopen64
