@@ -4,9 +4,11 @@ This guide provides useful information for migrating applications from SDL 2.0 t
 
 We have provided a handy Python script to automate some of this work for you [link to script], and details on the changes are organized by SDL 2.0 header below.
 
+
 ## SDL_pixels.h
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
+
 
 ## SDL_rwops.h
 
@@ -121,9 +123,11 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 }
 ```
 
+
 ## SDL_stdinc.h
 
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
+
 
 ## SDL_syswm.h
 
@@ -142,6 +146,12 @@ The structures in this file are versioned separately from the rest of SDL, allow
 ### SDL_GetWindowWMInfo
 
 This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass `SDL_SYSWM_CURRENT_VERSION` as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
+
+
+## SDL_version.h
+
+SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0
+
 
 ## SDL_video.h
 

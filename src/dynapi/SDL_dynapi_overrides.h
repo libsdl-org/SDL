@@ -487,7 +487,6 @@
 #define SDL_GetTouchFinger SDL_GetTouchFinger_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetRevision SDL_GetRevision_REAL
-#define SDL_GetRevisionNumber SDL_GetRevisionNumber_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
 #define SDL_VideoInit SDL_VideoInit_REAL

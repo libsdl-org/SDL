@@ -520,13 +520,6 @@ SDL_GetRevision(void)
     return SDL_REVISION;
 }
 
-/* Get the library source revision number */
-int
-SDL_GetRevisionNumber(void)
-{
-    return 0;  /* doesn't make sense without Mercurial. */
-}
-
 /* Get the name of the platform */
 const char *
 SDL_GetPlatform(void)
