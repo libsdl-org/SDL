@@ -525,7 +525,8 @@ mem_close(SDL_RWops * context)
 
 /* Functions to create SDL_RWops structures from various data sources */
 
-#ifdef HAVE_STDIO_H
+#if defined(HAVE_STDIO_H) && !(defined(__WIN32__) || defined(__GDK__))
+/* this is used a helper for SDL_RWFromFile(), but not for windows. */
 static SDL_RWops *
 SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
