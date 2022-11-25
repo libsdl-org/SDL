@@ -609,7 +609,7 @@ extern DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING c
 extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, const char *fmt, va_list ap);
 
 #ifndef SDL_PI_D
-#define SDL_PI_D   3.141592653589793238462643383279502884L      /**< pi (double) */
+#define SDL_PI_D   3.141592653589793238462643383279502884       /**< pi (double) */
 #endif
 #ifndef SDL_PI_F
 #define SDL_PI_F   3.141592653589793238462643383279502884F      /**< pi (float) */
