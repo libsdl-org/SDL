@@ -92,10 +92,6 @@ struct SDL_Window
 
     float opacity;
 
-    float brightness;
-    Uint16 *gamma;
-    Uint16 *saved_gamma;        /* (just offset into gamma) */
-
     SDL_Surface *surface;
     SDL_bool surface_valid;
 
@@ -241,8 +237,6 @@ struct SDL_VideoDevice
     void (*SetWindowResizable) (_THIS, SDL_Window * window, SDL_bool resizable);
     void (*SetWindowAlwaysOnTop) (_THIS, SDL_Window * window, SDL_bool on_top);
     void (*SetWindowFullscreen) (_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
-    int (*SetWindowGammaRamp) (_THIS, SDL_Window * window, const Uint16 * ramp);
-    int (*GetWindowGammaRamp) (_THIS, SDL_Window * window, Uint16 * ramp);
     void* (*GetWindowICCProfile) (_THIS, SDL_Window * window, size_t* size);
     int (*GetWindowDisplayIndex)(_THIS, SDL_Window * window);
     void (*SetWindowMouseRect)(_THIS, SDL_Window * window);

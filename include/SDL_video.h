@@ -1510,53 +1510,6 @@ extern DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window * window, const SD
 extern DECLSPEC const SDL_Rect * SDLCALL SDL_GetWindowMouseRect(SDL_Window * window);
 
 /**
- * Set the brightness (gamma multiplier) for a given window's display.
- *
- * Despite the name and signature, this method sets the brightness of the
- * entire display, not an individual window. A window is considered to be
- * owned by the display that contains the window's center pixel. (The index of
- * this display can be retrieved using SDL_GetWindowDisplayIndex().) The
- * brightness set will not follow the window if it is moved to another
- * display.
- *
- * Many platforms will refuse to set the display brightness in modern times.
- * You are better off using a shader to adjust gamma during rendering, or
- * something similar.
- *
- * \param window the window used to select the display whose brightness will
- *               be changed
- * \param brightness the brightness (gamma multiplier) value to set where 0.0
- *                   is completely dark and 1.0 is normal brightness
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetWindowBrightness
- * \sa SDL_SetWindowGammaRamp
- */
-extern DECLSPEC int SDLCALL SDL_SetWindowBrightness(SDL_Window * window, float brightness);
-
-/**
- * Get the brightness (gamma multiplier) for a given window's display.
- *
- * Despite the name and signature, this method retrieves the brightness of the
- * entire display, not an individual window. A window is considered to be
- * owned by the display that contains the window's center pixel. (The index of
- * this display can be retrieved using SDL_GetWindowDisplayIndex().)
- *
- * \param window the window used to select the display whose brightness will
- *               be queried
- * \returns the brightness for the display where 0.0 is completely dark and
- *          1.0 is normal brightness.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetWindowBrightness
- */
-extern DECLSPEC float SDLCALL SDL_GetWindowBrightness(SDL_Window * window);
-
-/**
  * Set the opacity for a window.
  *
  * The parameter `opacity` will be clamped internally between 0.0f
@@ -1624,69 +1577,6 @@ extern DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window * modal_window, SDL
  * \sa SDL_RaiseWindow
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window * window);
-
-/**
- * Set the gamma ramp for the display that owns a given window.
- *
- * Set the gamma translation table for the red, green, and blue channels of
- * the video hardware. Each table is an array of 256 16-bit quantities,
- * representing a mapping between the input and output for that channel. The
- * input is the index into the array, and the output is the 16-bit gamma value
- * at that index, scaled to the output color precision.
- *
- * Despite the name and signature, this method sets the gamma ramp of the
- * entire display, not an individual window. A window is considered to be
- * owned by the display that contains the window's center pixel. (The index of
- * this display can be retrieved using SDL_GetWindowDisplayIndex().) The gamma
- * ramp set will not follow the window if it is moved to another display.
- *
- * \param window the window used to select the display whose gamma ramp will
- *               be changed
- * \param red a 256 element array of 16-bit quantities representing the
- *            translation table for the red channel, or NULL
- * \param green a 256 element array of 16-bit quantities representing the
- *              translation table for the green channel, or NULL
- * \param blue a 256 element array of 16-bit quantities representing the
- *             translation table for the blue channel, or NULL
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetWindowGammaRamp
- */
-extern DECLSPEC int SDLCALL SDL_SetWindowGammaRamp(SDL_Window * window,
-                                                   const Uint16 * red,
-                                                   const Uint16 * green,
-                                                   const Uint16 * blue);
-
-/**
- * Get the gamma ramp for a given window's display.
- *
- * Despite the name and signature, this method retrieves the gamma ramp of the
- * entire display, not an individual window. A window is considered to be
- * owned by the display that contains the window's center pixel. (The index of
- * this display can be retrieved using SDL_GetWindowDisplayIndex().)
- *
- * \param window the window used to select the display whose gamma ramp will
- *               be queried
- * \param red a 256 element array of 16-bit quantities filled in with the
- *            translation table for the red channel, or NULL
- * \param green a 256 element array of 16-bit quantities filled in with the
- *              translation table for the green channel, or NULL
- * \param blue a 256 element array of 16-bit quantities filled in with the
- *             translation table for the blue channel, or NULL
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetWindowGammaRamp
- */
-extern DECLSPEC int SDLCALL SDL_GetWindowGammaRamp(SDL_Window * window,
-                                                   Uint16 * red,
-                                                   Uint16 * green,
-                                                   Uint16 * blue);
 
 /**
  * Possible return values from the SDL_HitTest callback.

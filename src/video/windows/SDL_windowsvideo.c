@@ -193,9 +193,7 @@ WIN_CreateDevice(void)
     device->SetWindowAlwaysOnTop = WIN_SetWindowAlwaysOnTop;
     device->SetWindowFullscreen = WIN_SetWindowFullscreen;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    device->SetWindowGammaRamp = WIN_SetWindowGammaRamp;
     device->GetWindowICCProfile = WIN_GetWindowICCProfile;
-    device->GetWindowGammaRamp = WIN_GetWindowGammaRamp;
     device->SetWindowMouseRect = WIN_SetWindowMouseRect;
     device->SetWindowMouseGrab = WIN_SetWindowMouseGrab;
     device->SetWindowKeyboardGrab = WIN_SetWindowKeyboardGrab;

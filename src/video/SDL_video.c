@@ -1739,7 +1739,6 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
     window->last_fullscreen_flags = window->flags;
     window->opacity = 1.0f;
-    window->brightness = 1.0f;
     window->next = _this->windows;
     window->is_destroying = SDL_FALSE;
     window->display_index = SDL_GetWindowDisplayIndex(window);
@@ -1838,7 +1837,6 @@ SDL_CreateWindowFrom(const void *data)
     window->last_fullscreen_flags = window->flags;
     window->is_destroying = SDL_FALSE;
     window->opacity = 1.0f;
-    window->brightness = 1.0f;
     window->next = _this->windows;
     if (_this->windows) {
         _this->windows->prev = window;
@@ -2755,30 +2753,6 @@ SDL_UpdateWindowSurfaceRects(SDL_Window * window, const SDL_Rect * rects,
 }
 
 int
-SDL_SetWindowBrightness(SDL_Window * window, float brightness)
-{
-    Uint16 ramp[256];
-    int status;
-
-    CHECK_WINDOW_MAGIC(window, -1);
-
-    SDL_CalculateGammaRamp(brightness, ramp);
-    status = SDL_SetWindowGammaRamp(window, ramp, ramp, ramp);
-    if (status == 0) {
-        window->brightness = brightness;
-    }
-    return status;
-}
-
-float
-SDL_GetWindowBrightness(SDL_Window * window)
-{
-    CHECK_WINDOW_MAGIC(window, 1.0f);
-
-    return window->brightness;
-}
-
-int
 SDL_SetWindowOpacity(SDL_Window * window, float opacity)
 {
     int retval;
@@ -2839,85 +2813,6 @@ SDL_SetWindowInputFocus(SDL_Window * window)
     return _this->SetWindowInputFocus(_this, window);
 }
 
-
-int
-SDL_SetWindowGammaRamp(SDL_Window * window, const Uint16 * red,
-                                            const Uint16 * green,
-                                            const Uint16 * blue)
-{
-    CHECK_WINDOW_MAGIC(window, -1);
-
-    if (!_this->SetWindowGammaRamp) {
-        return SDL_Unsupported();
-    }
-
-    if (!window->gamma) {
-        if (SDL_GetWindowGammaRamp(window, NULL, NULL, NULL) < 0) {
-            return -1;
-        }
-        SDL_assert(window->gamma != NULL);
-    }
-
-    if (red) {
-        SDL_memcpy(&window->gamma[0*256], red, 256*sizeof(Uint16));
-    }
-    if (green) {
-        SDL_memcpy(&window->gamma[1*256], green, 256*sizeof(Uint16));
-    }
-    if (blue) {
-        SDL_memcpy(&window->gamma[2*256], blue, 256*sizeof(Uint16));
-    }
-    if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
-        return _this->SetWindowGammaRamp(_this, window, window->gamma);
-    } else {
-        return 0;
-    }
-}
-
-int
-SDL_GetWindowGammaRamp(SDL_Window * window, Uint16 * red,
-                                            Uint16 * green,
-                                            Uint16 * blue)
-{
-    CHECK_WINDOW_MAGIC(window, -1);
-
-    if (!window->gamma) {
-        int i;
-
-        window->gamma = (Uint16 *)SDL_malloc(256*6*sizeof(Uint16));
-        if (!window->gamma) {
-            return SDL_OutOfMemory();
-        }
-        window->saved_gamma = window->gamma + 3*256;
-
-        if (_this->GetWindowGammaRamp) {
-            if (_this->GetWindowGammaRamp(_this, window, window->gamma) < 0) {
-                return -1;
-            }
-        } else {
-            /* Create an identity gamma ramp */
-            for (i = 0; i < 256; ++i) {
-                Uint16 value = (Uint16)((i << 8) | i);
-
-                window->gamma[0*256+i] = value;
-                window->gamma[1*256+i] = value;
-                window->gamma[2*256+i] = value;
-            }
-        }
-        SDL_memcpy(window->saved_gamma, window->gamma, 3*256*sizeof(Uint16));
-    }
-
-    if (red) {
-        SDL_memcpy(red, &window->gamma[0*256], 256*sizeof(Uint16));
-    }
-    if (green) {
-        SDL_memcpy(green, &window->gamma[1*256], 256*sizeof(Uint16));
-    }
-    if (blue) {
-        SDL_memcpy(blue, &window->gamma[2*256], 256*sizeof(Uint16));
-    }
-    return 0;
-}
 
 void
 SDL_UpdateWindowGrab(SDL_Window * window)
@@ -3164,10 +3059,6 @@ SDL_OnWindowFocusGained(SDL_Window * window)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (window->gamma && _this->SetWindowGammaRamp) {
-        _this->SetWindowGammaRamp(_this, window, window->gamma);
-    }
-
     if (mouse && mouse->relative_mode) {
         SDL_SetMouseFocus(window);
         if (mouse->relative_mode_warp) {
@@ -3220,10 +3111,6 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
 void
 SDL_OnWindowFocusLost(SDL_Window * window)
 {
-    if (window->gamma && _this->SetWindowGammaRamp) {
-        _this->SetWindowGammaRamp(_this, window, window->saved_gamma);
-    }
-
     SDL_UpdateWindowGrab(window);
 
     if (ShouldMinimizeOnFocusLoss(window)) {
@@ -3310,7 +3197,6 @@ SDL_DestroyWindow(SDL_Window * window)
     /* Free memory associated with the window */
     SDL_free(window->title);
     SDL_FreeSurface(window->icon);
-    SDL_free(window->gamma);
     while (window->data) {
         SDL_WindowUserData *data = window->data;
 

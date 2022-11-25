@@ -106,7 +106,6 @@ extern void X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 extern void X11_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable);
 extern void X11_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top);
 extern void X11_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
-extern int X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp);
 extern void* X11_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size);
 extern void X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void X11_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
