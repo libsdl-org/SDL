@@ -13,7 +13,8 @@ There are two basic ways of building SDL at the moment:
 
 1. CMake:  cmake -S . -B build && cmake --build build && cmake --install install
 
-   If you have a GNUish system, then you might try this.  Edit CMakeLists.txt,
+   If you have a system that supports CMake, then you might try this.  Edit CMakeLists.txt,
+
    take a look at the large section labelled:
 
 	"Platform-specific options and settings!"
