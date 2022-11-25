@@ -962,7 +962,7 @@ if(SDL_ASSEMBLY)
     endif()
 
     if(SDL_ARMNEON)
-      set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+      cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x assembler-with-cpp")
       check_c_source_compiles("
         .text
@@ -978,7 +978,7 @@ if(SDL_ASSEMBLY)
         pld [r0]
         vmovn.u16 d0, q0
       " ARMNEON_FOUND)
-      set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
+      cmake_pop_check_state()
 
       if(ARMNEON_FOUND)
         set(HAVE_ARMNEON TRUE)
