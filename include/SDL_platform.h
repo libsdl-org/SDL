@@ -98,7 +98,8 @@
 #if TARGET_OS_TV
 #undef __TVOS__
 #define __TVOS__ 1
-#elif TARGET_OS_IPHONE
+#endif
+#if TARGET_OS_IPHONE
 #undef __IOS__
 #define __IOS__ 1
 #else
