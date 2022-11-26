@@ -1156,11 +1156,18 @@ if(SDL_LIBC)
     check_struct_has_member("struct sigaction" "sa_sigaction" "signal.h" HAVE_SA_SIGACTION)
   endif()
 else()
-  if(WINDOWS)
-    set(HAVE_STDARG_H 1)
-    set(HAVE_STDDEF_H 1)
-    check_include_file(stdint.h HAVE_STDINT_H)
-  endif()
+  set(headers
+    stdarg.h
+    stddef.h
+    stdint.h
+  )
+  foreach(_HEADER ${headers})
+    string(TOUPPER "${_HEADER}" HEADER_IDENTIFIER)
+    string(REGEX REPLACE "[./]" "_" HEADER_IDENTIFIER "${HEADER_IDENTIFIER}")
+    set(LIBC_HAS_VAR "LIBC_HAS_${HEADER_IDENTIFIER}")
+    check_include_file("${_HEADER}" "${LIBC_HAS_VAR}")
+    set(HAVE_${HEADER_IDENTIFIER} ${${LIBC_HAS_VAR}})
+  endforeach()
 endif()
 
 
