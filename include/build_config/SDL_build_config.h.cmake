@@ -52,7 +52,6 @@
 #if HAVE_LIBC
 
 /* Useful headers */
-#cmakedefine STDC_HEADERS 1
 #cmakedefine HAVE_ALLOCA_H 1
 #cmakedefine HAVE_CTYPE_H 1
 #cmakedefine HAVE_FLOAT_H 1

@@ -309,7 +309,10 @@ windows_file_close(SDL_RWops * context)
 }
 #endif /* defined(__WIN32__) || defined(__GDK__) */
 
+
 #if defined(HAVE_STDIO_H)  && !(defined(__WIN32__) || defined(__GDK__))
+
+/* Functions to read/write stdio file pointers. Not used for windows. */
 
 #ifdef HAVE_FOPEN64
 #define fopen   fopen64
@@ -346,8 +349,6 @@ windows_file_close(SDL_RWops * context)
 #endif
 #define fseek_off_t long
 #endif
-
-/* Functions to read/write stdio file pointers */
 
 static Sint64 SDLCALL
 stdio_size(SDL_RWops * context)
@@ -429,7 +430,6 @@ stdio_close(SDL_RWops * context)
     int status = 0;
     if (context) {
         if (context->hidden.stdio.autoclose) {
-            /* WARNING:  Check the return value here! */
             if (fclose((FILE *)context->hidden.stdio.fp) != 0) {
                 status = SDL_Error(SDL_EFWRITE);
             }
@@ -438,7 +438,27 @@ stdio_close(SDL_RWops * context)
     }
     return status;
 }
-#endif /* !HAVE_STDIO_H */
+
+static SDL_RWops *
+SDL_RWFromFP(void *fp, SDL_bool autoclose)
+{
+    SDL_RWops *rwops = NULL;
+
+    rwops = SDL_AllocRW();
+    if (rwops != NULL) {
+        rwops->size = stdio_size;
+        rwops->seek = stdio_seek;
+        rwops->read = stdio_read;
+        rwops->write = stdio_write;
+        rwops->close = stdio_close;
+        rwops->hidden.stdio.fp = fp;
+        rwops->hidden.stdio.autoclose = autoclose;
+        rwops->type = SDL_RWOPS_STDFILE;
+    }
+    return rwops;
+}
+#endif /* !HAVE_STDIO_H && !(__WIN32__ || __GDK__) */
+
 
 /* Functions to read/write memory pointers */
 
@@ -528,28 +548,6 @@ mem_close(SDL_RWops * context)
 
 /* Functions to create SDL_RWops structures from various data sources */
 
-#if defined(HAVE_STDIO_H) && !(defined(__WIN32__) || defined(__GDK__))
-/* this is used a helper for SDL_RWFromFile(), but not for windows. */
-static SDL_RWops *
-SDL_RWFromFP(void *fp, SDL_bool autoclose)
-{
-    SDL_RWops *rwops = NULL;
-
-    rwops = SDL_AllocRW();
-    if (rwops != NULL) {
-        rwops->size = stdio_size;
-        rwops->seek = stdio_seek;
-        rwops->read = stdio_read;
-        rwops->write = stdio_write;
-        rwops->close = stdio_close;
-        rwops->hidden.stdio.fp = fp;
-        rwops->hidden.stdio.autoclose = autoclose;
-        rwops->type = SDL_RWOPS_STDFILE;
-    }
-    return rwops;
-}
-#endif /* HAVE_STDIO_H */
-
 SDL_RWops *
 SDL_RWFromFile(const char *file, const char *mode)
 {
@@ -559,7 +557,7 @@ SDL_RWFromFile(const char *file, const char *mode)
         return NULL;
     }
 #if defined(__ANDROID__)
-#ifdef HAVE_STDIO_H
+    #ifdef HAVE_STDIO_H
     /* Try to open the file on the filesystem first */
     if (*file == '/') {
         FILE *fp = fopen(file, mode);
@@ -583,7 +581,7 @@ SDL_RWFromFile(const char *file, const char *mode)
             }
         }
     }
-#endif /* HAVE_STDIO_H */
+    #endif /* HAVE_STDIO_H */
 
     /* Try to open the file from the asset system */
     rwops = SDL_AllocRW();

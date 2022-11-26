@@ -74,7 +74,7 @@
 # include <stdarg.h>
 #endif
 #ifdef HAVE_STRING_H
-# if !defined(STDC_HEADERS) && defined(HAVE_MEMORY_H)
+# ifdef HAVE_MEMORY_H
 #  include <memory.h>
 # endif
 # include <string.h>

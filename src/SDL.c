@@ -500,13 +500,20 @@ SDL_Quit(void)
 void
 SDL_GetVersion(SDL_version * ver)
 {
-    if (ver == NULL) {
-        return;
+    static SDL_bool check_hint = SDL_TRUE;
+    static SDL_bool legacy_version = SDL_FALSE;
+
+    if (ver == NULL) {        return;
     }
 
     SDL_VERSION(ver);
 
-    if (SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE)) {
+    if (check_hint) {
+        check_hint = SDL_FALSE;
+        legacy_version = SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE);
+    }
+
+    if (legacy_version) {
         /* Prior to SDL 2.24.0, the patch version was incremented with every release */
         ver->patch = ver->minor;
         ver->minor = 0;
