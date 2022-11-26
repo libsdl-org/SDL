@@ -436,7 +436,7 @@ stdio_close(SDL_RWops * context)
     return status;
 }
 
-static SDL_INLINE SDL_RWops *
+static SDL_RWops *
 SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
