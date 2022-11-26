@@ -45,7 +45,8 @@ OSStatus AEHandler(EventHandlerCallRef inCaller, EventRef inEvent, void* inRefco
 	
     // Events of type kEventAppleEvent must be removed from the queue 
     //  before being passed to AEProcessAppleEvent. 
-    if (IsEventInQueue(GetMainEventQueue(), inEvent)) { 
+    if (IsEventInQueue(GetMainEventQueue(), inEvent)) 
+    { 
         // RemoveEventFromQueue will release the event, which will 
         //  destroy it if we don't retain it first. 
         RetainEvent(inEvent); 
@@ -55,9 +56,8 @@ OSStatus AEHandler(EventHandlerCallRef inCaller, EventRef inEvent, void* inRefco
     // Convert the event ref to the type AEProcessAppleEvent expects. 
     ConvertEventRefToEventRecord(inEvent, &eventRecord); 
     ignoreErrForThisSample = AEProcessAppleEvent(&eventRecord); 
-    if (release) {
-        ReleaseEvent(inEvent);
-    } 
+    if (release) 
+        ReleaseEvent(inEvent); 
     // This Carbon event has been handled, even if no AppleEvent handlers 
     //  were installed for the Apple event. 
     return noErr; 

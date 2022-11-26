@@ -243,9 +243,8 @@ static void register_error(hid_device *device, const char *op)
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPWSTR)&msg, 0/*sz*/,
 		NULL);
-	if (!count) {
+	if (!count)
 		return;
-	}
 	
 	/* Get rid of the CR and LF that FormatMessage() sticks at the
 	   end of the message. Thanks Microsoft! */
@@ -283,7 +282,8 @@ static int lookup_functions()
 		RESOLVE(HidD_SetNumInputBuffers);
 		RESOLVE(HidD_SetOutputReport);
 #undef RESOLVE
-	} else
+	}
+	else
 		return -1;
 
 	return 0;
@@ -466,7 +466,9 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				           SPDRP_DRIVER, NULL, (PBYTE)driver_name, sizeof(driver_name), NULL);
 				if (!res)
 					goto cont;
-			} else {
+			}
+			else
+			{
 				goto cont;
 			}
 		}
@@ -523,7 +525,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				if (nt_res != HIDP_STATUS_SUCCESS) {
 					goto cont_close;
 				}
-			} else {
+			}
+			else {
 				goto cont_close;
 			}
 
@@ -542,7 +545,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			tmp = (struct hid_device_info*) calloc(1, sizeof(struct hid_device_info));
 			if (cur_dev) {
 				cur_dev->next = tmp;
-			} else {
+			}
+			else {
 				root = tmp;
 			}
 			cur_dev = tmp;
@@ -556,7 +560,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				len = strlen(str);
 				cur_dev->path = (char*) calloc(len+1, sizeof(char));
 				memcpy(cur_dev->path, str, len+1);
-			} else
+			}
+			else
 				cur_dev->path = NULL;
 
 			/* Serial Number */
@@ -657,7 +662,8 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 					path_to_open = cur_dev->path;
 					break;
 				}
-			} else {
+			}
+			else {
 				path_to_open = cur_dev->path;
 				break;
 			}
@@ -787,7 +793,8 @@ static int hid_write_timeout(hid_device *dev, const unsigned char *data, size_t 
 
 	/* Wait here until the write is done. This makes hid_write() synchronous. */
 	res = WaitForSingleObject(dev->write_ol.hEvent, milliseconds);
-	if (res != WAIT_OBJECT_0) {
+	if (res != WAIT_OBJECT_0)
+	{
 		// There was a Timeout.
 		bytes_written = (DWORD) -1;
 		register_error(dev, "WriteFile/WaitForSingleObject Timeout");
@@ -867,7 +874,8 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 			bytes_read--;
 			copy_len = length > bytes_read ? bytes_read : length;
 			memcpy(data, dev->read_buf+1, copy_len);
-		} else {
+		}
+		else {
 			/* Copy the whole buffer, report number and all. */
 			copy_len = length > bytes_read ? bytes_read : length;
 			memcpy(data, dev->read_buf, copy_len);
@@ -954,9 +962,8 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 	typedef BOOL (WINAPI *CancelIoEx_t)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
 	CancelIoEx_t CancelIoExFunc = (CancelIoEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CancelIoEx");
 
-	if (dev == NULL) {
+	if (!dev)
 		return;
-	}
 
 	if (CancelIoExFunc) {
 		CancelIoExFunc(dev->device_handle, NULL);

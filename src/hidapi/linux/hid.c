@@ -179,7 +179,8 @@ static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
 			else
 				data_len = 0; /* malformed report */
 			key_size = 3;
-		} else {
+		}
+		else {
 			/* This is a Short Item. The bottom two bits of the
 			   key contain the size code for the data section
 			   (value) for this key.  Refer to the HID
@@ -230,12 +231,12 @@ parse_uevent_info(const char *uevent, unsigned *bus_type,
 	int found_serial = 0;
 	int found_name = 0;
 
-	if (uevent == NULL) {
+	if (!uevent) {
 		return 0;
 	}
 
 	tmp = strdup(uevent);
-	if (tmp == NULL) {
+	if (!tmp) {
 		return 0;
 	}
 
@@ -244,7 +245,7 @@ parse_uevent_info(const char *uevent, unsigned *bus_type,
 		/* line: "KEY=value" */
 		key = line;
 		value = strchr(line, '=');
-		if (value == NULL) {
+		if (!value) {
 			goto next_line;
 		}
 		*value = '\0';
@@ -274,7 +275,7 @@ next_line:
 	}
 
 	free(tmp);
-	return found_id && found_name && found_serial;
+	return (found_id && found_name && found_serial);
 }
 
 static int is_BLE(hid_device *dev)
@@ -286,7 +287,7 @@ static int is_BLE(hid_device *dev)
 
 	/* Create the udev object */
 	udev = udev_new();
-	if (udev == NULL) {
+	if (!udev) {
 		printf("Can't create udev\n");
 		return -1;
 	}
@@ -352,7 +353,7 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 
 	/* Create the udev object */
 	udev = udev_new();
-	if (udev == NULL) {
+	if (!udev) {
 		printf("Can't create udev\n");
 		return -1;
 	}
@@ -410,7 +411,8 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 						ret = -1;
 						break;
 				}
-			} else {
+			}
+			else {
 				/* This is a USB device. Find its parent USB Device node. */
 				parent = udev_device_get_parent_with_subsystem_devtype(
 					   udev_dev,
@@ -457,9 +459,8 @@ int HID_API_EXPORT hid_init(void)
 
 	/* Set the locale if it's not set. */
 	locale = setlocale(LC_CTYPE, NULL);
-	if (locale == NULL) {
+	if (!locale)
 		setlocale(LC_CTYPE, "");
-	}
 
 	kernel_version = detect_kernel_version();
 
@@ -573,7 +574,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			tmp = (struct hid_device_info *)calloc(1, sizeof(struct hid_device_info));
 			if (cur_dev) {
 				cur_dev->next = tmp;
-			} else {
+			}
+			else {
 				root = tmp;
 			}
 			prev_dev = cur_dev;
@@ -619,7 +621,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						if (prev_dev) {
 							prev_dev->next = NULL;
 							cur_dev = prev_dev;
-						} else {
+						}
+						else {
 							cur_dev = root = NULL;
 						}
 
@@ -705,7 +708,8 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 					path_to_open = cur_dev->path;
 					break;
 				}
-			} else {
+			}
+			else {
 				path_to_open = cur_dev->path;
 				break;
 			}
@@ -745,9 +749,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 		/* Get Report Descriptor Size */
 		res = ioctl(dev->device_handle, HIDIOCGRDESCSIZE, &desc_size);
-		if (res < 0) {
+		if (res < 0)
 			perror("HIDIOCGRDESCSIZE");
-		}
 
 
 		/* Get Report Descriptor */
@@ -765,7 +768,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 		dev->needs_ble_hack = (is_BLE(dev) == 1);
 
 		return dev;
-	} else {
+	}
+	else {
 		/* Unable to open any devices. */
 		free(dev);
 		return NULL;
@@ -804,19 +808,18 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 		if (ret == -1 || ret == 0) {
 			/* Error or timeout */
 			return ret;
-		} else {
+		}
+		else {
 			/* Check for errors on the file descriptor. This will
 			   indicate a device disconnection. */
-			if (fds.revents & (POLLERR | POLLHUP | POLLNVAL)) {
+			if (fds.revents & (POLLERR | POLLHUP | POLLNVAL))
 				return -1;
-			}
 		}
 	}
 
 	bytes_read = read(dev->device_handle, data, length);
-	if (bytes_read < 0 && (errno == EAGAIN || errno == EINPROGRESS)) {
+	if (bytes_read < 0 && (errno == EAGAIN || errno == EINPROGRESS))
 		bytes_read = 0;
-	}
 
 	if (bytes_read >= 0 &&
 	    kernel_version != 0 &&
@@ -832,7 +835,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 
 int HID_API_EXPORT hid_read(hid_device *dev, unsigned char *data, size_t length)
 {
-	return hid_read_timeout(dev, data, length, (dev->blocking) ? -1 : 0);
+	return hid_read_timeout(dev, data, length, (dev->blocking)? -1: 0);
 }
 
 int HID_API_EXPORT hid_set_nonblocking(hid_device *dev, int nonblock)
@@ -858,9 +861,8 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 			continue;
 		}
 
-		if (res < 0) {
+		if (res < 0)
 			perror("ioctl (SFEATURE)");
-		}
 		break;
 	}
 	return res;
@@ -893,9 +895,8 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 
 void HID_API_EXPORT hid_close(hid_device *dev)
 {
-	if (dev == NULL) {
+	if (!dev)
 		return;
-	}
 	close(dev->device_handle);
 	free(dev);
 }

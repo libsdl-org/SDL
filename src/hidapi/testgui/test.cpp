@@ -195,9 +195,8 @@ MainWindow::MainWindow(FXApp *app)
 
 MainWindow::~MainWindow()
 {
-	if (connected_device) {
+	if (connected_device)
 		hid_close(connected_device);
-	}
 	hid_exit();
 	delete title_font;
 }
@@ -222,22 +221,18 @@ MainWindow::create()
 long
 MainWindow::onConnect(FXObject *sender, FXSelector sel, void *ptr)
 {
-	if (connected_device != NULL) {
+	if (connected_device != NULL)
 		return 1;
-	}
 	
 	FXint cur_item = device_list->getCurrentItem();
-	if (cur_item < 0) {
+	if (cur_item < 0)
 		return -1;
-	}
 	FXListItem *item = device_list->getItem(cur_item);
-	if (item == NULL) {
+	if (!item)
 		return -1;
-	}
 	struct hid_device_info *device_info = (struct hid_device_info*) item->getData();
-	if (device_info == NULL) {
+	if (!device_info)
 		return -1;
-	}
 	
 	connected_device =  hid_open_path(device_info->path);
 	
@@ -366,7 +361,8 @@ MainWindow::getLengthFromTextField(FXTextField *tf)
 				return -1;
 			}
 			return len;
-		} else
+		}
+		else
 			return -1;
 	}
 
@@ -460,12 +456,10 @@ MainWindow::onGetFeatureReport(FXObject *sender, FXSelector sel, void *ptr)
 			FXString t;
 			t.format("%02hhx ", buf[i]);
 			s += t;
-			if ((i + 1) % 4 == 0) {
+			if ((i+1) % 4 == 0)
 				s += " ";
-			}
-			if ((i + 1) % 16 == 0) {
+			if ((i+1) % 16 == 0)
 				s += "\n";
-			}
 		}
 		s += "\n";
 		input_text->appendText(s);
@@ -495,12 +489,10 @@ MainWindow::onTimeout(FXObject *sender, FXSelector sel, void *ptr)
 			FXString t;
 			t.format("%02hhx ", buf[i]);
 			s += t;
-			if ((i + 1) % 4 == 0) {
+			if ((i+1) % 4 == 0)
 				s += " ";
-			}
-			if ((i + 1) % 16 == 0) {
+			if ((i+1) % 16 == 0)
 				s += "\n";
-			}
 		}
 		s += "\n";
 		input_text->appendText(s);

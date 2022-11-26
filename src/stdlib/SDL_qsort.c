@@ -303,12 +303,8 @@ typedef struct { char * first; char * last; } stack_entry;
 /* and so is the partitioning logic: */
 #define Partition(swapper,sz) {			\
   do {						\
-    while (compare(first, pivot) < 0) {         \
-            first += sz;                        \
-    }                                           \
-    while (compare(pivot, last) < 0) {          \
-            last -= sz;                         \
-    }	                                        \
+    while (compare(first,pivot)<0) first+=sz;	\
+    while (compare(pivot,last)<0) last-=sz;	\
     if (first<last) {				\
       swapper(first,last);			\
       first+=sz; last-=sz; }			\
@@ -517,9 +513,7 @@ fprintf(stderr, "after partitioning first=#%lu last=#%lu\n", (first-(char*)base)
     *(int*)pivot=*(int*)first;
     for (;compare(pl,pivot)>0;pr=pl,--pl) {
       *pr=*pl; }
-    if (pr != (int *)first) {
-      *pr = *(int *)pivot;
-    }
+    if (pr!=(int*)first) *pr=*(int*)pivot;
   }
   free(pivot);
 }
@@ -529,9 +523,7 @@ fprintf(stderr, "after partitioning first=#%lu last=#%lu\n", (first-(char*)base)
 extern void qsortG(void *base, size_t nmemb, size_t size,
            int (*compare)(const void *, const void *)) {
 
-  if (nmemb <= 1) {
-    return;
-  }
+  if (nmemb<=1) return;
   if (((size_t)base|size)&(WORD_BYTES-1))
     qsort_nonaligned(base,nmemb,size,compare);
   else if (size!=WORD_BYTES)

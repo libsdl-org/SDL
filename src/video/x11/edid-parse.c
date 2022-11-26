@@ -50,9 +50,8 @@ get_bits (int in, int begin, int end)
 static int
 decode_header (const uchar *edid)
 {
-    if (SDL_memcmp(edid, "\x00\xff\xff\xff\xff\xff\xff\x00", 8) == 0) {
+    if (SDL_memcmp (edid, "\x00\xff\xff\xff\xff\xff\xff\x00", 8) == 0)
 	return TRUE;
-    }
     return FALSE;
 }
 
@@ -97,10 +96,13 @@ decode_vendor_and_product_identification (const uchar *edid, MonitorInfo *info)
 	break;
     }
 
-    if (is_model_year) {
+    if (is_model_year)
+    {
 	info->production_year = -1;
 	info->model_year = 1990 + edid[0x11];
-    } else {
+    }
+    else
+    {
 	info->production_year = 1990 + edid[0x11];
 	info->model_year = -1;
     }
@@ -123,7 +125,8 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
     /* Digital vs Analog */
     info->is_digital = get_bit (edid[0x14], 7);
 
-    if (info->is_digital) {
+    if (info->is_digital)
+    {
 	int bits;
 	
 	static const int bit_depth[8] =
@@ -145,7 +148,9 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 	    info->ad.digital.interface = interfaces[bits];
 	else
 	    info->ad.digital.interface = UNDEFINED;
-    } else {
+    }
+    else
+    {
 	int bits = get_bits (edid[0x14], 5, 6);
 	
 	static const double levels[][3] =
@@ -170,20 +175,27 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
     }
 
     /* Screen Size / Aspect Ratio */
-    if (edid[0x15] == 0 && edid[0x16] == 0) {
+    if (edid[0x15] == 0 && edid[0x16] == 0)
+    {
 	info->width_mm = -1;
 	info->height_mm = -1;
 	info->aspect_ratio = -1.0;
-    } else if (edid[0x16] == 0) {
+    }
+    else if (edid[0x16] == 0)
+    {
 	info->width_mm = -1;
 	info->height_mm = -1; 
 	info->aspect_ratio = 100.0 / (edid[0x15] + 99);
-    } else if (edid[0x15] == 0) {
+    }
+    else if (edid[0x15] == 0)
+    {
 	info->width_mm = -1;
 	info->height_mm = -1;
 	info->aspect_ratio = 100.0 / (edid[0x16] + 99);
 	info->aspect_ratio = 1/info->aspect_ratio; /* portrait */
-    } else {
+    }
+    else
+    {
 	info->width_mm = 10 * edid[0x15];
 	info->height_mm = 10 * edid[0x16];
     }
@@ -199,15 +211,16 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
     info->suspend = get_bit (edid[0x18], 6);
     info->active_off = get_bit (edid[0x18], 5);
 
-    if (info->is_digital) {
+    if (info->is_digital)
+    {
 	info->ad.digital.rgb444 = TRUE;
-	if (get_bit(edid[0x18], 3)) {
+	if (get_bit (edid[0x18], 3))
 	    info->ad.digital.ycrcb444 = 1;
-	}
-	if (get_bit(edid[0x18], 4)) {
+	if (get_bit (edid[0x18], 4))
 	    info->ad.digital.ycrcb422 = 1;
-	}
-    } else {
+    }
+    else
+    {
 	int bits = get_bits (edid[0x18], 3, 4);
 	ColorType color_type[4] =
 	{
@@ -235,9 +248,8 @@ decode_fraction (int high, int low)
 
     high = (high << 2) | low;
 
-    for (i = 0; i < 10; ++i) {
-	result += get_bit(high, i) * SDL_pow(2, i - 10);
-    }
+    for (i = 0; i < 10; ++i)
+	result += get_bit (high, i) * SDL_pow (2, i - 10);
 
     return result;
 }
@@ -297,13 +309,14 @@ decode_established_timings (const uchar *edid, MonitorInfo *info)
     int i, j, idx;
 
     idx = 0;
-    for (i = 0; i < 3; ++i) {
-	for (j = 0; j < 8; ++j) {
+    for (i = 0; i < 3; ++i)
+    {
+	for (j = 0; j < 8; ++j)
+	{
 	    int byte = edid[0x23 + i];
 
-	    if (get_bit(byte, j) && established[i][j].frequency != 0) {
+	    if (get_bit (byte, j) && established[i][j].frequency != 0)
 		info->established[idx++] = established[i][j];
-	    }
 	}
     }
     return TRUE;
@@ -314,11 +327,13 @@ decode_standard_timings (const uchar *edid, MonitorInfo *info)
 {
     int i;
     
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++)
+    {
 	int first = edid[0x26 + 2 * i];
 	int second = edid[0x27 + 2 * i];
 
-	if (first != 0x01 && second != 0x01) {
+	if (first != 0x01 && second != 0x01)
+	{
 	    int w = 8 * (first + 31);
 	    int h = 0;
 
@@ -343,14 +358,20 @@ static void
 decode_lf_string (const uchar *s, int n_chars, char *result)
 {
     int i;
-    for (i = 0; i < n_chars; ++i) {
-	if (s[i] == 0x0a) {
+    for (i = 0; i < n_chars; ++i)
+    {
+	if (s[i] == 0x0a)
+	{
 	    *result++ = '\0';
 	    break;
-	} else if (s[i] == 0x00) {
+	}
+	else if (s[i] == 0x00)
+	{
 	    /* Convert embedded 0's to spaces */
 	    *result++ = ' ';
-	} else {
+	}
+	else
+	{
 	    *result++ = s[i];
 	}
     }
@@ -432,19 +453,25 @@ decode_detailed_timing (const uchar *timing,
     bits = timing[0x11];
 
     detailed->digital_sync = get_bit (bits, 4);
-    if (detailed->digital_sync) {
+    if (detailed->digital_sync)
+    {
 	detailed->ad.digital.composite = !get_bit (bits, 3);
 
-	if (detailed->ad.digital.composite) {
+	if (detailed->ad.digital.composite)
+	{
 	    detailed->ad.digital.serrations = get_bit (bits, 2);
 	    detailed->ad.digital.negative_vsync = FALSE;
-	} else {
+	}
+	else
+	{
 	    detailed->ad.digital.serrations = FALSE;
 	    detailed->ad.digital.negative_vsync = !get_bit (bits, 2);
 	}
 
 	detailed->ad.digital.negative_hsync = !get_bit (bits, 0);
-    } else {
+    }
+    else
+    {
 	detailed->ad.analog.bipolar = get_bit (bits, 3);
 	detailed->ad.analog.serrations = get_bit (bits, 2);
 	detailed->ad.analog.sync_on_green = !get_bit (bits, 1);
@@ -459,12 +486,16 @@ decode_descriptors (const uchar *edid, MonitorInfo *info)
     
     timing_idx = 0;
     
-    for (i = 0; i < 4; ++i) {
+    for (i = 0; i < 4; ++i)
+    {
 	int index = 0x36 + i * 18;
 
-	if (edid[index + 0] == 0x00 && edid[index + 1] == 0x00) {
+	if (edid[index + 0] == 0x00 && edid[index + 1] == 0x00)
+	{
 	    decode_display_descriptor (edid + index, info);
-	} else {
+	}
+	else
+	{
 	    decode_detailed_timing (
 		edid + index, &(info->detailed_timings[timing_idx++]));
 	}
@@ -482,9 +513,8 @@ decode_check_sum (const uchar *edid,
     int i;
     uchar check = 0;
 
-    for (i = 0; i < 128; ++i) {
+    for (i = 0; i < 128; ++i)
 	check += edid[i];
-    }
 
     info->checksum = check;
 }
@@ -546,7 +576,8 @@ dump_monitor_info (MonitorInfo *info)
     printf ("EDID revision: %d.%d\n", info->major_version, info->minor_version);
     
     printf ("Display is %s\n", info->is_digital? "digital" : "analog");
-    if (info->is_digital) {
+    if (info->is_digital)
+    {
 	const char *interface;
 	if (info->ad.digital.bits_per_primary != -1)
 	    printf ("Bits Per Primary: %d\n", info->ad.digital.bits_per_primary);
@@ -568,7 +599,9 @@ dump_monitor_info (MonitorInfo *info)
 	printf ("RGB 4:4:4: %s\n", yesno (info->ad.digital.rgb444));
 	printf ("YCrCb 4:4:4: %s\n", yesno (info->ad.digital.ycrcb444));
 	printf ("YCrCb 4:2:2: %s\n", yesno (info->ad.digital.ycrcb422));
-    } else {
+    }
+    else
+    {
        const char *s;
 	printf ("Video Signal Level: %f\n", info->ad.analog.video_signal_level);
 	printf ("Sync Signal Level: %f\n", info->ad.analog.sync_signal_level);
@@ -635,12 +668,12 @@ dump_monitor_info (MonitorInfo *info)
     
     printf ("Established Timings:\n");
     
-    for (i = 0; i < 24; ++i) {
+    for (i = 0; i < 24; ++i)
+    {
 	Timing *timing = &(info->established[i]);
 	
-	if (timing->frequency == 0) {
+	if (timing->frequency == 0)
 	    break;
-	}
 	
 	printf ("  %d x %d @ %d Hz\n",
 		timing->width, timing->height, timing->frequency);
@@ -648,18 +681,19 @@ dump_monitor_info (MonitorInfo *info)
     }
     
     printf ("Standard Timings:\n");
-    for (i = 0; i < 8; ++i) {
+    for (i = 0; i < 8; ++i)
+    {
 	Timing *timing = &(info->standard[i]);
 	
-	if (timing->frequency == 0) {
+	if (timing->frequency == 0)
 	    break;
-	}
 	
 	printf ("  %d x %d @ %d Hz\n",
 		timing->width, timing->height, timing->frequency);
     }
     
-    for (i = 0; i < info->n_detailed_timings; ++i) {
+    for (i = 0; i < info->n_detailed_timings; ++i)
+    {
 	DetailedTiming *timing = &(info->detailed_timings[i]);
 	const char *s;
 	
@@ -692,7 +726,8 @@ dump_monitor_info (MonitorInfo *info)
 	}
 	printf ("  Stereo: %s\n", s);
 	
-	if (timing->digital_sync) {
+	if (timing->digital_sync)
+	{
 	    printf ("  Digital Sync:\n");
 	    printf ("    composite: %s\n", yesno (timing->ad.digital.composite));
 	    printf ("    serrations: %s\n", yesno (timing->ad.digital.serrations));
@@ -700,7 +735,9 @@ dump_monitor_info (MonitorInfo *info)
 		    yesno (timing->ad.digital.negative_vsync));
 	    printf ("    negative hsync: %s\n",
 		    yesno (timing->ad.digital.negative_hsync));
-	} else {
+	}
+	else
+	{
 	    printf ("  Analog Sync:\n");
 	    printf ("    bipolar: %s\n", yesno (timing->ad.analog.bipolar));
 	    printf ("    serrations: %s\n", yesno (timing->ad.analog.serrations));
