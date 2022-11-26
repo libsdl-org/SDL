@@ -92,30 +92,25 @@ double attribute_hidden __ieee754_log(double x)
 
 	k=0;
 	if (hx < 0x00100000) {			/* x < 2**-1022  */
-	    if (((hx & 0x7fffffff) | lx) == 0) {
-		return -two54 / zero;
-	    }		/* log(+-0)=-inf */
-	    if (hx < 0) {
-		return (x - x) / zero;
-	    }	/* log(-#) = NaN */
+	    if (((hx&0x7fffffff)|lx)==0)
+		return -two54/zero;		/* log(+-0)=-inf */
+	    if (hx<0) return (x-x)/zero;	/* log(-#) = NaN */
 	    k -= 54; x *= two54; /* subnormal number, scale up x */
 	    GET_HIGH_WORD(hx,x);
 	}
-	if (hx >= 0x7ff00000) {
-	    return x + x;
-	}
+	if (hx >= 0x7ff00000) return x+x;
 	k += (hx>>20)-1023;
 	hx &= 0x000fffff;
 	i = (hx+0x95f64)&0x100000;
 	SET_HIGH_WORD(x,hx|(i^0x3ff00000));	/* normalize x or x/2 */
 	k += (i>>20);
 	f = x-1.0;
-	if ((0x000fffff&(2+hx))<3) {	/* |f| < 2**-20 */
-	    if (f==zero) {if (k==0) return zero;  else {dk=(double)k;
+	if((0x000fffff&(2+hx))<3) {	/* |f| < 2**-20 */
+	    if(f==zero) {if(k==0) return zero;  else {dk=(double)k;
 				 return dk*ln2_hi+dk*ln2_lo;}
 	    }
 	    R = f*f*(0.5-0.33333333333333333*f);
-	    if (k==0) return f-R; else {dk=(double)k;
+	    if(k==0) return f-R; else {dk=(double)k;
 	    	     return dk*ln2_hi-((R-dk*ln2_lo)-f);}
 	}
  	s = f/(2.0+f);
@@ -128,12 +123,12 @@ double attribute_hidden __ieee754_log(double x)
 	t2= z*(Lg1+w*(Lg3+w*(Lg5+w*Lg7)));
 	i |= j;
 	R = t2+t1;
-	if (i>0) {
+	if(i>0) {
 	    hfsq=0.5*f*f;
-	    if (k==0) return f-(hfsq-s*(hfsq+R)); else
+	    if(k==0) return f-(hfsq-s*(hfsq+R)); else
 		     return dk*ln2_hi-((hfsq-(s*(hfsq+R)+dk*ln2_lo))-f);
 	} else {
-	    if (k==0) return f-s*(f-R); else
+	    if(k==0) return f-s*(f-R); else
 		     return dk*ln2_hi-((s*(f-R)-dk*ln2_lo)-f);
 	}
 }
@@ -145,13 +140,10 @@ double attribute_hidden __ieee754_log(double x)
 double log(double x)
 {
 	double z = __ieee754_log(x);
-	if (_LIB_VERSION == _IEEE_ || isnan(x) || x > 0.0) {
+	if (_LIB_VERSION == _IEEE_ || isnan(x) || x > 0.0)
 		return z;
-	}
-	if (x == 0.0) {
+	if (x == 0.0)
 		return __kernel_standard(x, x, 16); /* log(0) */
-	}
-
 	return __kernel_standard(x, x, 17); /* log(x<0) */
 }
 #else

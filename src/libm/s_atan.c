@@ -75,22 +75,17 @@ double atan(double x)
 
 	GET_HIGH_WORD(hx,x);
 	ix = hx&0x7fffffff;
-	if (ix>=0x44100000) {	/* if |x| >= 2^66 */
+	if(ix>=0x44100000) {	/* if |x| >= 2^66 */
 	    u_int32_t low;
 	    GET_LOW_WORD(low,x);
-	    if (ix > 0x7ff00000 || (ix == 0x7ff00000 && (low != 0))) {
-		return x + x;
-	    }		/* NaN */
-	    if (hx>0) {
-          return  atanhi[3]+atanlo[3];
-       } else {
-          return -atanhi[3]-atanlo[3];
-       }
+	    if(ix>0x7ff00000||
+		(ix==0x7ff00000&&(low!=0)))
+		return x+x;		/* NaN */
+	    if(hx>0) return  atanhi[3]+atanlo[3];
+	    else     return -atanhi[3]-atanlo[3];
 	} if (ix < 0x3fdc0000) {	/* |x| < 0.4375 */
 	    if (ix < 0x3e200000) {	/* |x| < 2^-29 */
-		if (huge + x > one) {
-		return x;
-		}	/* raise inexact */
+		if(huge+x>one) return x;	/* raise inexact */
 	    }
 	    id = -1;
 	} else {
@@ -114,7 +109,8 @@ double atan(double x)
     /* break sum from i=0 to 10 aT[i]z**(i+1) into odd and even poly */
 	s1 = z*(aT[0]+w*(aT[2]+w*(aT[4]+w*(aT[6]+w*(aT[8]+w*aT[10])))));
 	s2 = w*(aT[1]+w*(aT[3]+w*(aT[5]+w*(aT[7]+w*aT[9]))));
-	if (id<0) return x - x*(s1+s2); else {
+	if (id<0) return x - x*(s1+s2);
+	else {
 	    z = atanhi[id] - ((x*(s1+s2) - atanlo[id]) - x);
 	    return (hx<0)? -z:z;
 	}

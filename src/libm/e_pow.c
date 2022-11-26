@@ -119,14 +119,12 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	iy = hy&0x7fffffff;
 
     /* y==zero: x**0 = 1 */
-	if ((iy | ly) == 0) {
-		return one;
-	}
+	if((iy|ly)==0) return one;
 
     /* +-NaN return x+y */
-	if (ix > 0x7ff00000 || ((ix == 0x7ff00000) && (lx != 0)) || iy > 0x7ff00000 || ((iy == 0x7ff00000) && (ly != 0))) {
-		return x + y;
-	}
+	if(ix > 0x7ff00000 || ((ix==0x7ff00000)&&(lx!=0)) ||
+	   iy > 0x7ff00000 || ((iy==0x7ff00000)&&(ly!=0)))
+		return x+y;
 
     /* determine if y is an odd int when x < 0
      * yisint = 0	... y is not an integer
@@ -134,92 +132,68 @@ double attribute_hidden __ieee754_pow(double x, double y)
      * yisint = 2	... y is an even int
      */
 	yisint  = 0;
-	if (hx<0) {
-	    if (iy>=0x43400000) yisint = 2; /* even integer y */
-	    else if (iy>=0x3ff00000) {
+	if(hx<0) {
+	    if(iy>=0x43400000) yisint = 2; /* even integer y */
+	    else if(iy>=0x3ff00000) {
 		k = (iy>>20)-0x3ff;	   /* exponent */
-		if (k>20) {
+		if(k>20) {
 		    j = ly>>(52-k);
-		    if ((j << (52 - k)) == ly) {
-			yisint = 2 - (j & 1);
-		    }
-		} else if (ly==0) {
+		    if((j<<(52-k))==ly) yisint = 2-(j&1);
+		} else if(ly==0) {
 		    j = iy>>(20-k);
-		    if ((j << (20 - k)) == iy) {
-			yisint = 2 - (j & 1);
-		    }
+		    if((j<<(20-k))==iy) yisint = 2-(j&1);
 		}
 	    }
 	}
 
     /* special value of y */
-	if (ly==0) {
+	if(ly==0) {
 	    if (iy==0x7ff00000) {       /* y is +-inf */
-	        if (((ix - 0x3ff00000) | lx) == 0) {
-		    return one;
-	        }	        /* +-1**+-inf is 1 (yes, weird rule) */
-	        if (ix >= 0x3ff00000) {
-		    return (hy >= 0) ? y : zero; /* (|x|>1)**+-inf = inf,0 */
-		}
-
+	        if (((ix-0x3ff00000)|lx)==0)
+		    return one;	        /* +-1**+-inf is 1 (yes, weird rule) */
+	        if (ix >= 0x3ff00000)   /* (|x|>1)**+-inf = inf,0 */
+		    return (hy>=0) ? y : zero;
 	        /* (|x|<1)**-,+inf = inf,0 */
 		return (hy<0) ? -y : zero;
 	    }
-	    if (iy==0x3ff00000) {	/* y is  +-1 */
-		if (hy<0) return one/x; else return x;
+	    if(iy==0x3ff00000) {	/* y is  +-1 */
+		if(hy<0) return one/x; else return x;
 	    }
-	    if (hy == 0x40000000) {
-		return x * x; /* y is  2 */
-	    }
-
-	    if (hy==0x3fe00000) {	/* y is  0.5 */
-		if (hx >= 0) {
+	    if(hy==0x40000000) return x*x; /* y is  2 */
+	    if(hy==0x3fe00000) {	/* y is  0.5 */
+		if(hx>=0)	/* x >= +0 */
 		    return __ieee754_sqrt(x);
-		}	/* x >= +0 */
 	    }
 	}
 
 	ax   = fabs(x);
     /* special value of x */
-	if (lx==0) {
-	    if (ix==0x7ff00000||ix==0||ix==0x3ff00000) {
+	if(lx==0) {
+	    if(ix==0x7ff00000||ix==0||ix==0x3ff00000){
 		z = ax;			/*x is +-0,+-inf,+-1*/
-		if (hy < 0) {
-		    z = one / z;
-		}	/* z = (1/|x|) */
-		if (hx<0) {
-		    if (((ix-0x3ff00000)|yisint)==0) {
+		if(hy<0) z = one/z;	/* z = (1/|x|) */
+		if(hx<0) {
+		    if(((ix-0x3ff00000)|yisint)==0) {
 			z = (z-z)/(z-z); /* (-1)**non-int is NaN */
-		    } else if (yisint == 1) {
-			    z = -z;
-		    }		/* (x<0)**odd = -(|x|**odd) */
+		    } else if(yisint==1)
+			z = -z;		/* (x<0)**odd = -(|x|**odd) */
 		}
 		return z;
 	    }
 	}
 
     /* (x<0)**(non-int) is NaN */
-	if (((((u_int32_t)hx >> 31) - 1) | yisint) == 0) {
-	    return (x - x) / (x - x);
-	}
+	if(((((u_int32_t)hx>>31)-1)|yisint)==0) return (x-x)/(x-x);
 
     /* |y| is huge */
-	if (iy>0x41e00000) { /* if |y| > 2**31 */
-	    if (iy>0x43f00000) {	/* if |y| > 2**64, must o/uflow */
-		if (ix <= 0x3fefffff) {
-		    return (hy < 0) ? huge * huge : tiny * tiny;
-		}
-		if (ix >= 0x3ff00000) {
-		    return (hy > 0) ? huge * huge : tiny * tiny;
-		}
+	if(iy>0x41e00000) { /* if |y| > 2**31 */
+	    if(iy>0x43f00000){	/* if |y| > 2**64, must o/uflow */
+		if(ix<=0x3fefffff) return (hy<0)? huge*huge:tiny*tiny;
+		if(ix>=0x3ff00000) return (hy>0)? huge*huge:tiny*tiny;
 	    }
 	/* over/underflow if x is not close to one */
-	    if (ix < 0x3fefffff) {
-		return (hy < 0) ? huge * huge : tiny * tiny;
-	    }
-	    if (ix > 0x3ff00000) {
-		return (hy > 0) ? huge * huge : tiny * tiny;
-	    }
+	    if(ix<0x3fefffff) return (hy<0)? huge*huge:tiny*tiny;
+	    if(ix>0x3ff00000) return (hy>0)? huge*huge:tiny*tiny;
 	/* now |1-x| is tiny <= 2**-20, suffice to compute
 	   log(x) by x-x^2/2+x^3/3-x^4/4 */
 	    t = x-1;		/* t has 20 trailing zeros */
@@ -233,13 +207,14 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	    double s2,s_h,s_l,t_h,t_l;
 	    n = 0;
 	/* take care subnormal number */
-	    if (ix<0x00100000) {ax *= two53; n -= 53; GET_HIGH_WORD(ix,ax); }
+	    if(ix<0x00100000)
+		{ax *= two53; n -= 53; GET_HIGH_WORD(ix,ax); }
 	    n  += ((ix)>>20)-0x3ff;
 	    j  = ix&0x000fffff;
 	/* determine interval */
 	    ix = j|0x3ff00000;		/* normalize ix */
-	    if (j<=0x3988E) k=0;		/* |x|<sqrt(3/2) */
-	    else if (j<0xBB67A) k=1;	/* |x|<sqrt(3)   */
+	    if(j<=0x3988E) k=0;		/* |x|<sqrt(3/2) */
+	    else if(j<0xBB67A) k=1;	/* |x|<sqrt(3)   */
 	    else {k=0;n+=1;ix -= 0x00100000;}
 	    SET_HIGH_WORD(ax,ix);
 
@@ -279,10 +254,8 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	}
 
 	s = one; /* s (sign of result -ve**odd) = -1 else = 1 */
-	if (((((u_int32_t)hx >> 31) - 1) | (yisint - 1)) == 0) {
-	    s = -one; /* (-ve)**(odd int) */
-	}
-
+	if(((((u_int32_t)hx>>31)-1)|(yisint-1))==0)
+	    s = -one;/* (-ve)**(odd int) */
 
     /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
 	y1  = y;
@@ -292,20 +265,16 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	z = p_l+p_h;
 	EXTRACT_WORDS(j,i,z);
 	if (j>=0x40900000) {				/* z >= 1024 */
-	    if (((j-0x40900000)|i)!=0)			/* if z > 1024 */
+	    if(((j-0x40900000)|i)!=0)			/* if z > 1024 */
 		return s*huge*huge;			/* overflow */
 	    else {
-		if (p_l + ovt > z - p_h) {
-		    return s * huge * huge;
-		}	/* overflow */
+		if(p_l+ovt>z-p_h) return s*huge*huge;	/* overflow */
 	    }
-	} else if ((j&0x7fffffff)>=0x4090cc00 ) {	/* z <= -1075 */
-	    if (((j-0xc090cc00)|i)!=0) 		/* z < -1075 */
+	} else if((j&0x7fffffff)>=0x4090cc00 ) {	/* z <= -1075 */
+	    if(((j-0xc090cc00)|i)!=0) 		/* z < -1075 */
 		return s*tiny*tiny;		/* underflow */
 	    else {
-		if (p_l <= z - p_h) {
-		    return s * tiny * tiny;
-		}	/* underflow */
+		if(p_l<=z-p_h) return s*tiny*tiny;	/* underflow */
 	    }
 	}
     /*
@@ -314,15 +283,13 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	i = j&0x7fffffff;
 	k = (i>>20)-0x3ff;
 	n = 0;
-	if (i>0x3fe00000) {		/* if |z| > 0.5, set n = [z+0.5] */
+	if(i>0x3fe00000) {		/* if |z| > 0.5, set n = [z+0.5] */
 	    n = j+(0x00100000>>(k+1));
 	    k = ((n&0x7fffffff)>>20)-0x3ff;	/* new k for n */
 	    t = zero;
 	    SET_HIGH_WORD(t,n&~(0x000fffff>>k));
 	    n = ((n&0x000fffff)|0x00100000)>>(20-k);
-	    if (j < 0) {
-		n = -n;
-	    }
+	    if(j<0) n = -n;
 	    p_h -= t;
 	}
 	t = p_l+p_h;
@@ -337,7 +304,7 @@ double attribute_hidden __ieee754_pow(double x, double y)
 	z  = one-(r-z);
 	GET_HIGH_WORD(j,z);
 	j += (n<<20);
-	if ((j>>20)<=0) z = scalbn(z,n);	/* subnormal output */
+	if((j>>20)<=0) z = scalbn(z,n);	/* subnormal output */
 	else SET_HIGH_WORD(z,j);
 	return s*z;
 }
@@ -349,40 +316,29 @@ double attribute_hidden __ieee754_pow(double x, double y)
 double pow(double x, double y)
 {
 	double z = __ieee754_pow(x, y);
-	if (_LIB_VERSION == _IEEE_ || isnan(y)) {
+	if (_LIB_VERSION == _IEEE_|| isnan(y))
 		return z;
-	}
 	if (isnan(x)) {
-		if (y == 0.0) {
+		if (y == 0.0)
 			return __kernel_standard(x, y, 42); /* pow(NaN,0.0) */
-		}
-
 		return z;
 	}
 	if (x == 0.0) {
-		if (y == 0.0) {
+		if (y == 0.0)
 	    		return __kernel_standard(x, y, 20); /* pow(0.0,0.0) */
-		}
-
-		if (isfinite(y) && y < 0.0) {
-			return __kernel_standard(x, y, 23); /* pow(0.0,negative) */
-		}
-
+		if (isfinite(y) && y < 0.0)
+			return __kernel_standard(x,y,23); /* pow(0.0,negative) */
 		return z;
 	}
 	if (!isfinite(z)) {
 		if (isfinite(x) && isfinite(y)) {
-			if (isnan(z)) {
+			if (isnan(z))
 				return __kernel_standard(x, y, 24); /* pow neg**non-int */
-			}
-
 			return __kernel_standard(x, y, 21); /* pow overflow */
 		}
 	}
-	if (z == 0.0 && isfinite(x) && isfinite(y)) {
+	if (z == 0.0 && isfinite(x) && isfinite(y))
 		return __kernel_standard(x, y, 22); /* pow underflow */
-	}
-
 	return z;
 }
 #else

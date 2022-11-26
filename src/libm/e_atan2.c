@@ -57,17 +57,14 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	ix = hx&0x7fffffff;
 	EXTRACT_WORDS(hy,ly,y);
 	iy = hy&0x7fffffff;
-	if (((ix | ((lx | -(int32_t)lx) >> 31)) > 0x7ff00000) || ((iy | ((ly | -(int32_t)ly) >> 31)) > 0x7ff00000)) {
-	   return x + y;
-	}	/* x or y is NaN */
-	if (((hx - 0x3ff00000) | lx) == 0) {
-	   return atan(y); /* x=1.0 */
-	}
-
+	if(((ix|((lx|-(int32_t)lx)>>31))>0x7ff00000)||
+	   ((iy|((ly|-(int32_t)ly)>>31))>0x7ff00000))	/* x or y is NaN */
+	   return x+y;
+	if(((hx-0x3ff00000)|lx)==0) return atan(y);   /* x=1.0 */
 	m = ((hy>>31)&1)|((hx>>30)&2);	/* 2*sign(x)+sign(y) */
 
     /* when y = 0 */
-	if ((iy|ly)==0) {
+	if((iy|ly)==0) {
 	    switch(m) {
 		case 0:
 		case 1: return y; 	/* atan(+-0,+anything)=+-0 */
@@ -76,13 +73,11 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	    }
 	}
     /* when x = 0 */
-	if ((ix | lx) == 0) {
-	    return (hy < 0) ? -pi_o_2 - tiny : pi_o_2 + tiny;
-	}
+	if((ix|lx)==0) return (hy<0)?  -pi_o_2-tiny: pi_o_2+tiny;
 
     /* when x is INF */
-	if (ix==0x7ff00000) {
-	    if (iy==0x7ff00000) {
+	if(ix==0x7ff00000) {
+	    if(iy==0x7ff00000) {
 		switch(m) {
 		    case 0: return  pi_o_4+tiny;/* atan(+INF,+INF) */
 		    case 1: return -pi_o_4-tiny;/* atan(-INF,+INF) */
@@ -99,14 +94,12 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	    }
 	}
     /* when y is INF */
-	if (iy == 0x7ff00000) {
-	    return (hy < 0) ? -pi_o_2 - tiny : pi_o_2 + tiny;
-	}
+	if(iy==0x7ff00000) return (hy<0)? -pi_o_2-tiny: pi_o_2+tiny;
 
     /* compute y/x */
 	k = (iy-ix)>>20;
-	if (k > 60) z=pi_o_2+0.5*pi_lo; 	/* |y/x| >  2**60 */
-	else if (hx<0&&k<-60) z=0.0; 	/* |y|/x < -2**60 */
+	if(k > 60) z=pi_o_2+0.5*pi_lo; 	/* |y/x| >  2**60 */
+	else if(hx<0&&k<-60) z=0.0; 	/* |y|/x < -2**60 */
 	else z=atan(fabs(y/x));		/* safe to do y/x */
 	switch (m) {
 	    case 0: return       z  ;	/* atan(+,+) */
@@ -129,13 +122,10 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 double atan2(double y, double x)
 {
 	double z = __ieee754_atan2(y, x);
-	if (_LIB_VERSION == _IEEE_ || isnan(x) || isnan(y)) {
+	if (_LIB_VERSION == _IEEE_ || isnan(x) || isnan(y))
 		return z;
-	}
-	if (x == 0.0 && y == 0.0) {
-		return __kernel_standard(y, x, 3); /* atan2(+-0,+-0) */
-	}
-
+	if (x == 0.0 && y == 0.0)
+		return __kernel_standard(y,x,3); /* atan2(+-0,+-0) */
 	return z;
 }
 #else
