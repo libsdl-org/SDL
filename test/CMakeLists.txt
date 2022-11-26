@@ -127,8 +127,9 @@ add_sdl_test_executable(testdrawchessboard testdrawchessboard.c)
 add_sdl_test_executable(testdropfile testdropfile.c)
 add_sdl_test_executable(testerror NONINTERACTIVE testerror.c)
 
-if(LINUX)
+if(LINUX AND TARGET sdl-build-options)
     add_sdl_test_executable(testevdev NONINTERACTIVE testevdev.c)
+    target_include_directories(testevdev BEFORE PRIVATE $<TARGET_PROPERTY:sdl-build-options,INTERFACE_INCLUDE_DIRECTORIES>)
 endif()
 
 add_sdl_test_executable(testfile testfile.c)
