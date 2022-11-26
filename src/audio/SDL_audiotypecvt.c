@@ -34,8 +34,8 @@
 
 #if defined(__x86_64__) && HAVE_SSE2_INTRINSICS
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0  /* x86_64 guarantees SSE2. */
-#elif __MACOSX__ && HAVE_SSE2_INTRINSICS
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0  /* Mac OS X/Intel guarantees SSE2. */
+#elif __MACOS__ && HAVE_SSE2_INTRINSICS
+#define NEED_SCALAR_CONVERTER_FALLBACKS 0  /* macOS/Intel guarantees SSE2. */
 #elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && HAVE_NEON_INTRINSICS
 #define NEED_SCALAR_CONVERTER_FALLBACKS 0  /* ARMv8+ promise NEON. */
 #elif defined(__APPLE__) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && HAVE_NEON_INTRINSICS

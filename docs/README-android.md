@@ -6,9 +6,6 @@ http://trederia.blogspot.de/2017/03/building-sdl2-for-android-with-visual.html
 
 The rest of this README covers the Android gradle style build process.
 
-If you are using the older ant build process, it is no longer officially
-supported, but you can use the "android-project-ant" directory as a template.
-
 
 Requirements
 ================================================================================
@@ -369,7 +366,7 @@ Valgrind has support for Android out of the box, just grab code using:
 
 ... and follow the instructions in the file README.android to build it.
 
-One thing I needed to do on Mac OS X was change the path to the toolchain,
+One thing I needed to do on macOS was change the path to the toolchain,
 and add ranlib to the environment variables:
 export RANLIB=$NDKROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-ranlib
 

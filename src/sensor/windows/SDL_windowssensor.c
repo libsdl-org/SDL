@@ -180,7 +180,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                     hrZ = ISensorDataReport_GetSensorValue(pNewData, &SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, &valueZ);
                     if (SUCCEEDED(hrX) && SUCCEEDED(hrY) && SUCCEEDED(hrZ) &&
                         valueX.vt == VT_R8 && valueY.vt == VT_R8 && valueZ.vt == VT_R8) {
-                        const float DEGREES_TO_RADIANS = (float)(M_PI / 180.0f);
+                        const float DEGREES_TO_RADIANS = (SDL_PI_F / 180.0f);
                         float values[3];
 
                         values[0] = (float)valueX.dblVal * DEGREES_TO_RADIANS;

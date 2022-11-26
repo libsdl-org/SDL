@@ -39,7 +39,6 @@
 #define SDL_sscanf SDL_sscanf_REAL
 #define SDL_snprintf SDL_snprintf_REAL
 #define SDL_CreateThread SDL_CreateThread_REAL
-#define SDL_RWFromFP SDL_RWFromFP_REAL
 #define SDL_RegisterApp SDL_RegisterApp_REAL
 #define SDL_UnregisterApp SDL_UnregisterApp_REAL
 #define SDL_Direct3D9GetAdapterIndex SDL_Direct3D9GetAdapterIndex_REAL
@@ -287,7 +286,6 @@
 #define SDL_MapRGBA SDL_MapRGBA_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL
 #define SDL_GetRGBA SDL_GetRGBA_REAL
-#define SDL_CalculateGammaRamp SDL_CalculateGammaRamp_REAL
 #define SDL_GetPlatform SDL_GetPlatform_REAL
 #define SDL_GetPowerInfo SDL_GetPowerInfo_REAL
 #define SDL_HasIntersection SDL_HasIntersection_REAL
@@ -489,7 +487,6 @@
 #define SDL_GetTouchFinger SDL_GetTouchFinger_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetRevision SDL_GetRevision_REAL
-#define SDL_GetRevisionNumber SDL_GetRevisionNumber_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
 #define SDL_VideoInit SDL_VideoInit_REAL
@@ -539,10 +536,6 @@
 #define SDL_UpdateWindowSurfaceRects SDL_UpdateWindowSurfaceRects_REAL
 #define SDL_SetWindowGrab SDL_SetWindowGrab_REAL
 #define SDL_GetWindowGrab SDL_GetWindowGrab_REAL
-#define SDL_SetWindowBrightness SDL_SetWindowBrightness_REAL
-#define SDL_GetWindowBrightness SDL_GetWindowBrightness_REAL
-#define SDL_SetWindowGammaRamp SDL_SetWindowGammaRamp_REAL
-#define SDL_GetWindowGammaRamp SDL_GetWindowGammaRamp_REAL
 #define SDL_DestroyWindow SDL_DestroyWindow_REAL
 #define SDL_IsScreenSaverEnabled SDL_IsScreenSaverEnabled_REAL
 #define SDL_EnableScreenSaver SDL_EnableScreenSaver_REAL

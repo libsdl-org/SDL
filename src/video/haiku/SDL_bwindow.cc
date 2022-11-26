@@ -196,16 +196,6 @@ void HAIKU_SetWindowFullscreen(_THIS, SDL_Window * window,
     
 }
 
-int HAIKU_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp) {
-    /* FIXME: Not Haiku supported */
-    return -1;
-}
-
-int HAIKU_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp) {
-    /* FIXME: Not Haiku supported */
-    return -1;
-}
-
 
 void HAIKU_SetWindowMinimumSize(_THIS, SDL_Window * window) {
     BMessage msg(BWIN_MINIMUM_SIZE_WINDOW);

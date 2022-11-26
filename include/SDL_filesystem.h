@@ -43,8 +43,8 @@ extern "C" {
  * This is not necessarily a fast call, so you should call this once near
  * startup and save the string if you need it.
  *
- * **Mac OS X and iOS Specific Functionality**: If the application is in a
- * ".app" bundle, this function returns the Resource directory (e.g.
+ * **macOS and iOS Specific Functionality**: If the application is in a ".app"
+ * bundle, this function returns the Resource directory (e.g.
  * MyApp.app/Contents/Resources/). This behaviour can be overridden by adding
  * a property to the Info.plist file. Adding a string key with the name
  * SDL_FILESYSTEM_BASE_DIR_TYPE with a supported value will change the
@@ -100,7 +100,7 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *
  * `/home/bob/.local/share/My Program Name/`
  *
- * On Mac OS X, the string might look like:
+ * On macOS, the string might look like:
  *
  * `/Users/bob/Library/Application Support/My Program Name/`
  *

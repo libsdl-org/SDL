@@ -37,7 +37,7 @@
 
 #include "SDL_config.h"
 
-#ifndef __IPHONEOS__  /* No OpenGL on iOS. */
+#ifndef __IOS__  /* No OpenGL on iOS. */
 
 /*
  * Mesa 3-D graphics library
@@ -2118,7 +2118,7 @@ typedef void (APIENTRYP PFNGLMULTITEXCOORD4SVARBPROC) (GLenum target, const GLsh
 
 #endif /* __gl_h_ */
 
-#endif /* !__IPHONEOS__ */
+#endif /* !__IOS__ */
 
 #endif /* SDL_opengl_h_ */
 

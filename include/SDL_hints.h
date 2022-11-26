@@ -194,7 +194,7 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
- *  \brief  A variable controlling the audio category on iOS and Mac OS X
+ *  \brief  A variable controlling the audio category on iOS and macOS
  *
  *  This variable can be set to the following values:
  *
@@ -1076,7 +1076,7 @@ extern "C" {
 /**
 *  \brief  When set don't force the SDL app to become a foreground process
 *
-*  This hint only applies to Mac OS X.
+*  This hint only applies to macOS.
 *
 */
 #define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
@@ -1685,9 +1685,9 @@ extern "C" {
 #define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_VIDEO_HIGHDPI_DISABLED"
 
 /**
- *  \brief  A variable that dictates policy for fullscreen Spaces on Mac OS X.
+ *  \brief  A variable that dictates policy for fullscreen Spaces on macOS.
  *
- *  This hint only applies to Mac OS X.
+ *  This hint only applies to macOS.
  *
  *  The variable can be set to the following values:
  *    "0"       - Disable Spaces support (FULLSCREEN_DESKTOP won't use them and
@@ -1836,20 +1836,6 @@ extern "C" {
 #define SDL_HINT_VIDEO_FORCE_EGL "SDL_VIDEO_FORCE_EGL"
 
 /**
- * \brief A variable controlling whether X11 should use GLX or EGL by default
- *
- * This variable can be set to the following values:
- * "0" - Use GLX
- * "1" - Use EGL
- *
- * By default SDL will use GLX when both are present.
- *
- * \deprecated Use the platform-agnostic SDL_HINT_VIDEO_FORCE_EGL hint instead.
- *
- */
-#define SDL_HINT_VIDEO_X11_FORCE_EGL "SDL_VIDEO_X11_FORCE_EGL"
-
-/**
  * \brief A variable controlling whether the X11 _NET_WM_BYPASS_COMPOSITOR hint should be used.
  * 
  * This variable can be set to the following values:
@@ -1882,15 +1868,6 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
 
 /**
- *  \brief  A no-longer-used variable controlling whether the X11 Xinerama extension should be used.
- *
- * Before SDL 2.0.24, this would let apps and users disable Xinerama support on X11.
- *  Now SDL never uses Xinerama, and does not check for this hint at all.
- *  The preprocessor define is left here for source compatibility.
- */
-#define SDL_HINT_VIDEO_X11_XINERAMA         "SDL_VIDEO_X11_XINERAMA"
-
-/**
  *  \brief  A variable controlling whether the X11 XRandR extension should be used.
  *
  *  This variable can be set to the following values:
@@ -1900,15 +1877,6 @@ extern "C" {
  *  By default SDL will use XRandR.
  */
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
-
-/**
- *  \brief  A no-longer-used variable controlling whether the X11 VidMode extension should be used.
- *
- * Before SDL 2.0.24, this would let apps and users disable XVidMode support on X11.
- *  Now SDL never uses XVidMode, and does not check for this hint at all.
- *  The preprocessor define is left here for source compatibility.
- */
-#define SDL_HINT_VIDEO_X11_XVIDMODE         "SDL_VIDEO_X11_XVIDMODE"
 
 /**
  *  \brief  Controls how the fact chunk affects the loading of a WAVE file.

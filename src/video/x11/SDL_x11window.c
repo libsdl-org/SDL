@@ -424,8 +424,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 
 #if SDL_VIDEO_OPENGL_EGL
         if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
-             SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE) ||
-             SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
+             SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE))
 #if SDL_VIDEO_OPENGL_GLX            
             && ( !_this->gl_data || X11_GL_UseEGL(_this) )
 #endif
@@ -647,7 +646,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2 || SDL_VIDEO_OPENGL_EGL
     if ((window->flags & SDL_WINDOW_OPENGL) && 
         ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
-         SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
+         SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE))
 #if SDL_VIDEO_OPENGL_GLX            
         && ( !_this->gl_data || X11_GL_UseEGL(_this) )
 #endif  
@@ -1472,73 +1471,6 @@ void
 X11_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen)
 {
     X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
-}
-
-int
-X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
-{
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display = data->videodata->display;
-    Visual *visual = data->visual;
-    Colormap colormap = data->colormap;
-    XColor *colorcells;
-    int ncolors;
-    int rmask, gmask, bmask;
-    int rshift, gshift, bshift;
-    int i;
-
-    if (visual->class != DirectColor) {
-        return SDL_SetError("Window doesn't have DirectColor visual");
-    }
-
-    ncolors = visual->map_entries;
-    colorcells = SDL_malloc(ncolors * sizeof(XColor));
-    if (colorcells == NULL) {
-        return SDL_OutOfMemory();
-    }
-
-    rshift = 0;
-    rmask = visual->red_mask;
-    while (0 == (rmask & 1)) {
-        rshift++;
-        rmask >>= 1;
-    }
-
-    gshift = 0;
-    gmask = visual->green_mask;
-    while (0 == (gmask & 1)) {
-        gshift++;
-        gmask >>= 1;
-    }
-
-    bshift = 0;
-    bmask = visual->blue_mask;
-    while (0 == (bmask & 1)) {
-        bshift++;
-        bmask >>= 1;
-    }
-
-    /* build the color table pixel values */
-    for (i = 0; i < ncolors; i++) {
-        Uint32 rbits = (rmask * i) / (ncolors - 1);
-        Uint32 gbits = (gmask * i) / (ncolors - 1);
-        Uint32 bbits = (bmask * i) / (ncolors - 1);
-        Uint32 pix = (rbits << rshift) | (gbits << gshift) | (bbits << bshift);
-
-        colorcells[i].pixel = pix;
-
-        colorcells[i].red = ramp[(0 * 256) + i];
-        colorcells[i].green = ramp[(1 * 256) + i];
-        colorcells[i].blue = ramp[(2 * 256) + i];
-
-        colorcells[i].flags = DoRed | DoGreen | DoBlue;
-    }
-
-    X11_XStoreColors(display, colormap, colorcells, ncolors);
-    X11_XFlush(display);
-    SDL_free(colorcells);
-
-    return 0;
 }
 
 typedef struct {

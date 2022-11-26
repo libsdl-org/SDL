@@ -12,31 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - { name: autotools, test_args: '-DTEST_SHARED=FALSE' } # FIXME: autotools should build and install shared libraries
           - { name: CMake }
 
     steps:
     - name: Setup dependencies
       run: apt-get update && apt-get install -y cmake ninja-build
     - uses: actions/checkout@v3
-    - name: Configure (autotools)
-      if: ${{ contains(matrix.platform.name, 'autotools') }}
-      run: |
-        mkdir build_autotools
-        cd build_autotools
-        ../configure \
-          --host=arm-unknown-riscos \
-          --disable-gcc-atomics \
-          --prefix=${{ github.workspace }}/prefix_autotools
-    - name: Build (autotools)
-      if: ${{ contains(matrix.platform.name, 'autotools') }}
-      run: make -C build_autotools -j`nproc` V=1
-    - name: Install (autotools)
-      if: ${{ contains(matrix.platform.name, 'autotools') }}
-      run: |
-        echo "SDL3_DIR=${{ github.workspace }}/prefix_autotools" >> $GITHUB_ENV
-        make -C build_autotools install
-        ( cd ${{ github.workspace }}/prefix_autotools; find ) | LC_ALL=C sort -u
     - name: Configure (CMake)
       if: ${{ contains(matrix.platform.name, 'CMake') }}
       run: |

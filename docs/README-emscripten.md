@@ -46,7 +46,7 @@ Build:
 
     $ mkdir build
     $ cd build
-    $ emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --disable-cpuinfo CFLAGS="-O2"
+    $ emcmake cmake ..
     $ emmake make
 
 Or with cmake:
@@ -67,10 +67,10 @@ Some other SDL3 libraries can be easily built (assuming SDL3 is installed somewh
 
 SDL_mixer (http://www.libsdl.org/projects/SDL_mixer/):
 
-    $ EMCONFIGURE_JS=1 emconfigure ../configure
+    $ emcmake cmake ..
     build as usual...
 
 SDL_gfx (http://cms.ferzkopp.net/index.php/software/13-sdl-gfx):
 
-    $ EMCONFIGURE_JS=1 emconfigure ../configure --disable-mmx
+    $ emcmake cmake ..
     build as usual...

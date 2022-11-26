@@ -155,12 +155,7 @@
 #define HAVE_TRUNC  1
 #define HAVE_TRUNCF 1
 #define HAVE__FSEEKI64 1
-#ifdef _USE_MATH_DEFINES
-#define HAVE_M_PI 1
-#endif
-#else
-#define HAVE_M_PI 1
-#endif
+#endif    /* _MSC_VER */
 #else
 #define HAVE_STDARG_H   1
 #define HAVE_STDDEF_H   1

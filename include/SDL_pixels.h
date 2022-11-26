@@ -620,18 +620,6 @@ extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel,
                                          Uint8 * r, Uint8 * g, Uint8 * b,
                                          Uint8 * a);
 
-/**
- * Calculate a 256 entry gamma ramp for a gamma value.
- *
- * \param gamma a gamma value where 0.0 is black and 1.0 is identity
- * \param ramp an array of 256 values filled in with the gamma ramp
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetWindowGammaRamp
- */
-extern DECLSPEC void SDLCALL SDL_CalculateGammaRamp(float gamma, Uint16 * ramp);
-
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

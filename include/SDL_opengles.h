@@ -26,7 +26,7 @@
  */
 #include "SDL_config.h"
 
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 #include <OpenGLES/ES1/gl.h>
 #include <OpenGLES/ES1/glext.h>
 #else

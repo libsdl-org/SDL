@@ -104,7 +104,6 @@
 #define HAVE_SSCANF 1
 #define HAVE_VSSCANF 1
 #define HAVE_VSNPRINTF 1
-#define HAVE_M_PI 1
 #define HAVE_ACOS 1
 #define HAVE_ACOSF 1
 #define HAVE_ASIN 1

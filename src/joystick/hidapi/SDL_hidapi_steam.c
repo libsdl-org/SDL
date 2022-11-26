@@ -357,7 +357,7 @@ static int GetFeatureReport( SDL_hid_device *dev, unsigned char uBuffer[65] )
         // On Windows and macOS, BLE devices get 2 copies of the feature report ID, one that is removed by ReadFeatureReport,
         // and one that's included in the buffer we receive. We pad the bytes to read and skip over the report ID
         // if necessary.
-#if defined(__WIN32__) || defined(__MACOSX__)
+#if defined(__WIN32__) || defined(__MACOS__)
         ++ucBytesToRead;
         ++ucDataStartOffset;
 #endif
@@ -1215,9 +1215,9 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
                 ctx->timestamp_us += ctx->update_rate_in_us;
 
-                values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
-                values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
-                values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * ((float)M_PI / 180.0f));
+                values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
+                values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
+                values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
                 SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, ctx->timestamp_us, values, 3);
 
                 values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;

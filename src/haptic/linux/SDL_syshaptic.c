@@ -37,11 +37,6 @@
 #include <errno.h>              /* errno, strerror */
 #include <sys/stat.h>           /* stat */
 
-/* Just in case. */
-#ifndef M_PI
-#  define M_PI     3.14159265358979323846
-#endif
-
 
 #define MAX_HAPTICS  32         /* It's doubtful someone has more then 32 evdev */
 
@@ -723,7 +718,7 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
                       --> add 45000 in total
                       --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
                     */
-                tmp = (((Sint32) (f * 18000. / M_PI)) + 45000) % 36000;
+                tmp = (((Sint32) (f * 18000.0 / SDL_PI_D)) + 45000) % 36000;
             tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
             *dest = (Uint16) tmp;
         }

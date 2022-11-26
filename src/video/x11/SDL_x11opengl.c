@@ -39,7 +39,7 @@
  * the library was installed.
  */
 #define DEFAULT_OPENGL  "libGL.so"
-#elif defined(__MACOSX__)
+#elif defined(__MACOS__)
 #define DEFAULT_OPENGL  "/opt/X11/lib/libGL.1.dylib"
 #else
 #define DEFAULT_OPENGL  "libGL.so.1"
@@ -251,8 +251,7 @@ X11_GL_LoadLibrary(_THIS, const char *path)
      * GLX_EXT_create_context_es2_profile extension, switch over to X11_GLES functions  
      */
     if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
-         SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE) ||
-         SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) &&
+         SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) &&
         X11_GL_UseEGL(_this) ) {
 #if SDL_VIDEO_OPENGL_EGL
         X11_GL_UnloadLibrary(_this);
@@ -691,8 +690,7 @@ SDL_bool
 X11_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE) ||
-        SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
         /* use of EGL has been requested, even for desktop GL */
         return SDL_TRUE;
     }

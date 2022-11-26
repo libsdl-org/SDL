@@ -274,8 +274,6 @@ KMSDRM_CreateDevice(void)
     device->SetWindowPosition = KMSDRM_SetWindowPosition;
     device->SetWindowSize = KMSDRM_SetWindowSize;
     device->SetWindowFullscreen = KMSDRM_SetWindowFullscreen;
-    device->GetWindowGammaRamp = KMSDRM_GetWindowGammaRamp;
-    device->SetWindowGammaRamp = KMSDRM_SetWindowGammaRamp;
     device->ShowWindow = KMSDRM_ShowWindow;
     device->HideWindow = KMSDRM_HideWindow;
     device->RaiseWindow = KMSDRM_RaiseWindow;
@@ -1551,39 +1549,6 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
        and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()
        if we return error on any of the previous returns of the function. */ 
     return ret;
-}
-
-int
-KMSDRM_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
-{
-    SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
-    SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
-    SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
-    if (KMSDRM_drmModeCrtcGetGamma(viddata->drm_fd, dispdata->crtc->crtc_id, 256, &ramp[0*256], &ramp[1*256], &ramp[2*256]) == -1) {
-        return SDL_SetError("Failed to get gamma ramp");
-    }
-    return 0;
-}
-
-int
-KMSDRM_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
-{
-    SDL_WindowData *windata = (SDL_WindowData*)window->driverdata;
-    SDL_VideoData *viddata = (SDL_VideoData*)windata->viddata;
-    SDL_VideoDisplay *disp = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData* dispdata = (SDL_DisplayData*)disp->driverdata;
-    Uint16* tempRamp = SDL_calloc(3 * sizeof(Uint16), 256);
-    if (tempRamp == NULL) {
-        return SDL_OutOfMemory();
-    }
-    SDL_memcpy(tempRamp, ramp, 3 * sizeof(Uint16) * 256);
-    if (KMSDRM_drmModeCrtcSetGamma(viddata->drm_fd, dispdata->crtc->crtc_id, 256, &tempRamp[0*256], &tempRamp[1*256], &tempRamp[2*256]) == -1) {
-        SDL_free(tempRamp);
-        return SDL_SetError("Failed to set gamma ramp");
-    }
-    SDL_free(tempRamp);
-    return 0;
 }
 
 int

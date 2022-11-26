@@ -80,19 +80,12 @@
 # include <ctype.h>
 #endif
 #ifdef HAVE_MATH_H
-# if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
-/* Defining _USE_MATH_DEFINES is required to get M_PI to be defined on
-   Visual Studio.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
-   for more information.
-*/
-#  define _USE_MATH_DEFINES
-# endif
 # include <math.h>
 #endif
 #ifdef HAVE_FLOAT_H
 # include <float.h>
 #endif
-#if defined(HAVE_ALLOCA) && !defined(alloca)
+#if !defined(alloca)
 # if defined(HAVE_ALLOCA_H)
 #  include <alloca.h>
 # elif defined(__GNUC__)
@@ -615,10 +608,11 @@ extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size
 extern DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, const char *fmt, va_list ap);
 
-#ifndef HAVE_M_PI
-#ifndef M_PI
-#define M_PI    3.14159265358979323846264338327950288   /**< pi */
+#ifndef SDL_PI_D
+#define SDL_PI_D   3.141592653589793238462643383279502884       /**< pi (double) */
 #endif
+#ifndef SDL_PI_F
+#define SDL_PI_F   3.141592653589793238462643383279502884F      /**< pi (float) */
 #endif
 
 /**

@@ -9,7 +9,7 @@ This library is distributed under the terms of the zlib license:
 http://zlib.net/zlib_license.html
 
 
-This packages contains the SDL framework for OS X. 
+This packages contains the SDL framework for macOS. 
 Conforming with Apple guidelines, this framework 
 contains both the SDL runtime component and development header files.
 
@@ -35,10 +35,10 @@ https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search
 
 Additional References:
 
- - Screencast tutorials for getting started with OpenSceneGraph/Mac OS X are 
+ - Screencast tutorials for getting started with OpenSceneGraph/macOS are 
  	available at:
 	http://www.openscenegraph.org/projects/osg/wiki/Support/Tutorials/MacOSXTips
 	Though these are OpenSceneGraph centric, the same exact concepts apply to 
 	SDL, thus the videos are recommended for everybody getting started with
-	developing on Mac OS X. (You can skim over the PlugIns stuff since SDL
+	developing on macOS. (You can skim over the PlugIns stuff since SDL
 	doesn't have any PlugIns to worry about.)

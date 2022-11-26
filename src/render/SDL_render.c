@@ -39,7 +39,7 @@ SDL_AddEventWatch to catch SDL_APP_WILLENTERBACKGROUND events and stopped
 drawing themselves. Other platforms still draw, as the compositor can use it,
 and more importantly: drawing to render targets isn't lost. But I still think
 this should probably be removed at some point in the future.  --ryan. */
-#if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
+#if defined(__IOS__) || defined(__TVOS__) || defined(__ANDROID__)
 #define DONT_DRAW_WHILE_HIDDEN 1
 #else
 #define DONT_DRAW_WHILE_HIDDEN 0
@@ -3679,7 +3679,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         float s_minx, s_miny, s_maxx, s_maxy;
         float c_minx, c_miny, c_maxx, c_maxy;
 
-        const float radian_angle = (float)((M_PI * angle) / 180.0);
+        const float radian_angle = (float)((SDL_PI_D * angle) / 180.0);
         const float s = SDL_sinf(radian_angle);
         const float c = SDL_cosf(radian_angle);
 

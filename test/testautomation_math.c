@@ -1963,10 +1963,10 @@ static int
 cos_regularCases(void *args)
 {
     const d_to_d regular_cases[] = {
-        { -M_PI, -1.0 },
+        { -SDL_PI_D, -1.0 },
         { -0.0, 1.0 },
         { 0.0, 1.0 },
-        { M_PI, -1.0 }
+        { SDL_PI_D, -1.0 }
     };
     return helper_dtod("Cos", SDL_cos, regular_cases, SDL_arraysize(regular_cases));
 }
@@ -1979,24 +1979,24 @@ static int
 cos_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { M_PI * 1.0 / 10.0, 0.9510565162 },
-        { M_PI * 2.0 / 10.0, 0.8090169943 },
-        { M_PI * 3.0 / 10.0, 0.5877852522 },
-        { M_PI * 4.0 / 10.0, 0.3090169943 },
-        { M_PI * 5.0 / 10.0, 0.0 },
-        { M_PI * 6.0 / 10.0, -0.3090169943 },
-        { M_PI * 7.0 / 10.0, -0.5877852522 },
-        { M_PI * 8.0 / 10.0, -0.8090169943 },
-        { M_PI * 9.0 / 10.0, -0.9510565162 },
-        { M_PI * -1.0 / 10.0, 0.9510565162 },
-        { M_PI * -2.0 / 10.0, 0.8090169943 },
-        { M_PI * -3.0 / 10.0, 0.5877852522 },
-        { M_PI * -4.0 / 10.0, 0.3090169943 },
-        { M_PI * -5.0 / 10.0, 0.0 },
-        { M_PI * -6.0 / 10.0, -0.3090169943 },
-        { M_PI * -7.0 / 10.0, -0.5877852522 },
-        { M_PI * -8.0 / 10.0, -0.8090169943 },
-        { M_PI * -9.0 / 10.0, -0.9510565162 }
+        { SDL_PI_D * 1.0 / 10.0, 0.9510565162 },
+        { SDL_PI_D * 2.0 / 10.0, 0.8090169943 },
+        { SDL_PI_D * 3.0 / 10.0, 0.5877852522 },
+        { SDL_PI_D * 4.0 / 10.0, 0.3090169943 },
+        { SDL_PI_D * 5.0 / 10.0, 0.0 },
+        { SDL_PI_D * 6.0 / 10.0, -0.3090169943 },
+        { SDL_PI_D * 7.0 / 10.0, -0.5877852522 },
+        { SDL_PI_D * 8.0 / 10.0, -0.8090169943 },
+        { SDL_PI_D * 9.0 / 10.0, -0.9510565162 },
+        { SDL_PI_D * -1.0 / 10.0, 0.9510565162 },
+        { SDL_PI_D * -2.0 / 10.0, 0.8090169943 },
+        { SDL_PI_D * -3.0 / 10.0, 0.5877852522 },
+        { SDL_PI_D * -4.0 / 10.0, 0.3090169943 },
+        { SDL_PI_D * -5.0 / 10.0, 0.0 },
+        { SDL_PI_D * -6.0 / 10.0, -0.3090169943 },
+        { SDL_PI_D * -7.0 / 10.0, -0.5877852522 },
+        { SDL_PI_D * -8.0 / 10.0, -0.8090169943 },
+        { SDL_PI_D * -9.0 / 10.0, -0.9510565162 }
     };
     return helper_dtod_inexact("Cos", SDL_cos, precision_cases, SDL_arraysize(precision_cases));
 }
@@ -2080,10 +2080,10 @@ static int
 sin_regularCases(void *args)
 {
     const d_to_d regular_cases[] = {
-        { -M_PI / 2, -1.0 },
+        { -SDL_PI_D / 2, -1.0 },
         { -0.0, -0.0 },
         { 0.0, 0.0 },
-        { M_PI / 2, 1.0 }
+        { SDL_PI_D / 2, 1.0 }
     };
     return helper_dtod("Sin", SDL_sin, regular_cases, SDL_arraysize(regular_cases));
 }
@@ -2097,24 +2097,24 @@ static int
 sin_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { M_PI * 1.0 / 10.0, 0.3090169943 },
-        { M_PI * 2.0 / 10.0, 0.5877852522 },
-        { M_PI * 3.0 / 10.0, 0.8090169943 },
-        { M_PI * 4.0 / 10.0, 0.9510565162 },
-        { M_PI * 6.0 / 10.0, 0.9510565162 },
-        { M_PI * 7.0 / 10.0, 0.8090169943 },
-        { M_PI * 8.0 / 10.0, 0.5877852522 },
-        { M_PI * 9.0 / 10.0, 0.3090169943 },
-        { M_PI, 0.0 },
-        { M_PI * -1.0 / 10.0, -0.3090169943 },
-        { M_PI * -2.0 / 10.0, -0.5877852522 },
-        { M_PI * -3.0 / 10.0, -0.8090169943 },
-        { M_PI * -4.0 / 10.0, -0.9510565162 },
-        { M_PI * -6.0 / 10.0, -0.9510565162 },
-        { M_PI * -7.0 / 10.0, -0.8090169943 },
-        { M_PI * -8.0 / 10.0, -0.5877852522 },
-        { M_PI * -9.0 / 10.0, -0.3090169943 },
-        { -M_PI, 0.0 },
+        { SDL_PI_D * 1.0 / 10.0, 0.3090169943 },
+        { SDL_PI_D * 2.0 / 10.0, 0.5877852522 },
+        { SDL_PI_D * 3.0 / 10.0, 0.8090169943 },
+        { SDL_PI_D * 4.0 / 10.0, 0.9510565162 },
+        { SDL_PI_D * 6.0 / 10.0, 0.9510565162 },
+        { SDL_PI_D * 7.0 / 10.0, 0.8090169943 },
+        { SDL_PI_D * 8.0 / 10.0, 0.5877852522 },
+        { SDL_PI_D * 9.0 / 10.0, 0.3090169943 },
+        { SDL_PI_D, 0.0 },
+        { SDL_PI_D * -1.0 / 10.0, -0.3090169943 },
+        { SDL_PI_D * -2.0 / 10.0, -0.5877852522 },
+        { SDL_PI_D * -3.0 / 10.0, -0.8090169943 },
+        { SDL_PI_D * -4.0 / 10.0, -0.9510565162 },
+        { SDL_PI_D * -6.0 / 10.0, -0.9510565162 },
+        { SDL_PI_D * -7.0 / 10.0, -0.8090169943 },
+        { SDL_PI_D * -8.0 / 10.0, -0.5877852522 },
+        { SDL_PI_D * -9.0 / 10.0, -0.3090169943 },
+        { -SDL_PI_D, 0.0 },
     };
     return helper_dtod_inexact("Sin", SDL_sin, precision_cases, SDL_arraysize(precision_cases));
 }
@@ -2213,26 +2213,26 @@ static int
 tan_precisionTest(void *args)
 {
     const d_to_d precision_cases[] = {
-        { M_PI * 1.0 / 11.0, 0.2936264929 },
-        { M_PI * 2.0 / 11.0, 0.6426609771 },
-        { M_PI * 3.0 / 11.0, 1.1540615205 },
-        { M_PI * 4.0 / 11.0, 2.1896945629 },
-        { M_PI * 5.0 / 11.0, 6.9551527717 },
-        { M_PI * 6.0 / 11.0, -6.9551527717 },
-        { M_PI * 7.0 / 11.0, -2.1896945629 },
-        { M_PI * 8.0 / 11.0, -1.1540615205 },
-        { M_PI * 9.0 / 11.0, -0.6426609771 },
-        { M_PI * 10.0 / 11.0, -0.2936264929 },
-        { M_PI * -1.0 / 11.0, -0.2936264929 },
-        { M_PI * -2.0 / 11.0, -0.6426609771 },
-        { M_PI * -3.0 / 11.0, -1.1540615205 },
-        { M_PI * -4.0 / 11.0, -2.1896945629 },
-        { M_PI * -5.0 / 11.0, -6.9551527717 },
-        { M_PI * -6.0 / 11.0, 6.9551527717 },
-        { M_PI * -7.0 / 11.0, 2.1896945629 },
-        { M_PI * -8.0 / 11.0, 1.1540615205 },
-        { M_PI * -9.0 / 11.0, 0.6426609771 },
-        { M_PI * -10.0 / 11.0, 0.2936264929 }
+        { SDL_PI_D * 1.0 / 11.0, 0.2936264929 },
+        { SDL_PI_D * 2.0 / 11.0, 0.6426609771 },
+        { SDL_PI_D * 3.0 / 11.0, 1.1540615205 },
+        { SDL_PI_D * 4.0 / 11.0, 2.1896945629 },
+        { SDL_PI_D * 5.0 / 11.0, 6.9551527717 },
+        { SDL_PI_D * 6.0 / 11.0, -6.9551527717 },
+        { SDL_PI_D * 7.0 / 11.0, -2.1896945629 },
+        { SDL_PI_D * 8.0 / 11.0, -1.1540615205 },
+        { SDL_PI_D * 9.0 / 11.0, -0.6426609771 },
+        { SDL_PI_D * 10.0 / 11.0, -0.2936264929 },
+        { SDL_PI_D * -1.0 / 11.0, -0.2936264929 },
+        { SDL_PI_D * -2.0 / 11.0, -0.6426609771 },
+        { SDL_PI_D * -3.0 / 11.0, -1.1540615205 },
+        { SDL_PI_D * -4.0 / 11.0, -2.1896945629 },
+        { SDL_PI_D * -5.0 / 11.0, -6.9551527717 },
+        { SDL_PI_D * -6.0 / 11.0, 6.9551527717 },
+        { SDL_PI_D * -7.0 / 11.0, 2.1896945629 },
+        { SDL_PI_D * -8.0 / 11.0, 1.1540615205 },
+        { SDL_PI_D * -9.0 / 11.0, 0.6426609771 },
+        { SDL_PI_D * -10.0 / 11.0, 0.2936264929 }
     };
     return helper_dtod_inexact("Tan", SDL_tan, precision_cases, SDL_arraysize(precision_cases));
 }
@@ -2254,9 +2254,9 @@ acos_limitCases(void *args)
                         1.0, 0.0, result);
 
     result = SDL_acos(-1.0);
-    SDLTest_AssertCheck(M_PI == result,
+    SDLTest_AssertCheck(SDL_PI_D == result,
                         "Acos(%f), expected %f, got %f",
-                        -1.0, M_PI, result);
+                        -1.0, SDL_PI_D, result);
 
     return TEST_COMPLETED;
 }
@@ -2341,14 +2341,14 @@ asin_limitCases(void *args)
     double result;
 
     result = SDL_asin(1.0);
-    SDLTest_AssertCheck(M_PI / 2.0 == result,
+    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
                         "Asin(%f), expected %f, got %f",
-                        1.0, M_PI / 2.0, result);
+                        1.0, SDL_PI_D / 2.0, result);
 
     result = SDL_asin(-1.0);
-    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
                         "Asin(%f), expected %f, got %f",
-                        -1.0, -M_PI / 2.0, result);
+                        -1.0, -SDL_PI_D / 2.0, result);
 
     return TEST_COMPLETED;
 }
@@ -2433,16 +2433,16 @@ atan_limitCases(void *args)
     double result;
 
     result = SDL_atan(INFINITY);
-    SDLTest_AssertCheck((M_PI / 2.0) - EPSILON <= result &&
-                            result <= (M_PI / 2.0) + EPSILON,
+    SDLTest_AssertCheck((SDL_PI_D / 2.0) - EPSILON <= result &&
+                            result <= (SDL_PI_D / 2.0) + EPSILON,
                         "Atan(%f), expected %f, got %f",
-                        INFINITY, M_PI / 2.0, result);
+                        INFINITY, SDL_PI_D / 2.0, result);
 
     result = SDL_atan(-INFINITY);
-    SDLTest_AssertCheck((-M_PI / 2.0) - EPSILON <= result &&
-                            result <= (-M_PI / 2.0) + EPSILON,
+    SDLTest_AssertCheck((-SDL_PI_D / 2.0) - EPSILON <= result &&
+                            result <= (-SDL_PI_D / 2.0) + EPSILON,
                         "Atan(%f), expected %f, got %f",
-                        -INFINITY, -M_PI / 2.0, result);
+                        -INFINITY, -SDL_PI_D / 2.0, result);
 
     return TEST_COMPLETED;
 }
@@ -2530,8 +2530,8 @@ atan2_bothZeroCases(void *args)
     const dd_to_d cases[] = {
         { 0.0, 0.0, 0.0 },
         { -0.0, 0.0, -0.0 },
-        { 0.0, -0.0, M_PI },
-        { -0.0, -0.0, -M_PI },
+        { 0.0, -0.0, SDL_PI_D },
+        { -0.0, -0.0, -SDL_PI_D },
     };
     return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
 }
@@ -2548,9 +2548,9 @@ atan2_yZeroCases(void *args)
 {
     const dd_to_d cases[] = {
         { 0.0, 1.0, 0.0 },
-        { 0.0, -1.0, M_PI },
+        { 0.0, -1.0, SDL_PI_D },
         { -0.0, 1.0, -0.0 },
-        { -0.0, -1.0, -M_PI }
+        { -0.0, -1.0, -SDL_PI_D }
     };
     return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
 }
@@ -2563,10 +2563,10 @@ static int
 atan2_xZeroCases(void *args)
 {
     const dd_to_d cases[] = {
-        { 1.0, 0.0, M_PI / 2.0 },
-        { -1.0, 0.0, -M_PI / 2.0 },
-        { 1.0, -0.0, M_PI / 2.0 },
-        { -1.0, -0.0, -M_PI / 2.0 }
+        { 1.0, 0.0, SDL_PI_D / 2.0 },
+        { -1.0, 0.0, -SDL_PI_D / 2.0 },
+        { 1.0, -0.0, SDL_PI_D / 2.0 },
+        { -1.0, -0.0, -SDL_PI_D / 2.0 }
     };
     return helper_ddtod("SDL_atan2", SDL_atan2, cases, SDL_arraysize(cases));
 }
@@ -2587,24 +2587,24 @@ atan2_bothInfCases(void *args)
     double result;
 
     result = SDL_atan2(INFINITY, INFINITY);
-    SDLTest_AssertCheck(M_PI / 4.0 == result,
+    SDLTest_AssertCheck(SDL_PI_D / 4.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, INFINITY, M_PI / 4.0, result);
+                        INFINITY, INFINITY, SDL_PI_D / 4.0, result);
 
     result = SDL_atan2(INFINITY, -INFINITY);
-    SDLTest_AssertCheck(3.0 * M_PI / 4.0 == result,
+    SDLTest_AssertCheck(3.0 * SDL_PI_D / 4.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, -INFINITY, 3.0 * M_PI / 4.0, result);
+                        INFINITY, -INFINITY, 3.0 * SDL_PI_D / 4.0, result);
 
     result = SDL_atan2(-INFINITY, INFINITY);
-    SDLTest_AssertCheck(-M_PI / 4.0 == result,
+    SDLTest_AssertCheck(-SDL_PI_D / 4.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, INFINITY, -M_PI / 4.0, result);
+                        -INFINITY, INFINITY, -SDL_PI_D / 4.0, result);
 
     result = SDL_atan2(-INFINITY, -INFINITY);
-    SDLTest_AssertCheck(-3.0 * M_PI / 4.0 == result,
+    SDLTest_AssertCheck(-3.0 * SDL_PI_D / 4.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, -INFINITY, -3.0 * M_PI / 4.0, result);
+                        -INFINITY, -INFINITY, -3.0 * SDL_PI_D / 4.0, result);
 
     return TEST_COMPLETED;
 }
@@ -2619,24 +2619,24 @@ atan2_yInfCases(void *args)
     double result;
 
     result = SDL_atan2(INFINITY, 1.0);
-    SDLTest_AssertCheck(M_PI / 2.0 == result,
+    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, 1.0, M_PI / 2.0, result);
+                        INFINITY, 1.0, SDL_PI_D / 2.0, result);
 
     result = SDL_atan2(INFINITY, -1.0);
-    SDLTest_AssertCheck(M_PI / 2.0 == result,
+    SDLTest_AssertCheck(SDL_PI_D / 2.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        INFINITY, -1.0, M_PI / 2.0, result);
+                        INFINITY, -1.0, SDL_PI_D / 2.0, result);
 
     result = SDL_atan2(-INFINITY, 1.0);
-    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, 1.0, -M_PI / 2.0, result);
+                        -INFINITY, 1.0, -SDL_PI_D / 2.0, result);
 
     result = SDL_atan2(-INFINITY, -1.0);
-    SDLTest_AssertCheck(-M_PI / 2.0 == result,
+    SDLTest_AssertCheck(-SDL_PI_D / 2.0 == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        -INFINITY, -1.0, -M_PI / 2.0, result);
+                        -INFINITY, -1.0, -SDL_PI_D / 2.0, result);
 
     return TEST_COMPLETED;
 }
@@ -2663,14 +2663,14 @@ atan2_xInfCases(void *args)
                         -1.0, INFINITY, -0.0, result);
 
     result = SDL_atan2(1.0, -INFINITY);
-    SDLTest_AssertCheck(M_PI == result,
+    SDLTest_AssertCheck(SDL_PI_D == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        1.0, -INFINITY, M_PI, result);
+                        1.0, -INFINITY, SDL_PI_D, result);
 
     result = SDL_atan2(-1.0, -INFINITY);
-    SDLTest_AssertCheck(-M_PI == result,
+    SDLTest_AssertCheck(-SDL_PI_D == result,
                         "Atan2(%f,%f), expected %f, got %f",
-                        -1.0, -INFINITY, -M_PI, result);
+                        -1.0, -INFINITY, -SDL_PI_D, result);
 
     return TEST_COMPLETED;
 }
@@ -2712,9 +2712,9 @@ static int
 atan2_topRightQuadrantTest(void *args)
 {
     const dd_to_d top_right_cases[] = {
-        { 1.0, 1.0, M_PI / 4.0 },
-        { SQRT3, 3.0, M_PI / 6.0 },
-        { SQRT3, 1.0, M_PI / 3.0 }
+        { 1.0, 1.0, SDL_PI_D / 4.0 },
+        { SQRT3, 3.0, SDL_PI_D / 6.0 },
+        { SQRT3, 1.0, SDL_PI_D / 3.0 }
     };
     return helper_ddtod_inexact("SDL_atan2", SDL_atan2, top_right_cases, SDL_arraysize(top_right_cases));
 }
@@ -2727,9 +2727,9 @@ static int
 atan2_topLeftQuadrantTest(void *args)
 {
     const dd_to_d top_left_cases[] = {
-        { 1.0, -1.0, 3.0 * M_PI / 4.0 },
-        { SQRT3, -3.0, 5.0 * M_PI / 6.0 },
-        { SQRT3, -1.0, 2.0 * M_PI / 3.0 }
+        { 1.0, -1.0, 3.0 * SDL_PI_D / 4.0 },
+        { SQRT3, -3.0, 5.0 * SDL_PI_D / 6.0 },
+        { SQRT3, -1.0, 2.0 * SDL_PI_D / 3.0 }
     };
     return helper_ddtod_inexact("SDL_atan2", SDL_atan2, top_left_cases, SDL_arraysize(top_left_cases));
 }
@@ -2742,9 +2742,9 @@ static int
 atan2_bottomRightQuadrantTest(void *args)
 {
     const dd_to_d bottom_right_cases[] = {
-        { -1.0, 1.0, -M_PI / 4 },
-        { -SQRT3, 3.0, -M_PI / 6.0 },
-        { -SQRT3, 1.0, -M_PI / 3.0 }
+        { -1.0, 1.0, -SDL_PI_D / 4 },
+        { -SQRT3, 3.0, -SDL_PI_D / 6.0 },
+        { -SQRT3, 1.0, -SDL_PI_D / 3.0 }
     };
     return helper_ddtod_inexact("SDL_atan2", SDL_atan2, bottom_right_cases, SDL_arraysize(bottom_right_cases));
 }
@@ -2757,9 +2757,9 @@ static int
 atan2_bottomLeftQuadrantTest(void *args)
 {
     const dd_to_d bottom_left_cases[] = {
-        { -1.0, -1.0, -3.0 * M_PI / 4.0 },
-        { -SQRT3, -3.0, -5.0 * M_PI / 6.0 },
-        { -SQRT3, -1.0, -4.0 * M_PI / 6.0 }
+        { -1.0, -1.0, -3.0 * SDL_PI_D / 4.0 },
+        { -SQRT3, -3.0, -5.0 * SDL_PI_D / 6.0 },
+        { -SQRT3, -1.0, -4.0 * SDL_PI_D / 6.0 }
     };
     return helper_ddtod_inexact("SDL_atan2", SDL_atan2, bottom_left_cases, SDL_arraysize(bottom_left_cases));
 }

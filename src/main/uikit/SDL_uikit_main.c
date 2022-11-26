@@ -5,7 +5,7 @@
 /* Include the SDL main definition header */
 #include "SDL_main.h"
 
-#if defined(__IPHONEOS__) || defined(__TVOS__)
+#if defined(__IOS__) || defined(__TVOS__)
 
 #ifndef SDL_MAIN_HANDLED
 #ifdef main
@@ -19,6 +19,6 @@ main(int argc, char *argv[])
 }
 #endif /* !SDL_MAIN_HANDLED */
 
-#endif /* __IPHONEOS__ || __TVOS__ */
+#endif /* __IOS__ || __TVOS__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -52,7 +52,7 @@ enum blit_features {
 #ifdef HAVE_ALTIVEC_H
 #include <altivec.h>
 #endif
-#ifdef __MACOSX__
+#ifdef __MACOS__
 #include <sys/sysctl.h>
 static size_t
 GetL3CacheSize(void)
@@ -76,9 +76,9 @@ GetL3CacheSize(void)
     /* XXX: Just guess G4 */
     return 2097152;
 }
-#endif /* __MACOSX__ */
+#endif /* __MACOS__ */
 
-#if (defined(__MACOSX__) && (__GNUC__ < 4))
+#if (defined(__MACOS__) && (__GNUC__ < 4))
 #define VECUINT8_LITERAL(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) \
         (vector unsigned char) ( a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p )
 #define VECUINT16_LITERAL(a,b,c,d,e,f,g,h) \

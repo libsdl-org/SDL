@@ -6,4 +6,15 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* M_PI is no longer defined in SDL_stdinc.h, now the symbols SDL_PI_D (double) and SDL_PI_F (float) are available
 * SDL_GetWindowWMInfo() returns a standard int result code instead of SDL_bool, and takes SDL_SYSWM_CURRENT_VERSION as a new third parameter
+* The preprocessor symbol __MACOSX__ has been renamed __MACOS__
+* The preprocessor symbol __IPHONEOS__ has been renamed __IOS__
+* Removed the following functions from the API:
+	* SDL_CalculateGammaRamp()
+	* SDL_GetRevisionNumber()
+	* SDL_GetWindowBrightness()
+	* SDL_GetWindowGammaRamp()
+	* SDL_RWFromFP()
+	* SDL_SetWindowBrightness()
+	* SDL_SetWindowGammaRamp()

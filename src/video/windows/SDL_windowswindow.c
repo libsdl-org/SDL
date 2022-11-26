@@ -1020,25 +1020,6 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-int
-WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
-{
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
-    HDC hdc;
-    BOOL succeeded = FALSE;
-
-    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
-    if (hdc) {
-        succeeded = SetDeviceGammaRamp(hdc, (LPVOID)ramp);
-        if (!succeeded) {
-            WIN_SetError("SetDeviceGammaRamp()");
-        }
-        DeleteDC(hdc);
-    }
-    return succeeded ? 0 : -1;
-}
-
 void
 WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_bool send_event)
 {
@@ -1087,25 +1068,6 @@ WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
         SDL_OutOfMemory();
     }
     return iccProfileData;
-}
-
-int
-WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
-{
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
-    HDC hdc;
-    BOOL succeeded = FALSE;
-
-    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
-    if (hdc) {
-        succeeded = GetDeviceGammaRamp(hdc, (LPVOID)ramp);
-        if (!succeeded) {
-            WIN_SetError("GetDeviceGammaRamp()");
-        }
-        DeleteDC(hdc);
-    }
-    return succeeded ? 0 : -1;
 }
 
 static void WIN_GrabKeyboard(SDL_Window *window)

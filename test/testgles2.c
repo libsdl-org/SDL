@@ -20,7 +20,7 @@
 
 #include "SDL_test_common.h"
 
-#if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
+#if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
 #ifndef HAVE_OPENGLES2
 #define HAVE_OPENGLES2
 #endif
@@ -127,7 +127,7 @@ rotate_matrix(float angle, float x, float y, float z, float *r)
     float radians, c, s, c1, u[3], length;
     int i, j;
 
-    radians = (float)(angle * M_PI) / 180.0f;
+    radians = (angle * SDL_PI_F) / 180.0f;
 
     c = SDL_cosf(radians);
     s = SDL_sinf(radians);

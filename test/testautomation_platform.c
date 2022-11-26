@@ -124,7 +124,6 @@ int platform_testEndianessAndSwap(void *arg)
  * http://wiki.libsdl.org/SDL_GetCPUCount
  * http://wiki.libsdl.org/SDL_GetCPUCacheLineSize
  * http://wiki.libsdl.org/SDL_GetRevision
- * http://wiki.libsdl.org/SDL_GetRevisionNumber
  */
 int platform_testGetFunctions (void *arg)
 {

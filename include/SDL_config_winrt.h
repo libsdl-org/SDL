@@ -110,7 +110,6 @@
 /* #undef HAVE__LTOA */
 /* #undef HAVE__ULTOA */
 /* #undef HAVE_SSCANF */
-#define HAVE_M_PI 1
 #define HAVE_ACOS   1
 #define HAVE_ACOSF  1
 #define HAVE_ASIN   1

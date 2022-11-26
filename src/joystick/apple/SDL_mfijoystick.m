@@ -41,13 +41,13 @@
 #import <CoreMotion/CoreMotion.h>
 #endif
 
-#if defined(__MACOSX__)
+#if defined(__MACOS__)
 #include <IOKit/hid/IOHIDManager.h>
 #include <AppKit/NSApplication.h>
 #ifndef NSAppKitVersionNumber10_15
 #define NSAppKitVersionNumber10_15 1894
 #endif
-#endif /* __MACOSX__ */
+#endif /* __MACOS__ */
 
 #ifdef SDL_JOYSTICK_MFI
 #import <GameController/GameController.h>
@@ -63,7 +63,7 @@ static NSString *GCInputXboxShareButton = @"Button Share";
  * they are only ever used indirectly through objc_msgSend
  */
 @interface GCController (SDL)
-#if defined(__MACOSX__) && (__MAC_OS_X_VERSION_MAX_ALLOWED <= 101600)
+#if defined(__MACOS__) && (__MAC_OS_X_VERSION_MAX_ALLOWED <= 101600)
 + (BOOL)supportsHIDDevice:(IOHIDDeviceRef)device;
 #endif
 #if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 130000) || (__MAC_OS_VERSION_MAX_ALLOWED >= 1500000))
@@ -638,7 +638,7 @@ SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *
 static int
 IOS_JoystickInit(void)
 {
-#if defined(__MACOSX__)
+#if defined(__MACOS__)
 #if _SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 10.16, *)) {
         /* Continue with initialization on macOS 11+ */
@@ -883,7 +883,7 @@ IOS_AccelerometerUpdate(SDL_Joystick *joystick)
      by MAX_SINT16 so that it is mapped to the full range of an Sint16.
 
      You can customize the clamped range of this function by modifying the
-     SDL_IPHONE_MAX_GFORCE macro in SDL_config_iphoneos.h.
+     SDL_IPHONE_MAX_GFORCE macro in SDL_config_ios.h.
 
      Once converted to Sint16, the accelerometer data no longer has coherent
      units. You can convert the data back to units of g-force by multiplying
@@ -1673,7 +1673,7 @@ IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     return SDL_FALSE;
 }
 
-#if defined(SDL_JOYSTICK_MFI) && defined(__MACOSX__)
+#if defined(SDL_JOYSTICK_MFI) && defined(__MACOS__)
 SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (@available(macOS 10.16, *)) {

@@ -122,7 +122,7 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FP
     double sinangle;
     double cosangle;
 
-    radangle = angle * (M_PI / 180.0);
+    radangle = angle * (SDL_PI_D / 180.0);
     sinangle = SDL_sin(radangle);
     cosangle = SDL_cos(radangle);
 

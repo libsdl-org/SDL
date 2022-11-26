@@ -43,7 +43,7 @@
 /* Reworked monotonic clock to not assume the current system has one
    as not all linux kernels provide a monotonic clock (yeah recent ones
    probably do)
-   Also added OS X Monotonic clock support
+   Also added macOS Monotonic clock support
    Based on work in https://github.com/ThomasHabets/monotonic_clock
  */
 #if HAVE_NANOSLEEP || HAVE_CLOCK_GETTIME

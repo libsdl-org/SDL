@@ -4,7 +4,7 @@ iOS
 Building the Simple DirectMedia Layer for iOS 9.0+
 ==============================================================================
 
-Requirements: Mac OS X 10.9 or later and the iOS 9.0 or newer SDK.
+Requirements: macOS 10.9 or later and the iOS 9.0 or newer SDK.
 
 Instructions:
 
@@ -233,7 +233,7 @@ Textures:
 	The optimal texture formats on iOS are SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, and SDL_PIXELFORMAT_RGB24 pixel formats.
 
 Loading Shared Objects:
-	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_iphoneos.h.
+	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_ios.h.
 
 
 Notes -- CoreBluetooth.framework
@@ -273,7 +273,7 @@ e.g.
     {
         ... initialize game ...
     
-    #if __IPHONEOS__
+    #ifdef __IOS__
         // Initialize the Game Center for scoring and matchmaking
         InitGameCenter();
     
