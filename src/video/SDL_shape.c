@@ -55,20 +55,24 @@ SDL_bool SDL_IsShapedWindow(const SDL_Window *window)
     return (window->shaper != NULL);
 }
 
-/* REQUIRES that bitmap point to a w-by-h bitmap with ppb pixels-per-byte. */
-void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint8 *bitmap, Uint8 ppb)
+/* REQUIRES that bitmap point to a w-by-h bitmap with ppb pixels-per-byte and alignBytes scan line alignment. */
+void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint8* bitmap, Uint8 ppb, Uint8 alignBytes)
 {
     int x = 0;
     int y = 0;
     Uint8 r = 0, g = 0, b = 0, alpha = 0;
     Uint32 mask_value = 0;
-    size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
+    int bytes_per_scanline;
+
     Uint8 *bitmap_scanline;
     SDL_Color key;
 
     if (SDL_MUSTLOCK(shape)) {
         SDL_LockSurface(shape);
     }
+
+    bytes_per_scanline = (shape->w + (ppb - 1)) / ppb;
+    bytes_per_scanline = (bytes_per_scanline + (alignBytes - 1)) & ~(alignBytes - 1);
 
     SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
 
