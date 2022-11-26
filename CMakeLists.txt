@@ -123,10 +123,6 @@ math(EXPR DYLIB_CURRENT_VERSION_MINOR "${LT_REVISION}")
 set(DYLIB_CURRENT_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.${DYLIB_CURRENT_VERSION_MINOR}.0")
 set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.0.0")
 
-# This list holds all generated headers.
-# To avoid generating them twice, these are added to a dummy target on which all sdl targets depend.
-set(SDL_GENERATED_HEADERS)
-
 #message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT}")
 
 check_cpu_architecture(x86 SDL_CPU_X86)
@@ -358,7 +354,12 @@ endif()
 
 # General includes
 target_compile_definitions(sdl-build-options INTERFACE "-DUSING_GENERATED_CONFIG_H")
-target_include_directories(sdl-build-options BEFORE INTERFACE "${SDL3_BINARY_DIR}/include" "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
+target_include_directories(sdl-build-options
+  INTERFACE
+    "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>"
+    "${SDL3_BINARY_DIR}/include"
+    "${SDL3_SOURCE_DIR}/include"
+)
 # Note: The clang toolset for Visual Studio does not support the '-idirafter' option.
 if(USE_GCC OR (USE_CLANG AND NOT MSVC_CLANG))
   # !!! FIXME: do we _need_ to mess with CMAKE_C_FLAGS here?
@@ -2902,8 +2903,7 @@ configure_file("${SDL3_SOURCE_DIR}/include/build_config/SDL_build_config.h.cmake
   "${SDL3_BINARY_DIR}/SDL_build_config.h.intermediate")
 # 2. Create the "include-config-${CMAKE_BUILD_TYPE}" folder (fails on older CMake versions when it does not exist)
 string(TOLOWER "${CMAKE_BUILD_TYPE}" lower_build_type)
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/include-config-${lower_build_type}")
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/include-config-${lower_build_type}/build_config")
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/include-config-${lower_build_type}/build_config")
 # 3. generate SDL_build_config.h in an build_type-dependent folder (which should be first in the include search path)
 file(GENERATE
     OUTPUT "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/build_config/SDL_build_config.h"
@@ -2921,6 +2921,13 @@ if(EXTRA_CFLAGS)
 endif()
 listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
+
+file(GLOB SDL3_INCLUDE_FILES ${SDL3_SOURCE_DIR}/include/*.h)
+foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
+  if(_hdr MATCHES ".*SDL_revision.h")
+    list(REMOVE_ITEM SDL3_INCLUDE_FILES "${_hdr}")
+  endif()
+endforeach()
 
 # Compat helpers for the configuration files
 
@@ -2956,26 +2963,8 @@ else()
   set(SDL_REVISION "SDL-${SDL_VERSION}-no-vcs")
 endif()
 
-configure_file("${SDL3_SOURCE_DIR}/include/SDL_revision.h.cmake"
+configure_file("${SDL3_SOURCE_DIR}/include/build_config/SDL_revision.h.cmake"
   "${SDL3_BINARY_DIR}/include/SDL_revision.h")
-
-# Copy all non-generated headers to "${SDL3_BINARY_DIR}/include"
-# This is done to avoid the inclusion of a pre-generated SDL_build_config.h
-file(GLOB SDL3_INCLUDE_FILES ${SDL3_SOURCE_DIR}/include/*.h)
-set(SDL3_COPIED_INCLUDE_FILES)
-foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
-  if(_hdr MATCHES ".*SDL_revision.h")
-    list(REMOVE_ITEM SDL3_INCLUDE_FILES "${_hdr}")
-  else()
-    get_filename_component(_name "${_hdr}" NAME)
-    set(_bin_hdr "${SDL3_BINARY_DIR}/include/${_name}")
-    list(APPEND SDL3_COPIED_INCLUDE_FILES "${_bin_hdr}")
-    add_custom_command(OUTPUT "${_bin_hdr}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_hdr}" "${_bin_hdr}"
-        DEPENDS "${_hdr}")
-  endif()
-endforeach()
-list(APPEND SDL_GENERATED_HEADERS ${SDL3_COPIED_INCLUDE_FILES})
 
 if(CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQUAL ".lib")
   # Avoid conflict between the dll import library and the static library
@@ -3118,10 +3107,6 @@ if(SDL_TESTS)
   set(HAVE_TESTS ON)
 endif()
 
-# Create target that collects all all generated include files.
-add_custom_target(sdl_headers_copy
-    DEPENDS ${SDL_GENERATED_HEADERS})
-
 ##### Info output #####
 message(STATUS "")
 message(STATUS "SDL3 was configured with the following options:")
@@ -3194,11 +3179,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} ${EXTRA_CFLAGS_BUILD}")
 if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
   # Build SDLmain
   add_library(SDL3main STATIC ${SDLMAIN_SOURCES})
-  add_dependencies(SDL3main sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL3::SDL3main ALIAS SDL3main)
-  target_include_directories(SDL3main BEFORE PRIVATE "${SDL3_BINARY_DIR}/include" PRIVATE "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>")
-  target_include_directories(SDL3main PUBLIC "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>" $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>)
+  target_include_directories(SDL3main
+    PRIVATE
+      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+    PUBLIC
+      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
+  )
   if (WIN32)
     target_link_libraries(SDL3main PRIVATE shell32)
   endif()
@@ -3238,7 +3229,6 @@ endif()
 
 if(SDL_SHARED)
   add_library(SDL3 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
-  add_dependencies(SDL3 sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL3::SDL3 ALIAS SDL3)
   set_target_properties(SDL3 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -3277,11 +3267,15 @@ if(SDL_SHARED)
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
   target_link_libraries(SDL3 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
-  target_include_directories(SDL3 PUBLIC
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+  target_include_directories(SDL3
+    PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+    PUBLIC
+      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>")
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
+  )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(MINGW OR CYGWIN)
@@ -3299,7 +3293,6 @@ endif()
 
 if(SDL_STATIC)
   add_library(SDL3-static STATIC ${SOURCE_FILES})
-  add_dependencies(SDL3-static sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL3::SDL3-static ALIAS SDL3-static)
   set_target_properties(SDL3-static PROPERTIES
@@ -3309,11 +3302,15 @@ if(SDL_STATIC)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
   target_link_libraries(SDL3-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
-  target_include_directories(SDL3-static PUBLIC
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+  target_include_directories(SDL3-static
+    PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+    PUBLIC
+      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>")
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
+  )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(NOT ANDROID)
@@ -3333,15 +3330,18 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 if(SDL_TEST)
   file(GLOB TEST_SOURCES ${SDL3_SOURCE_DIR}/src/test/*.c)
   add_library(SDL3_test STATIC ${TEST_SOURCES})
-  add_dependencies(SDL3_test sdl_headers_copy)
   add_library(SDL3::SDL3test ALIAS SDL3_test)
   set_target_properties(SDL3_test PROPERTIES
       EXPORT_NAME SDL3test)
-  target_include_directories(SDL3_test PUBLIC
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+  target_include_directories(SDL3_test
+    PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+    PUBLIC
+      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>")
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
+  )
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
