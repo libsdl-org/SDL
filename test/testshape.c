@@ -10,8 +10,7 @@
   freely.
 */
 #include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
+
 #include "SDL.h"
 #include "SDL_shape.h"
 

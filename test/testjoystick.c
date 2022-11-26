@@ -12,17 +12,13 @@
 
 /* Simple program to test the SDL joystick routines */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "SDL.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
-
-#ifndef SDL_JOYSTICK_DISABLED
 
 #ifdef __IOS__
 #define SCREEN_WIDTH    320
@@ -330,16 +326,5 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-#else
-
-int
-main(int argc, char *argv[])
-{
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL compiled without Joystick support.\n");
-    return 1;
-}
-
-#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

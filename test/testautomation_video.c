@@ -1,20 +1,6 @@
 /**
  * Video test suite
  */
-
-#include <stdio.h>
-#include <string.h>
-
-/* Visual Studio 2008 doesn't have stdint.h */
-#if defined(_MSC_VER) && _MSC_VER <= 1500
-#define UINT8_MAX   ~(Uint8)0
-#define UINT16_MAX  ~(Uint16)0
-#define UINT32_MAX  ~(Uint32)0
-#define UINT64_MAX  ~(Uint64)0
-#else
-#include <stdint.h>
-#endif
-
 #include "SDL.h"
 #include "SDL_test.h"
 
@@ -1941,3 +1927,5 @@ SDLTest_TestSuiteReference videoTestSuite = {
     videoTests,
     NULL
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

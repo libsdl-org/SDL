@@ -19,10 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_config.h"
+#include "build_config/SDL_build_config.h"
 #include "SDL_dynapi.h"
 
 #if SDL_DYNAMIC_API
+
+#ifdef HAVE_STDIO_H
+#include <stdio.h>
+#endif
 
 #include "SDL.h"
 
@@ -39,7 +43,7 @@
    we'll forget to bump every time we add a function, so this is the
    failsafe switch for major API change decisions. Respect it and use it
    sparingly. */
-#define SDL_DYNAPI_VERSION 1
+#define SDL_DYNAPI_VERSION 2
 
 static void SDL_InitDynamicAPI(void);
 

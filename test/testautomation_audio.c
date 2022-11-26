@@ -9,7 +9,6 @@
 #endif
 
 #include <stdio.h>
-#include <string.h>
 
 #include "SDL.h"
 #include "SDL_test.h"
@@ -1047,3 +1046,5 @@ SDLTest_TestSuiteReference audioTestSuite = {
     audioTests,
     _audioTearDown
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

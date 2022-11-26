@@ -20,11 +20,7 @@
 */
 
 /* Ported from original test/common.c file. */
-
-#include "SDL_config.h"
 #include "SDL_test.h"
-
-#include <stdio.h>
 
 static const char *video_usage[] = {
     "[--video driver]", "[--renderer driver]", "[--gldebug]",

@@ -9,7 +9,6 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdio.h>
 #include "SDL.h"
 
 static void
@@ -102,3 +101,5 @@ main(int argc, char **argv)
     SDL_Quit();
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

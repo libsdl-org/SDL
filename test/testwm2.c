@@ -11,7 +11,6 @@
 */
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>

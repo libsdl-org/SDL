@@ -9,9 +9,10 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL.h"
 
 #include <stdlib.h>
+
+#include "SDL.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -163,3 +164,4 @@ main(int argc, char **argv)
     return 0;
 }
 
+/* vi: set ts=4 sw=4 expandtab: */

@@ -1,8 +1,6 @@
 /**
  * Mouse test suite
  */
-
-#include <stdio.h>
 #include <limits.h>
 
 #include "SDL.h"
@@ -661,3 +659,5 @@ SDLTest_TestSuiteReference mouseTestSuite = {
     mouseTests,
     NULL
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

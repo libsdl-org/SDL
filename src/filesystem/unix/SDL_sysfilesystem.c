@@ -25,14 +25,14 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-#include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <limits.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #if defined(__FREEBSD__) || defined(__OPENBSD__)
 #include <sys/sysctl.h>

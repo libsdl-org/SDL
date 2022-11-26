@@ -55,7 +55,7 @@ _m_prefetch(void *__P)
 #define SDL_BIG_ENDIAN  4321
 /* @} */
 
-#ifndef SDL_BYTEORDER           /* Not defined in SDL_config.h? */
+#ifndef SDL_BYTEORDER
 #ifdef __linux__
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
@@ -87,7 +87,7 @@ _m_prefetch(void *__P)
 #endif /* __linux__ */
 #endif /* !SDL_BYTEORDER */
 
-#ifndef SDL_FLOATWORDORDER           /* Not defined in SDL_config.h? */
+#ifndef SDL_FLOATWORDORDER
 /* predefs from newer gcc versions: */
 #if defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__FLOAT_WORD_ORDER__)
 #if (__FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__)

@@ -24,9 +24,6 @@
  Used by the test framework and test cases.
 
 */
-
-#include "SDL_config.h"
-
 #include "SDL_test.h"
 
 /* Assert check message format */

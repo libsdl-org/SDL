@@ -201,9 +201,6 @@
     <ClInclude Include="..\..\include\SDL_clipboard.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL_config.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL_copying.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -824,9 +821,6 @@
       <Filter>render\direct3d12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
-    <ClInclude Include="..\..\include\SDL_config_wingdk.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\core\gdk\SDL_gdk.h">
       <Filter>core\gdk</Filter>
     </ClInclude>

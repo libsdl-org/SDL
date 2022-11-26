@@ -12,8 +12,6 @@
 
 /* Simple test of the SDL semaphore code */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <signal.h>
 
 #include "SDL.h"
@@ -279,3 +277,5 @@ main(int argc, char **argv)
     SDL_Quit();
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

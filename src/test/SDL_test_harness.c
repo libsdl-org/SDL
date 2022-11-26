@@ -18,15 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-#include "SDL_config.h"
-
 #include "SDL_test.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <stdlib.h>     /* Needed for exit() */
 
 /* Invalid test name/description message format */
 #define SDLTEST_INVALID_NAME_FORMAT "(Invalid)"

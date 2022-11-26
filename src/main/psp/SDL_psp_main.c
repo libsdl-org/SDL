@@ -1,7 +1,7 @@
 /*
     SDL_psp_main.c, placed in the public domain by Sam Lantinga  3/13/14
 */
-#include "SDL_config.h"
+#include "SDL_platform.h"
 
 #ifdef __PSP__
 

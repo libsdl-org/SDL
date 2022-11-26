@@ -198,12 +198,6 @@
     <ClInclude Include="..\..\include\SDL_clipboard.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL_config.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL_config_windows.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL_copying.h">
       <Filter>API Headers</Filter>
     </ClInclude>

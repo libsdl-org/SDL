@@ -13,7 +13,6 @@
 /* Simple program: picks the offscreen backend and renders each frame to a bmp */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
 
 #ifdef __EMSCRIPTEN__

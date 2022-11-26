@@ -12,7 +12,6 @@
 
 /* Simple test of the SDL threading code */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 
@@ -135,3 +134,5 @@ main(int argc, char *argv[])
     SDL_Quit();                 /* Never reached */
     return 0;                 /* Never reached */
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

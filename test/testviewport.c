@@ -12,8 +12,6 @@
 /* Simple program:  Check viewports */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>

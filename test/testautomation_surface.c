@@ -837,3 +837,5 @@ SDLTest_TestSuiteReference surfaceTestSuite = {
     _surfaceTearDown
 
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

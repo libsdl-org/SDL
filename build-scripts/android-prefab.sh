@@ -204,8 +204,6 @@ create_shared_sdl_module() {
 EOF
         mkdir -p "${sdl_moduleworkdir}/include"
         cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include/"
-        rm "${sdl_moduleworkdir}/include/SDL_config.h"
-        cp "$sdl_root/include/SDL_config.h" "$sdl_root/include/SDL_config_android.h" "${sdl_moduleworkdir}/include/"
 
         abi_sdllibdir="${sdl_moduleworkdir}/libs/android.${android_abi}"
         mkdir -p "${abi_sdllibdir}"
@@ -238,8 +236,6 @@ create_static_sdl_module() {
 EOF
         mkdir -p "${sdl_moduleworkdir}/include"
         cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include"
-        rm "${sdl_moduleworkdir}/include/SDL_config.h"
-        cp "$sdl_root/include/SDL_config.h" "$sdl_root/include/SDL_config_android.h" "${sdl_moduleworkdir}/include/"
 
         abi_sdllibdir="${sdl_moduleworkdir}/libs/android.${android_abi}"
         mkdir -p "${abi_sdllibdir}"

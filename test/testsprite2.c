@@ -12,7 +12,6 @@
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
 
 #ifdef __EMSCRIPTEN__

@@ -9,9 +9,6 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-
-#include <stdio.h>
-
 #include "SDL.h"
 
 /*
@@ -470,3 +467,5 @@ main(int argc, char *argv[])
 
     return status;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

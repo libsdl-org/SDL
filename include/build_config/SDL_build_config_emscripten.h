@@ -19,28 +19,23 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_emscripten_h_
-#define _SDL_config_emscripten_h_
+#ifndef _SDL_build_config_emscripten_h_
+#define _SDL_build_config_emscripten_h_
 
 #include "SDL_platform.h"
 
 /**
- *  \file SDL_config_emscripten.h
+ *  \file SDL_build_config_emscripten.h
  *
  *  This is a configuration that can be used to build SDL for Emscripten.
  */
 
-#ifdef __LP64__
-#define SIZEOF_VOIDP 8
-#else
-#define SIZEOF_VOIDP 4
-#endif
 #define HAVE_GCC_ATOMICS 1
 
 /* Useful headers */
-#define STDC_HEADERS 1
 #define HAVE_ALLOCA_H 1
 #define HAVE_CTYPE_H 1
+#define HAVE_FLOAT_H 1
 #define HAVE_ICONV_H 1
 #define HAVE_INTTYPES_H 1
 #define HAVE_LIMITS_H 1
@@ -49,6 +44,7 @@
 #define HAVE_MEMORY_H 1
 #define HAVE_SIGNAL_H 1
 #define HAVE_STDARG_H 1
+#define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
 #define HAVE_STDLIB_H 1
@@ -214,4 +210,4 @@
 /* Enable system filesystem support */
 #define SDL_FILESYSTEM_EMSCRIPTEN 1
 
-#endif /* _SDL_config_emscripten_h_ */
+#endif /* _SDL_build_config_emscripten_h_ */

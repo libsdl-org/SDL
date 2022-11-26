@@ -834,8 +834,8 @@ macro(CheckPTHREAD)
         endif()
       endif()
 
-      check_include_files("pthread.h" HAVE_PTHREAD_H)
-      check_include_files("pthread_np.h" HAVE_PTHREAD_NP_H)
+      check_include_file(pthread.h HAVE_PTHREAD_H)
+      check_include_file(pthread_np.h HAVE_PTHREAD_NP_H)
       if (HAVE_PTHREAD_H)
         check_c_source_compiles("
             #define _GNU_SOURCE 1

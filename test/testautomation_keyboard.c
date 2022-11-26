@@ -2,10 +2,6 @@
  * Keyboard test suite
  */
 
-#include <stdio.h>
-#include <limits.h>
-
-#include "SDL_config.h"
 #include "SDL.h"
 #include "SDL_test.h"
 
@@ -709,3 +705,5 @@ SDLTest_TestSuiteReference keyboardTestSuite = {
     keyboardTests,
     NULL
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -130,6 +130,7 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 
 ## SDL_stdinc.h
 
+The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
 

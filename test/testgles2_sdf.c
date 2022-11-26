@@ -10,9 +10,6 @@
   freely.
 */
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>

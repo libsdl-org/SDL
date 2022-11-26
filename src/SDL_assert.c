@@ -36,9 +36,6 @@
 #ifndef WS_OVERLAPPEDWINDOW
 #define WS_OVERLAPPEDWINDOW 0
 #endif
-#else  /* fprintf, etc. */
-#include <stdio.h>
-#include <stdlib.h>
 #endif
 
 #if defined(__EMSCRIPTEN__)

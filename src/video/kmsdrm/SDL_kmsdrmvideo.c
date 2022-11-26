@@ -550,7 +550,7 @@ KMSDRM_CrtcGetPropId(uint32_t drm_fd,
             continue;
         }
 
-        if (strcmp(drm_prop->name, name) == 0) {
+        if (SDL_strcmp(drm_prop->name, name) == 0) {
             prop_id = drm_prop->prop_id;
         }
 
@@ -605,7 +605,7 @@ KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
             continue;
         }
 
-        if (strcasecmp(drm_prop->name, name) == 0) {
+        if (SDL_strcasecmp(drm_prop->name, name) == 0) {
             prop_value = props->prop_values[i];
             found = SDL_TRUE;
         }

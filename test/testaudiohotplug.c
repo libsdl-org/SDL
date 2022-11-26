@@ -12,9 +12,6 @@
 
 /* Program to test hotplugging of audio devices */
 
-#include "SDL_config.h"
-
-#include <stdio.h>
 #include <stdlib.h>
 
 #if HAVE_SIGNAL_H

@@ -24,7 +24,7 @@
  *
  *  This is a simple file to encapsulate the OpenGL ES 1.X API headers.
  */
-#include "SDL_config.h"
+#include "SDL_platform.h"
 
 #ifdef __IOS__
 #include <OpenGLES/ES1/gl.h>

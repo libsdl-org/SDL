@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_config.h"
-
 #if defined(SDL_SENSOR_WINDOWS)
 
 #include "SDL_error.h"
