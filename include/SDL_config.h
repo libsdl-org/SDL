@@ -37,10 +37,10 @@
 #include "SDL_config_wingdk.h"
 #elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #include "SDL_config_xbox.h"
-#elif defined(__MACOSX__)
-#include "SDL_config_macosx.h"
-#elif defined(__IPHONEOS__)
-#include "SDL_config_iphoneos.h"
+#elif defined(__MACOS__)
+#include "SDL_config_macos.h"
+#elif defined(__IOS__)
+#include "SDL_config_ios.h"
 #elif defined(__ANDROID__)
 #include "SDL_config_android.h"
 #elif defined(__EMSCRIPTEN__)

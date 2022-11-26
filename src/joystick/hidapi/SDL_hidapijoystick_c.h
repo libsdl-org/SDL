@@ -67,8 +67,8 @@ typedef struct _SDL_HIDAPI_Device
     int interface_class;
     int interface_subclass;
     int interface_protocol;
-    Uint16 usage_page;      /* Available on Windows and Mac OS X */
-    Uint16 usage;           /* Available on Windows and Mac OS X */
+    Uint16 usage_page;      /* Available on Windows and macOS */
+    Uint16 usage;           /* Available on Windows and macOS */
     SDL_bool is_bluetooth;
     SDL_JoystickType joystick_type;
     SDL_GameControllerType type;

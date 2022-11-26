@@ -87,13 +87,13 @@ HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *na
         /* This is the chatpad or other input interface, not the Xbox 360 interface */
         return SDL_FALSE;
     }
-#if defined(__MACOSX__) || defined(__WIN32__)
+#if defined(__MACOS__) || defined(__WIN32__)
     if (vendor_id == USB_VENDOR_MICROSOFT && product_id == 0x028e && version == 1) {
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
     }
 #endif
-#if defined(__MACOSX__)
+#if defined(__MACOS__)
     /* Wired Xbox One controllers are handled by this driver, interfacing with
        the 360Controller driver available from:
        https://github.com/360Controller/360Controller/releases
@@ -209,7 +209,7 @@ HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 static int
 HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-#ifdef __MACOSX__
+#ifdef __MACOS__
     if (SDL_IsJoystickBluetoothXboxOne(device->vendor_id, device->product_id)) {
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00 };
 
@@ -220,7 +220,7 @@ HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
             return SDL_SetError("Couldn't send rumble packet");
         }
     } else {
-        /* On Mac OS X the 360Controller driver uses this short report,
+        /* On macOS the 360Controller driver uses this short report,
            and we need to prefix it with a magic token so hidapi passes it through untouched
          */
         Uint8 rumble_packet[] = { 'M', 'A', 'G', 'I', 'C', '0', 0x00, 0x04, 0x00, 0x00 };
@@ -280,7 +280,7 @@ static void
 HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverXbox360_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
-#ifdef __MACOSX__
+#ifdef __MACOS__
     const SDL_bool invert_y_axes = SDL_FALSE;
 #else
     const SDL_bool invert_y_axes = SDL_TRUE;

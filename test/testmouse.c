@@ -18,7 +18,7 @@
 
 #include <stdlib.h> /* exit() */
 
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 #define SCREEN_WIDTH    320
 #define SCREEN_HEIGHT   480
 #else

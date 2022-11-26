@@ -16,7 +16,7 @@
 
 #include "SDL_test_common.h"
 
-#if defined(__IPHONEOS__) || defined(__ANDROID__)
+#if defined(__IOS__) || defined(__ANDROID__)
 #define HAVE_OPENGLES
 #endif
 

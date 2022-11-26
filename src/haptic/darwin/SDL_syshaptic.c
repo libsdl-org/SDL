@@ -355,7 +355,7 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
         return SDL_SetError("Haptic: Unable to create CFProperties.");
     }
 
-    /* Mac OS X currently is not mirroring all USB properties to HID page so need to look at USB device page also
+    /* macOS currently is not mirroring all USB properties to HID page so need to look at USB device page also
      * get dictionary for USB properties: step up two levels and get CF dictionary for USB properties
      */
     if ((KERN_SUCCESS ==
@@ -1345,7 +1345,7 @@ SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain)
     HRESULT ret;
     Uint32 val;
 
-    val = gain * 100;           /* Mac OS X uses 0 to 10,000 */
+    val = gain * 100;           /* macOS uses 0 to 10,000 */
     ret = FFDeviceSetForceFeedbackProperty(haptic->hwdata->device,
                                            FFPROP_FFGAIN, &val);
     if (ret != FF_OK) {
@@ -1365,7 +1365,7 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
     HRESULT ret;
     Uint32 val;
 
-    /* Mac OS X only has 0 (off) and 1 (on) */
+    /* macOS only has 0 (off) and 1 (on) */
     if (autocenter == 0) {
         val = 0;
     } else {

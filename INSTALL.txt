@@ -11,7 +11,7 @@ To compile and install SDL:
         * Run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-mingw64-x86_64.cmake && cmake --build build && cmake --install build
 
         macOS with Xcode:
-        * Read docs/README-macosx.md
+        * Read docs/README-macos.md
 
         macOS from the command line:
         * Run: cmake -S . -B build && cmake --build build && cmake --install build

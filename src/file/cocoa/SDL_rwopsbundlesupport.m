@@ -25,7 +25,7 @@
 
 #include "SDL_rwopsbundlesupport.h"
 
-/* For proper OS X applications, the resources are contained inside the application bundle.
+/* For proper macOS applications, the resources are contained inside the application bundle.
  So the strategy is to first check the application bundle for the file, then fallback to the current working directory.
  Note: One additional corner-case is if the resource is in a framework's resource bundle instead of the app.
  We might want to use bundle identifiers, e.g. org.libsdl.sdl to get the bundle for the framework,

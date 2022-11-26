@@ -19,28 +19,23 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_macosx_h_
-#define SDL_config_macosx_h_
+#ifndef SDL_config_ios_h_
+#define SDL_config_ios_h_
 #define SDL_config_h_
 
 #include "SDL_platform.h"
 
-/* This gets us MAC_OS_X_VERSION_MIN_REQUIRED... */
-#include <AvailabilityMacros.h>
-
-/* This is a set of defines to configure the SDL features */
-
 #ifdef __LP64__
-    #define SIZEOF_VOIDP 8
+#define SIZEOF_VOIDP 8
 #else
-    #define SIZEOF_VOIDP 4
+#define SIZEOF_VOIDP 4
 #endif
 
-/* Useful headers */
+#define HAVE_GCC_ATOMICS    1
+
 #define STDC_HEADERS    1
 #define HAVE_ALLOCA_H       1
 #define HAVE_CTYPE_H    1
-#define HAVE_FLOAT_H    1
 #define HAVE_INTTYPES_H 1
 #define HAVE_LIMITS_H   1
 #define HAVE_MATH_H 1
@@ -49,7 +44,8 @@
 #define HAVE_STDIO_H    1
 #define HAVE_STRING_H   1
 #define HAVE_SYS_TYPES_H    1
-#define HAVE_LIBUNWIND_H    1
+/* The libunwind functions are only available on x86 */
+/* #undef HAVE_LIBUNWIND_H */
 
 /* C library functions */
 #define HAVE_DLOPEN 1
@@ -61,6 +57,7 @@
 #define HAVE_GETENV 1
 #define HAVE_SETENV 1
 #define HAVE_PUTENV 1
+#define HAVE_SETENV 1
 #define HAVE_UNSETENV   1
 #define HAVE_QSORT  1
 #define HAVE_BSEARCH 1
@@ -131,47 +128,38 @@
 #define HAVE_SQRTF  1
 #define HAVE_TAN    1
 #define HAVE_TANF   1
-#define HAVE_TRUNC    1
-#define HAVE_TRUNCF   1
+#define HAVE_TRUNC  1
+#define HAVE_TRUNCF 1
 #define HAVE_SIGACTION  1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
 #define HAVE_SYSCONF    1
 #define HAVE_SYSCTLBYNAME 1
-
-#if defined(__has_include) && (defined(__i386__) || defined(__x86_64))
-# if __has_include(<immintrin.h>)
-#   define HAVE_IMMINTRIN_H 1
-# endif
-#endif
-
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= 1070)
 #define HAVE_O_CLOEXEC 1
-#endif
 
-#define HAVE_GCC_ATOMICS 1
-
-/* Enable various audio drivers */
-#define SDL_AUDIO_DRIVER_COREAUDIO  1
-#define SDL_AUDIO_DRIVER_DISK   1
+/* enable iPhone version of Core Audio driver */
+#define SDL_AUDIO_DRIVER_COREAUDIO 1
+/* Enable the dummy audio driver (src/audio/dummy/\*.c) */
 #define SDL_AUDIO_DRIVER_DUMMY  1
 
-/* Enable various input drivers */
-#define SDL_JOYSTICK_HIDAPI 1
-#define SDL_JOYSTICK_IOKIT  1
-#define SDL_JOYSTICK_VIRTUAL    1
-#define SDL_HAPTIC_IOKIT    1
+/* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
+#define SDL_HAPTIC_DUMMY 1
 
-/* The MFI controller support requires ARC Objective C runtime */
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1080 && !defined(__i386__)
+/* Enable joystick support */
+/* Only enable HIDAPI support if you want to support Steam Controllers on iOS and tvOS */
+/*#define SDL_JOYSTICK_HIDAPI 1*/
 #define SDL_JOYSTICK_MFI 1
+#define SDL_JOYSTICK_VIRTUAL    1
+
+#ifdef __TVOS__
+#define SDL_SENSOR_DUMMY    1
+#else
+/* Enable the CoreMotion sensor driver */
+#define SDL_SENSOR_COREMOTION   1
 #endif
 
-/* Enable the dummy sensor driver */
-#define SDL_SENSOR_DUMMY  1
-
-/* Enable various shared object loading systems */
-#define SDL_LOADSO_DLOPEN   1
+/* Enable Unix style SO loading */
+#define SDL_LOADSO_DLOPEN 1
 
 /* Enable various threading systems */
 #define SDL_THREAD_PTHREAD  1
@@ -180,97 +168,49 @@
 /* Enable various timer systems */
 #define SDL_TIMER_UNIX  1
 
-/* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_COCOA  1
+/* Supported video drivers */
+#define SDL_VIDEO_DRIVER_UIKIT  1
 #define SDL_VIDEO_DRIVER_DUMMY  1
-#undef SDL_VIDEO_DRIVER_X11
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC "/opt/X11/lib/libX11.6.dylib"
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "/opt/X11/lib/libXext.6.dylib"
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "/opt/X11/lib/libXi.6.dylib"
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR "/opt/X11/lib/libXrandr.2.dylib"
-#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS "/opt/X11/lib/libXss.1.dylib"
-#define SDL_VIDEO_DRIVER_X11_XDBE 1
-#define SDL_VIDEO_DRIVER_X11_XRANDR 1
-#define SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1
-#define SDL_VIDEO_DRIVER_X11_XSHAPE 1
-#define SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM 1
 
-#ifdef MAC_OS_X_VERSION_10_8
-/*
- * No matter the versions targeted, this is the 10.8 or later SDK, so you have
- *  to use the external Xquartz, which is a more modern Xlib. Previous SDKs
- *  used an older Xlib.
+/* Enable OpenGL ES */
+#if !TARGET_OS_MACCATALYST
+#define SDL_VIDEO_OPENGL_ES2 1
+#define SDL_VIDEO_OPENGL_ES 1
+#define SDL_VIDEO_RENDER_OGL_ES 1
+#define SDL_VIDEO_RENDER_OGL_ES2    1
+#endif
+
+/* Metal supported on 64-bit devices running iOS 8.0 and tvOS 9.0 and newer
+   Also supported in simulator from iOS 13.0 and tvOS 13.0
  */
-#define SDL_VIDEO_DRIVER_X11_XINPUT2 1
-#define SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1
-#endif
-
-#ifndef SDL_VIDEO_RENDER_OGL
-#define SDL_VIDEO_RENDER_OGL    1
-#endif
-
-#ifndef SDL_VIDEO_RENDER_OGL_ES2
-#define SDL_VIDEO_RENDER_OGL_ES2 1
-#endif
-
-/* Metal only supported on 64-bit architectures with 10.11+ */
-#if TARGET_RT_64_BIT && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
-#define SDL_PLATFORM_SUPPORTS_METAL    1
+#if (TARGET_OS_SIMULATOR && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 130000) || (__TV_OS_VERSION_MIN_REQUIRED >= 130000))) || (!TARGET_CPU_ARM && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 80000) || (__TV_OS_VERSION_MIN_REQUIRED >= 90000)))
+#define SDL_PLATFORM_SUPPORTS_METAL	1
 #else
-#define SDL_PLATFORM_SUPPORTS_METAL    0
+#define SDL_PLATFORM_SUPPORTS_METAL	0
 #endif
 
-#ifndef SDL_VIDEO_RENDER_METAL
 #if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_RENDER_METAL    1
-#else
-#define SDL_VIDEO_RENDER_METAL    0
-#endif
+#define SDL_VIDEO_RENDER_METAL  1
 #endif
 
-/* Enable OpenGL support */
-#ifndef SDL_VIDEO_OPENGL
-#define SDL_VIDEO_OPENGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_ES2
-#define SDL_VIDEO_OPENGL_ES2    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_EGL
-#define SDL_VIDEO_OPENGL_EGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_CGL
-#define SDL_VIDEO_OPENGL_CGL    1
-#endif
-#ifndef SDL_VIDEO_OPENGL_GLX
-#define SDL_VIDEO_OPENGL_GLX    1
-#endif
-
-/* Enable Vulkan and Metal support */
-#ifndef SDL_VIDEO_VULKAN
 #if SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_VULKAN 1
-#else
-#define SDL_VIDEO_VULKAN 0
-#endif
 #endif
 
-#ifndef SDL_VIDEO_METAL
 #if SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_METAL 1
-#else
-#define SDL_VIDEO_METAL 0
-#endif
 #endif
 
 /* Enable system power support */
-#define SDL_POWER_MACOSX 1
+#define SDL_POWER_UIKIT 1
+
+/* enable iPhone keyboard support */
+#define SDL_IPHONE_KEYBOARD 1
+
+/* enable iOS extended launch screen */
+#define SDL_IPHONE_LAUNCHSCREEN 1
 
 /* enable filesystem support */
 #define SDL_FILESYSTEM_COCOA   1
 
-/* Enable assembly routines */
-#ifdef __ppc__
-#define SDL_ALTIVEC_BLITTERS    1
-#endif
-
-#endif /* SDL_config_macosx_h_ */
+#endif /* SDL_config_ios_h_ */

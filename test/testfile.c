@@ -28,7 +28,7 @@
 
 /* WARNING ! those 2 files will be destroyed by this test program */
 
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 #define FBASENAME1  "../Documents/sdldata1" /* this file will be created during tests */
 #define FBASENAME2  "../Documents/sdldata2"     /* this file should not exist before starting test */
 #else

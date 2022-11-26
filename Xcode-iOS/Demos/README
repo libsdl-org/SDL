@@ -18,11 +18,11 @@ Happy (happy.c):
 
 Accelerometer (accelerometer.c):
 
-	Uses the iPhone's accelerometer as a joystick device to move a spaceship around the screen.  Note the use of the macro SDL_IPHONE_MAX_GFORCE (normally defined in SDL_config_iphoneos.h) which converts between the Sint16 number returned by SDL_JoystickGetAxis, and the floating point units of g-force reported natively by the iPhone. 
+	Uses the iPhone's accelerometer as a joystick device to move a spaceship around the screen.  Note the use of the macro SDL_IPHONE_MAX_GFORCE (normally defined in SDL_config_ios.h) which converts between the Sint16 number returned by SDL_JoystickGetAxis, and the floating point units of g-force reported natively by the iPhone. 
 
 Touch (touch.c):
 
-	Acts as a finger-paint type program.  Demonstrates how you can use SDL mouse input to accept touch input from the iPhone.  If SDL for iPhone is compiled with multitouch as multiple mouse emulation (SDL_IPHONE_MULTIPLE_MICE in SDL_config_iphoneos.h) then the program will accept multiple finger inputs simultaneously. 
+	Acts as a finger-paint type program.  Demonstrates how you can use SDL mouse input to accept touch input from the iPhone.  If SDL for iPhone is compiled with multitouch as multiple mouse emulation (SDL_IPHONE_MULTIPLE_MICE in SDL_config_ios.h) then the program will accept multiple finger inputs simultaneously. 
 
 Mixer (mixer.c):
 

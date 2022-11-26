@@ -280,7 +280,7 @@ Cocoa_CreateImage(SDL_Surface * surface)
 }
 
 /*
- * Mac OS X log support.
+ * macOS log support.
  *
  * This doesn't really have aything to do with the interfaces of the SDL video
  *  subsystem, but we need to stuff this into an Objective-C source code file.

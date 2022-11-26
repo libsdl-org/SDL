@@ -101,7 +101,7 @@ SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
 
 #if SDL_HAVE_BLIT_AUTO
 
-#ifdef __MACOSX__
+#ifdef __MACOS__
 #include <sys/sysctl.h>
 
 static SDL_bool
@@ -124,7 +124,7 @@ SDL_UseAltivecPrefetch()
     /* Just guess G4 */
     return SDL_TRUE;
 }
-#endif /* __MACOSX__ */
+#endif /* __MACOS__ */
 
 static SDL_BlitFunc
 SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,

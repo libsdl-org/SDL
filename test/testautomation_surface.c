@@ -16,7 +16,7 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
-#ifdef __MACOSX__
+#ifdef __MACOS__
 #include <unistd.h> /* For unlink() */
 #endif
 

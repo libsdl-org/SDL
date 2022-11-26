@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 
     /* Test showing a message box from a background thread.
 
-       On Mac OS X, the video subsystem needs to be initialized for this
+       On macOS, the video subsystem needs to be initialized for this
        to work, since the message box events are dispatched by the Cocoa
        subsystem on the main thread.
      */

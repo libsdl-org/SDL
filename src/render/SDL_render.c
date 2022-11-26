@@ -39,7 +39,7 @@ SDL_AddEventWatch to catch SDL_APP_WILLENTERBACKGROUND events and stopped
 drawing themselves. Other platforms still draw, as the compositor can use it,
 and more importantly: drawing to render targets isn't lost. But I still think
 this should probably be removed at some point in the future.  --ryan. */
-#if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
+#if defined(__IOS__) || defined(__TVOS__) || defined(__ANDROID__)
 #define DONT_DRAW_WHILE_HIDDEN 1
 #else
 #define DONT_DRAW_WHILE_HIDDEN 0

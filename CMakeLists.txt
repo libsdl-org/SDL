@@ -209,7 +209,7 @@ mark_as_advanced(SDL_CHECK_REQUIRED_INCLUDES SDL_CHECK_REQUIRED_LINK_OPTIONS)
 list(APPEND CMAKE_REQUIRED_INCLUDES ${SDL_CHECK_REQUIRED_INCLUDES})
 list(APPEND CMAKE_REQUIRED_LINK_OPTIONS ${SDL_CHECK_REQUIRED_LINK_OPTIONS})
 
-# Don't mistake osx for unix
+# Don't mistake macOS for unix
 if(UNIX AND NOT ANDROID AND NOT APPLE AND NOT RISCOS)
   set(UNIX_SYS ON)
 else()
@@ -2033,7 +2033,7 @@ elseif(WINDOWS)
   endif()
 
 elseif(APPLE)
-  # TODO: rework this all for proper MacOS X, iOS and Darwin support
+  # TODO: rework this all for proper macOS, iOS and Darwin support
 
   # We always need these libs on macOS at the moment.
   # !!! FIXME: we need Carbon for some very old API calls in
@@ -2061,7 +2061,7 @@ elseif(APPLE)
     if(IOS OR TVOS)
       file(GLOB MISC_SOURCES ${SDL3_SOURCE_DIR}/src/misc/ios/*.m)
     else()
-      file(GLOB MISC_SOURCES ${SDL3_SOURCE_DIR}/src/misc/macosx/*.m)
+      file(GLOB MISC_SOURCES ${SDL3_SOURCE_DIR}/src/misc/macos/*.m)
     endif()
     list(APPEND SOURCE_FILES ${MISC_SOURCES})
     set(HAVE_SDL_MISC TRUE)
@@ -2082,7 +2082,7 @@ elseif(APPLE)
   endif()
 
   if(SDL_JOYSTICK)
-    file(GLOB MFI_JOYSTICK_SOURCES ${SDL3_SOURCE_DIR}/src/joystick/iphoneos/*.m)
+    file(GLOB MFI_JOYSTICK_SOURCES ${SDL3_SOURCE_DIR}/src/joystick/apple/*.m)
     if(IOS OR TVOS)
       file(GLOB JOYSTICK_SOURCES ${SDL3_SOURCE_DIR}/src/joystick/steam/*.c)
       set(SDL_JOYSTICK_MFI 1)
@@ -2145,7 +2145,7 @@ elseif(APPLE)
       file(GLOB POWER_SOURCES ${SDL3_SOURCE_DIR}/src/power/uikit/*.m)
       set(SDL_POWER_UIKIT 1)
     else()
-      file(GLOB POWER_SOURCES ${SDL3_SOURCE_DIR}/src/power/macosx/*.c)
+      file(GLOB POWER_SOURCES ${SDL3_SOURCE_DIR}/src/power/macos/*.c)
       set(SDL_POWER_MACOSX 1)
       set(SDL_FRAMEWORK_IOKIT 1)
     endif()
@@ -2154,7 +2154,7 @@ elseif(APPLE)
   endif()
 
   if(SDL_LOCALE)
-    file(GLOB LOCALE_SOURCES ${SDL3_SOURCE_DIR}/src/locale/macosx/*.m)
+    file(GLOB LOCALE_SOURCES ${SDL3_SOURCE_DIR}/src/locale/macos/*.m)
     list(APPEND SOURCE_FILES ${LOCALE_SOURCES})
     set(HAVE_SDL_LOCALE TRUE)
   endif()

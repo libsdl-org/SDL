@@ -6,7 +6,7 @@
 # Shamelessly stolen from Owen Taylor
 #
 # Changelog:
-# * also look for SDL3.framework under Mac OS X
+# * also look for SDL3.framework under macOS
 # * removed HP/UX 9 support.
 # * updated for newer autoconf.
 

@@ -23,7 +23,7 @@
 #if SDL_VIDEO_DRIVER_COCOA
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-# error SDL for Mac OS X must be built with a 10.7 SDK or above.
+# error SDL for macOS must be built with a 10.7 SDK or above.
 #endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1070 */
 
 #include "SDL_timer.h"  /* For SDL_GetTicks() */
@@ -2145,8 +2145,8 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         rect.size.height = bounds.h;
         ConvertNSRect([nswindow screen], fullscreen, &rect);
 
-        /* Hack to fix origin on Mac OS X 10.4
-           This is no longer needed as of Mac OS X 10.15, according to bug 4822.
+        /* Hack to fix origin on macOS 10.4
+           This is no longer needed as of macOS 10.15, according to bug 4822.
          */
         if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14) {
             NSRect screenRect = [[nswindow screen] frame];
@@ -2172,7 +2172,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
          * was created as fullscreen-desktop. */
         [nswindow setStyleMask:GetWindowWindowedStyle(window)];
 
-        /* Hack to restore window decorations on Mac OS X 10.10 */
+        /* Hack to restore window decorations on macOS 10.10 */
         frameRect = [nswindow frame];
         [nswindow setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
         [nswindow setFrame:frameRect display:NO];

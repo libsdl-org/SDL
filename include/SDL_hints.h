@@ -194,7 +194,7 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
- *  \brief  A variable controlling the audio category on iOS and Mac OS X
+ *  \brief  A variable controlling the audio category on iOS and macOS
  *
  *  This variable can be set to the following values:
  *
@@ -1076,7 +1076,7 @@ extern "C" {
 /**
 *  \brief  When set don't force the SDL app to become a foreground process
 *
-*  This hint only applies to Mac OS X.
+*  This hint only applies to macOS.
 *
 */
 #define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
@@ -1685,9 +1685,9 @@ extern "C" {
 #define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_VIDEO_HIGHDPI_DISABLED"
 
 /**
- *  \brief  A variable that dictates policy for fullscreen Spaces on Mac OS X.
+ *  \brief  A variable that dictates policy for fullscreen Spaces on macOS.
  *
- *  This hint only applies to Mac OS X.
+ *  This hint only applies to macOS.
  *
  *  The variable can be set to the following values:
  *    "0"       - Disable Spaces support (FULLSCREEN_DESKTOP won't use them and

@@ -369,7 +369,7 @@ Valgrind has support for Android out of the box, just grab code using:
 
 ... and follow the instructions in the file README.android to build it.
 
-One thing I needed to do on Mac OS X was change the path to the toolchain,
+One thing I needed to do on macOS was change the path to the toolchain,
 and add ranlib to the environment variables:
 export RANLIB=$NDKROOT/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin/arm-linux-androideabi-ranlib
 

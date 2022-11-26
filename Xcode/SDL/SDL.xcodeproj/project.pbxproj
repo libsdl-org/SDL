@@ -152,7 +152,7 @@
 		A75FCD0723E25AB700529352 /* SDL_glfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90E23E2514000DCD162 /* SDL_glfuncs.h */; };
 		A75FCD0823E25AB700529352 /* SDL_atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CA1595D4D800BBD41B /* SDL_atomic.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCD0923E25AB700529352 /* SDL_rect_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60C23E2513D00DCD162 /* SDL_rect_c.h */; };
-		A75FCD0B23E25AB700529352 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
+		A75FCD0B23E25AB700529352 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
 		A75FCD0C23E25AB700529352 /* SDL_shaders_metal_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8DF23E2514000DCD162 /* SDL_shaders_metal_ios.h */; };
 		A75FCD0D23E25AB700529352 /* SDL_offscreenwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5F523E2513D00DCD162 /* SDL_offscreenwindow.h */; };
 		A75FCD0E23E25AB700529352 /* SDL_audio.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CB1595D4D800BBD41B /* SDL_audio.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -528,7 +528,7 @@
 		A75FCEC023E25AC700529352 /* SDL_glfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90E23E2514000DCD162 /* SDL_glfuncs.h */; };
 		A75FCEC123E25AC700529352 /* SDL_atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CA1595D4D800BBD41B /* SDL_atomic.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCEC223E25AC700529352 /* SDL_rect_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60C23E2513D00DCD162 /* SDL_rect_c.h */; };
-		A75FCEC423E25AC700529352 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
+		A75FCEC423E25AC700529352 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
 		A75FCEC523E25AC700529352 /* SDL_shaders_metal_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8DF23E2514000DCD162 /* SDL_shaders_metal_ios.h */; };
 		A75FCEC623E25AC700529352 /* SDL_offscreenwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5F523E2513D00DCD162 /* SDL_offscreenwindow.h */; };
 		A75FCEC723E25AC700529352 /* SDL_audio.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CB1595D4D800BBD41B /* SDL_audio.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -896,12 +896,12 @@
 		A75FDAC023E28B8000529352 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABF23E28B8000529352 /* CoreMotion.framework */; };
 		A75FDAC223E28B9600529352 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAC123E28B9600529352 /* CoreGraphics.framework */; };
 		A75FDAC423E28BA700529352 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDAC323E28BA700529352 /* CoreBluetooth.framework */; };
-		A75FDAF623E35EC400529352 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A75FDAF723E35EC400529352 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A75FDAF823E35ED500529352 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */; };
-		A75FDAF923E35ED500529352 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */; };
-		A75FDAFA23E35ED600529352 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */; };
-		A75FDAFB23E35ED700529352 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */; };
+		A75FDAF623E35EC400529352 /* SDL_config_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_ios.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A75FDAF723E35EC400529352 /* SDL_config_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_ios.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A75FDAF823E35ED500529352 /* SDL_config_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_ios.h */; };
+		A75FDAF923E35ED500529352 /* SDL_config_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_ios.h */; };
+		A75FDAFA23E35ED600529352 /* SDL_config_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_ios.h */; };
+		A75FDAFB23E35ED700529352 /* SDL_config_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDAF523E35EC400529352 /* SDL_config_ios.h */; };
 		A75FDB5823E39E6100529352 /* hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDB5723E39E6100529352 /* hidapi.h */; };
 		A75FDB5923E39E6100529352 /* hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDB5723E39E6100529352 /* hidapi.h */; };
 		A75FDB5A23E39E6100529352 /* hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDB5723E39E6100529352 /* hidapi.h */; };
@@ -941,7 +941,7 @@
 		A769B08D23E259AE00872273 /* SDL_shape_internals.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60D23E2513D00DCD162 /* SDL_shape_internals.h */; };
 		A769B08E23E259AE00872273 /* SDL_glfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90E23E2514000DCD162 /* SDL_glfuncs.h */; };
 		A769B09023E259AE00872273 /* SDL_rect_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60C23E2513D00DCD162 /* SDL_rect_c.h */; };
-		A769B09223E259AE00872273 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
+		A769B09223E259AE00872273 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
 		A769B09323E259AE00872273 /* SDL_shaders_metal_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8DF23E2514000DCD162 /* SDL_shaders_metal_ios.h */; };
 		A769B09423E259AE00872273 /* SDL_offscreenwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5F523E2513D00DCD162 /* SDL_offscreenwindow.h */; };
 		A769B09623E259AE00872273 /* SDL_coremotionsensor.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A57B23E2513D00DCD162 /* SDL_coremotionsensor.h */; };
@@ -2702,12 +2702,12 @@
 		A7D8B99523E2514400DCD162 /* SDL_shaders_metal.metal in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8E023E2514000DCD162 /* SDL_shaders_metal.metal */; };
 		A7D8B99623E2514400DCD162 /* SDL_shaders_metal.metal in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8E023E2514000DCD162 /* SDL_shaders_metal.metal */; };
 		A7D8B99723E2514400DCD162 /* SDL_shaders_metal.metal in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8E023E2514000DCD162 /* SDL_shaders_metal.metal */; };
-		A7D8B99B23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
-		A7D8B99C23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
-		A7D8B99D23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
-		A7D8B99E23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
-		A7D8B99F23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
-		A7D8B9A023E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */; };
+		A7D8B99B23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
+		A7D8B99C23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
+		A7D8B99D23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
+		A7D8B99E23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
+		A7D8B99F23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
+		A7D8B9A023E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */; };
 		A7D8B9A123E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */; };
 		A7D8B9A223E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */; };
 		A7D8B9A323E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */; };
@@ -3250,7 +3250,7 @@
 		AA7558021595D4D800BBD41B /* SDL_audio.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CB1595D4D800BBD41B /* SDL_audio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA7558041595D4D800BBD41B /* SDL_blendmode.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CC1595D4D800BBD41B /* SDL_blendmode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA7558061595D4D800BBD41B /* SDL_clipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CD1595D4D800BBD41B /* SDL_clipboard.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		AA7558081595D4D800BBD41B /* SDL_config_macosx.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CE1595D4D800BBD41B /* SDL_config_macosx.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AA7558081595D4D800BBD41B /* SDL_config_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CE1595D4D800BBD41B /* SDL_config_macos.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA75580A1595D4D800BBD41B /* SDL_config.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CF1595D4D800BBD41B /* SDL_config.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA75580C1595D4D800BBD41B /* SDL_copying.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557D01595D4D800BBD41B /* SDL_copying.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA75580E1595D4D800BBD41B /* SDL_cpuinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557D11595D4D800BBD41B /* SDL_cpuinfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -3315,7 +3315,7 @@
 		DB313FCC17554B71006C0E22 /* SDL_audio.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CB1595D4D800BBD41B /* SDL_audio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB313FCD17554B71006C0E22 /* SDL_blendmode.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CC1595D4D800BBD41B /* SDL_blendmode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB313FCE17554B71006C0E22 /* SDL_clipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CD1595D4D800BBD41B /* SDL_clipboard.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DB313FCF17554B71006C0E22 /* SDL_config_macosx.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CE1595D4D800BBD41B /* SDL_config_macosx.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB313FCF17554B71006C0E22 /* SDL_config_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CE1595D4D800BBD41B /* SDL_config_macos.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB313FD017554B71006C0E22 /* SDL_config.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557CF1595D4D800BBD41B /* SDL_config.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB313FD117554B71006C0E22 /* SDL_copying.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557D01595D4D800BBD41B /* SDL_copying.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB313FD217554B71006C0E22 /* SDL_cpuinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557D11595D4D800BBD41B /* SDL_cpuinfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -3690,7 +3690,7 @@
 		564624351FF821B80074AC87 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		564624371FF821CB0074AC87 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		566E26792462701100718109 /* SDL_locale.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_locale.h; sourceTree = "<group>"; };
-		566E26CC246274CB00718109 /* SDL_syslocale.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_syslocale.m; path = locale/macosx/SDL_syslocale.m; sourceTree = "<group>"; };
+		566E26CC246274CB00718109 /* SDL_syslocale.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_syslocale.m; path = locale/macos/SDL_syslocale.m; sourceTree = "<group>"; };
 		566E26CD246274CB00718109 /* SDL_locale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_locale.c; path = locale/SDL_locale.c; sourceTree = "<group>"; };
 		566E26CE246274CC00718109 /* SDL_syslocale.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_syslocale.h; path = locale/SDL_syslocale.h; sourceTree = "<group>"; };
 		567E2F2017C44C35005F1892 /* SDL_filesystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_filesystem.h; sourceTree = "<group>"; };
@@ -3713,7 +3713,7 @@
 		A75FDABF23E28B8000529352 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		A75FDAC123E28B9600529352 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		A75FDAC323E28BA700529352 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
-		A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_config_iphoneos.h; sourceTree = "<group>"; };
+		A75FDAF523E35EC400529352 /* SDL_config_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_config_ios.h; sourceTree = "<group>"; };
 		A75FDB5723E39E6100529352 /* hidapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hidapi.h; path = hidapi/hidapi.h; sourceTree = "<group>"; };
 		A75FDB9223E4C8DB00529352 /* hid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hid.c; sourceTree = "<group>"; };
 		A75FDBA323E4CB6F00529352 /* LICENSE-bsd.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "LICENSE-bsd.txt"; sourceTree = "<group>"; };
@@ -3960,7 +3960,7 @@
 		A7D8A8DE23E2514000DCD162 /* SDL_render_metal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_render_metal.m; sourceTree = "<group>"; };
 		A7D8A8DF23E2514000DCD162 /* SDL_shaders_metal_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_ios.h; sourceTree = "<group>"; };
 		A7D8A8E023E2514000DCD162 /* SDL_shaders_metal.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = SDL_shaders_metal.metal; sourceTree = "<group>"; };
-		A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_osx.h; sourceTree = "<group>"; };
+		A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_macos.h; sourceTree = "<group>"; };
 		A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_tvos.h; sourceTree = "<group>"; };
 		A7D8A8EC23E2514000DCD162 /* SDL_yuv_sw_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_yuv_sw_c.h; sourceTree = "<group>"; };
 		A7D8A8ED23E2514000DCD162 /* SDL_yuv_sw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_yuv_sw.c; sourceTree = "<group>"; };
@@ -4047,7 +4047,7 @@
 		AA7557CB1595D4D800BBD41B /* SDL_audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audio.h; sourceTree = "<group>"; };
 		AA7557CC1595D4D800BBD41B /* SDL_blendmode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_blendmode.h; sourceTree = "<group>"; };
 		AA7557CD1595D4D800BBD41B /* SDL_clipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_clipboard.h; sourceTree = "<group>"; };
-		AA7557CE1595D4D800BBD41B /* SDL_config_macosx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_config_macosx.h; sourceTree = "<group>"; };
+		AA7557CE1595D4D800BBD41B /* SDL_config_macos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_config_macos.h; sourceTree = "<group>"; };
 		AA7557CF1595D4D800BBD41B /* SDL_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_config.h; sourceTree = "<group>"; };
 		AA7557D01595D4D800BBD41B /* SDL_copying.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_copying.h; sourceTree = "<group>"; };
 		AA7557D11595D4D800BBD41B /* SDL_cpuinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cpuinfo.h; sourceTree = "<group>"; };
@@ -4318,8 +4318,8 @@
 				AADA5B8616CCAB3000107CF7 /* SDL_bits.h */,
 				AA7557CC1595D4D800BBD41B /* SDL_blendmode.h */,
 				AA7557CD1595D4D800BBD41B /* SDL_clipboard.h */,
-				A75FDAF523E35EC400529352 /* SDL_config_iphoneos.h */,
-				AA7557CE1595D4D800BBD41B /* SDL_config_macosx.h */,
+				A75FDAF523E35EC400529352 /* SDL_config_ios.h */,
+				AA7557CE1595D4D800BBD41B /* SDL_config_macos.h */,
 				AA7557CF1595D4D800BBD41B /* SDL_config.h */,
 				AA7557D01595D4D800BBD41B /* SDL_copying.h */,
 				AA7557D11595D4D800BBD41B /* SDL_cpuinfo.h */,
@@ -4471,19 +4471,19 @@
 			isa = PBXGroup;
 			children = (
 				F3ADAB8C2576F08500A6B1D9 /* ios */,
-				5616CA48252BB285005D5928 /* macosx */,
+				5616CA48252BB285005D5928 /* macos */,
 				5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */,
 				5616CA49252BB2A5005D5928 /* SDL_url.c */,
 			);
 			path = misc;
 			sourceTree = "<group>";
 		};
-		5616CA48252BB285005D5928 /* macosx */ = {
+		5616CA48252BB285005D5928 /* macos */ = {
 			isa = PBXGroup;
 			children = (
 				5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */,
 			);
-			path = macosx;
+			path = macos;
 			sourceTree = "<group>";
 		};
 		564624341FF821B70074AC87 /* Frameworks */ = {
@@ -4528,19 +4528,19 @@
 		566E26CB246274AE00718109 /* locale */ = {
 			isa = PBXGroup;
 			children = (
-				566E26EA246274E800718109 /* macosx */,
+				566E26EA246274E800718109 /* macos */,
 				566E26CD246274CB00718109 /* SDL_locale.c */,
 				566E26CE246274CC00718109 /* SDL_syslocale.h */,
 			);
 			name = locale;
 			sourceTree = "<group>";
 		};
-		566E26EA246274E800718109 /* macosx */ = {
+		566E26EA246274E800718109 /* macos */ = {
 			isa = PBXGroup;
 			children = (
 				566E26CC246274CB00718109 /* SDL_syslocale.m */,
 			);
-			name = macosx;
+			name = macos;
 			sourceTree = "<group>";
 		};
 		75E09157241EA924004729E1 /* virtual */ = {
@@ -4944,10 +4944,10 @@
 		A7D8A79D23E2513E00DCD162 /* joystick */ = {
 			isa = PBXGroup;
 			children = (
+				A7D8A7AA23E2513E00DCD162 /* apple */,
 				A7D8A7CC23E2513E00DCD162 /* darwin */,
 				A7D8A79F23E2513E00DCD162 /* dummy */,
 				A7D8A7BE23E2513E00DCD162 /* hidapi */,
-				A7D8A7AA23E2513E00DCD162 /* iphoneos */,
 				A7D8A7A123E2513E00DCD162 /* steam */,
 				75E09157241EA924004729E1 /* virtual */,
 				A7D8A7AD23E2513E00DCD162 /* SDL_gamecontroller.c */,
@@ -4979,13 +4979,13 @@
 			path = steam;
 			sourceTree = "<group>";
 		};
-		A7D8A7AA23E2513E00DCD162 /* iphoneos */ = {
+		A7D8A7AA23E2513E00DCD162 /* apple */ = {
 			isa = PBXGroup;
 			children = (
 				F395C1B02569C6A000942BFF /* SDL_mfijoystick_c.h */,
 				F395C1AF2569C6A000942BFF /* SDL_mfijoystick.m */,
 			);
-			path = iphoneos;
+			path = apple;
 			sourceTree = "<group>";
 		};
 		A7D8A7BE23E2513E00DCD162 /* hidapi */ = {
@@ -5043,7 +5043,7 @@
 		A7D8A7DF23E2513F00DCD162 /* power */ = {
 			isa = PBXGroup;
 			children = (
-				A7D8A7EA23E2513F00DCD162 /* macosx */,
+				A7D8A7EA23E2513F00DCD162 /* macos */,
 				A7D8A7E023E2513F00DCD162 /* uikit */,
 				A7D8A7E723E2513F00DCD162 /* SDL_power.c */,
 				A7D8A7F423E2513F00DCD162 /* SDL_syspower.h */,
@@ -5060,12 +5060,12 @@
 			path = uikit;
 			sourceTree = "<group>";
 		};
-		A7D8A7EA23E2513F00DCD162 /* macosx */ = {
+		A7D8A7EA23E2513F00DCD162 /* macos */ = {
 			isa = PBXGroup;
 			children = (
 				A7D8A7EB23E2513F00DCD162 /* SDL_syspower.c */,
 			);
-			path = macosx;
+			path = macos;
 			sourceTree = "<group>";
 		};
 		A7D8A7F623E2513F00DCD162 /* filesystem */ = {
@@ -5221,7 +5221,7 @@
 			children = (
 				A7D8A8DE23E2514000DCD162 /* SDL_render_metal.m */,
 				A7D8A8DF23E2514000DCD162 /* SDL_shaders_metal_ios.h */,
-				A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_osx.h */,
+				A7D8A8E223E2514000DCD162 /* SDL_shaders_metal_macos.h */,
 				A7D8A8E323E2514000DCD162 /* SDL_shaders_metal_tvos.h */,
 				A7D8A8E023E2514000DCD162 /* SDL_shaders_metal.metal */,
 			);
@@ -5399,7 +5399,7 @@
 				A75FCD0823E25AB700529352 /* SDL_atomic.h in Headers */,
 				F386F6F72884663E001840AA /* SDL_utils_c.h in Headers */,
 				A75FCD0923E25AB700529352 /* SDL_rect_c.h in Headers */,
-				A75FCD0B23E25AB700529352 /* SDL_shaders_metal_osx.h in Headers */,
+				A75FCD0B23E25AB700529352 /* SDL_shaders_metal_macos.h in Headers */,
 				F382072E284F3643004DD584 /* SDL_guid.h in Headers */,
 				A75FCD0C23E25AB700529352 /* SDL_shaders_metal_ios.h in Headers */,
 				A75FCD0D23E25AB700529352 /* SDL_offscreenwindow.h in Headers */,
@@ -5502,7 +5502,7 @@
 				A75FCD7323E25AB700529352 /* SDL_yuv_c.h in Headers */,
 				A75FCD7423E25AB700529352 /* scancodes_xfree86.h in Headers */,
 				A75FCD7523E25AB700529352 /* SDL_syspower.h in Headers */,
-				A75FDAFA23E35ED600529352 /* SDL_config_iphoneos.h in Headers */,
+				A75FDAFA23E35ED600529352 /* SDL_config_ios.h in Headers */,
 				A75FCD7723E25AB700529352 /* SDL_name.h in Headers */,
 				A75FCD7823E25AB700529352 /* eglext.h in Headers */,
 				A75FCD7923E25AB700529352 /* SDL_events_c.h in Headers */,
@@ -5628,7 +5628,7 @@
 				A75FCEC123E25AC700529352 /* SDL_atomic.h in Headers */,
 				F386F6F82884663E001840AA /* SDL_utils_c.h in Headers */,
 				A75FCEC223E25AC700529352 /* SDL_rect_c.h in Headers */,
-				A75FCEC423E25AC700529352 /* SDL_shaders_metal_osx.h in Headers */,
+				A75FCEC423E25AC700529352 /* SDL_shaders_metal_macos.h in Headers */,
 				A75FCEC523E25AC700529352 /* SDL_shaders_metal_ios.h in Headers */,
 				A75FCEC623E25AC700529352 /* SDL_offscreenwindow.h in Headers */,
 				A75FCEC723E25AC700529352 /* SDL_audio.h in Headers */,
@@ -5731,7 +5731,7 @@
 				A75FCF2C23E25AC700529352 /* SDL_yuv_c.h in Headers */,
 				A75FCF2D23E25AC700529352 /* scancodes_xfree86.h in Headers */,
 				A75FCF2E23E25AC700529352 /* SDL_syspower.h in Headers */,
-				A75FDAFB23E35ED700529352 /* SDL_config_iphoneos.h in Headers */,
+				A75FDAFB23E35ED700529352 /* SDL_config_ios.h in Headers */,
 				A75FCF3023E25AC700529352 /* SDL_name.h in Headers */,
 				A75FCF3123E25AC700529352 /* eglext.h in Headers */,
 				A75FCF3223E25AC700529352 /* SDL_events_c.h in Headers */,
@@ -5850,7 +5850,7 @@
 				A769B08D23E259AE00872273 /* SDL_shape_internals.h in Headers */,
 				A769B08E23E259AE00872273 /* SDL_glfuncs.h in Headers */,
 				A769B09023E259AE00872273 /* SDL_rect_c.h in Headers */,
-				A769B09223E259AE00872273 /* SDL_shaders_metal_osx.h in Headers */,
+				A769B09223E259AE00872273 /* SDL_shaders_metal_macos.h in Headers */,
 				A769B09323E259AE00872273 /* SDL_shaders_metal_ios.h in Headers */,
 				A769B09423E259AE00872273 /* SDL_offscreenwindow.h in Headers */,
 				A769B09623E259AE00872273 /* SDL_coremotionsensor.h in Headers */,
@@ -5927,7 +5927,7 @@
 				A769B0FB23E259AE00872273 /* SDL_yuv_c.h in Headers */,
 				A769B0FC23E259AE00872273 /* scancodes_xfree86.h in Headers */,
 				A769B0FD23E259AE00872273 /* SDL_syspower.h in Headers */,
-				A75FDAF923E35ED500529352 /* SDL_config_iphoneos.h in Headers */,
+				A75FDAF923E35ED500529352 /* SDL_config_ios.h in Headers */,
 				A769B10023E259AE00872273 /* eglext.h in Headers */,
 				A769B10123E259AE00872273 /* SDL_events_c.h in Headers */,
 				A769B10223E259AE00872273 /* math_private.h in Headers */,
@@ -6047,7 +6047,7 @@
 				A7D8AEE923E2514100DCD162 /* SDL_cocoavulkan.h in Headers */,
 				A7D8AEFB23E2514100DCD162 /* SDL_cocoawindow.h in Headers */,
 				A7D88A2323E2437C00DCD162 /* SDL_config.h in Headers */,
-				A75FDAF623E35EC400529352 /* SDL_config_iphoneos.h in Headers */,
+				A75FDAF623E35EC400529352 /* SDL_config_ios.h in Headers */,
 				A7D88A2523E2437C00DCD162 /* SDL_copying.h in Headers */,
 				A7D8B8CD23E2514400DCD162 /* SDL_coreaudio.h in Headers */,
 				A7D8A97023E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
@@ -6145,7 +6145,7 @@
 				A7D8BA5023E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
 				A1BB8B6D27F6CF330057CFA8 /* SDL_list.h in Headers */,
 				A7D8B98D23E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
-				A7D8B99C23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */,
+				A7D8B99C23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
 				A7D8B9A223E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */,
 				A7D88A5023E2437C00DCD162 /* SDL_shape.h in Headers */,
 				A7D8AC0A23E2514100DCD162 /* SDL_shape_internals.h in Headers */,
@@ -6281,7 +6281,7 @@
 				A7D8AEEA23E2514100DCD162 /* SDL_cocoavulkan.h in Headers */,
 				A7D8AEFC23E2514100DCD162 /* SDL_cocoawindow.h in Headers */,
 				A7D88BDA23E24BED00DCD162 /* SDL_config.h in Headers */,
-				A75FDAF723E35EC400529352 /* SDL_config_iphoneos.h in Headers */,
+				A75FDAF723E35EC400529352 /* SDL_config_ios.h in Headers */,
 				A7D88BDC23E24BED00DCD162 /* SDL_copying.h in Headers */,
 				A7D8B8CE23E2514400DCD162 /* SDL_coreaudio.h in Headers */,
 				A7D8A97123E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
@@ -6379,7 +6379,7 @@
 				A7D8BA5123E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
 				A1BB8B6E27F6CF330057CFA8 /* SDL_list.h in Headers */,
 				A7D8B98E23E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
-				A7D8B99D23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */,
+				A7D8B99D23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
 				A7D8B9A323E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */,
 				A7D88C0A23E24BED00DCD162 /* SDL_shape.h in Headers */,
 				A7D8AC0B23E2514100DCD162 /* SDL_shape_internals.h in Headers */,
@@ -6487,7 +6487,7 @@
 				A7D8AC0D23E2514100DCD162 /* SDL_shape_internals.h in Headers */,
 				A7D8BA7D23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AC0723E2514100DCD162 /* SDL_rect_c.h in Headers */,
-				A7D8B99F23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */,
+				A7D8B99F23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
 				A7D8B99023E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
 				A7D8AB8923E2514100DCD162 /* SDL_offscreenwindow.h in Headers */,
 				A7D8A97323E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
@@ -6564,7 +6564,7 @@
 				A7D8B3B423E2514200DCD162 /* SDL_yuv_c.h in Headers */,
 				A7D8BBA323E2514500DCD162 /* scancodes_xfree86.h in Headers */,
 				A7D8B5D923E2514300DCD162 /* SDL_syspower.h in Headers */,
-				A75FDAF823E35ED500529352 /* SDL_config_iphoneos.h in Headers */,
+				A75FDAF823E35ED500529352 /* SDL_config_ios.h in Headers */,
 				A7D8B24623E2514200DCD162 /* eglext.h in Headers */,
 				A7D8BBA923E2514500DCD162 /* SDL_events_c.h in Headers */,
 				A7D8BAC523E2514500DCD162 /* math_private.h in Headers */,
@@ -6684,7 +6684,7 @@
 				A7D8AEE823E2514100DCD162 /* SDL_cocoavulkan.h in Headers */,
 				A7D8AEFA23E2514100DCD162 /* SDL_cocoawindow.h in Headers */,
 				AA75580A1595D4D800BBD41B /* SDL_config.h in Headers */,
-				AA7558081595D4D800BBD41B /* SDL_config_macosx.h in Headers */,
+				AA7558081595D4D800BBD41B /* SDL_config_macos.h in Headers */,
 				AA75580C1595D4D800BBD41B /* SDL_copying.h in Headers */,
 				A7D8B8CC23E2514400DCD162 /* SDL_coreaudio.h in Headers */,
 				A7D8A96F23E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
@@ -6782,7 +6782,7 @@
 				A7D8BA4F23E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
 				A1BB8B6C27F6CF330057CFA8 /* SDL_list.h in Headers */,
 				A7D8B98C23E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
-				A7D8B99B23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */,
+				A7D8B99B23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
 				A7D8B9A123E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */,
 				AA7558481595D4D800BBD41B /* SDL_shape.h in Headers */,
 				A7D8AC0923E2514100DCD162 /* SDL_shape_internals.h in Headers */,
@@ -6889,7 +6889,7 @@
 				A7D8BA7C23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AC0623E2514100DCD162 /* SDL_rect_c.h in Headers */,
 				75E09166241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */,
-				A7D8B99E23E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */,
+				A7D8B99E23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
 				A7D8B98F23E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
 				A7D8AB8823E2514100DCD162 /* SDL_offscreenwindow.h in Headers */,
 				A7D8A97223E2514000DCD162 /* SDL_coremotionsensor.h in Headers */,
@@ -7066,7 +7066,7 @@
 				F386F6F62884663E001840AA /* SDL_utils_c.h in Headers */,
 				75E09169241EA924004729E1 /* SDL_virtualjoystick_c.h in Headers */,
 				A7D8AC0823E2514100DCD162 /* SDL_rect_c.h in Headers */,
-				A7D8B9A023E2514400DCD162 /* SDL_shaders_metal_osx.h in Headers */,
+				A7D8B9A023E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
 				A7D8B99123E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
 				F382072D284F3643004DD584 /* SDL_guid.h in Headers */,
 				A7D8AB8A23E2514100DCD162 /* SDL_offscreenwindow.h in Headers */,
@@ -7084,7 +7084,7 @@
 				A7D8A96223E2514000DCD162 /* SDL_error_c.h in Headers */,
 				DB313FD017554B71006C0E22 /* SDL_config.h in Headers */,
 				A7D8B98523E2514400DCD162 /* SDL_d3dmath.h in Headers */,
-				DB313FCF17554B71006C0E22 /* SDL_config_macosx.h in Headers */,
+				DB313FCF17554B71006C0E22 /* SDL_config_macos.h in Headers */,
 				A7D8ABDE23E2514100DCD162 /* SDL_egl_c.h in Headers */,
 				DB313FD117554B71006C0E22 /* SDL_copying.h in Headers */,
 				F382338B2738EB8600F7F527 /* SDL_hidapi.h in Headers */,
@@ -7361,7 +7361,7 @@
 			);
 			buildRules = (
 			);
-			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it. If you need it back, set the \"Exported Symbols File\" option to:\n../../src/main/macosx/exports/SDL.x\n(You may need to regenerate the exports list. There is a Makefile in that directory that you can run from the command line to rebuild it.)\nLong term, we want to utilize gcc 4.0's new visibility feature (analogous to declspec on Windows). Other platforms would benefit from this change too. The downside is that we still use gcc 3.3 for the PowerPC build here so only our x86 builds will cull the symbols if we go down this route (and don't use the exports file).\n\n";
+			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it.\n\n";
 			dependencies = (
 			);
 			name = "Framework-iOS";
@@ -7383,7 +7383,7 @@
 			);
 			buildRules = (
 			);
-			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it. If you need it back, set the \"Exported Symbols File\" option to:\n../../src/main/macosx/exports/SDL.x\n(You may need to regenerate the exports list. There is a Makefile in that directory that you can run from the command line to rebuild it.)\nLong term, we want to utilize gcc 4.0's new visibility feature (analogous to declspec on Windows). Other platforms would benefit from this change too. The downside is that we still use gcc 3.3 for the PowerPC build here so only our x86 builds will cull the symbols if we go down this route (and don't use the exports file).\n\n";
+			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it.\n\n";
 			dependencies = (
 			);
 			name = "Framework-tvOS";
@@ -7425,7 +7425,7 @@
 			);
 			buildRules = (
 			);
-			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it. If you need it back, set the \"Exported Symbols File\" option to:\n../../src/main/macosx/exports/SDL.x\n(You may need to regenerate the exports list. There is a Makefile in that directory that you can run from the command line to rebuild it.)\nLong term, we want to utilize gcc 4.0's new visibility feature (analogous to declspec on Windows). Other platforms would benefit from this change too. The downside is that we still use gcc 3.3 for the PowerPC build here so only our x86 builds will cull the symbols if we go down this route (and don't use the exports file).\n\n";
+			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it.\n\n";
 			dependencies = (
 			);
 			name = Framework;

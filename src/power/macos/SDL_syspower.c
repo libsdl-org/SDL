@@ -89,7 +89,7 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
         SInt32 val = -1;
         CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
 
-        /* Mac OS X reports 0 minutes until empty if you're plugged in. :( */
+        /* macOS reports 0 minutes until empty if you're plugged in. :( */
         if ((val == 0) && (is_ac)) {
             val = -1;           /* !!! FIXME: calc from timeToFull and capacity? */
         }
@@ -183,7 +183,7 @@ SDL_GetPowerInfo_MacOSX(SDL_PowerState * state, int *seconds, int *percent)
         CFRelease(blob);
     }
 
-    return SDL_TRUE;            /* always the definitive answer on Mac OS X. */
+    return SDL_TRUE;            /* always the definitive answer on macOS. */
 }
 
 #endif /* SDL_POWER_MACOSX */

@@ -71,7 +71,7 @@
 #endif
 
 #if defined(__APPLE__)
-/* lets us know what version of Mac OS X we're compiling on */
+/* lets us know what version of macOS we're compiling on */
 #include <AvailabilityMacros.h>
 #include <TargetConditionals.h>
 
@@ -99,17 +99,14 @@
 #undef __TVOS__
 #define __TVOS__ 1
 #endif
-#if TARGET_OS_IPHONE
-/* if compiling for iOS */
-#undef __IPHONEOS__
-#define __IPHONEOS__ 1
-#undef __MACOSX__
+#elif TARGET_OS_IPHONE
+#undef __IOS__
+#define __IOS__ 1
 #else
-/* if not compiling for iOS */
-#undef __MACOSX__
-#define __MACOSX__  1
+#undef __MACOS__
+#define __MACOS__  1
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
-# error SDL for Mac OS X only supports deploying on 10.7 and above.
+# error SDL for macOS only supports deploying on 10.7 and above.
 #endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 1070 */
 #endif /* TARGET_OS_IPHONE */
 #endif /* defined(__APPLE__) */
@@ -222,7 +219,7 @@ extern "C" {
  * Here are the names returned for some (but not all) supported platforms:
  *
  * - "Windows"
- * - "Mac OS X"
+ * - "macOS"
  * - "Linux"
  * - "iOS"
  * - "Android"
