@@ -1,4 +1,14 @@
-#include <stdio.h>
+/*
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
+*/
 #include "SDL.h"
 
 /* !!! FIXME: rewrite this to be wired in to test framework. */
@@ -132,3 +142,5 @@ int main(int argc, char **argv)
     SDL_Quit();
     return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

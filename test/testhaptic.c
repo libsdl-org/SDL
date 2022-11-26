@@ -14,9 +14,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /*
  * includes
  */
-#include "SDL.h"
+#include <stdlib.h>
 
-#ifndef SDL_HAPTIC_DISABLED
+#include "SDL.h"
 
 static SDL_Haptic *haptic;
 
@@ -353,13 +353,4 @@ HapticPrintSupported(SDL_Haptic * ptr)
         SDL_Log("      status\n");
 }
 
-#else
-
-int
-main(int argc, char *argv[])
-{
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL compiled without Haptic support.\n");
-    return 1;
-}
-
-#endif
+/* vi: set ts=4 sw=4 expandtab: */

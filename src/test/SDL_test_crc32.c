@@ -25,9 +25,6 @@
  Original source code contributed by A. Schiffler for GSOC project.
 
 */
-
-#include "SDL_config.h"
-
 #include "SDL_test.h"
 
 

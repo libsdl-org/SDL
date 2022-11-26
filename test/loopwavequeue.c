@@ -12,7 +12,6 @@
 
 /* Program to load a wave file and loop playing it using SDL sound queueing */
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__

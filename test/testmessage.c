@@ -12,7 +12,6 @@
 
 /* Simple test of the SDL MessageBox API */
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "SDL.h"
@@ -215,3 +214,5 @@ main(int argc, char *argv[])
     SDL_Quit();
     return (0);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

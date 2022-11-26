@@ -3349,4 +3349,11 @@ static const SDLTest_TestCaseReference *mathTests[] = {
     NULL
 };
 
-SDLTest_TestSuiteReference mathTestSuite = { "Math", NULL, mathTests, NULL };
+SDLTest_TestSuiteReference mathTestSuite = {
+    "Math",
+    NULL,
+    mathTests,
+    NULL
+};
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -10,9 +10,6 @@
   freely.
 */
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 
 #include "SDL_test_common.h"
 
@@ -1150,3 +1147,5 @@ int main(int argc, char **argv)
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -15,6 +15,7 @@
 /* quiet windows compiler warnings */
 #define _CRT_NONSTDC_NO_WARNINGS
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #ifndef _MSC_VER
@@ -23,8 +24,6 @@
 
 #include "SDL.h"
 
-
-#include <stdio.h>
 
 /* WARNING ! those 2 files will be destroyed by this test program */
 
@@ -281,3 +280,5 @@ main(int argc, char *argv[])
     cleanup();
     return 0;                   /* all ok */
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

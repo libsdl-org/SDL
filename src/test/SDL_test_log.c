@@ -29,17 +29,10 @@
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 # define _CRT_SECURE_NO_WARNINGS
 #endif
-
-#include "SDL_config.h"
-
-#include <stdarg.h> /* va_list */
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
 #include "SDL.h"
-
 #include "SDL_test.h"
+
+#include <time.h>   /* Needed for localtime() */
 
 /* work around compiler warning on older GCCs. */
 #if (defined(__GNUC__) && (__GNUC__ <= 2))

@@ -9,14 +9,11 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
 #include "SDL_test_common.h"
 
 #ifdef HAVE_OPENGL
+
+#include <stdlib.h>
 
 #include "SDL_opengl.h"
 
@@ -432,3 +429,5 @@ main(int argc, char *argv[])
 }
 
 #endif /* HAVE_OPENGL */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -118,3 +118,5 @@ main(int argc, char **argv)
 }                               /* main */
 
 /* end of testresample.c ... */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -637,6 +637,39 @@ SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 #endif /* HAVE_MEMSET */
 }
 
+/* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
+void *
+SDL_memset4(void *dst, Uint32 val, size_t dwords)
+{
+#ifdef __APPLE__
+    memset_pattern4(dst, &val, dwords * 4);
+#elif defined(__GNUC__) && defined(__i386__)
+    int u0, u1, u2;
+    __asm__ __volatile__ (
+        "cld \n\t"
+        "rep ; stosl \n\t"
+        : "=&D" (u0), "=&a" (u1), "=&c" (u2)
+        : "0" (dst), "1" (val), "2" (SDL_static_cast(Uint32, dwords))
+        : "memory"
+    );
+#else
+    size_t _n = (dwords + 3) / 4;
+    Uint32 *_p = SDL_static_cast(Uint32 *, dst);
+    Uint32 _val = (val);
+    if (dwords == 0) {
+        return dst;
+    }
+    switch (dwords % 4) {
+        case 0: do {    *_p++ = _val;   SDL_FALLTHROUGH;
+        case 3:         *_p++ = _val;   SDL_FALLTHROUGH;
+        case 2:         *_p++ = _val;   SDL_FALLTHROUGH;
+        case 1:         *_p++ = _val;
+        } while ( --_n );
+    }
+#endif
+    return dst;
+}
+
 #if defined(HAVE_CTYPE_H) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 int SDL_isblank(int x) { return isblank(x); }
 #else

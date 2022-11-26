@@ -18,9 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifdef TEST_MAIN
-#include "SDL_config.h"
-#else
+#ifndef TEST_MAIN
 #include "../SDL_internal.h"
 #endif
 

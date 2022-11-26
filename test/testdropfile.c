@@ -11,7 +11,6 @@
 */
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "SDL_test_common.h"
 

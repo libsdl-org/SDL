@@ -10,9 +10,6 @@
   freely.
 */
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -21,9 +18,7 @@
 #include "SDL_test_common.h"
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
-#ifndef HAVE_OPENGLES2
 #define HAVE_OPENGLES2
-#endif
 #endif
 
 #ifdef HAVE_OPENGLES2
@@ -240,7 +235,6 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
         ctx.glGetShaderInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
         buffer[length] = '\0';
         SDL_Log("Shader compilation failed: %s", buffer);
-        fflush(stderr);
         quit(-1);
     }
 }
@@ -261,7 +255,6 @@ link_program(struct shader_data *data)
          ctx.glGetProgramInfoLog(data->shader_program, sizeof(buffer), &length, &buffer[0]);
          buffer[length] = '\0';
          SDL_Log("Program linking failed: %s", buffer);
-         fflush(stderr);
          quit(-1);
     }
 }

@@ -18,3 +18,4 @@ General:
 	* SDL_RWFromFP()
 	* SDL_SetWindowBrightness()
 	* SDL_SetWindowGammaRamp()
+* SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality

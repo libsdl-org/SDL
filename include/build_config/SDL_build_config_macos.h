@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_macos_h_
-#define SDL_config_macos_h_
-#define SDL_config_h_
+#ifndef SDL_build_config_macos_h_
+#define SDL_build_config_macos_h_
+#define SDL_build_config_h_
 
 #include "SDL_platform.h"
 
@@ -30,26 +30,23 @@
 
 /* This is a set of defines to configure the SDL features */
 
-#ifdef __LP64__
-    #define SIZEOF_VOIDP 8
-#else
-    #define SIZEOF_VOIDP 4
-#endif
-
 /* Useful headers */
-#define STDC_HEADERS    1
-#define HAVE_ALLOCA_H       1
-#define HAVE_CTYPE_H    1
-#define HAVE_FLOAT_H    1
+#define HAVE_ALLOCA_H 1
+#define HAVE_CTYPE_H 1
+#define HAVE_FLOAT_H 1
 #define HAVE_INTTYPES_H 1
-#define HAVE_LIMITS_H   1
+#define HAVE_LIBUNWIND_H 1
+#define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
-#define HAVE_SIGNAL_H   1
-#define HAVE_STDINT_H   1
-#define HAVE_STDIO_H    1
-#define HAVE_STRING_H   1
-#define HAVE_SYS_TYPES_H    1
-#define HAVE_LIBUNWIND_H    1
+#define HAVE_SIGNAL_H 1
+#define HAVE_STDARG_H 1
+#define HAVE_STDDEF_H 1
+#define HAVE_STDINT_H 1
+#define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_STRING_H 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_WCHAR_H 1
 
 /* C library functions */
 #define HAVE_DLOPEN 1
@@ -273,4 +270,4 @@
 #define SDL_ALTIVEC_BLITTERS    1
 #endif
 
-#endif /* SDL_config_macos_h_ */
+#endif /* SDL_build_config_macos_h_ */

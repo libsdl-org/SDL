@@ -19,10 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_config.h"
+#include "build_config/SDL_build_config.h"
 #include "SDL_dynapi.h"
 
 #if SDL_DYNAMIC_API
+
+#ifdef HAVE_STDIO_H
+#include <stdio.h>
+#endif
 
 #include "SDL.h"
 

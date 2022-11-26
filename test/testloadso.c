@@ -14,8 +14,6 @@
 */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "SDL.h"
 
@@ -80,3 +78,5 @@ main(int argc, char *argv[])
     SDL_Quit();
     return retval;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

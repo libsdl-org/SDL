@@ -15,7 +15,6 @@
 */
 
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h> /* for atexit() */
 
 #include "SDL.h"
@@ -126,3 +125,5 @@ main(int argc, char *argv[])
 
     return (0);                 /* Never reached */
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

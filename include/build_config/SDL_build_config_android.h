@@ -19,33 +19,37 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_ios_h_
-#define SDL_config_ios_h_
-#define SDL_config_h_
+#ifndef SDL_build_config_android_h_
+#define SDL_build_config_android_h_
+#define SDL_build_config_h_
 
 #include "SDL_platform.h"
 
-#ifdef __LP64__
-#define SIZEOF_VOIDP 8
-#else
-#define SIZEOF_VOIDP 4
-#endif
+/**
+ *  \file SDL_build_config_android.h
+ *
+ *  This is a configuration that can be used to build SDL for Android
+ */
+
+#include <stdarg.h>
 
 #define HAVE_GCC_ATOMICS    1
 
-#define STDC_HEADERS    1
-#define HAVE_ALLOCA_H       1
-#define HAVE_CTYPE_H    1
+#define HAVE_ALLOCA_H 1
+#define HAVE_CTYPE_H 1
+#define HAVE_FLOAT_H 1
 #define HAVE_INTTYPES_H 1
-#define HAVE_LIMITS_H   1
+#define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
-#define HAVE_SIGNAL_H   1
-#define HAVE_STDINT_H   1
-#define HAVE_STDIO_H    1
-#define HAVE_STRING_H   1
-#define HAVE_SYS_TYPES_H    1
-/* The libunwind functions are only available on x86 */
-/* #undef HAVE_LIBUNWIND_H */
+#define HAVE_SIGNAL_H 1
+#define HAVE_STDARG_H 1
+#define HAVE_STDDEF_H 1
+#define HAVE_STDINT_H 1
+#define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_STRING_H 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_WCHAR_H 1
 
 /* C library functions */
 #define HAVE_DLOPEN 1
@@ -80,7 +84,7 @@
 #define HAVE_STRTOULL   1
 #define HAVE_STRTOD 1
 #define HAVE_ATOI   1
-#define HAVE_ATOF   1
+#define HAVE_ATOF 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP    1
 #define HAVE_STRCASECMP 1
@@ -128,38 +132,31 @@
 #define HAVE_SQRTF  1
 #define HAVE_TAN    1
 #define HAVE_TANF   1
-#define HAVE_TRUNC  1
-#define HAVE_TRUNCF 1
-#define HAVE_SIGACTION  1
+#define HAVE_TRUNC    1
+#define HAVE_TRUNCF   1
+#define HAVE_SIGACTION 1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
 #define HAVE_SYSCONF    1
-#define HAVE_SYSCTLBYNAME 1
-#define HAVE_O_CLOEXEC 1
+#define HAVE_CLOCK_GETTIME  1
 
-/* enable iPhone version of Core Audio driver */
-#define SDL_AUDIO_DRIVER_COREAUDIO 1
-/* Enable the dummy audio driver (src/audio/dummy/\*.c) */
+/* Enable various audio drivers */
+#define SDL_AUDIO_DRIVER_ANDROID    1
+#define SDL_AUDIO_DRIVER_OPENSLES   1
+#define SDL_AUDIO_DRIVER_AAUDIO     1
 #define SDL_AUDIO_DRIVER_DUMMY  1
 
-/* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
-#define SDL_HAPTIC_DUMMY 1
-
-/* Enable joystick support */
-/* Only enable HIDAPI support if you want to support Steam Controllers on iOS and tvOS */
-/*#define SDL_JOYSTICK_HIDAPI 1*/
-#define SDL_JOYSTICK_MFI 1
+/* Enable various input drivers */
+#define SDL_JOYSTICK_ANDROID    1
+#define SDL_JOYSTICK_HIDAPI     1
 #define SDL_JOYSTICK_VIRTUAL    1
+#define SDL_HAPTIC_ANDROID  1
 
-#ifdef __TVOS__
-#define SDL_SENSOR_DUMMY    1
-#else
-/* Enable the CoreMotion sensor driver */
-#define SDL_SENSOR_COREMOTION   1
-#endif
+/* Enable sensor driver */
+#define SDL_SENSOR_ANDROID  1
 
-/* Enable Unix style SO loading */
-#define SDL_LOADSO_DLOPEN 1
+/* Enable various shared object loading systems */
+#define SDL_LOADSO_DLOPEN   1
 
 /* Enable various threading systems */
 #define SDL_THREAD_PTHREAD  1
@@ -168,49 +165,28 @@
 /* Enable various timer systems */
 #define SDL_TIMER_UNIX  1
 
-/* Supported video drivers */
-#define SDL_VIDEO_DRIVER_UIKIT  1
-#define SDL_VIDEO_DRIVER_DUMMY  1
+/* Enable various video drivers */
+#define SDL_VIDEO_DRIVER_ANDROID 1
 
 /* Enable OpenGL ES */
-#if !TARGET_OS_MACCATALYST
-#define SDL_VIDEO_OPENGL_ES2 1
 #define SDL_VIDEO_OPENGL_ES 1
+#define SDL_VIDEO_OPENGL_ES2 1
+#define SDL_VIDEO_OPENGL_EGL 1
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
-#endif
 
-/* Metal supported on 64-bit devices running iOS 8.0 and tvOS 9.0 and newer
-   Also supported in simulator from iOS 13.0 and tvOS 13.0
- */
-#if (TARGET_OS_SIMULATOR && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 130000) || (__TV_OS_VERSION_MIN_REQUIRED >= 130000))) || (!TARGET_CPU_ARM && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 80000) || (__TV_OS_VERSION_MIN_REQUIRED >= 90000)))
-#define SDL_PLATFORM_SUPPORTS_METAL	1
+/* Enable Vulkan support */
+/* Android does not support Vulkan in native code using the "armeabi" ABI. */
+#if defined(__ARM_ARCH) && __ARM_ARCH < 7
+#define SDL_VIDEO_VULKAN 0
 #else
-#define SDL_PLATFORM_SUPPORTS_METAL	0
-#endif
-
-#if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_RENDER_METAL  1
-#endif
-
-#if SDL_PLATFORM_SUPPORTS_METAL
 #define SDL_VIDEO_VULKAN 1
 #endif
 
-#if SDL_PLATFORM_SUPPORTS_METAL
-#define SDL_VIDEO_METAL 1
-#endif
-
 /* Enable system power support */
-#define SDL_POWER_UIKIT 1
+#define SDL_POWER_ANDROID 1
 
-/* enable iPhone keyboard support */
-#define SDL_IPHONE_KEYBOARD 1
+/* Enable the filesystem driver */
+#define SDL_FILESYSTEM_ANDROID   1
 
-/* enable iOS extended launch screen */
-#define SDL_IPHONE_LAUNCHSCREEN 1
-
-/* enable filesystem support */
-#define SDL_FILESYSTEM_COCOA   1
-
-#endif /* SDL_config_ios_h_ */
+#endif /* SDL_build_config_android_h_ */
