@@ -163,17 +163,10 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
     return (SDL_bool)_SDL_cmpxchg_watcom((int *)a, (long)newval, (long)oldval);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_bool_compare_and_swap(a, oldval, newval);
-<<<<<<< HEAD
-#elif defined(__MACOSX__) && defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
-    return (SDL_bool)OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t *)a);
-#elif defined(__MACOSX__) && !defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
-    return (SDL_bool)OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t *)a);
-=======
-#elif defined(__MACOS__) && defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(__MACOS__) && defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return (SDL_bool) OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t*) a);
-#elif defined(__MACOS__) && !defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(__MACOS__) && !defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return (SDL_bool) OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t*) a);
->>>>>>> main
 #elif defined(__SOLARIS__)
     return (SDL_bool)(atomic_cas_ptr(a, oldval, newval) == oldval);
 #elif EMULATE_CAS
@@ -269,14 +262,8 @@ SDL_AtomicGet(SDL_atomic_t *a)
     return _SDL_xadd_watcom(&a->value, 0);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_or_and_fetch(&a->value, 0);
-<<<<<<< HEAD
-#elif defined(__MACOSX__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
-    return sizeof(a->value) == sizeof(uint32_t) ? OSAtomicOr32Barrier(0, (volatile uint32_t *)&a->value) : OSAtomicAdd64Barrier(0,
-                                                                                                                                (volatile int64_t *)&a->value);
-=======
-#elif defined(__MACOS__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(__MACOS__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return sizeof(a->value) == sizeof(uint32_t) ? OSAtomicOr32Barrier(0, (volatile uint32_t *)&a->value) : OSAtomicAdd64Barrier(0, (volatile int64_t *)&a->value);
->>>>>>> main
 #elif defined(__SOLARIS__)
     return atomic_or_uint((volatile uint_t *)&a->value, 0);
 #else
