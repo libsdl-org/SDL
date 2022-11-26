@@ -282,8 +282,9 @@ if(USE_GCC OR USE_CLANG)
 endif()
 
 # Default option knobs
-if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA OR PSP OR PS2 OR N3DS)
-  set(OPT_DEF_LIBC ON)
+set(SDL_LIBC_DEFAULT ON)
+if(WINDOWS)
+  set(SDL_LIBC_DEFAULT OFF)
 endif()
 
 if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
@@ -445,7 +446,7 @@ dep_option(SDL_ARMNEON             "Use NEON assembly blitters on ARM" OFF "SDL_
 dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
-set_option(SDL_LIBC                "Use the system C library" ${OPT_DEF_LIBC})
+set_option(SDL_LIBC                "Use the system C library" ${SDL_LIBC_DEFAULT})
 set_option(SDL_GCC_ATOMICS         "Use gcc builtin atomics" ${OPT_DEF_GCC_ATOMICS})
 dep_option(SDL_DBUS                "Enable D-Bus support" ON ${UNIX_SYS} OFF)
 set_option(SDL_DISKAUDIO           "Support the disk writer audio driver" ON)
