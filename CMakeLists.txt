@@ -1470,12 +1470,14 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     file(GLOB CORE_UNIX_SOURCES ${SDL3_SOURCE_DIR}/src/core/unix/*.c)
     list(APPEND SOURCE_FILES ${CORE_UNIX_SOURCES})
 
-    check_c_source_compiles("
-        #include <linux/input.h>
-        #ifndef EVIOCGNAME
-        #error EVIOCGNAME() ioctl not available
-        #endif
-        int main(int argc, char** argv) { return 0; }" HAVE_INPUT_EVENTS)
+    if (HAVE_LINUX_INPUT_H)
+        check_c_source_compiles("
+            #include <linux/input.h>
+            #ifndef EVIOCGNAME
+            #error EVIOCGNAME() ioctl not available
+            #endif
+            int main(int argc, char** argv) { return 0; }" HAVE_INPUT_EVENTS)
+    endif()
 
     if(LINUX)
       check_c_source_compiles("

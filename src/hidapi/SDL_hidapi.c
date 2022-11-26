@@ -63,7 +63,8 @@
 
 #ifdef HAVE_INOTIFY
 #include <unistd.h>  /* just in case we didn't use that SDL_USE_LIBUDEV block... */
-#include <errno.h>              /* errno, strerror */
+#include <string.h>             /* strerror */
+#include <errno.h>              /* errno */
 #include <fcntl.h>
 #include <limits.h>             /* For the definition of NAME_MAX */
 #include <sys/inotify.h>
