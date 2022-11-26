@@ -43,7 +43,7 @@
    we'll forget to bump every time we add a function, so this is the
    failsafe switch for major API change decisions. Respect it and use it
    sparingly. */
-#define SDL_DYNAPI_VERSION 1
+#define SDL_DYNAPI_VERSION 2
 
 static void SDL_InitDynamicAPI(void);
 
