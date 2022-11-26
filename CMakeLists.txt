@@ -1,5 +1,5 @@
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
-  message(FATAL_ERROR "Prevented in-tree build. Please create a build directory outside of the SDL source code and run \"cmake -S ${CMAKE_SOURCE_DIR} -B .\" from there")
+ message(FATAL_ERROR "Prevented in-tree build. Please create a build directory outside of the SDL source code and run \"cmake -S ${CMAKE_SOURCE_DIR} -B .\" from there")
 endif()
 
 cmake_minimum_required(VERSION 3.0.0)
@@ -992,7 +992,7 @@ if(SDL_ASSEMBLY)
   elseif(MSVC_VERSION GREATER 1500)
     # TODO: SDL_cpuinfo.h needs to support the user's configuration wish
     # for MSVC - right now it is always activated
-    if(NOT ARCH_64)
+    if(SDL_CPU_X86)
       if(SDL_MMX)
         set(HAVE_MMX TRUE)
       endif()
@@ -1736,7 +1736,7 @@ elseif(WINDOWS)
   if(MSVC AND NOT SDL_LIBC)
     # Prevent codegen that would use the VC runtime libraries.
     set_property(DIRECTORY . APPEND PROPERTY COMPILE_OPTIONS "/GS-")
-    if(NOT ARCH_64 AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
+    if(SDL_CPU_X86)
       set_property(DIRECTORY . APPEND PROPERTY COMPILE_OPTIONS "/arch:SSE")
     endif()
   endif()
