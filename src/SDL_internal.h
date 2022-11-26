@@ -48,7 +48,7 @@
 #define DECLSPEC
 #endif
 
-#include "build_config/SDL_build_config.h"
+#include "SDL_build_config.h"
 
 #ifdef __APPLE__
 #ifndef _DARWIN_C_SOURCE

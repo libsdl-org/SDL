@@ -9513,6 +9513,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					../../include,
+					../../include/build_config,
 					../../src/hidapi/hidapi,
 					../../src/video/khronos,
 					"$(VULKAN_SDK)/include",
@@ -9599,6 +9600,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					../../include,
+					../../include/build_config,
 					../../src/hidapi/hidapi,
 					../../src/video/khronos,
 					"$(VULKAN_SDK)/include",
