@@ -31,6 +31,23 @@ LDFLAGS += $(shell pkg-config sdl3 --libs)
 The SDL3main and SDL3test libraries have been renamed SDL3_main and SDL3_test, respectively.
 
 
+## SDL_cpuinfo.h
+
+The following headers are no longer automatically included, and will need to be included manually:
+- immintrin.h
+- mm3dnow.h
+- mmintrin.h
+- xmmintrin.h
+- emmintrin.h
+- pmmintrin.h
+- arm_neon.h
+- arm64_neon.h
+- armintr.h
+- arm64intr.h
+- altivec.h
+- lsxintrin.h
+- lasxintrin.h
+
 ## SDL_events.h
 
 The `timestamp` member of the SDL_Event structure now represents nanoseconds, and is populated with `SDL_GetTicksNS()`

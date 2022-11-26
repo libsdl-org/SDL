@@ -23,6 +23,7 @@
 #if SDL_HAVE_BLIT_A
 
 #include "SDL_blit.h"
+#include "../SDL_intrin.h"
 
 /* Functions to perform alpha blended blitting */
 
