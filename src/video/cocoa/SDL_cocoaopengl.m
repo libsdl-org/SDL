@@ -76,6 +76,7 @@ DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const 
 {
     self = [super initWithFormat:format shareContext:share];
     if (self) {
+        self.openglPixelFormat = format;
         SDL_AtomicSet(&self->dirty, 0);
         self->window = NULL;
         SDL_AtomicSet(&self->swapIntervalSetting, 0);
@@ -100,7 +101,7 @@ DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const 
 - (void)movedToNewScreen
 {
     if (self->displayLink) {
-        CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(self->displayLink, [self CGLContextObj], [[self pixelFormat] CGLPixelFormatObj]);
+        CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(self->displayLink, [self CGLContextObj], [[self openglPixelFormat] CGLPixelFormatObj]);
     }
 }
 
