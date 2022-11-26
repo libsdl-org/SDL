@@ -279,8 +279,10 @@ endif()
 
 # Default option knobs
 set(SDL_LIBC_DEFAULT ON)
+set(SDL_SYSTEM_ICONV_DEFAULT ON)
 if(WINDOWS)
   set(SDL_LIBC_DEFAULT OFF)
+  set(SDL_SYSTEM_ICONV_DEFAULT OFF)
 endif()
 
 if(NOT ("$ENV{CFLAGS}" STREQUAL ""))
@@ -447,13 +449,13 @@ dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;
 dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
 set_option(SDL_LIBC                "Use the system C library" ${SDL_LIBC_DEFAULT})
+set_option(SDL_SYSTEM_ICONV        "Use iconv() from system-installed libraries" ${SDL_SYSTEM_ICONV_DEFAULT})
 set_option(SDL_GCC_ATOMICS         "Use gcc builtin atomics" ${OPT_DEF_GCC_ATOMICS})
 dep_option(SDL_DBUS                "Enable D-Bus support" ON ${UNIX_SYS} OFF)
 set_option(SDL_DISKAUDIO           "Support the disk writer audio driver" ON)
 set_option(SDL_DUMMYAUDIO          "Support the dummy audio driver" ON)
 set_option(SDL_DUMMYVIDEO          "Use dummy video driver" ON)
 dep_option(SDL_IBUS                "Enable IBus support" ON ${UNIX_SYS} OFF)
-set_option(SDL_SYSTEM_ICONV        "Use iconv() from system-installed libraries" ON)
 set_option(SDL_OPENGL              "Include OpenGL support" ON)
 set_option(SDL_OPENGLES            "Include OpenGL ES support" ON)
 set_option(SDL_PTHREADS            "Use POSIX threads for multi-threading" ${SDL_PTHREADS_ENABLED_BY_DEFAULT})
