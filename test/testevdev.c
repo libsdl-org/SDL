@@ -18,6 +18,7 @@
 
 static int run_test(void);
 
+/* FIXME: Need CMake tests for this */
 #if HAVE_LIBUDEV_H || defined(SDL_JOYSTICK_LINUX)
 
 #include <stdint.h>
@@ -1039,3 +1040,5 @@ main(int argc, char *argv[])
 {
     return run_test() ? 0 : 1;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

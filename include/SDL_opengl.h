@@ -35,7 +35,7 @@
 #ifndef SDL_opengl_h_
 #define SDL_opengl_h_
 
-#include "SDL_config.h"
+#include "SDL_platform.h"
 
 #ifndef __IOS__  /* No OpenGL on iOS. */
 

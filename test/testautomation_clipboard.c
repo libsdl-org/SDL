@@ -1,10 +1,6 @@
 /**
  * New/updated tests: aschiffler at ferzkopp dot net
  */
-
-#include <stdio.h>
-#include <string.h>
-
 #include "SDL.h"
 #include "SDL_test.h"
 
@@ -334,3 +330,5 @@ SDLTest_TestSuiteReference clipboardTestSuite = {
     clipboardTests,
     NULL
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

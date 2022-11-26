@@ -2,7 +2,7 @@
     SDL_ps2_main.c, fjtrujy@gmail.com 
 */
 
-#include "SDL_config.h"
+#include "SDL_platform.h"
 
 #ifdef __PS2__
 
@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include <kernel.h>
 #include <sifrpc.h>

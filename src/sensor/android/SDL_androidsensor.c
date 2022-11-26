@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_config.h"
-
 #ifdef SDL_SENSOR_ANDROID
 
 /* This is the system specific header for the SDL sensor API */

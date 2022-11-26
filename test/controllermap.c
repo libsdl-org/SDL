@@ -15,12 +15,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "SDL.h"
 #include "testutils.h"
-
-#ifndef SDL_JOYSTICK_DISABLED
 
 /* Define this for verbose output while mapping controllers */
 #define DEBUG_CONTROLLERMAP
@@ -811,16 +808,5 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-#else
-
-int
-main(int argc, char *argv[])
-{
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL compiled without Joystick support.\n");
-    return 1;
-}
-
-#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

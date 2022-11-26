@@ -15,9 +15,6 @@
 /* loopwaves.c is much more robust in handling WAVE files --
     This is only for simple WAVEs
 */
-#include "SDL_config.h"
-
-#include <stdio.h>
 #include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__

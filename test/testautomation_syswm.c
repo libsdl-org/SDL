@@ -1,9 +1,6 @@
 /**
  * SysWM test suite
  */
-
-#include <stdio.h>
-
 #include "SDL.h"
 #include "SDL_syswm.h"
 #include "SDL_test.h"
@@ -56,3 +53,5 @@ SDLTest_TestSuiteReference syswmTestSuite = {
     syswmTests,
     NULL
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -105,7 +105,7 @@ When using a recent version of CMake (3.14+), it should be possible to:
 
 - build SDL for iOS, both static and dynamic
 - build SDL test apps (as iOS/tvOS .app bundles)
-- generate a working SDL_config.h for iOS (using SDL_config.h.cmake as a basis)
+- generate a working SDL_build_config.h for iOS (using SDL_build_config.h.cmake as a basis)
 
 To use, set the following CMake variables when running CMake's configuration stage:
 

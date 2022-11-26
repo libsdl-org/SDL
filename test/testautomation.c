@@ -11,8 +11,6 @@
 */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
 
 #include "SDL.h"
 #include "SDL_test.h"

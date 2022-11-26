@@ -18,9 +18,6 @@
  */
 static int main_testInitQuitJoystickHaptic (void *arg)
 {
-#if defined SDL_JOYSTICK_DISABLED || defined SDL_HAPTIC_DISABLED
-    return TEST_SKIPPED;
-#else
     int enabled_subsystems;
     int initialized_subsystems = SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC;
 
@@ -35,7 +32,6 @@ static int main_testInitQuitJoystickHaptic (void *arg)
     SDLTest_AssertCheck( enabled_subsystems == 0, "SDL_Quit should shut down everything (%i)", enabled_subsystems );
 
     return TEST_COMPLETED;
-#endif
 }
 
 /* !
@@ -46,9 +42,6 @@ static int main_testInitQuitJoystickHaptic (void *arg)
  */
 static int main_testInitQuitSubSystem (void *arg)
 {
-#if defined SDL_JOYSTICK_DISABLED || defined SDL_HAPTIC_DISABLED || defined SDL_GAMECONTROLLER_DISABLED
-    return TEST_SKIPPED;
-#else
     int i;
     int subsystems[] = { SDL_INIT_JOYSTICK, SDL_INIT_HAPTIC, SDL_INIT_GAMECONTROLLER };
 
@@ -68,15 +61,11 @@ static int main_testInitQuitSubSystem (void *arg)
     }
 
     return TEST_COMPLETED;
-#endif
 }
 
 const int joy_and_controller = SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER;
 static int main_testImpliedJoystickInit (void *arg)
 {
-#if defined SDL_JOYSTICK_DISABLED || defined SDL_GAMECONTROLLER_DISABLED
-    return TEST_SKIPPED;
-#else
     int initialized_system;
 
     /* First initialize the controller */
@@ -94,14 +83,10 @@ static int main_testImpliedJoystickInit (void *arg)
     SDLTest_AssertCheck( (initialized_system & joy_and_controller) == 0, "SDL_WasInit() should be false for joystick & controller (%x)", initialized_system );
 
     return TEST_COMPLETED;
-#endif
 }
 
 static int main_testImpliedJoystickQuit (void *arg)
 {
-#if defined SDL_JOYSTICK_DISABLED || defined SDL_GAMECONTROLLER_DISABLED
-    return TEST_SKIPPED;
-#else
     int initialized_system;
 
     /* First initialize the controller and the joystick (explicitly) */
@@ -122,7 +107,6 @@ static int main_testImpliedJoystickQuit (void *arg)
     SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 
     return TEST_COMPLETED;
-#endif
 }
 
 #if defined(__GNUC__) || defined(__clang__)

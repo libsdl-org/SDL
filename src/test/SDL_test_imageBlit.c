@@ -18,8 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
-
 #include "SDL_test.h"
 
 /* GIMP RGB C-Source image dump (blit.c) */

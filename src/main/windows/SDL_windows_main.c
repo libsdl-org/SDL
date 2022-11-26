@@ -3,7 +3,7 @@
 
     The WinMain function -- calls your program's main() function
 */
-#include "SDL_config.h"
+#include "SDL_platform.h"
 
 #ifdef __WIN32__
 

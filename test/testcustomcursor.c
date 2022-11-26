@@ -9,9 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-
 #include <stdlib.h>
-#include <stdio.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>

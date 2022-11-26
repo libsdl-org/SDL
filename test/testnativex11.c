@@ -53,3 +53,5 @@ DestroyWindowX11(void *window)
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

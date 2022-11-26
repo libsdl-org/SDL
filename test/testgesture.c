@@ -16,8 +16,9 @@
  *  l to load all touches from "./gestureSave"
  */
 
-#include "SDL.h"
 #include <stdlib.h> /* for exit() */
+
+#include "SDL.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -298,3 +299,4 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+/* vi: set ts=4 sw=4 expandtab: */

@@ -19,41 +19,41 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_h_
-#define SDL_config_h_
+#ifndef SDL_build_config_h_
+#define SDL_build_config_h_
 
 #include "SDL_platform.h"
 
 /**
- *  \file SDL_config.h
+ *  \file SDL_build_config.h
  */
 
 /* Add any platform that doesn't build using the configure system. */
 #if defined(__WIN32__)
-#include "SDL_config_windows.h"
+#include "SDL_build_config_windows.h"
 #elif defined(__WINRT__)
-#include "SDL_config_winrt.h"
+#include "SDL_build_config_winrt.h"
 #elif defined(__WINGDK__)
-#include "SDL_config_wingdk.h"
+#include "SDL_build_config_wingdk.h"
 #elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
-#include "SDL_config_xbox.h"
+#include "SDL_build_config_xbox.h"
 #elif defined(__MACOS__)
-#include "SDL_config_macos.h"
+#include "SDL_build_config_macos.h"
 #elif defined(__IOS__)
-#include "SDL_config_ios.h"
+#include "SDL_build_config_ios.h"
 #elif defined(__ANDROID__)
-#include "SDL_config_android.h"
+#include "SDL_build_config_android.h"
 #elif defined(__EMSCRIPTEN__)
-#include "SDL_config_emscripten.h"
+#include "SDL_build_config_emscripten.h"
 #elif defined(__NGAGE__)
-#include "SDL_config_ngage.h"
+#include "SDL_build_config_ngage.h"
 #else
 /* This is a minimal configuration just to get SDL running on new platforms. */
-#include "SDL_config_minimal.h"
+#include "SDL_build_config_minimal.h"
 #endif /* platform config */
 
 #ifdef USING_GENERATED_CONFIG_H
-#error Wrong SDL_config.h, check your include path?
+#error Wrong SDL_build_config.h, check your include path?
 #endif
 
-#endif /* SDL_config_h_ */
+#endif /* SDL_build_config_h_ */

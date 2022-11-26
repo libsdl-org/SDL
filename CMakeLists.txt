@@ -56,7 +56,6 @@ endif()
 #cmake_policy(SET CMP0042 OLD)
 
 include(CheckLibraryExists)
-include(CheckIncludeFiles)
 include(CheckIncludeFile)
 include(CheckLanguage)
 include(CheckSymbolExists)
@@ -1038,7 +1037,6 @@ if(SDL_LIBC)
       set(HAVE_${_UPPER} 1)
     endforeach()
     set(HAVE_ALLOCA 1)
-    set(STDC_HEADERS 1)
   else()
     set(HAVE_LIBC TRUE)
     set(headers_to_check
@@ -1072,7 +1070,6 @@ if(SDL_LIBC)
     check_include_file(linux/input.h HAVE_LINUX_INPUT_H)
 
     set(STDC_HEADER_NAMES "stddef.h;stdarg.h;stdlib.h;string.h;stdio.h;wchar.h;float.h")
-    check_include_files("${STDC_HEADER_NAMES}" STDC_HEADERS)
     # TODO: refine the mprotect check
     check_c_source_compiles("#include <sys/types.h>
                              #include <sys/mman.h>
@@ -2897,17 +2894,18 @@ endif()
 #   endif()
 # endif()
 
-# config variables may contain generator expression, so we need to generate SDL_config.h in 2 steps:
+# config variables may contain generator expression, so we need to generate SDL_build_config.h in 2 steps:
 # 1. replace all `#cmakedefine`'s and `@abc@`
-configure_file("${SDL3_SOURCE_DIR}/include/SDL_config.h.cmake"
-  "${SDL3_BINARY_DIR}/SDL_config.h.intermediate")
+configure_file("${SDL3_SOURCE_DIR}/include/build_config/SDL_build_config.h.cmake"
+  "${SDL3_BINARY_DIR}/SDL_build_config.h.intermediate")
 # 2. Create the "include-config-${CMAKE_BUILD_TYPE}" folder (fails on older CMake versions when it does not exist)
 string(TOLOWER "${CMAKE_BUILD_TYPE}" lower_build_type)
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/include-config-${lower_build_type}")
-# 3. generate SDL_config in an build_type-dependent folder (which should be first in the include search path)
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/include-config-${lower_build_type}/build_config")
+# 3. generate SDL_build_config.h in an build_type-dependent folder (which should be first in the include search path)
 file(GENERATE
-    OUTPUT "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h"
-    INPUT "${SDL3_BINARY_DIR}/SDL_config.h.intermediate")
+    OUTPUT "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/build_config/SDL_build_config.h"
+    INPUT "${SDL3_BINARY_DIR}/SDL_build_config.h.intermediate")
 
 # Prepare the flags and remove duplicates
 if(EXTRA_LDFLAGS)
@@ -2960,11 +2958,11 @@ configure_file("${SDL3_SOURCE_DIR}/include/SDL_revision.h.cmake"
   "${SDL3_BINARY_DIR}/include/SDL_revision.h")
 
 # Copy all non-generated headers to "${SDL3_BINARY_DIR}/include"
-# This is done to avoid the inclusion of a pre-generated SDL_config.h
+# This is done to avoid the inclusion of a pre-generated SDL_build_config.h
 file(GLOB SDL3_INCLUDE_FILES ${SDL3_SOURCE_DIR}/include/*.h)
 set(SDL3_COPIED_INCLUDE_FILES)
 foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
-  if(_hdr MATCHES ".*(SDL_config|SDL_revision).*")
+  if(_hdr MATCHES ".*SDL_revision.h")
     list(REMOVE_ITEM SDL3_INCLUDE_FILES "${_hdr}")
   else()
     get_filename_component(_name "${_hdr}" NAME)
@@ -3455,7 +3453,6 @@ if(NOT SDL3_DISABLE_INSTALL)
     FILES
       ${SDL3_INCLUDE_FILES}
       "${SDL3_BINARY_DIR}/include/SDL_revision.h"
-      "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3)
 
   install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")

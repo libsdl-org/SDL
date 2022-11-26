@@ -19,17 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_wingdk_h_
-#define SDL_config_wingdk_h_
-#define SDL_config_h_
+#ifndef SDL_build_config_wingdk_h_
+#define SDL_build_config_wingdk_h_
+#define SDL_build_config_h_
 
 #include "SDL_platform.h"
 
 /* Windows GDK does not need Windows SDK version checks because it requires
  * a recent version of the Windows 10 SDK. */
-
-/* GDK only supports 64-bit */
-# define SIZEOF_VOIDP 8
 
 #ifdef __clang__
 # define HAVE_GCC_ATOMICS 1
@@ -61,15 +58,18 @@
 /* This is disabled by default to avoid C runtime dependencies and manifest requirements */
 #ifdef HAVE_LIBC
 /* Useful headers */
-#define STDC_HEADERS 1
 #define HAVE_CTYPE_H 1
 #define HAVE_FLOAT_H 1
 #define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
 #define HAVE_SIGNAL_H 1
+#define HAVE_STDARG_H 1
+#define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
 #define HAVE_STRING_H 1
+#define HAVE_WCHAR_H 1
 
 /* C library functions */
 #define HAVE_MALLOC 1
@@ -243,6 +243,6 @@
 /* Enable filesystem support */
 #define SDL_FILESYSTEM_WINDOWS  1
 
-#endif /* SDL_config_wingdk_h_ */
+#endif /* SDL_build_config_wingdk_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

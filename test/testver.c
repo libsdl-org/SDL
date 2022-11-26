@@ -13,10 +13,6 @@
 /* Test program to compare the compile-time version of SDL with the linked
    version of SDL
 */
-
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "SDL.h"
 #include "SDL_revision.h"
 
@@ -45,3 +41,5 @@ main(int argc, char *argv[])
     SDL_Quit();
     return (0);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -33,15 +33,6 @@
     <ClInclude Include="..\include\SDL_clipboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL_config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\SDL_config_minimal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\SDL_config_winrt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\SDL_copying.h">
       <Filter>Header Files</Filter>
     </ClInclude>

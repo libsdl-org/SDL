@@ -12,13 +12,9 @@
 
 /* Simple program to test the SDL joystick hotplugging */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "SDL.h"
-
-#if !defined SDL_JOYSTICK_DISABLED && !defined SDL_HAPTIC_DISABLED
 
 int
 main(int argc, char *argv[])
@@ -150,13 +146,5 @@ main(int argc, char *argv[])
 
     return 0;
 }
-#else
 
-int
-main(int argc, char *argv[])
-{
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL compiled without Joystick and haptic support.\n");
-    return 1;
-}
-
-#endif
+/* vi: set ts=4 sw=4 expandtab: */

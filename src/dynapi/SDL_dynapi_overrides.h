@@ -892,3 +892,4 @@
 #define SDL_EGL_SetEGLAttributeCallbacks SDL_EGL_SetEGLAttributeCallbacks_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
+#define SDL_memset4 SDL_memset4_REAL

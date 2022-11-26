@@ -9,10 +9,6 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "SDL.h"
 #include "SDL_test_font.h"
 #include "testyuv_cvt.h"

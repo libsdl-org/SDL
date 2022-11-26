@@ -50,9 +50,6 @@
  ** documentation and/or software.                                    **
  ***********************************************************************
  */
-
-#include "SDL_config.h"
-
 #include "SDL_test.h"
 
 /* Forward declaration of static helper function */

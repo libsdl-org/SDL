@@ -26,7 +26,6 @@
 
 /* This file contains portable string manipulation functions for SDL */
 
-#include "SDL_stdinc.h"
 #include "SDL_vacopy.h"
 
 #if defined(__vita__)

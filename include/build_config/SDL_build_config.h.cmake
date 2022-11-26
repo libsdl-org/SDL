@@ -19,11 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_config_h_
-#define SDL_config_h_
+#ifndef SDL_build_config_h_
+#define SDL_build_config_h_
 
 /**
- *  \file SDL_config.h.in
+ *  \file SDL_build_config.h.in
  *
  *  This is a set of defines to configure the SDL features
  */
@@ -539,4 +539,4 @@ typedef unsigned int uintptr_t;
 #endif /* Visual Studio 2008 */
 #endif /* !_STDINT_H_ && !HAVE_STDINT_H */
 
-#endif /* SDL_config_h_ */
+#endif /* SDL_build_config_h_ */

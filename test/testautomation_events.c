@@ -1,9 +1,6 @@
 /**
  * Events test suite
  */
-
-#include <stdio.h>
-
 #include "SDL.h"
 #include "SDL_test.h"
 
@@ -199,3 +196,5 @@ SDLTest_TestSuiteReference eventsTestSuite = {
     eventsTests,
     NULL
 };
+
+/* vi: set ts=4 sw=4 expandtab: */

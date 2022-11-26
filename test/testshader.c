@@ -13,6 +13,8 @@
 
 #include "SDL.h"
 
+#include <stdlib.h>
+
 #ifdef HAVE_OPENGL
 
 #include "SDL_opengl.h"

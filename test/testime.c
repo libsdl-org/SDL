@@ -13,10 +13,6 @@
    If you build without SDL_ttf, you can use the GNU Unifont hex file instead.
    Download at http://unifoundry.com/unifont.html */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "SDL.h"
 #ifdef HAVE_SDL_TTF
 #include "SDL_ttf.h"
@@ -805,6 +801,5 @@ int main(int argc, char *argv[])
     SDLTest_CommonQuit(state);
     return 0;
 }
-
 
 /* vi: set ts=4 sw=4 expandtab: */

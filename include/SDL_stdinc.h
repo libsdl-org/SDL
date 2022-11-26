@@ -28,63 +28,15 @@
 #ifndef SDL_stdinc_h_
 #define SDL_stdinc_h_
 
-#include "SDL_config.h"
+#include "SDL_platform.h"
 
-#ifdef __APPLE__
-#ifndef _DARWIN_C_SOURCE
-#define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#include <inttypes.h>
 #endif
-#endif
+#include <stdarg.h>
+#include <stdint.h>
+#include <wchar.h>
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#ifdef HAVE_STDIO_H
-#include <stdio.h>
-#endif
-#if defined(STDC_HEADERS)
-# include <stdlib.h>
-# include <stddef.h>
-# include <stdarg.h>
-#else
-# if defined(HAVE_STDLIB_H)
-#  include <stdlib.h>
-# elif defined(HAVE_MALLOC_H)
-#  include <malloc.h>
-# endif
-# if defined(HAVE_STDDEF_H)
-#  include <stddef.h>
-# endif
-# if defined(HAVE_STDARG_H)
-#  include <stdarg.h>
-# endif
-#endif
-#ifdef HAVE_STRING_H
-# if !defined(STDC_HEADERS) && defined(HAVE_MEMORY_H)
-#  include <memory.h>
-# endif
-# include <string.h>
-#endif
-#ifdef HAVE_STRINGS_H
-# include <strings.h>
-#endif
-#ifdef HAVE_WCHAR_H
-# include <wchar.h>
-#endif
-#if defined(HAVE_INTTYPES_H)
-# include <inttypes.h>
-#elif defined(HAVE_STDINT_H)
-# include <stdint.h>
-#endif
-#ifdef HAVE_CTYPE_H
-# include <ctype.h>
-#endif
-#ifdef HAVE_MATH_H
-# include <math.h>
-#endif
-#ifdef HAVE_FLOAT_H
-# include <float.h>
-#endif
 #if !defined(alloca)
 # if defined(HAVE_ALLOCA_H)
 #  include <alloca.h>
@@ -254,7 +206,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIs64 PRIs64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIs64 "I64d"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIs64 "ld"
 #else
 #define SDL_PRIs64 "lld"
@@ -265,7 +217,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIu64 PRIu64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIu64 "I64u"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIu64 "lu"
 #else
 #define SDL_PRIu64 "llu"
@@ -276,7 +228,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIx64 PRIx64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIx64 "I64x"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIx64 "lx"
 #else
 #define SDL_PRIx64 "llx"
@@ -287,7 +239,7 @@ typedef uint64_t Uint64;
 #define SDL_PRIX64 PRIX64
 #elif defined(__WIN32__) || defined(__GDK__)
 #define SDL_PRIX64 "I64X"
-#elif defined(__LINUX__) && defined(__LP64__)
+#elif defined(__LP64__) && !defined(__APPLE__)
 #define SDL_PRIX64 "lX"
 #else
 #define SDL_PRIX64 "llX"
@@ -508,6 +460,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_crc16(Uint16 crc, const void *data, size_t le
 extern DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t len);
 
 extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
+extern DECLSPEC void *SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwords);
 
 #define SDL_zero(x) SDL_memset(&(x), 0, sizeof((x)))
 #define SDL_zerop(x) SDL_memset((x), 0, sizeof(*(x)))
@@ -518,36 +471,6 @@ extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, 
     SDL_memcpy((dst), (src), sizeof (*(src)))
 
 
-/* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
-SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
-{
-#ifdef __APPLE__
-    memset_pattern4(dst, &val, dwords * 4);
-#elif defined(__GNUC__) && defined(__i386__)
-    int u0, u1, u2;
-    __asm__ __volatile__ (
-        "cld \n\t"
-        "rep ; stosl \n\t"
-        : "=&D" (u0), "=&a" (u1), "=&c" (u2)
-        : "0" (dst), "1" (val), "2" (SDL_static_cast(Uint32, dwords))
-        : "memory"
-    );
-#else
-    size_t _n = (dwords + 3) / 4;
-    Uint32 *_p = SDL_static_cast(Uint32 *, dst);
-    Uint32 _val = (val);
-    if (dwords == 0) {
-        return;
-    }
-    switch (dwords % 4) {
-        case 0: do {    *_p++ = _val;   SDL_FALLTHROUGH;
-        case 3:         *_p++ = _val;   SDL_FALLTHROUGH;
-        case 2:         *_p++ = _val;   SDL_FALLTHROUGH;
-        case 1:         *_p++ = _val;
-        } while ( --_n );
-    }
-#endif
-}
 
 extern DECLSPEC void *SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 

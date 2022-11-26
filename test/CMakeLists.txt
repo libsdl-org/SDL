@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(SDL3_test)
 
 include(CheckCCompilerFlag)
+include(CheckIncludeFile)
 include(CMakeParseArguments)
 include(CMakePushCheckState)
 
@@ -91,7 +92,17 @@ if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
 endif()
 
 if (OPENGL_FOUND)
-add_definitions(-DHAVE_OPENGL)
+    add_definitions(-DHAVE_OPENGL)
+endif()
+
+check_include_file(signal.h HAVE_SIGNAL_H)
+if (HAVE_SIGNAL_H)
+    add_definitions(-DHAVE_SIGNAL_H)
+endif()
+
+check_include_file(libudev.h HAVE_LIBUDEV_H)
+if (HAVE_LIBUDEV_H)
+    add_definitions(-DHAVE_LIBUDEV_H)
 endif()
 
 add_sdl_test_executable(checkkeys checkkeys.c)
