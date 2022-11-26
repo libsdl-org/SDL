@@ -25,6 +25,7 @@
 #include "SDL.h"
 #include "SDL_video.h"
 #include "SDL_sysvideo.h"
+#include "SDL_egl_c.h"
 #include "SDL_blit.h"
 #include "SDL_pixels_c.h"
 #include "SDL_rect_c.h"
@@ -77,9 +78,6 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_DIRECTFB
-    &DirectFB_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_WINDOWS
     &WINDOWS_bootstrap,
 #endif
@@ -88,9 +86,6 @@ static VideoBootStrap *bootstrap[] = {
 #endif
 #if SDL_VIDEO_DRIVER_HAIKU
     &HAIKU_bootstrap,
-#endif
-#if SDL_VIDEO_DRIVER_PANDORA
-    &PND_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_UIKIT
     &UIKIT_bootstrap,
@@ -119,24 +114,14 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_RPI
     &RPI_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_NACL
-    &NACL_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
     &Emscripten_bootstrap,
-#endif
-#if SDL_VIDEO_DRIVER_QNX
-    &QNX_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_OFFSCREEN
     &OFFSCREEN_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_NGAGE
     &NGAGE_bootstrap,
-#endif
-#if SDL_VIDEO_DRIVER_OS2
-    &OS2DIVE_bootstrap,
-    &OS2VMAN_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
@@ -205,7 +190,7 @@ typedef struct {
 static Uint32
 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
 {
-#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
+#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__
     if (_this->GL_CreateContext != NULL) {
         return SDL_WINDOW_OPENGL;
     }
@@ -1916,16 +1901,6 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         window->surface_valid = SDL_FALSE;
     }
 
-    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
-        if (_this->DestroyWindowFramebuffer) {
-            _this->DestroyWindowFramebuffer(_this, window);
-        }
-    }
-
-    if (_this->DestroyWindow && !(flags & SDL_WINDOW_FOREIGN)) {
-        _this->DestroyWindow(_this, window);
-    }
-
     if ((window->flags & SDL_WINDOW_OPENGL) != (flags & SDL_WINDOW_OPENGL)) {
         if (flags & SDL_WINDOW_OPENGL) {
             need_gl_load = SDL_TRUE;
@@ -1954,6 +1929,16 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 
     if (need_vulkan_unload) {
         SDL_Vulkan_UnloadLibrary();
+    }
+
+    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
+        if (_this->DestroyWindowFramebuffer) {
+            _this->DestroyWindowFramebuffer(_this, window);
+        }
+    }
+
+    if (_this->DestroyWindow && !(flags & SDL_WINDOW_FOREIGN)) {
+        _this->DestroyWindow(_this, window);
     }
 
     if (need_gl_load) {
@@ -3295,6 +3280,12 @@ SDL_DestroyWindow(SDL_Window * window)
         window->surface = NULL;
         window->surface_valid = SDL_FALSE;
     }
+    if (window->flags & SDL_WINDOW_OPENGL) {
+        SDL_GL_UnloadLibrary();
+    }
+    if (window->flags & SDL_WINDOW_VULKAN) {
+        SDL_Vulkan_UnloadLibrary();
+    }
     if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
         if (_this->DestroyWindowFramebuffer) {
             _this->DestroyWindowFramebuffer(_this, window);
@@ -3302,12 +3293,6 @@ SDL_DestroyWindow(SDL_Window * window)
     }
     if (_this->DestroyWindow) {
         _this->DestroyWindow(_this, window);
-    }
-    if (window->flags & SDL_WINDOW_OPENGL) {
-        SDL_GL_UnloadLibrary();
-    }
-    if (window->flags & SDL_WINDOW_VULKAN) {
-        SDL_Vulkan_UnloadLibrary();
     }
 
     display = SDL_GetDisplayForWindow(window);
@@ -3478,6 +3463,31 @@ SDL_GL_GetProcAddress(const char *proc)
     return func;
 }
 
+void *
+SDL_EGL_GetProcAddress(const char *proc)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    void *func;
+
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+    func = NULL;
+
+    if (_this->egl_data) {
+        func = SDL_EGL_GetProcAddressInternal(_this, proc);
+    } else {
+        SDL_SetError("No EGL library has been loaded");
+    }
+
+    return func;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
+}
+
 void
 SDL_GL_UnloadLibrary(void)
 {
@@ -3621,12 +3631,28 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 #endif
 }
 
+void SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
+                                      SDL_EGLIntArrayCallback surfaceAttribCallback,
+                                      SDL_EGLIntArrayCallback contextAttribCallback)
+{
+    if (!_this) {
+        return;
+    }
+    _this->egl_platformattrib_callback = platformAttribCallback;
+    _this->egl_surfaceattrib_callback = surfaceAttribCallback;
+    _this->egl_contextattrib_callback = contextAttribCallback;
+}
+
 void
 SDL_GL_ResetAttributes()
 {
     if (_this == NULL) {
         return;
     }
+
+    _this->egl_platformattrib_callback = NULL;
+    _this->egl_surfaceattrib_callback = NULL;
+    _this->egl_contextattrib_callback = NULL;
 
     _this->gl_config.red_size = 3;
     _this->gl_config.green_size = 3;
@@ -3674,6 +3700,8 @@ SDL_GL_ResetAttributes()
     _this->gl_config.reset_notification = SDL_GL_CONTEXT_RESET_NO_NOTIFICATION;
 
     _this->gl_config.share_with_current_context = 0;
+
+    _this->gl_config.egl_platform = 0;
 }
 
 int
@@ -3789,6 +3817,9 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         break;
     case SDL_GL_CONTEXT_NO_ERROR:
         _this->gl_config.no_error = value;
+        break;
+    case SDL_GL_EGL_PLATFORM:
+        _this->gl_config.egl_platform = value;
         break;
     default:
         retval = SDL_SetError("Unknown OpenGL attribute");
@@ -3998,6 +4029,12 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
             *value = _this->gl_config.no_error;
             return 0;
         }
+    case SDL_GL_EGL_PLATFORM:
+        {
+            *value = _this->gl_config.egl_platform;
+            return 0;
+        }
+        break;
     default:
         return SDL_SetError("Unknown OpenGL attribute");
     }
@@ -4141,6 +4178,66 @@ SDL_GL_GetCurrentContext(void)
         return NULL;
     }
     return (SDL_GLContext)SDL_TLSGet(_this->current_glctx_tls);
+}
+
+SDL_EGLDisplay
+SDL_EGL_GetCurrentEGLDisplay(void)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return EGL_NO_DISPLAY;
+    }
+    if (!_this->egl_data) {
+        SDL_SetError("There is no current EGL display");
+        return EGL_NO_DISPLAY;
+    }
+    return _this->egl_data->egl_display;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
+}
+
+SDL_EGLConfig
+SDL_EGL_GetCurrentEGLConfig(void)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+    if (!_this->egl_data) {
+        SDL_SetError("There is no current EGL display");
+        return NULL;
+    }
+    return _this->egl_data->egl_config;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
+}
+
+SDL_EGLConfig
+SDL_EGL_GetWindowEGLSurface(SDL_Window * window)
+{
+#if SDL_VIDEO_OPENGL_EGL
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+    if (!_this->egl_data) {
+        SDL_SetError("There is no current EGL display");
+        return NULL;
+    }
+    if (_this->GL_GetEGLSurface) {
+        return _this->GL_GetEGLSurface(_this, window);
+    }
+    return NULL;
+#else
+    SDL_SetError("SDL was not built with EGL support");
+    return NULL;
+#endif
 }
 
 void SDL_GL_GetDrawableSize(SDL_Window * window, int *w, int *h)
@@ -4317,22 +4414,32 @@ SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask)
 }
 #endif
 
-SDL_bool
-SDL_GetWindowWMInfo(SDL_Window * window, struct SDL_SysWMinfo *info)
+int
+SDL_GetWindowWMInfo(SDL_Window *window, struct SDL_SysWMinfo *info, Uint32 version)
 {
-    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (info == NULL) {
-        SDL_InvalidParamError("info");
-        return SDL_FALSE;
+        return SDL_InvalidParamError("info");
     }
-    info->subsystem = SDL_SYSWM_UNKNOWN;
 
-    if (!_this->GetWindowWMInfo) {
-        SDL_Unsupported();
-        return SDL_FALSE;
+    /* Set the version in the structure to the minimum of our version and the application expected version */
+    version = SDL_min(version, SDL_SYSWM_CURRENT_VERSION);
+
+    if (version == 1) {
+        SDL_memset(info, 0, SDL_SYSWM_INFO_SIZE_V1);
+    } else {
+        return SDL_SetError("Unknown info version");
     }
-    return _this->GetWindowWMInfo(_this, window, info);
+
+    info->subsystem = SDL_SYSWM_UNKNOWN;
+    info->version = version;
+
+    if (_this->GetWindowWMInfo) {
+        return (_this->GetWindowWMInfo(_this, window, info));
+    } else {
+        return 0;
+    }
 }
 
 void
@@ -4457,9 +4564,6 @@ SDL_GetMessageBoxCount(void)
 #if SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_OS2
-#include "os2/SDL_os2messagebox.h"
-#endif
 #if SDL_VIDEO_DRIVER_RISCOS
 #include "riscos/SDL_riscosmessagebox.h"
 #endif
@@ -4467,18 +4571,13 @@ SDL_GetMessageBoxCount(void)
 #include "vita/SDL_vitamessagebox.h"
 #endif
 
-#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_OS2 || SDL_VIDEO_DRIVER_RISCOS
+#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11 || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_HAIKU || SDL_VIDEO_DRIVER_RISCOS
 static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
     SDL_Window *window = messageboxdata->window;
 
-    if (window == NULL) {
-        return SDL_TRUE;
-    }
-
-    SDL_VERSION(&info.version);
-    if (!SDL_GetWindowWMInfo(window, &info)) {
+    if (window == NULL || SDL_GetWindowWMInfo(window, &info, SDL_SYSWM_CURRENT_VERSION) < 0) {
         return SDL_TRUE;
     } else {
         return info.subsystem == drivertype;
@@ -4583,13 +4682,6 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_HAIKU) &&
         HAIKU_ShowMessageBox(messageboxdata, buttonid) == 0) {
-        retval = 0;
-    }
-#endif
-#if SDL_VIDEO_DRIVER_OS2
-    if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_OS2) &&
-        OS2_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif

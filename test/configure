@@ -633,7 +633,6 @@ SDL_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
-ISOS2
 ISUNIX
 ISWINDOWS
 ISMACOSX
@@ -3557,7 +3556,6 @@ fi
 ISUNIX="false"
 ISWINDOWS="false"
 ISMACOSX="false"
-ISOS2="false"
 
 case "$host" in
     *-*-cygwin* | *-*-mingw*)
@@ -3643,11 +3641,6 @@ fi
             SYS_GL_LIBS="-lOSMesa"
         fi
         ;;
-    *-*-qnx*)
-        EXE=""
-        MATHLIB=""
-        SYS_GL_LIBS="-lGLES_CM"
-        ;;
     *-*-emscripten*)
                 EXE=".bc"
         MATHLIB=""
@@ -3655,12 +3648,6 @@ fi
         ;;
     *-*-riscos*)
         EXE=",e1f"
-        MATHLIB=""
-        SYS_GL_LIBS=""
-        ;;
-    *-*-os2*)
-        ISOS2="true"
-        EXE=".exe"
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;
@@ -3712,7 +3699,6 @@ fi
 
         ;;
 esac
-
 
 
 

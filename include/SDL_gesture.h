@@ -54,7 +54,7 @@ typedef Sint64 SDL_GestureID;
  * \param touchId the touch device id, or -1 for all touch devices
  * \returns 1 on success or 0 if the specified device could not be found.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetTouchDevice
  */
@@ -68,7 +68,7 @@ extern DECLSPEC int SDLCALL SDL_RecordGesture(SDL_TouchID touchId);
  * \returns the number of saved templates on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LoadDollarTemplates
  * \sa SDL_SaveDollarTemplate
@@ -83,7 +83,7 @@ extern DECLSPEC int SDLCALL SDL_SaveAllDollarTemplates(SDL_RWops *dst);
  * \returns 1 on success or 0 on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LoadDollarTemplates
  * \sa SDL_SaveAllDollarTemplates
@@ -99,7 +99,7 @@ extern DECLSPEC int SDLCALL SDL_SaveDollarTemplate(SDL_GestureID gestureId,SDL_R
  * \returns the number of loaded templates on success or a negative error code
  *          (or 0) on failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SaveAllDollarTemplates
  * \sa SDL_SaveDollarTemplate

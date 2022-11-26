@@ -141,8 +141,7 @@ void KMSDRM_RestoreWindow(_THIS, SDL_Window * window);
 void KMSDRM_DestroyWindow(_THIS, SDL_Window * window);
 
 /* Window manager function */
-SDL_bool KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window,
-                             struct SDL_SysWMinfo *info);
+int KMSDRM_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 /* OpenGL/OpenGL ES functions */
 int KMSDRM_GLES_LoadLibrary(_THIS, const char *path);

@@ -468,7 +468,6 @@
 #define SDL_SoftStretch SDL_SoftStretch_REAL
 #define SDL_UpperBlitScaled SDL_UpperBlitScaled_REAL
 #define SDL_LowerBlitScaled SDL_LowerBlitScaled_REAL
-#define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
 #define SDL_GetThreadName SDL_GetThreadName_REAL
 #define SDL_ThreadID SDL_ThreadID_REAL
 #define SDL_GetThreadID SDL_GetThreadID_REAL
@@ -893,3 +892,10 @@
 #define SDL_SensorGetDataWithTimestamp SDL_SensorGetDataWithTimestamp_REAL
 #define SDL_ResetHints SDL_ResetHints_REAL
 #define SDL_strcasestr SDL_strcasestr_REAL
+#define SDL_EGL_GetProcAddress SDL_EGL_GetProcAddress_REAL
+#define SDL_EGL_GetCurrentEGLDisplay SDL_EGL_GetCurrentEGLDisplay_REAL
+#define SDL_EGL_GetCurrentEGLConfig SDL_EGL_GetCurrentEGLConfig_REAL
+#define SDL_EGL_GetWindowEGLSurface SDL_EGL_GetWindowEGLSurface_REAL
+#define SDL_EGL_SetEGLAttributeCallbacks SDL_EGL_SetEGLAttributeCallbacks_REAL
+#define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
+#define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL

@@ -180,11 +180,15 @@ Uint32
 SDL_SemValue(SDL_sem * sem)
 {
     int ret = 0;
-    if (sem) {
-        sem_getvalue(&sem->sem, &ret);
-        if (ret < 0) {
-            ret = 0;
-        }
+
+    if (!sem) {
+        SDL_InvalidParamError("sem");
+        return 0;
+    }
+
+    sem_getvalue(&sem->sem, &ret);
+    if (ret < 0) {
+        ret = 0;
     }
     return (Uint32) ret;
 }

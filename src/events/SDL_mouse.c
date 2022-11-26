@@ -31,10 +31,6 @@
 #if defined(__WIN32__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"    // For GetDoubleClickTime()
 #endif
-#if defined(__OS2__)
-#define INCL_WIN
-#include <os2.h>
-#endif
 
 /* #define DEBUG_MOUSE */
 
@@ -57,8 +53,6 @@ SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *ol
     } else {
 #if defined(__WIN32__) || defined(__WINGDK__)
         mouse->double_click_time = GetDoubleClickTime();
-#elif defined(__OS2__)
-        mouse->double_click_time = WinQuerySysValue(HWND_DESKTOP, SV_DBLCLKTIME);
 #else
         mouse->double_click_time = 500;
 #endif

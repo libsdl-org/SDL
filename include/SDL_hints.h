@@ -364,6 +364,15 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_ASYNCIFY   "SDL_EMSCRIPTEN_ASYNCIFY"
 
 /**
+ *  \brief Specify the CSS selector used for the "default" window/canvas
+ *
+ * This hint only applies to the emscripten platform
+ *
+ * The default value is "#canvas"
+ */
+#define SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR "SDL_EMSCRIPTEN_CANVAS_SELECTOR"
+
+/**
  *  \brief override the binding element for keyboard inputs for Emscripten builds
  *
  * This hint only applies to the emscripten platform
@@ -1644,6 +1653,18 @@ extern "C" {
 #define SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY "SDL_VIDEO_EGL_ALLOW_TRANSPARENCY"
 
 /**
+ * \brief If eglGetPlatformDisplay fails, fall back to calling eglGetDisplay.
+ *
+ * This variable can be set to one of the following values:
+ *   "0"        - Do not fall back to eglGetDisplay
+ *   "1"        - Fall back to eglGetDisplay if eglGetPlatformDisplay fails.
+ *
+ * By default, SDL will fall back to eglGetDisplay if eglGetPlatformDisplay
+ * fails.
+ */
+#define SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK "SDL_VIDEO_EGL_GETDISPLAY_FALLBACK"
+
+/**
  * \brief A variable controlling whether the graphics context is externally managed.
  *
  * This variable can be set to the following values:
@@ -1803,6 +1824,18 @@ extern "C" {
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER              "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
+ * \brief A variable controlling whether the OpenGL context should be created
+ * with EGL by default
+ *
+ * This variable can be set to the following values:
+ * "0" - Use platform-specific GL context creation API (GLX, WGL, CGL, etc)
+ * "1" - Use EGL
+ *
+ * By default SDL will use the platform-specific GL context API when both are present.
+ */
+#define SDL_HINT_VIDEO_FORCE_EGL "SDL_VIDEO_FORCE_EGL"
+
+/**
  * \brief A variable controlling whether X11 should use GLX or EGL by default
  *
  * This variable can be set to the following values:
@@ -1810,6 +1843,9 @@ extern "C" {
  * "1" - Use EGL
  *
  * By default SDL will use GLX when both are present.
+ *
+ * \deprecated Use the platform-agnostic SDL_HINT_VIDEO_FORCE_EGL hint instead.
+ *
  */
 #define SDL_HINT_VIDEO_X11_FORCE_EGL "SDL_VIDEO_X11_FORCE_EGL"
 
@@ -2411,7 +2447,7 @@ typedef enum
  * \param priority the SDL_HintPriority level for the hint
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2431,7 +2467,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \param value the value of the hint variable
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
@@ -2449,7 +2485,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * \param name the hint to set
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
- * \since This function is available since SDL 2.24.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2463,7 +2499,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  * variable, or NULL if the environment isn't set. Callbacks will be called
  * normally with this change.
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2477,7 +2513,7 @@ extern DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \param name the hint to query
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
@@ -2492,7 +2528,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
  *
- * \since This function is available since SDL 2.0.5.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
@@ -2517,7 +2553,7 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *                 hint value changes
  * \param userdata a pointer to pass to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelHintCallback
  */
@@ -2533,7 +2569,7 @@ extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
  *                 hint value changes
  * \param userdata a pointer being passed to the callback function
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddHintCallback
  */
@@ -2551,7 +2587,7 @@ extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
  *
  * This function will be removed from the API the next time we rev the ABI.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ResetHints
  */

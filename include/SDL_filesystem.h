@@ -75,7 +75,7 @@ extern "C" {
  *          doesn't implement this functionality, call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.1.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPrefPath
  */
@@ -132,7 +132,7 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *          notation. NULL if there's a problem (creating directory failed,
  *          etc.).
  *
- * \since This function is available since SDL 2.0.1.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetBasePath
  */

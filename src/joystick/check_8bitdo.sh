@@ -10,6 +10,6 @@ cat <<__EOF__
 __EOF__
 
 echo "Actual output:"
-fgrep 8BitDo SDL_gamecontrollerdb.h | fgrep -v hint
-egrep "hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1" SDL_gamecontrollerdb.h  | fgrep -i 8bit | fgrep -v x:b2,y:b3 | fgrep -v x:b3,y:b4
-egrep "hint:.SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1" SDL_gamecontrollerdb.h  | fgrep -i 8bit | fgrep -v x:b3,y:b2 | fgrep -v x:b4,y:b3
+${FGREP:-grep -F} 8BitDo SDL_gamecontrollerdb.h | ${FGREP:-grep -F} -v hint
+${EGREP:-grep -E} "hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1" SDL_gamecontrollerdb.h  | ${FGREP:-grep -F} -i 8bit | ${FGREP:-grep -F} -v x:b2,y:b3 | ${FGREP:-grep -F} -v x:b3,y:b4
+${EGREP:-grep -E} "hint:.SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1" SDL_gamecontrollerdb.h  | ${FGREP:-grep -F} -i 8bit | ${FGREP:-grep -F} -v x:b3,y:b2 | ${FGREP:-grep -F} -v x:b4,y:b3

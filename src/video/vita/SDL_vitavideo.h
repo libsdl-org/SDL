@@ -85,10 +85,6 @@ void VITA_RestoreWindow(_THIS, SDL_Window * window);
 void VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 void VITA_DestroyWindow(_THIS, SDL_Window * window);
 
-/* Window manager function */
-SDL_bool VITA_GetWindowWMInfo(_THIS, SDL_Window * window,
-                             struct SDL_SysWMinfo *info);
-
 #if SDL_VIDEO_DRIVER_VITA
 #if defined(SDL_VIDEO_VITA_PVR_OGL)
 /* OpenGL functions */

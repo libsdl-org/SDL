@@ -44,6 +44,7 @@ Cocoa_GLES_LoadLibrary(_THIS, const char *path)
         _this->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
         _this->GL_SwapWindow = Cocoa_GL_SwapWindow;
         _this->GL_DeleteContext = Cocoa_GL_DeleteContext;
+        _this->GL_GetEGLSurface = NULL;
         return Cocoa_GL_LoadLibrary(_this, path);
 #else
         return SDL_SetError("SDL not configured with OpenGL/CGL support");
@@ -51,7 +52,7 @@ Cocoa_GLES_LoadLibrary(_THIS, const char *path)
     }
     
     if (_this->egl_data == NULL) {
-        return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0);
+        return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform);
     }
 
     return 0;
@@ -77,6 +78,7 @@ Cocoa_GLES_CreateContext(_THIS, SDL_Window * window)
         _this->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
         _this->GL_SwapWindow = Cocoa_GL_SwapWindow;
         _this->GL_DeleteContext = Cocoa_GL_DeleteContext;
+        _this->GL_GetEGLSurface = NULL;
 
         if (Cocoa_GL_LoadLibrary(_this, NULL) != 0) {
             return NULL;
@@ -112,8 +114,29 @@ Cocoa_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     return SDL_EGL_MakeCurrent(_this, window ? ((__bridge SDL_WindowData *) window->driverdata).egl_surface : EGL_NO_SURFACE, context);
 }}
 
+void
+Cocoa_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+{ @autoreleasepool
+{
+    SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
+    NSView *contentView = windata.nswindow.contentView;
+    CALayer *layer = [contentView layer];
+
+    int width = layer.bounds.size.width * layer.contentsScale;
+    int height = layer.bounds.size.height * layer.contentsScale;
+
+    if (w) {
+        *w = width;
+    }
+
+    if (h) {
+        *h = height;
+    }
+}}
+
 int
 Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
+{ @autoreleasepool
 {
     NSView* v;
     /* The current context is lost in here; save it and reset it. */
@@ -127,7 +150,7 @@ Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
         #if 0  /* When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function. */
         SDL_assert(!_this->gl_config.driver_loaded);
         #endif
-        if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0) < 0) {
+        if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform) < 0) {
             SDL_EGL_UnloadLibrary(_this);
             return -1;
         }
@@ -143,7 +166,14 @@ Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
     }
 
     return Cocoa_GLES_MakeCurrent(_this, current_win, current_ctx);
-}
+}}
+
+SDL_EGLSurface
+Cocoa_GLES_GetEGLSurface(_THIS, SDL_Window * window)
+{ @autoreleasepool
+{
+    return ((__bridge SDL_WindowData *) window->driverdata).egl_surface;
+}}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && SDL_VIDEO_OPENGL_EGL */
 

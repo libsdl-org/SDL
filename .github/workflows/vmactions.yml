@@ -14,7 +14,8 @@ jobs:
         usesh: true
         prepare: |
           pkg install -y \
-              gmake \
+              cmake \
+              ninja \
               pkgconf \
               libXcursor \
               libXext \
@@ -33,7 +34,6 @@ jobs:
               libinotify \
               alsa-lib \
               jackit \
-              nas \
               pipewire \
               pulseaudio \
               sndio \
@@ -44,6 +44,7 @@ jobs:
               libudev-devd
 
         run: |
-          mkdir build_autotools
-          (cd build_autotools && CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib" ../configure)
-          gmake -C build_autotools -j`sysctl -n hw.ncpu` V=1
+          cmake -S . -B build -GNinja \
+            -DSDL_CHECK_REQUIRED_INCLUDES="/usr/local/include" \
+            -DSDL_CHECK_REQUIRED_LINK_OPTIONS="-L/usr/local/lib"
+          cmake --build build --verbose -- -j`sysctl -n hw.ncpu`

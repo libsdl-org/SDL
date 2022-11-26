@@ -51,7 +51,7 @@ extern "C" {
  * \returns an unsigned 32-bit value representing the number of milliseconds
  *          since the SDL library initialized.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_TICKS_PASSED
  */
@@ -77,7 +77,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
  * \returns an unsigned 64-bit value representing the number of milliseconds
  *          since the SDL library initialized.
  *
- * \since This function is available since SDL 2.0.18.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
 
@@ -116,7 +116,7 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
  *
  * \returns the current counter value.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPerformanceFrequency
  */
@@ -127,7 +127,7 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);
  *
  * \returns a platform-specific count per second.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetPerformanceCounter
  */
@@ -142,7 +142,7 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
  *
  * \param ms the number of milliseconds to delay
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
 
@@ -189,7 +189,7 @@ typedef int SDL_TimerID;
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RemoveTimer
  */
@@ -204,7 +204,7 @@ extern DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval,
  * \returns SDL_TRUE if the timer is removed or SDL_FALSE if the timer wasn't
  *          found.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddTimer
  */

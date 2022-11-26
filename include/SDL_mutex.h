@@ -71,7 +71,7 @@ typedef struct SDL_mutex SDL_mutex;
  * \returns the initialized and unlocked mutex or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyMutex
  * \sa SDL_LockMutex
@@ -94,7 +94,7 @@ extern DECLSPEC SDL_mutex *SDLCALL SDL_CreateMutex(void);
  * \param mutex the mutex to lock
  * \return 0, or -1 on error.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex);
 #define SDL_mutexP(m)   SDL_LockMutex(m)
@@ -112,7 +112,7 @@ extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex);
  * \returns 0, `SDL_MUTEX_TIMEDOUT`, or -1 on error; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateMutex
  * \sa SDL_DestroyMutex
@@ -136,7 +136,7 @@ extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_mutex * mutex);
  * \param mutex the mutex to unlock.
  * \returns 0, or -1 on error.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_UnlockMutex(SDL_mutex * mutex);
 #define SDL_mutexV(m)   SDL_UnlockMutex(m)
@@ -152,7 +152,7 @@ extern DECLSPEC int SDLCALL SDL_UnlockMutex(SDL_mutex * mutex);
  *
  * \param mutex the mutex to destroy
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateMutex
  * \sa SDL_LockMutex
@@ -186,7 +186,7 @@ typedef struct SDL_semaphore SDL_sem;
  * \returns a new semaphore or NULL on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroySemaphore
  * \sa SDL_SemPost
@@ -205,7 +205,7 @@ extern DECLSPEC SDL_sem *SDLCALL SDL_CreateSemaphore(Uint32 initial_value);
  *
  * \param sem the semaphore to destroy
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSemaphore
  * \sa SDL_SemPost
@@ -231,7 +231,7 @@ extern DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_sem * sem);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSemaphore
  * \sa SDL_DestroySemaphore
@@ -256,7 +256,7 @@ extern DECLSPEC int SDLCALL SDL_SemWait(SDL_sem * sem);
  *          block, or a negative error code on failure; call SDL_GetError()
  *          for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSemaphore
  * \sa SDL_DestroySemaphore
@@ -281,7 +281,7 @@ extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem * sem);
  *          succeed in the allotted time, or a negative error code on failure;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSemaphore
  * \sa SDL_DestroySemaphore
@@ -299,7 +299,7 @@ extern DECLSPEC int SDLCALL SDL_SemWaitTimeout(SDL_sem * sem, Uint32 ms);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSemaphore
  * \sa SDL_DestroySemaphore
@@ -316,7 +316,7 @@ extern DECLSPEC int SDLCALL SDL_SemPost(SDL_sem * sem);
  * \param sem the semaphore to query
  * \returns the current value of the semaphore.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateSemaphore
  */
@@ -340,7 +340,7 @@ typedef struct SDL_cond SDL_cond;
  * \returns a new condition variable or NULL on failure; call SDL_GetError()
  *          for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CondBroadcast
  * \sa SDL_CondSignal
@@ -355,7 +355,7 @@ extern DECLSPEC SDL_cond *SDLCALL SDL_CreateCond(void);
  *
  * \param cond the condition variable to destroy
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CondBroadcast
  * \sa SDL_CondSignal
@@ -372,7 +372,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyCond(SDL_cond * cond);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CondBroadcast
  * \sa SDL_CondWait
@@ -389,7 +389,7 @@ extern DECLSPEC int SDLCALL SDL_CondSignal(SDL_cond * cond);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CondSignal
  * \sa SDL_CondWait
@@ -417,7 +417,7 @@ extern DECLSPEC int SDLCALL SDL_CondBroadcast(SDL_cond * cond);
  * \returns 0 when it is signaled or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CondBroadcast
  * \sa SDL_CondSignal
@@ -446,7 +446,7 @@ extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex);
  *          the condition is not signaled in the allotted time, or a negative
  *          error code on failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 2.0.0.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CondBroadcast
  * \sa SDL_CondSignal

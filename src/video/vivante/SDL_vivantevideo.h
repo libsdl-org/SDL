@@ -80,8 +80,7 @@ void VIVANTE_HideWindow(_THIS, SDL_Window * window);
 void VIVANTE_DestroyWindow(_THIS, SDL_Window * window);
 
 /* Window manager function */
-SDL_bool VIVANTE_GetWindowWMInfo(_THIS, SDL_Window * window,
-                             struct SDL_SysWMinfo *info);
+int VIVANTE_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 /* Event functions */
 void VIVANTE_PumpEvents(_THIS);

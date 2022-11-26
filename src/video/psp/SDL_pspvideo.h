@@ -75,10 +75,6 @@ void PSP_MinimizeWindow(_THIS, SDL_Window * window);
 void PSP_RestoreWindow(_THIS, SDL_Window * window);
 void PSP_DestroyWindow(_THIS, SDL_Window * window);
 
-/* Window manager function */
-SDL_bool PSP_GetWindowWMInfo(_THIS, SDL_Window * window,
-                             struct SDL_SysWMinfo *info);
-
 /* OpenGL/OpenGL ES functions */
 int PSP_GL_LoadLibrary(_THIS, const char *path);
 void *PSP_GL_GetProcAddress(_THIS, const char *proc);

@@ -211,7 +211,7 @@ SDL_WAYLAND_SYM(bool, libdecor_configuration_get_content_size, (struct libdecor_
                                                                 int *))
 SDL_WAYLAND_SYM(bool, libdecor_configuration_get_window_state, (struct libdecor_configuration *,\
                                                                 enum libdecor_window_state *))
-SDL_WAYLAND_SYM(bool, libdecor_dispatch, (struct libdecor *, int))
+SDL_WAYLAND_SYM(int, libdecor_dispatch, (struct libdecor *, int))
 #endif
 
 #undef SDL_WAYLAND_MODULE

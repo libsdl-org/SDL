@@ -69,7 +69,7 @@ int
 SDL_SemTryWait(SDL_sem *sem)
 {
     if (sem == NULL) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     return SDL_SemWaitTimeout(sem, 0);
@@ -81,7 +81,7 @@ SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     int retval;
 
     if (sem == NULL) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
 
     if (timeout == SDL_MUTEX_MAXWAIT) {
@@ -114,7 +114,7 @@ Uint32
 SDL_SemValue(SDL_sem *sem)
 {
     if (sem == NULL) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
     return sem->semaphore.current_count;
 }
@@ -123,7 +123,7 @@ int
 SDL_SemPost(SDL_sem *sem)
 {
     if (sem == NULL) {
-        return SDL_SetError("Passed a NULL semaphore");
+        return SDL_InvalidParamError("sem");
     }
     LightSemaphore_Release(&sem->semaphore, 1);
     return 0;

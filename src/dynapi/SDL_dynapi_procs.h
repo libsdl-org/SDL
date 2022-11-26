@@ -50,8 +50,6 @@ SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF
 
 #if defined(__WIN32__) || defined(__GDK__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
-#elif defined(__OS2__)
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c),(a,b,c),return)
 #endif
@@ -502,7 +500,6 @@ SDL_DYNAPI_PROC(int,SDL_LowerBlit,(SDL_Surface *a, SDL_Rect *b, SDL_Surface *c, 
 SDL_DYNAPI_PROC(int,SDL_SoftStretch,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_UpperBlitScaled,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, SDL_Rect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_LowerBlitScaled,(SDL_Surface *a, SDL_Rect *b, SDL_Surface *c, SDL_Rect *d),(a,b,c,d),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b),(a,b),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetThreadName,(SDL_Thread *a),(a),return)
 SDL_DYNAPI_PROC(SDL_threadID,SDL_ThreadID,(void),(),return)
 SDL_DYNAPI_PROC(SDL_threadID,SDL_GetThreadID,(SDL_Thread *a),(a),return)
@@ -749,8 +746,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_HasColorKey,(SDL_Surface *a),(a),return)
 
 #if defined(__WIN32__) || defined(__GDK__)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
-#elif defined(__OS2__)
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
 #else
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d),(a,b,c,d),return)
 #endif
@@ -976,3 +971,12 @@ SDL_DYNAPI_PROC(int,SDL_GameControllerGetSensorDataWithTimestamp,(SDL_GameContro
 SDL_DYNAPI_PROC(int,SDL_SensorGetDataWithTimestamp,(SDL_Sensor *a, Uint64 *b, float *c, int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_ResetHints,(void),(),)
 SDL_DYNAPI_PROC(char*,SDL_strcasestr,(const char *a, const char *b),(a,b),return)
+SDL_DYNAPI_PROC(void*,SDL_EGL_GetProcAddress,(const char *a),(a),return)
+SDL_DYNAPI_PROC(SDL_EGLDisplay,SDL_EGL_GetCurrentEGLDisplay,(void),(),return)
+SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
+SDL_DYNAPI_PROC(SDL_EGLSurface,SDL_EGL_GetWindowEGLSurface,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_EGL_SetEGLAttributeCallbacks,(SDL_EGLAttribArrayCallback a, SDL_EGLIntArrayCallback b, SDL_EGLIntArrayCallback c),(a,b,c),)
+#if defined(__GDK__)
+SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),return)
+#endif
+SDL_DYNAPI_PROC(int,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b, Uint32 c),(a,b,c),return)

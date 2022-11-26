@@ -33,7 +33,7 @@ macro(FindLibraryAndSONAME _LIB)
 endmacro()
 
 macro(CheckDLOPEN)
-  cmake_push_check_state(RESET)
+  cmake_push_check_state()
   check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBC)
   if(NOT HAVE_DLOPEN_IN_LIBC)
     set(CMAKE_REQUIRED_LIBRARIES dl)
@@ -168,128 +168,6 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 # Optional:
-# - SDL_JACK_SHARED opt
-# - HAVE_SDL_LOADSO opt
-macro(CheckJACK)
-  if(SDL_JACK)
-    pkg_check_modules(PKG_JACK jack)
-    if(PKG_JACK_FOUND)
-      set(HAVE_JACK TRUE)
-      file(GLOB JACK_SOURCES ${SDL3_SOURCE_DIR}/src/audio/jack/*.c)
-      list(APPEND SOURCE_FILES ${JACK_SOURCES})
-      set(SDL_AUDIO_DRIVER_JACK 1)
-      list(APPEND EXTRA_CFLAGS ${PKG_JACK_CFLAGS})
-      if(SDL_JACK_SHARED AND NOT HAVE_SDL_LOADSO)
-        message_warn("You must have SDL_LoadObject() support for dynamic JACK audio loading")
-      endif()
-      FindLibraryAndSONAME("jack" LIBDIRS ${PKG_JACK_LIBRARY_DIRS})
-      if(SDL_JACK_SHARED AND JACK_LIB AND HAVE_SDL_LOADSO)
-        set(SDL_AUDIO_DRIVER_JACK_DYNAMIC "\"${JACK_LIB_SONAME}\"")
-        set(HAVE_JACK_SHARED TRUE)
-      else()
-        list(APPEND EXTRA_LDFLAGS ${PKG_JACK_LDFLAGS})
-      endif()
-      set(HAVE_SDL_AUDIO TRUE)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
-# - PkgCheckModules
-# Optional:
-# - SDL_ESD_SHARED opt
-# - HAVE_SDL_LOADSO opt
-macro(CheckESD)
-  if(SDL_ESD)
-    pkg_check_modules(PKG_ESD esound)
-    if(PKG_ESD_FOUND)
-      set(HAVE_ESD TRUE)
-      file(GLOB ESD_SOURCES ${SDL3_SOURCE_DIR}/src/audio/esd/*.c)
-      list(APPEND SOURCE_FILES ${ESD_SOURCES})
-      set(SDL_AUDIO_DRIVER_ESD 1)
-      list(APPEND EXTRA_CFLAGS ${PKG_ESD_CFLAGS})
-      if(SDL_ESD_SHARED AND NOT HAVE_SDL_LOADSO)
-          message_warn("You must have SDL_LoadObject() support for dynamic ESD loading")
-      endif()
-      FindLibraryAndSONAME(esd LIBDIRS ${PKG_ESD_LIBRARY_DIRS})
-      if(SDL_ESD_SHARED AND ESD_LIB AND HAVE_SDL_LOADSO)
-          set(SDL_AUDIO_DRIVER_ESD_DYNAMIC "\"${ESD_LIB_SONAME}\"")
-          set(HAVE_ESD_SHARED TRUE)
-      else()
-          list(APPEND EXTRA_LDFLAGS ${PKG_ESD_LDFLAGS})
-      endif()
-      set(HAVE_SDL_AUDIO TRUE)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
-# - n/a
-# Optional:
-# - SDL_ARTS_SHARED opt
-# - HAVE_SDL_LOADSO opt
-macro(CheckARTS)
-  if(SDL_ARTS)
-    find_program(ARTS_CONFIG arts-config)
-    if(ARTS_CONFIG)
-      execute_process(CMD_ARTSCFLAGS ${ARTS_CONFIG} --cflags
-        OUTPUT_VARIABLE ARTS_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-      list(APPEND EXTRA_CFLAGS ${ARTS_CFLAGS})
-      execute_process(CMD_ARTSLIBS ${ARTS_CONFIG} --libs
-        OUTPUT_VARIABLE ARTS_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
-      file(GLOB ARTS_SOURCES ${SDL3_SOURCE_DIR}/src/audio/arts/*.c)
-      list(APPEND SOURCE_FILES ${ARTS_SOURCES})
-      set(SDL_AUDIO_DRIVER_ARTS 1)
-      set(HAVE_ARTS TRUE)
-      if(SDL_ARTS_SHARED AND NOT HAVE_SDL_LOADSO)
-        message_warn("You must have SDL_LoadObject() support for dynamic ARTS loading")
-      endif()
-      FindLibraryAndSONAME(artsc)
-      if(SDL_ARTS_SHARED AND ARTSC_LIB AND HAVE_SDL_LOADSO)
-        # TODO
-        set(SDL_AUDIO_DRIVER_ARTS_DYNAMIC "\"${ARTSC_LIB_SONAME}\"")
-        set(HAVE_ARTS_SHARED TRUE)
-      else()
-        list(APPEND EXTRA_LDFLAGS ${ARTS_LIBS})
-      endif()
-      set(HAVE_SDL_AUDIO TRUE)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
-# - n/a
-# Optional:
-# - SDL_NAS_SHARED opt
-# - HAVE_SDL_LOADSO opt
-macro(CheckNAS)
-  if(SDL_NAS)
-    # TODO: set include paths properly, so the NAS headers are found
-    check_include_file(audio/audiolib.h HAVE_NAS_H)
-    find_library(D_NAS_LIB audio)
-    if(HAVE_NAS_H AND D_NAS_LIB)
-      set(HAVE_NAS TRUE)
-      file(GLOB NAS_SOURCES ${SDL3_SOURCE_DIR}/src/audio/nas/*.c)
-      list(APPEND SOURCE_FILES ${NAS_SOURCES})
-      set(SDL_AUDIO_DRIVER_NAS 1)
-      if(SDL_NAS_SHARED AND NOT HAVE_SDL_LOADSO)
-        message_warn("You must have SDL_LoadObject() support for dynamic NAS loading")
-      endif()
-      FindLibraryAndSONAME("audio")
-      if(SDL_NAS_SHARED AND AUDIO_LIB AND HAVE_SDL_LOADSO)
-        set(SDL_AUDIO_DRIVER_NAS_DYNAMIC "\"${AUDIO_LIB_SONAME}\"")
-        set(HAVE_NAS_SHARED TRUE)
-      else()
-        list(APPEND EXTRA_LIBS ${D_NAS_LIB})
-      endif()
-      set(HAVE_SDL_AUDIO TRUE)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
-# - PkgCheckModules
-# Optional:
 # - SDL_SNDIO_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckSNDIO)
@@ -319,26 +197,26 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 # Optional:
-# - FUSIONSOUND_SHARED opt
+# - SDL_JACK_SHARED opt
 # - HAVE_SDL_LOADSO opt
-macro(CheckFusionSound)
-  if(FUSIONSOUND)
-    pkg_check_modules(PKG_FUSIONSOUND fusionsound>=1.0.0)
-    if(PKG_FUSIONSOUND_FOUND)
-      set(HAVE_FUSIONSOUND TRUE)
-      file(GLOB FUSIONSOUND_SOURCES ${SDL3_SOURCE_DIR}/src/audio/fusionsound/*.c)
-      list(APPEND SOURCE_FILES ${FUSIONSOUND_SOURCES})
-      set(SDL_AUDIO_DRIVER_FUSIONSOUND 1)
-      list(APPEND EXTRA_CFLAGS ${PKG_FUSIONSOUND_CFLAGS})
-      if(FUSIONSOUND_SHARED AND NOT HAVE_SDL_LOADSO)
-        message_warn("You must have SDL_LoadObject() support for dynamic FusionSound loading")
+macro(CheckJACK)
+  if(SDL_JACK)
+    pkg_check_modules(PKG_JACK jack)
+    if(PKG_JACK_FOUND)
+      set(HAVE_JACK TRUE)
+      file(GLOB JACK_SOURCES ${SDL3_SOURCE_DIR}/src/audio/jack/*.c)
+      list(APPEND SOURCE_FILES ${JACK_SOURCES})
+      set(SDL_AUDIO_DRIVER_JACK 1)
+      list(APPEND EXTRA_CFLAGS ${PKG_JACK_CFLAGS})
+      if(SDL_JACK_SHARED AND NOT HAVE_SDL_LOADSO)
+        message_warn("You must have SDL_LoadObject() support for dynamic JACK audio loading")
       endif()
-      FindLibraryAndSONAME("fusionsound" LIBDIRS ${PKG_FUSIONSOUND_LIBRARY_DIRS})
-      if(FUSIONSOUND_SHARED AND FUSIONSOUND_LIB AND HAVE_SDL_LOADSO)
-        set(SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC "\"${FUSIONSOUND_LIB_SONAME}\"")
-        set(HAVE_FUSIONSOUND_SHARED TRUE)
+      FindLibraryAndSONAME("jack" LIBDIRS ${PKG_JACK_LIBRARY_DIRS})
+      if(SDL_JACK_SHARED AND JACK_LIB AND HAVE_SDL_LOADSO)
+        set(SDL_AUDIO_DRIVER_JACK_DYNAMIC "\"${JACK_LIB_SONAME}\"")
+        set(HAVE_JACK_SHARED TRUE)
       else()
-        list(APPEND EXTRA_LDFLAGS ${PKG_FUSIONSOUND_LDFLAGS})
+        list(APPEND EXTRA_LDFLAGS ${PKG_JACK_LDFLAGS})
       endif()
       set(HAVE_SDL_AUDIO TRUE)
     endif()
@@ -364,7 +242,7 @@ macro(CheckLibSampleRate)
           get_property(_samplerate_type TARGET SampleRate::samplerate PROPERTY TYPE)
           if(_samplerate_type STREQUAL "SHARED_LIBRARY")
             set(HAVE_LIBSAMPLERATE_SHARED TRUE)
-            if(WIN32 OR OS2)
+            if(WIN32)
               set(SDL_LIBSAMPLERATE_DYNAMIC "\"$<TARGET_FILE_NAME:SampleRate::samplerate>\"")
             else()
               set(SDL_LIBSAMPLERATE_DYNAMIC "\"$<TARGET_SONAME_FILE_NAME:SampleRate::samplerate>\"")
@@ -400,6 +278,7 @@ endmacro()
 # - SDL_X11_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckX11)
+  cmake_push_check_state()
   if(SDL_X11)
     foreach(_LIB X11 Xext Xcursor Xi Xfixes Xrandr Xrender Xss)
         FindLibraryAndSONAME("${_LIB}")
@@ -422,6 +301,7 @@ macro(CheckX11)
 
     if(X_INCLUDEDIR)
       list(APPEND EXTRA_CFLAGS "-I${X_INCLUDEDIR}")
+      list(APPEND CMAKE_REQUIRED_INCLUDES ${X_INCLUDEDIR})
     endif()
 
     find_file(HAVE_XCURSOR_H NAMES "X11/Xcursor/Xcursor.h" HINTS "${X_INCLUDEDIR}")
@@ -597,6 +477,7 @@ macro(CheckX11)
     # Prevent Mesa from including X11 headers
     list(APPEND EXTRA_CFLAGS "-DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11")
   endif()
+  cmake_pop_check_state()
 endmacro()
 
 macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
@@ -734,37 +615,6 @@ macro(CheckCOCOA)
       file(GLOB COCOA_SOURCES ${SDL3_SOURCE_DIR}/src/video/cocoa/*.m)
       list(APPEND SOURCE_FILES ${COCOA_SOURCES})
       set(SDL_VIDEO_DRIVER_COCOA 1)
-      set(HAVE_SDL_VIDEO TRUE)
-    endif()
-  endif()
-endmacro()
-
-# Requires:
-# - PkgCheckModules
-# Optional:
-# - DIRECTFB_SHARED opt
-# - HAVE_SDL_LOADSO opt
-macro(CheckDirectFB)
-  if(SDL_DIRECTFB)
-    pkg_check_modules(PKG_DIRECTFB directfb>=1.0.0)
-    if(PKG_DIRECTFB_FOUND)
-      set(HAVE_DIRECTFB TRUE)
-      file(GLOB DIRECTFB_SOURCES ${SDL3_SOURCE_DIR}/src/video/directfb/*.c)
-      list(APPEND SOURCE_FILES ${DIRECTFB_SOURCES})
-      set(SDL_VIDEO_DRIVER_DIRECTFB 1)
-      set(SDL_VIDEO_RENDER_DIRECTFB 1)
-      list(APPEND EXTRA_CFLAGS ${PKG_DIRECTFB_CFLAGS})
-      list(APPEND SDL_CFLAGS ${PKG_DIRECTFB_CFLAGS})
-      if(SDL_DIRECTFB_SHARED AND NOT HAVE_SDL_LOADSO)
-        message_warn("You must have SDL_LoadObject() support for dynamic DirectFB loading")
-      endif()
-      FindLibraryAndSONAME("directfb" LIBDIRS ${PKG_DIRECTFB_LIBRARY_DIRS})
-      if(SDL_DIRECTFB_SHARED AND DIRECTFB_LIB AND HAVE_SDL_LOADSO)
-        set(SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC "\"${DIRECTFB_LIB_SONAME}\"")
-        set(HAVE_DIRECTFB_SHARED TRUE)
-      else()
-        list(APPEND EXTRA_LDFLAGS ${PKG_DIRECTFB_LDFLAGS})
-      endif()
       set(HAVE_SDL_VIDEO TRUE)
     endif()
   endif()
@@ -1172,8 +1022,6 @@ macro(CheckHIDAPI)
           set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PKG_LIBUSB_CFLAGS}")
           if(HIDAPI_ONLY_LIBUSB)
             list(APPEND EXTRA_LIBS ${PKG_LIBUSB_LIBRARIES})
-          elseif(OS2)
-            set(SDL_LIBUSB_DYNAMIC "\"usb100.dll\"")
           else()
             # libusb is loaded dynamically, so don't add it to EXTRA_LIBS
             FindLibraryAndSONAME("usb-1.0" LIBDIRS ${PKG_LIBUSB_LIBRARY_DIRS})

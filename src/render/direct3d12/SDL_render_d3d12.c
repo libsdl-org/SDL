@@ -34,9 +34,11 @@
 #include "../../video/windows/SDL_windowswindow.h"
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
-#include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
+
+#define SDL_ENABLE_SYSWM_WINDOWS
+#include "SDL_syswm.h"
 
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #include "SDL_render_d3d12_xbox.h"
@@ -1174,7 +1176,7 @@ static HRESULT
 D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
-    IDXGISwapChain1* swapChain;
+    IDXGISwapChain1* swapChain = NULL;
     HRESULT result = S_OK;
     SDL_SysWMinfo windowinfo;
 
@@ -1198,8 +1200,12 @@ D3D12_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
         DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING; /* To support presenting with allow tearing on */
 
-    SDL_VERSION(&windowinfo.version);
-    SDL_GetWindowWMInfo(renderer->window, &windowinfo);
+    if (SDL_GetWindowWMInfo(renderer->window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
+        windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
+        SDL_SetError("Couldn't get window handle");
+        result = E_FAIL;
+        goto done;
+    }
 
     result = D3D_CALL(data->dxgiFactory, CreateSwapChainForHwnd,
         (IUnknown *)data->commandQueue,

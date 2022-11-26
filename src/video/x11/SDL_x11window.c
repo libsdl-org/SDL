@@ -40,6 +40,8 @@
 #endif
 
 #include "SDL_timer.h"
+
+#define SDL_ENABLE_SYSWM_X11
 #include "SDL_syswm.h"
 
 #define _NET_WM_STATE_REMOVE    0l
@@ -422,6 +424,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 
 #if SDL_VIDEO_OPENGL_EGL
         if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
+             SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE) ||
              SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
 #if SDL_VIDEO_OPENGL_GLX            
             && ( !_this->gl_data || X11_GL_UseEGL(_this) )
@@ -1757,30 +1760,22 @@ X11_DestroyWindow(_THIS, SDL_Window * window)
     window->driverdata = NULL;
 }
 
-SDL_bool
-X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+int
+X11_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
 
     if (data == NULL) {
         /* This sometimes happens in SDL_IBus_UpdateTextRect() while creating the window */
-        SDL_SetError("Window not initialized");
-        return SDL_FALSE;
+        return SDL_SetError("Window not initialized");
     }
 
-    display = data->videodata->display;
-
-    if (info->version.major == SDL_MAJOR_VERSION) {
-        info->subsystem = SDL_SYSWM_X11;
-        info->info.x11.display = display;
-        info->info.x11.window = data->xwindow;
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("Application not compiled with SDL %d",
-                     SDL_MAJOR_VERSION);
-        return SDL_FALSE;
-    }
+    info->subsystem = SDL_SYSWM_X11;
+    info->info.x11.display = data->videodata->display;
+    info->info.x11.screen = displaydata->screen;
+    info->info.x11.window = data->xwindow;
+    return 0;
 }
 
 int

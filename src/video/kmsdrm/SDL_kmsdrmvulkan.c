@@ -28,14 +28,17 @@
 
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_KMSDRM
 
+#include "SDL_assert.h"
+#include "SDL_loadso.h"
+
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmdyn.h"
-#include "SDL_assert.h"
-
-#include "SDL_loadso.h"
 #include "SDL_kmsdrmvulkan.h"
+
+#define SDL_ENABLE_SYSWM_KMSDRM
 #include "SDL_syswm.h"
-#include "sys/ioctl.h"
+
+#include <sys/ioctl.h>
 
 #if defined(__OpenBSD__)
 #define DEFAULT_VULKAN  "libvulkan.so"

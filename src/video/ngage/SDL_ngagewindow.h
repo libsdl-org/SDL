@@ -23,6 +23,7 @@
 #define _SDL_ngagewindow_h
 
 #include "../SDL_sysvideo.h"
+
 #include "SDL_syswm.h"
 
 #include "SDL_ngagevideo.h"

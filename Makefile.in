@@ -27,6 +27,7 @@ LDFLAGS = @BUILD_LDFLAGS@
 EXTRA_LDFLAGS = @EXTRA_LDFLAGS@
 LIBTOOL = @LIBTOOL@
 INSTALL = @INSTALL@
+FGREP	= @FGREP@
 AR	= @AR@
 RANLIB	= @RANLIB@
 RC	= @RC@
@@ -130,7 +131,7 @@ HDRS = \
 	begin_code.h \
 	close_code.h
 
-SDLTEST_HDRS = $(shell ls $(srcdir)/include | fgrep SDL_test)
+SDLTEST_HDRS = $(shell ls $(srcdir)/include | $(FGREP) SDL_test)
 
 LT_AGE      = @LT_AGE@
 LT_CURRENT  = @LT_CURRENT@

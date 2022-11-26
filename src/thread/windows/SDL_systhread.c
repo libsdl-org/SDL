@@ -45,23 +45,6 @@ typedef unsigned long (__cdecl *pfnSDL_CurrentBeginThread) (void *, unsigned,
         unsigned, unsigned *threadID);
 typedef void (__cdecl *pfnSDL_CurrentEndThread)(unsigned code);
 
-#elif defined(__WATCOMC__)
-/* This is for Watcom targets except OS2 */
-#if __WATCOMC__ < 1240
-#define __watcall
-#endif
-typedef unsigned long (__watcall * pfnSDL_CurrentBeginThread) (void *,
-                                                               unsigned,
-                                                               unsigned
-                                                               (__stdcall *
-                                                                func) (void
-                                                                       *),
-                                                               void *arg,
-                                                               unsigned,
-                                                               unsigned
-                                                               *threadID);
-typedef void (__watcall * pfnSDL_CurrentEndThread) (unsigned code);
-
 #else
 typedef uintptr_t(__cdecl * pfnSDL_CurrentBeginThread) (void *, unsigned,
                                                         unsigned (__stdcall *
