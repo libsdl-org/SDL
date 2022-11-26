@@ -31,7 +31,7 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 
-#if defined(HAVE_SIGNAL_H) && defined(HAVE_SIGACTION)
+#if defined(HAVE_SIGNAL_H) || defined(HAVE_SIGACTION)
 #define HAVE_SIGNAL_SUPPORT 1
 #endif
 
