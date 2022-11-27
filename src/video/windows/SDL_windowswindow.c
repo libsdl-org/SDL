@@ -305,7 +305,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
 
     /* Allocate the window data */
     data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         return SDL_OutOfMemory();
     }
     data->window = window;
@@ -841,8 +841,7 @@ WIN_RaiseWindow(_THIS, SDL_Window * window)
     DWORD dwCurID = 0u;
 
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-    if(bForce)
-    {
+    if (bForce) {
         hCurWnd = GetForegroundWindow();
         dwMyID = GetCurrentThreadId();
         dwCurID = GetWindowThreadProcessId(hCurWnd, NULL);
@@ -852,8 +851,7 @@ WIN_RaiseWindow(_THIS, SDL_Window * window)
         SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
     }
     SetForegroundWindow(hwnd);
-    if (bForce)
-    {
+    if (bForce) {
         AttachThreadInput(dwCurID, dwMyID, FALSE);
         SetFocus(hwnd);
         SetActiveWindow(hwnd);
@@ -1079,7 +1077,7 @@ WIN_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
     filename_utf8 = WIN_StringToUTF8(data->ICMFileName);
     if (filename_utf8) {
         iccProfileData = SDL_LoadFile(filename_utf8, size);
-        if (!iccProfileData) {
+        if (iccProfileData == NULL) {
             SDL_SetError("Could not open ICC profile");
         }
         SDL_free(filename_utf8);
@@ -1293,7 +1291,7 @@ void WIN_OnWindowEnter(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (!data || !data->hwnd) {
+    if (data == NULL || !data->hwnd) {
         /* The window wasn't fully initialized */
         return;
     }
@@ -1451,8 +1449,9 @@ WIN_ClientPointToSDL(const SDL_Window *window, int *x, int *y)
     const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
     const SDL_VideoData *videodata = data->videodata;
 
-    if (!videodata->dpi_scaling_enabled)
+    if (!videodata->dpi_scaling_enabled) {
         return;
+    }
 
     *x = MulDiv(*x, 96, data->scaling_dpi);
     *y = MulDiv(*y, 96, data->scaling_dpi);
@@ -1469,8 +1468,9 @@ WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y)
     const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
     const SDL_VideoData *videodata = data->videodata;
 
-    if (!videodata->dpi_scaling_enabled)
+    if (!videodata->dpi_scaling_enabled) {
         return;
+    }
     
     *x = MulDiv(*x, data->scaling_dpi, 96);
     *y = MulDiv(*y, data->scaling_dpi, 96);

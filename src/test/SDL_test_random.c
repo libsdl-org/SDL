@@ -40,7 +40,9 @@
 
 void SDLTest_RandomInit(SDLTest_RandomContext * rndContext, unsigned int xi, unsigned int ci)
 {
-  if (rndContext==NULL) return;
+  if (rndContext == NULL) {
+      return;
+  }
 
   /*
    * Choose a value for 'a' from this list
@@ -66,7 +68,9 @@ void SDLTest_RandomInitTime(SDLTest_RandomContext * rndContext)
 {
   int a, b;
 
-  if (rndContext==NULL) return;
+  if (rndContext == NULL) {
+    return;
+  }
 
   srand((unsigned int)time(NULL));
   a=rand();
@@ -81,7 +85,9 @@ unsigned int SDLTest_Random(SDLTest_RandomContext * rndContext)
 {
   unsigned int xh, xl;
 
-  if (rndContext==NULL) return -1;
+  if (rndContext == NULL) {
+    return -1;
+  }
 
   xh = rndContext->x >> 16;
   xl = rndContext->x & 65535;
@@ -89,9 +95,10 @@ unsigned int SDLTest_Random(SDLTest_RandomContext * rndContext)
   rndContext->c =
     xh * rndContext->ah + ((xh * rndContext->al) >> 16) +
     ((xl * rndContext->ah) >> 16);
-  if (xl * rndContext->al >= (~rndContext->c + 1))
+  if (xl * rndContext->al >= (~rndContext->c + 1)) {
     rndContext->c++;
-  return (rndContext->x);
+  }
+  return rndContext->x;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

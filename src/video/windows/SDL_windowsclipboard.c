@@ -125,7 +125,7 @@ WIN_GetClipboardText(_THIS)
         }
         CloseClipboard();
     }
-    if (!text) {
+    if (text == NULL) {
         text = SDL_strdup("");
     }
     return text;

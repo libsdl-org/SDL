@@ -127,7 +127,7 @@ initializeTextures(SDL_Renderer *renderer)
 
     /* create ship texture from surface */
     ship = SDL_CreateTextureFromSurface(renderer, bmp_surface);
-    if (!ship) {
+    if (ship == NULL) {
         fatalError("could not create ship texture");
     }
     SDL_SetTextureBlendMode(ship, SDL_BLENDMODE_BLEND);
@@ -145,7 +145,7 @@ initializeTextures(SDL_Renderer *renderer)
     }
     /* create space texture from surface */
     space = SDL_CreateTextureFromSurface(renderer, bmp_surface);
-    if (!space) {
+    if (space == NULL) {
         fatalError("could not create space texture");
     }
     SDL_FreeSurface(bmp_surface);

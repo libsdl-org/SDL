@@ -32,7 +32,7 @@ SDL_LoadObject(const char *sofile)
 {
     const char *loaderror = "SDL_LoadObject() not implemented";
     SDL_SetError("Failed loading %s: %s", sofile, loaderror);
-    return (NULL);
+    return NULL;
 }
 
 void *
@@ -40,7 +40,7 @@ SDL_LoadFunction(void *handle, const char *name)
 {
     const char *loaderror = "SDL_LoadFunction() not implemented";
     SDL_SetError("Failed loading %s: %s", name, loaderror);
-    return (NULL);
+    return NULL;
 }
 
 void

@@ -73,7 +73,7 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     }
 
     state = (SDLTest_CommonState *)SDL_calloc(1, sizeof(*state));
-    if (!state) {
+    if (state == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -115,6 +115,16 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
 
     return state;
 }
+
+#define SEARCHARG(dim)              \
+    while (*dim && *dim != ',') {   \
+        ++dim;                      \
+    }                               \
+    if (!*dim) {                    \
+        return -1;                  \
+    }                               \
+    *dim++ = '\0';
+
 
 int
 SDLTest_CommonArg(SDLTest_CommonState * state, int index)
@@ -309,20 +319,11 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         }
         x = argv[index];
         y = argv[index];
-        #define SEARCHARG(dim) \
-            while (*dim && *dim != ',') { \
-                ++dim; \
-            } \
-            if (!*dim) { \
-                return -1; \
-            } \
-            *dim++ = '\0';
         SEARCHARG(y)
         w = y;
         SEARCHARG(w)
         h = w;
         SEARCHARG(h)
-        #undef SEARCHARG
         state->confine.x = SDL_atoi(x);
         state->confine.y = SDL_atoi(y);
         state->confine.w = SDL_atoi(w);
@@ -596,7 +597,7 @@ static const char *
 BuildCommonUsageString(char **pstr, const char **strlist, const int numitems, const char **strlist2, const int numitems2)
 {
     char *str = *pstr;
-    if (!str) {
+    if (str == NULL) {
         size_t len = SDL_strlen("[--trackmem]") + 2;
         int i;
         for (i = 0; i < numitems; i++) {
@@ -608,7 +609,7 @@ BuildCommonUsageString(char **pstr, const char **strlist, const int numitems, co
             }
         }
         str = (char *) SDL_calloc(1, len);
-        if (!str) {
+        if (str == NULL) {
             return "";  /* oh well. */
         }
         SDL_strlcat(str, "[--trackmem] ", len);
@@ -1009,7 +1010,7 @@ SDLTest_LoadIcon(const char *file)
     icon = SDL_LoadBMP(file);
     if (icon == NULL) {
         SDL_Log("Couldn't load %s: %s\n", file, SDL_GetError());
-        return (NULL);
+        return NULL;
     }
 
     if (icon->format->palette) {
@@ -1017,7 +1018,7 @@ SDLTest_LoadIcon(const char *file)
         SDL_SetColorKey(icon, 1, *((Uint8 *) icon->pixels));
     }
 
-    return (icon);
+    return icon;
 }
 
 static SDL_HitTestResult SDLCALL
@@ -1169,8 +1170,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                     SDL_Log("      Red Mask   = 0x%.8" SDL_PRIx32 "\n", Rmask);
                     SDL_Log("      Green Mask = 0x%.8" SDL_PRIx32 "\n", Gmask);
                     SDL_Log("      Blue Mask  = 0x%.8" SDL_PRIx32 "\n", Bmask);
-                    if (Amask)
+                    if (Amask) {
                         SDL_Log("      Alpha Mask = 0x%.8" SDL_PRIx32 "\n", Amask);
+                    }
                 }
 
                 /* Print available fullscreen video modes */
@@ -1193,9 +1195,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                                     Gmask);
                             SDL_Log("        Blue Mask  = 0x%.8" SDL_PRIx32 "\n",
                                     Bmask);
-                            if (Amask)
-                                SDL_Log("        Alpha Mask = 0x%.8" SDL_PRIx32 "\n",
-                                        Amask);
+                            if (Amask) {
+                                SDL_Log("        Alpha Mask = 0x%.8" SDL_PRIx32 "\n", Amask);
+                            }
                         }
                     }
                 }
@@ -1763,7 +1765,7 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
     SDL_Rect viewport;
     SDL_Surface *surface;
 
-    if (!renderer) {
+    if (renderer == NULL) {
         return;
     }
 
@@ -1775,7 +1777,7 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
                     0x000000FF, 0x0000FF00, 0x00FF0000,
 #endif
                     0x00000000);
-    if (!surface) {
+    if (surface == NULL) {
         SDL_Log("Couldn't create surface: %s\n", SDL_GetError());
         return;
     }
@@ -1800,7 +1802,7 @@ FullscreenTo(int index, int windowId)
     Uint32 flags;
     struct SDL_Rect rect = { 0, 0, 0, 0 };
     SDL_Window *window = SDL_GetWindowFromID(windowId);
-    if (!window) {
+    if (window == NULL) {
         return;
     }
 
@@ -1940,10 +1942,18 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                     int x, y;
                     SDL_GetWindowPosition(window, &x, &y);
 
-                    if (event->key.keysym.sym == SDLK_UP)    y -= delta;
-                    if (event->key.keysym.sym == SDLK_DOWN)  y += delta;
-                    if (event->key.keysym.sym == SDLK_LEFT)  x -= delta;
-                    if (event->key.keysym.sym == SDLK_RIGHT) x += delta;
+                    if (event->key.keysym.sym == SDLK_UP) {
+                        y -= delta;
+                    }
+                    if (event->key.keysym.sym == SDLK_DOWN) {
+                        y += delta;
+                    }
+                    if (event->key.keysym.sym == SDLK_LEFT) {
+                        x -= delta;
+                    }
+                    if (event->key.keysym.sym == SDLK_RIGHT) {
+                        x += delta;
+                    }
 
                     SDL_Log("Setting position to (%d, %d)\n", x, y);
                     SDL_SetWindowPosition(window, x, y);

@@ -173,8 +173,7 @@ GL_ClearErrors(SDL_Renderer *renderer)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
 
-    if (!data->debug_enabled)
-    {
+    if (!data->debug_enabled) {
         return;
     }
     if (data->GL_ARB_debug_output_supported) {
@@ -201,8 +200,7 @@ GL_CheckAllErrors (const char *prefix, SDL_Renderer *renderer, const char *file,
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
     int ret = 0;
 
-    if (!data->debug_enabled)
-    {
+    if (!data->debug_enabled) {
         return 0;
     }
     if (data->GL_ARB_debug_output_supported) {
@@ -313,7 +311,7 @@ GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
         result = result->next;
     }
 
-    if (!result) {
+    if (result == NULL) {
         result = SDL_malloc(sizeof(GL_FBOList));
         if (result) {
             result->w = w;
@@ -478,7 +476,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 
     data = (GL_TextureData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -580,8 +578,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         renderdata->glTexImage2D(textype, 0, internalFormat, texture_w,
                                  texture_h, 0, format, type, data->pixels);
         renderdata->glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
-    }
-    else
+    } else
 #endif
     {
         renderdata->glTexImage2D(textype, 0, internalFormat, texture_w,
@@ -938,7 +935,7 @@ GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FP
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
     int i;
 
-    if (!verts) {
+    if (verts == NULL) {
         return -1;
     }
 
@@ -959,7 +956,7 @@ GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPo
     const size_t vertlen = (sizeof (GLfloat) * 2) * count;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
 
-    if (!verts) {
+    if (verts == NULL) {
         return -1;
     }
     cmd->data.draw.count = count;
@@ -1005,7 +1002,7 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     size_t sz = 2 * sizeof(GLfloat) + 4 * sizeof(Uint8) + (texture ? 2 : 0) * sizeof(GLfloat);
 
     verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
-    if (!verts) {
+    if (verts == NULL) {
         return -1;
     }
 
@@ -1459,7 +1456,7 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
     temp_pixels = SDL_malloc(rect->h * temp_pitch);
-    if (!temp_pixels) {
+    if (temp_pixels == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -1526,7 +1523,7 @@ GL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         renderdata->drawstate.target = NULL;
     }
 
-    if (!data) {
+    if (data == NULL) {
         return;
     }
     if (data->texture) {
@@ -1760,13 +1757,13 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_OutOfMemory();
         goto error;
     }
 
     data = (GL_RenderData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         SDL_free(renderer);
         SDL_OutOfMemory();
         goto error;
@@ -1861,7 +1858,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     hint = SDL_getenv("GL_ARB_texture_non_power_of_two");
-    if (!hint || *hint != '0') {
+    if (hint == NULL || *hint != '0') {
         SDL_bool isGL2 = SDL_FALSE;
         const char *verstr = (const char *)data->glGetString(GL_VERSION);
         if (verstr) {

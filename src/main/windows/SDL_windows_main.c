@@ -56,13 +56,13 @@ main_getcmdline(void)
 
     /* Parse it into argv and argc */
     argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
-    if (!argv) {
+    if (argv == NULL) {
         return OutOfMemory();
     }
     for (i = 0; i < argc; ++i) {
         DWORD len;
         char *arg = WIN_StringToUTF8W(argvw[i]);
-        if (!arg) {
+        if (arg == NULL) {
             return OutOfMemory();
         }
         len = (DWORD)SDL_strlen(arg);

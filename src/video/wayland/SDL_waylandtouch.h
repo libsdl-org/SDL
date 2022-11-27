@@ -99,7 +99,7 @@ qt_surface_extension_get_extended_surface(struct qt_surface_extension *qt_surfac
 
     id = wl_proxy_create((struct wl_proxy *) qt_surface_extension,
                  &qt_extended_surface_interface);
-    if (!id)
+    if (id == NULL)
         return NULL;
 
     WAYLAND_wl_proxy_marshal((struct wl_proxy *) qt_surface_extension,

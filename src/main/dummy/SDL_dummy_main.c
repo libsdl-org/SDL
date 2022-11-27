@@ -11,7 +11,7 @@
 int
 main(int argc, char *argv[])
 {
-    return (SDL_main(argc, argv));
+    return SDL_main(argc, argv);
 }
 #else
 /* Nothing to do on this platform */

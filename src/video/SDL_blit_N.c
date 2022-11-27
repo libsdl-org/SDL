@@ -63,8 +63,9 @@ GetL3CacheSize(void)
 
 
     int err = sysctlbyname(key, &result, &typeSize, NULL, 0);
-    if (0 != err)
+    if (0 != err) {
         return 0;
+    }
 
     return result;
 }
@@ -762,7 +763,7 @@ ConvertAltivec32to32_noprefetch(SDL_BlitInfo * info)
         while ((UNALIGNED_PTR(dst)) && (width)) {
             bits = *(src++);
             RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
-            if(!srcfmt->Amask)
+            if (!srcfmt->Amask)
               a = info->a;
             *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             width--;
@@ -795,7 +796,7 @@ ConvertAltivec32to32_noprefetch(SDL_BlitInfo * info)
         while (extrawidth) {
             bits = *(src++);    /* max 7 pixels, don't bother with prefetch. */
             RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
-            if(!srcfmt->Amask)
+            if (!srcfmt->Amask)
               a = info->a;
             *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             extrawidth--;
@@ -853,7 +854,7 @@ ConvertAltivec32to32_prefetch(SDL_BlitInfo * info)
                       DST_CHAN_DEST);
             bits = *(src++);
             RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
-            if(!srcfmt->Amask)
+            if (!srcfmt->Amask)
               a = info->a;
             *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             width--;
@@ -890,7 +891,7 @@ ConvertAltivec32to32_prefetch(SDL_BlitInfo * info)
         while (extrawidth) {
             bits = *(src++);    /* max 7 pixels, don't bother with prefetch. */
             RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
-            if(!srcfmt->Amask)
+            if (!srcfmt->Amask)
               a = info->a;
             *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             extrawidth--;
@@ -2307,10 +2308,18 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #else
     if (srcbpp == 3 && dstbpp == 4) {
-        if (p0 != 1) p0--;
-        if (p1 != 1) p1--;
-        if (p2 != 1) p2--;
-        if (p3 != 1) p3--;
+        if (p0 != 1) {
+            p0--;
+        }
+        if (p1 != 1) {
+            p1--;
+        }
+        if (p2 != 1) {
+            p2--;
+        }
+        if (p3 != 1) {
+            p3--;
+        }
     } else if (srcbpp == 4 && dstbpp == 3) {
         p0 = p1;
         p1 = p2;
@@ -3377,7 +3386,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
 
     /* We don't support destinations less than 8-bits */
     if (dstfmt->BitsPerPixel < 8) {
-        return (NULL);
+        return NULL;
     }
 
     switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
@@ -3400,8 +3409,9 @@ SDL_CalculateBlitN(SDL_Surface * surface)
         } else {
             /* Now the meat, choose the blitter we want */
             Uint32 a_need = NO_ALPHA;
-            if (dstfmt->Amask)
+            if (dstfmt->Amask) {
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
+            }
             table = normal_blit[srcfmt->BytesPerPixel - 1];
             for (which = 0; table[which].dstbpp; ++which) {
                 if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
@@ -3413,8 +3423,9 @@ SDL_CalculateBlitN(SDL_Surface * surface)
                     dstfmt->BytesPerPixel == table[which].dstbpp &&
                     (a_need & table[which].alpha) == a_need &&
                     ((table[which].blit_features & GetBlitFeatures()) ==
-                     table[which].blit_features))
+                     table[which].blit_features)) {
                     break;
+                }
             }
             blitfun = table[which].blitfunc;
 
@@ -3444,7 +3455,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
                 }
             }
         }
-        return (blitfun);
+        return blitfun;
 
     case SDL_COPY_COLORKEY:
         /* colorkey blit: Here we don't have too many options, mostly

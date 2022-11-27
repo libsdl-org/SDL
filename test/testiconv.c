@@ -62,9 +62,9 @@ main(int argc, char *argv[])
 
     fname = GetResourceFilename(argc > 1 ? argv[1] : NULL, "utf8.txt");
     file = fopen(fname, "rb");
-    if (!file) {
+    if (file == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
-        return (1);
+        return 1;
     }
     SDL_free(fname);
 
@@ -93,5 +93,5 @@ main(int argc, char *argv[])
     fclose(file);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
-    return (errors ? errors + 1 : 0);
+    return errors ? errors + 1 : 0;
 }

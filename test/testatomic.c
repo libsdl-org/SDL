@@ -25,8 +25,7 @@ tf(SDL_bool _tf)
     static const char *t = "TRUE";
     static const char *f = "FALSE";
 
-    if (_tf)
-    {
+    if (_tf) {
        return t;
     }
 
@@ -142,11 +141,13 @@ void runAdder(void)
 
     SDL_AtomicSet(&threadsRunning, NThreads);
 
-    while (T--)
+    while (T--) {
         SDL_CreateThread(adder, "Adder", NULL);
+    }
 
-    while (SDL_AtomicGet(&threadsRunning) > 0)
+    while (SDL_AtomicGet(&threadsRunning) > 0) {
         SDL_SemWait(threadDone);
+    }
 
     SDL_DestroySemaphore(threadDone);
 

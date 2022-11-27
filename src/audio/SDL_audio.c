@@ -541,11 +541,9 @@ SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
     } else {
         mark_device_removed(handle, current_audio.outputDevices, &current_audio.outputDevicesRemoved);
     }
-    for (device_index = 0; device_index < SDL_arraysize(open_devices); device_index++)
-    {
+    for (device_index = 0; device_index < SDL_arraysize(open_devices); device_index++) {
         device = open_devices[device_index];
-        if (device != NULL && device->handle == handle)
-        {
+        if (device != NULL && device->handle == handle) {
             device_was_opened = SDL_TRUE;
             SDL_OpenedAudioDeviceDisconnected(device);
             break;
@@ -1009,7 +1007,7 @@ SDL_AudioInit(const char *driver_name)
         }
     } else {
         for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
-            if(bootstrap[i]->demand_only) {
+            if (bootstrap[i]->demand_only) {
                 continue;
             }
 

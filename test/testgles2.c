@@ -114,7 +114,7 @@ quit(int rc)
         x; \
         { \
           GLenum glError = ctx.glGetError(); \
-          if(glError != GL_NO_ERROR) { \
+          if (glError != GL_NO_ERROR) { \
             SDL_Log("glGetError() = %i (0x%.8x) at line %i\n", glError, glError, __LINE__); \
             quit(1); \
           } \
@@ -239,7 +239,7 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
     GL_CHECK(ctx.glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
 
     /* Dump debug info (source and log) if compilation failed. */
-    if(status != GL_TRUE) {
+    if (status != GL_TRUE) {
         ctx.glGetShaderInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
         buffer[length] = '\0';
         SDL_Log("Shader compilation failed: %s", buffer);
@@ -260,7 +260,7 @@ link_program(struct shader_data *data)
     GL_CHECK(ctx.glLinkProgram(data->shader_program));
     GL_CHECK(ctx.glGetProgramiv(data->shader_program, GL_LINK_STATUS, &status));
 
-    if(status != GL_TRUE) {
+    if (status != GL_TRUE) {
          ctx.glGetProgramInfoLog(data->shader_program, sizeof(buffer), &length, &buffer[0]);
          buffer[length] = '\0';
          SDL_Log("Program linking failed: %s", buffer);
@@ -434,12 +434,24 @@ Render(unsigned int width, unsigned int height, shader_data* data)
     data->angle_y += 2;
     data->angle_z += 1;
 
-    if(data->angle_x >= 360) data->angle_x -= 360;
-    if(data->angle_x < 0) data->angle_x += 360;
-    if(data->angle_y >= 360) data->angle_y -= 360;
-    if(data->angle_y < 0) data->angle_y += 360;
-    if(data->angle_z >= 360) data->angle_z -= 360;
-    if(data->angle_z < 0) data->angle_z += 360;
+    if (data->angle_x >= 360) {
+        data->angle_x -= 360;
+    }
+    if (data->angle_x < 0) {
+        data->angle_x += 360;
+    }
+    if (data->angle_y >= 360) {
+        data->angle_y -= 360;
+    }
+    if (data->angle_y < 0) {
+        data->angle_y += 360;
+    }
+    if (data->angle_z >= 360) {
+        data->angle_z -= 360;
+    }
+    if (data->angle_z < 0) {
+        data->angle_z += 360;
+    }
 
     GL_CHECK(ctx.glViewport(0, 0, width, height));
     GL_CHECK(ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
@@ -555,7 +567,7 @@ main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
+    if (state == NULL) {
         return 1;
     }
     for (i = 1; i < argc;) {

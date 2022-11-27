@@ -37,12 +37,12 @@ extern "C" {
 
 int HAIKU_SetClipboardText(_THIS, const char *text) {
     BMessage *clip = NULL;
-    if(be_clipboard->Lock()) {
+    if (be_clipboard->Lock()) {
         be_clipboard->Clear();
-        if((clip = be_clipboard->Data())) {
+        if ((clip = be_clipboard->Data())) {
             /* Presumably the string of characters is ascii-format */
             ssize_t asciiLength = 0;
-            for(; text[asciiLength] != 0; ++asciiLength) {}
+            for (; text[asciiLength] != 0; ++asciiLength) {}
             clip->AddData("text/plain", B_MIME_TYPE, text, asciiLength);
             be_clipboard->Commit();
         }
@@ -56,8 +56,8 @@ char *HAIKU_GetClipboardText(_THIS) {
     const char *text = NULL;    
     ssize_t length;
     char *result;
-    if(be_clipboard->Lock()) {
-        if((clip = be_clipboard->Data())) {
+    if (be_clipboard->Lock()) {
+        if ((clip = be_clipboard->Data())) {
             /* Presumably the string of characters is ascii-format */
             clip->FindData("text/plain", B_MIME_TYPE, (const void**)&text,
                 &length);
@@ -65,7 +65,7 @@ char *HAIKU_GetClipboardText(_THIS) {
         be_clipboard->Unlock();
     } 
     
-    if (!text) {
+    if (text == NULL) {
         result = SDL_strdup("");
     } else {
         /* Copy the data and pass on to SDL */

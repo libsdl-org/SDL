@@ -47,8 +47,9 @@ SDL_memcpySSE(Uint8 * dst, const Uint8 * src, int len)
         dst += 64;
     }
 
-    if (len & 63)
+    if (len & 63) {
         SDL_memcpy(dst, src, len & 63);
+    }
 }
 #endif /* __SSE__ */
 
@@ -65,7 +66,7 @@ SDL_memcpyMMX(Uint8 * dst, const Uint8 * src, int len)
     __m64* d64 = (__m64*)dst;
     __m64* s64 = (__m64*)src;
 
-    for(i= len / 64; i--;) {
+    for (i= len / 64; i--;) {
         d64[0] = s64[0];
         d64[1] = s64[1];
         d64[2] = s64[2];
@@ -79,8 +80,7 @@ SDL_memcpyMMX(Uint8 * dst, const Uint8 * src, int len)
         s64 += 8;
     }
 
-    if (remain)
-    {
+    if (remain) {
         const int skip = len - remain;
         SDL_memcpy(dst + skip, src + skip, remain);
     }

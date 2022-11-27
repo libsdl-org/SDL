@@ -60,8 +60,9 @@ static struct JoyInfo joyInfo[MAX_CONTROLLERS];
 
 static inline int16_t convert_u8_to_s16(uint8_t val)
 {
-   if (val == 0)
+   if (val == 0) {
       return -0x7fff;
+   }
    return val * 0x0101 - 0x8000;
 }
 
@@ -95,11 +96,13 @@ static int PS2_JoystickInit(void)
     uint32_t port = 0;
     uint32_t slot = 0;
 
-    if(init_joystick_driver(true) < 0)
+    if (init_joystick_driver(true) < 0) {
         return -1;
+   }
 
-   for (port = 0; port < PS2_MAX_PORT; port++)
+   for (port = 0; port < PS2_MAX_PORT; port++) {
         mtapPortOpen(port);
+   }
     /* it can fail - we dont care, we will check it more strictly when padPortOpen */
 
     for (slot = 0; slot < PS2_MAX_SLOT; slot++) {
@@ -116,7 +119,7 @@ static int PS2_JoystickInit(void)
             */
 
             struct JoyInfo *info = &joyInfo[enabled_pads];
-            if(padPortOpen(port, slot, (void *)info->padBuf) > 0) {
+            if (padPortOpen(port, slot, (void *)info->padBuf) > 0) {
                 info->port = (uint8_t)port;
                 info->slot = (uint8_t)slot;
                 info->opened = 1;
@@ -142,8 +145,9 @@ static void PS2_JoystickDetect()
 /* Function to get the device-dependent name of a joystick */
 static const char *PS2_JoystickGetDeviceName(int index)
 {
-    if (index >= 0 && index < enabled_pads)
+    if (index >= 0 && index < enabled_pads) {
         return "PS2 Controller";
+    }
 
     SDL_SetError("No joystick available with that index");
     return NULL;
@@ -285,8 +289,9 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
                     mask = (1 << i);
                     previous = info->btns & mask;
                     current = pressed_buttons & mask;
-                    if (previous != current)
+                    if (previous != current) {
                         SDL_PrivateJoystickButton(joystick, i, current ? SDL_PRESSED : SDL_RELEASED);
+                    }
                 }
             }
             info->btns = pressed_buttons;
@@ -300,8 +305,9 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
             for (i = 0; i < PS2_TOTAL_AXIS; i++) {
                 previous_axis = info->analog_state[i];
                 current_axis = all_axis[i];
-                if (previous_axis != current_axis)
+                if (previous_axis != current_axis) {
                     SDL_PrivateJoystickAxis(joystick, i, convert_u8_to_s16(current_axis));
+                }
                 
                 info->analog_state[i] = current_axis;
             }

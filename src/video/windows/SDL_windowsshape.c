@@ -29,7 +29,7 @@ SDL_WindowShaper*
 Win32_CreateShaper(SDL_Window * window) {
     int resized_properly;
     SDL_WindowShaper* result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
-    if (!result) {
+    if (result == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -60,14 +60,13 @@ Win32_CreateShaper(SDL_Window * window) {
 static void
 CombineRectRegions(SDL_ShapeTree* node,void* closure) {
     HRGN mask_region = *((HRGN*)closure),temp_region = NULL;
-    if(node->kind == OpaqueShape) {
+    if (node->kind == OpaqueShape) {
         /* Win32 API regions exclude their outline, so we widen the region by one pixel in each direction to include the real outline. */
         temp_region = CreateRectRgn(node->data.shape.x,node->data.shape.y,node->data.shape.x + node->data.shape.w + 1,node->data.shape.y + node->data.shape.h + 1);
-        if(mask_region != NULL) {
+        if (mask_region != NULL) {
             CombineRgn(mask_region,mask_region,temp_region,RGN_OR);
             DeleteObject(temp_region);
-        }
-        else
+        } else
             *((HRGN*)closure) = temp_region;
     }
 }
@@ -77,7 +76,7 @@ Win32_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShape
     SDL_ShapeData *data;
     HRGN mask_region = NULL;
 
-    if( (shaper == NULL) ||
+    if ( (shaper == NULL) ||
         (shape == NULL) ||
         ((shape->format->Amask == 0) && (shape_mode->mode != ShapeModeColorKey)) ||
         (shape->w != shaper->window->w) ||
@@ -86,8 +85,9 @@ Win32_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShape
     }
 
     data = (SDL_ShapeData*)shaper->driverdata;
-    if(data->mask_tree != NULL)
+    if (data->mask_tree != NULL) {
         SDL_FreeShapeTree(&data->mask_tree);
+    }
     data->mask_tree = SDL_CalculateShapeTree(*shape_mode,shape);
 
     SDL_TraverseShapeTree(data->mask_tree,&CombineRectRegions,&mask_region);
@@ -102,15 +102,18 @@ int
 Win32_ResizeWindowShape(SDL_Window *window) {
     SDL_ShapeData* data;
 
-    if (window == NULL)
+    if (window == NULL) {
         return -1;
+    }
     data = (SDL_ShapeData *)window->shaper->driverdata;
-    if (data == NULL)
+    if (data == NULL) {
         return -1;
+    }
 
-    if(data->mask_tree != NULL)
+    if (data->mask_tree != NULL) {
         SDL_FreeShapeTree(&data->mask_tree);
-    if(window->shaper->hasshape == SDL_TRUE) {
+    }
+    if (window->shaper->hasshape == SDL_TRUE) {
         window->shaper->userx = window->x;
         window->shaper->usery = window->y;
         SDL_SetWindowPosition(window,-1000,-1000);

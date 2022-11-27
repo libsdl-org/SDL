@@ -117,7 +117,7 @@ SDL_GetTicks64(void)
         return (Uint64)(((Sint64)(now.tv_sec - start_ts.tv_sec) * 1000) + ((now.tv_nsec - start_ts.tv_nsec) / 1000000));
 #elif defined(__APPLE__)
         const uint64_t now = mach_absolute_time();
-        return ((((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000);
+        return (((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000;
 #else
         SDL_assert(SDL_FALSE);
         return 0;
@@ -159,7 +159,7 @@ SDL_GetPerformanceCounter(void)
         ticks *= 1000000;
         ticks += now.tv_usec;
     }
-    return (ticks);
+    return ticks;
 }
 
 Uint64

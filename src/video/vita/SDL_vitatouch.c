@@ -56,7 +56,7 @@ VITA_InitTouch(void)
     sceTouchEnableTouchForce(SCE_TOUCH_PORT_FRONT);
     sceTouchEnableTouchForce(SCE_TOUCH_PORT_BACK);
 
-    for(int port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+    for (int port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
         SceTouchPanelInfo panelinfo;
         sceTouchGetPanelInfo(port, &panelinfo);
 
@@ -75,7 +75,7 @@ VITA_InitTouch(void)
 }
 
 void 
-VITA_QuitTouch(void){
+VITA_QuitTouch(void) {
     sceTouchDisableTouchForce(SCE_TOUCH_PORT_FRONT);
     sceTouchDisableTouchForce(SCE_TOUCH_PORT_BACK);
 }
@@ -87,20 +87,20 @@ VITA_PollTouch(void)
     int port;
 
     // We skip polling touch if no window is created
-    if (Vita_Window == NULL)
+    if (Vita_Window == NULL) {
         return;
+    }
 
     SDL_memcpy(touch_old, touch, sizeof(touch_old));
 
-    for(port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+    for (port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
         /** Skip polling of Touch Device if environment variable is set **/
         if (((port == 0) && disableFrontPoll) || ((port == 1) && disableBackPoll)) {
             continue;
         }
         sceTouchPeek(port, &touch[port], 1);
         if (touch[port].reportNum > 0) {
-            for (int i = 0; i < touch[port].reportNum; i++)
-            {
+            for (int i = 0; i < touch[port].reportNum; i++) {
                 // adjust coordinates and forces to return normalized values
                 // for the front, screen area is used as a reference (for direct touch)
                 // e.g. touch_x = 1.0 corresponds to screen_x = 960
@@ -122,7 +122,7 @@ VITA_PollTouch(void)
                 finger_id = (SDL_FingerID) touch[port].report[i].id;
 
                 // Skip if finger was already previously down
-                if(!finger_down) {
+                if (!finger_down) {
                     // Send an initial touch
                     SDL_SendTouch((SDL_TouchID)port,
                         finger_id,

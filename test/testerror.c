@@ -38,7 +38,7 @@ ThreadFunc(void *data)
         SDL_Delay(1 * 1000);
     }
     SDL_Log("Child thread error string: %s\n", SDL_GetError());
-    return (0);
+    return 0;
 }
 
 int
@@ -52,7 +52,7 @@ main(int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     /* Set the error value for the main thread */
@@ -78,5 +78,5 @@ main(int argc, char *argv[])
     SDL_Log("Main thread error string: %s\n", SDL_GetError());
 
     SDL_Quit();
-    return (0);
+    return 0;
 }

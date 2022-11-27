@@ -85,7 +85,7 @@ main(int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     signal(SIGSEGV, SIG_DFL);
@@ -109,5 +109,5 @@ main(int argc, char *argv[])
         SDL_WaitThread(threads[i], NULL);
     }
     SDL_Quit();
-    return (0);
+    return 0;
 }

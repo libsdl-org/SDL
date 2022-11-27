@@ -40,7 +40,7 @@ SDL_SendClipboardUpdate(void)
 
         posted = (SDL_PushEvent(&event) > 0);
     }
-    return (posted);
+    return posted;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

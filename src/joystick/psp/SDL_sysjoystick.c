@@ -89,8 +89,7 @@ static int PSP_JoystickInit(void)
 
     /* Create an accurate map from analog inputs (0 to 255)
        to SDL joystick positions (-32768 to 32767) */
-    for (i = 0; i < 128; i++)
-    {
+    for (i = 0; i < 128; i++) {
         float t = (float)i/127.0f;
         analog_map[i+128] = calc_bezier_y(t);
         analog_map[127-i] = -1 * analog_map[i+128];
@@ -111,11 +110,12 @@ static void PSP_JoystickDetect(void)
 /* Function to get the device-dependent name of a joystick */
 static const char *PSP_JoystickGetDeviceName(int device_index)
 {
-    if (device_index == 0)
+    if (device_index == 0) {
         return "PSP builtin joypad";
+    }
 
     SDL_SetError("No joystick available with that index");
-    return(NULL);
+    return NULL;
 }
 
 static const char *PSP_JoystickGetDevicePath(int index)
@@ -210,11 +210,11 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     y = pad.Ly;
 
     /* Axes */
-    if(old_x != x) {
+    if (old_x != x) {
         SDL_PrivateJoystickAxis(joystick, 0, analog_map[x]);
         old_x = x;
     }
-    if(old_y != y) {
+    if (old_y != y) {
         SDL_PrivateJoystickAxis(joystick, 1, analog_map[y]);
         old_y = y;
     }
@@ -222,7 +222,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     /* Buttons */
     changed = old_buttons ^ buttons;
     old_buttons = buttons;
-    if(changed) {
+    if (changed) {
         for (i = 0; i < SDL_arraysize(button_map); i++) {
             if (changed & button_map[i]) {
                 SDL_PrivateJoystickButton(

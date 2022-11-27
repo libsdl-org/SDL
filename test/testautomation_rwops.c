@@ -47,7 +47,9 @@ RWopsSetUp(void *arg)
     /* Create a test file */
     handle = fopen(RWopsReadTestFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsReadTestFilename);
-        if (handle == NULL) return;
+        if (handle == NULL) {
+            return;
+    }
 
     /* Write some known text into it */
     fileLen = SDL_strlen(RWopsHelloWorldTestString);
@@ -59,7 +61,9 @@ RWopsSetUp(void *arg)
     /* Create a second test file */
     handle = fopen(RWopsAlphabetFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", RWopsAlphabetFilename);
-        if (handle == NULL) return;
+        if (handle == NULL) {
+            return;
+    }
 
     /* Write alphabet text into it */
     fileLen = SDL_strlen(RWopsAlphabetString);
@@ -114,8 +118,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
    SDLTest_AssertPass("Call to SDL_RWwrite succeeded");
    if (write) {
         SDLTest_AssertCheck(s == (size_t)1, "Verify result of writing one byte with SDL_RWwrite, expected 1, got %i", (int) s);
-   }
-   else {
+   } else {
         SDLTest_AssertCheck(s == (size_t)0, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int) s);
    }
 
@@ -236,7 +239,9 @@ rwops_testMem (void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromMem does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
    SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY, "Verify RWops type is SDL_RWOPS_MEMORY; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY, rw->type);
@@ -272,7 +277,9 @@ rwops_testConstMem (void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_RWFromConstMem does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
    SDLTest_AssertCheck(rw->type == SDL_RWOPS_MEMORY_RO, "Verify RWops type is SDL_RWOPS_MEMORY_RO; expected: %d, got: %" SDL_PRIu32, SDL_RWOPS_MEMORY_RO, rw->type);
@@ -308,7 +315,9 @@ rwops_testFileRead(void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in read mode does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
 #if defined(__ANDROID__)
@@ -355,7 +364,9 @@ rwops_testFileWrite(void)
    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
    /* Bail out if NULL */
-   if (rw == NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
 #if defined(__ANDROID__)
@@ -502,7 +513,9 @@ rwops_testAllocFree (void)
    SDL_RWops *rw = SDL_AllocRW();
    SDLTest_AssertPass("Call to SDL_AllocRW() succeeded");
    SDLTest_AssertCheck(rw != NULL, "Validate result from SDL_AllocRW() is not NULL");
-   if (rw==NULL) return TEST_ABORTED;
+   if (rw == NULL) {
+      return TEST_ABORTED;
+   }
 
    /* Check type */
    SDLTest_AssertCheck(
@@ -538,8 +551,7 @@ rwops_testCompareRWFromMemWithRWFromFile(void)
    int result;
 
 
-   for (size=5; size<10; size++)
-   {
+   for (size=5; size<10; size++) {
      /* Terminate buffer */
      buffer_file[slen] = 0;
      buffer_mem[slen] = 0;
@@ -652,7 +664,9 @@ rwops_testFileWriteReadEndian(void)
      SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
      /* Bail out if NULL */
-     if (rw == NULL) return TEST_ABORTED;
+     if (rw == NULL) {
+        return TEST_ABORTED;
+     }
 
      /* Write test data */
      objectsWritten = SDL_WriteBE16(rw, BE16value);

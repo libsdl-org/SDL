@@ -228,13 +228,13 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     VITA_GXM_RenderData *data;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     data = (VITA_GXM_RenderData *) SDL_calloc(1, sizeof(VITA_GXM_RenderData));
-    if (!data) {
+    if (data == NULL) {
         SDL_free(renderer);
         SDL_OutOfMemory();
         return NULL;
@@ -282,8 +282,7 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     sceSysmoduleLoadModule( SCE_SYSMODULE_RAZOR_CAPTURE );
 #endif
 
-    if (gxm_init(renderer) != 0)
-    {
+    if (gxm_init(renderer) != 0) {
         SDL_free(data);
         SDL_free(renderer);
         return NULL;
@@ -310,7 +309,7 @@ VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData* vita_texture = (VITA_GXM_TextureData*) SDL_calloc(1, sizeof(VITA_GXM_TextureData));
 
-    if (!vita_texture) {
+    if (vita_texture == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -649,8 +648,7 @@ VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 static void
 VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
 {
-    if (blendMode != data->currentBlendMode)
-    {
+    if (blendMode != data->currentBlendMode) {
         fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
 
         switch (blendMode)
@@ -711,8 +709,7 @@ VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
     cmd->data.draw.first = (size_t)vertex;
     cmd->data.draw.count = count;
 
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         vertex[i].x = points[i].x;
         vertex[i].y = points[i].y;
         vertex[i].color = color;
@@ -735,8 +732,7 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
     cmd->data.draw.first = (size_t)vertex;
     cmd->data.draw.count = (count-1) * 2;
 
-    for (int i = 0; i < count - 1; i++)
-    {
+    for (int i = 0; i < count - 1; i++) {
         vertex[i*2].x = points[i].x;
         vertex[i*2].y = points[i].y;
         vertex[i*2].color = color;
@@ -770,7 +766,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
                 data,
                 count * sizeof(texture_vertex));
 
-        if (!vertices) {
+        if (vertices == NULL) {
             return -1;
         }
 
@@ -810,7 +806,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
                 data,
                 count * sizeof(color_vertex));
 
-        if (!vertices) {
+        if (vertices == NULL) {
             return -1;
         }
 
@@ -1148,7 +1144,7 @@ VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     }
 
     temp_pixels = SDL_malloc(buflen);
-    if (!temp_pixels) {
+    if (temp_pixels == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -1236,14 +1232,17 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
 
-    if (data == NULL)
+    if (data == NULL) {
         return;
+    }
 
-    if(vita_texture == NULL)
+    if (vita_texture == NULL) {
         return;
+    }
 
-    if(vita_texture->tex == NULL)
+    if (vita_texture->tex == NULL) {
         return;
+    }
 
     sceGxmFinish(data->gxm_context);
 
@@ -1259,8 +1258,9 @@ VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     if (data) {
-        if (!data->initialized)
+        if (!data->initialized) {
             return;
+        }
 
         gxm_finish(renderer);
 

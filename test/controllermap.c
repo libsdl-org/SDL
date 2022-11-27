@@ -199,8 +199,7 @@ SetCurrentBinding(int iBinding)
         return;
     }
 
-    if (s_arrBindingOrder[iBinding] == -1)
-    {
+    if (s_arrBindingOrder[iBinding] == -1) {
         SetCurrentBinding(iBinding + 1);
         return;
     }
@@ -227,8 +226,7 @@ SetCurrentBinding(int iBinding)
 static SDL_bool
 BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const SDL_GameControllerExtendedBind *pBindingB)
 {
-    if (pBindingA->bindType != pBindingB->bindType)
-    {
+    if (pBindingA->bindType != pBindingB->bindType) {
         return SDL_FALSE;
     }
     switch (pBindingA->bindType)
@@ -245,7 +243,7 @@ BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const S
             int maxA = SDL_max(pBindingA->value.axis.axis_min, pBindingA->value.axis.axis_max);
             int minB = SDL_min(pBindingB->value.axis.axis_min, pBindingB->value.axis.axis_max);
             int maxB = SDL_max(pBindingB->value.axis.axis_min, pBindingB->value.axis.axis_max);
-            return (minA <= minB && maxA >= maxB);
+            return minA <= minB && maxA >= maxB;
         }
         /* Not reached */
     default:

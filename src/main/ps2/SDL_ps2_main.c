@@ -28,9 +28,9 @@
 __attribute__((weak))
 void reset_IOP() {
     SifInitRpc(0);
-    while(!SifIopReset(NULL, 0)) {
+    while (!SifIopReset(NULL, 0)) {
     }
-    while(!SifIopSync()){
+    while (!SifIopSync()) {
     }
 }
 
@@ -59,7 +59,7 @@ static void waitUntilDeviceIsReady(char *path)
     int ret = -1;
     int retries = 50;
 
-    while(ret != 0 && retries > 0) {
+    while (ret != 0 && retries > 0) {
         ret = stat(path, &buffer);
         /* Wait until the device is ready */
         nopdelay();

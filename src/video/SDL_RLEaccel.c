@@ -139,7 +139,7 @@
         Uint16 *src = (Uint16 *)(from);                 \
         Uint16 *dst = (Uint16 *)(to);                   \
         Uint32 ALPHA = alpha >> 3;                      \
-        for(i = 0; i < (int)(length); i++) {            \
+        for (i = 0; i < (int)(length); i++) {           \
             Uint32 s = *src++;                          \
             Uint32 d = *dst;                            \
             s = (s | s << 16) & 0x07e0f81f;             \
@@ -148,7 +148,7 @@
             d &= 0x07e0f81f;                            \
             *dst++ = (Uint16)(d | d >> 16);             \
         }                                               \
-    } while(0)
+    } while (0)
 
 #define ALPHA_BLIT16_555(to, from, length, bpp, alpha)  \
     do {                                                \
@@ -156,7 +156,7 @@
         Uint16 *src = (Uint16 *)(from);                 \
         Uint16 *dst = (Uint16 *)(to);                   \
         Uint32 ALPHA = alpha >> 3;                      \
-        for(i = 0; i < (int)(length); i++) {            \
+        for (i = 0; i < (int)(length); i++) {           \
             Uint32 s = *src++;                          \
             Uint32 d = *dst;                            \
             s = (s | s << 16) & 0x03e07c1f;             \
@@ -165,7 +165,7 @@
             d &= 0x03e07c1f;                            \
             *dst++ = (Uint16)(d | d >> 16);             \
         }                                               \
-    } while(0)
+    } while (0)
 
 /*
  * The general slow catch-all function, for remaining depths and formats
@@ -225,7 +225,7 @@
             src += bpp;                                         \
             dst += bpp;                                         \
         }                                                       \
-    } while(0)
+    } while (0)
 
 /*
  * Special case: 50% alpha (alpha=128)
@@ -240,13 +240,13 @@
         int i;                                                  \
         Uint32 *src = (Uint32 *)(from);                         \
         Uint32 *dst = (Uint32 *)(to);                           \
-        for(i = 0; i < (int)(length); i++) {                    \
+        for (i = 0; i < (int)(length); i++) {                   \
             Uint32 s = *src++;                                  \
             Uint32 d = *dst;                                    \
             *dst++ = (((s & 0x00fefefe) + (d & 0x00fefefe)) >> 1) \
                  + (s & d & 0x00010101);                        \
         }                                                       \
-    } while(0)
+    } while (0)
 
 /*
  * For 16bpp, we can actually blend two pixels in parallel, if we take
@@ -260,7 +260,7 @@
         Uint32 d = *dst;                                        \
         *dst++ = (Uint16)((((s & mask) + (d & mask)) >> 1) +    \
                           (s & d & (~mask & 0xffff)));          \
-    } while(0)
+    } while (0)
 
 /* basic 16bpp blender. mask is the pixels to keep when adding. */
 #define ALPHA_BLIT16_50(to, from, length, bpp, alpha, mask)     \
@@ -290,7 +290,7 @@
             if (n)                                              \
                 BLEND16_50(dst, src, mask); /* last odd pixel */ \
         }                                                       \
-    } while(0)
+    } while (0)
 
 #define ALPHA_BLIT16_565_50(to, from, length, bpp, alpha)       \
     ALPHA_BLIT16_50(to, from, length, bpp, alpha, 0xf7deU)
@@ -324,8 +324,9 @@
                         } else {                                \
                             blitter(2, Uint8, ALPHA_BLIT16_565); \
                         }                                       \
-                    } else                                      \
+                    } else {                                     \
                         goto general16;                         \
+                    }                                           \
                     break;                                      \
                                                                 \
                 case 0x7fff:                                    \
@@ -338,8 +339,9 @@
                             blitter(2, Uint8, ALPHA_BLIT16_555); \
                         }                                       \
                         break;                                  \
-                    } else                                      \
+                    } else {                                    \
                         goto general16;                         \
+                    }                                           \
                     break;                                      \
                                                                 \
                 default:                                        \
@@ -361,12 +363,13 @@
                     } else {                                    \
                         blitter(4, Uint16, ALPHA_BLIT32_888);   \
                     }                                           \
-                } else                                          \
+                } else {                                        \
                     blitter(4, Uint16, ALPHA_BLIT_ANY);         \
+                }                                               \
                 break;                                          \
             }                                                   \
         }                                                       \
-    } while(0)
+    } while (0)
 
 /*
  * Set a pixel value using the given format, except that the alpha value is
@@ -384,12 +387,6 @@
  * This takes care of the case when the surface is clipped on the left and/or
  * right. Top clipping has already been taken care of.
  */
-static void
-RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
-            Uint8 * dstbuf, SDL_Rect * srcrect, unsigned alpha)
-{
-    SDL_PixelFormat *fmt = surf_dst->format;
-
 #define RLECLIPBLIT(bpp, Type, do_blit)                         \
     do {                                                        \
         int linecount = srcrect->h;                             \
@@ -423,24 +420,31 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
     nocopy ## bpp ## do_blit:                                   \
                 srcbuf += run * bpp;                            \
                 ofs += run;                                     \
-            } else if (!ofs)                                    \
+            } else if (!ofs) {                                  \
                 break;                                          \
+            }                                                   \
                                                                 \
             if (ofs == w) {                                     \
                 ofs = 0;                                        \
                 dstbuf += surf_dst->pitch;                      \
-                if (!--linecount)                               \
+                if (!--linecount) {                             \
                     break;                                      \
+                }                                               \
             }                                                   \
         }                                                       \
-    } while(0)
+    } while (0)
+
+
+static void
+RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
+            Uint8 * dstbuf, SDL_Rect * srcrect, unsigned alpha)
+{
+    SDL_PixelFormat *fmt = surf_dst->format;
 
     CHOOSE_BLIT(RLECLIPBLIT, alpha, fmt);
-
-#undef RLECLIPBLIT
-
 }
 
+#undef RLECLIPBLIT
 
 /* blit a colorkeyed RLE surface */
 static int SDLCALL
@@ -456,7 +460,7 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
     /* Lock the destination if necessary */
     if (SDL_MUSTLOCK(surf_dst)) {
         if (SDL_LockSurface(surf_dst) < 0) {
-            return (-1);
+            return -1;
         }
     }
 
@@ -474,19 +478,19 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
         if (vskip) {
 
 #define RLESKIP(bpp, Type)          \
-        for(;;) {           \
+        for (;;) {           \
             int run;            \
             ofs += *(Type *)srcbuf; \
             run = ((Type *)srcbuf)[1];  \
             srcbuf += sizeof(Type) * 2; \
-            if(run) {           \
+            if (run) {           \
             srcbuf += run * bpp;    \
             ofs += run;     \
-            } else if(!ofs)     \
+            } else if (!ofs)     \
             goto done;      \
-            if(ofs == w) {      \
+            if (ofs == w) {      \
             ofs = 0;        \
-            if(!--vskip)        \
+            if (!--vskip)        \
                 break;      \
             }               \
         }
@@ -522,25 +526,25 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
         do {                                  \
         int linecount = srcrect->h;                   \
         int ofs = 0;                              \
-        for(;;) {                             \
+        for (;;) {                             \
             unsigned run;                         \
             ofs += *(Type *)srcbuf;                   \
             run = ((Type *)srcbuf)[1];                    \
             srcbuf += 2 * sizeof(Type);                   \
-            if(run) {                             \
+            if (run) {                             \
             do_blit(dstbuf + ofs * bpp, srcbuf, run, bpp, alpha); \
             srcbuf += run * bpp;                      \
             ofs += run;                       \
-            } else if(!ofs)                       \
+            } else if (!ofs)                       \
             break;                            \
-            if(ofs == w) {                        \
+            if (ofs == w) {                        \
             ofs = 0;                          \
             dstbuf += surf_dst->pitch;                     \
-            if(!--linecount)                      \
+            if (!--linecount)                      \
                 break;                        \
             }                                 \
         }                                 \
-        } while(0)
+        } while (0)
 
         CHOOSE_BLIT(RLEBLIT, alpha, fmt);
 
@@ -552,7 +556,7 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
     if (SDL_MUSTLOCK(surf_dst)) {
         SDL_UnlockSurface(surf_dst);
     }
-    return (0);
+    return 0;
 }
 
 #undef OPAQUE_BLIT
@@ -578,7 +582,7 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
     d &= 0xff00;                        \
     d = (d + ((s - d) * alpha >> 8)) & 0xff00;      \
     dst = d1 | d | 0xff000000;              \
-    } while(0)
+    } while (0)
 
 /*
  * For 16bpp pixels, we have stored the 5 most significant alpha bits in
@@ -594,7 +598,7 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
     d += (s - d) * alpha >> 5;      \
     d &= 0x07e0f81f;            \
     dst = (Uint16)(d | d >> 16);            \
-    } while(0)
+    } while (0)
 
 #define BLIT_TRANSL_555(src, dst)       \
     do {                    \
@@ -606,7 +610,7 @@ SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
     d += (s - d) * alpha >> 5;      \
     d &= 0x03e07c1f;            \
     dst = (Uint16)(d | d >> 16);            \
-    } while(0)
+    } while (0)
 
 /* used to save the destination format in the encoding. Designed to be
    macro-compatible with SDL_PixelFormat but without the unneeded fields */
@@ -653,27 +657,27 @@ RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
         ofs += ((Ctype *)srcbuf)[0];                  \
         run = ((Ctype *)srcbuf)[1];               \
         srcbuf += 2 * sizeof(Ctype);                  \
-        if(run) {                         \
+        if (run) {                         \
             /* clip to left and right borders */          \
             int cofs = ofs;                   \
             int crun = run;                   \
-            if(left - cofs > 0) {                 \
+            if (left - cofs > 0) {                 \
             crun -= left - cofs;                  \
             cofs = left;                      \
             }                             \
-            if(crun > right - cofs)               \
+            if (crun > right - cofs)               \
             crun = right - cofs;                  \
-            if(crun > 0)                      \
+            if (crun > 0)                      \
             PIXEL_COPY(dstbuf + cofs * sizeof(Ptype),     \
                    srcbuf + (cofs - ofs) * sizeof(Ptype), \
                    (unsigned)crun, sizeof(Ptype));    \
             srcbuf += run * sizeof(Ptype);            \
             ofs += run;                       \
-        } else if(!ofs)                       \
+        } else if (!ofs)                       \
             return;                       \
-        } while(ofs < w);                         \
+        } while (ofs < w);                         \
         /* skip padding if necessary */               \
-        if(sizeof(Ptype) == 2)                    \
+        if (sizeof(Ptype) == 2)                    \
         srcbuf += (uintptr_t)srcbuf & 2;              \
         /* blit translucent pixels on the same line */        \
         ofs = 0;                              \
@@ -682,30 +686,30 @@ RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
         ofs += ((Uint16 *)srcbuf)[0];                 \
         run = ((Uint16 *)srcbuf)[1];                  \
         srcbuf += 4;                          \
-        if(run) {                         \
+        if (run) {                         \
             /* clip to left and right borders */          \
             int cofs = ofs;                   \
             int crun = run;                   \
-            if(left - cofs > 0) {                 \
+            if (left - cofs > 0) {                 \
             crun -= left - cofs;                  \
             cofs = left;                      \
             }                             \
-            if(crun > right - cofs)               \
+            if (crun > right - cofs)               \
             crun = right - cofs;                  \
-            if(crun > 0) {                    \
+            if (crun > 0) {                    \
             Ptype *dst = (Ptype *)dstbuf + cofs;          \
             Uint32 *src = (Uint32 *)srcbuf + (cofs - ofs);    \
             int i;                        \
-            for(i = 0; i < crun; i++)             \
+            for (i = 0; i < crun; i++)             \
                 do_blend(src[i], dst[i]);             \
             }                             \
             srcbuf += run * 4;                    \
             ofs += run;                       \
         }                             \
-        } while(ofs < w);                         \
+        } while (ofs < w);                         \
         dstbuf += surf_dst->pitch;                     \
-    } while(--linecount);                         \
-    } while(0)
+    } while (--linecount);                         \
+    } while (0)
 
     switch (df->BytesPerPixel) {
     case 2:
@@ -819,16 +823,16 @@ SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
             ofs += ((Ctype *)srcbuf)[0];             \
             run = ((Ctype *)srcbuf)[1];              \
             srcbuf += 2 * sizeof(Ctype);             \
-            if(run) {                        \
+            if (run) {                        \
             PIXEL_COPY(dstbuf + ofs * sizeof(Ptype), srcbuf, \
                    run, sizeof(Ptype));          \
             srcbuf += run * sizeof(Ptype);           \
             ofs += run;                  \
-            } else if(!ofs)                  \
+            } else if (!ofs)                  \
             goto done;                   \
-        } while(ofs < w);                    \
+        } while (ofs < w);                    \
         /* skip padding if necessary */              \
-        if(sizeof(Ptype) == 2)                   \
+        if (sizeof(Ptype) == 2)                   \
             srcbuf += (uintptr_t)srcbuf & 2;             \
         /* blit translucent pixels on the same line */       \
         ofs = 0;                         \
@@ -837,10 +841,10 @@ SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
             ofs += ((Uint16 *)srcbuf)[0];            \
             run = ((Uint16 *)srcbuf)[1];             \
             srcbuf += 4;                     \
-            if(run) {                        \
+            if (run) {                        \
             Ptype *dst = (Ptype *)dstbuf + ofs;      \
             unsigned i;                  \
-            for(i = 0; i < run; i++) {           \
+            for (i = 0; i < run; i++) {           \
                 Uint32 src = *(Uint32 *)srcbuf;      \
                 do_blend(src, *dst);             \
                 srcbuf += 4;                 \
@@ -848,10 +852,10 @@ SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
             }                        \
             ofs += run;                  \
             }                            \
-        } while(ofs < w);                    \
+        } while (ofs < w);                    \
         dstbuf += surf_dst->pitch;                    \
-        } while(--linecount);                    \
-    } while(0)
+        } while (--linecount);                    \
+    } while (0)
 
         switch (df->BytesPerPixel) {
         case 2:
@@ -1036,11 +1040,13 @@ RLEAlphaSurface(SDL_Surface * surface)
                         SDL_PixelFormat *, SDL_PixelFormat *);
 
     dest = surface->map->dst;
-    if (!dest)
+    if (dest == NULL) {
         return -1;
+    }
     df = dest->format;
-    if (surface->format->BitsPerPixel != 32)
-        return -1;              /* only 32bpp source supported */
+    if (surface->format->BitsPerPixel != 32) {
+        return -1; /* only 32bpp source supported */
+    }
 
     /* find out whether the destination is one we support,
        and determine the max size of the encoded result */
@@ -1090,7 +1096,7 @@ RLEAlphaSurface(SDL_Surface * surface)
 
     maxsize += sizeof(RLEDestFormat);
     rlebuf = (Uint8 *) SDL_malloc(maxsize);
-    if (!rlebuf) {
+    if (rlebuf == NULL) {
         return SDL_OutOfMemory();
     }
     {
@@ -1122,7 +1128,7 @@ RLEAlphaSurface(SDL_Surface * surface)
 
         /* opaque counts are 8 or 16 bits, depending on target depth */
 #define ADD_OPAQUE_COUNTS(n, m)         \
-    if(df->BytesPerPixel == 4) {        \
+    if (df->BytesPerPixel == 4) {        \
         ((Uint16 *)dst)[0] = n;     \
         ((Uint16 *)dst)[1] = m;     \
         dst += 4;               \
@@ -1150,8 +1156,9 @@ RLEAlphaSurface(SDL_Surface * surface)
                 while (x < w && ISOPAQUE(src[x], sf))
                     x++;
                 skip = runstart - skipstart;
-                if (skip == w)
+                if (skip == w) {
                     blankline = 1;
+                }
                 run = x - runstart;
                 while (skip > max_opaque_run) {
                     ADD_OPAQUE_COUNTS(max_opaque_run, 0);
@@ -1203,8 +1210,9 @@ RLEAlphaSurface(SDL_Surface * surface)
                     runstart += len;
                     run -= len;
                 }
-                if (!blankline)
+                if (!blankline) {
                     lastline = dst;
+                }
             } while (x < w);
 
             src += surface->pitch >> 2;
@@ -1230,8 +1238,9 @@ RLEAlphaSurface(SDL_Surface * surface)
     /* reallocate the buffer to release unused memory */
     {
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (!p)
+        if (p == NULL) {
             p = rlebuf;
+        }
         surface->map->data = p;
     }
 
@@ -1247,7 +1256,7 @@ getpix_8(const Uint8 * srcbuf)
 static Uint32
 getpix_16(const Uint8 * srcbuf)
 {
-    return *(const Uint16 *) srcbuf;
+    return *(const Uint16 *)srcbuf;
 }
 
 static Uint32
@@ -1263,7 +1272,7 @@ getpix_24(const Uint8 * srcbuf)
 static Uint32
 getpix_32(const Uint8 * srcbuf)
 {
-    return *(const Uint32 *) srcbuf;
+    return *(const Uint32 *)srcbuf;
 }
 
 typedef Uint32(*getpix_func) (const Uint8 *);
@@ -1325,7 +1334,7 @@ RLEColorkeySurface(SDL_Surface * surface)
     h = surface->h;
 
 #define ADD_COUNTS(n, m)            \
-    if(bpp == 4) {              \
+    if (bpp == 4) {              \
         ((Uint16 *)dst)[0] = n;     \
         ((Uint16 *)dst)[1] = m;     \
         dst += 4;               \
@@ -1350,8 +1359,9 @@ RLEColorkeySurface(SDL_Surface * surface)
             while (x < w && (getpix(srcbuf + x * bpp) & rgbmask) != ckey)
                 x++;
             skip = runstart - skipstart;
-            if (skip == w)
+            if (skip == w) {
                 blankline = 1;
+            }
             run = x - runstart;
 
             /* encode segment */
@@ -1373,8 +1383,9 @@ RLEColorkeySurface(SDL_Surface * surface)
                 runstart += len;
                 run -= len;
             }
-            if (!blankline)
+            if (!blankline) {
                 lastline = dst;
+            }
         } while (x < w);
 
         srcbuf += surface->pitch;
@@ -1399,8 +1410,9 @@ RLEColorkeySurface(SDL_Surface * surface)
     {
         /* If SDL_realloc returns NULL, the original block is left intact */
         Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
-        if (!p)
+        if (p == NULL) {
             p = rlebuf;
+        }
         surface->map->data = p;
     }
 
@@ -1466,7 +1478,7 @@ SDL_RLESurface(SDL_Surface * surface)
     /* The surface is now accelerated */
     surface->flags |= SDL_RLEACCEL;
 
-    return (0);
+    return 0;
 }
 
 /*
@@ -1498,7 +1510,7 @@ UnRLEAlpha(SDL_Surface * surface)
 
     surface->pixels = SDL_SIMDAlloc(surface->h * surface->pitch);
     if (!surface->pixels) {
-        return (SDL_FALSE);
+        return SDL_FALSE;
     }
     surface->flags |= SDL_SIMD_ALIGNED;
     /* fill background with transparent pixels */
@@ -1529,8 +1541,9 @@ UnRLEAlpha(SDL_Surface * surface)
         } while (ofs < w);
 
         /* skip padding if needed */
-        if (bpp == 2)
-            srcbuf += (uintptr_t) srcbuf & 2;
+        if (bpp == 2) {
+            srcbuf += (uintptr_t)srcbuf & 2;
+        }
 
         /* copy translucent pixels */
         ofs = 0;
@@ -1548,7 +1561,7 @@ UnRLEAlpha(SDL_Surface * surface)
     }
 
 end_function:
-    return (SDL_TRUE);
+    return SDL_TRUE;
 }
 
 void

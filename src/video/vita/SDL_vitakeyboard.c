@@ -52,17 +52,16 @@ void
 VITA_PollKeyboard(void)
 {
     // We skip polling keyboard if no window is created
-    if (Vita_Window == NULL)
+    if (Vita_Window == NULL) {
         return;
+    }
 
-    if (keyboard_hid_handle > 0)
-    {
+    if (keyboard_hid_handle > 0) {
         int numReports = sceHidKeyboardRead(keyboard_hid_handle, (SceHidKeyboardReport**)&k_reports, SCE_HID_MAX_REPORT);
 
         if (numReports < 0) {
             keyboard_hid_handle = 0;
-        }
-        else if (numReports) {
+        } else if (numReports) {
             // Numlock and Capslock state changes only on a SDL_PRESSED event
             // The k_report only reports the state of the LED
             if (k_reports[numReports - 1].modifiers[1] & 0x1) {
@@ -70,8 +69,7 @@ VITA_PollKeyboard(void)
                     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
                     locks |= 0x1;
                 }
-            }
-            else {
+            } else {
                 if (locks & 0x1) {
                     SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
                     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
@@ -85,8 +83,7 @@ VITA_PollKeyboard(void)
                     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
                     locks |= 0x2;
                 }
-            }
-            else {
+            } else {
                 if (locks & 0x2) {
                     SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
                     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
@@ -100,8 +97,7 @@ VITA_PollKeyboard(void)
                     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_SCROLLLOCK);
                     locks |= 0x4;
                 }
-            }
-            else {
+            } else {
                 if (locks & 0x4) {
                     SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_SCROLLLOCK);
                     locks &= ~0x4;
@@ -114,64 +110,56 @@ VITA_PollKeyboard(void)
                 if (changed_modifiers & 0x01) {
                     if (prev_modifiers & 0x01) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LCTRL);
-                    }
-                    else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LCTRL);
                     }
                 }
                 if (changed_modifiers & 0x02) {
                     if (prev_modifiers & 0x02) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
-                    }
-                else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
                     }
                 }
                 if (changed_modifiers & 0x04) {
                     if (prev_modifiers & 0x04) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LALT);
-                    }
-                    else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LALT);
                     }
                 }
                 if (changed_modifiers & 0x08) {
                     if (prev_modifiers & 0x08) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
-                    }
-                    else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LGUI);
                     }
                 }
                 if (changed_modifiers & 0x10) {
                     if (prev_modifiers & 0x10) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RCTRL);
-                    }
-                    else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RCTRL);
                     }
             }
                 if (changed_modifiers & 0x20) {
                     if (prev_modifiers & 0x20) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
-                    }
-                    else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RSHIFT);
                     }
                 }
                 if (changed_modifiers & 0x40) {
                     if (prev_modifiers & 0x40) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RALT);
-                    }
-                    else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RALT);
                     }
                 }
                 if (changed_modifiers & 0x80) {
                     if (prev_modifiers & 0x80) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RGUI);
-                    }
-                    else {
+                    } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RGUI);
                     }
                 }

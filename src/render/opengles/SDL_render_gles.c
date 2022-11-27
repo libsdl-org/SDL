@@ -329,7 +329,7 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 
     data = (GLES_TextureData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -424,7 +424,7 @@ GLES_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     src = (Uint8 *)pixels;
     if (pitch != srcPitch) {
         blob = (Uint8 *)SDL_malloc(srcPitch * rect->h);
-        if (!blob) {
+        if (blob == NULL) {
             return SDL_OutOfMemory();
         }
         src = blob;
@@ -544,7 +544,7 @@ GLES_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
     int i;
 
-    if (!verts) {
+    if (verts == NULL) {
         return -1;
     }
 
@@ -565,7 +565,7 @@ GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
     const size_t vertlen = (sizeof (GLfloat) * 2) * count;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
 
-    if (!verts) {
+    if (verts == NULL) {
         return -1;
     }
     cmd->data.draw.count = count;
@@ -611,7 +611,7 @@ GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *
     int sz = 2 + 4 + (texture ? 2 : 0);
 
     verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * sz * sizeof (GLfloat), 0, &cmd->data.draw.first);
-    if (!verts) {
+    if (verts == NULL) {
         return -1;
     }
 
@@ -918,7 +918,7 @@ GLES_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
     temp_pixels = SDL_malloc(rect->h * temp_pitch);
-    if (!temp_pixels) {
+    if (temp_pixels == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -979,7 +979,7 @@ GLES_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         renderdata->drawstate.target = NULL;
     }
 
-    if (!data) {
+    if (data == NULL) {
         return;
     }
     if (data->texture) {
@@ -1095,13 +1095,13 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_OutOfMemory();
         goto error;
     }
 
     data = (GLES_RenderData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         GLES_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         goto error;

@@ -217,7 +217,7 @@ GetSlectionText(_THIS, Atom selection_type)
         X11_XFree(src);
     }
 
-    if (!text) {
+    if (text == NULL) {
         text = SDL_strdup("");
     }
 

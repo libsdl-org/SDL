@@ -185,7 +185,9 @@ static int SDL_inotify_init1(void) {
 #else
 static int SDL_inotify_init1(void) {
     int fd = inotify_init();
-    if (fd  < 0) return -1;
+    if (fd < 0) {
+        return -1;
+    }
     fcntl(fd, F_SETFL, O_NONBLOCK);
     fcntl(fd, F_SETFD, FD_CLOEXEC);
     return fd;
@@ -195,7 +197,7 @@ static int SDL_inotify_init1(void) {
 static int
 StrHasPrefix(const char *string, const char *prefix)
 {
-    return (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0);
+    return SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0;
 }
 
 static int
@@ -324,8 +326,7 @@ HIDAPI_InitializeDiscovery()
                 SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
             }
         }
-    }
-    else
+    } else
 #endif /* SDL_USE_LIBUDEV */
     {
 #if defined(HAVE_INOTIFY)
@@ -421,15 +422,14 @@ HIDAPI_UpdateDiscovery()
                 if (pUdevDevice) {
                     const char *action = NULL;
                     action = usyms->udev_device_get_action(pUdevDevice);
-                    if (!action || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
+                    if (action == NULL || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
                         ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
                     }
                     usyms->udev_device_unref(pUdevDevice);
                 }
             }
         }
-    }
-    else
+    } else
 #endif /* SDL_USE_LIBUDEV */
     {
 #if defined(HAVE_INOTIFY)
@@ -481,8 +481,9 @@ HIDAPI_ShutdownDiscovery()
     }
 
 #if defined(__WIN32__) || defined(__WINGDK__)
-    if (SDL_HIDAPI_discovery.m_hNotify)
+    if (SDL_HIDAPI_discovery.m_hNotify) {
         UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
+    }
 
     if (SDL_HIDAPI_discovery.m_hwndMsg) {
         DestroyWindow(SDL_HIDAPI_discovery.m_hwndMsg);
@@ -509,8 +510,7 @@ HIDAPI_ShutdownDiscovery()
             SDL_UDEV_ReleaseUdevSyms();
             usyms = NULL;
         }
-    }
-    else
+    } else
 #endif /* SDL_USE_LIBUDEV */
     {
 #if defined(HAVE_INOTIFY)
@@ -808,14 +808,8 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
                                  uint8_t descriptor_index, uint16_t lang_id,
                                  unsigned char *data, int length)
 {
-    return libusb_control_transfer(dev,
-                                   LIBUSB_ENDPOINT_IN | 0x0, /* Endpoint 0 IN */
-                                   LIBUSB_REQUEST_GET_DESCRIPTOR,
-                                   (LIBUSB_DT_STRING << 8) | descriptor_index,
-                                   lang_id,
-                                   data,
-                                   (uint16_t) length,
-                                   1000);
+    return libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN | 0x0, LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | descriptor_index, lang_id,
+                                   data, (uint16_t)length, 1000); /* Endpoint 0 IN */
 }
 #define libusb_get_string_descriptor SDL_libusb_get_string_descriptor
 #endif /* __FreeBSD__ */
@@ -1240,7 +1234,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #endif
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
             new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
-            if (!new_dev) {
+            if (new_dev == NULL) {
                 LIBUSB_hid_free_enumeration(usb_devs);
                 SDL_hid_free_enumeration(devs);
                 SDL_OutOfMemory();
@@ -1313,7 +1307,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #endif
             if (!bFound) {
                 new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
-                if (!new_dev) {
+                if (new_dev == NULL) {
 #ifdef HAVE_LIBUSB
                     if (libusb_ctx.libhandle) {
                         LIBUSB_hid_free_enumeration(usb_devs);

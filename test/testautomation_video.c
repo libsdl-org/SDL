@@ -836,7 +836,9 @@ video_getSetWindowGrab(void *arg)
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+    return TEST_ABORTED;
+  }
 
   /* Get state */
   originalMouseState = SDL_GetWindowMouseGrab(window);
@@ -980,7 +982,9 @@ video_getWindowId(void *arg)
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+    return TEST_ABORTED;
+  }
 
   /* Get ID */
   id = SDL_GetWindowID(window);
@@ -1034,7 +1038,9 @@ video_getWindowPixelFormat(void *arg)
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+    return TEST_ABORTED;
+  }
 
   /* Get format */
   format = SDL_GetWindowPixelFormat(window);
@@ -1072,7 +1078,9 @@ video_getSetWindowPosition(void *arg)
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+   return TEST_ABORTED;
+  }
 
   for (xVariation = 0; xVariation < 4; xVariation++) {
    for (yVariation = 0; yVariation < 4; yVariation++) {
@@ -1222,11 +1230,15 @@ video_getSetWindowSize(void *arg)
   result = SDL_GetDisplayBounds(0, &display);
   SDLTest_AssertPass("SDL_GetDisplayBounds()");
   SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-  if (result != 0) return TEST_ABORTED;
+  if (result != 0) {
+   return TEST_ABORTED;
+  }
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+   return TEST_ABORTED;
+  }
 
 #ifdef __WIN32__
   /* Platform clips window size to screen size */
@@ -1386,11 +1398,15 @@ video_getSetWindowMinimumSize(void *arg)
   result = SDL_GetDisplayBounds(0, &display);
   SDLTest_AssertPass("SDL_GetDisplayBounds()");
   SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-  if (result != 0) return TEST_ABORTED;
+  if (result != 0) {
+   return TEST_ABORTED;
+  }
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+   return TEST_ABORTED;
+  }
 
   for (wVariation = 0; wVariation < 5; wVariation++) {
    for (hVariation = 0; hVariation < 5; hVariation++) {
@@ -1525,11 +1541,15 @@ video_getSetWindowMaximumSize(void *arg)
   result = SDL_GetDisplayBounds(0, &display);
   SDLTest_AssertPass("SDL_GetDisplayBounds()");
   SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-  if (result != 0) return TEST_ABORTED;
+  if (result != 0) {
+   return TEST_ABORTED;
+  }
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+   return TEST_ABORTED;
+  }
 
   for (wVariation = 0; wVariation < 3; wVariation++) {
    for (hVariation = 0; hVariation < 3; hVariation++) {
@@ -1667,7 +1687,9 @@ video_getSetWindowData(void *arg)
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);
-  if (window == NULL) return TEST_ABORTED;
+  if (window == NULL) {
+    return TEST_ABORTED;
+  }
 
   /* Create testdata */
   datasize = SDLTest_RandomIntegerInRange(1, 32);
@@ -1879,14 +1901,16 @@ video_setWindowCenteredOnDisplay(void *arg)
     result = SDL_GetDisplayBounds(0 % displayNum, &display0);
     SDLTest_AssertPass("SDL_GetDisplayBounds()");
     SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-    if (result != 0)
+    if (result != 0) {
         return TEST_ABORTED;
+    }
 
     result = SDL_GetDisplayBounds(1 % displayNum, &display1);
     SDLTest_AssertPass("SDL_GetDisplayBounds()");
     SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
-    if (result != 0)
+    if (result != 0) {
         return TEST_ABORTED;
+    }
 
     for (xVariation = 0; xVariation < 2; xVariation++) {
         for (yVariation = 0; yVariation < 2; yVariation++) {

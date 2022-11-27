@@ -216,13 +216,13 @@ static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int s
     }
 #endif
     if (sync) {
-        return (SDL_hid_write(ctx->device->dev, data, size) >= 0);
+        return SDL_hid_write(ctx->device->dev, data, size) >= 0;
     } else {
         /* Use the rumble thread for general asynchronous writes */
         if (SDL_HIDAPI_LockRumble() < 0) {
             return SDL_FALSE;
         }
-        return (SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size) >= 0);
+        return SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, data, size) >= 0;
     }
 }
 
@@ -234,7 +234,7 @@ static SDL_bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs exp
     int nRead = 0;
     while ((nRead = ReadInput(ctx)) != -1) {
         if (nRead > 0) {
-            if (ctx->m_rgucReadBuffer[0] == expectedID && (!isMine || isMine(ctx->m_rgucReadBuffer))) {
+            if (ctx->m_rgucReadBuffer[0] == expectedID && (isMine == NULL || isMine(ctx->m_rgucReadBuffer))) {
                 return SDL_TRUE;
             }
         } else {
@@ -734,7 +734,7 @@ HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverWii_Context *ctx;
 
     ctx = (SDL_DriverWii_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -1529,7 +1529,7 @@ HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return (size >= 0);
+    return size >= 0;
 }
 
 static void

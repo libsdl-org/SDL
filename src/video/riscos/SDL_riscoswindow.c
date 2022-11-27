@@ -37,7 +37,7 @@ RISCOS_CreateWindow(_THIS, SDL_Window * window)
     SDL_WindowData *driverdata;
 
     driverdata = (SDL_WindowData *) SDL_calloc(1, sizeof(*driverdata));
-    if (!driverdata) {
+    if (driverdata == NULL) {
         return SDL_OutOfMemory();
     }
     driverdata->window = window;
@@ -56,8 +56,9 @@ RISCOS_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
 
-    if (!driverdata)
+    if (driverdata == NULL) {
         return;
+    }
 
     SDL_free(driverdata);
     window->driverdata = NULL;

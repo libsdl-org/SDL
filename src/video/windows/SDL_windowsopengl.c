@@ -189,7 +189,7 @@ WIN_GL_GetProcAddress(_THIS, const char *proc)
 
     /* This is to pick up extensions */
     func = _this->gl_data->wglGetProcAddress(proc);
-    if (!func) {
+    if (func == NULL) {
         /* This is probably a normal GL function */
         func = GetProcAddress(_this->gl_config.dll_handle, proc);
     }
@@ -352,11 +352,13 @@ HasExtension(const char *extension, const char *extensions)
 
     /* Extension names should not have spaces. */
     where = SDL_strchr(extension, ' ');
-    if (where || *extension == '\0')
+    if (where || *extension == '\0') {
         return SDL_FALSE;
+    }
 
-    if (!extensions)
+    if (extensions == NULL) {
         return SDL_FALSE;
+    }
 
     /* It takes a bit of care to be fool-proof about parsing the
      * OpenGL extensions string. Don't be fooled by sub-strings,
@@ -366,13 +368,16 @@ HasExtension(const char *extension, const char *extensions)
 
     for (;;) {
         where = SDL_strstr(start, extension);
-        if (!where)
+        if (where == NULL) {
             break;
+        }
 
         terminator = where + SDL_strlen(extension);
-        if (where == start || *(where - 1) == ' ')
-            if (*terminator == ' ' || *terminator == '\0')
+        if (where == start || *(where - 1) == ' ') {
+            if (*terminator == ' ' || *terminator == '\0') {
                 return SDL_TRUE;
+            }
+        }
 
         start = terminator;
     }
@@ -663,11 +668,7 @@ WIN_GL_UseEGL(_THIS)
     SDL_assert(_this->gl_data != NULL);
     SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
-    return (SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, SDL_FALSE)
-            || _this->gl_config.major_version == 1 /* No WGL extension for OpenGL ES 1.x profiles. */
-            || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major
-            || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major
-                && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor));
+    return SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, SDL_FALSE) || _this->gl_config.major_version == 1 || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor); /* No WGL extension for OpenGL ES 1.x profiles. */
 }
 
 SDL_GLContext
@@ -712,7 +713,7 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
         _this->gl_config.flags == 0) {
         /* Create legacy context */
         context = _this->gl_data->wglCreateContext(hdc);
-        if( share_context != 0 ) {
+        if ( share_context != 0 ) {
             _this->gl_data->wglShareLists(share_context, context);
         }
     } else {
@@ -810,15 +811,15 @@ WIN_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     }
 
     /* sanity check that higher level handled this. */
-    SDL_assert(window || (!window && !context));
+    SDL_assert(window || (window == NULL && !context));
 
     /* Some Windows drivers freak out if hdc is NULL, even when context is
        NULL, against spec. Since hdc is _supposed_ to be ignored if context
        is NULL, we either use the current GL window, or do nothing if we
        already have no current context. */
-    if (!window) {
+    if (window == NULL) {
         window = SDL_GL_GetCurrentWindow();
-        if (!window) {
+        if (window == NULL) {
             SDL_assert(SDL_GL_GetCurrentContext() == NULL);
             return 0;  /* already done. */
         }

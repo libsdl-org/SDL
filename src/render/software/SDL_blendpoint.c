@@ -217,7 +217,7 @@ int
 SDL_BlendPoint(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                Uint8 g, Uint8 b, Uint8 a)
 {
-    if (!dst) {
+    if (dst == NULL) {
         return SDL_InvalidParamError("SDL_BlendPoint(): dst");
     }
 
@@ -286,7 +286,7 @@ SDL_BlendPoints(SDL_Surface * dst, const SDL_Point * points, int count,
                 SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
     int status = 0;
 
-    if (!dst) {
+    if (dst == NULL) {
         return SDL_InvalidParamError("SDL_BlendPoints(): dst");
     }
 
@@ -332,7 +332,7 @@ SDL_BlendPoints(SDL_Surface * dst, const SDL_Point * points, int count,
         break;
     }
 
-    if (!func) {
+    if (func == NULL) {
         if (!dst->format->Amask) {
             func = SDL_BlendPoint_RGB;
         } else {

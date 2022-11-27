@@ -272,7 +272,7 @@ QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char** device_name)
 {
     DIPROPSTRING dipstr;
 
-    if (!device || !device_name) {
+    if (!device || device_name == NULL) {
         return SDL_FALSE;
     }
 
@@ -295,7 +295,7 @@ QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char** device_path)
 {
     DIPROPGUIDANDPATH dippath;
 
-    if (!device || !device_path) {
+    if (!device || device_path == NULL) {
         return SDL_FALSE;
     }
 
@@ -321,7 +321,7 @@ QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_
 {
     DIPROPDWORD dipdw;
 
-    if (!device || !vendor_id || !product_id) {
+    if (!device || vendor_id == NULL || product_id == NULL) {
         return SDL_FALSE;
     }
 
@@ -343,7 +343,7 @@ QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_
 
 void FreeRumbleEffectData(DIEFFECT *effect)
 {
-    if (!effect) {
+    if (effect == NULL) {
         return;
     }
     SDL_free(effect->rgdwAxes);
@@ -359,7 +359,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 
     /* Create the effect */
     effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect));
-    if (!effect) {
+    if (effect == NULL) {
         return NULL;
     }
     effect->dwSize = sizeof(*effect);
@@ -383,7 +383,7 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     effect->dwFlags |= DIEFF_CARTESIAN;
 
     periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (!periodic) {
+    if (periodic == NULL) {
         FreeRumbleEffectData(effect);
         return NULL;
     }
@@ -443,7 +443,7 @@ SDL_DINPUT_JoystickInit(void)
 static BOOL CALLBACK
 EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(expression) { if(!(expression)) goto err; }
+#define CHECK(expression) { if (!(expression)) goto err; }
     JoyStick_DeviceData *pNewJoystick = NULL;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     Uint16 vendor = 0;
@@ -470,8 +470,7 @@ EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
             /* if we are replacing the front of the list then update it */
             if (pNewJoystick == *(JoyStick_DeviceData**)pContext) {
                 *(JoyStick_DeviceData**)pContext = pNewJoystick->pNext;
-            }
-            else if (pPrevJoystick) {
+            } else if (pPrevJoystick) {
                 pPrevJoystick->pNext = pNewJoystick->pNext;
             }
 
@@ -556,7 +555,7 @@ typedef struct
 static BOOL CALLBACK
 EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
-#define CHECK(expression) { if(!(expression)) goto err; }
+#define CHECK(expression) { if (!(expression)) goto err; }
     Joystick_PresentData *pData = (Joystick_PresentData *)pContext;
     Uint16 vendor = 0;
     Uint16 product = 0;
@@ -692,10 +691,12 @@ SortDevFunc(const void *a, const void *b)
     const input_t *inputA = (const input_t*)a;
     const input_t *inputB = (const input_t*)b;
 
-    if (inputA->ofs < inputB->ofs)
+    if (inputA->ofs < inputB->ofs) {
         return -1;
-    if (inputA->ofs > inputB->ofs)
+    }
+    if (inputA->ofs > inputB->ofs) {
         return 1;
+    }
     return 0;
 }
 
@@ -967,16 +968,18 @@ TranslatePOV(DWORD value)
         SDL_HAT_UP | SDL_HAT_LEFT
     };
 
-    if (LOWORD(value) == 0xFFFF)
+    if (LOWORD(value) == 0xFFFF) {
         return SDL_HAT_CENTERED;
+    }
 
     /* Round the value up: */
     value += 4500 / 2;
     value %= 36000;
     value /= 4500;
 
-    if (value >= 8)
-        return SDL_HAT_CENTERED;        /* shouldn't happen */
+    if (value >= 8) {
+        return SDL_HAT_CENTERED; /* shouldn't happen */
+    }
 
     return HAT_VALS[value];
 }
@@ -1087,8 +1090,9 @@ UpdateDINPUTJoystickState_Buffered(SDL_Joystick * joystick)
         for (j = 0; j < joystick->hwdata->NumInputs; ++j) {
             const input_t *in = &joystick->hwdata->Inputs[j];
 
-            if (evtbuf[i].dwOfs != in->ofs)
+            if (evtbuf[i].dwOfs != in->ofs) {
                 continue;
+            }
 
             switch (in->type) {
             case AXIS:

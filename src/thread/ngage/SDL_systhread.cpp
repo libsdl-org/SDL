@@ -40,18 +40,13 @@ static int
 RunThread(TAny* data)
 {
     SDL_RunThread((SDL_Thread*)data);
-    return(0);
+    return 0;
 }
 
 static TInt
 NewThread(const TDesC& aName, TAny* aPtr1, TAny* aPtr2)
 {
-    return ((RThread*)(aPtr1))->Create
-        (aName,
-         RunThread,
-         KDefaultStackSize,
-         NULL,
-         aPtr2);
+    return ((RThread *)(aPtr1))->Create(aName, RunThread, KDefaultStackSize, NULL, aPtr2);
 }
 
 int
@@ -75,17 +70,16 @@ SDL_SYS_CreateThread(SDL_Thread *thread)
     RThread rthread;
 
     TInt status = CreateUnique(NewThread, &rthread, thread);
-    if (status != KErrNone)
-    {
+    if (status != KErrNone) {
         delete(((RThread*)(thread->handle)));
         thread->handle = NULL;
         SDL_SetError("Not enough resources to create thread");
-        return(-1);
+        return -1;
     }
 
     rthread.Resume();
     thread->handle = rthread.Handle();
-    return(0);
+    return 0;
 }
 
 void
@@ -105,7 +99,7 @@ SDL_ThreadID(void)
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-    return (0);
+    return 0;
 }
 
 void
@@ -113,8 +107,7 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
 {
     RThread t;
     t.Open(thread->threadid);
-    if(t.ExitReason() == EExitPending)
-    {
+    if (t.ExitReason() == EExitPending) {
         TRequestStatus status;
         t.Logon(status);
         User::WaitForRequest(status);

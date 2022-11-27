@@ -59,8 +59,9 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     sceAppUtilInit(&initParam, &bootParam);
     sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, &language);
 
-    if (language < 0 || language > SCE_SYSTEM_PARAM_LANG_TURKISH)
+    if (language < 0 || language > SCE_SYSTEM_PARAM_LANG_TURKISH) {
         language = SCE_SYSTEM_PARAM_LANG_ENGLISH_US; // default to english
+    }
 
     SDL_strlcpy(buf, vita_locales[language], buflen);
 

@@ -321,8 +321,9 @@ CreateHwData(const char *path)
         hw->type = BSDJOY_UHID;
         {
             int ax;
-            for (ax = 0; ax < JOYAXE_count; ax++)
+            for (ax = 0; ax < JOYAXE_count; ax++) {
                 hw->axis_map[ax] = -1;
+            }
         }
         hw->repdesc = hid_get_report_desc(fd);
         if (hw->repdesc == NULL) {
@@ -356,8 +357,9 @@ CreateHwData(const char *path)
             SDL_SetError("%s: Cannot start HID parser", path);
             goto usberr;
         }
-        for (i = 0; i < JOYAXE_count; i++)
+        for (i = 0; i < JOYAXE_count; i++) {
             hw->axis_map[i] = -1;
+        }
 
         while (hid_get_item(hdata, &hitem) > 0) {
             switch (hitem.kind) {
@@ -395,9 +397,11 @@ CreateHwData(const char *path)
             }
         }
         hid_end_parse(hdata);
-        for (i = 0; i < JOYAXE_count; i++)
-            if (hw->axis_map[i] > 0)
+        for (i = 0; i < JOYAXE_count; i++) {
+            if (hw->axis_map[i] > 0) {
                 hw->axis_map[i] = hw->naxes++;
+            }
+        }
 
         if (hw->naxes == 0 && hw->nbuttons == 0 && hw->nhats == 0) {
             SDL_SetError("%s: Not a joystick, ignoring", path);
@@ -447,7 +451,7 @@ MaybeAddDevice(const char *path)
     }
 
     hw = CreateHwData(path);
-    if (!hw) {
+    if (hw == NULL) {
         return -1;
     }
 
@@ -477,7 +481,7 @@ MaybeAddDevice(const char *path)
         }
 #endif /* USB_GET_DEVICEINFO */
     }
-    if (!name) {
+    if (name == NULL) {
         name = SDL_strdup(path);
         guid = SDL_CreateJoystickGUIDForName(name);
     }
@@ -634,7 +638,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     }
 
     hw = CreateHwData(item->path);
-    if (!hw) {
+    if (hw == NULL) {
         return -1;
     }
 
@@ -739,16 +743,13 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
                         else if (usage == HUG_DPAD_UP) {
                             dpad[0] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
-                        }
-                        else if (usage == HUG_DPAD_DOWN) {
+                        } else if (usage == HUG_DPAD_DOWN) {
                             dpad[1] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
-                        }
-                        else if (usage == HUG_DPAD_RIGHT) {
+                        } else if (usage == HUG_DPAD_RIGHT) {
                             dpad[2] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
-                        }
-                        else if (usage == HUG_DPAD_LEFT) {
+                        } else if (usage == HUG_DPAD_LEFT) {
                             dpad[3] = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0, dpad_to_sdl(dpad));
                         }

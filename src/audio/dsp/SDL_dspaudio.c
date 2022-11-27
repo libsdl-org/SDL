@@ -82,12 +82,13 @@ DSP_OpenDevice(_THIS, const char *devname)
 
     /* Make sure fragment size stays a power of 2, or OSS fails. */
     /* I don't know which of these are actually legal values, though... */
-    if (this->spec.channels > 8)
+    if (this->spec.channels > 8) {
         this->spec.channels = 8;
-    else if (this->spec.channels > 4)
+    } else if (this->spec.channels > 4) {
         this->spec.channels = 4;
-    else if (this->spec.channels > 2)
+    } else if (this->spec.channels > 2) {
         this->spec.channels = 2;
+    }
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -260,13 +261,13 @@ DSP_PlayDevice(_THIS)
 static Uint8 *
 DSP_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    return this->hidden->mixbuf;
 }
 
 static int
 DSP_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
-    return (int) read(this->hidden->audio_fd, buffer, buflen);
+    return (int)read(this->hidden->audio_fd, buffer, buflen);
 }
 
 static void

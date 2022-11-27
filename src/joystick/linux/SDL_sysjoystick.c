@@ -177,7 +177,7 @@ GuessIsJoystick(int fd)
         (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
-        return (0);
+        return 0;
     }
 
     devclass = SDL_EVDEV_GuessDeviceClass(evbit, absbit, keybit, relbit);
@@ -217,7 +217,7 @@ IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
     }
 
     name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
-    if (!name) {
+    if (name == NULL) {
         return 0;
     }
 
@@ -489,7 +489,7 @@ static void SteamControllerDisconnectedCallback(int device_instance)
 static int
 StrHasPrefix(const char *string, const char *prefix)
 {
-    return (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0);
+    return SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0;
 }
 
 static int
@@ -517,7 +517,7 @@ IsJoystickJSNode(const char *node)
     if (last_slash) {
         node = last_slash + 1;
     }
-    return (StrHasPrefix(node, "js") && StrIsInteger(node + 2));
+    return StrHasPrefix(node, "js") && StrIsInteger(node + 2);
 }
 
 static SDL_bool
@@ -527,7 +527,7 @@ IsJoystickEventNode(const char *node)
     if (last_slash) {
         node = last_slash + 1;
     }
-    return (StrHasPrefix(node, "event") && StrIsInteger(node + 5));
+    return StrHasPrefix(node, "event") && StrIsInteger(node + 5);
 }
 
 static SDL_bool
@@ -548,7 +548,9 @@ static int SDL_inotify_init1(void) {
 #else
 static int SDL_inotify_init1(void) {
     int fd = inotify_init();
-    if (fd  < 0) return -1;
+    if (fd < 0) {
+        return -1;
+    }
     fcntl(fd, F_SETFL, O_NONBLOCK);
     fcntl(fd, F_SETFD, FD_CLOEXEC);
     return fd;
@@ -582,8 +584,7 @@ LINUX_InotifyJoystickDetect(void)
 
                 if (buf.event.mask & (IN_CREATE | IN_MOVED_TO | IN_ATTRIB)) {
                     MaybeAddDevice(path);
-                }
-                else if (buf.event.mask & (IN_DELETE | IN_MOVED_FROM)) {
+                } else if (buf.event.mask & (IN_DELETE | IN_MOVED_FROM)) {
                     MaybeRemoveDevice(path);
                 }
             }
@@ -659,7 +660,7 @@ sort_entries(const void *_a, const void *_b)
             }
         }
     }
-    return (numA - numB);
+    return numA - numB;
 }
 
 static void
@@ -702,14 +703,12 @@ LINUX_JoystickDetect(void)
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         SDL_UDEV_Poll();
-    }
-    else
+    } else
 #endif
 #ifdef HAVE_INOTIFY
     if (inotify_fd >= 0 && last_joy_detect_time != 0) {
         LINUX_InotifyJoystickDetect();
-    }
-    else
+    } else
 #endif
     {
         LINUX_FallbackJoystickDetect();
@@ -786,8 +785,7 @@ LINUX_JoystickInit(void)
 
         /* Force a scan to build the initial device list */
         SDL_UDEV_Scan();
-    }
-    else
+    } else
 #endif
     {
 #if defined(HAVE_INOTIFY)
@@ -887,13 +885,13 @@ allocate_hatdata(SDL_Joystick *joystick)
         (struct hwdata_hat *) SDL_malloc(joystick->nhats *
                                          sizeof(struct hwdata_hat));
     if (joystick->hwdata->hats == NULL) {
-        return (-1);
+        return -1;
     }
     for (i = 0; i < joystick->nhats; ++i) {
         joystick->hwdata->hats[i].axis[0] = 1;
         joystick->hwdata->hats[i].axis[1] = 1;
     }
-    return (0);
+    return 0;
 }
 
 static int
@@ -905,13 +903,13 @@ allocate_balldata(SDL_Joystick *joystick)
         (struct hwdata_ball *) SDL_malloc(joystick->nballs *
                                           sizeof(struct hwdata_ball));
     if (joystick->hwdata->balls == NULL) {
-        return (-1);
+        return -1;
     }
     for (i = 0; i < joystick->nballs; ++i) {
         joystick->hwdata->balls[i].axis[0] = 0;
         joystick->hwdata->balls[i].axis[1] = 0;
     }
-    return (0);
+    return 0;
 }
 
 static SDL_bool
@@ -924,22 +922,24 @@ GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *
      * other continuous analog axis, so we have to guess. */
 
     /* If both axes are missing, they're not anything. */
-    if (!absinfo_x && !absinfo_y)
+    if (absinfo_x == NULL && absinfo_y == NULL) {
         return SDL_FALSE;
+    }
 
     /* If the hint says so, treat all hats as digital. */
-    if (SDL_GetHintBoolean(SDL_HINT_LINUX_DIGITAL_HATS, SDL_FALSE))
+    if (SDL_GetHintBoolean(SDL_HINT_LINUX_DIGITAL_HATS, SDL_FALSE)) {
         return SDL_TRUE;
+    }
 
     /* If both axes have ranges constrained between -1 and 1, they're definitely digital. */
-    if ((!absinfo_x || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) &&
-        (!absinfo_y || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1)))
+    if ((absinfo_x == NULL || (absinfo_x->minimum == -1 && absinfo_x->maximum == 1)) && (absinfo_y == NULL || (absinfo_y->minimum == -1 && absinfo_y->maximum == 1))) {
         return SDL_TRUE;
+    }
 
     /* If both axes lack fuzz, flat, and resolution values, they're probably digital. */
-    if ((!absinfo_x || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) &&
-        (!absinfo_y || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution)))
+    if ((absinfo_x == NULL || (!absinfo_x->fuzz && !absinfo_x->flat && !absinfo_x->resolution)) && (absinfo_y == NULL || (!absinfo_y->fuzz && !absinfo_y->flat && !absinfo_y->resolution))) {
         return SDL_TRUE;
+    }
 
     /* Otherwise, treat them as analog. */
     return SDL_FALSE;
@@ -988,10 +988,12 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
             int hat_y = -1;
             struct input_absinfo absinfo_x;
             struct input_absinfo absinfo_y;
-            if (test_bit(i, absbit))
+            if (test_bit(i, absbit)) {
                 hat_x = ioctl(fd, EVIOCGABS(i), &absinfo_x);
-            if (test_bit(i + 1, absbit))
+            }
+            if (test_bit(i + 1, absbit)) {
                 hat_y = ioctl(fd, EVIOCGABS(i + 1), &absinfo_y);
+            }
             if (GuessIfAxesAreDigitalHat((hat_x < 0 ? (void*)0 : &absinfo_x),
                                          (hat_y < 0 ? (void*)0 : &absinfo_y))) {
                 const int hat_index = (i - ABS_HAT0X) / 2;

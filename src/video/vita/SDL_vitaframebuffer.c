@@ -43,11 +43,13 @@ void *vita_gpu_alloc(unsigned int type, unsigned int size, SceUID *uid)
 
     *uid = sceKernelAllocMemBlock("gpu_mem", type, size, NULL);
 
-    if (*uid < 0)
+    if (*uid < 0) {
         return NULL;
+    }
 
-    if (sceKernelGetMemBlockBase(*uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(*uid, &mem) < 0) {
         return NULL;
+    }
 
     return mem;
 }
@@ -55,8 +57,9 @@ void *vita_gpu_alloc(unsigned int type, unsigned int size, SceUID *uid)
 void vita_gpu_free(SceUID uid)
 {
     void *mem = NULL;
-    if (sceKernelGetMemBlockBase(uid, &mem) < 0)
+    if (sceKernelGetMemBlockBase(uid, &mem) < 0) {
         return;
+    }
     sceKernelFreeMemBlock(uid);
 }
 
@@ -101,7 +104,7 @@ void VITA_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (!data) {
+    if (data == NULL) {
         /* The window wasn't fully initialized */
         return;
     }

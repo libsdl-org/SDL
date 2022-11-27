@@ -138,8 +138,7 @@ VITA_GLES_CreateContext(_THIS, SDL_Window * window)
 
     EGLCHK(eglChooseConfig(display, attribs, &config, 1, &num_configs));
 
-    if (num_configs == 0)
-    {
+    if (num_configs == 0) {
         SDL_SetError("No valid EGL configs for requested mode");
         return 0;
     }

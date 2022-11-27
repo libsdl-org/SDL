@@ -90,8 +90,9 @@ iteration()
         if (e.type == SDL_QUIT) {
             done = 1;
         } else if (e.type == SDL_KEYUP) {
-            if (e.key.keysym.sym == SDLK_ESCAPE)
+            if (e.key.keysym.sym == SDLK_ESCAPE) {
                 done = 1;
+            }
         } else if (e.type == SDL_AUDIODEVICEADDED) {
             int index = e.adevice.which;
             int iscapture = e.adevice.iscapture;
@@ -127,7 +128,7 @@ iteration()
 void
 loop()
 {
-    if(done)
+    if (done)
         emscripten_cancel_main_loop();
     else
         iteration();
@@ -146,7 +147,7 @@ main(int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     /* Some targets (Mac CoreAudio) need an event queue for audio hotplug, so make and immediately hide a window. */
@@ -201,7 +202,7 @@ main(int argc, char *argv[])
     SDL_FreeWAV(sound);
     SDL_free(filename);
     SDL_Quit();
-    return (0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

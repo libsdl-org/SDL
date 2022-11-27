@@ -55,8 +55,9 @@ closemutex(int sig)
     int i;
     SDL_Log("Process %lu:  Cleaning up...\n", id == mainthread ? 0 : id);
     SDL_AtomicSet(&doterminate, 1);
-    for (i = 0; i < 6; ++i)
+    for (i = 0; i < 6; ++i) {
         SDL_WaitThread(threads[i], NULL);
+    }
     SDL_DestroyMutex(mutex);
     exit(sig);
 }
@@ -64,8 +65,9 @@ closemutex(int sig)
 int SDLCALL
 Run(void *data)
 {
-    if (SDL_ThreadID() == mainthread)
+    if (SDL_ThreadID() == mainthread) {
         signal(SIGTERM, closemutex);
+    }
     while (!SDL_AtomicGet(&doterminate)) {
         SDL_Log("Process %lu ready to work\n", SDL_ThreadID());
         if (SDL_LockMutex(mutex) < 0) {
@@ -86,7 +88,7 @@ Run(void *data)
         SDL_Log("Process %lu:  raising SIGTERM\n", SDL_ThreadID());
         raise(SIGTERM);
     }
-    return (0);
+    return 0;
 }
 
 int
@@ -118,11 +120,12 @@ main(int argc, char *argv[])
     for (i = 0; i < maxproc; ++i) {
         char name[64];
         SDL_snprintf(name, sizeof (name), "Worker%d", i);
-        if ((threads[i] = SDL_CreateThread(Run, name, NULL)) == NULL)
+        if ((threads[i] = SDL_CreateThread(Run, name, NULL)) == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread!\n");
+        }
     }
     signal(SIGINT, terminate);
     Run(NULL);
 
-    return (0);                 /* Never reached */
+    return 0;                 /* Never reached */
 }

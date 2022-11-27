@@ -207,9 +207,9 @@ playSound(struct sound *s)
             break;
         }
         /* if this channel's sound is older than the oldest so far, set it to oldest */
-        if (mixer.channels[i].timestamp <
-            mixer.channels[oldest_channel].timestamp)
+        if (mixer.channels[i].timestamp < mixer.channels[oldest_channel].timestamp) {
             oldest_channel = i;
+        }
     }
 
     /* no empty channels, take the oldest one */

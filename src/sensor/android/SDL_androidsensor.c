@@ -56,14 +56,14 @@ SDL_ANDROID_SensorInit(void)
     ASensorList sensors;
 
     SDL_sensor_manager = ASensorManager_getInstance();
-    if (!SDL_sensor_manager) {
+    if (SDL_sensor_manager == NULL) {
         return SDL_SetError("Couldn't create sensor manager");
     }
 
     SDL_sensor_looper = ALooper_forThread();
-    if (!SDL_sensor_looper) {
+    if (SDL_sensor_looper == NULL) {
         SDL_sensor_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
-        if (!SDL_sensor_looper) {
+        if (SDL_sensor_looper == NULL) {
             return SDL_SetError("Couldn't create sensor event loop");
         }
     }
@@ -72,7 +72,7 @@ SDL_ANDROID_SensorInit(void)
     sensors_count = ASensorManager_getSensorList(SDL_sensor_manager, &sensors);
     if (sensors_count > 0) {
         SDL_sensors = (SDL_AndroidSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
-        if (!SDL_sensors) {
+        if (SDL_sensors == NULL) {
             return SDL_OutOfMemory();
         }
 

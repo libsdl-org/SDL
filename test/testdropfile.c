@@ -36,7 +36,7 @@ main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
+    if (state == NULL) {
         return 1;
     }
 
@@ -93,7 +93,7 @@ main(int argc, char *argv[])
 
     quit(0);
     /* keep the compiler happy ... */
-    return(0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

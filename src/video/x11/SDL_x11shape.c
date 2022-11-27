@@ -35,7 +35,7 @@ X11_CreateShaper(SDL_Window* window) {
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
     if (SDL_X11_HAVE_XSHAPE) {  /* Make sure X server supports it. */
         result = SDL_malloc(sizeof(SDL_WindowShaper));
-        if (!result) {
+        if (result == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -44,7 +44,7 @@ X11_CreateShaper(SDL_Window* window) {
         result->mode.parameters.binarizationCutoff = 1;
         result->userx = result->usery = 0;
         data = SDL_malloc(sizeof(SDL_ShapeData));
-        if (!data) {
+        if (data == NULL) {
             SDL_free(result);
             SDL_OutOfMemory();
             return NULL;
@@ -71,14 +71,15 @@ X11_ResizeWindowShape(SDL_Window* window) {
     unsigned int bitmapsize = window->w / 8;
     SDL_assert(data != NULL);
 
-    if(window->w % 8 > 0)
+    if (window->w % 8 > 0) {
         bitmapsize += 1;
+    }
     bitmapsize *= window->h;
-    if(data->bitmapsize != bitmapsize || data->bitmap == NULL) {
+    if (data->bitmapsize != bitmapsize || data->bitmap == NULL) {
         data->bitmapsize = bitmapsize;
         SDL_free(data->bitmap);
         data->bitmap = SDL_malloc(data->bitmapsize);
-        if(data->bitmap == NULL) {
+        if (data->bitmap == NULL) {
             return SDL_OutOfMemory();
         }
     }
@@ -97,14 +98,17 @@ X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMo
     SDL_WindowData *windowdata = NULL;
     Pixmap shapemask;
     
-    if(shaper == NULL || shape == NULL || shaper->driverdata == NULL)
+    if (shaper == NULL || shape == NULL || shaper->driverdata == NULL) {
         return -1;
+    }
 
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
-    if(shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode))
+    if (shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode)) {
         return -2;
-    if(shape->w != shaper->window->w || shape->h != shaper->window->h)
+    }
+    if (shape->w != shaper->window->w || shape->h != shaper->window->h) {
         return -3;
+    }
     data = shaper->driverdata;
 
     /* Assume that shaper->alphacutoff already has a value, because SDL_SetWindowShape() should have given it one. */

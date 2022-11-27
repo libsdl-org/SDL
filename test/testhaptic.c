@@ -78,8 +78,9 @@ main(int argc, char **argv)
         /* Try to find matching device */
         else {
             for (i = 0; i < SDL_NumHaptics(); i++) {
-                if (SDL_strstr(SDL_HapticName(i), name) != NULL)
+                if (SDL_strstr(SDL_HapticName(i), name) != NULL) {
                     break;
+                }
             }
 
             if (i >= SDL_NumHaptics()) {
@@ -283,8 +284,9 @@ main(int argc, char **argv)
     }
 
     /* Quit */
-    if (haptic != NULL)
+    if (haptic != NULL) {
         SDL_HapticClose(haptic);
+    }
     SDL_Quit();
 
     return 0;
@@ -317,40 +319,55 @@ HapticPrintSupported(SDL_Haptic * ptr)
     supported = SDL_HapticQuery(ptr);
     SDL_Log("   Supported effects [%d effects, %d playing]:\n",
            SDL_HapticNumEffects(ptr), SDL_HapticNumEffectsPlaying(ptr));
-    if (supported & SDL_HAPTIC_CONSTANT)
+    if (supported & SDL_HAPTIC_CONSTANT) {
         SDL_Log("      constant\n");
-    if (supported & SDL_HAPTIC_SINE)
+    }
+    if (supported & SDL_HAPTIC_SINE) {
         SDL_Log("      sine\n");
+    }
     /* !!! FIXME: put this back when we have more bits in 2.1 */
     /* if (supported & SDL_HAPTIC_SQUARE)
         SDL_Log("      square\n"); */
-    if (supported & SDL_HAPTIC_TRIANGLE)
+    if (supported & SDL_HAPTIC_TRIANGLE) {
         SDL_Log("      triangle\n");
-    if (supported & SDL_HAPTIC_SAWTOOTHUP)
+    }
+    if (supported & SDL_HAPTIC_SAWTOOTHUP) {
         SDL_Log("      sawtoothup\n");
-    if (supported & SDL_HAPTIC_SAWTOOTHDOWN)
+    }
+    if (supported & SDL_HAPTIC_SAWTOOTHDOWN) {
         SDL_Log("      sawtoothdown\n");
-    if (supported & SDL_HAPTIC_RAMP)
+    }
+    if (supported & SDL_HAPTIC_RAMP) {
         SDL_Log("      ramp\n");
-    if (supported & SDL_HAPTIC_FRICTION)
+    }
+    if (supported & SDL_HAPTIC_FRICTION) {
         SDL_Log("      friction\n");
-    if (supported & SDL_HAPTIC_SPRING)
+    }
+    if (supported & SDL_HAPTIC_SPRING) {
         SDL_Log("      spring\n");
-    if (supported & SDL_HAPTIC_DAMPER)
+    }
+    if (supported & SDL_HAPTIC_DAMPER) {
         SDL_Log("      damper\n");
-    if (supported & SDL_HAPTIC_INERTIA)
+    }
+    if (supported & SDL_HAPTIC_INERTIA) {
         SDL_Log("      inertia\n");
-    if (supported & SDL_HAPTIC_CUSTOM)
+    }
+    if (supported & SDL_HAPTIC_CUSTOM) {
         SDL_Log("      custom\n");
-    if (supported & SDL_HAPTIC_LEFTRIGHT)
+    }
+    if (supported & SDL_HAPTIC_LEFTRIGHT) {
         SDL_Log("      left/right\n");
+    }
     SDL_Log("   Supported capabilities:\n");
-    if (supported & SDL_HAPTIC_GAIN)
+    if (supported & SDL_HAPTIC_GAIN) {
         SDL_Log("      gain\n");
-    if (supported & SDL_HAPTIC_AUTOCENTER)
+    }
+    if (supported & SDL_HAPTIC_AUTOCENTER) {
         SDL_Log("      autocenter\n");
-    if (supported & SDL_HAPTIC_STATUS)
+    }
+    if (supported & SDL_HAPTIC_STATUS) {
         SDL_Log("      status\n");
+    }
 }
 
 #else

@@ -65,8 +65,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, voi
         masks = (Uint32*)((Uint8*)info + info->bmiHeader.biSize);
         *format = SDL_MasksToPixelFormatEnum(bpp, masks[0], masks[1], masks[2], 0);
     }
-    if (*format == SDL_PIXELFORMAT_UNKNOWN)
-    {
+    if (*format == SDL_PIXELFORMAT_UNKNOWN) {
         /* We'll use RGB format for now */
         *format = SDL_PIXELFORMAT_RGB888;
 
@@ -112,7 +111,7 @@ void WIN_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (!data) {
+    if (data == NULL) {
         /* The window wasn't fully initialized */
         return;
     }

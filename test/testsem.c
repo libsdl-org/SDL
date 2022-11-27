@@ -117,8 +117,9 @@ TestWaitTimeout(void)
     SDL_Log("Wait took %" SDL_PRIu32 " milliseconds\n\n", duration);
 
     /* Check to make sure the return value indicates timed out */
-    if (retval != SDL_MUTEX_TIMEDOUT)
+    if (retval != SDL_MUTEX_TIMEDOUT) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_SemWaitTimeout returned: %d; expected: %d\n\n", retval, SDL_MUTEX_TIMEDOUT);
+    }
 
     SDL_DestroySemaphore(sem);
 }
@@ -135,7 +136,7 @@ TestOverheadUncontended(void)
     SDL_Log("Doing %d uncontended Post/Wait operations on semaphore\n", NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT);
 
     start_ticks = SDL_GetTicks();
-    for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++){
+    for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
             SDL_SemPost(sem);
         }
@@ -157,14 +158,14 @@ ThreadFuncOverheadContended(void *data)
     Thread_State *state = (Thread_State *) data;
 
     if (state->flag) {
-        while(alive) {
+        while (alive) {
             if (SDL_SemTryWait(sem) == SDL_MUTEX_TIMEDOUT) {
                 ++state->content_count;
             }
             ++state->loop_count;
         }
     } else {
-        while(alive) {
+        while (alive) {
             /* Timeout needed to allow check on alive flag */
             if (SDL_SemWaitTimeout(sem, 50) == SDL_MUTEX_TIMEDOUT) {
                 ++state->content_count;
@@ -251,13 +252,13 @@ main(int argc, char **argv)
 
     if (argc < 2) {
         SDL_Log("Usage: %s init_value\n", argv[0]);
-        return (1);
+        return 1;
     }
 
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
     signal(SIGTERM, killed);
     signal(SIGINT, killed);
@@ -276,5 +277,5 @@ main(int argc, char **argv)
     TestOverheadContended(SDL_TRUE);
 
     SDL_Quit();
-    return (0);
+    return 0;
 }

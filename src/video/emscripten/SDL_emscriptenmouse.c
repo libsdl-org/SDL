@@ -40,7 +40,7 @@ Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
         curdata = (Emscripten_CursorData *) SDL_calloc(1, sizeof(*curdata));
-        if (!curdata) {
+        if (curdata == NULL) {
             SDL_OutOfMemory();
             SDL_free(cursor);
             return NULL;
@@ -49,8 +49,7 @@ Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
         curdata->system_cursor = cursor_str;
         curdata->is_custom = is_custom;
         cursor->driverdata = curdata;
-    }
-    else {
+    } else {
         SDL_OutOfMemory();
     }
 
@@ -72,7 +71,7 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
 
     conv_surf = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
 
-    if (!conv_surf) {
+    if (conv_surf == NULL) {
         return NULL;
     }
 
@@ -204,18 +203,17 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
 {
     Emscripten_CursorData *curdata;
     if (SDL_GetMouseFocus() != NULL) {
-        if(cursor && cursor->driverdata) {
+        if (cursor && cursor->driverdata) {
             curdata = (Emscripten_CursorData *) cursor->driverdata;
 
-            if(curdata->system_cursor) {
+            if (curdata->system_cursor) {
                 MAIN_THREAD_EM_ASM({
                     if (Module['canvas']) {
                         Module['canvas'].style['cursor'] = UTF8ToString($0);
                     }
                 }, curdata->system_cursor);
             }
-        }
-        else {
+        } else {
             MAIN_THREAD_EM_ASM(
                 if (Module['canvas']) {
                     Module['canvas'].style['cursor'] = 'none';
@@ -239,7 +237,7 @@ Emscripten_SetRelativeMouseMode(SDL_bool enabled)
     SDL_WindowData *window_data;
 
     /* TODO: pointer lock isn't actually enabled yet */
-    if(enabled) {
+    if (enabled) {
         window = SDL_GetMouseFocus();
         if (window == NULL) {
             return -1;
@@ -247,11 +245,11 @@ Emscripten_SetRelativeMouseMode(SDL_bool enabled)
 
         window_data = (SDL_WindowData *) window->driverdata;
 
-        if(emscripten_request_pointerlock(window_data->canvas_id, 1) >= EMSCRIPTEN_RESULT_SUCCESS) {
+        if (emscripten_request_pointerlock(window_data->canvas_id, 1) >= EMSCRIPTEN_RESULT_SUCCESS) {
             return 0;
         }
     } else {
-        if(emscripten_exit_pointerlock() >= EMSCRIPTEN_RESULT_SUCCESS) {
+        if (emscripten_exit_pointerlock() >= EMSCRIPTEN_RESULT_SUCCESS) {
             return 0;
         }
     }

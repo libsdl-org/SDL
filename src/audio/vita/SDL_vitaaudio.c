@@ -81,7 +81,7 @@ VITAAUD_OpenDevice(_THIS, const char *devname)
         }
     }
 
-    if(!test_format) {
+    if (!test_format) {
         return SDL_SetError("Unsupported audio format");
     }
 
@@ -111,7 +111,7 @@ VITAAUD_OpenDevice(_THIS, const char *devname)
         format = SCE_AUDIO_OUT_MODE_STEREO;
     }
 
-    if(this->spec.freq < 48000) {
+    if (this->spec.freq < 48000) {
         port = SCE_AUDIO_OUT_PORT_TYPE_BGM;
     }
 

@@ -57,14 +57,15 @@ ThreadFunc(void *data)
 
         if (testprio) {
             SDL_Log("SDL_SetThreadPriority(%s):%d\n", getprioritystr(prio), SDL_SetThreadPriority(prio));
-            if (++prio > SDL_THREAD_PRIORITY_TIME_CRITICAL)
+            if (++prio > SDL_THREAD_PRIORITY_TIME_CRITICAL) {
                 prio = SDL_THREAD_PRIORITY_LOW;
+            }
         }
 
         SDL_Delay(1 * 1000);
     }
     SDL_Log("Thread '%s' exiting!\n", (char *) data);
-    return (0);
+    return 0;
 }
 
 static void
@@ -88,7 +89,7 @@ main(int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
@@ -132,5 +133,5 @@ main(int argc, char *argv[])
     raise(SIGTERM);
 
     SDL_Quit();                 /* Never reached */
-    return (0);                 /* Never reached */
+    return 0;                 /* Never reached */
 }

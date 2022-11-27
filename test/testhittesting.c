@@ -74,8 +74,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    while (!done)
-    {
+    while (!done) {
         SDL_Event e;
         int nothing_to_do = 1;
 
@@ -108,7 +107,7 @@ int main(int argc, char **argv)
                     if (e.key.keysym.sym == SDLK_ESCAPE) {
                         done = 1;
                     } else if (e.key.keysym.sym == SDLK_x) {
-                        if (!areas) {
+                        if (areas == NULL) {
                             areas = drag_areas;
                             numareas = SDL_arraysize(drag_areas);
                         } else {

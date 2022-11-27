@@ -296,7 +296,7 @@ DSOUND_GetDeviceBuf(_THIS)
     }
     if (result != DS_OK) {
         SetDSerror("DirectSound GetCurrentPosition", result);
-        return (NULL);
+        return NULL;
     }
     cursor /= this->spec.size;
 #ifdef DEBUG_SOUND
@@ -331,9 +331,9 @@ DSOUND_GetDeviceBuf(_THIS)
     }
     if (result != DS_OK) {
         SetDSerror("DirectSound Lock", result);
-        return (NULL);
+        return NULL;
     }
-    return (this->hidden->locked_buf);
+    return this->hidden->locked_buf;
 }
 
 static int

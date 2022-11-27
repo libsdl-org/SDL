@@ -49,7 +49,7 @@ SDL_XInputUseOldJoystickMapping()
 #ifdef __WINRT__
     /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
     /* FIXME: Why are Win8/10 different here? -flibit */
-    return (NTDDI_VERSION < NTDDI_WIN10);
+    return NTDDI_VERSION < NTDDI_WIN10;
 #elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return SDL_FALSE;
 #else
@@ -57,7 +57,7 @@ SDL_XInputUseOldJoystickMapping()
     if (s_XInputUseOldJoystickMapping < 0) {
         s_XInputUseOldJoystickMapping = SDL_GetHintBoolean(SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING, SDL_FALSE);
     }
-    return (s_XInputUseOldJoystickMapping > 0);
+    return s_XInputUseOldJoystickMapping > 0;
 #endif
 }
 
@@ -248,11 +248,13 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     JoyStick_DeviceData *pPrevJoystick = NULL;
     JoyStick_DeviceData *pNewJoystick = *pContext;
 
-    if (SDL_XInputUseOldJoystickMapping() && SubType != XINPUT_DEVSUBTYPE_GAMEPAD)
+    if (SDL_XInputUseOldJoystickMapping() && SubType != XINPUT_DEVSUBTYPE_GAMEPAD) {
         return;
+    }
 
-    if (SubType == XINPUT_DEVSUBTYPE_UNKNOWN)
+    if (SubType == XINPUT_DEVSUBTYPE_UNKNOWN) {
         return;
+    }
 
     while (pNewJoystick) {
         if (pNewJoystick->bXInputDevice && (pNewJoystick->XInputUserId == userid) && (pNewJoystick->SubType == SubType)) {
@@ -273,7 +275,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
 
     pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
-    if (!pNewJoystick) {
+    if (pNewJoystick == NULL) {
         return; /* better luck next time? */
     }
 
@@ -521,8 +523,9 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
     XINPUT_STATE_EX XInputState;
     XINPUT_BATTERY_INFORMATION_EX XBatteryInformation;
 
-    if (!XINPUTGETSTATE)
+    if (!XINPUTGETSTATE) {
         return;
+    }
 
     result = XINPUTGETSTATE(joystick->hwdata->userid, &XInputState);
     if (result == ERROR_DEVICE_NOT_CONNECTED) {

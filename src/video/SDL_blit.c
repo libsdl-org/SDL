@@ -96,7 +96,7 @@ SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
         SDL_UnlockSurface(src);
     }
     /* Blit is done! */
-    return (okay ? 0 : -1);
+    return okay ? 0 : -1;
 }
 
 #if SDL_HAVE_BLIT_AUTO

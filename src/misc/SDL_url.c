@@ -26,7 +26,7 @@ extern int SDL_SYS_OpenURL(const char *url);
 int
 SDL_OpenURL(const char *url)
 {
-    if (!url) {
+    if (url == NULL) {
         return SDL_InvalidParamError("url");
     }
     return SDL_SYS_OpenURL(url);

@@ -98,7 +98,7 @@ int
 SDL_CondSignal_generic(SDL_cond * _cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -123,7 +123,7 @@ int
 SDL_CondBroadcast_generic(SDL_cond * _cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -180,7 +180,7 @@ SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     int retval;
 
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 

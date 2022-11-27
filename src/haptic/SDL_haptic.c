@@ -60,8 +60,7 @@ ValidHaptic(SDL_Haptic * haptic)
     valid = 0;
     if (haptic != NULL) {
         hapticlist = SDL_haptics;
-        while ( hapticlist )
-        {
+        while ( hapticlist ) {
             if (hapticlist == haptic) {
                 valid = 1;
                 break;
@@ -123,8 +122,7 @@ SDL_HapticOpen(int device_index)
     /* If the haptic is already open, return it
     * TODO: Should we create haptic instance IDs like the Joystick API?
     */
-    while ( hapticlist )
-    {
+    while ( hapticlist ) {
         if (device_index == hapticlist->index) {
             haptic = hapticlist;
             ++haptic->ref_count;
@@ -156,10 +154,12 @@ SDL_HapticOpen(int device_index)
     SDL_haptics = haptic;
 
     /* Disable autocenter and set gain to max. */
-    if (haptic->supported & SDL_HAPTIC_GAIN)
+    if (haptic->supported & SDL_HAPTIC_GAIN) {
         SDL_HapticSetGain(haptic, 100);
-    if (haptic->supported & SDL_HAPTIC_AUTOCENTER)
+    }
+    if (haptic->supported & SDL_HAPTIC_AUTOCENTER) {
         SDL_HapticSetAutocenter(haptic, 0);
+    }
 
     return haptic;
 }
@@ -184,8 +184,7 @@ SDL_HapticOpened(int device_index)
     opened = 0;
     hapticlist = SDL_haptics;
     /* TODO Should this use an instance ID? */
-    while ( hapticlist )
-    {
+    while ( hapticlist ) {
         if (hapticlist->index == (Uint8) device_index) {
             opened = 1;
             break;
@@ -216,8 +215,9 @@ SDL_HapticIndex(SDL_Haptic * haptic)
 int
 SDL_MouseIsHaptic(void)
 {
-    if (SDL_SYS_HapticMouse() < 0)
+    if (SDL_SYS_HapticMouse() < 0) {
         return SDL_FALSE;
+    }
     return SDL_TRUE;
 }
 
@@ -295,8 +295,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
 
     hapticlist = SDL_haptics;
     /* Check to see if joystick's haptic is already open */
-    while ( hapticlist )
-    {
+    while ( hapticlist ) {
         if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick)) {
             haptic = hapticlist;
             ++haptic->ref_count;
@@ -362,17 +361,12 @@ SDL_HapticClose(SDL_Haptic * haptic)
     /* Remove from the list */
     hapticlist = SDL_haptics;
     hapticlistprev = NULL;
-    while ( hapticlist )
-    {
-        if (haptic == hapticlist)
-        {
-            if ( hapticlistprev )
-            {
+    while ( hapticlist ) {
+        if (haptic == hapticlist) {
+            if ( hapticlistprev ) {
                 /* unlink this entry */
                 hapticlistprev->next = hapticlist->next;
-            }
-            else
-            {
+            } else {
                 SDL_haptics = haptic->next;
             }
 
@@ -464,8 +458,9 @@ SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect)
         return -1;
     }
 
-    if ((haptic->supported & effect->type) != 0)
+    if ((haptic->supported & effect->type) != 0) {
         return SDL_TRUE;
+    }
     return SDL_FALSE;
 }
 
@@ -646,10 +641,11 @@ SDL_HapticSetGain(SDL_Haptic * haptic, int gain)
         max_gain = SDL_atoi(env);
 
         /* Check for sanity. */
-        if (max_gain < 0)
+        if (max_gain < 0) {
             max_gain = 0;
-        else if (max_gain > 100)
+        } else if (max_gain > 100) {
             max_gain = 100;
+        }
 
         /* We'll scale it linearly with SDL_HAPTIC_GAIN_MAX */
         real_gain = (gain * max_gain) / 100;
@@ -747,7 +743,7 @@ SDL_HapticRumbleSupported(SDL_Haptic * haptic)
     }
 
     /* Most things can use SINE, but XInput only has LEFTRIGHT. */
-    return ((haptic->supported & (SDL_HAPTIC_SINE|SDL_HAPTIC_LEFTRIGHT)) != 0);
+    return (haptic->supported & (SDL_HAPTIC_SINE | SDL_HAPTIC_LEFTRIGHT)) != 0;
 }
 
 /*

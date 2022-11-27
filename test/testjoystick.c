@@ -118,7 +118,7 @@ loop(void *arg)
 
         case SDL_JOYDEVICEADDED:
             SDL_Log("Joystick device %d added.\n", (int) event.jdevice.which);
-            if (!joystick) {
+            if (joystick == NULL) {
                 joystick = SDL_JoystickOpen(event.jdevice.which);
                 if (joystick) {
                     PrintJoystick(joystick);
@@ -144,16 +144,21 @@ loop(void *arg)
         case SDL_JOYHATMOTION:
             SDL_Log("Joystick %" SDL_PRIs32 " hat %d value:",
                     event.jhat.which, event.jhat.hat);
-            if (event.jhat.value == SDL_HAT_CENTERED)
+            if (event.jhat.value == SDL_HAT_CENTERED) {
                 SDL_Log(" centered");
-            if (event.jhat.value & SDL_HAT_UP)
+            }
+            if (event.jhat.value & SDL_HAT_UP) {
                 SDL_Log(" up");
-            if (event.jhat.value & SDL_HAT_RIGHT)
+            }
+            if (event.jhat.value & SDL_HAT_RIGHT) {
                 SDL_Log(" right");
-            if (event.jhat.value & SDL_HAT_DOWN)
+            }
+            if (event.jhat.value & SDL_HAT_DOWN) {
                 SDL_Log(" down");
-            if (event.jhat.value & SDL_HAT_LEFT)
+            }
+            if (event.jhat.value & SDL_HAT_LEFT) {
                 SDL_Log(" left");
+            }
             SDL_Log("\n");
             break;
         case SDL_JOYBALLMOTION:

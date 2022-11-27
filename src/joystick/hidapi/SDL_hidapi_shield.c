@@ -107,9 +107,7 @@ HIDAPI_DriverShield_UnregisterHints(SDL_HintCallback callback, void *userdata)
 static SDL_bool
 HIDAPI_DriverShield_IsEnabled(void)
 {
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SHIELD,
-               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
-                   SDL_HIDAPI_DEFAULT));
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SHIELD, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
 static SDL_bool
@@ -124,7 +122,7 @@ HIDAPI_DriverShield_InitDevice(SDL_HIDAPI_Device *device)
     SDL_DriverShield_Context *ctx;
 
     ctx = (SDL_DriverShield_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -508,7 +506,7 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Byte 0 is HID report ID */
         switch (data[0]) {
             case k_ShieldReportIdControllerState:
-                if (!joystick) {
+                if (joystick == NULL) {
                     break;
                 }
                 if (size == 16) {
@@ -518,7 +516,7 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
                 }
                 break;
             case k_ShieldReportIdControllerTouch:
-                if (!joystick) {
+                if (joystick == NULL) {
                     break;
                 }
                 HIDAPI_DriverShield_HandleTouchPacketV103(joystick, ctx, data, size);
@@ -582,7 +580,7 @@ HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return (size >= 0);
+    return size >= 0;
 }
 
 static void

@@ -620,7 +620,7 @@ ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
-    return (0);
+    return 0;
 }
 
 static int

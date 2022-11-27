@@ -124,16 +124,16 @@ WINRT_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_OutOfMemory();
-        return (0);
+        return 0;
     }
 
     data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
-    if (!data) {
+    if (data == NULL) {
         SDL_OutOfMemory();
         SDL_free(device);
-        return (0);
+        return 0;
     }
     device->driverdata = data;
 
@@ -351,7 +351,7 @@ WINRT_AddDisplaysForOutput (_THIS, IDXGIAdapter1 * dxgiAdapter1, int outputIndex
         }
 
         dxgiModes = (DXGI_MODE_DESC *)SDL_calloc(numModes, sizeof(DXGI_MODE_DESC));
-        if ( ! dxgiModes) {
+        if (dxgiModes == NULL) {
             SDL_OutOfMemory();
             goto done;
         }
@@ -613,7 +613,7 @@ WINRT_IsCoreWindowActive(CoreWindow ^ coreWindow)
     if (coreWindow->CustomProperties->HasKey("SDLHelperWindowActivationState")) {
         CoreWindowActivationState activationState = \
             safe_cast<CoreWindowActivationState>(coreWindow->CustomProperties->Lookup("SDLHelperWindowActivationState"));
-        return (activationState != CoreWindowActivationState::Deactivated);
+        return activationState != CoreWindowActivationState::Deactivated;
     }
 
     /* Assume that non-SDL tracked windows are active, although this should

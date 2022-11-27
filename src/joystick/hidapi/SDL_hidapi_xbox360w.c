@@ -67,10 +67,7 @@ static SDL_bool
 HIDAPI_DriverXbox360W_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
-               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360,
-                   SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX,
-                       SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
-                           SDL_HIDAPI_DEFAULT))));
+                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT))));
 }
 
 static SDL_bool
@@ -146,7 +143,7 @@ HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
     HIDAPI_SetDeviceName(device, "Xbox 360 Wireless Controller");
 
     ctx = (SDL_DriverXbox360W_Context *)SDL_calloc(1, sizeof(*ctx));
-    if (!ctx) {
+    if (ctx == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
@@ -175,7 +172,7 @@ HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joysti
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
 
-    if (!ctx) {
+    if (ctx == NULL) {
         return;
     }
 
@@ -360,7 +357,7 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
         /* Read error, device is disconnected */
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
-    return (size >= 0);
+    return size >= 0;
 }
 
 static void

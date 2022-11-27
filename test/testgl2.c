@@ -229,7 +229,7 @@ main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
+    if (state == NULL) {
         return 1;
     }
     for (i = 1; i < argc;) {
@@ -405,8 +405,9 @@ main(int argc, char *argv[])
 
         for (i = 0; i < state->num_windows; ++i) {
             int w, h;
-            if (state->windows[i] == NULL)
+            if (state->windows[i] == NULL) {
                 continue;
+            }
             SDL_GL_MakeCurrent(state->windows[i], context);
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);

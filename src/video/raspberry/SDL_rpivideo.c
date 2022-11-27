@@ -351,7 +351,7 @@ RPI_DestroyWindow(_THIS, SDL_Window * window)
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
 
-    if(data) {
+    if (data) {
         if (data->double_buffer) {
             /* Wait for vsync, and then stop vsync callbacks and destroy related stuff, if needed */
             SDL_LockMutex(data->vsync_cond_mutex);

@@ -250,19 +250,19 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
         const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32) 1) << 16) | 5);
 
         /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
-        if (!retval && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
+        if (retval == NULL && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
             retval = _this->egl_data->eglGetProcAddress(proc);
         }
 
         #if !defined(__EMSCRIPTEN__) && !defined(SDL_VIDEO_DRIVER_VITA)  /* LoadFunction isn't needed on Emscripten and will call dlsym(), causing other problems. */
         /* Try SDL_LoadFunction() first for EGL <= 1.4, or as a fallback for >= 1.5. */
-        if (!retval) {
+        if (retval == NULL) {
             retval = SDL_LoadFunction(_this->egl_data->opengl_dll_handle, proc);
         }
         #endif
 
         /* Try eglGetProcAddress if we're on <= 1.4 and still searching... */
-        if (!retval && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
+        if (retval == NULL && !is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
             retval = _this->egl_data->eglGetProcAddress(proc);
         }
     }
@@ -611,8 +611,7 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
         if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
             return SDL_SetError("Could not initialize EGL");
         }
-    }
-    else {
+    } else {
         int i;
         SDL_bool found = SDL_FALSE;
         EGLDisplay attempted_egl_display;
@@ -818,8 +817,7 @@ SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
     }
 
     /* first ensure that a found config has a matching format, or the function will fall through. */
-    if (_this->egl_data->egl_required_visual_id)
-    {
+    if (_this->egl_data->egl_required_visual_id) {
         for (i = 0; i < found_configs; i++ ) {
             EGLint format;
             _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,

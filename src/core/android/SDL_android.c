@@ -734,7 +734,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     library_file = (*env)->GetStringUTFChars(env, library, NULL);
     library_handle = dlopen(library_file, RTLD_GLOBAL);
 
-    if (!library_handle) {
+    if (library_handle == NULL) {
         /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
            In this case we should use lib name without path. https://bugzilla.libsdl.org/show_bug.cgi?id=4739 */
         const char *library_name = SDL_strrchr(library_file, '/');
@@ -777,7 +777,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
                     }
                     (*env)->DeleteLocalRef(env, string);
                 }
-                if (!arg) {
+                if (arg == NULL) {
                     arg = SDL_strdup("");
                 }
                 argv[argc++] = arg;
@@ -874,8 +874,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         Android_SendResize(Android_Window);
     }
 
@@ -890,8 +889,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
 
     displayOrientation = (SDL_DisplayOrientation)orientation;
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_VideoDisplay *display = SDL_GetDisplay(0);
         SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
     }
@@ -1000,8 +998,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
 
         data->native_window = Android_JNI_GetNativeWindow();
@@ -1019,8 +1016,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
     SDL_LockMutex(Android_ActivityMutex);
 
 #if SDL_VIDEO_OPENGL_EGL
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData  *data  = (SDL_WindowData *) Android_Window->driverdata;
 
@@ -1045,8 +1041,7 @@ retry:
 
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window)
-    {
+    if (Android_Window) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData  *data  = (SDL_WindowData *) Android_Window->driverdata;
 
@@ -1880,7 +1875,7 @@ size_t Android_JNI_FileRead(SDL_RWops* ctx, void* buffer,
 
     if (result > 0) {
         /* Number of chuncks */
-        return (result / size);
+        return result / size;
     } else {
         /* Error or EOF */
         return result;
@@ -2265,7 +2260,7 @@ void *SDL_AndroidGetActivity(void)
     /* See SDL_system.h for caveats on using this function. */
 
     JNIEnv *env = Android_JNI_GetEnv();
-    if (!env) {
+    if (env == NULL) {
         return NULL;
     }
 
@@ -2319,7 +2314,7 @@ const char * SDL_AndroidGetInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
 
-    if (!s_AndroidInternalFilesPath) {
+    if (s_AndroidInternalFilesPath == NULL) {
         struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
         jmethodID mid;
         jobject context;
@@ -2412,7 +2407,7 @@ const char * SDL_AndroidGetExternalStoragePath(void)
 {
     static char *s_AndroidExternalFilesPath = NULL;
 
-    if (!s_AndroidExternalFilesPath) {
+    if (s_AndroidExternalFilesPath == NULL) {
         struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
         jmethodID mid;
         jobject context;

@@ -164,7 +164,7 @@ main(int argc, char *argv[])
      */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video subsystem: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
     {
         int status = 0;
@@ -172,8 +172,7 @@ main(int argc, char *argv[])
         intptr_t eventNumber = SDL_RegisterEvents(1);
         SDL_Thread* thread = SDL_CreateThread(&button_messagebox, "MessageBox", (void*)eventNumber);
 
-        while (SDL_WaitEvent(&event))
-        {
+        while (SDL_WaitEvent(&event)) {
             if (event.type == eventNumber) {
                 break;
             }
@@ -204,8 +203,7 @@ main(int argc, char *argv[])
             quit(1);
         }
 
-        while (SDL_WaitEvent(&event))
-        {
+        while (SDL_WaitEvent(&event)) {
             if (event.type == SDL_QUIT || event.type == SDL_KEYUP) {
                 break;
             }
@@ -213,5 +211,5 @@ main(int argc, char *argv[])
     }
 
     SDL_Quit();
-    return (0);
+    return 0;
 }

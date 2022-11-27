@@ -233,14 +233,15 @@ static struct SDL_wscons_compose_tab_s {
 
 static keysym_t ksym_upcase(keysym_t ksym)
 {
-    if (ksym >= KS_f1 && ksym <= KS_f20)
-        return(KS_F1 - KS_f1 + ksym);
+    if (ksym >= KS_f1 && ksym <= KS_f20) {
+        return KS_F1 - KS_f1 + ksym;
+    }
 
-    if (KS_GROUP(ksym) == KS_GROUP_Ascii && ksym <= 0xff &&
-            latin1_to_upper[ksym] != 0x00)
-        return(latin1_to_upper[ksym]);
+    if (KS_GROUP(ksym) == KS_GROUP_Ascii && ksym <= 0xff && latin1_to_upper[ksym] != 0x00) {
+        return latin1_to_upper[ksym];
+    }
 
-    return(ksym);
+    return ksym;
 }
 static struct wscons_keycode_to_SDL {
     keysym_t sourcekey;
@@ -414,7 +415,7 @@ static SDL_WSCONS_input_data* SDL_WSCONS_Init_Keyboard(const char* dev)
 #endif
     SDL_WSCONS_input_data* input = (SDL_WSCONS_input_data*)SDL_calloc(1, sizeof(SDL_WSCONS_input_data));
 
-    if (!input) {
+    if (input == NULL) {
         return input;
     }
     input->fd = open(dev,O_RDWR | O_NONBLOCK | O_CLOEXEC);
@@ -491,10 +492,12 @@ static void put_utf8(SDL_WSCONS_input_data* input, uint c)
         put_queue(input, 0xc0 | (c >> 6));
         put_queue(input, 0x80 | (c & 0x3f));
     } else if (c < 0x10000) {
-        if (c >= 0xD800 && c <= 0xF500)
+        if (c >= 0xD800 && c <= 0xF500) {
             return;
-        if (c == 0xFFFF)
+        }
+        if (c == 0xFFFF) {
             return;
+        }
         /* 1110**** 10****** 10****** */
         put_queue(input, 0xe0 | (c >> 12));
         put_queue(input, 0x80 | ((c >> 6) & 0x3f));
@@ -511,7 +514,9 @@ static void put_utf8(SDL_WSCONS_input_data* input, uint c)
 static void Translate_to_text(SDL_WSCONS_input_data* input, keysym_t ksym)
 {
     if (KS_GROUP(ksym) == KS_GROUP_Keypad) {
-        if (SDL_isprint(ksym & 0xFF)) ksym &= 0xFF;
+        if (SDL_isprint(ksym & 0xFF)) {
+            ksym &= 0xFF;
+        }
     }
     switch(ksym) {
     case KS_Escape:
@@ -569,7 +574,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
     keysym_t *group;
     keysym_t ksym, result;
 
-    if (!input) return;
+    if (input == NULL) {
+        return;
+    }
     if ((n = read(input->fd, events, sizeof(events))) > 0) {
         n /= sizeof(struct wscons_event);
         for (i = 0; i < n; i++) {
@@ -578,21 +585,27 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
             case WSCONS_EVENT_KEY_DOWN: {
                 switch (input->keymap.map[events[i].value].group1[0]) {
                 case KS_Hold_Screen: {
-                    if (input->lockheldstate[0] >= 1) break;
+                    if (input->lockheldstate[0] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= LED_SCR;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[0] = 1;
                     break;
                 }
                 case KS_Num_Lock: {
-                    if (input->lockheldstate[1] >= 1) break;
+                    if (input->lockheldstate[1] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= LED_NUM;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[1] = 1;
                     break;
                 }
                 case KS_Caps_Lock: {
-                    if (input->lockheldstate[2] >= 1) break;
+                    if (input->lockheldstate[2] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= LED_CAP;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[2] = 1;
@@ -600,7 +613,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                 }
 #ifndef __NetBSD__
                 case KS_Mode_Lock: {
-                    if (input->lockheldstate[3] >= 1) break;
+                    if (input->lockheldstate[3] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= 1 << 4;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[3] = 1;
@@ -608,50 +623,66 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                 }
 #endif
                 case KS_Shift_Lock: {
-                    if (input->lockheldstate[4] >= 1) break;
+                    if (input->lockheldstate[4] >= 1) {
+                                break;
+                    }
                     input->ledstate ^= 1 << 5;
                     ioctl(input->fd, WSKBDIO_SETLEDS, &input->ledstate);
                     input->lockheldstate[4] = 1;
                     break;
                 }
                 case KS_Shift_L: {
-                    if (input->shiftheldstate[0]) break;
+                    if (input->shiftheldstate[0]) {
+                                break;
+                    }
                     input->shiftstate[0]++;
                     input->shiftheldstate[0] = 1;
                     break;
                 }
                 case KS_Shift_R: {
-                    if (input->shiftheldstate[1]) break;
+                    if (input->shiftheldstate[1]) {
+                                break;
+                    }
                     input->shiftstate[0]++;
                     input->shiftheldstate[1] = 1;
                     break;
                 }
                 case KS_Alt_L: {
-                    if (input->shiftheldstate[2]) break;
+                    if (input->shiftheldstate[2]) {
+                                break;
+                    }
                     input->shiftstate[1]++;
                     input->shiftheldstate[2] = 1;
                     break;
                 }
                 case KS_Alt_R: {
-                    if (input->shiftheldstate[3]) break;
+                    if (input->shiftheldstate[3]) {
+                                break;
+                    }
                     input->shiftstate[1]++;
                     input->shiftheldstate[3] = 1;
                     break;
                 }
                 case KS_Control_L: {
-                    if (input->shiftheldstate[4]) break;
+                    if (input->shiftheldstate[4]) {
+                                break;
+                    }
                     input->shiftstate[2]++;
                     input->shiftheldstate[4] = 1;
                     break;
                 }
                 case KS_Control_R: {
-                    if (input->shiftheldstate[5]) break;
+                    if (input->shiftheldstate[5]) {
+                                break;
+                    }
                     input->shiftstate[2]++;
                     input->shiftheldstate[5] = 1;
                     break;
                 }
                 case KS_Mode_switch: {
-                    if (input->shiftheldstate[6]) break;
+                    if (input->shiftheldstate[6]) {
+                                break;
+                    }
                     input->shiftstate[3]++;
                     input->shiftheldstate[6] = 1;
                     break;
@@ -662,60 +693,84 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
             case WSCONS_EVENT_KEY_UP: {
                 switch(input->keymap.map[events[i].value].group1[0]) {
                 case KS_Hold_Screen: {
-                    if (input->lockheldstate[0]) input->lockheldstate[0] = 0;
+                    if (input->lockheldstate[0]) {
+                                input->lockheldstate[0] = 0;
+                    }
                 }
                 break;
                 case KS_Num_Lock: {
-                    if (input->lockheldstate[1]) input->lockheldstate[1] = 0;
+                    if (input->lockheldstate[1]) {
+                                input->lockheldstate[1] = 0;
+                    }
                 }
                 break;
                 case KS_Caps_Lock: {
-                    if (input->lockheldstate[2]) input->lockheldstate[2] = 0;
+                    if (input->lockheldstate[2]) {
+                                input->lockheldstate[2] = 0;
+                    }
                 }
                 break;
 #ifndef __NetBSD__
                 case KS_Mode_Lock: {
-                    if (input->lockheldstate[3]) input->lockheldstate[3] = 0;
+                    if (input->lockheldstate[3]) {
+                                input->lockheldstate[3] = 0;
+                    }
                 }
                 break;
 #endif
                 case KS_Shift_Lock: {
-                    if (input->lockheldstate[4]) input->lockheldstate[4] = 0;
+                    if (input->lockheldstate[4]) {
+                                input->lockheldstate[4] = 0;
+                    }
                 }
                 break;
                 case KS_Shift_L: {
                     input->shiftheldstate[0] = 0;
-                    if (input->shiftstate[0]) input->shiftstate[0]--;
+                    if (input->shiftstate[0]) {
+                                input->shiftstate[0]--;
+                    }
                     break;
                 }
                 case KS_Shift_R: {
                     input->shiftheldstate[1] = 0;
-                    if (input->shiftstate[0]) input->shiftstate[0]--;
+                    if (input->shiftstate[0]) {
+                                input->shiftstate[0]--;
+                    }
                     break;
                 }
                 case KS_Alt_L: {
                     input->shiftheldstate[2] = 0;
-                    if (input->shiftstate[1]) input->shiftstate[1]--;
+                    if (input->shiftstate[1]) {
+                                input->shiftstate[1]--;
+                    }
                     break;
                 }
                 case KS_Alt_R: {
                     input->shiftheldstate[3] = 0;
-                    if (input->shiftstate[1]) input->shiftstate[1]--;
+                    if (input->shiftstate[1]) {
+                                input->shiftstate[1]--;
+                    }
                     break;
                 }
                 case KS_Control_L: {
                     input->shiftheldstate[4] = 0;
-                    if (input->shiftstate[2]) input->shiftstate[2]--;
+                    if (input->shiftstate[2]) {
+                                input->shiftstate[2]--;
+                    }
                     break;
                 }
                 case KS_Control_R: {
                     input->shiftheldstate[5] = 0;
-                    if (input->shiftstate[2]) input->shiftstate[2]--;
+                    if (input->shiftstate[2]) {
+                                input->shiftstate[2]--;
+                    }
                     break;
                 }
                 case KS_Mode_switch: {
                     input->shiftheldstate[6] = 0;
-                    if (input->shiftstate[3]) input->shiftstate[3]--;
+                    if (input->shiftstate[3]) {
+                                input->shiftstate[3]--;
+                    }
                     break;
                 }
                 }
@@ -733,7 +788,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
             else 
                 Translate_to_keycode(input, type, events[i].value);
 
-            if (type == WSCONS_EVENT_KEY_UP) continue;
+            if (type == WSCONS_EVENT_KEY_UP) {
+                continue;
+            }
 
             if (IS_ALTGR_MODE && !IS_CONTROL_HELD)
                 group = &input->keymap.map[events[i].value].group2[0];
@@ -778,7 +835,9 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
                 } else result = ksym;
                 break;
             }
-            if (result == KS_voidSymbol) continue;
+            if (result == KS_voidSymbol) {
+                continue;
+            }
 
             if (input->composelen > 0) {
                 if (input->composelen == 2 && group == &input->keymap.map[events[i].value].group2[0]) {
@@ -809,21 +868,24 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
 
             if (KS_GROUP(result) == KS_GROUP_Ascii) {
                 if (IS_CONTROL_HELD) {
-                    if ((result >= KS_at && result <= KS_z) || result == KS_space)
+                    if ((result >= KS_at && result <= KS_z) || result == KS_space) {
                         result = result & 0x1f;
-                    else if (result == KS_2)
+                    } else if (result == KS_2) {
                         result = 0x00;
-                    else if (result >= KS_3 && result <= KS_7)
+                    } else if (result >= KS_3 && result <= KS_7) {
                         result = KS_Escape + (result - KS_3);
-                    else if (result == KS_8)
-                        result = KS_Delete;
+                    } else if (result == KS_8) {
+                       result = KS_Delete;
+                    }
                 }
                 if (IS_ALT_HELD) {
                     if (input->encoding & KB_METAESC) {
                         Translate_to_keycode(input, WSCONS_EVENT_KEY_DOWN, KS_Escape);
                         Translate_to_text(input, result);
                         continue;
-                    } else result |= 0x80;
+                    } else {
+                       result |= 0x80;
+                    }
                 }
             }
             Translate_to_text(input,result);
@@ -835,7 +897,10 @@ static void updateKeyboard(SDL_WSCONS_input_data* input)
 void SDL_WSCONS_PumpEvents()
 {
     int i = 0;
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++) {
         updateKeyboard(inputs[i]);
-    if (mouseInputData != NULL) updateMouse(mouseInputData);
+    }
+    if (mouseInputData != NULL) {
+        updateMouse(mouseInputData);
+    }
 }

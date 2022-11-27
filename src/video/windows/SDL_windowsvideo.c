@@ -552,7 +552,7 @@ SDL_Direct3D9GetAdapterIndex(int displayIndex)
         SDL_DisplayData *pData = (SDL_DisplayData *)SDL_GetDisplayDriverData(displayIndex);
         int adapterIndex = D3DADAPTER_DEFAULT;
 
-        if (!pData) {
+        if (pData == NULL) {
             SDL_SetError("Invalid display index");
             adapterIndex = -1; /* make sure we return something invalid */
         } else {
@@ -620,8 +620,12 @@ SDL_bool
 SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
 {
 #if !HAVE_DXGI_H
-    if (adapterIndex) *adapterIndex = -1;
-    if (outputIndex) *outputIndex = -1;
+    if (adapterIndex) {
+        *adapterIndex = -1;
+    }
+    if (outputIndex) {
+        *outputIndex = -1;
+    }
     SDL_SetError("SDL was compiled without DXGI support due to missing dxgi.h header");
     return SDL_FALSE;
 #else
@@ -633,12 +637,12 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput* pDXGIOutput;
 
-    if (!adapterIndex) {
+    if (adapterIndex == NULL) {
         SDL_InvalidParamError("adapterIndex");
         return SDL_FALSE;
     }
 
-    if (!outputIndex) {
+    if (outputIndex == NULL) {
         SDL_InvalidParamError("outputIndex");
         return SDL_FALSE;
     }
@@ -646,7 +650,7 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
     *adapterIndex = -1;
     *outputIndex = -1;
 
-    if (!pData) {
+    if (pData == NULL) {
         SDL_SetError("Invalid display index");
         return SDL_FALSE;
     }

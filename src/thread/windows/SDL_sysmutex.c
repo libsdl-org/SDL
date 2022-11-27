@@ -65,7 +65,7 @@ SDL_CreateMutex_srw(void)
 
     /* Relies on SRWLOCK_INIT == 0. */
     mutex = (SDL_mutex_srw *) SDL_calloc(1, sizeof(*mutex));
-    if (!mutex) {
+    if (mutex == NULL) {
         SDL_OutOfMemory();
     }
 

@@ -168,7 +168,7 @@ SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
         spot = (char *)hint;
     }
 
-    if (!spot) {
+    if (spot == NULL) {
         return;
     }
 
@@ -176,7 +176,7 @@ SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
         entry = (Uint16)SDL_strtol(spot, &spot, 0);
         entry <<= 16;
         spot = SDL_strstr(spot, "0x");
-        if (!spot) {
+        if (spot == NULL) {
             break;
         }
         entry |= (Uint16)SDL_strtol(spot, &spot, 0);
@@ -222,9 +222,9 @@ static SDL_bool HasSameOutput(SDL_ExtendedGameControllerBind *a, SDL_ExtendedGam
     }
 
     if (a->outputType == SDL_CONTROLLER_BINDTYPE_AXIS) {
-        return (a->output.axis.axis == b->output.axis.axis);
+        return a->output.axis.axis == b->output.axis.axis;
     } else {
-        return (a->output.button == b->output.button);
+        return a->output.button == b->output.button;
     }
 }
 
@@ -266,7 +266,7 @@ static void HandleJoystickAxis(SDL_GameController *gamecontroller, int axis, int
         }
     }
 
-    if (last_match && (!match || !HasSameOutput(last_match, match))) {
+    if (last_match && (match == NULL || !HasSameOutput(last_match, match))) {
         /* Clear the last input that this axis generated */
         ResetOutput(gamecontroller, last_match);
     }
@@ -549,8 +549,7 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(SDL_JoystickGU
         SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
     }
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string,
-                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
 }
 #endif /* __ANDROID__ */
 
@@ -681,8 +680,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
         }
     }
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string,
-                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
 }
 
 /*
@@ -696,8 +694,7 @@ static ControllerMapping_t *SDL_CreateMappingForRAWINPUTController(SDL_JoystickG
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
     SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,guide:b10,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string,
-                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
 }
 
 /*
@@ -715,8 +712,7 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
     SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:b10,dpdown:b12,dpleft:b13,dpright:b11,leftx:a1,lefty:a0~,rightx:a3,righty:a2~,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string,
-                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
 }
 
 /*
@@ -808,7 +804,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         return s_pXInputMapping;
     }
 #endif
-    if (!mapping) {
+    if (mapping == NULL) {
         if (SDL_IsJoystickHIDAPI(guid)) {
             mapping = SDL_CreateMappingForHIDAPIController(guid);
         } else if (SDL_IsJoystickRAWINPUT(guid)) {
@@ -847,13 +843,14 @@ SDL_GameControllerAxis SDL_GameControllerGetAxisFromString(const char *pchString
         ++pchString;
     }
 
-    if (!pchString || !pchString[0]) {
+    if (pchString == NULL || !pchString[0]) {
         return SDL_CONTROLLER_AXIS_INVALID;
     }
 
     for (entry = 0; map_StringForControllerAxis[entry]; ++entry) {
-        if (!SDL_strcasecmp(pchString, map_StringForControllerAxis[entry]))
-            return (SDL_GameControllerAxis) entry;
+        if (!SDL_strcasecmp(pchString, map_StringForControllerAxis[entry])) {
+            return (SDL_GameControllerAxis)entry;
+        }
     }
     return SDL_CONTROLLER_AXIS_INVALID;
 }
@@ -900,12 +897,14 @@ static const char* map_StringForControllerButton[] = {
 SDL_GameControllerButton SDL_GameControllerGetButtonFromString(const char *pchString)
 {
     int entry;
-    if (!pchString || !pchString[0])
+    if (pchString == NULL || !pchString[0]) {
         return SDL_CONTROLLER_BUTTON_INVALID;
+    }
 
     for (entry = 0; map_StringForControllerButton[entry]; ++entry) {
-        if (SDL_strcasecmp(pchString, map_StringForControllerButton[entry]) == 0)
-            return (SDL_GameControllerButton) entry;
+        if (SDL_strcasecmp(pchString, map_StringForControllerButton[entry]) == 0) {
+            return (SDL_GameControllerButton)entry;
+        }
     }
     return SDL_CONTROLLER_BUTTON_INVALID;
 }
@@ -1114,7 +1113,7 @@ static char *SDL_PrivateGetControllerGUIDFromMappingString(const char *pMapping)
     const char *pFirstComma = SDL_strchr(pMapping, ',');
     if (pFirstComma) {
         char *pchGUID = SDL_malloc(pFirstComma - pMapping + 1);
-        if (!pchGUID) {
+        if (pchGUID == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -1154,15 +1153,17 @@ static char *SDL_PrivateGetControllerNameFromMappingString(const char *pMapping)
     char *pchName;
 
     pFirstComma = SDL_strchr(pMapping, ',');
-    if (!pFirstComma)
+    if (pFirstComma == NULL) {
         return NULL;
+    }
 
     pSecondComma = SDL_strchr(pFirstComma + 1, ',');
-    if (!pSecondComma)
+    if (pSecondComma == NULL) {
         return NULL;
+    }
 
     pchName = SDL_malloc(pSecondComma - pFirstComma);
-    if (!pchName) {
+    if (pchName == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1180,12 +1181,14 @@ static char *SDL_PrivateGetControllerMappingFromMappingString(const char *pMappi
     const char *pFirstComma, *pSecondComma;
 
     pFirstComma = SDL_strchr(pMapping, ',');
-    if (!pFirstComma)
+    if (pFirstComma == NULL) {
         return NULL;
+    }
 
     pSecondComma = SDL_strchr(pFirstComma + 1, ',');
-    if (!pSecondComma)
+    if (pSecondComma == NULL) {
         return NULL;
+    }
 
     return SDL_strdup(pSecondComma + 1); /* mapping is everything after the 3rd comma */
 }
@@ -1225,13 +1228,13 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
     Uint16 crc;
 
     pchName = SDL_PrivateGetControllerNameFromMappingString(mappingString);
-    if (!pchName) {
+    if (pchName == NULL) {
         SDL_SetError("Couldn't parse name from %s", mappingString);
         return NULL;
     }
 
     pchMapping = SDL_PrivateGetControllerMappingFromMappingString(mappingString);
-    if (!pchMapping) {
+    if (pchMapping == NULL) {
         SDL_free(pchName);
         SDL_SetError("Couldn't parse %s", mappingString);
         return NULL;
@@ -1288,7 +1291,7 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
         *existing = SDL_TRUE;
     } else {
         pControllerMapping = SDL_malloc(sizeof(*pControllerMapping));
-        if (!pControllerMapping) {
+        if (pControllerMapping == NULL) {
             SDL_free(pchName);
             SDL_free(pchMapping);
             SDL_OutOfMemory();
@@ -1331,7 +1334,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
 
     mapping = SDL_PrivateGetControllerMappingForGUID(guid);
 #ifdef __LINUX__
-    if (!mapping && name) {
+    if (mapping == NULL && name) {
         if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
             /* The Linux driver xpad.c maps the wireless dpad to buttons */
             SDL_bool existing;
@@ -1344,7 +1347,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
     }
 #endif /* __LINUX__ */
 
-    if (!mapping) {
+    if (mapping == NULL) {
         mapping = s_pDefaultMapping;
     }
     return mapping;
@@ -1426,8 +1429,7 @@ static ControllerMapping_t *SDL_PrivateGenerateAutomaticControllerMapping(const 
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "lefttrigger", &raw_map->lefttrigger);
     SDL_PrivateAppendToMappingString(mapping, sizeof(mapping), "righttrigger", &raw_map->righttrigger);
 
-    return SDL_PrivateAddMappingForGUID(guid, mapping,
-                      &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+    return SDL_PrivateAddMappingForGUID(guid, mapping, &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
 }
 
 static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
@@ -1441,13 +1443,13 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
         SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
         SDL_UnlockJoysticks();
-        return (NULL);
+        return NULL;
     }
 
     name = SDL_JoystickNameForIndex(device_index);
     guid = SDL_JoystickGetDeviceGUID(device_index);
     mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
-    if (!mapping) {
+    if (mapping == NULL) {
         SDL_GamepadMapping raw_map;
 
         SDL_zero(raw_map);
@@ -1544,7 +1546,7 @@ SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMap
     SDL_bool existing = SDL_FALSE;
     ControllerMapping_t *pControllerMapping;
 
-    if (!mappingString) {
+    if (mappingString == NULL) {
         return SDL_InvalidParamError("mappingString");
     }
 
@@ -1611,7 +1613,7 @@ SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMap
 #endif
 
     pchGUID = SDL_PrivateGetControllerGUIDFromMappingString(mappingString);
-    if (!pchGUID) {
+    if (pchGUID == NULL) {
         return SDL_SetError("Couldn't parse GUID from %s", mappingString);
     }
     if (!SDL_strcasecmp(pchGUID, "default")) {
@@ -1623,7 +1625,7 @@ SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMap
     SDL_free(pchGUID);
 
     pControllerMapping = SDL_PrivateAddMappingForGUID(jGUID, mappingString, &existing, priority);
-    if (!pControllerMapping) {
+    if (pControllerMapping == NULL) {
         return -1;
     }
 
@@ -1691,7 +1693,7 @@ CreateMappingString(ControllerMapping_t *mapping, SDL_JoystickGUID guid)
     }
 
     pMappingString = SDL_malloc(needed);
-    if (!pMappingString) {
+    if (pMappingString == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1778,8 +1780,9 @@ SDL_GameControllerLoadHints()
             char *pchNewLine = NULL;
 
             pchNewLine = SDL_strchr(pUserMappings, '\n');
-            if (pchNewLine)
+            if (pchNewLine) {
                 *pchNewLine = '\0';
+            }
 
             SDL_PrivateGameControllerAddMapping(pUserMappings, SDL_CONTROLLER_MAPPING_PRIORITY_USER);
 
@@ -1841,7 +1844,7 @@ SDL_GameControllerInitMappings(void)
     SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
                         SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
 
-    return (0);
+    return 0;
 }
 
 int
@@ -1862,7 +1865,7 @@ SDL_GameControllerInit(void)
         }
     }
 
-    return (0);
+    return 0;
 }
 
 
@@ -1930,7 +1933,7 @@ SDL_GameControllerMappingForDeviceIndex(int joystick_index)
         /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
         needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
         pMappingString = SDL_malloc(needed);
-        if (!pMappingString) {
+        if (pMappingString == NULL) {
             SDL_OutOfMemory();
             SDL_UnlockJoysticks();
             return NULL;
@@ -2085,14 +2088,14 @@ SDL_GameControllerOpen(int device_index)
                 gamecontroller = gamecontrollerlist;
                 ++gamecontroller->ref_count;
                 SDL_UnlockJoysticks();
-                return (gamecontroller);
+                return gamecontroller;
         }
         gamecontrollerlist = gamecontrollerlist->next;
     }
 
     /* Find a controller mapping */
     pSupportedController =  SDL_PrivateGetControllerMapping(device_index);
-    if (!pSupportedController) {
+    if (pSupportedController == NULL) {
         SDL_SetError("Couldn't find mapping for device (%d)", device_index);
         SDL_UnlockJoysticks();
         return NULL;
@@ -2146,7 +2149,7 @@ SDL_GameControllerOpen(int device_index)
 
     SDL_UnlockJoysticks();
 
-    return (gamecontroller);
+    return gamecontroller;
 }
 
 /*
@@ -2377,7 +2380,7 @@ int SDL_GameControllerSetSensorEnabled(SDL_GameController *gamecontroller, SDL_S
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
     int i;
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return -1;
     }
 
@@ -2439,7 +2442,7 @@ SDL_GameControllerGetSensorDataRate(SDL_GameController *gamecontroller, SDL_Sens
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
     int i;
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return 0.0f;
     }
 
@@ -2471,7 +2474,7 @@ SDL_GameControllerGetSensorDataWithTimestamp(SDL_GameController *gamecontroller,
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
     int i;
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return -1;
     }
 
@@ -2507,7 +2510,7 @@ SDL_GameControllerPath(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return NULL;
     }
     return SDL_JoystickPath(joystick);
@@ -2518,7 +2521,7 @@ SDL_GameControllerGetType(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return SDL_CONTROLLER_TYPE_UNKNOWN;
     }
     return SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGetGUID(joystick), SDL_JoystickName(joystick));
@@ -2529,7 +2532,7 @@ SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return -1;
     }
     return SDL_JoystickGetPlayerIndex(joystick);
@@ -2543,7 +2546,7 @@ SDL_GameControllerSetPlayerIndex(SDL_GameController *gamecontroller, int player_
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return;
     }
     SDL_JoystickSetPlayerIndex(joystick, player_index);
@@ -2554,7 +2557,7 @@ SDL_GameControllerGetVendor(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return 0;
     }
     return SDL_JoystickGetVendor(joystick);
@@ -2565,7 +2568,7 @@ SDL_GameControllerGetProduct(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return 0;
     }
     return SDL_JoystickGetProduct(joystick);
@@ -2576,7 +2579,7 @@ SDL_GameControllerGetProductVersion(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return 0;
     }
     return SDL_JoystickGetProductVersion(joystick);
@@ -2587,7 +2590,7 @@ SDL_GameControllerGetFirmwareVersion(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return 0;
     }
     return SDL_JoystickGetFirmwareVersion(joystick);
@@ -2598,7 +2601,7 @@ SDL_GameControllerGetSerial(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return NULL;
     }
     return SDL_JoystickGetSerial(joystick);
@@ -2674,8 +2677,9 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForAxis(SDL_GameController
 
     CHECK_GAMECONTROLLER_MAGIC(gamecontroller, bind);
 
-    if (axis == SDL_CONTROLLER_AXIS_INVALID)
+    if (axis == SDL_CONTROLLER_AXIS_INVALID) {
         return bind;
+    }
 
     for (i = 0; i < gamecontroller->num_bindings; ++i) {
         SDL_ExtendedGameControllerBind *binding = &gamecontroller->bindings[i];
@@ -2708,8 +2712,9 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForButton(SDL_GameControll
 
     CHECK_GAMECONTROLLER_MAGIC(gamecontroller, bind);
 
-    if (button == SDL_CONTROLLER_BUTTON_INVALID)
+    if (button == SDL_CONTROLLER_BUTTON_INVALID) {
         return bind;
+    }
 
     for (i = 0; i < gamecontroller->num_bindings; ++i) {
         SDL_ExtendedGameControllerBind *binding = &gamecontroller->bindings[i];
@@ -2735,7 +2740,7 @@ SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequenc
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return -1;
     }
     return SDL_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
@@ -2746,7 +2751,7 @@ SDL_GameControllerRumbleTriggers(SDL_GameController *gamecontroller, Uint16 left
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return -1;
     }
     return SDL_JoystickRumbleTriggers(joystick, left_rumble, right_rumble, duration_ms);
@@ -2757,7 +2762,7 @@ SDL_GameControllerHasLED(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return SDL_FALSE;
     }
     return SDL_JoystickHasLED(joystick);
@@ -2768,7 +2773,7 @@ SDL_GameControllerHasRumble(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return SDL_FALSE;
     }
     return SDL_JoystickHasRumble(joystick);
@@ -2779,7 +2784,7 @@ SDL_GameControllerHasRumbleTriggers(SDL_GameController *gamecontroller)
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return SDL_FALSE;
     }
     return SDL_JoystickHasRumbleTriggers(joystick);
@@ -2790,7 +2795,7 @@ SDL_GameControllerSetLED(SDL_GameController *gamecontroller, Uint8 red, Uint8 gr
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return -1;
     }
     return SDL_JoystickSetLED(joystick, red, green, blue);
@@ -2801,7 +2806,7 @@ SDL_GameControllerSendEffect(SDL_GameController *gamecontroller, const void *dat
 {
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
 
-    if (!joystick) {
+    if (joystick == NULL) {
         return -1;
     }
     return SDL_JoystickSendEffect(joystick, data, size);
@@ -2812,8 +2817,9 @@ SDL_GameControllerClose(SDL_GameController *gamecontroller)
 {
     SDL_GameController *gamecontrollerlist, *gamecontrollerlistprev;
 
-    if (!gamecontroller || gamecontroller->magic != &gamecontroller_magic)
+    if (gamecontroller == NULL || gamecontroller->magic != &gamecontroller_magic) {
         return;
+    }
 
     SDL_LockJoysticks();
 
@@ -2917,7 +2923,7 @@ SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameContro
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
-    return (posted);
+    return posted;
 }
 
 
@@ -2946,7 +2952,7 @@ SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameCont
         break;
     default:
         /* Invalid state -- bail */
-        return (0);
+        return 0;
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
@@ -2957,12 +2963,12 @@ SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameCont
 
             if (gamecontroller->joystick->delayed_guide_button) {
                 /* Skip duplicate press */
-                return (0);
+                return 0;
             }
         } else {
             if (!SDL_TICKS_PASSED(now, gamecontroller->guide_button_down+SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS)) {
                 gamecontroller->joystick->delayed_guide_button = SDL_TRUE;
-                return (0);
+                return 0;
             }
             gamecontroller->joystick->delayed_guide_button = SDL_FALSE;
         }
@@ -2978,7 +2984,7 @@ SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameCont
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
-    return (posted);
+    return posted;
 }
 
 /*
@@ -3013,7 +3019,7 @@ SDL_GameControllerEventState(int state)
         }
         break;
     }
-    return (state);
+    return state;
 #endif /* SDL_EVENTS_DISABLED */
 }
 

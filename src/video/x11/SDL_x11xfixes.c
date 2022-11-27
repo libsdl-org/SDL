@@ -35,13 +35,13 @@ query_xfixes_version(Display *display, int major, int minor)
 {
     /* We don't care if this fails, so long as it sets major/minor on it's way out the door. */
     X11_XFixesQueryVersion(display, &major, &minor);
-    return ((major * 1000) + minor);
+    return (major * 1000) + minor;
 }
 
 static SDL_bool
 xfixes_version_atleast(const int version, const int wantmajor, const int wantminor)
 {
-    return (version >= ((wantmajor * 1000) + wantminor));
+    return version >= ((wantmajor * 1000) + wantminor);
 }
 
 void
