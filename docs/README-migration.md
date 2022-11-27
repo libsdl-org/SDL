@@ -169,6 +169,7 @@ Programs which have access to shaders can implement more robust versions of thos
 ## SDL_hints.h
 
 The following hints have been removed:
+* SDL_HINT_IDLE_TIMER_DISABLED (use SDL_DisableScreenSaver instead)
 * SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
 * SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
 * SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)

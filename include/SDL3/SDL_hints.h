@@ -557,23 +557,6 @@ extern "C" {
 #define SDL_HINT_HIDAPI_IGNORE_DEVICES "SDL_HIDAPI_IGNORE_DEVICES"
 
 /**
- *  \brief  A variable controlling whether the idle timer is disabled on iOS.
- *
- *  When an iOS app does not receive touches for some time, the screen is
- *  dimmed automatically. For games where the accelerometer is the only input
- *  this is problematic. This functionality can be disabled by setting this
- *  hint.
- *
- *  As of SDL 2.0.4, SDL_EnableScreenSaver() and SDL_DisableScreenSaver()
- *  accomplish the same thing on iOS. They should be preferred over this hint.
- *
- *  This variable can be set to the following values:
- *    "0"       - Enable idle timer
- *    "1"       - Disable idle timer
- */
-#define SDL_HINT_IDLE_TIMER_DISABLED "SDL_IOS_IDLE_TIMER_DISABLED"
-
-/**
  * \brief A variable to control whether certain IMEs should handle text editing internally instead of sending SDL_TEXTEDITING events.
  *
  * The variable can be set to the following values:

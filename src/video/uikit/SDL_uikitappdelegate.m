@@ -75,13 +75,6 @@ int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
     return exit_status;
 }
 
-static void SDLCALL
-SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    BOOL disable = (hint && *hint != '0');
-    [UIApplication sharedApplication].idleTimerDisabled = disable;
-}
-
 #if !TARGET_OS_TV
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
 static UIImage *
@@ -456,10 +449,6 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     /* Set working directory to resource path */
     [[NSFileManager defaultManager] changeCurrentDirectoryPath:[bundle resourcePath]];
-
-    /* register a callback for the idletimer hint */
-    SDL_AddHintCallback(SDL_HINT_IDLE_TIMER_DISABLED,
-                        SDL_IdleTimerDisabledChanged, NULL);
 
     SDL_SetMainReady();
     [self performSelector:@selector(postFinishLaunch) withObject:nil afterDelay:0.0];
