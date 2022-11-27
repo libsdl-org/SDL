@@ -25,8 +25,6 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/touch.h>
 
-#include "SDL_events.h"
-#include "SDL_log.h"
 #include "SDL_vitavideo.h"
 #include "SDL_vitatouch.h"
 #include "../../events/SDL_mouse_c.h"

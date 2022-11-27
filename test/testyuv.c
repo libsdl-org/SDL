@@ -9,8 +9,8 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL.h"
-#include "SDL_test_font.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_test_font.h>
 #include "testyuv_cvt.h"
 
 

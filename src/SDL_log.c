@@ -26,9 +26,6 @@
 
 /* Simple log messages in SDL */
 
-#include "SDL_error.h"
-#include "SDL_log.h"
-#include "SDL_mutex.h"
 #include "SDL_log_c.h"
 
 #if HAVE_STDIO_H

@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <dlfcn.h>
 
-#include "SDL_loadso.h"
 
 #if SDL_VIDEO_DRIVER_UIKIT
 #include "../../video/uikit/SDL_uikitvideo.h"

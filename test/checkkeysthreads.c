@@ -22,7 +22,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 int done;
 

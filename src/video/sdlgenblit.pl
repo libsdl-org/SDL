@@ -594,7 +594,6 @@ sub output_copyfunc_h
 sub output_copyinc
 {
     print FILE <<__EOF__;
-#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_blit_auto.h"
 

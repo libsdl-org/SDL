@@ -23,7 +23,6 @@
 
 #include "../SDL_sysvideo.h"
 
-#include "SDL_touch.h"
 
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
 @interface SDL_uikitview : UIView <UIPointerInteractionDelegate>

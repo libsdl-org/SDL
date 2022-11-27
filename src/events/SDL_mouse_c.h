@@ -23,7 +23,6 @@
 #ifndef SDL_mouse_c_h_
 #define SDL_mouse_c_h_
 
-#include "SDL_mouse.h"
 
 struct SDL_Cursor
 {

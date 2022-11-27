@@ -23,7 +23,6 @@
 #ifndef SDL_JOYSTICK_IOS_H
 #define SDL_JOYSTICK_IOS_H
 
-#include "SDL_stdinc.h"
 #include "../SDL_sysjoystick.h"
 
 @class GCController;

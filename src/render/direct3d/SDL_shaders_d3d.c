@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_render.h"
-#include "SDL_system.h"
 
 #if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
 

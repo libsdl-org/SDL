@@ -40,11 +40,6 @@
 #include <dirent.h>
 #include <linux/joystick.h>
 
-#include "SDL_hints.h"
-#include "SDL_joystick.h"
-#include "SDL_log.h"
-#include "SDL_endian.h"
-#include "SDL_timer.h"
 #include "../../events/SDL_events_c.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"

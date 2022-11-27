@@ -28,11 +28,11 @@
 #include <stdio.h>
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 /* These headers have system specific definitions, so aren't included above */
-#include "SDL_syswm.h"
-#include "SDL_vulkan.h"
+#include <SDL3/SDL_syswm.h>
+#include <SDL3/SDL_vulkan.h>
 
 /* This is the version of the dynamic API. This doesn't match the SDL version
    and should not change until there's been a major revamp in API/ABI.

@@ -12,7 +12,7 @@
 
 #include <stdlib.h>
 
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 
 static SDLTest_CommonState *state;
 

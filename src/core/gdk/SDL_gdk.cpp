@@ -21,11 +21,7 @@
 #include "../../SDL_internal.h"
 
 extern "C" {
-#include "SDL_system.h"
 #include "../windows/SDL_windows.h"
-#include "SDL_messagebox.h"
-#include "SDL_main.h"
-#include "SDL_events.h"
 #include "../../events/SDL_events_c.h"
 }
 #include <XGameRuntime.h>

@@ -29,7 +29,6 @@
 #include <sys/stat.h>
 #include <unistd.h> /* For close() */
 
-#include "SDL_stdinc.h"
 #include "SDL_audiodev_c.h"
 
 #ifndef _PATH_DEV_DSP

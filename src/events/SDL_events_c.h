@@ -25,8 +25,6 @@
 #include "../SDL_internal.h"
 
 /* Useful functions and variables from SDL_events.c */
-#include "SDL_events.h"
-#include "SDL_thread.h"
 #include "../video/SDL_sysvideo.h"
 
 #include "SDL_clipboardevents_c.h"

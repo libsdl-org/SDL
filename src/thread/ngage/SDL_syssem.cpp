@@ -24,8 +24,6 @@
 
 #include <e32std.h>
 
-#include "SDL_error.h"
-#include "SDL_thread.h"
 
 #define SDL_MUTEX_TIMEOUT -2
 

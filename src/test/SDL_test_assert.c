@@ -24,7 +24,7 @@
  Used by the test framework and test cases.
 
 */
-#include "SDL_test.h"
+#include <SDL3/SDL_test.h>
 
 /* Assert check message format */
 #define SDLTEST_ASSERT_CHECK_FORMAT "Assert '%s': %s"

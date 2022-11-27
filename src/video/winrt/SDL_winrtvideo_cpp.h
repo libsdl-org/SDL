@@ -26,8 +26,6 @@
 #endif
 
 /* SDL includes: */
-#include "SDL_video.h"
-#include "SDL_events.h"
 
 #if NTDDI_VERSION >= NTDDI_WINBLUE  /* ApplicationView's functionality only becomes
                                        useful for SDL in Win[Phone] 8.1 and up.

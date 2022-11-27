@@ -28,8 +28,6 @@
 
 /* CPU feature detection for SDL */
 
-#include "SDL_cpuinfo.h"
-#include "SDL_assert.h"
 
 #ifdef HAVE_SYSCONF
 #include <unistd.h>

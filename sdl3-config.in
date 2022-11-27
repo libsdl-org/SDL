@@ -46,7 +46,7 @@ while test $# -gt 0; do
       echo @SDL_VERSION@
       ;;
     --cflags)
-      echo -I@includedir@/SDL3 @SDL_CFLAGS@
+      echo -I@includedir@ -I@includedir@/SDL3 @SDL_CFLAGS@
       ;;
 @ENABLE_SHARED_TRUE@    --libs)
 @ENABLE_SHARED_TRUE@      echo -L@libdir@ @SDL_RLD_FLAGS@ @SDL_LIBS@

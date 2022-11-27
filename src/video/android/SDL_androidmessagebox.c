@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_ANDROID
 
-#include "SDL_messagebox.h"
 #include "SDL_androidmessagebox.h"
 #include "../../core/android/SDL_android.h"
 

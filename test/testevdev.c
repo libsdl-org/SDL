@@ -23,8 +23,6 @@ static int run_test(void);
 
 #include <stdint.h>
 
-#include "SDL_stdinc.h"
-#include "SDL_endian.h"
 #include "../src/core/linux/SDL_evdev_capabilities.h"
 #include "../src/core/linux/SDL_evdev_capabilities.c"
 

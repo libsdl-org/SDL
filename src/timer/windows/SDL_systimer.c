@@ -25,8 +25,6 @@
 #include "../../core/windows/SDL_windows.h"
 #include <mmsystem.h>
 
-#include "SDL_timer.h"
-#include "SDL_hints.h"
 
 
 /* The first (low-resolution) ticks value of the application */

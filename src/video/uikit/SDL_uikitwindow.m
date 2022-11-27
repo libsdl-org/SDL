@@ -22,10 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
-#include "SDL_hints.h"
-#include "SDL_mouse.h"
-#include "SDL_system.h"
-#include "SDL_video.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
@@ -39,7 +35,7 @@
 #include "SDL_uikitopenglview.h"
 
 #define SDL_ENABLE_SYSWM_UIKIT
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #include <Foundation/Foundation.h>
 

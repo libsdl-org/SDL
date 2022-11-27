@@ -13,7 +13,7 @@
 /* Definitions for platform dependent windowing functions to test SDL
    integration with native windows
 */
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 typedef struct
 {

@@ -22,7 +22,6 @@
 
 #if SDL_HAVE_BLIT_A
 
-#include "SDL_video.h"
 #include "SDL_blit.h"
 
 /* Functions to perform alpha blended blitting */

@@ -9,7 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 /* !!! FIXME: rewrite this to be wired in to test framework. */
 

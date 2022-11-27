@@ -25,8 +25,6 @@
 #include "../SDL_internal.h"
 
 /* Useful functions and variables from SDL_joystick.c */
-#include "SDL_gamecontroller.h"
-#include "SDL_joystick.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus

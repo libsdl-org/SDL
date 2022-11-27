@@ -36,8 +36,6 @@
 
 #include <sys/soundcard.h>
 
-#include "SDL_timer.h"
-#include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 #include "SDL_dspaudio.h"

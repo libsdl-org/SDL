@@ -24,7 +24,7 @@
   Data generators for fuzzing test data in a reproducible way.
 
 */
-#include "SDL_test.h"
+#include <SDL3/SDL_test.h>
 
 #include <float.h>      /* Needed for FLT_MAX and DBL_EPSILON */
 #include <limits.h>     /* Needed for UCHAR_MAX, etc. */

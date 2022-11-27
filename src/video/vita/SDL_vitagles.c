@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "SDL_error.h"
-#include "SDL_log.h"
 #include "SDL_vitavideo.h"
 #include "SDL_vitagles_c.h"
 

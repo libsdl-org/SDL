@@ -23,7 +23,6 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#include "SDL.h"
 #include <stdlib.h> /* fgets */
 #include <stdio.h> /* FILE, STDOUT_FILENO, fdopen, fclose */
 #include <unistd.h> /* pid_t, pipe, fork, close, dup2, execvp, _exit */

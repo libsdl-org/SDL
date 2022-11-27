@@ -1,13 +1,9 @@
 /*
     SDL_ps2_main.c, fjtrujy@gmail.com 
 */
-
-#include "SDL_platform.h"
+#include <SDL3/SDL.h>
 
 #ifdef __PS2__
-
-#include "SDL_main.h"
-#include "SDL_error.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

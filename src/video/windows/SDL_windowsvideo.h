@@ -51,8 +51,6 @@
 #endif
 
 #include "SDL_windowswindow.h"
-#include "SDL_events.h"
-#include "SDL_loadso.h"
 
 
 #if WINVER < 0x0601

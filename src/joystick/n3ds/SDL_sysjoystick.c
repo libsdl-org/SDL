@@ -27,7 +27,6 @@
 #include <3ds.h>
 
 #include "../SDL_sysjoystick.h"
-#include "SDL_events.h"
 
 #define NB_BUTTONS 23
 

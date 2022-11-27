@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_RISCOS
 
-#include "SDL_messagebox.h"
 #include "SDL_riscosmessagebox.h"
 
 #include <kernel.h>

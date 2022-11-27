@@ -20,7 +20,6 @@
 */
 
 #include "../../SDL_internal.h"
-#include "SDL_events.h"
 #include <sys/time.h>
 #include <dev/wscons/wsconsio.h>
 #include <unistd.h>

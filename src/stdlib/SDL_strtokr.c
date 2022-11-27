@@ -24,7 +24,6 @@
 
 #include "../SDL_internal.h"
 
-#include "SDL_stdinc.h"
 
 char *SDL_strtokr(char *s1, const char *s2, char **ptr)
 {

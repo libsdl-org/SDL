@@ -41,8 +41,6 @@
    data sources.  It can easily be extended to files, memory, etc.
 */
 
-#include "SDL_endian.h"
-#include "SDL_rwops.h"
 
 #ifdef __APPLE__
 #include "cocoa/SDL_rwopsbundlesupport.h"
@@ -54,7 +52,6 @@
 
 #ifdef __ANDROID__
 #include "../core/android/SDL_android.h"
-#include "SDL_system.h"
 #endif
 
 #if defined(__WIN32__) || defined(__GDK__)

@@ -22,11 +22,10 @@
 
 #if SDL_VIDEO_DRIVER_RISCOS
 
-#include "SDL_version.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"

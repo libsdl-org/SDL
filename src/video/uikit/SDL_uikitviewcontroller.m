@@ -22,8 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
-#include "SDL_video.h"
-#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 

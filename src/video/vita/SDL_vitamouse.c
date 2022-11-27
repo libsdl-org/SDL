@@ -26,9 +26,6 @@
 #include <psp2/ctrl.h>
 #include <psp2/hid.h>
 
-#include "SDL_events.h"
-#include "SDL_log.h"
-#include "SDL_mouse.h"
 #include "SDL_vitavideo.h"
 #include "SDL_vitamouse_c.h"
 #include "../../events/SDL_mouse_c.h"

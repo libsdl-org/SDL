@@ -23,8 +23,6 @@
 #ifndef SDL_keyboard_c_h_
 #define SDL_keyboard_c_h_
 
-#include "SDL_keycode.h"
-#include "SDL_events.h"
 
 /* Initialize the keyboard subsystem */
 extern int SDL_KeyboardInit(void);

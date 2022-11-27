@@ -9,7 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 /*
  * Watcom C flags these as Warning 201: "Unreachable code" if you just

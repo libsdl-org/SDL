@@ -26,7 +26,6 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include "SDL_thread.h"
 #include "SDL_sysmutex_c.h"
 
 struct SDL_cond

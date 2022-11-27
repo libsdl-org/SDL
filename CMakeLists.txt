@@ -2922,7 +2922,7 @@ endif()
 listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
-file(GLOB SDL3_INCLUDE_FILES ${SDL3_SOURCE_DIR}/include/*.h)
+file(GLOB SDL3_INCLUDE_FILES ${SDL3_SOURCE_DIR}/include/SDL3/*.h)
 foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
   if(_hdr MATCHES ".*SDL_revision.h")
     list(REMOVE_ITEM SDL3_INCLUDE_FILES "${_hdr}")
@@ -2963,8 +2963,9 @@ else()
   set(SDL_REVISION "SDL-${SDL_VERSION}-no-vcs")
 endif()
 
+execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${SDL3_BINARY_DIR}/include/SDL3")
 configure_file("${SDL3_SOURCE_DIR}/include/build_config/SDL_revision.h.cmake"
-  "${SDL3_BINARY_DIR}/include/SDL_revision.h")
+  "${SDL3_BINARY_DIR}/include/SDL3/SDL_revision.h")
 
 if(CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQUAL ".lib")
   # Avoid conflict between the dll import library and the static library
@@ -3454,7 +3455,7 @@ if(NOT SDL3_DISABLE_INSTALL)
   install(
     FILES
       ${SDL3_INCLUDE_FILES}
-      "${SDL3_BINARY_DIR}/include/SDL_revision.h"
+      "${SDL3_BINARY_DIR}/include/SDL3/SDL_revision.h"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3)
 
   install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")

@@ -6,7 +6,7 @@
 #ifndef _testsuites_h
 #define _testsuites_h
 
-#include "SDL_test.h"
+#include <SDL3/SDL_test.h>
 
 /* Test collections */
 extern SDLTest_TestSuiteReference audioTestSuite;

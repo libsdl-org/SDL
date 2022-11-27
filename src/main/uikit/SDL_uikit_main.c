@@ -1,9 +1,7 @@
 /*
     SDL_uikit_main.c, placed in the public domain by Sam Lantinga  3/18/2019
 */
-
-/* Include the SDL main definition header */
-#include "SDL_main.h"
+#include <SDL3/SDL.h>
 
 #if defined(__IOS__) || defined(__TVOS__)
 

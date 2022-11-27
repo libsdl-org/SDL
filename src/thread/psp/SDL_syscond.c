@@ -28,7 +28,6 @@
    implementation, written by Christopher Tate and Owen Smith.  Thanks!
  */
 
-#include "SDL_thread.h"
 
 struct SDL_cond
 {

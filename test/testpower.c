@@ -11,7 +11,7 @@
 */
 /* Simple test of power subsystem. */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 static void
 report_power(void)

@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_render.h"
-#include "SDL_system.h"
 
 #if SDL_VIDEO_RENDER_D3D12 && !SDL_RENDER_DISABLED
 
@@ -32,13 +30,11 @@
 
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/windows/SDL_windowswindow.h"
-#include "SDL_hints.h"
-#include "SDL_loadso.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 
 #define SDL_ENABLE_SYSWM_WINDOWS
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
 #include "SDL_render_d3d12_xbox.h"

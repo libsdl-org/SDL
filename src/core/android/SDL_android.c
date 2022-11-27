@@ -20,16 +20,9 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_stdinc.h"
-#include "SDL_atomic.h"
-#include "SDL_hints.h"
-#include "SDL_main.h"
-#include "SDL_timer.h"
-#include "SDL_version.h"
 
 #ifdef __ANDROID__
 
-#include "SDL_system.h"
 #include "SDL_android.h"
 
 #include "../../events/SDL_events_c.h"

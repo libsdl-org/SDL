@@ -18,7 +18,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 SDL_Window *window;
 SDL_Renderer *renderer;

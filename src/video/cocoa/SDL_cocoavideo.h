@@ -23,13 +23,12 @@
 #ifndef SDL_cocoavideo_h_
 #define SDL_cocoavideo_h_
 
-#include "SDL_opengl.h"
+#include <SDL3/SDL_opengl.h>
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <Cocoa/Cocoa.h>
 
-#include "SDL_keycode.h"
 #include "../SDL_sysvideo.h"
 
 #include "SDL_cocoaclipboard.h"

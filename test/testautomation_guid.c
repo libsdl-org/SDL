@@ -2,8 +2,8 @@
  * GUID test suite
  */
 
-#include "SDL.h"
-#include "SDL_test.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_test.h>
 
 /* ================= Test Case Implementation ================== */
 

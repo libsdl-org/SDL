@@ -31,8 +31,6 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-#include "SDL_events.h"
-#include "SDL_error.h"
 
 /* Current pad state */
 static SceCtrlData pad = { .Lx = 0, .Ly = 0, .Buttons = 0 };

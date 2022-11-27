@@ -9,13 +9,13 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 
 #ifdef HAVE_OPENGL
 
 #include <stdlib.h>
 
-#include "SDL_opengl.h"
+#include <SDL3/SDL_opengl.h>
 
 typedef struct GL_Context
 {

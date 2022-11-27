@@ -23,8 +23,6 @@
 #ifndef SDL_androidvideo_h_
 #define SDL_androidvideo_h_
 
-#include "SDL_mutex.h"
-#include "SDL_rect.h"
 #include "../SDL_sysvideo.h"
 
 /* Called by the JNI layer when the screen changes size or format */

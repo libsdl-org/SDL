@@ -25,8 +25,6 @@
 /* This is the system specific header for the SDL sensor API */
 #include <CoreMotion/CoreMotion.h>
 
-#include "SDL_error.h"
-#include "SDL_sensor.h"
 #include "SDL_coremotionsensor.h"
 #include "../SDL_syssensor.h"
 #include "../SDL_sensor_c.h"

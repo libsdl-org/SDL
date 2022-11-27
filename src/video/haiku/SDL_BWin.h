@@ -27,10 +27,9 @@ extern "C" {
 #endif
 
 #include "../../SDL_internal.h"
-#include "SDL.h"
 #include "SDL_bframebuffer.h"
 
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #ifdef __cplusplus
 }
@@ -43,7 +42,6 @@ extern "C" {
 #if SDL_VIDEO_OPENGL
 #include <opengl/GLView.h>
 #endif
-#include "SDL_events.h"
 #include "../../main/haiku/SDL_BApp.h"
 
 

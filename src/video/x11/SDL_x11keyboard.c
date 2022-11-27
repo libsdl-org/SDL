@@ -22,8 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
-#include "SDL_hints.h"
-#include "SDL_misc.h"
 #include "SDL_x11video.h"
 
 #include "../../events/SDL_keyboard_c.h"

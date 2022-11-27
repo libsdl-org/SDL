@@ -33,8 +33,6 @@
 
 #include "SDL_BApp.h"   /* SDL_BApp class definition */
 #include "SDL_BeApp.h"
-#include "SDL_timer.h"
-#include "SDL_error.h"
 
 #include "../../video/haiku/SDL_BWin.h"
 

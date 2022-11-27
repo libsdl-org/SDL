@@ -11,7 +11,7 @@
 */
 
 /* Program to test surround sound audio channels */
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 static int total_channels;
 static int active_channel;

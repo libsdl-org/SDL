@@ -24,7 +24,6 @@
 #ifndef SDL_poll_h_
 #define SDL_poll_h_
 
-#include "SDL_stdinc.h"
 
 #define SDL_IOR_READ           0x1
 #define SDL_IOR_WRITE          0x2

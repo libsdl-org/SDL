@@ -23,9 +23,6 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#include "SDL_stdinc.h"
-#include "SDL_timer.h"
-#include "SDL_hints.h"
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"

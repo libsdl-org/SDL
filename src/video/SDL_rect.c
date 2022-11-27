@@ -20,7 +20,6 @@
 */
 #include "../SDL_internal.h"
 
-#include "SDL_rect.h"
 #include "SDL_rect_c.h"
 
 /* There's no float version of this at the moment, because it's not a public API

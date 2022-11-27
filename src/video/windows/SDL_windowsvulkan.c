@@ -31,11 +31,10 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 
-#include "SDL_loadso.h"
 #include "SDL_windowsvulkan.h"
 
 #define SDL_ENABLE_SYSWM_WINDOWS
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
 {

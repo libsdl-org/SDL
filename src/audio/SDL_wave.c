@@ -33,8 +33,6 @@
 
 /* Microsoft WAVE file loading routines */
 
-#include "SDL_hints.h"
-#include "SDL_audio.h"
 #include "SDL_wave.h"
 #include "SDL_audio_c.h"
 

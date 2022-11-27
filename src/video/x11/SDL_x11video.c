@@ -24,10 +24,6 @@
 
 #include <unistd.h> /* For getpid() and readlink() */
 
-#include "SDL_video.h"
-#include "SDL_mouse.h"
-#include "SDL_timer.h"
-#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 

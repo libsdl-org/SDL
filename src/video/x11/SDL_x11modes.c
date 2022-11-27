@@ -22,9 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
-#include "SDL_hints.h"
 #include "SDL_x11video.h"
-#include "SDL_timer.h"
 #include "edid.h"
 
 /* #define X11MODES_DEBUG */

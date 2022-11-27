@@ -37,14 +37,11 @@
  *  SDL video driver.  Renamed to "PS2" by Sam Lantinga.
  */
 
-#include "SDL_video.h"
-#include "SDL_mouse.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_ps2video.h"
-#include "SDL_hints.h"
 
 /* PS2 driver bootstrap functions */
 

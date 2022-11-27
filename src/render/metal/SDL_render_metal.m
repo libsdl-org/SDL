@@ -22,8 +22,6 @@
 
 #if SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED
 
-#include "SDL_hints.h"
-#include "SDL_metal.h"
 #include "../SDL_sysrender.h"
 
 #include <Availability.h>
@@ -39,7 +37,7 @@
 #import <UIKit/UIKit.h>
 #define SDL_ENABLE_SYSWM_UIKIT
 #endif
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 /* Regenerate these with build-metal-shaders.sh */
 #ifdef __MACOS__

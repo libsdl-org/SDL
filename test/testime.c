@@ -13,12 +13,12 @@
    If you build without SDL_ttf, you can use the GNU Unifont hex file instead.
    Download at http://unifoundry.com/unifont.html */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #ifdef HAVE_SDL_TTF
 #include "SDL_ttf.h"
 #endif
 
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 #include "testutils.h"
 
 #define DEFAULT_PTSIZE 30

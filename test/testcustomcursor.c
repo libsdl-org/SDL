@@ -15,7 +15,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 
 /* Stolen from the mailing list */
 /* Creates a new mouse cursor from an XPM */

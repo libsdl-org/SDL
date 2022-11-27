@@ -25,7 +25,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent library loading routines                           */
 
-#include "SDL_loadso.h"
 
 void *
 SDL_LoadObject(const char *sofile)

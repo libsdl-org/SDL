@@ -24,7 +24,6 @@
 
 #include <e32std.h>
 
-#include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 
 struct SDL_mutex

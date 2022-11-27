@@ -23,8 +23,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL_joystick.h"
-#include "SDL_gamecontroller.h"
 #include "SDL_hidapijoystick_c.h"
 #include "../SDL_sysjoystick.h"
 

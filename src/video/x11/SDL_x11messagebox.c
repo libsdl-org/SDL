@@ -23,7 +23,6 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
-#include "SDL.h"
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
 #include "SDL_x11messagebox.h"

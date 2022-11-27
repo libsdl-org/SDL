@@ -23,9 +23,6 @@
 #ifndef SDL_sysrender_h_
 #define SDL_sysrender_h_
 
-#include "SDL_render.h"
-#include "SDL_events.h"
-#include "SDL_mutex.h"
 #include "SDL_yuv_sw_c.h"
 
 /* Set up for C function definitions, even when using C++ */

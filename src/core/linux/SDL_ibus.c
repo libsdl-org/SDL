@@ -21,8 +21,6 @@
 #include "../../SDL_internal.h"
 
 #ifdef HAVE_IBUS_IBUS_H
-#include "SDL.h"
-#include "SDL_hints.h"
 #include "SDL_ibus.h"
 #include "SDL_dbus.h"
 #include "../../video/SDL_sysvideo.h"
@@ -32,7 +30,7 @@
 #include "../../video/x11/SDL_x11video.h"
 #define SDL_ENABLE_SYSWM_X11
 #endif
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #include <sys/inotify.h>
 #include <unistd.h>

@@ -30,12 +30,11 @@
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoawindow.h"
 
-#include "SDL_loadso.h"
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoavulkan.h"
 
 #define SDL_ENABLE_SYSWM_COCOA
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #include <dlfcn.h>
 

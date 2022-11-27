@@ -28,8 +28,6 @@
 #include <stdlib.h>
 #include <timer_alarm.h>
 
-#include "SDL_error.h"
-#include "SDL_thread.h"
 
 #include <kernel.h>
 

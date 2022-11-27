@@ -20,7 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_thread.h"
 
 #ifndef SDL_syscond_generic_h_
 #define SDL_syscond_generic_h_

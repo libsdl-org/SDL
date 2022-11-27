@@ -21,7 +21,6 @@
 #include "../../SDL_internal.h"
 
 #include "SDL_evdev_kbd.h"
-#include "SDL_hints.h"
 
 #ifdef SDL_INPUT_LINUXKD
 

@@ -24,7 +24,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #include "SDL_ngagevideo.h"
 

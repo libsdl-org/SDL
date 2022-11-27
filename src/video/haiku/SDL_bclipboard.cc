@@ -28,7 +28,6 @@
 #include <TypeConstants.h>
 
 #include "SDL_BWin.h"
-#include "SDL_timer.h"
 #include "../SDL_sysvideo.h"
 
 #ifdef __cplusplus

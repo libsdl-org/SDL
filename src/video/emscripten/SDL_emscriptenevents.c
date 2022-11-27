@@ -34,7 +34,6 @@
 #include "SDL_emscriptenevents.h"
 #include "SDL_emscriptenvideo.h"
 
-#include "SDL_hints.h"
 
 #define FULLSCREEN_MASK ( SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN )
 

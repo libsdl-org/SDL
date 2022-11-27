@@ -24,7 +24,6 @@
 
 #include "../../events/SDL_events_c.h"
 
-#include "SDL_log.h"
 #include "SDL_riscosvideo.h"
 #include "SDL_riscosevents_c.h"
 #include "scancodes_riscos.h"

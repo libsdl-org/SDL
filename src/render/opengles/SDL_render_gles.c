@@ -22,9 +22,8 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES && !SDL_RENDER_DISABLED
 
-#include "SDL_hints.h"
 #include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
-#include "SDL_opengles.h"
+#include <SDL3/SDL_opengles.h>
 #include "../SDL_sysrender.h"
 #include "../../SDL_utils_c.h"
 

@@ -13,7 +13,7 @@
 /* Test program to check the resolution of the SDL timer on the current
    platform
 */
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #define DEFAULT_RESOLUTION  1
 

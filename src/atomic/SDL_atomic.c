@@ -20,7 +20,6 @@
 */
 #include "../SDL_internal.h"
 
-#include "SDL_atomic.h"
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1500)
 #include <intrin.h>

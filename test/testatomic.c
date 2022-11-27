@@ -9,7 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 /*
   Absolutely basic tests just to see if we get the expected value

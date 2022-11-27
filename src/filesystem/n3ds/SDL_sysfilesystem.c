@@ -29,8 +29,6 @@
 #include <dirent.h>
 #include <errno.h>
 
-#include "SDL_error.h"
-#include "SDL_filesystem.h"
 
 SDL_FORCE_INLINE char *MakePrefPath(const char *app);
 SDL_FORCE_INLINE int CreatePrefPathDir(const char *pref);

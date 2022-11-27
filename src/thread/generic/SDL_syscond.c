@@ -26,7 +26,6 @@
    implementation, written by Christopher Tate and Owen Smith.  Thanks!
  */
 
-#include "SDL_thread.h"
 
 #include "../generic/SDL_syscond_c.h"
 

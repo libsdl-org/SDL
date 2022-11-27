@@ -24,7 +24,6 @@
 
 #include "SDL_uikitview.h"
 
-#include "SDL_hints.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/SDL_events_c.h"

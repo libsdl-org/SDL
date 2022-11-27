@@ -27,8 +27,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "SDL_timer.h"
-#include "SDL_hints.h"
 #include "../SDL_timer_c.h"
 
 #ifdef __EMSCRIPTEN__

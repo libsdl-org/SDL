@@ -34,8 +34,6 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-#include "SDL_events.h"
-#include "SDL_error.h"
 
 #define PS2_MAX_PORT 2 /* each ps2 has 2 ports */
 #define PS2_MAX_SLOT 4 /* maximum - 4 slots in one multitap */

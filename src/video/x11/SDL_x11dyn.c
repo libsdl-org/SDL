@@ -32,8 +32,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
 
-#include "SDL_name.h"
-#include "SDL_loadso.h"
+#include <SDL3/SDL_name.h>
 
 typedef struct
 {

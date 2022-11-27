@@ -18,13 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include <SDL3/SDL.h>
 
 /* Include this so we define UNICODE properly */
 #include "../../core/windows/SDL_windows.h"
-
-/* Include the SDL main definition header */
-#include "SDL.h"
-#include "SDL_main.h"
 
 #ifdef main
 #  undef main

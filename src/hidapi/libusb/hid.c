@@ -29,9 +29,6 @@
 
 #include "../../SDL_internal.h"
 #include "../../thread/SDL_systhread.h"
-#include "SDL_hints.h"
-#include "SDL_mutex.h"
-#include "SDL_thread.h"
 
 #ifdef realloc
 #undef realloc

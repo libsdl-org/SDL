@@ -18,8 +18,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL_test.h"
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test.h>
+#include <SDL3/SDL_test_common.h>
 #include "testutils.h"
 
 #define NUM_SPRITES    100

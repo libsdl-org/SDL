@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_hints.h"
-#include "SDL_thread.h"
 
 #include "../generic/SDL_syscond_c.h"
 #include "SDL_sysmutex_c.h"

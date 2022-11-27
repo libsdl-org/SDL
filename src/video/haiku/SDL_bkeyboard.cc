@@ -29,8 +29,6 @@
 extern "C" {
 #endif
 
-#include "SDL_events.h"
-#include "SDL_keycode.h"
 
 #include "SDL_bkeyboard.h"
 

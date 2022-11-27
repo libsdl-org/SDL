@@ -27,7 +27,6 @@
 #include "SDL_winrtvideo_cpp.h"
 extern "C" {
 #include "SDL_winrtopengles.h"
-#include "SDL_loadso.h"
 #include "../SDL_egl_c.h"
 }
 

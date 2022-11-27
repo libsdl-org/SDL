@@ -30,10 +30,9 @@
 
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
-#include "SDL_hints.h"
 
 #define SDL_ENABLE_SYSWM_ANDROID
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 /* Currently only one window */
 SDL_Window *Android_Window = NULL;

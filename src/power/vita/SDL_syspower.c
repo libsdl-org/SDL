@@ -24,7 +24,6 @@
 #ifndef SDL_POWER_DISABLED
 #if SDL_POWER_VITA
 
-#include "SDL_power.h"
 #include <psp2/power.h>
 
 

@@ -40,7 +40,6 @@
 #define APM_DEVICE_ALL 1
 #define APM_BIOS_CALL (B_DEVICE_OP_CODES_END + 3)
 
-#include "SDL_power.h"
 
 SDL_bool
 SDL_GetPowerInfo_Haiku(SDL_PowerState * state, int *seconds, int *percent)
