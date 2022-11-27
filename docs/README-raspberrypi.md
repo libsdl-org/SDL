@@ -87,7 +87,7 @@ The final step is compiling SDL itself.
 
 To be able to deploy this to /usr/local in the Raspbian system you need to fix up a few paths:
     
-    perl -w -pi -e "s#$PWD/rpi-sdl3-installed#/usr/local#g;" ./rpi-sdl3-installed/lib/libSDL3.la ./rpi-sdl3-installed/lib/pkgconfig/sdl3.pc ./rpi-sdl3-installed/bin/sdl3-config
+    perl -w -pi -e "s#$PWD/rpi-sdl3-installed#/usr/local#g;" ./rpi-sdl3-installed/lib/libSDL3.la ./rpi-sdl3-installed/lib/pkgconfig/sdl3.pc
     
 Apps don't work or poor video/audio performance
 -----------------------------------------------

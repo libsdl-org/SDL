@@ -321,8 +321,7 @@ if(MSVC)
   endif()
 endif()
 
-# Those are used for pkg-config and friends, so that the sdl3.pc, sdl3-config,
-# etc. are created correctly.
+# Those are used for pkg-config so sdl3.pc is created correctly.
 set(SDL_LIBS "-lSDL3")
 set(SDL_CFLAGS )
 
@@ -3023,8 +3022,6 @@ endif()
 
 configure_file("${SDL3_SOURCE_DIR}/sdl3.pc.in"
   "${SDL3_BINARY_DIR}/sdl3.pc" @ONLY)
-configure_file("${SDL3_SOURCE_DIR}/sdl3-config.in"
-  "${SDL3_BINARY_DIR}/sdl3-config" @ONLY)
 
 macro(check_add_debug_flag FLAG SUFFIX)
     check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
@@ -3465,11 +3462,6 @@ if(NOT SDL3_DISABLE_INSTALL)
   else()
     install(FILES ${SDL3_BINARY_DIR}/sdl3.pc
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-  endif()
-  if(NOT (WINDOWS OR CYGWIN) OR MINGW)
-    install(PROGRAMS ${SDL3_BINARY_DIR}/sdl3-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
-    # TODO: what about the .spec file? Is it only needed for RPM creation?
-    install(FILES "${SDL3_SOURCE_DIR}/sdl3.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
   endif()
 endif()
 

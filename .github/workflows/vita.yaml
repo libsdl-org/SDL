@@ -41,11 +41,6 @@ jobs:
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
           -DCMAKE_BUILD_TYPE=Release
         cmake --build cmake_config_build --verbose
-    - name: Verify sdl3-config
-      run: |
-        export CC=arm-vita-eabi-gcc
-        export PATH=${{ env.SDL3_DIR }}/bin:$PATH
-        cmake/test/test_sdlconfig.sh
     - name: Verify sdl3.pc
       run: |
         export CC=arm-vita-eabi-gcc

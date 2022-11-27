@@ -76,12 +76,11 @@ NSApplicationDelegate implementation:
 
 # Using the Simple DirectMedia Layer with a traditional Makefile
 
-An existing build system for your SDL app has good chances
-
-to work almost unchanged on macOS. However, to produce a "real" Mac binary
-that you can distribute to users, you need to put the generated binary into a
-so called "bundle", which is basically a fancy folder with a name like
-"MyCoolGame.app".
+An existing build system for your SDL app has good chances to work almost
+unchanged on macOS, as long as you link with the SDL framework. However,
+to produce a "real" Mac binary that you can distribute to users, you need
+to put the generated binary into a so called "bundle", which is basically
+a fancy folder with a name like "MyCoolGame.app".
 
 To get this build automatically, add something like the following rule to
 your Makefile.am:
@@ -124,24 +123,8 @@ But beware! That is only part of the story! With the above, you end up with
 a barebones .app bundle, which is double-clickable from the Finder. But
 there are some more things you should do before shipping your product...
 
-1. The bundle right now probably is dynamically linked against SDL. That
-   means that when you copy it to another computer, *it will not run*,
-   unless you also install SDL on that other computer. A good solution
-   for this dilemma is to static link against SDL. On macOS, you can
-   achieve that by linking against the libraries listed by
-
-   ```bash
-   sdl3-config --static-libs
-   ```
-
-   instead of those listed by
-
-   ```bash
-   sdl3-config --libs
-   ```
-
-   Depending on how exactly SDL is integrated into your build systems, the
-   way to achieve that varies, so I won't describe it here in detail
+1. You'll need to copy the SDL framework into the Contents/Frameworks
+   folder in your bundle, so it is included along with your application.
 
 2. Add an 'Info.plist' to your application. That is a special XML file which
    contains some meta-information about your application (like some copyright

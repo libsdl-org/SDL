@@ -36,12 +36,6 @@ jobs:
           -DTEST_SHARED=FALSE \
           -DCMAKE_BUILD_TYPE=Release
         cmake --build cmake_config_build --verbose
-    - name: Verify sdl3-config
-      run: |
-        export CC=psp-gcc
-        export PATH=${{ env.SDL3_DIR }}/bin:$PATH
-        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
-        cmake/test/test_sdlconfig.sh
     - name: Verify sdl3.pc
       run: |
         export CC=psp-gcc

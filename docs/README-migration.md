@@ -6,6 +6,28 @@ We have provided a handy Python script to automate some of this work for you [li
 
 SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's the only header you'll need in your application unless you are using OpenGL or Vulkan functionality.
 
+CMake users should use this snippet to include SDL support in their project:
+```
+find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
+find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3main)
+if(TARGET SDL3::SDL3main)
+    target_link_libraries(mygame PRIVATE SDL3::SDL3main)
+endif()
+target_link_libraries(mygame PRIVATE SDL3::SDL3)
+```
+
+Autotools users should use this snippet to include SDL support in their project:
+```
+PKG_CHECK_MODULES([SDL3], [sdl3])
+```
+and then add $SDL3_CFLAGS to their project CFLAGS and $SDL3_LIBS to their project LDFLAGS
+
+Makefile users can use this snippet to include SDL support in their project:
+```
+CFLAGS += $(shell pkg-config sdl3 --cflags)
+LDFLAGS += $(shell pkg-config sdl3 --libs)
+```
+
 
 ## SDL_platform.h
 
