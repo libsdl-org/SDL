@@ -47,12 +47,6 @@ jobs:
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
           -DCMAKE_BUILD_TYPE=Release
         cmake --build cmake_config_build --verbose
-    - name: Verify sdl3-config
-      run: |
-        export CC=mips64r5900el-ps2-elf-gcc
-        export PATH=${{ env.SDL3_DIR }}/bin:$PATH
-        export EXTRA_LDFLAGS="-L$PS2DEV/ps2sdk/ee/lib -L$PS2DEV/gsKit/lib -L$PS2DEV/ps2sdk/ports/lib"
-        cmake/test/test_sdlconfig.sh
     - name: Verify sdl3.pc
       run: |
         export CC=mips64r5900el-ps2-elf-gcc

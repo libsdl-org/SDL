@@ -62,12 +62,6 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
           cmake --build cmake_config_build --verbose
-      - name: Verify sdl3-config
-        if: ${{ matrix.platform.name == 'CMake' }}
-        run: |
-          export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
-          export PATH=${{ env.SDL3_DIR }}/bin:$PATH
-          cmake/test/test_sdlconfig.sh
       - name: Verify sdl3.pc
         if: ${{ matrix.platform.name == 'CMake' }}
         run: |

@@ -96,10 +96,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
         cmake --build cmake_config_build --verbose
-    - name: Verify sdl3-config
-      run: |
-        export PATH=${{ env.SDL3_DIR }}/bin:$PATH
-        cmake/test/test_sdlconfig.sh
     - name: Verify sdl3.pc
       run: |
         export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
