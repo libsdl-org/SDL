@@ -42,6 +42,10 @@
 #include <emscripten.h>
 #endif
 
+#if defined(HAVE_SIGNAL_H)
+#include <signal.h>
+#endif
+
 /* The size of the stack buffer to use for rendering assert messages. */
 #define SDL_MAX_ASSERT_MESSAGE_STACK 256
 
@@ -460,6 +464,17 @@ SDL_AssertionHandler SDL_GetAssertionHandler(void **userdata)
         *userdata = assertion_userdata;
     }
     return assertion_handler;
+}
+
+void SDL_TriggerBreakpointFunction()
+{
+#ifndef SDL_TRIGGER_BREAKPOINT_USES_FUNCTION
+    SDL_TriggerBreakpoint();
+#elif defined(HAVE_SIGNAL_H) && !defined(__WATCOMC__)
+    raise(SIGTRAP);
+#else
+#warning How do we trigger breakpoints on this platform?
+#endif
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

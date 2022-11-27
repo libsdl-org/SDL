@@ -47,6 +47,8 @@ on the assertion line and not in some random guts of SDL, and so each
 assert can have unique static variables associated with it.
 */
 
+extern DECLSPEC void SDLCALL SDL_TriggerBreakpointFunction(void);
+
 #if defined(_MSC_VER)
 /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
@@ -61,12 +63,9 @@ assert can have unique static variables associated with it.
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "bkpt #22\n\t" )
 #elif defined(__386__) && defined(__WATCOMC__)
     #define SDL_TriggerBreakpoint() { _asm { int 0x03 } }
-#elif defined(HAVE_SIGNAL_H) && !defined(__WATCOMC__)
-    #include <signal.h>
-    #define SDL_TriggerBreakpoint() raise(SIGTRAP)
 #else
-    /* How do we trigger breakpoints on this platform? */
-    #define SDL_TriggerBreakpoint()
+#define SDL_TRIGGER_BREAKPOINT_USES_FUNCTION
+    #define SDL_TriggerBreakpoint() SDL_TriggerBreakpointFunction()
 #endif
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */

@@ -969,3 +969,4 @@ SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(void*,SDL_memset4,(void *a, Uint32 b, size_t c),(a,b,c),return)
+SDL_DYNAPI_PROC(void,SDL_TriggerBreakpointFunction,(void),(),)

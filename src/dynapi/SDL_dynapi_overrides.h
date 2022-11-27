@@ -893,3 +893,4 @@
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
 #define SDL_memset4 SDL_memset4_REAL
+#define SDL_TriggerBreakpointFunction SDL_TriggerBreakpointFunction_REAL
