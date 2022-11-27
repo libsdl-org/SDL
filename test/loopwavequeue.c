@@ -55,8 +55,7 @@ loop()
 #ifdef __EMSCRIPTEN__
     if (done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)) {
         emscripten_cancel_main_loop();
-    }
-    else
+    } else
 #endif
     {
         /* The device from SDL_OpenAudio() is always device #1. */
@@ -83,7 +82,7 @@ main(int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     filename = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
@@ -134,8 +133,7 @@ main(int argc, char *argv[])
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING))
-    {
+    while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING)) {
         loop();
 
         SDL_Delay(100);  /* let it play for awhile. */

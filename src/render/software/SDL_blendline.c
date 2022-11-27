@@ -808,12 +808,12 @@ SDL_BlendLine(SDL_Surface * dst, int x1, int y1, int x2, int y2,
 {
     BlendLineFunc func;
 
-    if (!dst) {
+    if (dst == NULL) {
         return SDL_InvalidParamError("SDL_BlendLine(): dst");
     }
 
     func = SDL_CalculateBlendLineFunc(dst->format);
-    if (!func) {
+    if (func == NULL) {
         return SDL_SetError("SDL_BlendLine(): Unsupported surface format");
     }
 
@@ -837,12 +837,12 @@ SDL_BlendLines(SDL_Surface * dst, const SDL_Point * points, int count,
     SDL_bool draw_end;
     BlendLineFunc func;
 
-    if (!dst) {
+    if (dst == NULL) {
         return SDL_SetError("SDL_BlendLines(): Passed NULL destination surface");
     }
 
     func = SDL_CalculateBlendLineFunc(dst->format);
-    if (!func) {
+    if (func == NULL) {
         return SDL_SetError("SDL_BlendLines(): Unsupported surface format");
     }
 

@@ -97,16 +97,13 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         value = THREAD_PRIORITY_LOWEST;
-    }
-    else if (priority == SDL_THREAD_PRIORITY_HIGH) {
+    } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
         value = THREAD_PRIORITY_HIGHEST;
-    }
-    else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+    } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
         // FIXME: WinRT does not support TIME_CRITICAL! -flibit
         SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "TIME_CRITICAL unsupported, falling back to HIGHEST");
         value = THREAD_PRIORITY_HIGHEST;
-    }
-    else {
+    } else {
         value = THREAD_PRIORITY_NORMAL;
     }
     if (!SetThreadPriority(GetCurrentThread(), value)) {

@@ -144,7 +144,7 @@ NETBSDAUDIO_PlayDevice(_THIS)
 static Uint8 *
 NETBSDAUDIO_GetDeviceBuf(_THIS)
 {
-    return (this->hidden->mixbuf);
+    return this->hidden->mixbuf;
 }
 
 

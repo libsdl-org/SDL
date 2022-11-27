@@ -62,7 +62,7 @@ static int DisconnectSensor(ISensor *sensor);
 
 static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_QueryInterface(ISensorManagerEvents * This, REFIID riid, void **ppvObject)
 {
-    if (!ppvObject) {
+    if (ppvObject == NULL) {
         return E_INVALIDARG;
     }
 
@@ -102,7 +102,7 @@ static ISensorManagerEvents sensor_manager_events = {
 
 static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_QueryInterface(ISensorEvents * This, REFIID riid, void **ppvObject)
 {
-    if (!ppvObject) {
+    if (ppvObject == NULL) {
         return E_INVALIDARG;
     }
 
@@ -281,7 +281,7 @@ static int ConnectSensor(ISensor *sensor)
     if (bstr_name != NULL) {
         SysFreeString(bstr_name);
     }
-    if (!name) {
+    if (name == NULL) {
         return SDL_OutOfMemory();
     }
 

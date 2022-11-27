@@ -133,15 +133,16 @@ loop(void *arg)
                 break;
 
         case SDL_MOUSEMOTION:
-            if (!active)
+            if (active == NULL) {
                 break;
+            }
 
             active->x2 = event.motion.x;
             active->y2 = event.motion.y;
             break;
 
         case SDL_MOUSEBUTTONDOWN:
-            if (!active) {
+            if (active == NULL) {
                 active = SDL_calloc(1, sizeof(*active));
                 active->x1 = active->x2 = event.button.x;
                 active->y1 = active->y2 = event.button.y;
@@ -158,8 +159,9 @@ loop(void *arg)
             break;
 
         case SDL_MOUSEBUTTONUP:
-            if (!active)
+            if (active == NULL) {
                 break;
+            }
 
             switch (event.button.button) {
             case SDL_BUTTON_LEFT:   buttons &= ~SDL_BUTTON_LMASK; break;
@@ -210,8 +212,9 @@ loop(void *arg)
 
     /* Objects from mouse clicks */
     DrawObjects(renderer);
-    if (active)
+    if (active) {
         DrawObject(renderer, active);
+    }
 
     SDL_RenderPresent(renderer);
 

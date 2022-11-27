@@ -76,8 +76,9 @@ SDL_GetPerformanceFrequency(void)
 void SDL_Delay(Uint32 ms)
 {
     const Uint32 max_delay = 0xffffffffUL / 1000;
-    if(ms > max_delay)
+    if (ms > max_delay) {
         ms = max_delay;
+    }
     sceKernelDelayThreadCB(ms * 1000);
 }
 

@@ -94,7 +94,7 @@ X11_CreateXCursorCursor(SDL_Surface * surface, int hot_x, int hot_y)
     XcursorImage *image;
 
     image = X11_XcursorImageCreate(surface->w, surface->h);
-    if (!image) {
+    if (image == NULL) {
         SDL_OutOfMemory();
         return None;
     }
@@ -128,13 +128,13 @@ X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
     unsigned int width_bytes = ((surface->w + 7) & ~7) / 8;
 
     data_bits = SDL_calloc(1, surface->h * width_bytes);
-    if (!data_bits) {
+    if (data_bits == NULL) {
         SDL_OutOfMemory();
         return None;
     }
 
     mask_bits = SDL_calloc(1, surface->h * width_bytes);
-    if (!mask_bits) {
+    if (mask_bits == NULL) {
         SDL_free(data_bits);
         SDL_OutOfMemory();
         return None;
@@ -175,15 +175,13 @@ X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
         fg.red   = rfg * 257 / fgBits;
         fg.green = gfg * 257 / fgBits;
         fg.blue  = bfg * 257 / fgBits;
-    }
-    else fg.red = fg.green = fg.blue = 0;
+    } else fg.red = fg.green = fg.blue = 0;
 
     if (bgBits) {
         bg.red   = rbg * 257 / bgBits;
         bg.green = gbg * 257 / bgBits;
         bg.blue  = bbg * 257 / bgBits;
-    }
-    else bg.red = bg.green = bg.blue = 0;
+    } else bg.red = bg.green = bg.blue = 0;
 
     data_pixmap = X11_XCreateBitmapFromData(display, DefaultRootWindow(display),
                                         (char*)data_bits,
@@ -360,8 +358,9 @@ static int
 X11_SetRelativeMouseMode(SDL_bool enabled)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
-    if(X11_Xinput2IsInitialized())
+    if (X11_Xinput2IsInitialized()) {
         return 0;
+    }
 #else
     SDL_Unsupported();
 #endif

@@ -188,7 +188,7 @@ stdlib_getsetenv(void *arg)
   /* Create a random name. This tests SDL_getenv, since we need to */
   /* make sure the variable is not set yet (it shouldn't). */
   do {
-    for(counter = 0; counter < nameLen; counter++) {
+    for (counter = 0; counter < nameLen; counter++) {
       name[counter] = (char)SDLTest_RandomIntegerInRange(65, 90);
     }
     name[nameLen] = '\0';

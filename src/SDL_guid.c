@@ -51,15 +51,15 @@ void SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
 static unsigned char nibble(unsigned char c)
 {
     if ((c >= '0') && (c <= '9')) {
-        return (c - '0');
+        return c - '0';
     }
 
     if ((c >= 'A') && (c <= 'F')) {
-        return (c - 'A' + 0x0a);
+        return c - 'A' + 0x0a;
     }
 
     if ((c >= 'a') && (c <= 'f')) {
-        return (c - 'a' + 0x0a);
+        return c - 'a' + 0x0a;
     }
 
     /* received an invalid character, and no real way to return an error */

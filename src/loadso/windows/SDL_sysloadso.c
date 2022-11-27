@@ -34,7 +34,7 @@ SDL_LoadObject(const char *sofile)
     void *handle;
     LPTSTR tstr;
 
-    if (!sofile) {
+    if (sofile == NULL) {
         SDL_InvalidParamError("sofile");
         return NULL;
     }

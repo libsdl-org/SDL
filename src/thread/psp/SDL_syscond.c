@@ -57,7 +57,7 @@ SDL_CreateCond(void)
     } else {
         SDL_OutOfMemory();
     }
-    return (cond);
+    return cond;
 }
 
 /* Destroy a condition variable */
@@ -82,7 +82,7 @@ SDL_DestroyCond(SDL_cond * cond)
 int
 SDL_CondSignal(SDL_cond * cond)
 {
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -106,7 +106,7 @@ SDL_CondSignal(SDL_cond * cond)
 int
 SDL_CondBroadcast(SDL_cond * cond)
 {
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
@@ -162,7 +162,7 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
 {
     int retval;
 
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 

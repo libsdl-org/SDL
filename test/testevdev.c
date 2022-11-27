@@ -997,8 +997,7 @@ run_test(void)
 
         if (actual == t->expected) {
             printf("\tOK\n");
-        }
-        else {
+        } else {
             printf("\tExpected 0x%08x\n", t->expected);
 
             for (j = 0; device_classes[j].code != 0; j++) {

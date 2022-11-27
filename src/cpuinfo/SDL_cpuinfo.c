@@ -320,8 +320,9 @@ CPU_haveAltiVec(void)
     int hasVectorUnit = 0;
     size_t length = sizeof(hasVectorUnit);
     int error = sysctl(selectors, 2, &hasVectorUnit, &length, NULL, 0);
-    if (0 == error)
+    if (0 == error) {
         altivec = (hasVectorUnit != 0);
+    }
 #elif defined(__FreeBSD__) && defined(__powerpc__)
     unsigned long cpufeatures = 0;
     elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
@@ -362,13 +363,10 @@ CPU_haveARMSIMD(void)
     int fd;
 
     fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
-    if (fd >= 0)
-    {
+    if (fd >= 0) {
         Elf32_auxv_t aux;
-        while (read(fd, &aux, sizeof aux) == sizeof aux)
-        {
-            if (aux.a_type == AT_PLATFORM)
-            {
+        while (read(fd, &aux, sizeof aux) == sizeof aux) {
+            if (aux.a_type == AT_PLATFORM) {
                 const char *plat = (const char *) aux.a_un.a_val;
                 if (plat) {
                     arm_simd = SDL_strncmp(plat, "v6l", 3) == 0 ||
@@ -387,16 +385,19 @@ CPU_haveARMSIMD(void)
 {
     _kernel_swi_regs regs;
     regs.r[0] = 0;
-    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL) {
         return 0;
+    }
 
-    if (!(regs.r[0] & (1<<31)))
+    if (!(regs.r[0] & (1 << 31))) {
         return 0;
+    }
 
     regs.r[0] = 34;
     regs.r[1] = 29;
-    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL)
+    if (_kernel_swi(OS_PlatformFeatures, &regs, &regs) != NULL) {
         return 0;
+    }
 
     return regs.r[0];
 }
@@ -418,8 +419,7 @@ readProcAuxvForNeon(void)
     int fd;
 
     fd = open("/proc/self/auxv", O_RDONLY | O_CLOEXEC);
-    if (fd >= 0)
-    {
+    if (fd >= 0) {
         Elf32_auxv_t aux;
         while (read(fd, &aux, sizeof (aux)) == sizeof (aux)) {
             if (aux.a_type == AT_HWCAP) {
@@ -465,11 +465,12 @@ CPU_haveNEON(void)
     return 1;  /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
-    if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0)
+    if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0) {
         return 0;
-    return ((hasneon & HWCAP_NEON) == HWCAP_NEON);
+    }
+    return (hasneon & HWCAP_NEON) == HWCAP_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
-    return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
+    return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
 #elif defined(__LINUX__)
     return readProcAuxvForNeon();
 #elif defined(__ANDROID__)
@@ -538,7 +539,7 @@ CPU_have3DNow(void)
         cpuid(0x80000000, a, b, c, d);
         if (a >= 0x80000001) {
             cpuid(0x80000001, a, b, c, d);
-            return (d & 0x80000000);
+            return d & 0x80000000;
         }
     }
     return 0;
@@ -611,7 +612,7 @@ CPU_haveAVX2(void)
         int a, b, c, d;
         (void) a; (void) b; (void) c; (void) d;  /* compiler warnings... */
         cpuid(7, a, b, c, d);
-        return (b & 0x00000020);
+        return b & 0x00000020;
     }
     return 0;
 }
@@ -631,7 +632,7 @@ CPU_haveAVX512F(void)
         int a, b, c, d;
         (void) a; (void) b; (void) c; (void) d;  /* compiler warnings... */
         cpuid(7, a, b, c, d);
-        return (b & 0x00010000);
+        return b & 0x00010000;
     }
     return 0;
 }
@@ -815,10 +816,10 @@ SDL_GetCPUCacheLineSize(void)
     (void) a; (void) b; (void) c; (void) d;
    if (SDL_strcmp(cpuType, "GenuineIntel") == 0 || SDL_strcmp(cpuType, "CentaurHauls") == 0 || SDL_strcmp(cpuType, "  Shanghai  ") == 0) {
         cpuid(0x00000001, a, b, c, d);
-        return (((b >> 8) & 0xff) * 8);
+        return ((b >> 8) & 0xff) * 8;
     } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0 || SDL_strcmp(cpuType, "HygonGenuine") == 0) {
         cpuid(0x80000005, a, b, c, d);
-        return (c & 0xff);
+        return c & 0xff;
     } else {
         /* Just make a guess here... */
         return SDL_CACHELINE_SIZE;

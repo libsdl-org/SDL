@@ -277,8 +277,7 @@ WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_
     if (bSwapButtons) {
         if (button == SDL_BUTTON_LEFT) {
             button = SDL_BUTTON_RIGHT;
-        }
-        else if (button == SDL_BUTTON_RIGHT) {
+        } else if (button == SDL_BUTTON_RIGHT) {
             button = SDL_BUTTON_LEFT;
         }
     }
@@ -331,26 +330,36 @@ WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mou
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-        if ((rawButtons & RI_MOUSE_BUTTON_1_DOWN))
+        if ((rawButtons & RI_MOUSE_BUTTON_1_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_1_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_1_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_1_UP), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_2_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_2_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_2_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_2_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_2_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_2_UP), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_3_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_3_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_3_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_3_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_3_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_3_UP), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_4_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_4_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_4_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_4_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_4_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_4_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_5_DOWN))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_5_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_5_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
-        if ((rawButtons & RI_MOUSE_BUTTON_5_UP))
+        }
+        if ((rawButtons & RI_MOUSE_BUTTON_5_UP)) {
             WIN_CheckWParamMouseButton(!(rawButtons & RI_MOUSE_BUTTON_5_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
+        }
         data->mouse_button_flags = rawButtons;
     }
 }
@@ -649,12 +658,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     /* Get the window data for the window */
     data = WIN_GetWindowDataFromHWND(hwnd);
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    if (!data) {
+    if (data == NULL) {
         /* Fallback */
         data = (SDL_WindowData *) GetProp(hwnd, TEXT("SDL_WindowData"));
     }
 #endif
-    if (!data) {
+    if (data == NULL) {
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
 
@@ -671,8 +680,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #endif /* WMMSG_DEBUG */
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
+    if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata)) {
         return 0;
+    }
 #endif
 
     switch (msg) {
@@ -1270,8 +1280,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* We'll do our own drawing, prevent flicker */
     case WM_ERASEBKGND:
-        if (!data->videodata->cleared)
-        {
+        if (!data->videodata->cleared) {
             RECT client_rect;
             HBRUSH brush;
             data->videodata->cleared = SDL_TRUE;
@@ -1280,12 +1289,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             FillRect(GetDC(hwnd), &client_rect, brush);
             DeleteObject(brush);
         }
-        return (1);
+        return 1;
 
     case WM_SYSCOMMAND:
         {
             if ((wParam & 0xFFF0) == SC_KEYMENU) {
-                return (0);
+                return 0;
             }
 
 #if defined(SC_SCREENSAVE) || defined(SC_MONITORPOWER)
@@ -1293,7 +1302,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if ((wParam & 0xFFF0) == SC_SCREENSAVE ||
                 (wParam & 0xFFF0) == SC_MONITORPOWER) {
                 if (SDL_GetVideoDevice()->suspend_screensaver) {
-                    return (0);
+                    return 0;
                 }
             }
 #endif /* System has screensaver support */
@@ -1371,15 +1380,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          * If we're handling our own touches, we don't want any gestures.
          * Not all of these settings are documented.
          * The use of the undocumented ones was suggested by https://github.com/bjarkeck/GCGJ/blob/master/Monogame/Windows/WinFormsGameForm.cs . */
-        return TABLET_DISABLE_PRESSANDHOLD |    /*  disables press and hold (right-click) gesture */
-            TABLET_DISABLE_PENTAPFEEDBACK |     /*  disables UI feedback on pen up (waves) */
-            TABLET_DISABLE_PENBARRELFEEDBACK |  /*  disables UI feedback on pen button down (circle) */
-            TABLET_DISABLE_TOUCHUIFORCEON |
-            TABLET_DISABLE_TOUCHUIFORCEOFF |
-            TABLET_DISABLE_TOUCHSWITCH |
-            TABLET_DISABLE_FLICKS |             /*  disables pen flicks (back, forward, drag down, drag up) */
-            TABLET_DISABLE_SMOOTHSCROLLING |
-            TABLET_DISABLE_FLICKFALLBACKKEYS;
+        return TABLET_DISABLE_PRESSANDHOLD | TABLET_DISABLE_PENTAPFEEDBACK | TABLET_DISABLE_PENBARRELFEEDBACK | TABLET_DISABLE_TOUCHUIFORCEON | TABLET_DISABLE_TOUCHUIFORCEOFF | TABLET_DISABLE_TOUCHSWITCH | TABLET_DISABLE_FLICKS | TABLET_DISABLE_SMOOTHSCROLLING | TABLET_DISABLE_FLICKFALLBACKKEYS;    /*  disables press and hold (right-click) gesture */
+            /*  disables UI feedback on pen up (waves) */
+            /*  disables UI feedback on pen button down (circle) */
+            /*  disables pen flicks (back, forward, drag down, drag up) */
 
 #endif /* HAVE_TPCSHRD_H */
 
@@ -1838,7 +1842,7 @@ WIN_PumpEvents(_THIS)
        not grabbing the keyboard. Note: If we *are* grabbing the keyboard, GetKeyState()
        will return inaccurate results for VK_LWIN and VK_RWIN but we don't need it anyway. */
     focusWindow = SDL_GetKeyboardFocus();
-    if (!focusWindow || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
+    if (focusWindow == NULL || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
         if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
             SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LGUI);
         }
@@ -1868,8 +1872,12 @@ HINSTANCE SDL_Instance = NULL;
 static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-    if (wcex.hIcon) DestroyIcon(wcex.hIcon);
-    if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
+    if (wcex.hIcon) {
+        DestroyIcon(wcex.hIcon);
+    }
+    if (wcex.hIconSm) {
+        DestroyIcon(wcex.hIconSm);
+    }
 #endif
     SDL_free(SDL_Appname);
     SDL_Appname = NULL;
@@ -1888,10 +1896,10 @@ SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     /* Only do this once... */
     if (app_registered) {
         ++app_registered;
-        return (0);
+        return 0;
     }
     SDL_assert(SDL_Appname == NULL);
-    if (!name) {
+    if (name == NULL) {
         name = "SDL_app";
 #if defined(CS_BYTEALIGNCLIENT) || defined(CS_OWNDC)
         style = (CS_BYTEALIGNCLIENT | CS_OWNDC);

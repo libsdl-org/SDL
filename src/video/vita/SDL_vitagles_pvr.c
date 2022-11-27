@@ -41,10 +41,8 @@ VITA_GLES_LoadLibrary(_THIS, const char *path)
     char* default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) // we don't care about actual value
-    {
-        if (override != NULL)
-        {
+    if (skip_init == NULL) // we don't care about actual value {
+        if (override != NULL) {
           default_path = override;
         }
 

@@ -21,7 +21,7 @@
 
 #include <SDL3/SDL_test_common.h>
 
-#define SWAP(typ,a,b) do{typ t=a;a=b;b=t;}while(0)
+#define SWAP(typ,a,b) do{typ t=a;a=b;b=t;}while (0)
 #define NUM_OBJECTS 100
 
 static SDLTest_CommonState *state;
@@ -85,10 +85,12 @@ SDL_Rect lines[MAX_LINES];
 static int
 add_line(int x1, int y1, int x2, int y2)
 {
-    if (num_lines >= MAX_LINES)
+    if (num_lines >= MAX_LINES) {
         return 0;
-    if ((x1 == x2) && (y1 == y2))
+    }
+    if ((x1 == x2) && (y1 == y2)) {
         return 0;
+    }
 
     SDL_Log("adding line (%d, %d), (%d, %d)\n", x1, y1, x2, y2);
     lines[num_lines].x = x1;
@@ -129,15 +131,19 @@ SDL_Rect rects[MAX_RECTS];
 static int
 add_rect(int x1, int y1, int x2, int y2)
 {
-    if (num_rects >= MAX_RECTS)
+    if (num_rects >= MAX_RECTS) {
         return 0;
-    if ((x1 == x2) || (y1 == y2))
+    }
+    if ((x1 == x2) || (y1 == y2)) {
         return 0;
+    }
 
-    if (x1 > x2)
+    if (x1 > x2) {
         SWAP(int, x1, x2);
-    if (y1 > y2)
+    }
+    if (y1 > y2) {
         SWAP(int, y1, y2);
+    }
 
     SDL_Log("adding rect (%d, %d), (%d, %d) [%dx%d]\n", x1, y1, x2, y2,
            x2 - x1, y2 - y1);
@@ -212,12 +218,12 @@ loop()
             mouse_begin_y = event.button.y;
             break;
         case SDL_MOUSEBUTTONUP:
-            if (event.button.button == 3)
-                add_line(mouse_begin_x, mouse_begin_y, event.button.x,
-                         event.button.y);
-            if (event.button.button == 1)
-                add_rect(mouse_begin_x, mouse_begin_y, event.button.x,
-                         event.button.y);
+            if (event.button.button == 3) {
+                add_line(mouse_begin_x, mouse_begin_y, event.button.x, event.button.y);
+            }
+            if (event.button.button == 1) {
+                add_rect(mouse_begin_x, mouse_begin_y, event.button.x, event.button.y);
+            }
             break;
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym) {
@@ -243,8 +249,9 @@ loop()
     }
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
-        if (state->windows[i] == NULL)
+        if (state->windows[i] == NULL) {
             continue;
+        }
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
 
@@ -277,7 +284,7 @@ main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
+    if (state == NULL) {
         return 1;
     }
     for (i = 1; i < argc;) {

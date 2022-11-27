@@ -35,9 +35,9 @@ static int shm_errhandler(Display *d, XErrorEvent *e)
 {
         if ( e->error_code == BadAccess ) {
             shm_error = True;
-            return(0);
+            return 0;
         } else
-        return(X_handler(d,e));
+        return X_handler(d, e);
 }
 
 static SDL_bool have_mitshm(Display *dpy)
@@ -95,8 +95,9 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
                 X11_XShmAttach(display, shminfo);
                 X11_XSync(display, False);
                 X11_XSetErrorHandler(X_handler);
-                if ( shm_error )
+                if (shm_error) {
                     shmdt(shminfo->shmaddr);
+                }
             } else {
                 shm_error = True;
             }
@@ -160,26 +161,25 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
                 /* Clipped? */
                 continue;
             }
-            if (x < 0)
-            {
+            if (x < 0) {
                 x += w;
                 w += rects[i].x;
             }
-            if (y < 0)
-            {
+            if (y < 0) {
                 y += h;
                 h += rects[i].y;
             }
-            if (x + w > window->w)
+            if (x + w > window->w) {
                 w = window->w - x;
-            if (y + h > window->h)
+            }
+            if (y + h > window->h) {
                 h = window->h - y;
+            }
 
             X11_XShmPutImage(display, data->xwindow, data->gc, data->ximage,
                 x, y, x, y, w, h, False);
         }
-    }
-    else
+    } else
 #endif /* !NO_SHARED_MEMORY */
     {
         for (i = 0; i < numrects; ++i) {
@@ -192,20 +192,20 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
                 /* Clipped? */
                 continue;
             }
-            if (x < 0)
-            {
+            if (x < 0) {
                 x += w;
                 w += rects[i].x;
             }
-            if (y < 0)
-            {
+            if (y < 0) {
                 y += h;
                 h += rects[i].y;
             }
-            if (x + w > window->w)
+            if (x + w > window->w) {
                 w = window->w - x;
-            if (y + h > window->h)
+            }
+            if (y + h > window->h) {
                 h = window->h - y;
+            }
 
             X11_XPutImage(display, data->xwindow, data->gc, data->ximage,
                 x, y, x, y, w, h);
@@ -223,7 +223,7 @@ X11_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display;
 
-    if (!data) {
+    if (data == NULL) {
         /* The window wasn't fully initialized */
         return;
     }

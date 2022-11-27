@@ -154,8 +154,9 @@ static void PS2AUDIO_Deinitialize(void)
 
 static SDL_bool PS2AUDIO_Init(SDL_AudioDriverImpl * impl)
 {
-    if(init_audio_driver() < 0)
+    if (init_audio_driver() < 0) {
         return SDL_FALSE;
+    }
 
     /* Set the function pointers */
     impl->OpenDevice = PS2AUDIO_OpenDevice;

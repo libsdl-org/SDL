@@ -3189,7 +3189,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
             charWidth, charHeight, 32,
             0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
         if (character == NULL) {
-            return (-1);
+            return -1;
         }
 
         charpos = SDLTest_FontData + ci * charSize;
@@ -3222,7 +3222,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
          * Check pointer
          */
         if (cache->charTextureCache[ci] == NULL) {
-            return (-1);
+            return -1;
         }
     }
 
@@ -3239,7 +3239,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
      */
     result |= SDL_RenderCopy(renderer, cache->charTextureCache[ci], &srect, &drect);
 
-    return (result);
+    return result;
 }
 
 /* Gets a unicode value from a UTF-8 encoded string
@@ -3350,14 +3350,14 @@ int SDLTest_DrawString(SDL_Renderer * renderer, int x, int y, const char *s)
         len -= advance;
     }
 
-    return (result);
+    return result;
 }
 
 SDLTest_TextWindow *SDLTest_TextWindowCreate(int x, int y, int w, int h)
 {
     SDLTest_TextWindow *textwin = (SDLTest_TextWindow *)SDL_malloc(sizeof(*textwin));
 
-    if ( !textwin ) {
+    if (textwin == NULL) {
         return NULL;
     }
 
@@ -3451,8 +3451,7 @@ void SDLTest_TextWindowClear(SDLTest_TextWindow *textwin)
 {
     int i;
 
-    for ( i = 0; i < textwin->numlines; ++i )
-    {
+    for ( i = 0; i < textwin->numlines; ++i ) {
         if ( textwin->lines[i] ) {
             SDL_free(textwin->lines[i]);
             textwin->lines[i] = NULL;

@@ -76,7 +76,7 @@ RunThreadViaCreateThread(LPVOID data)
 static unsigned __stdcall
 RunThreadViaBeginThreadEx(void *data)
 {
-  return (unsigned) RunThread(data);
+  return (unsigned)RunThread(data);
 }
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
@@ -187,7 +187,7 @@ SDL_SYS_SetupThread(const char *name)
 SDL_threadID
 SDL_ThreadID(void)
 {
-    return ((SDL_threadID) GetCurrentThreadId());
+    return (SDL_threadID)GetCurrentThreadId();
 }
 
 int

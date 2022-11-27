@@ -46,7 +46,7 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * form
     SDL_GetWindowSize(window, &w, &h);
 
     surface = SDL_CreateRGBSurface(0, w, h, bpp, Rmask, Gmask, Bmask, Amask);
-    if (!surface) {
+    if (surface == NULL) {
         return -1;
     }
 
@@ -64,7 +64,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
 
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     surface = data->surface;
-    if (!surface) {
+    if (surface == NULL) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
     }
 

@@ -38,7 +38,7 @@ main(int argc, char *argv[])
            linked.major, linked.minor, linked.patch,
            SDL_GetRevision());
     SDL_Quit();
-    return (0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

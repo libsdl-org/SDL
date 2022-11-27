@@ -58,13 +58,10 @@ TInt E32Main()
 
     newHeap = User::ChunkHeap(NULL, heapSize, heapSize, KMinHeapGrowBy);
 
-    if (NULL == newHeap)
-    {
+    if (newHeap == NULL) {
         ret = 3;
         goto cleanup;
-    }
-    else
-    {
+    } else {
         oldHeap = User::SwitchHeap(newHeap);
         /* Call stdlib main */
         SDL_SetMainReady();

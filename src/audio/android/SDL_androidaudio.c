@@ -146,26 +146,24 @@ void ANDROIDAUDIO_PauseDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if(audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice != NULL && audioDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
         if (SDL_AtomicGet(&audioDevice->paused)) {
             /* The device is already paused, leave it alone */
             private->resume = SDL_FALSE;
-        }
-        else {
+        } else {
             SDL_LockMutex(audioDevice->mixer_lock);
             SDL_AtomicSet(&audioDevice->paused, 1);
             private->resume = SDL_TRUE;
         }
     }
 
-    if(captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice != NULL && captureDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) captureDevice->hidden;
         if (SDL_AtomicGet(&captureDevice->paused)) {
             /* The device is already paused, leave it alone */
             private->resume = SDL_FALSE;
-        }
-        else {
+        } else {
             SDL_LockMutex(captureDevice->mixer_lock);
             SDL_AtomicSet(&captureDevice->paused, 1);
             private->resume = SDL_TRUE;
@@ -178,7 +176,7 @@ void ANDROIDAUDIO_ResumeDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if(audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice != NULL && audioDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
         if (private->resume) {
             SDL_AtomicSet(&audioDevice->paused, 0);
@@ -187,7 +185,7 @@ void ANDROIDAUDIO_ResumeDevices(void)
         }
     }
 
-    if(captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice != NULL && captureDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) captureDevice->hidden;
         if (private->resume) {
             SDL_AtomicSet(&captureDevice->paused, 0);

@@ -228,7 +228,9 @@ mouse_createFreeColorCursor(void *arg)
     /* Get sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Validate sample input image is not NULL");
-    if (face == NULL) return TEST_ABORTED;
+    if (face == NULL) {
+        return TEST_ABORTED;
+    }
 
     /* Create a color cursor from surface */
     cursor = SDL_CreateColorCursor(face, 0, 0);
@@ -464,7 +466,9 @@ mouse_warpMouseInWindow(void *arg)
     yPositions[5] = h+1;
     /* Create test window */
     window = _createMouseSuiteTestWindow();
-    if (window == NULL) return TEST_ABORTED;
+    if (window == NULL) {
+      return TEST_ABORTED;
+    }
 
     /* Mouse to random position inside window */
     x = SDLTest_RandomIntegerInRange(1, w-1);
@@ -516,7 +520,9 @@ mouse_getMouseFocus(void *arg)
 
         /* Create test window */
     window = _createMouseSuiteTestWindow();
-    if (window == NULL) return TEST_ABORTED;
+    if (window == NULL) {
+        return TEST_ABORTED;
+    }
 
     /* Mouse to random position inside window */
     x = SDLTest_RandomIntegerInRange(1, w-1);

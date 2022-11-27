@@ -180,7 +180,7 @@ ResamplerPadding(const int inrate, const int outrate)
         return 0;
     }
     if (inrate > outrate) {
-        return (int) SDL_ceilf(((float) (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float) outrate)));
+        return (int)SDL_ceilf(((float)(RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float)outrate)));
     }
     return RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
 }
@@ -246,7 +246,7 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
         outtime = outtimeincr * i;
     }
 
-    return outframes * chans * sizeof (float);
+    return outframes * chans * sizeof(float);
 }
 
 int
@@ -485,7 +485,7 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
 
     /* we keep no streaming state here, so pad with silence on both ends. */
     padding = (float *) SDL_calloc(paddingsamples ? paddingsamples : 1, sizeof (float));
-    if (!padding) {
+    if (padding == NULL) {
         SDL_OutOfMemory();
         return;
     }
@@ -583,7 +583,7 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
        !!! FIXME in 2.1:   We need to store data for this resampler, because the cvt structure doesn't store the original sample rates,
        !!! FIXME in 2.1:   so we steal the ninth and tenth slot.  :( */
     if (cvt->filter_index >= (SDL_AUDIOCVT_MAX_FILTERS-2)) {
-        return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS-2);
+        return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS - 2);
     }
     cvt->filters[SDL_AUDIOCVT_MAX_FILTERS-1] = (SDL_AudioFilter) (uintptr_t) src_rate;
     cvt->filters[SDL_AUDIOCVT_MAX_FILTERS] = (SDL_AudioFilter) (uintptr_t) dst_rate;
@@ -785,7 +785,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     }
 
     cvt->needed = (cvt->filter_index != 0);
-    return (cvt->needed);
+    return cvt->needed;
 }
 
 typedef int (*SDL_ResampleAudioStreamFunc)(SDL_AudioStream *stream, const void *inbuf, const int inbuflen, void *outbuf, const int outbuflen);
@@ -832,7 +832,7 @@ EnsureStreamBufferSize(SDL_AudioStream *stream, const int newlen)
         ptr = stream->work_buffer_base;
     } else {
         ptr = (Uint8 *) SDL_realloc(stream->work_buffer_base, newlen + 32);
-        if (!ptr) {
+        if (ptr == NULL) {
             SDL_OutOfMemory();
             return NULL;
         }
@@ -908,12 +908,12 @@ SetupLibSampleRateResampling(SDL_AudioStream *stream)
 
     if (SRC_available) {
         state = SRC_src_new(SRC_converter, stream->pre_resample_channels, &result);
-        if (!state) {
+        if (state == NULL) {
             SDL_SetError("src_new() failed: %s", SRC_src_strerror(result));
         }
     }
 
-    if (!state) {
+    if (state == NULL) {
         SDL_CleanupAudioStreamResampler_SRC(stream);
         return SDL_FALSE;
     }
@@ -980,7 +980,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
     SDL_AudioStream *retval;
 
     retval = (SDL_AudioStream *) SDL_calloc(1, sizeof (SDL_AudioStream));
-    if (!retval) {
+    if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
@@ -1123,7 +1123,7 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
     #endif
 
     workbuf = EnsureStreamBufferSize(stream, workbuflen);
-    if (!workbuf) {
+    if (workbuf == NULL) {
         return -1;  /* probably out of memory. */
     }
 
@@ -1190,8 +1190,9 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, in
 
     if (maxputbytes) {
         const int maxbytes = *maxputbytes;
-        if (buflen > maxbytes)
+        if (buflen > maxbytes) {
             buflen = maxbytes;
+        }
         *maxputbytes -= buflen;
     }
 
@@ -1214,10 +1215,10 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
     SDL_Log("AUDIOSTREAM: wants to put %d preconverted bytes\n", buflen);
     #endif
 
-    if (!stream) {
+    if (stream == NULL) {
         return SDL_InvalidParamError("stream");
     }
-    if (!buf) {
+    if (buf == NULL) {
         return SDL_InvalidParamError("buf");
     }
     if (len == 0) {
@@ -1269,7 +1270,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
 
 int SDL_AudioStreamFlush(SDL_AudioStream *stream)
 {
-    if (!stream) {
+    if (stream == NULL) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -1287,8 +1288,9 @@ int SDL_AudioStreamFlush(SDL_AudioStream *stream)
         const SDL_bool first_run = stream->first_run;
         const int filled = stream->staging_buffer_filled;
         int actual_input_frames = filled / stream->src_sample_frame_size;
-        if (!first_run)
+        if (!first_run) {
             actual_input_frames += stream->resampler_padding_samples / stream->pre_resample_channels;
+        }
 
         if (actual_input_frames > 0) {  /* don't bother if nothing to flush. */
             /* This is how many bytes we're expecting without silence appended. */
@@ -1327,10 +1329,10 @@ SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
     SDL_Log("AUDIOSTREAM: want to get %d converted bytes\n", len);
     #endif
 
-    if (!stream) {
+    if (stream == NULL) {
         return SDL_InvalidParamError("stream");
     }
-    if (!buf) {
+    if (buf == NULL) {
         return SDL_InvalidParamError("buf");
     }
     if (len <= 0) {
@@ -1340,20 +1342,20 @@ SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
         return SDL_SetError("Can't request partial sample frames");
     }
 
-    return (int) SDL_ReadFromDataQueue(stream->queue, buf, len);
+    return (int)SDL_ReadFromDataQueue(stream->queue, buf, len);
 }
 
 /* number of converted/resampled bytes available */
 int
 SDL_AudioStreamAvailable(SDL_AudioStream *stream)
 {
-    return stream ? (int) SDL_CountDataQueue(stream->queue) : 0;
+    return stream ? (int)SDL_CountDataQueue(stream->queue) : 0;
 }
 
 void
 SDL_AudioStreamClear(SDL_AudioStream *stream)
 {
-    if (!stream) {
+    if (stream == NULL) {
         SDL_InvalidParamError("stream");
     } else {
         SDL_ClearDataQueue(stream->queue, stream->packetlen * 2);

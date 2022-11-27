@@ -168,16 +168,16 @@ getlocale(char *buffer, size_t bufsize)
     char *ptr;
 
     lang = SDL_getenv("LC_ALL");
-    if (!lang) {
+    if (lang == NULL) {
         lang = SDL_getenv("LC_CTYPE");
     }
-    if (!lang) {
+    if (lang == NULL) {
         lang = SDL_getenv("LC_MESSAGES");
     }
-    if (!lang) {
+    if (lang == NULL) {
         lang = SDL_getenv("LANG");
     }
-    if (!lang || !*lang || SDL_strcmp(lang, "C") == 0) {
+    if (lang == NULL || !*lang || SDL_strcmp(lang, "C") == 0) {
         lang = "ASCII";
     }
 
@@ -205,10 +205,10 @@ SDL_iconv_open(const char *tocode, const char *fromcode)
     char fromcode_buffer[64];
     char tocode_buffer[64];
 
-    if (!fromcode || !*fromcode) {
+    if (fromcode == NULL || !*fromcode) {
         fromcode = getlocale(fromcode_buffer, sizeof(fromcode_buffer));
     }
-    if (!tocode || !*tocode) {
+    if (tocode == NULL || !*tocode) {
         tocode = getlocale(tocode_buffer, sizeof(tocode_buffer));
     }
     for (i = 0; i < SDL_arraysize(encodings); ++i) {
@@ -248,11 +248,11 @@ SDL_iconv(SDL_iconv_t cd,
     Uint32 ch = 0;
     size_t total;
 
-    if (!inbuf || !*inbuf) {
+    if (inbuf == NULL || !*inbuf) {
         /* Reset the context */
         return 0;
     }
-    if (!outbuf || !*outbuf || !outbytesleft || !*outbytesleft) {
+    if (outbuf == NULL || !*outbuf || outbytesleft == NULL || !*outbytesleft) {
         return SDL_ICONV_E2BIG;
     }
     src = *inbuf;
@@ -818,10 +818,10 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
     cd = SDL_iconv_open(tocode, fromcode);
     if (cd == (SDL_iconv_t) - 1) {
         /* See if we can recover here (fixes iconv on Solaris 11) */
-        if (!tocode || !*tocode) {
+        if (tocode == NULL || !*tocode) {
             tocode = "UTF-8";
         }
-        if (!fromcode || !*fromcode) {
+        if (fromcode == NULL || !*fromcode) {
             fromcode = "UTF-8";
         }
         cd = SDL_iconv_open(tocode, fromcode);
@@ -832,7 +832,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
 
     stringsize = inbytesleft > 4 ? inbytesleft : 4;
     string = (char *) SDL_malloc(stringsize);
-    if (!string) {
+    if (string == NULL) {
         SDL_iconv_close(cd);
         return NULL;
     }
@@ -849,7 +849,7 @@ SDL_iconv_string(const char *tocode, const char *fromcode, const char *inbuf,
                 char *oldstring = string;
                 stringsize *= 2;
                 string = (char *) SDL_realloc(string, stringsize);
-                if (!string) {
+                if (string == NULL) {
                     SDL_free(oldstring);
                     SDL_iconv_close(cd);
                     return NULL;

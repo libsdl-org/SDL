@@ -52,7 +52,7 @@ SDL_VITA_SensorInit(void)
     SDL_sensors_count = 2;
 
     SDL_sensors = (SDL_VitaSensor *)SDL_calloc(SDL_sensors_count, sizeof(*SDL_sensors));
-    if (!SDL_sensors) {
+    if (SDL_sensors == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -142,15 +142,12 @@ SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
     SDL_memset(motionState, 0, sizeof(motionState));
 
     err = sceMotionGetSensorState(motionState, SCE_MOTION_MAX_NUM_STATES);
-    if (err != 0)
-    {
+    if (err != 0) {
         return;
     }
 
-    for (int i = 0; i < SCE_MOTION_MAX_NUM_STATES; i++)
-    {
-        if (sensor->hwdata->counter < motionState[i].counter)
-        {
+    for (int i = 0; i < SCE_MOTION_MAX_NUM_STATES; i++) {
+        if (sensor->hwdata->counter < motionState[i].counter) {
             unsigned int timestamp = motionState[i].timestamp;
 
             sensor->hwdata->counter = motionState[i].counter;

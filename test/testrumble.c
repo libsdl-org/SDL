@@ -78,8 +78,9 @@ main(int argc, char **argv)
         /* Try to find matching device */
         else {
             for (i = 0; i < SDL_NumHaptics(); i++) {
-                if (SDL_strstr(SDL_HapticName(i), name) != NULL)
+                if (SDL_strstr(SDL_HapticName(i), name) != NULL) {
                     break;
+                }
             }
 
             if (i >= SDL_NumHaptics()) {
@@ -129,8 +130,9 @@ main(int argc, char **argv)
     SDL_Delay(2000);
 
     /* Quit */
-    if (haptic != NULL)
+    if (haptic != NULL) {
         SDL_HapticClose(haptic);
+    }
     SDL_Quit();
 
     return 0;

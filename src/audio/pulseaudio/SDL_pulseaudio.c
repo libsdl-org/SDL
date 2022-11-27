@@ -49,17 +49,11 @@ static SDL_bool include_monitors = SDL_FALSE;
 #if (PA_API_VERSION < 12)
 /** Return non-zero if the passed state is one of the connected states */
 static SDL_INLINE int PA_CONTEXT_IS_GOOD(pa_context_state_t x) {
-    return
-        x == PA_CONTEXT_CONNECTING ||
-        x == PA_CONTEXT_AUTHORIZING ||
-        x == PA_CONTEXT_SETTING_NAME ||
-        x == PA_CONTEXT_READY;
+    return x == PA_CONTEXT_CONNECTING || x == PA_CONTEXT_AUTHORIZING || x == PA_CONTEXT_SETTING_NAME || x == PA_CONTEXT_READY;
 }
 /** Return non-zero if the passed state is one of the connected states */
 static SDL_INLINE int PA_STREAM_IS_GOOD(pa_stream_state_t x) {
-    return
-        x == PA_STREAM_CREATING ||
-        x == PA_STREAM_READY;
+    return x == PA_STREAM_CREATING || x == PA_STREAM_READY;
 }
 #endif /* pulseaudio <= 0.9.10 */
 
@@ -308,7 +302,7 @@ ConnectToPulseServer_Internal(pa_mainloop **_mainloop, pa_context **_context)
     SDL_assert(mainloop_api);  /* this never fails, right? */
 
     context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
-    if (!context) {
+    if (context == NULL) {
         PULSEAUDIO_pa_mainloop_free(mainloop);
         return SDL_SetError("pa_context_new() failed");
     }
@@ -541,7 +535,7 @@ FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_bool iscapture, void *h
                 SinkDeviceNameCallback, &h->device_name));
     }
 
-    return (h->device_name != NULL);
+    return h->device_name != NULL;
 }
 
 static int

@@ -110,12 +110,16 @@ void _testBlitBlendMode(int mode)
 
     /* Check test surface */
     SDLTest_AssertCheck(testSurface != NULL, "Verify testSurface is not NULL");
-    if (testSurface == NULL) return;
+    if (testSurface == NULL) {
+        return;
+    }
 
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) return;
+    if (face == NULL) {
+        return;
+    }
 
         /* Reset alpha modulation */
     ret = SDL_SetSurfaceAlphaMod(face, 255);
@@ -160,14 +164,16 @@ void _testBlitBlendMode(int mode)
         if (mode == -2) {
             /* Set color mod. */
             ret = SDL_SetSurfaceColorMod( face, (255/nj)*j, (255/ni)*i, (255/nj)*j );
-            if (ret != 0) checkFailCount2++;
-        }
-        else if (mode == -3) {
+            if (ret != 0) {
+                checkFailCount2++;
+            }
+        } else if (mode == -3) {
             /* Set alpha mod. */
             ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
-            if (ret != 0) checkFailCount3++;
-        }
-        else if (mode == -4) {
+            if (ret != 0) {
+                checkFailCount3++;
+            }
+        } else if (mode == -4) {
             /* Crazy blending mode magic. */
             nmode = (i/4*j/4) % 4;
             if (nmode==0) {
@@ -184,14 +190,18 @@ void _testBlitBlendMode(int mode)
                 return;
             }
             ret = SDL_SetSurfaceBlendMode( face, bmode );
-            if (ret != 0) checkFailCount4++;
+            if (ret != 0) {
+                checkFailCount4++;
+            }
         }
 
          /* Blitting. */
          rect.x = i;
          rect.y = j;
          ret = SDL_BlitSurface( face, NULL, testSurface, &rect );
-         if (ret != 0) checkFailCount1++;
+         if (ret != 0) {
+            checkFailCount1++;
+         }
       }
     }
     SDLTest_AssertCheck(checkFailCount1 == 0, "Validate results from calls to SDL_BlitSurface, expected: 0, got: %i", checkFailCount1);
@@ -231,7 +241,9 @@ surface_testSaveLoadBitmap(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL) return TEST_ABORTED;
+    if (face == NULL) {
+        return TEST_ABORTED;
+    }
 
     /* Delete test file; ignore errors */
     unlink(sampleFilename);
@@ -275,8 +287,9 @@ surface_testSurfaceConversion(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL)
+    if (face == NULL) {
         return TEST_ABORTED;
+    }
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (face->format->palette) {
@@ -346,8 +359,9 @@ surface_testCompleteSurfaceConversion(void *arg)
     /* Create sample surface */
     face = SDLTest_ImageFace();
     SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
-    if (face == NULL)
+    if (face == NULL) {
         return TEST_ABORTED;
+    }
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (face->format->palette) {
@@ -756,8 +770,7 @@ surface_testOverflow(void *arg)
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-    }
-    else {
+    } else {
         SDLTest_Log("Can't easily overflow size_t on this platform");
     }
 

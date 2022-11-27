@@ -216,7 +216,7 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
     /* Initialize the timer subsystem */
-    if ((flags & SDL_INIT_TIMER)){
+    if ((flags & SDL_INIT_TIMER)) {
 #if !SDL_TIMERS_DISABLED && !SDL_TIMER_DUMMY
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_TIMER)) {
             if (SDL_TimerInit() < 0) {
@@ -232,7 +232,7 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
     /* Initialize the video subsystem */
-    if ((flags & SDL_INIT_VIDEO)){
+    if ((flags & SDL_INIT_VIDEO)) {
 #if !SDL_VIDEO_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_VIDEO)) {
             if (SDL_VideoInit(NULL) < 0) {
@@ -248,7 +248,7 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
     /* Initialize the audio subsystem */
-    if ((flags & SDL_INIT_AUDIO)){
+    if ((flags & SDL_INIT_AUDIO)) {
 #if !SDL_AUDIO_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_AUDIO)) {
             if (SDL_AudioInit(NULL) < 0) {
@@ -264,7 +264,7 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
     /* Initialize the joystick subsystem */
-    if ((flags & SDL_INIT_JOYSTICK)){
+    if ((flags & SDL_INIT_JOYSTICK)) {
 #if !SDL_JOYSTICK_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_JOYSTICK)) {
            if (SDL_JoystickInit() < 0) {
@@ -279,7 +279,7 @@ SDL_InitSubSystem(Uint32 flags)
 #endif
     }
 
-    if ((flags & SDL_INIT_GAMECONTROLLER)){
+    if ((flags & SDL_INIT_GAMECONTROLLER)) {
 #if !SDL_JOYSTICK_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_GAMECONTROLLER)) {
             if (SDL_GameControllerInit() < 0) {
@@ -295,7 +295,7 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
     /* Initialize the haptic subsystem */
-    if ((flags & SDL_INIT_HAPTIC)){
+    if ((flags & SDL_INIT_HAPTIC)) {
 #if !SDL_HAPTIC_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_HAPTIC)) {
             if (SDL_HapticInit() < 0) {
@@ -311,7 +311,7 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
     /* Initialize the sensor subsystem */
-    if ((flags & SDL_INIT_SENSOR)){
+    if ((flags & SDL_INIT_SENSOR)) {
 #if !SDL_SENSOR_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_SENSOR)) {
             if (SDL_SensorInit() < 0) {
@@ -328,11 +328,11 @@ SDL_InitSubSystem(Uint32 flags)
 
     (void) flags_initialized;  /* make static analysis happy, since this only gets used in error cases. */
 
-    return (0);
+    return 0;
 
 quit_and_error:
     SDL_QuitSubSystem(flags_initialized);
-    return (-1);
+    return -1;
 }
 
 int
@@ -500,8 +500,7 @@ SDL_GetVersion(SDL_version * ver)
     static SDL_bool check_hint = SDL_TRUE;
     static SDL_bool legacy_version = SDL_FALSE;
 
-    if (!ver) {
-        return;
+    if (ver == NULL) {        return;
     }
 
     SDL_VERSION(ver);

@@ -49,16 +49,17 @@ InitIME()
     const char *xmodifiers = SDL_getenv("XMODIFIERS");
 #endif
 
-    if (inited == SDL_TRUE)
+    if (inited == SDL_TRUE) {
         return;
+    }
 
     inited = SDL_TRUE;
 
     /* See if fcitx IME support is being requested */
 #ifdef HAVE_FCITX
-    if (!SDL_IME_Init_Real &&
+    if (SDL_IME_Init_Real == NULL &&
         ((im_module && SDL_strcmp(im_module, "fcitx") == 0) ||
-         (!im_module && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
+         (im_module == NULL && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
         SDL_IME_Init_Real = SDL_Fcitx_Init;
         SDL_IME_Quit_Real = SDL_Fcitx_Quit;
         SDL_IME_SetFocus_Real = SDL_Fcitx_SetFocus;
@@ -71,7 +72,7 @@ InitIME()
 
     /* default to IBus */
 #ifdef HAVE_IBUS_IBUS_H
-    if (!SDL_IME_Init_Real) {
+    if (SDL_IME_Init_Real == NULL) {
         SDL_IME_Init_Real = SDL_IBus_Init;
         SDL_IME_Quit_Real = SDL_IBus_Quit;
         SDL_IME_SetFocus_Real = SDL_IBus_SetFocus;
@@ -109,29 +110,33 @@ SDL_IME_Init(void)
 void
 SDL_IME_Quit(void)
 {
-    if (SDL_IME_Quit_Real)
+    if (SDL_IME_Quit_Real) {
         SDL_IME_Quit_Real();
+    }
 }
 
 void
 SDL_IME_SetFocus(SDL_bool focused)
 {
-    if (SDL_IME_SetFocus_Real)
+    if (SDL_IME_SetFocus_Real) {
         SDL_IME_SetFocus_Real(focused);
+    }
 }
 
 void
 SDL_IME_Reset(void)
 {
-    if (SDL_IME_Reset_Real)
+    if (SDL_IME_Reset_Real) {
         SDL_IME_Reset_Real();
+    }
 }
 
 SDL_bool
 SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
-    if (SDL_IME_ProcessKeyEvent_Real)
+    if (SDL_IME_ProcessKeyEvent_Real) {
         return SDL_IME_ProcessKeyEvent_Real(keysym, keycode, state);
+    }
 
     return SDL_FALSE;
 }
@@ -139,15 +144,17 @@ SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 void
 SDL_IME_UpdateTextRect(const SDL_Rect *rect)
 {
-    if (SDL_IME_UpdateTextRect_Real)
+    if (SDL_IME_UpdateTextRect_Real) {
         SDL_IME_UpdateTextRect_Real(rect);
+    }
 }
 
 void
 SDL_IME_PumpEvents()
 {
-    if (SDL_IME_PumpEvents_Real)
+    if (SDL_IME_PumpEvents_Real) {
         SDL_IME_PumpEvents_Real();
+    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -65,7 +65,9 @@ static int vsync_handler()
 /* Copy of gsKit_sync_flip, but without the 'flip' */
 static void gsKit_sync(GSGLOBAL *gsGlobal)
 {
-   if (!gsGlobal->FirstFrame) WaitSema(vsync_sema_id);
+   if (!gsGlobal->FirstFrame) {
+      WaitSema(vsync_sema_id);
+   }
    while (PollSema(vsync_sema_id) >= 0)
    	;
 }
@@ -73,10 +75,8 @@ static void gsKit_sync(GSGLOBAL *gsGlobal)
 /* Copy of gsKit_sync_flip, but without the 'sync' */
 static void gsKit_flip(GSGLOBAL *gsGlobal)
 {
-   if (!gsGlobal->FirstFrame)
-   {
-      if (gsGlobal->DoubleBuffering == GS_SETTING_ON)
-      {
+   if (!gsGlobal->FirstFrame) {
+      if (gsGlobal->DoubleBuffering == GS_SETTING_ON) {
          GS_SET_DISPFB2( gsGlobal->ScreenBuffer[
                gsGlobal->ActiveBuffer & 1] / 8192,
                gsGlobal->Width / 64, gsGlobal->PSM, 0, 0 );
@@ -110,16 +110,16 @@ PS2_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GSTEXTURE* ps2_tex = (GSTEXTURE*) SDL_calloc(1, sizeof(GSTEXTURE));
 
-    if (!ps2_tex)
+    if (ps2_tex == NULL) {
         return SDL_OutOfMemory();
+    }
 
     ps2_tex->Width = texture->w;
     ps2_tex->Height = texture->h;
     ps2_tex->PSM = PixelFormatToPS2PSM(texture->format);
     ps2_tex->Mem = memalign(128, gsKit_texture_size_ee(ps2_tex->Width, ps2_tex->Height, ps2_tex->PSM));
 
-    if (!ps2_tex->Mem)
-    {
+    if (!ps2_tex->Mem) {
         SDL_free(ps2_tex);
         return SDL_OutOfMemory();
     }
@@ -214,7 +214,7 @@ PS2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
     gs_rgbaq rgbaq;
     int i;
 
-    if (!vertices) {
+    if (vertices == NULL) {
         return -1;
     }
 
@@ -249,7 +249,7 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     if (texture) {
         GSPRIMSTQPOINT *vertices = (GSPRIMSTQPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMSTQPOINT), 4, &cmd->data.draw.first);
         
-        if (!vertices) {
+        if (vertices == NULL) {
             return -1;
         }
 
@@ -282,7 +282,7 @@ PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     } else {
         GSPRIMPOINT *vertices = (GSPRIMPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof (GSPRIMPOINT), 4, &cmd->data.draw.first);
 
-        if (!vertices) {
+        if (vertices == NULL) {
             return -1;
         }
 
@@ -332,7 +332,7 @@ PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
     const SDL_Rect *rect = &cmd->data.cliprect.rect;
 
-    if(cmd->data.cliprect.enabled){
+    if (cmd->data.cliprect.enabled) {
         gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(rect->x, rect->y, rect->w, rect->h));
     } else {
         gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);
@@ -520,18 +520,20 @@ PS2_RenderPresent(SDL_Renderer * renderer)
     PS2_RenderData *data = (PS2_RenderData *) renderer->driverdata;
 
     if (data->gsGlobal->DoubleBuffering == GS_SETTING_OFF) {
-		if (data->vsync == 2) // Dynamic
+		if (data->vsync == 2) { // Dynamic
             gsKit_sync(data->gsGlobal);
-        else if (data->vsync == 1)
+        } else if (data->vsync == 1) {
             gsKit_vsync_wait();
+        }
 		gsKit_queue_exec(data->gsGlobal);
     } else {
 		gsKit_queue_exec(data->gsGlobal);
 		gsKit_finish();
-		if (data->vsync == 2) // Dynamic
+		if (data->vsync == 2) { // Dynamic
             gsKit_sync(data->gsGlobal);
-        else if (data->vsync == 1)
+        } else if (data->vsync == 1) {
             gsKit_vsync_wait();
+        }
 		gsKit_flip(data->gsGlobal);
 	}
 	gsKit_TexManager_nextFrame(data->gsGlobal);
@@ -545,11 +547,13 @@ PS2_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GSTEXTURE *ps2_texture = (GSTEXTURE *) texture->driverdata;
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
-    if (data == NULL)
+    if (data == NULL) {
         return;
+    }
 
-    if(ps2_texture == NULL)
+    if (ps2_texture == NULL) {
         return;
+    }
 
     // Free from vram
     gsKit_TexManager_free(data->gsGlobal, ps2_texture);
@@ -573,8 +577,9 @@ PS2_DestroyRenderer(SDL_Renderer * renderer)
         SDL_free(data);
     }
 
-    if (vsync_sema_id >= 0)
+    if (vsync_sema_id >= 0) {
         DeleteSema(vsync_sema_id);
+    }
 
     SDL_free(renderer);
 }
@@ -598,13 +603,13 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_bool dynamicVsync;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
+    if (renderer == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     data = (PS2_RenderData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         PS2_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return NULL;

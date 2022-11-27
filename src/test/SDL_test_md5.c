@@ -106,7 +106,9 @@ static unsigned char MD5PADDING[64] = {
 
 void SDLTest_Md5Init(SDLTest_Md5Context * mdContext)
 {
-  if (mdContext==NULL) return;
+  if (mdContext == NULL) {
+    return;
+  }
 
   mdContext->i[0] = mdContext->i[1] = (MD5UINT4) 0;
 
@@ -132,8 +134,12 @@ void SDLTest_Md5Update(SDLTest_Md5Context * mdContext, unsigned char *inBuf,
   int       mdi;
   unsigned int i, ii;
 
-  if (mdContext == NULL) return;
-  if (inBuf == NULL || inLen < 1) return;
+  if (mdContext == NULL) {
+    return;
+  }
+  if (inBuf == NULL || inLen < 1) {
+    return;
+  }
 
   /*
    * compute number of bytes mod 64
@@ -143,8 +149,9 @@ void SDLTest_Md5Update(SDLTest_Md5Context * mdContext, unsigned char *inBuf,
   /*
    * update number of bits
    */
-  if ((mdContext->i[0] + ((MD5UINT4) inLen << 3)) < mdContext->i[0])
+  if ((mdContext->i[0] + ((MD5UINT4)inLen << 3)) < mdContext->i[0]) {
     mdContext->i[1]++;
+  }
   mdContext->i[0] += ((MD5UINT4) inLen << 3);
   mdContext->i[1] += ((MD5UINT4) inLen >> 29);
 
@@ -158,11 +165,9 @@ void SDLTest_Md5Update(SDLTest_Md5Context * mdContext, unsigned char *inBuf,
      * transform if necessary
      */
     if (mdi == 0x40) {
-      for (i = 0, ii = 0; i < 16; i++, ii += 4)
-    in[i] = (((MD5UINT4) mdContext->in[ii + 3]) << 24) |
-      (((MD5UINT4) mdContext->in[ii + 2]) << 16) |
-      (((MD5UINT4) mdContext->in[ii + 1]) << 8) |
-      ((MD5UINT4) mdContext->in[ii]);
+      for (i = 0, ii = 0; i < 16; i++, ii += 4) {
+    in[i] = (((MD5UINT4)mdContext->in[ii + 3]) << 24) | (((MD5UINT4)mdContext->in[ii + 2]) << 16) | (((MD5UINT4)mdContext->in[ii + 1]) << 8) | ((MD5UINT4)mdContext->in[ii]);
+      }
       SDLTest_Md5Transform(mdContext->buf, in);
       mdi = 0;
     }
@@ -181,7 +186,9 @@ void SDLTest_Md5Final(SDLTest_Md5Context * mdContext)
   unsigned int i, ii;
   unsigned int padLen;
 
-  if (mdContext == NULL) return;
+  if (mdContext == NULL) {
+    return;
+  }
 
   /*
    * save number of bits
@@ -203,11 +210,9 @@ void SDLTest_Md5Final(SDLTest_Md5Context * mdContext)
   /*
    * append length in bits and transform
    */
-  for (i = 0, ii = 0; i < 14; i++, ii += 4)
-    in[i] = (((MD5UINT4) mdContext->in[ii + 3]) << 24) |
-      (((MD5UINT4) mdContext->in[ii + 2]) << 16) |
-      (((MD5UINT4) mdContext->in[ii + 1]) << 8) |
-      ((MD5UINT4) mdContext->in[ii]);
+  for (i = 0, ii = 0; i < 14; i++, ii += 4) {
+    in[i] = (((MD5UINT4)mdContext->in[ii + 3]) << 24) | (((MD5UINT4)mdContext->in[ii + 2]) << 16) | (((MD5UINT4)mdContext->in[ii + 1]) << 8) | ((MD5UINT4)mdContext->in[ii]);
+  }
   SDLTest_Md5Transform(mdContext->buf, in);
 
   /*

@@ -151,11 +151,11 @@ SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
     Sint64 temp;
     Sint64 number;
 
-    if(pMin > pMax) {
+    if (pMin > pMax) {
         temp = min;
         min = max;
         max = temp;
-    } else if(pMin == pMax) {
+    } else if (pMin == pMax) {
         return (Sint32)min;
     }
 
@@ -477,7 +477,7 @@ SDLTest_RandomAsciiStringWithMaximumLength(int maxLength)
 {
     int size;
 
-    if(maxLength < 1) {
+    if (maxLength < 1) {
                 SDL_InvalidParamError("maxLength");
         return NULL;
     }
@@ -494,7 +494,7 @@ SDLTest_RandomAsciiStringOfSize(int size)
     int counter;
 
 
-    if(size < 1) {
+    if (size < 1) {
                 SDL_InvalidParamError("size");
         return NULL;
     }
@@ -504,7 +504,7 @@ SDLTest_RandomAsciiStringOfSize(int size)
       return NULL;
         }
 
-    for(counter = 0; counter < size; ++counter) {
+    for (counter = 0; counter < size; ++counter) {
         string[counter] = (char)SDLTest_RandomIntegerInRange(32, 126);
     }
 

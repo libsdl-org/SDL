@@ -235,7 +235,7 @@ WIN_FreeCursor(SDL_Cursor * cursor)
 static int
 WIN_ShowCursor(SDL_Cursor * cursor)
 {
-    if (!cursor) {
+    if (cursor == NULL) {
         cursor = SDL_blank_cursor;
     }
     if (cursor) {

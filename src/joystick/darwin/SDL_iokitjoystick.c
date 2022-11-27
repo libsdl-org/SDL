@@ -41,7 +41,7 @@ static recDevice *gpDeviceList = NULL;
 
 void FreeRumbleEffectData(FFEFFECT *effect)
 {
-    if (!effect) {
+    if (effect == NULL) {
         return;
     }
     SDL_free(effect->rgdwAxes);
@@ -57,7 +57,7 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 
     /* Create the effect */
     effect = (FFEFFECT *)SDL_calloc(1, sizeof(*effect));
-    if (!effect) {
+    if (effect == NULL) {
         return NULL;
     }
     effect->dwSize = sizeof(*effect);
@@ -81,7 +81,7 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     effect->dwFlags |= FFEFF_CARTESIAN;
 
     periodic = (FFPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (!periodic) {
+    if (periodic == NULL) {
         FreeRumbleEffectData(effect);
         return NULL;
     }
@@ -99,8 +99,9 @@ static recDevice *GetDeviceForIndex(int device_index)
     recDevice *device = gpDeviceList;
     while (device) {
         if (!device->removed) {
-            if (device_index == 0)
+            if (device_index == 0) {
                 break;
+            }
 
             --device_index;
         }
@@ -206,13 +207,10 @@ GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 m
     const float deviceScale = max - min;
     const float readScale = pElement->maxReport - pElement->minReport;
     int returnValue = SDL_FALSE;
-    if (GetHIDElementState(pDevice, pElement, pValue))
-    {
+    if (GetHIDElementState(pDevice, pElement, pValue)) {
         if (readScale == 0) {
             returnValue = SDL_TRUE;           /* no scaling at all */
-        }
-        else
-        {
+        } else {
             *pValue = ((*pValue - pElement->minReport) * deviceScale / readScale) + min;
             returnValue = SDL_TRUE;
         }
@@ -545,7 +543,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     }
 
     device = (recDevice *) SDL_calloc(1, sizeof(recDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_OutOfMemory();
         return;
     }
@@ -578,7 +576,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     }
 
     /* Add device to the end of the list */
-    if ( !gpDeviceList ) {
+    if (gpDeviceList == NULL) {
         gpDeviceList = device;
     } else {
         recDevice *curdevice;
@@ -889,7 +887,7 @@ DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint1
     /* Scale and average the two rumble strengths */
     Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
     
-    if (!device) {
+    if (device == NULL) {
         return SDL_SetError("Rumble failed, device disconnected");
     }
 
@@ -932,7 +930,7 @@ DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
     recDevice *device = joystick->hwdata;
     Uint32 result = 0;
 
-    if (!device) {
+    if (device == NULL) {
         return 0;
     }
 
@@ -969,7 +967,7 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     SInt32 value, range;
     int i, goodRead = SDL_FALSE;
 
-    if (!device) {
+    if (device == NULL) {
         return;
     }
 

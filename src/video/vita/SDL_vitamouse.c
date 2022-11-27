@@ -44,16 +44,14 @@ void
 VITA_PollMouse(void)
 {
     // We skip polling mouse if no window is created
-    if (Vita_Window == NULL)
+    if (Vita_Window == NULL) {
         return;
+    }
 
-    if (mouse_hid_handle > 0)
-    {
+    if (mouse_hid_handle > 0) {
         int numReports = sceHidMouseRead(mouse_hid_handle, (SceHidMouseReport**)&m_reports, SCE_HID_MAX_REPORT);
-        if (numReports > 0)
-        {
-            for (int i = 0; i <= numReports - 1; i++)
-            {
+        if (numReports > 0) {
+            for (int i = 0; i <= numReports - 1; i++) {
                 Uint8 changed_buttons = m_reports[i].buttons ^ prev_buttons;
 
                 if (changed_buttons & 0x1) {
@@ -77,8 +75,7 @@ VITA_PollMouse(void)
 
                 prev_buttons = m_reports[i].buttons;
 
-                if (m_reports[i].rel_x || m_reports[i].rel_y)
-                {
+                if (m_reports[i].rel_x || m_reports[i].rel_y) {
                     SDL_SendMouseMotion(Vita_Window, 0, 1, m_reports[i].rel_x, m_reports[i].rel_y);
                 }
             }

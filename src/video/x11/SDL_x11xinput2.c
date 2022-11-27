@@ -46,8 +46,9 @@ static void parse_valuators(const double *input_values, const unsigned char *mas
                             double *output_values,int output_values_len) {
     int i = 0,z = 0;
     int top = mask_len * 8;
-    if (top > MAX_AXIS)
+    if (top > MAX_AXIS) {
         top = MAX_AXIS;
+    }
 
     SDL_memset(output_values,0,output_values_len * sizeof(double));
     for (; i < top && z < output_values_len; i++) {
@@ -65,13 +66,13 @@ query_xinput2_version(Display *display, int major, int minor)
 {
     /* We don't care if this fails, so long as it sets major/minor on it's way out the door. */
     X11_XIQueryVersion(display, &major, &minor);
-    return ((major * 1000) + minor);
+    return (major * 1000) + minor;
 }
 
 static SDL_bool
 xinput2_version_atleast(const int version, const int wantmajor, const int wantminor)
 {
-    return ( version >= ((wantmajor * 1000) + wantminor) );
+    return version >= ((wantmajor * 1000) + wantminor);
 }
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
@@ -232,13 +233,13 @@ xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
 
     /* don't know about this device yet, query and cache it. */
     devinfo = (SDL_XInput2DeviceInfo *) SDL_calloc(1, sizeof (SDL_XInput2DeviceInfo));
-    if (!devinfo) {
+    if (devinfo == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     xidevinfo = X11_XIQueryDevice(videodata->display, device_id, &i);
-    if (!xidevinfo) {
+    if (xidevinfo == NULL) {
         SDL_free(devinfo);
         return NULL;
     }
@@ -292,7 +293,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie)
             }
 
             devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
-            if (!devinfo) {
+            if (devinfo == NULL) {
                 return 0;  /* oh well. */
             }
 
@@ -417,8 +418,9 @@ X11_InitXinput2Multitouch(_THIS)
             XITouchClassInfo *t = (XITouchClassInfo*)class;
 
             /* Only touch devices */
-            if (class->type != XITouchClass)
+            if (class->type != XITouchClass) {
                 continue;
+            }
 
             if (t->mode == XIDependentTouch) {
                 touchType = SDL_TOUCH_DEVICE_INDIRECT_RELATIVE;

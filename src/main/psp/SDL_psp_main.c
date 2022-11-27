@@ -46,8 +46,9 @@ int sdl_psp_setup_callbacks(void)
     int thid;
     thid = sceKernelCreateThread("update_thread",
                      sdl_psp_callback_thread, 0x11, 0xFA0, 0, 0);
-    if(thid >= 0)
+    if (thid >= 0) {
         sceKernelStartThread(thid, 0, 0);
+    }
     return thid;
 }
 

@@ -216,7 +216,7 @@ SDL_MouseInit(void)
 
     mouse->cursor_shown = SDL_TRUE;
 
-    return (0);
+    return 0;
 }
 
 void
@@ -453,7 +453,7 @@ SDL_SetMouseSystemScale(int num_values, const float *values)
     }
 
     v = (float *)SDL_realloc(mouse->system_scale_values, num_values * sizeof(*values));
-    if (!v) {
+    if (v == NULL) {
         return SDL_OutOfMemory();
     }
     SDL_memcpy(v, values, num_values * sizeof(*values));
@@ -676,7 +676,7 @@ static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
     if (button >= mouse->num_clickstates) {
         int i, count = button + 1;
         SDL_MouseClickState *clickstate = (SDL_MouseClickState *)SDL_realloc(mouse->clickstate, count * sizeof(*mouse->clickstate));
-        if (!clickstate) {
+        if (clickstate == NULL) {
             return NULL;
         }
         mouse->clickstate = clickstate;
@@ -699,7 +699,7 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     SDL_MouseInputSource *source;
 
     source = GetMouseInputSource(mouse, mouseID);
-    if (!source) {
+    if (source == NULL) {
         return 0;
     }
     buttonstate = source->buttonstate;
@@ -996,10 +996,10 @@ SDL_GetGlobalMouseState(int *x, int *y)
         int tmpx, tmpy;
 
         /* make sure these are never NULL for the backend implementations... */
-        if (!x) {
+        if (x == NULL) {
             x = &tmpx;
         }
-        if (!y) {
+        if (y == NULL) {
             y = &tmpy;
         }
 
@@ -1259,7 +1259,7 @@ SDL_CreateCursor(const Uint8 * data, const Uint8 * mask,
                                    0x0000FF00,
                                    0x000000FF,
                                    0xFF000000);
-    if (!surface) {
+    if (surface == NULL) {
         return NULL;
     }
     for (y = 0; y < h; ++y) {
@@ -1293,7 +1293,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     SDL_Surface *temp = NULL;
     SDL_Cursor *cursor;
 
-    if (!surface) {
+    if (surface == NULL) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -1312,7 +1312,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     if (surface->format->format != SDL_PIXELFORMAT_ARGB8888) {
         temp = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
-        if (!temp) {
+        if (temp == NULL) {
             return NULL;
         }
         surface = temp;
@@ -1368,7 +1368,7 @@ SDL_SetCursor(SDL_Cursor * cursor)
                     break;
                 }
             }
-            if (!found) {
+            if (found == NULL) {
                 SDL_SetError("Cursor not associated with the current mouse");
                 return;
             }
@@ -1398,7 +1398,7 @@ SDL_GetCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (!mouse) {
+    if (mouse == NULL) {
         return NULL;
     }
     return mouse->cur_cursor;
@@ -1409,7 +1409,7 @@ SDL_GetDefaultCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (!mouse) {
+    if (mouse == NULL) {
         return NULL;
     }
     return mouse->def_cursor;
@@ -1421,7 +1421,7 @@ SDL_FreeCursor(SDL_Cursor * cursor)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Cursor *curr, *prev;
 
-    if (!cursor) {
+    if (cursor == NULL) {
         return;
     }
 
@@ -1455,7 +1455,7 @@ SDL_ShowCursor(int toggle)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool shown;
 
-    if (!mouse) {
+    if (mouse == NULL) {
         return 0;
     }
 

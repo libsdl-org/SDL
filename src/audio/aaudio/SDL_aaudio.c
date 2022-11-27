@@ -439,7 +439,7 @@ SDL_bool aaudio_DetectBrokenPlayState( void )
     int64_t framePosition, timeNanoseconds;
     aaudio_result_t res;
 
-    if ( !audioDevice || !audioDevice->hidden ) {
+    if (audioDevice == NULL || !audioDevice->hidden ) {
         return SDL_FALSE;
     }
 

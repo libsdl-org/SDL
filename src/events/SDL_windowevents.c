@@ -86,7 +86,7 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
 {
     int posted;
 
-    if (!window) {
+    if (window == NULL) {
         return 0;
     }
     switch (windowevent) {

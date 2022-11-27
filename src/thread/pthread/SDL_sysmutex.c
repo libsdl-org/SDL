@@ -63,7 +63,7 @@ SDL_CreateMutex(void)
     } else {
         SDL_OutOfMemory();
     }
-    return (mutex);
+    return mutex;
 }
 
 void

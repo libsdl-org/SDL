@@ -39,8 +39,9 @@ SDL_GetBasePath(void)
   getcwd(cwd, sizeof(cwd));
   len = SDL_strlen(cwd) + 1;
   retval = (char *) SDL_malloc(len);
-  if (retval)
+  if (retval) {
     SDL_memcpy(retval, cwd, len);
+  }
 
   return retval;
 }
@@ -54,15 +55,17 @@ static void recursive_mkdir(const char *dir) {
 
   snprintf(tmp, sizeof(tmp),"%s",dir);
   len = strlen(tmp);
-  if (tmp[len - 1] == '/')
+  if (tmp[len - 1] == '/') {
       tmp[len - 1] = 0;
+  }
 
   for (p = tmp + 1; *p; p++) {
     if (*p == '/') {
       *p = 0;
       // Just creating subfolders from current path
-      if (strstr(tmp, base) != NULL)
+      if (strstr(tmp, base) != NULL) {
         mkdir(tmp, S_IRWXU);
+      }
 
       *p = '/';
     }
@@ -78,11 +81,11 @@ SDL_GetPrefPath(const char *org, const char *app)
   char *retval = NULL;
   size_t len;
   char *base = SDL_GetBasePath();
-  if (!app) {
+  if (app == NULL) {
     SDL_InvalidParamError("app");
     return NULL;
   }
-  if(!org) {
+  if (org == NULL) {
     org = "";
   }
 

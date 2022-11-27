@@ -65,9 +65,9 @@ Emscripten_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_OutOfMemory();
-        return (0);
+        return 0;
     }
 
     /* Firefox sends blur event which would otherwise prevent full screen
@@ -310,7 +310,7 @@ Emscripten_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data;
 
-    if(window->driverdata) {
+    if (window->driverdata) {
         data = (SDL_WindowData *) window->driverdata;
 
         Emscripten_UnregisterEventHandlers(data);
@@ -328,19 +328,19 @@ static void
 Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
     SDL_WindowData *data;
-    if(window->driverdata) {
+    if (window->driverdata) {
         data = (SDL_WindowData *) window->driverdata;
 
-        if(fullscreen) {
+        if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;
             SDL_bool is_desktop_fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP;
             int res;
 
             strategy.scaleMode = is_desktop_fullscreen ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
 
-            if(!is_desktop_fullscreen) {
+            if (!is_desktop_fullscreen) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_NONE;
-            } else if(window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            } else if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
             } else {
                 strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
@@ -355,12 +355,11 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
             data->fullscreen_resize = is_desktop_fullscreen;
 
             res = emscripten_request_fullscreen_strategy(data->canvas_id, 1, &strategy);
-            if(res != EMSCRIPTEN_RESULT_SUCCESS && res != EMSCRIPTEN_RESULT_DEFERRED) {
+            if (res != EMSCRIPTEN_RESULT_SUCCESS && res != EMSCRIPTEN_RESULT_DEFERRED) {
                 /* unset flags, fullscreen failed */
                 window->flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
             }
-        }
-        else
+        } else
             emscripten_exit_fullscreen();
     }
 }

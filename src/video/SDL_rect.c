@@ -38,10 +38,10 @@ SDL_GetSpanEnclosingRect(int width, int height,
     } else if (height < 1) {
         SDL_InvalidParamError("height");
         return SDL_FALSE;
-    } else if (!rects) {
+    } else if (rects == NULL) {
         SDL_InvalidParamError("rects");
         return SDL_FALSE;
-    } else if (!span) {
+    } else if (span == NULL) {
         SDL_InvalidParamError("span");
         return SDL_FALSE;
     } else if (numrects < 1) {

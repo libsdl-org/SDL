@@ -109,7 +109,7 @@ drawCircle(SDL_Surface *screen, float x, float y, float r, unsigned int c)
     for (ty = (float) -SDL_fabs(r); ty <= (float) SDL_fabs((int) r); ty++) {
         xr = (float) SDL_sqrt(r * r - ty * ty);
         if (r > 0) { /* r > 0 ==> filled circle */
-            for(tx = -xr + 0.5f; tx <= xr - 0.5f; tx++) {
+            for (tx = -xr + 0.5f; tx <= xr - 0.5f; tx++) {
                 setpix(screen, x + tx, y + ty, c);
             }
         } else {
@@ -133,7 +133,7 @@ DrawScreen(SDL_Window *window)
     SDL_Surface *screen = SDL_GetWindowSurface(window);
     int i;
 
-    if (!screen) {
+    if (screen == NULL) {
         return;
     }
 
@@ -273,7 +273,7 @@ loop(void)
 int main(int argc, char* argv[])
 {
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (!state) {
+    if (state == NULL) {
         return 1;
     }
 

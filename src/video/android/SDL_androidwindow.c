@@ -67,7 +67,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     SDL_SetKeyboardFocus(window);
 
     data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (data == NULL) {
         retval = SDL_OutOfMemory();
         goto endfunction;
     }
@@ -136,7 +136,7 @@ Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display
         }
 
         data = (SDL_WindowData *)window->driverdata;
-        if (!data || !data->native_window) {
+        if (data == NULL || !data->native_window) {
             if (data && !data->native_window) {
                 SDL_SetError("Missing native window");
             }

@@ -165,7 +165,7 @@ loadFont(void)
 {
     SDL_Surface *surface = SDL_LoadBMP("kromasky_16x16.bmp");
 
-    if (!surface) {
+    if (surface == NULL) {
         printf("Error loading bitmap: %s\n", SDL_GetError());
         return 0;
     } else {
@@ -183,7 +183,7 @@ loadFont(void)
         SDL_BlitSurface(surface, NULL, converted, NULL);
         /* create our texture */
         texture = SDL_CreateTextureFromSurface(renderer, converted);
-        if (!texture) {
+        if (texture == NULL) {
             printf("texture creation failed: %s\n", SDL_GetError());
         } else {
             /* set blend mode for our texture */

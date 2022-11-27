@@ -200,7 +200,7 @@ Wayland_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_free(data);
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
@@ -596,7 +596,7 @@ display_handle_done(void *data,
 
     if (driverdata->has_logical_size) { /* If xdg-output is present, calculate the true scale of the desktop */
         driverdata->scale_factor = (float)native_mode.w / (float)driverdata->width;
-    } else  { /* Scale the desktop coordinates, if xdg-output isn't present */
+    } else { /* Scale the desktop coordinates, if xdg-output isn't present */
         driverdata->width /= driverdata->scale_factor;
         driverdata->height /= driverdata->scale_factor;
     }
@@ -702,7 +702,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     SDL_WaylandOutputData *data;
 
     output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
-    if (!output) {
+    if (output == NULL) {
         SDL_SetError("Failed to retrieve output.");
         return;
     }

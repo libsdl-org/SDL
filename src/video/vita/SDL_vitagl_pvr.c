@@ -52,10 +52,8 @@ VITA_GL_LoadLibrary(_THIS, const char *path)
     char* default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (skip_init == NULL) // we don't care about actual value
-    {
-        if (override != NULL)
-        {
+    if (skip_init == NULL) // we don't care about actual value {
+        if (override != NULL) {
           default_path = override;
         }
 
@@ -99,8 +97,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
 
     context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
 
-    if (context != NULL)
-    {
+    if (context != NULL) {
         FB_WIDTH = window->w;
         FB_HEIGHT = window->h;
         set_getprocaddress((void *(*)(const char *))eglGetProcAddress);

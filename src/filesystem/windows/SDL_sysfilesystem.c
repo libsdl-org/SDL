@@ -40,7 +40,7 @@ SDL_GetBasePath(void)
 
     while (SDL_TRUE) {
         void *ptr = SDL_realloc(path, buflen * sizeof (WCHAR));
-        if (!ptr) {
+        if (ptr == NULL) {
             SDL_free(path);
             SDL_OutOfMemory();
             return NULL;
@@ -98,11 +98,11 @@ SDL_GetPrefPath(const char *org, const char *app)
     size_t new_wpath_len = 0;
     BOOL api_result = FALSE;
 
-    if (!app) {
+    if (app == NULL) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (!org) {
+    if (org == NULL) {
         org = "";
     }
 

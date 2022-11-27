@@ -65,7 +65,7 @@ DISKAUDIO_PlayDevice(_THIS)
 static Uint8 *
 DISKAUDIO_GetDeviceBuf(_THIS)
 {
-    return (_this->hidden->mixbuf);
+    return _this->hidden->mixbuf;
 }
 
 static int

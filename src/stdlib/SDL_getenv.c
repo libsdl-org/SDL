@@ -47,8 +47,8 @@ int
 SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
     
     return setenv(name, value, overwrite);
@@ -58,8 +58,8 @@ int
 SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
     
     if (!overwrite) {
@@ -81,8 +81,8 @@ SDL_setenv(const char *name, const char *value, int overwrite)
     char *new_variable;
 
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
     
     if (getenv(name) != NULL) {
@@ -96,8 +96,8 @@ SDL_setenv(const char *name, const char *value, int overwrite)
     /* This leaks. Sorry. Get a better OS so we don't have to do this. */
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
     new_variable = (char *) SDL_malloc(len);
-    if (!new_variable) {
-        return (-1);
+    if (new_variable == NULL) {
+        return -1;
     }
 
     SDL_snprintf(new_variable, len, "%s=%s", name, value);
@@ -114,8 +114,8 @@ SDL_setenv(const char *name, const char *value, int overwrite)
     char *new_variable;
 
     /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return (-1);
+    if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
+        return -1;
     }
 
     /* See if it already exists */
@@ -126,8 +126,8 @@ SDL_setenv(const char *name, const char *value, int overwrite)
     /* Allocate memory for the variable */
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
     new_variable = (char *) SDL_malloc(len);
-    if (!new_variable) {
-        return (-1);
+    if (new_variable == NULL) {
+        return -1;
     }
 
     SDL_snprintf(new_variable, len, "%s=%s", name, value);
@@ -165,7 +165,7 @@ SDL_setenv(const char *name, const char *value, int overwrite)
             SDL_free(new_variable);
         }
     }
-    return (added ? 0 : -1);
+    return added ? 0 : -1;
 }
 #endif
 
@@ -180,7 +180,7 @@ SDL_getenv(const char *name)
 #endif
 
     /* Input validation */
-    if (!name || *name == '\0') {
+    if (name == NULL || *name == '\0') {
         return NULL;
     }
 
@@ -193,7 +193,7 @@ SDL_getenv(const char *name)
     size_t bufferlen;
 
     /* Input validation */
-    if (!name || *name == '\0') {
+    if (name == NULL || *name == '\0') {
         return NULL;
     }
     
@@ -221,14 +221,14 @@ SDL_getenv(const char *name)
     char *value;
 
     /* Input validation */
-    if (!name || *name == '\0') {
+    if (name == NULL || *name == '\0') {
         return NULL;
     }
     
     value = (char *) 0;
     if (SDL_env) {
         len = SDL_strlen(name);
-        for (i = 0; SDL_env[i] && !value; ++i) {
+        for (i = 0; SDL_env[i] && value == NULL; ++i) {
             if ((SDL_strncmp(SDL_env[i], name, len) == 0) &&
                 (SDL_env[i][len] == '=')) {
                 value = &SDL_env[i][len + 1];
@@ -307,7 +307,7 @@ main(int argc, char *argv[])
     } else {
         printf("failed\n");
     }
-    return (0);
+    return 0;
 }
 #endif /* TEST_MAIN */
 

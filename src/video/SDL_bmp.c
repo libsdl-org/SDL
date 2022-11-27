@@ -64,17 +64,21 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
     Uint8 ch;
     Uint8 needsPad;
 
-#define COPY_PIXEL(x)   spot = &bits[ofs++]; if(spot >= start && spot < end) *spot = (x)
+#define COPY_PIXEL(x)   spot = &bits[ofs++]; if (spot >= start && spot < end) *spot = (x)
 
     for (;;) {
-        if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+        if (!SDL_RWread(src, &ch, 1, 1)) {
+            return SDL_TRUE;
+        }
         /*
         | encoded mode starts with a run length, and then a byte
         | with two colour indexes to alternate between for the run
         */
         if (ch) {
             Uint8 pixel;
-            if (!SDL_RWread(src, &pixel, 1, 1)) return SDL_TRUE;
+            if (!SDL_RWread(src, &pixel, 1, 1)) {
+                return SDL_TRUE;
+            }
             if (isRle8) {                   /* 256-color bitmap, compressed */
                 do {
                     COPY_PIXEL(pixel);
@@ -84,9 +88,13 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
                 Uint8 pixel1 = pixel & 0x0F;
                 for (;;) {
                     COPY_PIXEL(pixel0); /* even count, high nibble */
-                    if (!--ch) break;
+                    if (!--ch) {
+                    break;
+                    }
                     COPY_PIXEL(pixel1); /* odd count, low nibble */
-                    if (!--ch) break;
+                    if (!--ch) {
+                    break;
+                    }
                 }
             }
         } else {
@@ -95,7 +103,9 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
             | a cursor move, or some absolute data.
             | zero tag may be absolute mode or an escape
             */
-            if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+            if (!SDL_RWread(src, &ch, 1, 1)) {
+                return SDL_TRUE;
+            }
             switch (ch) {
             case 0:                         /* end of line */
                 ofs = 0;
@@ -104,9 +114,13 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
             case 1:                         /* end of bitmap */
                 return SDL_FALSE;           /* success! */
             case 2:                         /* delta */
-                if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+                if (!SDL_RWread(src, &ch, 1, 1)) {
+                    return SDL_TRUE;
+                }
                 ofs += ch;
-                if (!SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+                if (!SDL_RWread(src, &ch, 1, 1)) {
+                    return SDL_TRUE;
+                }
                 bits -= (ch * pitch);
                 break;
             default:                        /* no compression */
@@ -114,22 +128,32 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
                     needsPad = (ch & 1);
                     do {
                         Uint8 pixel;
-                        if (!SDL_RWread(src, &pixel, 1, 1)) return SDL_TRUE;
+                        if (!SDL_RWread(src, &pixel, 1, 1)) {
+                            return SDL_TRUE;
+                        }
                         COPY_PIXEL(pixel);
                     } while (--ch);
                 } else {
                     needsPad = (((ch+1)>>1) & 1); /* (ch+1)>>1: bytes size */
                     for (;;) {
                         Uint8 pixel;
-                        if (!SDL_RWread(src, &pixel, 1, 1)) return SDL_TRUE;
+                        if (!SDL_RWread(src, &pixel, 1, 1)) {
+                            return SDL_TRUE;
+                        }
                         COPY_PIXEL(pixel >> 4);
-                        if (!--ch) break;
+                        if (!--ch) {
+                            break;
+                        }
                         COPY_PIXEL(pixel & 0x0F);
-                        if (!--ch) break;
+                        if (!--ch) {
+                            break;
+                        }
                     }
                 }
                 /* pad at even boundary */
-                if (needsPad && !SDL_RWread(src, &ch, 1, 1)) return SDL_TRUE;
+                if (needsPad && !SDL_RWread(src, &ch, 1, 1)) {
+                    return SDL_TRUE;
+                }
                 break;
             }
         }
@@ -460,7 +484,9 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     }
     if ((biCompression == BI_RLE4) || (biCompression == BI_RLE8)) {
         was_error = readRlePixels(surface, src, biCompression == BI_RLE8);
-        if (was_error) SDL_Error(SDL_EFREAD);
+        if (was_error) {
+            SDL_Error(SDL_EFREAD);
+        }
         goto done;
     }
     top = (Uint8 *)surface->pixels;
@@ -535,15 +561,17 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             case 15:
             case 16:{
                     Uint16 *pix = (Uint16 *) bits;
-                    for (i = 0; i < surface->w; i++)
+                    for (i = 0; i < surface->w; i++) {
                         pix[i] = SDL_Swap16(pix[i]);
+                    }
                     break;
                 }
 
             case 32:{
                     Uint32 *pix = (Uint32 *) bits;
-                    for (i = 0; i < surface->w; i++)
+                    for (i = 0; i < surface->w; i++) {
                         pix[i] = SDL_Swap32(pix[i]);
+                    }
                     break;
                 }
             }
@@ -577,7 +605,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     if (freesrc && src) {
         SDL_RWclose(src);
     }
-    return (surface);
+    return surface;
 }
 
 int
@@ -662,7 +690,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
                 SDL_InitFormat(&format, SDL_PIXELFORMAT_BGR24);
             }
             surface = SDL_ConvertSurface(saveme, &format, 0);
-            if (!surface) {
+            if (surface == NULL) {
                 SDL_SetError("Couldn't convert image to %d bpp",
                              format.BitsPerPixel);
             }
@@ -817,7 +845,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
     if (freedst && dst) {
         SDL_RWclose(dst);
     }
-    return ((SDL_strcmp(SDL_GetError(), "") == 0) ? 0 : -1);
+    return (SDL_strcmp(SDL_GetError(), "") == 0) ? 0 : -1;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

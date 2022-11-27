@@ -87,9 +87,9 @@ void PSP_PumpEvents(_THIS)
     /* HPRM Keyboard */
     changed = old_keys ^ keys;
     old_keys = keys;
-    if(changed) {
-        for(i=0; i<sizeof(keymap_psp)/sizeof(keymap_psp[0]); i++) {
-            if(changed & keymap_psp[i].id) {
+    if (changed) {
+        for (i=0; i<sizeof(keymap_psp)/sizeof(keymap_psp[0]); i++) {
+            if (changed & keymap_psp[i].id) {
                 SDL_SendKeyboardKey((keys & keymap_psp[i].id) ?
                                     SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap_psp[i].sym));
             }
@@ -102,10 +102,10 @@ void PSP_PumpEvents(_THIS)
         int i, length, count;
         SIrKeybScanCodeData *scanData;
 
-            if(pspIrKeybReadinput(buffer, &length) >= 0) {
-                if((length % sizeof(SIrKeybScanCodeData)) == 0){
+            if (pspIrKeybReadinput(buffer, &length) >= 0) {
+                if ((length % sizeof(SIrKeybScanCodeData)) == 0) {
                     count = length / sizeof(SIrKeybScanCodeData);
-                    for( i=0; i < count; i++ ) {
+                    for ( i=0; i < count; i++ ) {
                 unsigned char raw, pressed;
                         scanData=(SIrKeybScanCodeData*) buffer+i;
                         raw = scanData->raw;
@@ -131,8 +131,9 @@ void PSP_InitOSKeymap(_THIS)
 {
 #ifdef PSPIRKEYB
     int i;
-    for (i=0; i<SDL_TABLESIZE(keymap); ++i)
+    for (i = 0; i < SDL_TABLESIZE(keymap); ++i) {
         keymap[i] = SDLK_UNKNOWN;
+    }
 
     keymap[KEY_ESC] = SDLK_ESCAPE;
 
@@ -250,12 +251,12 @@ void PSP_EventInit(_THIS)
     }
 #endif
     /* Start thread to read data */
-    if((event_sem =  SDL_CreateSemaphore(1)) == NULL) {
+    if ((event_sem =  SDL_CreateSemaphore(1)) == NULL) {
         SDL_SetError("Can't create input semaphore");
         return;
     }
     running = 1;
-    if((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
+    if ((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
         SDL_SetError("Can't create input thread");
         return;
     }

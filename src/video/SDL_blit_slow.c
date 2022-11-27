@@ -147,14 +147,17 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR;
-                if (dstR > 255)
+                if (dstR > 255) {
                     dstR = 255;
+                }
                 dstG = srcG + dstG;
-                if (dstG > 255)
+                if (dstG > 255) {
                     dstG = 255;
+                }
                 dstB = srcB + dstB;
-                if (dstB > 255)
+                if (dstB > 255) {
                     dstB = 255;
+                }
                 break;
             case SDL_COPY_MOD:
                 dstR = (srcR * dstR) / 255;
@@ -163,17 +166,21 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 break;
             case SDL_COPY_MUL:
                 dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255;
-                if (dstR > 255)
+                if (dstR > 255) {
                     dstR = 255;
+                }
                 dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255;
-                if (dstG > 255)
+                if (dstG > 255) {
                     dstG = 255;
+                }
                 dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255;
-                if (dstB > 255)
+                if (dstB > 255) {
                     dstB = 255;
+                }
                 dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255;
-                if (dstA > 255)
+                if (dstA > 255) {
                     dstA = 255;
+                }
                 break;
             }
             if (FORMAT_HAS_ALPHA(dstfmt_val)) {

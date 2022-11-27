@@ -818,7 +818,7 @@ IMA_ADPCM_Init(WaveFile *file, size_t datalength)
         /* There's no specification for this, but it's basically the same
          * format because the extensible header has wSampePerBlocks too.
          */
-    } else  {
+    } else {
         /* The Standards Update says there 'should' be 2 bytes for wSamplesPerBlock. */
         if (chunk->size >= 20 && format->extsize >= 2) {
             format->samplesperblock = chunk->data[18] | ((Uint16)chunk->data[19] << 8);
@@ -899,14 +899,18 @@ IMA_ADPCM_ProcessNibble(Sint8 *cindex, Sint16 lastsample, Uint8 nybble)
      * (nybble & 0x8 ? -1 : 1) * ((nybble & 0x7) * step / 4 + step / 8)
      */
     delta = step >> 3;
-    if (nybble & 0x04)
+    if (nybble & 0x04) {
         delta += step;
-    if (nybble & 0x02)
+    }
+    if (nybble & 0x02) {
         delta += step >> 1;
-    if (nybble & 0x01)
+    }
+    if (nybble & 0x01) {
         delta += step >> 2;
-    if (nybble & 0x08)
+    }
+    if (nybble & 0x08) {
         delta = -delta;
+    }
 
     sample = lastsample + delta;
 

@@ -184,8 +184,7 @@ Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 
     if (window && context) {
         ret = SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *) window->driverdata)->egl_surface, context);
-    }
-    else {
+    } else {
         ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
 

@@ -40,10 +40,12 @@ RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     regs.r[0] = (unsigned int)&error;
 
     regs.r[1] = (1 << 8) | (1 << 4);
-    if (messageboxdata->flags == SDL_MESSAGEBOX_INFORMATION)
+    if (messageboxdata->flags == SDL_MESSAGEBOX_INFORMATION) {
         regs.r[1] |= (1 << 9);
-    else if (messageboxdata->flags == SDL_MESSAGEBOX_WARNING)
+    } else if (messageboxdata->flags == SDL_MESSAGEBOX_WARNING) {
         regs.r[1] |= (2 << 9);
+    }
+    
     regs.r[2] = (unsigned int)messageboxdata->title;
     regs.r[3] = 0;
     regs.r[4] = 0;
@@ -51,8 +53,9 @@ RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_strlcpy(buttonstring, "" , 1024);
     for (i = 0; i < messageboxdata->numbuttons; i++) {
         SDL_strlcat(buttonstring, messageboxdata->buttons[i].text, 1024);
-        if (i + 1 < messageboxdata->numbuttons)
+        if (i + 1 < messageboxdata->numbuttons) {
             SDL_strlcat(buttonstring, ",", 1024);
+        }
     }
     regs.r[5] = (unsigned int)buttonstring;
 

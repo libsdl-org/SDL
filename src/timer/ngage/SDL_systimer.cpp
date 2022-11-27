@@ -37,8 +37,7 @@ extern "C" {
 void
 SDL_TicksInit(void)
 {
-    if (ticks_started)
-    {
+    if (ticks_started) {
         return;
     }
     ticks_started = SDL_TRUE;
@@ -61,8 +60,7 @@ SDL_TicksQuit(void)
 Uint64
 SDL_GetTicks64(void)
 {
-    if (! ticks_started)
-    {
+    if (! ticks_started) {
         SDL_TicksInit();
     }
 

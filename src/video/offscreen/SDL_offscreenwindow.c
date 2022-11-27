@@ -32,7 +32,7 @@ OFFSCREEN_CreateWindow(_THIS, SDL_Window* window)
 {
     OFFSCREEN_Window *offscreen_window = SDL_calloc(1, sizeof(OFFSCREEN_Window));
 
-    if (!offscreen_window) {
+    if (offscreen_window == NULL) {
         return SDL_OutOfMemory();
     }
 

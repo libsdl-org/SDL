@@ -43,7 +43,7 @@ static SDL_TouchID  track_touchid;
 int
 SDL_TouchInit(void)
 {
-    return (0);
+    return 0;
 }
 
 int
@@ -149,7 +149,7 @@ SDL_Finger *
 SDL_GetTouchFinger(SDL_TouchID touchID, int index)
 {
     SDL_Touch *touch = SDL_GetTouch(touchID);
-    if (!touch) {
+    if (touch == NULL) {
         return NULL;
     }
     if (index < 0 || index >= touch->num_fingers) {
@@ -173,7 +173,7 @@ SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name)
     /* Add the touch to the list of touch */
     touchDevices = (SDL_Touch **) SDL_realloc(SDL_touchDevices,
                                       (SDL_num_touch + 1) * sizeof(*touchDevices));
-    if (!touchDevices) {
+    if (touchDevices == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -211,7 +211,7 @@ SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float y, float p
     if (touch->num_fingers == touch->max_fingers) {
         SDL_Finger **new_fingers;
         new_fingers = (SDL_Finger **)SDL_realloc(touch->fingers, (touch->max_fingers+1)*sizeof(*touch->fingers));
-        if (!new_fingers) {
+        if (new_fingers == NULL) {
             return SDL_OutOfMemory();
         }
         touch->fingers = new_fingers;
@@ -256,7 +256,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
     SDL_Mouse *mouse;
 
     SDL_Touch* touch = SDL_GetTouch(id);
-    if (!touch) {
+    if (touch == NULL) {
         return -1;
     }
 
@@ -278,10 +278,18 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
                         if (finger_touching == SDL_FALSE) {
                             int pos_x = (int)(x * (float)window->w);
                             int pos_y = (int)(y * (float)window->h);
-                            if (pos_x < 0) pos_x = 0;
-                            if (pos_x > window->w - 1) pos_x = window->w - 1;
-                            if (pos_y < 0) pos_y = 0;
-                            if (pos_y > window->h - 1) pos_y = window->h - 1;
+                            if (pos_x < 0) {
+                                pos_x = 0;
+                            }
+                            if (pos_x > window->w - 1) {
+                                pos_x = window->w - 1;
+                            }
+                            if (pos_y < 0) {
+                                pos_y = 0;
+                            }
+                            if (pos_y > window->h - 1) {
+                                pos_y = window->h - 1;
+                            }
                             SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
                             SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
                         }
@@ -341,7 +349,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
             posted = (SDL_PushEvent(&event) > 0);
         }
     } else {
-        if (!finger) {
+        if (finger == NULL) {
             /* This finger is already up */
             return 0;
         }
@@ -378,7 +386,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
     float xrel, yrel, prel;
 
     touch = SDL_GetTouch(id);
-    if (!touch) {
+    if (touch == NULL) {
         return -1;
     }
 
@@ -393,10 +401,18 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
                     if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
                         int pos_x = (int)(x * (float)window->w);
                         int pos_y = (int)(y * (float)window->h);
-                        if (pos_x < 0) pos_x = 0;
-                        if (pos_x > window->w - 1) pos_x = window->w - 1;
-                        if (pos_y < 0) pos_y = 0;
-                        if (pos_y > window->h - 1) pos_y = window->h - 1;
+                        if (pos_x < 0) {
+                            pos_x = 0;
+                        }
+                        if (pos_x > window->w - 1) {
+                            pos_x = window->w - 1;
+                        }
+                        if (pos_y < 0) {
+                            pos_y = 0;
+                        }
+                        if (pos_y > window->h - 1) {
+                            pos_y = window->h - 1;
+                        }
                         SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
                     }
                 }
@@ -413,7 +429,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
     }
 
     finger = SDL_GetFinger(touch,fingerid);
-    if (!finger) {
+    if (finger == NULL) {
         return SDL_SendTouch(id, fingerid, window, SDL_TRUE, x, y, pressure);
     }
 
@@ -465,7 +481,7 @@ SDL_DelTouch(SDL_TouchID id)
 
     index = SDL_GetTouchIndex(id);
     touch = SDL_GetTouch(id);
-    if (!touch) {
+    if (touch == NULL) {
         return;
     }
 

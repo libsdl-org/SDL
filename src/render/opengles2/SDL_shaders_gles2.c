@@ -379,12 +379,15 @@ GLES2_ShaderIncludeType GLES2_GetTexCoordPrecisionEnumFromHint()
     const char *texcoord_hint = SDL_GetHint("SDL_RENDER_OPENGLES2_TEXCOORD_PRECISION");
     GLES2_ShaderIncludeType value = GLES2_SHADER_FRAGMENT_INCLUDE_BEST_TEXCOORD_PRECISION;
     if (texcoord_hint) {
-        if (SDL_strcmp(texcoord_hint, "undefined") == 0)
+        if (SDL_strcmp(texcoord_hint, "undefined") == 0) {
             return GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION;
-        if (SDL_strcmp(texcoord_hint, "high") == 0)
+        }
+        if (SDL_strcmp(texcoord_hint, "high") == 0) {
             return GLES2_SHADER_FRAGMENT_INCLUDE_HIGH_TEXCOORD_PRECISION;
-        if (SDL_strcmp(texcoord_hint, "medium") == 0)
+        }
+        if (SDL_strcmp(texcoord_hint, "medium") == 0) {
             return GLES2_SHADER_FRAGMENT_INCLUDE_MEDIUM_TEXCOORD_PRECISION;
+        }
     }
     return value;
 }

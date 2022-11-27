@@ -88,7 +88,7 @@ static size_t
 measure_mode_block(const int *block)
 {
     size_t blockSize = ((block[0] & 0xFF) == 3) ? 7 : 5;
-    while(block[blockSize] != -1) {
+    while (block[blockSize] != -1) {
         blockSize += 2;
     }
     blockSize++;
@@ -169,7 +169,7 @@ convert_mode_block(const int *block)
     }
 
     dst = SDL_malloc(40);
-    if (!dst) {
+    if (dst == NULL) {
         return NULL;
     }
 
@@ -249,7 +249,7 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     }
 
     block = SDL_malloc(-regs.r[7]);
-    if (!block) {
+    if (block == NULL) {
         SDL_OutOfMemory();
         return;
     }
@@ -268,8 +268,9 @@ RISCOS_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             continue;
         }
 
-        if (mode.format == SDL_PIXELFORMAT_UNKNOWN)
+        if (mode.format == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
+        }
 
         mode.driverdata = convert_mode_block(pos + 4);
         if (!mode.driverdata) {

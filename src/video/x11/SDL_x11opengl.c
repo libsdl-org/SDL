@@ -303,13 +303,15 @@ HasExtension(const char *extension, const char *extensions)
     const char *start;
     const char *where, *terminator;
 
-    if (!extensions)
+    if (!extensions) {
         return SDL_FALSE;
+    }
 
     /* Extension names should not have spaces. */
     where = SDL_strchr(extension, ' ');
-    if (where || *extension == '\0')
+    if (where || *extension == '\0') {
         return SDL_FALSE;
+    }
 
     /* It takes a bit of care to be fool-proof about parsing the
      * OpenGL extensions string. Don't be fooled by sub-strings,
@@ -319,13 +321,16 @@ HasExtension(const char *extension, const char *extensions)
 
     for (;;) {
         where = SDL_strstr(start, extension);
-        if (!where)
+        if (!where) {
             break;
+        }
 
         terminator = where + SDL_strlen(extension);
-        if (where == start || *(where - 1) == ' ')
-            if (*terminator == ' ' || *terminator == '\0')
+        if (where == start || *(where - 1) == ' ') {
+            if (*terminator == ' ' || *terminator == '\0') {
                 return SDL_TRUE;
+            }
+        }
 
         start = terminator;
     }
@@ -496,7 +501,7 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
     SDL_assert(size >= MAX_ATTRIBUTES);
 
     /* Setup our GLX attributes according to the gl_config. */
-    if( for_FBConfig ) {
+    if ( for_FBConfig ) {
         attribs[i++] = GLX_RENDER_TYPE;
         if (_this->gl_config.floatbuffers) {
             attribs[i++] = GLX_RGBA_FLOAT_BIT_ARB;
@@ -520,7 +525,7 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
 
     if (_this->gl_config.double_buffer) {
         attribs[i++] = GLX_DOUBLEBUFFER;
-        if( for_FBConfig ) {
+        if ( for_FBConfig ) {
             attribs[i++] = True;
         }
     }
@@ -555,7 +560,7 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
 
     if (_this->gl_config.stereo) {
         attribs[i++] = GLX_STEREO;
-        if( for_FBConfig ) {
+        if ( for_FBConfig ) {
             attribs[i++] = True;
         }
     }
@@ -665,18 +670,14 @@ X11_GL_ErrorHandler(Display * d, XErrorEvent * e)
     char x11_error_locale[256];
 
     errorCode = e->error_code;
-    if (X11_XGetErrorText(d, errorCode, x11_error_locale, sizeof(x11_error_locale)) == Success)
-    {
+    if (X11_XGetErrorText(d, errorCode, x11_error_locale, sizeof(x11_error_locale)) == Success) {
         x11_error = SDL_iconv_string("UTF-8", "", x11_error_locale, SDL_strlen(x11_error_locale)+1);
     }
 
-    if (x11_error)
-    {
+    if (x11_error) {
         SDL_SetError("Could not %s: %s", errorHandlerOperation, x11_error);
         SDL_free(x11_error);
-    }
-    else
-    {
+    } else {
         SDL_SetError("Could not %s: %i (Base %i)", errorHandlerOperation, errorCode, errorBase);
     }
 
@@ -747,19 +748,19 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             int iattr = 4;
 
             /* SDL profile bits match GLX profile bits */
-            if( _this->gl_config.profile_mask != 0 ) {
+            if ( _this->gl_config.profile_mask != 0 ) {
                 attribs[iattr++] = GLX_CONTEXT_PROFILE_MASK_ARB;
                 attribs[iattr++] = _this->gl_config.profile_mask;
             }
 
             /* SDL flags match GLX flags */
-            if( _this->gl_config.flags != 0 ) {
+            if ( _this->gl_config.flags != 0 ) {
                 attribs[iattr++] = GLX_CONTEXT_FLAGS_ARB;
                 attribs[iattr++] = _this->gl_config.flags;
             }
 
             /* only set if glx extension is available */
-            if( _this->gl_data->HAS_GLX_ARB_context_flush_control ) {
+            if ( _this->gl_data->HAS_GLX_ARB_context_flush_control ) {
                 attribs[iattr++] = GLX_CONTEXT_RELEASE_BEHAVIOR_ARB;
                 attribs[iattr++] = 
                     _this->gl_config.release_behavior ? 
@@ -768,7 +769,7 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             }
 
             /* only set if glx extension is available */
-            if( _this->gl_data->HAS_GLX_ARB_create_context_robustness ) {
+            if ( _this->gl_data->HAS_GLX_ARB_create_context_robustness ) {
                 attribs[iattr++] = GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
                 attribs[iattr++] =
                     _this->gl_config.reset_notification ?
@@ -777,7 +778,7 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             }
 
             /* only set if glx extension is available */
-            if( _this->gl_data->HAS_GLX_ARB_create_context_no_error ) {
+            if ( _this->gl_data->HAS_GLX_ARB_create_context_no_error ) {
                 attribs[iattr++] = GLX_CONTEXT_OPENGL_NO_ERROR_ARB;
                 attribs[iattr++] = _this->gl_config.no_error;
             }

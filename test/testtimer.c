@@ -23,7 +23,7 @@ static Uint32 SDLCALL
 ticktock(Uint32 interval, void *param)
 {
     ++ticks;
-    return (interval);
+    return interval;
 }
 
 static Uint32 SDLCALL
@@ -47,7 +47,7 @@ main(int argc, char *argv[])
 
     if (SDL_Init(SDL_INIT_TIMER) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
@@ -97,14 +97,17 @@ main(int argc, char *argv[])
     /* Test multiple timers */
     SDL_Log("Testing multiple timers...\n");
     t1 = SDL_AddTimer(100, callback, (void *) 1);
-    if (!t1)
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,"Could not create timer 1: %s\n", SDL_GetError());
+    if (!t1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 1: %s\n", SDL_GetError());
+    }
     t2 = SDL_AddTimer(50, callback, (void *) 2);
-    if (!t2)
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,"Could not create timer 2: %s\n", SDL_GetError());
+    if (!t2) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 2: %s\n", SDL_GetError());
+    }
     t3 = SDL_AddTimer(233, callback, (void *) 3);
-    if (!t3)
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,"Could not create timer 3: %s\n", SDL_GetError());
+    if (!t3) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 3: %s\n", SDL_GetError());
+    }
 
     /* Wait 10 seconds */
     SDL_Log("Waiting 10 seconds\n");
@@ -136,7 +139,7 @@ main(int argc, char *argv[])
     SDL_Log("Delay 1 second = %d ms in ticks, %d ms in ticks64, %f ms according to performance counter\n", (int) (now32-start32), (int) (now64-start64), (double)((now - start)*1000) / SDL_GetPerformanceFrequency());
 
     SDL_Quit();
-    return (0);
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

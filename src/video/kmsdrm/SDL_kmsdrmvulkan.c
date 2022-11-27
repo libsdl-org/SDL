@@ -52,19 +52,23 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
     SDL_bool hasDisplayExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
-    if(_this->vulkan_config.loader_handle)
+    if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
+    }
 
     /* Load the Vulkan library */
-    if(!path)
+    if (path == NULL) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
-    if(!path)
+    }
+    if (path == NULL) {
         path = DEFAULT_VULKAN;
+    }
 
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
 
-    if(!_this->vulkan_config.loader_handle)
+    if (!_this->vulkan_config.loader_handle) {
         return -1;
+    }
 
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
@@ -72,43 +76,44 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
 
-    if(!vkGetInstanceProcAddr)
+    if (!vkGetInstanceProcAddr) {
         goto fail;
+    }
 
     _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
         (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
 
-    if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
+    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
         goto fail;
+    }
 
     extensions = SDL_Vulkan_CreateInstanceExtensionsList(
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
 
-    if(!extensions)
+    if (extensions == NULL) {
         goto fail;
+    }
 
-    for(i = 0; i < extensionCount; i++)
+    for (i = 0; i < extensionCount; i++)
     {
-        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasDisplayExtension = SDL_TRUE;
+        }
     }
 
     SDL_free(extensions);
 
-    if(!hasSurfaceExtension)
-    {
+    if (!hasSurfaceExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
-    }
-    else if(!hasDisplayExtension)
-    {
+    } else if (!hasDisplayExtension) {
         SDL_SetError("Installed Vulkan doesn't implement the "
                      VK_KHR_DISPLAY_EXTENSION_NAME "extension");
         goto fail;
@@ -124,8 +129,7 @@ fail:
 
 void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 {
-    if(_this->vulkan_config.loader_handle)
-    {
+    if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
     }
@@ -149,8 +153,7 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -258,8 +261,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         (PFN_vkCreateDisplayModeKHR)vkGetInstanceProcAddr(
             instance, "vkCreateDisplayModeKHR");
 
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         goto clean;
     }
@@ -273,8 +275,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     /* that the VK_KHR_Display extension is active on the instance. */
     /* That's the central extension we need for x-less VK!          */
     /****************************************************************/
-    if(!vkCreateDisplayPlaneSurfaceKHR)
-    {
+    if (!vkCreateDisplayPlaneSurfaceKHR) {
         SDL_SetError(VK_KHR_DISPLAY_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         goto clean;
@@ -444,9 +445,9 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
         /* The plane must be bound to the chosen display, or not in use.
            If none of these is true, iterate to another plane. */
-        if (!((plane_props[i].currentDisplay == display) ||
-              (plane_props[i].currentDisplay == VK_NULL_HANDLE))) 
+        if (!((plane_props[i].currentDisplay == display) || (plane_props[i].currentDisplay == VK_NULL_HANDLE))) {
             continue;
+        }
 
         /* Iterate the list of displays supported by this plane
            in order to find out if the chosen display is among them. */
@@ -501,8 +502,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                      &display_plane_surface_create_info,
                                      NULL,
                                      surface);
-    if(result != VK_SUCCESS)
-    {
+    if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateDisplayPlaneSurfaceKHR failed: %s",
             SDL_Vulkan_GetResultString(result));
         goto clean;
@@ -511,16 +511,21 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     ret = SDL_TRUE;
 
 clean:
-    if (physical_devices)
-        SDL_free (physical_devices);
-    if (display_props)
-        SDL_free (display_props);
-    if (device_props)
-        SDL_free (device_props);
-    if (plane_props)
-        SDL_free (plane_props);
-    if (mode_props)
-        SDL_free (mode_props);
+    if (physical_devices) {
+        SDL_free(physical_devices);
+    }
+    if (display_props) {
+        SDL_free(display_props);
+    }
+    if (device_props) {
+        SDL_free(device_props);
+    }
+    if (plane_props) {
+        SDL_free(plane_props);
+    }
+    if (mode_props) {
+        SDL_free(mode_props);
+    }
 
     return ret;
 }

@@ -39,8 +39,9 @@ play_through_once(void *arg, Uint8 * stream, int len)
     Uint8 *waveptr = sound + cbdata->soundpos;
     int waveleft = soundlen - cbdata->soundpos;
     int cpy = len;
-    if (cpy > waveleft)
+    if (cpy > waveleft) {
         cpy = waveleft;
+    }
 
     SDL_memcpy(stream, waveptr, cpy);
     len -= cpy;
@@ -105,7 +106,7 @@ test_multi_audio(int devcount)
             while (!SDL_AtomicGet(&cbd[0].done)) {
                 #ifdef __ANDROID__                
                 /* Empty queue, some application events would prevent pause. */
-                while (SDL_PollEvent(&event)){}
+                while (SDL_PollEvent(&event)) {}
                 #endif                
                 SDL_Delay(100);
             }
@@ -143,7 +144,7 @@ test_multi_audio(int devcount)
         }
         #ifdef __ANDROID__        
         /* Empty queue, some application events would prevent pause. */
-        while (SDL_PollEvent(&event)){}
+        while (SDL_PollEvent(&event)) {}
         #endif        
 
         SDL_Delay(100);
@@ -173,7 +174,7 @@ main(int argc, char **argv)
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return (1);
+        return 1;
     }
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());

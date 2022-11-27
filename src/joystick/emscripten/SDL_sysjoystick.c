@@ -73,11 +73,11 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
 
     item->timestamp = gamepadEvent->timestamp;
 
-    for( i = 0; i < item->naxes; i++) {
+    for ( i = 0; i < item->naxes; i++) {
         item->axis[i] = gamepadEvent->axis[i];
     }
 
-    for( i = 0; i < item->nbuttons; i++) {
+    for ( i = 0; i < item->nbuttons; i++) {
         item->analogButton[i] = gamepadEvent->analogButton[i];
         item->digitalButton[i] = gamepadEvent->digitalButton[i];
     }
@@ -195,7 +195,7 @@ EMSCRIPTEN_JoystickInit(void)
 
     /* handle already connected gamepads */
     if (numjs > 0) {
-        for(i = 0; i < numjs; i++) {
+        for (i = 0; i < numjs; i++) {
             retval = emscripten_get_gamepad_status(i, &gamepadState);
             if (retval == EMSCRIPTEN_RESULT_SUCCESS) {
                 Emscripten_JoyStickConnected(EMSCRIPTEN_EVENT_GAMEPADCONNECTED,
@@ -209,7 +209,7 @@ EMSCRIPTEN_JoystickInit(void)
                                                       0,
                                                       Emscripten_JoyStickConnected);
 
-    if(retval != EMSCRIPTEN_RESULT_SUCCESS) {
+    if (retval != EMSCRIPTEN_RESULT_SUCCESS) {
         EMSCRIPTEN_JoystickQuit();
         return SDL_SetError("Could not set gamepad connect callback");
     }
@@ -217,7 +217,7 @@ EMSCRIPTEN_JoystickInit(void)
     retval = emscripten_set_gamepaddisconnected_callback(NULL,
                                                          0,
                                                          Emscripten_JoyStickDisconnected);
-    if(retval != EMSCRIPTEN_RESULT_SUCCESS) {
+    if (retval != EMSCRIPTEN_RESULT_SUCCESS) {
         EMSCRIPTEN_JoystickQuit();
         return SDL_SetError("Could not set gamepad disconnect callback");
     }
@@ -328,7 +328,7 @@ EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
-    return (0);
+    return 0;
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -347,10 +347,10 @@ EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
 
     if (item) {
         result = emscripten_get_gamepad_status(item->index, &gamepadState);
-        if( result == EMSCRIPTEN_RESULT_SUCCESS) {
-            if(gamepadState.timestamp == 0 || gamepadState.timestamp != item->timestamp) {
-                for(i = 0; i < item->nbuttons; i++) {
-                    if(item->digitalButton[i] != gamepadState.digitalButton[i]) {
+        if ( result == EMSCRIPTEN_RESULT_SUCCESS) {
+            if (gamepadState.timestamp == 0 || gamepadState.timestamp != item->timestamp) {
+                for (i = 0; i < item->nbuttons; i++) {
+                    if (item->digitalButton[i] != gamepadState.digitalButton[i]) {
                         buttonState = gamepadState.digitalButton[i]? SDL_PRESSED: SDL_RELEASED;
                         SDL_PrivateJoystickButton(item->joystick, i, buttonState);
                     }
@@ -360,8 +360,8 @@ EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                     item->digitalButton[i] = gamepadState.digitalButton[i];
                 }
 
-                for(i = 0; i < item->naxes; i++) {
-                    if(item->axis[i] != gamepadState.axis[i]) {
+                for (i = 0; i < item->naxes; i++) {
+                    if (item->axis[i] != gamepadState.axis[i]) {
                         /* do we need to do conversion? */
                         SDL_PrivateJoystickAxis(item->joystick, i,
                                                   (Sint16) (32767.*gamepadState.axis[i]));

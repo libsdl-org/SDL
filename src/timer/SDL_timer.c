@@ -171,7 +171,7 @@ SDL_TimerThread(void *_data)
                 current->scheduled = tick + interval;
                 SDL_AddTimerInternal(data, current);
             } else {
-                if (!freelist_head) {
+                if (freelist_head == NULL) {
                     freelist_head = current;
                 }
                 if (freelist_tail) {
@@ -299,7 +299,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
         SDL_RemoveTimer(timer->timerID);
     } else {
         timer = (SDL_Timer *)SDL_malloc(sizeof(*timer));
-        if (!timer) {
+        if (timer == NULL) {
             SDL_OutOfMemory();
             return 0;
         }
@@ -312,7 +312,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     SDL_AtomicSet(&timer->canceled, 0);
 
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
-    if (!entry) {
+    if (entry == NULL) {
         SDL_free(timer);
         SDL_OutOfMemory();
         return 0;
@@ -429,7 +429,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     SDL_TimerMap *entry;
 
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
-    if (!entry) {
+    if (entry == NULL) {
         SDL_OutOfMemory();
         return 0;
     }

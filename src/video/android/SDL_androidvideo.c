@@ -89,13 +89,13 @@ Android_CreateDevice(void)
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
+    if (device == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
-    if (!data) {
+    if (data == NULL) {
         SDL_OutOfMemory();
         SDL_free(device);
         return NULL;
@@ -280,8 +280,7 @@ void Android_SendResize(SDL_Window *window)
       which can happen after VideoInit().
     */
     SDL_VideoDevice *device = SDL_GetVideoDevice();
-    if (device && device->num_displays > 0)
-    {
+    if (device && device->num_displays > 0) {
         SDL_VideoDisplay *display          = &device->displays[0];
         display->desktop_mode.format       = Android_ScreenFormat;
         display->desktop_mode.w            = Android_DeviceWidth;

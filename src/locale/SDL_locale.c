@@ -32,7 +32,7 @@ build_locales_from_csv_string(char *csv)
     SDL_Locale *loc;
     SDL_Locale *retval;
 
-    if (!csv || !csv[0]) {
+    if (csv == NULL || !csv[0]) {
         return NULL;  /* nothing to report */
     }
 
@@ -48,7 +48,7 @@ build_locales_from_csv_string(char *csv)
     alloclen = slen + (num_locales * sizeof (SDL_Locale));
 
     loc = retval = (SDL_Locale *) SDL_calloc(1, alloclen);
-    if (!retval) {
+    if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;  /* oh well */
     }
@@ -56,7 +56,10 @@ build_locales_from_csv_string(char *csv)
     SDL_strlcpy(ptr, csv, slen);
 
     while (SDL_TRUE) {  /* parse out the string */
-        while (*ptr == ' ') ptr++;  /* skip whitespace. */
+        while (*ptr == ' ') {
+            ptr++; /* skip whitespace. */
+        }
+
         if (*ptr == '\0') {
             break;
         }

@@ -17,7 +17,7 @@
 
 static float clip3(float x, float y, float z)
 {
-    return ((z < x) ? x : ((z > y) ? y : z));
+    return (z < x) ? x : ((z > y) ? y : z);
 }
 
 static void RGBtoYUV(Uint8 * rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
@@ -68,8 +68,9 @@ static void RGBtoYUV(Uint8 * rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, int mo
 
     if (luminance != 100) {
         yuv[0] = yuv[0] * luminance / 100;
-        if (yuv[0] > 255)
+        if (yuv[0] > 255) {
             yuv[0] = 255;
+        }
     }
 }
 
@@ -291,7 +292,7 @@ int CalculateYUVPitch(Uint32 format, int width)
     case SDL_PIXELFORMAT_YUY2:
     case SDL_PIXELFORMAT_UYVY:
     case SDL_PIXELFORMAT_YVYU:
-        return 4*((width + 1)/2);
+        return 4 * ((width + 1) / 2);
     default:
         return 0;
     }
