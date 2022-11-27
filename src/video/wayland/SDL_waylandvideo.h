@@ -20,7 +20,6 @@
 */
 
 #include "../../SDL_internal.h"
-#include "SDL_stdinc.h"
 
 #ifndef SDL_waylandvideo_h_
 #define SDL_waylandvideo_h_

@@ -20,7 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_events.h"
 #include "../SDL_sysjoystick.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_directx.h"

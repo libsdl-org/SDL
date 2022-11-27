@@ -22,9 +22,6 @@
 
 #ifdef SDL_TIMER_VITA
 
-#include "SDL_thread.h"
-#include "SDL_timer.h"
-#include "SDL_error.h"
 #include "../SDL_timer_c.h"
 #include <stdlib.h>
 #include <time.h>

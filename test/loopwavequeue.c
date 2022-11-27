@@ -18,7 +18,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #if HAVE_SIGNAL_H
 #include <signal.h>

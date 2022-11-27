@@ -22,7 +22,7 @@
 #ifndef _SDL_build_config_emscripten_h_
 #define _SDL_build_config_emscripten_h_
 
-#include "SDL_platform.h"
+#include <SDL3/SDL_platform.h>
 
 /**
  *  \file SDL_build_config_emscripten.h

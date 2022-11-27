@@ -32,14 +32,10 @@
 
 /* SDL internals */
 #include "../SDL_sysvideo.h"
-#include "SDL_version.h"
-#include "SDL_loadso.h"
-#include "SDL_events.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
-#include "SDL_hints.h"
 
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #ifdef SDL_INPUT_LINUXEV
 #include "../../core/linux/SDL_evdev.h"

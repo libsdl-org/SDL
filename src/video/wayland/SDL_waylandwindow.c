@@ -31,9 +31,7 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandtouch.h"
-#include "SDL_hints.h"
 #include "../../SDL_hints_c.h"
-#include "SDL_events.h"
 
 #include "xdg-shell-client-protocol.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"

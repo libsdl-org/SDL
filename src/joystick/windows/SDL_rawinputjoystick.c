@@ -33,10 +33,6 @@
 
 #if SDL_JOYSTICK_RAWINPUT
 
-#include "SDL_endian.h"
-#include "SDL_events.h"
-#include "SDL_hints.h"
-#include "SDL_timer.h"
 #include "../usb_ids.h"
 #include "../SDL_sysjoystick.h"
 #include "../../core/windows/SDL_windows.h"

@@ -22,10 +22,8 @@
 
 #if SDL_HAVE_BLIT_1
 
-#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_sysvideo.h"
-#include "SDL_endian.h"
 
 /* Functions to blit from 8-bit surfaces to other surfaces */
 

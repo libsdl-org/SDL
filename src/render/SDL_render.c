@@ -22,9 +22,6 @@
 
 /* The SDL 2D rendering system */
 
-#include "SDL_hints.h"
-#include "SDL_render.h"
-#include "SDL_timer.h"
 #include "SDL_sysrender.h"
 #include "software/SDL_render_sw_c.h"
 #include "../video/SDL_pixels_c.h"

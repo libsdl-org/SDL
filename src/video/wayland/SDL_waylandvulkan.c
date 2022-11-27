@@ -31,11 +31,10 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 
-#include "SDL_loadso.h"
 #include "SDL_waylandvulkan.h"
 
 #define SDL_ENABLE_SYSWM_WAYLAND
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #if defined(__OpenBSD__)
 #define DEFAULT_VULKAN  "libvulkan.so"

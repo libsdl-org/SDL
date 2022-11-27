@@ -22,9 +22,6 @@
 
 /* This is the game controller API for Simple DirectMedia Layer */
 
-#include "SDL_events.h"
-#include "SDL_hints.h"
-#include "SDL_timer.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
 #include "SDL_gamecontrollerdb.h"
@@ -37,7 +34,6 @@
 #endif
 
 #if defined(__ANDROID__)
-#include "SDL_system.h"
 #endif
 
 

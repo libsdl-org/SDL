@@ -24,7 +24,6 @@
 
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenframebuffer.h"
-#include "SDL_hints.h"
 
 #include <emscripten/threading.h>
 

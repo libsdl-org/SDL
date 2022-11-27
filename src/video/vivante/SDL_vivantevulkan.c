@@ -31,9 +31,8 @@
 
 #include "SDL_vivantevideo.h"
 
-#include "SDL_loadso.h"
 #include "SDL_vivantevulkan.h"
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
 {

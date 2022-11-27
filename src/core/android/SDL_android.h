@@ -19,7 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
-#include "SDL_system.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -31,9 +30,6 @@ extern "C" {
 #include <EGL/eglplatform.h>
 #include <android/native_window_jni.h>
 
-#include "SDL_audio.h"
-#include "SDL_rect.h"
-#include "SDL_video.h"
 
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
@@ -64,7 +60,6 @@ extern void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id);
 extern SDL_bool Android_IsDeXMode(void);
 extern SDL_bool Android_IsChromebook(void);
 
-#include "SDL_rwops.h"
 
 int Android_JNI_FileOpen(SDL_RWops* ctx, const char* fileName, const char* mode);
 Sint64 Android_JNI_FileSize(SDL_RWops* ctx);
@@ -113,7 +108,6 @@ int Android_JNI_SendMessage(int command, int param);
 JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls);
 
 /* MessageBox */
-#include "SDL_messagebox.h"
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 /* Cursor support */

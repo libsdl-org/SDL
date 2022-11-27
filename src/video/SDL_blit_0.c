@@ -22,7 +22,6 @@
 
 #if SDL_HAVE_BLIT_0
 
-#include "SDL_video.h"
 #include "SDL_blit.h"
 
 /* Functions to blit from bitmaps to other surfaces */

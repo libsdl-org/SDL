@@ -38,10 +38,6 @@
 #include <sys/sysctl.h>
 #endif
 
-#include "SDL_error.h"
-#include "SDL_stdinc.h"
-#include "SDL_filesystem.h"
-#include "SDL_rwops.h"
 
 static char *
 readSymLink(const char *path)

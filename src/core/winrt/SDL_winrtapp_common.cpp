@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_main.h"
-#include "SDL_system.h"
 #include "SDL_winrtapp_direct3d.h"
 #include "SDL_winrtapp_xaml.h"
 

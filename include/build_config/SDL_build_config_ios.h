@@ -23,7 +23,7 @@
 #define SDL_build_config_ios_h_
 #define SDL_build_config_h_
 
-#include "SDL_platform.h"
+#include <SDL3/SDL_platform.h>
 
 #define HAVE_GCC_ATOMICS    1
 

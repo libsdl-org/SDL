@@ -22,7 +22,6 @@
 
 #if defined(SDL_TIMER_DUMMY) || defined(SDL_TIMERS_DISABLED)
 
-#include "SDL_timer.h"
 
 static SDL_bool ticks_started = SDL_FALSE;
 

@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include "testutils.h"
 
 /* Define this for verbose output while mapping controllers */

@@ -25,7 +25,6 @@
 
 /* *INDENT-OFF* */ /* clang-format off */
 
-#include "SDL_video.h"
 #include "SDL_blit.h"
 #include "SDL_blit_auto.h"
 

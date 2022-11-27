@@ -21,7 +21,6 @@
 #include "../SDL_internal.h"
 
 #if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12) && !SDL_RENDER_DISABLED
-#include "SDL_stdinc.h"
 
 #include "SDL_d3dmath.h"
 

@@ -35,9 +35,6 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_hints.h"
-#include "SDL_thread.h"
-#include "SDL_timer.h"
 
 typedef SDL_sem * (*pfnSDL_CreateSemaphore)(Uint32);
 typedef void (*pfnSDL_DestroySemaphore)(SDL_sem *);

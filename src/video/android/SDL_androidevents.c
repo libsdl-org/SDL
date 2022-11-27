@@ -23,7 +23,6 @@
 #if SDL_VIDEO_DRIVER_ANDROID
 
 #include "SDL_androidevents.h"
-#include "SDL_events.h"
 #include "SDL_androidkeyboard.h"
 #include "SDL_androidwindow.h"
 #include "../SDL_sysvideo.h"

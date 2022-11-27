@@ -22,9 +22,6 @@
 
 /* This provides the default mixing callback for the SDL audio routines */
 
-#include "SDL_cpuinfo.h"
-#include "SDL_timer.h"
-#include "SDL_audio.h"
 #include "SDL_sysaudio.h"
 
 /* This table is used to add two sound values together and pin

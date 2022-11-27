@@ -26,7 +26,6 @@
 
 #ifdef HAVE_DBUS_DBUS_H
 #define SDL_USE_LIBDBUS 1
-#include "SDL_stdinc.h"
 #include <dbus/dbus.h>
 
 

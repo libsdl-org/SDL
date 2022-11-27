@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 static int alive = 0;
 

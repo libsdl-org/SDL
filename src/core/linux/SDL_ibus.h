@@ -26,7 +26,6 @@
 
 #ifdef HAVE_IBUS_IBUS_H
 #define SDL_USE_IBUS 1
-#include "SDL_stdinc.h"
 #include <ibus-1.0/ibus.h>
 
 extern SDL_bool SDL_IBus_Init(void);

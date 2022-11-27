@@ -68,14 +68,9 @@ extern "C" {
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtgamebar_cpp.h"
 #include "SDL_winrtmouse_c.h"
-#include "SDL_main.h"
-#include "SDL_mouse.h"
-#include "SDL_video.h"
-#include "SDL_system.h"
-#include "SDL_hints.h"
 
 #define SDL_ENABLE_SYSWM_WINRT
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 
 /* Initialization/Query functions */

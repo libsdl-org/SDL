@@ -23,9 +23,6 @@
 #ifndef SDL_blit_h_
 #define SDL_blit_h_
 
-#include "SDL_cpuinfo.h"
-#include "SDL_endian.h"
-#include "SDL_surface.h"
 
 /* pixman ARM blitters are 32 bit only : */
 #if defined(__aarch64__)||defined(_M_ARM64)

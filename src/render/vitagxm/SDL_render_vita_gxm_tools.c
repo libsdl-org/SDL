@@ -22,9 +22,7 @@
 
 #if SDL_VIDEO_RENDER_VITA_GXM
 
-#include "SDL_hints.h"
 #include "../SDL_sysrender.h"
-#include "SDL_log.h"
 
 #include <psp2/kernel/processmgr.h>
 #include <psp2/appmgr.h>

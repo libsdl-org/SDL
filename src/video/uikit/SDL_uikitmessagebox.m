@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
-#include "SDL.h"
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitwindow.h"
 

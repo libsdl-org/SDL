@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void

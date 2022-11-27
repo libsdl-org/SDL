@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_X11
 
-#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -39,10 +38,9 @@
 #include "SDL_x11opengles.h"
 #endif
 
-#include "SDL_timer.h"
 
 #define SDL_ENABLE_SYSWM_X11
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #define _NET_WM_STATE_REMOVE    0l
 #define _NET_WM_STATE_ADD       1l

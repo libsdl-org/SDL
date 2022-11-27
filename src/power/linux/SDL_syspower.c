@@ -31,7 +31,6 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-#include "SDL_power.h"
 #include "../SDL_syspower.h"
 
 #include "../../core/linux/SDL_dbus.h"

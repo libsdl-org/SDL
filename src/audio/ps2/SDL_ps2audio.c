@@ -22,8 +22,6 @@
 
 /* Output audio to nowhere... */
 
-#include "SDL_timer.h"
-#include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_ps2audio.h"
 

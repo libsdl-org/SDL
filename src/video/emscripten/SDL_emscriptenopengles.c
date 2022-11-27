@@ -28,7 +28,6 @@
 
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
-#include "SDL_hints.h"
 
 
 int

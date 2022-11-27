@@ -22,7 +22,6 @@
 
 /* Thread management routines for SDL */
 
-#include "SDL_thread.h"
 #include "../SDL_systhread.h"
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD

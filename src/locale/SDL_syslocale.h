@@ -22,7 +22,6 @@
 
 /* This is the system specific header for the SDL locale API */
 
-#include "SDL_locale.h"
 
 #ifdef __cplusplus
 extern "C" {

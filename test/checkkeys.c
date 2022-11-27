@@ -21,8 +21,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL.h"
-#include "SDL_test_font.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_test_font.h>
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;

@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)

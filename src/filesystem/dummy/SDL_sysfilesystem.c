@@ -25,8 +25,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-#include "SDL_error.h"
-#include "SDL_filesystem.h"
 
 char *
 SDL_GetBasePath(void)

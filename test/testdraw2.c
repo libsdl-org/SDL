@@ -19,7 +19,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 
 #define NUM_OBJECTS 100
 

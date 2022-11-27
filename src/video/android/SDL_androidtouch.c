@@ -24,8 +24,6 @@
 
 #include <android/log.h>
 
-#include "SDL_hints.h"
-#include "SDL_events.h"
 #include "SDL_androidtouch.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"

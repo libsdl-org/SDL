@@ -22,11 +22,8 @@
 
 #if SDL_AUDIO_DRIVER_JACK
 
-#include "SDL_timer.h"
-#include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_jackaudio.h"
-#include "SDL_loadso.h"
 #include "../../thread/SDL_systhread.h"
 
 

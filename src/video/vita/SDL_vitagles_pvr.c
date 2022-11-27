@@ -26,8 +26,6 @@
 #include <psp2/kernel/modulemgr.h>
 #include <gpu_es4/psp2_pvr_hint.h>
 
-#include "SDL_error.h"
-#include "SDL_log.h"
 #include "SDL_vitavideo.h"
 #include "../SDL_egl_c.h"
 #include "SDL_vitagles_pvr_c.h"

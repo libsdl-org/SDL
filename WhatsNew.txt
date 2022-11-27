@@ -6,6 +6,7 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* SDL headers should now be included as `#include <SDL3/SDL.h>`
 * M_PI is no longer defined in SDL_stdinc.h, now the symbols SDL_PI_D (double) and SDL_PI_F (float) are available
 * SDL_GetWindowWMInfo() returns a standard int result code instead of SDL_bool, and takes SDL_SYSWM_CURRENT_VERSION as a new third parameter
 * The preprocessor symbol __MACOSX__ has been renamed __MACOS__

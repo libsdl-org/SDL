@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_WINDOWS && SDL_VIDEO_OPENGL_EGL && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
-#include "SDL_hints.h"
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsopengles.h"
 #include "SDL_windowsopengl.h"

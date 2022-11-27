@@ -18,11 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_assert.h"
-#include "SDL_stdinc.h"
-#include "SDL_log.h"
-#include "SDL_test_crc32.h"
-#include "SDL_test_memory.h"
+#include <SDL3/SDL_test.h>
 
 #ifdef HAVE_LIBUNWIND_H
 #define UNW_LOCAL_ONLY

@@ -27,7 +27,6 @@
 
 /* This file contains portable stdlib functions for SDL */
 
-#include "SDL_stdinc.h"
 #include "../libm/math_libm.h"
 
 

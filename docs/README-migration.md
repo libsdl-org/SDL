@@ -4,6 +4,8 @@ This guide provides useful information for migrating applications from SDL 2.0 t
 
 We have provided a handy Python script to automate some of this work for you [link to script], and details on the changes are organized by SDL 2.0 header below.
 
+SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's the only header you'll need in your application unless you are using OpenGL or Vulkan functionality.
+
 
 ## SDL_platform.h
 

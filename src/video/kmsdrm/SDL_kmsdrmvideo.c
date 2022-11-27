@@ -25,8 +25,6 @@
 
 /* SDL internals */
 #include "../SDL_sysvideo.h"
-#include "SDL_log.h"
-#include "SDL_hints.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -38,7 +36,7 @@
 #endif
 
 #define SDL_ENABLE_SYSWM_KMSDRM
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 /* KMS/DRM declarations */
 #include "SDL_kmsdrmvideo.h"

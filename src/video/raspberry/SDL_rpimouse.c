@@ -22,8 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_RPI
 
-#include "SDL_surface.h"
-#include "SDL_hints.h"
 
 #include "SDL_rpivideo.h"
 #include "SDL_rpimouse.h"

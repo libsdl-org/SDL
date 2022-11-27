@@ -25,8 +25,6 @@
 
 #include <3ds.h>
 
-#include "SDL_error.h"
-#include "SDL_power.h"
 
 SDL_FORCE_INLINE SDL_PowerState GetPowerState(void);
 SDL_FORCE_INLINE int ReadStateFromPTMU(bool *is_plugged, u8 *is_charging);

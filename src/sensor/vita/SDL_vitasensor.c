@@ -22,8 +22,6 @@
 
 #if defined(SDL_SENSOR_VITA)
 
-#include "SDL_error.h"
-#include "SDL_sensor.h"
 #include "SDL_vitasensor.h"
 #include "../SDL_syssensor.h"
 #include <psp2/motion.h>

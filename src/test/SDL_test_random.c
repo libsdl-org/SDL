@@ -27,7 +27,7 @@
  Original source code contributed by A. Schiffler for GSOC project.
 
 */
-#include "SDL_test.h"
+#include <SDL3/SDL_test.h>
 
 #include <stdlib.h>     /* Needed for srand() and rand() */
 #include <time.h>       /* Needed for time() */

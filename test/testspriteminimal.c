@@ -18,7 +18,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include "testutils.h"
 
 #define WINDOW_WIDTH    640

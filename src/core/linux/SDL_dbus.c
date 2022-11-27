@@ -19,15 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
-#include "SDL_hints.h"
 #include "SDL_dbus.h"
-#include "SDL_atomic.h"
 #include "SDL_sandbox.h"
 #include "../../stdlib/SDL_vacopy.h"
 
 #if SDL_USE_LIBDBUS
 /* we never link directly to libdbus. */
-#include "SDL_loadso.h"
 static const char *dbus_library = "libdbus-1.so.3";
 static void *dbus_handle = NULL;
 static char *inhibit_handle = NULL;

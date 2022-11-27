@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#include "SDL_render.h"
-#include "SDL_system.h"
 
 #if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
 
@@ -30,13 +28,11 @@
 #if !defined(__WINRT__)
 #include "../../video/windows/SDL_windowswindow.h"
 #endif
-#include "SDL_hints.h"
-#include "SDL_loadso.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 
 #define SDL_ENABLE_SYSWM_WINDOWS
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #include <d3d11_1.h>
 

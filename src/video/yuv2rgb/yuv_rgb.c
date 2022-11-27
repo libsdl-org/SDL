@@ -6,7 +6,6 @@
 
 #include "yuv_rgb.h"
 
-#include "SDL_cpuinfo.h"
 /*#include <x86intrin.h>*/
 
 #define PRECISION 6

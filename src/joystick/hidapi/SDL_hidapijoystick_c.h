@@ -23,12 +23,6 @@
 #ifndef SDL_JOYSTICK_HIDAPI_H
 #define SDL_JOYSTICK_HIDAPI_H
 
-#include "SDL_atomic.h"
-#include "SDL_hints.h"
-#include "SDL_mutex.h"
-#include "SDL_joystick.h"
-#include "SDL_gamecontroller.h"
-#include "SDL_hidapi.h"
 #include "../usb_ids.h"
 
 /* This is the full set of HIDAPI drivers available */

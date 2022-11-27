@@ -25,7 +25,6 @@
 
 /* This is the system specific header for the SDL sensor API */
 
-#include "SDL_sensor.h"
 #include "SDL_sensor_c.h"
 
 /* The SDL sensor structure */

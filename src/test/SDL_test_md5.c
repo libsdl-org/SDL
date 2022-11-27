@@ -50,7 +50,7 @@
  ** documentation and/or software.                                    **
  ***********************************************************************
  */
-#include "SDL_test.h"
+#include <SDL3/SDL_test.h>
 
 /* Forward declaration of static helper function */
 static void SDLTest_Md5Transform(MD5UINT4 * buf, const MD5UINT4 * in);

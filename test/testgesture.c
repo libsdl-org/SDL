@@ -18,14 +18,14 @@
 
 #include <stdlib.h> /* for exit() */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL_test.h"
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test.h>
+#include <SDL3/SDL_test_common.h>
 
 #define WIDTH 640
 #define HEIGHT 480

@@ -36,7 +36,7 @@
 #import "SDL_uikitmetalview.h"
 
 #define SDL_ENABLE_SYSWM_UIKIT
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 
 @implementation SDL_uikitmetalview

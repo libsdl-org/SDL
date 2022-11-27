@@ -23,7 +23,6 @@
 #if SDL_VIDEO_RENDER_PS2
 
 #include "../SDL_sysrender.h"
-#include "SDL_hints.h"
 
 #include <kernel.h>
 #include <malloc.h>

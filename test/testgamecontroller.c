@@ -12,7 +12,7 @@
 
 /* Simple program to test the SDL game controller routines */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include "testutils.h"
 
 #ifdef __EMSCRIPTEN__

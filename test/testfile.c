@@ -22,7 +22,7 @@
 #include <unistd.h>
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 
 /* WARNING ! those 2 files will be destroyed by this test program */

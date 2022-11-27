@@ -20,7 +20,6 @@
 */
 
 #include "SDL_rwopsromfs.h"
-#include "SDL_error.h"
 
 /* Checks if the mode is a kind of reading */
 SDL_FORCE_INLINE SDL_bool IsReadMode(const char *mode);

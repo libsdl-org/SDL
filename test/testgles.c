@@ -11,7 +11,7 @@
 */
 #include <stdlib.h>
 
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 
 #if defined(__IOS__) || defined(__ANDROID__)
 #define HAVE_OPENGLES
@@ -19,7 +19,7 @@
 
 #ifdef HAVE_OPENGLES
 
-#include "SDL_opengles.h"
+#include <SDL3/SDL_opengles.h>
 
 static SDLTest_CommonState *state;
 static SDL_GLContext *context = NULL;

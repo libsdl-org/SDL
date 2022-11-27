@@ -26,7 +26,7 @@
 #include "SDL_BWin.h"
 #include <new>
 
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 /* Define a path to window's BWIN data */
 #ifdef __cplusplus

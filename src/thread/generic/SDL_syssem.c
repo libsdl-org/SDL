@@ -22,8 +22,6 @@
 
 /* An implementation of semaphores using mutexes and condition variables */
 
-#include "SDL_timer.h"
-#include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 
 

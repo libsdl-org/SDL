@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #define NUMTHREADS 10
 

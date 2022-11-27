@@ -27,9 +27,6 @@
 
 #include <unistd.h>
 
-#include "SDL_error.h"
-#include "SDL_filesystem.h"
-#include "SDL_system.h"
 
 
 char *

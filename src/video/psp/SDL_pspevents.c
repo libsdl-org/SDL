@@ -25,13 +25,11 @@
 /* Being a null driver, there's no event stream. We just define stubs for
    most of the API. */
 
-#include "SDL.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../SDL_sysvideo.h"
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"
-#include "SDL_keyboard.h"
 #include "../../thread/SDL_systhread.h"
 #include <psphprm.h>
 #include <pspthreadman.h>

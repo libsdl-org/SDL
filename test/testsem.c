@@ -14,7 +14,7 @@
 
 #include <signal.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #define NUM_THREADS 10
 /* This value should be smaller than the maximum count of the */

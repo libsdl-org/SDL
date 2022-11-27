@@ -26,7 +26,6 @@
 
 #include <3ds.h>
 
-#include "SDL_thread.h"
 
 struct SDL_semaphore
 {

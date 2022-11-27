@@ -25,7 +25,6 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_thread.h"
 #include "../SDL_thread_c.h"
 
 #if WINAPI_FAMILY_WINRT

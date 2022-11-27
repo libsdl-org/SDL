@@ -10,7 +10,7 @@
   freely.
 */
 
-#include "SDL_test.h"
+#include <SDL3/SDL_test.h>
 
 static int SDLCALL
 num_compare(const void *_a, const void *_b)

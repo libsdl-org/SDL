@@ -13,8 +13,7 @@
 /* Test program to compare the compile-time version of SDL with the linked
    version of SDL
 */
-#include "SDL.h"
-#include "SDL_revision.h"
+#include <SDL3/SDL.h>
 
 int
 main(int argc, char *argv[])

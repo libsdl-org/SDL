@@ -29,10 +29,6 @@
  */
 #include "../SDL_internal.h"
 
-#include "SDL_loadso.h"
-#include "SDL_hidapi.h"
-#include "SDL_thread.h"
-#include "SDL_timer.h"
 #include "SDL_hidapi_c.h"
 
 #if !SDL_HIDAPI_DISABLED

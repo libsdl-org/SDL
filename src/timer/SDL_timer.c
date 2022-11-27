@@ -20,10 +20,7 @@
 */
 #include "../SDL_internal.h"
 
-#include "SDL_timer.h"
 #include "SDL_timer_c.h"
-#include "SDL_atomic.h"
-#include "SDL_cpuinfo.h"
 #include "../thread/SDL_systhread.h"
 
 /* #define DEBUG_TIMERS */

@@ -29,9 +29,6 @@
 #include <swis.h>
 #include <unixlib/local.h>
 
-#include "SDL_error.h"
-#include "SDL_stdinc.h"
-#include "SDL_filesystem.h"
 
 /* Wrapper around __unixify_std that uses SDL's memory allocators */
 static char *

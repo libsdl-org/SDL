@@ -25,7 +25,7 @@
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
-#include "SDL_egl.h"
+#include <SDL3/SDL_egl.h>
 
 #if SDL_VIDEO_DRIVER_VIVANTE_VDK
 #include <gc_vdk.h>

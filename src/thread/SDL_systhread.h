@@ -25,7 +25,6 @@
 #ifndef SDL_systhread_h_
 #define SDL_systhread_h_
 
-#include "SDL_thread.h"
 #include "SDL_thread_c.h"
 
 /* Set up for C function definitions, even when using C++ */

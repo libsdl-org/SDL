@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL
 
-#include "SDL_timer.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"

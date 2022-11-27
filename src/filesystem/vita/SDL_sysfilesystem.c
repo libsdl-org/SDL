@@ -34,10 +34,6 @@
 #include <limits.h>
 #include <fcntl.h>
 
-#include "SDL_error.h"
-#include "SDL_stdinc.h"
-#include "SDL_filesystem.h"
-#include "SDL_rwops.h"
 
 char *
 SDL_GetBasePath(void)

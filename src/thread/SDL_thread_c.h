@@ -23,7 +23,6 @@
 #ifndef SDL_thread_c_h_
 #define SDL_thread_c_h_
 
-#include "SDL_thread.h"
 
 /* Need the definitions of SYS_ThreadHandle */
 #if SDL_THREADS_DISABLED

@@ -19,7 +19,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 
 #define SWAP(typ,a,b) do{typ t=a;a=b;b=t;}while(0)
 #define NUM_OBJECTS 100

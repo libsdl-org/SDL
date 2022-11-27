@@ -15,7 +15,7 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test_common.h>
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
 #define HAVE_OPENGLES2
@@ -23,7 +23,7 @@
 
 #ifdef HAVE_OPENGLES2
 
-#include "SDL_opengles2.h"
+#include <SDL3/SDL_opengles2.h>
 
 typedef struct GLES2_Context
 {

@@ -23,7 +23,7 @@
 #define SDL_build_config_windows_h_
 #define SDL_build_config_h_
 
-#include "SDL_platform.h"
+#include <SDL3/SDL_platform.h>
 
 /* winsdkver.h defines _WIN32_MAXVER for SDK version detection. It is present since at least the Windows 7 SDK,
  * but out of caution we'll only use it if the compiler supports __has_include() to confirm its presence.

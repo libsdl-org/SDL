@@ -33,7 +33,6 @@
 #include "../core/android/SDL_android.h"
 #endif
 
-#include "SDL_stdinc.h"
 
 #if (defined(__WIN32__) || defined(__WINGDK__)) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
 /* Note this isn't thread-safe! */

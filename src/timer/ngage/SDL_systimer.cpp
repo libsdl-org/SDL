@@ -25,7 +25,6 @@
 #include <e32std.h>
 #include <e32hal.h>
 
-#include "SDL_timer.h"
 
 static SDL_bool ticks_started = SDL_FALSE;
 static TUint    start         = 0;

@@ -25,7 +25,7 @@
 
 #if SDL_VIDEO_OPENGL_EGL
 
-#include "SDL_egl.h"
+#include <SDL3/SDL_egl.h>
 
 #include "SDL_sysvideo.h"
 

@@ -22,16 +22,12 @@
 
 #ifdef __LINUX__
 
-#include "SDL_error.h"
-#include "SDL_stdinc.h"
-#include "SDL_thread.h"
 
 #if !SDL_THREADS_DISABLED
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <pthread.h>
 #include <unistd.h>
-#include "SDL_system.h"
 
 /* RLIMIT_RTTIME requires kernel >= 2.6.25 and is in glibc >= 2.14 */
 #ifndef RLIMIT_RTTIME

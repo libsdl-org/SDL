@@ -20,7 +20,6 @@
 */
 #include "../SDL_internal.h"
 
-#include "SDL_clipboard.h"
 #include "SDL_sysvideo.h"
 
 

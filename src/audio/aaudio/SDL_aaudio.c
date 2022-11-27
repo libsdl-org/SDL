@@ -22,8 +22,6 @@
 
 #if SDL_AUDIO_DRIVER_AAUDIO
 
-#include "SDL_audio.h"
-#include "SDL_loadso.h"
 #include "../SDL_audio_c.h"
 #include "../../core/android/SDL_android.h"
 #include "SDL_aaudio.h"

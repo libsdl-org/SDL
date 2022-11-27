@@ -22,7 +22,6 @@
 
 #if SDL_THREAD_VITA
 
-#include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 
 #include <psp2/kernel/threadmgr.h>

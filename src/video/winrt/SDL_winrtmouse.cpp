@@ -37,7 +37,6 @@ extern "C" {
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../SDL_sysvideo.h"
-#include "SDL_events.h"
 }
 
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"

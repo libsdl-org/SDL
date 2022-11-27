@@ -22,8 +22,6 @@
 
 #ifdef SDL_JOYSTICK_IOKIT
 
-#include "SDL_events.h"
-#include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "SDL_iokitjoystick_c.h"

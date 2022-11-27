@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED
 
-#include "SDL_surface.h"
 #include "SDL_triangle.h"
 
 #include "../../video/SDL_blit.h"

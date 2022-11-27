@@ -23,9 +23,6 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#include "SDL_video.h"
-#include "SDL_mouse.h"
-#include "SDL_stdinc.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandvideo.h"
@@ -37,7 +34,6 @@
 #include "SDL_waylandtouch.h"
 #include "SDL_waylandclipboard.h"
 #include "SDL_waylandvulkan.h"
-#include "SDL_hints.h"
 
 #include <sys/types.h>
 #include <unistd.h>

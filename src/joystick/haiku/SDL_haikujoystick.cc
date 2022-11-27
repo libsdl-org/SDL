@@ -30,7 +30,6 @@
 extern "C"
 {
 
-#include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 

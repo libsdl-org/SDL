@@ -22,9 +22,6 @@
 
 /* General event handling code for SDL */
 
-#include "SDL.h"
-#include "SDL_events.h"
-#include "SDL_thread.h"
 #include "SDL_events_c.h"
 #include "../SDL_hints_c.h"
 #include "../timer/SDL_timer_c.h"
@@ -32,7 +29,7 @@
 #include "../joystick/SDL_joystick_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 #undef SDL_PRIs64
 #if (defined(__WIN32__) || defined(__GDK__)) && !defined(__CYGWIN__)

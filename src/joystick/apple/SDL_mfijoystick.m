@@ -21,10 +21,6 @@
 #include "../../SDL_internal.h"
 
 /* This is the iOS implementation of the SDL joystick API */
-#include "SDL_events.h"
-#include "SDL_joystick.h"
-#include "SDL_hints.h"
-#include "SDL_stdinc.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"

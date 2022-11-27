@@ -100,7 +100,6 @@
 # include <float.h>
 #endif
 
-#include "SDL_stdinc.h"
 
 /* If you run into a warning that O_CLOEXEC is redefined, update the SDL configuration header for your platform to add HAVE_O_CLOEXEC */
 #ifndef HAVE_O_CLOEXEC
@@ -172,8 +171,7 @@
 #define SDL_HAVE_YUV                    !SDL_LEAN_AND_MEAN
 #endif
 
-#include "SDL_assert.h"
-#include "SDL_log.h"
+#include <SDL3/SDL.h>
 
 #endif /* SDL_internal_h_ */
 

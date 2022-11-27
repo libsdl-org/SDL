@@ -23,9 +23,6 @@
 #include <unistd.h>
 
 #include "SDL_fcitx.h"
-#include "SDL_hints.h"
-#include "SDL_keycode.h"
-#include "SDL_keyboard.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "SDL_dbus.h"
 
@@ -33,7 +30,7 @@
 #include "../../video/x11/SDL_x11video.h"
 #define SDL_ENABLE_SYSWM_X11
 #endif
-#include "SDL_syswm.h"
+#include <SDL3/SDL_syswm.h>
 
 
 #define FCITX_DBUS_SERVICE "org.freedesktop.portal.Fcitx"
