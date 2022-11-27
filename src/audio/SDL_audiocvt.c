@@ -202,7 +202,6 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
     typedef float ResampleFloatType;
 
     const ResampleFloatType finrate = (ResampleFloatType) inrate;
-    const ResampleFloatType outtimeincr = ((ResampleFloatType) 1.0f) / ((ResampleFloatType) outrate);
     const ResampleFloatType ratio = ((float) outrate) / ((float) inrate);
     const int paddinglen = ResamplerPadding(inrate, outrate);
     const int framelen = chans * (int)sizeof (float);
@@ -247,7 +246,7 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
             *(dst++) = outsample;
         }
 
-        outtime = outtimeincr * i;
+        outtime = ((ResampleFloatType) i) / ((ResampleFloatType) outrate);
     }
 
     return outframes * chans * sizeof (float);
