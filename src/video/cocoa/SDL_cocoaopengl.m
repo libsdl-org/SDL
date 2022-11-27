@@ -44,6 +44,16 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+/* _Nullable is available starting Xcode 7 */
+#ifdef __has_feature
+#if __has_feature(nullability)
+#define HAS_FEATURE_NULLABLE
+#endif
+#endif
+#ifndef HAS_FEATURE_NULLABLE
+#define _Nullable
+#endif
+
 static SDL_bool SDL_opengl_async_dispatch = SDL_FALSE;
 
 static void SDLCALL
