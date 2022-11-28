@@ -37,6 +37,20 @@ The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ 
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
 
+## SDL_render.h
+
+Remove 'integer' functions, prefer the float versions.
+
+SDL_RenderDrawPoint
+SDL_RenderDrawPoints
+SDL_RenderDrawLine
+SDL_RenderDrawLines
+SDL_RenderDrawRect
+SDL_RenderDrawRects
+SDL_RenderFillRect
+SDL_RenderFillRects
+SDL_RenderCopy
+SDL_RenderCopyEx
 
 ## SDL_rwops.h
 
