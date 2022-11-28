@@ -29,7 +29,7 @@ Later, we will refer to the following `.lib` and `.dll` files that have just bee
 
 -   `./VisualC/Win32/Debug/SDL3.dll` or `./VisualC/Win32/Release/SDL3.dll`
 -   `./VisualC/Win32/Debug/SDL3.lib` or `./VisualC/Win32/Release/SDL3.lib`
--   `./VisualC/Win32/Debug/SDL3main.lib` or `./VisualC/Win32/Release/SDL3main.lib`
+-   `./VisualC/Win32/Debug/SDL3_main.lib` or `./VisualC/Win32/Release/SDL3_main.lib`
 
 _Note for the `x64` versions, just replace `Win32` in the path with `x64`_
 
@@ -64,7 +64,7 @@ Copy the following file into your Project directory:
 Add the following files to your project (It is not necessary to copy them to your project directory):
 
 -   `SDL3.lib`
--   `SDL3main.lib`
+-   `SDL3_main.lib`
 
 To add them to your project, right click on your project, and select
 `Add files to project`.

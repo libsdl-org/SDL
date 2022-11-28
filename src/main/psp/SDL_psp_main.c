@@ -12,7 +12,7 @@
     #undef main
 #endif
 
-/* If application's main() is redefined as SDL_main, and libSDLmain is
+/* If application's main() is redefined as SDL_main, and libSDL_main is
    linked, then this file will create the standard exit callback,
    define the PSP_MODULE_INFO macro, and exit back to the browser when
    the program is finished.
