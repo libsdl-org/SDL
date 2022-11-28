@@ -246,6 +246,7 @@ SDL_GetBasePath(void)
                 return NULL;
             }
         }
+    }
 #endif
 
     /* If we had access to argv[0] here, we could check it for a path,
