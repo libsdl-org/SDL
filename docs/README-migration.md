@@ -158,6 +158,11 @@ The standard C headers like stdio.h and stdlib.h are no longer included, you sho
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
 
+## SDL_surface.h
+
+Removed unused 'depth' field from SDL_CreateRGBSurfaceWithFormat and SDL_CreateRGBSurfaceWithFormatFrom
+
+
 ## SDL_syswm.h
 
 This header no longer includes platform specific headers and type definitions, instead allowing you to include the ones appropriate for your use case. You should define one or more of the following to enable the relevant platform-specific support:
