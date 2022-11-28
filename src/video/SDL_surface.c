@@ -41,7 +41,7 @@ SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
  * Return SDL_SIZE_MAX on overflow.
  */
 static size_t
-SDL_CalculatePitch(Uint32 format, size_t width, SDL_bool minimal)
+SDL_CalculatePitch(Uint32 format, size_t width, SDL_Bool minimal)
 {
     size_t pitch;
 
@@ -323,7 +323,7 @@ SDL_SetSurfaceRLE(SDL_Surface * surface, int flag)
     return 0;
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasSurfaceRLE(SDL_Surface * surface)
 {
     if (surface == NULL) {
@@ -368,7 +368,7 @@ SDL_SetColorKey(SDL_Surface * surface, int flag, Uint32 key)
     return 0;
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasColorKey(SDL_Surface * surface)
 {
     if (surface == NULL) {
@@ -402,7 +402,7 @@ SDL_GetColorKey(SDL_Surface * surface, Uint32 * key)
 /* This is a fairly slow function to switch from colorkey to alpha 
    NB: it doesn't handle bpp 1 or 3, because they have no alpha channel */
 static void
-SDL_ConvertColorkeyToAlpha(SDL_Surface * surface, SDL_bool ignore_alpha)
+SDL_ConvertColorkeyToAlpha(SDL_Surface * surface, SDL_Bool ignore_alpha)
 {
     int x, y, bpp;
 
@@ -644,7 +644,7 @@ SDL_GetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode *blendMode)
     return 0;
 }
 
-SDL_bool
+SDL_Bool
 SDL_SetClipRect(SDL_Surface * surface, const SDL_Rect * rect)
 {
     SDL_Rect full_rect;
@@ -1165,9 +1165,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     SDL_Color copy_color;
     SDL_Rect bounds;
     int ret;
-    SDL_bool palette_ck_transform = SDL_FALSE;
+    SDL_Bool palette_ck_transform = SDL_FALSE;
     int palette_ck_value = 0;
-    SDL_bool palette_has_alpha = SDL_FALSE;
+    SDL_Bool palette_has_alpha = SDL_FALSE;
     Uint8 *palette_saved_alpha = NULL;
     int palette_saved_alpha_ncolors = 0;
 
@@ -1234,9 +1234,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
      * Destination format has alpha.
      * -> set alpha channel to be opaque */
     if (surface->format->palette && format->Amask) {
-        SDL_bool set_opaque = SDL_FALSE;
+        SDL_Bool set_opaque = SDL_FALSE;
 
-        SDL_bool is_opaque, has_alpha_channel;
+        SDL_Bool is_opaque, has_alpha_channel;
         SDL_DetectPalette(surface->format->palette, &is_opaque, &has_alpha_channel);
 
         if (is_opaque) {
@@ -1309,8 +1309,8 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     }
 
     if (copy_flags & SDL_COPY_COLORKEY) {
-        SDL_bool set_colorkey_by_color = SDL_FALSE;
-        SDL_bool convert_colorkey = SDL_TRUE;
+        SDL_Bool set_colorkey_by_color = SDL_FALSE;
+        SDL_Bool convert_colorkey = SDL_TRUE;
 
         if (surface->format->palette) {
             if (format->palette &&
@@ -1407,7 +1407,7 @@ SDL_ConvertSurfaceFormat(SDL_Surface * surface, Uint32 pixel_format,
 /*
  * Create a surface on the stack for quick blit operations
  */
-static SDL_INLINE SDL_bool
+static SDL_INLINE SDL_Bool
 SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format,
                          void * pixels, int pitch, SDL_Surface * surface,
                          SDL_PixelFormat * format, SDL_BlitMap * blitmap)

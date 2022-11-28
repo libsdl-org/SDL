@@ -283,7 +283,7 @@ JACK_OpenDevice(_THIS, const char *devname)
         data to us) and "input" for playback (we input audio data to them).
         Likewise, SDL's playback port will be "output" (we write data out)
         and capture will be "input" (we read data in). */
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     const unsigned long sysportflags = iscapture ? JackPortIsOutput : JackPortIsInput;
     const unsigned long sdlportflags = iscapture ? JackPortIsInput : JackPortIsOutput;
     const JackProcessCallback callback = iscapture ? jackProcessCaptureCallback : jackProcessPlaybackCallback;
@@ -403,7 +403,7 @@ JACK_Deinitialize(void)
     UnloadJackLibrary();
 }
 
-static SDL_bool
+static SDL_Bool
 JACK_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadJackLibrary() < 0) {

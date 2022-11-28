@@ -76,9 +76,9 @@ SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) 
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *screen = NULL;
-static SDL_bool retval = SDL_FALSE;
-static SDL_bool done = SDL_FALSE;
-static SDL_bool set_LED = SDL_FALSE;
+static SDL_Bool retval = SDL_FALSE;
+static SDL_Bool done = SDL_FALSE;
+static SDL_Bool set_LED = SDL_FALSE;
 static int trigger_effect = 0;
 static SDL_Texture *background_front, *background_back, *button_texture, *axis_texture;
 static SDL_GameController *gamecontroller;
@@ -156,7 +156,7 @@ static int FindController(SDL_JoystickID controller_id)
     return -1;
 }
 
-static void AddController(int device_index, SDL_bool verbose)
+static void AddController(int device_index, SDL_Bool verbose)
 {
     SDL_JoystickID controller_id = SDL_JoystickGetDeviceInstanceID(device_index);
     SDL_GameController *controller;
@@ -334,9 +334,9 @@ static void CyclePS5TriggerEffect()
     SDL_GameControllerSendEffect(gamecontroller, &state, sizeof(state));
 }
 
-static SDL_bool ShowingFront()
+static SDL_Bool ShowingFront()
 {
-    SDL_bool showing_front = SDL_TRUE;
+    SDL_Bool showing_front = SDL_TRUE;
     int i;
 
     if (gamecontroller) {
@@ -423,12 +423,12 @@ static SDL_GameControllerButton FindButtonAtPosition(int x, int y)
 {
     SDL_Point point;
     int i;
-    SDL_bool showing_front = ShowingFront();
+    SDL_Bool showing_front = ShowingFront();
 
     point.x = x;
     point.y = y;
     for (i = 0; i < SDL_CONTROLLER_BUTTON_TOUCHPAD; ++i) {
-        SDL_bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
+        SDL_Bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
         if (on_front == showing_front) {
             SDL_Rect rect;
             rect.x = button_positions[i].x;
@@ -447,7 +447,7 @@ static SDL_GameControllerAxis FindAxisAtPosition(int x, int y)
 {
     SDL_Point point;
     int i;
-    SDL_bool showing_front = ShowingFront();
+    SDL_Bool showing_front = ShowingFront();
 
     point.x = x;
     point.y = y;
@@ -550,7 +550,7 @@ loop(void *arg)
 {
     SDL_Event event;
     int i;
-    SDL_bool showing_front;
+    SDL_Bool showing_front;
 
     /* Update to get the current event state */
     SDL_PumpEvents();
@@ -681,7 +681,7 @@ loop(void *arg)
         /* Update visual controller state */
         for (i = 0; i < SDL_CONTROLLER_BUTTON_TOUCHPAD; ++i) {
             if (SDL_GameControllerGetButton(gamecontroller, (SDL_GameControllerButton)i) == SDL_PRESSED) {
-                SDL_bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
+                SDL_Bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
                 if (on_front == showing_front) {
                     SDL_Rect dst;
                     dst.x = button_positions[i].x;

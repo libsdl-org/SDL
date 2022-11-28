@@ -106,7 +106,7 @@ SDL_MostSignificantBitIndex32(Uint32 x)
 #endif
 }
 
-SDL_FORCE_INLINE SDL_bool
+SDL_FORCE_INLINE SDL_Bool
 SDL_HasExactlyOneBitSet32(Uint32 x)
 {
     if (x && !(x & (x - 1))) {

@@ -74,10 +74,10 @@ RunThread(void *data)
 }
 
 #if (defined(__MACOS__) || defined(__IOS__)) && defined(HAVE_DLOPEN)
-static SDL_bool checked_setname = SDL_FALSE;
+static SDL_Bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(const char*) = NULL;
 #elif defined(__LINUX__) && defined(HAVE_DLOPEN)
-static SDL_bool checked_setname = SDL_FALSE;
+static SDL_Bool checked_setname = SDL_FALSE;
 static int (*ppthread_setname_np)(pthread_t, const char*) = NULL;
 #endif
 int
@@ -191,7 +191,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     int pri_policy;
     pthread_t thread = pthread_self();
     const char *policyhint = SDL_GetHint(SDL_HINT_THREAD_PRIORITY_POLICY);
-    const SDL_bool timecritical_realtime_hint = SDL_GetHintBoolean(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, SDL_FALSE);
+    const SDL_Bool timecritical_realtime_hint = SDL_GetHintBoolean(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, SDL_FALSE);
 
     if (pthread_getschedparam(thread, &policy, &sched) != 0) {
         return SDL_SetError("pthread_getschedparam() failed");

@@ -239,7 +239,7 @@ SNDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
     struct sio_par par;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
 
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc(sizeof(*this->hidden));
@@ -352,7 +352,7 @@ SNDIO_DetectDevices(void)
 	SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *) 0x2);
 }
 
-static SDL_bool
+static SDL_Bool
 SNDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadSNDIOLibrary() < 0) {

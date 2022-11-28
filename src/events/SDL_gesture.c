@@ -68,12 +68,12 @@ typedef struct {
     int numDollarTemplates;
     SDL_DollarTemplate *dollarTemplate;
 
-    SDL_bool recording;
+    SDL_Bool recording;
 } SDL_GestureTouch;
 
 static SDL_GestureTouch *SDL_gestureTouch;
 static int SDL_numGestureTouches = 0;
-static SDL_bool recordAll;
+static SDL_Bool recordAll;
 
 #if 0
 static void PrintPath(SDL_FloatPoint *path)
@@ -342,7 +342,7 @@ static float bestDollarDifference(SDL_FloatPoint* points,SDL_FloatPoint* templ)
 }
 
 /* DollarPath contains raw points, plus (possibly) the calculated length */
-static int dollarNormalize(const SDL_DollarPath *path,SDL_FloatPoint *points, SDL_bool is_recording)
+static int dollarNormalize(const SDL_DollarPath *path,SDL_FloatPoint *points, SDL_Bool is_recording)
 {
     int i;
     float interval;

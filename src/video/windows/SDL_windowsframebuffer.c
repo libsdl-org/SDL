@@ -27,7 +27,7 @@
 int WIN_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    SDL_bool isstack;
+    SDL_Bool isstack;
     size_t size;
     LPBITMAPINFO info;
     HBITMAP hbm;

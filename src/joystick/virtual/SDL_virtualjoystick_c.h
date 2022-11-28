@@ -32,7 +32,7 @@
 typedef struct joystick_hwdata
 {
     SDL_JoystickType type;
-    SDL_bool attached;
+    SDL_Bool attached;
     char *name;
     SDL_JoystickGUID guid;
     SDL_VirtualJoystickDesc desc;

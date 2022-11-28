@@ -90,7 +90,7 @@ main(int argc, char **argv)
     SDL_Log("Opened %d sensors\n", num_opened);
 
     if (num_opened > 0) {
-        SDL_bool done = SDL_FALSE;
+        SDL_Bool done = SDL_FALSE;
         SDL_Event event;
 
         SDL_CreateWindow("Sensor Test", 0, 0, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);

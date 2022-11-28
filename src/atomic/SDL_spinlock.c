@@ -56,7 +56,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
 #endif /* __WATCOMC__ && __386__ */
 
 /* This function is where all the magic happens... */
-SDL_bool
+SDL_Bool
 SDL_AtomicTryLock(SDL_SpinLock *lock)
 {
 #if SDL_ATOMIC_DISABLED
@@ -131,14 +131,14 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 
 #elif defined(__SOLARIS__) && defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
-    return (SDL_bool)((int)atomic_cas_64((volatile uint64_t *)lock, 0, 1) == 0);
+    return (SDL_Bool)((int)atomic_cas_64((volatile uint64_t *)lock, 0, 1) == 0);
 
 #elif defined(__SOLARIS__) && !defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
-    return (SDL_bool)((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
+    return (SDL_Bool)((int)atomic_cas_32((volatile uint32_t *)lock, 0, 1) == 0);
 #elif defined(PS2)
     uint32_t oldintr;
-    SDL_bool res = SDL_FALSE;
+    SDL_Bool res = SDL_FALSE;
     // disable interuption
     oldintr = DIntr();
 

@@ -1382,7 +1382,7 @@ SDL_Convert_F32_to_S32_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
 void SDL_ChooseAudioConverters(void)
 {
-    static SDL_bool converters_chosen = SDL_FALSE;
+    static SDL_Bool converters_chosen = SDL_FALSE;
 
     if (converters_chosen) {
         return;

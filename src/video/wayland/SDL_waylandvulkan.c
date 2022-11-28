@@ -46,8 +46,8 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasWaylandSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasWaylandSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -119,7 +119,7 @@ void Wayland_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -136,7 +136,7 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
             extensionsForWayland);
 }
 
-SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
+SDL_Bool Wayland_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

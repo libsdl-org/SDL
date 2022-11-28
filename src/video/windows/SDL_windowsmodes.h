@@ -27,7 +27,7 @@ typedef struct
 {
     WCHAR DeviceName[32];
     HMONITOR MonitorHandle;
-    SDL_bool IsValid;
+    SDL_Bool IsValid;
 } SDL_DisplayData;
 
 typedef struct

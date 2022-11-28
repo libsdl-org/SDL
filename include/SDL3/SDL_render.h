@@ -752,7 +752,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture * texture);
  *
  * \sa SDL_SetRenderTarget
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *renderer);
+extern DECLSPEC SDL_Bool SDLCALL SDL_RenderTargetSupported(SDL_Renderer *renderer);
 
 /**
  * Set a texture as the current rendering target.
@@ -861,7 +861,7 @@ extern DECLSPEC void SDLCALL SDL_RenderGetLogicalSize(SDL_Renderer * renderer, i
  * \sa SDL_RenderSetLogicalSize
  */
 extern DECLSPEC int SDLCALL SDL_RenderSetIntegerScale(SDL_Renderer * renderer,
-                                                      SDL_bool enable);
+                                                      SDL_Bool enable);
 
 /**
  * Get whether integer scales are forced for resolution-independent rendering.
@@ -874,7 +874,7 @@ extern DECLSPEC int SDLCALL SDL_RenderSetIntegerScale(SDL_Renderer * renderer,
  *
  * \sa SDL_RenderSetIntegerScale
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_RenderGetIntegerScale(SDL_Renderer * renderer);
+extern DECLSPEC SDL_Bool SDLCALL SDL_RenderGetIntegerScale(SDL_Renderer * renderer);
 
 /**
  * Set the drawing area for rendering on the current target.
@@ -954,7 +954,7 @@ extern DECLSPEC void SDLCALL SDL_RenderGetClipRect(SDL_Renderer * renderer,
  * \sa SDL_RenderGetClipRect
  * \sa SDL_RenderSetClipRect
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_RenderIsClipEnabled(SDL_Renderer * renderer);
+extern DECLSPEC SDL_Bool SDLCALL SDL_RenderIsClipEnabled(SDL_Renderer * renderer);
 
 
 /**

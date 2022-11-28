@@ -120,7 +120,7 @@ GetWindowStyle(SDL_Window * window)
  * Can be called before we have a HWND.
  */
 static void
-WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
+WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_Bool use_current)
 {
     SDL_VideoData* videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
@@ -207,7 +207,7 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
 }
 
 static void
-WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_bool use_current)
+WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_Bool use_current)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -295,7 +295,7 @@ WIN_GetScalingDPIForHWND(const SDL_VideoData *videodata, HWND hwnd)
 }
 
 static int
-SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool created)
+SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_Bool created)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data;
@@ -578,7 +578,7 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
     HWND hwnd = (HWND) data;
     LPTSTR title;
     int titleLen;
-    SDL_bool isstack;
+    SDL_Bool isstack;
 
     /* Query the title from the existing window */
     titleLen = GetWindowTextLength(hwnd);
@@ -650,7 +650,7 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     int icon_len, mask_len, row_len, y;
     BITMAPINFOHEADER *bmi;
     Uint8 *dst;
-    SDL_bool isstack;
+    SDL_Bool isstack;
 
     /* Create temporary buffer for ICONIMAGE structure */
     SDL_COMPILE_TIME_ASSERT(WIN_SetWindowIcon_uses_BITMAPINFOHEADER_to_prepare_an_ICONIMAGE, sizeof(BITMAPINFOHEADER) == 40);
@@ -832,7 +832,7 @@ WIN_RaiseWindow(_THIS, SDL_Window * window)
      * nearly impossible to programmatically move a window to the foreground,
      * for "security" reasons. Apparently, the following song-and-dance gets
      * around their objections. */
-    SDL_bool bForce = SDL_GetHintBoolean(SDL_HINT_FORCE_RAISEWINDOW, SDL_FALSE);
+    SDL_Bool bForce = SDL_GetHintBoolean(SDL_HINT_FORCE_RAISEWINDOW, SDL_FALSE);
 
     HWND hCurWnd = NULL;
     DWORD dwMyID = 0u;
@@ -875,7 +875,7 @@ WIN_MinimizeWindow(_THIS, SDL_Window * window)
 }
 
 void
-WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
+WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -892,7 +892,7 @@ WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
-WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_Bool resizable)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -906,7 +906,7 @@ WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 }
 
 void
-WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top)
+WIN_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_Bool on_top)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -931,7 +931,7 @@ WIN_RestoreWindow(_THIS, SDL_Window * window)
  * Reconfigures the window to fill the given display, if fullscreen is true, otherwise restores the window.
  */
 void
-WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_Bool fullscreen)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__) 
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
@@ -1017,7 +1017,7 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 void
-WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_bool send_event)
+WIN_UpdateWindowICCProfile(SDL_Window * window, SDL_Bool send_event)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -1117,13 +1117,13 @@ WIN_SetWindowMouseRect(_THIS, SDL_Window * window)
 }
 
 void
-WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 {
     WIN_UpdateClipCursor(window);
 }
 
 void
-WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 {
     if (grabbed) {
         WIN_GrabKeyboard(window);
@@ -1342,7 +1342,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
 }
 
 int
-WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
+WIN_SetWindowHitTest(SDL_Window *window, SDL_Bool enabled)
 {
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
@@ -1425,7 +1425,7 @@ WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y)
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 void
-WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
+WIN_AcceptDragAndDrop(SDL_Window * window, SDL_Bool accept)
 {
     const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);

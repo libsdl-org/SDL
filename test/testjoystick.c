@@ -31,7 +31,7 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *screen = NULL;
 static SDL_Joystick *joystick = NULL;
-static SDL_bool done = SDL_FALSE;
+static SDL_Bool done = SDL_FALSE;
 
 static void
 PrintJoystick(SDL_Joystick *joy)

@@ -1486,7 +1486,7 @@ SDL_RLESurface(SDL_Surface * surface)
  * completely transparent pixels will be lost, and color and alpha depth
  * may have been reduced (when encoding for 16bpp targets).
  */
-static SDL_bool
+static SDL_Bool
 UnRLEAlpha(SDL_Surface * surface)
 {
     Uint8 *srcbuf;

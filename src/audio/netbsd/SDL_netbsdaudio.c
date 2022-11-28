@@ -202,7 +202,7 @@ NETBSDAUDIO_CloseDevice(_THIS)
 static int
 NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 {
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;
     int encoding = AUDIO_ENCODING_NONE;
     audio_info_t info, hwinfo;
@@ -318,7 +318,7 @@ NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static SDL_bool
+static SDL_Bool
 NETBSDAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */

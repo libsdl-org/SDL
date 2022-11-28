@@ -83,7 +83,7 @@ get_channel_name(int channel_index, int channel_count)
     return NULL;
 }
 
-SDL_bool
+SDL_Bool
 is_lfe_channel(int channel_index, int channel_count)
 {
     return (channel_count == 3 && channel_index == 2) || (channel_count >= 6 && channel_index == 3);

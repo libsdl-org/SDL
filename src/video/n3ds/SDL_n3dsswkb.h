@@ -28,7 +28,7 @@ void N3DS_SwkbInit();
 void N3DS_SwkbPoll();
 void N3DS_SwkbQuit();
 
-SDL_bool N3DS_HasScreenKeyboardSupport(_THIS);
+SDL_Bool N3DS_HasScreenKeyboardSupport(_THIS);
 
 void N3DS_StartTextInput(_THIS);
 void N3DS_StopTextInput(_THIS);

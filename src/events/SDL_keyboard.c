@@ -44,7 +44,7 @@ struct SDL_Keyboard
     Uint8 keysource[SDL_NUM_SCANCODES];
     Uint8 keystate[SDL_NUM_SCANCODES];
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
-    SDL_bool autorelease_pending;
+    SDL_Bool autorelease_pending;
 };
 
 static SDL_Keyboard SDL_keyboard;
@@ -696,7 +696,7 @@ SDL_GetDefaultKeymap(SDL_Keycode * keymap)
 }
 
 void
-SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_bool send_event)
+SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_Bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
@@ -1000,7 +1000,7 @@ SDL_ReleaseAutoReleaseKeys(void)
     }
 }
 
-SDL_bool
+SDL_Bool
 SDL_HardwareKeyboardKeyPressed(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
@@ -1110,7 +1110,7 @@ SDL_SetModState(SDL_Keymod modstate)
 
 /* Note that SDL_ToggleModState() is not a public API. SDL_SetModState() is. */
 void
-SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
+SDL_ToggleModState(const SDL_Keymod modstate, const SDL_Bool toggle)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     if (toggle) {

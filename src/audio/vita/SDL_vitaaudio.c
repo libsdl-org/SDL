@@ -191,7 +191,7 @@ static void VITAAUD_ThreadInit(_THIS)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 VITAAUD_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */

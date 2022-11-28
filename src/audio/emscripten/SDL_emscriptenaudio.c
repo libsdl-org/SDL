@@ -199,7 +199,7 @@ static int
 EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     int result;
 
     /* based on parts of library_sdl.js */
@@ -347,10 +347,10 @@ EMSCRIPTENAUDIO_LockOrUnlockDeviceWithNoMixerLock(SDL_AudioDevice * device)
 {
 }
 
-static SDL_bool
+static SDL_Bool
 EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
-    SDL_bool available, capture_available;
+    SDL_Bool available, capture_available;
 
     /* Set the function pointers */
     impl->OpenDevice = EMSCRIPTENAUDIO_OpenDevice;

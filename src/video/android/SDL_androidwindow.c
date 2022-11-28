@@ -112,7 +112,7 @@ Android_SetWindowTitle(_THIS, SDL_Window *window)
 }
 
 void
-Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_Bool fullscreen)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -169,7 +169,7 @@ Android_MinimizeWindow(_THIS, SDL_Window *window)
     Android_JNI_MinizeWindow();
 }
 
-void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
+void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_Bool resizable)
 {
     /* Set orientation */
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));

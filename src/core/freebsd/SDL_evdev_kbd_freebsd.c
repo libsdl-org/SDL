@@ -53,11 +53,11 @@ struct SDL_EVDEV_keyboard_state
     keymap_t* key_map;
     keyboard_info_t* kbInfo;
     unsigned char shift_down[4];        /* shift state counters.. */
-    SDL_bool dead_key_next;
+    SDL_Bool dead_key_next;
     int npadch;                    /* -1 or number assembled on pad */
     accentmap_t *accents;
     unsigned int diacr;
-    SDL_bool rep;                    /* flag telling character repeat */
+    SDL_Bool rep;                    /* flag telling character repeat */
     unsigned char lockstate;
     unsigned char ledflagstate;
     char shift_state;

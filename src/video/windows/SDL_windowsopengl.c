@@ -342,7 +342,7 @@ WIN_GL_ChoosePixelFormat(HDC hdc, PIXELFORMATDESCRIPTOR * target)
     return best;
 }
 
-static SDL_bool
+static SDL_Bool
 HasExtension(const char *extension, const char *extensions)
 {
     const char *start;
@@ -660,7 +660,7 @@ WIN_GL_SetupWindow(_THIS, SDL_Window * window)
     return retval;
 }
 
-SDL_bool
+SDL_Bool
 WIN_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
@@ -877,7 +877,7 @@ WIN_GL_DeleteContext(_THIS, SDL_GLContext context)
 }
 
 
-SDL_bool
+SDL_Bool
 WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window * fromWindow, SDL_Window * toWindow)
 {
     HDC hfromdc = ((SDL_WindowData *) fromWindow->driverdata)->hdc;

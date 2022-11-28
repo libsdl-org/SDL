@@ -1165,7 +1165,7 @@ extern DECLSPEC void SDLCALL SDL_GetWindowMaximumSize(SDL_Window * window,
  * \sa SDL_GetWindowFlags
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowBordered(SDL_Window * window,
-                                                   SDL_bool bordered);
+                                                   SDL_Bool bordered);
 
 /**
  * Set the user-resizable state of a window.
@@ -1184,7 +1184,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowBordered(SDL_Window * window,
  * \sa SDL_GetWindowFlags
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowResizable(SDL_Window * window,
-                                                    SDL_bool resizable);
+                                                    SDL_Bool resizable);
 
 /**
  * Set the window to always be above the others.
@@ -1201,7 +1201,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowResizable(SDL_Window * window,
  * \sa SDL_GetWindowFlags
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window * window,
-                                                      SDL_bool on_top);
+                                                      SDL_Bool on_top);
 
 /**
  * Show a window.
@@ -1378,7 +1378,7 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window * window,
  * \sa SDL_GetWindowGrab
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_Window * window,
-                                               SDL_bool grabbed);
+                                               SDL_Bool grabbed);
 
 /**
  * Set a window's keyboard grab mode.
@@ -1409,7 +1409,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_Window * window,
  * \sa SDL_SetWindowGrab
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window * window,
-                                                       SDL_bool grabbed);
+                                                       SDL_Bool grabbed);
 
 /**
  * Set a window's mouse grab mode.
@@ -1426,7 +1426,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window * window,
  * \sa SDL_SetWindowGrab
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowMouseGrab(SDL_Window * window,
-                                                    SDL_bool grabbed);
+                                                    SDL_Bool grabbed);
 
 /**
  * Get a window's input grab mode.
@@ -1438,7 +1438,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowMouseGrab(SDL_Window * window,
  *
  * \sa SDL_SetWindowGrab
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowGrab(SDL_Window * window);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GetWindowGrab(SDL_Window * window);
 
 /**
  * Get a window's keyboard grab mode.
@@ -1451,7 +1451,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowGrab(SDL_Window * window);
  * \sa SDL_SetWindowKeyboardGrab
  * \sa SDL_GetWindowGrab
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window * window);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window * window);
 
 /**
  * Get a window's mouse grab mode.
@@ -1464,7 +1464,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window * window);
  * \sa SDL_SetWindowKeyboardGrab
  * \sa SDL_GetWindowGrab
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window * window);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window * window);
 
 /**
  * Get the window that currently has an input grab enabled.
@@ -1700,7 +1700,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window * window);
  * \sa SDL_DisableScreenSaver
  * \sa SDL_EnableScreenSaver
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenSaverEnabled(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsScreenSaverEnabled(void);
 
 /**
  * Allow the screen to be blanked by a screen saver.
@@ -1854,7 +1854,7 @@ extern DECLSPEC void SDLCALL SDL_GL_UnloadLibrary(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GL_ExtensionSupported(const char
+extern DECLSPEC SDL_Bool SDLCALL SDL_GL_ExtensionSupported(const char
                                                            *extension);
 
 /**

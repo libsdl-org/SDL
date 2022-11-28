@@ -104,7 +104,7 @@ hints_setHint(void *arg)
   char *value;
   const char *testValue;
   char *callbackValue;
-  SDL_bool result;
+  SDL_Bool result;
   int i, j;
 
   /* Create random values to set */

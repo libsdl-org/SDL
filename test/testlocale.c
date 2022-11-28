@@ -42,7 +42,7 @@ int main(int argc, char **argv)
         log_locales();
 
         if ((argc == 2) && (SDL_strcmp(argv[1], "--listen") == 0)) {
-            SDL_bool keep_going = SDL_TRUE;
+            SDL_Bool keep_going = SDL_TRUE;
             while (keep_going) {
                 SDL_Event e;
                 while (SDL_PollEvent(&e)) {

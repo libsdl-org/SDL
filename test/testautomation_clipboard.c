@@ -144,7 +144,7 @@ clipboard_testClipboardTextFunctions(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
-    SDL_bool boolResult;
+    SDL_Bool boolResult;
     int intResult;
     char *charResult;
 
@@ -223,7 +223,7 @@ clipboard_testPrimarySelectionTextFunctions(void *arg)
 {
     char *textRef = SDLTest_RandomAsciiString();
     char *text = SDL_strdup(textRef);
-    SDL_bool boolResult;
+    SDL_Bool boolResult;
     int intResult;
     char *charResult;
 

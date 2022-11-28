@@ -213,7 +213,7 @@ HAIKUAUDIO_Deinitialize(void)
     SDL_QuitBeApp();
 }
 
-static SDL_bool
+static SDL_Bool
 HAIKUAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Initialize the Be Application, if it's not already started */

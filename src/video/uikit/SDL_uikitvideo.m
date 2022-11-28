@@ -184,7 +184,7 @@ UIKit_SuspendScreenSaver(_THIS)
     }
 }
 
-SDL_bool
+SDL_Bool
 UIKit_IsSystemVersionAtLeast(double version)
 {
     return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
@@ -281,7 +281,7 @@ void SDL_NSLog(const char *prefix, const char *text)
  * This doesn't really have aything to do with the interfaces of the SDL video
  * subsystem, but we need to stuff this into an Objective-C source code file.
  */
-SDL_bool SDL_IsIPad(void)
+SDL_Bool SDL_IsIPad(void)
 {
     return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
 }

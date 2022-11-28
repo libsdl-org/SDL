@@ -540,7 +540,7 @@ VIRTUAL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -596,7 +596,7 @@ VIRTUAL_JoystickQuit(void)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);

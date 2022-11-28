@@ -37,7 +37,7 @@
 
 /* For Vista+, we can enumerate DSound devices with IMMDevice */
 #if HAVE_MMDEVICEAPI_H
-static SDL_bool SupportsIMMDevice = SDL_FALSE;
+static SDL_Bool SupportsIMMDevice = SDL_FALSE;
 #endif /* HAVE_MMDEVICEAPI_H */
 
 /* DirectX function pointers for audio */
@@ -499,8 +499,8 @@ DSOUND_OpenDevice(_THIS, const char *devname)
 {
     const DWORD numchunks = 8;
     HRESULT result;
-    SDL_bool tried_format = SDL_FALSE;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool tried_format = SDL_FALSE;
+    SDL_Bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;
     LPGUID guid = (LPGUID) this->handle;
     DWORD bufsize;
@@ -640,7 +640,7 @@ DSOUND_Deinitialize(void)
 }
 
 
-static SDL_bool
+static SDL_Bool
 DSOUND_Init(SDL_AudioDriverImpl * impl)
 {
     if (!DSOUND_Load()) {

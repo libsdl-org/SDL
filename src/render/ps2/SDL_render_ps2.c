@@ -588,7 +588,7 @@ static int
 PS2_SetVSync(SDL_Renderer * renderer, const int vsync)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    SDL_bool dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
+    SDL_Bool dynamicVsync = SDL_GetHintBoolean(SDL_HINT_PS2_DYNAMIC_VSYNC, SDL_FALSE);
     data->vsync = vsync ? (dynamicVsync ? 2 : 1) : 0;
     return 0;
 }
@@ -600,7 +600,7 @@ PS2_CreateRenderer(SDL_Window * window, Uint32 flags)
     PS2_RenderData *data;
     GSGLOBAL *gsGlobal;
     ee_sema_t sema;
-    SDL_bool dynamicVsync;
+    SDL_Bool dynamicVsync;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (renderer == NULL) {

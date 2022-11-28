@@ -105,7 +105,7 @@ typedef struct
     D3D12_FILTER scaleMode;
 #if SDL_HAVE_YUV
     /* YV12 texture support */
-    SDL_bool yuv;
+    SDL_Bool yuv;
     ID3D12Resource *mainTextureU;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureResourceViewU;
     D3D12_RESOURCE_STATES mainResourceStateU;
@@ -116,7 +116,7 @@ typedef struct
     SIZE_T mainSRVIndexV;
 
     /* NV12 texture support */
-    SDL_bool nv12;
+    SDL_Bool nv12;
     ID3D12Resource *mainTextureNV;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureResourceViewNV;
     D3D12_RESOURCE_STATES mainResourceStateNV;
@@ -219,15 +219,15 @@ typedef struct
     D3D12_CPU_DESCRIPTOR_HANDLE currentRenderTargetView;
     D3D12_CPU_DESCRIPTOR_HANDLE currentShaderResource;
     D3D12_CPU_DESCRIPTOR_HANDLE currentSampler;
-    SDL_bool cliprectDirty;
-    SDL_bool currentCliprectEnabled;
+    SDL_Bool cliprectDirty;
+    SDL_Bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
     SDL_Rect currentViewport;
     int currentViewportRotation;
-    SDL_bool viewportDirty;
+    SDL_Bool viewportDirty;
     Float4X4 identity;
     int currentVertexBuffer;
-    SDL_bool issueBatch;
+    SDL_Bool issueBatch;
 } D3D12_RenderData;
 
 
@@ -728,7 +728,7 @@ D3D12_CreateDeviceResources(SDL_Renderer* renderer)
     HRESULT result = S_OK;
     UINT creationFlags = 0;
     int i, j, k, l;
-    SDL_bool createDebug = SDL_FALSE;
+    SDL_Bool createDebug = SDL_FALSE;
 
     D3D12_COMMAND_QUEUE_DESC queueDesc;
     D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc;
@@ -1422,7 +1422,7 @@ D3D12_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 D3D12_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
@@ -2430,7 +2430,7 @@ D3D12_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, D3D12_
     const Float4X4 *newmatrix = matrix ? matrix : &rendererData->identity;
     D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView = D3D12_GetCurrentRenderTargetView(renderer);
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
-    SDL_bool updateSubresource = SDL_FALSE;
+    SDL_Bool updateSubresource = SDL_FALSE;
     int i;
     D3D12_CPU_DESCRIPTOR_HANDLE firstShaderResource;
     DXGI_FORMAT rtvFormat = DXGI_FORMAT_B8G8R8A8_UNORM;

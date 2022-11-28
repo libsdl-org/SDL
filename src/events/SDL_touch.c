@@ -34,7 +34,7 @@ static SDL_Touch **SDL_touchDevices = NULL;
 #define SYNTHESIZE_TOUCH_TO_MOUSE 1
 
 #if SYNTHESIZE_TOUCH_TO_MOUSE
-static SDL_bool finger_touching = SDL_FALSE;
+static SDL_Bool finger_touching = SDL_FALSE;
 static SDL_FingerID track_fingerid;
 static SDL_TouchID  track_touchid;
 #endif
@@ -249,7 +249,7 @@ SDL_DelFinger(SDL_Touch* touch, SDL_FingerID fingerid)
 
 int
 SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
-              SDL_bool down, float x, float y, float pressure)
+              SDL_Bool down, float x, float y, float pressure)
 {
     int posted;
     SDL_Finger *finger;

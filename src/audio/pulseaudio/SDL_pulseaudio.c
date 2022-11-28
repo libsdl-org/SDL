@@ -43,7 +43,7 @@
 #include "../../thread/SDL_systhread.h"
 
 /* should we include monitors in the device list? Set at SDL_Init time */
-static SDL_bool include_monitors = SDL_FALSE;
+static SDL_Bool include_monitors = SDL_FALSE;
 
 
 #if (PA_API_VERSION < 12)
@@ -262,7 +262,7 @@ WaitForPulseOperation(pa_mainloop *mainloop, pa_operation *o)
 {
     /* This checks for NO errors currently. Either fix that, check results elsewhere, or do things you don't care about. */
     if (mainloop && o) {
-        SDL_bool okay = SDL_TRUE;
+        SDL_Bool okay = SDL_TRUE;
         while (okay && (PULSEAUDIO_pa_operation_get_state(o) == PA_OPERATION_RUNNING)) {
             okay = (PULSEAUDIO_pa_mainloop_iterate(mainloop, 1, NULL) >= 0);
         }
@@ -516,8 +516,8 @@ SourceDeviceNameCallback(pa_context *c, const pa_source_info *i, int is_last, vo
     }
 }
 
-static SDL_bool
-FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_bool iscapture, void *handle)
+static SDL_Bool
+FindDeviceName(struct SDL_PrivateAudioData *h, const SDL_Bool iscapture, void *handle)
 {
     const uint32_t idx = ((uint32_t) ((intptr_t) handle)) - 1;
 
@@ -548,7 +548,7 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     pa_channel_map pacmap;
     pa_stream_flags_t flags = 0;
     const char *name = NULL;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     int state = 0, format = PA_SAMPLE_INVALID;
     int rc = 0;
 
@@ -720,7 +720,7 @@ static void
 SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, void *data)
 {
     SDL_AudioSpec spec;
-    SDL_bool add = (SDL_bool) ((intptr_t) data);
+    SDL_Bool add = (SDL_Bool) ((intptr_t) data);
     if (i) {
         spec.freq = i->sample_spec.rate;
         spec.channels = i->sample_spec.channels;
@@ -749,7 +749,7 @@ static void
 SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_last, void *data)
 {
     SDL_AudioSpec spec;
-    SDL_bool add = (SDL_bool) ((intptr_t) data);
+    SDL_Bool add = (SDL_Bool) ((intptr_t) data);
     if (i) {
         /* Maybe skip "monitor" sources. These are just output from other sinks. */
         if (include_monitors || (i->monitor_of_sink == PA_INVALID_INDEX)) {
@@ -793,13 +793,13 @@ ServerInfoCallback(pa_context *c, const pa_server_info *i, void *data)
 static void
 HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint32_t idx, void *data)
 {
-    const SDL_bool added = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW);
-    const SDL_bool removed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE);
-    const SDL_bool changed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE);
+    const SDL_Bool added = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW);
+    const SDL_Bool removed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE);
+    const SDL_Bool changed = ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_CHANGE);
 
     if (added || removed || changed) {  /* we only care about add/remove events. */
-        const SDL_bool sink = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK);
-        const SDL_bool source = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE);
+        const SDL_Bool sink = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SINK);
+        const SDL_Bool source = ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE);
 
         /* adds need sink details from the PulseAudio server. Another callback... */
         if ((added || changed) && sink) {
@@ -908,7 +908,7 @@ PULSEAUDIO_Deinitialize(void)
     UnloadPulseAudioLibrary();
 }
 
-static SDL_bool
+static SDL_Bool
 PULSEAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadPulseAudioLibrary() < 0) {

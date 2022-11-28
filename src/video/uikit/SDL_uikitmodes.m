@@ -281,7 +281,7 @@ UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
 
 static int
 UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, UIScreen * uiscreen,
-                     UIScreenMode * uiscreenmode, SDL_bool addRotation)
+                     UIScreenMode * uiscreenmode, SDL_Bool addRotation)
 {
     if (UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode) < 0) {
         return -1;
@@ -298,7 +298,7 @@ UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, UIScreen * uiscre
 }
 
 int
-UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
+UIKit_AddDisplay(UIScreen *uiscreen, SDL_Bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
     CGSize size = uiscreen.bounds.size;
@@ -355,7 +355,7 @@ UIKit_DelDisplay(UIScreen *uiscreen)
     }
 }
 
-SDL_bool
+SDL_Bool
 UIKit_IsDisplayLandscape(UIScreen *uiscreen)
 {
 #if !TARGET_OS_TV
@@ -394,8 +394,8 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     @autoreleasepool {
         SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
 
-        SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
-        SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
+        SDL_Bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
+        SDL_Bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
         CGFloat scale = data.uiscreen.scale;
         NSArray *availableModes = nil;
 

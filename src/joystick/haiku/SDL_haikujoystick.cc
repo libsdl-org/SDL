@@ -264,7 +264,7 @@ extern "C"
         return SDL_Unsupported();
     }
 
-    static SDL_bool
+    static SDL_Bool
     HAIKU_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     {
         return SDL_FALSE;
@@ -286,7 +286,7 @@ extern "C"
         return SDL_Unsupported();
     }
 
-    static int HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+    static int HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
     {
         return SDL_Unsupported();
     }

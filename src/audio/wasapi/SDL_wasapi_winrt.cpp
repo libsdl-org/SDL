@@ -53,8 +53,8 @@ using namespace Microsoft::WRL;
 
 static Platform::String^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4e27-bc73-6882a1bb8e4c} 0";
 
-static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid);
-static void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid);
+static void WASAPI_AddDevice(const SDL_Bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid);
+static void WASAPI_RemoveDevice(const SDL_Bool iscapture, LPCWSTR devid);
 extern "C" {
     SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
     SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
@@ -72,7 +72,7 @@ static DevIdList *deviceid_list = NULL;
 class SDL_WasapiDeviceEventHandler
 {
 public:
-    SDL_WasapiDeviceEventHandler(const SDL_bool _iscapture);
+    SDL_WasapiDeviceEventHandler(const SDL_Bool _iscapture);
     ~SDL_WasapiDeviceEventHandler();
     void OnDeviceAdded(DeviceWatcher^ sender, DeviceInformation^ args);
     void OnDeviceRemoved(DeviceWatcher^ sender, DeviceInformationUpdate^ args);
@@ -83,7 +83,7 @@ public:
     SDL_semaphore* completed;
 
 private:
-    const SDL_bool iscapture;
+    const SDL_Bool iscapture;
     DeviceWatcher^ watcher;
     Windows::Foundation::EventRegistrationToken added_handler;
     Windows::Foundation::EventRegistrationToken removed_handler;
@@ -92,7 +92,7 @@ private:
     Windows::Foundation::EventRegistrationToken default_changed_handler;
 };
 
-SDL_WasapiDeviceEventHandler::SDL_WasapiDeviceEventHandler(const SDL_bool _iscapture)
+SDL_WasapiDeviceEventHandler::SDL_WasapiDeviceEventHandler(const SDL_Bool _iscapture)
     : iscapture(_iscapture)
     , completed(SDL_CreateSemaphore(0))
 {
@@ -267,7 +267,7 @@ WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 }
 
 int
-WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
+WASAPI_ActivateDevice(_THIS, const SDL_Bool isrecovery)
 {
     LPCWSTR devid = _this->hidden->devid;
     Platform::String^ defdevid;
@@ -377,7 +377,7 @@ WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
 }
 
 static void
-WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
+WASAPI_RemoveDevice(const SDL_Bool iscapture, LPCWSTR devid)
 {
     DevIdList *i;
     DevIdList *next;
@@ -400,7 +400,7 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
 }
 
 static void
-WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
+WASAPI_AddDevice(const SDL_Bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
 {
     DevIdList *devidlist;
     SDL_AudioSpec spec;

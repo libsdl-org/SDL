@@ -101,7 +101,7 @@ typedef struct SDL_RWops
 #elif defined(__WIN32__) || defined(__GDK__)
         struct
         {
-            SDL_bool append;
+            SDL_Bool append;
             void *h;
             struct
             {
@@ -114,7 +114,7 @@ typedef struct SDL_RWops
 
         struct
         {
-            SDL_bool autoclose;
+            SDL_Bool autoclose;
             void *fp;
         } stdio;
 

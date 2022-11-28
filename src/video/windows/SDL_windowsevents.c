@@ -184,7 +184,7 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 {
     SDL_Scancode code;
     int nScanCode = (lParam >> 16) & 0xFF;
-    SDL_bool bIsExtended = (lParam & (1 << 24)) != 0;
+    SDL_Bool bIsExtended = (lParam & (1 << 24)) != 0;
 
     code = VKeytoScancode(wParam);
 
@@ -265,14 +265,14 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-static SDL_bool
+static SDL_Bool
 WIN_ShouldIgnoreFocusClick()
 {
     return !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
 }
 
 static void
-WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_bool bSwapButtons, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
+WIN_CheckWParamMouseButton(SDL_Bool bwParamMousePressed, Uint32 mouseFlags, SDL_Bool bSwapButtons, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
 {
     if (bSwapButtons) {
         if (button == SDL_BUTTON_LEFT) {
@@ -329,7 +329,7 @@ WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mou
 
     if (rawButtons != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
-        SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+        SDL_Bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
         if ((rawButtons & RI_MOUSE_BUTTON_1_DOWN)) {
             WIN_CheckWParamMouseButton((rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
         }
@@ -369,7 +369,7 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
 {
     Uint32 mouseFlags;
     SHORT keyState;
-    SDL_bool swapButtons;
+    SDL_Bool swapButtons;
 
     /* mouse buttons may have changed state here, we need to resync them,
        but we will get a WM_MOUSEMOVE right away which will fix things up if in non raw mode also
@@ -401,12 +401,12 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
 }
 
 static void
-WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
+WIN_UpdateFocus(SDL_Window *window, SDL_Bool expect_focus)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     HWND hwnd = data->hwnd;
-    SDL_bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
-    SDL_bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
+    SDL_Bool had_focus = (SDL_GetKeyboardFocus() == window) ? SDL_TRUE : SDL_FALSE;
+    SDL_Bool has_focus = (GetForegroundWindow() == hwnd) ? SDL_TRUE : SDL_FALSE;
 
     if (had_focus == has_focus || has_focus != expect_focus) {
         return;
@@ -415,7 +415,7 @@ WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
     if (has_focus) {
         POINT cursorPos;
 
-        SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+        SDL_Bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
         if (GetAsyncKeyState(VK_LBUTTON)) {
             data->focus_click_pending |= !swapButtons ? SDL_BUTTON_LMASK : SDL_BUTTON_RMASK;
         }
@@ -515,7 +515,7 @@ WIN_ConvertUTF16toUTF8(UINT32 high_surrogate, UINT32 low_surrogate, char * text)
     return WIN_ConvertUTF32toUTF8(codepoint, text);
 }
 
-static SDL_bool
+static SDL_Bool
 ShouldGenerateWindowCloseOnAltF4(void)
 {
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
@@ -839,9 +839,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                        We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
                     */
-                    SDL_bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
-                    SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
-                    SDL_bool normalized_coordinates = ((rawmouse->usFlags & 0x40) == 0) ? SDL_TRUE : SDL_FALSE;
+                    SDL_Bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? SDL_TRUE : SDL_FALSE;
+                    SDL_Bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;
+                    SDL_Bool normalized_coordinates = ((rawmouse->usFlags & 0x40) == 0) ? SDL_TRUE : SDL_FALSE;
                     int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
                     int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
                     int x = normalized_coordinates ? (int)(((float)rawmouse->lLastX / 65535.0f) * w) : (int)rawmouse->lLastX;
@@ -1319,7 +1319,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_TOUCH:
         if (data->videodata->GetTouchInputInfo && data->videodata->CloseTouchInputHandle) {
             UINT i, num_inputs = LOWORD(wParam);
-            SDL_bool isstack;
+            SDL_Bool isstack;
             PTOUCHINPUT inputs = SDL_small_alloc(TOUCHINPUT, num_inputs, &isstack);
             if (data->videodata->GetTouchInputInfo((HTOUCHINPUT)lParam, num_inputs, inputs, sizeof(TOUCHINPUT))) {
                 RECT rect;
@@ -1393,7 +1393,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             HDROP drop = (HDROP) wParam;
             UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
             for (i = 0; i < count; ++i) {
-                SDL_bool isstack;
+                SDL_Bool isstack;
                 UINT size = DragQueryFile(drop, i, NULL, 0) + 1;
                 LPTSTR buffer = SDL_small_alloc(TCHAR, size, &isstack);
                 if (buffer) {
@@ -1705,7 +1705,7 @@ static void WIN_UpdateMouseCapture()
             POINT cursorPos;
 
             if (GetCursorPos(&cursorPos) && ScreenToClient(data->hwnd, &cursorPos)) {
-                SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+                SDL_Bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
                 SDL_MouseID mouseID = SDL_GetMouse()->mouseID;
                 SDL_Point point;
                 point.x = cursorPos.x;

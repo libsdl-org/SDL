@@ -52,7 +52,7 @@ typedef struct SDL_WindowData
     /* Vsync callback cond and mutex */
     SDL_cond  *vsync_cond;
     SDL_mutex *vsync_cond_mutex;
-    SDL_bool double_buffer;
+    SDL_Bool double_buffer;
 
 } SDL_WindowData;
 

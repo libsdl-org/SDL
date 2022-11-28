@@ -384,7 +384,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
         char *output;
         size_t length;
         LPTSTR tstr;
-        SDL_bool isstack;
+        SDL_Bool isstack;
 
 #if !defined(HAVE_STDIO_H) && !defined(__WINRT__) && !defined(__GDK__)
         BOOL attachResult;

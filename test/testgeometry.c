@@ -23,7 +23,7 @@
 #include "testutils.h"
 
 static SDLTest_CommonState *state;
-static SDL_bool use_texture = SDL_FALSE;
+static SDL_Bool use_texture = SDL_FALSE;
 static SDL_Texture **sprites;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;

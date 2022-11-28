@@ -40,12 +40,12 @@ static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 #define _THIS SDL_UDEV_PrivateData *_this
 static _THIS = NULL;
 
-static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr);
+static SDL_Bool SDL_UDEV_load_sym(const char *fn, void **addr);
 static int SDL_UDEV_load_syms(void);
-static SDL_bool SDL_UDEV_hotplug_update_available(void);
+static SDL_Bool SDL_UDEV_hotplug_update_available(void);
 static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev);
 
-static SDL_bool
+static SDL_Bool
 SDL_UDEV_load_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(_this->udev_handle, fn);
@@ -95,7 +95,7 @@ SDL_UDEV_load_syms(void)
     return 0;
 }
 
-static SDL_bool
+static SDL_Bool
 SDL_UDEV_hotplug_update_available(void)
 {
     if (_this->udev_mon != NULL) {
@@ -225,13 +225,13 @@ SDL_UDEV_Scan(void)
     _this->syms.udev_enumerate_unref(enumerate);
 }
 
-SDL_bool
+SDL_Bool
 SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version)
 {
     struct udev_enumerate *enumerate = NULL;
     struct udev_list_entry *devs = NULL;
     struct udev_list_entry *item = NULL;
-    SDL_bool found = SDL_FALSE;
+    SDL_Bool found = SDL_FALSE;
 
     if (_this == NULL) {
         return SDL_FALSE;

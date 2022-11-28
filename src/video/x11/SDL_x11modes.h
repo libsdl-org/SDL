@@ -35,7 +35,7 @@ typedef struct
     float hdpi;
     float vdpi;
 
-    SDL_bool use_xrandr;
+    SDL_Bool use_xrandr;
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     RROutput xrandr_output;

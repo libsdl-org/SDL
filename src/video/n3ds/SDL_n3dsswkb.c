@@ -48,7 +48,7 @@ N3DS_SwkbQuit()
     return;
 }
 
-SDL_bool
+SDL_Bool
 N3DS_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;

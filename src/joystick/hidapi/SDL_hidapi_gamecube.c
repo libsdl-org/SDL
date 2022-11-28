@@ -37,7 +37,7 @@
 #define MAX_CONTROLLERS 4
 
 typedef struct {
-    SDL_bool pc_mode;
+    SDL_Bool pc_mode;
     SDL_JoystickID joysticks[MAX_CONTROLLERS];
     Uint8 wireless[MAX_CONTROLLERS];
     Uint8 min_axis[MAX_CONTROLLERS*SDL_CONTROLLER_AXIS_MAX];
@@ -45,9 +45,9 @@ typedef struct {
     Uint8 rumbleAllowed[MAX_CONTROLLERS];
     Uint8 rumble[1+MAX_CONTROLLERS];
     /* Without this variable, hid_write starts to lag a TON */
-    SDL_bool rumbleUpdate;
-    SDL_bool m_bUseButtonLabels;
-    SDL_bool useRumbleBrake;
+    SDL_Bool rumbleUpdate;
+    SDL_Bool m_bUseButtonLabels;
+    SDL_Bool useRumbleBrake;
 } SDL_DriverGameCube_Context;
 
 static void
@@ -62,7 +62,7 @@ HIDAPI_DriverGameCube_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverGameCube_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE,
@@ -70,7 +70,7 @@ HIDAPI_DriverGameCube_IsEnabled(void)
                    SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
@@ -125,7 +125,7 @@ static Uint8 RemapButton(SDL_DriverGameCube_Context *ctx, Uint8 button)
     return button;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx;
@@ -381,7 +381,7 @@ HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device, SDL_Driver
     }
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
@@ -410,7 +410,7 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
@@ -508,7 +508,7 @@ HIDAPI_DriverGameCube_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick
 }
 
 static int
-HIDAPI_DriverGameCube_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverGameCube_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }

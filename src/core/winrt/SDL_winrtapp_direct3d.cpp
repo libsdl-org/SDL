@@ -501,7 +501,7 @@ void SDL_WinRTApp::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEven
 
     m_windowVisible = args->Visible;
     if (WINRT_GlobalSDLWindow) {
-        SDL_bool wasSDLWindowSurfaceValid = WINRT_GlobalSDLWindow->surface_valid;
+        SDL_Bool wasSDLWindowSurfaceValid = WINRT_GlobalSDLWindow->surface_valid;
         Uint32 latestWindowFlags = WINRT_DetectWindowFlags(WINRT_GlobalSDLWindow);
         if (args->Visible) {
             SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_SHOWN, 0, 0);

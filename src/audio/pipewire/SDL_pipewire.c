@@ -80,7 +80,7 @@ enum PW_READY_FLAGS
 #define PW_ID_TO_HANDLE(x) (void *)((uintptr_t)x)
 #define PW_HANDLE_TO_ID(x) (uint32_t)((uintptr_t)x)
 
-static SDL_bool pipewire_initialized = SDL_FALSE;
+static SDL_Bool pipewire_initialized = SDL_FALSE;
 
 /* Pipewire entry points */
 static const char *(*PIPEWIRE_pw_get_library_version)(void);
@@ -211,7 +211,7 @@ load_pipewire_syms()
     return 0;
 }
 
-SDL_FORCE_INLINE SDL_bool
+SDL_FORCE_INLINE SDL_Bool
 pipewire_version_at_least(int major, int minor, int patch)
 {
     return (pipewire_version_major >= major) &&
@@ -256,7 +256,7 @@ struct node_object
 
     Uint32   id;
     int      seq;
-    SDL_bool persist;
+    SDL_Bool persist;
 
     /*
      * NOTE: If used, this is *must* be allocated with SDL_malloc() or similar
@@ -278,7 +278,7 @@ struct io_node
     struct spa_list link;
 
     Uint32        id;
-    SDL_bool      is_capture;
+    SDL_Bool      is_capture;
     SDL_AudioSpec spec;
 
     const char *name; /* Friendly name */
@@ -297,18 +297,18 @@ static struct spa_hook        hotplug_core_listener;
 static struct spa_list        hotplug_pending_list;
 static struct spa_list        hotplug_io_list;
 static int                    hotplug_init_seq_val;
-static SDL_bool               hotplug_init_complete;
-static SDL_bool               hotplug_events_enabled;
+static SDL_Bool               hotplug_init_complete;
+static SDL_Bool               hotplug_events_enabled;
 
 static char *pipewire_default_sink_id   = NULL;
 static char *pipewire_default_source_id = NULL;
 
 /* The active node list */
-static SDL_bool
+static SDL_Bool
 io_list_check_add(struct io_node *node)
 {
     struct io_node *n;
-    SDL_bool        ret = SDL_TRUE;
+    SDL_Bool        ret = SDL_TRUE;
 
     /* See if the node is already in the list */
     spa_list_for_each (n, &hotplug_io_list, link) {
@@ -547,7 +547,7 @@ hotplug_core_sync(struct node_object *node)
 }
 
 /* Helpers for retrieving values from params */
-static SDL_bool
+static SDL_Bool
 get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int *max)
 {
     const struct spa_pod_prop *prop;
@@ -581,7 +581,7 @@ get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int
     return SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 {
     const struct spa_pod_prop *prop;
@@ -714,7 +714,7 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
             const char     *node_desc;
             const char     *node_path;
             struct io_node *io;
-            SDL_bool        is_capture;
+            SDL_Bool        is_capture;
             int             desc_buffer_len;
             int             path_buffer_len;
 
@@ -1178,7 +1178,7 @@ PIPEWIRE_OpenDevice(_THIS, const char *devname)
     struct pw_properties        *props;
     const char                  *app_name, *stream_name, *stream_role, *error;
     Uint32                       node_id   = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
-    SDL_bool                     iscapture = this->iscapture;
+    SDL_Bool                     iscapture = this->iscapture;
     int                          res;
 
     /* Clamp the period size to sane values */
@@ -1390,7 +1390,7 @@ PIPEWIRE_Deinitialize()
     }
 }
 
-static SDL_bool
+static SDL_Bool
 PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 {
     if (!pipewire_initialized) {

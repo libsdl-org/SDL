@@ -371,7 +371,7 @@ VITA_RestoreWindow(_THIS, SDL_Window * window)
 {
 }
 void
-VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 {
 }
 
@@ -391,7 +391,7 @@ VITA_DestroyWindow(_THIS, SDL_Window * window)
     Vita_Window = NULL;
 }
 
-SDL_bool VITA_HasScreenKeyboardSupport(_THIS)
+SDL_Bool VITA_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
@@ -546,7 +546,7 @@ void VITA_HideScreenKeyboard(_THIS, SDL_Window *window)
 #endif
 }
 
-SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+SDL_Bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
 #if defined(SDL_VIDEO_VITA_PVR)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;

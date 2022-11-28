@@ -93,7 +93,7 @@ N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 }
 
 static int
-N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -190,7 +190,7 @@ N3DS_JoystickQuit(void)
     hidExit();
 }
 
-static SDL_bool
+static SDL_Bool
 N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     /* There is only one possible mapping. */

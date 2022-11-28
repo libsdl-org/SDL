@@ -38,8 +38,8 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasDisplayExtension = SDL_FALSE;
+    SDL_Bool hasSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasDisplayExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -120,7 +120,7 @@ void VIVANTE_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -137,7 +137,7 @@ SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
             extensionsForVivante);
 }
 
-SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
+SDL_Bool VIVANTE_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

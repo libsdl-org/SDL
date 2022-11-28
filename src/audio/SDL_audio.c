@@ -105,7 +105,7 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_LIBSAMPLERATE_DYNAMIC
 static void *SRC_lib = NULL;
 #endif
-SDL_bool SRC_available = SDL_FALSE;
+SDL_Bool SRC_available = SDL_FALSE;
 int SRC_converter = 0;
 SRC_STATE* (*SRC_src_new)(int converter_type, int channels, int *error) = NULL;
 int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data) = NULL;
@@ -114,7 +114,7 @@ SRC_STATE* (*SRC_src_delete)(SRC_STATE *state) = NULL;
 const char* (*SRC_src_strerror)(int error) = NULL;
 int (*SRC_src_simple)(SRC_DATA *data, int converter_type, int channels) = NULL;
 
-static SDL_bool
+static SDL_Bool
 LoadLibSampleRate(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_AUDIO_RESAMPLING_MODE);
@@ -272,7 +272,7 @@ SDL_AudioOpenDevice_Default(_THIS, const char *devname)
     return SDL_Unsupported();
 }
 
-static SDL_INLINE SDL_bool
+static SDL_INLINE SDL_Bool
 is_in_audio_device_thread(SDL_AudioDevice * device)
 {
     /* The device thread locks the same mutex, but not through the public API.
@@ -435,7 +435,7 @@ free_device_list(SDL_AudioDeviceItem **devices, int *devCount)
 
 /* The audio backends call this when a new device is plugged in. */
 void
-SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpec *spec, void *handle)
+SDL_AddAudioDevice(const SDL_Bool iscapture, const char *name, SDL_AudioSpec *spec, void *handle)
 {
     const int device_index = iscapture ? add_capture_device(name, spec, handle) : add_output_device(name, spec, handle);
     if (device_index != -1) {
@@ -482,7 +482,7 @@ void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
 }
 
 static void
-mark_device_removed(void *handle, SDL_AudioDeviceItem *devices, SDL_bool *removedFlag)
+mark_device_removed(void *handle, SDL_AudioDeviceItem *devices, SDL_Bool *removedFlag)
 {
     SDL_AudioDeviceItem *item;
     SDL_assert(handle != NULL);
@@ -497,11 +497,11 @@ mark_device_removed(void *handle, SDL_AudioDeviceItem *devices, SDL_bool *remove
 
 /* The audio backends call this when a device is removed from the system. */
 void
-SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
+SDL_RemoveAudioDevice(const SDL_Bool iscapture, void *handle)
 {
     int device_index;
     SDL_AudioDevice *device = NULL;
-    SDL_bool device_was_opened = SDL_FALSE;
+    SDL_Bool device_was_opened = SDL_FALSE;
 
     SDL_LockMutex(current_audio.detectionLock);
     if (iscapture) {
@@ -922,7 +922,7 @@ int
 SDL_AudioInit(const char *driver_name)
 {
     int i;
-    SDL_bool initialized = SDL_FALSE, tried_to_init = SDL_FALSE;
+    SDL_Bool initialized = SDL_FALSE, tried_to_init = SDL_FALSE;
 
     if (SDL_GetCurrentAudioDriver()) {
         SDL_AudioQuit();        /* shutdown driver if already running. */
@@ -1026,7 +1026,7 @@ SDL_GetCurrentAudioDriver()
 
 /* Clean out devices that we've removed but had to keep around for stability. */
 static void
-clean_out_device_list(SDL_AudioDeviceItem **devices, int *devCount, SDL_bool *removedFlag)
+clean_out_device_list(SDL_AudioDeviceItem **devices, int *devCount, SDL_Bool *removedFlag)
 {
     SDL_AudioDeviceItem *item = *devices;
     SDL_AudioDeviceItem *prev = NULL;
@@ -1267,11 +1267,11 @@ open_audio_device(const char *devname, int iscapture,
                   const SDL_AudioSpec * desired, SDL_AudioSpec * obtained,
                   int allowed_changes, int min_id)
 {
-    const SDL_bool is_internal_thread = (desired->callback == NULL);
+    const SDL_Bool is_internal_thread = (desired->callback == NULL);
     SDL_AudioDeviceID id = 0;
     SDL_AudioSpec _obtained;
     SDL_AudioDevice *device;
-    SDL_bool build_stream;
+    SDL_Bool build_stream;
     void *handle = NULL;
     int i = 0;
 

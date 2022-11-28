@@ -62,7 +62,7 @@ DSP_CloseDevice(_THIS)
 static int
 DSP_OpenDevice(_THIS, const char *devname)
 {
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     int format;
     int value;
@@ -286,7 +286,7 @@ DSP_FlushCapture(_THIS)
     }
 }
 
-static SDL_bool InitTimeDevicesExist = SDL_FALSE;
+static SDL_Bool InitTimeDevicesExist = SDL_FALSE;
 static int
 look_for_devices_test(int fd)
 {
@@ -295,7 +295,7 @@ look_for_devices_test(int fd)
     return 0;
 }
 
-static SDL_bool
+static SDL_Bool
 DSP_Init(SDL_AudioDriverImpl * impl)
 {
     InitTimeDevicesExist = SDL_FALSE;

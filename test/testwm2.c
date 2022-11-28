@@ -38,7 +38,7 @@ static const char *cursorNames[] = {
 };
 int system_cursor = -1;
 SDL_Cursor *cursor = NULL;
-SDL_bool relative_mode = SDL_FALSE;
+SDL_Bool relative_mode = SDL_FALSE;
 int highlighted_mode = -1;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
@@ -184,7 +184,7 @@ loop()
                 }
             }
             if (event.type == SDL_KEYUP) {
-                SDL_bool updateCursor = SDL_FALSE;
+                SDL_Bool updateCursor = SDL_FALSE;
 
                 if (event.key.keysym.sym == SDLK_LEFT) {
                     --system_cursor;

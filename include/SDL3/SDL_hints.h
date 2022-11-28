@@ -2403,7 +2403,7 @@ typedef enum
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
+extern DECLSPEC SDL_Bool SDLCALL SDL_SetHintWithPriority(const char *name,
                                                          const char *value,
                                                          SDL_HintPriority priority);
 
@@ -2423,7 +2423,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \sa SDL_GetHint
  * \sa SDL_SetHintWithPriority
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
+extern DECLSPEC SDL_Bool SDLCALL SDL_SetHint(const char *name,
                                              const char *value);
 
 /**
@@ -2441,7 +2441,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+extern DECLSPEC SDL_Bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
  * Reset all hints to the default values.
@@ -2484,7 +2484,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_Bool default_value);
 
 /**
  * Type definition of the hint callback function.

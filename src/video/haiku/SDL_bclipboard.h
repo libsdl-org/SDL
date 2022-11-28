@@ -26,7 +26,7 @@
 
 extern int HAIKU_SetClipboardText(_THIS, const char *text);
 extern char *HAIKU_GetClipboardText(_THIS);
-extern SDL_bool HAIKU_HasClipboardText(_THIS);
+extern SDL_Bool HAIKU_HasClipboardText(_THIS);
 
 #endif
 

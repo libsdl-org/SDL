@@ -34,20 +34,20 @@ typedef struct _Object {
     int x1, y1, x2, y2;
     Uint8 r, g, b;
 
-    SDL_bool isRect;
+    SDL_Bool isRect;
 } Object;
 
 static Object *active = NULL;
 static Object *objects = NULL;
 static int buttons = 0;
-static SDL_bool isRect = SDL_FALSE;
+static SDL_Bool isRect = SDL_FALSE;
 
-static SDL_bool wheel_x_active = SDL_FALSE;
-static SDL_bool wheel_y_active = SDL_FALSE;
+static SDL_Bool wheel_x_active = SDL_FALSE;
+static SDL_Bool wheel_y_active = SDL_FALSE;
 static float wheel_x = SCREEN_WIDTH * 0.5f;
 static float wheel_y = SCREEN_HEIGHT * 0.5f;
 
-static SDL_bool done = SDL_FALSE;
+static SDL_Bool done = SDL_FALSE;
 
 void
 DrawObject(SDL_Renderer * renderer, Object * object)

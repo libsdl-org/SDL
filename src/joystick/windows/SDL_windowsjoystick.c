@@ -130,12 +130,12 @@ typedef DWORD (WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, 
 typedef DWORD (WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
 
 /* local variables */
-static SDL_bool s_bJoystickThread = SDL_FALSE;
-static SDL_bool s_bWindowsDeviceChanged = SDL_FALSE;
+static SDL_Bool s_bJoystickThread = SDL_FALSE;
+static SDL_Bool s_bWindowsDeviceChanged = SDL_FALSE;
 static SDL_cond *s_condJoystickThread = NULL;
 static SDL_mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_joystickThread = NULL;
-static SDL_bool s_bJoystickThreadQuit = SDL_FALSE;
+static SDL_Bool s_bJoystickThreadQuit = SDL_FALSE;
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
 JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
@@ -170,7 +170,7 @@ SDL_CleanupDeviceNotificationFunc(void)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 SDL_CreateDeviceNotificationFunc(void)
 {
     cfgmgr32_lib_handle = LoadLibraryA("cfgmgr32.dll");
@@ -306,7 +306,7 @@ SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
     return 0;
 }
 
-static SDL_bool
+static SDL_Bool
 SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex)
 {
     MSG msg;
@@ -342,7 +342,7 @@ static int SDLCALL
 SDL_JoystickThread(void *_data)
 {
 #if SDL_JOYSTICK_XINPUT
-    SDL_bool bOpenedXInputDevices[XUSER_MAX_COUNT];
+    SDL_Bool bOpenedXInputDevices[XUSER_MAX_COUNT];
     SDL_zeroa(bOpenedXInputDevices);
 #endif
 
@@ -368,7 +368,7 @@ SDL_JoystickThread(void *_data)
                 for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
                     XINPUT_CAPABILITIES capabilities;
                     const DWORD result = XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities);
-                    const SDL_bool available = (result == ERROR_SUCCESS) ? SDL_TRUE : SDL_FALSE;
+                    const SDL_Bool available = (result == ERROR_SUCCESS) ? SDL_TRUE : SDL_FALSE;
                     if (bOpenedXInputDevices[userId] != available) {
                         s_bWindowsDeviceChanged = SDL_TRUE;
                         bOpenedXInputDevices[userId] = available;
@@ -727,7 +727,7 @@ WINDOWS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-WINDOWS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+WINDOWS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -795,7 +795,7 @@ WINDOWS_JoystickQuit(void)
     s_bWindowsDeviceChanged = SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 WINDOWS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;

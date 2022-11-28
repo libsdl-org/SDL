@@ -19,7 +19,7 @@
 
 
 /* Return true if the YUV format is packed pixels */
-static SDL_bool is_packed_yuv_format(Uint32 format)
+static SDL_Bool is_packed_yuv_format(Uint32 format)
 {
     return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
@@ -65,12 +65,12 @@ static SDL_Surface *generate_test_pattern(int pattern_size)
     return pattern;
 }
 
-static SDL_bool verify_yuv_data(Uint32 format, const Uint8 *yuv, int yuv_pitch, SDL_Surface *surface)
+static SDL_Bool verify_yuv_data(Uint32 format, const Uint8 *yuv, int yuv_pitch, SDL_Surface *surface)
 {
     const int tolerance = 20;
     const int size = (surface->h * surface->pitch);
     Uint8 *rgb;
-    SDL_bool result = SDL_FALSE;
+    SDL_Bool result = SDL_FALSE;
 
     rgb = (Uint8 *)SDL_malloc(size);
     if (rgb == NULL) {
@@ -214,7 +214,7 @@ int
 main(int argc, char **argv)
 {
     struct {
-        SDL_bool enable_intrinsics;
+        SDL_Bool enable_intrinsics;
         int pattern_size;
         int extra_pitch;
     } automated_test_params[] = {
@@ -258,7 +258,7 @@ main(int argc, char **argv)
     int pitch;
     Uint8 *raw_yuv;
     Uint32 then, now, i, iterations = 100;
-    SDL_bool should_run_automated_tests = SDL_FALSE;
+    SDL_Bool should_run_automated_tests = SDL_FALSE;
 
     while (argv[arg] && *argv[arg] == '-') {
         if (SDL_strcmp(argv[arg], "--jpeg") == 0) {

@@ -167,7 +167,7 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     return retval;
 }
 
-SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
+SDL_Bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
                                                  const char **userNames,
                                                  unsigned nameCount,
                                                  const char *const *names)
@@ -196,7 +196,7 @@ static const VkDisplayPlaneAlphaFlagBitsKHR alphaModes[4] = {
     VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR,
 };
 
-SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
+SDL_Bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)
 {

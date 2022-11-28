@@ -26,7 +26,7 @@
 typedef struct SDL_XInput2DeviceInfo
 {
     int device_id;
-    SDL_bool relative[2];
+    SDL_Bool relative[2];
     double minval[2];
     double maxval[2];
     double prev_coords[2];

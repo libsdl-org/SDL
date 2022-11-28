@@ -53,9 +53,9 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasMetalSurfaceExtension = SDL_FALSE;
-    SDL_bool hasMacOSSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasMetalSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasMacOSSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
     if (_this->vulkan_config.loader_handle) {
@@ -167,7 +167,7 @@ void Cocoa_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -185,7 +185,7 @@ SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
 }
 
 
-static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(_THIS,
+static SDL_Bool Cocoa_Vulkan_CreateSurfaceViaMetalView(_THIS,
                                                     SDL_Window *window,
                                                     VkInstance instance,
                                                     VkSurfaceKHR *surface,
@@ -238,7 +238,7 @@ static SDL_bool Cocoa_Vulkan_CreateSurfaceViaMetalView(_THIS,
     return SDL_TRUE;
 }
 
-SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
+SDL_Bool Cocoa_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

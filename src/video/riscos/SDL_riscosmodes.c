@@ -106,8 +106,8 @@ read_mode_variable(int *block, int var)
     return regs.r[2];
 }
 
-static SDL_bool
-read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
+static SDL_Bool
+read_mode_block(int *block, SDL_DisplayMode *mode, SDL_Bool extended)
 {
     int xres, yres, ncolour, modeflags, log2bpp, rate;
 

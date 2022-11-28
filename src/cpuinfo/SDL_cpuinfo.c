@@ -263,13 +263,13 @@ done:
 
 static int CPU_CPUIDFeatures[4];
 static int CPU_CPUIDMaxFunction = 0;
-static SDL_bool CPU_OSSavesYMM = SDL_FALSE;
-static SDL_bool CPU_OSSavesZMM = SDL_FALSE;
+static SDL_Bool CPU_OSSavesYMM = SDL_FALSE;
+static SDL_Bool CPU_OSSavesZMM = SDL_FALSE;
 
 static void
 CPU_calcCPUIDFeatures(void)
 {
-    static SDL_bool checked = SDL_FALSE;
+    static SDL_Bool checked = SDL_FALSE;
     if (!checked) {
         checked = SDL_TRUE;
         if (CPU_haveCPUID()) {
@@ -905,96 +905,96 @@ SDL_GetCPUFeatures(void)
 
 #define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & f) ? SDL_TRUE : SDL_FALSE)
 
-SDL_bool SDL_HasRDTSC(void)
+SDL_Bool SDL_HasRDTSC(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_RDTSC);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasAltiVec(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_ALTIVEC);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasMMX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_MMX);
 }
 
-SDL_bool
+SDL_Bool
 SDL_Has3DNow(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_3DNOW);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasSSE(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasSSE2(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE2);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasSSE3(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE3);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasSSE41(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE41);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasSSE42(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_SSE42);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasAVX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasAVX2(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX2);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasAVX512F(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX512F);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasARMSIMD(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_ARM_SIMD);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasNEON(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_NEON);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasLSX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LSX);
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasLASX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LASX);

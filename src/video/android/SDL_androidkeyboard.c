@@ -339,13 +339,13 @@ Android_OnKeyUp(int keycode)
     return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
 }
 
-SDL_bool
+SDL_Bool
 Android_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
 
-SDL_bool
+SDL_Bool
 Android_IsScreenKeyboardShown(_THIS, SDL_Window * window)
 {
     return Android_JNI_IsScreenKeyboardShown();

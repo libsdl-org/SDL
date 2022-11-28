@@ -85,7 +85,7 @@ Android_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
-    SDL_bool block_on_pause;
+    SDL_Bool block_on_pause;
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));

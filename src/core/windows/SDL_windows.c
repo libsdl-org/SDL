@@ -126,7 +126,7 @@ WIN_CoUninitialize(void)
 void *
 WIN_LoadComBaseFunction(const char *name)
 {
-    static SDL_bool s_bLoaded;
+    static SDL_Bool s_bLoaded;
     static HMODULE s_hComBase;
    
     if (!s_bLoaded) {
@@ -261,7 +261,7 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     const unsigned char *ptr;
     char keystr[128];
     WCHAR *strw = NULL;
-    SDL_bool rc;
+    SDL_Bool rc;
     HKEY hkey;
     DWORD len = 0;
     char *retval = NULL;

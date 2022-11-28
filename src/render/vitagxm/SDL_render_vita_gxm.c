@@ -46,7 +46,7 @@ static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
 
-static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode);
+static SDL_Bool VITA_GXM_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode);
 
 static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 
@@ -294,7 +294,7 @@ VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
 }
 
-static SDL_bool
+static SDL_Bool
 VITA_GXM_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     // only for custom modes. we build all modes on init, so no custom modes, sorry
@@ -877,8 +877,8 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
-    SDL_bool matrix_updated = SDL_FALSE;
-    SDL_bool program_updated = SDL_FALSE;
+    SDL_Bool matrix_updated = SDL_FALSE;
+    SDL_Bool program_updated = SDL_FALSE;
 
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
@@ -1154,7 +1154,7 @@ VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     /* Flip the rows to be top-down if necessary */
 
     if (!renderer->target) {
-        SDL_bool isstack;
+        SDL_Bool isstack;
         length = rect->w * SDL_BYTESPERPIXEL(temp_format);
         src = (Uint8*)temp_pixels + (rect->h-1)*temp_pitch;
         dst = (Uint8*)temp_pixels;

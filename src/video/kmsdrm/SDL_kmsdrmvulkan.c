@@ -48,8 +48,8 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasDisplayExtension = SDL_FALSE;
+    SDL_Bool hasSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasDisplayExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
     if (_this->vulkan_config.loader_handle) {
@@ -145,7 +145,7 @@ void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 /* members of the VkInstanceCreateInfo struct passed to              */
 /* vkCreateInstance().                                               */
 /*********************************************************************/
-SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -181,7 +181,7 @@ void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 /* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
 /* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */                
 /***********************************************************************/
-SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
+SDL_Bool KMSDRM_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)
@@ -212,10 +212,10 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     VkDisplayPlaneAlphaFlagBitsKHR alpha_mode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
 
     VkResult result;
-    SDL_bool ret = SDL_FALSE;
-    SDL_bool valid_gpu = SDL_FALSE;
-    SDL_bool mode_found = SDL_FALSE;
-    SDL_bool plane_supports_display = SDL_FALSE;
+    SDL_Bool ret = SDL_FALSE;
+    SDL_Bool valid_gpu = SDL_FALSE;
+    SDL_Bool mode_found = SDL_FALSE;
+    SDL_Bool plane_supports_display = SDL_FALSE;
 
     /* Get the display index from the display being used by the window. */
     int display_index = SDL_atoi(SDL_GetDisplayForWindow(window)->name);

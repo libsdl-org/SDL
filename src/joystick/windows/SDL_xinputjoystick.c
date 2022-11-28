@@ -37,11 +37,11 @@ extern "C" {
 /*
  * Internal stuff.
  */
-static SDL_bool s_bXInputEnabled = SDL_TRUE;
+static SDL_Bool s_bXInputEnabled = SDL_TRUE;
 static char *s_arrXInputDevicePath[XUSER_MAX_COUNT];
 
 
-static SDL_bool
+static SDL_Bool
 SDL_XInputUseOldJoystickMapping()
 {
 #ifdef __WINRT__
@@ -59,7 +59,7 @@ SDL_XInputUseOldJoystickMapping()
 #endif
 }
 
-SDL_bool SDL_XINPUT_Enabled(void)
+SDL_Bool SDL_XINPUT_Enabled(void)
 {
     return s_bXInputEnabled;
 }
@@ -186,7 +186,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
             SDL_Log("Raw input device: VID = 0x%x, PID = 0x%x, %s\n", rdi.hid.dwVendorId, rdi.hid.dwProductId, devName);
 #endif
             if (SDL_strstr(devName, "IG_") != NULL) {
-                SDL_bool found = SDL_FALSE;
+                SDL_Bool found = SDL_FALSE;
                 for (j = 0; j < SDL_arraysize(s_arrXInputDevicePath); ++j) {
                     if (!s_arrXInputDevicePath[j]) {
                         continue;
@@ -573,7 +573,7 @@ SDL_XINPUT_JoystickQuit(void)
 
 typedef struct JoyStick_DeviceData JoyStick_DeviceData;
 
-SDL_bool SDL_XINPUT_Enabled(void)
+SDL_Bool SDL_XINPUT_Enabled(void)
 {
     return SDL_FALSE;
 }

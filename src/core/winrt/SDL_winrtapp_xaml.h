@@ -25,7 +25,7 @@
 
 
 #ifdef __cplusplus
-extern SDL_bool WINRT_XAMLWasEnabled;
+extern SDL_Bool WINRT_XAMLWasEnabled;
 extern int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void * backgroundPanelAsIInspectable);
 #endif // ifdef __cplusplus
 

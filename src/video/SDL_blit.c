@@ -103,7 +103,7 @@ SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
 #ifdef __MACOS__
 #include <sys/sysctl.h>
 
-static SDL_bool
+static SDL_Bool
 SDL_UseAltivecPrefetch()
 {
     const char key[] = "hw.l3cachesize";
@@ -117,7 +117,7 @@ SDL_UseAltivecPrefetch()
     }
 }
 #else
-static SDL_bool
+static SDL_Bool
 SDL_UseAltivecPrefetch()
 {
     /* Just guess G4 */

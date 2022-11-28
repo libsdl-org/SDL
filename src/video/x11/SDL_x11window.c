@@ -73,7 +73,7 @@ X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*predicate)(),
 }
 */
 
-static SDL_bool
+static SDL_Bool
 X11_IsWindowMapped(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
@@ -89,7 +89,7 @@ X11_IsWindowMapped(_THIS, SDL_Window * window)
 }
 
 #if 0
-static SDL_bool
+static SDL_Bool
 X11_IsActionAllowed(SDL_Window *window, Atom action)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
@@ -100,7 +100,7 @@ X11_IsActionAllowed(SDL_Window *window, Atom action)
     unsigned long remain;
     unsigned long len, i;
     Atom *list;
-    SDL_bool ret = SDL_FALSE;
+    SDL_Bool ret = SDL_FALSE;
 
     if (X11_XGetWindowProperty(display, data->xwindow, _NET_WM_ALLOWED_ACTIONS, 0, 1024, False, XA_ATOM, &type, &form, &len, &remain, (unsigned char **)&list) == Success) {
         for (i=0; i<len; ++i) {
@@ -343,7 +343,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
 }
 
 static void
-SetWindowBordered(Display *display, int screen, Window window, SDL_bool border)
+SetWindowBordered(Display *display, int screen, Window window, SDL_Bool border)
 {
     /*
      * this code used to check for KWM_WIN_DECORATION, but KDE hasn't
@@ -379,7 +379,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_DisplayData *displaydata =
         (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    const SDL_bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, SDL_FALSE);
+    const SDL_Bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, SDL_FALSE);
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
@@ -787,7 +787,7 @@ X11_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     X11_XFlush(display);
 }
 
-static SDL_bool caught_x11_error = SDL_FALSE;
+static SDL_Bool caught_x11_error = SDL_FALSE;
 static int
 X11_CatchAnyError(Display * d, XErrorEvent * e)
 {
@@ -1058,10 +1058,10 @@ X11_SetWindowInputFocus(_THIS, SDL_Window * window)
 }
 
 void
-X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
+X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered)
 {
-    const SDL_bool focused = ((window->flags & SDL_WINDOW_INPUT_FOCUS) != 0);
-    const SDL_bool visible = ((window->flags & SDL_WINDOW_HIDDEN) == 0);
+    const SDL_Bool focused = ((window->flags & SDL_WINDOW_INPUT_FOCUS) != 0);
+    const SDL_Bool visible = ((window->flags & SDL_WINDOW_HIDDEN) == 0);
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata =
         (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
@@ -1094,7 +1094,7 @@ X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
-X11_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+X11_SetWindowResizable(_THIS, SDL_Window * window, SDL_Bool resizable)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
@@ -1132,7 +1132,7 @@ X11_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 }
 
 void
-X11_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top)
+X11_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_Bool on_top)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
@@ -1247,7 +1247,7 @@ X11_RaiseWindow(_THIS, SDL_Window * window)
 }
 
 static void
-SetWindowMaximized(_THIS, SDL_Window * window, SDL_bool maximized)
+SetWindowMaximized(_THIS, SDL_Window * window, SDL_Bool maximized)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata =
@@ -1321,7 +1321,7 @@ X11_RestoreWindow(_THIS, SDL_Window * window)
 
 /* This asks the Window Manager to handle fullscreen for us. This is the modern way. */
 static void
-X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen)
+X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_Bool fullscreen)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata = (SDL_DisplayData *) _display->driverdata;
@@ -1417,7 +1417,7 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
                                       attrs.x, attrs.y, &x, &y, &childReturn);
 
             if (!caught_x11_error) {
-                SDL_bool window_changed = SDL_FALSE;
+                SDL_Bool window_changed = SDL_FALSE;
                 if ((x != orig_x) || (y != orig_y)) {
                     SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, x, y);
                     window_changed = SDL_TRUE;
@@ -1466,7 +1466,7 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
 }
 
 void
-X11_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen)
+X11_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_Bool fullscreen)
 {
     X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
 }
@@ -1554,7 +1554,7 @@ X11_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size)
 }
 
 void
-X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display;
@@ -1610,7 +1610,7 @@ X11_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 }
 
 void
-X11_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+X11_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display;
@@ -1709,13 +1709,13 @@ X11_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 }
 
 int
-X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
+X11_SetWindowHitTest(SDL_Window *window, SDL_Bool enabled)
 {
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
 void
-X11_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
+X11_AcceptDragAndDrop(SDL_Window * window, SDL_Bool accept)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;

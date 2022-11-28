@@ -35,7 +35,7 @@
 static SDL_Mouse SDL_mouse;
 
 /* for mapping mouse events to touch */
-static SDL_bool track_mouse_down = SDL_FALSE;
+static SDL_Bool track_mouse_down = SDL_FALSE;
 
 static int
 SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);
@@ -138,7 +138,7 @@ static void SDLCALL
 SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-    SDL_bool default_value;
+    SDL_Bool default_value;
 
 #if defined(__ANDROID__) || (defined(__IOS__) && !defined(__TVOS__))
     default_value = SDL_TRUE;
@@ -156,7 +156,7 @@ static void SDLCALL
 SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-    SDL_bool auto_capture = SDL_GetStringBoolean(hint, SDL_TRUE);
+    SDL_Bool auto_capture = SDL_GetStringBoolean(hint, SDL_TRUE);
 
     if (auto_capture != mouse->auto_capture) {
         mouse->auto_capture = auto_capture;
@@ -236,7 +236,7 @@ SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
-static Uint32 GetButtonState(SDL_Mouse *mouse, SDL_bool include_touch)
+static Uint32 GetButtonState(SDL_Mouse *mouse, SDL_Bool include_touch)
 {
     int i;
     Uint32 buttonstate = 0;
@@ -319,11 +319,11 @@ SDL_SetMouseFocus(SDL_Window * window)
 }
 
 /* Check to see if we need to synthesize focus events */
-static SDL_bool
-SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_bool send_mouse_motion)
+static SDL_Bool
+SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_Bool send_mouse_motion)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_bool inWindow = SDL_TRUE;
+    SDL_Bool inWindow = SDL_TRUE;
 
     if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
         int w, h;
@@ -1012,7 +1012,7 @@ SDL_GetGlobalMouseState(int *x, int *y)
 }
 
 void
-SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode)
+SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_Bool ignore_relative_mode)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1075,7 +1075,7 @@ SDL_WarpMouseGlobal(int x, int y)
     return SDL_Unsupported();
 }
 
-static SDL_bool
+static SDL_Bool
 ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
     if (!mouse->WarpMouse) {
@@ -1087,7 +1087,7 @@ ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 }
 
 int
-SDL_SetRelativeMouseMode(SDL_bool enabled)
+SDL_SetRelativeMouseMode(SDL_Bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
@@ -1149,7 +1149,7 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
-SDL_bool
+SDL_Bool
 SDL_GetRelativeMouseMode()
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1158,7 +1158,7 @@ SDL_GetRelativeMouseMode()
 }
 
 int
-SDL_UpdateMouseCapture(SDL_bool force_release)
+SDL_UpdateMouseCapture(SDL_Bool force_release)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *capture_window = NULL;
@@ -1210,7 +1210,7 @@ SDL_UpdateMouseCapture(SDL_bool force_release)
 }
 
 int
-SDL_CaptureMouse(SDL_bool enabled)
+SDL_CaptureMouse(SDL_Bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1453,7 +1453,7 @@ int
 SDL_ShowCursor(int toggle)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_bool shown;
+    SDL_Bool shown;
 
     if (mouse == NULL) {
         return 0;

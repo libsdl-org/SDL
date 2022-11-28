@@ -60,7 +60,7 @@ SDL_LoadFunction(void *handle, const char *name)
     void *symbol = dlsym(handle, name);
     if (symbol == NULL) {
         /* prepend an underscore for platforms that need that. */
-        SDL_bool isstack;
+        SDL_Bool isstack;
         size_t len = SDL_strlen(name) + 1;
         char *_name = SDL_small_alloc(char, len + 1, &isstack);
         _name[0] = '_';

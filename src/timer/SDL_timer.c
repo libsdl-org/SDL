@@ -337,12 +337,12 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     return entry->timerID;
 }
 
-SDL_bool
+SDL_Bool
 SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
-    SDL_bool canceled = SDL_FALSE;
+    SDL_Bool canceled = SDL_FALSE;
 
     /* Find the timer */
     SDL_LockMutex(data->timermap_lock);
@@ -448,7 +448,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     return entry->timerID;
 }
 
-SDL_bool
+SDL_Bool
 SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;

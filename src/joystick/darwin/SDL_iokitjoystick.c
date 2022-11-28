@@ -175,7 +175,7 @@ FreeDevice(recDevice *removeDevice)
     return pDeviceNext;
 }
 
-static SDL_bool
+static SDL_Bool
 GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
 {
     SInt32 value = 0;
@@ -201,7 +201,7 @@ GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
     return returnValue;
 }
 
-static SDL_bool
+static SDL_Bool
 GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 min, SInt32 max, SInt32 *pValue)
 {
     const float deviceScale = max - min;
@@ -259,7 +259,7 @@ AddHIDElements(CFArrayRef array, recDevice *pDevice)
     CFArrayApplyFunction(array, range, AddHIDElement, pDevice);
 }
 
-static SDL_bool
+static SDL_Bool
 ElementAlreadyAdded(const IOHIDElementCookie cookie, const recElement *listitem) {
     while (listitem) {
         if (listitem->cookie == cookie) {
@@ -415,7 +415,7 @@ AddHIDElement(const void *value, void *parameter)
 }
 
 
-static SDL_bool
+static SDL_Bool
 GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
     Sint32 vendor = 0;
@@ -506,13 +506,13 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *i;
 
 #if defined(SDL_JOYSTICK_MFI)
-    extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
+    extern SDL_Bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
     if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return SDL_TRUE;
     }
@@ -593,7 +593,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     SDL_PrivateJoystickAdded(device->instance_id);
 }
 
-static SDL_bool
+static SDL_Bool
 ConfigHIDManager(CFArrayRef matchingArray)
 {
     CFRunLoopRef runloop = CFRunLoopGetCurrent();
@@ -643,10 +643,10 @@ CreateHIDDeviceMatchDictionary(const UInt32 page, const UInt32 usage, int *okay)
     return retval;
 }
 
-static SDL_bool
+static SDL_Bool
 CreateHIDManager(void)
 {
-    SDL_bool retval = SDL_FALSE;
+    SDL_Bool retval = SDL_FALSE;
     int okay = 1;
     const void *vals[] = {
         (void *) CreateHIDDeviceMatchDictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, &okay),
@@ -954,7 +954,7 @@ DARWIN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -1087,7 +1087,7 @@ DARWIN_JoystickQuit(void)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 DARWIN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;

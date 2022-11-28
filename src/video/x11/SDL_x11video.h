@@ -83,7 +83,7 @@ typedef struct SDL_VideoData
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
     /* This is true for ICCCM2.0-compliant window managers */
-    SDL_bool net_wm;
+    SDL_Bool net_wm;
 
     /* Useful atoms */
     Atom WM_PROTOCOLS;
@@ -123,13 +123,13 @@ typedef struct SDL_VideoData
     Atom XKLAVIER_STATE;
 
     SDL_Scancode key_layout[256];
-    SDL_bool selection_waiting;
+    SDL_Bool selection_waiting;
 
-    SDL_bool broken_pointer_grab;  /* true if XGrabPointer seems unreliable. */
+    SDL_Bool broken_pointer_grab;  /* true if XGrabPointer seems unreliable. */
 
     Uint32 last_mode_change_deadline;
 
-    SDL_bool global_mouse_changed;
+    SDL_Bool global_mouse_changed;
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
 
@@ -152,12 +152,12 @@ typedef struct SDL_VideoData
 #endif
 
     /* Used to interact with the on-screen keyboard */
-    SDL_bool is_steam_deck;
-    SDL_bool steam_keyboard_open;
+    SDL_Bool is_steam_deck;
+    SDL_Bool steam_keyboard_open;
 
 } SDL_VideoData;
 
-extern SDL_bool X11_UseDirectColorVisuals(void);
+extern SDL_Bool X11_UseDirectColorVisuals(void);
 
 #endif /* SDL_x11video_h_ */
 

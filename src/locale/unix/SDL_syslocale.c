@@ -68,7 +68,7 @@ void
 SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* !!! FIXME: should we be using setlocale()? Or some D-Bus thing? */
-    SDL_bool isstack;
+    SDL_Bool isstack;
     const char *envr;
     char *tmp;
 

@@ -53,17 +53,17 @@ struct GLES_FBOList
 typedef struct
 {
     SDL_Rect viewport;
-    SDL_bool viewport_dirty;
+    SDL_Bool viewport_dirty;
     SDL_Texture *texture;
     SDL_Texture *target;
     int drawablew;
     int drawableh;
     SDL_BlendMode blend;
-    SDL_bool cliprect_enabled_dirty;
-    SDL_bool cliprect_enabled;
-    SDL_bool cliprect_dirty;
+    SDL_Bool cliprect_enabled_dirty;
+    SDL_Bool cliprect_enabled;
+    SDL_Bool cliprect_dirty;
     SDL_Rect cliprect;
-    SDL_bool texturing;
+    SDL_Bool texturing;
     Uint32 color;
     Uint32 clear_color;
 } GLES_DrawStateCache;
@@ -77,13 +77,13 @@ typedef struct
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC
 #undef SDL_PROC_OES
-    SDL_bool GL_OES_framebuffer_object_supported;
+    SDL_Bool GL_OES_framebuffer_object_supported;
     GLES_FBOList *framebuffers;
     GLuint window_framebuffer;
 
-    SDL_bool GL_OES_blend_func_separate_supported;
-    SDL_bool GL_OES_blend_equation_separate_supported;
-    SDL_bool GL_OES_blend_subtract_supported;
+    SDL_Bool GL_OES_blend_func_separate_supported;
+    SDL_Bool GL_OES_blend_equation_separate_supported;
+    SDL_Bool GL_OES_blend_subtract_supported;
 
     GLES_DrawStateCache drawstate;
 } GLES_RenderData;
@@ -259,7 +259,7 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 GLES_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
@@ -662,7 +662,7 @@ SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
-        const SDL_bool istarget = (data->drawstate.target != NULL);
+        const SDL_Bool istarget = (data->drawstate.target != NULL);
         data->glMatrixMode(GL_PROJECTION);
         data->glLoadIdentity();
         data->glViewport(viewport->x,
@@ -690,7 +690,7 @@ SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
     if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
         const SDL_Rect *rect = &data->drawstate.cliprect;
-        const SDL_bool istarget = (data->drawstate.target != NULL);
+        const SDL_Bool istarget = (data->drawstate.target != NULL);
         data->glScissor(viewport->x + rect->x,
                         istarget ? viewport->y + rect->y : data->drawstate.drawableh - viewport->y - rect->y - rect->h,
                         rect->w, rect->h);
@@ -916,7 +916,7 @@ GLES_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     /* Flip the rows to be top-down if necessary */
     if (!renderer->target) {
-        SDL_bool isstack;
+        SDL_Bool isstack;
         length = rect->w * SDL_BYTESPERPIXEL(temp_format);
         src = (Uint8*)temp_pixels + (rect->h-1)*temp_pitch;
         dst = (Uint8*)temp_pixels;
@@ -1059,7 +1059,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     GLint value;
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
-    SDL_bool changed_window = SDL_FALSE;
+    SDL_Bool changed_window = SDL_FALSE;
 
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);

@@ -74,7 +74,7 @@ static struct {
     EventRegistrationToken controller_added_token;
     EventRegistrationToken controller_removed_token;
     int controller_count;
-    SDL_bool ro_initialized;
+    SDL_Bool ro_initialized;
     WindowsGamingInputControllerState *controllers;
 } wgi;
 
@@ -96,10 +96,10 @@ static const IID IID_IRacingWheelStatics = { 0x3AC12CD5, 0x581B, 0x4936, { 0x9F,
 static const IID IID_IRacingWheelStatics2 = { 0xE666BCAA, 0xEDFD, 0x4323, { 0xA9, 0xF6, 0x3C, 0x38, 0x40, 0x48, 0xD1, 0xED } };
 /*static const IID IID_IRacingWheel = { 0xF546656F, 0xE106, 0x4C82, { 0xA9, 0x0F, 0x55, 0x40, 0x12, 0x90, 0x4B, 0x85 } };*/
 
-extern SDL_bool SDL_XINPUT_Enabled(void);
-extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
+extern SDL_Bool SDL_XINPUT_Enabled(void);
+extern SDL_Bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
 
-static SDL_bool
+static SDL_Bool
 SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 {
 #ifdef SDL_JOYSTICK_XINPUT
@@ -268,7 +268,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         SDL_JoystickType type = SDL_JOYSTICK_TYPE_UNKNOWN;
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
         __x_ABI_CWindows_CGaming_CInput_CIGameController *gamecontroller = NULL;
-        SDL_bool ignore_joystick = SDL_FALSE;
+        SDL_Bool ignore_joystick = SDL_FALSE;
 
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareVendorId(controller, &vendor);
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareProductId(controller, &product);
@@ -792,7 +792,7 @@ WGI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -848,7 +848,7 @@ WGI_JoystickUpdate(SDL_Joystick *joystick)
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_GetCurrentReading(hwdata->controller, nbuttons, buttons, nhats, hats, naxes, axes, &timestamp);
     if (SUCCEEDED(hr) && timestamp != hwdata->timestamp) {
         UINT32 i;
-        SDL_bool all_zero = SDL_TRUE;
+        SDL_Bool all_zero = SDL_TRUE;
 
         /* The axes are all zero when the application loses focus */
         for (i = 0; i < naxes; ++i) {
@@ -946,7 +946,7 @@ WGI_JoystickQuit(void)
     SDL_zero(wgi);
 }
 
-static SDL_bool
+static SDL_Bool
 WGI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;

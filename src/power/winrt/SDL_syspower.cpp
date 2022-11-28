@@ -25,7 +25,7 @@
 
 
 extern "C"
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_WinRT(SDL_PowerState * state, int *seconds, int *percent)
 {
     /* TODO, WinRT: Battery info is available on at least one WinRT platform (Windows Phone 8).  Implement SDL_GetPowerInfo_WinRT as appropriate. */

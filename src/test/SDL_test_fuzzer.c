@@ -189,7 +189,7 @@ SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
  * \returns Returns a random boundary value for the domain or 0 in case of error
  */
 static Uint64
-SDLTest_GenerateUnsignedBoundaryValues(const Uint64 maxValue, Uint64 boundary1, Uint64 boundary2, SDL_bool validDomain)
+SDLTest_GenerateUnsignedBoundaryValues(const Uint64 maxValue, Uint64 boundary1, Uint64 boundary2, SDL_Bool validDomain)
 {
         Uint64 b1, b2;
     Uint64 delta;
@@ -252,7 +252,7 @@ SDLTest_GenerateUnsignedBoundaryValues(const Uint64 maxValue, Uint64 boundary1, 
 
 
 Uint8
-SDLTest_RandomUint8BoundaryValue(Uint8 boundary1, Uint8 boundary2, SDL_bool validDomain)
+SDLTest_RandomUint8BoundaryValue(Uint8 boundary1, Uint8 boundary2, SDL_Bool validDomain)
 {
     /* max value for Uint8 */
     const Uint64 maxValue = UCHAR_MAX;
@@ -262,7 +262,7 @@ SDLTest_RandomUint8BoundaryValue(Uint8 boundary1, Uint8 boundary2, SDL_bool vali
 }
 
 Uint16
-SDLTest_RandomUint16BoundaryValue(Uint16 boundary1, Uint16 boundary2, SDL_bool validDomain)
+SDLTest_RandomUint16BoundaryValue(Uint16 boundary1, Uint16 boundary2, SDL_Bool validDomain)
 {
     /* max value for Uint16 */
     const Uint64 maxValue = USHRT_MAX;
@@ -272,7 +272,7 @@ SDLTest_RandomUint16BoundaryValue(Uint16 boundary1, Uint16 boundary2, SDL_bool v
 }
 
 Uint32
-SDLTest_RandomUint32BoundaryValue(Uint32 boundary1, Uint32 boundary2, SDL_bool validDomain)
+SDLTest_RandomUint32BoundaryValue(Uint32 boundary1, Uint32 boundary2, SDL_Bool validDomain)
 {
     /* max value for Uint32 */
     #if ((ULONG_MAX) == (UINT_MAX))
@@ -286,7 +286,7 @@ SDLTest_RandomUint32BoundaryValue(Uint32 boundary1, Uint32 boundary2, SDL_bool v
 }
 
 Uint64
-SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_bool validDomain)
+SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_Bool validDomain)
 {
     /* max value for Uint64 */
     const Uint64 maxValue = UINT64_MAX;
@@ -321,7 +321,7 @@ SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_bool v
  * \returns Returns a random boundary value for the domain or 0 in case of error
  */
 static Sint64
-SDLTest_GenerateSignedBoundaryValues(const Sint64 minValue, const Sint64 maxValue, Sint64 boundary1, Sint64 boundary2, SDL_bool validDomain)
+SDLTest_GenerateSignedBoundaryValues(const Sint64 minValue, const Sint64 maxValue, Sint64 boundary1, Sint64 boundary2, SDL_Bool validDomain)
 {
         Sint64 b1, b2;
     Sint64 delta;
@@ -384,7 +384,7 @@ SDLTest_GenerateSignedBoundaryValues(const Sint64 minValue, const Sint64 maxValu
 
 
 Sint8
-SDLTest_RandomSint8BoundaryValue(Sint8 boundary1, Sint8 boundary2, SDL_bool validDomain)
+SDLTest_RandomSint8BoundaryValue(Sint8 boundary1, Sint8 boundary2, SDL_Bool validDomain)
 {
     /* min & max values for Sint8 */
     const Sint64 maxValue = SCHAR_MAX;
@@ -395,7 +395,7 @@ SDLTest_RandomSint8BoundaryValue(Sint8 boundary1, Sint8 boundary2, SDL_bool vali
 }
 
 Sint16
-SDLTest_RandomSint16BoundaryValue(Sint16 boundary1, Sint16 boundary2, SDL_bool validDomain)
+SDLTest_RandomSint16BoundaryValue(Sint16 boundary1, Sint16 boundary2, SDL_Bool validDomain)
 {
     /* min & max values for Sint16 */
     const Sint64 maxValue = SHRT_MAX;
@@ -406,7 +406,7 @@ SDLTest_RandomSint16BoundaryValue(Sint16 boundary1, Sint16 boundary2, SDL_bool v
 }
 
 Sint32
-SDLTest_RandomSint32BoundaryValue(Sint32 boundary1, Sint32 boundary2, SDL_bool validDomain)
+SDLTest_RandomSint32BoundaryValue(Sint32 boundary1, Sint32 boundary2, SDL_Bool validDomain)
 {
     /* min & max values for Sint32 */
     #if ((ULONG_MAX) == (UINT_MAX))
@@ -422,7 +422,7 @@ SDLTest_RandomSint32BoundaryValue(Sint32 boundary1, Sint32 boundary2, SDL_bool v
 }
 
 Sint64
-SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL_bool validDomain)
+SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL_Bool validDomain)
 {
     /* min & max values for Sint64 */
     const Sint64 maxValue = INT64_MAX;

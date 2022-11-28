@@ -42,13 +42,13 @@
 typedef struct
 {
     SDL_Rect viewport;
-    SDL_bool viewport_dirty;
+    SDL_Bool viewport_dirty;
     SDL_Texture *texture;
     SDL_BlendMode blend;
-    SDL_bool cliprect_enabled;
-    SDL_bool cliprect_enabled_dirty;
+    SDL_Bool cliprect_enabled;
+    SDL_Bool cliprect_enabled_dirty;
     SDL_Rect cliprect;
-    SDL_bool cliprect_dirty;
+    SDL_Bool cliprect_dirty;
     LPDIRECT3DPIXELSHADER9 shader;
 } D3D_DrawStateCache;
 
@@ -62,9 +62,9 @@ typedef struct
     IDirect3DDevice9 *device;
     UINT adapter;
     D3DPRESENT_PARAMETERS pparams;
-    SDL_bool updateSize;
-    SDL_bool beginScene;
-    SDL_bool enableSeparateAlphaBlend;
+    SDL_Bool updateSize;
+    SDL_Bool beginScene;
+    SDL_Bool enableSeparateAlphaBlend;
     D3DTEXTUREFILTERTYPE scaleMode[8];
     IDirect3DSurface9 *defaultRenderTarget;
     IDirect3DSurface9 *currentRenderTarget;
@@ -75,13 +75,13 @@ typedef struct
     LPDIRECT3DVERTEXBUFFER9 vertexBuffers[8];
     size_t vertexBufferSize[8];
     int currentVertexBuffer;
-    SDL_bool reportedVboProblem;
+    SDL_Bool reportedVboProblem;
     D3D_DrawStateCache drawstate;
 } D3D_RenderData;
 
 typedef struct
 {
-    SDL_bool dirty;
+    SDL_Bool dirty;
     int w, h;
     DWORD usage;
     Uint32 format;
@@ -97,7 +97,7 @@ typedef struct
 
 #if SDL_HAVE_YUV
     /* YV12 texture support */
-    SDL_bool yuv;
+    SDL_Bool yuv;
     D3D_TextureRep utexture;
     D3D_TextureRep vtexture;
     Uint8 *pixels;
@@ -400,7 +400,7 @@ GetBlendEquation(SDL_BlendOperation operation)
     return (D3DBLENDOP) 0;
 }
 
-static SDL_bool
+static SDL_Bool
 D3D_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
@@ -1134,7 +1134,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
     const int vboidx = data->currentVertexBuffer;
     IDirect3DVertexBuffer9 *vbo = NULL;
-    const SDL_bool istarget = renderer->target != NULL;
+    const SDL_Bool istarget = renderer->target != NULL;
 
     if (D3D_ActivateRenderer(renderer) < 0) {
         return -1;
@@ -1223,7 +1223,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const SDL_Rect *viewport = &data->drawstate.viewport;
                 const int backw = istarget ? renderer->target->w : data->pparams.BackBufferWidth;
                 const int backh = istarget ? renderer->target->h : data->pparams.BackBufferHeight;
-                const SDL_bool viewport_equal = ((viewport->x == 0) && (viewport->y == 0) && (viewport->w == backw) && (viewport->h == backh)) ? SDL_TRUE : SDL_FALSE;
+                const SDL_Bool viewport_equal = ((viewport->x == 0) && (viewport->y == 0) && (viewport->w == backw) && (viewport->h == backh)) ? SDL_TRUE : SDL_FALSE;
 
                 if (data->drawstate.cliprect_enabled || data->drawstate.cliprect_enabled_dirty) {
                     IDirect3DDevice9_SetRenderState(data->device, D3DRS_SCISSORTESTENABLE, FALSE);
@@ -1266,7 +1266,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
                 /* DirectX 9 has the same line rasterization semantics as GDI,
                    so we need to close the endpoint of the line with a second draw call. */
-                const SDL_bool close_endpoint = ((count == 2) || (verts[0].x != verts[count-1].x) || (verts[0].y != verts[count-1].y));
+                const SDL_Bool close_endpoint = ((count == 2) || (verts[0].x != verts[count-1].x) || (verts[0].y != verts[count-1].y));
 
                 SetDrawState(data, cmd);
 

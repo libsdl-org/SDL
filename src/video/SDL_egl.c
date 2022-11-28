@@ -168,7 +168,7 @@ int SDL_EGL_SetErrorEx(const char * message, const char * eglFunctionName, EGLin
 
 /* EGL implementation of SDL OpenGL ES support */
 
-SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext)
+SDL_Bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext)
 {
     size_t ext_len;
     const char *ext_override;
@@ -246,7 +246,7 @@ SDL_EGL_GetProcAddressInternal(_THIS, const char *proc)
     void *retval = NULL;
     if (_this->egl_data != NULL) {
         const Uint32 eglver = (((Uint32) _this->egl_data->egl_version_major) << 16) | ((Uint32) _this->egl_data->egl_version_minor);
-        const SDL_bool is_egl_15_or_later = eglver >= ((((Uint32) 1) << 16) | 5);
+        const SDL_Bool is_egl_15_or_later = eglver >= ((((Uint32) 1) << 16) | 5);
 
         /* EGL 1.5 can use eglGetProcAddress() for any symbol. 1.4 and earlier can't use it for core entry points. */
         if (retval == NULL && is_egl_15_or_later && _this->egl_data->eglGetProcAddress) {
@@ -300,7 +300,7 @@ SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
     const char *d3dcompiler;
 #endif
 #if SDL_VIDEO_DRIVER_RPI
-    SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
+    SDL_Bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
 #endif
 
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
@@ -623,7 +623,7 @@ SDL_EGL_InitializeOffscreen(_THIS, int device)
         }
     } else {
         int i;
-        SDL_bool found = SDL_FALSE;
+        SDL_Bool found = SDL_FALSE;
         EGLDisplay attempted_egl_display;
 
         /* If no hint is provided lets look for the first device/display that will allow us to eglInit */
@@ -725,14 +725,14 @@ static void dumpconfig(_THIS, EGLConfig config)
 #endif /* DUMP_EGL_CONFIG */
 
 static int
-SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
+SDL_EGL_PrivateChooseConfig(_THIS, SDL_Bool set_config_caveat_none)
 {
     /* 64 seems nice. */
     EGLint attribs[64];
     EGLint found_configs = 0, value;
     /* 128 seems even nicer here */
     EGLConfig configs[128];
-    SDL_bool has_matching_format = SDL_FALSE;
+    SDL_Bool has_matching_format = SDL_FALSE;
     int i, j, best_bitdiff = -1, best_truecolor_bitdiff = -1;
     int truecolor_config_idx = -1;
 
@@ -844,7 +844,7 @@ SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
     /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
 
     for (i = 0; i < found_configs; i++ ) {
-        SDL_bool is_truecolor = SDL_FALSE;
+        SDL_Bool is_truecolor = SDL_FALSE;
         int bitdiff = 0;
 
         if (has_matching_format && _this->egl_data->egl_required_visual_id) {
@@ -960,7 +960,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     EGLint profile_mask = _this->gl_config.profile_mask;
     EGLint major_version = _this->gl_config.major_version;
     EGLint minor_version = _this->gl_config.minor_version;
-    SDL_bool profile_es = (profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_Bool profile_es = (profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
     if (!_this->egl_data) {
         SDL_SetError("EGL not initialized");
@@ -1267,7 +1267,7 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
 
 #ifdef EGL_EXT_present_opaque
     if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_present_opaque")) {
-        const SDL_bool allow_transparent = SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, SDL_FALSE);
+        const SDL_Bool allow_transparent = SDL_GetHintBoolean(SDL_HINT_VIDEO_EGL_ALLOW_TRANSPARENCY, SDL_FALSE);
         attribs[attr++] = EGL_PRESENT_OPAQUE_EXT;
         attribs[attr++] = allow_transparent ? EGL_FALSE : EGL_TRUE;
     }

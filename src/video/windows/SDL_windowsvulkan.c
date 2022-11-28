@@ -41,8 +41,8 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
     Uint32 i;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasWin32SurfaceExtension = SDL_FALSE;
+    SDL_Bool hasSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasWin32SurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -114,7 +114,7 @@ void WIN_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool WIN_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -131,7 +131,7 @@ SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
             extensionsForWin32);
 }
 
-SDL_bool WIN_Vulkan_CreateSurface(_THIS,
+SDL_Bool WIN_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

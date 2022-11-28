@@ -20,7 +20,7 @@
 #include <SDL3/SDL_opengl.h>
 
 
-static SDL_bool shaders_supported;
+static SDL_Bool shaders_supported;
 static int      current_shader = 0;
 
 enum {
@@ -126,7 +126,7 @@ static PFNGLSHADERSOURCEARBPROC glShaderSourceARB;
 static PFNGLUNIFORM1IARBPROC glUniform1iARB;
 static PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
 
-static SDL_bool CompileShader(GLhandleARB shader, const char *source)
+static SDL_Bool CompileShader(GLhandleARB shader, const char *source)
 {
     GLint status = 0;
 
@@ -152,7 +152,7 @@ static SDL_bool CompileShader(GLhandleARB shader, const char *source)
     }
 }
 
-static SDL_bool LinkProgram(ShaderData *data)
+static SDL_Bool LinkProgram(ShaderData *data)
 {
     GLint status = 0;
 
@@ -180,7 +180,7 @@ static SDL_bool LinkProgram(ShaderData *data)
     }
 }
 
-static SDL_bool CompileShaderProgram(ShaderData *data)
+static SDL_Bool CompileShaderProgram(ShaderData *data)
 {
     const int num_tmus_bound = 4;
     int i;
@@ -232,7 +232,7 @@ static void DestroyShaderProgram(ShaderData *data)
     }
 }
 
-static SDL_bool InitShaders()
+static SDL_Bool InitShaders()
 {
     int i;
 

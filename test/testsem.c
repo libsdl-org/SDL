@@ -28,7 +28,7 @@ int alive;
 typedef struct Thread_State {
     SDL_Thread * thread;
     int number;
-    SDL_bool flag;
+    SDL_Bool flag;
     int loop_count;
     int content_count;
 } Thread_State;
@@ -175,7 +175,7 @@ ThreadFuncOverheadContended(void *data)
 }
 
 static void
-TestOverheadContended(SDL_bool try_wait)
+TestOverheadContended(SDL_Bool try_wait)
 {
     Uint32 start_ticks;
     Uint32 end_ticks;

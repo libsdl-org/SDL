@@ -33,7 +33,7 @@ SDL_FORCE_INLINE int GetBatteryPercentage(void);
 #define BATTERY_PERCENT_REG      0xB
 #define BATTERY_PERCENT_REG_SIZE 2
 
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_N3DS(SDL_PowerState *state, int *seconds, int *percent)
 {
     *state = GetPowerState();

@@ -138,7 +138,7 @@ extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* ren
  * DX11 device and swap chain.
  *
  * Before SDL 2.0.4 this function did not return a value. Since SDL 2.0.4 it
- * returns an SDL_bool.
+ * returns an SDL_Bool.
  *
  * \param displayIndex the display index for which to get both indices
  * \param adapterIndex a pointer to be filled in with the adapter index
@@ -148,7 +148,7 @@ extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* ren
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex );
+extern DECLSPEC SDL_Bool SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex );
 
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
@@ -240,7 +240,7 @@ extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, 
  *
  * \sa SDL_iPhoneSetAnimationCallback
  */
-extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
+extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_Bool enabled);
 
 #endif /* __IOS__ */
 
@@ -328,7 +328,7 @@ extern DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsAndroidTV(void);
 
 /**
  * Query if the application is running on a Chromebook.
@@ -337,7 +337,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsChromebook(void);
 
 /**
  * Query if the application is running on a Samsung DeX docking station.
@@ -346,7 +346,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsDeXMode(void);
 
 /**
  * Trigger the Android system back button behavior.
@@ -425,7 +425,7 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
+extern DECLSPEC SDL_Bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
 
 /**
  * Shows an Android toast notification.
@@ -578,7 +578,7 @@ extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsTablet(void);
 
 /* Functions used by iOS application delegates to notify SDL about state changes */
 extern DECLSPEC void SDLCALL SDL_OnApplicationWillTerminate(void);

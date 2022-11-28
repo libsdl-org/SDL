@@ -67,7 +67,7 @@ typedef struct
     int (*WarpMouseGlobal) (int x, int y);
 
     /* Set relative mode */
-    int (*SetRelativeMouseMode) (SDL_bool enabled);
+    int (*SetRelativeMouseMode) (SDL_Bool enabled);
 
     /* Set mouse capture */
     int (*CaptureMouse) (SDL_Window * window);
@@ -85,29 +85,29 @@ typedef struct
     int last_x, last_y;         /* the last reported x and y coordinates */
     float accumulated_wheel_x;
     float accumulated_wheel_y;
-    SDL_bool has_position;
-    SDL_bool relative_mode;
-    SDL_bool relative_mode_warp;
-    SDL_bool relative_mode_warp_motion;
-    SDL_bool enable_normal_speed_scale;
+    SDL_Bool has_position;
+    SDL_Bool relative_mode;
+    SDL_Bool relative_mode_warp;
+    SDL_Bool relative_mode_warp_motion;
+    SDL_Bool enable_normal_speed_scale;
     float normal_speed_scale;
-    SDL_bool enable_relative_speed_scale;
+    SDL_Bool enable_relative_speed_scale;
     float relative_speed_scale;
-    SDL_bool enable_relative_system_scale;
+    SDL_Bool enable_relative_system_scale;
     int num_system_scale_values;
     float *system_scale_values;
     float scale_accum_x;
     float scale_accum_y;
     Uint32 double_click_time;
     int double_click_radius;
-    SDL_bool touch_mouse_events;
-    SDL_bool mouse_touch_events;
-    SDL_bool was_touch_mouse_events; /* Was a touch-mouse event pending? */
+    SDL_Bool touch_mouse_events;
+    SDL_Bool mouse_touch_events;
+    SDL_Bool was_touch_mouse_events; /* Was a touch-mouse event pending? */
 #if defined(__vita__)
     Uint8 vita_touch_mouse_device;
 #endif
-    SDL_bool auto_capture;
-    SDL_bool capture_desired;
+    SDL_Bool auto_capture;
+    SDL_Bool capture_desired;
     SDL_Window *capture_window;
 
     /* Data for input source state */
@@ -121,7 +121,7 @@ typedef struct
     SDL_Cursor *cursors;
     SDL_Cursor *def_cursor;
     SDL_Cursor *cur_cursor;
-    SDL_bool cursor_shown;
+    SDL_Bool cursor_shown;
 
     /* Driver-dependent data. */
     void *driverdata;
@@ -141,7 +141,7 @@ extern void SDL_SetDefaultCursor(SDL_Cursor * cursor);
 extern void SDL_SetMouseFocus(SDL_Window * window);
 
 /* Update the mouse capture window */
-extern int SDL_UpdateMouseCapture(SDL_bool force_release);
+extern int SDL_UpdateMouseCapture(SDL_Bool force_release);
 
 /* You can set either a single scale, or a set of {speed, scale} values in sorted order */
 extern int SDL_SetMouseSystemScale(int num_values, const float *values);
@@ -159,7 +159,7 @@ extern int SDL_SendMouseButtonClicks(SDL_Window * window, SDL_MouseID mouseID, U
 extern int SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction);
 
 /* Warp the mouse within the window, potentially overriding relative mode */
-extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_relative_mode);
+extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_Bool ignore_relative_mode);
 
 /* TODO RECONNECT: Set mouse state to "zero" */
 #if 0

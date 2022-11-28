@@ -37,20 +37,20 @@ HIDAPI_DriverCombined_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverCombined_IsEnabled(void)
 {
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverCombined_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     /* This is always explicitly created for combined devices */
     return SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverCombined_InitDevice(SDL_HIDAPI_Device *device)
 {
     return HIDAPI_JoystickConnected(device, NULL);
@@ -67,7 +67,7 @@ HIDAPI_DriverCombined_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joysti
 {
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     int i;
@@ -180,7 +180,7 @@ HIDAPI_DriverCombined_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick
 }
 
 static int
-HIDAPI_DriverCombined_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverCombined_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     int i;
     int result = -1;
@@ -194,7 +194,7 @@ HIDAPI_DriverCombined_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_J
     return result;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverCombined_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     int i;

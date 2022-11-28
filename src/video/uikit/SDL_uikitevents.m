@@ -108,7 +108,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
 
 
 void
-SDL_iPhoneSetEventPump(SDL_bool enabled)
+SDL_iPhoneSetEventPump(SDL_Bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
 
@@ -154,7 +154,7 @@ UIKit_PumpEvents(_THIS)
 
 #ifdef ENABLE_GCKEYBOARD
 
-static SDL_bool keyboard_connected = SDL_FALSE;
+static SDL_Bool keyboard_connected = SDL_FALSE;
 static id keyboard_connect_observer = nil;
 static id keyboard_disconnect_observer = nil;
 
@@ -206,7 +206,7 @@ void SDL_InitGCKeyboard(void)
     }
 }
 
-SDL_bool SDL_HasGCKeyboard(void)
+SDL_Bool SDL_HasGCKeyboard(void)
 {
     return keyboard_connected;
 }
@@ -240,7 +240,7 @@ void SDL_InitGCKeyboard(void)
 {
 }
 
-SDL_bool SDL_HasGCKeyboard(void)
+SDL_Bool SDL_HasGCKeyboard(void)
 {
     return SDL_FALSE;
 }
@@ -269,7 +269,7 @@ static void UpdatePointerLock()
     }
 }
 
-static int SetGCMouseRelativeMode(SDL_bool enabled)
+static int SetGCMouseRelativeMode(SDL_Bool enabled)
 {
     mouse_relative_mode = enabled;
     UpdatePointerLock();
@@ -385,12 +385,12 @@ void SDL_InitGCMouse(void)
     }
 }
 
-SDL_bool SDL_HasGCMouse(void)
+SDL_Bool SDL_HasGCMouse(void)
 {
     return (mice_connected > 0);
 }
 
-SDL_bool SDL_GCMouseRelativeMode(void)
+SDL_Bool SDL_GCMouseRelativeMode(void)
 {
     return mouse_relative_mode;
 }
@@ -426,12 +426,12 @@ void SDL_InitGCMouse(void)
 {
 }
 
-SDL_bool SDL_HasGCMouse(void)
+SDL_Bool SDL_HasGCMouse(void)
 {
     return SDL_FALSE;
 }
 
-SDL_bool SDL_GCMouseRelativeMode(void)
+SDL_Bool SDL_GCMouseRelativeMode(void)
 {
     return SDL_FALSE;
 }

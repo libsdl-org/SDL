@@ -56,19 +56,19 @@ HIDAPI_DriverStadia_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STADIA, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverStadia_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STADIA, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverStadia_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return (type == SDL_CONTROLLER_TYPE_GOOGLE_STADIA) ? SDL_TRUE : SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverStadia_Context *ctx;
@@ -97,7 +97,7 @@ HIDAPI_DriverStadia_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystick
 {
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
@@ -153,7 +153,7 @@ HIDAPI_DriverStadia_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *
 }
 
 static int
-HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -170,10 +170,10 @@ HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_C
     }
 
     if (ctx->last_state[1] != data[1]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        SDL_Bool dpad_up = SDL_FALSE;
+        SDL_Bool dpad_down = SDL_FALSE;
+        SDL_Bool dpad_left = SDL_FALSE;
+        SDL_Bool dpad_right = SDL_FALSE;
 
         switch (data[1]) {
         case 0:
@@ -260,7 +260,7 @@ HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_C
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;

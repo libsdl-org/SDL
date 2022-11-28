@@ -29,7 +29,7 @@
 #include <psp2/kernel/processmgr.h>
 
 static uint64_t start;
-static SDL_bool ticks_started = SDL_FALSE;
+static SDL_Bool ticks_started = SDL_FALSE;
 
 void
 SDL_TicksInit(void)

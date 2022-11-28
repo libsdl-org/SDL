@@ -94,14 +94,14 @@ typedef struct
     D3D11_FILTER scaleMode;
 #if SDL_HAVE_YUV
     /* YV12 texture support */
-    SDL_bool yuv;
+    SDL_Bool yuv;
     ID3D11Texture2D *mainTextureU;
     ID3D11ShaderResourceView *mainTextureResourceViewU;
     ID3D11Texture2D *mainTextureV;
     ID3D11ShaderResourceView *mainTextureResourceViewV;
 
     /* NV12 texture support */
-    SDL_bool nv12;
+    SDL_Bool nv12;
     ID3D11Texture2D *mainTextureNV;
     ID3D11ShaderResourceView *mainTextureResourceViewNV;
 
@@ -158,12 +158,12 @@ typedef struct
     ID3D11PixelShader *currentShader;
     ID3D11ShaderResourceView *currentShaderResource;
     ID3D11SamplerState *currentSampler;
-    SDL_bool cliprectDirty;
-    SDL_bool currentCliprectEnabled;
+    SDL_Bool cliprectDirty;
+    SDL_Bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
     SDL_Rect currentViewport;
     int currentViewportRotation;
-    SDL_bool viewportDirty;
+    SDL_Bool viewportDirty;
     Float4X4 identity;
     int currentVertexBuffer;
 } D3D11_RenderData;
@@ -1070,7 +1070,7 @@ D3D11_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 }
 #endif
 
-static SDL_bool
+static SDL_Bool
 D3D11_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
@@ -1903,7 +1903,7 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
     ID3D11ShaderResourceView *shaderResource;
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
     ID3D11BlendState *blendState = NULL;
-    SDL_bool updateSubresource = SDL_FALSE;
+    SDL_Bool updateSubresource = SDL_FALSE;
 
     if (renderTargetView != rendererData->currentRenderTargetView) {
         ID3D11DeviceContext_OMSetRenderTargets(rendererData->d3dContext,

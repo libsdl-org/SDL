@@ -37,7 +37,7 @@
 #include "SDL_pspgl_c.h"
 
 /* unused
-static SDL_bool PSP_initialized = SDL_FALSE;
+static SDL_Bool PSP_initialized = SDL_FALSE;
 */
 
 static void
@@ -272,7 +272,7 @@ PSP_DestroyWindow(_THIS, SDL_Window * window)
 }
 
 /* TO Write Me */
-SDL_bool PSP_HasScreenKeyboardSupport(_THIS)
+SDL_Bool PSP_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_FALSE;
 }
@@ -282,7 +282,7 @@ void PSP_ShowScreenKeyboard(_THIS, SDL_Window *window)
 void PSP_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
 }
-SDL_bool PSP_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+SDL_Bool PSP_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     return SDL_FALSE;
 }

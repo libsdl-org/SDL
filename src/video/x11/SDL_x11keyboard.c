@@ -152,7 +152,7 @@ X11_InitKeyboard(_THIS)
         char *prev_xmods  = X11_XSetLocaleModifiers(NULL);
         const char *new_xmods = "";
         const char *env_xmods = SDL_getenv("XMODIFIERS");
-        SDL_bool has_dbus_ime_support = SDL_FALSE;
+        SDL_Bool has_dbus_ime_support = SDL_FALSE;
 
         if (prev_locale) {
             prev_locale = SDL_strdup(prev_locale);
@@ -312,7 +312,7 @@ X11_InitKeyboard(_THIS)
 }
 
 void
-X11_UpdateKeymap(_THIS, SDL_bool send_event)
+X11_UpdateKeymap(_THIS, SDL_Bool send_event)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     int i;
@@ -442,7 +442,7 @@ X11_SetTextInputRect(_THIS, const SDL_Rect *rect)
 #endif
 }
 
-SDL_bool
+SDL_Bool
 X11_HasScreenKeyboardSupport(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
@@ -478,7 +478,7 @@ X11_HideScreenKeyboard(_THIS, SDL_Window *window)
     }
 }
 
-SDL_bool
+SDL_Bool
 X11_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;

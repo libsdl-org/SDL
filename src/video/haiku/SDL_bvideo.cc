@@ -235,7 +235,7 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 }
 
 static int
-HAIKU_SetRelativeMouseMode(SDL_bool enabled)
+HAIKU_SetRelativeMouseMode(SDL_Bool enabled)
 {
     SDL_Window *window = SDL_GetMouseFocus();
     if (window == NULL) {

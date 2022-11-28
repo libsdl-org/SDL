@@ -25,7 +25,7 @@
 #ifndef SDL_hints_c_h_
 #define SDL_hints_c_h_
 
-extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
+extern SDL_Bool SDL_GetStringBoolean(const char *value, SDL_Bool default_value);
 
 #endif /* SDL_hints_c_h_ */
 

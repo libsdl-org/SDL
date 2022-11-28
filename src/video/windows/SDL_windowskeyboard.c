@@ -36,7 +36,7 @@ static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
 static void IME_ClearComposition(SDL_VideoData *videodata);
-static SDL_bool IME_IsTextInputShown(SDL_VideoData* videodata);
+static SDL_Bool IME_IsTextInputShown(SDL_VideoData* videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
 #ifndef MAPVK_VK_TO_VSC
@@ -116,7 +116,7 @@ WIN_InitKeyboard(_THIS)
 }
 
 void
-WIN_UpdateKeymap(SDL_bool send_event)
+WIN_UpdateKeymap(SDL_Bool send_event)
 {
     int i;
     SDL_Scancode scancode;
@@ -292,12 +292,12 @@ void WIN_ClearComposition(_THIS)
 {
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_Bool WIN_IsTextInputShown(_THIS)
 {
     return SDL_FALSE;
 }
 
-SDL_bool
+SDL_Bool
 IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     return SDL_FALSE;
@@ -373,12 +373,12 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
 static void IME_DestroyTextures(SDL_VideoData *videodata);
 
-static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata);
+static SDL_Bool UILess_SetupSinks(SDL_VideoData *videodata);
 static void UILess_ReleaseSinks(SDL_VideoData *videodata);
 static void UILess_EnableUIUpdates(SDL_VideoData *videodata);
 static void UILess_DisableUIUpdates(SDL_VideoData *videodata);
 
-static SDL_bool
+static SDL_Bool
 WIN_ShouldShowNativeUI()
 {
     return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
@@ -795,7 +795,7 @@ IME_ClearComposition(SDL_VideoData *videodata)
     SDL_SendEditingText("", 0, 0);
 }
 
-static SDL_bool
+static SDL_Bool
 IME_IsTextInputShown(SDL_VideoData* videodata)
 {
     if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
@@ -1038,10 +1038,10 @@ IME_HideCandidateList(SDL_VideoData *videodata)
     IME_SendEditingEvent(videodata);
 }
 
-SDL_bool
+SDL_Bool
 IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
-    SDL_bool trap = SDL_FALSE;
+    SDL_Bool trap = SDL_FALSE;
     HIMC himc = 0;
     if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
         return SDL_FALSE;
@@ -1418,11 +1418,11 @@ UILess_DisableUIUpdates(SDL_VideoData *videodata)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 UILess_SetupSinks(SDL_VideoData *videodata)
 {
     TfClientId clientid = 0;
-    SDL_bool result = SDL_FALSE;
+    SDL_Bool result = SDL_FALSE;
     ITfSource *source = 0;
     if (FAILED(CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgrEx, (LPVOID *)&videodata->ime_threadmgrex))) {
         return SDL_FALSE;
@@ -1538,7 +1538,7 @@ static void
 IME_PositionCandidateList(SDL_VideoData *videodata, SIZE size)
 {
     int left, top, right, bottom;
-    SDL_bool ok = SDL_FALSE;
+    SDL_Bool ok = SDL_FALSE;
     int winw = videodata->ime_winwidth;
     int winh = videodata->ime_winheight;
 
@@ -1615,7 +1615,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
     SIZE maxcandsize = {0};
     HBITMAP hbm = NULL;
     int candcount = SDL_min(SDL_min(MAX_CANDLIST, videodata->ime_candcount), videodata->ime_candpgsize);
-    SDL_bool vertical = videodata->ime_candvertical;
+    SDL_Bool vertical = videodata->ime_candvertical;
 
     const int listborder = 1;
     const int listpadding = 0;
@@ -1777,7 +1777,7 @@ void IME_Present(SDL_VideoData *videodata)
     /* FIXME: Need to show the IME bitmap */
 }
 
-SDL_bool WIN_IsTextInputShown(_THIS)
+SDL_Bool WIN_IsTextInputShown(_THIS)
 {
     SDL_VideoData* videodata = (SDL_VideoData*)_this->driverdata;
     return IME_IsTextInputShown(videodata);

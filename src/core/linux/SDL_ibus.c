@@ -52,7 +52,7 @@ static const char *ibus_input_interface = NULL;
 static char *input_ctx_path = NULL;
 static SDL_Rect ibus_cursor_rect = { 0, 0, 0, 0 };
 static DBusConnection *ibus_conn = NULL;
-static SDL_bool ibus_is_portal_interface = SDL_FALSE;
+static SDL_Bool ibus_is_portal_interface = SDL_FALSE;
 static char *ibus_addr_file = NULL;
 static int inotify_fd = -1, inotify_wd = -1;
 
@@ -92,7 +92,7 @@ IBus_ModState(void)
     return ibus_mods;
 }
 
-static SDL_bool
+static SDL_Bool
 IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
                   DBusMessageIter *inside, const char * struct_id, size_t id_size)
 {
@@ -120,7 +120,7 @@ IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
                            Uint32 *start_pos, Uint32 *end_pos)
 {
@@ -207,7 +207,7 @@ IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext
     return text;
 }
 
-static SDL_bool
+static SDL_Bool
 IBus_GetVariantCursorPos(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
                          Uint32 *pos)
 {
@@ -259,8 +259,8 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
         if (text) {
             if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE)) {
                 Uint32 pos, start_pos, end_pos;
-                SDL_bool has_pos = SDL_FALSE;
-                SDL_bool has_dec_pos = SDL_FALSE;
+                SDL_Bool has_pos = SDL_FALSE;
+                SDL_Bool has_dec_pos = SDL_FALSE;
 
                 dbus->message_iter_init(msg, &iter);
                 has_dec_pos = IBus_GetDecorationPosition(conn, &iter, dbus, &start_pos, &end_pos);
@@ -309,7 +309,7 @@ static char *
 IBus_ReadAddressFromFile(const char *file_path)
 {
     char addr_buf[1024];
-    SDL_bool success = SDL_FALSE;
+    SDL_Bool success = SDL_FALSE;
     FILE *addr_file;
 
     addr_file = fopen(file_path, "r");
@@ -429,7 +429,7 @@ IBus_GetDBusAddressFilename(void)
     return SDL_strdup(file_path);
 }
 
-static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus);
+static SDL_Bool IBus_CheckConnection(SDL_DBusContext *dbus);
 
 static void SDLCALL
 IBus_SetCapabilities(void *data, const char *name, const char *old_val,
@@ -449,12 +449,12 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
 }
 
 
-static SDL_bool
+static SDL_Bool
 IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 {
     const char *client_name = "SDL3_Application";
     const char *path = NULL;
-    SDL_bool result = SDL_FALSE;
+    SDL_Bool result = SDL_FALSE;
     DBusObjectPathVTable ibus_vtable;
     
     SDL_zero(ibus_vtable);
@@ -514,7 +514,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     return result;
 }
 
-static SDL_bool
+static SDL_Bool
 IBus_CheckConnection(SDL_DBusContext *dbus)
 {
     if (dbus == NULL) {
@@ -531,7 +531,7 @@ IBus_CheckConnection(SDL_DBusContext *dbus)
         if (readsize > 0) {
         
             char *p;
-            SDL_bool file_updated = SDL_FALSE;
+            SDL_Bool file_updated = SDL_FALSE;
             
             for (p = buf; p < buf + readsize; /**/) {
                 struct inotify_event *event = (struct inotify_event*) p;
@@ -553,7 +553,7 @@ IBus_CheckConnection(SDL_DBusContext *dbus)
             if (file_updated) {
                 char *addr = IBus_ReadAddressFromFile(ibus_addr_file);
                 if (addr) {
-                    SDL_bool result = IBus_SetupConnection(dbus, addr);
+                    SDL_Bool result = IBus_SetupConnection(dbus, addr);
                     SDL_free(addr);
                     return result;
                 }
@@ -564,10 +564,10 @@ IBus_CheckConnection(SDL_DBusContext *dbus)
     return SDL_FALSE;
 }
 
-SDL_bool
+SDL_Bool
 SDL_IBus_Init(void)
 {
-    SDL_bool result = SDL_FALSE;
+    SDL_Bool result = SDL_FALSE;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     
     if (dbus) {
@@ -672,7 +672,7 @@ IBus_SimpleMessage(const char *method)
 }
 
 void
-SDL_IBus_SetFocus(SDL_bool focused)
+SDL_IBus_SetFocus(SDL_Bool focused)
 { 
     const char *method = focused ? "FocusIn" : "FocusOut";
     IBus_SimpleMessage(method);
@@ -684,7 +684,7 @@ SDL_IBus_Reset(void)
     IBus_SimpleMessage("Reset");
 }
 
-SDL_bool
+SDL_Bool
 SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 { 
     Uint32 result = 0;

@@ -53,7 +53,7 @@ WASAPI_DetectDevices(void)
     WASAPI_EnumerateEndpoints();
 }
 
-static SDL_INLINE SDL_bool
+static SDL_INLINE SDL_Bool
 WasapiFailed(_THIS, const HRESULT err)
 {
     if (err == S_OK) {
@@ -127,7 +127,7 @@ UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
 
 static void ReleaseWasapiDevice(_THIS);
 
-static SDL_bool
+static SDL_Bool
 RecoverWasapiDevice(_THIS)
 {
     ReleaseWasapiDevice(this);  /* dump the lost device's handles. */
@@ -151,11 +151,11 @@ RecoverWasapiDevice(_THIS)
     return SDL_TRUE;  /* okay, carry on with new device details! */
 }
 
-static SDL_bool
+static SDL_Bool
 RecoverWasapiIfLost(_THIS)
 {
     const int generation = this->hidden->default_device_generation;
-    SDL_bool lost = this->hidden->device_lost;
+    SDL_Bool lost = this->hidden->device_lost;
 
     if (!SDL_AtomicGet(&this->enabled)) {
         return SDL_FALSE;  /* already failed. */
@@ -264,7 +264,7 @@ WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
             const int total = ((int) frames) * this->hidden->framesize;
             const int cpy = SDL_min(buflen, total);
             const int leftover = total - cpy;
-            const SDL_bool silent = (flags & AUDCLNT_BUFFERFLAGS_SILENT) ? SDL_TRUE : SDL_FALSE;
+            const SDL_Bool silent = (flags & AUDCLNT_BUFFERFLAGS_SILENT) ? SDL_TRUE : SDL_FALSE;
 
             if (silent) {
                 SDL_memset(buffer, this->spec.silence, cpy);
@@ -389,7 +389,7 @@ WASAPI_UnrefDevice(_THIS)
 
 /* This is called once a device is activated, possibly asynchronously. */
 int
-WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
+WASAPI_PrepDevice(_THIS, const SDL_Bool updatestream)
 {
     /* !!! FIXME: we could request an exclusive mode stream, which is lower latency;
        !!!  it will write into the kernel's audio buffer directly instead of
@@ -597,7 +597,7 @@ WASAPI_Deinitialize(void)
     WASAPI_PlatformDeinit();
 }
 
-static SDL_bool
+static SDL_Bool
 WASAPI_Init(SDL_AudioDriverImpl * impl)
 {
     if (WASAPI_PlatformInit() == -1) {

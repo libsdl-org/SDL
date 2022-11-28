@@ -727,7 +727,7 @@ openslES_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static SDL_bool
+static SDL_Bool
 openslES_Init(SDL_AudioDriverImpl * impl)
 {
     LOGI("openslES_Init() called");

@@ -44,7 +44,7 @@ extern "C" {
 #include "SDL_winrtmouse_c.h"
 
 
-extern "C" SDL_bool WINRT_UsingRelativeMouseMode = SDL_FALSE;
+extern "C" SDL_Bool WINRT_UsingRelativeMouseMode = SDL_FALSE;
 
 
 static SDL_Cursor *
@@ -182,7 +182,7 @@ WINRT_ShowCursor(SDL_Cursor * cursor)
 }
 
 static int
-WINRT_SetRelativeMouseMode(SDL_bool enabled)
+WINRT_SetRelativeMouseMode(SDL_Bool enabled)
 {
     WINRT_UsingRelativeMouseMode = enabled;
     return 0;

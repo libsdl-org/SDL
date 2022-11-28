@@ -83,7 +83,7 @@ static void WINRT_VideoQuit(_THIS);
 /* Window functions */
 static int WINRT_CreateWindow(_THIS, SDL_Window * window);
 static void WINRT_SetWindowSize(_THIS, SDL_Window * window);
-static void WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
+static void WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_Bool fullscreen);
 static void WINRT_DestroyWindow(_THIS, SDL_Window * window);
 static int WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
 
@@ -786,7 +786,7 @@ WINRT_SetWindowSize(_THIS, SDL_Window * window)
 }
 
 void
-WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_Bool fullscreen)
 {
 #if NTDDI_VERSION >= NTDDI_WIN10
     SDL_WindowData * data = (SDL_WindowData *)window->driverdata;

@@ -147,7 +147,7 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
 }
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
-static SDL_bool
+static SDL_Bool
 CheckXRandR(Display * display, int *major, int *minor)
 {
     /* Default the extension not available */
@@ -202,7 +202,7 @@ CalculateXRandRRefreshRate(const XRRModeInfo *info)
         SDL_round(((double)info->dotClock / (double)(info->hTotal * info->vTotal))) : 0;
 }
 
-static SDL_bool
+static SDL_Bool
 SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
                   RRMode modeID, SDL_DisplayMode *mode)
 {
@@ -289,7 +289,7 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
 
 
 static int
-X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_bool send_event)
+X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_Bool send_event)
 {
     Atom EDID = X11_XInternAtom(dpy, "EDID", False);
     XRROutputInfo *output_info;

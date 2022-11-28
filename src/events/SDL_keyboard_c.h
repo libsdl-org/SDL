@@ -34,7 +34,7 @@ extern void SDL_GetDefaultKeymap(SDL_Keycode * keymap);
 extern SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode);
 
 /* Set the mapping of scancode to key codes */
-extern void SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_bool send_event);
+extern void SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_Bool send_event);
 
 /* Set a platform-dependent key name, overriding the default platform-agnostic
    name. Encoded as UTF-8. The string is not copied, thus the pointer given to
@@ -62,7 +62,7 @@ extern int SDL_SendKeyboardKeyAndKeycode(Uint8 state, SDL_Scancode scancode, SDL
 extern void SDL_ReleaseAutoReleaseKeys(void);
 
 /* Return true if any hardware key is pressed */
-extern SDL_bool SDL_HardwareKeyboardKeyPressed(void);
+extern SDL_Bool SDL_HardwareKeyboardKeyPressed(void);
 
 /* Send keyboard text input */
 extern int SDL_SendKeyboardText(const char *text);
@@ -77,7 +77,7 @@ extern void SDL_KeyboardQuit(void);
 extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
 
 /* Toggle on or off pieces of the keyboard mod state. */
-extern void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle);
+extern void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_Bool toggle);
 
 #endif /* SDL_keyboard_c_h_ */
 

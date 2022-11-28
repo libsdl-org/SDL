@@ -228,7 +228,7 @@ HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
 }
 
 static void
-UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
+UpdateKeymap(SDL_VideoData *data, SDL_Bool send_event)
 {
     TISInputSourceRef key_layout;
     const void *chr_data;
@@ -446,7 +446,7 @@ extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
 void
-Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+Cocoa_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 {
 #if SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);

@@ -407,7 +407,7 @@ EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Ui
     return SDL_Unsupported();
 }
 
-static SDL_bool
+static SDL_Bool
 EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
@@ -432,7 +432,7 @@ EMSCRIPTEN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size
 }
 
 static int
-EMSCRIPTEN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+EMSCRIPTEN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }

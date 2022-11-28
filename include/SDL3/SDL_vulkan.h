@@ -157,7 +157,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(SDL_Window *window,
+extern DECLSPEC SDL_Bool SDLCALL SDL_Vulkan_GetInstanceExtensions(SDL_Window *window,
                                                                   unsigned int *pCount,
                                                                   const char **pNames);
 
@@ -179,7 +179,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(SDL_Window *wi
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_GetDrawableSize
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
+extern DECLSPEC SDL_Bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                           VkInstance instance,
                                                           VkSurfaceKHR* surface);
 

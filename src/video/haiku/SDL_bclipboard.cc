@@ -75,8 +75,8 @@ char *HAIKU_GetClipboardText(_THIS) {
     return result;
 }
 
-SDL_bool HAIKU_HasClipboardText(_THIS) {
-    SDL_bool result = SDL_FALSE;
+SDL_Bool HAIKU_HasClipboardText(_THIS) {
+    SDL_Bool result = SDL_FALSE;
     char *text = HAIKU_GetClipboardText(_this);
     if (text) {
         result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;

@@ -28,11 +28,11 @@
 #define SDL_USE_IBUS 1
 #include <ibus-1.0/ibus.h>
 
-extern SDL_bool SDL_IBus_Init(void);
+extern SDL_Bool SDL_IBus_Init(void);
 extern void SDL_IBus_Quit(void);
 
 /* Lets the IBus server know about changes in window focus */
-extern void SDL_IBus_SetFocus(SDL_bool focused);
+extern void SDL_IBus_SetFocus(SDL_Bool focused);
 
 /* Closes the candidate list and resets any text currently being edited */
 extern void SDL_IBus_Reset(void);
@@ -40,7 +40,7 @@ extern void SDL_IBus_Reset(void);
 /* Sends a keypress event to IBus, returns SDL_TRUE if IBus used this event to
    update its candidate list or change input methods. PumpEvents should be
    called some time after this, to receive the TextInput / TextEditing event back. */
-extern SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
+extern SDL_Bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
 
 /* Update the position of IBus' candidate list. If rect is NULL then this will 
    just reposition it relative to the focused window's new position. */

@@ -89,11 +89,11 @@ struct SDL_EVDEV_keyboard_state
     int old_kbd_mode;
     unsigned short **key_maps;
     unsigned char shift_down[NR_SHIFT];        /* shift state counters.. */
-    SDL_bool dead_key_next;
+    SDL_Bool dead_key_next;
     int npadch;                    /* -1 or number assembled on pad */
     struct kbdiacrs *accents;
     unsigned int diacr;
-    SDL_bool rep;                    /* flag telling character repeat */
+    SDL_Bool rep;                    /* flag telling character repeat */
     unsigned char lockstate;
     unsigned char slockstate;
     unsigned char ledflagstate;

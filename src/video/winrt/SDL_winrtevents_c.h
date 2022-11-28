@@ -53,7 +53,7 @@ typedef enum {
 extern Windows::Foundation::Point WINRT_TransformCursorPosition(SDL_Window * window,
                                                                 Windows::Foundation::Point rawPosition,
                                                                 WINRT_CursorNormalizationType normalization);
-extern SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt, Uint8 *button, Uint8 *pressed);
+extern SDL_Bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt, Uint8 *button, Uint8 *pressed);
 extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
@@ -69,10 +69,10 @@ extern void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterRece
 
 #if NTDDI_VERSION >= NTDDI_WIN10
 extern void WINTRT_InitialiseInputPaneEvents(_THIS);
-extern SDL_bool WINRT_HasScreenKeyboardSupport(_THIS);
+extern SDL_Bool WINRT_HasScreenKeyboardSupport(_THIS);
 extern void WINRT_ShowScreenKeyboard(_THIS, SDL_Window *window);
 extern void WINRT_HideScreenKeyboard(_THIS, SDL_Window *window);
-extern SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window);
+extern SDL_Bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 #endif  // NTDDI_VERSION >= ...
 
 /* XAML Thread Management */

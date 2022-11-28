@@ -22,7 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
-extern SDL_bool UIKit_ShowingMessageBox(void);
+extern SDL_Bool UIKit_ShowingMessageBox(void);
 
 extern int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 

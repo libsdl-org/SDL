@@ -71,8 +71,8 @@ typedef struct GLES2_TextureData
     int pitch;
 #if SDL_HAVE_YUV
     /* YUV texture support */
-    SDL_bool yuv;
-    SDL_bool nv12;
+    SDL_Bool yuv;
+    SDL_Bool nv12;
     GLuint texture_v;
     GLuint texture_u;
 #endif
@@ -129,15 +129,15 @@ typedef enum
 typedef struct
 {
     SDL_Rect viewport;
-    SDL_bool viewport_dirty;
+    SDL_Bool viewport_dirty;
     SDL_Texture *texture;
     SDL_Texture *target;
     SDL_BlendMode blend;
-    SDL_bool cliprect_enabled_dirty;
-    SDL_bool cliprect_enabled;
-    SDL_bool cliprect_dirty;
+    SDL_Bool cliprect_enabled_dirty;
+    SDL_Bool cliprect_enabled;
+    SDL_Bool cliprect_dirty;
     SDL_Rect cliprect;
-    SDL_bool texturing;
+    SDL_Bool texturing;
     Uint32 clear_color;
     int drawablew;
     int drawableh;
@@ -149,7 +149,7 @@ typedef struct GLES2_RenderData
 {
     SDL_GLContext *context;
 
-    SDL_bool debug_enabled;
+    SDL_Bool debug_enabled;
 
 #define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
 #include "SDL_gles2funcs.h"
@@ -364,7 +364,7 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 GLES2_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
@@ -543,7 +543,7 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
     }
 
     if (!compileSuccessful) {
-        SDL_bool isstack = SDL_FALSE;
+        SDL_Bool isstack = SDL_FALSE;
         char *info = NULL;
         int length = 0;
 
@@ -734,7 +734,7 @@ GLES2_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 static int
 GLES2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
-    const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
+    const SDL_Bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
     SDL_VertexSolid *verts = (SDL_VertexSolid *) SDL_AllocateRenderVertices(renderer, count * sizeof(*verts), 0, &cmd->data.draw.first);
     int i;
     SDL_Color color;
@@ -767,7 +767,7 @@ GLES2_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
 static int
 GLES2_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
-    const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
+    const SDL_Bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
     int i;
     GLfloat prevx, prevy;
     SDL_VertexSolid *verts = (SDL_VertexSolid *) SDL_AllocateRenderVertices(renderer, count * sizeof(*verts), 0, &cmd->data.draw.first);
@@ -828,7 +828,7 @@ GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture 
         float scale_x, float scale_y)
 {
     int i;
-    const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
+    const SDL_Bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
     int count = indices ? num_indices : num_vertices;
 
     cmd->data.draw.count = count;
@@ -1162,7 +1162,7 @@ static int
 GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     GLES2_RenderData *data = (GLES2_RenderData *) renderer->driverdata;
-    const SDL_bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
+    const SDL_Bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 || renderer->target->format == SDL_PIXELFORMAT_RGB888));
 
 #if USE_VERTEX_BUFFER_OBJECTS
     const int vboidx = data->current_vertex_buffer;
@@ -1956,7 +1956,7 @@ GLES2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     /* Flip the rows to be top-down if necessary */
     if (!renderer->target) {
-        SDL_bool isstack;
+        SDL_Bool isstack;
         length = rect->w * SDL_BYTESPERPIXEL(temp_format);
         src = (Uint8*)temp_pixels + (rect->h-1)*temp_pitch;
         dst = (Uint8*)temp_pixels;
@@ -2076,7 +2076,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     GLint window_framebuffer;
     GLint value;
     int profile_mask = 0, major = 0, minor = 0;
-    SDL_bool changed_window = SDL_FALSE;
+    SDL_Bool changed_window = SDL_FALSE;
 
     if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask) < 0) {
         goto error;

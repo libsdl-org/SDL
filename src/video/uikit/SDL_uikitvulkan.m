@@ -51,9 +51,9 @@ int UIKit_Vulkan_LoadLibrary(_THIS, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasMetalSurfaceExtension = SDL_FALSE;
-    SDL_bool hasIOSSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasMetalSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasIOSSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
     if (_this->vulkan_config.loader_handle) {
@@ -173,7 +173,7 @@ void UIKit_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool UIKit_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool UIKit_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -191,7 +191,7 @@ SDL_bool UIKit_Vulkan_GetInstanceExtensions(_THIS,
             extensionsForUIKit);
 }
 
-SDL_bool UIKit_Vulkan_CreateSurface(_THIS,
+SDL_Bool UIKit_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

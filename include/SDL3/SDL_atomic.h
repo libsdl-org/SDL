@@ -103,7 +103,7 @@ typedef int SDL_SpinLock;
  * \sa SDL_AtomicLock
  * \sa SDL_AtomicUnlock
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicTryLock(SDL_SpinLock *lock);
+extern DECLSPEC SDL_Bool SDLCALL SDL_AtomicTryLock(SDL_SpinLock *lock);
 
 /**
  * Lock a spin lock by setting it to a non-zero value.
@@ -275,7 +275,7 @@ typedef struct { int value; } SDL_atomic_t;
  * \sa SDL_AtomicGet
  * \sa SDL_AtomicSet
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval);
+extern DECLSPEC SDL_Bool SDLCALL SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval);
 
 /**
  * Set an atomic variable to a value.
@@ -363,7 +363,7 @@ extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_atomic_t *a, int v);
  * \sa SDL_AtomicGetPtr
  * \sa SDL_AtomicSetPtr
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCASPtr(void **a, void *oldval, void *newval);
+extern DECLSPEC SDL_Bool SDLCALL SDL_AtomicCASPtr(void **a, void *oldval, void *newval);
 
 /**
  * Set a pointer to a value atomically.

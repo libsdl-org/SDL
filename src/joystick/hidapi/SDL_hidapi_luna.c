@@ -60,19 +60,19 @@ HIDAPI_DriverLuna_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_LUNA, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverLuna_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_LUNA, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverLuna_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return (type == SDL_CONTROLLER_TYPE_AMAZON_LUNA) ? SDL_TRUE : SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverLuna_Context *ctx;
@@ -101,7 +101,7 @@ HIDAPI_DriverLuna_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID
 {
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverLuna_Context *ctx = (SDL_DriverLuna_Context *)device->context;
@@ -173,7 +173,7 @@ HIDAPI_DriverLuna_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *jo
 }
 
 static int
-HIDAPI_DriverLuna_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverLuna_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -199,10 +199,10 @@ HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_DriverLuna_Co
     }
 
     if (ctx->last_state[3] != data[3]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        SDL_Bool dpad_up = SDL_FALSE;
+        SDL_Bool dpad_down = SDL_FALSE;
+        SDL_Bool dpad_left = SDL_FALSE;
+        SDL_Bool dpad_right = SDL_FALSE;
 
         switch (data[3] & 0xf) {
         case 0:
@@ -301,10 +301,10 @@ HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick, SDL_DriverL
     }
 
     if (ctx->last_state[13] != data[13]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        SDL_Bool dpad_up = SDL_FALSE;
+        SDL_Bool dpad_down = SDL_FALSE;
+        SDL_Bool dpad_left = SDL_FALSE;
+        SDL_Bool dpad_right = SDL_FALSE;
 
         switch (data[13] & 0xf) {
         case 1:
@@ -390,7 +390,7 @@ HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick, SDL_DriverL
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverLuna_Context *ctx = (SDL_DriverLuna_Context *)device->context;

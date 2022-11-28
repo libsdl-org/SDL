@@ -65,12 +65,12 @@ typedef struct SDL_evdevlist_item
     int fd;
 
     /* TODO: use this for every device, not just touchscreen */
-    SDL_bool out_of_sync;
+    SDL_Bool out_of_sync;
 
     /* TODO: expand on this to have data for every possible class (mouse,
        keyboard, touchpad, etc.). Also there's probably some things in here we
        can pull out to the SDL_evdevlist_item i.e. name */
-    SDL_bool is_touchscreen;
+    SDL_Bool is_touchscreen;
     struct {
         char* name;
 
@@ -94,9 +94,9 @@ typedef struct SDL_evdevlist_item
     } * touchscreen_data;
 
     /* Mouse state */
-    SDL_bool high_res_wheel;
-    SDL_bool high_res_hwheel;
-    SDL_bool relative_mouse;
+    SDL_Bool high_res_wheel;
+    SDL_Bool high_res_hwheel;
+    SDL_Bool relative_mouse;
     int mouse_x, mouse_y;
     int mouse_wheel, mouse_hwheel;
 
@@ -138,7 +138,7 @@ static Uint8 EVDEV_MouseButtons[] = {
 };
 
 static int
-SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
+SDL_EVDEV_SetRelativeMouseMode(SDL_Bool enabled)
 {
     /* Mice already send relative events through this interface */
     return 0;

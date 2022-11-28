@@ -273,7 +273,7 @@ N3DSAUDIO_ThreadInit(_THIS)
     svcSetThreadPriority(CUR_THREAD_HANDLE, current_priority);
 }
 
-static SDL_bool
+static SDL_Bool
 N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
@@ -327,7 +327,7 @@ FreePrivateData(_THIS)
 static int
 FindAudioFormat(_THIS)
 {
-    SDL_bool found_valid_format = SDL_FALSE;
+    SDL_Bool found_valid_format = SDL_FALSE;
     Uint16 test_format = SDL_FirstAudioFormat(this->spec.format);
 
     while (!found_valid_format && test_format) {

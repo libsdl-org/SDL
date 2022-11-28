@@ -161,7 +161,7 @@ WIN_GetDisplayOrientation(DEVMODE *mode)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode, SDL_DisplayOrientation *orientation)
 {
     SDL_DisplayModeData *data;
@@ -296,8 +296,8 @@ WIN_GetDisplayNameVista_failed:
     return NULL;
 }
 
-static SDL_bool
-WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool send_event)
+static SDL_Bool
+WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_Bool send_event)
 {
     int i;
     SDL_VideoDisplay display;
@@ -362,8 +362,8 @@ WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool se
 
 typedef struct _WIN_AddDisplaysData {
     SDL_VideoDevice *video_device;
-    SDL_bool send_event;
-    SDL_bool want_primary;
+    SDL_Bool send_event;
+    SDL_Bool want_primary;
 } WIN_AddDisplaysData;
 
 static BOOL CALLBACK
@@ -379,7 +379,7 @@ WIN_AddDisplaysCallback(HMONITOR hMonitor,
     info.cbSize = sizeof(info);
 
     if (GetMonitorInfoW(hMonitor, (LPMONITORINFO)&info) != 0) {
-        const SDL_bool is_primary = ((info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY);
+        const SDL_Bool is_primary = ((info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY);
 
         if (is_primary == data->want_primary) {
             WIN_AddDisplay(data->video_device, hMonitor, &info, data->send_event);
@@ -391,7 +391,7 @@ WIN_AddDisplaysCallback(HMONITOR hMonitor,
 }
 
 static void
-WIN_AddDisplays(_THIS, SDL_bool send_event)
+WIN_AddDisplays(_THIS, SDL_Bool send_event)
 {
     WIN_AddDisplaysData callback_data;
     callback_data.video_device = _this;

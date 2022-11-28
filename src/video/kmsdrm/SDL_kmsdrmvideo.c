@@ -53,9 +53,9 @@
 #include <errno.h>
 
 #ifdef __OpenBSD__
-static SDL_bool moderndri = SDL_FALSE;
+static SDL_Bool moderndri = SDL_FALSE;
 #else
-static SDL_bool moderndri = SDL_TRUE;
+static SDL_Bool moderndri = SDL_TRUE;
 #endif
 
 static char kmsdrm_dri_path[16];
@@ -383,10 +383,10 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 static void
 KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data)
 {
-    *((SDL_bool *) data) = SDL_FALSE;
+    *((SDL_Bool *) data) = SDL_FALSE;
 }
 
-SDL_bool
+SDL_Bool
 KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata) {
 
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
@@ -558,7 +558,7 @@ KMSDRM_CrtcGetPropId(uint32_t drm_fd,
     return prop_id;
 }
 
-static SDL_bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vrr_prop_id) {
+static SDL_Bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vrr_prop_id) {
     drmModeObjectPropertiesPtr drm_props;
 
     drm_props = KMSDRM_drmModeObjectGetProperties(drm_fd,
@@ -578,13 +578,13 @@ static SDL_bool KMSDRM_VrrPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *vr
     return SDL_TRUE;
 }
 
-static SDL_bool 
+static SDL_Bool 
 KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
                          uint32_t output_id,
                          char const* name)
 {
     uint32_t i;
-    SDL_bool found = SDL_FALSE;
+    SDL_Bool found = SDL_FALSE;
     uint64_t prop_value = 0;
 
 
@@ -618,7 +618,7 @@ KMSDRM_ConnectorCheckVrrCapable(uint32_t drm_fd,
 }
 
 void
-KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, SDL_bool enabled)
+KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, SDL_Bool enabled)
 {
     uint32_t vrr_prop_id;
     if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) {
@@ -632,12 +632,12 @@ KMSDRM_CrtcSetVrr(uint32_t drm_fd, uint32_t crtc_id, SDL_bool enabled)
                              enabled);
 }
 
-static SDL_bool 
+static SDL_Bool 
 KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
 {
     uint32_t object_prop_id, vrr_prop_id;
     drmModeObjectPropertiesPtr props;
-    SDL_bool object_prop_value;
+    SDL_Bool object_prop_value;
     int i;
 
     if (!KMSDRM_VrrPropId(drm_fd, crtc_id, &vrr_prop_id)) {
@@ -1341,7 +1341,7 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window *window)
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *dispdata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     SDL_VideoData *viddata;
-    SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
+    SDL_Bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
     unsigned int i, j;
 
     if (windata == NULL) {
@@ -1421,8 +1421,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->driverdata;
-    SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
-    SDL_bool vulkan_mode = viddata->vulkan_mode; /* Do we have any Vulkan windows? */
+    SDL_Bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
+    SDL_Bool vulkan_mode = viddata->vulkan_mode; /* Do we have any Vulkan windows? */
     NativeDisplayType egl_display;
     drmModeModeInfo *mode;
     int ret = 0;
@@ -1576,7 +1576,7 @@ KMSDRM_SetWindowSize(_THIS, SDL_Window * window)
     }
 }
 void
-KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_Bool fullscreen)
 
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);

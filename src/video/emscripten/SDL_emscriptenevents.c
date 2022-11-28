@@ -805,8 +805,8 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
 {
     const SDL_Keycode keycode = Emscripten_MapKeyCode(keyEvent);
     SDL_Scancode scancode = Emscripten_MapScanCode(keyEvent->code);
-    SDL_bool prevent_default = SDL_TRUE;
-    SDL_bool is_nav_key = SDL_FALSE;
+    SDL_Bool prevent_default = SDL_TRUE;
+    SDL_Bool is_nav_key = SDL_FALSE;
 
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         /* KaiOS Left Soft Key and Right Soft Key, they act as OK/Next/Menu and Cancel/Back/Clear */
@@ -880,7 +880,7 @@ static EM_BOOL
 Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    SDL_bool force = SDL_FALSE;
+    SDL_Bool force = SDL_FALSE;
 
     /* update pixel ratio */
     if (window_data->window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {

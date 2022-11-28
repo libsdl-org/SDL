@@ -144,12 +144,12 @@ void SDL_WAYLAND_register_output(struct wl_output *output)
     wl_proxy_set_tag((struct wl_proxy *)output, &SDL_WAYLAND_output_tag);
 }
 
-SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
+SDL_Bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
 {
     return wl_proxy_get_tag((struct wl_proxy *) surface) == &SDL_WAYLAND_surface_tag;
 }
 
-SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
+SDL_Bool SDL_WAYLAND_own_output(struct wl_output *output)
 {
     return wl_proxy_get_tag((struct wl_proxy *) output) == &SDL_WAYLAND_output_tag;
 }
@@ -376,7 +376,7 @@ static const struct zxdg_output_v1_listener xdg_output_listener = {
 };
 
 static void
-AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
+AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_Bool rot_90)
 {
     struct EmulatedMode
     {
@@ -560,7 +560,7 @@ display_handle_done(void *data,
     SDL_VideoData* video = driverdata->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
-    const SDL_bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
+    const SDL_Bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
 
     /*
      * When using xdg-output, two wl-output.done events will be emitted:
@@ -661,14 +661,14 @@ display_handle_done(void *data,
 
     /* Add emulated modes if wp_viewporter is supported and mode emulation is enabled. */
     if (video->viewporter && mode_emulation_enabled) {
-        const SDL_bool rot_90 = ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0) ||
+        const SDL_Bool rot_90 = ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) != 0) ||
                                 (driverdata->width < driverdata->height);
         AddEmulatedModes(dpy, rot_90);
     }
 
     if (driverdata->index == -1) {
         /* First time getting display info, create the VideoDisplay */
-        SDL_bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
+        SDL_Bool send_event = driverdata->videodata->initializing ? SDL_FALSE : SDL_TRUE;
         driverdata->placeholder.orientation = driverdata->orientation;
         driverdata->placeholder.driverdata = driverdata;
         driverdata->index = SDL_AddVideoDisplay(&driverdata->placeholder, send_event);
@@ -913,7 +913,7 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 #ifdef HAVE_LIBDECOR_H
-static SDL_bool should_use_libdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
+static SDL_Bool should_use_libdecor(SDL_VideoData *data, SDL_Bool ignore_xdg)
 {
     if (!SDL_WAYLAND_HAVE_WAYLAND_LIBDECOR) {
         return SDL_FALSE;
@@ -939,8 +939,8 @@ static SDL_bool should_use_libdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 }
 #endif
 
-SDL_bool
-Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
+SDL_Bool
+Wayland_LoadLibdecor(SDL_VideoData *data, SDL_Bool ignore_xdg)
 {
 #ifdef HAVE_LIBDECOR_H
     if (data->shell.libdecor != NULL) {
@@ -1147,7 +1147,7 @@ Wayland_VideoCleanup(_THIS)
     }
 }
 
-SDL_bool
+SDL_Bool
 Wayland_VideoReconnect(_THIS)
 {
 #if 0 /* TODO RECONNECT: Uncomment all when https://invent.kde.org/plasma/kwin/-/wikis/Restarting is completed */

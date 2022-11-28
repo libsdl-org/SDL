@@ -58,7 +58,7 @@ static unsigned int get_allocation_bucket(void *mem)
     return index;
 }
  
-static SDL_bool SDL_IsAllocationTracked(void *mem)
+static SDL_Bool SDL_IsAllocationTracked(void *mem)
 {
     SDL_tracked_allocation *entry;
     int index = get_allocation_bucket(mem);

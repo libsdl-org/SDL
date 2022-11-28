@@ -34,15 +34,15 @@
 #endif
 
 #ifdef HAVE_SIGNAL_SUPPORT
-static SDL_bool disable_signals = SDL_FALSE;
-static SDL_bool send_quit_pending = SDL_FALSE;
+static SDL_Bool disable_signals = SDL_FALSE;
+static SDL_Bool send_quit_pending = SDL_FALSE;
 
 #ifdef SDL_BACKGROUNDING_SIGNAL
-static SDL_bool send_backgrounding_pending = SDL_FALSE;
+static SDL_Bool send_backgrounding_pending = SDL_FALSE;
 #endif
 
 #ifdef SDL_FOREGROUNDING_SIGNAL
-static SDL_bool send_foregrounding_pending = SDL_FALSE;
+static SDL_Bool send_foregrounding_pending = SDL_FALSE;
 #endif
 
 static void

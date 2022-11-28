@@ -26,11 +26,11 @@
 #include "../../core/windows/SDL_windows.h"
 
 
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_Windows(SDL_PowerState * state, int *seconds, int *percent)
 {
     SYSTEM_POWER_STATUS status;
-    SDL_bool need_details = SDL_FALSE;
+    SDL_Bool need_details = SDL_FALSE;
 
     /* This API should exist back to Win95. */
     if (!GetSystemPowerStatus(&status)) {

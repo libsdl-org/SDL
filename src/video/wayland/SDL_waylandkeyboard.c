@@ -146,7 +146,7 @@ Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 #endif
 }
 
-SDL_bool
+SDL_Bool
 Wayland_HasScreenKeyboardSupport(_THIS)
 {
     /* In reality we just want to return true when the screen keyboard is the
@@ -154,8 +154,8 @@ Wayland_HasScreenKeyboardSupport(_THIS)
      * input protocol, make sure we don't have any physical keyboards either.
      */
     SDL_VideoData *driverdata = _this->driverdata;
-    SDL_bool haskeyboard = (driverdata->input != NULL) && (driverdata->input->keyboard != NULL);
-    SDL_bool hastextmanager = (driverdata->text_input_manager != NULL);
+    SDL_Bool haskeyboard = (driverdata->input != NULL) && (driverdata->input->keyboard != NULL);
+    SDL_Bool hastextmanager = (driverdata->text_input_manager != NULL);
     return !haskeyboard && hastextmanager;
 }
 

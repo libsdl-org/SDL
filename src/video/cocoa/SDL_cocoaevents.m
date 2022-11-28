@@ -69,7 +69,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     SDL_SendQuit();
 }
 
-static SDL_bool s_bShouldHandleEventsInSDLApplication = SDL_FALSE;
+static SDL_Bool s_bShouldHandleEventsInSDLApplication = SDL_FALSE;
 
 static void Cocoa_DispatchEvent(NSEvent *theEvent)
 {

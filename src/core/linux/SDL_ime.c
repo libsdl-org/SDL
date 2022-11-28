@@ -24,11 +24,11 @@
 #include "SDL_ibus.h"
 #include "SDL_fcitx.h"
 
-typedef SDL_bool (*_SDL_IME_Init)(void);
+typedef SDL_Bool (*_SDL_IME_Init)(void);
 typedef void (*_SDL_IME_Quit)(void);
-typedef void (*_SDL_IME_SetFocus)(SDL_bool);
+typedef void (*_SDL_IME_SetFocus)(SDL_Bool);
 typedef void (*_SDL_IME_Reset)(void);
-typedef SDL_bool (*_SDL_IME_ProcessKeyEvent)(Uint32, Uint32, Uint8 state);
+typedef SDL_Bool (*_SDL_IME_ProcessKeyEvent)(Uint32, Uint32, Uint8 state);
 typedef void (*_SDL_IME_UpdateTextRect)(const SDL_Rect *);
 typedef void (*_SDL_IME_PumpEvents)(void);
 
@@ -43,7 +43,7 @@ static _SDL_IME_PumpEvents SDL_IME_PumpEvents_Real = NULL;
 static void
 InitIME()
 {
-    static SDL_bool inited = SDL_FALSE;
+    static SDL_Bool inited = SDL_FALSE;
 #ifdef HAVE_FCITX
     const char *im_module = SDL_getenv("SDL_IM_MODULE");
     const char *xmodifiers = SDL_getenv("XMODIFIERS");
@@ -84,7 +84,7 @@ InitIME()
 #endif /* HAVE_IBUS_IBUS_H */
 }
 
-SDL_bool
+SDL_Bool
 SDL_IME_Init(void)
 {
     InitIME();
@@ -116,7 +116,7 @@ SDL_IME_Quit(void)
 }
 
 void
-SDL_IME_SetFocus(SDL_bool focused)
+SDL_IME_SetFocus(SDL_Bool focused)
 {
     if (SDL_IME_SetFocus_Real) {
         SDL_IME_SetFocus_Real(focused);
@@ -131,7 +131,7 @@ SDL_IME_Reset(void)
     }
 }
 
-SDL_bool
+SDL_Bool
 SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     if (SDL_IME_ProcessKeyEvent_Real) {

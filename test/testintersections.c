@@ -26,8 +26,8 @@
 
 static SDLTest_CommonState *state;
 static int num_objects;
-static SDL_bool cycle_color;
-static SDL_bool cycle_alpha;
+static SDL_Bool cycle_color;
+static SDL_Bool cycle_alpha;
 static int cycle_direction = 1;
 static int current_alpha = 255;
 static int current_color = 255;

@@ -15,7 +15,7 @@
 #define MAX_PARTICLES 2000      /* maximum number of particles displayed at once */
 
 static GLuint particleTextureID;        /* OpenGL particle texture id */
-static SDL_bool pointSizeExtensionSupported;    /* is GL_OES_point_size_array supported ? */
+static SDL_Bool pointSizeExtensionSupported;    /* is GL_OES_point_size_array supported ? */
 static float pointSizeScale;
 /*
     used to describe what type of particle a given struct particle is.

@@ -28,7 +28,7 @@
 
 @interface SDL_ShapeData : NSObject
     @property (nonatomic) NSGraphicsContext* context;
-    @property (nonatomic) SDL_bool saved;
+    @property (nonatomic) SDL_Bool saved;
     @property (nonatomic) SDL_ShapeTree* shape;
 @end
 

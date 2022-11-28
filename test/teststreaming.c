@@ -59,7 +59,7 @@ Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
 SDL_Renderer *renderer;
 int frame;
 SDL_Texture *MooseTexture;
-SDL_bool done = SDL_FALSE;
+SDL_Bool done = SDL_FALSE;
 
 void quit(int rc)
 {

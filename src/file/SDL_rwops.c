@@ -437,7 +437,7 @@ stdio_close(SDL_RWops * context)
 }
 
 static SDL_RWops *
-SDL_RWFromFP(void *fp, SDL_bool autoclose)
+SDL_RWFromFP(void *fp, SDL_Bool autoclose)
 {
     SDL_RWops *rwops = NULL;
 

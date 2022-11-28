@@ -294,7 +294,7 @@ Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 }
 
 static int
-Cocoa_SetRelativeMouseMode(SDL_bool enabled)
+Cocoa_SetRelativeMouseMode(SDL_Bool enabled)
 {
     CGError result;
     SDL_Window *window;
@@ -436,7 +436,7 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
     NSPoint location;
     CGFloat lastMoveX, lastMoveY;
     float deltaX, deltaY;
-    SDL_bool seenWarp;
+    SDL_Bool seenWarp;
     switch ([event type]) {
         case NSEventTypeMouseMoved:
         case NSEventTypeLeftMouseDragged:

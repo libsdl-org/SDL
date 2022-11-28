@@ -47,7 +47,7 @@ typedef struct {
 #ifdef HAVE_LIBDECOR_H
         struct {
             struct libdecor_frame *frame;
-            SDL_bool initial_configure_seen;
+            SDL_Bool initial_configure_seen;
         } libdecor;
 #endif
         struct {
@@ -61,7 +61,7 @@ typedef struct {
                     SDL_Window *child;
                 } popup;
             } roleobj;
-            SDL_bool initial_configure_seen;
+            SDL_Bool initial_configure_seen;
         } xdg;
     } shell_surface;
     enum {
@@ -102,11 +102,11 @@ typedef struct {
     int drawable_width, drawable_height;
     int fs_output_width, fs_output_height;
     int window_width, window_height;
-    SDL_bool needs_resize_event;
-    SDL_bool floating_resize_pending;
-    SDL_bool was_floating;
-    SDL_bool is_fullscreen;
-    SDL_bool in_fullscreen_transition;
+    SDL_Bool needs_resize_event;
+    SDL_Bool floating_resize_pending;
+    SDL_Bool was_floating;
+    SDL_Bool is_fullscreen;
+    SDL_Bool in_fullscreen_transition;
     Uint32 fullscreen_flags;
 } SDL_WindowData;
 
@@ -115,15 +115,15 @@ extern void Wayland_HideWindow(_THIS, SDL_Window *window);
 extern void Wayland_RaiseWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                                         SDL_VideoDisplay * _display,
-                                        SDL_bool fullscreen);
+                                        SDL_Bool fullscreen);
 extern void Wayland_MaximizeWindow(_THIS, SDL_Window * window);
 extern void Wayland_MinimizeWindow(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMouseRect(_THIS, SDL_Window * window);
-extern void Wayland_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
-extern void Wayland_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
+extern void Wayland_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_Bool grabbed);
+extern void Wayland_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_Bool grabbed);
 extern void Wayland_RestoreWindow(_THIS, SDL_Window * window);
-extern void Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered);
-extern void Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable);
+extern void Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered);
+extern void Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_Bool resizable);
 extern int Wayland_CreateWindow(_THIS, SDL_Window *window);
 extern void Wayland_SetWindowSize(_THIS, SDL_Window * window);
 extern void Wayland_SetWindowMinimumSize(_THIS, SDL_Window * window);
@@ -135,7 +135,7 @@ extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);
 extern void Wayland_SuspendScreenSaver(_THIS);
 
 extern int Wayland_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info);
-extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
+extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_Bool enabled);
 extern int Wayland_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
 
 extern void Wayland_InitWin(SDL_VideoData *data);

@@ -32,11 +32,11 @@ typedef xcb_connection_t *(*PFN_XGetXCBConnection)(Display *dpy);
 
 int X11_Vulkan_LoadLibrary(_THIS, const char *path);
 void X11_Vulkan_UnloadLibrary(_THIS);
-SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool X11_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names);
-SDL_bool X11_Vulkan_CreateSurface(_THIS,
+SDL_Bool X11_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface);

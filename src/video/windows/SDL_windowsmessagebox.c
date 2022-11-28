@@ -239,7 +239,7 @@ typedef struct
     WORD numbuttons;
 } WIN_DialogData;
 
-static SDL_bool GetButtonIndex(const SDL_MessageBoxData *messageboxdata, Uint32 flags, size_t *i)
+static SDL_Bool GetButtonIndex(const SDL_MessageBoxData *messageboxdata, Uint32 flags, size_t *i)
 {
     for (*i = 0; *i < (size_t)messageboxdata->numbuttons; ++*i) {
         if (messageboxdata->buttons[*i].flags & flags) {
@@ -317,7 +317,7 @@ static INT_PTR CALLBACK MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wP
     return FALSE;
 }
 
-static SDL_bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
+static SDL_Bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
 {
     /* Growing memory in 64 KiB steps. */
     const size_t sizestep = 0x10000;
@@ -356,7 +356,7 @@ static SDL_bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
     return SDL_TRUE;
 }
 
-static SDL_bool AlignDialogData(WIN_DialogData *dialog, size_t size)
+static SDL_Bool AlignDialogData(WIN_DialogData *dialog, size_t size)
 {
     size_t padding = (dialog->used % size);
 
@@ -369,7 +369,7 @@ static SDL_bool AlignDialogData(WIN_DialogData *dialog, size_t size)
     return SDL_TRUE;
 }
 
-static SDL_bool AddDialogData(WIN_DialogData *dialog, const void *data, size_t size)
+static SDL_Bool AddDialogData(WIN_DialogData *dialog, const void *data, size_t size)
 {
     if (!ExpandDialogSpace(dialog, size)) {
         return SDL_FALSE;
@@ -381,12 +381,12 @@ static SDL_bool AddDialogData(WIN_DialogData *dialog, const void *data, size_t s
     return SDL_TRUE;
 }
 
-static SDL_bool AddDialogString(WIN_DialogData *dialog, const char *string)
+static SDL_Bool AddDialogString(WIN_DialogData *dialog, const char *string)
 {
     WCHAR *wstring;
     WCHAR *p;
     size_t count;
-    SDL_bool status;
+    SDL_Bool status;
 
     if (string == NULL) {
         string = "";
@@ -420,7 +420,7 @@ static void Vec2ToDLU(short *x, short *y)
 }
 
 
-static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style, DWORD exStyle, int x, int y, int w, int h, int id, const char *caption, WORD ordinal)
+static SDL_Bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style, DWORD exStyle, int x, int y, int w, int h, int id, const char *caption, WORD ordinal)
 {
     DLGITEMTEMPLATEEX item;
     WORD marker = 0xFFFF;
@@ -473,19 +473,19 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     return SDL_TRUE;
 }
 
-static SDL_bool AddDialogStaticText(WIN_DialogData *dialog, int x, int y, int w, int h, const char *text)
+static SDL_Bool AddDialogStaticText(WIN_DialogData *dialog, int x, int y, int w, int h, const char *text)
 {
     DWORD style = WS_VISIBLE | WS_CHILD | SS_LEFT | SS_NOPREFIX | SS_EDITCONTROL | WS_GROUP;
     return AddDialogControl(dialog, DLGITEMTYPESTATIC, style, 0, x, y, w, h, -1, text, 0);
 }
 
-static SDL_bool AddDialogStaticIcon(WIN_DialogData *dialog, int x, int y, int w, int h, Uint16 ordinal)
+static SDL_Bool AddDialogStaticIcon(WIN_DialogData *dialog, int x, int y, int w, int h, Uint16 ordinal)
 {
     DWORD style = WS_VISIBLE | WS_CHILD | SS_ICON | WS_GROUP;
     return AddDialogControl(dialog, DLGITEMTYPESTATIC, style, 0, x, y, w, h, -2, NULL, ordinal);
 }
 
-static SDL_bool AddDialogButton(WIN_DialogData *dialog, int x, int y, int w, int h, const char *text, int id, SDL_bool isDefault)
+static SDL_Bool AddDialogButton(WIN_DialogData *dialog, int x, int y, int w, int h, const char *text, int id, SDL_Bool isDefault)
 {
     DWORD style = WS_VISIBLE | WS_CHILD | WS_TABSTOP;
     if (isDefault) {
@@ -838,7 +838,7 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     x = Size.cx - (ButtonWidth + ButtonMargin) * messageboxdata->numbuttons;
     y = Size.cy - ButtonHeight - ButtonMargin;
     for (i = 0; i < messageboxdata->numbuttons; i++) {
-        SDL_bool isdefault = SDL_FALSE;
+        SDL_Bool isdefault = SDL_FALSE;
         const char *buttontext;
         const SDL_MessageBoxButtonData *sdlButton;
 

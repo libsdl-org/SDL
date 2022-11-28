@@ -91,7 +91,7 @@ SDL_GetPrefPath(const char *org, const char *app)
      * actually stick around, you'll need to use iCloud storage.
      */
     {
-        static SDL_bool shown = SDL_FALSE;
+        static SDL_Bool shown = SDL_FALSE;
         if (!shown)
         {
             shown = SDL_TRUE;

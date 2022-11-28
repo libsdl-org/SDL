@@ -122,7 +122,7 @@ int
 timer_addRemoveTimer(void *arg)
 {
   SDL_TimerID id;
-  SDL_bool result;
+  SDL_Bool result;
   int param;
 
   /* Reset state */

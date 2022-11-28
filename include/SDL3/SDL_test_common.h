@@ -65,7 +65,7 @@ typedef struct
     const char *window_title;
     const char *window_icon;
     Uint32 window_flags;
-    SDL_bool flash_on_focus_loss;
+    SDL_Bool flash_on_focus_loss;
     int window_x;
     int window_y;
     int window_w;
@@ -85,7 +85,7 @@ typedef struct
     /* Renderer info */
     const char *renderdriver;
     Uint32 render_flags;
-    SDL_bool skip_renderer;
+    SDL_Bool skip_renderer;
     SDL_Renderer **renderers;
     SDL_Texture **targets;
 
@@ -184,7 +184,7 @@ const char *SDLTest_CommonUsage(SDLTest_CommonState * state);
  *
  * \returns SDL_TRUE if initialization succeeded, false otherwise
  */
-SDL_bool SDLTest_CommonInit(SDLTest_CommonState * state);
+SDL_Bool SDLTest_CommonInit(SDLTest_CommonState * state);
 
 /**
  * \brief Easy argument handling when test app doesn't need any custom args.
@@ -195,7 +195,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState * state);
  *
  * \returns SDL_FALSE if app should quit, true otherwise.
  */
-SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState * state, const int argc, char **argv);
+SDL_Bool SDLTest_CommonDefaultArgs(SDLTest_CommonState * state, const int argc, char **argv);
 
 /**
  * \brief Common event handler for test windows.

@@ -417,7 +417,7 @@ extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface * surface,
  *
  * \sa SDL_SetSurfaceRLE
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSurfaceRLE(SDL_Surface * surface);
+extern DECLSPEC SDL_Bool SDLCALL SDL_HasSurfaceRLE(SDL_Surface * surface);
 
 /**
  * Set the color key (transparent pixel) in a surface.
@@ -459,7 +459,7 @@ extern DECLSPEC int SDLCALL SDL_SetColorKey(SDL_Surface * surface,
  * \sa SDL_SetColorKey
  * \sa SDL_GetColorKey
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasColorKey(SDL_Surface * surface);
+extern DECLSPEC SDL_Bool SDLCALL SDL_HasColorKey(SDL_Surface * surface);
 
 /**
  * Get the color key (transparent pixel) for a surface.
@@ -617,7 +617,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface * surface,
  * \sa SDL_BlitSurface
  * \sa SDL_GetClipRect
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_SetClipRect(SDL_Surface * surface,
+extern DECLSPEC SDL_Bool SDLCALL SDL_SetClipRect(SDL_Surface * surface,
                                                  const SDL_Rect * rect);
 
 /**

@@ -49,13 +49,13 @@ SDL_CreateShapedWindow(const char *title,unsigned int x,unsigned int y,unsigned 
         return NULL;
 }
 
-SDL_bool
+SDL_Bool
 SDL_IsShapedWindow(const SDL_Window *window)
 {
     if (window == NULL)
         return SDL_FALSE;
     else
-        return (SDL_bool)(window->shaper != NULL);
+        return (SDL_Bool)(window->shaper != NULL);
 }
 
 /* REQUIRES that bitmap point to a w-by-h bitmap with ppb pixels-per-byte. */
@@ -128,7 +128,7 @@ RecursivelyCalculateShapeTree(SDL_WindowShapeMode mode,SDL_Surface* mask,SDL_Rec
     Uint8* pixel = NULL;
     Uint32 pixel_value = 0;
     Uint8 r = 0,g = 0,b = 0,a = 0;
-    SDL_bool pixel_opaque = SDL_FALSE;
+    SDL_Bool pixel_opaque = SDL_FALSE;
     int last_opaque = -1;
     SDL_Color key;
     SDL_ShapeTree* result = (SDL_ShapeTree*)SDL_malloc(sizeof(SDL_ShapeTree));
@@ -312,7 +312,7 @@ SDL_SetWindowShape(SDL_Window *window,SDL_Surface *shape,SDL_WindowShapeMode *sh
     return result;
 }
 
-static SDL_bool
+static SDL_Bool
 SDL_WindowHasAShape(SDL_Window *window)
 {
     if (window == NULL || !SDL_IsShapedWindow(window)) {

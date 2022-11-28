@@ -43,7 +43,7 @@ DUMMYAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return buflen;
 }
 
-static SDL_bool
+static SDL_Bool
 DUMMYAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */

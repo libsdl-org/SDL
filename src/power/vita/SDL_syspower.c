@@ -27,7 +27,7 @@
 #include <psp2/power.h>
 
 
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_VITA(SDL_PowerState * state, int *seconds,
                             int *percent)
 {

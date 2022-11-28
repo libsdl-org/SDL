@@ -73,10 +73,10 @@ Cocoa_GetClipboardText(_THIS)
     return text;
 }}
 
-SDL_bool
+SDL_Bool
 Cocoa_HasClipboardText(_THIS)
 {
-    SDL_bool result = SDL_FALSE;
+    SDL_Bool result = SDL_FALSE;
     char *text = Cocoa_GetClipboardText(_this);
     if (text) {
         result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;

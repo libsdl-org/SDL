@@ -38,7 +38,7 @@ extern "C" {
 /*
  * Internal stuff.
  */
-static SDL_bool loaded_xinput = SDL_FALSE;
+static SDL_Bool loaded_xinput = SDL_FALSE;
 
 
 int

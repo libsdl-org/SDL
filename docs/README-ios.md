@@ -161,7 +161,7 @@ void SDL_StartTextInput()
 void SDL_StopTextInput()
 	-- disables text events and hides the onscreen keyboard.
 
-SDL_bool SDL_IsTextInputActive()
+SDL_Bool SDL_IsTextInputActive()
 	-- returns whether or not text events are enabled (and the onscreen keyboard is visible)
 
 

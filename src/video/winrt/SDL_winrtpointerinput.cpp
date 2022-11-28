@@ -115,7 +115,7 @@ WINRT_TransformCursorPosition(SDL_Window * window,
     return outputPosition;
 }
 
-SDL_bool
+SDL_Bool
 WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt, Uint8 *button, Uint8 *pressed)
 {
     using namespace Windows::UI::Input;

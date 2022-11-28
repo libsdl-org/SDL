@@ -119,7 +119,7 @@ DUMMY_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -139,7 +139,7 @@ DUMMY_JoystickQuit(void)
 {
 }
 
-static SDL_bool
+static SDL_Bool
 DUMMY_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;

@@ -36,9 +36,9 @@
 
 typedef struct {
     SDL_HIDAPI_Device *device;
-    SDL_bool connected;
+    SDL_Bool connected;
     int player_index;
-    SDL_bool player_lights;
+    SDL_Bool player_lights;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXbox360W_Context;
 
@@ -59,14 +59,14 @@ HIDAPI_DriverXbox360W_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverXbox360W_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
                               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT))));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverXbox360W_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
@@ -78,9 +78,9 @@ HIDAPI_DriverXbox360W_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *n
     return SDL_FALSE;
 }
 
-static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, SDL_bool on)
+static SDL_Bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, SDL_Bool on)
 {
-    const SDL_bool blink = SDL_FALSE;
+    const SDL_Bool blink = SDL_FALSE;
     Uint8 mode = on ? ((blink ? 0x02 : 0x06) + slot) : 0;
     Uint8 led_packet[] = { 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
@@ -103,7 +103,7 @@ static void UpdateSlotLED(SDL_DriverXbox360W_Context *ctx)
 static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)userdata;
-    SDL_bool player_lights = SDL_GetStringBoolean(hint, SDL_TRUE);
+    SDL_Bool player_lights = SDL_GetStringBoolean(hint, SDL_TRUE);
 
     if (player_lights != ctx->player_lights) {
         ctx->player_lights = player_lights;
@@ -128,7 +128,7 @@ UpdatePowerLevel(SDL_Joystick *joystick, Uint8 level)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXbox360W_Context *ctx;
@@ -177,7 +177,7 @@ HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joysti
     UpdateSlotLED(ctx);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
@@ -240,7 +240,7 @@ HIDAPI_DriverXbox360W_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick
 }
 
 static int
-HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -249,7 +249,7 @@ static void
 HIDAPI_DriverXbox360W_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverXbox360W_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
-    const SDL_bool invert_y_axes = SDL_TRUE;
+    const SDL_Bool invert_y_axes = SDL_TRUE;
 
     if (ctx->last_state[2] != data[2]) {
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
@@ -294,7 +294,7 @@ HIDAPI_DriverXbox360W_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
@@ -311,7 +311,7 @@ HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("Xbox 360 wireless packet: size = %d", data, size);
 #endif
         if (size == 2 && data[0] == 0x08) {
-            SDL_bool connected = (data[1] & 0x80) ? SDL_TRUE : SDL_FALSE;
+            SDL_Bool connected = (data[1] & 0x80) ? SDL_TRUE : SDL_FALSE;
 #ifdef DEBUG_JOYSTICK
             SDL_Log("Connected = %s\n", connected ? "TRUE" : "FALSE");
 #endif

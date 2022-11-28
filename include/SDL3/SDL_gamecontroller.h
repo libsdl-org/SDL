@@ -270,7 +270,7 @@ extern DECLSPEC char * SDLCALL SDL_GameControllerMapping(SDL_GameController *gam
  * \sa SDL_GameControllerNameForIndex
  * \sa SDL_GameControllerOpen
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsGameController(int joystick_index);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsGameController(int joystick_index);
 
 /**
  * Get the implementation dependent name for the game controller.
@@ -536,7 +536,7 @@ extern DECLSPEC const char * SDLCALL SDL_GameControllerGetSerial(SDL_GameControl
  * \sa SDL_GameControllerClose
  * \sa SDL_GameControllerOpen
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerGetAttached(SDL_GameController *gamecontroller);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GameControllerGetAttached(SDL_GameController *gamecontroller);
 
 /**
  * Get the Joystick ID from a Game Controller.
@@ -679,7 +679,7 @@ SDL_GameControllerGetBindForAxis(SDL_GameController *gamecontroller,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL
+extern DECLSPEC SDL_Bool SDLCALL
 SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis);
 
 /**
@@ -793,7 +793,7 @@ SDL_GameControllerGetBindForButton(SDL_GameController *gamecontroller,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasButton(SDL_GameController *gamecontroller,
+extern DECLSPEC SDL_Bool SDLCALL SDL_GameControllerHasButton(SDL_GameController *gamecontroller,
                                                              SDL_GameControllerButton button);
 
 /**
@@ -842,7 +842,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetTouchpadFinger(SDL_GameControll
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasSensor(SDL_GameController *gamecontroller, SDL_SensorType type);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GameControllerHasSensor(SDL_GameController *gamecontroller, SDL_SensorType type);
 
 /**
  * Set whether data reporting for a game controller sensor is enabled.
@@ -854,7 +854,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasSensor(SDL_GameController 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type, SDL_bool enabled);
+extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type, SDL_Bool enabled);
 
 /**
  * Query whether sensor data reporting is enabled for a game controller.
@@ -865,7 +865,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerSetSensorEnabled(SDL_GameControlle
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GameControllerIsSensorEnabled(SDL_GameController *gamecontroller, SDL_SensorType type);
 
 /**
  * Get the data rate (number of events per second) of a game controller
@@ -968,7 +968,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerRumbleTriggers(SDL_GameController 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *gamecontroller);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *gamecontroller);
 
 /**
  * Query whether a game controller has rumble support.
@@ -981,7 +981,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasLED(SDL_GameController *ga
  *
  * \sa SDL_GameControllerRumble
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumble(SDL_GameController *gamecontroller);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GameControllerHasRumble(SDL_GameController *gamecontroller);
 
 /**
  * Query whether a game controller has rumble support on triggers.
@@ -994,7 +994,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumble(SDL_GameController 
  *
  * \sa SDL_GameControllerRumbleTriggers
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GameControllerHasRumbleTriggers(SDL_GameController *gamecontroller);
+extern DECLSPEC SDL_Bool SDLCALL SDL_GameControllerHasRumbleTriggers(SDL_GameController *gamecontroller);
 
 /**
  * Update a game controller's LED color.

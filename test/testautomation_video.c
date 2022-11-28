@@ -49,8 +49,8 @@ void _destroyVideoSuiteTestWindow(SDL_Window *window)
 int
 video_enableDisableScreensaver(void *arg)
 {
-    SDL_bool initialResult;
-    SDL_bool result;
+    SDL_Bool initialResult;
+    SDL_Bool result;
 
     /* Get current state and proceed according to current state */
     initialResult = SDL_IsScreenSaverEnabled();
@@ -596,9 +596,9 @@ video_getWindowDisplayModeNegative(void *arg)
 
 /* Helper for setting and checking the window mouse grab state */
 void
-_setAndCheckWindowMouseGrabState(SDL_Window* window, SDL_bool desiredState)
+_setAndCheckWindowMouseGrabState(SDL_Window* window, SDL_Bool desiredState)
 {
-  SDL_bool currentState;
+  SDL_Bool currentState;
 
   /* Set state */
   SDL_SetWindowMouseGrab(window, desiredState);
@@ -632,9 +632,9 @@ _setAndCheckWindowMouseGrabState(SDL_Window* window, SDL_bool desiredState)
 
 /* Helper for setting and checking the window keyboard grab state */
 void
-_setAndCheckWindowKeyboardGrabState(SDL_Window* window, SDL_bool desiredState)
+_setAndCheckWindowKeyboardGrabState(SDL_Window* window, SDL_Bool desiredState)
 {
-  SDL_bool currentState;
+  SDL_Bool currentState;
 
   /* Set state */
   SDL_SetWindowKeyboardGrab(window, desiredState);
@@ -677,7 +677,7 @@ video_getSetWindowGrab(void *arg)
 {
   const char* title = "video_getSetWindowGrab Test Window";
   SDL_Window* window;
-  SDL_bool originalMouseState, originalKeyboardState;
+  SDL_Bool originalMouseState, originalKeyboardState;
 
   /* Call against new test window */
   window = _createVideoSuiteTestWindow(title);

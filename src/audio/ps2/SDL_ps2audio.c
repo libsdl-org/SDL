@@ -152,7 +152,7 @@ static void PS2AUDIO_Deinitialize(void)
     deinit_audio_driver();
 }
 
-static SDL_bool PS2AUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_Bool PS2AUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (init_audio_driver() < 0) {
         return SDL_FALSE;

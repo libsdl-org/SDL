@@ -80,7 +80,7 @@ extern DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_HasClipboardText(void);
 
 /**
  * Put UTF-8 text into the primary selection.
@@ -127,7 +127,7 @@ extern DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_HasPrimarySelectionText(void);
 
 
 /* Ends C function definitions when using C++ */

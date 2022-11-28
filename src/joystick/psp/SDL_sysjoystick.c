@@ -183,7 +183,7 @@ static int PSP_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int 
     return SDL_Unsupported();
 }
 
-static int PSP_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int PSP_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -242,7 +242,7 @@ static void PSP_JoystickQuit(void)
 {
 }
 
-static SDL_bool
+static SDL_Bool
 PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;

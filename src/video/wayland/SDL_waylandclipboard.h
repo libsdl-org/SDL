@@ -25,10 +25,10 @@
 
 extern int Wayland_SetClipboardText(_THIS, const char *text);
 extern char *Wayland_GetClipboardText(_THIS);
-extern SDL_bool Wayland_HasClipboardText(_THIS);
+extern SDL_Bool Wayland_HasClipboardText(_THIS);
 extern int Wayland_SetPrimarySelectionText(_THIS, const char *text);
 extern char *Wayland_GetPrimarySelectionText(_THIS);
-extern SDL_bool Wayland_HasPrimarySelectionText(_THIS);
+extern SDL_Bool Wayland_HasPrimarySelectionText(_THIS);
 
 #endif /* SDL_waylandclipboard_h_ */
 

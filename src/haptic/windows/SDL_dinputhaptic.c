@@ -37,7 +37,7 @@ extern HWND SDL_HelperWindow;
 /*
  * Internal stuff.
  */
-static SDL_bool coinitialized = SDL_FALSE;
+static SDL_Bool coinitialized = SDL_FALSE;
 static LPDIRECTINPUT8 dinput = NULL;
 
 
@@ -286,7 +286,7 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
  *       - Get supported features.
  */
 static int
-SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE8 device8, SDL_bool is_joystick)
+SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE8 device8, SDL_Bool is_joystick)
 {
     HRESULT ret;
     DIPROPDWORD dipdw;

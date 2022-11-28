@@ -953,7 +953,7 @@ static bool UpdateSteamControllerState( const uint8_t *pData, int nDataSize, Ste
 /*****************************************************************************************************/
 
 typedef struct {
-    SDL_bool report_sensors;
+    SDL_Bool report_sensors;
     uint32_t update_rate_in_us;
     Uint32 timestamp_us;
 
@@ -975,19 +975,19 @@ HIDAPI_DriverSteam_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSteam_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_FALSE);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystickSteamController(vendor_id, product_id);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSteam_Context *ctx;
@@ -1023,7 +1023,7 @@ HIDAPI_DriverSteam_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickI
 {
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
@@ -1088,7 +1088,7 @@ HIDAPI_DriverSteam_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *j
 }
 
 static int
-HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
     unsigned char buf[65];
@@ -1111,7 +1111,7 @@ HIDAPI_DriverSteam_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *jo
     return 0;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;

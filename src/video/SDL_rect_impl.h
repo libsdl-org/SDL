@@ -21,7 +21,7 @@
 
 /* This file is #included twice to support int and float versions with the same code. */
 
-SDL_bool
+SDL_Bool
 SDL_HASINTERSECTION(const RECTTYPE * A, const RECTTYPE * B)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
@@ -67,7 +67,7 @@ SDL_HASINTERSECTION(const RECTTYPE * A, const RECTTYPE * B)
     return SDL_TRUE;
 }
 
-SDL_bool
+SDL_Bool
 SDL_INTERSECTRECT(const RECTTYPE * A, const RECTTYPE * B, RECTTYPE * result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
@@ -173,7 +173,7 @@ SDL_UNIONRECT(const RECTTYPE * A, const RECTTYPE * B, RECTTYPE * result)
     result->h = Amax - Amin;
 }
 
-SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE * points, int count, const RECTTYPE * clip,
+SDL_Bool SDL_ENCLOSEPOINTS(const POINTTYPE * points, int count, const RECTTYPE * clip,
                   RECTTYPE * result)
 {
     SCALARTYPE minx = 0;
@@ -192,7 +192,7 @@ SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE * points, int count, const RECTTYPE *
     }
 
     if (clip) {
-        SDL_bool added = SDL_FALSE;
+        SDL_Bool added = SDL_FALSE;
         const SCALARTYPE clip_minx = clip->x;
         const SCALARTYPE clip_miny = clip->y;
         const SCALARTYPE clip_maxx = clip->x+clip->w-1;
@@ -291,7 +291,7 @@ COMPUTEOUTCODE(const RECTTYPE * rect, SCALARTYPE x, SCALARTYPE y)
     return code;
 }
 
-SDL_bool
+SDL_Bool
 SDL_INTERSECTRECTANDLINE(const RECTTYPE * rect, SCALARTYPE *X1, SCALARTYPE *Y1, SCALARTYPE *X2,
                          SCALARTYPE *Y2)
 {

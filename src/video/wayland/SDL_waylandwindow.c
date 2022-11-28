@@ -45,7 +45,7 @@
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
 
-SDL_FORCE_INLINE SDL_bool
+SDL_FORCE_INLINE SDL_Bool
 FloatEqual(float a, float b)
 {
     const float diff    = SDL_fabsf(a - b);
@@ -116,21 +116,21 @@ GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawab
     }
 }
 
-SDL_FORCE_INLINE SDL_bool
+SDL_FORCE_INLINE SDL_Bool
 SurfaceScaleIsFractional(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     return !FloatEqual(SDL_roundf(data->scale_factor), data->scale_factor);
 }
 
-SDL_FORCE_INLINE SDL_bool
+SDL_FORCE_INLINE SDL_Bool
 FullscreenModeEmulation(SDL_Window *window)
 {
     return (window->flags & SDL_WINDOW_FULLSCREEN) &&
            ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
-static SDL_bool
+static SDL_Bool
 NeedViewport(SDL_Window *window)
 {
     SDL_WindowData        *wind   = window->driverdata;
@@ -227,8 +227,8 @@ ConfigureWindowGeometry(SDL_Window *window)
     struct wl_region      *region;
     const int              old_dw = data->drawable_width;
     const int              old_dh = data->drawable_height;
-    SDL_bool               window_size_changed;
-    SDL_bool               drawable_size_changed;
+    SDL_Bool               window_size_changed;
+    SDL_Bool               drawable_size_changed;
 
     /* Set the drawable backbuffer size. */
     GetBufferSize(window, &data->drawable_width, &data->drawable_height);
@@ -318,7 +318,7 @@ CommitLibdecorFrame(SDL_Window *window)
 }
 
 static void
-SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
+SetMinMaxDimensions(SDL_Window *window, SDL_Bool commit)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = wind->waylandData;
@@ -443,7 +443,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
 }
 
 static void
-UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
+UpdateWindowFullscreen(SDL_Window *window, SDL_Bool fullscreen)
 {
     SDL_WindowData *wind = (SDL_WindowData*)window->driverdata;
 
@@ -566,9 +566,9 @@ handle_configure_xdg_toplevel(void *data,
     SDL_WaylandOutputData *driverdata;
 
     enum xdg_toplevel_state *state;
-    SDL_bool fullscreen = SDL_FALSE;
-    SDL_bool maximized = SDL_FALSE;
-    SDL_bool floating = SDL_TRUE;
+    SDL_Bool fullscreen = SDL_FALSE;
+    SDL_Bool maximized = SDL_FALSE;
+    SDL_Bool floating = SDL_TRUE;
     wl_array_for_each(state, states) {
         switch (*state) {
         case XDG_TOPLEVEL_STATE_FULLSCREEN:
@@ -798,11 +798,11 @@ decoration_frame_configure(struct libdecor_frame *frame,
     int width, height;
     float scale_factor = wind->scale_factor;
 
-    SDL_bool focused = SDL_FALSE;
-    SDL_bool fullscreen = SDL_FALSE;
-    SDL_bool maximized = SDL_FALSE;
-    SDL_bool tiled = SDL_FALSE;
-    SDL_bool floating;
+    SDL_Bool focused = SDL_FALSE;
+    SDL_Bool fullscreen = SDL_FALSE;
+    SDL_Bool maximized = SDL_FALSE;
+    SDL_Bool tiled = SDL_FALSE;
+    SDL_Bool floating;
 
     static const enum libdecor_window_state tiled_states = (
         LIBDECOR_WINDOW_STATE_TILED_LEFT | LIBDECOR_WINDOW_STATE_TILED_RIGHT |
@@ -885,7 +885,7 @@ decoration_frame_configure(struct libdecor_frame *frame,
          *
          *      https://gitlab.gnome.org/jadahl/libdecor/-/issues/40
          */
-        const SDL_bool use_cached_size = (floating && !wind->was_floating) ||
+        const SDL_Bool use_cached_size = (floating && !wind->was_floating) ||
                                          (window->is_hiding || !!(window->flags & SDL_WINDOW_HIDDEN));
 
         /* This will never set 0 for width/height unless the function returns false */
@@ -1022,7 +1022,7 @@ Wayland_move_window(SDL_Window *window,
 {
     SDL_WindowData *wind = (SDL_WindowData*)window->driverdata;
     SDL_VideoDisplay *display;
-    SDL_bool fs_display_changed = SDL_FALSE;
+    SDL_Bool fs_display_changed = SDL_FALSE;
     int i, j;
     const int numdisplays = SDL_GetNumVideoDisplays();
     for (i = 0; i < numdisplays; i += 1) {
@@ -1170,7 +1170,7 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
     } else
 #endif
     if (viddata->shell.xdg && data->shell_surface.xdg.surface != NULL) {
-        SDL_bool popup = (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ? SDL_TRUE : SDL_FALSE;
+        SDL_Bool popup = (data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) ? SDL_TRUE : SDL_FALSE;
         info->info.wl.xdg_surface = data->shell_surface.xdg.surface;
         info->info.wl.xdg_toplevel = popup ? NULL : data->shell_surface.xdg.roleobj.toplevel;
         if (popup) {
@@ -1183,7 +1183,7 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 }
 
 int
-Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
+Wayland_SetWindowHitTest(SDL_Window *window, SDL_Bool enabled)
 {
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
@@ -1667,7 +1667,7 @@ static void QtExtendedSurface_Unsubscribe(struct qt_extended_surface *surface, c
 
 void
 Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
-                            SDL_VideoDisplay * _display, SDL_bool fullscreen)
+                            SDL_VideoDisplay * _display, SDL_Bool fullscreen)
 {
     SDL_WindowData *wind = (SDL_WindowData*) window->driverdata;
     struct wl_output *output = ((SDL_WaylandOutputData*) _display->driverdata)->output;
@@ -1739,7 +1739,7 @@ Wayland_RestoreWindow(_THIS, SDL_Window * window)
 }
 
 void
-Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
+Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered)
 {
     SDL_WindowData *wind = window->driverdata;
     const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
@@ -1762,7 +1762,7 @@ Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
-Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+Wayland_SetWindowResizable(_THIS, SDL_Window * window, SDL_Bool resizable)
 {
 #ifdef HAVE_LIBDECOR_H
     const SDL_WindowData *wind = window->driverdata;
@@ -1869,7 +1869,7 @@ Wayland_SetWindowMouseRect(_THIS, SDL_Window *window)
 }
 
 void
-Wayland_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+Wayland_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_Bool grabbed)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
@@ -1881,7 +1881,7 @@ Wayland_SetWindowMouseGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
 }
 
 void
-Wayland_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
+Wayland_SetWindowKeyboardGrab(_THIS, SDL_Window *window, SDL_Bool grabbed)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
@@ -2222,8 +2222,8 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
 static void
 EGLTransparencyChangedCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    const SDL_bool oldval = SDL_GetStringBoolean(oldValue, SDL_FALSE);
-    const SDL_bool newval = SDL_GetStringBoolean(newValue, SDL_FALSE);
+    const SDL_Bool oldval = SDL_GetStringBoolean(oldValue, SDL_FALSE);
+    const SDL_Bool newval = SDL_GetStringBoolean(newValue, SDL_FALSE);
 
     if (oldval != newval) {
         SDL_Window      *window;

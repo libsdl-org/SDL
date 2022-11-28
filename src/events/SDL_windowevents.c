@@ -28,7 +28,7 @@
 typedef struct RemovePendingSizeChangedAndResizedEvents_Data
 {
     const SDL_Event *new_event;
-    SDL_bool saw_resized;
+    SDL_Bool saw_resized;
 } RemovePendingSizeChangedAndResizedEvents_Data;
 
 static int SDLCALL

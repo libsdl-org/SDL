@@ -278,7 +278,7 @@ initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
     #if ENABLE_SDL_CALL_LOGGING
     {
         const char *env = SDL_getenv_REAL("SDL_DYNAPI_LOG_CALLS");
-        const SDL_bool log_calls = (env && SDL_atoi_REAL(env));
+        const SDL_Bool log_calls = (env && SDL_atoi_REAL(env));
         if (log_calls) {
             #define SDL_DYNAPI_PROC(rc,fn,params,args,ret) jump_table.fn = fn##_LOGSDLCALLS;
             #include "SDL_dynapi_procs.h"
@@ -385,7 +385,7 @@ SDL_InitDynamicAPILocked(void)
 {
     const char *libname = SDL_getenv_REAL("SDL_DYNAMIC_API");
     SDL_DYNAPI_ENTRYFN entry = NULL;  /* funcs from here by default. */
-    SDL_bool use_internal = SDL_TRUE;
+    SDL_Bool use_internal = SDL_TRUE;
 
     if (libname) {
         entry = (SDL_DYNAPI_ENTRYFN) get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
@@ -430,7 +430,7 @@ SDL_InitDynamicAPI(void)
      *  SDL_CreateThread() would also call this function before building the
      *  new thread).
      */
-    static SDL_bool already_initialized = SDL_FALSE;
+    static SDL_Bool already_initialized = SDL_FALSE;
 
     /* SDL_AtomicLock calls SDL mutex functions to emulate if
        SDL_ATOMIC_DISABLED, which we can't do here, so in such a

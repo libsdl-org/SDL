@@ -43,7 +43,7 @@
 extern HWND SDL_HelperWindow;
 
 /* local variables */
-static SDL_bool coinitialized = SDL_FALSE;
+static SDL_Bool coinitialized = SDL_FALSE;
 static LPDIRECTINPUT8 dinput = NULL;
 
 /* Taken from Wine - Thanks! */
@@ -233,7 +233,7 @@ SetDIerror(const char *function, HRESULT code)
     return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
 
-static SDL_bool
+static SDL_Bool
 SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
 {
 #ifdef SDL_JOYSTICK_XINPUT
@@ -265,7 +265,7 @@ SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
     return SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char** device_name)
 {
     DIPROPSTRING dipstr;
@@ -288,7 +288,7 @@ QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char** device_name)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char** device_path)
 {
     DIPROPGUIDANDPATH dippath;
@@ -314,7 +314,7 @@ QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char** device_path)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_id)
 {
     DIPROPDWORD dipdw;
@@ -547,7 +547,7 @@ typedef struct
 {
     Uint16 vendor;
     Uint16 product;
-    SDL_bool present;
+    SDL_Bool present;
 } Joystick_PresentData;
 
 static BOOL CALLBACK
@@ -580,7 +580,7 @@ err:
 #undef CHECK
 }
 
-SDL_bool
+SDL_Bool
 SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_number)
 {
     Joystick_PresentData data;
@@ -1181,7 +1181,7 @@ SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
 }
 
-SDL_bool
+SDL_Bool
 SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 {
     return SDL_FALSE;

@@ -438,7 +438,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_bool active);
+extern DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_Bool active);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

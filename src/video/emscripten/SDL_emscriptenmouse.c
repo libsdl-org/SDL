@@ -32,7 +32,7 @@
 #include "../../events/SDL_mouse_c.h"
 
 static SDL_Cursor*
-Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
+Emscripten_CreateCursorFromString(const char* cursor_str, SDL_Bool is_custom)
 {
     SDL_Cursor* cursor;
     Emscripten_CursorData *curdata;
@@ -212,7 +212,7 @@ Emscripten_WarpMouse(SDL_Window* window, int x, int y)
 }
 
 static int
-Emscripten_SetRelativeMouseMode(SDL_bool enabled)
+Emscripten_SetRelativeMouseMode(SDL_Bool enabled)
 {
     SDL_Window *window;
     SDL_WindowData *window_data;

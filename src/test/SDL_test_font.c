@@ -3250,8 +3250,8 @@ static Uint32 UTF8_getch(const char *src, size_t srclen, int *inc)
     const Uint8 *p = (const Uint8 *)src;
     size_t left = 0;
     size_t save_srclen = srclen;
-    SDL_bool overlong = SDL_FALSE;
-    SDL_bool underflow = SDL_FALSE;
+    SDL_Bool overlong = SDL_FALSE;
+    SDL_Bool underflow = SDL_FALSE;
     Uint32 ch = UNKNOWN_UNICODE;
 
     if (srclen == 0) {
@@ -3401,7 +3401,7 @@ void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, const char *fmt, ...
 void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char *text, size_t len)
 {
     size_t existing;
-    SDL_bool newline = SDL_FALSE;
+    SDL_Bool newline = SDL_FALSE;
     char *line;
 
     if ( len > 0 && text[len - 1] == '\n' ) {

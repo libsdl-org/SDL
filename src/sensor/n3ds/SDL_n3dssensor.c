@@ -42,7 +42,7 @@ SDL_FORCE_INLINE int InitN3DSServices(void);
 SDL_FORCE_INLINE void UpdateN3DSAccelerometer(SDL_Sensor *sensor);
 SDL_FORCE_INLINE void UpdateN3DSGyroscope(SDL_Sensor *sensor);
 
-SDL_FORCE_INLINE SDL_bool
+SDL_FORCE_INLINE SDL_Bool
 IsDeviceIndexValid(int device_index)
 {
     return device_index >= 0 && device_index < N3DS_SENSOR_COUNT;

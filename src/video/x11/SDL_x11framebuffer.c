@@ -40,7 +40,7 @@ static int shm_errhandler(Display *d, XErrorEvent *e)
         return X_handler(d, e);
 }
 
-static SDL_bool have_mitshm(Display *dpy)
+static SDL_Bool have_mitshm(Display *dpy)
 {
     /* Only use shared memory on local X servers */
     return X11_XShmQueryExtension(dpy) ? SDL_X11_HAVE_SHM : SDL_FALSE;

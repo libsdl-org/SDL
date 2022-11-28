@@ -31,12 +31,12 @@
 static int
 SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
 {
-    static SDL_bool app_is_dropping = SDL_FALSE;
+    static SDL_Bool app_is_dropping = SDL_FALSE;
     int posted = 0;
 
     /* Post the event, if desired */
     if (SDL_GetEventState(evtype) == SDL_ENABLE) {
-        const SDL_bool need_begin = window ? !window->is_dropping : !app_is_dropping;
+        const SDL_Bool need_begin = window ? !window->is_dropping : !app_is_dropping;
         SDL_Event event;
 
         if (need_begin) {

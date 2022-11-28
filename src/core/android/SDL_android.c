@@ -349,12 +349,12 @@ static jmethodID midHapticStop;
 /* Accelerometer data storage */
 static SDL_DisplayOrientation displayOrientation;
 static float fLastAccelerometer[3];
-static SDL_bool bHasNewData;
+static SDL_Bool bHasNewData;
 
-static SDL_bool bHasEnvironmentVariables;
+static SDL_Bool bHasEnvironmentVariables;
 
 static SDL_atomic_t bPermissionRequestPending;
-static SDL_bool bPermissionRequestResult;
+static SDL_Bool bPermissionRequestResult;
 
 /* Android AssetManager */
 static void Internal_Android_Create_AssetManager(void);
@@ -748,7 +748,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
             int argc;
             int len;
             char **argv;
-            SDL_bool isstack;
+            SDL_Bool isstack;
 
             /* Prepare the arguments. */
             len = (*env)->GetArrayLength(env, array);
@@ -1331,7 +1331,7 @@ static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func)
     return refholder;
 }
 
-static SDL_bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env)
+static SDL_Bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env)
 {
     const int capacity = 16;
     if ((*env)->PushLocalFrame(env, capacity) < 0) {
@@ -1379,7 +1379,7 @@ void Android_JNI_SetActivityTitle(const char *title)
     (*env)->DeleteLocalRef(env, jtitle);
 }
 
-void Android_JNI_SetWindowStyle(SDL_bool fullscreen)
+void Android_JNI_SetWindowStyle(SDL_Bool fullscreen)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midSetWindowStyle, fullscreen ? 1 : 0);
@@ -1400,16 +1400,16 @@ void Android_JNI_MinizeWindow()
     (*env)->CallStaticVoidMethod(env, mActivityClass, midMinimizeWindow);
 }
 
-SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss()
+SDL_Bool Android_JNI_ShouldMinimizeOnFocusLoss()
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midShouldMinimizeOnFocusLoss);
 }
 
-SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
+SDL_Bool Android_JNI_GetAccelerometerValues(float values[3])
 {
     int i;
-    SDL_bool retval = SDL_FALSE;
+    SDL_Bool retval = SDL_FALSE;
 
     if (bHasNewData) {
         for (i = 0; i < 3; ++i) {
@@ -1742,7 +1742,7 @@ void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id)
 
 /* Test for an exception and call SDL_SetError with its detail if one occurs */
 /* If the parameter silent is truthy then SDL_SetError() will not be called. */
-static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
+static SDL_Bool Android_JNI_ExceptionOccurred(SDL_Bool silent)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jthrowable exception;
@@ -1933,7 +1933,7 @@ char* Android_JNI_GetClipboardText(void)
     return (text == NULL) ? SDL_strdup("") : text;
 }
 
-SDL_bool Android_JNI_HasClipboardText(void)
+SDL_Bool Android_JNI_HasClipboardText(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jboolean retval = (*env)->CallStaticBooleanMethod(env, mActivityClass, midClipboardHasText);
@@ -2112,7 +2112,7 @@ int Android_JNI_SendMessage(int command, int param)
     return success ? 0 : -1;
 }
 
-void Android_JNI_SuspendScreenSaver(SDL_bool suspend)
+void Android_JNI_SuspendScreenSaver(SDL_Bool suspend)
 {
     Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == SDL_FALSE) ? 0 : 1);
 }
@@ -2134,7 +2134,7 @@ void Android_JNI_HideTextInput(void)
     Android_JNI_SendMessage(COMMAND_TEXTEDIT_HIDE, 0);
 }
 
-SDL_bool Android_JNI_IsScreenKeyboardShown(void)
+SDL_Bool Android_JNI_IsScreenKeyboardShown(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jboolean is_shown = 0;
@@ -2273,25 +2273,25 @@ int SDL_GetAndroidSDKVersion(void)
     return sdk_version;
 }
 
-SDL_bool SDL_IsAndroidTablet(void)
+SDL_Bool SDL_IsAndroidTablet(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
 }
 
-SDL_bool SDL_IsAndroidTV(void)
+SDL_Bool SDL_IsAndroidTV(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsAndroidTV);
 }
 
-SDL_bool SDL_IsChromebook(void)
+SDL_Bool SDL_IsChromebook(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsChromebook);
 }
 
-SDL_bool SDL_IsDeXMode(void)
+SDL_Bool SDL_IsDeXMode(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
@@ -2441,7 +2441,7 @@ const char * SDL_AndroidGetExternalStoragePath(void)
     return s_AndroidExternalFilesPath;
 }
 
-SDL_bool SDL_AndroidRequestPermission(const char *permission)
+SDL_Bool SDL_AndroidRequestPermission(const char *permission)
 {
     return Android_JNI_RequestPermission(permission);
 }
@@ -2460,7 +2460,7 @@ void Android_JNI_GetManifestEnvironmentVariables(void)
 
     if (!bHasEnvironmentVariables) {
         JNIEnv *env = Android_JNI_GetEnv();
-        SDL_bool ret = (*env)->CallStaticBooleanMethod(env, mActivityClass, midGetManifestEnvironmentVariables);
+        SDL_Bool ret = (*env)->CallStaticBooleanMethod(env, mActivityClass, midGetManifestEnvironmentVariables);
         if (ret) {
             bHasEnvironmentVariables = SDL_TRUE;
         }
@@ -2490,31 +2490,31 @@ void Android_JNI_DestroyCustomCursor(int cursorID)
     return;
 }
 
-SDL_bool Android_JNI_SetCustomCursor(int cursorID)
+SDL_Bool Android_JNI_SetCustomCursor(int cursorID)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetCustomCursor, cursorID);
 }
 
-SDL_bool Android_JNI_SetSystemCursor(int cursorID)
+SDL_Bool Android_JNI_SetSystemCursor(int cursorID)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetSystemCursor, cursorID);
 }
 
-SDL_bool Android_JNI_SupportsRelativeMouse(void)
+SDL_Bool Android_JNI_SupportsRelativeMouse(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSupportsRelativeMouse);
 }
 
-SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
+SDL_Bool Android_JNI_SetRelativeMouseEnabled(SDL_Bool enabled)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetRelativeMouseEnabled, (enabled == 1));
 }
 
-SDL_bool Android_JNI_RequestPermission(const char *permission)
+SDL_Bool Android_JNI_RequestPermission(const char *permission)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jpermission;

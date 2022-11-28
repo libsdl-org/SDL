@@ -260,7 +260,7 @@ static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out
     }
 }
 
-SDL_bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+SDL_Bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     switch (format)
     {

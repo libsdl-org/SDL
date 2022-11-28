@@ -1793,7 +1793,7 @@ WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 **audio_buf,
     Uint32 chunkcountlimit = 10000;
     char *envchunkcountlimit;
     Sint64 RIFFstart, RIFFend, lastchunkpos;
-    SDL_bool RIFFlengthknown = SDL_FALSE;
+    SDL_Bool RIFFlengthknown = SDL_FALSE;
     WaveFormat *format = &file->format;
     WaveChunk *chunk = &file->chunk;
     WaveChunk RIFFchunk;

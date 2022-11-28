@@ -27,9 +27,9 @@
 
 /* Display a UIKit message box */
 
-static SDL_bool s_showingMessageBox = SDL_FALSE;
+static SDL_Bool s_showingMessageBox = SDL_FALSE;
 
-SDL_bool
+SDL_Bool
 UIKit_ShowingMessageBox(void)
 {
     return s_showingMessageBox;

@@ -532,8 +532,8 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
 
     if (cmd != NULL) {
         if (use_rendergeometry) {
-            SDL_bool isstack1;
-            SDL_bool isstack2;
+            SDL_Bool isstack1;
+            SDL_Bool isstack2;
             float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
             int *indices = SDL_small_alloc(int, 6 * count, &isstack2);
 
@@ -651,7 +651,7 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     return retval;
 }
 
-static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd);
+static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_Bool flush_viewport_cmd);
 
 int
 SDL_GetNumRenderDrivers(void)
@@ -727,9 +727,9 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 #if defined(__ANDROID__)
                     /* Don't immediatly flush because the app may be in
                      * background, and the egl context shouldn't be used. */
-                    SDL_bool flush_viewport_cmd = SDL_FALSE;
+                    SDL_Bool flush_viewport_cmd = SDL_FALSE;
 #else
-                    SDL_bool flush_viewport_cmd = SDL_TRUE;
+                    SDL_Bool flush_viewport_cmd = SDL_TRUE;
 #endif
                     UpdateLogicalSize(renderer, flush_viewport_cmd);
                 } else {
@@ -956,7 +956,7 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 #if !SDL_RENDER_DISABLED
     SDL_Renderer *renderer = NULL;
     int n = SDL_GetNumRenderDrivers();
-    SDL_bool batching = SDL_TRUE;
+    SDL_Bool batching = SDL_TRUE;
     const char *hint;
 
 #if defined(__ANDROID__)
@@ -1189,7 +1189,7 @@ SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 IsSupportedBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     switch (blendMode)
@@ -1207,7 +1207,7 @@ IsSupportedBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 IsSupportedFormat(SDL_Renderer * renderer, Uint32 format)
 {
     Uint32 i;
@@ -1233,7 +1233,7 @@ GetClosestSupportedFormat(SDL_Renderer * renderer, Uint32 format)
             }
         }
     } else {
-        SDL_bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(format);
+        SDL_Bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(format);
 
         /* We just want to match the first format that has the same channels */
         for (i = 0; i < renderer->info.num_texture_formats; ++i) {
@@ -1266,7 +1266,7 @@ SDL_Texture *
 SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int h)
 {
     SDL_Texture *texture;
-    SDL_bool texture_is_fourcc_and_target;
+    SDL_Bool texture_is_fourcc_and_target;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -1377,8 +1377,8 @@ SDL_Texture *
 SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 {
     const SDL_PixelFormat *fmt;
-    SDL_bool needAlpha;
-    SDL_bool direct_update;
+    SDL_Bool needAlpha;
+    SDL_Bool direct_update;
     int i;
     Uint32 format = SDL_PIXELFORMAT_UNKNOWN;
     SDL_Texture *texture;
@@ -1400,7 +1400,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 
     /* If Palette contains alpha values, promotes to alpha format */
     if (fmt->palette) {
-        SDL_bool is_opaque, has_alpha_channel;
+        SDL_Bool is_opaque, has_alpha_channel;
         SDL_DetectPalette(fmt->palette, &is_opaque, &has_alpha_channel);
         if (!is_opaque) {
             needAlpha = SDL_TRUE;
@@ -2209,7 +2209,7 @@ SDL_UnlockTexture(SDL_Texture * texture)
     texture->locked_surface = NULL;
 }
 
-SDL_bool
+SDL_Bool
 SDL_RenderTargetSupported(SDL_Renderer *renderer)
 {
     if (renderer == NULL || !renderer->SetRenderTarget) {
@@ -2307,7 +2307,7 @@ SDL_GetRenderTarget(SDL_Renderer *renderer)
 }
 
 static int
-UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
+UpdateLogicalSize(SDL_Renderer *renderer, SDL_Bool flush_viewport_cmd)
 {
     int w = 1, h = 1;
     float want_aspect;
@@ -2328,7 +2328,7 @@ UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
     hint = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
     if (hint && (*hint == '1' || SDL_strcasecmp(hint, "overscan") == 0)) {
 #if SDL_VIDEO_RENDER_D3D
-        SDL_bool overscan_supported = SDL_TRUE;
+        SDL_Bool overscan_supported = SDL_TRUE;
         /* Unfortunately, Direct3D 9 doesn't support negative viewport numbers
            which the overscan implementation relies on.
         */
@@ -2460,7 +2460,7 @@ SDL_RenderGetLogicalSize(SDL_Renderer * renderer, int *w, int *h)
 }
 
 int
-SDL_RenderSetIntegerScale(SDL_Renderer * renderer, SDL_bool enable)
+SDL_RenderSetIntegerScale(SDL_Renderer * renderer, SDL_Bool enable)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2469,7 +2469,7 @@ SDL_RenderSetIntegerScale(SDL_Renderer * renderer, SDL_bool enable)
     return UpdateLogicalSize(renderer, SDL_TRUE);
 }
 
-SDL_bool
+SDL_Bool
 SDLCALL SDL_RenderGetIntegerScale(SDL_Renderer * renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, SDL_FALSE);
@@ -2558,7 +2558,7 @@ SDL_RenderGetClipRect(SDL_Renderer * renderer, SDL_Rect * rect)
     }
 }
 
-SDL_bool
+SDL_Bool
 SDL_RenderIsClipEnabled(SDL_Renderer * renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, SDL_FALSE)
@@ -2715,7 +2715,7 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
                           const SDL_Point * points, const int count)
 {
     int retval;
-    SDL_bool isstack;
+    SDL_Bool isstack;
     SDL_FRect *frects;
     int i;
 
@@ -2749,7 +2749,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     SDL_FPoint *fpoints;
     int i;
     int retval;
-    SDL_bool isstack;
+    SDL_Bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2791,7 +2791,7 @@ RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
                            const SDL_FPoint * fpoints, const int count)
 {
     int retval;
-    SDL_bool isstack;
+    SDL_Bool isstack;
     SDL_FRect *frects;
     int i;
 
@@ -2870,14 +2870,14 @@ SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float
     return SDL_RenderDrawLinesF(renderer, points, 2);
 }
 
-static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
+static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_Bool draw_last)
 {
     int i, deltax, deltay, numpixels;
     int d, dinc1, dinc2;
     int x, xinc1, xinc2;
     int y, yinc1, yinc2;
     int retval;
-    SDL_bool isstack;
+    SDL_Bool isstack;
     SDL_FPoint *points;
 
     deltax = SDL_abs(x2 - x1);
@@ -2959,9 +2959,9 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
     SDL_FRect *frects;
     int i, nrects = 0;
     int retval = 0;
-    SDL_bool isstack;
-    SDL_bool drew_line = SDL_FALSE;
-    SDL_bool draw_last = SDL_FALSE;
+    SDL_Bool isstack;
+    SDL_Bool drew_line = SDL_FALSE;
+    SDL_Bool draw_last = SDL_FALSE;
 
     frects = SDL_small_alloc(SDL_FRect, count-1, &isstack);
     if (frects == NULL) {
@@ -2969,8 +2969,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
     }
 
     for (i = 0; i < count-1; ++i) {
-        SDL_bool same_x = (points[i].x == points[i+1].x);
-        SDL_bool same_y = (points[i].y == points[i+1].y);
+        SDL_Bool same_x = (points[i].x == points[i+1].x);
+        SDL_Bool same_y = (points[i].y == points[i+1].y);
 
         if (i == (count - 2)) {
             if (!drew_line || points[i+1].x != points[0].x || points[i+1].y != points[0].y) {
@@ -3031,7 +3031,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     SDL_FPoint *fpoints;
     int i;
     int retval;
-    SDL_bool isstack;
+    SDL_Bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -3091,8 +3091,8 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     if (renderer->line_method == SDL_RENDERLINEMETHOD_POINTS) {
         retval = RenderDrawLinesWithRectsF(renderer, points, count);
     } else if (renderer->line_method == SDL_RENDERLINEMETHOD_GEOMETRY) {
-        SDL_bool isstack1;
-        SDL_bool isstack2;
+        SDL_Bool isstack1;
+        SDL_Bool isstack2;
         const float scale_x = renderer->scale.x;
         const float scale_y = renderer->scale.y;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
@@ -3367,7 +3367,7 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
     SDL_FRect *frects;
     int i;
     int retval;
-    SDL_bool isstack;
+    SDL_Bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -3410,7 +3410,7 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
     SDL_FRect *frects;
     int i;
     int retval;
-    SDL_bool isstack;
+    SDL_Bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -4316,7 +4316,7 @@ SDL_RenderSimulateVSync(SDL_Renderer * renderer)
 void
 SDL_RenderPresent(SDL_Renderer * renderer)
 {
-    SDL_bool presented = SDL_TRUE;
+    SDL_Bool presented = SDL_TRUE;
 
     CHECK_RENDERER_MAGIC(renderer, );
 

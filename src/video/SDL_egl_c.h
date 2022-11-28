@@ -40,7 +40,7 @@ typedef struct SDL_EGL_VideoData
     int egl_surfacetype;
     int egl_version_major, egl_version_minor;
     EGLint egl_required_visual_id;
-    SDL_bool is_offscreen;  /* whether EGL display was offscreen */
+    SDL_Bool is_offscreen;  /* whether EGL display was offscreen */
     EGLenum apitype;  /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
     
     EGLDisplay(EGLAPIENTRY *eglGetDisplay) (NativeDisplayType display);
@@ -124,7 +124,7 @@ typedef enum SDL_EGL_ExtensionType {
     SDL_EGL_CLIENT_EXTENSION
 } SDL_EGL_ExtensionType;
 
-extern SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext);
+extern SDL_Bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext);
 
 extern int SDL_EGL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
 /* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)

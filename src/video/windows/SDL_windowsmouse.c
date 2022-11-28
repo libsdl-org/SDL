@@ -34,7 +34,7 @@ static SDL_Cursor *SDL_blank_cursor = NULL;
 static int rawInputEnableCount = 0;
 
 static int
-ToggleRawInput(SDL_bool enabled)
+ToggleRawInput(SDL_Bool enabled)
 {
     RAWINPUTDEVICE rawMouse = { 0x01, 0x02, 0, NULL }; /* Mouse: UsagePage = 1, Usage = 2 */
 
@@ -102,7 +102,7 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     LPVOID pixels;
     LPVOID maskbits;
     size_t maskbitslen;
-    SDL_bool isstack;
+    SDL_Bool isstack;
     ICONINFO ii;
 
     SDL_zero(bmh);
@@ -298,7 +298,7 @@ WIN_WarpMouseGlobal(int x, int y)
 }
 
 static int
-WIN_SetRelativeMouseMode(SDL_bool enabled)
+WIN_SetRelativeMouseMode(SDL_Bool enabled)
 {
     return ToggleRawInput(enabled);
 }
@@ -329,7 +329,7 @@ WIN_GetGlobalMouseState(int *x, int *y)
 {
     Uint32 retval = 0;
     POINT pt = { 0, 0 };
-    SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+    SDL_Bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
     GetCursorPos(&pt);
     *x = (int) pt.x;
@@ -385,7 +385,7 @@ WIN_QuitMouse(_THIS)
  * https://superuser.com/questions/278362/windows-mouse-acceleration-curve-smoothmousexcurve-and-smoothmouseycurve
  * http://www.esreality.com/?a=post&id=1846538/
  */
-static SDL_bool
+static SDL_Bool
 LoadFiveFixedPointFloats(BYTE *bytes, float *values)
 {
     int i;

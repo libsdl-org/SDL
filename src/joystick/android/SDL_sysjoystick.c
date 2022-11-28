@@ -306,7 +306,7 @@ Android_OnHat(int device_id, int hat_id, int x, int y)
 
 
 int
-Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, SDL_bool is_accelerometer, int button_mask, int naxes, int nhats, int nballs)
+Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, SDL_Bool is_accelerometer, int button_mask, int naxes, int nhats, int nballs)
 {
     SDL_joylist_item *item;
     SDL_JoystickGUID guid;
@@ -649,7 +649,7 @@ ANDROID_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -714,7 +714,7 @@ ANDROID_JoystickQuit(void)
 #endif /* 0 */
 }
 
-static SDL_bool
+static SDL_Bool
 ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;

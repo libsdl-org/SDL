@@ -66,7 +66,7 @@ struct SDL_PrivateAudioData
     AudioDeviceID deviceID;
     SDL_atomic_t device_change_flag;
 #else
-    SDL_bool interrupted;
+    SDL_Bool interrupted;
     CFTypeRef interruption_listener;
 #endif
 };

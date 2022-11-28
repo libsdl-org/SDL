@@ -230,7 +230,7 @@ SDL_GetErrBuf(void)
     return SDL_GetStaticErrBuf();
 #else
     static SDL_SpinLock tls_lock;
-    static SDL_bool tls_being_created;
+    static SDL_Bool tls_being_created;
     static SDL_TLSID tls_errbuf;
     const SDL_error *ALLOCATION_IN_PROGRESS = (SDL_error *)-1;
     SDL_error *errbuf;

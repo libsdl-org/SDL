@@ -767,7 +767,7 @@ extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event * events, int numevents,
  *
  * \sa SDL_HasEvents
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasEvent(Uint32 type);
+extern DECLSPEC SDL_Bool SDLCALL SDL_HasEvent(Uint32 type);
 
 
 /**
@@ -786,7 +786,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasEvent(Uint32 type);
  *
  * \sa SDL_HasEvents
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasEvents(Uint32 minType, Uint32 maxType);
+extern DECLSPEC SDL_Bool SDLCALL SDL_HasEvents(Uint32 minType, Uint32 maxType);
 
 /**
  * Clear events of a specific type from the event queue.
@@ -1039,7 +1039,7 @@ extern DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter,
  *
  * \sa SDL_SetEventFilter
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter * filter,
+extern DECLSPEC SDL_Bool SDLCALL SDL_GetEventFilter(SDL_EventFilter * filter,
                                                     void **userdata);
 
 /**

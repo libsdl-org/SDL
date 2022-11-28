@@ -67,7 +67,7 @@ extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
 
 /* Implements functionality of SDL_Vulkan_GetInstanceExtensions for a list of
  * names passed in nameCount and names. */
-extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
+extern SDL_Bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
                                                         const char **userNames,
                                                         unsigned nameCount,
                                                         const char *const *names);
@@ -76,7 +76,7 @@ extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
  * using the DisplayKHR extension.
  * This needs to be passed an instance that was created with the VK_KHR_DISPLAY_EXTENSION_NAME
  * exension. */
-extern SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
+extern SDL_Bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
                                                  VkInstance instance,
                                                  VkSurfaceKHR *surface);
 #else

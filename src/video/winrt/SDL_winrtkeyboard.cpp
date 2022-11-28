@@ -409,7 +409,7 @@ void WINTRT_InitialiseInputPaneEvents(_THIS)
     }
 }
 
-SDL_bool WINRT_HasScreenKeyboardSupport(_THIS)
+SDL_Bool WINRT_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
@@ -432,7 +432,7 @@ void WINRT_HideScreenKeyboard(_THIS, SDL_Window *window)
     }
 }
 
-SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+SDL_Bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();

@@ -79,7 +79,7 @@ typedef struct gxm_texture {
     SceGxmColorSurface gxm_colorsurface;
     SceGxmDepthStencilSurface gxm_depthstencil;
     SceUID depth_UID;
-    SDL_bool cdram;
+    SDL_Bool cdram;
 } gxm_texture;
 
 typedef struct fragment_programs {
@@ -98,7 +98,7 @@ typedef struct blend_fragment_programs {
 typedef struct
 {
     SDL_Rect viewport;
-    SDL_bool viewport_dirty;
+    SDL_Bool viewport_dirty;
     SDL_Texture *texture;
     SDL_Texture *target;
     SDL_Color color;
@@ -106,11 +106,11 @@ typedef struct
     SceGxmVertexProgram *vertex_program;
     int last_command;
 
-    SDL_bool cliprect_enabled_dirty;
-    SDL_bool cliprect_enabled;
-    SDL_bool cliprect_dirty;
+    SDL_Bool cliprect_enabled_dirty;
+    SDL_Bool cliprect_enabled;
+    SDL_Bool cliprect_dirty;
     SDL_Rect cliprect;
-    SDL_bool texturing;
+    SDL_Bool texturing;
     SDL_Color clear_color;
     int drawablew;
     int drawableh;
@@ -118,8 +118,8 @@ typedef struct
 
 typedef struct
 {
-    SDL_bool      initialized;
-    SDL_bool      drawing;
+    SDL_Bool      initialized;
+    SDL_Bool      drawing;
 
     unsigned int  psm;
     unsigned int  bpp;
@@ -198,8 +198,8 @@ typedef struct
     unsigned int w;
     unsigned int h;
     float wscale;
-    SDL_bool     yuv;
-    SDL_bool     nv12;
+    SDL_Bool     yuv;
+    SDL_Bool     nv12;
 } VITA_GXM_TextureData;
 
 #endif /* SDL_RENDER_VITA_GXM_TYPES_H */

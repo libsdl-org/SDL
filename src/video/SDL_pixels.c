@@ -133,7 +133,7 @@ SDL_GetPixelFormatName(Uint32 format)
 }
 #undef CASE
 
-SDL_bool
+SDL_Bool
 SDL_PixelFormatEnumToMasks(Uint32 format, int *bpp, Uint32 * Rmask,
                            Uint32 * Gmask, Uint32 * Bmask, Uint32 * Amask)
 {
@@ -811,12 +811,12 @@ SDL_FindColor(SDL_Palette * pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 
 /* Tell whether palette is opaque, and if it has an alpha_channel */
 void
-SDL_DetectPalette(SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel)
+SDL_DetectPalette(SDL_Palette *pal, SDL_Bool *is_opaque, SDL_Bool *has_alpha_channel)
 {
     int i;
 
     {
-        SDL_bool all_opaque = SDL_TRUE;
+        SDL_Bool all_opaque = SDL_TRUE;
         for (i = 0; i < pal->ncolors; i++) {
             Uint8 alpha_value = pal->colors[i].a;
             if (alpha_value != SDL_ALPHA_OPAQUE) {
@@ -834,7 +834,7 @@ SDL_DetectPalette(SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_cha
     }
 
     {
-        SDL_bool all_transparent = SDL_TRUE;
+        SDL_Bool all_transparent = SDL_TRUE;
         for (i = 0; i < pal->ncolors; i++) {
             Uint8 alpha_value = pal->colors[i].a;
             if (alpha_value != SDL_ALPHA_TRANSPARENT) {

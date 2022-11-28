@@ -233,32 +233,32 @@ typedef struct
 typedef struct {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
-    SDL_bool m_bInputOnly;
-    SDL_bool m_bIsGameCube;
-    SDL_bool m_bUseButtonLabels;
-    SDL_bool m_bPlayerLights;
+    SDL_Bool m_bInputOnly;
+    SDL_Bool m_bIsGameCube;
+    SDL_Bool m_bUseButtonLabels;
+    SDL_Bool m_bPlayerLights;
     int      m_nPlayerIndex;
-    SDL_bool m_bSyncWrite;
+    SDL_Bool m_bSyncWrite;
     int      m_nMaxWriteAttempts;
     ESwitchDeviceInfoControllerType m_eControllerType;
     Uint8 m_rgucMACAddress[6];
     Uint8 m_nCommandNumber;
     SwitchCommonOutputPacket_t m_RumblePacket;
     Uint8 m_rgucReadBuffer[k_unSwitchMaxOutputPacketLength];
-    SDL_bool m_bRumbleActive;
+    SDL_Bool m_bRumbleActive;
     Uint32 m_unRumbleSent;
-    SDL_bool m_bRumblePending;
-    SDL_bool m_bRumbleZeroPending;
+    SDL_Bool m_bRumblePending;
+    SDL_Bool m_bRumbleZeroPending;
     Uint32 m_unRumblePending;
-    SDL_bool m_bReportSensors;
-    SDL_bool m_bHasSensorData;
+    SDL_Bool m_bReportSensors;
+    SDL_Bool m_bHasSensorData;
     Uint32 m_unLastInput;
     Uint32 m_unLastIMUReset;
     Uint32 m_unIMUSampleTimestamp;
     Uint32 m_unIMUSamples;
     Uint32 m_unIMUUpdateIntervalUS;
     Uint64 m_ulTimestampUS;
-    SDL_bool m_bVerticalMode;
+    SDL_Bool m_bVerticalMode;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -340,7 +340,7 @@ static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Conte
     return NULL;
 }
 
-static SDL_bool ReadProprietaryReply(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs expectedID)
+static SDL_Bool ReadProprietaryReply(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs expectedID)
 {
     /* Average response time for messages is ~30ms */
     Uint32 TimeoutMs = 100;
@@ -380,7 +380,7 @@ static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
     ctx->m_nCommandNumber = (ctx->m_nCommandNumber + 1) & 0xF;
 }
 
-static SDL_bool WritePacket(SDL_DriverSwitch_Context *ctx, void *pBuf, Uint8 ucLen)
+static SDL_Bool WritePacket(SDL_DriverSwitch_Context *ctx, void *pBuf, Uint8 ucLen)
 {
     Uint8 rgucBuf[k_unSwitchMaxOutputPacketLength];
     const size_t unWriteSize = ctx->device->is_bluetooth ? k_unSwitchBluetoothPacketLength : k_unSwitchUSBPacketLength;
@@ -402,7 +402,7 @@ static SDL_bool WritePacket(SDL_DriverSwitch_Context *ctx, void *pBuf, Uint8 ucL
     }
 }
 
-static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandInputPacket_t **ppReply)
+static SDL_Bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandInputPacket_t **ppReply)
 {
     SwitchSubcommandInputPacket_t *reply = NULL;
     int nTries;
@@ -424,7 +424,7 @@ static SDL_bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommand
     return reply != NULL;
 }
 
-static SDL_bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, SDL_bool waitForReply)
+static SDL_Bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, SDL_Bool waitForReply)
 {
     int nTries;
 
@@ -542,7 +542,7 @@ static void EncodeRumble(SwitchRumbleData_t *pRumble, Uint16 usHighFreq, Uint8 u
     }
 }
 
-static SDL_bool WriteRumble(SDL_DriverSwitch_Context *ctx)
+static SDL_Bool WriteRumble(SDL_DriverSwitch_Context *ctx)
 {
     /* Write into m_RumblePacket rather than a temporary buffer to allow the current rumble state
      * to be retained for subsequent rumble or subcommand packets sent to the controller
@@ -580,7 +580,7 @@ static ESwitchDeviceInfoControllerType CalculateControllerType(SDL_DriverSwitch_
     return eControllerType;
 }
 
-static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
+static SDL_Bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
 {
     SwitchSubcommandInputPacket_t *reply = NULL;
 
@@ -616,7 +616,7 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
     return SDL_FALSE;
 }
 
-static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
+static SDL_Bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
 {
     /* We have to send a connection handshake to the controller when communicating over USB
      * before we're able to send it other commands. Luckily this command is not supported
@@ -640,17 +640,17 @@ static SDL_bool BTrySetupUSB(SDL_DriverSwitch_Context *ctx)
     return SDL_TRUE;
 }
 
-static SDL_bool SetVibrationEnabled(SDL_DriverSwitch_Context *ctx, Uint8 enabled)
+static SDL_Bool SetVibrationEnabled(SDL_DriverSwitch_Context *ctx, Uint8 enabled)
 {
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableVibration, &enabled, sizeof(enabled), NULL);
 
 }
-static SDL_bool SetInputMode(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
+static SDL_Bool SetInputMode(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
 {
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetInputReportMode, &input_mode, 1, NULL);
 }
 
-static SDL_bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
+static SDL_Bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
 {
     Uint8 ucLedIntensity = 0;
     Uint8 rgucBuffer[4];
@@ -704,7 +704,7 @@ static void UpdateSlotLED(SDL_DriverSwitch_Context *ctx)
 static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)userdata;
-    SDL_bool bPlayerLights = SDL_GetStringBoolean(hint, SDL_TRUE);
+    SDL_Bool bPlayerLights = SDL_GetStringBoolean(hint, SDL_TRUE);
 
     if (bPlayerLights != ctx->m_bPlayerLights) {
         ctx->m_bPlayerLights = bPlayerLights;
@@ -713,13 +713,13 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
     }
 }
 
-static SDL_bool SetIMUEnabled(SDL_DriverSwitch_Context* ctx, SDL_bool enabled)
+static SDL_Bool SetIMUEnabled(SDL_DriverSwitch_Context* ctx, SDL_Bool enabled)
 {
     Uint8 imu_data = enabled ? 1 : 0;
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
 }
 
-static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
+static SDL_Bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
 {
     Uint8 *pStickCal;
     size_t stick, axis;
@@ -789,7 +789,7 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     return SDL_TRUE;
 }
 
-static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
+static SDL_Bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
 {
     Uint8* pIMUScale;
     SwitchSubcommandInputPacket_t* reply = NULL;
@@ -977,7 +977,7 @@ ReadJoyConControllerType(SDL_HIDAPI_Device *device)
     return eControllerType;
 }
 
-static SDL_bool
+static SDL_Bool
 HasHomeLED(SDL_DriverSwitch_Context *ctx)
 {
     Uint16 vendor_id = ctx->device->vendor_id;
@@ -1002,7 +1002,7 @@ HasHomeLED(SDL_DriverSwitch_Context *ctx)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInfoControllerType eControllerType)
 {
     /* These controllers don't have a diamond button configuration, so always use labels */
@@ -1017,7 +1017,7 @@ AlwaysUsesLabels(int vendor_id, int product_id, ESwitchDeviceInfoControllerType 
     }
 }
 
-static SDL_bool
+static SDL_Bool
 IsGameCubeFormFactor(int vendor_id, int product_id)
 {
     static Uint32 gamecube_formfactor[] = {
@@ -1047,13 +1047,13 @@ HIDAPI_DriverNintendoClassic_UnregisterHints(SDL_HintCallback callback, void *us
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverNintendoClassic_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverNintendoClassic_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
@@ -1091,13 +1091,13 @@ HIDAPI_DriverJoyCons_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverJoyCons_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverJoyCons_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
@@ -1131,13 +1131,13 @@ HIDAPI_DriverSwitch_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSwitch_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SWITCH, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     /* The HORI Wireless Switch Pad enumerates as a HID device when connected via USB
@@ -1219,7 +1219,7 @@ UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     HIDAPI_SetDeviceSerial(device, serial);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSwitch_Context *ctx;
@@ -1283,7 +1283,7 @@ HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joystick
     UpdateSlotLED(ctx);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
@@ -1563,7 +1563,7 @@ HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *
 }
 
 static int
-HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     SDL_DriverSwitch_Context* ctx = (SDL_DriverSwitch_Context*)device->context;
     
@@ -1606,10 +1606,10 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
     }
 
     if (packet->ucStickHat != ctx->m_lastInputOnlyState.ucStickHat) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        SDL_Bool dpad_up = SDL_FALSE;
+        SDL_Bool dpad_down = SDL_FALSE;
+        SDL_Bool dpad_left = SDL_FALSE;
+        SDL_Bool dpad_right = SDL_FALSE;
 
         switch (packet->ucStickHat) {
         case 0:
@@ -1703,10 +1703,10 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
     }
 
     if (packet->ucStickHat != ctx->m_lastSimpleState.ucStickHat) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        SDL_Bool dpad_up = SDL_FALSE;
+        SDL_Bool dpad_down = SDL_FALSE;
+        SDL_Bool dpad_left = SDL_FALSE;
+        SDL_Bool dpad_right = SDL_FALSE;
 
         switch (packet->ucStickHat) {
         case 0:
@@ -2023,7 +2023,7 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
     }
 
     if (ctx->m_bReportSensors) {
-        SDL_bool bHasSensorData = (packet->imuState[0].sAccelZ != 0 ||
+        SDL_Bool bHasSensorData = (packet->imuState[0].sAccelZ != 0 ||
                                    packet->imuState[0].sAccelY != 0 ||
                                    packet->imuState[0].sAccelX != 0);
         if (bHasSensorData) {
@@ -2115,7 +2115,7 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
     ctx->m_lastFullState = *packet;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;

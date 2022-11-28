@@ -143,7 +143,7 @@ typedef struct
 
     } value;
 
-    SDL_bool committed;
+    SDL_Bool committed;
 
 } SDL_GameControllerExtendedBind;
 
@@ -151,7 +151,7 @@ static SDL_GameControllerExtendedBind s_arrBindings[BINDING_COUNT];
 
 typedef struct
 {
-    SDL_bool m_bMoving;
+    SDL_Bool m_bMoving;
     int m_nLastValue;
     int m_nStartingValue;
     int m_nFarthestValue;
@@ -162,12 +162,12 @@ static AxisState *s_arrAxisState;
     
 static int s_iCurrentBinding;
 static Uint32 s_unPendingAdvanceTime;
-static SDL_bool s_bBindingComplete;
+static SDL_Bool s_bBindingComplete;
 
 static SDL_Window *window;
 static SDL_Renderer *screen;
-static SDL_bool done = SDL_FALSE;
-static SDL_bool bind_touchpad = SDL_FALSE;
+static SDL_Bool done = SDL_FALSE;
+static SDL_Bool bind_touchpad = SDL_FALSE;
 
 static int
 StandardizeAxisValue(int nValue)
@@ -220,7 +220,7 @@ SetCurrentBinding(int iBinding)
     s_unPendingAdvanceTime = 0;
 }
 
-static SDL_bool
+static SDL_Bool
 BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const SDL_GameControllerExtendedBind *pBindingB)
 {
     if (pBindingA->bindType != pBindingB->bindType) {
@@ -296,8 +296,8 @@ ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
     /* Should the new binding override the existing one? */
     pCurrent = &s_arrBindings[iCurrentElement];
     if (pCurrent->bindType != SDL_CONTROLLER_BINDTYPE_NONE) {
-        SDL_bool bNativeDPad, bCurrentDPad;
-        SDL_bool bNativeAxis, bCurrentAxis;
+        SDL_Bool bNativeDPad, bCurrentDPad;
+        SDL_Bool bNativeAxis, bCurrentAxis;
         
         bNativeDPad = (iCurrentElement == SDL_CONTROLLER_BUTTON_DPAD_UP ||
                        iCurrentElement == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
@@ -328,7 +328,7 @@ ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 BMergeAxisBindings(int iIndex)
 {
     SDL_GameControllerExtendedBind *pBindingA = &s_arrBindings[iIndex];
@@ -470,7 +470,7 @@ WatchJoystick(SDL_Joystick * joystick)
 #endif
                     if (nFarthestDistance >= 16000) {
                         /* If we've gone out far enough and started to come back, let's bind this axis */
-                        SDL_bool bCommitBinding = (nCurrentDistance <= 10000) ? SDL_TRUE : SDL_FALSE;
+                        SDL_Bool bCommitBinding = (nCurrentDistance <= 10000) ? SDL_TRUE : SDL_FALSE;
                         SDL_GameControllerExtendedBind binding;
                         SDL_zero(binding);
                         binding.bindType = SDL_CONTROLLER_BINDTYPE_AXIS;

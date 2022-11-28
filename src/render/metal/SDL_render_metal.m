@@ -432,7 +432,7 @@ ChoosePipelineState(METAL_RenderData *data, METAL_ShaderPipelines *pipelines, SD
     return MakePipelineState(data, cache, [NSString stringWithFormat:@" (blend=custom 0x%x)", blendmode], blendmode);
 }
 
-static SDL_bool
+static SDL_Bool
 METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, MTLClearColor *clear_color, id<MTLBuffer> vertex_buffer)
 {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
@@ -518,7 +518,7 @@ METAL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
     return 0;
 }}
 
-static SDL_bool
+static SDL_Bool
 METAL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
@@ -1174,17 +1174,17 @@ typedef struct
     __unsafe_unretained id<MTLBuffer> vertex_buffer;
     size_t constants_offset;
     SDL_Texture *texture;
-    SDL_bool cliprect_dirty;
-    SDL_bool cliprect_enabled;
+    SDL_Bool cliprect_dirty;
+    SDL_Bool cliprect_enabled;
     SDL_Rect cliprect;
-    SDL_bool viewport_dirty;
+    SDL_Bool viewport_dirty;
     SDL_Rect viewport;
     size_t projection_offset;
-    SDL_bool color_dirty;
+    SDL_Bool color_dirty;
     size_t color_offset;
 } METAL_DrawStateCache;
 
-static SDL_bool
+static SDL_Bool
 SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_MetalFragmentFunction shader,
              const size_t constants_offset, id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
 {
@@ -1265,7 +1265,7 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const size_t constants_offset,
              id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
 {
@@ -1497,7 +1497,7 @@ static int
 METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    SDL_bool ready = SDL_TRUE;
+    SDL_Bool ready = SDL_TRUE;
 
     // If we don't have a command buffer, we can't present, so activate to get one.
     if (data.mtlcmdencoder == nil) {

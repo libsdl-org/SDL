@@ -37,11 +37,11 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern void SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, SDL_AudioSpec *spec, void *handle);
+extern void SDL_AddAudioDevice(const SDL_Bool iscapture, const char *name, SDL_AudioSpec *spec, void *handle);
 
 /* Audio targets should call this as devices are removed, so SDL can update
    its list of available devices. */
-extern void SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle);
+extern void SDL_RemoveAudioDevice(const SDL_Bool iscapture, void *handle);
 
 /* Audio targets should call this if an opened audio device is lost while
    being used. This can happen due to i/o errors, or a device being unplugged,
@@ -81,12 +81,12 @@ typedef struct SDL_AudioDriverImpl
     /* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
 
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
-    SDL_bool ProvidesOwnCallbackThread;
-    SDL_bool HasCaptureSupport;
-    SDL_bool OnlyHasDefaultOutputDevice;
-    SDL_bool OnlyHasDefaultCaptureDevice;
-    SDL_bool AllowsArbitraryDeviceNames;
-    SDL_bool SupportsNonPow2Samples;
+    SDL_Bool ProvidesOwnCallbackThread;
+    SDL_Bool HasCaptureSupport;
+    SDL_Bool OnlyHasDefaultOutputDevice;
+    SDL_Bool OnlyHasDefaultCaptureDevice;
+    SDL_Bool AllowsArbitraryDeviceNames;
+    SDL_Bool SupportsNonPow2Samples;
 } SDL_AudioDriverImpl;
 
 
@@ -115,8 +115,8 @@ typedef struct SDL_AudioDriver
 
     /* A mutex for device detection */
     SDL_mutex *detectionLock;
-    SDL_bool captureDevicesRemoved;
-    SDL_bool outputDevicesRemoved;
+    SDL_Bool captureDevicesRemoved;
+    SDL_Bool outputDevicesRemoved;
     int outputDeviceCount;
     int inputDeviceCount;
     SDL_AudioDeviceItem *outputDevices;
@@ -144,7 +144,7 @@ struct SDL_AudioDevice
     SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
     SDL_atomic_t enabled;  /* true if device is functioning and connected. */
     SDL_atomic_t paused;
-    SDL_bool iscapture;
+    SDL_Bool iscapture;
 
     /* Scratch buffer used in the bridge between SDL and the user callback. */
     Uint8 *work_buffer;
@@ -174,8 +174,8 @@ typedef struct AudioBootStrap
 {
     const char *name;
     const char *desc;
-    SDL_bool (*init) (SDL_AudioDriverImpl * impl);
-    SDL_bool demand_only;  /* 1==request explicitly, or it won't be available. */
+    SDL_Bool (*init) (SDL_AudioDriverImpl * impl);
+    SDL_Bool demand_only;  /* 1==request explicitly, or it won't be available. */
 } AudioBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */

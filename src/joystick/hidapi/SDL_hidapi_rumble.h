@@ -26,7 +26,7 @@
 
 /* Advanced API */
 int SDL_HIDAPI_LockRumble(void);
-SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size);
+SDL_Bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size);
 int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size);
 typedef void (*SDL_HIDAPI_RumbleSentCallback)(void *userdata);
 int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size, SDL_HIDAPI_RumbleSentCallback callback, void *userdata);

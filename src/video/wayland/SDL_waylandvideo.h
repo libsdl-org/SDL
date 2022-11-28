@@ -49,7 +49,7 @@ typedef struct {
 typedef struct SDL_WaylandOutputData SDL_WaylandOutputData;
 
 typedef struct {
-    SDL_bool initializing;
+    SDL_Bool initializing;
     struct wl_display *display;
     int display_disconnected;
     struct wl_registry *registry;
@@ -94,7 +94,7 @@ typedef struct {
     char *classname;
 
     int relative_mouse_mode;
-    SDL_bool egl_transparency_enabled;
+    SDL_Bool egl_transparency_enabled;
 } SDL_VideoData;
 
 struct SDL_WaylandOutputData {
@@ -108,7 +108,7 @@ struct SDL_WaylandOutputData {
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
     float ddpi, hdpi, vdpi;
-    SDL_bool has_logical_position, has_logical_size;
+    SDL_Bool has_logical_position, has_logical_size;
     int index;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
@@ -120,12 +120,12 @@ struct SDL_WaylandOutputData {
 
 extern void SDL_WAYLAND_register_surface(struct wl_surface *surface);
 extern void SDL_WAYLAND_register_output(struct wl_output *output);
-extern SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
-extern SDL_bool SDL_WAYLAND_own_output(struct wl_output *output);
+extern SDL_Bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
+extern SDL_Bool SDL_WAYLAND_own_output(struct wl_output *output);
 
-extern SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg);
+extern SDL_Bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_Bool ignore_xdg);
 
-extern SDL_bool Wayland_VideoReconnect(_THIS);
+extern SDL_Bool Wayland_VideoReconnect(_THIS);
 
 #endif /* SDL_waylandvideo_h_ */
 

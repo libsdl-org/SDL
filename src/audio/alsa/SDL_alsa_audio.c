@@ -541,7 +541,7 @@ static int
 ALSA_OpenDevice(_THIS, const char *devname)
 {
     int status = 0;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     snd_pcm_t *pcm_handle = NULL;
     snd_pcm_hw_params_t *hwparams = NULL;
     snd_pcm_sw_params_t *swparams = NULL;
@@ -724,7 +724,7 @@ ALSA_OpenDevice(_THIS, const char *devname)
 typedef struct ALSA_Device
 {
     char *name;
-    SDL_bool iscapture;
+    SDL_Bool iscapture;
     struct ALSA_Device *next;
 } ALSA_Device;
 
@@ -861,10 +861,10 @@ ALSA_HotplugIteration(void)
             /* only want physical hardware interfaces */
             if (match == NULL || (SDL_strncmp(name, match, match_len) == 0)) {
                 char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
-                const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
-                const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);
-                SDL_bool have_output = SDL_FALSE;
-                SDL_bool have_input = SDL_FALSE;
+                const SDL_Bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
+                const SDL_Bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);
+                SDL_Bool have_output = SDL_FALSE;
+                SDL_Bool have_input = SDL_FALSE;
 
                 free(ioid);
 
@@ -982,7 +982,7 @@ ALSA_Deinitialize(void)
     UnloadALSALibrary();
 }
 
-static SDL_bool
+static SDL_Bool
 ALSA_Init(SDL_AudioDriverImpl * impl)
 {
     if (LoadALSALibrary() < 0) {

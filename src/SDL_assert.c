@@ -248,7 +248,7 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
 #if defined(__EMSCRIPTEN__)
         /* This is nasty, but we can't block on a custom UI. */
         for ( ; ; ) {
-            SDL_bool okay = SDL_TRUE;
+            SDL_Bool okay = SDL_TRUE;
             char *buf = (char *) EM_ASM_INT({
                 var str =
                     UTF8ToString($0) + '\n\n' +

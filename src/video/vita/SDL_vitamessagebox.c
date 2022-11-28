@@ -41,7 +41,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     SceMsgDialogResult dialog_result;
     SceCommonDialogErrorCode init_result;
-    SDL_bool setup_minimal_gxm = SDL_FALSE;
+    SDL_Bool setup_minimal_gxm = SDL_FALSE;
 
     if (messageboxdata->numbuttons > 3) {
         return -1;

@@ -107,7 +107,7 @@ SDL_GetPrimarySelectionText(void)
     }
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -128,7 +128,7 @@ SDL_HasClipboardText(void)
     }
 }
 
-SDL_bool
+SDL_Bool
 SDL_HasPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();

@@ -33,15 +33,15 @@ extern "C" {
 
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
-extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
+extern void Android_JNI_SetWindowStyle(SDL_Bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
 extern void Android_JNI_MinizeWindow(void);
-extern SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
+extern SDL_Bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
-extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
+extern SDL_Bool Android_JNI_GetAccelerometerValues(float values[3]);
 extern void Android_JNI_ShowTextInput(SDL_Rect *inputRect);
 extern void Android_JNI_HideTextInput(void);
-extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
+extern SDL_Bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow* Android_JNI_GetNativeWindow(void);
 
 extern SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void);
@@ -57,8 +57,8 @@ extern void Android_JNI_CloseAudioDevice(const int iscapture);
 extern void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id);
 
 /* Detecting device type */
-extern SDL_bool Android_IsDeXMode(void);
-extern SDL_bool Android_IsChromebook(void);
+extern SDL_Bool Android_IsDeXMode(void);
+extern SDL_Bool Android_IsChromebook(void);
 
 
 int Android_JNI_FileOpen(SDL_RWops* ctx, const char* fileName, const char* mode);
@@ -74,7 +74,7 @@ void Android_JNI_GetManifestEnvironmentVariables(void);
 /* Clipboard support */
 int Android_JNI_SetClipboardText(const char* text);
 char* Android_JNI_GetClipboardText(void);
-SDL_bool Android_JNI_HasClipboardText(void);
+SDL_Bool Android_JNI_HasClipboardText(void);
 
 /* Power support */
 int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seconds, int* percent);
@@ -88,7 +88,7 @@ void Android_JNI_HapticRun(int device_id, float intensity, int length);
 void Android_JNI_HapticStop(int device_id);
 
 /* Video */
-void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
+void Android_JNI_SuspendScreenSaver(SDL_Bool suspend);
 
 /* Touch support */
 void Android_JNI_InitTouch(void);
@@ -113,15 +113,15 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 /* Cursor support */
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
 void Android_JNI_DestroyCustomCursor(int cursorID);
-SDL_bool Android_JNI_SetCustomCursor(int cursorID);
-SDL_bool Android_JNI_SetSystemCursor(int cursorID);
+SDL_Bool Android_JNI_SetCustomCursor(int cursorID);
+SDL_Bool Android_JNI_SetSystemCursor(int cursorID);
 
 /* Relative mouse support */
-SDL_bool Android_JNI_SupportsRelativeMouse(void);
-SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
+SDL_Bool Android_JNI_SupportsRelativeMouse(void);
+SDL_Bool Android_JNI_SetRelativeMouseEnabled(SDL_Bool enabled);
 
 /* Request permission */
-SDL_bool Android_JNI_RequestPermission(const char *permission);
+SDL_Bool Android_JNI_RequestPermission(const char *permission);
 
 /* Show toast notification */
 int Android_JNI_ShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset);
@@ -130,10 +130,10 @@ int Android_JNI_OpenURL(const char *url);
 
 int SDL_GetAndroidSDKVersion(void);
 
-SDL_bool SDL_IsAndroidTablet(void);
-SDL_bool SDL_IsAndroidTV(void);
-SDL_bool SDL_IsChromebook(void);
-SDL_bool SDL_IsDeXMode(void);
+SDL_Bool SDL_IsAndroidTablet(void);
+SDL_Bool SDL_IsAndroidTV(void);
+SDL_Bool SDL_IsChromebook(void);
+SDL_Bool SDL_IsDeXMode(void);
 
 void Android_ActivityMutex_Lock(void);
 void Android_ActivityMutex_Unlock(void);

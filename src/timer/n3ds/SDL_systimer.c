@@ -24,7 +24,7 @@
 
 #include <3ds.h>
 
-static SDL_bool ticks_started = SDL_FALSE;
+static SDL_Bool ticks_started = SDL_FALSE;
 static u64 start_tick;
 
 #define NSEC_PER_MSEC 1000000ULL

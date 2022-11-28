@@ -26,7 +26,7 @@
 #include <e32hal.h>
 
 
-static SDL_bool ticks_started = SDL_FALSE;
+static SDL_Bool ticks_started = SDL_FALSE;
 static TUint    start         = 0;
 static TInt     tickPeriodMilliSeconds;
 

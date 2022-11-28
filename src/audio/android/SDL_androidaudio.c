@@ -38,7 +38,7 @@ static int
 ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
 
     SDL_assert((captureDevice == NULL) || !iscapture);
     SDL_assert((audioDevice == NULL) || iscapture);
@@ -118,7 +118,7 @@ ANDROIDAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static SDL_bool
+static SDL_Bool
 ANDROIDAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */

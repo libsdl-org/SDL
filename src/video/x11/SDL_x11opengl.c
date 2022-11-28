@@ -297,7 +297,7 @@ X11_GL_UnloadLibrary(_THIS)
     _this->gl_data = NULL;
 }
 
-static SDL_bool
+static SDL_Bool
 HasExtension(const char *extension, const char *extensions)
 {
     const char *start;
@@ -684,7 +684,7 @@ X11_GL_ErrorHandler(Display * d, XErrorEvent * e)
     return (0);
 }
 
-SDL_bool
+SDL_Bool
 X11_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);

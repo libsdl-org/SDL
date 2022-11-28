@@ -148,7 +148,7 @@ int window_h;
 SDL_Renderer *renderer;
 int paused = 0;
 int i;
-SDL_bool done = SDL_FALSE;
+SDL_Bool done = SDL_FALSE;
 static int fpsdelay;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */

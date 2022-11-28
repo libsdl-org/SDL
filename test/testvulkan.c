@@ -176,7 +176,7 @@ static SDLTest_CommonState *state;
 static VulkanContext *vulkanContexts = NULL;  // an array of state->num_windows items
 static VulkanContext *vulkanContext = NULL;  // for the currently-rendering window
 
-static void shutdownVulkan(SDL_bool doDestroySwapchain);
+static void shutdownVulkan(SDL_Bool doDestroySwapchain);
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void quit(int rc)
@@ -323,7 +323,7 @@ static void findPhysicalDevice(void)
         uint32_t queueFamiliesCount = 0;
         uint32_t queueFamilyIndex;
         uint32_t deviceExtensionCount = 0;
-        SDL_bool hasSwapchainExtension = SDL_FALSE;
+        SDL_Bool hasSwapchainExtension = SDL_FALSE;
         uint32_t i;
 
         VkPhysicalDevice physicalDevice = physicalDevices[physicalDeviceIndex];
@@ -614,7 +614,7 @@ static void getSwapchainImages(void)
     }
 }
 
-static SDL_bool createSwapchain(void)
+static SDL_Bool createSwapchain(void)
 {
     uint32_t i;
     int w, h;
@@ -889,7 +889,7 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
     }
 }
 
-static void destroySwapchainAndSwapchainSpecificStuff(SDL_bool doDestroySwapchain)
+static void destroySwapchainAndSwapchainSpecificStuff(SDL_Bool doDestroySwapchain)
 {
     vkDeviceWaitIdle(vulkanContext->device);
     destroyFences();
@@ -900,7 +900,7 @@ static void destroySwapchainAndSwapchainSpecificStuff(SDL_bool doDestroySwapchai
     }
 }
 
-static SDL_bool createNewSwapchainAndSwapchainSpecificStuff(void)
+static SDL_Bool createNewSwapchainAndSwapchainSpecificStuff(void)
 {
     destroySwapchainAndSwapchainSpecificStuff(SDL_FALSE);
     getSurfaceCaps();
@@ -942,7 +942,7 @@ static void initVulkan(void)
     }
 }
 
-static void shutdownVulkan(SDL_bool doDestroySwapchain)
+static void shutdownVulkan(SDL_Bool doDestroySwapchain)
 {
     if (vulkanContexts) {
         int i;
@@ -983,7 +983,7 @@ static void shutdownVulkan(SDL_bool doDestroySwapchain)
     SDL_Vulkan_UnloadLibrary();
 }
 
-static SDL_bool render(void)
+static SDL_Bool render(void)
 {
     uint32_t frameIndex;
     VkResult result;
@@ -995,7 +995,7 @@ static SDL_bool render(void)
     int w, h;
 
     if (!vulkanContext->swapchain) {
-        SDL_bool retval = createNewSwapchainAndSwapchainSpecificStuff();
+        SDL_Bool retval = createNewSwapchainAndSwapchainSpecificStuff();
         if (!retval) {
             SDL_Delay(100);
         }

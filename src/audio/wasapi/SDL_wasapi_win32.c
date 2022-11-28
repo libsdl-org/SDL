@@ -108,7 +108,7 @@ WASAPI_PlatformThreadDeinit(_THIS)
 }
 
 int
-WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
+WASAPI_ActivateDevice(_THIS, const SDL_Bool isrecovery)
 {
     IMMDevice *device = NULL;
     HRESULT ret;

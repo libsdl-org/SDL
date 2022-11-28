@@ -50,11 +50,11 @@ static void openslES_PauseDevices(void) {}
 #if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_AAUDIO
 extern void aaudio_ResumeDevices(void);
 extern void aaudio_PauseDevices(void);
-SDL_bool aaudio_DetectBrokenPlayState( void );
+SDL_Bool aaudio_DetectBrokenPlayState( void );
 #else
 static void aaudio_ResumeDevices(void) {}
 static void aaudio_PauseDevices(void) {}
-static SDL_bool aaudio_DetectBrokenPlayState( void ) { return SDL_FALSE; }
+static SDL_Bool aaudio_DetectBrokenPlayState( void ) { return SDL_FALSE; }
 #endif
 
 
@@ -111,7 +111,7 @@ Android_PumpEvents_Blocking(_THIS)
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
     if (videodata->isPaused) {
-        SDL_bool isContextExternal = SDL_IsVideoContextExternal();
+        SDL_Bool isContextExternal = SDL_IsVideoContextExternal();
 
 #if SDL_VIDEO_OPENGL_EGL
         /* Make sure this is the last thing we do before pausing */
@@ -189,7 +189,7 @@ Android_PumpEvents_NonBlocking(_THIS)
 
     if (videodata->isPaused) {
 
-        SDL_bool isContextExternal = SDL_IsVideoContextExternal();
+        SDL_Bool isContextExternal = SDL_IsVideoContextExternal();
         if (backup_context) {
 
 #if SDL_VIDEO_OPENGL_EGL

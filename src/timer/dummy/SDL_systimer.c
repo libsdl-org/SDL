@@ -23,7 +23,7 @@
 #if defined(SDL_TIMER_DUMMY) || defined(SDL_TIMERS_DISABLED)
 
 
-static SDL_bool ticks_started = SDL_FALSE;
+static SDL_Bool ticks_started = SDL_FALSE;
 
 void
 SDL_TicksInit(void)

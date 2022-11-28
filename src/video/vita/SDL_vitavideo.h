@@ -33,11 +33,11 @@
 
 typedef struct SDL_VideoData
 {
-    SDL_bool egl_initialized;   /* OpenGL device initialization status */
+    SDL_Bool egl_initialized;   /* OpenGL device initialization status */
     uint32_t egl_refcount;      /* OpenGL reference count              */
 
     SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
-    SDL_bool ime_active;
+    SDL_Bool ime_active;
 } SDL_VideoData;
 
 
@@ -49,7 +49,7 @@ typedef struct SDL_DisplayData
 
 typedef struct SDL_WindowData
 {
-    SDL_bool uses_gles;
+    SDL_Bool uses_gles;
     SceUID buffer_uid;
     void* buffer;
 #if defined(SDL_VIDEO_VITA_PVR)
@@ -82,7 +82,7 @@ void VITA_RaiseWindow(_THIS, SDL_Window * window);
 void VITA_MaximizeWindow(_THIS, SDL_Window * window);
 void VITA_MinimizeWindow(_THIS, SDL_Window * window);
 void VITA_RestoreWindow(_THIS, SDL_Window * window);
-void VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
+void VITA_SetWindowGrab(_THIS, SDL_Window * window, SDL_Bool grabbed);
 void VITA_DestroyWindow(_THIS, SDL_Window * window);
 
 #if SDL_VIDEO_DRIVER_VITA
@@ -106,10 +106,10 @@ void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context);
 #endif
 
 /* VITA on screen keyboard */
-SDL_bool VITA_HasScreenKeyboardSupport(_THIS);
+SDL_Bool VITA_HasScreenKeyboardSupport(_THIS);
 void VITA_ShowScreenKeyboard(_THIS, SDL_Window *window);
 void VITA_HideScreenKeyboard(_THIS, SDL_Window *window);
-SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window);
+SDL_Bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 
 void VITA_PumpEvents(_THIS);
 

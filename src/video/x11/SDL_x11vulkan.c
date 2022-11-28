@@ -45,9 +45,9 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     SDL_VideoData *videoData = (SDL_VideoData *)_this->driverdata;
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasXlibSurfaceExtension = SDL_FALSE;
-    SDL_bool hasXCBSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasXlibSurfaceExtension = SDL_FALSE;
+    SDL_Bool hasXCBSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     Uint32 i;
     if (_this->vulkan_config.loader_handle) {
@@ -144,7 +144,7 @@ void X11_Vulkan_UnloadLibrary(_THIS)
     }
 }
 
-SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
+SDL_Bool X11_Vulkan_GetInstanceExtensions(_THIS,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names)
@@ -169,7 +169,7 @@ SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
     }
 }
 
-SDL_bool X11_Vulkan_CreateSurface(_THIS,
+SDL_Bool X11_Vulkan_CreateSurface(_THIS,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface)

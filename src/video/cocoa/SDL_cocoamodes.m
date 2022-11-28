@@ -101,7 +101,7 @@ GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRef link)
     return refreshRate;
 }
 
-static SDL_bool
+static SDL_Bool
 HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
 {
     uint32_t ioflags = CGDisplayModeGetIOFlags(vidmode);
@@ -144,8 +144,8 @@ GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
     return pixelformat;
 }
 
-static SDL_bool
-GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
+static SDL_Bool
+GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_Bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
@@ -306,7 +306,7 @@ Cocoa_InitModes(_THIS)
     CGDisplayErr result;
     CGDirectDisplayID *displays;
     CGDisplayCount numDisplays;
-    SDL_bool isstack;
+    SDL_Bool isstack;
     int pass, i;
 
     result = CGGetOnlineDisplayList(0, NULL, &numDisplays);

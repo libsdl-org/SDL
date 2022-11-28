@@ -52,7 +52,7 @@ typedef struct
 
 } SDL_Windows_Sensor;
 
-static SDL_bool SDL_windowscoinit;
+static SDL_Bool SDL_windowscoinit;
 static ISensorManager *SDL_sensor_manager;
 static int SDL_num_sensors;
 static SDL_Windows_Sensor *SDL_sensors;

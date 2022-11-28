@@ -373,7 +373,7 @@ main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
     while (!done) {
-        SDL_bool update_swap_interval = SDL_FALSE;
+        SDL_Bool update_swap_interval = SDL_FALSE;
 
         /* Check for events */
         ++frames;

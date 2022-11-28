@@ -57,7 +57,7 @@ open_power_file(const char *base, const char *node, const char *key)
 }
 
 
-static SDL_bool
+static SDL_Bool
 read_power_file(const char *base, const char *node, const char *key,
                 char *buf, size_t buflen)
 {
@@ -76,7 +76,7 @@ read_power_file(const char *base, const char *node, const char *key,
 }
 
 
-static SDL_bool
+static SDL_Bool
 make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
 {
     char *ptr = *_ptr;
@@ -124,8 +124,8 @@ make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
 }
 
 static void
-check_proc_acpi_battery(const char * node, SDL_bool * have_battery,
-                        SDL_bool * charging, int *seconds, int *percent)
+check_proc_acpi_battery(const char * node, SDL_Bool * have_battery,
+                        SDL_Bool * charging, int *seconds, int *percent)
 {
     const char *base = proc_acpi_battery_path;
     char info[1024];
@@ -133,8 +133,8 @@ check_proc_acpi_battery(const char * node, SDL_bool * have_battery,
     char *ptr = NULL;
     char *key = NULL;
     char *val = NULL;
-    SDL_bool charge = SDL_FALSE;
-    SDL_bool choose = SDL_FALSE;
+    SDL_Bool charge = SDL_FALSE;
+    SDL_Bool choose = SDL_FALSE;
     int maximum = -1;
     int remaining = -1;
     int secs = -1;
@@ -213,7 +213,7 @@ check_proc_acpi_battery(const char * node, SDL_bool * have_battery,
 }
 
 static void
-check_proc_acpi_ac_adapter(const char * node, SDL_bool * have_ac)
+check_proc_acpi_ac_adapter(const char * node, SDL_Bool * have_ac)
 {
     const char *base = proc_acpi_ac_adapter_path;
     char state[256];
@@ -236,15 +236,15 @@ check_proc_acpi_ac_adapter(const char * node, SDL_bool * have_ac)
 }
 
 
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState * state,
                                  int *seconds, int *percent)
 {
     struct dirent *dent = NULL;
     DIR *dirp = NULL;
-    SDL_bool have_battery = SDL_FALSE;
-    SDL_bool have_ac = SDL_FALSE;
-    SDL_bool charging = SDL_FALSE;
+    SDL_Bool have_battery = SDL_FALSE;
+    SDL_Bool have_ac = SDL_FALSE;
+    SDL_Bool charging = SDL_FALSE;
 
     *seconds = -1;
     *percent = -1;
@@ -287,7 +287,7 @@ SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState * state,
 }
 
 
-static SDL_bool
+static SDL_Bool
 next_string(char **_ptr, char **_str)
 {
     char *ptr = *_ptr;
@@ -315,7 +315,7 @@ next_string(char **_ptr, char **_str)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 int_string(char *str, int *val)
 {
     char *endptr = NULL;
@@ -324,11 +324,11 @@ int_string(char *str, int *val)
 }
 
 /* http://lxr.linux.no/linux+v2.6.29/drivers/char/apm-emulation.c */
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState * state,
                                 int *seconds, int *percent)
 {
-    SDL_bool need_details = SDL_FALSE;
+    SDL_Bool need_details = SDL_FALSE;
     int ac_status = 0;
     int battery_status = 0;
     int battery_flag = 0;
@@ -432,7 +432,7 @@ SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState * state,
     return SDL_TRUE;
 }
 
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *seconds, int *percent)
 {
     const char *base = sys_class_power_supply_path;
@@ -450,7 +450,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
 
     while ((dent = readdir(dirp)) != NULL) {
         const char *name = dent->d_name;
-        SDL_bool choose = SDL_FALSE;
+        SDL_Bool choose = SDL_FALSE;
         char str[64];
         SDL_PowerState st;
         int secs;
@@ -546,7 +546,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
 static void
 check_upower_device(DBusConnection *conn, const char *path, SDL_PowerState *state, int *seconds, int *percent)
 {
-    SDL_bool choose = SDL_FALSE;
+    SDL_Bool choose = SDL_FALSE;
     SDL_PowerState st;
     int secs;
     int pct;
@@ -624,10 +624,10 @@ check_upower_device(DBusConnection *conn, const char *path, SDL_PowerState *stat
 }
 #endif
 
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *seconds, int *percent)
 {
-    SDL_bool retval = SDL_FALSE;
+    SDL_Bool retval = SDL_FALSE;
 
 #if SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();

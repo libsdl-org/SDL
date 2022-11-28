@@ -53,7 +53,7 @@
 #define XDG_PORTAL_DBUS_PATH "/org/freedesktop/portal/desktop"
 #define XDG_PORTAL_DBUS_INTERFACE "org.freedesktop.portal.Realtime"
 
-static SDL_bool    rtkit_use_session_conn;
+static SDL_Bool    rtkit_use_session_conn;
 static const char *rtkit_dbus_node;
 static const char *rtkit_dbus_path;
 static const char *rtkit_dbus_interface;
@@ -68,7 +68,7 @@ static Sint64 rtkit_max_rttime_usec = 200000;
  *  - The desktop portal exists and supports the realtime interface.
  *  - The realtime interface is new enough to have the required bug fixes applied.
  */
-static SDL_bool
+static SDL_Bool
 realtime_portal_supported(DBusConnection *conn)
 {
     Sint64 res;
@@ -134,7 +134,7 @@ rtkit_initialize()
     }
 }
 
-static SDL_bool
+static SDL_Bool
 rtkit_initialize_realtime_thread()
 {
     // Following is an excerpt from rtkit README that outlines the requirements
@@ -194,7 +194,7 @@ rtkit_initialize_realtime_thread()
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 rtkit_setpriority_nice(pid_t thread, int nice_level)
 {
     DBusConnection *dbus_conn;
@@ -218,7 +218,7 @@ rtkit_setpriority_nice(pid_t thread, int nice_level)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 {
     DBusConnection *dbus_conn;

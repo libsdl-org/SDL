@@ -49,7 +49,7 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #endif
 };
 static SDL_Sensor *SDL_sensors = NULL;
-static SDL_bool SDL_updating_sensor = SDL_FALSE;
+static SDL_Bool SDL_updating_sensor = SDL_FALSE;
 static SDL_mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
 static SDL_atomic_t SDL_next_sensor_instance_id;
 
@@ -123,7 +123,7 @@ SDL_SensorID SDL_GetNextSensorInstanceID()
  * Get the driver and device index for an API device index
  * This should be called while the sensor lock is held, to prevent another thread from updating the list
  */
-static SDL_bool
+static SDL_Bool
 SDL_GetDriverAndSensorIndex(int device_index, SDL_SensorDriver **driver, int *driver_index)
 {
     int i, num_sensors, total_sensors = 0;

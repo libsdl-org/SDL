@@ -111,7 +111,7 @@ DISKAUDIO_CloseDevice(_THIS)
 
 
 static const char *
-get_filename(const SDL_bool iscapture, const char *devname)
+get_filename(const SDL_Bool iscapture, const char *devname)
 {
     if (devname == NULL) {
         devname = SDL_getenv(iscapture ? DISKENVR_INFILE : DISKENVR_OUTFILE);
@@ -127,7 +127,7 @@ DISKAUDIO_OpenDevice(_THIS, const char *devname)
 {
     void *handle = _this->handle;
     /* handle != NULL means "user specified the placeholder name on the fake detected device list" */
-    SDL_bool iscapture = _this->iscapture;
+    SDL_Bool iscapture = _this->iscapture;
     const char *fname = get_filename(iscapture, handle ? NULL : devname);
     const char *envr = SDL_getenv(DISKENVR_IODELAY);
 
@@ -176,7 +176,7 @@ DISKAUDIO_DetectDevices(void)
     SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *) 0x2);
 }
 
-static SDL_bool
+static SDL_Bool
 DISKAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */

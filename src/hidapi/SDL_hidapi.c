@@ -87,9 +87,9 @@ static const SDL_UDEV_Symbols * usyms = NULL;
 
 static struct
 {
-    SDL_bool m_bInitialized;
+    SDL_Bool m_bInitialized;
     Uint32 m_unDeviceChangeCounter;
-    SDL_bool m_bCanGetNotifications;
+    SDL_Bool m_bCanGetNotifications;
     Uint32 m_unLastDetect;
 
 #if defined(__WIN32__) || defined(__WINGDK__)
@@ -1068,7 +1068,7 @@ int SDL_hid_init(void)
         libusb_ctx.libhandle = (void *)1;
 #endif
         if (libusb_ctx.libhandle != NULL) {
-            SDL_bool loaded = SDL_TRUE;
+            SDL_Bool loaded = SDL_TRUE;
 #ifdef SDL_LIBUSB_DYNAMIC
             #define LOAD_LIBUSB_SYMBOL(func) \
                 if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
@@ -1276,7 +1276,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
         SDL_Log("hidraw devices found:");
 #endif
         for (raw_dev = raw_devs; raw_dev; raw_dev = raw_dev->next) {
-            SDL_bool bFound = SDL_FALSE;
+            SDL_Bool bFound = SDL_FALSE;
 #ifdef DEBUG_HIDAPI
             SDL_Log(" - %ls %ls 0x%.4hx 0x%.4hx",
                     raw_dev->manufacturer_string, raw_dev->product_string,
@@ -1561,7 +1561,7 @@ int SDL_hid_get_indexed_string(SDL_hid_device *device, int string_index, wchar_t
     return result;
 }
 
-void SDL_hid_ble_scan(SDL_bool active)
+void SDL_hid_ble_scan(SDL_Bool active)
 {
 #if !SDL_HIDAPI_DISABLED && (__IOS__ || __TVOS__)
     hid_ble_scan(active);

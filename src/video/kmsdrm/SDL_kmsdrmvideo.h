@@ -41,9 +41,9 @@ typedef struct SDL_VideoData
 
     struct gbm_device *gbm_dev;
 
-    SDL_bool video_init;             /* Has VideoInit succeeded? */
-    SDL_bool vulkan_mode;            /* Are we in Vulkan mode? One VK window is enough to be. */
-    SDL_bool async_pageflip_support; /* Does the hardware support async. pageflips? */ 
+    SDL_Bool video_init;             /* Has VideoInit succeeded? */
+    SDL_Bool vulkan_mode;            /* Are we in Vulkan mode? One VK window is enough to be. */
+    SDL_Bool async_pageflip_support; /* Does the hardware support async. pageflips? */ 
 
     SDL_Window **windows;
     int max_windows;
@@ -51,7 +51,7 @@ typedef struct SDL_VideoData
 
     /* Even if we have several displays, we only have to
        open 1 FD and create 1 gbm device. */
-    SDL_bool gbm_init;
+    SDL_Bool gbm_init;
 
 } SDL_VideoData;
 
@@ -71,7 +71,7 @@ typedef struct SDL_DisplayData
     drmModeModeInfo fullscreen_mode;
 
     drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
-    SDL_bool saved_vrr;
+    SDL_Bool saved_vrr;
 
     /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
        because setting/unsetting up these is done on window creation/destruction,
@@ -81,7 +81,7 @@ typedef struct SDL_DisplayData
     int cursor_bo_drm_fd;
     uint64_t cursor_w, cursor_h;
 
-    SDL_bool default_cursor_init;
+    SDL_Bool default_cursor_init;
 } SDL_DisplayData;
 
 typedef struct SDL_WindowData
@@ -95,11 +95,11 @@ typedef struct SDL_WindowData
     struct gbm_bo *bo;
     struct gbm_bo *next_bo;
 
-    SDL_bool waiting_for_flip;
-    SDL_bool double_buffer;
+    SDL_Bool waiting_for_flip;
+    SDL_Bool double_buffer;
 
     EGLSurface egl_surface;
-    SDL_bool egl_surface_dirty;
+    SDL_Bool egl_surface_dirty;
 } SDL_WindowData;
 
 typedef struct KMSDRM_FBInfo
@@ -112,7 +112,7 @@ typedef struct KMSDRM_FBInfo
 int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 KMSDRM_FBInfo *KMSDRM_FBFromBO2(_THIS, struct gbm_bo *bo, int w, int h);
-SDL_bool KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata);
+SDL_Bool KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata);
 
 /****************************************************************************/
 /* SDL_VideoDevice functions declaration                                    */
@@ -129,7 +129,7 @@ void KMSDRM_SetWindowTitle(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 void KMSDRM_SetWindowPosition(_THIS, SDL_Window * window);
 void KMSDRM_SetWindowSize(_THIS, SDL_Window * window);
-void KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen);
+void KMSDRM_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_Bool fullscreen);
 void KMSDRM_ShowWindow(_THIS, SDL_Window * window);
 void KMSDRM_HideWindow(_THIS, SDL_Window * window);
 void KMSDRM_RaiseWindow(_THIS, SDL_Window * window);

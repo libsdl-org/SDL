@@ -335,7 +335,7 @@ GetWindowStyle(SDL_Window * window)
     return style;
 }
 
-static SDL_bool
+static SDL_Bool
 SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
@@ -356,7 +356,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 ShouldAdjustCoordinatesForGrab(SDL_Window * window)
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
@@ -375,7 +375,7 @@ ShouldAdjustCoordinatesForGrab(SDL_Window * window)
     return SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
 {
     if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
@@ -759,7 +759,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     }
 
     if (s_moveHack) {
-        SDL_bool blockMove = ((SDL_GetTicks() - s_moveHack) < 500);
+        SDL_Bool blockMove = ((SDL_GetTicks() - s_moveHack) < 500);
 
         s_moveHack = 0;
 
@@ -1138,8 +1138,8 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 
     /* Also note that SDL_SendKeyboardKey expects all capslock events to be
        keypresses; it won't toggle the mod state if you send a keyrelease.  */
-    const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
-    const SDL_bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
+    const SDL_Bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
+    const SDL_Bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
     if (osenabled ^ sdlenabled) {
         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
@@ -1619,7 +1619,7 @@ Cocoa_SendMouseButtonClicks(SDL_Mouse * mouse, NSEvent *theEvent, SDL_Window * w
 @end
 
 static int
-SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
+SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, SDL_Bool created)
 { @autoreleasepool
 {
     SDL_VideoData *videodata = (__bridge SDL_VideoData *) _this->driverdata;
@@ -2073,7 +2073,7 @@ Cocoa_RestoreWindow(_THIS, SDL_Window * window)
 }}
 
 void
-Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
+Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered)
 { @autoreleasepool
 {
     if (SetWindowStyle(window, GetWindowStyle(window))) {
@@ -2084,7 +2084,7 @@ Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }}
 
 void
-Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_Bool resizable)
 { @autoreleasepool
 {
     /* Don't set this if we're in a space!
@@ -2109,7 +2109,7 @@ Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 }}
 
 void
-Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top)
+Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_Bool on_top)
 { @autoreleasepool
     {
         NSWindow *nswindow = ((__bridge SDL_WindowData *) window->driverdata).nswindow;
@@ -2121,7 +2121,7 @@ Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top)
     }}
 
 void
-Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_Bool fullscreen)
 { @autoreleasepool
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
@@ -2292,7 +2292,7 @@ Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window)
 }
 
 void
-Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 { @autoreleasepool
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
@@ -2362,7 +2362,7 @@ Cocoa_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
     return 0;
 }}
 
-SDL_bool
+SDL_Bool
 Cocoa_IsWindowInFullscreenSpace(SDL_Window * window)
 { @autoreleasepool
 {
@@ -2375,11 +2375,11 @@ Cocoa_IsWindowInFullscreenSpace(SDL_Window * window)
     }
 }}
 
-SDL_bool
-Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
+SDL_Bool
+Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_Bool state)
 { @autoreleasepool
 {
-    SDL_bool succeeded = SDL_FALSE;
+    SDL_Bool succeeded = SDL_FALSE;
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
 
     if (data.inWindowFullscreenTransition) {
@@ -2419,13 +2419,13 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
 }}
 
 int
-Cocoa_SetWindowHitTest(SDL_Window * window, SDL_bool enabled)
+Cocoa_SetWindowHitTest(SDL_Window * window, SDL_Bool enabled)
 {
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
 void
-Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
+Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_Bool accept)
 { @autoreleasepool
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;

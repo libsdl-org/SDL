@@ -221,7 +221,7 @@ SDLTest_BailOut(void)
 * \returns Test case result.
 */
 static int
-SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, SDL_bool forceTestRun)
+SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, SDL_Bool forceTestRun)
 {
     SDL_TimerID timer = 0;
     int testCaseResult = 0;
@@ -382,7 +382,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     const char *suiteFilterName = NULL;
     int testFilter = 0;
     const char *testFilterName = NULL;
-    SDL_bool forceTestRun = SDL_FALSE;
+    SDL_Bool forceTestRun = SDL_FALSE;
     int testResult = 0;
     int runResult = 0;
     int totalTestFailedCount = 0;

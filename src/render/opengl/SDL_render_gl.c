@@ -65,7 +65,7 @@ struct GL_FBOList
 
 typedef struct
 {
-    SDL_bool viewport_dirty;
+    SDL_Bool viewport_dirty;
     SDL_Rect viewport;
     SDL_Texture *texture;
     SDL_Texture *target;
@@ -73,14 +73,14 @@ typedef struct
     int drawableh;
     SDL_BlendMode blend;
     GL_Shader shader;
-    SDL_bool cliprect_enabled_dirty;
-    SDL_bool cliprect_enabled;
-    SDL_bool cliprect_dirty;
+    SDL_Bool cliprect_enabled_dirty;
+    SDL_Bool cliprect_enabled;
+    SDL_Bool cliprect_dirty;
     SDL_Rect cliprect;
-    SDL_bool texturing;
-    SDL_bool vertex_array;
-    SDL_bool color_array;
-    SDL_bool texture_array;
+    SDL_Bool texturing;
+    SDL_Bool vertex_array;
+    SDL_Bool color_array;
+    SDL_Bool texture_array;
     Uint32 color;
     Uint32 clear_color;
 } GL_DrawStateCache;
@@ -89,8 +89,8 @@ typedef struct
 {
     SDL_GLContext context;
 
-    SDL_bool debug_enabled;
-    SDL_bool GL_ARB_debug_output_supported;
+    SDL_Bool debug_enabled;
+    SDL_Bool GL_ARB_debug_output_supported;
     int errors;
     char **error_messages;
     GLDEBUGPROCARB next_error_callback;
@@ -98,9 +98,9 @@ typedef struct
 
     GLenum textype;
 
-    SDL_bool GL_ARB_texture_non_power_of_two_supported;
-    SDL_bool GL_ARB_texture_rectangle_supported;
-    SDL_bool GL_EXT_framebuffer_object_supported;
+    SDL_Bool GL_ARB_texture_non_power_of_two_supported;
+    SDL_Bool GL_ARB_texture_rectangle_supported;
+    SDL_Bool GL_EXT_framebuffer_object_supported;
     GL_FBOList *framebuffers;
 
     /* OpenGL functions */
@@ -109,7 +109,7 @@ typedef struct
 #undef SDL_PROC
 
     /* Multitexture support */
-    SDL_bool GL_ARB_multitexture_supported;
+    SDL_Bool GL_ARB_multitexture_supported;
     PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
     GLint num_texture_units;
 
@@ -139,8 +139,8 @@ typedef struct
 
 #if SDL_HAVE_YUV
     /* YUV texture support */
-    SDL_bool yuv;
-    SDL_bool nv12;
+    SDL_Bool yuv;
+    SDL_Bool nv12;
     GLuint utexture;
     GLuint vtexture;
 #endif
@@ -386,7 +386,7 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
@@ -410,7 +410,7 @@ GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     return SDL_TRUE;
 }
 
-SDL_FORCE_INLINE SDL_bool
+SDL_FORCE_INLINE SDL_Bool
 convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
                GLint* internalFormat, GLenum* format, GLenum* type)
 {
@@ -1048,12 +1048,12 @@ static int
 SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
-    SDL_bool vertex_array;
-    SDL_bool color_array;
-    SDL_bool texture_array;
+    SDL_Bool vertex_array;
+    SDL_Bool color_array;
+    SDL_Bool texture_array;
 
     if (data->drawstate.viewport_dirty) {
-        const SDL_bool istarget = data->drawstate.target != NULL;
+        const SDL_Bool istarget = data->drawstate.target != NULL;
         const SDL_Rect *viewport = &data->drawstate.viewport;
         data->glMatrixMode(GL_PROJECTION);
         data->glLoadIdentity();
@@ -1475,7 +1475,7 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     /* Flip the rows to be top-down if necessary */
     if (!renderer->target) {
-        SDL_bool isstack;
+        SDL_Bool isstack;
         length = rect->w * SDL_BYTESPERPIXEL(temp_format);
         src = (Uint8*)temp_pixels + (rect->h-1)*temp_pitch;
         dst = (Uint8*)temp_pixels;
@@ -1696,7 +1696,7 @@ GL_SetVSync(SDL_Renderer * renderer, const int vsync)
     return retval;
 }
 
-static SDL_bool
+static SDL_Bool
 GL_IsProbablyAccelerated(const GL_RenderData *data)
 {
     /*const char *vendor = (const char *) data->glGetString(GL_VENDOR);*/
@@ -1731,9 +1731,9 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     GLint value;
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
-    SDL_bool changed_window = SDL_FALSE;
+    SDL_Bool changed_window = SDL_FALSE;
     const char *hint;
-    SDL_bool non_power_of_two_supported = SDL_FALSE;
+    SDL_Bool non_power_of_two_supported = SDL_FALSE;
 
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
@@ -1858,7 +1858,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     hint = SDL_getenv("GL_ARB_texture_non_power_of_two");
     if (hint == NULL || *hint != '0') {
-        SDL_bool isGL2 = SDL_FALSE;
+        SDL_Bool isGL2 = SDL_FALSE;
         const char *verstr = (const char *)data->glGetString(GL_VERSION);
         if (verstr) {
             char verbuf[16];

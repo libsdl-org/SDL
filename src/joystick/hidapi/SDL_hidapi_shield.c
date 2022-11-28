@@ -75,11 +75,11 @@ typedef struct {
     Uint8 seq_num;
 
     SDL_JoystickPowerLevel battery_level;
-    SDL_bool charging;
+    SDL_Bool charging;
     Uint32 last_battery_query_time;
 
-    SDL_bool rumble_report_pending;
-    SDL_bool rumble_update_pending;
+    SDL_Bool rumble_report_pending;
+    SDL_Bool rumble_update_pending;
     Uint8 left_motor_amplitude;
     Uint8 right_motor_amplitude;
     Uint32 last_rumble_time;
@@ -100,19 +100,19 @@ HIDAPI_DriverShield_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SHIELD, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverShield_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SHIELD, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverShield_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return (type == SDL_CONTROLLER_TYPE_NVIDIA_SHIELD) ? SDL_TRUE : SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverShield_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverShield_Context *ctx;
@@ -174,7 +174,7 @@ HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void
     return 0;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
@@ -293,7 +293,7 @@ HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *
 }
 
 static int
-HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -302,10 +302,10 @@ static void
 HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
 {
     if (ctx->last_state[3] != data[3]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        SDL_Bool dpad_up = SDL_FALSE;
+        SDL_Bool dpad_down = SDL_FALSE;
+        SDL_Bool dpad_left = SDL_FALSE;
+        SDL_Bool dpad_right = SDL_FALSE;
 
         switch (data[3]) {
         case 0:
@@ -403,10 +403,10 @@ HIDAPI_DriverShield_HandleStatePacketV104(SDL_Joystick *joystick, SDL_DriverShie
     }
 
     if (ctx->last_state[2] != data[2]) {
-        SDL_bool dpad_up = SDL_FALSE;
-        SDL_bool dpad_down = SDL_FALSE;
-        SDL_bool dpad_left = SDL_FALSE;
-        SDL_bool dpad_right = SDL_FALSE;
+        SDL_Bool dpad_up = SDL_FALSE;
+        SDL_Bool dpad_down = SDL_FALSE;
+        SDL_Bool dpad_left = SDL_FALSE;
+        SDL_Bool dpad_right = SDL_FALSE;
 
         switch (data[2]) {
         case 0:
@@ -479,7 +479,7 @@ HIDAPI_DriverShield_HandleStatePacketV104(SDL_Joystick *joystick, SDL_DriverShie
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;

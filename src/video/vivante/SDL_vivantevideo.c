@@ -374,7 +374,7 @@ VIVANTE_HideWindow(_THIS, SDL_Window * window)
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
-SDL_bool
+SDL_Bool
 VIVANTE_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;

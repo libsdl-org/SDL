@@ -177,7 +177,7 @@ int SDL_HIDAPI_LockRumble(void)
     return SDL_LockMutex(ctx->lock);
 }
 
-SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
+SDL_Bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
 {
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
     SDL_HIDAPI_RumbleRequest *request, *found;

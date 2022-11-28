@@ -89,7 +89,7 @@ SDL_memcpyMMX(Uint8 * dst, const Uint8 * src, int len)
 void
 SDL_BlitCopy(SDL_BlitInfo * info)
 {
-    SDL_bool overlap;
+    SDL_Bool overlap;
     Uint8 *src, *dst;
     int w, h;
     int srcskip, dstskip;

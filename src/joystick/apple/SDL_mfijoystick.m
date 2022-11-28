@@ -492,7 +492,7 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
 #if defined(SDL_JOYSTICK_iOS_ACCELEROMETER) || defined(SDL_JOYSTICK_MFI)
 static void
-IOS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
+IOS_AddJoystickDevice(GCController *controller, SDL_Bool accelerometer)
 {
     SDL_JoystickDeviceItem *device = deviceList;
 
@@ -952,7 +952,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 #endif
 
         if (controller.extendedGamepad) {
-            SDL_bool isstack;
+            SDL_Bool isstack;
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
             /* Axis order matches the XInput Windows mappings. */
@@ -1092,7 +1092,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
             SDL_small_free(buttons, isstack);
         } else if (controller.gamepad) {
-            SDL_bool isstack;
+            SDL_Bool isstack;
             GCGamepad *gamepad = controller.gamepad;
 
             /* Button order matches the XInput Windows mappings. */
@@ -1537,7 +1537,7 @@ IOS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
 #ifdef ENABLE_MFI_SENSORS
     @autoreleasepool {
@@ -1663,14 +1663,14 @@ IOS_JoystickQuit(void)
     numjoysticks = 0;
 }
 
-static SDL_bool
+static SDL_Bool
 IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
 }
 
 #if defined(SDL_JOYSTICK_MFI) && defined(__MACOS__)
-SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
+SDL_Bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (@available(macOS 10.16, *)) {
         if ([GCController supportsHIDDevice:device]) {

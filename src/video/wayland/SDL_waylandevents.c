@@ -177,10 +177,10 @@ touch_surface(SDL_TouchID id)
 }
 
 /* Returns SDL_TRUE if a key repeat event was due */
-static SDL_bool
+static SDL_Bool
 keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t elapsed)
 {
-    SDL_bool ret = SDL_FALSE;
+    SDL_Bool ret = SDL_FALSE;
     while ((elapsed - repeat_info->next_repeat_ms) < 0x80000000U) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             SDL_SendKeyboardKey(SDL_PRESSED, repeat_info->scancode);
@@ -204,7 +204,7 @@ keyboard_repeat_clear(SDL_WaylandKeyboardRepeat* repeat_info) {
 
 static void
 keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key, uint32_t wl_press_time,
-                    uint32_t scancode, SDL_bool has_text, char text[8]) {
+                    uint32_t scancode, SDL_Bool has_text, char text[8]) {
     if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
         return;
     }
@@ -239,11 +239,11 @@ keyboard_repeat_set_text(SDL_WaylandKeyboardRepeat *repeat_info, const char text
     }
 }
 
-static SDL_bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat* repeat_info) {
+static SDL_Bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat* repeat_info) {
     return repeat_info->is_initialized && repeat_info->is_key_down;
 }
 
-static SDL_bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key) {
+static SDL_Bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key) {
     return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
 
@@ -281,7 +281,7 @@ Wayland_WaitEventTimeout(_THIS, int timeout)
 {
     SDL_VideoData *d = _this->driverdata;
     struct SDL_WaylandInput *input = d->input;
-    SDL_bool key_repeat_active = SDL_FALSE;
+    SDL_Bool key_repeat_active = SDL_FALSE;
 
     WAYLAND_wl_display_flush(d->display);
 
@@ -479,7 +479,7 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
     }
 }
 
-static SDL_bool
+static SDL_Bool
 ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
 {
     SDL_WindowData *window_data = input->pointer_focus;
@@ -1165,8 +1165,8 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 #endif
 }
 
-static SDL_bool
-keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, SDL_bool *handled_by_ime)
+static SDL_Bool
+keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, SDL_Bool *handled_by_ime)
 {
     SDL_WindowData *window = input->keyboard_focus;
     const xkb_keysym_t *syms;
@@ -1226,8 +1226,8 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     enum wl_keyboard_key_state state = state_w;
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
     char text[8];
-    SDL_bool has_text = SDL_FALSE;
-    SDL_bool handled_by_ime = SDL_FALSE;
+    SDL_Bool has_text = SDL_FALSE;
+    SDL_Bool handled_by_ime = SDL_FALSE;
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
@@ -1580,7 +1580,7 @@ data_device_handle_enter(void *data, struct wl_data_device *wl_data_device,
                          wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id)
 {
     SDL_WaylandDataDevice *data_device = data;
-    SDL_bool has_mime = SDL_FALSE;
+    SDL_Bool has_mime = SDL_FALSE;
     uint32_t dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
 
     data_device->drag_serial = serial;
@@ -1707,7 +1707,7 @@ static int Wayland_URIDecode(char *buf, int len) {
  */
 static char* Wayland_URIToLocal(char* uri) {
     char *file = NULL;
-    SDL_bool local;
+    SDL_Bool local;
 
     if (SDL_memcmp(uri,"file:/",6) == 0) {
         uri += 6;      /* local file? */

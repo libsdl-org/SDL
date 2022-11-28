@@ -42,7 +42,7 @@
 #include "../../SDL_hints_c.h"
 
 static int
-Wayland_SetRelativeMouseMode(SDL_bool enabled);
+Wayland_SetRelativeMouseMode(SDL_Bool enabled);
 
 typedef struct {
     struct wl_buffer   *buffer;
@@ -83,7 +83,7 @@ wayland_read_dbus_setting(SDL_DBusContext *dbus, const char *key)
     return reply;
 }
 
-static SDL_bool
+static SDL_Bool
 wayland_parse_dbus_reply(SDL_DBusContext *dbus, DBusMessage *reply, int type, void *value)
 {
     DBusMessageIter iter[3];
@@ -108,7 +108,7 @@ wayland_parse_dbus_reply(SDL_DBusContext *dbus, DBusMessage *reply, int type, vo
     return SDL_TRUE;
 }
 
-static SDL_bool
+static SDL_Bool
 wayland_dbus_read_cursor_size(int *size)
 {
     static const char *cursor_size_value = "cursor-size";
@@ -131,7 +131,7 @@ wayland_dbus_read_cursor_size(int *size)
     return SDL_FALSE;
 }
 
-static SDL_bool
+static SDL_Bool
 wayland_dbus_read_cursor_theme(char **theme)
 {
     static const char *cursor_theme_value = "cursor-theme";
@@ -158,7 +158,7 @@ wayland_dbus_read_cursor_theme(char **theme)
 
 #endif
 
-static SDL_bool
+static SDL_Bool
 wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float *scale)
 {
     struct wl_cursor_theme *theme = NULL;
@@ -209,7 +209,7 @@ wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorData *cdata, float
     }
     if (theme == NULL) {
         char *xcursor_theme = NULL;
-        SDL_bool free_theme_str = SDL_FALSE;
+        SDL_Bool free_theme_str = SDL_FALSE;
 
         vdata->cursor_themes = SDL_realloc(vdata->cursor_themes,
                                            sizeof(SDL_WaylandCursorTheme) * (vdata->num_cursor_themes + 1));
@@ -567,7 +567,7 @@ Wayland_WarpMouseGlobal(int x, int y)
 }
 
 static int
-Wayland_SetRelativeMouseMode(SDL_bool enabled)
+Wayland_SetRelativeMouseMode(SDL_Bool enabled)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = (SDL_VideoData *) vd->driverdata;

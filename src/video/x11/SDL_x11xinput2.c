@@ -69,7 +69,7 @@ query_xinput2_version(Display *display, int major, int minor)
     return (major * 1000) + minor;
 }
 
-static SDL_bool
+static SDL_Bool
 xinput2_version_atleast(const int version, const int wantmajor, const int wantminor)
 {
     return version >= ((wantmajor * 1000) + wantminor);

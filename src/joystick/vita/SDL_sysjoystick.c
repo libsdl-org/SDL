@@ -361,12 +361,12 @@ VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static SDL_bool
+static SDL_Bool
 VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;

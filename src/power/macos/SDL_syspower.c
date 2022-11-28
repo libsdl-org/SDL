@@ -35,15 +35,15 @@
 
 /* Note that AC power sources also include a laptop battery it is charging. */
 static void
-checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
-        SDL_bool * charging, int *seconds, int *percent)
+checkps(CFDictionaryRef dict, SDL_Bool * have_ac, SDL_Bool * have_battery,
+        SDL_Bool * charging, int *seconds, int *percent)
 {
     CFStringRef strval;         /* don't CFRelease() this. */
     CFBooleanRef bval;
     CFNumberRef numval;
-    SDL_bool charge = SDL_FALSE;
-    SDL_bool choose = SDL_FALSE;
-    SDL_bool is_ac = SDL_FALSE;
+    SDL_Bool charge = SDL_FALSE;
+    SDL_Bool choose = SDL_FALSE;
+    SDL_Bool is_ac = SDL_FALSE;
     int secs = -1;
     int maxpct = -1;
     int pct = -1;
@@ -139,7 +139,7 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
 #undef STRMATCH
 
 
-SDL_bool
+SDL_Bool
 SDL_GetPowerInfo_MacOSX(SDL_PowerState * state, int *seconds, int *percent)
 {
     CFTypeRef blob = IOPSCopyPowerSourcesInfo();
@@ -152,9 +152,9 @@ SDL_GetPowerInfo_MacOSX(SDL_PowerState * state, int *seconds, int *percent)
         CFArrayRef list = IOPSCopyPowerSourcesList(blob);
         if (list != NULL) {
             /* don't CFRelease() the list items, or dictionaries! */
-            SDL_bool have_ac = SDL_FALSE;
-            SDL_bool have_battery = SDL_FALSE;
-            SDL_bool charging = SDL_FALSE;
+            SDL_Bool have_ac = SDL_FALSE;
+            SDL_Bool have_battery = SDL_FALSE;
+            SDL_Bool charging = SDL_FALSE;
             const CFIndex total = CFArrayGetCount(list);
             CFIndex i;
             for (i = 0; i < total; i++) {

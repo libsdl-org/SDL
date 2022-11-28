@@ -59,14 +59,14 @@ typedef void (*addDevFn)(const char *name, SDL_AudioSpec *spec, const int iscapt
 typedef struct AudioDeviceList
 {
     AudioDeviceID devid;
-    SDL_bool alive;
+    SDL_Bool alive;
     struct AudioDeviceList *next;
 } AudioDeviceList;
 
 static AudioDeviceList *output_devs = NULL;
 static AudioDeviceList *capture_devs = NULL;
 
-static SDL_bool
+static SDL_Bool
 add_to_internal_dev_list(const int iscapture, AudioDeviceID devId)
 {
     AudioDeviceList *item = (AudioDeviceList *) SDL_malloc(sizeof (AudioDeviceList));
@@ -373,7 +373,7 @@ static void interruption_end(_THIS)
 
 @end
 
-static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrecord)
+static BOOL update_audio_session(_THIS, SDL_Bool open, SDL_Bool allow_playandrecord)
 {
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
@@ -647,7 +647,7 @@ static OSStatus
 device_unplugged(AudioObjectID devid, UInt32 num_addr, const AudioObjectPropertyAddress *addrs, void *data)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) data;
-    SDL_bool dead = SDL_FALSE;
+    SDL_Bool dead = SDL_FALSE;
     UInt32 isAlive = 1;
     UInt32 size = sizeof (isAlive);
     OSStatus error;
@@ -688,7 +688,7 @@ default_device_changed(AudioObjectID inObjectID, UInt32 inNumberAddresses, const
 static void
 COREAUDIO_CloseDevice(_THIS)
 {
-    const SDL_bool iscapture = this->iscapture;
+    const SDL_Bool iscapture = this->iscapture;
     int i;
 
 /* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
@@ -752,7 +752,7 @@ static int
 prepare_device(_THIS)
 {
     void *handle = this->handle;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     AudioDeviceID devid = (AudioDeviceID) ((size_t) handle);
     OSStatus result = noErr;
     UInt32 size = 0;
@@ -1030,7 +1030,7 @@ COREAUDIO_OpenDevice(_THIS, const char *devname)
 {
     AudioStreamBasicDescription *strdesc;
     SDL_AudioFormat test_format;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     SDL_AudioDevice **new_open_devices;
 
     /* Initialize all variables that we clean on shutdown */
@@ -1296,7 +1296,7 @@ COREAUDIO_Deinitialize(void)
 #endif
 }
 
-static SDL_bool
+static SDL_Bool
 COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */

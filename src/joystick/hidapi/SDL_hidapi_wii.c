@@ -119,8 +119,8 @@ typedef struct {
     Uint8 rgucBaseButtons[2];
     Uint8 rgucAccelerometer[3];
     Uint8 rgucExtension[21];
-    SDL_bool hasBaseButtons;
-    SDL_bool hasAccelerometer;
+    SDL_Bool hasBaseButtons;
+    SDL_Bool hasAccelerometer;
     Uint8 ucNExtensionBytes;
 } WiiButtonData;
 
@@ -129,18 +129,18 @@ typedef struct {
     SDL_Joystick *joystick;
     EWiiCommunicationState m_eCommState;
     EWiiExtensionControllerType m_eExtensionControllerType;
-    SDL_bool m_bUseButtonLabels;
-    SDL_bool m_bPlayerLights;
+    SDL_Bool m_bUseButtonLabels;
+    SDL_Bool m_bPlayerLights;
     int m_nPlayerIndex;
-    SDL_bool m_bRumbleActive;
-    SDL_bool m_bMotionPlusPresent;
+    SDL_Bool m_bRumbleActive;
+    SDL_Bool m_bMotionPlusPresent;
     Uint8    m_ucMotionPlusMode;
-    SDL_bool m_bReportSensors;
+    SDL_Bool m_bReportSensors;
     Uint8 m_rgucReadBuffer[k_unWiiPacketDataLength];
     Uint32 m_unLastInput;
     Uint32 m_unLastStatus;
     Uint32 m_unNextMotionPlusCheck;
-    SDL_bool m_bDisconnected;
+    SDL_Bool m_bDisconnected;
 
     struct StickCalibrationData {
         Uint16 min;
@@ -162,7 +162,7 @@ HIDAPI_DriverWii_UnregisterHints(SDL_HintCallback callback, void *userdata)
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII, callback, userdata);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverWii_IsEnabled(void)
 {
 #if 1 /* This doesn't work with the dolphinbar, so don't enable by default right now */
@@ -174,7 +174,7 @@ HIDAPI_DriverWii_IsEnabled(void)
 #endif
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverWii_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO &&
@@ -203,7 +203,7 @@ static int ReadInput(SDL_DriverWii_Context *ctx)
     return size;
 }
 
-static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int size, SDL_bool sync)
+static SDL_Bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int size, SDL_Bool sync)
 {
 #ifdef DEBUG_WII_PROTOCOL
     if (size > 0) {
@@ -221,7 +221,7 @@ static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int s
     }
 }
 
-static SDL_bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs expectedID, SDL_bool(*isMine)(const Uint8 *))
+static SDL_Bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs expectedID, SDL_Bool(*isMine)(const Uint8 *))
 {
     Uint32 TimeoutMs = 250; /* Seeing successful reads after about 200 ms */
     Uint32 startTicks = SDL_GetTicks();
@@ -243,12 +243,12 @@ static SDL_bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs exp
     return SDL_FALSE;
 }
 
-static SDL_bool IsWriteMemoryResponse(const Uint8 *data)
+static SDL_Bool IsWriteMemoryResponse(const Uint8 *data)
 {
     return data[3] == k_eWiiOutputReportIDs_WriteMemory;
 }
 
-static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const Uint8 *data, int size, SDL_bool sync)
+static SDL_Bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const Uint8 *data, int size, SDL_Bool sync)
 {
     Uint8 writeRequest[k_unWiiPacketDataLength];
 
@@ -278,7 +278,7 @@ static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const 
     return SDL_TRUE;
 }
 
-static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int size, SDL_bool sync)
+static SDL_Bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int size, SDL_Bool sync)
 {
     Uint8 readRequest[7];
 
@@ -305,12 +305,12 @@ static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int siz
     return SDL_TRUE;
 }
 
-static SDL_bool SendExtensionIdentify(SDL_DriverWii_Context *ctx, SDL_bool sync)
+static SDL_Bool SendExtensionIdentify(SDL_DriverWii_Context *ctx, SDL_Bool sync)
 {
     return ReadRegister(ctx, 0xA400FE, 2, sync);
 }
 
-static SDL_bool ParseExtensionIdentifyResponse(SDL_DriverWii_Context *ctx, Uint16 *extension)
+static SDL_Bool ParseExtensionIdentifyResponse(SDL_DriverWii_Context *ctx, Uint16 *extension)
 {
     int i;
 
@@ -364,9 +364,9 @@ static EWiiExtensionControllerType GetExtensionType(Uint16 extension_id)
     }
 }
 
-static SDL_bool SendExtensionReset(SDL_DriverWii_Context *ctx, SDL_bool sync)
+static SDL_Bool SendExtensionReset(SDL_DriverWii_Context *ctx, SDL_Bool sync)
 {
-    SDL_bool result = SDL_TRUE;
+    SDL_Bool result = SDL_TRUE;
     {
         Uint8 data = 0x55;
         result = result && WriteRegister(ctx, 0xA400F0, &data, sizeof(data), sync);
@@ -379,7 +379,7 @@ static SDL_bool SendExtensionReset(SDL_DriverWii_Context *ctx, SDL_bool sync)
     return result;
 }
 
-static SDL_bool GetMotionPlusState(SDL_DriverWii_Context *ctx, SDL_bool *connected, Uint8 *mode)
+static SDL_Bool GetMotionPlusState(SDL_DriverWii_Context *ctx, SDL_Bool *connected, Uint8 *mode)
 {
     Uint16 extension;
 
@@ -424,7 +424,7 @@ static SDL_bool GetMotionPlusState(SDL_DriverWii_Context *ctx, SDL_bool *connect
     return SDL_FALSE;
 }
 
-static SDL_bool NeedsPeriodicMotionPlusCheck(SDL_DriverWii_Context *ctx, SDL_bool status_update)
+static SDL_Bool NeedsPeriodicMotionPlusCheck(SDL_DriverWii_Context *ctx, SDL_Bool status_update)
 {
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
         /* The Wii U Pro controller never has the Motion Plus extension */
@@ -506,8 +506,8 @@ static void UpdatePowerLevelWii(SDL_Joystick *joystick, Uint8 batteryLevelByte)
 
 static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryByte)
 {
-    SDL_bool charging  = extensionBatteryByte & 0x08 ? SDL_FALSE : SDL_TRUE;
-    SDL_bool pluggedIn = extensionBatteryByte & 0x04 ? SDL_FALSE : SDL_TRUE;
+    SDL_Bool charging  = extensionBatteryByte & 0x08 ? SDL_FALSE : SDL_TRUE;
+    SDL_Bool pluggedIn = extensionBatteryByte & 0x04 ? SDL_FALSE : SDL_TRUE;
     Uint8 batteryLevel = extensionBatteryByte >> 4;
 
     /* Not sure if all Wii U Pro controllers act like this, but on mine
@@ -550,7 +550,7 @@ static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
     }
 }
 
-static SDL_bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputReportIDs type)
+static SDL_Bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputReportIDs type)
 {
     Uint8 data[3];
     Uint8 tt = ctx->m_bRumbleActive;
@@ -653,7 +653,7 @@ static void UpdateSlotLED(SDL_DriverWii_Context *ctx)
 static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
-    SDL_bool bPlayerLights = SDL_GetStringBoolean(hint, SDL_TRUE);
+    SDL_Bool bPlayerLights = SDL_GetStringBoolean(hint, SDL_TRUE);
 
     if (bPlayerLights != ctx->m_bPlayerLights) {
         ctx->m_bPlayerLights = bPlayerLights;
@@ -723,7 +723,7 @@ UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     device->guid.data[15] = ctx->m_eExtensionControllerType;
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverWii_Context *ctx;
@@ -764,7 +764,7 @@ HIDAPI_DriverWii_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
     UpdateSlotLED(ctx);
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
@@ -820,7 +820,7 @@ static int
 HIDAPI_DriverWii_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
-    SDL_bool active = (low_frequency_rumble || high_frequency_rumble) ? SDL_TRUE : SDL_FALSE;
+    SDL_Bool active = (low_frequency_rumble || high_frequency_rumble) ? SDL_TRUE : SDL_FALSE;
 
     if (active != ctx->m_bRumbleActive) {
         Uint8 data[2];
@@ -859,7 +859,7 @@ HIDAPI_DriverWii_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
 }
 
 static int
-HIDAPI_DriverWii_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+HIDAPI_DriverWii_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_Bool enabled)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
 
@@ -1279,7 +1279,7 @@ static void GetAccelerometer(WiiButtonData *dst, const Uint8 *src)
 
 static void GetExtensionData(WiiButtonData *dst, const Uint8 *src, int size)
 {
-    SDL_bool valid_data = SDL_FALSE;
+    SDL_Bool valid_data = SDL_FALSE;
     int i;
 
     if (size > sizeof(dst->rgucExtension)) {
@@ -1300,8 +1300,8 @@ static void GetExtensionData(WiiButtonData *dst, const Uint8 *src, int size)
 
 static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
 {
-    SDL_bool hadExtension = ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_None;
-    SDL_bool hasExtension = ctx->m_rgucReadBuffer[3] & 2 ? SDL_TRUE : SDL_FALSE;
+    SDL_Bool hadExtension = ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_None;
+    SDL_Bool hasExtension = ctx->m_rgucReadBuffer[3] & 2 ? SDL_TRUE : SDL_FALSE;
     WiiButtonData data;
     SDL_zero(data);
     GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
@@ -1457,7 +1457,7 @@ static void HandleInput(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
     }
 }
 
-static SDL_bool
+static SDL_Bool
 HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;

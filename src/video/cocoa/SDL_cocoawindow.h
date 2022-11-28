@@ -126,8 +126,8 @@ typedef enum
     @property (nonatomic) NSWindow *nswindow;
     @property (nonatomic) NSView *sdlContentView;
     @property (nonatomic) NSMutableArray *nscontexts;
-    @property (nonatomic) SDL_bool created;
-    @property (nonatomic) SDL_bool inWindowFullscreenTransition;
+    @property (nonatomic) SDL_Bool created;
+    @property (nonatomic) SDL_Bool inWindowFullscreenTransition;
     @property (nonatomic) NSInteger window_number;
     @property (nonatomic) NSInteger flash_request;
     @property (nonatomic) Cocoa_WindowListener *listener;
@@ -154,18 +154,18 @@ extern void Cocoa_RaiseWindow(_THIS, SDL_Window * window);
 extern void Cocoa_MaximizeWindow(_THIS, SDL_Window * window);
 extern void Cocoa_MinimizeWindow(_THIS, SDL_Window * window);
 extern void Cocoa_RestoreWindow(_THIS, SDL_Window * window);
-extern void Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered);
-extern void Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable);
-extern void Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_bool on_top);
-extern void Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
+extern void Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered);
+extern void Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_Bool resizable);
+extern void Cocoa_SetWindowAlwaysOnTop(_THIS, SDL_Window * window, SDL_Bool on_top);
+extern void Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_Bool fullscreen);
 extern void* Cocoa_GetWindowICCProfile(_THIS, SDL_Window * window, size_t * size);
 extern int Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window * window);
 extern void Cocoa_SetWindowMouseRect(_THIS, SDL_Window * window);
-extern void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
+extern void Cocoa_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_Bool grabbed);
 extern void Cocoa_DestroyWindow(_THIS, SDL_Window * window);
 extern int Cocoa_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
-extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
-extern void Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept);
+extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_Bool enabled);
+extern void Cocoa_AcceptDragAndDrop(SDL_Window * window, SDL_Bool accept);
 extern int Cocoa_FlashWindow(_THIS, SDL_Window * window, SDL_FlashOperation operation);
 
 #endif /* SDL_cocoawindow_h_ */

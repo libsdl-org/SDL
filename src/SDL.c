@@ -102,11 +102,11 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 
 /* The initialized subsystems */
 #ifdef SDL_MAIN_NEEDED
-static SDL_bool SDL_MainIsReady = SDL_FALSE;
+static SDL_Bool SDL_MainIsReady = SDL_FALSE;
 #else
-static SDL_bool SDL_MainIsReady = SDL_TRUE;
+static SDL_Bool SDL_MainIsReady = SDL_TRUE;
 #endif
-static SDL_bool SDL_bInMainQuit = SDL_FALSE;
+static SDL_Bool SDL_bInMainQuit = SDL_FALSE;
 static Uint8 SDL_SubsystemRefCount[ 32 ];
 
 /* Private helper to increment a subsystem's ref counter. */
@@ -131,7 +131,7 @@ SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 }
 
 /* Private helper to check if a system needs init. */
-static SDL_bool
+static SDL_Bool
 SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
@@ -140,7 +140,7 @@ SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 }
 
 /* Private helper to check if a system needs to be quit. */
-static SDL_bool
+static SDL_Bool
 SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) {
@@ -497,8 +497,8 @@ SDL_Quit(void)
 void
 SDL_GetVersion(SDL_version * ver)
 {
-    static SDL_bool check_hint = SDL_TRUE;
-    static SDL_bool legacy_version = SDL_FALSE;
+    static SDL_Bool check_hint = SDL_TRUE;
+    static SDL_Bool legacy_version = SDL_FALSE;
 
     if (ver == NULL) {        return;
     }
@@ -597,14 +597,14 @@ SDL_GetPlatform(void)
 #endif
 }
 
-SDL_bool
+SDL_Bool
 SDL_IsTablet(void)
 {
 #if __ANDROID__
-    extern SDL_bool SDL_IsAndroidTablet(void);
+    extern SDL_Bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
 #elif __IOS__
-    extern SDL_bool SDL_IsIPad(void);
+    extern SDL_Bool SDL_IsIPad(void);
     return SDL_IsIPad();
 #else
     return SDL_FALSE;

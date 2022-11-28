@@ -52,7 +52,7 @@
 #define _Nullable
 #endif
 
-static SDL_bool SDL_opengl_async_dispatch = SDL_FALSE;
+static SDL_Bool SDL_opengl_async_dispatch = SDL_FALSE;
 
 static void SDLCALL
 SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *name, const char *oldValue, const char *hint)

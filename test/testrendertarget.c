@@ -33,7 +33,7 @@ typedef struct {
 
 DrawState *drawstates;
 int done;
-SDL_bool test_composite = SDL_FALSE;
+SDL_Bool test_composite = SDL_FALSE;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -43,13 +43,13 @@ quit(int rc)
     exit(rc);
 }
 
-SDL_bool
+SDL_Bool
 DrawComposite(DrawState *s)
 {
     SDL_Rect viewport, R;
     SDL_Texture *target;
 
-    static SDL_bool blend_tested = SDL_FALSE;
+    static SDL_Bool blend_tested = SDL_FALSE;
     if (!blend_tested) {
         SDL_Texture *A, *B;
         Uint32 P;
@@ -126,7 +126,7 @@ DrawComposite(DrawState *s)
     return SDL_TRUE;
 }
 
-SDL_bool
+SDL_Bool
 Draw(DrawState *s)
 {
     SDL_Rect viewport;

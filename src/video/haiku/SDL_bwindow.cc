@@ -145,13 +145,13 @@ void HAIKU_SetWindowSize(_THIS, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered) {
+void HAIKU_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered) {
     BMessage msg(BWIN_SET_BORDERED);
     msg.AddBool("window-border", bordered != SDL_FALSE);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable) {
+void HAIKU_SetWindowResizable(_THIS, SDL_Window * window, SDL_Bool resizable) {
     BMessage msg(BWIN_SET_RESIZABLE);
     msg.AddBool("window-resizable", resizable != SDL_FALSE);
     _ToBeWin(window)->PostMessage(&msg);
@@ -188,7 +188,7 @@ void HAIKU_RestoreWindow(_THIS, SDL_Window * window) {
 }
 
 void HAIKU_SetWindowFullscreen(_THIS, SDL_Window * window,
-        SDL_VideoDisplay * display, SDL_bool fullscreen) {
+        SDL_VideoDisplay * display, SDL_Bool fullscreen) {
     /* Haiku tracks all video display information */
     BMessage msg(BWIN_FULLSCREEN);
     msg.AddBool("fullscreen", fullscreen);
@@ -204,7 +204,7 @@ void HAIKU_SetWindowMinimumSize(_THIS, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed) {
+void HAIKU_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_Bool grabbed) {
     /* TODO: Implement this! */
 }
 

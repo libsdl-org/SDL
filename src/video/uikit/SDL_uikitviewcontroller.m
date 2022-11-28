@@ -499,7 +499,7 @@ GetWindowViewController(SDL_Window * window)
     return data.viewcontroller;
 }
 
-SDL_bool
+SDL_Bool
 UIKit_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
@@ -523,7 +523,7 @@ UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
     }
 }
 
-SDL_bool
+SDL_Bool
 UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     @autoreleasepool {

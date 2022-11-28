@@ -84,7 +84,7 @@ typedef struct SDL_MessageBoxDataX11
     Window window;
 #if SDL_VIDEO_DRIVER_X11_XDBE
     XdbeBackBuffer buf;
-    SDL_bool xdbe;                      /* Whether Xdbe is present or not */
+    SDL_Bool xdbe;                      /* Whether Xdbe is present or not */
 #endif
     long event_mask;
     Atom wm_protocols;
@@ -610,8 +610,8 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
 {
     GC ctx;
     XGCValues ctx_vals;
-    SDL_bool close_dialog = SDL_FALSE;
-    SDL_bool has_focus = SDL_TRUE;
+    SDL_Bool close_dialog = SDL_FALSE;
+    SDL_Bool has_focus = SDL_TRUE;
     KeySym last_key_pressed = XK_VoidSymbol;
     unsigned long gcflags = GCForeground | GCBackground;
 
@@ -634,7 +634,7 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
 
     while ( !close_dialog ) {
         XEvent e;
-        SDL_bool draw = SDL_TRUE;
+        SDL_Bool draw = SDL_TRUE;
 
         /* can't use XWindowEvent() because it can't handle ClientMessage events. */
         /* can't use XNextEvent() because we only want events for this window. */

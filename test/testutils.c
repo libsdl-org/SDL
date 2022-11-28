@@ -89,7 +89,7 @@ GetResourceFilename(const char *user_specified, const char *def)
  * If height_out is non-NULL, set it to the texture height.
  */
 SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
+LoadTexture(SDL_Renderer *renderer, const char *file, SDL_Bool transparent,
             int *width_out, int *height_out)
 {
     SDL_Surface *temp = NULL;

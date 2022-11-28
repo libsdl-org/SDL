@@ -256,7 +256,7 @@ static int PS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int 
 }
 
 /* Sensor functionality */
-static int PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return -1;
 }
@@ -328,7 +328,7 @@ static void PS2_JoystickQuit(void)
     deinit_joystick_driver(true);
 }
 
-static SDL_bool PS2_GetGamepadMapping(int device_index, SDL_GamepadMapping * out)
+static SDL_Bool PS2_GetGamepadMapping(int device_index, SDL_GamepadMapping * out)
 {
     return SDL_FALSE;
 }

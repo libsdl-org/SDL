@@ -391,18 +391,18 @@ typedef struct SDL_VideoData
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
-    SDL_bool dpi_scaling_enabled;
-    SDL_bool cleared;
+    SDL_Bool dpi_scaling_enabled;
+    SDL_Bool cleared;
 
  #ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_bool ime_com_initialized;
+    SDL_Bool ime_com_initialized;
     struct ITfThreadMgr *ime_threadmgr;
-    SDL_bool ime_initialized;
-    SDL_bool ime_enabled;
-    SDL_bool ime_available;
+    SDL_Bool ime_initialized;
+    SDL_Bool ime_enabled;
+    SDL_Bool ime_available;
     HWND ime_hwnd_main;
     HWND ime_hwnd_current;
-    SDL_bool ime_suppress_endcomposition_event;
+    SDL_Bool ime_suppress_endcomposition_event;
     HIMC ime_himc;
 
     WCHAR* ime_composition;
@@ -410,16 +410,16 @@ typedef struct SDL_VideoData
     WCHAR ime_readingstring[16];
     int ime_cursor;
 
-    SDL_bool ime_candlist;
+    SDL_Bool ime_candlist;
     WCHAR* ime_candidates;
     DWORD ime_candcount;
     DWORD ime_candref;
     DWORD ime_candsel;
     UINT ime_candpgsize;
     int ime_candlistindexbase;
-    SDL_bool ime_candvertical;
+    SDL_Bool ime_candvertical;
 
-    SDL_bool ime_dirty;
+    SDL_Bool ime_dirty;
     SDL_Rect ime_rect;
     SDL_Rect ime_candlistrect;
     int ime_winwidth;
@@ -434,7 +434,7 @@ typedef struct SDL_VideoData
     LPVOID (WINAPI *ImmLockIMCC)(HIMCC himcc);
     BOOL (WINAPI *ImmUnlockIMCC)(HIMCC himcc);
 
-    SDL_bool ime_uiless;
+    SDL_Bool ime_uiless;
     struct ITfThreadMgrEx *ime_threadmgrex;
     DWORD ime_uielemsinkcookie;
     DWORD ime_alpnsinkcookie;
@@ -449,13 +449,13 @@ typedef struct SDL_VideoData
     UINT _SDL_WAKEUP;
 } SDL_VideoData;
 
-extern SDL_bool g_WindowsEnableMessageLoop;
-extern SDL_bool g_WindowFrameUsableWhileCursorHidden;
+extern SDL_Bool g_WindowsEnableMessageLoop;
+extern SDL_Bool g_WindowFrameUsableWhileCursorHidden;
 
 typedef struct IDirect3D9 IDirect3D9;
-extern SDL_bool D3D_LoadDLL( void **pD3DDLL, IDirect3D9 **pDirect3D9Interface );
+extern SDL_Bool D3D_LoadDLL( void **pD3DDLL, IDirect3D9 **pDirect3D9Interface );
 
-extern SDL_bool WIN_IsPerMonitorV2DPIAware(_THIS);
+extern SDL_Bool WIN_IsPerMonitorV2DPIAware(_THIS);
 
 #endif /* SDL_windowsvideo_h_ */
 

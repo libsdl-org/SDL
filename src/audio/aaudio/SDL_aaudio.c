@@ -72,7 +72,7 @@ static int
 aaudio_OpenDevice(_THIS, const char *devname)
 {
     struct SDL_PrivateAudioData *private;
-    SDL_bool iscapture = this->iscapture;
+    SDL_Bool iscapture = this->iscapture;
     aaudio_result_t res;
     LOGI(__func__);
 
@@ -267,7 +267,7 @@ aaudio_Deinitialize(void)
     LOGI("End AAUDIO %s", SDL_GetError());
 }
 
-static SDL_bool
+static SDL_Bool
 aaudio_Init(SDL_AudioDriverImpl *impl)
 {
     aaudio_result_t res;
@@ -433,7 +433,7 @@ void aaudio_ResumeDevices(void)
  None of the standard state queries indicate any problem in my testing. And the error callback doesn't actually get called.
  But, AAudioStream_getTimestamp() does return AAUDIO_ERROR_INVALID_STATE
 */
-SDL_bool aaudio_DetectBrokenPlayState( void )
+SDL_Bool aaudio_DetectBrokenPlayState( void )
 {
     struct SDL_PrivateAudioData *private;
     int64_t framePosition, timeNanoseconds;

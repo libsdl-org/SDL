@@ -91,7 +91,7 @@ typedef enum
 
 static EnumerationMethod enumeration_method = ENUMERATION_UNSET;
 
-static SDL_bool IsJoystickJSNode(const char *node);
+static SDL_Bool IsJoystickJSNode(const char *node);
 static int MaybeAddDevice(const char *path);
 static int MaybeRemoveDevice(const char *path);
 
@@ -107,13 +107,13 @@ typedef struct SDL_joylist_item
     struct SDL_joylist_item *next;
 
     /* Steam Controller support */
-    SDL_bool m_bSteamController;
+    SDL_Bool m_bSteamController;
 
-    SDL_bool checked_mapping;
+    SDL_Bool checked_mapping;
     SDL_GamepadMapping *mapping;
 } SDL_joylist_item;
 
-static SDL_bool SDL_classic_joysticks = SDL_FALSE;
+static SDL_Bool SDL_classic_joysticks = SDL_FALSE;
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
@@ -147,7 +147,7 @@ FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
 }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-static SDL_bool
+static SDL_Bool
 IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *name)
 {
     if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_S && version == 0 &&
@@ -431,7 +431,7 @@ HandlePendingRemovals(void)
     }
 }
 
-static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, int *device_instance)
+static SDL_Bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, int *device_instance)
 {
     SDL_joylist_item *item;
 
@@ -505,7 +505,7 @@ StrIsInteger(const char *string)
     return 1;
 }
 
-static SDL_bool
+static SDL_Bool
 IsJoystickJSNode(const char *node)
 {
     const char *last_slash = SDL_strrchr(node, '/');
@@ -515,7 +515,7 @@ IsJoystickJSNode(const char *node)
     return StrHasPrefix(node, "js") && StrIsInteger(node + 2);
 }
 
-static SDL_bool
+static SDL_Bool
 IsJoystickEventNode(const char *node)
 {
     const char *last_slash = SDL_strrchr(node, '/');
@@ -525,7 +525,7 @@ IsJoystickEventNode(const char *node)
     return StrHasPrefix(node, "event") && StrIsInteger(node + 5);
 }
 
-static SDL_bool
+static SDL_Bool
 IsJoystickDeviceNode(const char *node)
 {
     if (SDL_classic_joysticks) {
@@ -907,7 +907,7 @@ allocate_balldata(SDL_Joystick *joystick)
     return 0;
 }
 
-static SDL_bool
+static SDL_Bool
 GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *absinfo_y)
 {
     /* A "hat" is assumed to be a digital input with at most 9 possible states
@@ -949,8 +949,8 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
     unsigned long ffbit[NBITS(FF_MAX)] = { 0 };
     Uint8 key_pam_size, abs_pam_size;
-    SDL_bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_FALSE);
-    SDL_bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_HAT_DEADZONES, SDL_TRUE);
+    SDL_Bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_FALSE);
+    SDL_Bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_HAT_DEADZONES, SDL_TRUE);
 
     /* See if this device uses the new unified event API */
     if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
@@ -1310,7 +1310,7 @@ LINUX_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 }
 
 static int
-LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_Bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -1686,7 +1686,7 @@ LINUX_JoystickQuit(void)
    This is based on the Linux Gamepad Specification
    available at: https://www.kernel.org/doc/html/v4.15/input/gamepad.html
  */
-static SDL_bool
+static SDL_Bool
 LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;

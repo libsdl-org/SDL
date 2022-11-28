@@ -40,7 +40,7 @@ typedef struct
 {
     const SDL_Rect *viewport;
     const SDL_Rect *cliprect;
-    SDL_bool surface_cliprect_dirty;
+    SDL_Bool surface_cliprect_dirty;
 } SW_DrawStateCache;
 
 typedef struct
@@ -642,9 +642,9 @@ PrepTextureForCopy(const SDL_RenderCommand *cmd)
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
-    const SDL_bool colormod = ((r & g & b) != 0xFF);
-    const SDL_bool alphamod = (a != 0xFF);
-    const SDL_bool blending = ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD) || (blend == SDL_BLENDMODE_MUL));
+    const SDL_Bool colormod = ((r & g & b) != 0xFF);
+    const SDL_Bool alphamod = (a != 0xFF);
+    const SDL_Bool blending = ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD) || (blend == SDL_BLENDMODE_MUL));
 
     if (colormod || alphamod || blending) {
         SDL_SetSurfaceRLE(surface, 0);
@@ -1168,7 +1168,7 @@ SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     const char *hint;
     SDL_Surface *surface;
-    SDL_bool no_hint_set;
+    SDL_Bool no_hint_set;
 
     /* Set the vsync hint based on our flags, if it's not already set */
     hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);

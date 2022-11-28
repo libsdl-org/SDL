@@ -92,7 +92,7 @@ typedef struct DevIdList
 static DevIdList *deviceid_list = NULL;
 
 static void
-SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bool useguid)
+SDL_IMMDevice_Remove(const SDL_Bool iscapture, LPCWSTR devid, SDL_Bool useguid)
 {
     DevIdList *i;
     DevIdList *next;
@@ -115,7 +115,7 @@ SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bool useguid)
 }
 
 static void
-SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid, GUID *dsoundguid, SDL_bool useguid)
+SDL_IMMDevice_Add(const SDL_Bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid, GUID *dsoundguid, SDL_Bool useguid)
 {
     DevIdList *devidlist;
     SDL_AudioSpec spec;
@@ -182,7 +182,7 @@ typedef struct SDLMMNotificationClient
 {
     const IMMNotificationClientVtbl *lpVtbl;
     SDL_atomic_t refcount;
-    SDL_bool useguid;
+    SDL_Bool useguid;
 } SDLMMNotificationClient;
 
 static HRESULT STDMETHODCALLTYPE
@@ -277,7 +277,7 @@ SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *ithis, LPCWS
         if (SUCCEEDED(IMMDevice_QueryInterface(device, &SDL_IID_IMMEndpoint, (void **)&endpoint))) {
             EDataFlow flow;
             if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
-                const SDL_bool iscapture = (flow == eCapture);
+                const SDL_Bool iscapture = (flow == eCapture);
                 const SDLMMNotificationClient *client = (SDLMMNotificationClient*) ithis;
                 if (dwNewState == DEVICE_STATE_ACTIVE) {
                     char *utf8dev;
@@ -367,7 +367,7 @@ SDL_IMMDevice_Quit(void)
 }
 
 int
-SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
+SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_Bool iscapture)
 {
     HRESULT ret;
 
@@ -423,7 +423,7 @@ static int SDLCALL sort_endpoints(const void *_a, const void *_b)
 }
 
 static void
-EnumerateEndpointsForFlow(const SDL_bool iscapture)
+EnumerateEndpointsForFlow(const SDL_Bool iscapture)
 {
     IMMDeviceCollection *collection = NULL;
     EndpointItem *items;
@@ -475,7 +475,7 @@ EnumerateEndpointsForFlow(const SDL_bool iscapture)
 }
 
 void
-SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid)
+SDL_IMMDevice_EnumerateEndpoints(SDL_Bool useguid)
 {
     notification_client.useguid = useguid;
 

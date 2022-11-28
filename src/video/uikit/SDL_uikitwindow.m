@@ -82,7 +82,7 @@
 
 
 static int
-SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
+SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_Bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
@@ -302,7 +302,7 @@ UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
 }
 
 void
-UIKit_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
+UIKit_SetWindowBordered(_THIS, SDL_Window * window, SDL_Bool bordered)
 {
     @autoreleasepool {
         UIKit_UpdateWindowBorder(_this, window);
@@ -310,7 +310,7 @@ UIKit_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
-UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_Bool fullscreen)
 {
     @autoreleasepool {
         UIKit_UpdateWindowBorder(_this, window);
@@ -318,7 +318,7 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
 }
 
 void
-UIKit_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+UIKit_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_Bool grabbed)
 {
     /* There really isn't a concept of window grab or cursor confinement on iOS */
 }

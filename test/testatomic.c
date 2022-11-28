@@ -18,7 +18,7 @@
 
 static
 const char *
-tf(SDL_bool _tf)
+tf(SDL_Bool _tf)
 {
     static const char *t = "TRUE";
     static const char *f = "FALSE";
@@ -37,7 +37,7 @@ void RunBasicTest()
     SDL_SpinLock lock = 0;
 
     SDL_atomic_t v;
-    SDL_bool tfret = SDL_FALSE;
+    SDL_Bool tfret = SDL_FALSE;
 
     SDL_Log("\nspin lock---------------------------------------\n\n");
 
@@ -310,13 +310,13 @@ static void InitEventQueue(SDL_EventQueue *queue)
     SDL_AtomicSet(&queue->active, 1);
 }
 
-static SDL_bool EnqueueEvent_LockFree(SDL_EventQueue *queue, const SDL_Event *event)
+static SDL_Bool EnqueueEvent_LockFree(SDL_EventQueue *queue, const SDL_Event *event)
 {
     SDL_EventQueueEntry *entry;
     unsigned queue_pos;
     unsigned entry_seq;
     int delta;
-    SDL_bool status;
+    SDL_Bool status;
 
 #ifdef TEST_SPINLOCK_FIFO
     /* This is a gate so an external thread can lock the queue */
@@ -357,13 +357,13 @@ static SDL_bool EnqueueEvent_LockFree(SDL_EventQueue *queue, const SDL_Event *ev
     return status;
 }
 
-static SDL_bool DequeueEvent_LockFree(SDL_EventQueue *queue, SDL_Event *event)
+static SDL_Bool DequeueEvent_LockFree(SDL_EventQueue *queue, SDL_Event *event)
 {
     SDL_EventQueueEntry *entry;
     unsigned queue_pos;
     unsigned entry_seq;
     int delta;
-    SDL_bool status;
+    SDL_Bool status;
 
 #ifdef TEST_SPINLOCK_FIFO
     /* This is a gate so an external thread can lock the queue */
@@ -404,13 +404,13 @@ static SDL_bool DequeueEvent_LockFree(SDL_EventQueue *queue, SDL_Event *event)
     return status;
 }
 
-static SDL_bool EnqueueEvent_Mutex(SDL_EventQueue *queue, const SDL_Event *event)
+static SDL_Bool EnqueueEvent_Mutex(SDL_EventQueue *queue, const SDL_Event *event)
 {
     SDL_EventQueueEntry *entry;
     unsigned queue_pos;
     unsigned entry_seq;
     int delta;
-    SDL_bool status = SDL_FALSE;
+    SDL_Bool status = SDL_FALSE;
 
     SDL_LockMutex(queue->mutex);
 
@@ -437,13 +437,13 @@ static SDL_bool EnqueueEvent_Mutex(SDL_EventQueue *queue, const SDL_Event *event
     return status;
 }
 
-static SDL_bool DequeueEvent_Mutex(SDL_EventQueue *queue, SDL_Event *event)
+static SDL_Bool DequeueEvent_Mutex(SDL_EventQueue *queue, SDL_Event *event)
 {
     SDL_EventQueueEntry *entry;
     unsigned queue_pos;
     unsigned entry_seq;
     int delta;
-    SDL_bool status = SDL_FALSE;
+    SDL_Bool status = SDL_FALSE;
 
     SDL_LockMutex(queue->mutex);
 
@@ -476,8 +476,8 @@ typedef struct
     int index;
     char padding1[SDL_CACHELINE_SIZE-(sizeof(SDL_EventQueue*)+sizeof(int))%SDL_CACHELINE_SIZE];
     int waits;
-    SDL_bool lock_free;
-    char padding2[SDL_CACHELINE_SIZE-sizeof(int)-sizeof(SDL_bool)];
+    SDL_Bool lock_free;
+    char padding2[SDL_CACHELINE_SIZE-sizeof(int)-sizeof(SDL_Bool)];
     SDL_Thread *thread;
 } WriterData;
 
@@ -486,8 +486,8 @@ typedef struct
     SDL_EventQueue *queue;
     int counters[NUM_WRITERS];
     int waits;
-    SDL_bool lock_free;
-    char padding[SDL_CACHELINE_SIZE-(sizeof(SDL_EventQueue*)+sizeof(int)*NUM_WRITERS+sizeof(int)+sizeof(SDL_bool))%SDL_CACHELINE_SIZE];
+    SDL_Bool lock_free;
+    char padding[SDL_CACHELINE_SIZE-(sizeof(SDL_EventQueue*)+sizeof(int)*NUM_WRITERS+sizeof(int)+sizeof(SDL_Bool))%SDL_CACHELINE_SIZE];
     SDL_Thread *thread;
 } ReaderData;
 
@@ -583,7 +583,7 @@ static int SDLCALL FIFO_Watcher(void* _data)
 }
 #endif /* TEST_SPINLOCK_FIFO */
 
-static void RunFIFOTest(SDL_bool lock_free)
+static void RunFIFOTest(SDL_Bool lock_free)
 {
     SDL_EventQueue queue;
     SDL_Thread *fifo_thread = NULL;

@@ -269,7 +269,7 @@ extern DECLSPEC void SDLCALL SDL_StartTextInput(void);
  *
  * \sa SDL_StartTextInput
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsTextInputActive(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsTextInputActive(void);
 
 /**
  * Stop receiving any text input events.
@@ -295,7 +295,7 @@ extern DECLSPEC void SDLCALL SDL_ClearComposition(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsTextInputShown(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsTextInputShown(void);
 
 /**
  * Set the rectangle used to type Unicode text inputs.
@@ -328,7 +328,7 @@ extern DECLSPEC void SDLCALL SDL_SetTextInputRect(const SDL_Rect *rect);
  * \sa SDL_StartTextInput
  * \sa SDL_IsScreenKeyboardShown
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
+extern DECLSPEC SDL_Bool SDLCALL SDL_HasScreenKeyboardSupport(void);
 
 /**
  * Check whether the screen keyboard is shown for given window.
@@ -340,7 +340,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
  *
  * \sa SDL_HasScreenKeyboardSupport
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenKeyboardShown(SDL_Window *window);
+extern DECLSPEC SDL_Bool SDLCALL SDL_IsScreenKeyboardShown(SDL_Window *window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

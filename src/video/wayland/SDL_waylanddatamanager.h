@@ -101,18 +101,18 @@ extern int Wayland_primary_selection_source_add_data(SDL_WaylandPrimarySelection
                                                      const char *mime_type,
                                                      const void *buffer,
                                                      size_t length);
-extern SDL_bool Wayland_data_source_has_mime(SDL_WaylandDataSource *source,
+extern SDL_Bool Wayland_data_source_has_mime(SDL_WaylandDataSource *source,
                                              const char *mime_type);
-extern SDL_bool Wayland_primary_selection_source_has_mime(SDL_WaylandPrimarySelectionSource *source,
+extern SDL_Bool Wayland_primary_selection_source_has_mime(SDL_WaylandPrimarySelectionSource *source,
                                                           const char *mime_type);
 extern void* Wayland_data_source_get_data(SDL_WaylandDataSource *source,
                                           size_t *length,
                                           const char *mime_type,
-                                          SDL_bool null_terminate);
+                                          SDL_Bool null_terminate);
 extern void* Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSource *source,
                                                        size_t *length,
                                                        const char *mime_type,
-                                                       SDL_bool null_terminate);
+                                                       SDL_Bool null_terminate);
 extern void Wayland_data_source_destroy(SDL_WaylandDataSource *source);
 extern void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource *source);
 
@@ -120,14 +120,14 @@ extern void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelection
 extern void* Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
                                         size_t *length,
                                         const char *mime_type,
-                                        SDL_bool null_terminate);
+                                        SDL_Bool null_terminate);
 extern void* Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
                                                      size_t *length,
                                                      const char *mime_type,
-                                                     SDL_bool null_terminate);
-extern SDL_bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
+                                                     SDL_Bool null_terminate);
+extern SDL_Bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
                                             const char *mime_type);
-extern SDL_bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
+extern SDL_Bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
                                                          const char *mime_type);
 extern int Wayland_data_offer_add_mime(SDL_WaylandDataOffer *offer,
                                        const char *mime_type);

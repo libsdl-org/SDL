@@ -39,12 +39,12 @@ typedef struct SDL_WindowData
 
     float pixel_ratio;
 
-    SDL_bool external_size;
+    SDL_Bool external_size;
 
     int requested_fullscreen_mode;
-    SDL_bool fullscreen_resize;
+    SDL_Bool fullscreen_resize;
 
-    SDL_bool has_pointer_lock;
+    SDL_Bool has_pointer_lock;
 } SDL_WindowData;
 
 #endif /* SDL_emscriptenvideo_h_ */

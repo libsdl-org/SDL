@@ -55,8 +55,8 @@ void
 N3DS_PollTouch(void)
 {
     touchPosition touch;
-    static SDL_bool was_pressed = SDL_FALSE;
-    SDL_bool pressed;
+    static SDL_Bool was_pressed = SDL_FALSE;
+    SDL_Bool pressed;
     hidTouchRead(&touch);
     pressed = (touch.px != 0 || touch.py != 0);
 

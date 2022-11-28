@@ -102,7 +102,7 @@ typedef struct SDL_RenderCommand
             SDL_Rect rect;
         } viewport;
         struct {
-            SDL_bool enabled;
+            SDL_Bool enabled;
             SDL_Rect rect;
         } cliprect;
         struct {
@@ -143,7 +143,7 @@ struct SDL_Renderer
 
     void (*WindowEvent) (SDL_Renderer * renderer, const SDL_WindowEvent *event);
     int (*GetOutputSize) (SDL_Renderer * renderer, int *w, int *h);
-    SDL_bool (*SupportsBlendMode)(SDL_Renderer * renderer, SDL_BlendMode blendMode);
+    SDL_Bool (*SupportsBlendMode)(SDL_Renderer * renderer, SDL_BlendMode blendMode);
     int (*CreateTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
     int (*QueueSetViewport) (SDL_Renderer * renderer, SDL_RenderCommand *cmd);
     int (*QueueSetDrawColor) (SDL_Renderer * renderer, SDL_RenderCommand *cmd);
@@ -203,11 +203,11 @@ struct SDL_Renderer
 
     /* The window associated with the renderer */
     SDL_Window *window;
-    SDL_bool hidden;
+    SDL_Bool hidden;
 
     /* Whether we should simulate vsync */
-    SDL_bool wanted_vsync;
-    SDL_bool simulate_vsync;
+    SDL_Bool wanted_vsync;
+    SDL_Bool simulate_vsync;
     Uint32 simulate_vsync_interval;
     Uint32 last_present;
 
@@ -218,7 +218,7 @@ struct SDL_Renderer
     int logical_h_backup;
 
     /* Whether or not to force the viewport to even integer intervals */
-    SDL_bool integer_scale;
+    SDL_Bool integer_scale;
 
     /* The drawable area within the window */
     SDL_DRect viewport;
@@ -229,8 +229,8 @@ struct SDL_Renderer
     SDL_DRect clip_rect_backup;
 
     /* Whether or not the clipping rectangle is used. */
-    SDL_bool clipping_enabled;
-    SDL_bool clipping_enabled_backup;
+    SDL_Bool clipping_enabled;
+    SDL_Bool clipping_enabled_backup;
 
     /* The render output coordinate scale */
     SDL_FPoint scale;
@@ -240,7 +240,7 @@ struct SDL_Renderer
     SDL_FPoint dpi_scale;
 
     /* Whether or not to scale relative mouse motion */
-    SDL_bool relative_scaling;
+    SDL_Bool relative_scaling;
 
     /* The method of drawing lines */
     SDL_RenderLineMethod line_method;
@@ -260,8 +260,8 @@ struct SDL_Renderer
     SDL_Color color;                    /**< Color for drawing operations values */
     SDL_BlendMode blendMode;            /**< The drawing blend mode */
 
-    SDL_bool always_batch;
-    SDL_bool batching;
+    SDL_Bool always_batch;
+    SDL_Bool batching;
     SDL_RenderCommand *render_commands;
     SDL_RenderCommand *render_commands_tail;
     SDL_RenderCommand *render_commands_pool;
@@ -269,10 +269,10 @@ struct SDL_Renderer
     Uint32 last_queued_color;
     SDL_DRect last_queued_viewport;
     SDL_DRect last_queued_cliprect;
-    SDL_bool last_queued_cliprect_enabled;
-    SDL_bool color_queued;
-    SDL_bool viewport_queued;
-    SDL_bool cliprect_queued;
+    SDL_Bool last_queued_cliprect_enabled;
+    SDL_Bool color_queued;
+    SDL_Bool viewport_queued;
+    SDL_Bool cliprect_queued;
 
     void *vertex_data;
     size_t vertex_data_used;

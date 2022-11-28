@@ -419,7 +419,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickDetachVirtual(int device_index);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickIsVirtual(int device_index);
+extern DECLSPEC SDL_Bool SDLCALL SDL_JoystickIsVirtual(int device_index);
 
 /**
  * Set values on an opened, virtual-joystick's axis.
@@ -683,7 +683,7 @@ extern DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint
  * \sa SDL_JoystickClose
  * \sa SDL_JoystickOpen
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAttached(SDL_Joystick *joystick);
+extern DECLSPEC SDL_Bool SDLCALL SDL_JoystickGetAttached(SDL_Joystick *joystick);
 
 /**
  * Get the instance ID of an opened joystick.
@@ -842,7 +842,7 @@ extern DECLSPEC Sint16 SDLCALL SDL_JoystickGetAxis(SDL_Joystick *joystick,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick *joystick,
+extern DECLSPEC SDL_Bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick *joystick,
                                                    int axis, Sint16 *state);
 
 /**
@@ -979,7 +979,7 @@ extern DECLSPEC int SDLCALL SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, U
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
+extern DECLSPEC SDL_Bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
 
 /**
  * Query whether a joystick has rumble support.
@@ -991,7 +991,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasLED(SDL_Joystick *joystick);
  *
  * \sa SDL_JoystickRumble
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumble(SDL_Joystick *joystick);
+extern DECLSPEC SDL_Bool SDLCALL SDL_JoystickHasRumble(SDL_Joystick *joystick);
 
 /**
  * Query whether a joystick has rumble support on triggers.
@@ -1003,7 +1003,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumble(SDL_Joystick *joystick);
  *
  * \sa SDL_JoystickRumbleTriggers
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick);
+extern DECLSPEC SDL_Bool SDLCALL SDL_JoystickHasRumbleTriggers(SDL_Joystick *joystick);
 
 /**
  * Update a joystick's LED color.

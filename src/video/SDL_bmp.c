@@ -50,7 +50,7 @@
 #define LCS_WINDOWS_COLOR_SPACE    0x57696E20
 #endif
 
-static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8)
+static SDL_Bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8)
 {
     /*
     | Sets the surface pixels from src.  A bmp image is upside down.
@@ -163,7 +163,7 @@ static SDL_bool readRlePixels(SDL_Surface * surface, SDL_RWops * src, int isRle8
 static void CorrectAlphaChannel(SDL_Surface *surface)
 {
     /* Check to see if there is any alpha channel data */
-    SDL_bool hasAlpha = SDL_FALSE;
+    SDL_Bool hasAlpha = SDL_FALSE;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     int alphaChannelOffset = 0;
 #else
@@ -192,7 +192,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
 SDL_Surface *
 SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
 {
-    SDL_bool was_error;
+    SDL_Bool was_error;
     Sint64 fp_offset = 0;
     int bmpPitch;
     int i, pad;
@@ -204,11 +204,11 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     SDL_Palette *palette;
     Uint8 *bits;
     Uint8 *top, *end;
-    SDL_bool topDown;
+    SDL_Bool topDown;
     int ExpandBMP;
-    SDL_bool haveRGBMasks = SDL_FALSE;
-    SDL_bool haveAlphaMask = SDL_FALSE;
-    SDL_bool correctAlpha = SDL_FALSE;
+    SDL_Bool haveRGBMasks = SDL_FALSE;
+    SDL_Bool haveAlphaMask = SDL_FALSE;
+    SDL_Bool correctAlpha = SDL_FALSE;
 
     /* The Win32 BMP file header (14 bytes) */
     char magic[2];
@@ -615,8 +615,8 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
     int i, pad;
     SDL_Surface *surface;
     Uint8 *bits;
-    SDL_bool save32bit = SDL_FALSE;
-    SDL_bool saveLegacyBMP = SDL_FALSE;
+    SDL_Bool save32bit = SDL_FALSE;
+    SDL_Bool saveLegacyBMP = SDL_FALSE;
 
     /* The Win32 BMP file header (14 bytes) */
     char magic[2] = { 'B', 'M' };

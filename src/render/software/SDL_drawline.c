@@ -29,7 +29,7 @@
 
 static void
 SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
-              SDL_bool draw_end)
+              SDL_Bool draw_end)
 {
     if (y1 == y2) {
         int length;
@@ -57,7 +57,7 @@ SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
 
 static void
 SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
-              SDL_bool draw_end)
+              SDL_Bool draw_end)
 {
     if (y1 == y2) {
         HLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
@@ -87,7 +87,7 @@ SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
 
 static void
 SDL_DrawLine4(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
-              SDL_bool draw_end)
+              SDL_Bool draw_end)
 {
     if (y1 == y2) {
         HLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
@@ -119,7 +119,7 @@ SDL_DrawLine4(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
 
 typedef void (*DrawLineFunc) (SDL_Surface * dst,
                               int x1, int y1, int x2, int y2,
-                              Uint32 color, SDL_bool draw_end);
+                              Uint32 color, SDL_Bool draw_end);
 
 static DrawLineFunc
 SDL_CalculateDrawLineFunc(const SDL_PixelFormat * fmt)
@@ -169,7 +169,7 @@ SDL_DrawLines(SDL_Surface * dst, const SDL_Point * points, int count,
     int i;
     int x1, y1;
     int x2, y2;
-    SDL_bool draw_end;
+    SDL_Bool draw_end;
     DrawLineFunc func;
 
     if (dst == NULL) {
