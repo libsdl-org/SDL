@@ -324,7 +324,7 @@ if(MSVC)
   endif()
 endif()
 
-# Those are used for pkg-config so sdl3.pc is created correctly.
+# Those are used for pkg-config so SDL3.pc is created correctly.
 set(SDL_LIBS "-lSDL3")
 set(SDL_CFLAGS )
 
@@ -3036,8 +3036,8 @@ endif()
 # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
 # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
 
-configure_file("${SDL3_SOURCE_DIR}/sdl3.pc.in"
-  "${SDL3_BINARY_DIR}/sdl3.pc" @ONLY)
+configure_file("${SDL3_SOURCE_DIR}/SDL3.pc.in"
+  "${SDL3_BINARY_DIR}/SDL3.pc" @ONLY)
 
 macro(check_add_debug_flag FLAG SUFFIX)
     check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
@@ -3470,9 +3470,9 @@ if(NOT SDL3_DISABLE_INSTALL)
   install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
   if(FREEBSD)
     # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-    install(FILES ${SDL3_BINARY_DIR}/sdl3.pc DESTINATION "libdata/pkgconfig")
+    install(FILES ${SDL3_BINARY_DIR}/SDL3.pc DESTINATION "libdata/pkgconfig")
   else()
-    install(FILES ${SDL3_BINARY_DIR}/sdl3.pc
+    install(FILES ${SDL3_BINARY_DIR}/SDL3.pc
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
   endif()
 endif()
