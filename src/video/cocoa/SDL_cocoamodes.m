@@ -415,7 +415,6 @@ Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
         }
     }
 
-    SDL_assert(screen != nil);  /* didn't find it?! */
     if (screen == nil) {
         return -1;
     }
