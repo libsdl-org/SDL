@@ -55,7 +55,7 @@
 /* On GDK, SDL provides a main function that initializes the game runtime.
 
    Please note that #include'ing SDL_main.h is not enough to get a main()
-   function working. You must either link against SDL3main or, if not possible,
+   function working. You must either link against SDL3_main or, if not possible,
    call the SDL_GDKRunApp function from your entry point.
 */
 #define SDL_MAIN_NEEDED
@@ -65,7 +65,7 @@
    and starts the iOS application run loop.
 
    If you link with SDL dynamically on iOS, the main function can't be in a
-   shared library, so you need to link with libSDLmain.a, which includes a
+   shared library, so you need to link with libSDL_main.a, which includes a
    stub main function that calls into the shared library to start execution.
 
    See src/video/uikit/SDL_uikitappdelegate.m for more details.

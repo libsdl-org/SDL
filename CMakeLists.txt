@@ -429,7 +429,7 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
 endforeach()
 
 # Allow some projects to be built conditionally.
-set_option(SDL3_DISABLE_SDL3MAIN   "Disable building/installation of SDL3main" OFF)
+set_option(SDL3_DISABLE_SDL3MAIN   "Disable building/installation of SDL3_main" OFF)
 set_option(SDL3_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 set_option(SDL3_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
@@ -2042,7 +2042,7 @@ elseif(WINDOWS)
   if(MINGW OR CYGWIN)
     if(NOT SDL3_DISABLE_SDL3MAIN)
       list(APPEND SDL_CFLAGS "-Dmain=SDL_main")
-      list(INSERT SDL_LIBS 0 "-lSDL3main")
+      list(INSERT SDL_LIBS 0 "-lSDL3_main")
     endif(NOT SDL3_DISABLE_SDL3MAIN)
     list(INSERT SDL_LIBS 0 "-lmingw32" "-mwindows")
   endif()
@@ -2680,7 +2680,7 @@ elseif(PSP)
       psppower
   )
   if(NOT SDL3_DISABLE_SDL3MAIN)
-    list(INSERT SDL_LIBS 0 "-lSDL3main")
+    list(INSERT SDL_LIBS 0 "-lSDL3_main")
   endif(NOT SDL3_DISABLE_SDL3MAIN)
 
 elseif(PS2)
@@ -3191,11 +3191,11 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} ${EXTRA_CFLAGS_BUILD}")
 
 if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
-  # Build SDLmain
-  add_library(SDL3main STATIC ${SDLMAIN_SOURCES})
+  # Build SDL_main
+  add_library(SDL3_main STATIC ${SDLMAIN_SOURCES})
   # alias target for in-tree builds
-  add_library(SDL3::SDL3main ALIAS SDL3main)
-  target_include_directories(SDL3main
+  add_library(SDL3::SDL3_main ALIAS SDL3_main)
+  target_include_directories(SDL3_main
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
     PUBLIC
@@ -3204,18 +3204,18 @@ if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
   if (WIN32)
-    target_link_libraries(SDL3main PRIVATE shell32)
+    target_link_libraries(SDL3_main PRIVATE shell32)
   endif()
   if(MINGW OR CYGWIN)
     cmake_minimum_required(VERSION 3.13)
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-      target_link_options(SDL3main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=_WinMain@16>")
+      target_link_options(SDL3_main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=_WinMain@16>")
     else()
-      target_link_options(SDL3main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>")
+      target_link_options(SDL3_main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>")
     endif()
   endif()
   if (NOT ANDROID)
-    set_target_properties(SDL3main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
+    set_target_properties(SDL3_main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   endif()
 endif()
 
@@ -3341,9 +3341,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 if(SDL_TEST)
   file(GLOB TEST_SOURCES ${SDL3_SOURCE_DIR}/src/test/*.c)
   add_library(SDL3_test STATIC ${TEST_SOURCES})
-  add_library(SDL3::SDL3test ALIAS SDL3_test)
+  add_library(SDL3::SDL3_test ALIAS SDL3_test)
   set_target_properties(SDL3_test PROPERTIES
-      EXPORT_NAME SDL3test)
+      EXPORT_NAME SDL3_test)
   target_include_directories(SDL3_test
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
@@ -3365,7 +3365,7 @@ if(NOT SDL3_DISABLE_INSTALL)
   endif()
 
   if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
-    install(TARGETS SDL3main EXPORT SDL3mainTargets
+    install(TARGETS SDL3_main EXPORT SDL3mainTargets
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -3425,7 +3425,7 @@ if(NOT SDL3_DISABLE_INSTALL)
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL3mainTargets
-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3main")
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3_main")
     endif()
   endif()
 
@@ -3449,7 +3449,7 @@ if(NOT SDL3_DISABLE_INSTALL)
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL3testTargets
-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3test")
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3_test")
     endif()
   endif()
 
