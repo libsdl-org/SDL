@@ -170,6 +170,7 @@ SDL_GetJoystickGameControllerProtocol(const char *name, Uint16 vendor, Uint16 pr
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
             0x2c22, /* Qanba */
+            0x2dc8, /* 8BitDo */
         };
 
         int i;
