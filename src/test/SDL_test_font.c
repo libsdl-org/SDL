@@ -3155,10 +3155,10 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
     /*
      * Setup destination rectangle
      */
-    drect.x = x;
-    drect.y = y;
-    drect.w = charWidth;
-    drect.h = charHeight;
+    drect.x = (float)x;
+    drect.y = (float)y;
+    drect.w = (float)charWidth;
+    drect.h = (float)charHeight;
 
     /* Character index in cache */
     ci = c;
