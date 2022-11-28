@@ -188,6 +188,10 @@ SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the AP
 
 Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
 
+
+SDL_GL_CONTEXT_EGL has been removed.
+
+
 ## SDL_hints.h
 
 The following hints have been removed:
