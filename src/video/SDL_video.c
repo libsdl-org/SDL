@@ -3659,14 +3659,6 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
     case SDL_GL_CONTEXT_MINOR_VERSION:
         _this->gl_config.minor_version = value;
         break;
-    case SDL_GL_CONTEXT_EGL:
-        /* FIXME: SDL_GL_CONTEXT_EGL to be deprecated in SDL 2.1 */
-        if (value != 0) {
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-        } else {
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
-        }
-        break;
     case SDL_GL_CONTEXT_FLAGS:
         if (value & ~(SDL_GL_CONTEXT_DEBUG_FLAG |
                       SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG |
@@ -3876,16 +3868,6 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     case SDL_GL_CONTEXT_MINOR_VERSION:
         {
             *value = _this->gl_config.minor_version;
-            return 0;
-        }
-    case SDL_GL_CONTEXT_EGL:
-        /* FIXME: SDL_GL_CONTEXT_EGL to be deprecated in SDL 2.1 */
-        {
-            if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
-                *value = 1;
-            } else {
-                *value = 0;
-            }
             return 0;
         }
     case SDL_GL_CONTEXT_FLAGS:
