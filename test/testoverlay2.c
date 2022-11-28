@@ -142,7 +142,7 @@ SDL_Color MooseColors[84] = {
 
 Uint8 MooseFrame[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE*2];
 SDL_Texture *MooseTexture;
-SDL_Rect displayrect;
+SDL_FRect displayrect;
 int window_w;
 int window_h;
 SDL_Renderer *renderer;
@@ -224,7 +224,7 @@ loop()
         SDL_UpdateTexture(MooseTexture, NULL, MooseFrame[i], MOOSEPIC_W);
     }
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, MooseTexture, NULL, &displayrect);
+    SDL_RenderCopyF(renderer, MooseTexture, NULL, &displayrect);
     SDL_RenderPresent(renderer);
 
 #ifdef __EMSCRIPTEN__

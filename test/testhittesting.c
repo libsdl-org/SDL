@@ -15,13 +15,13 @@
 
 #define RESIZE_BORDER 20
 
-const SDL_Rect drag_areas[] = {
+const SDL_FRect drag_areas[] = {
     { 20, 20, 100, 100 },
     { 200, 70, 100, 100 },
     { 400, 90, 100, 100 }
 };
 
-static const SDL_Rect *areas = drag_areas;
+static const SDL_FRect *areas = drag_areas;
 static int numareas = SDL_arraysize(drag_areas);
 
 static SDL_HitTestResult SDLCALL
@@ -29,9 +29,12 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
 {
     int i;
     int w, h;
+    SDL_FPoint fpt; 
+    fpt.x = pt->x;
+    fpt.y = pt->y;
 
     for (i = 0; i < numareas; i++) {
-        if (SDL_PointInRect(pt, &areas[i])) {
+        if (SDL_PointInFRect(&fpt, &areas[i])) {
             SDL_Log("HIT-TEST: DRAGGABLE\n");
             return SDL_HITTEST_DRAGGABLE;
         }
@@ -91,7 +94,7 @@ int main(int argc, char **argv)
         SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRects(renderer, areas, SDL_arraysize(drag_areas));
+        SDL_RenderFillRectsF(renderer, areas, SDL_arraysize(drag_areas));
         SDL_RenderPresent(renderer);
 
         while (SDL_PollEvent(&e)) {

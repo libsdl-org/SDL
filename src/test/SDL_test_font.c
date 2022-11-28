@@ -3132,7 +3132,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
     const Uint32 charHeight = FONT_CHARACTER_SIZE;
     const Uint32 charSize = FONT_CHARACTER_SIZE;
     SDL_Rect srect;
-    SDL_Rect drect;
+    SDL_FRect drect;
     int result;
     Uint32 ix, iy;
     const unsigned char *charpos;
@@ -3237,7 +3237,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
     /*
      * Draw texture onto destination
      */
-    result |= SDL_RenderCopy(renderer, cache->charTextureCache[ci], &srect, &drect);
+    result |= SDL_RenderCopyF(renderer, cache->charTextureCache[ci], &srect, &drect);
 
     return result;
 }

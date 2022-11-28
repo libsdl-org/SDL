@@ -42,8 +42,8 @@ void
 render(SDL_Renderer *renderer, double deltaTime)
 {
     int i;
-    SDL_Rect srcRect;
-    SDL_Rect dstRect;
+    SDL_FRect srcRect;
+    SDL_FRect dstRect;
     int w;
     int h;
 
@@ -92,7 +92,7 @@ render(SDL_Renderer *renderer, double deltaTime)
         }
         dstRect.x = faces[i].x;
         dstRect.y = faces[i].y;
-        SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
+        SDL_RenderCopyF(renderer, texture, &srcRect, &dstRect);
     }
     /* update screen */
     SDL_RenderPresent(renderer);

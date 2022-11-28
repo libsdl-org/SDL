@@ -18,7 +18,7 @@ render(SDL_Renderer *renderer)
     SDL_RenderGetLogicalSize(renderer, &renderW, &renderH);
 
     /*  Come up with a random rectangle */
-    SDL_Rect rect;
+    SDL_FRect rect;
     rect.w = randomInt(64, 128);
     rect.h = randomInt(64, 128);
     rect.x = randomInt(0, renderW);
@@ -31,7 +31,7 @@ render(SDL_Renderer *renderer)
 
     /*  Fill the rectangle in the color */
     SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-    SDL_RenderFillRect(renderer, &rect);
+    SDL_RenderFillRectF(renderer, &rect);
 
     /* update screen */
     SDL_RenderPresent(renderer);

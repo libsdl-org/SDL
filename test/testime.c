@@ -37,7 +37,7 @@
 #define MAX_TEXT_LENGTH 256
 
 static SDLTest_CommonState *state;
-static SDL_Rect textRect, markedRect;
+static SDL_FRect textRect, markedRect;
 static SDL_Color lineColor = {0,0,0,255};
 static SDL_Color backColor = {255,255,255,255};
 static SDL_Color textColor = {0,0,0,255};
@@ -303,7 +303,7 @@ static int unifont_load_texture(Uint32 textureID)
     return 0;
 }
 
-static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dstrect)
+static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *dstrect)
 {
     SDL_Texture *texture;
     const Uint32 textureID = codepoint / UNIFONT_GLYPHS_IN_TEXTURE;
@@ -322,7 +322,7 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dst
         const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
         srcrect.x = cInTex % UNIFONT_GLYPHS_IN_ROW * 16;
         srcrect.y = cInTex / UNIFONT_GLYPHS_IN_ROW * 16;
-        SDL_RenderCopy(state->renderers[rendererID], texture, &srcrect, dstrect);
+        SDL_RenderCopyF(state->renderers[rendererID], texture, &srcrect, dstrect);
     }
     return unifontGlyph[codepoint].width;
 }
@@ -452,12 +452,12 @@ void CleanupVideo()
 void _Redraw(int rendererID)
 {
     SDL_Renderer * renderer = state->renderers[rendererID];
-    SDL_Rect drawnTextRect, cursorRect, underlineRect;
+    SDL_FRect drawnTextRect, cursorRect, underlineRect;
     drawnTextRect = textRect;
     drawnTextRect.w = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
-    SDL_RenderFillRect(renderer,&textRect);
+    SDL_RenderFillRectF(renderer,&textRect);
 
     if (*text) {
 #ifdef HAVE_SDL_TTF
@@ -472,13 +472,13 @@ void _Redraw(int rendererID)
         texture = SDL_CreateTextureFromSurface(renderer,textSur);
         SDL_FreeSurface(textSur);
 
-        SDL_RenderCopy(renderer,texture,NULL,&drawnTextRect);
+        SDL_RenderCopyF(renderer,texture,NULL,&drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         char *utext = text;
         Uint32 codepoint;
         size_t len;
-        SDL_Rect dstrect;
+        SDL_FRect dstrect;
 
         dstrect.x = textRect.x;
         dstrect.y = textRect.y + (textRect.h - 16 * UNIFONT_DRAW_SCALE) / 2;
@@ -515,7 +515,7 @@ void _Redraw(int rendererID)
     drawnTextRect.w = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
-    SDL_RenderFillRect(renderer,&markedRect);
+    SDL_RenderFillRectF(renderer,&markedRect);
 
     if (markedText[0]) {
 #ifdef HAVE_SDL_TTF
@@ -543,14 +543,14 @@ void _Redraw(int rendererID)
         texture = SDL_CreateTextureFromSurface(renderer,textSur);
         SDL_FreeSurface(textSur);
 
-        SDL_RenderCopy(renderer,texture,NULL,&drawnTextRect);
+        SDL_RenderCopyF(renderer,texture,NULL,&drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         int i = 0;
         char *utext = markedText;
         Uint32 codepoint;
         size_t len;
-        SDL_Rect dstrect;
+        SDL_FRect dstrect;
 
         dstrect.x = drawnTextRect.x;
         dstrect.y = textRect.y + (textRect.h - 16 * UNIFONT_DRAW_SCALE) / 2;
@@ -582,13 +582,20 @@ void _Redraw(int rendererID)
         underlineRect.w = drawnTextRect.w;
 
         SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-        SDL_RenderFillRect(renderer, &underlineRect);
+        SDL_RenderFillRectF(renderer, &underlineRect);
     }
 
     SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-    SDL_RenderFillRect(renderer,&cursorRect);
+    SDL_RenderFillRectF(renderer,&cursorRect);
 
-    SDL_SetTextInputRect(&markedRect);
+    {
+        SDL_Rect r;
+        r.x = markedRect.x;
+        r.y = markedRect.y;
+        r.w = markedRect.w;
+        r.h = markedRect.h;
+        SDL_SetTextInputRect(&r);
+    }
 }
 
 void Redraw()

@@ -23,14 +23,14 @@
 
 static SDLTest_CommonState *state;
 int i, done;
-SDL_Rect rect;
+SDL_FRect rect;
 SDL_Event event;
 
 static void
 DrawRects(SDL_Renderer * renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
+    SDL_RenderFillRectF(renderer, &rect);
 }
 
 static void

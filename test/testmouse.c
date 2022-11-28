@@ -55,7 +55,7 @@ DrawObject(SDL_Renderer * renderer, Object * object)
     SDL_SetRenderDrawColor(renderer, object->r, object->g, object->b, 255);
 
     if (object->isRect) {
-        SDL_Rect rect;
+        SDL_FRect rect;
 
         if (object->x1 > object->x2) {
             rect.x = object->x2;
@@ -73,10 +73,10 @@ DrawObject(SDL_Renderer * renderer, Object * object)
             rect.h = object->y2 - object->y1;
         }
 
-        /* SDL_RenderDrawRect(renderer, &rect); */
-        SDL_RenderFillRect(renderer, &rect);
+        /* SDL_RenderDrawRects(renderer, &rect); */
+        SDL_RenderFillRectF(renderer, &rect);
     } else {
-        SDL_RenderDrawLine(renderer, object->x1, object->y1, object->x2, object->y2);
+        SDL_RenderDrawLineF(renderer, object->x1, object->y1, object->x2, object->y2);
     }
 }
 
@@ -204,10 +204,10 @@ loop(void *arg)
     /* Mouse wheel */
     SDL_SetRenderDrawColor(renderer, 0, 255, 128, 255);
     if (wheel_x_active) {
-        SDL_RenderDrawLine(renderer, (int)wheel_x, 0, (int)wheel_x, SCREEN_HEIGHT);
+        SDL_RenderDrawLineF(renderer, (int)wheel_x, 0, (int)wheel_x, SCREEN_HEIGHT);
     }
     if (wheel_y_active) {
-        SDL_RenderDrawLine(renderer, 0, (int)wheel_y, SCREEN_WIDTH, (int)wheel_y);
+        SDL_RenderDrawLineF(renderer, 0, (int)wheel_y, SCREEN_WIDTH, (int)wheel_y);
     }
 
     /* Objects from mouse clicks */

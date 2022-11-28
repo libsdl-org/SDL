@@ -29,7 +29,8 @@ void
 DrawChessBoard()
 {
     int row = 0,column = 0,x = 0;
-    SDL_Rect rect, darea;
+    SDL_FRect rect;
+    SDL_Rect darea;
 
     /* Get the Size of drawing surface */
     SDL_RenderGetViewport(renderer, &darea);
@@ -47,7 +48,7 @@ DrawChessBoard()
             rect.x = x * rect.w;
             rect.y = row * rect.h;
             x = x + 2;
-            SDL_RenderFillRect(renderer, &rect);
+            SDL_RenderFillRectF(renderer, &rect);
         }
     }
 }

@@ -25,7 +25,7 @@ drawLine(SDL_Renderer *renderer, float startx, float starty, float dx, float dy)
     int iterations = distance / PIXELS_PER_ITERATION + 1;       /* number of brush sprites to draw for the line */
     float dx_prime = dx / iterations;   /* x-shift per iteration */
     float dy_prime = dy / iterations;   /* y-shift per iteration */
-    SDL_Rect dstRect;           /* rect to draw brush sprite into */
+    SDL_FFRect dstRect;           /* rect to draw brush sprite into */
     float x;
     float y;
     int i;
@@ -45,7 +45,7 @@ drawLine(SDL_Renderer *renderer, float startx, float starty, float dx, float dy)
         x += dx_prime;
         y += dy_prime;
         /* draw brush blot */
-        SDL_RenderCopy(renderer, brush, NULL, &dstRect);
+        SDL_RenderCopyF(renderer, brush, NULL, &dstRect);
     }
 }
 
@@ -126,7 +126,7 @@ main(int argc, char *argv[])
             }
         }
 
-        SDL_RenderCopy(renderer, target, NULL, NULL);
+        SDL_RenderCopyF(renderer, target, NULL, NULL);
         SDL_RenderPresent(renderer);
     }
 

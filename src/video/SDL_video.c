@@ -341,7 +341,7 @@ SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, const SDL_
             return -1;
         }
 
-        if (SDL_RenderCopy(data->renderer, data->texture, NULL, NULL) < 0) {
+        if (SDL_RenderCopyF(data->renderer, data->texture, NULL, NULL) < 0) {
             return -1;
         }
 

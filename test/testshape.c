@@ -26,12 +26,17 @@ typedef struct LoadedPicture {
 
 void render(SDL_Renderer *renderer,SDL_Texture *texture,SDL_Rect texture_dimensions)
 {
+    SDL_FRect frect;
     /* Clear render-target to blue. */
     SDL_SetRenderDrawColor(renderer,0x00,0x00,0xff,0xff);
     SDL_RenderClear(renderer);
 
     /* Render the texture. */
-    SDL_RenderCopy(renderer,texture,&texture_dimensions,&texture_dimensions);
+    frect.x = texture_dimensions.x;
+    frect.y = texture_dimensions.y;
+    frect.w = texture_dimensions.w;
+    frect.h = texture_dimensions.h;
+    SDL_RenderCopyF(renderer,texture,&texture_dimensions, &frect);
 
     SDL_RenderPresent(renderer);
 }

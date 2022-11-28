@@ -12,7 +12,7 @@
 
 static struct
 {
-    SDL_Rect rect;              /* where the button is drawn */
+    SDL_FRect rect;             /* where the button is drawn */
     SDL_Color upColor;          /* color when button is not active */
     SDL_Color downColor;        /* color when button is active */
     int isPressed;              /* is the button being pressed ? */
@@ -173,7 +173,7 @@ render(SDL_Renderer *renderer)
         SDL_Color color =
             buttons[i].isPressed ? buttons[i].downColor : buttons[i].upColor;
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-        SDL_RenderFillRect(renderer, &buttons[i].rect);
+        SDL_RenderFillRectF(renderer, &buttons[i].rect);
     }
     /* update the screen */
     SDL_RenderPresent(renderer);

@@ -75,7 +75,7 @@ DrawPoints(SDL_Renderer * renderer)
 
         x = rand() % viewport.w;
         y = rand() % viewport.h;
-        SDL_RenderDrawPoint(renderer, x, y);
+        SDL_RenderDrawPointF(renderer, x, y);
     }
 }
 
@@ -115,19 +115,19 @@ DrawLines(SDL_Renderer * renderer)
 
     for (i = 0; i < num_lines; ++i) {
         if (i == -1) {
-            SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
-            SDL_RenderDrawLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
-            SDL_RenderDrawLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
-            SDL_RenderDrawLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
+            SDL_RenderDrawLineF(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
+            SDL_RenderDrawLineF(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
+            SDL_RenderDrawLineF(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
+            SDL_RenderDrawLineF(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
-            SDL_RenderDrawLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
+            SDL_RenderDrawLineF(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
         }
     }
 }
 
 #define MAX_RECTS 16
 int num_rects = 0;
-SDL_Rect rects[MAX_RECTS];
+SDL_FRect rects[MAX_RECTS];
 static int
 add_rect(int x1, int y1, int x2, int y2)
 {
@@ -160,7 +160,7 @@ static void
 DrawRects(SDL_Renderer * renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
-    SDL_RenderFillRects(renderer, rects, num_rects);
+    SDL_RenderFillRectsF(renderer, rects, num_rects);
 }
 
 static void
@@ -172,8 +172,8 @@ DrawRectLineIntersections(SDL_Renderer * renderer)
 
     for (i = 0; i < num_rects; i++)
         for (j = 0; j < num_lines; j++) {
-            int x1, y1, x2, y2;
-            SDL_Rect r;
+            float x1, y1, x2, y2;
+            SDL_FRect r;
 
             r = rects[i];
             x1 = lines[j].x;
@@ -181,8 +181,8 @@ DrawRectLineIntersections(SDL_Renderer * renderer)
             x2 = lines[j].w;
             y2 = lines[j].h;
 
-            if (SDL_IntersectRectAndLine(&r, &x1, &y1, &x2, &y2)) {
-                SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+            if (SDL_IntersectFRectAndLine(&r, &x1, &y1, &x2, &y2)) {
+                SDL_RenderDrawLineF(renderer, x1, y1, x2, y2);
             }
         }
 }
@@ -196,9 +196,9 @@ DrawRectRectIntersections(SDL_Renderer * renderer)
 
     for (i = 0; i < num_rects; i++)
         for (j = i + 1; j < num_rects; j++) {
-            SDL_Rect r;
-            if (SDL_IntersectRect(&rects[i], &rects[j], &r)) {
-                SDL_RenderFillRect(renderer, &r);
+            SDL_FRect r;
+            if (SDL_IntersectFRect(&rects[i], &rects[j], &r)) {
+                SDL_RenderFillRectF(renderer, &r);
             }
         }
 }

@@ -27,8 +27,8 @@
 #define MAX_SPEED       1
 
 static SDL_Texture *sprite;
-static SDL_Rect positions[NUM_SPRITES];
-static SDL_Rect velocities[NUM_SPRITES];
+static SDL_FRect positions[NUM_SPRITES];
+static SDL_FRect velocities[NUM_SPRITES];
 static int sprite_w, sprite_h;
 
 SDL_Renderer *renderer;
@@ -48,7 +48,7 @@ MoveSprites()
     int i;
     int window_w = WINDOW_WIDTH;
     int window_h = WINDOW_HEIGHT;
-    SDL_Rect *position, *velocity;
+    SDL_FRect *position, *velocity;
 
     /* Draw a gray background */
     SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
@@ -70,7 +70,7 @@ MoveSprites()
         }
 
         /* Blit the sprite onto the screen */
-        SDL_RenderCopy(renderer, sprite, NULL, position);
+        SDL_RenderCopyF(renderer, sprite, NULL, position);
     }
 
     /* Update the screen! */

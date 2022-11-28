@@ -33,8 +33,8 @@ static SDL_bool cycle_alpha;
 static int cycle_direction = 1;
 static int current_alpha = 0;
 static int current_color = 0;
-static SDL_Rect *positions;
-static SDL_Rect *velocities;
+static SDL_FRect *positions;
+static SDL_FRect *velocities;
 static int sprite_w, sprite_h;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
 static Uint32 next_fps_check, frames;
@@ -89,8 +89,9 @@ void
 MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
 {
     int i;
-    SDL_Rect viewport, temp;
-    SDL_Rect *position, *velocity;
+    SDL_Rect viewport;
+    SDL_FRect temp;
+    SDL_FRect *position, *velocity;
 
     /* Query the sizes */
     SDL_RenderGetViewport(renderer, &viewport);
@@ -128,17 +129,17 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
 
     /* Test points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
-    SDL_RenderDrawPoint(renderer, 0, 0);
-    SDL_RenderDrawPoint(renderer, viewport.w-1, 0);
-    SDL_RenderDrawPoint(renderer, 0, viewport.h-1);
-    SDL_RenderDrawPoint(renderer, viewport.w-1, viewport.h-1);
+    SDL_RenderDrawPointF(renderer, 0, 0);
+    SDL_RenderDrawPointF(renderer, viewport.w-1, 0);
+    SDL_RenderDrawPointF(renderer, 0, viewport.h-1);
+    SDL_RenderDrawPointF(renderer, viewport.w-1, viewport.h-1);
 
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawLine(renderer, 1, 0, viewport.w-2, 0);
-    SDL_RenderDrawLine(renderer, 1, viewport.h-1, viewport.w-2, viewport.h-1);
-    SDL_RenderDrawLine(renderer, 0, 1, 0, viewport.h-2);
-    SDL_RenderDrawLine(renderer, viewport.w-1, 1, viewport.w-1, viewport.h-2);
+    SDL_RenderDrawLineF(renderer, 1, 0, viewport.w-2, 0);
+    SDL_RenderDrawLineF(renderer, 1, viewport.h-1, viewport.w-2, viewport.h-1);
+    SDL_RenderDrawLineF(renderer, 0, 1, 0, viewport.h-2);
+    SDL_RenderDrawLineF(renderer, viewport.w-1, 1, viewport.w-1, viewport.h-2);
 
     /* Test fill and copy */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -147,7 +148,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     temp.w = sprite_w;
     temp.h = sprite_h;
     if (use_rendergeometry == 0) {
-        SDL_RenderFillRect(renderer, &temp);
+        SDL_RenderFillRectF(renderer, &temp);
     } else {
         /* Draw two triangles, filled, uniform */
         SDL_Color color;
@@ -178,31 +179,31 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
 
         SDL_RenderGeometry(renderer, NULL, verts, 3, NULL, 0);
     }
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderCopyF(renderer, sprite, NULL, &temp);
     temp.x = viewport.w-sprite_w-1;
     temp.y = 1;
     temp.w = sprite_w;
     temp.h = sprite_h;
-    SDL_RenderFillRect(renderer, &temp);
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderFillRectF(renderer, &temp);
+    SDL_RenderCopyF(renderer, sprite, NULL, &temp);
     temp.x = 1;
     temp.y = viewport.h-sprite_h-1;
     temp.w = sprite_w;
     temp.h = sprite_h;
-    SDL_RenderFillRect(renderer, &temp);
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderFillRectF(renderer, &temp);
+    SDL_RenderCopyF(renderer, sprite, NULL, &temp);
     temp.x = viewport.w-sprite_w-1;
     temp.y = viewport.h-sprite_h-1;
     temp.w = sprite_w;
     temp.h = sprite_h;
-    SDL_RenderFillRect(renderer, &temp);
-    SDL_RenderCopy(renderer, sprite, NULL, &temp);
+    SDL_RenderFillRectF(renderer, &temp);
+    SDL_RenderCopyF(renderer, sprite, NULL, &temp);
 
     /* Test diagonal lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawLine(renderer, sprite_w, sprite_h,
+    SDL_RenderDrawLineF(renderer, sprite_w, sprite_h,
                        viewport.w-sprite_w-2, viewport.h-sprite_h-2);
-    SDL_RenderDrawLine(renderer, viewport.w-sprite_w-2, sprite_h,
+    SDL_RenderDrawLineF(renderer, viewport.w-sprite_w-2, sprite_h,
                        sprite_w, viewport.h-sprite_h-2);
 
     /* Conditionally move the sprites, bounce at the wall */
@@ -239,7 +240,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
             position = &positions[i];
 
             /* Blit the sprite onto the screen */
-            SDL_RenderCopy(renderer, sprite, NULL, position);
+            SDL_RenderCopyF(renderer, sprite, NULL, position);
         }
     } else if (use_rendergeometry == 1) {
         /*
@@ -543,8 +544,8 @@ main(int argc, char *argv[])
     }
 
     /* Allocate memory for the sprite info */
-    positions = (SDL_Rect *) SDL_malloc(num_sprites * sizeof(SDL_Rect));
-    velocities = (SDL_Rect *) SDL_malloc(num_sprites * sizeof(SDL_Rect));
+    positions = (SDL_FRect *) SDL_malloc(num_sprites * sizeof(SDL_FRect));
+    velocities = (SDL_FRect *) SDL_malloc(num_sprites * sizeof(SDL_FRect));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);

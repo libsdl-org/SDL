@@ -425,13 +425,20 @@ WatchJoystick(SDL_Joystick * joystick)
         SDL_RenderClear(screen);
         if (s_arrBindingOrder[s_iCurrentBinding] >= SDL_CONTROLLER_BUTTON_PADDLE1 &&
             s_arrBindingOrder[s_iCurrentBinding] <= SDL_CONTROLLER_BUTTON_PADDLE4) {
-            SDL_RenderCopy(screen, background_back, NULL, NULL);
+            SDL_RenderCopyF(screen, background_back, NULL, NULL);
         } else {
-            SDL_RenderCopy(screen, background_front, NULL, NULL);
+            SDL_RenderCopyF(screen, background_front, NULL, NULL);
         }
         SDL_SetTextureAlphaMod(marker, alpha);
         SDL_SetTextureColorMod(marker, 10, 255, 21);
-        SDL_RenderCopyEx(screen, marker, NULL, &dst, s_arrBindingDisplay[iElement].angle, NULL, SDL_FLIP_NONE);
+        {
+            SDL_FRect fdst;
+            fdst.x = dst.x;
+            fdst.y = dst.y;
+            fdst.w = dst.w;
+            fdst.h = dst.h;
+            SDL_RenderCopyExF(screen, marker, NULL, &fdst, s_arrBindingDisplay[iElement].angle, NULL, SDL_FLIP_NONE);
+        }
         SDL_RenderPresent(screen);
             
         while (SDL_PollEvent(&event) > 0) {

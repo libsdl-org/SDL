@@ -27,7 +27,7 @@ typedef struct {
     SDL_Renderer *renderer;
     SDL_Texture *background;
     SDL_Texture *sprite;
-    SDL_Rect sprite_rect;
+    SDL_FRect sprite_rect;
     int scale_direction;
 } DrawState;
 
@@ -46,7 +46,8 @@ quit(int rc)
 SDL_bool
 DrawComposite(DrawState *s)
 {
-    SDL_Rect viewport, R;
+    SDL_Rect viewport;
+    SDL_FRect R;
     SDL_Texture *target;
 
     static SDL_bool blend_tested = SDL_FALSE;
@@ -62,12 +63,12 @@ DrawComposite(DrawState *s)
 
         SDL_SetRenderTarget(s->renderer, A);
         SDL_SetRenderDrawColor(s->renderer, 0x00, 0x00, 0x00, 0x80);
-        SDL_RenderFillRect(s->renderer, NULL);
+        SDL_RenderFillRectF(s->renderer, NULL);
 
         SDL_SetRenderTarget(s->renderer, B);
         SDL_SetRenderDrawColor(s->renderer, 0x00, 0x00, 0x00, 0x00);
-        SDL_RenderFillRect(s->renderer, NULL);
-        SDL_RenderCopy(s->renderer, A, NULL, NULL);
+        SDL_RenderFillRectF(s->renderer, NULL);
+        SDL_RenderCopyF(s->renderer, A, NULL, NULL);
         SDL_RenderReadPixels(s->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, &P, sizeof(P));
 
         SDL_Log("Blended pixel: 0x%8.8" SDL_PRIX32 "\n", P);
@@ -87,7 +88,7 @@ DrawComposite(DrawState *s)
        This is solid black so when the sprite is copied to it, any per-pixel alpha will be blended through.
      */
     SDL_SetRenderDrawColor(s->renderer, 0x00, 0x00, 0x00, 0x00);
-    SDL_RenderFillRect(s->renderer, NULL);
+    SDL_RenderFillRectF(s->renderer, NULL);
 
     /* Scale and draw the sprite */
     s->sprite_rect.w += s->scale_direction;
@@ -104,10 +105,10 @@ DrawComposite(DrawState *s)
     s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
     s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
-    SDL_RenderCopy(s->renderer, s->sprite, NULL, &s->sprite_rect);
+    SDL_RenderCopyF(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
     SDL_SetRenderTarget(s->renderer, NULL);
-    SDL_RenderCopy(s->renderer, s->background, NULL, NULL);
+    SDL_RenderCopyF(s->renderer, s->background, NULL, NULL);
 
     SDL_SetRenderDrawBlendMode(s->renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(s->renderer, 0xff, 0x00, 0x00, 0x80);
@@ -115,10 +116,10 @@ DrawComposite(DrawState *s)
     R.y = 0;
     R.w = 100;
     R.h = 100;
-    SDL_RenderFillRect(s->renderer, &R);
+    SDL_RenderFillRectF(s->renderer, &R);
     SDL_SetRenderDrawBlendMode(s->renderer, SDL_BLENDMODE_NONE);
 
-    SDL_RenderCopy(s->renderer, target, NULL, NULL);
+    SDL_RenderCopyF(s->renderer, target, NULL, NULL);
     SDL_DestroyTexture(target);
 
     /* Update the screen! */
@@ -142,7 +143,7 @@ Draw(DrawState *s)
     SDL_SetRenderTarget(s->renderer, target);
 
     /* Draw the background */
-    SDL_RenderCopy(s->renderer, s->background, NULL, NULL);
+    SDL_RenderCopyF(s->renderer, s->background, NULL, NULL);
 
     /* Scale and draw the sprite */
     s->sprite_rect.w += s->scale_direction;
@@ -159,10 +160,10 @@ Draw(DrawState *s)
     s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
     s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
-    SDL_RenderCopy(s->renderer, s->sprite, NULL, &s->sprite_rect);
+    SDL_RenderCopyF(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
     SDL_SetRenderTarget(s->renderer, NULL);
-    SDL_RenderCopy(s->renderer, target, NULL, NULL);
+    SDL_RenderCopyF(s->renderer, target, NULL, NULL);
     SDL_DestroyTexture(target);
 
     /* Update the screen! */
@@ -253,8 +254,12 @@ main(int argc, char *argv[])
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }
-        SDL_QueryTexture(drawstate->sprite, NULL, NULL,
-                         &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
+        {
+            int w, h;
+            SDL_QueryTexture(drawstate->sprite, NULL, NULL, &w, &h);
+            drawstate->sprite_rect.w = w;
+            drawstate->sprite_rect.h = h;
+        }
         drawstate->scale_direction = 1;
     }
 

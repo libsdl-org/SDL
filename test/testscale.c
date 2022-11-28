@@ -30,7 +30,7 @@ typedef struct {
     SDL_Renderer *renderer;
     SDL_Texture *background;
     SDL_Texture *sprite;
-    SDL_Rect sprite_rect;
+    SDL_FRect sprite_rect;
     int scale_direction;
 } DrawState;
 
@@ -53,7 +53,7 @@ Draw(DrawState *s)
     SDL_RenderGetViewport(s->renderer, &viewport);
 
     /* Draw the background */
-    SDL_RenderCopy(s->renderer, s->background, NULL, NULL);
+    SDL_RenderCopyF(s->renderer, s->background, NULL, NULL);
 
     /* Scale and draw the sprite */
     s->sprite_rect.w += s->scale_direction;
@@ -70,7 +70,7 @@ Draw(DrawState *s)
     s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
     s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
-    SDL_RenderCopy(s->renderer, s->sprite, NULL, &s->sprite_rect);
+    SDL_RenderCopyF(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
     /* Update the screen! */
     SDL_RenderPresent(s->renderer);
@@ -131,8 +131,12 @@ main(int argc, char *argv[])
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }
-        SDL_QueryTexture(drawstate->sprite, NULL, NULL,
-                         &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
+        {
+            int w, h;
+            SDL_QueryTexture(drawstate->sprite, NULL, NULL, &w, &h);
+            drawstate->sprite_rect.w = w;
+            drawstate->sprite_rect.h = h;
+        }
         drawstate->scale_direction = 1;
     }
 

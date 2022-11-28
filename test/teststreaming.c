@@ -113,7 +113,7 @@ loop()
     UpdateTexture(MooseTexture);
 
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, MooseTexture, NULL, NULL);
+    SDL_RenderCopyF(renderer, MooseTexture, NULL, NULL);
     SDL_RenderPresent(renderer);
 
 #ifdef __EMSCRIPTEN__

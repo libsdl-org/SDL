@@ -97,13 +97,13 @@ render(SDL_Renderer *renderer, int w, int h, double deltaTime)
     }
 
     /* draw the background */
-    SDL_RenderCopy(renderer, space, NULL, NULL);
+    SDL_RenderCopyF(renderer, space, NULL, NULL);
 
     /* draw the ship */
     shipData.rect.x = shipData.x;
     shipData.rect.y = shipData.y;
 
-    SDL_RenderCopy(renderer, ship, NULL, &shipData.rect);
+    SDL_RenderCopyF(renderer, ship, NULL, &shipData.rect);
 
     /* update screen */
     SDL_RenderPresent(renderer);

@@ -330,16 +330,6 @@
 #define SDL_SetRenderDrawBlendMode SDL_SetRenderDrawBlendMode_REAL
 #define SDL_GetRenderDrawBlendMode SDL_GetRenderDrawBlendMode_REAL
 #define SDL_RenderClear SDL_RenderClear_REAL
-#define SDL_RenderDrawPoint SDL_RenderDrawPoint_REAL
-#define SDL_RenderDrawPoints SDL_RenderDrawPoints_REAL
-#define SDL_RenderDrawLine SDL_RenderDrawLine_REAL
-#define SDL_RenderDrawLines SDL_RenderDrawLines_REAL
-#define SDL_RenderDrawRect SDL_RenderDrawRect_REAL
-#define SDL_RenderDrawRects SDL_RenderDrawRects_REAL
-#define SDL_RenderFillRect SDL_RenderFillRect_REAL
-#define SDL_RenderFillRects SDL_RenderFillRects_REAL
-#define SDL_RenderCopy SDL_RenderCopy_REAL
-#define SDL_RenderCopyEx SDL_RenderCopyEx_REAL
 #define SDL_RenderReadPixels SDL_RenderReadPixels_REAL
 #define SDL_RenderPresent SDL_RenderPresent_REAL
 #define SDL_DestroyTexture SDL_DestroyTexture_REAL

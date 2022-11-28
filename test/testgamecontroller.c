@@ -675,7 +675,7 @@ loop(void *arg)
     /* blank screen, set up for drawing this frame. */
     SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(screen);
-    SDL_RenderCopy(screen, showing_front ? background_front : background_back, NULL, NULL);
+    SDL_RenderCopyF(screen, showing_front ? background_front : background_back, NULL, NULL);
 
     if (gamecontroller) {
         /* Update visual controller state */
@@ -683,12 +683,12 @@ loop(void *arg)
             if (SDL_GameControllerGetButton(gamecontroller, (SDL_GameControllerButton)i) == SDL_PRESSED) {
                 SDL_bool on_front = (i < SDL_CONTROLLER_BUTTON_PADDLE1 || i > SDL_CONTROLLER_BUTTON_PADDLE4);
                 if (on_front == showing_front) {
-                    SDL_Rect dst;
+                    SDL_FRect dst;
                     dst.x = button_positions[i].x;
                     dst.y = button_positions[i].y;
                     dst.w = BUTTON_SIZE;
                     dst.h = BUTTON_SIZE;
-                    SDL_RenderCopyEx(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyExF(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
                 }
             }
         }
@@ -699,20 +699,20 @@ loop(void *arg)
                 const Sint16 value = SDL_GameControllerGetAxis(gamecontroller, (SDL_GameControllerAxis)(i));
                 if (value < -deadzone) {
                     const double angle = axis_positions[i].angle;
-                    SDL_Rect dst;
+                    SDL_FRect dst;
                     dst.x = axis_positions[i].x;
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyExF(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 } else if (value > deadzone) {
                     const double angle = axis_positions[i].angle + 180.0;
-                    SDL_Rect dst;
+                    SDL_FRect dst;
                     dst.x = axis_positions[i].x;
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyExF(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 }
             }
         }

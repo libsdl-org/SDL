@@ -154,9 +154,9 @@ drawGlyph(int glyph, int positionIndex)
 {
     int x, y;
     getPositionForCharNumber(positionIndex, &x, &y);
-    SDL_Rect srcRect = { GLYPH_SIZE_IMAGE * glyph, 0, GLYPH_SIZE_IMAGE, GLYPH_SIZE_IMAGE };
-    SDL_Rect dstRect = { x, y, GLYPH_SIZE_SCREEN, GLYPH_SIZE_SCREEN };
-    SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
+    SDL_FRect srcRect = { GLYPH_SIZE_IMAGE * glyph, 0, GLYPH_SIZE_IMAGE, GLYPH_SIZE_IMAGE };
+    SDL_FRect dstRect = { x, y, GLYPH_SIZE_SCREEN, GLYPH_SIZE_SCREEN };
+    SDL_RenderCopyF(renderer, texture, &srcRect, &dstRect);
 }
 
 /* this function loads our font into an SDL_Texture and returns the SDL_Texture  */

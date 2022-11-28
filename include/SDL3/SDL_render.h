@@ -116,7 +116,7 @@ typedef enum
 } SDL_TextureAccess;
 
 /**
- * The texture channel modulation used in SDL_RenderCopy().
+ * The texture channel modulation used in SDL_RenderCopyF().
  */
 typedef enum
 {
@@ -126,7 +126,7 @@ typedef enum
 } SDL_TextureModulate;
 
 /**
- * Flip constants for SDL_RenderCopyEx
+ * Flip constants for SDL_RenderCopyExF().
  */
 typedef enum
 {
@@ -475,7 +475,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureAlphaMod(SDL_Texture * texture,
                                                    Uint8 * alpha);
 
 /**
- * Set the blend mode for a texture, used by SDL_RenderCopy().
+ * Set the blend mode for a texture, used by SDL_RenderCopyF().
  *
  * If the blend mode is not supported, the closest supported mode is chosen
  * and this function returns -1.
@@ -488,7 +488,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureAlphaMod(SDL_Texture * texture,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetTextureBlendMode
- * \sa SDL_RenderCopy
+ * \sa SDL_RenderCopyF
  */
 extern DECLSPEC int SDLCALL SDL_SetTextureBlendMode(SDL_Texture * texture,
                                                     SDL_BlendMode blendMode);
@@ -1067,14 +1067,14 @@ extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer * renderer,
  *
  * \sa SDL_GetRenderDrawColor
  * \sa SDL_RenderClear
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
+ * \sa SDL_RenderDrawLineF
+ * \sa SDL_RenderDrawLinesF
+ * \sa SDL_RenderDrawPointF
+ * \sa SDL_RenderDrawPointsF
+ * \sa SDL_RenderDrawRectF
+ * \sa SDL_RenderDrawRectsF
+ * \sa SDL_RenderFillRectF
+ * \sa SDL_RenderFillRectsF
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderDrawColor(SDL_Renderer * renderer,
                                            Uint8 r, Uint8 g, Uint8 b,
@@ -1116,14 +1116,14 @@ extern DECLSPEC int SDLCALL SDL_GetRenderDrawColor(SDL_Renderer * renderer,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderDrawBlendMode
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
+ * \sa SDL_RenderDrawLineF
+ * \sa SDL_RenderDrawLinesF
+ * \sa SDL_RenderDrawPointF
+ * \sa SDL_RenderDrawPointsF
+ * \sa SDL_RenderDrawRectF
+ * \sa SDL_RenderDrawRectsF
+ * \sa SDL_RenderFillRectF
+ * \sa SDL_RenderFillRectsF
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderDrawBlendMode(SDL_Renderer * renderer,
                                                        SDL_BlendMode blendMode);
@@ -1158,306 +1158,6 @@ extern DECLSPEC int SDLCALL SDL_GetRenderDrawBlendMode(SDL_Renderer * renderer,
  * \sa SDL_SetRenderDrawColor
  */
 extern DECLSPEC int SDLCALL SDL_RenderClear(SDL_Renderer * renderer);
-
-/**
- * Draw a point on the current rendering target.
- *
- * SDL_RenderDrawPoint() draws a single point. If you want to draw multiple,
- * use SDL_RenderDrawPoints() instead.
- *
- * \param renderer the rendering context
- * \param x the x coordinate of the point
- * \param y the y coordinate of the point
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderPresent
- * \sa SDL_SetRenderDrawBlendMode
- * \sa SDL_SetRenderDrawColor
- */
-extern DECLSPEC int SDLCALL SDL_RenderDrawPoint(SDL_Renderer * renderer,
-                                                int x, int y);
-
-/**
- * Draw multiple points on the current rendering target.
- *
- * \param renderer the rendering context
- * \param points an array of SDL_Point structures that represent the points to
- *               draw
- * \param count the number of points to draw
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderPresent
- * \sa SDL_SetRenderDrawBlendMode
- * \sa SDL_SetRenderDrawColor
- */
-extern DECLSPEC int SDLCALL SDL_RenderDrawPoints(SDL_Renderer * renderer,
-                                                 const SDL_Point * points,
-                                                 int count);
-
-/**
- * Draw a line on the current rendering target.
- *
- * SDL_RenderDrawLine() draws the line to include both end points. If you want
- * to draw multiple, connecting lines use SDL_RenderDrawLines() instead.
- *
- * \param renderer the rendering context
- * \param x1 the x coordinate of the start point
- * \param y1 the y coordinate of the start point
- * \param x2 the x coordinate of the end point
- * \param y2 the y coordinate of the end point
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderPresent
- * \sa SDL_SetRenderDrawBlendMode
- * \sa SDL_SetRenderDrawColor
- */
-extern DECLSPEC int SDLCALL SDL_RenderDrawLine(SDL_Renderer * renderer,
-                                               int x1, int y1, int x2, int y2);
-
-/**
- * Draw a series of connected lines on the current rendering target.
- *
- * \param renderer the rendering context
- * \param points an array of SDL_Point structures representing points along
- *               the lines
- * \param count the number of points, drawing count-1 lines
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderPresent
- * \sa SDL_SetRenderDrawBlendMode
- * \sa SDL_SetRenderDrawColor
- */
-extern DECLSPEC int SDLCALL SDL_RenderDrawLines(SDL_Renderer * renderer,
-                                                const SDL_Point * points,
-                                                int count);
-
-/**
- * Draw a rectangle on the current rendering target.
- *
- * \param renderer the rendering context
- * \param rect an SDL_Rect structure representing the rectangle to draw, or
- *             NULL to outline the entire rendering target
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderPresent
- * \sa SDL_SetRenderDrawBlendMode
- * \sa SDL_SetRenderDrawColor
- */
-extern DECLSPEC int SDLCALL SDL_RenderDrawRect(SDL_Renderer * renderer,
-                                               const SDL_Rect * rect);
-
-/**
- * Draw some number of rectangles on the current rendering target.
- *
- * \param renderer the rendering context
- * \param rects an array of SDL_Rect structures representing the rectangles to
- *              be drawn
- * \param count the number of rectangles
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderPresent
- * \sa SDL_SetRenderDrawBlendMode
- * \sa SDL_SetRenderDrawColor
- */
-extern DECLSPEC int SDLCALL SDL_RenderDrawRects(SDL_Renderer * renderer,
-                                                const SDL_Rect * rects,
-                                                int count);
-
-/**
- * Fill a rectangle on the current rendering target with the drawing color.
- *
- * The current drawing color is set by SDL_SetRenderDrawColor(), and the
- * color's alpha value is ignored unless blending is enabled with the
- * appropriate call to SDL_SetRenderDrawBlendMode().
- *
- * \param renderer the rendering context
- * \param rect the SDL_Rect structure representing the rectangle to fill, or
- *             NULL for the entire rendering target
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderPresent
- * \sa SDL_SetRenderDrawBlendMode
- * \sa SDL_SetRenderDrawColor
- */
-extern DECLSPEC int SDLCALL SDL_RenderFillRect(SDL_Renderer * renderer,
-                                               const SDL_Rect * rect);
-
-/**
- * Fill some number of rectangles on the current rendering target with the
- * drawing color.
- *
- * \param renderer the rendering context
- * \param rects an array of SDL_Rect structures representing the rectangles to
- *              be filled
- * \param count the number of rectangles
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderPresent
- */
-extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer * renderer,
-                                                const SDL_Rect * rects,
-                                                int count);
-
-/**
- * Copy a portion of the texture to the current rendering target.
- *
- * The texture is blended with the destination based on its blend mode set
- * with SDL_SetTextureBlendMode().
- *
- * The texture color is affected based on its color modulation set by
- * SDL_SetTextureColorMod().
- *
- * The texture alpha is affected based on its alpha modulation set by
- * SDL_SetTextureAlphaMod().
- *
- * \param renderer the rendering context
- * \param texture the source texture
- * \param srcrect the source SDL_Rect structure or NULL for the entire texture
- * \param dstrect the destination SDL_Rect structure or NULL for the entire
- *                rendering target; the texture will be stretched to fill the
- *                given rectangle
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderCopyEx
- * \sa SDL_SetTextureAlphaMod
- * \sa SDL_SetTextureBlendMode
- * \sa SDL_SetTextureColorMod
- */
-extern DECLSPEC int SDLCALL SDL_RenderCopy(SDL_Renderer * renderer,
-                                           SDL_Texture * texture,
-                                           const SDL_Rect * srcrect,
-                                           const SDL_Rect * dstrect);
-
-/**
- * Copy a portion of the texture to the current rendering, with optional
- * rotation and flipping.
- *
- * Copy a portion of the texture to the current rendering target, optionally
- * rotating it by angle around the given center and also flipping it
- * top-bottom and/or left-right.
- *
- * The texture is blended with the destination based on its blend mode set
- * with SDL_SetTextureBlendMode().
- *
- * The texture color is affected based on its color modulation set by
- * SDL_SetTextureColorMod().
- *
- * The texture alpha is affected based on its alpha modulation set by
- * SDL_SetTextureAlphaMod().
- *
- * \param renderer the rendering context
- * \param texture the source texture
- * \param srcrect the source SDL_Rect structure or NULL for the entire texture
- * \param dstrect the destination SDL_Rect structure or NULL for the entire
- *                rendering target
- * \param angle an angle in degrees that indicates the rotation that will be
- *              applied to dstrect, rotating it in a clockwise direction
- * \param center a pointer to a point indicating the point around which
- *               dstrect will be rotated (if NULL, rotation will be done
- *               around `dstrect.w / 2`, `dstrect.h / 2`)
- * \param flip a SDL_RendererFlip value stating which flipping actions should
- *             be performed on the texture
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RenderCopy
- * \sa SDL_SetTextureAlphaMod
- * \sa SDL_SetTextureBlendMode
- * \sa SDL_SetTextureColorMod
- */
-extern DECLSPEC int SDLCALL SDL_RenderCopyEx(SDL_Renderer * renderer,
-                                           SDL_Texture * texture,
-                                           const SDL_Rect * srcrect,
-                                           const SDL_Rect * dstrect,
-                                           const double angle,
-                                           const SDL_Point *center,
-                                           const SDL_RendererFlip flip);
-
 
 /**
  * Draw a point on the current rendering target at subpixel precision.
@@ -1714,7 +1414,7 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer * renderer,
  * Update the screen with any rendering performed since the previous call.
  *
  * SDL's rendering functions operate on a backbuffer; that is, calling a
- * rendering function such as SDL_RenderDrawLine() does not directly put a
+ * rendering function such as SDL_RenderDrawLineF() does not directly put a
  * line on the screen, but rather updates the backbuffer. As such, you compose
  * your entire scene and *present* the composed backbuffer to the screen as a
  * complete picture.
@@ -1734,14 +1434,14 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer * renderer,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RenderClear
- * \sa SDL_RenderDrawLine
- * \sa SDL_RenderDrawLines
- * \sa SDL_RenderDrawPoint
- * \sa SDL_RenderDrawPoints
- * \sa SDL_RenderDrawRect
- * \sa SDL_RenderDrawRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
+ * \sa SDL_RenderDrawLineF
+ * \sa SDL_RenderDrawLinesF
+ * \sa SDL_RenderDrawPointF
+ * \sa SDL_RenderDrawPointsF
+ * \sa SDL_RenderDrawRectF
+ * \sa SDL_RenderDrawRectsF
+ * \sa SDL_RenderFillRectF
+ * \sa SDL_RenderFillRectsF
  * \sa SDL_SetRenderDrawBlendMode
  * \sa SDL_SetRenderDrawColor
  */

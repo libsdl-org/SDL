@@ -36,7 +36,7 @@ static NativeWindowFactory *factories[] = {
 };
 static NativeWindowFactory *factory = NULL;
 static void *native_window;
-static SDL_Rect *positions, *velocities;
+static SDL_FRect *positions, *velocities;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -55,7 +55,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     int sprite_w, sprite_h;
     int i;
     SDL_Rect viewport;
-    SDL_Rect *position, *velocity;
+    SDL_FRect *position, *velocity;
 
     /* Query the sizes */
     SDL_RenderGetViewport(renderer, &viewport);
@@ -81,7 +81,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
         }
 
         /* Blit the sprite onto the screen */
-        SDL_RenderCopy(renderer, sprite, NULL, position);
+        SDL_RenderCopyF(renderer, sprite, NULL, position);
     }
 
     /* Update the screen! */
@@ -154,8 +154,8 @@ main(int argc, char *argv[])
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
-    positions = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    velocities = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    positions = (SDL_FRect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_FRect));
+    velocities = (SDL_FRect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_FRect));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
