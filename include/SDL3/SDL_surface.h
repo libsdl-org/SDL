@@ -162,8 +162,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
 
 
-/* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
-
 /**
  * Allocate a new RGB surface with a specific pixel format.
  *
@@ -174,7 +172,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
  * \param flags the flags are unused and should be set to 0
  * \param width the width of the surface
  * \param height the height of the surface
- * \param depth the depth of the surface in bits
  * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
@@ -186,7 +183,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
  * \sa SDL_FreeSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
-    (Uint32 flags, int width, int height, int depth, Uint32 format);
+    (Uint32 flags, int width, int height, Uint32 format);
 
 /**
  * Allocate a new RGB surface with existing pixel data.
@@ -226,8 +223,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               Uint32 Bmask,
                                                               Uint32 Amask);
 
-/* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
-
 /**
  * Allocate a new RGB surface with with a specific pixel format and existing
  * pixel data.
@@ -242,7 +237,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
  * \param pixels a pointer to existing pixel data
  * \param width the width of the surface
  * \param height the height of the surface
- * \param depth the depth of the surface in bits
  * \param pitch the pitch of the surface in bytes
  * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
@@ -255,7 +249,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
  * \sa SDL_FreeSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormatFrom
-    (void *pixels, int width, int height, int depth, int pitch, Uint32 format);
+    (void *pixels, int width, int height, int pitch, Uint32 format);
 
 /**
  * Free an RGB surface.

@@ -617,11 +617,11 @@ surface_testOverflow(void *arg)
     SDL_memset(buf, '\0', sizeof(buf));
 
     expectedError = "Parameter 'width' is invalid";
-    surface = SDL_CreateRGBSurfaceWithFormat(0, -3, 100, 8, SDL_PIXELFORMAT_INDEX8);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, -3, 100, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface == NULL, "Should detect negative width");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, -1, 1, 8, 4, SDL_PIXELFORMAT_INDEX8);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, -1, 1, 4, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface == NULL, "Should detect negative width");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -631,11 +631,11 @@ surface_testOverflow(void *arg)
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
     expectedError = "Parameter 'height' is invalid";
-    surface = SDL_CreateRGBSurfaceWithFormat(0, 100, -3, 8, SDL_PIXELFORMAT_INDEX8);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 100, -3, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface == NULL, "Should detect negative height");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 1, -1, 8, 4, SDL_PIXELFORMAT_INDEX8);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 1, -1, 4, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface == NULL, "Should detect negative height");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -645,7 +645,7 @@ surface_testOverflow(void *arg)
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
     expectedError = "Parameter 'pitch' is invalid";
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 4, 1, 8, -1, SDL_PIXELFORMAT_INDEX8);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 4, 1, -1, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface == NULL, "Should detect negative pitch");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -657,7 +657,7 @@ surface_testOverflow(void *arg)
     /* Less than 1 byte per pixel: the pitch can legitimately be less than
      * the width, but it must be enough to hold the appropriate number of
      * bits per pixel. SDL_PIXELFORMAT_INDEX4* needs 1 byte per 2 pixels. */
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 6, 1, 4, 3, SDL_PIXELFORMAT_INDEX4LSB);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 6, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface != NULL, "6px * 4 bits per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
@@ -666,7 +666,7 @@ surface_testOverflow(void *arg)
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
 
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 7, 1, 4, 3, SDL_PIXELFORMAT_INDEX4LSB);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 7, 1, 3, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -675,7 +675,7 @@ surface_testOverflow(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 7, 1, 4, 4, SDL_PIXELFORMAT_INDEX4LSB);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 7, 1, 4, SDL_PIXELFORMAT_INDEX4LSB);
     SDLTest_AssertCheck(surface != NULL, "7px * 4 bits per px fits in 4 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
@@ -685,7 +685,7 @@ surface_testOverflow(void *arg)
     SDL_FreeSurface(surface);
 
     /* SDL_PIXELFORMAT_INDEX1* needs 1 byte per 8 pixels. */
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 16, 1, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 16, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface != NULL, "16px * 1 bit per px fits in 2 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
@@ -694,7 +694,7 @@ surface_testOverflow(void *arg)
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
 
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 17, 1, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 17, 1, 2, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -703,7 +703,7 @@ surface_testOverflow(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 17, 1, 1, 3, SDL_PIXELFORMAT_INDEX1LSB);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 17, 1, 3, SDL_PIXELFORMAT_INDEX1LSB);
     SDLTest_AssertCheck(surface != NULL, "17px * 1 bit per px fits in 3 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
@@ -713,7 +713,7 @@ surface_testOverflow(void *arg)
     SDL_FreeSurface(surface);
 
     /* SDL_PIXELFORMAT_INDEX8 and SDL_PIXELFORMAT_RGB332 require 1 byte per pixel. */
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 5, 1, 8, 5, SDL_PIXELFORMAT_RGB332);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 5, 1, 5, SDL_PIXELFORMAT_RGB332);
     SDLTest_AssertCheck(surface != NULL, "5px * 8 bits per px fits in 5 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
@@ -722,7 +722,7 @@ surface_testOverflow(void *arg)
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
 
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 6, 1, 8, 5, SDL_PIXELFORMAT_RGB332);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 6, 1, 5, SDL_PIXELFORMAT_RGB332);
     SDLTest_AssertCheck(surface == NULL, "Should detect pitch < width * bpp");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -734,7 +734,7 @@ surface_testOverflow(void *arg)
     /* Everything else requires more than 1 byte per pixel, and rounds up
      * each pixel to an integer number of bytes (e.g. RGB555 is really
      * XRGB1555, with 1 bit per pixel wasted). */
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 3, 1, 15, 6, SDL_PIXELFORMAT_RGB555);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 3, 1, 6, SDL_PIXELFORMAT_RGB555);
     SDLTest_AssertCheck(surface != NULL, "3px * 15 (really 16) bits per px fits in 6 bytes: %s",
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
@@ -743,7 +743,7 @@ surface_testOverflow(void *arg)
                         surface != NULL ? "(success)" : SDL_GetError());
     SDL_FreeSurface(surface);
 
-    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 4, 1, 15, 6, SDL_PIXELFORMAT_RGB555);
+    surface = SDL_CreateRGBSurfaceWithFormatFrom(buf, 4, 1, 6, SDL_PIXELFORMAT_RGB555);
     SDLTest_AssertCheck(surface == NULL, "4px * 15 (really 16) bits per px doesn't fit in 6 bytes");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -754,19 +754,19 @@ surface_testOverflow(void *arg)
 
     if (sizeof (size_t) == 4 && sizeof (int) >= 4) {
         expectedError = "Out of memory";
-        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32, 1, 8, SDL_PIXELFORMAT_INDEX8);
+        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32, 1, SDL_PIXELFORMAT_INDEX8);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width + alignment");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32 / 2, 1, 32, SDL_PIXELFORMAT_ARGB8888);
+        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32 / 2, 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 29) - 1, (1 << 29) - 1, 8, SDL_PIXELFORMAT_INDEX8);
+        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 29) - 1, (1 << 29) - 1, SDL_PIXELFORMAT_INDEX8);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 15) + 1, (1 << 15) + 1, 32, SDL_PIXELFORMAT_ARGB8888);
+        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 15) + 1, (1 << 15) + 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());

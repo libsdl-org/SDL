@@ -831,7 +831,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
                     /* Prevent to do scaling + clipping on viewport boundaries as it may lose proportion */
                     if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
-                        SDL_Surface *tmp = SDL_CreateRGBSurfaceWithFormat(0, dstrect->w, dstrect->h, 0, src->format->format);
+                        SDL_Surface *tmp = SDL_CreateRGBSurfaceWithFormat(0, dstrect->w, dstrect->h, src->format->format);
                         /* Scale to an intermediate surface, then blit */
                         if (tmp) {
                             SDL_Rect r;

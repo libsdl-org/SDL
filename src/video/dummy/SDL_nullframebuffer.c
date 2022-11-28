@@ -39,7 +39,7 @@ int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
 
     /* Create a new one */
     SDL_GetWindowSize(window, &w, &h);
-    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, surface_format);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, surface_format);
     if (surface == NULL) {
         return -1;
     }
