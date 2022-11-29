@@ -413,7 +413,7 @@ SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture * swdata, const SDL_Rect * srcrect,
             SDL_PixelFormatEnumToMasks(target_format, &bpp, &Rmask, &Gmask,
                                        &Bmask, &Amask);
             swdata->stretch =
-                SDL_CreateRGBSurface(0, swdata->w, swdata->h, bpp, Rmask,
+                SDL_CreateRGBSurface(swdata->w, swdata->h, bpp, Rmask,
                                      Gmask, Bmask, Amask);
             if (!swdata->stretch) {
                 return -1;

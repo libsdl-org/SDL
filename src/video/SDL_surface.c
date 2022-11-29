@@ -68,20 +68,15 @@ SDL_CalculatePitch(Uint32 format, size_t width, SDL_bool minimal)
     return pitch;
 }
 
-/* TODO: In SDL 3, drop the unused flags */
 /*
  * Create an empty RGB surface of the appropriate depth using the given
  * enum SDL_PIXELFORMAT_* format
  */
 SDL_Surface *
-SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height,
-                               Uint32 format)
+SDL_CreateRGBSurfaceWithFormat(int width, int height, Uint32 format)
 {
     size_t pitch;
     SDL_Surface *surface;
-
-    /* The flags are no longer used, make the compiler happy */
-    (void)flags;
 
     if (width < 0) {
         SDL_InvalidParamError("width");
@@ -176,13 +171,11 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height,
     return surface;
 }
 
-/* TODO: In SDL 3, drop the unused flags parameter */
 /*
  * Create an empty RGB surface of the appropriate depth
  */
 SDL_Surface *
-SDL_CreateRGBSurface(Uint32 flags,
-                     int width, int height, int depth,
+SDL_CreateRGBSurface(int width, int height, int depth,
                      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
     Uint32 format;
@@ -194,7 +187,7 @@ SDL_CreateRGBSurface(Uint32 flags,
         return NULL;
     }
 
-    return SDL_CreateRGBSurfaceWithFormat(flags, width, height, format);
+    return SDL_CreateRGBSurfaceWithFormat(width, height, format);
 }
 
 /*
@@ -234,7 +227,7 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
         return NULL;
     }
 
-    surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, format);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 0, format);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
@@ -246,7 +239,6 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
     return surface;
 }
 
-/* TODO: In SDL 3, drop the unused depth parameter */
 /*
  * Create an RGB surface from an existing memory buffer using the given given
  * enum SDL_PIXELFORMAT_* format
@@ -276,7 +268,7 @@ SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
         return NULL;
     }
 
-    surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, format);
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 0, format);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
@@ -1034,13 +1026,11 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
             SDL_Rect srcrect2;
             int is_complex_copy_flags = (src->map->info.flags & complex_copy_flags);
 
-            Uint32 flags;
             Uint8 r, g, b;
             Uint8 alpha;
             SDL_BlendMode blendMode;
 
             /* Save source infos */
-            flags = src->flags;
             SDL_GetSurfaceColorMod(src, &r, &g, &b);
             SDL_GetSurfaceAlphaMod(src, &alpha);
             SDL_GetSurfaceBlendMode(src, &blendMode);
@@ -1062,7 +1052,7 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
                 } else {
                     fmt = SDL_PIXELFORMAT_ARGB8888;
                 }
-                tmp1 = SDL_CreateRGBSurfaceWithFormat(flags, src->w, src->h, fmt);
+                tmp1 = SDL_CreateRGBSurfaceWithFormat(src->w, src->h, fmt);
                 SDL_LowerBlit(src, srcrect, tmp1, &tmprect);
 
 
@@ -1078,7 +1068,7 @@ SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
             /* Intermediate scaling */
             if (is_complex_copy_flags || src->format->format != dst->format->format) {
                 SDL_Rect tmprect;
-                SDL_Surface *tmp2 = SDL_CreateRGBSurfaceWithFormat(flags, dstrect->w, dstrect->h, src->format->format);
+                SDL_Surface *tmp2 = SDL_CreateRGBSurfaceWithFormat(dstrect->w, dstrect->h, src->format->format);
                 SDL_SoftStretchLinear(src, &srcrect2, tmp2, NULL);
 
                 SDL_SetSurfaceColorMod(tmp2, r, g, b);
@@ -1195,7 +1185,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     }
 
     /* Create a new surface with the desired format */
-    convert = SDL_CreateRGBSurface(flags, surface->w, surface->h,
+    convert = SDL_CreateRGBSurface(surface->w, surface->h,
                                    format->BitsPerPixel, format->Rmask,
                                    format->Gmask, format->Bmask,
                                    format->Amask);
@@ -1340,7 +1330,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             int converted_colorkey = 0;
 
             /* Create a dummy surface to get the colorkey converted */
-            tmp = SDL_CreateRGBSurface(0, 1, 1,
+            tmp = SDL_CreateRGBSurface(1, 1,
                                    surface->format->BitsPerPixel, surface->format->Rmask,
                                    surface->format->Gmask, surface->format->Bmask,
                                    surface->format->Amask);

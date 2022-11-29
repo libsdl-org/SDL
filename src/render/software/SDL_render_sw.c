@@ -113,7 +113,7 @@ SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 
     texture->driverdata =
-        SDL_CreateRGBSurface(0, texture->w, texture->h, bpp, Rmask, Gmask,
+        SDL_CreateRGBSurface(texture->w, texture->h, bpp, Rmask, Gmask,
                              Bmask, Amask);
     SDL_SetSurfaceColorMod(texture->driverdata, texture->color.r, texture->color.g, texture->color.b);
     SDL_SetSurfaceAlphaMod(texture->driverdata, texture->color.a);
@@ -405,7 +405,7 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
      * to clear the pixels in the destination surface. The other steps are explained below.
      */
     if (blendmode == SDL_BLENDMODE_NONE && !isOpaque) {
-        mask = SDL_CreateRGBSurface(0, final_rect->w, final_rect->h, 32,
+        mask = SDL_CreateRGBSurface(final_rect->w, final_rect->h, 32,
                                     0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
         if (mask == NULL) {
             retval = -1;
@@ -419,7 +419,7 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * tex
      */
     if (!retval && (blitRequired || applyModulation)) {
         SDL_Rect scale_rect = tmp_rect;
-        src_scaled = SDL_CreateRGBSurface(0, final_rect->w, final_rect->h, 32,
+        src_scaled = SDL_CreateRGBSurface(final_rect->w, final_rect->h, 32,
                                           0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
         if (src_scaled == NULL) {
             retval = -1;
@@ -831,7 +831,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
                     /* Prevent to do scaling + clipping on viewport boundaries as it may lose proportion */
                     if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
-                        SDL_Surface *tmp = SDL_CreateRGBSurfaceWithFormat(0, dstrect->w, dstrect->h, src->format->format);
+                        SDL_Surface *tmp = SDL_CreateRGBSurfaceWithFormat(dstrect->w, dstrect->h, src->format->format);
                         /* Scale to an intermediate surface, then blit */
                         if (tmp) {
                             SDL_Rect r;

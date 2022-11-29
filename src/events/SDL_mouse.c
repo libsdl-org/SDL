@@ -1254,7 +1254,7 @@ SDL_CreateCursor(const Uint8 * data, const Uint8 * mask,
     w = ((w + 7) & ~7);
 
     /* Create the surface from a bitmap */
-    surface = SDL_CreateRGBSurface(0, w, h, 32,
+    surface = SDL_CreateRGBSurface(w, h, 32,
                                    0x00FF0000,
                                    0x0000FF00,
                                    0x000000FF,

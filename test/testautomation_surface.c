@@ -55,7 +55,7 @@ _surfaceSetUp(void *arg)
 #endif
 
     referenceSurface = SDLTest_ImageBlit(); /* For size info */
-    testSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, referenceSurface->w, referenceSurface->h, 32, rmask, gmask, bmask, amask);
+    testSurface = SDL_CreateRGBSurface(referenceSurface->w, referenceSurface->h, 32, rmask, gmask, bmask, amask);
     SDLTest_AssertCheck(testSurface != NULL, "Check that testSurface is not NULL");
     if (testSurface != NULL) {
       /* Disable blend mode for target surface */
@@ -617,7 +617,7 @@ surface_testOverflow(void *arg)
     SDL_memset(buf, '\0', sizeof(buf));
 
     expectedError = "Parameter 'width' is invalid";
-    surface = SDL_CreateRGBSurfaceWithFormat(0, -3, 100, SDL_PIXELFORMAT_INDEX8);
+    surface = SDL_CreateRGBSurfaceWithFormat(-3, 100, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface == NULL, "Should detect negative width");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -631,7 +631,7 @@ surface_testOverflow(void *arg)
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
 
     expectedError = "Parameter 'height' is invalid";
-    surface = SDL_CreateRGBSurfaceWithFormat(0, 100, -3, SDL_PIXELFORMAT_INDEX8);
+    surface = SDL_CreateRGBSurfaceWithFormat(100, -3, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface == NULL, "Should detect negative height");
     SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                         "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
@@ -754,19 +754,19 @@ surface_testOverflow(void *arg)
 
     if (sizeof (size_t) == 4 && sizeof (int) >= 4) {
         expectedError = "Out of memory";
-        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32, 1, SDL_PIXELFORMAT_INDEX8);
+        surface = SDL_CreateRGBSurfaceWithFormat(SDL_MAX_SINT32, 1, SDL_PIXELFORMAT_INDEX8);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width + alignment");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateRGBSurfaceWithFormat(0, SDL_MAX_SINT32 / 2, 1, SDL_PIXELFORMAT_ARGB8888);
+        surface = SDL_CreateRGBSurfaceWithFormat(SDL_MAX_SINT32 / 2, 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 29) - 1, (1 << 29) - 1, SDL_PIXELFORMAT_INDEX8);
+        surface = SDL_CreateRGBSurfaceWithFormat((1 << 29) - 1, (1 << 29) - 1, SDL_PIXELFORMAT_INDEX8);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
-        surface = SDL_CreateRGBSurfaceWithFormat(0, (1 << 15) + 1, (1 << 15) + 1, SDL_PIXELFORMAT_ARGB8888);
+        surface = SDL_CreateRGBSurfaceWithFormat((1 << 15) + 1, (1 << 15) + 1, SDL_PIXELFORMAT_ARGB8888);
         SDLTest_AssertCheck(surface == NULL, "Should detect overflow in width * height * bytes per pixel");
         SDLTest_AssertCheck(SDL_strcmp(SDL_GetError(), expectedError) == 0,
                             "Expected \"%s\", got \"%s\"", expectedError, SDL_GetError());
