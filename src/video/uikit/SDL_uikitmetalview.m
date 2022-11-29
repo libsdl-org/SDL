@@ -94,6 +94,11 @@ UIKit_Metal_CreateView(_THIS, SDL_Window * window)
 
     metalview = [[SDL_uikitmetalview alloc] initWithFrame:data.uiwindow.bounds
                                                     scale:scale];
+    if (metalview == nil) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
     [metalview setSDLWindow:window];
 
     return (void*)CFBridgingRetain(metalview);
