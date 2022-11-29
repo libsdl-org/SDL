@@ -342,4 +342,54 @@ WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
 
 #endif /* defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__) */
 
+
+/*
+ * Public APIs
+ */
+#if !defined(SDL_VIDEO_DRIVER_WINDOWS)
+
+#if defined(__WIN32__) || defined(__GDK__)
+int
+SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+{
+    (void) name;
+    (void) style;
+    (void) hInst;
+    return 0;
+}
+
+void
+SDL_UnregisterApp(void)
+{
+}
+
+void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
+{
+}
+#endif /* __WIN32__ || __GDK__ */
+
+#if defined(__WIN32__) || defined(__WINGDK__)
+int
+SDL_Direct3D9GetAdapterIndex(int displayIndex)
+{
+    (void) displayIndex;
+    return 0; /* D3DADAPTER_DEFAULT */
+}
+
+SDL_bool
+SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
+{
+    (void) displayIndex;
+    if (adapterIndex) {
+        *adapterIndex = -1;
+    }
+    if (outputIndex) {
+        *outputIndex = -1;
+    }
+    return SDL_FALSE;
+}
+#endif /* __WIN32__ || __WINGDK__ */
+
+#endif /* !SDL_VIDEO_DRIVER_WINDOWS */
+
 /* vi: set ts=4 sw=4 expandtab: */
