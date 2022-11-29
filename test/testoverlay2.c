@@ -224,7 +224,7 @@ loop()
         SDL_UpdateTexture(MooseTexture, NULL, MooseFrame[i], MOOSEPIC_W);
     }
     SDL_RenderClear(renderer);
-    SDL_RenderCopyF(renderer, MooseTexture, NULL, &displayrect);
+    SDL_RenderCopy(renderer, MooseTexture, NULL, &displayrect);
     SDL_RenderPresent(renderer);
 
 #ifdef __EMSCRIPTEN__

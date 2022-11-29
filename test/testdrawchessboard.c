@@ -48,7 +48,7 @@ DrawChessBoard()
             rect.x = x * rect.w;
             rect.y = row * rect.h;
             x = x + 2;
-            SDL_RenderFillRectF(renderer, &rect);
+            SDL_RenderFillRect(renderer, &rect);
         }
     }
 }

@@ -173,7 +173,7 @@ render(SDL_Renderer *renderer)
         SDL_Color color =
             buttons[i].isPressed ? buttons[i].downColor : buttons[i].upColor;
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-        SDL_RenderFillRectF(renderer, &buttons[i].rect);
+        SDL_RenderFillRect(renderer, &buttons[i].rect);
     }
     /* update the screen */
     SDL_RenderPresent(renderer);

@@ -31,7 +31,7 @@ render(SDL_Renderer *renderer)
 
     /*  Fill the rectangle in the color */
     SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-    SDL_RenderFillRectF(renderer, &rect);
+    SDL_RenderFillRect(renderer, &rect);
 
     /* update screen */
     SDL_RenderPresent(renderer);

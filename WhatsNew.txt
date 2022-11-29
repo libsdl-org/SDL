@@ -19,9 +19,33 @@ General:
 	* SDL_RWFromFP()
 	* SDL_SetWindowBrightness()
 	* SDL_SetWindowGammaRamp()
+   * SDL_RenderDrawPoint()
+   * SDL_RenderDrawPoints()
+   * SDL_RenderDrawLine()
+   * SDL_RenderDrawLines()
+   * SDL_RenderDrawRect()
+   * SDL_RenderDrawRects()
+   * SDL_RenderFillRect()
+   * SDL_RenderFillRects()
+   * SDL_RenderCopy()
+   * SDL_RenderCopyEx()
 * Removed the following hints from the API:
 	* SDL_HINT_IDLE_TIMER_DISABLED
 	* SDL_HINT_VIDEO_X11_FORCE_EGL
 	* SDL_HINT_VIDEO_X11_XINERAMA
 	* SDL_HINT_VIDEO_X11_XVIDMODE
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
+
+* Function renamed:
+   * SDL_RenderDrawPointF() to SDL_RenderDrawPoint()
+   * SDL_RenderDrawPointsF() to SDL_RenderDrawPoints()
+   * SDL_RenderDrawLineF() to SDL_RenderDrawLine()
+   * SDL_RenderDrawLinesF() to SDL_RenderDrawLines()
+   * SDL_RenderDrawRectF() to SDL_RenderDrawRect()
+   * SDL_RenderDrawRectsF() to SDL_RenderDrawRects()
+   * SDL_RenderFillRectF() to SDL_RenderFillRect()
+   * SDL_RenderFillRectsF() to SDL_RenderFillRects()
+   * SDL_RenderCopyF() to SDL_RenderCopy()
+   * SDL_RenderCopyExF() to SDL_RenderCopyEx()
+
+

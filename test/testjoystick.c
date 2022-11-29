@@ -96,7 +96,7 @@ DrawRect(SDL_Renderer *r, const int x, const int y, const int w, const int h)
     area.y = y;
     area.w = w;
     area.h = h;
-    SDL_RenderFillRectF(r, &area);
+    SDL_RenderFillRect(r, &area);
 }
 
 void

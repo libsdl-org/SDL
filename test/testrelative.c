@@ -30,7 +30,7 @@ static void
 DrawRects(SDL_Renderer * renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRectF(renderer, &rect);
+    SDL_RenderFillRect(renderer, &rect);
 }
 
 static void

@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         SDL_SetRenderDrawColor(renderer, 0, 0, 127, 255);
         SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRectsF(renderer, areas, SDL_arraysize(drag_areas));
+        SDL_RenderFillRects(renderer, areas, SDL_arraysize(drag_areas));
         SDL_RenderPresent(renderer);
 
         while (SDL_PollEvent(&e)) {

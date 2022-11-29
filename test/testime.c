@@ -322,7 +322,7 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *ds
         const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
         srcrect.x = cInTex % UNIFONT_GLYPHS_IN_ROW * 16;
         srcrect.y = cInTex / UNIFONT_GLYPHS_IN_ROW * 16;
-        SDL_RenderCopyF(state->renderers[rendererID], texture, &srcrect, dstrect);
+        SDL_RenderCopy(state->renderers[rendererID], texture, &srcrect, dstrect);
     }
     return unifontGlyph[codepoint].width;
 }
@@ -457,7 +457,7 @@ void _Redraw(int rendererID)
     drawnTextRect.w = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
-    SDL_RenderFillRectF(renderer,&textRect);
+    SDL_RenderFillRect(renderer,&textRect);
 
     if (*text) {
 #ifdef HAVE_SDL_TTF
@@ -472,7 +472,7 @@ void _Redraw(int rendererID)
         texture = SDL_CreateTextureFromSurface(renderer,textSur);
         SDL_FreeSurface(textSur);
 
-        SDL_RenderCopyF(renderer,texture,NULL,&drawnTextRect);
+        SDL_RenderCopy(renderer,texture,NULL,&drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         char *utext = text;
@@ -515,7 +515,7 @@ void _Redraw(int rendererID)
     drawnTextRect.w = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
-    SDL_RenderFillRectF(renderer,&markedRect);
+    SDL_RenderFillRect(renderer,&markedRect);
 
     if (markedText[0]) {
 #ifdef HAVE_SDL_TTF
@@ -543,7 +543,7 @@ void _Redraw(int rendererID)
         texture = SDL_CreateTextureFromSurface(renderer,textSur);
         SDL_FreeSurface(textSur);
 
-        SDL_RenderCopyF(renderer,texture,NULL,&drawnTextRect);
+        SDL_RenderCopy(renderer,texture,NULL,&drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         int i = 0;
@@ -582,11 +582,11 @@ void _Redraw(int rendererID)
         underlineRect.w = drawnTextRect.w;
 
         SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-        SDL_RenderFillRectF(renderer, &underlineRect);
+        SDL_RenderFillRect(renderer, &underlineRect);
     }
 
     SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-    SDL_RenderFillRectF(renderer,&cursorRect);
+    SDL_RenderFillRect(renderer,&cursorRect);
 
     {
         SDL_Rect r;

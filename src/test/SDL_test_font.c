@@ -3237,7 +3237,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
     /*
      * Draw texture onto destination
      */
-    result |= SDL_RenderCopyF(renderer, cache->charTextureCache[ci], &srect, &drect);
+    result |= SDL_RenderCopy(renderer, cache->charTextureCache[ci], &srect, &drect);
 
     return result;
 }

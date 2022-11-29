@@ -10,7 +10,7 @@ Common files:
 
 Rectangles (rectangles.c):
 
-	Draws randomly sized and colored rectangles all over the screen by using SDL_RenderFillRectF.  This is the simplest of all the demos.
+	Draws randomly sized and colored rectangles all over the screen by using SDL_RenderFillRect.  This is the simplest of all the demos.
 
 Happy (happy.c):
 

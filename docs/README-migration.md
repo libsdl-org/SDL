@@ -39,9 +39,9 @@ SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been
 
 ## SDL_render.h
 
-Remove 'integer' functions, prefer the float versions.
+Renderer 'integer' functions have been removed, prefer the float versions which have renamed.
 
-SDL_RenderDrawPoint
+SDL_RenderDrawPoint 
 SDL_RenderDrawPoints
 SDL_RenderDrawLine
 SDL_RenderDrawLines

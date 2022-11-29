@@ -45,7 +45,7 @@ drawLine(SDL_Renderer *renderer, float startx, float starty, float dx, float dy)
         x += dx_prime;
         y += dy_prime;
         /* draw brush blot */
-        SDL_RenderCopyF(renderer, brush, NULL, &dstRect);
+        SDL_RenderCopy(renderer, brush, NULL, &dstRect);
     }
 }
 
@@ -126,7 +126,7 @@ main(int argc, char *argv[])
             }
         }
 
-        SDL_RenderCopyF(renderer, target, NULL, NULL);
+        SDL_RenderCopy(renderer, target, NULL, NULL);
         SDL_RenderPresent(renderer);
     }
 

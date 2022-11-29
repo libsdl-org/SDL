@@ -2689,12 +2689,12 @@ SDL_RenderClear(SDL_Renderer * renderer)
 }
 
 int
-SDL_RenderDrawPointF(SDL_Renderer * renderer, float x, float y)
+SDL_RenderDrawPoint(SDL_Renderer * renderer, float x, float y)
 {
     SDL_FPoint fpoint;
     fpoint.x = x;
     fpoint.y = y;
-    return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
+    return SDL_RenderDrawPoints(renderer, &fpoint, 1);
 }
 
 static int
@@ -2730,7 +2730,7 @@ RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
 }
 
 int
-SDL_RenderDrawPointsF(SDL_Renderer * renderer,
+SDL_RenderDrawPoints(SDL_Renderer * renderer,
                       const SDL_FPoint * points, int count)
 {
     int retval;
@@ -2738,7 +2738,7 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawPointsF(): points");
+        return SDL_InvalidParamError("SDL_RenderDrawPoints(): points");
     }
     if (count < 1) {
         return 0;
@@ -2760,14 +2760,14 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
 }
 
 int
-SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float y2)
+SDL_RenderDrawLine(SDL_Renderer * renderer, float x1, float y1, float x2, float y2)
 {
     SDL_FPoint points[2];
     points[0].x = x1;
     points[0].y = y1;
     points[1].x = x2;
     points[1].y = y2;
-    return SDL_RenderDrawLinesF(renderer, points, 2);
+    return SDL_RenderDrawLines(renderer, points, 2);
 }
 
 static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
@@ -2925,7 +2925,7 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
 }
 
 int
-SDL_RenderDrawLinesF(SDL_Renderer * renderer,
+SDL_RenderDrawLines(SDL_Renderer * renderer,
                      const SDL_FPoint * points, int count)
 {
     int retval = 0;
@@ -2933,7 +2933,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (points == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawLinesF(): points");
+        return SDL_InvalidParamError("SDL_RenderDrawLines(): points");
     }
     if (count < 2) {
         return 0;
@@ -3081,7 +3081,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
 }
 
 int
-SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
+SDL_RenderDrawRect(SDL_Renderer * renderer, const SDL_FRect * rect)
 {
     SDL_FRect frect;
     SDL_FPoint points[5];
@@ -3104,11 +3104,11 @@ SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
     points[3].y = rect->y+rect->h-1;
     points[4].x = rect->x;
     points[4].y = rect->y;
-    return SDL_RenderDrawLinesF(renderer, points, 5);
+    return SDL_RenderDrawLines(renderer, points, 5);
 }
 
 int
-SDL_RenderDrawRectsF(SDL_Renderer * renderer,
+SDL_RenderDrawRects(SDL_Renderer * renderer,
                      const SDL_FRect * rects, int count)
 {
     int i;
@@ -3116,7 +3116,7 @@ SDL_RenderDrawRectsF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rects == NULL) {
-        return SDL_InvalidParamError("SDL_RenderDrawRectsF(): rects");
+        return SDL_InvalidParamError("SDL_RenderDrawRects(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3130,7 +3130,7 @@ SDL_RenderDrawRectsF(SDL_Renderer * renderer,
 #endif
 
     for (i = 0; i < count; ++i) {
-        if (SDL_RenderDrawRectF(renderer, &rects[i]) < 0) {
+        if (SDL_RenderDrawRect(renderer, &rects[i]) < 0) {
             return -1;
         }
     }
@@ -3138,7 +3138,7 @@ SDL_RenderDrawRectsF(SDL_Renderer * renderer,
 }
 
 int
-SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
+SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_FRect * rect)
 {
     SDL_FRect frect;
 
@@ -3149,11 +3149,11 @@ SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
         RenderGetViewportSize(renderer, &frect);
         rect = &frect;
     }
-    return SDL_RenderFillRectsF(renderer, rect, 1);
+    return SDL_RenderFillRects(renderer, rect, 1);
 }
 
 int
-SDL_RenderFillRectsF(SDL_Renderer * renderer,
+SDL_RenderFillRects(SDL_Renderer * renderer,
                      const SDL_FRect * rects, int count)
 {
     SDL_FRect *frects;
@@ -3164,7 +3164,7 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rects == NULL) {
-        return SDL_InvalidParamError("SDL_RenderFillRectsF(): rects");
+        return SDL_InvalidParamError("SDL_RenderFillRects(): rects");
     }
     if (count < 1) {
         return 0;
@@ -3196,7 +3196,7 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
 }
 
 int
-SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
+SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                 const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
     SDL_Rect real_srcrect;
@@ -3303,7 +3303,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 int
-SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
+SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
@@ -3314,7 +3314,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     int use_rendergeometry;
 
     if (flip == SDL_FLIP_NONE && (int)(angle/360) == angle/360) { /* fast path when we don't need rotation or flipping */
-        return SDL_RenderCopyF(renderer, texture, srcrect, dstrect);
+        return SDL_RenderCopy(renderer, texture, srcrect, dstrect);
     }
 
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -3755,7 +3755,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_SetTextureAlphaMod(texture, col0_.a);
                 SDL_SetTextureColorMod(texture, col0_.r, col0_.g, col0_.b);
                 if (s.w > 0 && s.h > 0) {
-                    SDL_RenderCopyF(renderer, texture, &s, &d);
+                    SDL_RenderCopy(renderer, texture, &s, &d);
                 } else {
                     int flags = 0;
                     if (s.w < 0) {
@@ -3768,7 +3768,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                         s.h *= -1;
                         s.y -= s.h;
                     }
-                    SDL_RenderCopyExF(renderer, texture, &s, &d, 0, NULL, flags);
+                    SDL_RenderCopyEx(renderer, texture, &s, &d, 0, NULL, flags);
                 }
 
 #if DEBUG_SW_RENDER_GEOMETRY
@@ -3778,7 +3778,7 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             } else if (d.w != 0.0f && d.h != 0.0f) { /* Rect, no texture */
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(renderer, col0_.r, col0_.g, col0_.b, col0_.a);
-                SDL_RenderFillRectF(renderer, &d);
+                SDL_RenderFillRect(renderer, &d);
 #if DEBUG_SW_RENDER_GEOMETRY
                 SDL_Log("Rect-FILL: RGB %d %d %d - Alpha:%d - texture=%p: dst (%f, %f, %f x %f)", col0_.r, col0_.g, col0_.b, col0_.a,
                         (void *)texture, d.x, d.y, d.w, d.h);

@@ -675,7 +675,7 @@ loop(void *arg)
     /* blank screen, set up for drawing this frame. */
     SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(screen);
-    SDL_RenderCopyF(screen, showing_front ? background_front : background_back, NULL, NULL);
+    SDL_RenderCopy(screen, showing_front ? background_front : background_back, NULL, NULL);
 
     if (gamecontroller) {
         /* Update visual controller state */
@@ -688,7 +688,7 @@ loop(void *arg)
                     dst.y = button_positions[i].y;
                     dst.w = BUTTON_SIZE;
                     dst.h = BUTTON_SIZE;
-                    SDL_RenderCopyExF(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyEx(screen, button_texture, NULL, &dst, 0, NULL, SDL_FLIP_NONE);
                 }
             }
         }
@@ -704,7 +704,7 @@ loop(void *arg)
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyExF(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 } else if (value > deadzone) {
                     const double angle = axis_positions[i].angle + 180.0;
                     SDL_FRect dst;
@@ -712,7 +712,7 @@ loop(void *arg)
                     dst.y = axis_positions[i].y;
                     dst.w = AXIS_SIZE;
                     dst.h = AXIS_SIZE;
-                    SDL_RenderCopyExF(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
+                    SDL_RenderCopyEx(screen, axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
                 }
             }
         }

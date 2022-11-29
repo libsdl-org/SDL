@@ -75,7 +75,7 @@ DrawPoints(SDL_Renderer * renderer)
 
         x = rand() % viewport.w;
         y = rand() % viewport.h;
-        SDL_RenderDrawPointF(renderer, x, y);
+        SDL_RenderDrawPoint(renderer, x, y);
     }
 }
 
@@ -115,12 +115,12 @@ DrawLines(SDL_Renderer * renderer)
 
     for (i = 0; i < num_lines; ++i) {
         if (i == -1) {
-            SDL_RenderDrawLineF(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
-            SDL_RenderDrawLineF(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
-            SDL_RenderDrawLineF(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
-            SDL_RenderDrawLineF(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
+            SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
+            SDL_RenderDrawLine(renderer, 0, viewport.h - 1, viewport.w - 1, 0);
+            SDL_RenderDrawLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
+            SDL_RenderDrawLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
-            SDL_RenderDrawLineF(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
+            SDL_RenderDrawLine(renderer, lines[i].x, lines[i].y, lines[i].w, lines[i].h);
         }
     }
 }
@@ -160,7 +160,7 @@ static void
 DrawRects(SDL_Renderer * renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
-    SDL_RenderFillRectsF(renderer, rects, num_rects);
+    SDL_RenderFillRects(renderer, rects, num_rects);
 }
 
 static void
@@ -182,7 +182,7 @@ DrawRectLineIntersections(SDL_Renderer * renderer)
             y2 = lines[j].h;
 
             if (SDL_IntersectFRectAndLine(&r, &x1, &y1, &x2, &y2)) {
-                SDL_RenderDrawLineF(renderer, x1, y1, x2, y2);
+                SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
             }
         }
 }
@@ -198,7 +198,7 @@ DrawRectRectIntersections(SDL_Renderer * renderer)
         for (j = i + 1; j < num_rects; j++) {
             SDL_FRect r;
             if (SDL_IntersectFRect(&rects[i], &rects[j], &r)) {
-                SDL_RenderFillRectF(renderer, &r);
+                SDL_RenderFillRect(renderer, &r);
             }
         }
 }

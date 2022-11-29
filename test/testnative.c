@@ -81,7 +81,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
         }
 
         /* Blit the sprite onto the screen */
-        SDL_RenderCopyF(renderer, sprite, NULL, position);
+        SDL_RenderCopy(renderer, sprite, NULL, position);
     }
 
     /* Update the screen! */

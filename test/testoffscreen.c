@@ -44,7 +44,7 @@ draw()
     rect.w = (frame_number * 2) % width;
     rect.h = (frame_number * 2) % height;
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x10, 0x21, 0xFF);
-    SDL_RenderFillRectF(renderer, &rect);
+    SDL_RenderFillRect(renderer, &rect);
 
     SDL_RenderPresent(renderer);
 }

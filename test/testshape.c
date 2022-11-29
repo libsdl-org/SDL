@@ -36,7 +36,7 @@ void render(SDL_Renderer *renderer,SDL_Texture *texture,SDL_Rect texture_dimensi
     frect.y = texture_dimensions.y;
     frect.w = texture_dimensions.w;
     frect.h = texture_dimensions.h;
-    SDL_RenderCopyF(renderer,texture,&texture_dimensions, &frect);
+    SDL_RenderCopy(renderer,texture,&texture_dimensions, &frect);
 
     SDL_RenderPresent(renderer);
 }

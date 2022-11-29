@@ -92,7 +92,7 @@ render(SDL_Renderer *renderer, double deltaTime)
         }
         dstRect.x = faces[i].x;
         dstRect.y = faces[i].y;
-        SDL_RenderCopyF(renderer, texture, &srcRect, &dstRect);
+        SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
     }
     /* update screen */
     SDL_RenderPresent(renderer);

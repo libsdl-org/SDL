@@ -116,7 +116,7 @@ typedef enum
 } SDL_TextureAccess;
 
 /**
- * The texture channel modulation used in SDL_RenderCopyF().
+ * The texture channel modulation used in SDL_RenderCopy().
  */
 typedef enum
 {
@@ -126,7 +126,7 @@ typedef enum
 } SDL_TextureModulate;
 
 /**
- * Flip constants for SDL_RenderCopyExF().
+ * Flip constants for SDL_RenderCopyEx().
  */
 typedef enum
 {
@@ -475,7 +475,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureAlphaMod(SDL_Texture * texture,
                                                    Uint8 * alpha);
 
 /**
- * Set the blend mode for a texture, used by SDL_RenderCopyF().
+ * Set the blend mode for a texture, used by SDL_RenderCopy().
  *
  * If the blend mode is not supported, the closest supported mode is chosen
  * and this function returns -1.
@@ -488,7 +488,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureAlphaMod(SDL_Texture * texture,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetTextureBlendMode
- * \sa SDL_RenderCopyF
+ * \sa SDL_RenderCopy
  */
 extern DECLSPEC int SDLCALL SDL_SetTextureBlendMode(SDL_Texture * texture,
                                                     SDL_BlendMode blendMode);
@@ -1067,14 +1067,14 @@ extern DECLSPEC void SDLCALL SDL_RenderLogicalToWindow(SDL_Renderer * renderer,
  *
  * \sa SDL_GetRenderDrawColor
  * \sa SDL_RenderClear
- * \sa SDL_RenderDrawLineF
- * \sa SDL_RenderDrawLinesF
- * \sa SDL_RenderDrawPointF
- * \sa SDL_RenderDrawPointsF
- * \sa SDL_RenderDrawRectF
- * \sa SDL_RenderDrawRectsF
- * \sa SDL_RenderFillRectF
- * \sa SDL_RenderFillRectsF
+ * \sa SDL_RenderDrawLine
+ * \sa SDL_RenderDrawLines
+ * \sa SDL_RenderDrawPoint
+ * \sa SDL_RenderDrawPoints
+ * \sa SDL_RenderDrawRect
+ * \sa SDL_RenderDrawRects
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderFillRects
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderDrawColor(SDL_Renderer * renderer,
                                            Uint8 r, Uint8 g, Uint8 b,
@@ -1116,14 +1116,14 @@ extern DECLSPEC int SDLCALL SDL_GetRenderDrawColor(SDL_Renderer * renderer,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderDrawBlendMode
- * \sa SDL_RenderDrawLineF
- * \sa SDL_RenderDrawLinesF
- * \sa SDL_RenderDrawPointF
- * \sa SDL_RenderDrawPointsF
- * \sa SDL_RenderDrawRectF
- * \sa SDL_RenderDrawRectsF
- * \sa SDL_RenderFillRectF
- * \sa SDL_RenderFillRectsF
+ * \sa SDL_RenderDrawLine
+ * \sa SDL_RenderDrawLines
+ * \sa SDL_RenderDrawPoint
+ * \sa SDL_RenderDrawPoints
+ * \sa SDL_RenderDrawRect
+ * \sa SDL_RenderDrawRects
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderFillRects
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderDrawBlendMode(SDL_Renderer * renderer,
                                                        SDL_BlendMode blendMode);
@@ -1169,7 +1169,7 @@ extern DECLSPEC int SDLCALL SDL_RenderClear(SDL_Renderer * renderer);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderDrawPointF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderDrawPoint(SDL_Renderer * renderer,
                                                  float x, float y);
 
 /**
@@ -1182,7 +1182,7 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawPointF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderDrawPointsF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderDrawPoints(SDL_Renderer * renderer,
                                                   const SDL_FPoint * points,
                                                   int count);
 
@@ -1198,7 +1198,7 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawPointsF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderDrawLineF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderDrawLine(SDL_Renderer * renderer,
                                                 float x1, float y1, float x2, float y2);
 
 /**
@@ -1212,7 +1212,7 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawLineF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderDrawLinesF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderDrawLines(SDL_Renderer * renderer,
                                                  const SDL_FPoint * points,
                                                  int count);
 
@@ -1226,7 +1226,7 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawLinesF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderDrawRectF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderDrawRect(SDL_Renderer * renderer,
                                                 const SDL_FRect * rect);
 
 /**
@@ -1240,7 +1240,7 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawRectF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderDrawRectsF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderDrawRects(SDL_Renderer * renderer,
                                                  const SDL_FRect * rects,
                                                  int count);
 
@@ -1255,7 +1255,7 @@ extern DECLSPEC int SDLCALL SDL_RenderDrawRectsF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderFillRectF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderFillRect(SDL_Renderer * renderer,
                                                 const SDL_FRect * rect);
 
 /**
@@ -1269,7 +1269,7 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRectF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderFillRectsF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer * renderer,
                                                  const SDL_FRect * rects,
                                                  int count);
 
@@ -1287,7 +1287,7 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRectsF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderCopyF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderCopy(SDL_Renderer * renderer,
                                             SDL_Texture * texture,
                                             const SDL_Rect * srcrect,
                                             const SDL_FRect * dstrect);
@@ -1313,7 +1313,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopyF(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RenderCopyExF(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_RenderCopyEx(SDL_Renderer * renderer,
                                             SDL_Texture * texture,
                                             const SDL_Rect * srcrect,
                                             const SDL_FRect * dstrect,
@@ -1414,7 +1414,7 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer * renderer,
  * Update the screen with any rendering performed since the previous call.
  *
  * SDL's rendering functions operate on a backbuffer; that is, calling a
- * rendering function such as SDL_RenderDrawLineF() does not directly put a
+ * rendering function such as SDL_RenderDrawLine() does not directly put a
  * line on the screen, but rather updates the backbuffer. As such, you compose
  * your entire scene and *present* the composed backbuffer to the screen as a
  * complete picture.
@@ -1434,14 +1434,14 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer * renderer,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RenderClear
- * \sa SDL_RenderDrawLineF
- * \sa SDL_RenderDrawLinesF
- * \sa SDL_RenderDrawPointF
- * \sa SDL_RenderDrawPointsF
- * \sa SDL_RenderDrawRectF
- * \sa SDL_RenderDrawRectsF
- * \sa SDL_RenderFillRectF
- * \sa SDL_RenderFillRectsF
+ * \sa SDL_RenderDrawLine
+ * \sa SDL_RenderDrawLines
+ * \sa SDL_RenderDrawPoint
+ * \sa SDL_RenderDrawPoints
+ * \sa SDL_RenderDrawRect
+ * \sa SDL_RenderDrawRects
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderFillRects
  * \sa SDL_SetRenderDrawBlendMode
  * \sa SDL_SetRenderDrawColor
  */
