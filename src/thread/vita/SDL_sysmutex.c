@@ -41,7 +41,7 @@ SDL_CreateMutex(void)
 
     /* Allocate mutex memory */
     mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
-    if (mutex) {
+    if (mutex != NULL) {
 
         res = sceKernelCreateLwMutex(
             &mutex->lock,
@@ -64,7 +64,7 @@ SDL_CreateMutex(void)
 void
 SDL_DestroyMutex(SDL_mutex * mutex)
 {
-    if (mutex) {
+    if (mutex != NULL) {
         sceKernelDeleteLwMutex(&mutex->lock);
         SDL_free(mutex);
     }

@@ -78,7 +78,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
 int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     Uint32 *pTimeout;
-       unsigned int res;
+    unsigned int res;
 
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -100,13 +100,13 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     }
 
     res = sceKernelWaitSema(sem->semid, 1, pTimeout);
-       switch (res) {
-               case SCE_KERNEL_OK:
-                       return 0;
-               case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
-                       return SDL_MUTEX_TIMEDOUT;
-               default:
-                       return SDL_SetError("WaitForSingleObject() failed");
+    switch (res) {
+    case SCE_KERNEL_OK:
+        return 0;
+    case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
+        return SDL_MUTEX_TIMEDOUT;
+    default:
+        return SDL_SetError("WaitForSingleObject() failed");
     }
 }
 

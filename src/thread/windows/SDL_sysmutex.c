@@ -74,7 +74,7 @@ SDL_CreateMutex_srw(void)
 static void
 SDL_DestroyMutex_srw(SDL_mutex * mutex)
 {
-    if (mutex) {
+    if (mutex != NULL) {
         /* There are no kernel allocated resources */
         SDL_free(mutex);
     }
@@ -176,7 +176,7 @@ SDL_CreateMutex_cs(void)
 
     /* Allocate mutex memory */
     mutex = (SDL_mutex_cs *) SDL_malloc(sizeof(*mutex));
-    if (mutex) {
+    if (mutex != NULL) {
         /* Initialize */
         /* On SMP systems, a non-zero spin count generally helps performance */
 #if __WINRT__
@@ -195,7 +195,7 @@ static void
 SDL_DestroyMutex_cs(SDL_mutex * mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
-    if (mutex) {
+    if (mutex != NULL) {
         DeleteCriticalSection(&mutex->cs);
         SDL_free(mutex);
     }
