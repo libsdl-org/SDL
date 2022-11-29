@@ -48,9 +48,9 @@ set(SDL3_INCLUDE_DIRS           "${SDL3_INCLUDE_DIR}")
 set_and_check(SDL3_BINDIR       "${SDL3_PREFIX}/lib/${_sdl_arch_subdir}")
 set_and_check(SDL3_LIBDIR       "${SDL3_PREFIX}/lib/${_sdl_arch_subdir}")
 
-set(SDL3_LIBRARIES      SDL3::SDL3main SDL3::SDL3)
-set(SDL3MAIN_LIBRARY    SDL3::SDL3main)
-set(SDL3TEST_LIBRARY    SDL3::SDL3test)
+set(SDL3_LIBRARIES      SDL3::SDL3_main SDL3::SDL3)
+set(SDL3MAIN_LIBRARY    SDL3::SDL3_main)
+set(SDL3TEST_LIBRARY    SDL3::SDL3_test)
 
 
 # All targets are created, even when some might not be requested though COMPONENTS.
@@ -77,32 +77,32 @@ endif()
 unset(_sdl3_library)
 unset(_sdl3_dll_library)
 
-set(_sdl3main_library "${SDL3_LIBDIR}/SDL3main.lib")
+set(_sdl3main_library "${SDL3_LIBDIR}/SDL3_main.lib")
 if(EXISTS "${_sdl3main_library}")
-    if(NOT TARGET SDL3::SDL3main)
-        add_library(SDL3::SDL3main STATIC IMPORTED)
-        set_target_properties(SDL3::SDL3main
+    if(NOT TARGET SDL3::SDL3_main)
+        add_library(SDL3::SDL3_main STATIC IMPORTED)
+        set_target_properties(SDL3::SDL3_main
         PROPERTIES
             IMPORTED_LOCATION "${_sdl3main_library}"
         )
     endif()
-    set(SDL3_SDL3main_FOUND TRUE)
+    set(SDL3_SDL3_main_FOUND TRUE)
 else()
     set(SDL3_SDL3_FOUND FALSE)
 endif()
 unset(_sdl3main_library)
 
-set(_sdl3test_library "${SDL3_LIBDIR}/SDL3test.lib")
+set(_sdl3test_library "${SDL3_LIBDIR}/SDL3_test.lib")
 if(EXISTS "${_sdl3test_library}")
-    if(NOT TARGET SDL3::SDL3test)
-        add_library(SDL3::SDL3test STATIC IMPORTED)
-        set_target_properties(SDL3::SDL3test
+    if(NOT TARGET SDL3::SDL3_test)
+        add_library(SDL3::SDL3_test STATIC IMPORTED)
+        set_target_properties(SDL3::SDL3_test
             PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES "${SDL3_INCLUDE_DIRS}"
                 IMPORTED_LOCATION "${_sdl3test_library}"
         )
     endif()
-    set(SDL3_SDL3test_FOUND TRUE)
+    set(SDL3_SDL3_test_FOUND TRUE)
 else()
     set(SDL3_SDL3_FOUND FALSE)
 endif()

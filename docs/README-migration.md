@@ -9,9 +9,9 @@ SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's 
 CMake users should use this snippet to include SDL support in their project:
 ```
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
-find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3main)
-if(TARGET SDL3::SDL3main)
-    target_link_libraries(mygame PRIVATE SDL3::SDL3main)
+find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3_main)
+if(TARGET SDL3::SDL3_main)
+    target_link_libraries(mygame PRIVATE SDL3::SDL3_main)
 endif()
 target_link_libraries(mygame PRIVATE SDL3::SDL3)
 ```
@@ -27,6 +27,8 @@ Makefile users can use this snippet to include SDL support in their project:
 CFLAGS += $(shell pkg-config sdl3 --cflags)
 LDFLAGS += $(shell pkg-config sdl3 --libs)
 ```
+
+The SDL3main and SDL3test libraries have been renamed SDL3_main and SDL3_test, respectively.
 
 
 ## SDL_platform.h

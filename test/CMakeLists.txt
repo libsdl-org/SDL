@@ -24,7 +24,7 @@ macro(add_sdl_test_executable TARGET)
 endmacro()
 
 if(NOT TARGET SDL3::SDL3-static)
-    find_package(SDL3 3.0.0 REQUIRED COMPONENTS SDL3-static SDL3test)
+    find_package(SDL3 3.0.0 REQUIRED COMPONENTS SDL3-static SDL3_test)
 endif()
 
 enable_testing()
@@ -34,13 +34,13 @@ if(SDL_INSTALL_TESTS)
 endif()
 
 if(N3DS)
-    link_libraries(SDL3::SDL3main)
+    link_libraries(SDL3::SDL3_main)
 endif()
 
 if(PSP)
     link_libraries(
-        SDL3::SDL3main
-        SDL3::SDL3test
+        SDL3::SDL3_main
+        SDL3::SDL3_test
         SDL3::SDL3-static
         GL
         pspvram
@@ -55,7 +55,7 @@ if(PSP)
     )
 elseif(PS2)
 link_libraries(
-        SDL3main
+        SDL3_main
         SDL3_test
         SDL3-static
         patches
@@ -64,11 +64,11 @@ link_libraries(
         ps2_drivers
 )
 else()
-    link_libraries(SDL3::SDL3test SDL3::SDL3-static)
+    link_libraries(SDL3::SDL3_test SDL3::SDL3-static)
 endif()
 
 if(WINDOWS)
-    # mingw32 must come before SDL3main to link successfully
+    # mingw32 must come before SDL3_main to link successfully
     if(MINGW OR CYGWIN)
         link_libraries(mingw32)
     endif()
@@ -80,7 +80,7 @@ if(WINDOWS)
 
     # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
     # but we need them for VS as well.
-    link_libraries(SDL3main)
+    link_libraries(SDL3_main)
     add_definitions(-Dmain=SDL_main)
 endif()
 

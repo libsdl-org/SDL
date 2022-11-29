@@ -251,6 +251,7 @@ public class HIDDeviceManager {
             0x20d6, // PowerA
             0x24c6, // PowerA
             0x2c22, // Qanba
+            0x2dc8, // 8BitDo
         };
 
         if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_VENDOR_SPEC &&
@@ -278,7 +279,7 @@ public class HIDDeviceManager {
             0x1532, // Razer Wildcat
             0x20d6, // PowerA
             0x24c6, // PowerA
-            0x2dc8, /* 8BitDo */
+            0x2dc8, // 8BitDo
             0x2e24, // Hyperkin
         };
 

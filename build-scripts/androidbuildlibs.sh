@@ -11,7 +11,7 @@
 #  NDK_LIBS_OUT=<dest>  - specify alternate destination for installable
 #                         modules.
 #
-# Note that SDLmain is not an installable module (.so) so libSDLmain.a
+# Note that SDL_main is not an installable module (.so) so libSDL_main.a
 # can be found in $obj/local/<abi> along with the unstripped libSDL.so.
 #
 

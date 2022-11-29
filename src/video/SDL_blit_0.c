@@ -525,7 +525,7 @@ SDL_CalculateBlit0(SDL_Surface * surface)
     int which;
 
     /* 4bits to 32bits */
-    if (surface->format->BitsPerPixel == 4) {
+    if (surface->format->format == SDL_PIXELFORMAT_INDEX4MSB) {
         if (surface->map->dst->format->BytesPerPixel == 4) {
             switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
                 case 0:
@@ -535,33 +535,32 @@ SDL_CalculateBlit0(SDL_Surface * surface)
                     return Blit4bto4Key;
             }
         }
-        /* We don't fully support 4-bit packed pixel modes */
         return NULL;
     }
 
-    if (surface->format->BitsPerPixel != 1) {
-        /* We don't support sub 8-bit packed pixel modes */
-        return (SDL_BlitFunc) NULL;
-    }
-    if (surface->map->dst->format->BitsPerPixel < 8) {
-        which = 0;
-    } else {
-        which = surface->map->dst->format->BytesPerPixel;
-    }
-    switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
-    case 0:
-        return bitmap_blit[which];
+    if (surface->format->format == SDL_PIXELFORMAT_INDEX1MSB) {
+        if (surface->map->dst->format->BitsPerPixel < 8) {
+            which = 0;
+        } else {
+            which = surface->map->dst->format->BytesPerPixel;
+        }
+        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+        case 0:
+            return bitmap_blit[which];
 
-    case SDL_COPY_COLORKEY:
-        return colorkey_blit[which];
+        case SDL_COPY_COLORKEY:
+            return colorkey_blit[which];
 
-    case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
-        return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc) NULL;
+        case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
+            return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc) NULL;
 
-    case SDL_COPY_COLORKEY | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
-        return which >= 2 ? BlitBtoNAlphaKey : (SDL_BlitFunc) NULL;
+        case SDL_COPY_COLORKEY | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
+            return which >= 2 ? BlitBtoNAlphaKey : (SDL_BlitFunc) NULL;
+        }
+        return NULL;
     }
-    return (SDL_BlitFunc) NULL;
+
+    return NULL;
 }
 
 #endif /* SDL_HAVE_BLIT_0 */

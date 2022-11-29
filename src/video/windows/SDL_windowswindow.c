@@ -79,20 +79,7 @@ GetWindowStyle(SDL_Window * window)
         style |= STYLE_FULLSCREEN;
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
-            /* SDL 2.1:
-               This behavior more closely matches other platform where the window is borderless
-               but still interacts with the window manager (e.g. task bar shows above it, it can
-               be resized to fit within usable desktop area, etc.) so this should be the behavior
-               for a future SDL release.
-
-               If you want a borderless window the size of the desktop that looks like a fullscreen
-               window, then you should use the SDL_WINDOW_FULLSCREEN_DESKTOP flag.
-             */
-            if (SDL_GetHintBoolean("SDL_BORDERLESS_WINDOWED_STYLE", SDL_FALSE)) {
-                style |= STYLE_BORDERLESS_WINDOWED;
-            } else {
-                style |= STYLE_BORDERLESS;
-            }
+            style |= STYLE_BORDERLESS_WINDOWED;
         } else {
             style |= STYLE_NORMAL;
         }
