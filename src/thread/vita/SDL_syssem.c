@@ -78,15 +78,15 @@ void SDL_DestroySemaphore(SDL_sem *sem)
 int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     Uint32 *pTimeout;
-    unsigned int res;
+    int res;
 
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
     if (timeout == 0) {
-        int res2 = sceKernelPollSema(sem->semid, 1);
-        if (res2 < 0) {
+        res = sceKernelPollSema(sem->semid, 1);
+        if (res < 0) {
             return SDL_MUTEX_TIMEDOUT;
         }
         return 0;
