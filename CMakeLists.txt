@@ -3196,8 +3196,8 @@ if(SDL_SHARED)
       SOVERSION "0")
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3 PROPERTIES
-      VERSION "${SDL_SO_VERSION_MAJOR}"
-      SOVERSION "${SDL_SO_VERSION}")
+      VERSION "${SDL_SO_VERSION}"
+      SOVERSION "${SDL_SO_VERSION_MAJOR}")
   else()
     if(WINDOWS OR CYGWIN)
       set_target_properties(SDL3 PROPERTIES
