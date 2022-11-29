@@ -87,8 +87,8 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     }
 
     if (timeout == 0) {
-        res = sceKernelPollSema(sem->semid, 1);
-        if (res < 0) {
+        int res2 = sceKernelPollSema(sem->semid, 1);
+        if (res2 < 0) {
             return SDL_MUTEX_TIMEDOUT;
         }
         return 0;
