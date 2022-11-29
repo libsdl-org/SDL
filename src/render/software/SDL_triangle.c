@@ -274,7 +274,7 @@ int SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poin
         }
 
         /* Use an intermediate surface */
-        tmp = SDL_CreateRGBSurfaceWithFormat(0, dstrect.w, dstrect.h, 0, format);
+        tmp = SDL_CreateRGBSurfaceWithFormat(dstrect.w, dstrect.h, format);
         if (tmp == NULL) {
             ret = -1;
             goto end;

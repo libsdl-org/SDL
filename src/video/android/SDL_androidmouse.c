@@ -90,7 +90,7 @@ Android_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     int custom_cursor;
     SDL_Surface *converted;
 
-    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888);
     if (converted == NULL) {
         return NULL;
     }
@@ -124,7 +124,7 @@ static SDL_Cursor *
 Android_CreateEmptyCursor()
 {
     if (empty_cursor == NULL) {
-        SDL_Surface *empty_surface = SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_ARGB8888);
+        SDL_Surface *empty_surface = SDL_CreateRGBSurfaceWithFormat(1, 1, SDL_PIXELFORMAT_ARGB8888);
         if (empty_surface) {
             SDL_memset(empty_surface->pixels, 0, empty_surface->h * empty_surface->pitch);
             empty_cursor = Android_CreateCursor(empty_surface, 0, 0);

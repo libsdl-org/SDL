@@ -140,7 +140,6 @@ typedef enum
  * You can change this by calling SDL_SetSurfaceBlendMode() and selecting a
  * different `blendMode`.
  *
- * \param flags the flags are unused and should be set to 0
  * \param width the width of the surface
  * \param height the height of the surface
  * \param depth the depth of the surface in bits
@@ -158,11 +157,9 @@ typedef enum
  * \sa SDL_FreeSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
-    (Uint32 flags, int width, int height, int depth,
+    (int width, int height, int depth,
      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
 
-
-/* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
 
 /**
  * Allocate a new RGB surface with a specific pixel format.
@@ -171,10 +168,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
  * of providing pixel color masks, you provide it with a predefined format
  * from SDL_PixelFormatEnum.
  *
- * \param flags the flags are unused and should be set to 0
  * \param width the width of the surface
  * \param height the height of the surface
- * \param depth the depth of the surface in bits
  * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
@@ -186,7 +181,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
  * \sa SDL_FreeSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
-    (Uint32 flags, int width, int height, int depth, Uint32 format);
+    (int width, int height, Uint32 format);
 
 /**
  * Allocate a new RGB surface with existing pixel data.
@@ -226,8 +221,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               Uint32 Bmask,
                                                               Uint32 Amask);
 
-/* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
-
 /**
  * Allocate a new RGB surface with with a specific pixel format and existing
  * pixel data.
@@ -242,7 +235,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
  * \param pixels a pointer to existing pixel data
  * \param width the width of the surface
  * \param height the height of the surface
- * \param depth the depth of the surface in bits
  * \param pitch the pitch of the surface in bytes
  * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
@@ -255,7 +247,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
  * \sa SDL_FreeSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormatFrom
-    (void *pixels, int width, int height, int depth, int pitch, Uint32 format);
+    (void *pixels, int width, int height, int pitch, Uint32 format);
 
 /**
  * Free an RGB surface.
@@ -661,8 +653,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  * \param src the existing SDL_Surface structure to convert
  * \param fmt the SDL_PixelFormat structure that the new surface is optimized
  *            for
- * \param flags the flags are unused and should be set to 0; this is a
- *              leftover from SDL 1.2's API
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -673,7 +663,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  * \sa SDL_CreateRGBSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
-    (SDL_Surface * src, const SDL_PixelFormat * fmt, Uint32 flags);
+    (SDL_Surface * src, const SDL_PixelFormat * fmt);
 
 /**
  * Copy an existing surface to a new surface of the specified format enum.
@@ -686,8 +676,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * \param src the existing SDL_Surface structure to convert
  * \param pixel_format the SDL_PixelFormatEnum that the new surface is
  *                     optimized for
- * \param flags the flags are unused and should be set to 0; this is a
- *              leftover from SDL 1.2's API
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -698,7 +686,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * \sa SDL_CreateRGBSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
-    (SDL_Surface * src, Uint32 pixel_format, Uint32 flags);
+    (SDL_Surface * src, Uint32 pixel_format);
 
 /**
  * Copy a block of pixels of one format to another format.
