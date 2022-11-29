@@ -114,7 +114,8 @@ Uint32
 SDL_SemValue(SDL_sem *sem)
 {
     if (sem == NULL) {
-        return SDL_InvalidParamError("sem");
+        SDL_InvalidParamError("sem");
+        return 0;
     }
     return sem->semaphore.current_count;
 }
