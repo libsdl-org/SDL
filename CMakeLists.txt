@@ -89,12 +89,6 @@ set(SDL_MINOR_VERSION 0)
 set(SDL_MICRO_VERSION 0)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
-# Set defaults preventing destination file conflicts
-set(SDL_CMAKE_DEBUG_POSTFIX "d"
-    CACHE STRING "Name suffix for debug builds")
-
-mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX SDL_CMAKE_DEBUG_POSTFIX)
-
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL3 to SDL4, at which point this would
 # reset to 0 anyway.
@@ -3161,9 +3155,6 @@ if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
       target_link_libraries(SDL3_main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>")
     endif()
   endif()
-  if (NOT ANDROID)
-    set_target_properties(SDL3_main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
 endif()
 
 if(ANDROID)
@@ -3239,9 +3230,6 @@ if(SDL_SHARED)
       target_link_options(SDL3 PRIVATE -static-libgcc)
     endif()
   endif()
-  if(NOT ANDROID)
-    set_target_properties(SDL3 PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
   set_property(TARGET SDL3 PROPERTY INTERFACE_SDL3_SHARED TRUE)
   set_property(TARGET SDL3 APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
@@ -3268,9 +3256,6 @@ if(SDL_STATIC)
   )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
-  if(NOT ANDROID)
-    set_target_properties(SDL3-static PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
   set_property(TARGET SDL3-static PROPERTY INTERFACE_SDL3_SHARED FALSE)
   set_property(TARGET SDL3-static APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
