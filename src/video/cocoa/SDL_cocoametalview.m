@@ -144,6 +144,7 @@ Cocoa_Metal_CreateView(_THIS, SDL_Window * window)
                                                 highDPI:highDPI
                                                 windowID:windowID];
     if (newview == nil) {
+        SDL_OutOfMemory();
         return NULL;
     }
 
