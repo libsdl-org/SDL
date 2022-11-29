@@ -82,8 +82,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     int res;
 
     if (sem == NULL) {
-        SDL_InvalidParamError("sem");
-        return 0;
+        return SDL_InvalidParamError("sem");
     }
 
     if (timeout == 0) {
