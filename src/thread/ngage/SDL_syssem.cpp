@@ -72,7 +72,7 @@ static void WaitAll(SDL_sem *sem)
     RSemaphore sema;
     sema.SetHandle(sem->handle);
     sema.Wait();
-    while(sem->count < 0) {
+    while (sem->count < 0) {
         sema.Wait();
     }
 }
@@ -94,7 +94,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
 void
 SDL_DestroySemaphore(SDL_sem * sem)
 {
-    if (sem) {
+    if (sem != NULL) {
         RSemaphore sema;
         sema.SetHandle(sem->handle);
         sema.Signal(sema.Count());

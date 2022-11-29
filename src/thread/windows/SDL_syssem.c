@@ -96,7 +96,7 @@ SDL_CreateSemaphore_atom(Uint32 initial_value)
     SDL_sem_atom *sem;
 
     sem = (SDL_sem_atom *) SDL_malloc(sizeof(*sem));
-    if (sem) {
+    if (sem != NULL) {
         sem->count = initial_value;
     } else {
         SDL_OutOfMemory();
@@ -107,7 +107,7 @@ SDL_CreateSemaphore_atom(Uint32 initial_value)
 static void
 SDL_DestroySemaphore_atom(SDL_sem * sem)
 {
-    if (sem) {
+    if (sem != NULL) {
         SDL_free(sem);
     }
 }
@@ -269,7 +269,7 @@ SDL_CreateSemaphore_kern(Uint32 initial_value)
 
     /* Allocate sem memory */
     sem = (SDL_sem_kern *) SDL_malloc(sizeof(*sem));
-    if (sem) {
+    if (sem != NULL) {
         /* Create the semaphore, with max value 32K */
 #if __WINRT__
         sem->id = CreateSemaphoreEx(NULL, initial_value, 32 * 1024, NULL, 0, SEMAPHORE_ALL_ACCESS);
@@ -293,7 +293,7 @@ static void
 SDL_DestroySemaphore_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
-    if (sem) {
+    if (sem != NULL) {
         if (sem->id) {
             CloseHandle(sem->id);
             sem->id = 0;

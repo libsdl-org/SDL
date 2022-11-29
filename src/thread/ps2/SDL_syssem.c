@@ -83,7 +83,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     int ret;
     struct timer_alarm_t alarm;
     InitializeTimerAlarm(&alarm);
-    
+
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
@@ -105,7 +105,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     if (ret < 0) {
         return SDL_MUTEX_TIMEDOUT;
     }
-    return 0; //Wait condition satisfied.
+    return 0; // Wait condition satisfied.
 }
 
 int SDL_SemTryWait(SDL_sem *sem)
