@@ -16,6 +16,7 @@
 #endif
 
 #include <SDL3/SDL_test_common.h>
+#include "testutils.h"
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)
 #define HAVE_OPENGLES2
@@ -151,7 +152,7 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
     if (status != GL_TRUE) {
         ctx.glGetProgramInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
         buffer[length] = '\0';
-        SDL_Log("Shader compilation failed: %s", buffer);fflush(stderr);
+        SDL_Log("Shader compilation failed: %s", buffer);
         quit(-1);
     }
 }
@@ -161,7 +162,7 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
  * To get correct rotation for most cases when a_angle is disabled cosine
  * value is decremented by 1.0 to get proper output with 0.0 which is default value
  */
-static const Uint8 GLES2_VertexSrc_Default_[] = " \
+static const char GLES2_VertexSrc_Default_[] = " \
     uniform mat4 u_projection; \
     attribute vec2 a_position; \
     attribute vec2 a_texCoord; \
@@ -181,7 +182,7 @@ static const Uint8 GLES2_VertexSrc_Default_[] = " \
     } \
 ";
 
-static const Uint8 GLES2_FragmentSrc_TextureABGRSrc_[] = " \
+static const char GLES2_FragmentSrc_TextureABGRSrc_[] = " \
     precision mediump float; \
     uniform sampler2D u_texture; \
     uniform vec4 u_color; \
@@ -195,7 +196,7 @@ static const Uint8 GLES2_FragmentSrc_TextureABGRSrc_[] = " \
 ";
 
 /* RGB to ABGR conversion */
-static const Uint8 GLES2_FragmentSrc_TextureABGRSrc_SDF[] = " \
+static const char GLES2_FragmentSrc_TextureABGRSrc_SDF[] = " \
     #extension GL_OES_standard_derivatives : enable\n\
     \
     precision mediump float; \
@@ -361,7 +362,7 @@ void loop()
                     g_angle -= 1;
                 }
                 if (sym == SDLK_DOWN) {
-                        g_angle += 1;
+                    g_angle += 1;
                 }
  
 
@@ -403,16 +404,6 @@ void loop()
     matrix_mvp[0][0] = 2.0f / 640.0;
     matrix_mvp[1][1] = -2.0f / 480.0;
     matrix_mvp[3][1] = 1.0f;
-    
-    if (0) {
-        float *f = (float *) matrix_mvp;
-        SDL_Log("-----------------------------------");
-        SDL_Log("[ %f, %f, %f, %f ]", *f++, *f++, *f++, *f++);
-        SDL_Log("[ %f, %f, %f, %f ]", *f++, *f++, *f++, *f++);
-        SDL_Log("[ %f, %f, %f, %f ]", *f++, *f++, *f++, *f++);
-        SDL_Log("[ %f, %f, %f, %f ]", *f++, *f++, *f++, *f++);
-        SDL_Log("-----------------------------------");
-    }
 
     renderCopy_angle(g_angle);
 
