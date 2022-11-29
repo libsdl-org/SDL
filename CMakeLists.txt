@@ -95,36 +95,32 @@ set(SDL_CMAKE_DEBUG_POSTFIX "d"
 
 mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX SDL_CMAKE_DEBUG_POSTFIX)
 
-# Calculate a libtool-like version number
-math(EXPR SDL_BINARY_AGE "${SDL_MINOR_VERSION} * 100 + ${SDL_MICRO_VERSION}")
-if(SDL_MINOR_VERSION MATCHES "[02468]$")
-    # Stable branch, 3.24.1 -> libSDL3-3.0.so.0.2400.1
-    set(SDL_INTERFACE_AGE ${SDL_MICRO_VERSION})
-else()
-    # Development branch, 3.23.1 -> libSDL3-3.0.so.0.2301.0
-    set(SDL_INTERFACE_AGE 0)
-endif()
-
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL3 to SDL4, at which point this would
 # reset to 0 anyway.
-set(LT_MAJOR "0")
+set(SDL_SO_VERSION_MAJOR "0")
+set(SDL_SO_VERSION_MINOR "${SDL_MINOR_VERSION}")
+set(SDL_SO_VERSION_MICRO "${SDL_MICRO_VERSION}")
+set(SDL_SO_VERSION "${SDL_SO_VERSION_MAJOR}.${SDL_SO_VERSION_MINOR}.${SDL_SO_VERSION_MICRO}")
 
-math(EXPR LT_AGE "${SDL_BINARY_AGE} - ${SDL_INTERFACE_AGE}")
-math(EXPR LT_CURRENT "${LT_MAJOR} + ${LT_AGE}")
-set(LT_REVISION "${SDL_INTERFACE_AGE}")
-set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
+if(SDL_MINOR_VERSION MATCHES "[02468]$")
+  math(EXPR SDL_DYLIB_CURRENT_VERSION_MAJOR "100 * ${SDL_MINOR_VERSION} + 1")
+  set(SDL_DYLIB_CURRENT_VERSION_MINOR "0")
+  math(EXPR SDL_DYLIB_COMPAT_VERSION_MAJOR "${SDL_DYLIB_CURRENT_VERSION_MAJOR}")
+  set(SDL_DYLIB_COMPAT_VERSION_MINOR "${SDL_MICRO_VERSION}")
+else()
+  math(EXPR SDL_DYLIB_CURRENT_VERSION_MAJOR "100 * ${SDL_MINOR_VERSION} + ${SDL_MICRO_VERSION} + 1")
+  set(SDL_DYLIB_CURRENT_VERSION_MINOR "0")
+  math(EXPR SDL_DYLIB_COMPAT_VERSION_MAJOR "${SDL_DYLIB_CURRENT_VERSION_MAJOR}")
+  set(SDL_DYLIB_COMPAT_VERSION_MINOR "0")
+endif()
+set(SDL_DYLIB_CURRENT_VERSION_MICRO "0")
+set(SDL_DYLIB_COMPAT_VERSION_MICRO "0")
 
-# The following should match the versions in the Xcode project file.
-# Each version is 1 higher than you might expect, for compatibility
-# with libtool: macOS ABI versioning is 1-based, unlike other platforms
-# which are normally 0-based.
-math(EXPR DYLIB_CURRENT_VERSION_MAJOR "${LT_MAJOR} + ${LT_AGE} + 1")
-math(EXPR DYLIB_CURRENT_VERSION_MINOR "${LT_REVISION}")
-set(DYLIB_CURRENT_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.${DYLIB_CURRENT_VERSION_MINOR}.0")
-set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.0.0")
+set(SDL_DYLIB_CURRENT_VERSION "${SDL_DYLIB_CURRENT_VERSION_MAJOR}.${SDL_DYLIB_CURRENT_VERSION_MINOR}.${SDL_DYLIB_CURRENT_VERSION_MICRO}")
+set(SDL_DYLIB_COMPAT_VERSION "${SDL_DYLIB_COMPAT_VERSION_MAJOR}.${SDL_DYLIB_COMPAT_VERSION_MINOR}.${SDL_DYLIB_COMPAT_VERSION_MICRO}")
 
-#message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT}")
+#message("SDL_SO_VERSION=${SDL_SO_VERSION} SDL_DYLIB_CURRENT_VERSION=${SDL_DYLIB_CURRENT_VERSION} SDL_DYLIB_COMPAT_VERSION=${SDL_DYLIB_COMPAT_VERSION}")
 
 check_cpu_architecture(x86 SDL_CPU_X86)
 check_cpu_architecture(x64 SDL_CPU_X64)
@@ -650,8 +646,8 @@ if(USE_GCC OR USE_CLANG)
     cmake_pop_check_state()
 
     # FIXME: use generator expression instead of appending to EXTRA_LDFLAGS_BUILD
-    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
-    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${DYLIB_CURRENT_VERSION}")
+    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${SDL_DYLIB_COMPAT_VERSION}")
+    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${SDL_DYLIB_CURRENT_VERSION}")
   elseif(NOT OPENBSD)
     set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
@@ -3206,19 +3202,16 @@ if(SDL_SHARED)
     # FIXME: Remove SOVERSION in SDL3
     set_target_properties(SDL3 PROPERTIES
       MACOSX_RPATH 1
-      SOVERSION 0)
+      SOVERSION "0")
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3 PROPERTIES
-      VERSION ${LT_VERSION}
-      SOVERSION ${LT_MAJOR})
+      VERSION "${SDL_SO_VERSION_MAJOR}"
+      SOVERSION "${SDL_SO_VERSION}")
   else()
     if(WINDOWS OR CYGWIN)
       set_target_properties(SDL3 PROPERTIES
         DEFINE_SYMBOL DLL_EXPORT)
     endif()
-    set_target_properties(SDL3 PROPERTIES
-      VERSION ${SDL_VERSION}
-      SOVERSION ${LT_REVISION})
   endif()
   # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
   if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
