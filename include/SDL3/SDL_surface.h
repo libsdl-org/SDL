@@ -653,7 +653,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  * \param src the existing SDL_Surface structure to convert
  * \param fmt the SDL_PixelFormat structure that the new surface is optimized
  *            for
- * \param flags the surface flags
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -664,7 +663,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  * \sa SDL_CreateRGBSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
-    (SDL_Surface * src, const SDL_PixelFormat * fmt, Uint32 flags);
+    (SDL_Surface * src, const SDL_PixelFormat * fmt);
 
 /**
  * Copy an existing surface to a new surface of the specified format enum.
@@ -677,7 +676,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * \param src the existing SDL_Surface structure to convert
  * \param pixel_format the SDL_PixelFormatEnum that the new surface is
  *                     optimized for
- * \param flags the surface flags
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -688,7 +686,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * \sa SDL_CreateRGBSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
-    (SDL_Surface * src, Uint32 pixel_format, Uint32 flags);
+    (SDL_Surface * src, Uint32 pixel_format);
 
 /**
  * Copy a block of pixels of one format to another format.

@@ -689,7 +689,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
             } else {
                 SDL_InitFormat(&format, SDL_PIXELFORMAT_BGR24);
             }
-            surface = SDL_ConvertSurface(saveme, &format, 0);
+            surface = SDL_ConvertSurface(saveme, &format);
             if (surface == NULL) {
                 SDL_SetError("Couldn't convert image to %d bpp",
                              format.BitsPerPixel);

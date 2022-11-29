@@ -1140,15 +1140,14 @@ SDL_UnlockSurface(SDL_Surface * surface)
 SDL_Surface *
 SDL_DuplicateSurface(SDL_Surface * surface)
 {
-    return SDL_ConvertSurface(surface, surface->format, surface->flags);
+    return SDL_ConvertSurface(surface, surface->format);
 }
 
 /*
  * Convert a surface into the specified pixel format.
  */
 SDL_Surface *
-SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
-                   Uint32 flags)
+SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format)
 {
     SDL_Surface *convert;
     Uint32 copy_flags;
@@ -1345,7 +1344,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             tmp->map->info.flags &= ~SDL_COPY_COLORKEY;
 
             /* Convertion of the colorkey */
-            tmp2 = SDL_ConvertSurface(tmp, format, 0);
+            tmp2 = SDL_ConvertSurface(tmp, format);
 
             /* Get the converted colorkey */
             SDL_memcpy(&converted_colorkey, tmp2->pixels, tmp2->format->BytesPerPixel);
@@ -1371,7 +1370,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
         (copy_flags & SDL_COPY_MODULATE_ALPHA)) {
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
     }
-    if ((copy_flags & SDL_COPY_RLE_DESIRED) || (flags & SDL_RLEACCEL)) {
+    if ((copy_flags & SDL_COPY_RLE_DESIRED)) {
         SDL_SetSurfaceRLE(convert, SDL_RLEACCEL);
     }
 
@@ -1380,15 +1379,14 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
 }
 
 SDL_Surface *
-SDL_ConvertSurfaceFormat(SDL_Surface * surface, Uint32 pixel_format,
-                         Uint32 flags)
+SDL_ConvertSurfaceFormat(SDL_Surface * surface, Uint32 pixel_format)
 {
     SDL_PixelFormat *fmt;
     SDL_Surface *convert = NULL;
 
     fmt = SDL_AllocFormat(pixel_format);
     if (fmt) {
-        convert = SDL_ConvertSurface(surface, fmt, flags);
+        convert = SDL_ConvertSurface(surface, fmt);
         SDL_FreeFormat(fmt);
     }
     return convert;

@@ -1485,7 +1485,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
            SDL_DestroyTexture(texture);
            return NULL;
         }
-        temp = SDL_ConvertSurface(surface, dst_fmt, 0);
+        temp = SDL_ConvertSurface(surface, dst_fmt);
         SDL_FreeFormat(dst_fmt);
         if (temp) {
             SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);

@@ -162,6 +162,7 @@ M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D 
 
 Removed unused 'depth' parameter from SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom()
 Removed unused 'flags' parameter from SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceWithFormat()
+Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
 
 
 ## SDL_syswm.h

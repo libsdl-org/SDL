@@ -1311,7 +1311,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     }
 
     if (surface->format->format != SDL_PIXELFORMAT_ARGB8888) {
-        temp = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+        temp = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888);
         if (temp == NULL) {
             return NULL;
         }

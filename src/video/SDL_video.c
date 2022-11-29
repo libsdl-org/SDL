@@ -2065,7 +2065,7 @@ SDL_SetWindowIcon(SDL_Window * window, SDL_Surface * icon)
     SDL_FreeSurface(window->icon);
 
     /* Convert the icon into ARGB8888 */
-    window->icon = SDL_ConvertSurfaceFormat(icon, SDL_PIXELFORMAT_ARGB8888, 0);
+    window->icon = SDL_ConvertSurfaceFormat(icon, SDL_PIXELFORMAT_ARGB8888);
     if (!window->icon) {
         return;
     }

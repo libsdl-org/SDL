@@ -325,7 +325,7 @@ main(int argc, char **argv)
     } else {
         filename = "testyuv.bmp";
     }
-    original = SDL_ConvertSurfaceFormat(SDL_LoadBMP(filename), SDL_PIXELFORMAT_RGB24, 0);
+    original = SDL_ConvertSurfaceFormat(SDL_LoadBMP(filename), SDL_PIXELFORMAT_RGB24);
     if (original == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         return 3;

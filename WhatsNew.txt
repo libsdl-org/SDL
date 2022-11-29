@@ -27,4 +27,5 @@ General:
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
 * Removed unused 'depth' parameter from SDL_CreateRGBSurfaceWithFormat and SDL_CreateRGBSurfaceWithFormatFrom
 * Removed unused 'flags' parameter from SDL_CreateRGBSurface and SDL_CreateRGBSurfaceWithFormat
+* Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
 
