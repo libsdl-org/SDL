@@ -54,13 +54,11 @@ CreateUnique(TInt (*aFunc)(const TDesC& aName, TAny*, TAny*), TAny* aPtr1, TAny*
 {
     TBuf<16> name;
     TInt     status = KErrNone;
-    do
-    {
+    do {
         object_count++;
         name.Format(_L("SDL_%x"), object_count);
         status = aFunc(name, aPtr1, aPtr2);
-    }
-    while(status == KErrAlreadyExists);
+    } while (status == KErrAlreadyExists);
     return status;
 }
 
@@ -73,8 +71,7 @@ SDL_SYS_CreateThread(SDL_Thread *thread)
     if (status != KErrNone) {
         delete(((RThread*)(thread->handle)));
         thread->handle = NULL;
-        SDL_SetError("Not enough resources to create thread");
-        return -1;
+        return SDL_SetError("Not enough resources to create thread");
     }
 
     rthread.Resume();

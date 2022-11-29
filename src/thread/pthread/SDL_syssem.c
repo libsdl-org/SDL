@@ -46,7 +46,7 @@ SDL_sem *
 SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_sem *sem = (SDL_sem *) SDL_malloc(sizeof(SDL_sem));
-    if (sem) {
+    if (sem != NULL) {
         if (sem_init(&sem->sem, 0, initial_value) < 0) {
             SDL_SetError("sem_init() failed");
             SDL_free(sem);
@@ -61,7 +61,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
 void
 SDL_DestroySemaphore(SDL_sem * sem)
 {
-    if (sem) {
+    if (sem != NULL) {
         sem_destroy(&sem->sem);
         SDL_free(sem);
     }
@@ -180,11 +180,15 @@ Uint32
 SDL_SemValue(SDL_sem * sem)
 {
     int ret = 0;
-    if (sem) {
-        sem_getvalue(&sem->sem, &ret);
-        if (ret < 0) {
-            ret = 0;
-        }
+
+    if (sem == NULL) {
+        SDL_InvalidParamError("sem");
+        return 0;
+    }
+
+    sem_getvalue(&sem->sem, &ret);
+    if (ret < 0) {
+        ret = 0;
     }
     return (Uint32) ret;
 }
