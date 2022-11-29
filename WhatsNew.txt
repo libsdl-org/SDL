@@ -25,3 +25,4 @@ General:
 	* SDL_HINT_VIDEO_X11_XINERAMA
 	* SDL_HINT_VIDEO_X11_XVIDMODE
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
+* Removed unused 'depth' field from SDL_CreateRGBSurfaceWithFormat and SDL_CreateRGBSurfaceWithFormatFrom
