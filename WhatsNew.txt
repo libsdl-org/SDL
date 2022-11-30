@@ -25,4 +25,4 @@ General:
 	* SDL_HINT_VIDEO_X11_XINERAMA
 	* SDL_HINT_VIDEO_X11_XVIDMODE
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
-* Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes (eg SDL_video.h, SDL_GLattr)
+* Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
