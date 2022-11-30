@@ -190,7 +190,7 @@ Programs which have access to shaders can implement more robust versions of thos
 
 
 Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes (eg SDL_video.h, SDL_GLattr)
-You can get the previous behavior with 'SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);'
+You can instead use 'SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);'
 
 
 ## SDL_hints.h
