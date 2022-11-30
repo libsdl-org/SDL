@@ -35,7 +35,9 @@ General:
 	* SDL_HINT_VIDEO_X11_XINERAMA
 	* SDL_HINT_VIDEO_X11_XVIDMODE
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
-
+* Removed unused 'depth' parameter from SDL_CreateRGBSurfaceWithFormat and SDL_CreateRGBSurfaceWithFormatFrom
+* Removed unused 'flags' parameter from SDL_CreateRGBSurface and SDL_CreateRGBSurfaceWithFormat
+* Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
 * Function renamed:
   * SDL_RenderDrawPointF() to SDL_RenderDrawPoint()
   * SDL_RenderDrawPointsF() to SDL_RenderDrawPoints()
@@ -47,5 +49,4 @@ General:
   * SDL_RenderFillRectsF() to SDL_RenderFillRects()
   * SDL_RenderCopyF() to SDL_RenderCopy()
   * SDL_RenderCopyExF() to SDL_RenderCopyEx()
-
 

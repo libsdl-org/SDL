@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* General mouse handling code for SDL */
 
@@ -1254,7 +1254,7 @@ SDL_CreateCursor(const Uint8 * data, const Uint8 * mask,
     w = ((w + 7) & ~7);
 
     /* Create the surface from a bitmap */
-    surface = SDL_CreateRGBSurface(0, w, h, 32,
+    surface = SDL_CreateRGBSurface(w, h, 32,
                                    0x00FF0000,
                                    0x0000FF00,
                                    0x000000FF,
@@ -1311,7 +1311,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     }
 
     if (surface->format->format != SDL_PIXELFORMAT_ARGB8888) {
-        temp = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+        temp = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888);
         if (temp == NULL) {
             return NULL;
         }

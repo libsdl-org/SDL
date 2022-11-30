@@ -22,7 +22,7 @@
 #ifndef _SDL_vitatouch_h
 #define _SDL_vitatouch_h
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* Touch functions */
 extern void VITA_InitTouch(void);

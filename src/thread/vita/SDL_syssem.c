@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_THREAD_VITA
 
@@ -78,11 +78,10 @@ void SDL_DestroySemaphore(SDL_sem *sem)
 int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     Uint32 *pTimeout;
-       unsigned int res;
+    int res;
 
     if (sem == NULL) {
-        SDL_InvalidParamError("sem");
-        return 0;
+        return SDL_InvalidParamError("sem");
     }
 
     if (timeout == 0) {
@@ -101,13 +100,13 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     }
 
     res = sceKernelWaitSema(sem->semid, 1, pTimeout);
-       switch (res) {
-               case SCE_KERNEL_OK:
-                       return 0;
-               case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
-                       return SDL_MUTEX_TIMEDOUT;
-               default:
-                       return SDL_SetError("WaitForSingleObject() failed");
+    switch (res) {
+    case SCE_KERNEL_OK:
+        return 0;
+    case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
+        return SDL_MUTEX_TIMEDOUT;
+    default:
+        return SDL_SetError("WaitForSingleObject() failed");
     }
 }
 

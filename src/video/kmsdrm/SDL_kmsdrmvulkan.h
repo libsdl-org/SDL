@@ -24,7 +24,7 @@
  * Based on Jacob Lifshay's SDL_x11vulkan.c.
  */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_kmsdrm_vulkan_h_
 #define SDL_kmsdrm_vulkan_h_

@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* General (mostly internal) pixel/color manipulation routines for SDL */
 
@@ -528,7 +528,6 @@ SDL_AllocFormat(Uint32 pixel_format)
     if (SDL_InitFormat(format, pixel_format) < 0) {
         SDL_AtomicUnlock(&formats_lock);
         SDL_free(format);
-        SDL_InvalidParamError("format");
         return NULL;
     }
 
@@ -669,6 +668,7 @@ SDL_AllocPalette(int ncolors)
         (SDL_Color *) SDL_malloc(ncolors * sizeof(*palette->colors));
     if (!palette->colors) {
         SDL_free(palette);
+        SDL_OutOfMemory();
         return NULL;
     }
     palette->ncolors = ncolors;

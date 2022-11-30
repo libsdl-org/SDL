@@ -27,7 +27,7 @@
  * Last upstream update was from July 25, 2019, Git commit 93dca807.
  */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../../thread/SDL_systhread.h"
 
 #ifdef realloc

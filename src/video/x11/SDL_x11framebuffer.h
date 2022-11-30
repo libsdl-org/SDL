@@ -22,7 +22,7 @@
 #ifndef SDL_x11framebuffer_h_
 #define SDL_x11framebuffer_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 extern int X11_CreateWindowFramebuffer(_THIS, SDL_Window * window,

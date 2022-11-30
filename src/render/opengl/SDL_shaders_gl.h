@@ -22,7 +22,7 @@
 #ifndef SDL_shaders_gl_h_
 #define SDL_shaders_gl_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* OpenGL shader implementation */
 

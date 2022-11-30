@@ -24,7 +24,7 @@
  * Based on Jacob Lifshay's SDL_x11vulkan.c.
  */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_KMSDRM
 

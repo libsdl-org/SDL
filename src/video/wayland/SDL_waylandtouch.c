@@ -21,7 +21,7 @@
 
 /* Contributed by Thomas Perl <thomas.perl@jollamobile.com> */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 

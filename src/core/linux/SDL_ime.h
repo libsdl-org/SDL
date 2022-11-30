@@ -22,7 +22,7 @@
 #ifndef SDL_ime_h_
 #define SDL_ime_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 extern SDL_bool SDL_IME_Init(void);

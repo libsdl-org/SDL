@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* This is code that Windows uses to talk to WASAPI-related system APIs.
    This is for non-WinRT desktop apps. The C++/CX implementation of these

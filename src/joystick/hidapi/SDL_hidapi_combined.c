@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 /* This driver supports the Nintendo Switch Joy-Cons pair controllers */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 

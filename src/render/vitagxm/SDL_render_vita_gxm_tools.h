@@ -22,7 +22,7 @@
 #ifndef SDL_RENDER_VITA_GXM_TOOLS_H
 #define SDL_RENDER_VITA_GXM_TOOLS_H
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "../SDL_sysrender.h"
 

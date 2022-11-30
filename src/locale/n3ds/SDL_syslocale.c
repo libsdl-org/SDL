@@ -20,7 +20,7 @@
 */
 
 #include "../SDL_syslocale.h"
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include <3ds.h>
 

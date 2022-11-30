@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
 
@@ -69,7 +69,7 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
     const char *cursor_url = NULL;
     SDL_Surface *conv_surf;
 
-    conv_surf = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
+    conv_surf = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888);
 
     if (conv_surf == NULL) {
         return NULL;

@@ -24,7 +24,7 @@
  * SDL_x11vulkan.h and Mark Callow's SDL_vivantevulkan.h
  */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_vivantevulkan_h_
 #define SDL_vivantevulkan_h_

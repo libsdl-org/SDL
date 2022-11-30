@@ -29,7 +29,7 @@
 
   So, combine them as best we can!
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_JOYSTICK_RAWINPUT
 

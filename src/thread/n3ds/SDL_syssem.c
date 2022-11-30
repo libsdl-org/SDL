@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_THREAD_N3DS
 
@@ -113,7 +113,8 @@ Uint32
 SDL_SemValue(SDL_sem *sem)
 {
     if (sem == NULL) {
-        return SDL_InvalidParamError("sem");
+        SDL_InvalidParamError("sem");
+        return 0;
     }
     return sem->semaphore.current_count;
 }

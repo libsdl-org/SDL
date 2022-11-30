@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_waylandwindow_h_
 #define SDL_waylandwindow_h_
@@ -83,6 +83,7 @@ typedef struct {
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
     struct xdg_activation_token_v1 *activation_token;
     struct wp_viewport *draw_viewport;
+    struct wp_fractional_scale_v1 *fractional_scale;
 
     /* floating dimensions for restoring from maximized and fullscreen */
     int floating_width, floating_height;
