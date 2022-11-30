@@ -36,11 +36,9 @@ DWORD SDL_XInputVersion = 0;
 static HANDLE s_pXInputDLL = 0;
 static int s_XInputDLLRefCount = 0;
 
-
 #if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
 
-int
-WIN_LoadXInputDLL(void)
+int WIN_LoadXInputDLL(void)
 {
     /* Getting handles to system dlls (via LoadLibrary and its variants) is not
      * supported on WinRT, thus, pointers to XInput's functions can't be
@@ -65,22 +63,20 @@ WIN_LoadXInputDLL(void)
     return 0;
 }
 
-void
-WIN_UnloadXInputDLL(void)
+void WIN_UnloadXInputDLL(void)
 {
 }
 
 #else /* !(defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)) */
 
-int
-WIN_LoadXInputDLL(void)
+int WIN_LoadXInputDLL(void)
 {
     DWORD version = 0;
 
     if (s_pXInputDLL) {
         SDL_assert(s_XInputDLLRefCount > 0);
         s_XInputDLLRefCount++;
-        return 0;  /* already loaded */
+        return 0; /* already loaded */
     }
 
     /* NOTE: Don't load XinputUap.dll
@@ -88,10 +84,10 @@ WIN_LoadXInputDLL(void)
      * limitations of that API (no devices at startup, no background input, etc.)
      */
     version = (1 << 16) | 4;
-    s_pXInputDLL = LoadLibrary(TEXT("XInput1_4.dll"));  /* 1.4 Ships with Windows 8. */
+    s_pXInputDLL = LoadLibrary(TEXT("XInput1_4.dll")); /* 1.4 Ships with Windows 8. */
     if (!s_pXInputDLL) {
         version = (1 << 16) | 3;
-        s_pXInputDLL = LoadLibrary(TEXT("XInput1_3.dll"));  /* 1.3 can be installed as a redistributable component. */
+        s_pXInputDLL = LoadLibrary(TEXT("XInput1_3.dll")); /* 1.3 can be installed as a redistributable component. */
     }
     if (!s_pXInputDLL) {
         s_pXInputDLL = LoadLibrary(TEXT("bin\\XInput1_3.dll"));
@@ -115,7 +111,7 @@ WIN_LoadXInputDLL(void)
     }
     SDL_XInputSetState = (XInputSetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputSetState");
     SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetCapabilities");
-    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress( (HMODULE)s_pXInputDLL, "XInputGetBatteryInformation" );
+    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetBatteryInformation");
     if (SDL_XInputGetState == NULL || SDL_XInputSetState == NULL || SDL_XInputGetCapabilities == NULL) {
         WIN_UnloadXInputDLL();
         return -1;
@@ -124,8 +120,7 @@ WIN_LoadXInputDLL(void)
     return 0;
 }
 
-void
-WIN_UnloadXInputDLL(void)
+void WIN_UnloadXInputDLL(void)
 {
     if (s_pXInputDLL) {
         SDL_assert(s_XInputDLLRefCount > 0);

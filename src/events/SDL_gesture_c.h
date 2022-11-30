@@ -26,7 +26,7 @@
 extern int SDL_GestureAddTouch(SDL_TouchID touchId);
 extern int SDL_GestureDelTouch(SDL_TouchID touchId);
 
-extern void SDL_GestureProcessEvent(SDL_Event* event);
+extern void SDL_GestureProcessEvent(SDL_Event *event);
 
 extern void SDL_GestureQuit(void);
 

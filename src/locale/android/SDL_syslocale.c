@@ -23,11 +23,9 @@
 #include "../SDL_syslocale.h"
 #include "../../core/android/SDL_android.h"
 
-void
-SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     Android_JNI_GetLocale(buf, buflen);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-

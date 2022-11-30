@@ -12,7 +12,7 @@
 /* Simple program:  Create a native window and attach an SDL renderer */
 
 #include <stdlib.h> /* for srand() */
-#include <time.h> /* for time() */
+#include <time.h>   /* for time() */
 
 #include "testnative.h"
 #include "testutils.h"
@@ -49,8 +49,7 @@ quit(int rc)
     exit(rc);
 }
 
-void
-MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
+void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     int sprite_w, sprite_h;
     int i;
@@ -88,8 +87,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     SDL_RenderPresent(renderer);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i, done;
     const char *driver;
@@ -105,7 +103,7 @@ main(int argc, char *argv[])
 
     if (SDL_VideoInit(NULL) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",
-                SDL_GetError());
+                     SDL_GetError());
         exit(1);
     }
     driver = SDL_GetCurrentVideoDriver();
@@ -119,7 +117,7 @@ main(int argc, char *argv[])
     }
     if (factory == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find native window code for %s driver\n",
-                driver);
+                     driver);
         quit(2);
     }
     SDL_Log("Creating native window for %s driver\n", driver);
@@ -154,8 +152,8 @@ main(int argc, char *argv[])
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
     SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
-    positions = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
-    velocities = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    positions = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
+    velocities = (SDL_Rect *)SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
     if (positions == NULL || velocities == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);

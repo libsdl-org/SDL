@@ -10,39 +10,39 @@
 /**
  * @brief Call to SDL_GetWindowWMInfo
  */
-int
-syswm_getWindowWMInfo(void *arg)
+int syswm_getWindowWMInfo(void *arg)
 {
-  int result;
-  SDL_Window *window;
-  SDL_SysWMinfo info;
+    int result;
+    SDL_Window *window;
+    SDL_SysWMinfo info;
 
-  window = SDL_CreateWindow("", 0, 0, 0, 0, SDL_WINDOW_HIDDEN);
-  SDLTest_AssertPass("Call to SDL_CreateWindow()");
-  SDLTest_AssertCheck(window != NULL, "Check that value returned from SDL_CreateWindow is not NULL");
-  if (window == NULL) {
-     return TEST_ABORTED;
-  }
+    window = SDL_CreateWindow("", 0, 0, 0, 0, SDL_WINDOW_HIDDEN);
+    SDLTest_AssertPass("Call to SDL_CreateWindow()");
+    SDLTest_AssertCheck(window != NULL, "Check that value returned from SDL_CreateWindow is not NULL");
+    if (window == NULL) {
+        return TEST_ABORTED;
+    }
 
-  /* Make call */
-  result = SDL_GetWindowWMInfo(window, &info, SDL_SYSWM_CURRENT_VERSION);
-  SDLTest_AssertPass("Call to SDL_GetWindowWMInfo()");
-  SDLTest_Log((result == 0) ? "Got window information" : "Couldn't get window information");
+    /* Make call */
+    result = SDL_GetWindowWMInfo(window, &info, SDL_SYSWM_CURRENT_VERSION);
+    SDLTest_AssertPass("Call to SDL_GetWindowWMInfo()");
+    SDLTest_Log((result == 0) ? "Got window information" : "Couldn't get window information");
 
-  SDL_DestroyWindow(window);
-  SDLTest_AssertPass("Call to SDL_DestroyWindow()");
+    SDL_DestroyWindow(window);
+    SDLTest_AssertPass("Call to SDL_DestroyWindow()");
 
-  return TEST_COMPLETED;
+    return TEST_COMPLETED;
 }
 
 /* ================= Test References ================== */
 
 /* SysWM test cases */
-static const SDLTest_TestCaseReference syswmTest1 =
-        { (SDLTest_TestCaseFp)syswm_getWindowWMInfo, "syswm_getWindowWMInfo", "Call to SDL_GetWindowWMInfo", TEST_ENABLED };
+static const SDLTest_TestCaseReference syswmTest1 = {
+    (SDLTest_TestCaseFp)syswm_getWindowWMInfo, "syswm_getWindowWMInfo", "Call to SDL_GetWindowWMInfo", TEST_ENABLED
+};
 
 /* Sequence of SysWM test cases */
-static const SDLTest_TestCaseReference *syswmTests[] =  {
+static const SDLTest_TestCaseReference *syswmTests[] = {
     &syswmTest1, NULL
 };
 

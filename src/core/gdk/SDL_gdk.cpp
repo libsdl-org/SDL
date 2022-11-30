@@ -35,16 +35,15 @@ PAPPSTATE_REGISTRATION hPLM = {};
 HANDLE plmSuspendComplete = nullptr;
 
 extern "C" DECLSPEC int
-SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue)
+SDL_GDKGetTaskQueue(XTaskQueueHandle *outTaskQueue)
 {
     /* If this is the first call, first create the global task queue. */
     if (!GDK_GlobalTaskQueue) {
         HRESULT hr;
 
         hr = XTaskQueueCreate(XTaskQueueDispatchMode::ThreadPool,
-            XTaskQueueDispatchMode::Manual,
-            &GDK_GlobalTaskQueue
-            );
+                              XTaskQueueDispatchMode::Manual,
+                              &GDK_GlobalTaskQueue);
         if (FAILED(hr)) {
             return SDL_SetError("[GDK] Could not create global task queue");
         }
@@ -84,7 +83,7 @@ OutOfMemory(void)
 
 /* Gets the arguments with GetCommandLine, converts them to argc and argv
    and calls SDL_main */
-extern "C"  DECLSPEC int
+extern "C" DECLSPEC int
 SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
 {
     LPWSTR *argvw;
@@ -104,7 +103,7 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
      */
 
     /* Parse it into argv and argc */
-    argv = (char **) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
+    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
     if (argv == NULL) {
         return OutOfMemory();
     }
@@ -114,8 +113,8 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
         if (arg == NULL) {
             return OutOfMemory();
         }
-        len = (DWORD) SDL_strlen(arg);
-        argv[i] = (char *) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len + 1);
+        len = (DWORD)SDL_strlen(arg);
+        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len + 1);
         if (!argv[i]) {
             return OutOfMemory();
         }
@@ -150,12 +149,11 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
 
         /* Register suspend/resume handling */
         plmSuspendComplete = CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
-        if (!plmSuspendComplete ) {
+        if (!plmSuspendComplete) {
             SDL_SetError("[GDK] Unable to create plmSuspendComplete event");
             return -1;
         }
-        auto rascn = [](BOOLEAN quiesced, PVOID context)
-        {
+        auto rascn = [](BOOLEAN quiesced, PVOID context) {
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppStateChangeNotification handler");
             if (quiesced) {
                 ResetEvent(plmSuspendComplete);
@@ -210,7 +208,8 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
 }
 
 extern "C" DECLSPEC void
-SDL_GDKSuspendComplete() {
+SDL_GDKSuspendComplete()
+{
     if (plmSuspendComplete) {
         SetEvent(plmSuspendComplete);
     }

@@ -24,15 +24,14 @@
 
 #include <SDL3/SDL.h>
 
-
 /* WARNING ! those 2 files will be destroyed by this test program */
 
 #ifdef __IOS__
-#define FBASENAME1  "../Documents/sdldata1" /* this file will be created during tests */
-#define FBASENAME2  "../Documents/sdldata2"     /* this file should not exist before starting test */
+#define FBASENAME1 "../Documents/sdldata1" /* this file will be created during tests */
+#define FBASENAME2 "../Documents/sdldata2" /* this file should not exist before starting test */
 #else
-#define FBASENAME1  "sdldata1"      /* this file will be created during tests */
-#define FBASENAME2  "sdldata2"      /* this file should not exist before starting test */
+#define FBASENAME1 "sdldata1" /* this file will be created during tests */
+#define FBASENAME2 "sdldata2" /* this file should not exist before starting test */
 #endif
 
 #ifndef NULL
@@ -47,22 +46,19 @@ cleanup(void)
 }
 
 static void
-rwops_error_quit(unsigned line, SDL_RWops * rwops)
+rwops_error_quit(unsigned line, SDL_RWops *rwops)
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed\n", line);
     if (rwops) {
-        rwops->close(rwops);    /* This calls SDL_FreeRW(rwops); */
+        rwops->close(rwops); /* This calls SDL_FreeRW(rwops); */
     }
     cleanup();
-    exit(1);                    /* quit with rwops error (test failed) */
+    exit(1); /* quit with rwops error (test failed) */
 }
 
-#define RWOP_ERR_QUIT(x)    rwops_error_quit( __LINE__, (x) )
+#define RWOP_ERR_QUIT(x) rwops_error_quit(__LINE__, (x))
 
-
-
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_RWops *rwops = NULL;
     char test_buf[30];
@@ -72,7 +68,7 @@ main(int argc, char *argv[])
 
     cleanup();
 
-/* test 1 : basic argument test: all those calls to SDL_RWFromFile should fail */
+    /* test 1 : basic argument test: all those calls to SDL_RWFromFile should fail */
 
     rwops = SDL_RWFromFile(NULL, NULL);
     if (rwops) {
@@ -96,16 +92,16 @@ main(int argc, char *argv[])
     }
     SDL_Log("test1 OK\n");
 
-/* test 2 : check that inexistent file is not successfully opened/created when required */
-/* modes : r, r+ imply that file MUST exist
-   modes : a, a+, w, w+ checks that it succeeds (file may not exists)
+    /* test 2 : check that inexistent file is not successfully opened/created when required */
+    /* modes : r, r+ imply that file MUST exist
+       modes : a, a+, w, w+ checks that it succeeds (file may not exists)
 
- */
-    rwops = SDL_RWFromFile(FBASENAME2, "rb");   /* this file doesn't exist that call must fail */
+     */
+    rwops = SDL_RWFromFile(FBASENAME2, "rb"); /* this file doesn't exist that call must fail */
     if (rwops) {
         RWOP_ERR_QUIT(rwops);
     }
-    rwops = SDL_RWFromFile(FBASENAME2, "rb+");  /* this file doesn't exist that call must fail */
+    rwops = SDL_RWFromFile(FBASENAME2, "rb+"); /* this file doesn't exist that call must fail */
     if (rwops) {
         RWOP_ERR_QUIT(rwops);
     }
@@ -135,10 +131,10 @@ main(int argc, char *argv[])
     unlink(FBASENAME2);
     SDL_Log("test2 OK\n");
 
-/* test 3 : creation, writing , reading, seeking,
-            test : w mode, r mode, w+ mode
- */
-    rwops = SDL_RWFromFile(FBASENAME1, "wb");   /* write only */
+    /* test 3 : creation, writing , reading, seeking,
+                test : w mode, r mode, w+ mode
+     */
+    rwops = SDL_RWFromFile(FBASENAME1, "wb"); /* write only */
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
@@ -156,11 +152,11 @@ main(int argc, char *argv[])
     }
     if (0 != rwops->read(rwops, test_buf, 1, 1)) {
         RWOP_ERR_QUIT(rwops); /* we are in write only mode */
-    } 
+    }
 
     rwops->close(rwops);
 
-    rwops = SDL_RWFromFile(FBASENAME1, "rb");   /* read mode, file must exists */
+    rwops = SDL_RWFromFile(FBASENAME1, "rb"); /* read mode, file must exists */
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
@@ -197,8 +193,8 @@ main(int argc, char *argv[])
 
     rwops->close(rwops);
 
-/* test 3: same with w+ mode */
-    rwops = SDL_RWFromFile(FBASENAME1, "wb+");  /* write + read + truncation */
+    /* test 3: same with w+ mode */
+    rwops = SDL_RWFromFile(FBASENAME1, "wb+"); /* write + read + truncation */
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
@@ -248,8 +244,8 @@ main(int argc, char *argv[])
     rwops->close(rwops);
     SDL_Log("test3 OK\n");
 
-/* test 4: same in r+ mode */
-    rwops = SDL_RWFromFile(FBASENAME1, "rb+");  /* write + read + file must exists, no truncation */
+    /* test 4: same in r+ mode */
+    rwops = SDL_RWFromFile(FBASENAME1, "rb+"); /* write + read + file must exists, no truncation */
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
@@ -299,8 +295,8 @@ main(int argc, char *argv[])
     rwops->close(rwops);
     SDL_Log("test4 OK\n");
 
-/* test5 : append mode */
-    rwops = SDL_RWFromFile(FBASENAME1, "ab+");  /* write + read + append */
+    /* test5 : append mode */
+    rwops = SDL_RWFromFile(FBASENAME1, "ab+"); /* write + read + append */
     if (rwops == NULL) {
         RWOP_ERR_QUIT(rwops);
     }
@@ -356,7 +352,7 @@ main(int argc, char *argv[])
     rwops->close(rwops);
     SDL_Log("test5 OK\n");
     cleanup();
-    return 0;                   /* all ok */
+    return 0; /* all ok */
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

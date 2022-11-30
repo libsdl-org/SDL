@@ -30,9 +30,9 @@
 /*#include <xcb/xcb.h>*/
 
 #if defined(__OpenBSD__)
-#define DEFAULT_VULKAN  "libvulkan.so"
+#define DEFAULT_VULKAN "libvulkan.so"
 #else
-#define DEFAULT_VULKAN  "libvulkan.so.1"
+#define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
 /*
@@ -85,8 +85,7 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     if (extensions == NULL) {
         goto fail;
     }
-    for (i = 0; i < extensionCount; i++)
-    {
+    for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
         } else if (SDL_strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -97,16 +96,13 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     }
     SDL_free(extensions);
     if (!hasSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     }
     if (hasXlibSurfaceExtension) {
         videoData->vulkan_xlib_xcb_library = NULL;
     } else if (!hasXCBSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement either the "
-                     VK_KHR_XCB_SURFACE_EXTENSION_NAME "extension or the "
-                     VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME "extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else {
         const char *libX11XCBLibraryName = SDL_getenv("SDL_X11_XCB_LIBRARY");
@@ -156,13 +152,15 @@ SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
     }
     if (videoData->vulkan_xlib_xcb_library) {
         static const char *const extensionsForXCB[] = {
-            VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_EXTENSION_NAME,
+            VK_KHR_SURFACE_EXTENSION_NAME,
+            VK_KHR_XCB_SURFACE_EXTENSION_NAME,
         };
         return SDL_Vulkan_GetInstanceExtensions_Helper(
             count, names, SDL_arraysize(extensionsForXCB), extensionsForXCB);
     } else {
         static const char *const extensionsForXlib[] = {
-            VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
+            VK_KHR_SURFACE_EXTENSION_NAME,
+            VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
         };
         return SDL_Vulkan_GetInstanceExtensions_Helper(
             count, names, SDL_arraysize(extensionsForXlib), extensionsForXlib);

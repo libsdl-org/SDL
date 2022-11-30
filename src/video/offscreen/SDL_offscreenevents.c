@@ -30,8 +30,7 @@
 #include "SDL_offscreenvideo.h"
 #include "SDL_offscreenevents_c.h"
 
-void
-OFFSCREEN_PumpEvents(_THIS)
+void OFFSCREEN_PumpEvents(_THIS)
 {
     /* do nothing. */
 }

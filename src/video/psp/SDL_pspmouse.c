@@ -28,9 +28,9 @@
 
 #include "SDL_pspmouse_c.h"
 
-
 /* The implementation dependent data for the window manager cursor */
-struct WMcursor {
+struct WMcursor
+{
     int unused;
 };
 

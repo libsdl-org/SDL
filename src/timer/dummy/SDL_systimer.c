@@ -22,11 +22,9 @@
 
 #if defined(SDL_TIMER_DUMMY) || defined(SDL_TIMERS_DISABLED)
 
-
 static SDL_bool ticks_started = SDL_FALSE;
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -34,8 +32,7 @@ SDL_TicksInit(void)
     ticks_started = SDL_TRUE;
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }
@@ -63,8 +60,7 @@ SDL_GetPerformanceFrequency(void)
     return 1000;
 }
 
-void
-SDL_Delay(Uint32 ms)
+void SDL_Delay(Uint32 ms)
 {
     SDL_Unsupported();
 }

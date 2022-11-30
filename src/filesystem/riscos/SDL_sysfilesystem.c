@@ -29,10 +29,8 @@
 #include <swis.h>
 #include <unixlib/local.h>
 
-
 /* Wrapper around __unixify_std that uses SDL's memory allocators */
-static char *
-SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
+static char *SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
 {
     const char *const in_buf = buffer; /* = NULL if we allocate the buffer.  */
 
@@ -70,8 +68,7 @@ SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
     return buffer;
 }
 
-static char *
-canonicalisePath(const char *path, const char *pathVar)
+static char *canonicalisePath(const char *path, const char *pathVar)
 {
     _kernel_oserror *error;
     _kernel_swi_regs regs;
@@ -106,8 +103,7 @@ canonicalisePath(const char *path, const char *pathVar)
     return buf;
 }
 
-static _kernel_oserror *
-createDirectoryRecursive(char *path)
+static _kernel_oserror *createDirectoryRecursive(char *path)
 {
     char *ptr = NULL;
     _kernel_oserror *error;
@@ -116,7 +112,7 @@ createDirectoryRecursive(char *path)
     regs.r[1] = (int)path;
     regs.r[2] = 0;
 
-    for (ptr = path+1; *ptr; ptr++) {
+    for (ptr = path + 1; *ptr; ptr++) {
         if (*ptr == '.') {
             *ptr = '\0';
             error = _kernel_swi(OS_File, &regs, &regs);
@@ -178,7 +174,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     len = SDL_strlen(canon) + SDL_strlen(org) + SDL_strlen(app) + 4;
-    dir = (char *) SDL_malloc(len);
+    dir = (char *)SDL_malloc(len);
     if (dir == NULL) {
         SDL_OutOfMemory();
         SDL_free(canon);

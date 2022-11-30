@@ -22,25 +22,27 @@
 /* These are values used in the controller type byte of the controller GUID */
 
 /* These values come directly out of the hardware, so don't change them */
-typedef enum {
-    k_eSwitchDeviceInfoControllerType_Unknown           = 0,
-    k_eSwitchDeviceInfoControllerType_JoyConLeft        = 1,
-    k_eSwitchDeviceInfoControllerType_JoyConRight       = 2,
-    k_eSwitchDeviceInfoControllerType_ProController     = 3,
-    k_eSwitchDeviceInfoControllerType_NESLeft           = 9,
-    k_eSwitchDeviceInfoControllerType_NESRight          = 10,
-    k_eSwitchDeviceInfoControllerType_SNES              = 11,
-    k_eSwitchDeviceInfoControllerType_N64               = 12,
-    k_eSwitchDeviceInfoControllerType_SEGA_Genesis      = 13,
+typedef enum
+{
+    k_eSwitchDeviceInfoControllerType_Unknown = 0,
+    k_eSwitchDeviceInfoControllerType_JoyConLeft = 1,
+    k_eSwitchDeviceInfoControllerType_JoyConRight = 2,
+    k_eSwitchDeviceInfoControllerType_ProController = 3,
+    k_eSwitchDeviceInfoControllerType_NESLeft = 9,
+    k_eSwitchDeviceInfoControllerType_NESRight = 10,
+    k_eSwitchDeviceInfoControllerType_SNES = 11,
+    k_eSwitchDeviceInfoControllerType_N64 = 12,
+    k_eSwitchDeviceInfoControllerType_SEGA_Genesis = 13,
 } ESwitchDeviceInfoControllerType;
 
 /* These values are used internally but can be updated as needed */
-typedef enum {
-    k_eWiiExtensionControllerType_Unknown               = 0,
-    k_eWiiExtensionControllerType_None                  = 128,
-    k_eWiiExtensionControllerType_Nunchuk               = 129,
-    k_eWiiExtensionControllerType_Gamepad               = 130,
-    k_eWiiExtensionControllerType_WiiUPro               = 131,
+typedef enum
+{
+    k_eWiiExtensionControllerType_Unknown = 0,
+    k_eWiiExtensionControllerType_None = 128,
+    k_eWiiExtensionControllerType_Nunchuk = 129,
+    k_eWiiExtensionControllerType_Gamepad = 130,
+    k_eWiiExtensionControllerType_WiiUPro = 131,
 } EWiiExtensionControllerType;
 
 /* vi: set ts=4 sw=4 expandtab: */

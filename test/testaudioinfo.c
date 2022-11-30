@@ -43,8 +43,7 @@ print_devices(int iscapture)
     }
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     char *deviceName = NULL;
     SDL_AudioSpec spec;
@@ -96,7 +95,6 @@ main(int argc, char **argv)
         SDL_Log("Channels: %d\n", spec.channels);
         SDL_Log("SDL_AudioFormat: %X\n", spec.format);
     }
-
 
     SDL_Quit();
     return 0;

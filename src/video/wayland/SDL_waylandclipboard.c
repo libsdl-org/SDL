@@ -26,8 +26,7 @@
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandclipboard.h"
 
-int
-Wayland_SetClipboardText(_THIS, const char *text)
+int Wayland_SetClipboardText(_THIS, const char *text)
 {
     SDL_VideoData *video_data = NULL;
     SDL_WaylandDataDevice *data_device = NULL;
@@ -41,7 +40,7 @@ Wayland_SetClipboardText(_THIS, const char *text)
         if (video_data->input != NULL && video_data->input->data_device != NULL) {
             data_device = video_data->input->data_device;
             if (text[0] != '\0') {
-                SDL_WaylandDataSource* source = Wayland_data_source_create(_this);
+                SDL_WaylandDataSource *source = Wayland_data_source_create(_this);
                 Wayland_data_source_add_data(source, TEXT_MIME, text,
                                              SDL_strlen(text));
 
@@ -58,8 +57,7 @@ Wayland_SetClipboardText(_THIS, const char *text)
     return status;
 }
 
-int
-Wayland_SetPrimarySelectionText(_THIS, const char *text)
+int Wayland_SetPrimarySelectionText(_THIS, const char *text)
 {
     SDL_VideoData *video_data = NULL;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
@@ -73,7 +71,7 @@ Wayland_SetPrimarySelectionText(_THIS, const char *text)
         if (video_data->input != NULL && video_data->input->primary_selection_device != NULL) {
             primary_selection_device = video_data->input->primary_selection_device;
             if (text[0] != '\0') {
-                SDL_WaylandPrimarySelectionSource* source = Wayland_primary_selection_source_create(_this);
+                SDL_WaylandPrimarySelectionSource *source = Wayland_primary_selection_source_create(_this);
                 Wayland_primary_selection_source_add_data(source, TEXT_MIME, text,
                                                           SDL_strlen(text));
 
@@ -112,7 +110,7 @@ Wayland_GetClipboardText(_THIS)
                 text = Wayland_data_source_get_data(data_device->selection_source,
                                                     &length, TEXT_MIME, SDL_TRUE);
             } else if (Wayland_data_offer_has_mime(
-                    data_device->selection_offer, TEXT_MIME)) {
+                           data_device->selection_offer, TEXT_MIME)) {
                 text = Wayland_data_offer_receive(data_device->selection_offer,
                                                   &length, TEXT_MIME, SDL_TRUE);
             }
@@ -147,7 +145,7 @@ Wayland_GetPrimarySelectionText(_THIS)
                 text = Wayland_primary_selection_source_get_data(primary_selection_device->selection_source,
                                                                  &length, TEXT_MIME, SDL_TRUE);
             } else if (Wayland_primary_selection_offer_has_mime(
-                    primary_selection_device->selection_offer, TEXT_MIME)) {
+                           primary_selection_device->selection_offer, TEXT_MIME)) {
                 text = Wayland_primary_selection_offer_receive(primary_selection_device->selection_offer,
                                                                &length, TEXT_MIME, SDL_TRUE);
             }

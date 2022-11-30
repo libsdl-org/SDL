@@ -23,12 +23,13 @@
 #ifndef SDL_x11clipboard_h_
 #define SDL_x11clipboard_h_
 
-enum ESDLX11ClipboardMimeType {
+enum ESDLX11ClipboardMimeType
+{
     SDL_X11_CLIPBOARD_MIME_TYPE_STRING,
     SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN,
-    #ifdef X_HAVE_UTF8_STRING
+#ifdef X_HAVE_UTF8_STRING
     SDL_X11_CLIPBOARD_MIME_TYPE_TEXT_PLAIN_UTF8,
-    #endif
+#endif
     SDL_X11_CLIPBOARD_MIME_TYPE_TEXT,
     SDL_X11_CLIPBOARD_MIME_TYPE_MAX
 };

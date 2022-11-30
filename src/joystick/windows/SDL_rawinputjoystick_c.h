@@ -34,5 +34,4 @@ extern void RAWINPUT_UnregisterNotifications();
 /* Returns 0 if message was handled */
 extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-
 /* vi: set ts=4 sw=4 expandtab: */

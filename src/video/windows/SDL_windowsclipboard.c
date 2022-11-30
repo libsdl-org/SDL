@@ -26,31 +26,27 @@
 #include "SDL_windowswindow.h"
 #include "../../events/SDL_clipboardevents_c.h"
 
-
 #ifdef UNICODE
-#define TEXT_FORMAT  CF_UNICODETEXT
+#define TEXT_FORMAT CF_UNICODETEXT
 #else
-#define TEXT_FORMAT  CF_TEXT
+#define TEXT_FORMAT CF_TEXT
 #endif
 
-
 /* Get any application owned window handle for clipboard association */
-static HWND
-GetWindowHandle(_THIS)
+static HWND GetWindowHandle(_THIS)
 {
     SDL_Window *window;
 
     window = _this->windows;
     if (window) {
-        return ((SDL_WindowData *) window->driverdata)->hwnd;
+        return ((SDL_WindowData *)window->driverdata)->hwnd;
     }
     return NULL;
 }
 
-int
-WIN_SetClipboardText(_THIS, const char *text)
+int WIN_SetClipboardText(_THIS, const char *text)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     int result = 0;
 
     if (OpenClipboard(GetWindowHandle(_this))) {
@@ -66,12 +62,12 @@ WIN_SetClipboardText(_THIS, const char *text)
 
         /* Find out the size of the data */
         for (size = 0, i = 0; tstr[i]; ++i, ++size) {
-            if (tstr[i] == '\n' && (i == 0 || tstr[i-1] != '\r')) {
+            if (tstr[i] == '\n' && (i == 0 || tstr[i - 1] != '\r')) {
                 /* We're going to insert a carriage return */
                 ++size;
             }
         }
-        size = (size+1)*sizeof(*tstr);
+        size = (size + 1) * sizeof(*tstr);
 
         /* Save the data to the clipboard */
         hMem = GlobalAlloc(GMEM_MOVEABLE, size);
@@ -80,7 +76,7 @@ WIN_SetClipboardText(_THIS, const char *text)
             if (dst) {
                 /* Copy the text over, adding carriage returns as necessary */
                 for (i = 0; tstr[i]; ++i) {
-                    if (tstr[i] == '\n' && (i == 0 || tstr[i-1] != '\r')) {
+                    if (tstr[i] == '\n' && (i == 0 || tstr[i - 1] != '\r')) {
                         *dst++ = '\r';
                     }
                     *dst++ = tstr[i];
@@ -143,8 +139,7 @@ WIN_HasClipboardText(_THIS)
     return result;
 }
 
-void
-WIN_CheckClipboardUpdate(struct SDL_VideoData * data)
+void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
 {
     const DWORD count = GetClipboardSequenceNumber();
     if (count != data->clipboard_count) {

@@ -25,7 +25,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-
 char *
 SDL_GetBasePath(void)
 {

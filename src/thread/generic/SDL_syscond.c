@@ -26,7 +26,6 @@
    implementation, written by Christopher Tate and Owen Smith.  Thanks!
  */
 
-
 #include "../generic/SDL_syscond_c.h"
 
 /* If two implementations are to be compiled into SDL (the active one
@@ -57,7 +56,7 @@ SDL_CreateCond_generic(void)
 {
     SDL_cond_generic *cond;
 
-    cond = (SDL_cond_generic *) SDL_malloc(sizeof(SDL_cond_generic));
+    cond = (SDL_cond_generic *)SDL_malloc(sizeof(SDL_cond_generic));
     if (cond) {
         cond->lock = SDL_CreateMutex();
         cond->wait_sem = SDL_CreateSemaphore(0);
@@ -74,8 +73,7 @@ SDL_CreateCond_generic(void)
 }
 
 /* Destroy a condition variable */
-void
-SDL_DestroyCond_generic(SDL_cond * _cond)
+void SDL_DestroyCond_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (cond) {
@@ -93,8 +91,7 @@ SDL_DestroyCond_generic(SDL_cond * _cond)
 }
 
 /* Restart one of the threads that are waiting on the condition variable */
-int
-SDL_CondSignal_generic(SDL_cond * _cond)
+int SDL_CondSignal_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (cond == NULL) {
@@ -118,8 +115,7 @@ SDL_CondSignal_generic(SDL_cond * _cond)
 }
 
 /* Restart all threads that are waiting on the condition variable */
-int
-SDL_CondBroadcast_generic(SDL_cond * _cond)
+int SDL_CondBroadcast_generic(SDL_cond *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     if (cond == NULL) {
@@ -173,8 +169,7 @@ Thread B:
     SDL_CondSignal(cond);
     SDL_UnlockMutex(lock);
  */
-int
-SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
+int SDL_CondWaitTimeout_generic(SDL_cond *_cond, SDL_mutex *mutex, Uint32 ms)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     int retval;
@@ -229,8 +224,7 @@ SDL_CondWaitTimeout_generic(SDL_cond * _cond, SDL_mutex * mutex, Uint32 ms)
 }
 
 /* Wait on the condition variable forever */
-int
-SDL_CondWait_generic(SDL_cond * cond, SDL_mutex * mutex)
+int SDL_CondWait_generic(SDL_cond *cond, SDL_mutex *mutex)
 {
     return SDL_CondWaitTimeout_generic(cond, mutex, SDL_MUTEX_MAXWAIT);
 }

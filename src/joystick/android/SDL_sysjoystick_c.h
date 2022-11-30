@@ -40,13 +40,13 @@ typedef struct SDL_joylist_item
 {
     int device_instance;
     int device_id; /* Android's device id */
-    char *name;   /* "SideWinder 3D Pro" or whatever */
+    char *name;    /* "SideWinder 3D Pro" or whatever */
     SDL_JoystickGUID guid;
     SDL_bool is_accelerometer;
     SDL_Joystick *joystick;
     int nbuttons, naxes, nhats, nballs;
     int dpad_state;
-    
+
     struct SDL_joylist_item *next;
 } SDL_joylist_item;
 

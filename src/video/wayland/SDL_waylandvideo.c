@@ -60,32 +60,26 @@
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
-static void
-display_handle_done(void *data, struct wl_output *output);
+static void display_handle_done(void *data, struct wl_output *output);
 
 /* Initialization/Query functions */
-static int
-Wayland_VideoInit(_THIS);
+static int Wayland_VideoInit(_THIS);
 
-static int
-Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
+static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
 
-static int
-Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float * hdpi, float * vdpi);
+static int Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi);
 
-static void
-Wayland_VideoQuit(_THIS);
+static void Wayland_VideoQuit(_THIS);
 
 /* Find out what class name we should use
  * Based on src/video/x11/SDL_x11video.c */
-static char *
-get_classname()
+static char *get_classname()
 {
-/* !!! FIXME: this is probably wrong, albeit harmless in many common cases. From protocol spec:
-    "The surface class identifies the general class of applications
-    to which the surface belongs. A common convention is to use the
-    file name (or the full path if it is a non-standard location) of
-    the application's .desktop file as the class." */
+    /* !!! FIXME: this is probably wrong, albeit harmless in many common cases. From protocol spec:
+        "The surface class identifies the general class of applications
+        to which the surface belongs. A common convention is to use the
+        file name (or the full path if it is a non-standard location) of
+        the application's .desktop file as the class." */
 
     char *spot;
 #if defined(__LINUX__) || defined(__FREEBSD__)
@@ -147,16 +141,15 @@ void SDL_WAYLAND_register_output(struct wl_output *output)
 
 SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface)
 {
-    return wl_proxy_get_tag((struct wl_proxy *) surface) == &SDL_WAYLAND_surface_tag;
+    return wl_proxy_get_tag((struct wl_proxy *)surface) == &SDL_WAYLAND_surface_tag;
 }
 
 SDL_bool SDL_WAYLAND_own_output(struct wl_output *output)
 {
-    return wl_proxy_get_tag((struct wl_proxy *) output) == &SDL_WAYLAND_output_tag;
+    return wl_proxy_get_tag((struct wl_proxy *)output) == &SDL_WAYLAND_output_tag;
 }
 
-static void
-Wayland_DeleteDevice(SDL_VideoDevice *device)
+static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_VideoData *data = (SDL_VideoData *)device->driverdata;
     if (data->display) {
@@ -171,8 +164,7 @@ Wayland_DeleteDevice(SDL_VideoDevice *device)
     SDL_WAYLAND_UnloadSymbols();
 }
 
-static SDL_VideoDevice *
-Wayland_CreateDevice(void)
+static SDL_VideoDevice *Wayland_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -291,22 +283,20 @@ VideoBootStrap Wayland_bootstrap = {
     Wayland_CreateDevice
 };
 
-static void
-xdg_output_handle_logical_position(void *data, struct zxdg_output_v1 *xdg_output,
-                                   int32_t x, int32_t y)
+static void xdg_output_handle_logical_position(void *data, struct zxdg_output_v1 *xdg_output,
+                                               int32_t x, int32_t y)
 {
-    SDL_WaylandOutputData* driverdata = data;
+    SDL_WaylandOutputData *driverdata = data;
 
     driverdata->x = x;
     driverdata->y = y;
     driverdata->has_logical_position = SDL_TRUE;
 }
 
-static void
-xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
-                               int32_t width, int32_t height)
+static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
+                                           int32_t width, int32_t height)
 {
-    SDL_WaylandOutputData* driverdata = data;
+    SDL_WaylandOutputData *driverdata = data;
 
     if (driverdata->width != 0 && driverdata->height != 0) {
         /* FIXME: GNOME has a bug where the logical size does not account for
@@ -317,12 +307,11 @@ xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
          * detected otherwise), then override if necessary.
          * -flibit
          */
-        const float scale = (float) driverdata->width / (float) width;
+        const float scale = (float)driverdata->width / (float)width;
         if ((scale == 1.0f) && (driverdata->scale_factor != 1.0f)) {
             SDL_LogWarn(
                 SDL_LOG_CATEGORY_VIDEO,
-                "xdg_output scale did not match, overriding with wl_output scale"
-            );
+                "xdg_output scale did not match, overriding with wl_output scale");
             return;
         }
     }
@@ -332,10 +321,9 @@ xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
     driverdata->has_logical_size = SDL_TRUE;
 }
 
-static void
-xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
+static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
 {
-    SDL_WaylandOutputData* driverdata = data;
+    SDL_WaylandOutputData *driverdata = data;
 
     /*
      * xdg-output.done events are deprecated and only apply below version 3 of the protocol.
@@ -346,17 +334,15 @@ xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
     }
 }
 
-static void
-xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
-                       const char *name)
+static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
+                                   const char *name)
 {
 }
 
-static void
-xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
-                              const char *description)
+static void xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
+                                          const char *description)
 {
-    SDL_WaylandOutputData* driverdata = data;
+    SDL_WaylandOutputData *driverdata = data;
 
     if (driverdata->index == -1) {
         /* xdg-output descriptions, if available, supersede wl-output model names. */
@@ -369,15 +355,14 @@ xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
 }
 
 static const struct zxdg_output_v1_listener xdg_output_listener = {
-        xdg_output_handle_logical_position,
-        xdg_output_handle_logical_size,
-        xdg_output_handle_done,
-        xdg_output_handle_name,
-        xdg_output_handle_description,
+    xdg_output_handle_logical_position,
+    xdg_output_handle_logical_size,
+    xdg_output_handle_done,
+    xdg_output_handle_name,
+    xdg_output_handle_description,
 };
 
-static void
-AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
+static void AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
 {
     struct EmulatedMode
     {
@@ -429,7 +414,7 @@ AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
 
     int i;
     SDL_DisplayMode mode;
-    const int native_width  = dpy->display_modes->w;
+    const int native_width = dpy->display_modes->w;
     const int native_height = dpy->display_modes->h;
 
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
@@ -452,16 +437,15 @@ AddEmulatedModes(SDL_VideoDisplay *dpy, SDL_bool rot_90)
     }
 }
 
-static void
-display_handle_geometry(void *data,
-                        struct wl_output *output,
-                        int x, int y,
-                        int physical_width,
-                        int physical_height,
-                        int subpixel,
-                        const char *make,
-                        const char *model,
-                        int transform)
+static void display_handle_geometry(void *data,
+                                    struct wl_output *output,
+                                    int x, int y,
+                                    int physical_width,
+                                    int physical_height,
+                                    int subpixel,
+                                    const char *make,
+                                    const char *model,
+                                    int transform)
 
 {
     SDL_WaylandOutputData *driverdata = data;
@@ -496,10 +480,10 @@ display_handle_geometry(void *data,
     }
 
     driverdata->transform = transform;
-    #define TF_CASE(in, out) \
-        case WL_OUTPUT_TRANSFORM_##in: \
-            driverdata->orientation = SDL_ORIENTATION_##out; \
-            break;
+#define TF_CASE(in, out)                                 \
+    case WL_OUTPUT_TRANSFORM_##in:                       \
+        driverdata->orientation = SDL_ORIENTATION_##out; \
+        break;
     if (driverdata->physical_width >= driverdata->physical_height) {
         switch (transform) {
             TF_CASE(NORMAL, LANDSCAPE)
@@ -523,21 +507,20 @@ display_handle_geometry(void *data,
             TF_CASE(FLIPPED_270, LANDSCAPE)
         }
     }
-    #undef TF_CASE
+#undef TF_CASE
 }
 
-static void
-display_handle_mode(void *data,
-                    struct wl_output *output,
-                    uint32_t flags,
-                    int width,
-                    int height,
-                    int refresh)
+static void display_handle_mode(void *data,
+                                struct wl_output *output,
+                                uint32_t flags,
+                                int width,
+                                int height,
+                                int refresh)
 {
-    SDL_WaylandOutputData* driverdata = data;
+    SDL_WaylandOutputData *driverdata = data;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
-        driverdata->native_width  = width;
+        driverdata->native_width = width;
         driverdata->native_height = height;
 
         /*
@@ -545,7 +528,7 @@ display_handle_mode(void *data,
          * handle_done and xdg-output coordinates are pre-transformed.
          */
         if (!driverdata->has_logical_size) {
-            driverdata->width  = width;
+            driverdata->width = width;
             driverdata->height = height;
         }
 
@@ -553,12 +536,11 @@ display_handle_mode(void *data,
     }
 }
 
-static void
-display_handle_done(void *data,
-                    struct wl_output *output)
+static void display_handle_done(void *data,
+                                struct wl_output *output)
 {
-    SDL_WaylandOutputData* driverdata = data;
-    SDL_VideoData* video = driverdata->videodata;
+    SDL_WaylandOutputData *driverdata = data;
+    SDL_VideoData *video = driverdata->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
     const SDL_bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
@@ -589,7 +571,7 @@ display_handle_done(void *data,
         native_mode.h = driverdata->native_height;
     }
     native_mode.refresh_rate = (int)SDL_round(driverdata->refresh / 1000.0); /* mHz to Hz */
-    native_mode.driverdata   = driverdata->output;
+    native_mode.driverdata = driverdata->output;
 
     /* The scaled desktop mode */
     SDL_zero(desktop_mode);
@@ -627,27 +609,19 @@ display_handle_done(void *data,
 
     /* Calculate the display DPI */
     if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
-        driverdata->hdpi = driverdata->physical_height ?
-            (((float) driverdata->height) * 25.4f / driverdata->physical_height) :
-            0.0f;
-        driverdata->vdpi = driverdata->physical_width ?
-            (((float) driverdata->width) * 25.4f / driverdata->physical_width) :
-            0.0f;
+        driverdata->hdpi = driverdata->physical_height ? (((float)driverdata->height) * 25.4f / driverdata->physical_height) : 0.0f;
+        driverdata->vdpi = driverdata->physical_width ? (((float)driverdata->width) * 25.4f / driverdata->physical_width) : 0.0f;
         driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->height,
                                                   driverdata->width,
-                                                  ((float) driverdata->physical_height) / 25.4f,
-                                                  ((float) driverdata->physical_width) / 25.4f);
+                                                  ((float)driverdata->physical_height) / 25.4f,
+                                                  ((float)driverdata->physical_width) / 25.4f);
     } else {
-        driverdata->hdpi = driverdata->physical_width ?
-            (((float) driverdata->width) * 25.4f / driverdata->physical_width) :
-            0.0f;
-        driverdata->vdpi = driverdata->physical_height ?
-            (((float) driverdata->height) * 25.4f / driverdata->physical_height) :
-            0.0f;
+        driverdata->hdpi = driverdata->physical_width ? (((float)driverdata->width) * 25.4f / driverdata->physical_width) : 0.0f;
+        driverdata->vdpi = driverdata->physical_height ? (((float)driverdata->height) * 25.4f / driverdata->physical_height) : 0.0f;
         driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->width,
                                                   driverdata->height,
-                                                  ((float) driverdata->physical_width) / 25.4f,
-                                                  ((float) driverdata->physical_height) / 25.4f);
+                                                  ((float)driverdata->physical_width) / 25.4f,
+                                                  ((float)driverdata->physical_height) / 25.4f);
     }
 
     if (driverdata->index > -1) {
@@ -680,10 +654,9 @@ display_handle_done(void *data,
     }
 }
 
-static void
-display_handle_scale(void *data,
-                     struct wl_output *output,
-                     int32_t factor)
+static void display_handle_scale(void *data,
+                                 struct wl_output *output,
+                                 int32_t factor)
 {
     SDL_WaylandOutputData *driverdata = data;
     driverdata->scale_factor = factor;
@@ -696,8 +669,7 @@ static const struct wl_output_listener output_listener = {
     display_handle_scale
 };
 
-static void
-Wayland_add_display(SDL_VideoData *d, uint32_t id)
+static void Wayland_add_display(SDL_VideoData *d, uint32_t id)
 {
     struct wl_output *output;
     SDL_WaylandOutputData *data;
@@ -720,15 +692,15 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
 
     /* Keep a list of outputs for deferred xdg-output initialization. */
     if (d->output_list != NULL) {
-        SDL_WaylandOutputData *node = (SDL_WaylandOutputData*)d->output_list;
+        SDL_WaylandOutputData *node = (SDL_WaylandOutputData *)d->output_list;
 
         while (node->next != NULL) {
-            node = (SDL_WaylandOutputData*)node->next;
+            node = (SDL_WaylandOutputData *)node->next;
         }
 
-        node->next = (struct SDL_WaylandOutputData*)data;
+        node->next = (struct SDL_WaylandOutputData *)data;
     } else {
-        d->output_list = (struct SDL_WaylandOutputData*)data;
+        d->output_list = (struct SDL_WaylandOutputData *)data;
     }
 
     if (data->videodata->xdg_output_manager) {
@@ -737,8 +709,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     }
 }
 
-static void
-Wayland_free_display(SDL_VideoData *d, uint32_t id)
+static void Wayland_free_display(SDL_VideoData *d, uint32_t id)
 {
     int num_displays = SDL_GetNumVideoDisplays();
     SDL_VideoDisplay *display;
@@ -747,7 +718,7 @@ Wayland_free_display(SDL_VideoData *d, uint32_t id)
 
     for (i = 0; i < num_displays; i += 1) {
         display = SDL_GetDisplay(i);
-        data = (SDL_WaylandOutputData *) display->driverdata;
+        data = (SDL_WaylandOutputData *)display->driverdata;
         if (data->registry_id == id) {
             if (d->output_list != NULL) {
                 SDL_WaylandOutputData *node = d->output_list;
@@ -773,7 +744,7 @@ Wayland_free_display(SDL_VideoData *d, uint32_t id)
             num_displays -= 1;
             for (; i < num_displays; i += 1) {
                 display = SDL_GetDisplay(i);
-                data = (SDL_WaylandOutputData *) display->driverdata;
+                data = (SDL_WaylandOutputData *)display->driverdata;
                 data->index -= 1;
             }
 
@@ -782,8 +753,7 @@ Wayland_free_display(SDL_VideoData *d, uint32_t id)
     }
 }
 
-static void
-Wayland_init_xdg_output(SDL_VideoData *d)
+static void Wayland_init_xdg_output(SDL_VideoData *d)
 {
     SDL_WaylandOutputData *node;
     for (node = d->output_list; node != NULL; node = node->next) {
@@ -793,14 +763,12 @@ Wayland_init_xdg_output(SDL_VideoData *d)
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-static void
-windowmanager_hints(void *data, struct qt_windowmanager *qt_windowmanager,
-        int32_t show_is_fullscreen)
+static void windowmanager_hints(void *data, struct qt_windowmanager *qt_windowmanager,
+                                int32_t show_is_fullscreen)
 {
 }
 
-static void
-windowmanager_quit(void *data, struct qt_windowmanager *qt_windowmanager)
+static void windowmanager_quit(void *data, struct qt_windowmanager *qt_windowmanager)
 {
     SDL_SendQuit();
 }
@@ -811,8 +779,7 @@ static const struct qt_windowmanager_listener windowmanager_listener = {
 };
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-static void
-handle_ping_xdg_wm_base(void *data, struct xdg_wm_base *xdg, uint32_t serial)
+static void handle_ping_xdg_wm_base(void *data, struct xdg_wm_base *xdg, uint32_t serial)
 {
     xdg_wm_base_pong(xdg, serial);
 }
@@ -821,12 +788,10 @@ static const struct xdg_wm_base_listener shell_listener_xdg = {
     handle_ping_xdg_wm_base
 };
 
-
 #ifdef HAVE_LIBDECOR_H
-static void
-libdecor_error(struct libdecor *context,
-               enum libdecor_error error,
-               const char *message)
+static void libdecor_error(struct libdecor *context,
+                           enum libdecor_error error,
+                           const char *message)
 {
     SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "libdecor error (%d): %s\n", error, message);
 }
@@ -836,10 +801,8 @@ static struct libdecor_interface libdecor_interface = {
 };
 #endif
 
-
-static void
-display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
-                      const char *interface, uint32_t version)
+static void display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
+                                  const char *interface, uint32_t version)
 {
     SDL_VideoData *d = data;
 
@@ -892,17 +855,16 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_touch_create(d, id);
     } else if (SDL_strcmp(interface, "qt_surface_extension") == 0) {
         d->surface_extension = wl_registry_bind(registry, id,
-                &qt_surface_extension_interface, 1);
+                                                &qt_surface_extension_interface, 1);
     } else if (SDL_strcmp(interface, "qt_windowmanager") == 0) {
         d->windowmanager = wl_registry_bind(registry, id,
-                &qt_windowmanager_interface, 1);
+                                            &qt_windowmanager_interface, 1);
         qt_windowmanager_add_listener(d->windowmanager, &windowmanager_listener, d);
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
     }
 }
 
-static void
-display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
+static void display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
     SDL_VideoData *d = data;
     /* We don't get an interface, just an ID, so assume it's a wl_output :shrug: */
@@ -956,10 +918,9 @@ Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
     return SDL_FALSE;
 }
 
-int
-Wayland_VideoInit(_THIS)
+int Wayland_VideoInit(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData*)_this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
@@ -997,8 +958,7 @@ Wayland_VideoInit(_THIS)
     return 0;
 }
 
-static int
-Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
+static int Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)display->driverdata;
     rect->x = driverdata->x;
@@ -1008,8 +968,7 @@ Wayland_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
     return 0;
 }
 
-static int
-Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float * hdpi, float * vdpi)
+static int Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay *sdl_display, float *ddpi, float *hdpi, float *vdpi)
 {
     SDL_WaylandOutputData *driverdata = (SDL_WaylandOutputData *)sdl_display->driverdata;
 
@@ -1026,8 +985,7 @@ Wayland_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float
     return driverdata->ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
-static void
-Wayland_VideoCleanup(_THIS)
+static void Wayland_VideoCleanup(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
     int i, j;
@@ -1038,11 +996,11 @@ Wayland_VideoCleanup(_THIS)
     for (i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = &_this->displays[i];
 
-        if (((SDL_WaylandOutputData*)display->driverdata)->xdg_output) {
-            zxdg_output_v1_destroy(((SDL_WaylandOutputData*)display->driverdata)->xdg_output);
+        if (((SDL_WaylandOutputData *)display->driverdata)->xdg_output) {
+            zxdg_output_v1_destroy(((SDL_WaylandOutputData *)display->driverdata)->xdg_output);
         }
 
-        wl_output_destroy(((SDL_WaylandOutputData*)display->driverdata)->output);
+        wl_output_destroy(((SDL_WaylandOutputData *)display->driverdata)->output);
         SDL_free(display->driverdata);
         display->driverdata = NULL;
 
@@ -1099,7 +1057,7 @@ Wayland_VideoCleanup(_THIS)
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
     if (data->tablet_manager) {
-        zwp_tablet_manager_v2_destroy((struct zwp_tablet_manager_v2*)data->tablet_manager);
+        zwp_tablet_manager_v2_destroy((struct zwp_tablet_manager_v2 *)data->tablet_manager);
         data->tablet_manager = NULL;
     }
 
@@ -1202,8 +1160,7 @@ Wayland_VideoReconnect(_THIS)
 #endif /* 0 */
 }
 
-void
-Wayland_VideoQuit(_THIS)
+void Wayland_VideoQuit(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
 

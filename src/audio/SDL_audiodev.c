@@ -33,9 +33,9 @@
 
 #ifndef _PATH_DEV_DSP
 #if defined(__NETBSD__) || defined(__OPENBSD__)
-#define _PATH_DEV_DSP  "/dev/audio"
+#define _PATH_DEV_DSP "/dev/audio"
 #else
-#define _PATH_DEV_DSP  "/dev/dsp"
+#define _PATH_DEV_DSP "/dev/dsp"
 #endif
 #endif
 #ifndef _PATH_DEV_DSP24
@@ -45,8 +45,7 @@
 #define _PATH_DEV_AUDIO "/dev/audio"
 #endif
 
-static void
-test_device(const int iscapture, const char *fname, int flags, int (*test) (int fd))
+static void test_device(const int iscapture, const char *fname, int flags, int (*test)(int fd))
 {
     struct stat sb;
     if ((stat(fname, &sb) == 0) && (S_ISCHR(sb.st_mode))) {
@@ -64,20 +63,18 @@ test_device(const int iscapture, const char *fname, int flags, int (*test) (int 
                  * information,  making this information inaccessible at
                  * enumeration time
                  */
-                SDL_AddAudioDevice(iscapture, fname, NULL, (void *) (uintptr_t) dummyhandle);
+                SDL_AddAudioDevice(iscapture, fname, NULL, (void *)(uintptr_t)dummyhandle);
             }
         }
     }
 }
 
-static int
-test_stub(int fd)
+static int test_stub(int fd)
 {
     return 1;
 }
 
-static void
-SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*test)(int))
+static void SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*test)(int))
 {
     const int flags = iscapture ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
     const char *audiodev;
@@ -96,9 +93,7 @@ SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*
             struct stat sb;
 
             /* Added support for /dev/sound/\* in Linux 2.4 */
-            if (((stat("/dev/sound", &sb) == 0) && S_ISDIR(sb.st_mode))
-                && ((stat(_PATH_DEV_DSP24, &sb) == 0)
-                    && S_ISCHR(sb.st_mode))) {
+            if (((stat("/dev/sound", &sb) == 0) && S_ISDIR(sb.st_mode)) && ((stat(_PATH_DEV_DSP24, &sb) == 0) && S_ISCHR(sb.st_mode))) {
                 audiodev = _PATH_DEV_DSP24;
             } else {
                 audiodev = _PATH_DEV_DSP;
@@ -118,8 +113,7 @@ SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*
     }
 }
 
-void
-SDL_EnumUnixAudioDevices(const int classic, int (*test)(int))
+void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int))
 {
     SDL_EnumUnixAudioDevices_Internal(SDL_TRUE, classic, test);
     SDL_EnumUnixAudioDevices_Internal(SDL_FALSE, classic, test);
