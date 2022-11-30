@@ -412,7 +412,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 
         length = SDL_strlen(SDL_priority_prefixes[priority]) + 2 + SDL_strlen(message) + 1 + 1 + 1;
         output = SDL_small_alloc(char, length, &isstack);
-        SDL_snprintf(output, length, "%s: %s\r\n", SDL_priority_prefixes[priority], message);
+        (void)SDL_snprintf(output, length, "%s: %s\r\n", SDL_priority_prefixes[priority], message);
         tstr = WIN_UTF8ToString(output);
 
         /* Output to debugger */
@@ -457,27 +457,33 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     {
         FILE *pFile;
         pFile = fopen("SDL_Log.txt", "a");
-        fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
-        fclose(pFile);
+        if (pFile != NULL) {
+            (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
+            (void)fclose(pFile);
+        }
     }
 #elif defined(__VITA__)
     {
         FILE *pFile;
         pFile = fopen("ux0:/data/SDL_Log.txt", "a");
-        fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
-        fclose(pFile);
+        if (pFile != NULL) {
+            (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
+            (void)fclose(pFile);
+        }
     }
 #elif defined(__3DS__)
     {
         FILE *pFile;
         pFile = fopen("sdmc:/3ds/SDL_Log.txt", "a");
-        fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
-        fclose(pFile);
+        if (pFile != NULL) {
+            (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
+            (void)fclose(pFile);
+        }
     }
 #endif
 #if HAVE_STDIO_H && \
     !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
-    fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
+    (void)fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
 #else
     /* We won't print anything, but reference the priority prefix anyway
        to avoid a compiler warning.
