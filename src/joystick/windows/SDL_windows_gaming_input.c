@@ -185,7 +185,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
             continue;
         }
 
-        SDL_snprintf(devVidPidString, sizeof(devVidPidString), "VID_%04X&PID_%04X", vendor, product);
+        (void)SDL_snprintf(devVidPidString, sizeof devVidPidString, "VID_%04X&PID_%04X", vendor, product);
 
         while (CM_Get_Parent(&devNode, devNode, 0) == CR_SUCCESS) {
             char deviceId[MAX_DEVICE_ID_LEN];
@@ -233,7 +233,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
 {
     RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
-    return SDL_AtomicAdd(&self->refcount, 1) + 1;
+    return SDL_AtomicAdd(&self->refcount, 1) + 1UL;
 }
 
 static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
@@ -389,6 +389,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
                 wgi.controllers = controllers;
 
                 SDL_PrivateJoystickAdded(joystickID);
+            } else {
+                SDL_free(name);
             }
         }
 
