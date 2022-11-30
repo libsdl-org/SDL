@@ -22,7 +22,7 @@
 #ifndef SDL_blendpoint_h_
 #define SDL_blendpoint_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 extern int SDL_BlendPoint(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a);

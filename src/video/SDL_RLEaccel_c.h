@@ -22,7 +22,7 @@
 #ifndef SDL_RLEaccel_c_h_
 #define SDL_RLEaccel_c_h_
 
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* Useful functions and variables from SDL_RLEaccel.c */
 

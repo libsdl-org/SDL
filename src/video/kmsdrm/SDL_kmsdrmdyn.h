@@ -22,7 +22,7 @@
 #ifndef SDL_kmsdrmdyn_h_
 #define SDL_kmsdrmdyn_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>

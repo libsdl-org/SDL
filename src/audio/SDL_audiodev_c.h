@@ -22,7 +22,7 @@
 #ifndef SDL_audiodev_c_h_
 #define SDL_audiodev_c_h_
 
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 #include "SDL_sysaudio.h"
 
 /* Open the audio device for playback, and don't block if busy */

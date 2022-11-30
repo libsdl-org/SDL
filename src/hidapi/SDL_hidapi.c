@@ -27,7 +27,7 @@
  * This merges the two, at a small performance cost, until distributions
  * have granted access to /dev/hidraw*
  */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "SDL_hidapi_c.h"
 

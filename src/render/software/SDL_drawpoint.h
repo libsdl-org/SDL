@@ -22,7 +22,7 @@
 #ifndef SDL_drawpoint_h_
 #define SDL_drawpoint_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 extern int SDL_DrawPoint(SDL_Surface * dst, int x, int y, Uint32 color);

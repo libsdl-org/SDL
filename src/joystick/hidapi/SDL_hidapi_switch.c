@@ -21,7 +21,7 @@
 /* This driver supports the Nintendo Switch Pro controller.
    Code and logic contributed by Valve Corporation under the SDL zlib license.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 

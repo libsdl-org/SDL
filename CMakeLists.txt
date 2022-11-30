@@ -3219,6 +3219,7 @@ if(SDL_SHARED)
   target_include_directories(SDL3
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
     PUBLIC
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
@@ -3253,6 +3254,7 @@ if(SDL_STATIC)
   target_include_directories(SDL3-static
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
     PUBLIC
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"

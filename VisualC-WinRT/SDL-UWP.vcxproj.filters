@@ -836,5 +836,11 @@
     <ClCompile Include="..\src\stdlib\SDL_mslibc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\core\windows\pch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\windows\pch_cpp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

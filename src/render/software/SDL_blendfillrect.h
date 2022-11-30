@@ -22,7 +22,7 @@
 #ifndef SDL_blendfillrect_h_
 #define SDL_blendfillrect_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 extern int SDL_BlendFillRect(SDL_Surface * dst, const SDL_Rect * rect, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a);

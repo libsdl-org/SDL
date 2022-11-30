@@ -21,7 +21,7 @@
 /* This driver supports both simplified reports and the extended input reports enabled by Steam.
    Code and logic contributed by Valve Corporation under the SDL zlib license.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
