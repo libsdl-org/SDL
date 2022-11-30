@@ -30,20 +30,19 @@
 /*****************************************************************************/
 /* SDL OpenGL/OpenGL ES functions                                            */
 /*****************************************************************************/
-#define EGLCHK(stmt)                            \
-    do {                                        \
-        EGLint err;                             \
-                                                \
-        stmt;                                   \
-        err = eglGetError();                    \
-        if (err != EGL_SUCCESS) {               \
-            SDL_SetError("EGL error %d", err);  \
-            return 0;                           \
-        }                                       \
+#define EGLCHK(stmt)                           \
+    do {                                       \
+        EGLint err;                            \
+                                               \
+        stmt;                                  \
+        err = eglGetError();                   \
+        if (err != EGL_SUCCESS) {              \
+            SDL_SetError("EGL error %d", err); \
+            return 0;                          \
+        }                                      \
     } while (0)
 
-void 
-VITA_GLES_KeyboardCallback(ScePigletPreSwapData *data)
+void VITA_GLES_KeyboardCallback(ScePigletPreSwapData *data)
 {
     SceCommonDialogUpdateParam commonDialogParam;
     SDL_zero(commonDialogParam);
@@ -59,11 +58,10 @@ VITA_GLES_KeyboardCallback(ScePigletPreSwapData *data)
     sceCommonDialogUpdate(&commonDialogParam);
 }
 
-int
-VITA_GLES_LoadLibrary(_THIS, const char *path)
+int VITA_GLES_LoadLibrary(_THIS, const char *path)
 {
-  pibInit(PIB_SHACCCG | PIB_GET_PROC_ADDR_CORE);
-  return 0;
+    pibInit(PIB_SHACCCG | PIB_GET_PROC_ADDR_CORE);
+    return 0;
 }
 
 void *
@@ -72,8 +70,7 @@ VITA_GLES_GetProcAddress(_THIS, const char *proc)
     return eglGetProcAddress(proc);
 }
 
-void
-VITA_GLES_UnloadLibrary(_THIS)
+void VITA_GLES_UnloadLibrary(_THIS)
 {
     eglTerminate(_this->gl_data->display);
 }
@@ -82,10 +79,10 @@ static EGLint width = 960;
 static EGLint height = 544;
 
 SDL_GLContext
-VITA_GLES_CreateContext(_THIS, SDL_Window * window)
+VITA_GLES_CreateContext(_THIS, SDL_Window *window)
 {
 
-    SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *wdata = (SDL_WindowData *)window->driverdata;
 
     EGLint attribs[32];
     EGLDisplay display;
@@ -141,7 +138,6 @@ VITA_GLES_CreateContext(_THIS, SDL_Window * window)
         return 0;
     }
 
-
     EGLCHK(surface = eglCreateWindowSurface(display, config, VITA_WINDOW_960X544, NULL));
 
     EGLCHK(context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs));
@@ -155,25 +151,22 @@ VITA_GLES_CreateContext(_THIS, SDL_Window * window)
     _this->gl_data->context = context;
     _this->gl_data->surface = surface;
 
-    preSwapCallback = (PFNEGLPIGLETVITASETPRESWAPCALLBACKSCEPROC) eglGetProcAddress("eglPigletVitaSetPreSwapCallbackSCE");
+    preSwapCallback = (PFNEGLPIGLETVITASETPRESWAPCALLBACKSCEPROC)eglGetProcAddress("eglPigletVitaSetPreSwapCallbackSCE");
     preSwapCallback(VITA_GLES_KeyboardCallback);
 
     return context;
 }
 
-int
-VITA_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+int VITA_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
-        if (!eglMakeCurrent(_this->gl_data->display, _this->gl_data->surface,
-                          _this->gl_data->surface, _this->gl_data->context))
-        {
-            return SDL_SetError("Unable to make EGL context current");
-        }
+    if (!eglMakeCurrent(_this->gl_data->display, _this->gl_data->surface,
+                        _this->gl_data->surface, _this->gl_data->context)) {
+        return SDL_SetError("Unable to make EGL context current");
+    }
     return 0;
 }
 
-int
-VITA_GLES_SetSwapInterval(_THIS, int interval)
+int VITA_GLES_SetSwapInterval(_THIS, int interval)
 {
     EGLBoolean status;
     status = eglSwapInterval(_this->gl_data->display, interval);
@@ -186,14 +179,12 @@ VITA_GLES_SetSwapInterval(_THIS, int interval)
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
-int
-VITA_GLES_GetSwapInterval(_THIS)
+int VITA_GLES_GetSwapInterval(_THIS)
 {
     return _this->gl_data->swapinterval;
 }
 
-int
-VITA_GLES_SwapWindow(_THIS, SDL_Window * window)
+int VITA_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
     if (!eglSwapBuffers(_this->gl_data->display, _this->gl_data->surface)) {
         return SDL_SetError("eglSwapBuffers() failed");
@@ -201,10 +192,9 @@ VITA_GLES_SwapWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
-void
-VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
+void VITA_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
     EGLBoolean status;
 
     if (phdata->egl_initialized != SDL_TRUE) {

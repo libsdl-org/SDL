@@ -42,26 +42,27 @@ struct SDL_GLDriverData
        implementation supports GLX_EXT_create_context_es2_profile.
        major = minor = 0 when unsupported.
      */
-    struct {
+    struct
+    {
         int major;
         int minor;
     } es_profile_max_supported_version;
 
-    Bool (*glXQueryExtension) (Display*,int*,int*);
-    void *(*glXGetProcAddress) (const GLubyte*);
-    XVisualInfo *(*glXChooseVisual) (Display*,int,int*);
-    GLXContext (*glXCreateContext) (Display*,XVisualInfo*,GLXContext,Bool);
-    GLXContext (*glXCreateContextAttribsARB) (Display*,GLXFBConfig,GLXContext,Bool,const int *);
-    GLXFBConfig *(*glXChooseFBConfig) (Display*,int,const int *,int *);
-    XVisualInfo *(*glXGetVisualFromFBConfig) (Display*,GLXFBConfig);
-    void (*glXDestroyContext) (Display*, GLXContext);
-    Bool(*glXMakeCurrent) (Display*,GLXDrawable,GLXContext);
-    void (*glXSwapBuffers) (Display*, GLXDrawable);
-    void (*glXQueryDrawable) (Display*,GLXDrawable,int,unsigned int*);
-    void (*glXSwapIntervalEXT) (Display*,GLXDrawable,int);
-    int (*glXSwapIntervalSGI) (int);
-    int (*glXSwapIntervalMESA) (int);
-    int (*glXGetSwapIntervalMESA) (void);
+    Bool (*glXQueryExtension)(Display *, int *, int *);
+    void *(*glXGetProcAddress)(const GLubyte *);
+    XVisualInfo *(*glXChooseVisual)(Display *, int, int *);
+    GLXContext (*glXCreateContext)(Display *, XVisualInfo *, GLXContext, Bool);
+    GLXContext (*glXCreateContextAttribsARB)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
+    GLXFBConfig *(*glXChooseFBConfig)(Display *, int, const int *, int *);
+    XVisualInfo *(*glXGetVisualFromFBConfig)(Display *, GLXFBConfig);
+    void (*glXDestroyContext)(Display *, GLXContext);
+    Bool (*glXMakeCurrent)(Display *, GLXDrawable, GLXContext);
+    void (*glXSwapBuffers)(Display *, GLXDrawable);
+    void (*glXQueryDrawable)(Display *, GLXDrawable, int, unsigned int *);
+    void (*glXSwapIntervalEXT)(Display *, GLXDrawable, int);
+    int (*glXSwapIntervalSGI)(int);
+    int (*glXSwapIntervalMESA)(int);
+    int (*glXGetSwapIntervalMESA)(void);
 };
 
 /* OpenGL functions */
@@ -69,13 +70,13 @@ extern int X11_GL_LoadLibrary(_THIS, const char *path);
 extern void *X11_GL_GetProcAddress(_THIS, const char *proc);
 extern void X11_GL_UnloadLibrary(_THIS);
 extern SDL_bool X11_GL_UseEGL(_THIS);
-extern XVisualInfo *X11_GL_GetVisual(_THIS, Display * display, int screen);
-extern SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window * window);
-extern int X11_GL_MakeCurrent(_THIS, SDL_Window * window,
+extern XVisualInfo *X11_GL_GetVisual(_THIS, Display *display, int screen);
+extern SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window *window);
+extern int X11_GL_MakeCurrent(_THIS, SDL_Window *window,
                               SDL_GLContext context);
 extern int X11_GL_SetSwapInterval(_THIS, int interval);
 extern int X11_GL_GetSwapInterval(_THIS);
-extern int X11_GL_SwapWindow(_THIS, SDL_Window * window);
+extern int X11_GL_SwapWindow(_THIS, SDL_Window *window);
 extern void X11_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* SDL_VIDEO_OPENGL_GLX */

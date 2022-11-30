@@ -30,9 +30,9 @@
 #include <kernel.h>
 #include <swis.h>
 
-int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
     const char *sprite_name = "display";
     unsigned int sprite_mode;
     _kernel_oserror *error;
@@ -63,13 +63,13 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, 
         return SDL_OutOfMemory();
     }
 
-    driverdata->fb_area->size  = size;
+    driverdata->fb_area->size = size;
     driverdata->fb_area->count = 0;
     driverdata->fb_area->start = 16;
-    driverdata->fb_area->end   = 16;
+    driverdata->fb_area->end = 16;
 
     /* Create the actual image */
-    regs.r[0] = 256+15;
+    regs.r[0] = 256 + 15;
     regs.r[1] = (int)driverdata->fb_area;
     regs.r[2] = (int)sprite_name;
     regs.r[3] = 0;
@@ -88,13 +88,13 @@ int RISCOS_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, 
     return 0;
 }
 
-int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
     _kernel_swi_regs regs;
     _kernel_oserror *error;
 
-    regs.r[0] = 512+52;
+    regs.r[0] = 512 + 52;
     regs.r[1] = (int)driverdata->fb_area;
     regs.r[2] = (int)driverdata->fb_sprite;
     regs.r[3] = 0; /* window->x << 1; */
@@ -110,9 +110,9 @@ int RISCOS_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * 
     return 0;
 }
 
-void RISCOS_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
+void RISCOS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
 
     if (driverdata->fb_area) {
         SDL_free(driverdata->fb_area);

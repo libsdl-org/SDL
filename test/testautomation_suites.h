@@ -32,7 +32,7 @@ extern SDLTest_TestSuiteReference timerTestSuite;
 extern SDLTest_TestSuiteReference videoTestSuite;
 
 /* All test suites */
-SDLTest_TestSuiteReference *testSuites[] =  {
+SDLTest_TestSuiteReference *testSuites[] = {
     &audioTestSuite,
     &clipboardTestSuite,
     &eventsTestSuite,

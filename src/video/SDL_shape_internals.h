@@ -25,28 +25,36 @@
 
 struct SDL_ShapeTree;
 
-typedef struct {
-    struct SDL_ShapeTree *upleft,*upright,*downleft,*downright;
+typedef struct
+{
+    struct SDL_ShapeTree *upleft, *upright, *downleft, *downright;
 } SDL_QuadTreeChildren;
 
-typedef union {
+typedef union
+{
     SDL_QuadTreeChildren children;
     SDL_Rect shape;
 } SDL_ShapeUnion;
 
-typedef enum { QuadShape,TransparentShape,OpaqueShape } SDL_ShapeKind;
+typedef enum
+{
+    QuadShape,
+    TransparentShape,
+    OpaqueShape
+} SDL_ShapeKind;
 
-typedef struct SDL_ShapeTree {
+typedef struct SDL_ShapeTree
+{
     SDL_ShapeKind kind;
     SDL_ShapeUnion data;
 } SDL_ShapeTree;
 
-typedef void(*SDL_TraversalFunction)(SDL_ShapeTree*,void*);
+typedef void (*SDL_TraversalFunction)(SDL_ShapeTree *, void *);
 
-extern void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitmap,Uint8 ppb);
-extern SDL_ShapeTree* SDL_CalculateShapeTree(SDL_WindowShapeMode mode,SDL_Surface* shape);
-extern void SDL_TraverseShapeTree(SDL_ShapeTree *tree,SDL_TraversalFunction function,void* closure);
-extern void SDL_FreeShapeTree(SDL_ShapeTree** shape_tree);
+extern void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint8 *bitmap, Uint8 ppb);
+extern SDL_ShapeTree *SDL_CalculateShapeTree(SDL_WindowShapeMode mode, SDL_Surface *shape);
+extern void SDL_TraverseShapeTree(SDL_ShapeTree *tree, SDL_TraversalFunction function, void *closure);
+extern void SDL_FreeShapeTree(SDL_ShapeTree **shape_tree);
 
 #endif /* SDL_shape_internals_h_ */
 

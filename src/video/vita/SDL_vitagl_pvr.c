@@ -43,46 +43,45 @@ void getFBSize(int *width, int *height)
     *height = FB_HEIGHT;
 }
 
-int
-VITA_GL_LoadLibrary(_THIS, const char *path)
+int VITA_GL_LoadLibrary(_THIS, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
-    char* override = SDL_getenv("VITA_MODULE_PATH");
-    char* skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
-    char* default_path = "app0:module";
+    char *override = SDL_getenv("VITA_MODULE_PATH");
+    char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
+    char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
     if (skip_init == NULL) // we don't care about actual value {
         if (override != NULL) {
-          default_path = override;
+            default_path = override;
         }
 
-        sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
-        sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
 
-        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libGL.suprx");
-        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libGL.suprx");
+    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
-        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libgpu_es4_ext.suprx");
+    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-        SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
-        sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
+    SDL_snprintf(target_path, MAX_PATH, "%s/%s", default_path, "libIMGEGL.suprx");
+    sceKernelLoadStartModule(target_path, 0, NULL, 0, NULL, NULL);
 
-        PVRSRVInitializeAppHint(&hint);
+    PVRSRVInitializeAppHint(&hint);
 
-        SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
-        SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
-        SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
+    SDL_snprintf(hint.szGLES1, MAX_PATH, "%s/%s", default_path, "libGLESv1_CM.suprx");
+    SDL_snprintf(hint.szGLES2, MAX_PATH, "%s/%s", default_path, "libGLESv2.suprx");
+    SDL_snprintf(hint.szWindowSystem, MAX_PATH, "%s/%s", default_path, "libpvrPSP2_WSEGL.suprx");
 
-        PVRSRVCreateVirtualAppHint(&hint);
-    }
+    PVRSRVCreateVirtualAppHint(&hint);
+}
 
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) 0, 0);
+return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
 SDL_GLContext
-VITA_GL_CreateContext(_THIS, SDL_Window * window)
+VITA_GL_CreateContext(_THIS, SDL_Window *window)
 {
     char gl_version[3];
     SDL_GLContext context = NULL;
@@ -95,7 +94,7 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 
-    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
 
     if (context != NULL) {
         FB_WIDTH = window->w;

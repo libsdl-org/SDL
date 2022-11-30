@@ -25,8 +25,7 @@
 #include <string.h>
 #include <psp2/apputil.h>
 
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
     SceAppUtilInitParam init_param;
     SceAppUtilBootParam boot_param;
@@ -42,4 +41,3 @@ SDL_SYS_OpenURL(const char *url)
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-

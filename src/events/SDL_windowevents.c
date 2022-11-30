@@ -31,10 +31,9 @@ typedef struct RemovePendingSizeChangedAndResizedEvents_Data
     SDL_bool saw_resized;
 } RemovePendingSizeChangedAndResizedEvents_Data;
 
-static int SDLCALL
-RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
+static int SDLCALL RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
 {
-    RemovePendingSizeChangedAndResizedEvents_Data *userdata = (RemovePendingSizeChangedAndResizedEvents_Data *) _userdata;
+    RemovePendingSizeChangedAndResizedEvents_Data *userdata = (RemovePendingSizeChangedAndResizedEvents_Data *)_userdata;
     const SDL_Event *new_event = userdata->new_event;
 
     if (event->type == SDL_WINDOWEVENT &&
@@ -52,8 +51,7 @@ RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
     return 1;
 }
 
-static int SDLCALL
-RemovePendingMoveEvents(void * userdata, SDL_Event *event)
+static int SDLCALL RemovePendingMoveEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
@@ -66,8 +64,7 @@ RemovePendingMoveEvents(void * userdata, SDL_Event *event)
     return 1;
 }
 
-static int SDLCALL
-RemovePendingExposedEvents(void * userdata, SDL_Event *event)
+static int SDLCALL RemovePendingExposedEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
@@ -80,9 +77,8 @@ RemovePendingExposedEvents(void * userdata, SDL_Event *event)
     return 1;
 }
 
-int
-SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
-                    int data2)
+int SDL_SendWindowEvent(SDL_Window *window, Uint8 windowevent, int data1,
+                        int data2)
 {
     int posted;
 
@@ -203,12 +199,12 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
             userdata.new_event = &event;
             userdata.saw_resized = SDL_FALSE;
             SDL_FilterEvents(RemovePendingSizeChangedAndResizedEvents, &userdata);
-            if (userdata.saw_resized) {  /* if there was a pending resize, make sure one at the new dimensions remains. */
+            if (userdata.saw_resized) { /* if there was a pending resize, make sure one at the new dimensions remains. */
                 event.window.event = SDL_WINDOWEVENT_RESIZED;
                 if (SDL_PushEvent(&event) <= 0) {
-                    return 0;  /* oh well. */
+                    return 0; /* oh well. */
                 }
-                event.window.event = SDL_WINDOWEVENT_SIZE_CHANGED;  /* then push the actual event next. */
+                event.window.event = SDL_WINDOWEVENT_SIZE_CHANGED; /* then push the actual event next. */
             }
         }
         if (windowevent == SDL_WINDOWEVENT_MOVED) {
@@ -221,9 +217,9 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
     }
 
     if (windowevent == SDL_WINDOWEVENT_CLOSE) {
-        if ( !window->prev && !window->next ) {
+        if (!window->prev && !window->next) {
             if (SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, SDL_TRUE)) {
-                SDL_SendQuit();  /* This is the last window in the list so send the SDL_QUIT event */
+                SDL_SendQuit(); /* This is the last window in the list so send the SDL_QUIT event */
             }
         }
     }

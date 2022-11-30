@@ -40,8 +40,7 @@ quit(int rc)
     exit(rc);
 }
 
-int
-LoadSprite(const char *file)
+int LoadSprite(const char *file)
 {
     int i;
 
@@ -62,9 +61,7 @@ LoadSprite(const char *file)
     return 0;
 }
 
-
-void
-loop()
+void loop()
 {
     int i;
     SDL_Event event;
@@ -163,8 +160,7 @@ loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     const char *icon = "icon.bmp";
@@ -218,7 +214,7 @@ main(int argc, char *argv[])
 
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
-        (SDL_Texture **) SDL_malloc(state->num_windows * sizeof(*sprites));
+        (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
     if (sprites == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
@@ -237,7 +233,6 @@ main(int argc, char *argv[])
         }
     }
 
-
     srand((unsigned int)time(NULL));
 
     /* Main render loop */
@@ -251,16 +246,16 @@ main(int argc, char *argv[])
     while (!done) {
         ++frames;
         loop();
-        }
+    }
 #endif
 
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        double fps = ((double) frames * 1000) / (now - then);
+        double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
     }
-    
+
     quit(0);
 
     return 0;

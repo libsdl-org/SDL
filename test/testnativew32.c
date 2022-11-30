@@ -54,7 +54,7 @@ CreateWindowNative(int w, int h)
     wc.hInstance = GetModuleHandle(NULL);
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName = NULL;
     wc.lpszClassName = "SDL Test";
 
@@ -82,7 +82,7 @@ CreateWindowNative(int w, int h)
 static void
 DestroyWindowNative(void *window)
 {
-    DestroyWindow((HWND) window);
+    DestroyWindow((HWND)window);
 }
 
 #endif

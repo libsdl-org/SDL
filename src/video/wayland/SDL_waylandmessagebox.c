@@ -23,19 +23,18 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#include <stdlib.h> /* fgets */
-#include <stdio.h> /* FILE, STDOUT_FILENO, fdopen, fclose */
-#include <unistd.h> /* pid_t, pipe, fork, close, dup2, execvp, _exit */
+#include <stdlib.h>   /* fgets */
+#include <stdio.h>    /* FILE, STDOUT_FILENO, fdopen, fclose */
+#include <unistd.h>   /* pid_t, pipe, fork, close, dup2, execvp, _exit */
 #include <sys/wait.h> /* waitpid, WIFEXITED, WEXITSTATUS */
-#include <string.h> /* strerr */
+#include <string.h>   /* strerr */
 #include <errno.h>
 
 #include "SDL_waylandmessagebox.h"
 
-#define MAX_BUTTONS             8       /* Maximum number of buttons supported */
+#define MAX_BUTTONS 8 /* Maximum number of buttons supported */
 
-int
-Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     int fd_pipe[2]; /* fd_pipe[0]: read end of pipe, fd_pipe[1]: write end of pipe */
     pid_t pid1;
@@ -49,9 +48,9 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
 
     pid1 = fork();
-    if (pid1 == 0) {  /* child process */
+    if (pid1 == 0) { /* child process */
         int argc = 5, i;
-        const char* argv[5 + 2/* icon name */ + 2/* title */ + 2/* message */ + 2*MAX_BUTTONS + 1/* NULL */] = {
+        const char *argv[5 + 2 /* icon name */ + 2 /* title */ + 2 /* message */ + 2 * MAX_BUTTONS + 1 /* NULL */] = {
             "zenity", "--question", "--switch", "--no-wrap", "--no-markup"
         };
 
@@ -115,9 +114,9 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                 if (WEXITSTATUS(status) < 128) {
                     int i;
                     size_t output_len = 1;
-                    char* output = NULL;
-                    char* tmp = NULL;
-                    FILE* outputfp = NULL;
+                    char *output = NULL;
+                    char *tmp = NULL;
+                    FILE *outputfp = NULL;
 
                     close(fd_pipe[1]); /* no writing to pipe */
                     /* At this point, if no button ID is needed, we can just bail as soon as the
@@ -176,7 +175,7 @@ Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                     }
 
                     SDL_free(output);
-                    return 0;  /* success! */
+                    return 0; /* success! */
                 } else {
                     return SDL_SetError("zenity reported error or failed to launch: %d", WEXITSTATUS(status));
                 }

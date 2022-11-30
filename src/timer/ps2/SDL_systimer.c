@@ -31,8 +31,7 @@
 static uint64_t start;
 static SDL_bool ticks_started = SDL_FALSE;
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -42,8 +41,7 @@ SDL_TicksInit(void)
     start = GetTimerSystemTime();
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }
@@ -75,9 +73,9 @@ SDL_GetPerformanceFrequency(void)
 
 void SDL_Delay(Uint32 ms)
 {
-    struct timespec tv = {0};
-    tv.tv_sec          = ms / 1000;
-    tv.tv_nsec         = (ms % 1000) * 1000000;
+    struct timespec tv = { 0 };
+    tv.tv_sec = ms / 1000;
+    tv.tv_nsec = (ms % 1000) * 1000000;
     nanosleep(&tv, NULL);
 }
 

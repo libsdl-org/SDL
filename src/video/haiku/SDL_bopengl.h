@@ -30,16 +30,15 @@ extern "C" {
 
 #include "../SDL_sysvideo.h"
 
-
-extern int HAIKU_GL_LoadLibrary(_THIS, const char *path);                  /* FIXME */
-extern void *HAIKU_GL_GetProcAddress(_THIS, const char *proc);             /* FIXME */
-extern void HAIKU_GL_UnloadLibrary(_THIS);                                 /* TODO */
-extern int HAIKU_GL_MakeCurrent(_THIS, SDL_Window * window,
-                              SDL_GLContext context);
-extern int HAIKU_GL_SetSwapInterval(_THIS, int interval);                  /* TODO */
-extern int HAIKU_GL_GetSwapInterval(_THIS);                                /* TODO */
-extern int HAIKU_GL_SwapWindow(_THIS, SDL_Window * window);
-extern SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window * window);
+extern int HAIKU_GL_LoadLibrary(_THIS, const char *path);      /* FIXME */
+extern void *HAIKU_GL_GetProcAddress(_THIS, const char *proc); /* FIXME */
+extern void HAIKU_GL_UnloadLibrary(_THIS);                     /* TODO */
+extern int HAIKU_GL_MakeCurrent(_THIS, SDL_Window *window,
+                                SDL_GLContext context);
+extern int HAIKU_GL_SetSwapInterval(_THIS, int interval); /* TODO */
+extern int HAIKU_GL_GetSwapInterval(_THIS);               /* TODO */
+extern int HAIKU_GL_SwapWindow(_THIS, SDL_Window *window);
+extern SDL_GLContext HAIKU_GL_CreateContext(_THIS, SDL_Window *window);
 extern void HAIKU_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 extern void HAIKU_GL_RebootContexts(_THIS);

@@ -19,7 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
@@ -34,8 +33,7 @@
 #include "SDL_emscriptenevents.h"
 #include "SDL_emscriptenvideo.h"
 
-
-#define FULLSCREEN_MASK ( SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN )
+#define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
 
 /*
 .keyCode to SDL keycode
@@ -43,231 +41,230 @@ https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
 https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 */
 static const SDL_Keycode emscripten_keycode_table[] = {
-    /*  0 */    SDLK_UNKNOWN,
-    /*  1 */    SDLK_UNKNOWN,
-    /*  2 */    SDLK_UNKNOWN,
-    /*  3 */    SDLK_CANCEL,
-    /*  4 */    SDLK_UNKNOWN,
-    /*  5 */    SDLK_UNKNOWN,
-    /*  6 */    SDLK_HELP,
-    /*  7 */    SDLK_UNKNOWN,
-    /*  8 */    SDLK_BACKSPACE,
-    /*  9 */    SDLK_TAB,
-    /*  10 */   SDLK_UNKNOWN,
-    /*  11 */   SDLK_UNKNOWN,
-    /*  12 */   SDLK_KP_5,
-    /*  13 */   SDLK_RETURN,
-    /*  14 */   SDLK_UNKNOWN,
-    /*  15 */   SDLK_UNKNOWN,
-    /*  16 */   SDLK_LSHIFT,
-    /*  17 */   SDLK_LCTRL,
-    /*  18 */   SDLK_LALT,
-    /*  19 */   SDLK_PAUSE,
-    /*  20 */   SDLK_CAPSLOCK,
-    /*  21 */   SDLK_UNKNOWN,
-    /*  22 */   SDLK_UNKNOWN,
-    /*  23 */   SDLK_UNKNOWN,
-    /*  24 */   SDLK_UNKNOWN,
-    /*  25 */   SDLK_UNKNOWN,
-    /*  26 */   SDLK_UNKNOWN,
-    /*  27 */   SDLK_ESCAPE,
-    /*  28 */   SDLK_UNKNOWN,
-    /*  29 */   SDLK_UNKNOWN,
-    /*  30 */   SDLK_UNKNOWN,
-    /*  31 */   SDLK_UNKNOWN,
-    /*  32 */   SDLK_SPACE,
-    /*  33 */   SDLK_PAGEUP,
-    /*  34 */   SDLK_PAGEDOWN,
-    /*  35 */   SDLK_END,
-    /*  36 */   SDLK_HOME,
-    /*  37 */   SDLK_LEFT,
-    /*  38 */   SDLK_UP,
-    /*  39 */   SDLK_RIGHT,
-    /*  40 */   SDLK_DOWN,
-    /*  41 */   SDLK_UNKNOWN,
-    /*  42 */   SDLK_UNKNOWN,
-    /*  43 */   SDLK_UNKNOWN,
-    /*  44 */   SDLK_UNKNOWN,
-    /*  45 */   SDLK_INSERT,
-    /*  46 */   SDLK_DELETE,
-    /*  47 */   SDLK_UNKNOWN,
-    /*  48 */   SDLK_0,
-    /*  49 */   SDLK_1,
-    /*  50 */   SDLK_2,
-    /*  51 */   SDLK_3,
-    /*  52 */   SDLK_4,
-    /*  53 */   SDLK_5,
-    /*  54 */   SDLK_6,
-    /*  55 */   SDLK_7,
-    /*  56 */   SDLK_8,
-    /*  57 */   SDLK_9,
-    /*  58 */   SDLK_UNKNOWN,
-    /*  59 */   SDLK_SEMICOLON,
-    /*  60 */   SDLK_BACKSLASH /*SDL_SCANCODE_NONUSBACKSLASH*/,
-    /*  61 */   SDLK_EQUALS,
-    /*  62 */   SDLK_UNKNOWN,
-    /*  63 */   SDLK_MINUS,
-    /*  64 */   SDLK_UNKNOWN,
-    /*  65 */   SDLK_a,
-    /*  66 */   SDLK_b,
-    /*  67 */   SDLK_c,
-    /*  68 */   SDLK_d,
-    /*  69 */   SDLK_e,
-    /*  70 */   SDLK_f,
-    /*  71 */   SDLK_g,
-    /*  72 */   SDLK_h,
-    /*  73 */   SDLK_i,
-    /*  74 */   SDLK_j,
-    /*  75 */   SDLK_k,
-    /*  76 */   SDLK_l,
-    /*  77 */   SDLK_m,
-    /*  78 */   SDLK_n,
-    /*  79 */   SDLK_o,
-    /*  80 */   SDLK_p,
-    /*  81 */   SDLK_q,
-    /*  82 */   SDLK_r,
-    /*  83 */   SDLK_s,
-    /*  84 */   SDLK_t,
-    /*  85 */   SDLK_u,
-    /*  86 */   SDLK_v,
-    /*  87 */   SDLK_w,
-    /*  88 */   SDLK_x,
-    /*  89 */   SDLK_y,
-    /*  90 */   SDLK_z,
-    /*  91 */   SDLK_LGUI,
-    /*  92 */   SDLK_UNKNOWN,
-    /*  93 */   SDLK_APPLICATION,
-    /*  94 */   SDLK_UNKNOWN,
-    /*  95 */   SDLK_UNKNOWN,
-    /*  96 */   SDLK_KP_0,
-    /*  97 */   SDLK_KP_1,
-    /*  98 */   SDLK_KP_2,
-    /*  99 */   SDLK_KP_3,
-    /* 100 */   SDLK_KP_4,
-    /* 101 */   SDLK_KP_5,
-    /* 102 */   SDLK_KP_6,
-    /* 103 */   SDLK_KP_7,
-    /* 104 */   SDLK_KP_8,
-    /* 105 */   SDLK_KP_9,
-    /* 106 */   SDLK_KP_MULTIPLY,
-    /* 107 */   SDLK_KP_PLUS,
-    /* 108 */   SDLK_UNKNOWN,
-    /* 109 */   SDLK_KP_MINUS,
-    /* 110 */   SDLK_KP_PERIOD,
-    /* 111 */   SDLK_KP_DIVIDE,
-    /* 112 */   SDLK_F1,
-    /* 113 */   SDLK_F2,
-    /* 114 */   SDLK_F3,
-    /* 115 */   SDLK_F4,
-    /* 116 */   SDLK_F5,
-    /* 117 */   SDLK_F6,
-    /* 118 */   SDLK_F7,
-    /* 119 */   SDLK_F8,
-    /* 120 */   SDLK_F9,
-    /* 121 */   SDLK_F10,
-    /* 122 */   SDLK_F11,
-    /* 123 */   SDLK_F12,
-    /* 124 */   SDLK_F13,
-    /* 125 */   SDLK_F14,
-    /* 126 */   SDLK_F15,
-    /* 127 */   SDLK_F16,
-    /* 128 */   SDLK_F17,
-    /* 129 */   SDLK_F18,
-    /* 130 */   SDLK_F19,
-    /* 131 */   SDLK_F20,
-    /* 132 */   SDLK_F21,
-    /* 133 */   SDLK_F22,
-    /* 134 */   SDLK_F23,
-    /* 135 */   SDLK_F24,
-    /* 136 */   SDLK_UNKNOWN,
-    /* 137 */   SDLK_UNKNOWN,
-    /* 138 */   SDLK_UNKNOWN,
-    /* 139 */   SDLK_UNKNOWN,
-    /* 140 */   SDLK_UNKNOWN,
-    /* 141 */   SDLK_UNKNOWN,
-    /* 142 */   SDLK_UNKNOWN,
-    /* 143 */   SDLK_UNKNOWN,
-    /* 144 */   SDLK_NUMLOCKCLEAR,
-    /* 145 */   SDLK_SCROLLLOCK,
-    /* 146 */   SDLK_UNKNOWN,
-    /* 147 */   SDLK_UNKNOWN,
-    /* 148 */   SDLK_UNKNOWN,
-    /* 149 */   SDLK_UNKNOWN,
-    /* 150 */   SDLK_UNKNOWN,
-    /* 151 */   SDLK_UNKNOWN,
-    /* 152 */   SDLK_UNKNOWN,
-    /* 153 */   SDLK_UNKNOWN,
-    /* 154 */   SDLK_UNKNOWN,
-    /* 155 */   SDLK_UNKNOWN,
-    /* 156 */   SDLK_UNKNOWN,
-    /* 157 */   SDLK_UNKNOWN,
-    /* 158 */   SDLK_UNKNOWN,
-    /* 159 */   SDLK_UNKNOWN,
-    /* 160 */   SDLK_BACKQUOTE,
-    /* 161 */   SDLK_UNKNOWN,
-    /* 162 */   SDLK_UNKNOWN,
-    /* 163 */   SDLK_KP_HASH, /*KaiOS phone keypad*/
-    /* 164 */   SDLK_UNKNOWN,
-    /* 165 */   SDLK_UNKNOWN,
-    /* 166 */   SDLK_UNKNOWN,
-    /* 167 */   SDLK_UNKNOWN,
-    /* 168 */   SDLK_UNKNOWN,
-    /* 169 */   SDLK_UNKNOWN,
-    /* 170 */   SDLK_KP_MULTIPLY, /*KaiOS phone keypad*/
-    /* 171 */   SDLK_RIGHTBRACKET,
-    /* 172 */   SDLK_UNKNOWN,
-    /* 173 */   SDLK_MINUS, /*FX*/
-    /* 174 */   SDLK_VOLUMEDOWN, /*IE, Chrome*/
-    /* 175 */   SDLK_VOLUMEUP, /*IE, Chrome*/
-    /* 176 */   SDLK_AUDIONEXT, /*IE, Chrome*/
-    /* 177 */   SDLK_AUDIOPREV, /*IE, Chrome*/
-    /* 178 */   SDLK_UNKNOWN,
-    /* 179 */   SDLK_AUDIOPLAY, /*IE, Chrome*/
-    /* 180 */   SDLK_UNKNOWN,
-    /* 181 */   SDLK_AUDIOMUTE, /*FX*/
-    /* 182 */   SDLK_VOLUMEDOWN, /*FX*/
-    /* 183 */   SDLK_VOLUMEUP, /*FX*/
-    /* 184 */   SDLK_UNKNOWN,
-    /* 185 */   SDLK_UNKNOWN,
-    /* 186 */   SDLK_SEMICOLON, /*IE, Chrome, D3E legacy*/
-    /* 187 */   SDLK_EQUALS, /*IE, Chrome, D3E legacy*/
-    /* 188 */   SDLK_COMMA,
-    /* 189 */   SDLK_MINUS, /*IE, Chrome, D3E legacy*/
-    /* 190 */   SDLK_PERIOD,
-    /* 191 */   SDLK_SLASH,
-    /* 192 */   SDLK_BACKQUOTE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
-    /* 193 */   SDLK_UNKNOWN,
-    /* 194 */   SDLK_UNKNOWN,
-    /* 195 */   SDLK_UNKNOWN,
-    /* 196 */   SDLK_UNKNOWN,
-    /* 197 */   SDLK_UNKNOWN,
-    /* 198 */   SDLK_UNKNOWN,
-    /* 199 */   SDLK_UNKNOWN,
-    /* 200 */   SDLK_UNKNOWN,
-    /* 201 */   SDLK_UNKNOWN,
-    /* 202 */   SDLK_UNKNOWN,
-    /* 203 */   SDLK_UNKNOWN,
-    /* 204 */   SDLK_UNKNOWN,
-    /* 205 */   SDLK_UNKNOWN,
-    /* 206 */   SDLK_UNKNOWN,
-    /* 207 */   SDLK_UNKNOWN,
-    /* 208 */   SDLK_UNKNOWN,
-    /* 209 */   SDLK_UNKNOWN,
-    /* 210 */   SDLK_UNKNOWN,
-    /* 211 */   SDLK_UNKNOWN,
-    /* 212 */   SDLK_UNKNOWN,
-    /* 213 */   SDLK_UNKNOWN,
-    /* 214 */   SDLK_UNKNOWN,
-    /* 215 */   SDLK_UNKNOWN,
-    /* 216 */   SDLK_UNKNOWN,
-    /* 217 */   SDLK_UNKNOWN,
-    /* 218 */   SDLK_UNKNOWN,
-    /* 219 */   SDLK_LEFTBRACKET,
-    /* 220 */   SDLK_BACKSLASH,
-    /* 221 */   SDLK_RIGHTBRACKET,
-    /* 222 */   SDLK_QUOTE, /*FX, D3E legacy*/
+    /*  0 */ SDLK_UNKNOWN,
+    /*  1 */ SDLK_UNKNOWN,
+    /*  2 */ SDLK_UNKNOWN,
+    /*  3 */ SDLK_CANCEL,
+    /*  4 */ SDLK_UNKNOWN,
+    /*  5 */ SDLK_UNKNOWN,
+    /*  6 */ SDLK_HELP,
+    /*  7 */ SDLK_UNKNOWN,
+    /*  8 */ SDLK_BACKSPACE,
+    /*  9 */ SDLK_TAB,
+    /*  10 */ SDLK_UNKNOWN,
+    /*  11 */ SDLK_UNKNOWN,
+    /*  12 */ SDLK_KP_5,
+    /*  13 */ SDLK_RETURN,
+    /*  14 */ SDLK_UNKNOWN,
+    /*  15 */ SDLK_UNKNOWN,
+    /*  16 */ SDLK_LSHIFT,
+    /*  17 */ SDLK_LCTRL,
+    /*  18 */ SDLK_LALT,
+    /*  19 */ SDLK_PAUSE,
+    /*  20 */ SDLK_CAPSLOCK,
+    /*  21 */ SDLK_UNKNOWN,
+    /*  22 */ SDLK_UNKNOWN,
+    /*  23 */ SDLK_UNKNOWN,
+    /*  24 */ SDLK_UNKNOWN,
+    /*  25 */ SDLK_UNKNOWN,
+    /*  26 */ SDLK_UNKNOWN,
+    /*  27 */ SDLK_ESCAPE,
+    /*  28 */ SDLK_UNKNOWN,
+    /*  29 */ SDLK_UNKNOWN,
+    /*  30 */ SDLK_UNKNOWN,
+    /*  31 */ SDLK_UNKNOWN,
+    /*  32 */ SDLK_SPACE,
+    /*  33 */ SDLK_PAGEUP,
+    /*  34 */ SDLK_PAGEDOWN,
+    /*  35 */ SDLK_END,
+    /*  36 */ SDLK_HOME,
+    /*  37 */ SDLK_LEFT,
+    /*  38 */ SDLK_UP,
+    /*  39 */ SDLK_RIGHT,
+    /*  40 */ SDLK_DOWN,
+    /*  41 */ SDLK_UNKNOWN,
+    /*  42 */ SDLK_UNKNOWN,
+    /*  43 */ SDLK_UNKNOWN,
+    /*  44 */ SDLK_UNKNOWN,
+    /*  45 */ SDLK_INSERT,
+    /*  46 */ SDLK_DELETE,
+    /*  47 */ SDLK_UNKNOWN,
+    /*  48 */ SDLK_0,
+    /*  49 */ SDLK_1,
+    /*  50 */ SDLK_2,
+    /*  51 */ SDLK_3,
+    /*  52 */ SDLK_4,
+    /*  53 */ SDLK_5,
+    /*  54 */ SDLK_6,
+    /*  55 */ SDLK_7,
+    /*  56 */ SDLK_8,
+    /*  57 */ SDLK_9,
+    /*  58 */ SDLK_UNKNOWN,
+    /*  59 */ SDLK_SEMICOLON,
+    /*  60 */ SDLK_BACKSLASH /*SDL_SCANCODE_NONUSBACKSLASH*/,
+    /*  61 */ SDLK_EQUALS,
+    /*  62 */ SDLK_UNKNOWN,
+    /*  63 */ SDLK_MINUS,
+    /*  64 */ SDLK_UNKNOWN,
+    /*  65 */ SDLK_a,
+    /*  66 */ SDLK_b,
+    /*  67 */ SDLK_c,
+    /*  68 */ SDLK_d,
+    /*  69 */ SDLK_e,
+    /*  70 */ SDLK_f,
+    /*  71 */ SDLK_g,
+    /*  72 */ SDLK_h,
+    /*  73 */ SDLK_i,
+    /*  74 */ SDLK_j,
+    /*  75 */ SDLK_k,
+    /*  76 */ SDLK_l,
+    /*  77 */ SDLK_m,
+    /*  78 */ SDLK_n,
+    /*  79 */ SDLK_o,
+    /*  80 */ SDLK_p,
+    /*  81 */ SDLK_q,
+    /*  82 */ SDLK_r,
+    /*  83 */ SDLK_s,
+    /*  84 */ SDLK_t,
+    /*  85 */ SDLK_u,
+    /*  86 */ SDLK_v,
+    /*  87 */ SDLK_w,
+    /*  88 */ SDLK_x,
+    /*  89 */ SDLK_y,
+    /*  90 */ SDLK_z,
+    /*  91 */ SDLK_LGUI,
+    /*  92 */ SDLK_UNKNOWN,
+    /*  93 */ SDLK_APPLICATION,
+    /*  94 */ SDLK_UNKNOWN,
+    /*  95 */ SDLK_UNKNOWN,
+    /*  96 */ SDLK_KP_0,
+    /*  97 */ SDLK_KP_1,
+    /*  98 */ SDLK_KP_2,
+    /*  99 */ SDLK_KP_3,
+    /* 100 */ SDLK_KP_4,
+    /* 101 */ SDLK_KP_5,
+    /* 102 */ SDLK_KP_6,
+    /* 103 */ SDLK_KP_7,
+    /* 104 */ SDLK_KP_8,
+    /* 105 */ SDLK_KP_9,
+    /* 106 */ SDLK_KP_MULTIPLY,
+    /* 107 */ SDLK_KP_PLUS,
+    /* 108 */ SDLK_UNKNOWN,
+    /* 109 */ SDLK_KP_MINUS,
+    /* 110 */ SDLK_KP_PERIOD,
+    /* 111 */ SDLK_KP_DIVIDE,
+    /* 112 */ SDLK_F1,
+    /* 113 */ SDLK_F2,
+    /* 114 */ SDLK_F3,
+    /* 115 */ SDLK_F4,
+    /* 116 */ SDLK_F5,
+    /* 117 */ SDLK_F6,
+    /* 118 */ SDLK_F7,
+    /* 119 */ SDLK_F8,
+    /* 120 */ SDLK_F9,
+    /* 121 */ SDLK_F10,
+    /* 122 */ SDLK_F11,
+    /* 123 */ SDLK_F12,
+    /* 124 */ SDLK_F13,
+    /* 125 */ SDLK_F14,
+    /* 126 */ SDLK_F15,
+    /* 127 */ SDLK_F16,
+    /* 128 */ SDLK_F17,
+    /* 129 */ SDLK_F18,
+    /* 130 */ SDLK_F19,
+    /* 131 */ SDLK_F20,
+    /* 132 */ SDLK_F21,
+    /* 133 */ SDLK_F22,
+    /* 134 */ SDLK_F23,
+    /* 135 */ SDLK_F24,
+    /* 136 */ SDLK_UNKNOWN,
+    /* 137 */ SDLK_UNKNOWN,
+    /* 138 */ SDLK_UNKNOWN,
+    /* 139 */ SDLK_UNKNOWN,
+    /* 140 */ SDLK_UNKNOWN,
+    /* 141 */ SDLK_UNKNOWN,
+    /* 142 */ SDLK_UNKNOWN,
+    /* 143 */ SDLK_UNKNOWN,
+    /* 144 */ SDLK_NUMLOCKCLEAR,
+    /* 145 */ SDLK_SCROLLLOCK,
+    /* 146 */ SDLK_UNKNOWN,
+    /* 147 */ SDLK_UNKNOWN,
+    /* 148 */ SDLK_UNKNOWN,
+    /* 149 */ SDLK_UNKNOWN,
+    /* 150 */ SDLK_UNKNOWN,
+    /* 151 */ SDLK_UNKNOWN,
+    /* 152 */ SDLK_UNKNOWN,
+    /* 153 */ SDLK_UNKNOWN,
+    /* 154 */ SDLK_UNKNOWN,
+    /* 155 */ SDLK_UNKNOWN,
+    /* 156 */ SDLK_UNKNOWN,
+    /* 157 */ SDLK_UNKNOWN,
+    /* 158 */ SDLK_UNKNOWN,
+    /* 159 */ SDLK_UNKNOWN,
+    /* 160 */ SDLK_BACKQUOTE,
+    /* 161 */ SDLK_UNKNOWN,
+    /* 162 */ SDLK_UNKNOWN,
+    /* 163 */ SDLK_KP_HASH, /*KaiOS phone keypad*/
+    /* 164 */ SDLK_UNKNOWN,
+    /* 165 */ SDLK_UNKNOWN,
+    /* 166 */ SDLK_UNKNOWN,
+    /* 167 */ SDLK_UNKNOWN,
+    /* 168 */ SDLK_UNKNOWN,
+    /* 169 */ SDLK_UNKNOWN,
+    /* 170 */ SDLK_KP_MULTIPLY, /*KaiOS phone keypad*/
+    /* 171 */ SDLK_RIGHTBRACKET,
+    /* 172 */ SDLK_UNKNOWN,
+    /* 173 */ SDLK_MINUS,      /*FX*/
+    /* 174 */ SDLK_VOLUMEDOWN, /*IE, Chrome*/
+    /* 175 */ SDLK_VOLUMEUP,   /*IE, Chrome*/
+    /* 176 */ SDLK_AUDIONEXT,  /*IE, Chrome*/
+    /* 177 */ SDLK_AUDIOPREV,  /*IE, Chrome*/
+    /* 178 */ SDLK_UNKNOWN,
+    /* 179 */ SDLK_AUDIOPLAY, /*IE, Chrome*/
+    /* 180 */ SDLK_UNKNOWN,
+    /* 181 */ SDLK_AUDIOMUTE,  /*FX*/
+    /* 182 */ SDLK_VOLUMEDOWN, /*FX*/
+    /* 183 */ SDLK_VOLUMEUP,   /*FX*/
+    /* 184 */ SDLK_UNKNOWN,
+    /* 185 */ SDLK_UNKNOWN,
+    /* 186 */ SDLK_SEMICOLON, /*IE, Chrome, D3E legacy*/
+    /* 187 */ SDLK_EQUALS,    /*IE, Chrome, D3E legacy*/
+    /* 188 */ SDLK_COMMA,
+    /* 189 */ SDLK_MINUS, /*IE, Chrome, D3E legacy*/
+    /* 190 */ SDLK_PERIOD,
+    /* 191 */ SDLK_SLASH,
+    /* 192 */ SDLK_BACKQUOTE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
+    /* 193 */ SDLK_UNKNOWN,
+    /* 194 */ SDLK_UNKNOWN,
+    /* 195 */ SDLK_UNKNOWN,
+    /* 196 */ SDLK_UNKNOWN,
+    /* 197 */ SDLK_UNKNOWN,
+    /* 198 */ SDLK_UNKNOWN,
+    /* 199 */ SDLK_UNKNOWN,
+    /* 200 */ SDLK_UNKNOWN,
+    /* 201 */ SDLK_UNKNOWN,
+    /* 202 */ SDLK_UNKNOWN,
+    /* 203 */ SDLK_UNKNOWN,
+    /* 204 */ SDLK_UNKNOWN,
+    /* 205 */ SDLK_UNKNOWN,
+    /* 206 */ SDLK_UNKNOWN,
+    /* 207 */ SDLK_UNKNOWN,
+    /* 208 */ SDLK_UNKNOWN,
+    /* 209 */ SDLK_UNKNOWN,
+    /* 210 */ SDLK_UNKNOWN,
+    /* 211 */ SDLK_UNKNOWN,
+    /* 212 */ SDLK_UNKNOWN,
+    /* 213 */ SDLK_UNKNOWN,
+    /* 214 */ SDLK_UNKNOWN,
+    /* 215 */ SDLK_UNKNOWN,
+    /* 216 */ SDLK_UNKNOWN,
+    /* 217 */ SDLK_UNKNOWN,
+    /* 218 */ SDLK_UNKNOWN,
+    /* 219 */ SDLK_LEFTBRACKET,
+    /* 220 */ SDLK_BACKSLASH,
+    /* 221 */ SDLK_RIGHTBRACKET,
+    /* 222 */ SDLK_QUOTE, /*FX, D3E legacy*/
 };
-
 
 /*
 Emscripten PK code to scancode
@@ -404,8 +401,7 @@ static const SDL_Scancode emscripten_scancode_table[] = {
     /* 0x7E "NumpadComma"    */ SDL_SCANCODE_KP_COMMA
 };
 
-static SDL_Scancode
-Emscripten_MapScanCode(const char *code)
+static SDL_Scancode Emscripten_MapScanCode(const char *code)
 {
     const DOM_PK_CODE_TYPE pk_code = emscripten_compute_dom_pk_code(code);
     if (pk_code < SDL_arraysize(emscripten_scancode_table)) {
@@ -413,97 +409,96 @@ Emscripten_MapScanCode(const char *code)
     }
 
     switch (pk_code) {
-        case DOM_PK_PASTE:
-            return SDL_SCANCODE_PASTE;
-        case DOM_PK_MEDIA_TRACK_PREVIOUS:
-            return SDL_SCANCODE_AUDIOPREV;
-        case DOM_PK_CUT:
-            return SDL_SCANCODE_CUT;
-        case DOM_PK_COPY:
-            return SDL_SCANCODE_COPY;
-        case DOM_PK_MEDIA_TRACK_NEXT:
-            return SDL_SCANCODE_AUDIONEXT;
-        case DOM_PK_NUMPAD_ENTER:
-            return SDL_SCANCODE_KP_ENTER;
-        case DOM_PK_CONTROL_RIGHT:
-            return SDL_SCANCODE_RCTRL;
-        case DOM_PK_AUDIO_VOLUME_MUTE:
-            return SDL_SCANCODE_AUDIOMUTE;
-        case DOM_PK_LAUNCH_APP_2:
-            return SDL_SCANCODE_CALCULATOR;
-        case DOM_PK_MEDIA_PLAY_PAUSE:
-            return SDL_SCANCODE_AUDIOPLAY;
-        case DOM_PK_MEDIA_STOP:
-            return SDL_SCANCODE_AUDIOSTOP;
-        case DOM_PK_EJECT:
-            return SDL_SCANCODE_EJECT;
-        case DOM_PK_AUDIO_VOLUME_DOWN:
-            return SDL_SCANCODE_VOLUMEDOWN;
-        case DOM_PK_AUDIO_VOLUME_UP:
-            return SDL_SCANCODE_VOLUMEUP;
-        case DOM_PK_BROWSER_HOME:
-            return SDL_SCANCODE_AC_HOME;
-        case DOM_PK_NUMPAD_DIVIDE:
-            return SDL_SCANCODE_KP_DIVIDE;
-        case DOM_PK_ALT_RIGHT:
-            return SDL_SCANCODE_RALT;
-        case DOM_PK_HELP:
-            return SDL_SCANCODE_HELP;
-        case DOM_PK_NUM_LOCK:
-            return SDL_SCANCODE_NUMLOCKCLEAR;
-        case DOM_PK_HOME:
-            return SDL_SCANCODE_HOME;
-        case DOM_PK_ARROW_UP:
-            return SDL_SCANCODE_UP;
-        case DOM_PK_PAGE_UP:
-            return SDL_SCANCODE_PAGEUP;
-        case DOM_PK_ARROW_LEFT:
-            return SDL_SCANCODE_LEFT;
-        case DOM_PK_ARROW_RIGHT:
-            return SDL_SCANCODE_RIGHT;
-        case DOM_PK_END:
-            return SDL_SCANCODE_END;
-        case DOM_PK_ARROW_DOWN:
-            return SDL_SCANCODE_DOWN;
-        case DOM_PK_PAGE_DOWN:
-            return SDL_SCANCODE_PAGEDOWN;
-        case DOM_PK_INSERT:
-            return SDL_SCANCODE_INSERT;
-        case DOM_PK_DELETE:
-            return SDL_SCANCODE_DELETE;
-        case DOM_PK_META_LEFT:
-            return SDL_SCANCODE_LGUI;
-        case DOM_PK_META_RIGHT:
-            return SDL_SCANCODE_RGUI;
-        case DOM_PK_CONTEXT_MENU:
-            return SDL_SCANCODE_APPLICATION;
-        case DOM_PK_POWER:
-            return SDL_SCANCODE_POWER;
-        case DOM_PK_BROWSER_SEARCH:
-            return SDL_SCANCODE_AC_SEARCH;
-        case DOM_PK_BROWSER_FAVORITES:
-            return SDL_SCANCODE_AC_BOOKMARKS;
-        case DOM_PK_BROWSER_REFRESH:
-            return SDL_SCANCODE_AC_REFRESH;
-        case DOM_PK_BROWSER_STOP:
-            return SDL_SCANCODE_AC_STOP;
-        case DOM_PK_BROWSER_FORWARD:
-            return SDL_SCANCODE_AC_FORWARD;
-        case DOM_PK_BROWSER_BACK:
-            return SDL_SCANCODE_AC_BACK;
-        case DOM_PK_LAUNCH_APP_1:
-            return SDL_SCANCODE_COMPUTER;
-        case DOM_PK_LAUNCH_MAIL:
-            return SDL_SCANCODE_MAIL;
-        case DOM_PK_MEDIA_SELECT:
-            return SDL_SCANCODE_MEDIASELECT;
+    case DOM_PK_PASTE:
+        return SDL_SCANCODE_PASTE;
+    case DOM_PK_MEDIA_TRACK_PREVIOUS:
+        return SDL_SCANCODE_AUDIOPREV;
+    case DOM_PK_CUT:
+        return SDL_SCANCODE_CUT;
+    case DOM_PK_COPY:
+        return SDL_SCANCODE_COPY;
+    case DOM_PK_MEDIA_TRACK_NEXT:
+        return SDL_SCANCODE_AUDIONEXT;
+    case DOM_PK_NUMPAD_ENTER:
+        return SDL_SCANCODE_KP_ENTER;
+    case DOM_PK_CONTROL_RIGHT:
+        return SDL_SCANCODE_RCTRL;
+    case DOM_PK_AUDIO_VOLUME_MUTE:
+        return SDL_SCANCODE_AUDIOMUTE;
+    case DOM_PK_LAUNCH_APP_2:
+        return SDL_SCANCODE_CALCULATOR;
+    case DOM_PK_MEDIA_PLAY_PAUSE:
+        return SDL_SCANCODE_AUDIOPLAY;
+    case DOM_PK_MEDIA_STOP:
+        return SDL_SCANCODE_AUDIOSTOP;
+    case DOM_PK_EJECT:
+        return SDL_SCANCODE_EJECT;
+    case DOM_PK_AUDIO_VOLUME_DOWN:
+        return SDL_SCANCODE_VOLUMEDOWN;
+    case DOM_PK_AUDIO_VOLUME_UP:
+        return SDL_SCANCODE_VOLUMEUP;
+    case DOM_PK_BROWSER_HOME:
+        return SDL_SCANCODE_AC_HOME;
+    case DOM_PK_NUMPAD_DIVIDE:
+        return SDL_SCANCODE_KP_DIVIDE;
+    case DOM_PK_ALT_RIGHT:
+        return SDL_SCANCODE_RALT;
+    case DOM_PK_HELP:
+        return SDL_SCANCODE_HELP;
+    case DOM_PK_NUM_LOCK:
+        return SDL_SCANCODE_NUMLOCKCLEAR;
+    case DOM_PK_HOME:
+        return SDL_SCANCODE_HOME;
+    case DOM_PK_ARROW_UP:
+        return SDL_SCANCODE_UP;
+    case DOM_PK_PAGE_UP:
+        return SDL_SCANCODE_PAGEUP;
+    case DOM_PK_ARROW_LEFT:
+        return SDL_SCANCODE_LEFT;
+    case DOM_PK_ARROW_RIGHT:
+        return SDL_SCANCODE_RIGHT;
+    case DOM_PK_END:
+        return SDL_SCANCODE_END;
+    case DOM_PK_ARROW_DOWN:
+        return SDL_SCANCODE_DOWN;
+    case DOM_PK_PAGE_DOWN:
+        return SDL_SCANCODE_PAGEDOWN;
+    case DOM_PK_INSERT:
+        return SDL_SCANCODE_INSERT;
+    case DOM_PK_DELETE:
+        return SDL_SCANCODE_DELETE;
+    case DOM_PK_META_LEFT:
+        return SDL_SCANCODE_LGUI;
+    case DOM_PK_META_RIGHT:
+        return SDL_SCANCODE_RGUI;
+    case DOM_PK_CONTEXT_MENU:
+        return SDL_SCANCODE_APPLICATION;
+    case DOM_PK_POWER:
+        return SDL_SCANCODE_POWER;
+    case DOM_PK_BROWSER_SEARCH:
+        return SDL_SCANCODE_AC_SEARCH;
+    case DOM_PK_BROWSER_FAVORITES:
+        return SDL_SCANCODE_AC_BOOKMARKS;
+    case DOM_PK_BROWSER_REFRESH:
+        return SDL_SCANCODE_AC_REFRESH;
+    case DOM_PK_BROWSER_STOP:
+        return SDL_SCANCODE_AC_STOP;
+    case DOM_PK_BROWSER_FORWARD:
+        return SDL_SCANCODE_AC_FORWARD;
+    case DOM_PK_BROWSER_BACK:
+        return SDL_SCANCODE_AC_BACK;
+    case DOM_PK_LAUNCH_APP_1:
+        return SDL_SCANCODE_COMPUTER;
+    case DOM_PK_LAUNCH_MAIL:
+        return SDL_SCANCODE_MAIL;
+    case DOM_PK_MEDIA_SELECT:
+        return SDL_SCANCODE_MEDIASELECT;
     }
 
     return SDL_SCANCODE_UNKNOWN;
 }
 
-static SDL_Keycode
-Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent)
+static SDL_Keycode Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent)
 {
     SDL_Keycode keycode = SDLK_UNKNOWN;
     if (keyEvent->keyCode < SDL_arraysize(emscripten_keycode_table)) {
@@ -511,66 +506,66 @@ Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent)
         if (keycode != SDLK_UNKNOWN) {
             if (keyEvent->location == DOM_KEY_LOCATION_RIGHT) {
                 switch (keycode) {
-                    case SDLK_LSHIFT:
-                        keycode = SDLK_RSHIFT;
-                        break;
-                    case SDLK_LCTRL:
-                        keycode = SDLK_RCTRL;
-                        break;
-                    case SDLK_LALT:
-                        keycode = SDLK_RALT;
-                        break;
-                    case SDLK_LGUI:
-                        keycode = SDLK_RGUI;
-                        break;
+                case SDLK_LSHIFT:
+                    keycode = SDLK_RSHIFT;
+                    break;
+                case SDLK_LCTRL:
+                    keycode = SDLK_RCTRL;
+                    break;
+                case SDLK_LALT:
+                    keycode = SDLK_RALT;
+                    break;
+                case SDLK_LGUI:
+                    keycode = SDLK_RGUI;
+                    break;
                 }
             } else if (keyEvent->location == DOM_KEY_LOCATION_NUMPAD) {
                 switch (keycode) {
-                    case SDLK_0:
-                    case SDLK_INSERT:
-                        keycode = SDLK_KP_0;
-                        break;
-                    case SDLK_1:
-                    case SDLK_END:
-                        keycode = SDLK_KP_1;
-                        break;
-                    case SDLK_2:
-                    case SDLK_DOWN:
-                        keycode = SDLK_KP_2;
-                        break;
-                    case SDLK_3:
-                    case SDLK_PAGEDOWN:
-                        keycode = SDLK_KP_3;
-                        break;
-                    case SDLK_4:
-                    case SDLK_LEFT:
-                        keycode = SDLK_KP_4;
-                        break;
-                    case SDLK_5:
-                        keycode = SDLK_KP_5;
-                        break;
-                    case SDLK_6:
-                    case SDLK_RIGHT:
-                        keycode = SDLK_KP_6;
-                        break;
-                    case SDLK_7:
-                    case SDLK_HOME:
-                        keycode = SDLK_KP_7;
-                        break;
-                    case SDLK_8:
-                    case SDLK_UP:
-                        keycode = SDLK_KP_8;
-                        break;
-                    case SDLK_9:
-                    case SDLK_PAGEUP:
-                        keycode = SDLK_KP_9;
-                        break;
-                    case SDLK_RETURN:
-                        keycode = SDLK_KP_ENTER;
-                        break;
-                    case SDLK_DELETE:
-                        keycode = SDLK_KP_PERIOD;
-                        break;
+                case SDLK_0:
+                case SDLK_INSERT:
+                    keycode = SDLK_KP_0;
+                    break;
+                case SDLK_1:
+                case SDLK_END:
+                    keycode = SDLK_KP_1;
+                    break;
+                case SDLK_2:
+                case SDLK_DOWN:
+                    keycode = SDLK_KP_2;
+                    break;
+                case SDLK_3:
+                case SDLK_PAGEDOWN:
+                    keycode = SDLK_KP_3;
+                    break;
+                case SDLK_4:
+                case SDLK_LEFT:
+                    keycode = SDLK_KP_4;
+                    break;
+                case SDLK_5:
+                    keycode = SDLK_KP_5;
+                    break;
+                case SDLK_6:
+                case SDLK_RIGHT:
+                    keycode = SDLK_KP_6;
+                    break;
+                case SDLK_7:
+                case SDLK_HOME:
+                    keycode = SDLK_KP_7;
+                    break;
+                case SDLK_8:
+                case SDLK_UP:
+                    keycode = SDLK_KP_8;
+                    break;
+                case SDLK_9:
+                case SDLK_PAGEUP:
+                    keycode = SDLK_KP_9;
+                    break;
+                case SDLK_RETURN:
+                    keycode = SDLK_KP_ENTER;
+                    break;
+                case SDLK_DELETE:
+                    keycode = SDLK_KP_PERIOD;
+                    break;
                 }
             }
         }
@@ -580,26 +575,25 @@ Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent)
 }
 
 /* "borrowed" from SDL_windowsevents.c */
-static int
-Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char * text)
+static int Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char *text)
 {
     if (codepoint <= 0x7F) {
-        text[0] = (char) codepoint;
+        text[0] = (char)codepoint;
         text[1] = '\0';
     } else if (codepoint <= 0x7FF) {
-        text[0] = 0xC0 | (char) ((codepoint >> 6) & 0x1F);
-        text[1] = 0x80 | (char) (codepoint & 0x3F);
+        text[0] = 0xC0 | (char)((codepoint >> 6) & 0x1F);
+        text[1] = 0x80 | (char)(codepoint & 0x3F);
         text[2] = '\0';
     } else if (codepoint <= 0xFFFF) {
-        text[0] = 0xE0 | (char) ((codepoint >> 12) & 0x0F);
-        text[1] = 0x80 | (char) ((codepoint >> 6) & 0x3F);
-        text[2] = 0x80 | (char) (codepoint & 0x3F);
+        text[0] = 0xE0 | (char)((codepoint >> 12) & 0x0F);
+        text[1] = 0x80 | (char)((codepoint >> 6) & 0x3F);
+        text[2] = 0x80 | (char)(codepoint & 0x3F);
         text[3] = '\0';
     } else if (codepoint <= 0x10FFFF) {
-        text[0] = 0xF0 | (char) ((codepoint >> 18) & 0x0F);
-        text[1] = 0x80 | (char) ((codepoint >> 12) & 0x3F);
-        text[2] = 0x80 | (char) ((codepoint >> 6) & 0x3F);
-        text[3] = 0x80 | (char) (codepoint & 0x3F);
+        text[0] = 0xF0 | (char)((codepoint >> 18) & 0x0F);
+        text[1] = 0x80 | (char)((codepoint >> 12) & 0x3F);
+        text[2] = 0x80 | (char)((codepoint >> 6) & 0x3F);
+        text[3] = 0x80 | (char)(codepoint & 0x3F);
         text[4] = '\0';
     } else {
         return SDL_FALSE;
@@ -607,18 +601,15 @@ Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char * text)
     return SDL_TRUE;
 }
 
-static EM_BOOL
-Emscripten_HandlePointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent *changeEvent, void *userData)
+static EM_BOOL Emscripten_HandlePointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent *changeEvent, void *userData)
 {
-    SDL_WindowData *window_data = (SDL_WindowData *) userData;
+    SDL_WindowData *window_data = (SDL_WindowData *)userData;
     /* keep track of lock losses, so we can regrab if/when appropriate. */
     window_data->has_pointer_lock = changeEvent->isActive;
     return 0;
 }
 
-
-static EM_BOOL
-Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
+static EM_BOOL Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
     const int isPointerLocked = window_data->has_pointer_lock;
@@ -648,8 +639,7 @@ Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent
     return 0;
 }
 
-static EM_BOOL
-Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
+static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
     Uint8 sdl_button;
@@ -658,22 +648,22 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     double css_w, css_h;
 
     switch (mouseEvent->button) {
-        case 0:
-            sdl_button = SDL_BUTTON_LEFT;
-            break;
-        case 1:
-            sdl_button = SDL_BUTTON_MIDDLE;
-            break;
-        case 2:
-            sdl_button = SDL_BUTTON_RIGHT;
-            break;
-        default:
-            return 0;
+    case 0:
+        sdl_button = SDL_BUTTON_LEFT;
+        break;
+    case 1:
+        sdl_button = SDL_BUTTON_MIDDLE;
+        break;
+    case 2:
+        sdl_button = SDL_BUTTON_RIGHT;
+        break;
+    default:
+        return 0;
     }
 
     if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN) {
         if (SDL_GetMouse()->relative_mode && !window_data->has_pointer_lock) {
-            emscripten_request_pointerlock(window_data->canvas_id, 0);  /* try to regrab lost pointer lock. */
+            emscripten_request_pointerlock(window_data->canvas_id, 0); /* try to regrab lost pointer lock. */
         }
         sdl_button_state = SDL_PRESSED;
         sdl_event_type = SDL_MOUSEBUTTONDOWN;
@@ -693,8 +683,7 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
-static EM_BOOL
-Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
+static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
 
@@ -715,31 +704,29 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
     return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
-static EM_BOOL
-Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
+static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
 
     float deltaY = wheelEvent->deltaY;
 
     switch (wheelEvent->deltaMode) {
-        case DOM_DELTA_PIXEL:
-            deltaY /= 100; /* 100 pixels make up a step */
-            break;
-        case DOM_DELTA_LINE:
-            deltaY /= 3; /* 3 lines make up a step */
-            break;
-        case DOM_DELTA_PAGE:
-            deltaY *= 80; /* A page makes up 80 steps */
-            break;
+    case DOM_DELTA_PIXEL:
+        deltaY /= 100; /* 100 pixels make up a step */
+        break;
+    case DOM_DELTA_LINE:
+        deltaY /= 3; /* 3 lines make up a step */
+        break;
+    case DOM_DELTA_PAGE:
+        deltaY *= 80; /* A page makes up 80 steps */
+        break;
     }
 
     SDL_SendMouseWheel(window_data->window, 0, (float)wheelEvent->deltaX, -deltaY, SDL_MOUSEWHEEL_NORMAL);
     return SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE;
 }
 
-static EM_BOOL
-Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, void *userData)
+static EM_BOOL Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
     /* If the user switches away while keys are pressed (such as
@@ -748,22 +735,20 @@ Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, vo
         SDL_ResetKeyboard();
     }
 
-
     SDL_SendWindowEvent(window_data->window, eventType == EMSCRIPTEN_EVENT_FOCUS ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
     return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
-static EM_BOOL
-Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
+static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
-    SDL_WindowData *window_data = (SDL_WindowData *) userData;
+    SDL_WindowData *window_data = (SDL_WindowData *)userData;
     int i;
     double client_w, client_h;
     int preventDefault = 0;
 
     SDL_TouchID deviceId = 1;
     if (SDL_AddTouch(deviceId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
-         return 0;
+        return 0;
     }
 
     emscripten_get_element_css_size(window_data->canvas_id, &client_w, &client_h);
@@ -800,8 +785,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     return preventDefault;
 }
 
-static EM_BOOL
-Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
+static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     const SDL_Keycode keycode = Emscripten_MapKeyCode(keyEvent);
     SDL_Scancode scancode = Emscripten_MapScanCode(keyEvent->code);
@@ -824,14 +808,14 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
      * we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
      */
-    if ( (scancode == SDL_SCANCODE_BACKSPACE) ||
-         (scancode == SDL_SCANCODE_TAB) ||
-         (scancode == SDL_SCANCODE_LEFT) ||
-         (scancode == SDL_SCANCODE_UP) ||
-         (scancode == SDL_SCANCODE_RIGHT) ||
-         (scancode == SDL_SCANCODE_DOWN) ||
-         ((scancode >= SDL_SCANCODE_F1) && (scancode <= SDL_SCANCODE_F15)) ||
-         keyEvent->ctrlKey ) {
+    if ((scancode == SDL_SCANCODE_BACKSPACE) ||
+        (scancode == SDL_SCANCODE_TAB) ||
+        (scancode == SDL_SCANCODE_LEFT) ||
+        (scancode == SDL_SCANCODE_UP) ||
+        (scancode == SDL_SCANCODE_RIGHT) ||
+        (scancode == SDL_SCANCODE_DOWN) ||
+        ((scancode >= SDL_SCANCODE_F1) && (scancode <= SDL_SCANCODE_F15)) ||
+        keyEvent->ctrlKey) {
         is_nav_key = SDL_TRUE;
     }
 
@@ -842,8 +826,7 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
     return prevent_default;
 }
 
-static EM_BOOL
-Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
+static EM_BOOL Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     char text[5];
     if (Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text)) {
@@ -852,8 +835,7 @@ Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent
     return SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE;
 }
 
-static EM_BOOL
-Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
+static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
     SDL_VideoDisplay *display;
@@ -876,8 +858,7 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
     return 0;
 }
 
-static EM_BOOL
-Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
+static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
     SDL_bool force = SDL_FALSE;
@@ -908,9 +889,9 @@ Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *u
             }
 
             if (force) {
-               /* force the event to trigger, so pixel ratio changes can be handled */
-               window_data->window->w = 0;
-               window_data->window->h = 0;
+                /* force the event to trigger, so pixel ratio changes can be handled */
+                window_data->window->w = 0;
+                window_data->window->h = 0;
             }
 
             SDL_SendWindowEvent(window_data->window, SDL_WINDOWEVENT_RESIZED, w, h);
@@ -935,16 +916,14 @@ Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userDat
     return 0;
 }
 
-static EM_BOOL
-Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChangeEvent *visEvent, void *userData)
+static EM_BOOL Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChangeEvent *visEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
     SDL_SendWindowEvent(window_data->window, visEvent->hidden ? SDL_WINDOWEVENT_HIDDEN : SDL_WINDOWEVENT_SHOWN, 0, 0);
     return 0;
 }
 
-static const char*
-Emscripten_HandleBeforeUnload(int eventType, const void *reserved, void *userData)
+static const char *Emscripten_HandleBeforeUnload(int eventType, const void *reserved, void *userData)
 {
     /* This event will need to be handled synchronously, e.g. using
        SDL_AddEventWatch, as the page is being closed *now*. */
@@ -953,8 +932,7 @@ Emscripten_HandleBeforeUnload(int eventType, const void *reserved, void *userDat
     return ""; /* don't trigger confirmation dialog */
 }
 
-void
-Emscripten_RegisterEventHandlers(SDL_WindowData *data)
+void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
     const char *keyElement;
 
@@ -998,8 +976,7 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_beforeunload_callback(data, Emscripten_HandleBeforeUnload);
 }
 
-void
-Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
+void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 {
     const char *target;
 

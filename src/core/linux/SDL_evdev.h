@@ -26,7 +26,6 @@
 
 #ifdef SDL_INPUT_LINUXEV
 
-
 extern int SDL_EVDEV_Init(void);
 extern void SDL_EVDEV_Quit(void);
 extern void SDL_EVDEV_Poll(void);

@@ -39,33 +39,33 @@ extern void WINRT_PumpEvents(_THIS);
 }
 #endif
 
-
 /*
  * Internal-use, C++/CX functions:
  */
 #ifdef __cplusplus_winrt
 
 /* Pointers (Mice, Touch, etc.) */
-typedef enum {
+typedef enum
+{
     NormalizeZeroToOne,
     TransformToSDLWindowSize
 } WINRT_CursorNormalizationType;
-extern Windows::Foundation::Point WINRT_TransformCursorPosition(SDL_Window * window,
+extern Windows::Foundation::Point WINRT_TransformCursorPosition(SDL_Window *window,
                                                                 Windows::Foundation::Point rawPosition,
                                                                 WINRT_CursorNormalizationType normalization);
-extern SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt, Uint8 *button, Uint8 *pressed);
-extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
-extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
-extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
-extern void WINRT_ProcessPointerEnteredEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
-extern void WINRT_ProcessPointerExitedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
-extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
-extern void WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::MouseEventArgs ^args);
+extern SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt, Uint8 *button, Uint8 *pressed);
+extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^ pointerPoint);
+extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^ pointerPoint);
+extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^ pointerPoint);
+extern void WINRT_ProcessPointerEnteredEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^ pointerPoint);
+extern void WINRT_ProcessPointerExitedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^ pointerPoint);
+extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^ pointerPoint);
+extern void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::MouseEventArgs ^ args);
 
 /* Keyboard */
-extern void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^args);
-extern void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^args);
-extern void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^args);
+extern void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^ args);
+extern void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^ args);
+extern void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
 #if NTDDI_VERSION >= NTDDI_WIN10
 extern void WINTRT_InitialiseInputPaneEvents(_THIS);
@@ -73,7 +73,7 @@ extern SDL_bool WINRT_HasScreenKeyboardSupport(_THIS);
 extern void WINRT_ShowScreenKeyboard(_THIS, SDL_Window *window);
 extern void WINRT_HideScreenKeyboard(_THIS, SDL_Window *window);
 extern SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window);
-#endif  // NTDDI_VERSION >= ...
+#endif // NTDDI_VERSION >= ...
 
 /* XAML Thread Management */
 extern void WINRT_CycleXAMLThread(void);

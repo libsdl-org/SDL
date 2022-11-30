@@ -24,9 +24,7 @@
 
 #include "SDL_events_c.h"
 
-
-int
-SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1)
+int SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1)
 {
     int posted;
 

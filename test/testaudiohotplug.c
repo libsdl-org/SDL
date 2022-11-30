@@ -26,8 +26,8 @@
 #include "testutils.h"
 
 static SDL_AudioSpec spec;
-static Uint8 *sound = NULL;     /* Pointer to wave data */
-static Uint32 soundlen = 0;     /* Length of wave data */
+static Uint8 *sound = NULL; /* Pointer to wave data */
+static Uint32 soundlen = 0; /* Length of wave data */
 
 static int posindex = 0;
 static Uint32 positions[64];
@@ -41,9 +41,9 @@ quit(int rc)
 }
 
 void SDLCALL
-fillerup(void *_pos, Uint8 * stream, int len)
+fillerup(void *_pos, Uint8 *stream, int len)
 {
-    Uint32 pos = *((Uint32 *) _pos);
+    Uint32 pos = *((Uint32 *)_pos);
     Uint8 *waveptr;
     int waveleft;
 
@@ -62,17 +62,16 @@ fillerup(void *_pos, Uint8 * stream, int len)
     }
     SDL_memcpy(stream, waveptr, len);
     pos += len;
-    *((Uint32 *) _pos) = pos;
+    *((Uint32 *)_pos) = pos;
 }
 
 static int done = 0;
-void
-poked(int sig)
+void poked(int sig)
 {
     done = 1;
 }
 
-static const char*
+static const char *
 devtypestr(int iscapture)
 {
     return iscapture ? "capture" : "output";
@@ -95,10 +94,10 @@ iteration()
             int iscapture = e.adevice.iscapture;
             const char *name = SDL_GetAudioDeviceName(index, iscapture);
             if (name != NULL)
-                SDL_Log("New %s audio device at index %u: %s\n", devtypestr(iscapture), (unsigned int) index, name);
+                SDL_Log("New %s audio device at index %u: %s\n", devtypestr(iscapture), (unsigned int)index, name);
             else {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Got new %s device at index %u, but failed to get the name: %s\n",
-                    devtypestr(iscapture), (unsigned int) index, SDL_GetError());
+                             devtypestr(iscapture), (unsigned int)index, SDL_GetError());
                 continue;
             }
             if (!iscapture) {
@@ -109,21 +108,20 @@ iteration()
                 if (!dev) {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open '%s': %s\n", name, SDL_GetError());
                 } else {
-                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int) dev);
+                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int)dev);
                     SDL_PauseAudioDevice(dev, 0);
                 }
             }
         } else if (e.type == SDL_AUDIODEVICEREMOVED) {
-            dev = (SDL_AudioDeviceID) e.adevice.which;
-            SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int) dev);
+            dev = (SDL_AudioDeviceID)e.adevice.which;
+            SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int)dev);
             SDL_CloseAudioDevice(dev);
         }
     }
 }
 
 #ifdef __EMSCRIPTEN__
-void
-loop()
+void loop()
 {
     if (done)
         emscripten_cancel_main_loop();
@@ -132,8 +130,7 @@ loop()
 }
 #endif
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     char *filename = NULL;

@@ -27,21 +27,17 @@
 #include "SDL_x11xinput2.h"
 #include "../../events/SDL_touch_c.h"
 
-
-void
-X11_InitTouch(_THIS)
+void X11_InitTouch(_THIS)
 {
     X11_InitXinput2Multitouch(_this);
 }
 
-void
-X11_QuitTouch(_THIS)
+void X11_QuitTouch(_THIS)
 {
     SDL_TouchQuit();
 }
 
-void
-X11_ResetTouch(_THIS)
+void X11_ResetTouch(_THIS)
 {
     X11_QuitTouch(_this);
     X11_InitTouch(_this);

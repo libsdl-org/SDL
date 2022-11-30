@@ -38,7 +38,7 @@
 #include "../../events/SDL_events_c.h"
 #include "SDL_evdev_kbd_default_keyaccmap.h"
 
-typedef void (fn_handler_fn)(SDL_EVDEV_keyboard_state *kbd);
+typedef void(fn_handler_fn)(SDL_EVDEV_keyboard_state *kbd);
 
 /*
  * Keyboard State
@@ -50,14 +50,14 @@ struct SDL_EVDEV_keyboard_state
     int keyboard_fd;
     unsigned long old_kbd_mode;
     unsigned short **key_maps;
-    keymap_t* key_map;
-    keyboard_info_t* kbInfo;
-    unsigned char shift_down[4];        /* shift state counters.. */
+    keymap_t *key_map;
+    keyboard_info_t *kbInfo;
+    unsigned char shift_down[4]; /* shift state counters.. */
     SDL_bool dead_key_next;
-    int npadch;                    /* -1 or number assembled on pad */
+    int npadch; /* -1 or number assembled on pad */
     accentmap_t *accents;
     unsigned int diacr;
-    SDL_bool rep;                    /* flag telling character repeat */
+    SDL_bool rep; /* flag telling character repeat */
     unsigned char lockstate;
     unsigned char ledflagstate;
     char shift_state;
@@ -70,24 +70,23 @@ static int SDL_EVDEV_kbd_load_keymaps(SDL_EVDEV_keyboard_state *kbd)
     return ioctl(kbd->keyboard_fd, GIO_KEYMAP, kbd->key_map) >= 0;
 }
 
-static SDL_EVDEV_keyboard_state * kbd_cleanup_state = NULL;
+static SDL_EVDEV_keyboard_state *kbd_cleanup_state = NULL;
 static int kbd_cleanup_sigactions_installed = 0;
 static int kbd_cleanup_atexit_installed = 0;
 
 static struct sigaction old_sigaction[NSIG];
 
-static int fatal_signals[] =
-{
+static int fatal_signals[] = {
     /* Handlers for SIGTERM and SIGINT are installed in SDL_QuitInit. */
-    SIGHUP,  SIGQUIT, SIGILL,  SIGABRT,
-    SIGFPE,  SIGSEGV, SIGPIPE, SIGBUS,
+    SIGHUP, SIGQUIT, SIGILL, SIGABRT,
+    SIGFPE, SIGSEGV, SIGPIPE, SIGBUS,
     SIGSYS
 };
 
 static void kbd_cleanup(void)
 {
     struct mouse_info mData;
-    SDL_EVDEV_keyboard_state* kbd = kbd_cleanup_state;
+    SDL_EVDEV_keyboard_state *kbd = kbd_cleanup_state;
     if (kbd == NULL) {
         return;
     }
@@ -102,18 +101,17 @@ static void kbd_cleanup(void)
     ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
 }
 
-void
-SDL_EVDEV_kbd_reraise_signal(int sig)
+void SDL_EVDEV_kbd_reraise_signal(int sig)
 {
     raise(sig);
 }
 
-siginfo_t* SDL_EVDEV_kdb_cleanup_siginfo = NULL;
-void*      SDL_EVDEV_kdb_cleanup_ucontext = NULL;
+siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
+void *SDL_EVDEV_kdb_cleanup_ucontext = NULL;
 
-static void kbd_cleanup_signal_action(int signum, siginfo_t* info, void* ucontext)
+static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontext)
 {
-    struct sigaction* old_action_p = &(old_sigaction[signum]);
+    struct sigaction *old_action_p = &(old_sigaction[signum]);
     sigset_t sigset;
 
     /* Restore original signal handler before going any further. */
@@ -147,7 +145,7 @@ static void kbd_unregister_emerg_cleanup()
     kbd_cleanup_sigactions_installed = 0;
 
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
-        struct sigaction* old_action_p;
+        struct sigaction *old_action_p;
         struct sigaction cur_action;
         signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
@@ -176,7 +174,7 @@ static void kbd_cleanup_atexit(void)
     kbd_unregister_emerg_cleanup();
 }
 
-static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
+static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
 {
     int tabidx, signum;
 
@@ -200,9 +198,9 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
     kbd_cleanup_sigactions_installed = 1;
 
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
-        struct sigaction* old_action_p;
+        struct sigaction *old_action_p;
         struct sigaction new_action;
-        signum = fatal_signals[tabidx];   
+        signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
         if (sigaction(signum, NULL, old_action_p)) {
             continue;
@@ -211,7 +209,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
         /* Skip SIGHUP and SIGPIPE if handler is already installed
          * - assume the handler will do the cleanup
          */
-        if ((signum == SIGHUP || signum == SIGPIPE) && (old_action_p->sa_handler != SIG_DFL || (void(*)(int))old_action_p->sa_sigaction != SIG_DFL)) {
+        if ((signum == SIGHUP || signum == SIGPIPE) && (old_action_p->sa_handler != SIG_DFL || (void (*)(int))old_action_p->sa_sigaction != SIG_DFL)) {
             continue;
         }
 
@@ -228,7 +226,7 @@ SDL_EVDEV_kbd_init(void)
     SDL_EVDEV_keyboard_state *kbd;
     struct mouse_info mData;
     char flag_state;
-    char* devicePath;
+    char *devicePath;
 
     SDL_zero(mData);
     mData.operation = MOUSE_HIDE;
@@ -246,15 +244,15 @@ SDL_EVDEV_kbd_init(void)
 
     kbd->accents = SDL_calloc(sizeof(accentmap_t), 1);
     kbd->key_map = SDL_calloc(sizeof(keymap_t), 1);
-    kbd->kbInfo = SDL_calloc(sizeof(keyboard_info_t), 1);    
+    kbd->kbInfo = SDL_calloc(sizeof(keyboard_info_t), 1);
 
     ioctl(kbd->console_fd, KDGKBINFO, kbd->kbInfo);
     ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
-    
+
     if (ioctl(kbd->console_fd, KDGKBSTATE, &flag_state) == 0) {
         kbd->ledflagstate = flag_state;
     }
-    
+
     if (ioctl(kbd->console_fd, GIO_DEADKEYMAP, kbd->accents) < 0) {
         SDL_free(kbd->accents);
         kbd->accents = &accentmap_default_us_acc;
@@ -288,14 +286,14 @@ SDL_EVDEV_kbd_init(void)
                 kbd_register_emerg_cleanup(kbd);
             }
             SDL_free(devicePath);
-        } else kbd->keyboard_fd = kbd->console_fd;
+        } else
+            kbd->keyboard_fd = kbd->console_fd;
     }
 
     return kbd;
 }
 
-void
-SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
+void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 {
     struct mouse_info mData;
 
@@ -329,7 +327,7 @@ SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 static void put_queue(SDL_EVDEV_keyboard_state *kbd, uint c)
 {
     /* c is already part of a UTF-8 sequence and safe to add as a character */
-    if (kbd->text_len < (sizeof(kbd->text)-1)) {
+    if (kbd->text_len < (sizeof(kbd->text) - 1)) {
         kbd->text[kbd->text_len++] = (char)c;
     }
 }
@@ -380,12 +378,12 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
     for (i = 0; i < kbd->accents->n_accs; i++) {
         if (kbd->accents->acc[i].accchar == d) {
             for (j = 0; j < NUM_ACCENTCHARS; ++j) {
-                    if (kbd->accents->acc[i].map[j][0] == 0) { /* end of table */
-                            break;
-                    } 
-                    if (kbd->accents->acc[i].map[j][0] == ch) {
-                            return kbd->accents->acc[i].map[j][1];
-                    }
+                if (kbd->accents->acc[i].map[j][0] == 0) { /* end of table */
+                    break;
+                }
+                if (kbd->accents->acc[i].map[j][0] == ch) {
+                    return kbd->accents->acc[i].map[j][1];
+                }
             }
         }
     }
@@ -470,8 +468,7 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
     }
 }
 
-void
-SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int down)
+void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int down)
 {
     keymap_t key_map;
     struct keyent_t keysym;
@@ -525,7 +522,7 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
                 k_deadunicode(kbd, kbd->accents->acc[accent_index].accchar, !down);
             }
         } else {
-            switch(map_from_key_sym) {
+            switch (map_from_key_sym) {
             case ASH: /* alt/meta shift */
                 k_shift(kbd, 3, down == 0);
                 break;

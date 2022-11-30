@@ -24,7 +24,6 @@
 #include "../SDL_joystick_c.h"
 #include "SDL_steamcontroller.h"
 
-
 void SDL_InitSteamControllers(SteamControllerConnectedCallback_t connectedCallback,
                               SteamControllerDisconnectedCallback_t disconnectedCallback)
 {
