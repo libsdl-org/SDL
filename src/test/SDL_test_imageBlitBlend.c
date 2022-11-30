@@ -585,7 +585,7 @@ SDL_Surface *SDLTest_ImageBlitBlendAdd()
         SDLTest_imageBlitBlendAdd.width,
         SDLTest_imageBlitBlendAdd.height,
         SDLTest_imageBlitBlendAdd.width * SDLTest_imageBlitBlendAdd.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
@@ -1174,7 +1174,7 @@ SDL_Surface *SDLTest_ImageBlitBlend()
         SDLTest_imageBlitBlend.width,
         SDLTest_imageBlitBlend.height,
         SDLTest_imageBlitBlend.width * SDLTest_imageBlitBlend.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
@@ -1593,7 +1593,7 @@ SDL_Surface *SDLTest_ImageBlitBlendMod()
         SDLTest_imageBlitBlendMod.width,
         SDLTest_imageBlitBlendMod.height,
         SDLTest_imageBlitBlendMod.width * SDLTest_imageBlitBlendMod.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
@@ -2395,7 +2395,7 @@ SDL_Surface *SDLTest_ImageBlitBlendNone()
         SDLTest_imageBlitBlendNone.width,
         SDLTest_imageBlitBlendNone.height,
         SDLTest_imageBlitBlendNone.width * SDLTest_imageBlitBlendNone.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
@@ -2929,7 +2929,7 @@ SDL_Surface *SDLTest_ImageBlitBlendAll()
         SDLTest_imageBlitBlendAll.width,
         SDLTest_imageBlitBlendAll.height,
         SDLTest_imageBlitBlendAll.width * SDLTest_imageBlitBlendAll.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -229,7 +229,7 @@ SDL_Surface *SDLTest_ImageFace()
         SDLTest_imageFace.height,
         SDLTest_imageFace.width * SDLTest_imageFace.bytes_per_pixel,
         SDL_PIXELFORMAT_RGBA32);
-   return surface;
+    return surface;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

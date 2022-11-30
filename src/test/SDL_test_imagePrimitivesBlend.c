@@ -682,7 +682,7 @@ SDL_Surface *SDLTest_ImagePrimitivesBlend()
         SDLTest_imagePrimitivesBlend.width,
         SDLTest_imagePrimitivesBlend.height,
         SDLTest_imagePrimitivesBlend.width * SDLTest_imagePrimitivesBlend.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

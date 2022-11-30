@@ -545,7 +545,7 @@ SDL_Surface *SDLTest_ImageBlit()
         SDLTest_imageBlit.width,
         SDLTest_imageBlit.height,
         SDLTest_imageBlit.width * SDLTest_imageBlit.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 static const SDLTest_SurfaceImage_t SDLTest_imageBlitColor = {
@@ -1017,7 +1017,7 @@ SDL_Surface *SDLTest_ImageBlitColor()
         SDLTest_imageBlitColor.width,
         SDLTest_imageBlitColor.height,
         SDLTest_imageBlitColor.width * SDLTest_imageBlitColor.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 static const SDLTest_SurfaceImage_t SDLTest_imageBlitAlpha = {
@@ -1652,7 +1652,7 @@ SDL_Surface *SDLTest_ImageBlitAlpha()
         SDLTest_imageBlitAlpha.width,
         SDLTest_imageBlitAlpha.height,
         SDLTest_imageBlitAlpha.width * SDLTest_imageBlitAlpha.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
-   return surface;
+    return surface;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

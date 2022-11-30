@@ -475,13 +475,13 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
                          */
                         SDL_Surface *src_rotated_rgb;
                         int f = SDL_MasksToPixelFormatEnum(src_rotated->format->BitsPerPixel,
-                                            src_rotated->format->Rmask,
-                                            src_rotated->format->Gmask,
-                                            src_rotated->format->Bmask,
-                                            0);
+                                                           src_rotated->format->Rmask,
+                                                           src_rotated->format->Gmask,
+                                                           src_rotated->format->Bmask,
+                                                           0);
 
-                        src_rotated_rgb = SDL_CreateRGBSurfaceFrom(src_rotated->pixels, src_rotated->w, src_rotated->h, 
-                                                                             src_rotated->pitch, f);
+                        src_rotated_rgb = SDL_CreateRGBSurfaceFrom(src_rotated->pixels, src_rotated->w, src_rotated->h,
+                                                                   src_rotated->pitch, f);
                         if (src_rotated_rgb == NULL) {
                             retval = -1;
                         } else {
@@ -802,46 +802,46 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                 dstrect->y += drawstate.viewport->y;
             }
 
-                if ( srcrect->w == dstrect->w && srcrect->h == dstrect->h ) {
-                    SDL_BlitSurface(src, srcrect, surface, dstrect);
-                } else {
-                    /* If scaling is ever done, permanently disable RLE (which doesn't support scaling)
-                     * to avoid potentially frequent RLE encoding/decoding.
-                     */
-                    SDL_SetSurfaceRLE(surface, 0);
+            if (srcrect->w == dstrect->w && srcrect->h == dstrect->h) {
+                SDL_BlitSurface(src, srcrect, surface, dstrect);
+            } else {
+                /* If scaling is ever done, permanently disable RLE (which doesn't support scaling)
+                 * to avoid potentially frequent RLE encoding/decoding.
+                 */
+                SDL_SetSurfaceRLE(surface, 0);
 
-                    /* Prevent to do scaling + clipping on viewport boundaries as it may lose proportion */
-                    if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
-                        SDL_Surface *tmp = SDL_CreateRGBSurface(dstrect->w, dstrect->h, src->format->format);
-                        /* Scale to an intermediate surface, then blit */
-                        if (tmp) {
-                            SDL_Rect r;
-                            SDL_BlendMode blendmode;
-                            Uint8 alphaMod, rMod, gMod, bMod;
+                /* Prevent to do scaling + clipping on viewport boundaries as it may lose proportion */
+                if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
+                    SDL_Surface *tmp = SDL_CreateRGBSurface(dstrect->w, dstrect->h, src->format->format);
+                    /* Scale to an intermediate surface, then blit */
+                    if (tmp) {
+                        SDL_Rect r;
+                        SDL_BlendMode blendmode;
+                        Uint8 alphaMod, rMod, gMod, bMod;
 
-                            SDL_GetSurfaceBlendMode(src, &blendmode);
-                            SDL_GetSurfaceAlphaMod(src, &alphaMod);
-                            SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
+                        SDL_GetSurfaceBlendMode(src, &blendmode);
+                        SDL_GetSurfaceAlphaMod(src, &alphaMod);
+                        SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
 
-                            r.x = 0;
-                            r.y = 0;
-                            r.w = dstrect->w;
-                            r.h = dstrect->h;
+                        r.x = 0;
+                        r.y = 0;
+                        r.w = dstrect->w;
+                        r.h = dstrect->h;
 
-                            SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_NONE);
-                            SDL_SetSurfaceColorMod(src, 255, 255, 255);
-                            SDL_SetSurfaceAlphaMod(src, 255);
+                        SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_NONE);
+                        SDL_SetSurfaceColorMod(src, 255, 255, 255);
+                        SDL_SetSurfaceAlphaMod(src, 255);
 
-                            SDL_PrivateUpperBlitScaled(src, srcrect, tmp, &r, texture->scaleMode);
+                        SDL_PrivateUpperBlitScaled(src, srcrect, tmp, &r, texture->scaleMode);
 
-                            SDL_SetSurfaceColorMod(tmp, rMod, gMod, bMod);
-                            SDL_SetSurfaceAlphaMod(tmp, alphaMod);
-                            SDL_SetSurfaceBlendMode(tmp, blendmode);
+                        SDL_SetSurfaceColorMod(tmp, rMod, gMod, bMod);
+                        SDL_SetSurfaceAlphaMod(tmp, alphaMod);
+                        SDL_SetSurfaceBlendMode(tmp, blendmode);
 
-                            SDL_BlitSurface(tmp, NULL, surface, dstrect);
-                            SDL_FreeSurface(tmp);
-                            /* No need to set back r/g/b/a/blendmode to 'src' since it's done in PrepTextureForCopy() */
-                        }
+                        SDL_BlitSurface(tmp, NULL, surface, dstrect);
+                        SDL_FreeSurface(tmp);
+                        /* No need to set back r/g/b/a/blendmode to 'src' since it's done in PrepTextureForCopy() */
+                    }
                 } else {
                     SDL_PrivateUpperBlitScaled(src, srcrect, surface, dstrect, texture->scaleMode);
                 }

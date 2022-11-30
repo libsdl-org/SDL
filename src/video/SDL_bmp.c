@@ -425,11 +425,11 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
     /* Create a compatible surface, note that the colors are RGB ordered */
     {
         Uint32 format;
-        
+
         /* Get the pixel format */
         format = SDL_MasksToPixelFormatEnum(biBitCount, Rmask, Gmask, Bmask, Amask);
         surface = SDL_CreateRGBSurface(biWidth, biHeight, format);
-    
+
         if (surface == NULL) {
             was_error = SDL_TRUE;
             goto done;
