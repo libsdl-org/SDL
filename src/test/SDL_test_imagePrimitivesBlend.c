@@ -674,13 +674,7 @@ SDL_Surface *SDLTest_ImagePrimitivesBlend()
         (void*)SDLTest_imagePrimitivesBlend.pixel_data,
         SDLTest_imagePrimitivesBlend.width,
         SDLTest_imagePrimitivesBlend.height,
-        SDLTest_imagePrimitivesBlend.width * SDLTest_imagePrimitivesBlend.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-         SDL_PIXELFORMAT_BGR24
-#else
-         SDL_PIXELFORMAT_RGB24
-#endif
-         );
+        SDLTest_imagePrimitivesBlend.width * SDLTest_imagePrimitivesBlend.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
    return surface;
 }
 

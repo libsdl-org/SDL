@@ -542,13 +542,7 @@ SDL_Surface *SDLTest_ImageBlit()
         (void*)SDLTest_imageBlit.pixel_data,
         SDLTest_imageBlit.width,
         SDLTest_imageBlit.height,
-        SDLTest_imageBlit.width * SDLTest_imageBlit.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-         SDL_PIXELFORMAT_BGR24
-#else
-         SDL_PIXELFORMAT_RGB24
-#endif
-         );
+        SDLTest_imageBlit.width * SDLTest_imageBlit.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
    return surface;
 }
 
@@ -1018,13 +1012,7 @@ SDL_Surface *SDLTest_ImageBlitColor()
         (void*)SDLTest_imageBlitColor.pixel_data,
         SDLTest_imageBlitColor.width,
         SDLTest_imageBlitColor.height,
-        SDLTest_imageBlitColor.width * SDLTest_imageBlitColor.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-         SDL_PIXELFORMAT_BGR24
-#else
-         SDL_PIXELFORMAT_RGB24
-#endif
-         );
+        SDLTest_imageBlitColor.width * SDLTest_imageBlitColor.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
    return surface;
 }
 
@@ -1523,13 +1511,7 @@ SDL_Surface *SDLTest_ImageBlitAlpha()
         (void*)SDLTest_imageBlitAlpha.pixel_data,
         SDLTest_imageBlitAlpha.width,
         SDLTest_imageBlitAlpha.height,
-        SDLTest_imageBlitAlpha.width * SDLTest_imageBlitAlpha.bytes_per_pixel,
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-         SDL_PIXELFORMAT_BGR24
-#else
-         SDL_PIXELFORMAT_RGB24
-#endif
-         );
+        SDLTest_imageBlitAlpha.width * SDLTest_imageBlitAlpha.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
    return surface;
 }
 
