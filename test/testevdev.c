@@ -76,6 +76,7 @@ typedef struct
 #define FFx8 FFx4, FFx4
 
 /* Test-cases derived from real devices or from Linux kernel source */
+/* *INDENT-OFF* */ /* clang-format off */
 static const GuessTest guess_tests[] =
 {
     {
@@ -933,6 +934,7 @@ static const GuessTest guess_tests[] =
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
     }
 };
+/* *INDENT-ON* */ /* clang-format on */
 
 /* The Linux kernel provides capability info in EVIOCGBIT and in /sys
  * as an array of unsigned long in native byte order, rather than an array
