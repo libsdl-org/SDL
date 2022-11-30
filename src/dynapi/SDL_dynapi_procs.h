@@ -464,8 +464,6 @@ SDL_DYNAPI_PROC(SDL_iconv_t,SDL_iconv_open,(const char *a, const char *b),(a,b),
 SDL_DYNAPI_PROC(int,SDL_iconv_close,(SDL_iconv_t a),(a),return)
 SDL_DYNAPI_PROC(size_t,SDL_iconv,(SDL_iconv_t a, const char **b, size_t *c, char **d, size_t *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(char*,SDL_iconv_string,(const char *a, const char *b, const char *c, size_t d),(a,b,c,d),return)
-SDL_DYNAPI_PROC(SDL_Surface*,SDL_CreateRGBSurface,(int a, int b, int c, Uint32 d, Uint32 e, Uint32 f, Uint32 g),(a,b,c,d,e,f,g),return)
-SDL_DYNAPI_PROC(SDL_Surface*,SDL_CreateRGBSurfaceFrom,(void *a, int b, int c, int d, int e, Uint32 f, Uint32 g, Uint32 h, Uint32 i),(a,b,c,d,e,f,g,h,i),return)
 SDL_DYNAPI_PROC(void,SDL_FreeSurface,(SDL_Surface *a),(a),)
 SDL_DYNAPI_PROC(int,SDL_SetSurfacePalette,(SDL_Surface *a, SDL_Palette *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_LockSurface,(SDL_Surface *a),(a),return)

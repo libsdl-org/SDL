@@ -437,8 +437,6 @@
 #define SDL_iconv_close SDL_iconv_close_REAL
 #define SDL_iconv SDL_iconv_REAL
 #define SDL_iconv_string SDL_iconv_string_REAL
-#define SDL_CreateRGBSurface SDL_CreateRGBSurface_REAL
-#define SDL_CreateRGBSurfaceFrom SDL_CreateRGBSurfaceFrom_REAL
 #define SDL_FreeSurface SDL_FreeSurface_REAL
 #define SDL_SetSurfacePalette SDL_SetSurfacePalette_REAL
 #define SDL_LockSurface SDL_LockSurface_REAL

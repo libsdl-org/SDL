@@ -114,54 +114,6 @@ typedef enum
 } SDL_YUV_CONVERSION_MODE;
 
 /**
- * Allocate a new RGB surface.
- *
- * If `depth` is 4 or 8 bits, an empty palette is allocated for the surface.
- * If `depth` is greater than 8 bits, the pixel format is set using the
- * [RGBA]mask parameters.
- *
- * The [RGBA]mask parameters are the bitmasks used to extract that color from
- * a pixel. For instance, `Rmask` being 0xFF000000 means the red data is
- * stored in the most significant byte. Using zeros for the RGB masks sets a
- * default value, based on the depth. For example:
- *
- * ```c++
- * SDL_CreateRGBSurface(0,w,h,32,0,0,0,0);
- * ```
- *
- * However, using zero for the Amask results in an Amask of 0.
- *
- * By default surfaces with an alpha mask are set up for blending as with:
- *
- * ```c++
- * SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND)
- * ```
- *
- * You can change this by calling SDL_SetSurfaceBlendMode() and selecting a
- * different `blendMode`.
- *
- * \param width the width of the surface
- * \param height the height of the surface
- * \param depth the depth of the surface in bits
- * \param Rmask the red mask for the pixels
- * \param Gmask the green mask for the pixels
- * \param Bmask the blue mask for the pixels
- * \param Amask the alpha mask for the pixels
- * \returns the new SDL_Surface structure that is created or NULL if it fails;
- *          call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateRGBSurfaceFrom
- * \sa SDL_CreateRGBSurfaceWithFormat
- * \sa SDL_FreeSurface
- */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
-    (int width, int height, int depth,
-     Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
-
-
-/**
  * Allocate a new RGB surface with a specific pixel format.
  *
  * This function operates mostly like SDL_CreateRGBSurface(), except instead
@@ -182,44 +134,6 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
     (int width, int height, Uint32 format);
-
-/**
- * Allocate a new RGB surface with existing pixel data.
- *
- * This function operates mostly like SDL_CreateRGBSurface(), except it does
- * not allocate memory for the pixel data, instead the caller provides an
- * existing buffer of data for the surface to use.
- *
- * No copy is made of the pixel data. Pixel data is not managed automatically;
- * you must free the surface before you free the pixel data.
- *
- * \param pixels a pointer to existing pixel data
- * \param width the width of the surface
- * \param height the height of the surface
- * \param depth the depth of the surface in bits
- * \param pitch the pitch of the surface in bytes
- * \param Rmask the red mask for the pixels
- * \param Gmask the green mask for the pixels
- * \param Bmask the blue mask for the pixels
- * \param Amask the alpha mask for the pixels
- * \returns the new SDL_Surface structure that is created or NULL if it fails;
- *          call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateRGBSurface
- * \sa SDL_CreateRGBSurfaceWithFormat
- * \sa SDL_FreeSurface
- */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
-                                                              int width,
-                                                              int height,
-                                                              int depth,
-                                                              int pitch,
-                                                              Uint32 Rmask,
-                                                              Uint32 Gmask,
-                                                              Uint32 Bmask,
-                                                              Uint32 Amask);
 
 /**
  * Allocate a new RGB surface with with a specific pixel format and existing
