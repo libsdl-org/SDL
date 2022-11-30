@@ -3918,7 +3918,6 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
             *value = _this->gl_config.egl_platform;
             return 0;
         }
-        break;
     default:
         return SDL_SetError("Unknown OpenGL attribute");
     }
