@@ -75,6 +75,7 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
         return NULL;
     }
 
+    /* *INDENT-OFF* */ /* clang-format off */
     cursor_url = (const char *)MAIN_THREAD_EM_ASM_INT({
         var w = $0;
         var h = $1;
@@ -105,6 +106,7 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
 
         return urlBuf;
     }, surface->w, surface->h, hot_x, hot_y, conv_surf->pixels);
+    /* *INDENT-ON* */ /* clang-format on */
 
     SDL_FreeSurface(conv_surf);
 
@@ -188,18 +190,22 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
             curdata = (Emscripten_CursorData *) cursor->driverdata;
 
             if (curdata->system_cursor) {
+                /* *INDENT-OFF* */ /* clang-format off */
                 MAIN_THREAD_EM_ASM({
                     if (Module['canvas']) {
                         Module['canvas'].style['cursor'] = UTF8ToString($0);
                     }
                 }, curdata->system_cursor);
+                /* *INDENT-ON* */ /* clang-format on */
             }
         } else {
+            /* *INDENT-OFF* */ /* clang-format off */
             MAIN_THREAD_EM_ASM(
                 if (Module['canvas']) {
                     Module['canvas'].style['cursor'] = 'none';
                 }
             );
+            /* *INDENT-ON* */ /* clang-format on */
         }
     }
     return 0;

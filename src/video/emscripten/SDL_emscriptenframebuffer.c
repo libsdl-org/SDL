@@ -70,6 +70,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
 
     /* Send the data to the display */
 
+    /* *INDENT-OFF* */ /* clang-format off */
     MAIN_THREAD_EM_ASM({
         var w = $0;
         var h = $1;
@@ -143,6 +144,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
 
         SDL3.ctx.putImageData(SDL3.image, 0, 0);
     }, surface->w, surface->h, surface->pixels, data->canvas_id);
+    /* *INDENT-ON* */ /* clang-format on */
 
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */

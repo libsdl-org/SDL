@@ -249,6 +249,7 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
         /* This is nasty, but we can't block on a custom UI. */
         for ( ; ; ) {
             SDL_bool okay = SDL_TRUE;
+            /* *INDENT-OFF* */ /* clang-format off */
             char *buf = (char *) EM_ASM_INT({
                 var str =
                     UTF8ToString($0) + '\n\n' +
@@ -259,12 +260,14 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
                 }
                 return allocate(intArrayFromString(reply), 'i8', ALLOC_NORMAL);
             }, message);
+            /* *INDENT-ON* */ /* clang-format on */
 
             if (SDL_strcmp(buf, "a") == 0) {
                 state = SDL_ASSERTION_ABORT;
-            /* (currently) no break functionality on Emscripten
+#if 0 /* (currently) no break functionality on Emscripten */
             } else if (SDL_strcmp(buf, "b") == 0) {
-                state = SDL_ASSERTION_BREAK; */
+                state = SDL_ASSERTION_BREAK;
+#endif
             } else if (SDL_strcmp(buf, "r") == 0) {
                 state = SDL_ASSERTION_RETRY;
             } else if (SDL_strcmp(buf, "i") == 0) {
