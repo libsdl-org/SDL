@@ -27,6 +27,8 @@
 
 #if SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
 
+/* *INDENT-OFF* */ /* clang-format off */
+
 #include <Windows.h>
 #include <windows.ui.core.h>
 #include <windows.devices.enumeration.h>
@@ -438,6 +440,8 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENS
     spec.format = WaveFormatToSDLFormat((WAVEFORMATEX *)fmt);
     SDL_AddAudioDevice(iscapture, devname, &spec, (void *)devid);
 }
+
+/* *INDENT-ON* */ /* clang-format on */
 
 #endif  // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
 
