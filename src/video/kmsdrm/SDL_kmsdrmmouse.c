@@ -171,7 +171,7 @@ static int KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
     /* Copy from the cursor buffer to a buffer that we can dump to the GBM BO. */
     for (i = 0; i < curdata->h; i++) {
         src_row = &((uint8_t *)curdata->buffer)[i * curdata->w * 4];
-        SDL_memcpy(ready_buffer + (i * bo_stride), src_row, 4 * curdata->w);
+        SDL_memcpy(ready_buffer + (i * bo_stride), src_row, (size_t)4 * curdata->w);
     }
 
     /* Dump the cursor buffer to our GBM BO. */
@@ -261,7 +261,7 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
     /* Configure the cursor buffer info.
        This buffer has the original size of the cursor surface we are given. */
     curdata->buffer_pitch = surface->w;
-    curdata->buffer_size = surface->w * surface->h * 4;
+    curdata->buffer_size = (size_t)surface->w * surface->h * 4;
     curdata->buffer = (uint32_t *)SDL_malloc(curdata->buffer_size);
 
     if (!curdata->buffer) {
