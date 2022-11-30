@@ -37,19 +37,20 @@
 
 /* The __atomic_load_n() intrinsic showed up in different times for different compilers. */
 #if defined(__clang__)
-#  if __has_builtin(__atomic_load_n) || defined(HAVE_GCC_ATOMICS)
-     /* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
-        It might be in a later NDK or we might need an extra library? --ryan. */
-#    if !defined(__ANDROID__)
-#      define HAVE_ATOMIC_LOAD_N 1
-#    endif
-#  endif
+#if __has_builtin(__atomic_load_n) || defined(HAVE_GCC_ATOMICS)
+/* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
+   It might be in a later NDK or we might need an extra library? --ryan. */
+#if !defined(__ANDROID__)
+#define HAVE_ATOMIC_LOAD_N 1
+#endif
+#endif
 #elif defined(__GNUC__)
-#   if (__GNUC__ >= 5)
-#     define HAVE_ATOMIC_LOAD_N 1
-#   endif
+#if (__GNUC__ >= 5)
+#define HAVE_ATOMIC_LOAD_N 1
+#endif
 #endif
 
+/* *INDENT-OFF* */ /* clang-format off */
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(intsize, 4==sizeof(int));
 #define HAVE_WATCOM_ATOMICS
@@ -74,7 +75,9 @@ extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
   parm [ecx] [eax] \
   value [eax] \
   modify exact [eax];
+
 #endif /* __WATCOMC__ && __386__ */
+/* *INDENT-ON* */ /* clang-format on */
 
 /*
   If any of the operations are not provided then we must emulate some
@@ -106,23 +109,20 @@ extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
 #if EMULATE_CAS
 static SDL_SpinLock locks[32];
 
-static SDL_INLINE void
-enterLock(void *a)
+static SDL_INLINE void enterLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);
 
     SDL_AtomicLock(&locks[index]);
 }
 
-static SDL_INLINE void
-leaveLock(void *a)
+static SDL_INLINE void leaveLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);
 
     SDL_AtomicUnlock(&locks[index]);
 }
 #endif
-
 
 SDL_bool
 SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
@@ -150,7 +150,7 @@ SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
 
     return retval;
 #else
-    #error Please define your platform.
+#error Please define your platform.
 #endif
 }
 
@@ -181,12 +181,11 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
 
     return retval;
 #else
-    #error Please define your platform.
+#error Please define your platform.
 #endif
 }
 
-int
-SDL_AtomicSet(SDL_atomic_t *a, int v)
+int SDL_AtomicSet(SDL_atomic_t *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
@@ -206,7 +205,7 @@ SDL_AtomicSet(SDL_atomic_t *a, int v)
 #endif
 }
 
-void*
+void *
 SDL_AtomicSetPtr(void **a, void *v)
 {
 #if defined(HAVE_MSC_ATOMICS)
@@ -226,8 +225,7 @@ SDL_AtomicSetPtr(void **a, void *v)
 #endif
 }
 
-int
-SDL_AtomicAdd(SDL_atomic_t *a, int v)
+int SDL_AtomicAdd(SDL_atomic_t *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
@@ -239,7 +237,7 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 #elif defined(__SOLARIS__)
     int pv = a->value;
     membar_consumer();
-    atomic_add_int((volatile uint_t*)&a->value, v);
+    atomic_add_int((volatile uint_t *)&a->value, v);
     return pv;
 #else
     int value;
@@ -250,8 +248,7 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 #endif
 }
 
-int
-SDL_AtomicGet(SDL_atomic_t *a)
+int SDL_AtomicGet(SDL_atomic_t *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
@@ -299,14 +296,12 @@ SDL_AtomicGetPtr(void **a)
 #error This file should be built in arm mode so the mcr instruction is available for memory barriers
 #endif
 
-void
-SDL_MemoryBarrierReleaseFunction(void)
+void SDL_MemoryBarrierReleaseFunction(void)
 {
     SDL_MemoryBarrierRelease();
 }
 
-void
-SDL_MemoryBarrierAcquireFunction(void)
+void SDL_MemoryBarrierAcquireFunction(void)
 {
     SDL_MemoryBarrierAcquire();
 }

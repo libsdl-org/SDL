@@ -23,7 +23,8 @@
 #ifndef SDL_riscosdefs_h_
 #define SDL_riscosdefs_h_
 
-typedef struct sprite_area {
+typedef struct sprite_area
+{
     int size;  /*  +0 */
     int count; /*  +4 */
     int start; /*  +8 */
@@ -32,7 +33,8 @@ typedef struct sprite_area {
 
 SDL_COMPILE_TIME_ASSERT(sprite_area, sizeof(sprite_area) == 16);
 
-typedef struct sprite_header {
+typedef struct sprite_header
+{
     int next;         /*  +0 */
     char name[12];    /*  +4 */
     int width;        /* +16 */

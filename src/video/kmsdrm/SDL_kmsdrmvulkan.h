@@ -37,14 +37,14 @@
 int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path);
 void KMSDRM_Vulkan_UnloadLibrary(_THIS);
 SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names);
+                                             SDL_Window *window,
+                                             unsigned *count,
+                                             const char **names);
 void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface);
+                                     SDL_Window *window,
+                                     VkInstance instance,
+                                     VkSurfaceKHR *surface);
 
 #endif
 

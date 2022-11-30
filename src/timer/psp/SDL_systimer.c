@@ -34,8 +34,7 @@
 static struct timeval start;
 static SDL_bool ticks_started = SDL_FALSE;
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -45,8 +44,7 @@ SDL_TicksInit(void)
     gettimeofday(&start, NULL);
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }

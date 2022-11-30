@@ -18,8 +18,7 @@ static const char *GetSensorTypeString(SDL_SensorType type)
 {
     static char unknown_type[64];
 
-    switch (type)
-    {
+    switch (type) {
     case SDL_SENSOR_INVALID:
         return "SDL_SENSOR_INVALID";
     case SDL_SENSOR_UNKNOWN:
@@ -55,8 +54,7 @@ static void HandleSensorEvent(SDL_SensorEvent *event)
     }
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int i;
     int num_sensors, num_opened;

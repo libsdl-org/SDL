@@ -40,17 +40,17 @@ extern void UIKit_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int 
 extern SDL_bool UIKit_GetWindowWMInfo(_THIS, SDL_Window * window,
                                       struct SDL_SysWMinfo * info);
 
-extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window * window);
+extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 
 @class UIWindow;
 
 @interface SDL_WindowData : NSObject
 
-@property (nonatomic, strong) UIWindow *uiwindow;
-@property (nonatomic, strong) SDL_uikitviewcontroller *viewcontroller;
+@property(nonatomic, strong) UIWindow *uiwindow;
+@property(nonatomic, strong) SDL_uikitviewcontroller *viewcontroller;
 
 /* Array of SDL_uikitviews owned by this window. */
-@property (nonatomic, copy) NSMutableArray *views;
+@property(nonatomic, copy) NSMutableArray *views;
 
 @end
 

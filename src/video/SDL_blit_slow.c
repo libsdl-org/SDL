@@ -24,12 +24,13 @@
 #include "SDL_blit.h"
 #include "SDL_blit_slow.h"
 
-#define FORMAT_ALPHA      0
-#define FORMAT_NO_ALPHA  -1
-#define FORMAT_2101010    1
-#define FORMAT_HAS_ALPHA(format)        format == 0
-#define FORMAT_HAS_NO_ALPHA(format)     format < 0
-static int SDL_INLINE detect_format(SDL_PixelFormat *pf) {
+#define FORMAT_ALPHA                0
+#define FORMAT_NO_ALPHA             -1
+#define FORMAT_2101010              1
+#define FORMAT_HAS_ALPHA(format)    format == 0
+#define FORMAT_HAS_NO_ALPHA(format) format < 0
+static int SDL_INLINE detect_format(SDL_PixelFormat *pf)
+{
     if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
         return FORMAT_2101010;
     } else if (pf->Amask) {
@@ -42,8 +43,7 @@ static int SDL_INLINE detect_format(SDL_PixelFormat *pf) {
 /* The ONE TRUE BLITTER
  * This puppy has to handle all the unoptimized cases - yes, it's slow.
  */
-void
-SDL_Blit_Slow(SDL_BlitInfo * info)
+void SDL_Blit_Slow(SDL_BlitInfo *info)
 {
     const int flags = info->flags;
     const Uint32 modulateR = info->r;
@@ -98,7 +98,7 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 /* srcpixel isn't set for 24 bpp */
                 if (srcbpp == 3) {
                     srcpixel = (srcR << src_fmt->Rshift) |
-                        (srcG << src_fmt->Gshift) | (srcB << src_fmt->Bshift);
+                               (srcG << src_fmt->Gshift) | (srcB << src_fmt->Bshift);
                 }
                 if ((srcpixel & rgbmask) == ckey) {
                     posx += incx;

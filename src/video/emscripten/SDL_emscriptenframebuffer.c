@@ -28,8 +28,7 @@
 
 #include <emscripten/threading.h>
 
-
-int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_BGR888;
@@ -38,7 +37,7 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * form
     Uint32 Rmask, Gmask, Bmask, Amask;
 
     /* Free the old framebuffer surface */
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     surface = data->surface;
     SDL_FreeSurface(surface);
 
@@ -59,11 +58,11 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * form
     return 0;
 }
 
-int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_Surface *surface;
 
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     surface = data->surface;
     if (surface == NULL) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
@@ -71,6 +70,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
 
     /* Send the data to the display */
 
+    /* *INDENT-OFF* */ /* clang-format off */
     MAIN_THREAD_EM_ASM({
         var w = $0;
         var h = $1;
@@ -166,9 +166,9 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
     return 0;
 }
 
-void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
+void Emscripten_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
     SDL_FreeSurface(data->surface);
     data->surface = NULL;

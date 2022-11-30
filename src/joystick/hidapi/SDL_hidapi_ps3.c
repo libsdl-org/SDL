@@ -32,13 +32,12 @@
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 
-
 #ifdef SDL_JOYSTICK_HIDAPI_PS3
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_PS3_PROTOCOL*/
 
-#define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
 typedef enum
 {
@@ -46,7 +45,8 @@ typedef enum
     k_EPS3ReportIdEffects = 1,
 } EPS3ReportId;
 
-typedef struct {
+typedef struct
+{
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     SDL_bool is_shanwan;
@@ -58,23 +58,19 @@ typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverPS3_Context;
 
-
 static int HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size);
 
-static void
-HIDAPI_DriverPS3_RegisterHints(SDL_HintCallback callback, void *userdata)
+static void HIDAPI_DriverPS3_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS3, callback, userdata);
 }
 
-static void
-HIDAPI_DriverPS3_UnregisterHints(SDL_HintCallback callback, void *userdata)
+static void HIDAPI_DriverPS3_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS3, callback, userdata);
 }
 
-static SDL_bool
-HIDAPI_DriverPS3_IsEnabled(void)
+static SDL_bool HIDAPI_DriverPS3_IsEnabled(void)
 {
     SDL_bool default_value;
 
@@ -105,8 +101,7 @@ HIDAPI_DriverPS3_IsEnabled(void)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, default_value);
 }
 
-static SDL_bool
-HIDAPI_DriverPS3_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static SDL_bool HIDAPI_DriverPS3_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_SONY && product_id == USB_PRODUCT_SONY_DS3) {
         return SDL_TRUE;
@@ -129,8 +124,7 @@ static int SendFeatureReport(SDL_hid_device *dev, Uint8 *report, size_t length)
     return SDL_hid_send_feature_report(dev, report, length);
 }
 
-static SDL_bool
-HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
+static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx;
     SDL_bool is_shanwan = SDL_FALSE;
@@ -194,14 +188,12 @@ HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int
-HIDAPI_DriverPS3_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+static int HIDAPI_DriverPS3_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
 {
     return -1;
 }
 
-static int
-HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
+static int HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
@@ -218,13 +210,12 @@ HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
     effects[2] = ctx->rumble_right ? 1 : 0;
     effects[4] = ctx->rumble_left;
 
-    effects[9] = (0x01 << (1+(ctx->player_index % 4)));
+    effects[9] = (0x01 << (1 + (ctx->player_index % 4)));
 
     return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
 }
 
-static void
-HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+static void HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
@@ -238,8 +229,7 @@ HIDAPI_DriverPS3_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID 
     HIDAPI_DriverPS3_UpdateEffects(device);
 }
 
-static SDL_bool
-HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static SDL_bool HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
@@ -262,8 +252,7 @@ HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
     return SDL_TRUE;
 }
 
-static int
-HIDAPI_DriverPS3_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int HIDAPI_DriverPS3_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
@@ -273,26 +262,22 @@ HIDAPI_DriverPS3_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     return HIDAPI_DriverPS3_UpdateEffects(device);
 }
 
-static int
-HIDAPI_DriverPS3_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int HIDAPI_DriverPS3_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32
-HIDAPI_DriverPS3_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32 HIDAPI_DriverPS3_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYCAP_RUMBLE;
 }
 
-static int
-HIDAPI_DriverPS3_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int HIDAPI_DriverPS3_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
+static int HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
 {
     Uint8 data[49];
     int report_size, offset;
@@ -310,8 +295,7 @@ HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     return 0;
 }
 
-static int
-HIDAPI_DriverPS3_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static int HIDAPI_DriverPS3_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
@@ -320,16 +304,14 @@ HIDAPI_DriverPS3_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joysti
     return 0;
 }
 
-static float
-HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
+static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 {
     /* Accelerometer values are in big endian order */
     value = SDL_SwapBE16(value);
     return (float)(value - 511) / 113.0f;
 }
 
-static void
-HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
 
@@ -405,8 +387,7 @@ HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Con
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static void
-HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
 
@@ -493,8 +474,7 @@ HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool
-HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
+static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
     SDL_Joystick *joystick = NULL;
@@ -556,21 +536,18 @@ HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
     return size >= 0;
 }
 
-static void
-HIDAPI_DriverPS3_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static void HIDAPI_DriverPS3_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
     ctx->joystick = NULL;
 }
 
-static void
-HIDAPI_DriverPS3_FreeDevice(SDL_HIDAPI_Device *device)
+static void HIDAPI_DriverPS3_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 = {
     SDL_HINT_JOYSTICK_HIDAPI_PS3,
     SDL_TRUE,
     HIDAPI_DriverPS3_RegisterHints,
@@ -592,21 +569,18 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 =
     HIDAPI_DriverPS3_FreeDevice,
 };
 
-
-static SDL_bool
-HIDAPI_DriverPS3ThirdParty_IsEnabled(void)
+static SDL_bool HIDAPI_DriverPS3ThirdParty_IsEnabled(void)
 {
 #if 1 /* Not enabled by default, we don't know what the L3/R3 buttons are */
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
 #else
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
-               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
-                   SDL_HIDAPI_DEFAULT));
+                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                                                 SDL_HIDAPI_DEFAULT));
 #endif
 }
 
-static SDL_bool
-HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     Uint8 data[USB_PACKET_LENGTH];
     int size;
@@ -628,8 +602,7 @@ HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *device, const ch
     return SDL_FALSE;
 }
 
-static SDL_bool
-HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
+static SDL_bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx;
 
@@ -647,19 +620,16 @@ HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int
-HIDAPI_DriverPS3ThirdParty_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+static int HIDAPI_DriverPS3ThirdParty_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
 {
     return -1;
 }
 
-static void
-HIDAPI_DriverPS3ThirdParty_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+static void HIDAPI_DriverPS3ThirdParty_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
 }
 
-static SDL_bool
-HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static SDL_bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
@@ -674,44 +644,37 @@ HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick 
     return SDL_TRUE;
 }
 
-static int
-HIDAPI_DriverPS3ThirdParty_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int HIDAPI_DriverPS3ThirdParty_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int
-HIDAPI_DriverPS3ThirdParty_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int HIDAPI_DriverPS3ThirdParty_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32
-HIDAPI_DriverPS3ThirdParty_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32 HIDAPI_DriverPS3ThirdParty_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return 0;
 }
 
-static int
-HIDAPI_DriverPS3ThirdParty_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int HIDAPI_DriverPS3ThirdParty_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-HIDAPI_DriverPS3ThirdParty_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
+static int HIDAPI_DriverPS3ThirdParty_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static int HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static void
-HIDAPI_DriverPS3ThirdParty_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
 
@@ -824,8 +787,7 @@ HIDAPI_DriverPS3ThirdParty_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverP
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool
-HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *device)
+static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
     SDL_Joystick *joystick = NULL;
@@ -862,21 +824,18 @@ HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *device)
     return size >= 0;
 }
 
-static void
-HIDAPI_DriverPS3ThirdParty_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static void HIDAPI_DriverPS3ThirdParty_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
     ctx->joystick = NULL;
 }
 
-static void
-HIDAPI_DriverPS3ThirdParty_FreeDevice(SDL_HIDAPI_Device *device)
+static void HIDAPI_DriverPS3ThirdParty_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3ThirdParty =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3ThirdParty = {
     SDL_HINT_JOYSTICK_HIDAPI_PS3,
     SDL_TRUE,
     HIDAPI_DriverPS3_RegisterHints,

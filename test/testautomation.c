@@ -29,8 +29,7 @@ quit(int rc)
     exit(rc);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int result;
     int testIterations = 1;
@@ -63,7 +62,7 @@ main(int argc, char *argv[])
                 }
             } else if (SDL_strcasecmp(argv[i], "--execKey") == 0) {
                 if (argv[i + 1]) {
-                    SDL_sscanf(argv[i + 1], "%"SDL_PRIu64, &userExecKey);
+                    SDL_sscanf(argv[i + 1], "%" SDL_PRIu64, &userExecKey);
                     consumed = 2;
                 }
             } else if (SDL_strcasecmp(argv[i], "--seed") == 0) {
@@ -104,11 +103,11 @@ main(int argc, char *argv[])
 
     /* Empty event queue */
     done = 0;
-    for (i=0; i<100; i++) {
-      while (SDL_PollEvent(&event)) {
-        SDLTest_CommonEvent(state, &event, &done);
-      }
-      SDL_Delay(10);
+    for (i = 0; i < 100; i++) {
+        while (SDL_PollEvent(&event)) {
+            SDLTest_CommonEvent(state, &event, &done);
+        }
+        SDL_Delay(10);
     }
 
     /* Clean up */

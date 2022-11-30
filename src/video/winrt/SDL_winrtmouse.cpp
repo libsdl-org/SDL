@@ -44,45 +44,65 @@ extern "C" {
 #include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtmouse_c.h"
 
-
 extern "C" SDL_bool WINRT_UsingRelativeMouseMode = SDL_FALSE;
 
-
-static SDL_Cursor *
-WINRT_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor;
     CoreCursorType cursorType = CoreCursorType::Arrow;
 
-    switch(id)
-    {
+    switch (id) {
     default:
         SDL_assert(0);
         return NULL;
-    case SDL_SYSTEM_CURSOR_ARROW:     cursorType = CoreCursorType::Arrow; break;
-    case SDL_SYSTEM_CURSOR_IBEAM:     cursorType = CoreCursorType::IBeam; break;
-    case SDL_SYSTEM_CURSOR_WAIT:      cursorType = CoreCursorType::Wait; break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR: cursorType = CoreCursorType::Cross; break;
-    case SDL_SYSTEM_CURSOR_WAITARROW: cursorType = CoreCursorType::Wait; break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:  cursorType = CoreCursorType::SizeNorthwestSoutheast; break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:  cursorType = CoreCursorType::SizeNortheastSouthwest; break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:    cursorType = CoreCursorType::SizeWestEast; break;
-    case SDL_SYSTEM_CURSOR_SIZENS:    cursorType = CoreCursorType::SizeNorthSouth; break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:   cursorType = CoreCursorType::SizeAll; break;
-    case SDL_SYSTEM_CURSOR_NO:        cursorType = CoreCursorType::UniversalNo; break;
-    case SDL_SYSTEM_CURSOR_HAND:      cursorType = CoreCursorType::Hand; break;
+    case SDL_SYSTEM_CURSOR_ARROW:
+        cursorType = CoreCursorType::Arrow;
+        break;
+    case SDL_SYSTEM_CURSOR_IBEAM:
+        cursorType = CoreCursorType::IBeam;
+        break;
+    case SDL_SYSTEM_CURSOR_WAIT:
+        cursorType = CoreCursorType::Wait;
+        break;
+    case SDL_SYSTEM_CURSOR_CROSSHAIR:
+        cursorType = CoreCursorType::Cross;
+        break;
+    case SDL_SYSTEM_CURSOR_WAITARROW:
+        cursorType = CoreCursorType::Wait;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENWSE:
+        cursorType = CoreCursorType::SizeNorthwestSoutheast;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENESW:
+        cursorType = CoreCursorType::SizeNortheastSouthwest;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEWE:
+        cursorType = CoreCursorType::SizeWestEast;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENS:
+        cursorType = CoreCursorType::SizeNorthSouth;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEALL:
+        cursorType = CoreCursorType::SizeAll;
+        break;
+    case SDL_SYSTEM_CURSOR_NO:
+        cursorType = CoreCursorType::UniversalNo;
+        break;
+    case SDL_SYSTEM_CURSOR_HAND:
+        cursorType = CoreCursorType::Hand;
+        break;
     }
 
-    cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
+    cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         /* Create a pointer to a COM reference to a cursor.  The extra
            pointer is used (on top of the COM reference) to allow the cursor
            to be referenced by the SDL_cursor's driverdata field, which is
            a void pointer.
         */
-        CoreCursor ^* theCursor = new CoreCursor^(nullptr);
+        CoreCursor ^ *theCursor = new CoreCursor ^ (nullptr);
         *theCursor = ref new CoreCursor(cursorType, 0);
-        cursor->driverdata = (void *) theCursor;
+        cursor->driverdata = (void *)theCursor;
     } else {
         SDL_OutOfMemory();
     }
@@ -90,34 +110,31 @@ WINRT_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
-static SDL_Cursor *
-WINRT_CreateDefaultCursor()
+static SDL_Cursor *WINRT_CreateDefaultCursor()
 {
     return WINRT_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 }
 
-static void
-WINRT_FreeCursor(SDL_Cursor * cursor)
+static void WINRT_FreeCursor(SDL_Cursor *cursor)
 {
     if (cursor->driverdata) {
-        CoreCursor ^* theCursor = (CoreCursor ^*) cursor->driverdata;
-        *theCursor = nullptr;       // Release the COM reference to the CoreCursor
-        delete theCursor;           // Delete the pointer to the COM reference
+        CoreCursor ^ *theCursor = (CoreCursor ^ *)cursor->driverdata;
+        *theCursor = nullptr; // Release the COM reference to the CoreCursor
+        delete theCursor;     // Delete the pointer to the COM reference
     }
     SDL_free(cursor);
 }
 
-static int
-WINRT_ShowCursor(SDL_Cursor * cursor)
+static int WINRT_ShowCursor(SDL_Cursor *cursor)
 {
     // TODO, WinRT, XAML: make WINRT_ShowCursor work when XAML support is enabled.
-    if ( ! CoreWindow::GetForCurrentThread()) {
+    if (!CoreWindow::GetForCurrentThread()) {
         return 0;
     }
 
     CoreWindow ^ coreWindow = CoreWindow::GetForCurrentThread();
     if (cursor) {
-        CoreCursor ^* theCursor = (CoreCursor ^*) cursor->driverdata;
+        CoreCursor ^ *theCursor = (CoreCursor ^ *)cursor->driverdata;
         coreWindow->PointerCursor = *theCursor;
     } else {
         // HACK ALERT: TL;DR - Hiding the cursor in WinRT/UWP apps is weird, and
@@ -164,13 +181,13 @@ WINRT_ShowCursor(SDL_Cursor * cursor)
         //     - src/main/winrt/SDL2-WinRTResources.rc             -- declares the cursor resource, and its ID (of 5000)
         //
 
-        const unsigned int win32CursorResourceID = 5000;  
+        const unsigned int win32CursorResourceID = 5000;
         CoreCursor ^ blankCursor = ref new CoreCursor(CoreCursorType::Custom, win32CursorResourceID);
 
         // Set 'PointerCursor' to 'blankCursor' in a way that shouldn't throw
         // an exception if the app hasn't loaded that resource.
-        ABI::Windows::UI::Core::ICoreCursor * iblankCursor = reinterpret_cast<ABI::Windows::UI::Core::ICoreCursor *>(blankCursor);
-        ABI::Windows::UI::Core::ICoreWindow * icoreWindow = reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow *>(coreWindow);
+        ABI::Windows::UI::Core::ICoreCursor *iblankCursor = reinterpret_cast<ABI::Windows::UI::Core::ICoreCursor *>(blankCursor);
+        ABI::Windows::UI::Core::ICoreWindow *icoreWindow = reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow *>(coreWindow);
         HRESULT hr = icoreWindow->put_PointerCursor(iblankCursor);
         if (FAILED(hr)) {
             // The app doesn't contain the cursor resource, or some other error
@@ -182,15 +199,13 @@ WINRT_ShowCursor(SDL_Cursor * cursor)
     return 0;
 }
 
-static int
-WINRT_SetRelativeMouseMode(SDL_bool enabled)
+static int WINRT_SetRelativeMouseMode(SDL_bool enabled)
 {
     WINRT_UsingRelativeMouseMode = enabled;
     return 0;
 }
 
-void
-WINRT_InitMouse(_THIS)
+void WINRT_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -201,19 +216,18 @@ WINRT_InitMouse(_THIS)
     */
 
 #if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
-    //mouse->CreateCursor = WINRT_CreateCursor;
+    // mouse->CreateCursor = WINRT_CreateCursor;
     mouse->CreateSystemCursor = WINRT_CreateSystemCursor;
     mouse->ShowCursor = WINRT_ShowCursor;
     mouse->FreeCursor = WINRT_FreeCursor;
-    //mouse->WarpMouse = WINRT_WarpMouse;
+    // mouse->WarpMouse = WINRT_WarpMouse;
     mouse->SetRelativeMouseMode = WINRT_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(WINRT_CreateDefaultCursor());
 #endif
 }
 
-void
-WINRT_QuitMouse(_THIS)
+void WINRT_QuitMouse(_THIS)
 {
 }
 

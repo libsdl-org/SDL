@@ -22,12 +22,13 @@
 #include "SDL_test_common.h"
 #include "testutils.h"
 
-#define WINDOW_WIDTH    640
-#define WINDOW_HEIGHT   480
+#define WINDOW_WIDTH  640
+#define WINDOW_HEIGHT 480
 
 static SDLTest_CommonState *state;
 
-typedef struct {
+typedef struct
+{
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *background;
@@ -47,8 +48,7 @@ quit(int rc)
     exit(rc);
 }
 
-void
-Draw(DrawState *s)
+void Draw(DrawState *s)
 {
     SDL_Rect viewport;
 
@@ -78,8 +78,7 @@ Draw(DrawState *s)
     SDL_RenderPresent(s->renderer);
 }
 
-void
-loop()
+void loop()
 {
     int i;
     SDL_Event event;
@@ -101,8 +100,7 @@ loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     int frames;
@@ -155,7 +153,7 @@ main(int argc, char *argv[])
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        double fps = ((double) frames * 1000) / (now - then);
+        double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
     }
 

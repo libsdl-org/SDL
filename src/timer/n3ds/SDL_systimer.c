@@ -29,8 +29,7 @@ static u64 start_tick;
 
 #define NSEC_PER_MSEC 1000000ULL
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -40,8 +39,7 @@ SDL_TicksInit(void)
     start_tick = svcGetSystemTick();
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }
@@ -70,8 +68,7 @@ SDL_GetPerformanceFrequency(void)
     return SYSCLOCK_ARM11;
 }
 
-void
-SDL_Delay(Uint32 ms)
+void SDL_Delay(Uint32 ms)
 {
     svcSleepThread(ms * NSEC_PER_MSEC);
 }

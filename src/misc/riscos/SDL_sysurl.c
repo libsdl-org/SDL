@@ -28,8 +28,7 @@
 #define URI_Dispatch 0x4e381
 #endif
 
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *error;
@@ -46,4 +45,3 @@ SDL_SYS_OpenURL(const char *url)
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-

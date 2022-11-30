@@ -28,7 +28,7 @@
 #include "SDL_main.h"
 
 #ifdef main
-#  undef main
+#undef main
 #endif /* main */
 
 /* This is where execution begins */

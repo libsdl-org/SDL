@@ -44,28 +44,26 @@ static size_t SDL_envmemlen = 0;
 /* Put a variable into the environment */
 /* Note: Name may not contain a '=' character. (Reference: http://www.unix.com/man-page/Linux/3/setenv/) */
 #if defined(HAVE_SETENV)
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
     if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
         return -1;
     }
-    
+
     return setenv(name, value, overwrite);
 }
 #elif defined(__WIN32__) || defined(__WINGDK__)
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
     if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
         return -1;
     }
-    
+
     if (!overwrite) {
         if (GetEnvironmentVariableA(name, NULL, 0) > 0) {
-            return 0;  /* asked not to overwrite existing value. */
+            return 0; /* asked not to overwrite existing value. */
         }
     }
     if (!SetEnvironmentVariableA(name, *value ? value : NULL)) {
@@ -75,8 +73,7 @@ SDL_setenv(const char *name, const char *value, int overwrite)
 }
 /* We have a real environment table, but no real setenv? Fake it w/ putenv. */
 #elif (defined(HAVE_GETENV) && defined(HAVE_PUTENV) && !defined(HAVE_SETENV))
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     size_t len;
     char *new_variable;
@@ -85,18 +82,18 @@ SDL_setenv(const char *name, const char *value, int overwrite)
     if (name == NULL || *name == '\0' || SDL_strchr(name, '=') != NULL || value == NULL) {
         return -1;
     }
-    
+
     if (getenv(name) != NULL) {
         if (overwrite) {
             unsetenv(name);
         } else {
-            return 0;  /* leave the existing one there. */
+            return 0; /* leave the existing one there. */
         }
     }
 
     /* This leaks. Sorry. Get a better OS so we don't have to do this. */
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
-    new_variable = (char *) SDL_malloc(len);
+    new_variable = (char *)SDL_malloc(len);
     if (new_variable == NULL) {
         return -1;
     }
@@ -105,9 +102,8 @@ SDL_setenv(const char *name, const char *value, int overwrite)
     return putenv(new_variable);
 }
 #else /* roll our own */
-static char **SDL_env = (char **) 0;
-int
-SDL_setenv(const char *name, const char *value, int overwrite)
+static char **SDL_env = (char **)0;
+int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     int added;
     size_t len, i;
@@ -126,7 +122,7 @@ SDL_setenv(const char *name, const char *value, int overwrite)
 
     /* Allocate memory for the variable */
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
-    new_variable = (char *) SDL_malloc(len);
+    new_variable = (char *)SDL_malloc(len);
     if (new_variable == NULL) {
         return -1;
     }
@@ -160,7 +156,7 @@ SDL_setenv(const char *name, const char *value, int overwrite)
         if (new_env) {
             SDL_env = new_env;
             SDL_env[i++] = new_variable;
-            SDL_env[i++] = (char *) 0;
+            SDL_env[i++] = (char *)0;
             added = 1;
         } else {
             SDL_free(new_variable);
@@ -197,20 +193,20 @@ SDL_getenv(const char *name)
     if (name == NULL || *name == '\0') {
         return NULL;
     }
-    
+
     bufferlen =
-        GetEnvironmentVariableA(name, SDL_envmem, (DWORD) SDL_envmemlen);
+        GetEnvironmentVariableA(name, SDL_envmem, (DWORD)SDL_envmemlen);
     if (bufferlen == 0) {
         return NULL;
     }
     if (bufferlen > SDL_envmemlen) {
-        char *newmem = (char *) SDL_realloc(SDL_envmem, bufferlen);
+        char *newmem = (char *)SDL_realloc(SDL_envmem, bufferlen);
         if (newmem == NULL) {
             return NULL;
         }
         SDL_envmem = newmem;
         SDL_envmemlen = bufferlen;
-        GetEnvironmentVariableA(name, SDL_envmem, (DWORD) SDL_envmemlen);
+        GetEnvironmentVariableA(name, SDL_envmem, (DWORD)SDL_envmemlen);
     }
     return SDL_envmem;
 }
@@ -225,8 +221,8 @@ SDL_getenv(const char *name)
     if (name == NULL || *name == '\0') {
         return NULL;
     }
-    
-    value = (char *) 0;
+
+    value = (char *)0;
     if (SDL_env) {
         len = SDL_strlen(name);
         for (i = 0; SDL_env[i] && value == NULL; ++i) {
@@ -240,12 +236,10 @@ SDL_getenv(const char *name)
 }
 #endif
 
-
 #ifdef TEST_MAIN
 #include <stdio.h>
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char *value;
 

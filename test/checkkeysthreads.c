@@ -45,8 +45,8 @@ print_string(char **text, size_t *maxlen, const char *fmt, ...)
     len = SDL_vsnprintf(*text, *maxlen, fmt, ap);
     if (len > 0) {
         *text += len;
-        if ( ((size_t) len) < *maxlen ) {
-            *maxlen -= (size_t) len;
+        if (((size_t)len) < *maxlen) {
+            *maxlen -= (size_t)len;
         } else {
             *maxlen = 0;
         }
@@ -117,7 +117,7 @@ PrintModifierState()
 }
 
 static void
-PrintKey(SDL_Keysym * sym, SDL_bool pressed, SDL_bool repeat)
+PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
 {
     char message[512];
     char *spot;
@@ -129,17 +129,17 @@ PrintKey(SDL_Keysym * sym, SDL_bool pressed, SDL_bool repeat)
     /* Print the keycode, name and state */
     if (sym->sym) {
         print_string(&spot, &left,
-                "Key %s:  scancode %d = %s, keycode 0x%08X = %s ",
-                pressed ? "pressed " : "released",
-                sym->scancode,
-                SDL_GetScancodeName(sym->scancode),
-                sym->sym, SDL_GetKeyName(sym->sym));
+                     "Key %s:  scancode %d = %s, keycode 0x%08X = %s ",
+                     pressed ? "pressed " : "released",
+                     sym->scancode,
+                     SDL_GetScancodeName(sym->scancode),
+                     sym->sym, SDL_GetKeyName(sym->sym));
     } else {
         print_string(&spot, &left,
-                "Unknown Key (scancode %d = %s) %s ",
-                sym->scancode,
-                SDL_GetScancodeName(sym->scancode),
-                pressed ? "pressed " : "released");
+                     "Unknown Key (scancode %d = %s) %s ",
+                     sym->scancode,
+                     SDL_GetScancodeName(sym->scancode),
+                     pressed ? "pressed " : "released");
     }
     print_modifiers(&spot, &left);
     if (repeat) {
@@ -156,21 +156,21 @@ PrintText(const char *eventtype, const char *text)
     char expanded[1024];
 
     expanded[0] = '\0';
-    for ( spot = text; *spot; ++spot ) {
+    for (spot = text; *spot; ++spot) {
         size_t length = SDL_strlen(expanded);
         SDL_snprintf(expanded + length, sizeof(expanded) - length, "\\x%.2x", (unsigned char)*spot);
     }
     SDL_Log("%s Text (%s): \"%s%s\"\n", eventtype, expanded, *text == '"' ? "\\" : "", text);
 }
 
-void
-loop()
+void loop()
 {
     SDL_Event event;
     /* Check for events */
     /*SDL_WaitEvent(&event); emscripten does not like waiting*/
 
-    fprintf(stderr, "starting loop\n"); fflush(stderr);
+    fprintf(stderr, "starting loop\n");
+    fflush(stderr);
     // while (SDL_PollEvent(&event)) {
     while (!done && SDL_WaitEvent(&event)) {
         fprintf(stderr, "got event type: %" SDL_PRIu32 "\n", event.type);
@@ -188,7 +188,8 @@ loop()
             break;
         case SDL_MOUSEBUTTONDOWN:
             /* Left button quits the app, other buttons toggles text input */
-            fprintf(stderr, "mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT); fflush(stderr);
+            fprintf(stderr, "mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
+            fflush(stderr);
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
             } else {
@@ -207,9 +208,11 @@ loop()
         default:
             break;
         }
-        fprintf(stderr, "waiting new event\n"); fflush(stderr);
+        fprintf(stderr, "waiting new event\n");
+        fflush(stderr);
     }
-    fprintf(stderr, "exiting event loop\n"); fflush(stderr);
+    fprintf(stderr, "exiting event loop\n");
+    fflush(stderr);
 #ifdef __EMSCRIPTEN__
     if (done) {
         emscripten_cancel_main_loop();
@@ -222,9 +225,10 @@ static int SDLCALL ping_thread(void *ptr)
 {
     int cnt;
     SDL_Event sdlevent;
-    SDL_memset(&sdlevent, 0 , sizeof(SDL_Event));
+    SDL_memset(&sdlevent, 0, sizeof(SDL_Event));
     for (cnt = 0; cnt < 10; ++cnt) {
-        fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10); fflush(stderr);
+        fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10);
+        fflush(stderr);
         sdlevent.type = SDL_KEYDOWN;
         sdlevent.key.keysym.sym = SDLK_1;
         SDL_PushEvent(&sdlevent);
@@ -233,8 +237,7 @@ static int SDLCALL ping_thread(void *ptr)
     return cnt;
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -255,7 +258,7 @@ main(int argc, char *argv[])
                               640, 480, 0);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create 640x480 window: %s\n",
-                SDL_GetError());
+                     SDL_GetError());
         quit(2);
     }
 

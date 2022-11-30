@@ -36,9 +36,9 @@
 #include "SDL_syswm.h"
 
 #if defined(__OpenBSD__)
-#define DEFAULT_VULKAN  "libvulkan.so"
+#define DEFAULT_VULKAN "libvulkan.so"
 #else
-#define DEFAULT_VULKAN  "libvulkan.so.1"
+#define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
 int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
@@ -84,8 +84,7 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
     if (extensions == NULL) {
         goto fail;
     }
-    for (i = 0; i < extensionCount; i++)
-    {
+    for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
         } else if (SDL_strcmp(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -94,12 +93,10 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
     }
     SDL_free(extensions);
     if (!hasSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else if (!hasWaylandSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME "extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME "extension");
         goto fail;
     }
     return 0;
@@ -119,9 +116,9 @@ void Wayland_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names)
+                                              SDL_Window *window,
+                                              unsigned *count,
+                                              const char **names)
 {
     static const char *const extensionsForWayland[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
@@ -131,22 +128,22 @@ SDL_bool Wayland_Vulkan_GetInstanceExtensions(_THIS,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForWayland),
-            extensionsForWayland);
+        count, names, SDL_arraysize(extensionsForWayland),
+        extensionsForWayland);
 }
 
 SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface)
+                                      SDL_Window *window,
+                                      VkInstance instance,
+                                      VkSurfaceKHR *surface)
 {
     SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWaylandSurfaceKHR vkCreateWaylandSurfaceKHR =
         (PFN_vkCreateWaylandSurfaceKHR)vkGetInstanceProcAddr(
-                                            instance,
-                                            "vkCreateWaylandSurfaceKHR");
+            instance,
+            "vkCreateWaylandSurfaceKHR");
     VkWaylandSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
@@ -165,7 +162,7 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
     createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.display = windowData->waylandData->display;
-    createInfo.surface =  windowData->surface;
+    createInfo.surface = windowData->surface;
     result = vkCreateWaylandSurfaceKHR(instance, &createInfo,
                                        NULL, surface);
     if (result != VK_SUCCESS) {

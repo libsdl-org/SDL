@@ -73,8 +73,7 @@ static SDL_bool has_monotonic_time = SDL_FALSE;
 static struct timeval start_tv;
 static SDL_bool ticks_started = SDL_FALSE;
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -97,8 +96,7 @@ SDL_TicksInit(void)
     }
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }
@@ -178,13 +176,12 @@ SDL_GetPerformanceFrequency(void)
         freq /= mach_base_info.numer;
         return freq;
 #endif
-    } 
-        
+    }
+
     return 1000000;
 }
 
-void
-SDL_Delay(Uint32 ms)
+void SDL_Delay(Uint32 ms)
 {
     int was_error;
 

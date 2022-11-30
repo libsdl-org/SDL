@@ -30,9 +30,9 @@
 
 typedef struct SDL_PrivateGLESData
 {
-  /* 1401 If the struct-declaration-list contains no named members, the behavior is undefined. */
-  /* warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat] */
-  int dummy; 
+    /* 1401 If the struct-declaration-list contains no named members, the behavior is undefined. */
+    /* warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat] */
+    int dummy;
 } SDL_PrivateGLESData;
 
 /* OpenGLES functions */
@@ -41,7 +41,7 @@ typedef struct SDL_PrivateGLESData
 #define X11_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define X11_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define X11_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define X11_GLES_DeleteContext SDL_EGL_DeleteContext
+#define X11_GLES_DeleteContext   SDL_EGL_DeleteContext
 
 extern int X11_GLES_LoadLibrary(_THIS, const char *path);
 extern XVisualInfo *X11_GLES_GetVisual(_THIS, Display * display, int screen);

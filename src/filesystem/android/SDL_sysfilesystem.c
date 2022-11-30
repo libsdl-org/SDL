@@ -45,7 +45,7 @@ SDL_GetPrefPath(const char *org, const char *app)
 {
     const char *path = SDL_AndroidGetInternalStoragePath();
     if (path) {
-        size_t pathlen = SDL_strlen(path)+2;
+        size_t pathlen = SDL_strlen(path) + 2;
         char *fullpath = (char *)SDL_malloc(pathlen);
         if (fullpath == NULL) {
             SDL_OutOfMemory();

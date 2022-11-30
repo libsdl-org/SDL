@@ -40,8 +40,7 @@ static _SDL_IME_ProcessKeyEvent SDL_IME_ProcessKeyEvent_Real = NULL;
 static _SDL_IME_UpdateTextRect SDL_IME_UpdateTextRect_Real = NULL;
 static _SDL_IME_PumpEvents SDL_IME_PumpEvents_Real = NULL;
 
-static void
-InitIME()
+static void InitIME()
 {
     static SDL_bool inited = SDL_FALSE;
 #ifdef HAVE_FCITX
@@ -107,24 +106,21 @@ SDL_IME_Init(void)
     return SDL_FALSE;
 }
 
-void
-SDL_IME_Quit(void)
+void SDL_IME_Quit(void)
 {
     if (SDL_IME_Quit_Real) {
         SDL_IME_Quit_Real();
     }
 }
 
-void
-SDL_IME_SetFocus(SDL_bool focused)
+void SDL_IME_SetFocus(SDL_bool focused)
 {
     if (SDL_IME_SetFocus_Real) {
         SDL_IME_SetFocus_Real(focused);
     }
 }
 
-void
-SDL_IME_Reset(void)
+void SDL_IME_Reset(void)
 {
     if (SDL_IME_Reset_Real) {
         SDL_IME_Reset_Real();
@@ -141,16 +137,14 @@ SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
     return SDL_FALSE;
 }
 
-void
-SDL_IME_UpdateTextRect(const SDL_Rect *rect)
+void SDL_IME_UpdateTextRect(const SDL_Rect *rect)
 {
     if (SDL_IME_UpdateTextRect_Real) {
         SDL_IME_UpdateTextRect_Real(rect);
     }
 }
 
-void
-SDL_IME_PumpEvents()
+void SDL_IME_PumpEvents()
 {
     if (SDL_IME_PumpEvents_Real) {
         SDL_IME_PumpEvents_Real();

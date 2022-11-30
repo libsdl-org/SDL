@@ -54,7 +54,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_zero(msgParam);
     SDL_snprintf(message, sizeof(message), "%s\r\n\r\n%s", messageboxdata->title, messageboxdata->message);
 
-    msgParam.msg = (const SceChar8*)message;
+    msgParam.msg = (const SceChar8 *)message;
     SDL_zero(buttonParam);
 
     if (messageboxdata->numbuttons == 3) {

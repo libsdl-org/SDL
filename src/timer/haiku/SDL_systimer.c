@@ -29,8 +29,7 @@
 static bigtime_t start;
 static SDL_bool ticks_started = SDL_FALSE;
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -41,8 +40,7 @@ SDL_TicksInit(void)
     start = system_time();
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }
@@ -54,7 +52,7 @@ SDL_GetTicks64(void)
         SDL_TicksInit();
     }
 
-    return (Uint64) ((system_time() - start) / 1000);
+    return (Uint64)((system_time() - start) / 1000);
 }
 
 Uint64
@@ -69,8 +67,7 @@ SDL_GetPerformanceFrequency(void)
     return 1000000;
 }
 
-void
-SDL_Delay(Uint32 ms)
+void SDL_Delay(Uint32 ms)
 {
     snooze(ms * 1000);
 }

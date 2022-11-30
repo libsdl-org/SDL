@@ -42,30 +42,31 @@
 
 static SDLTest_CommonState *state;
 static SDL_Rect textRect, markedRect;
-static SDL_Color lineColor = {0,0,0,255};
-static SDL_Color backColor = {255,255,255,255};
-static SDL_Color textColor = {0,0,0,255};
+static SDL_Color lineColor = { 0, 0, 0, 255 };
+static SDL_Color backColor = { 255, 255, 255, 255 };
+static SDL_Color textColor = { 0, 0, 0, 255 };
 static char text[MAX_TEXT_LENGTH], markedText[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
 static int cursor = 0;
 #ifdef HAVE_SDL_TTF
 static TTF_Font *font;
 #else
-#define UNIFONT_MAX_CODEPOINT 0x1ffff
-#define UNIFONT_NUM_GLYPHS 0x20000
+#define UNIFONT_MAX_CODEPOINT     0x1ffff
+#define UNIFONT_NUM_GLYPHS        0x20000
 /* Using 512x512 textures that are supported everywhere. */
-#define UNIFONT_TEXTURE_WIDTH 512
-#define UNIFONT_GLYPHS_IN_ROW (UNIFONT_TEXTURE_WIDTH / 16)
+#define UNIFONT_TEXTURE_WIDTH     512
+#define UNIFONT_GLYPHS_IN_ROW     (UNIFONT_TEXTURE_WIDTH / 16)
 #define UNIFONT_GLYPHS_IN_TEXTURE (UNIFONT_GLYPHS_IN_ROW * UNIFONT_GLYPHS_IN_ROW)
-#define UNIFONT_NUM_TEXTURES ((UNIFONT_NUM_GLYPHS + UNIFONT_GLYPHS_IN_TEXTURE - 1) / UNIFONT_GLYPHS_IN_TEXTURE)
-#define UNIFONT_TEXTURE_SIZE (UNIFONT_TEXTURE_WIDTH * UNIFONT_TEXTURE_WIDTH * 4)
-#define UNIFONT_TEXTURE_PITCH (UNIFONT_TEXTURE_WIDTH * 4)
-#define UNIFONT_DRAW_SCALE 2
-struct UnifontGlyph {
+#define UNIFONT_NUM_TEXTURES      ((UNIFONT_NUM_GLYPHS + UNIFONT_GLYPHS_IN_TEXTURE - 1) / UNIFONT_GLYPHS_IN_TEXTURE)
+#define UNIFONT_TEXTURE_SIZE      (UNIFONT_TEXTURE_WIDTH * UNIFONT_TEXTURE_WIDTH * 4)
+#define UNIFONT_TEXTURE_PITCH     (UNIFONT_TEXTURE_WIDTH * 4)
+#define UNIFONT_DRAW_SCALE        2
+struct UnifontGlyph
+{
     Uint8 width;
     Uint8 data[32];
-} *unifontGlyph;
+} * unifontGlyph;
 static SDL_Texture **unifontTexture;
-static Uint8 unifontTextureLoaded[UNIFONT_NUM_TEXTURES] = {0};
+static Uint8 unifontTextureLoaded[UNIFONT_NUM_TEXTURES] = { 0 };
 
 /* Unifont loading code start */
 
@@ -151,7 +152,7 @@ static int unifont_init(const char *fontname)
         bytesRead = SDL_RWread(hexFile, hexBuffer, 1, 9);
         if (numGlyphs > 0 && bytesRead == 0) {
             break; /* EOF */
-        } 
+        }
         if ((numGlyphs == 0 && bytesRead == 0) || (numGlyphs > 0 && bytesRead < 9)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
             return -1;
@@ -259,7 +260,7 @@ static void unifont_make_rgba(Uint8 *src, Uint8 *dst, Uint8 width)
 static int unifont_load_texture(Uint32 textureID)
 {
     int i;
-    Uint8 * textureRGBA;
+    Uint8 *textureRGBA;
 
     if (textureID >= UNIFONT_NUM_TEXTURES) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Tried to load out of range texture %" SDL_PRIu32 "\n", textureID);
@@ -363,7 +364,7 @@ size_t utf8_length(unsigned char c)
     c = (unsigned char)(0xff & c);
     if (c < 0x80)
         return 1;
-    else if ((c >> 5) ==0x6)
+    else if ((c >> 5) == 0x6)
         return 2;
     else if ((c >> 4) == 0xe)
         return 3;
@@ -455,13 +456,13 @@ void CleanupVideo()
 
 void _Redraw(int rendererID)
 {
-    SDL_Renderer * renderer = state->renderers[rendererID];
+    SDL_Renderer *renderer = state->renderers[rendererID];
     SDL_Rect drawnTextRect, cursorRect, underlineRect;
     drawnTextRect = textRect;
     drawnTextRect.w = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
-    SDL_RenderFillRect(renderer,&textRect);
+    SDL_RenderFillRect(renderer, &textRect);
 
     if (*text) {
 #ifdef HAVE_SDL_TTF
@@ -473,10 +474,10 @@ void _Redraw(int rendererID)
         drawnTextRect.w = textSur->w;
         drawnTextRect.h = textSur->h;
 
-        texture = SDL_CreateTextureFromSurface(renderer,textSur);
+        texture = SDL_CreateTextureFromSurface(renderer, textSur);
         SDL_FreeSurface(textSur);
 
-        SDL_RenderCopy(renderer,texture,NULL,&drawnTextRect);
+        SDL_RenderCopy(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         char *utext = text;
@@ -519,7 +520,7 @@ void _Redraw(int rendererID)
     drawnTextRect.w = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
-    SDL_RenderFillRect(renderer,&markedRect);
+    SDL_RenderFillRect(renderer, &markedRect);
 
     if (markedText[0]) {
 #ifdef HAVE_SDL_TTF
@@ -544,10 +545,10 @@ void _Redraw(int rendererID)
         drawnTextRect.w = textSur->w;
         drawnTextRect.h = textSur->h;
 
-        texture = SDL_CreateTextureFromSurface(renderer,textSur);
+        texture = SDL_CreateTextureFromSurface(renderer, textSur);
         SDL_FreeSurface(textSur);
 
-        SDL_RenderCopy(renderer,texture,NULL,&drawnTextRect);
+        SDL_RenderCopy(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
         int i = 0;
@@ -590,7 +591,7 @@ void _Redraw(int rendererID)
     }
 
     SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-    SDL_RenderFillRect(renderer,&cursorRect);
+    SDL_RenderFillRect(renderer, &cursorRect);
 
     SDL_SetTextInputRect(&markedRect);
 }
@@ -627,7 +628,7 @@ int main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
-    for (i = 1; i < argc;i++) {
+    for (i = 1; i < argc; i++) {
         SDLTest_CommonArg(state, i);
     }
     for (argc--, argv++; argc > 0; argc--, argv++) {
@@ -652,7 +653,6 @@ int main(int argc, char *argv[])
     if (!SDLTest_CommonInit(state)) {
         return 2;
     }
-
 
 #ifdef HAVE_SDL_TTF
     /* Initialize fonts */
@@ -686,86 +686,84 @@ int main(int argc, char *argv[])
         /* Check for events */
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
-            switch(event.type) {
-                case SDL_KEYDOWN: {
-                    switch (event.key.keysym.sym)
-                    {
-                        case SDLK_RETURN:
-                             text[0]=0x00;
-                             Redraw();
-                             break;
-                        case SDLK_BACKSPACE:
-                            /* Only delete text if not in editing mode. */
-                             if (!markedText[0]) {
-                                 size_t textlen = SDL_strlen(text);
-
-                                 do {
-                                     if (textlen==0) {
-                                         break;
-                                     }
-                                     if ((text[textlen-1] & 0x80) == 0x00) {
-                                         /* One byte */
-                                         text[textlen-1]=0x00;
-                                         break;
-                                     }
-                                     if ((text[textlen-1] & 0xC0) == 0x80) {
-                                         /* Byte from the multibyte sequence */
-                                         text[textlen-1]=0x00;
-                                         textlen--;
-                                     }
-                                     if ((text[textlen-1] & 0xC0) == 0xC0) {
-                                         /* First byte of multibyte sequence */
-                                         text[textlen-1]=0x00;
-                                         break;
-                                     }
-                                 } while (1);
-
-                                 Redraw();
-                             }
-                             break;
-                    }
-
-                    if (done) {
-                        break;
-                    }
-
-                    SDL_Log("Keyboard: scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s\n",
-                            event.key.keysym.scancode,
-                            SDL_GetScancodeName(event.key.keysym.scancode),
-                            SDL_static_cast(Uint32, event.key.keysym.sym),
-                            SDL_GetKeyName(event.key.keysym.sym));
-                    break;
-
-                case SDL_TEXTINPUT:
-                    if (event.text.text[0] == '\0' || event.text.text[0] == '\n' || markedRect.w < 0) {
-                        break;
-                    }
-
-                    SDL_Log("Keyboard: text input \"%s\"\n", event.text.text);
-
-                    if (SDL_strlen(text) + SDL_strlen(event.text.text) < sizeof(text)) {
-                        SDL_strlcat(text, event.text.text, sizeof(text));
-                    }
-
-                    SDL_Log("text inputed: %s\n", text);
-
-                    /* After text inputed, we can clear up markedText because it */
-                    /* is committed */
-                    markedText[0] = 0;
+            switch (event.type) {
+            case SDL_KEYDOWN:
+            {
+                switch (event.key.keysym.sym) {
+                case SDLK_RETURN:
+                    text[0] = 0x00;
                     Redraw();
                     break;
+                case SDLK_BACKSPACE:
+                    /* Only delete text if not in editing mode. */
+                    if (!markedText[0]) {
+                        size_t textlen = SDL_strlen(text);
 
-                case SDL_TEXTEDITING:
-                    SDL_Log("text editing \"%s\", selected range (%" SDL_PRIs32 ", %" SDL_PRIs32 ")\n",
-                            event.edit.text, event.edit.start, event.edit.length);
+                        do {
+                            if (textlen == 0) {
+                                break;
+                            }
+                            if ((text[textlen - 1] & 0x80) == 0x00) {
+                                /* One byte */
+                                text[textlen - 1] = 0x00;
+                                break;
+                            }
+                            if ((text[textlen - 1] & 0xC0) == 0x80) {
+                                /* Byte from the multibyte sequence */
+                                text[textlen - 1] = 0x00;
+                                textlen--;
+                            }
+                            if ((text[textlen - 1] & 0xC0) == 0xC0) {
+                                /* First byte of multibyte sequence */
+                                text[textlen - 1] = 0x00;
+                                break;
+                            }
+                        } while (1);
 
-                    SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
-                    cursor = event.edit.start;
-                    Redraw();
+                        Redraw();
+                    }
                     break;
                 }
+
+                if (done) {
+                    break;
+                }
+
+                SDL_Log("Keyboard: scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s\n",
+                        event.key.keysym.scancode,
+                        SDL_GetScancodeName(event.key.keysym.scancode),
+                        SDL_static_cast(Uint32, event.key.keysym.sym),
+                        SDL_GetKeyName(event.key.keysym.sym));
                 break;
 
+            case SDL_TEXTINPUT:
+                if (event.text.text[0] == '\0' || event.text.text[0] == '\n' || markedRect.w < 0) {
+                    break;
+                }
+
+                SDL_Log("Keyboard: text input \"%s\"\n", event.text.text);
+
+                if (SDL_strlen(text) + SDL_strlen(event.text.text) < sizeof(text)) {
+                    SDL_strlcat(text, event.text.text, sizeof(text));
+                }
+
+                SDL_Log("text inputed: %s\n", text);
+
+                /* After text inputed, we can clear up markedText because it */
+                /* is committed */
+                markedText[0] = 0;
+                Redraw();
+                break;
+
+            case SDL_TEXTEDITING:
+                SDL_Log("text editing \"%s\", selected range (%" SDL_PRIs32 ", %" SDL_PRIs32 ")\n",
+                        event.edit.text, event.edit.start, event.edit.length);
+
+                SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
+                cursor = event.edit.start;
+                Redraw();
+                break;
+            } break;
             }
         }
     }

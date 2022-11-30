@@ -26,15 +26,13 @@
  * Returns SDL_TRUE if we have a definitive answer.
  * SDL_FALSE to try next implementation.
  */
-typedef SDL_bool
-    (*SDL_GetPowerInfo_Impl) (SDL_PowerState * state, int *seconds,
-                              int *percent);
+typedef SDL_bool (*SDL_GetPowerInfo_Impl)(SDL_PowerState *state, int *seconds,
+                                          int *percent);
 
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_HARDWIRED
 /* This is for things that _never_ have a battery */
-static SDL_bool
-SDL_GetPowerInfo_Hardwired(SDL_PowerState * state, int *seconds, int *percent)
+static SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *state, int *seconds, int *percent)
 {
     *seconds = -1;
     *percent = -1;
@@ -44,40 +42,40 @@ SDL_GetPowerInfo_Hardwired(SDL_PowerState * state, int *seconds, int *percent)
 #endif
 
 static SDL_GetPowerInfo_Impl implementations[] = {
-#ifdef SDL_POWER_LINUX          /* in order of preference. More than could work. */
+#ifdef SDL_POWER_LINUX /* in order of preference. More than could work. */
     SDL_GetPowerInfo_Linux_org_freedesktop_upower,
     SDL_GetPowerInfo_Linux_sys_class_power_supply,
     SDL_GetPowerInfo_Linux_proc_acpi,
     SDL_GetPowerInfo_Linux_proc_apm,
 #endif
-#ifdef SDL_POWER_WINDOWS        /* handles Win32, Win64, PocketPC. */
+#ifdef SDL_POWER_WINDOWS /* handles Win32, Win64, PocketPC. */
     SDL_GetPowerInfo_Windows,
 #endif
-#ifdef SDL_POWER_UIKIT          /* handles iPhone/iPad/etc */
+#ifdef SDL_POWER_UIKIT /* handles iPhone/iPad/etc */
     SDL_GetPowerInfo_UIKit,
 #endif
 #ifdef SDL_POWER_MACOSX         /* handles Mac OS X, Darwin. */
     SDL_GetPowerInfo_MacOSX,
 #endif
-#ifdef SDL_POWER_HAIKU          /* with BeOS euc.jp apm driver. Does this work on Haiku? */
+#ifdef SDL_POWER_HAIKU /* with BeOS euc.jp apm driver. Does this work on Haiku? */
     SDL_GetPowerInfo_Haiku,
 #endif
-#ifdef SDL_POWER_ANDROID        /* handles Android. */
+#ifdef SDL_POWER_ANDROID /* handles Android. */
     SDL_GetPowerInfo_Android,
 #endif
-#ifdef SDL_POWER_PSP        /* handles PSP. */
+#ifdef SDL_POWER_PSP /* handles PSP. */
     SDL_GetPowerInfo_PSP,
 #endif
-#ifdef SDL_POWER_VITA        /* handles PSVita. */
+#ifdef SDL_POWER_VITA /* handles PSVita. */
     SDL_GetPowerInfo_VITA,
 #endif
-#ifdef SDL_POWER_N3DS        /* handles N3DS. */
+#ifdef SDL_POWER_N3DS /* handles N3DS. */
     SDL_GetPowerInfo_N3DS,
 #endif
-#ifdef SDL_POWER_WINRT          /* handles WinRT */
+#ifdef SDL_POWER_WINRT /* handles WinRT */
     SDL_GetPowerInfo_WinRT,
 #endif
-#ifdef SDL_POWER_EMSCRIPTEN     /* handles Emscripten */
+#ifdef SDL_POWER_EMSCRIPTEN /* handles Emscripten */
     SDL_GetPowerInfo_Emscripten,
 #endif
 

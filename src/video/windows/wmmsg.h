@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#define MAX_WMMSG   (sizeof(wmtab)/sizeof(wmtab[0]))
+#define MAX_WMMSG (sizeof(wmtab) / sizeof(wmtab[0]))
 
 const char *wmtab[] = {
     "WM_NULL",

@@ -24,7 +24,6 @@
 
 #include "../SDL_internal.h"
 
-
 /* YUV conversion functions */
 
 extern int SDL_ConvertPixels_YUV_to_RGB(int width, int height, Uint32 src_format, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch);

@@ -54,8 +54,7 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
 
 /* End undefined functions */
 
-static SDL_VideoDevice *
-HAIKU_CreateDevice(void)
+static SDL_VideoDevice * HAIKU_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     /*SDL_VideoData *data;*/
@@ -141,8 +140,7 @@ void HAIKU_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
-static SDL_Cursor *
-HAIKU_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor;
     BCursorID cursorId = B_CURSOR_ID_SYSTEM_DEFAULT;
@@ -176,14 +174,12 @@ HAIKU_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
-static SDL_Cursor *
-HAIKU_CreateDefaultCursor()
+static SDL_Cursor * HAIKU_CreateDefaultCursor()
 {
     return HAIKU_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 }
 
-static void
-HAIKU_FreeCursor(SDL_Cursor * cursor)
+static void HAIKU_FreeCursor(SDL_Cursor * cursor)
 {
     if (cursor->driverdata) {
         delete (BCursor*) cursor->driverdata;
@@ -191,8 +187,7 @@ HAIKU_FreeCursor(SDL_Cursor * cursor)
     SDL_free(cursor);
 }
 
-static SDL_Cursor *
-HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     SDL_Cursor *cursor;
     SDL_Surface *converted;
@@ -236,8 +231,7 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 	return 0;
 }
 
-static int
-HAIKU_SetRelativeMouseMode(SDL_bool enabled)
+static int HAIKU_SetRelativeMouseMode(SDL_bool enabled)
 {
     SDL_Window *window = SDL_GetMouseFocus();
     if (window == NULL) {

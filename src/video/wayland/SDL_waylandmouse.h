@@ -27,7 +27,7 @@
 
 extern void Wayland_InitMouse(void);
 extern void Wayland_FiniMouse(SDL_VideoData *data);
-#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
+#if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
 extern void Wayland_RecreateCursors(void);
 #endif /* 0 */
 

@@ -39,7 +39,7 @@ using namespace XInputOnGameInput;
 #define XUSER_MAX_COUNT 4
 #endif
 #ifndef XUSER_INDEX_ANY
-#define XUSER_INDEX_ANY     0x000000FF
+#define XUSER_INDEX_ANY 0x000000FF
 #endif
 #ifndef XINPUT_CAPS_FFB_SUPPORTED
 #define XINPUT_CAPS_FFB_SUPPORTED 0x0001
@@ -131,29 +131,29 @@ using namespace XInputOnGameInput;
 #endif
 
 #ifndef BATTERY_DEVTYPE_GAMEPAD
-#define BATTERY_DEVTYPE_GAMEPAD         0x00
+#define BATTERY_DEVTYPE_GAMEPAD 0x00
 #endif
 
 #ifndef BATTERY_TYPE_DISCONNECTED
-#define BATTERY_TYPE_DISCONNECTED       0x00
+#define BATTERY_TYPE_DISCONNECTED 0x00
 #endif
 #ifndef BATTERY_TYPE_WIRED
-#define BATTERY_TYPE_WIRED              0x01
+#define BATTERY_TYPE_WIRED 0x01
 #endif
 #ifndef BATTERY_TYPE_UNKNOWN
-#define BATTERY_TYPE_UNKNOWN            0xFF
+#define BATTERY_TYPE_UNKNOWN 0xFF
 #endif
 #ifndef BATTERY_LEVEL_EMPTY
-#define BATTERY_LEVEL_EMPTY             0x00
+#define BATTERY_LEVEL_EMPTY 0x00
 #endif
 #ifndef BATTERY_LEVEL_LOW
-#define BATTERY_LEVEL_LOW               0x01
+#define BATTERY_LEVEL_LOW 0x01
 #endif
 #ifndef BATTERY_LEVEL_MEDIUM
-#define BATTERY_LEVEL_MEDIUM            0x02
+#define BATTERY_LEVEL_MEDIUM 0x02
 #endif
 #ifndef BATTERY_LEVEL_FULL
-#define BATTERY_LEVEL_FULL              0x03
+#define BATTERY_LEVEL_FULL 0x03
 #endif
 
 /* Set up for C function definitions, even when using C++ */
@@ -222,31 +222,26 @@ typedef struct
 #endif /* HAVE_XINPUT_H */
 
 /* Forward decl's for XInput API's we load dynamically and use if available */
-typedef DWORD (WINAPI *XInputGetState_t)
-    (
-    DWORD         dwUserIndex,  /* [in] Index of the gamer associated with the device */
-    XINPUT_STATE_EX* pState     /* [out] Receives the current state */
-    );
+typedef DWORD(WINAPI *XInputGetState_t)(
+    DWORD dwUserIndex,      /* [in] Index of the gamer associated with the device */
+    XINPUT_STATE_EX *pState /* [out] Receives the current state */
+);
 
-typedef DWORD (WINAPI *XInputSetState_t)
-    (
-    DWORD             dwUserIndex,  /* [in] Index of the gamer associated with the device */
-    XINPUT_VIBRATION* pVibration    /* [in, out] The vibration information to send to the controller */
-    );
+typedef DWORD(WINAPI *XInputSetState_t)(
+    DWORD dwUserIndex,           /* [in] Index of the gamer associated with the device */
+    XINPUT_VIBRATION *pVibration /* [in, out] The vibration information to send to the controller */
+);
 
-typedef DWORD (WINAPI *XInputGetCapabilities_t)
-    (
-    DWORD                dwUserIndex,   /* [in] Index of the gamer associated with the device */
-    DWORD                dwFlags,       /* [in] Input flags that identify the device type */
-    XINPUT_CAPABILITIES* pCapabilities  /* [out] Receives the capabilities */
-    );
+typedef DWORD(WINAPI *XInputGetCapabilities_t)(
+    DWORD dwUserIndex,                 /* [in] Index of the gamer associated with the device */
+    DWORD dwFlags,                     /* [in] Input flags that identify the device type */
+    XINPUT_CAPABILITIES *pCapabilities /* [out] Receives the capabilities */
+);
 
-typedef DWORD (WINAPI *XInputGetBatteryInformation_t)
-    (
-    DWORD                         dwUserIndex,
-    BYTE                          devType,
-    XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation
-    );
+typedef DWORD(WINAPI *XInputGetBatteryInformation_t)(
+    DWORD dwUserIndex,
+    BYTE devType,
+    XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation);
 
 extern int WIN_LoadXInputDLL(void);
 extern void WIN_UnloadXInputDLL(void);
@@ -255,17 +250,17 @@ extern XInputGetState_t SDL_XInputGetState;
 extern XInputSetState_t SDL_XInputSetState;
 extern XInputGetCapabilities_t SDL_XInputGetCapabilities;
 extern XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation;
-extern DWORD SDL_XInputVersion;  /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
+extern DWORD SDL_XInputVersion; /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
 
-#define XINPUTGETSTATE          SDL_XInputGetState
-#define XINPUTSETSTATE          SDL_XInputSetState
-#define XINPUTGETCAPABILITIES   SDL_XInputGetCapabilities
-#define XINPUTGETBATTERYINFORMATION   SDL_XInputGetBatteryInformation
+#define XINPUTGETSTATE              SDL_XInputGetState
+#define XINPUTSETSTATE              SDL_XInputSetState
+#define XINPUTGETCAPABILITIES       SDL_XInputGetCapabilities
+#define XINPUTGETBATTERYINFORMATION SDL_XInputGetBatteryInformation
 
 #endif /* SDL_xinput_h_ */
 

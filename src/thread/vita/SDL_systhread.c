@@ -34,19 +34,19 @@
 #include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
 
-#define VITA_THREAD_STACK_SIZE_MIN 0x1000 // 4KiB
-#define VITA_THREAD_STACK_SIZE_MAX 0x2000000 // 32MiB
-#define VITA_THREAD_STACK_SIZE_DEFAULT 0x10000 // 64KiB
-#define VITA_THREAD_NAME_MAX 32
+#define VITA_THREAD_STACK_SIZE_MIN     0x1000    // 4KiB
+#define VITA_THREAD_STACK_SIZE_MAX     0x2000000 // 32MiB
+#define VITA_THREAD_STACK_SIZE_DEFAULT 0x10000   // 64KiB
+#define VITA_THREAD_NAME_MAX           32
 
-#define VITA_THREAD_PRIORITY_LOW 191
-#define VITA_THREAD_PRIORITY_NORMAL 160
-#define VITA_THREAD_PRIORITY_HIGH 112
+#define VITA_THREAD_PRIORITY_LOW           191
+#define VITA_THREAD_PRIORITY_NORMAL        160
+#define VITA_THREAD_PRIORITY_HIGH          112
 #define VITA_THREAD_PRIORITY_TIME_CRITICAL 64
 
 static int ThreadEntry(SceSize args, void *argp)
 {
-    SDL_RunThread(*(SDL_Thread **) argp);
+    SDL_RunThread(*(SDL_Thread **)argp);
     return 0;
 }
 
@@ -74,11 +74,11 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     thread->handle = sceKernelCreateThread(
         thread_name, // name
         ThreadEntry, // function to run
-        0, // priority. 0 means priority of calling thread
-        stack_size, // stack size
-        0, // attibutes. always 0
-        0, // cpu affinity mask. 0 = all CPUs
-        NULL // opt. always NULL
+        0,           // priority. 0 means priority of calling thread
+        stack_size,  // stack size
+        0,           // attibutes. always 0
+        0,           // cpu affinity mask. 0 = all CPUs
+        NULL         // opt. always NULL
     );
 
     if (thread->handle < 0) {
@@ -96,7 +96,7 @@ void SDL_SYS_SetupThread(const char *name)
 
 SDL_threadID SDL_ThreadID(void)
 {
-    return (SDL_threadID) sceKernelGetThreadId();
+    return (SDL_threadID)sceKernelGetThreadId();
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
@@ -114,23 +114,22 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
     int value = VITA_THREAD_PRIORITY_NORMAL;
 
-    switch(priority) {
-        case SDL_THREAD_PRIORITY_LOW:
-            value = VITA_THREAD_PRIORITY_LOW;
-            break;
-        case SDL_THREAD_PRIORITY_NORMAL:
-            value = VITA_THREAD_PRIORITY_NORMAL;
-            break;
-        case SDL_THREAD_PRIORITY_HIGH:
-            value = VITA_THREAD_PRIORITY_HIGH;
-            break;
-        case SDL_THREAD_PRIORITY_TIME_CRITICAL:
-            value = VITA_THREAD_PRIORITY_TIME_CRITICAL;
-            break;
+    switch (priority) {
+    case SDL_THREAD_PRIORITY_LOW:
+        value = VITA_THREAD_PRIORITY_LOW;
+        break;
+    case SDL_THREAD_PRIORITY_NORMAL:
+        value = VITA_THREAD_PRIORITY_NORMAL;
+        break;
+    case SDL_THREAD_PRIORITY_HIGH:
+        value = VITA_THREAD_PRIORITY_HIGH;
+        break;
+    case SDL_THREAD_PRIORITY_TIME_CRITICAL:
+        value = VITA_THREAD_PRIORITY_TIME_CRITICAL;
+        break;
     }
 
     return sceKernelChangeThreadPriority(0, value);
-
 }
 
 #endif /* SDL_THREAD_VITA */

@@ -34,76 +34,77 @@
 char *
 SDL_GetBasePath(void)
 {
-  char *retval;
-  size_t len;
-  char cwd[FILENAME_MAX];
+    char *retval;
+    size_t len;
+    char cwd[FILENAME_MAX];
 
-  getcwd(cwd, sizeof(cwd));
-  len = SDL_strlen(cwd) + 1;
-  retval = (char *) SDL_malloc(len);
-  if (retval) {
-    SDL_memcpy(retval, cwd, len);
-  }
+    getcwd(cwd, sizeof(cwd));
+    len = SDL_strlen(cwd) + 1;
+    retval = (char *)SDL_malloc(len);
+    if (retval) {
+        SDL_memcpy(retval, cwd, len);
+    }
 
-  return retval;
+    return retval;
 }
 
 /* Do a recursive mkdir of parents folders */
-static void recursive_mkdir(const char *dir) {
-  char tmp[FILENAME_MAX];
-  char *base = SDL_GetBasePath();
-  char *p = NULL;
-  size_t len;
+static void recursive_mkdir(const char *dir)
+{
+    char tmp[FILENAME_MAX];
+    char *base = SDL_GetBasePath();
+    char *p = NULL;
+    size_t len;
 
-  snprintf(tmp, sizeof(tmp),"%s",dir);
-  len = strlen(tmp);
-  if (tmp[len - 1] == '/') {
-      tmp[len - 1] = 0;
-  }
-
-  for (p = tmp + 1; *p; p++) {
-    if (*p == '/') {
-      *p = 0;
-      // Just creating subfolders from current path
-      if (strstr(tmp, base) != NULL) {
-        mkdir(tmp, S_IRWXU);
-      }
-
-      *p = '/';
+    snprintf(tmp, sizeof(tmp), "%s", dir);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/') {
+        tmp[len - 1] = 0;
     }
-  }
 
-  free(base);
-  mkdir(tmp, S_IRWXU);
+    for (p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = 0;
+            // Just creating subfolders from current path
+            if (strstr(tmp, base) != NULL) {
+                mkdir(tmp, S_IRWXU);
+            }
+
+            *p = '/';
+        }
+    }
+
+    free(base);
+    mkdir(tmp, S_IRWXU);
 }
 
 char *
 SDL_GetPrefPath(const char *org, const char *app)
 {
-  char *retval = NULL;
-  size_t len;
-  char *base = SDL_GetBasePath();
-  if (app == NULL) {
-    SDL_InvalidParamError("app");
-    return NULL;
-  }
-  if (org == NULL) {
-    org = "";
-  }
+    char *retval = NULL;
+    size_t len;
+    char *base = SDL_GetBasePath();
+    if (app == NULL) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
+    if (org == NULL) {
+        org = "";
+    }
 
-  len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
-  retval = (char *) SDL_malloc(len);
+    len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
+    retval = (char *)SDL_malloc(len);
 
-  if (*org) {
-    SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
-  } else {
-    SDL_snprintf(retval, len, "%s%s/", base, app);
-  }
-  free(base);
+    if (*org) {
+        SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
+    } else {
+        SDL_snprintf(retval, len, "%s%s/", base, app);
+    }
+    free(base);
 
-  recursive_mkdir(retval);
-  
-  return retval;
+    recursive_mkdir(retval);
+
+    return retval;
 }
 
 #endif /* SDL_FILESYSTEM_PS2 */

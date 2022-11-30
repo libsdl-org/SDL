@@ -48,16 +48,16 @@
 #include <sched.h>
 
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
-#define RTKIT_DBUS_NODE "org.freedesktop.RealtimeKit1"
-#define RTKIT_DBUS_PATH "/org/freedesktop/RealtimeKit1"
+#define RTKIT_DBUS_NODE      "org.freedesktop.RealtimeKit1"
+#define RTKIT_DBUS_PATH      "/org/freedesktop/RealtimeKit1"
 #define RTKIT_DBUS_INTERFACE "org.freedesktop.RealtimeKit1"
 
 /* d-bus queries to the XDG portal interface to RealtimeKit1 */
-#define XDG_PORTAL_DBUS_NODE "org.freedesktop.portal.Desktop"
-#define XDG_PORTAL_DBUS_PATH "/org/freedesktop/portal/desktop"
+#define XDG_PORTAL_DBUS_NODE      "org.freedesktop.portal.Desktop"
+#define XDG_PORTAL_DBUS_PATH      "/org/freedesktop/portal/desktop"
 #define XDG_PORTAL_DBUS_INTERFACE "org.freedesktop.portal.Realtime"
 
-static SDL_bool    rtkit_use_session_conn;
+static SDL_bool rtkit_use_session_conn;
 static const char *rtkit_dbus_node;
 static const char *rtkit_dbus_path;
 static const char *rtkit_dbus_interface;
@@ -72,16 +72,14 @@ static Sint64 rtkit_max_rttime_usec = 200000;
  *  - The desktop portal exists and supports the realtime interface.
  *  - The realtime interface is new enough to have the required bug fixes applied.
  */
-static SDL_bool
-realtime_portal_supported(DBusConnection *conn)
+static SDL_bool realtime_portal_supported(DBusConnection *conn)
 {
     Sint64 res;
     return SDL_DBus_QueryPropertyOnConnection(conn, XDG_PORTAL_DBUS_NODE, XDG_PORTAL_DBUS_PATH, XDG_PORTAL_DBUS_INTERFACE,
                                               "RTTimeUSecMax", DBUS_TYPE_INT64, &res);
 }
 
-static void
-set_rtkit_interface()
+static void set_rtkit_interface()
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -99,8 +97,7 @@ set_rtkit_interface()
     }
 }
 
-static DBusConnection*
-get_rtkit_dbus_connection()
+static DBusConnection *get_rtkit_dbus_connection()
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -111,8 +108,7 @@ get_rtkit_dbus_connection()
     return NULL;
 }
 
-static void
-rtkit_initialize()
+static void rtkit_initialize()
 {
     DBusConnection *dbus_conn;
 
@@ -138,8 +134,7 @@ rtkit_initialize()
     }
 }
 
-static SDL_bool
-rtkit_initialize_realtime_thread()
+static SDL_bool rtkit_initialize_realtime_thread()
 {
     // Following is an excerpt from rtkit README that outlines the requirements
     // a thread must meet before making rtkit requests:
@@ -164,7 +159,7 @@ rtkit_initialize_realtime_thread()
     int err;
     struct rlimit rlimit;
     int nLimit = RLIMIT_RTTIME;
-    pid_t nPid = 0; //self
+    pid_t nPid = 0; // self
     int nSchedPolicy = sched_getscheduler(nPid) | SCHED_RESET_ON_FORK;
     struct sched_param schedParam;
 
@@ -198,8 +193,7 @@ rtkit_initialize_realtime_thread()
     return SDL_TRUE;
 }
 
-static SDL_bool
-rtkit_setpriority_nice(pid_t thread, int nice_level)
+static SDL_bool rtkit_setpriority_nice(pid_t thread, int nice_level)
 {
     DBusConnection *dbus_conn;
     Uint64 pid = (Uint64)getpid();
@@ -222,8 +216,7 @@ rtkit_setpriority_nice(pid_t thread, int nice_level)
     return SDL_TRUE;
 }
 
-static SDL_bool
-rtkit_setpriority_realtime(pid_t thread, int rt_priority)
+static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 {
     DBusConnection *dbus_conn;
     Uint64 pid = (Uint64)getpid();
@@ -261,8 +254,7 @@ rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 #endif /* threads */
 
 /* this is a public symbol, so it has to exist even if threads are disabled. */
-int
-SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
+int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 {
 #if SDL_THREADS_DISABLED
     return SDL_Unsupported();
@@ -294,8 +286,7 @@ SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 }
 
 /* this is a public symbol, so it has to exist even if threads are disabled. */
-int
-SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
 #if SDL_THREADS_DISABLED
     return SDL_Unsupported();
@@ -356,6 +347,6 @@ SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedP
 #endif
 }
 
-#endif  /* __LINUX__ */
+#endif /* __LINUX__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

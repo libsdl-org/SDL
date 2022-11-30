@@ -29,70 +29,58 @@
 #include "SDL_dummysensor.h"
 #include "../SDL_syssensor.h"
 
-static int
-SDL_DUMMY_SensorInit(void)
+static int SDL_DUMMY_SensorInit(void)
 {
     return 0;
 }
 
-static int
-SDL_DUMMY_SensorGetCount(void)
+static int SDL_DUMMY_SensorGetCount(void)
 {
     return 0;
 }
 
-static void
-SDL_DUMMY_SensorDetect(void)
+static void SDL_DUMMY_SensorDetect(void)
 {
 }
 
-static const char *
-SDL_DUMMY_SensorGetDeviceName(int device_index)
+static const char *SDL_DUMMY_SensorGetDeviceName(int device_index)
 {
     return NULL;
 }
 
-static SDL_SensorType
-SDL_DUMMY_SensorGetDeviceType(int device_index)
+static SDL_SensorType SDL_DUMMY_SensorGetDeviceType(int device_index)
 {
     return SDL_SENSOR_INVALID;
 }
 
-static int
-SDL_DUMMY_SensorGetDeviceNonPortableType(int device_index)
+static int SDL_DUMMY_SensorGetDeviceNonPortableType(int device_index)
 {
     return -1;
 }
 
-static SDL_SensorID
-SDL_DUMMY_SensorGetDeviceInstanceID(int device_index)
+static SDL_SensorID SDL_DUMMY_SensorGetDeviceInstanceID(int device_index)
 {
     return -1;
 }
 
-static int
-SDL_DUMMY_SensorOpen(SDL_Sensor *sensor, int device_index)
+static int SDL_DUMMY_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     return SDL_Unsupported();
 }
-    
-static void
-SDL_DUMMY_SensorUpdate(SDL_Sensor *sensor)
+
+static void SDL_DUMMY_SensorUpdate(SDL_Sensor *sensor)
 {
 }
 
-static void
-SDL_DUMMY_SensorClose(SDL_Sensor *sensor)
+static void SDL_DUMMY_SensorClose(SDL_Sensor *sensor)
 {
 }
 
-static void
-SDL_DUMMY_SensorQuit(void)
+static void SDL_DUMMY_SensorQuit(void)
 {
 }
 
-SDL_SensorDriver SDL_DUMMY_SensorDriver =
-{
+SDL_SensorDriver SDL_DUMMY_SensorDriver = {
     SDL_DUMMY_SensorInit,
     SDL_DUMMY_SensorGetCount,
     SDL_DUMMY_SensorDetect,

@@ -24,7 +24,7 @@
 #define SDL_x11events_h_
 
 extern void X11_PumpEvents(_THIS);
-extern int  X11_WaitEventTimeout(_THIS, int timeout);
+extern int X11_WaitEventTimeout(_THIS, int timeout);
 extern void X11_SendWakeupEvent(_THIS, SDL_Window *window);
 extern void X11_SuspendScreenSaver(_THIS);
 extern void X11_ReconcileKeyboardState(_THIS);

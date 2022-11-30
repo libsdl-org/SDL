@@ -257,7 +257,6 @@ static const DWORD D3D9_PixelShader_YUV_BT709[] = {
     0x90e40000, 0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff
 };
 
-
 static const DWORD *D3D9_shaders[] = {
     D3D9_PixelShader_YUV_JPEG,
     D3D9_PixelShader_YUV_BT601,

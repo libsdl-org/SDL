@@ -35,15 +35,15 @@
 
 typedef struct SDL_VideoData
 {
-    int devindex;               /* device index that was passed on creation */
-    int drm_fd;                 /* DRM file desc */
-    char devpath[32];           /* DRM dev path. */
+    int devindex;     /* device index that was passed on creation */
+    int drm_fd;       /* DRM file desc */
+    char devpath[32]; /* DRM dev path. */
 
     struct gbm_device *gbm_dev;
 
     SDL_bool video_init;             /* Has VideoInit succeeded? */
     SDL_bool vulkan_mode;            /* Are we in Vulkan mode? One VK window is enough to be. */
-    SDL_bool async_pageflip_support; /* Does the hardware support async. pageflips? */ 
+    SDL_bool async_pageflip_support; /* Does the hardware support async. pageflips? */
 
     SDL_Window **windows;
     int max_windows;
@@ -55,12 +55,10 @@ typedef struct SDL_VideoData
 
 } SDL_VideoData;
 
-
 typedef struct SDL_DisplayModeData
 {
     int mode_index;
 } SDL_DisplayModeData;
-
 
 typedef struct SDL_DisplayData
 {
@@ -70,7 +68,7 @@ typedef struct SDL_DisplayData
     drmModeModeInfo original_mode;
     drmModeModeInfo fullscreen_mode;
 
-    drmModeCrtc *saved_crtc;    /* CRTC to restore on quit */
+    drmModeCrtc *saved_crtc; /* CRTC to restore on quit */
     SDL_bool saved_vrr;
 
     /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
@@ -104,12 +102,12 @@ typedef struct SDL_WindowData
 
 typedef struct KMSDRM_FBInfo
 {
-    int drm_fd;         /* DRM file desc */
-    uint32_t fb_id;     /* DRM framebuffer ID */
+    int drm_fd;     /* DRM file desc */
+    uint32_t fb_id; /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 
 /* Helper functions */
-int KMSDRM_CreateSurfaces(_THIS, SDL_Window * window);
+int KMSDRM_CreateSurfaces(_THIS, SDL_Window *window);
 KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo);
 KMSDRM_FBInfo *KMSDRM_FBFromBO2(_THIS, struct gbm_bo *bo, int w, int h);
 SDL_bool KMSDRM_WaitPageflip(_THIS, SDL_WindowData *windata);
@@ -148,11 +146,11 @@ SDL_bool KMSDRM_GetWindowWMInfo(_THIS, SDL_Window * window,
 int KMSDRM_GLES_LoadLibrary(_THIS, const char *path);
 void *KMSDRM_GLES_GetProcAddress(_THIS, const char *proc);
 void KMSDRM_GLES_UnloadLibrary(_THIS);
-SDL_GLContext KMSDRM_GLES_CreateContext(_THIS, SDL_Window * window);
-int KMSDRM_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+SDL_GLContext KMSDRM_GLES_CreateContext(_THIS, SDL_Window *window);
+int KMSDRM_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 int KMSDRM_GLES_SetSwapInterval(_THIS, int interval);
 int KMSDRM_GLES_GetSwapInterval(_THIS);
-int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window);
+int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window);
 void KMSDRM_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* __SDL_KMSDRMVIDEO_H__ */

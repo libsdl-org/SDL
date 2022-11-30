@@ -30,16 +30,15 @@
 #include "SDL_power.h"
 
 /* CoreFoundation is so verbose... */
-#define STRMATCH(a,b) (CFStringCompare(a, b, 0) == kCFCompareEqualTo)
-#define GETVAL(k,v) \
-    CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **) v)
+#define STRMATCH(a, b) (CFStringCompare(a, b, 0) == kCFCompareEqualTo)
+#define GETVAL(k, v) \
+    CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **)v)
 
 /* Note that AC power sources also include a laptop battery it is charging. */
-static void
-checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
-        SDL_bool * charging, int *seconds, int *percent)
+static void checkps(CFDictionaryRef dict, SDL_bool *have_ac, SDL_bool *have_battery,
+                    SDL_bool *charging, int *seconds, int *percent)
 {
-    CFStringRef strval;         /* don't CFRelease() this. */
+    CFStringRef strval; /* don't CFRelease() this. */
     CFBooleanRef bval;
     CFNumberRef numval;
     SDL_bool charge = SDL_FALSE;
@@ -50,7 +49,7 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
     int pct = -1;
 
     if ((GETVAL(kIOPSIsPresentKey, &bval)) && (bval == kCFBooleanFalse)) {
-        return;                 /* nothing to see here. */
+        return; /* nothing to see here. */
     }
 
     if (!GETVAL(kIOPSPowerSourceStateKey, &strval)) {
@@ -60,7 +59,7 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
     if (STRMATCH(strval, CFSTR(kIOPSACPowerValue))) {
         is_ac = *have_ac = SDL_TRUE;
     } else if (!STRMATCH(strval, CFSTR(kIOPSBatteryPowerValue))) {
-        return;                 /* not a battery? */
+        return; /* not a battery? */
     }
 
     if ((GETVAL(kIOPSIsChargingKey, &bval)) && (bval == kCFBooleanTrue)) {
@@ -72,7 +71,7 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
         CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
         if (val > 0) {
             *have_battery = SDL_TRUE;
-            maxpct = (int) val;
+            maxpct = (int)val;
         }
     }
 
@@ -81,7 +80,7 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
         CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
         if (val > 0) {
             *have_battery = SDL_TRUE;
-            maxpct = (int) val;
+            maxpct = (int)val;
         }
     }
 
@@ -91,23 +90,23 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
 
         /* Mac OS X reports 0 minutes until empty if you're plugged in. :( */
         if ((val == 0) && (is_ac)) {
-            val = -1;           /* !!! FIXME: calc from timeToFull and capacity? */
+            val = -1; /* !!! FIXME: calc from timeToFull and capacity? */
         }
 
-        secs = (int) val;
+        secs = (int)val;
         if (secs > 0) {
-            secs *= 60;         /* value is in minutes, so convert to seconds. */
+            secs *= 60; /* value is in minutes, so convert to seconds. */
         }
     }
 
     if (GETVAL(kIOPSCurrentCapacityKey, &numval)) {
         SInt32 val = -1;
         CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
-        pct = (int) val;
+        pct = (int)val;
     }
 
     if ((pct > 0) && (maxpct > 0)) {
-        pct = (int) ((((double) pct) / ((double) maxpct)) * 100.0);
+        pct = (int)((((double)pct) / ((double)maxpct)) * 100.0);
     }
 
     if (pct > 100) {
@@ -120,7 +119,7 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
      */
     if ((secs < 0) && (*seconds < 0)) {
         if ((pct < 0) && (*percent < 0)) {
-            choose = SDL_TRUE;  /* at least we know there's a battery. */
+            choose = SDL_TRUE; /* at least we know there's a battery. */
         }
         if (pct > *percent) {
             choose = SDL_TRUE;
@@ -139,9 +138,8 @@ checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
 #undef GETVAL
 #undef STRMATCH
 
-
 SDL_bool
-SDL_GetPowerInfo_MacOSX(SDL_PowerState * state, int *seconds, int *percent)
+SDL_GetPowerInfo_MacOSX(SDL_PowerState *state, int *seconds, int *percent)
 {
     CFTypeRef blob = IOPSCopyPowerSourcesInfo();
 
@@ -159,7 +157,7 @@ SDL_GetPowerInfo_MacOSX(SDL_PowerState * state, int *seconds, int *percent)
             const CFIndex total = CFArrayGetCount(list);
             CFIndex i;
             for (i = 0; i < total; i++) {
-                CFTypeRef ps = (CFTypeRef) CFArrayGetValueAtIndex(list, i);
+                CFTypeRef ps = (CFTypeRef)CFArrayGetValueAtIndex(list, i);
                 CFDictionaryRef dict =
                     IOPSGetPowerSourceDescription(blob, ps);
                 if (dict != NULL) {

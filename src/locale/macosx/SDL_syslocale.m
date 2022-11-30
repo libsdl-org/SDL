@@ -24,53 +24,53 @@
 
 #import <Foundation/Foundation.h>
 
-void
-SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
-{ @autoreleasepool {
-    NSArray *languages = NSLocale.preferredLanguages;
-    size_t numlangs = 0;
-    size_t i;
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+{
+    @autoreleasepool {
+        NSArray *languages = NSLocale.preferredLanguages;
+        size_t numlangs = 0;
+        size_t i;
 
-    numlangs = (size_t) [languages count];
+        numlangs = (size_t)[languages count];
 
-    for (i = 0; i < numlangs; i++) {
-        NSString *nsstr = [languages objectAtIndex:i];
-        size_t len;
-        char *ptr;
+        for (i = 0; i < numlangs; i++) {
+            NSString *nsstr = [languages objectAtIndex:i];
+            size_t len;
+            char *ptr;
 
-        if (nsstr == nil) {
-            break;
-        }
-
-        [nsstr getCString:buf maxLength:buflen encoding:NSASCIIStringEncoding];
-        len = SDL_strlen(buf);
-
-        // convert '-' to '_'...
-        //  These are always full lang-COUNTRY, so we search from the back,
-        //  so things like zh-Hant-CN find the right '-' to convert.
-        if ((ptr = SDL_strrchr(buf, '-')) != NULL) {
-            *ptr = '_';
-        }
-
-        if (buflen <= len) {
-            *buf = '\0';  // drop this one and stop, we can't fit anymore.
-            break;
-        }
-
-        buf += len;
-        buflen -= len;
-
-        if (i < (numlangs - 1)) {
-            if (buflen <= 1) {
-                break;  // out of room, stop looking.
+            if (nsstr == nil) {
+                break;
             }
-            buf[0] = ',';  // add a comma between entries.
-            buf[1] = '\0';
-            buf++;
-            buflen--;
+
+            [nsstr getCString:buf maxLength:buflen encoding:NSASCIIStringEncoding];
+            len = SDL_strlen(buf);
+
+            // convert '-' to '_'...
+            //  These are always full lang-COUNTRY, so we search from the back,
+            //  so things like zh-Hant-CN find the right '-' to convert.
+            if ((ptr = SDL_strrchr(buf, '-')) != NULL) {
+                *ptr = '_';
+            }
+
+            if (buflen <= len) {
+                *buf = '\0'; // drop this one and stop, we can't fit anymore.
+                break;
+            }
+
+            buf += len;
+            buflen -= len;
+
+            if (i < (numlangs - 1)) {
+                if (buflen <= 1) {
+                    break; // out of room, stop looking.
+                }
+                buf[0] = ','; // add a comma between entries.
+                buf[1] = '\0';
+                buf++;
+                buflen--;
+            }
         }
     }
-}}
+}
 
 /* vi: set ts=4 sw=4 expandtab: */
-

@@ -12,7 +12,7 @@
 
 /* quiet windows compiler warnings */
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-# define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include <stdio.h>
@@ -24,15 +24,14 @@ static size_t
 widelen(char *data)
 {
     size_t len = 0;
-    Uint32 *p = (Uint32 *) data;
+    Uint32 *p = (Uint32 *)data;
     while (*p++) {
         ++len;
     }
     return len;
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     const char *formats[] = {
         "UTF8",
@@ -49,7 +48,7 @@ main(int argc, char *argv[])
         "UCS-4",
     };
 
-    char * fname;
+    char *fname;
     char buffer[BUFSIZ];
     char *ucs4;
     char *test[2];

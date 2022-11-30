@@ -27,7 +27,6 @@
 #include <windows.ui.xaml.media.dxinterop.h>
 #endif
 
-
 /* SDL includes */
 #include "../../SDL_internal.h"
 #include "SDL.h"
@@ -36,70 +35,58 @@
 #include "SDL_winrtapp_common.h"
 #include "SDL_winrtapp_xaml.h"
 
-
-
 /* SDL-internal globals: */
 SDL_bool WINRT_XAMLWasEnabled = SDL_FALSE;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
-extern "C"
-ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative = NULL;
-static Windows::Foundation::EventRegistrationToken  WINRT_XAMLAppEventToken;
+extern "C" ISwapChainBackgroundPanelNative *WINRT_GlobalSwapChainBackgroundPanelNative = NULL;
+static Windows::Foundation::EventRegistrationToken WINRT_XAMLAppEventToken;
 #endif
-
 
 /*
  * Input event handlers (XAML)
  */
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 
-static void
-WINRT_OnPointerPressedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
+static void WINRT_OnPointerPressedViaXAML(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args)
 {
     WINRT_ProcessPointerPressedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
 }
 
-static void
-WINRT_OnPointerMovedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
+static void WINRT_OnPointerMovedViaXAML(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args)
 {
     WINRT_ProcessPointerMovedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
 }
 
-static void
-WINRT_OnPointerReleasedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
+static void WINRT_OnPointerReleasedViaXAML(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args)
 {
     WINRT_ProcessPointerReleasedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
 }
 
-static void
-WINRT_OnPointerWheelChangedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
+static void WINRT_OnPointerWheelChangedViaXAML(Platform::Object ^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ args)
 {
     WINRT_ProcessPointerWheelChangedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
 }
 
 #endif // WINAPI_FAMILY == WINAPI_FAMILY_APP
 
-
 /*
  * XAML-to-SDL Rendering Callback
  */
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 
-static void
-WINRT_OnRenderViaXAML(_In_ Platform::Object^ sender, _In_ Platform::Object^ args)
+static void WINRT_OnRenderViaXAML(_In_ Platform::Object ^ sender, _In_ Platform::Object ^ args)
 {
     WINRT_CycleXAMLThread();
 }
 
 #endif // WINAPI_FAMILY == WINAPI_FAMILY_APP
 
-
 /*
  * SDL + XAML Initialization
  */
 
-int
-SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void * backgroundPanelAsIInspectable)
+int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPanelAsIInspectable)
 {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     return SDL_SetError("XAML support is not yet available in Windows Phone.");
@@ -114,13 +101,13 @@ SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void * backgroundPanelAs
     using namespace Windows::UI::Xaml::Media;
 
     // Make sure we have a valid XAML element (to draw onto):
-    if ( ! backgroundPanelAsIInspectable) {
+    if (!backgroundPanelAsIInspectable) {
         return SDL_InvalidParamError("backgroundPanelAsIInspectable");
     }
 
-    Platform::Object ^ backgroundPanel = reinterpret_cast<Object ^>((IInspectable *) backgroundPanelAsIInspectable);
-    SwapChainBackgroundPanel ^swapChainBackgroundPanel = dynamic_cast<SwapChainBackgroundPanel ^>(backgroundPanel);
-    if ( ! swapChainBackgroundPanel) {
+    Platform::Object ^ backgroundPanel = reinterpret_cast<Object ^>((IInspectable *)backgroundPanelAsIInspectable);
+    SwapChainBackgroundPanel ^ swapChainBackgroundPanel = dynamic_cast<SwapChainBackgroundPanel ^>(backgroundPanel);
+    if (!swapChainBackgroundPanel) {
         return SDL_SetError("An unknown or unsupported type of XAML control was specified.");
     }
 
@@ -131,10 +118,10 @@ SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void * backgroundPanelAs
     swapChainBackgroundPanel->PointerMoved += ref new PointerEventHandler(WINRT_OnPointerMovedViaXAML);
 
     // Setup for rendering:
-    IInspectable *panelInspectable = (IInspectable*) reinterpret_cast<IInspectable*>(swapChainBackgroundPanel);
+    IInspectable *panelInspectable = (IInspectable *)reinterpret_cast<IInspectable *>(swapChainBackgroundPanel);
     panelInspectable->QueryInterface(__uuidof(ISwapChainBackgroundPanelNative), (void **)&WINRT_GlobalSwapChainBackgroundPanelNative);
 
-    WINRT_XAMLAppEventToken = CompositionTarget::Rendering::add(ref new EventHandler<Object^>(WINRT_OnRenderViaXAML));
+    WINRT_XAMLAppEventToken = CompositionTarget::Rendering::add(ref new EventHandler<Object ^>(WINRT_OnRenderViaXAML));
 
     // Make sure the app is ready to call the SDL-centric main() function:
     WINRT_SDLAppEntryPoint = mainFunction;

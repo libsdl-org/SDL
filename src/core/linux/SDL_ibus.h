@@ -43,11 +43,11 @@ extern void SDL_IBus_Reset(void);
    called some time after this, to receive the TextInput / TextEditing event back. */
 extern SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
 
-/* Update the position of IBus' candidate list. If rect is NULL then this will 
+/* Update the position of IBus' candidate list. If rect is NULL then this will
    just reposition it relative to the focused window's new position. */
 extern void SDL_IBus_UpdateTextRect(const SDL_Rect *window_relative_rect);
 
-/* Checks DBus for new IBus events, and calls SDL_SendKeyboardText / 
+/* Checks DBus for new IBus events, and calls SDL_SendKeyboardText /
    SDL_SendEditingText for each event it finds */
 extern void SDL_IBus_PumpEvents(void);
 

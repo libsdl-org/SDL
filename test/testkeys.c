@@ -19,8 +19,7 @@
 
 #include "SDL.h"
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_Scancode scancode;
 
@@ -33,7 +32,7 @@ main(int argc, char *argv[])
     }
     for (scancode = 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         SDL_Log("Scancode #%d, \"%s\"\n", scancode,
-               SDL_GetScancodeName(scancode));
+                SDL_GetScancodeName(scancode));
     }
     SDL_Quit();
     return 0;

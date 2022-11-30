@@ -33,7 +33,7 @@ SDL_CreateMutex(void)
     SDL_mutex *mutex;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
+    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
         RecursiveLock_Init(&mutex->lock);
     } else {
@@ -43,8 +43,7 @@ SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void
-SDL_DestroyMutex(SDL_mutex *mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         SDL_free(mutex);
@@ -52,8 +51,7 @@ SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int
-SDL_LockMutex(SDL_mutex *mutex)
+int SDL_LockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
         return SDL_SetError("Passed a NULL mutex");
@@ -65,8 +63,7 @@ SDL_LockMutex(SDL_mutex *mutex)
 }
 
 /* try Lock the mutex */
-int
-SDL_TryLockMutex(SDL_mutex *mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
         return SDL_SetError("Passed a NULL mutex");
@@ -76,8 +73,7 @@ SDL_TryLockMutex(SDL_mutex *mutex)
 }
 
 /* Unlock the mutex */
-int
-SDL_mutexV(SDL_mutex *mutex)
+int SDL_mutexV(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
         return SDL_SetError("Passed a NULL mutex");

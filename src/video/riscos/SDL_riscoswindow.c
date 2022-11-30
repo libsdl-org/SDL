@@ -31,12 +31,11 @@
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
-int
-RISCOS_CreateWindow(_THIS, SDL_Window * window)
+int RISCOS_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *driverdata;
 
-    driverdata = (SDL_WindowData *) SDL_calloc(1, sizeof(*driverdata));
+    driverdata = (SDL_WindowData *)SDL_calloc(1, sizeof(*driverdata));
     if (driverdata == NULL) {
         return SDL_OutOfMemory();
     }
@@ -51,10 +50,9 @@ RISCOS_CreateWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
-void
-RISCOS_DestroyWindow(_THIS, SDL_Window * window)
+void RISCOS_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *driverdata = (SDL_WindowData *)window->driverdata;
 
     if (driverdata == NULL) {
         return;

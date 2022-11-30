@@ -29,13 +29,12 @@
 #include "../video/SDL_sysvideo.h"
 #include "scancodes_ascii.h"
 
-
 /* #define DEBUG_KEYBOARD */
 
 /* Global keyboard information */
 
-#define KEYBOARD_HARDWARE       0x01
-#define KEYBOARD_AUTORELEASE    0x02
+#define KEYBOARD_HARDWARE    0x01
+#define KEYBOARD_AUTORELEASE 0x02
 
 typedef struct SDL_Keyboard SDL_Keyboard;
 
@@ -644,40 +643,38 @@ static const char *SDL_scancode_names[SDL_NUM_SCANCODES] = {
 char *
 SDL_UCS4ToUTF8(Uint32 ch, char *dst)
 {
-    Uint8 *p = (Uint8 *) dst;
+    Uint8 *p = (Uint8 *)dst;
     if (ch <= 0x7F) {
-        *p = (Uint8) ch;
+        *p = (Uint8)ch;
         ++dst;
     } else if (ch <= 0x7FF) {
-        p[0] = 0xC0 | (Uint8) ((ch >> 6) & 0x1F);
-        p[1] = 0x80 | (Uint8) (ch & 0x3F);
+        p[0] = 0xC0 | (Uint8)((ch >> 6) & 0x1F);
+        p[1] = 0x80 | (Uint8)(ch & 0x3F);
         dst += 2;
     } else if (ch <= 0xFFFF) {
-        p[0] = 0xE0 | (Uint8) ((ch >> 12) & 0x0F);
-        p[1] = 0x80 | (Uint8) ((ch >> 6) & 0x3F);
-        p[2] = 0x80 | (Uint8) (ch & 0x3F);
+        p[0] = 0xE0 | (Uint8)((ch >> 12) & 0x0F);
+        p[1] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
+        p[2] = 0x80 | (Uint8)(ch & 0x3F);
         dst += 3;
     } else {
-        p[0] = 0xF0 | (Uint8) ((ch >> 18) & 0x07);
-        p[1] = 0x80 | (Uint8) ((ch >> 12) & 0x3F);
-        p[2] = 0x80 | (Uint8) ((ch >> 6) & 0x3F);
-        p[3] = 0x80 | (Uint8) (ch & 0x3F);
+        p[0] = 0xF0 | (Uint8)((ch >> 18) & 0x07);
+        p[1] = 0x80 | (Uint8)((ch >> 12) & 0x3F);
+        p[2] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
+        p[3] = 0x80 | (Uint8)(ch & 0x3F);
         dst += 4;
     }
     return dst;
 }
 
 /* Public functions */
-int
-SDL_KeyboardInit(void)
+int SDL_KeyboardInit(void)
 {
     /* Set the default keymap */
     SDL_SetKeymap(0, SDL_default_keymap, SDL_NUM_SCANCODES, SDL_FALSE);
     return 0;
 }
 
-void
-SDL_ResetKeyboard(void)
+void SDL_ResetKeyboard(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
@@ -685,21 +682,19 @@ SDL_ResetKeyboard(void)
 #ifdef DEBUG_KEYBOARD
     printf("Resetting keyboard\n");
 #endif
-    for (scancode = (SDL_Scancode) 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
+    for (scancode = (SDL_Scancode)0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         if (keyboard->keystate[scancode] == SDL_PRESSED) {
             SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
     }
 }
 
-void
-SDL_GetDefaultKeymap(SDL_Keycode * keymap)
+void SDL_GetDefaultKeymap(SDL_Keycode *keymap)
 {
     SDL_memcpy(keymap, SDL_default_keymap, sizeof(SDL_default_keymap));
 }
 
-void
-SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_bool send_event)
+void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
@@ -732,8 +727,7 @@ SDL_SetKeymap(int start, const SDL_Keycode * keys, int length, SDL_bool send_eve
     }
 }
 
-void
-SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
+void SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
     if (scancode >= SDL_NUM_SCANCODES) {
         return;
@@ -749,8 +743,7 @@ SDL_GetKeyboardFocus(void)
     return keyboard->focus;
 }
 
-void
-SDL_SetKeyboardFocus(SDL_Window * window)
+void SDL_SetKeyboardFocus(SDL_Window *window)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
@@ -767,7 +760,7 @@ SDL_SetKeyboardFocus(SDL_Window * window)
 
         /* old window must lose an existing mouse capture. */
         if (keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE) {
-            SDL_CaptureMouse(SDL_FALSE);  /* drop the capture. */
+            SDL_CaptureMouse(SDL_FALSE); /* drop the capture. */
             SDL_UpdateMouseCapture(SDL_TRUE);
             SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
         }
@@ -799,8 +792,7 @@ SDL_SetKeyboardFocus(SDL_Window * window)
     }
 }
 
-static int
-SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+static int SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
@@ -934,7 +926,7 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode, SD
         (keyboard->focus->flags & SDL_WINDOW_KEYBOARD_GRABBED) &&
         (keyboard->focus->flags & SDL_WINDOW_FULLSCREEN) &&
         SDL_GetHintBoolean(SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED, SDL_TRUE)) {
-        /* We will temporarily forfeit our grab by minimizing our window, 
+        /* We will temporarily forfeit our grab by minimizing our window,
            allowing the user to escape the application */
         SDL_MinimizeWindow(keyboard->focus);
     }
@@ -942,8 +934,7 @@ SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode, SD
     return posted;
 }
 
-int
-SDL_SendKeyboardUnicodeKey(Uint32 ch)
+int SDL_SendKeyboardUnicodeKey(Uint32 ch)
 {
     SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
     uint16_t mod = 0;
@@ -969,26 +960,22 @@ SDL_SendKeyboardUnicodeKey(Uint32 ch)
     return 0;
 }
 
-int
-SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
+int SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
 {
     return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode, SDLK_UNKNOWN);
 }
 
-int
-SDL_SendKeyboardKeyAndKeycode(Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+int SDL_SendKeyboardKeyAndKeycode(Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
     return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode, keycode);
 }
 
-int
-SDL_SendKeyboardKeyAutoRelease(SDL_Scancode scancode)
+int SDL_SendKeyboardKeyAutoRelease(SDL_Scancode scancode)
 {
     return SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
 }
 
-void
-SDL_ReleaseAutoReleaseKeys(void)
+void SDL_ReleaseAutoReleaseKeys(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode scancode;
@@ -1017,8 +1004,7 @@ SDL_HardwareKeyboardKeyPressed(void)
     return SDL_FALSE;
 }
 
-int
-SDL_SendKeyboardText(const char *text)
+int SDL_SendKeyboardText(const char *text)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
@@ -1048,8 +1034,7 @@ SDL_SendKeyboardText(const char *text)
     return posted;
 }
 
-int
-SDL_SendEditingText(const char *text, int start, int length)
+int SDL_SendEditingText(const char *text, int start, int length)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
@@ -1079,8 +1064,7 @@ SDL_SendEditingText(const char *text, int start, int length)
     return posted;
 }
 
-void
-SDL_KeyboardQuit(void)
+void SDL_KeyboardQuit(void)
 {
 }
 
@@ -1089,7 +1073,7 @@ SDL_GetKeyboardState(int *numkeys)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (numkeys != (int *) 0) {
+    if (numkeys != (int *)0) {
         *numkeys = SDL_NUM_SCANCODES;
     }
     return keyboard->keystate;
@@ -1103,8 +1087,7 @@ SDL_GetModState(void)
     return (SDL_Keymod)keyboard->modstate;
 }
 
-void
-SDL_SetModState(SDL_Keymod modstate)
+void SDL_SetModState(SDL_Keymod modstate)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
@@ -1112,8 +1095,7 @@ SDL_SetModState(SDL_Keymod modstate)
 }
 
 /* Note that SDL_ToggleModState() is not a public API. SDL_SetModState() is. */
-void
-SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
+void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     if (toggle) {
@@ -1123,15 +1105,14 @@ SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
     }
 }
 
-
 SDL_Keycode
 SDL_GetKeyFromScancode(SDL_Scancode scancode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
-          SDL_InvalidParamError("scancode");
-          return 0;
+        SDL_InvalidParamError("scancode");
+        return 0;
     }
 
     return keyboard->keymap[scancode];
@@ -1168,8 +1149,8 @@ SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
-          SDL_InvalidParamError("scancode");
-          return "";
+        SDL_InvalidParamError("scancode");
+        return "";
     }
 
     name = SDL_scancode_names[scancode];
@@ -1184,7 +1165,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
     int i;
 
     if (name == NULL || !*name) {
-            SDL_InvalidParamError("name");
+        SDL_InvalidParamError("name");
         return SDL_SCANCODE_UNKNOWN;
     }
 
@@ -1233,7 +1214,7 @@ SDL_GetKeyName(SDL_Keycode key)
             key -= 32;
         }
 
-        end = SDL_UCS4ToUTF8((Uint32) key, name);
+        end = SDL_UCS4ToUTF8((Uint32)key, name);
         *end = '\0';
         return name;
     }
@@ -1254,27 +1235,27 @@ SDL_GetKeyFromName(const char *name)
     if (key >= 0xF0) {
         if (SDL_strlen(name) == 4) {
             int i = 0;
-            key  = (Uint16)(name[i]&0x07) << 18;
-            key |= (Uint16)(name[++i]&0x3F) << 12;
-            key |= (Uint16)(name[++i]&0x3F) << 6;
-            key |= (Uint16)(name[++i]&0x3F);
+            key = (Uint16)(name[i] & 0x07) << 18;
+            key |= (Uint16)(name[++i] & 0x3F) << 12;
+            key |= (Uint16)(name[++i] & 0x3F) << 6;
+            key |= (Uint16)(name[++i] & 0x3F);
             return key;
         }
         return SDLK_UNKNOWN;
     } else if (key >= 0xE0) {
         if (SDL_strlen(name) == 3) {
             int i = 0;
-            key  = (Uint16)(name[i]&0x0F) << 12;
-            key |= (Uint16)(name[++i]&0x3F) << 6;
-            key |= (Uint16)(name[++i]&0x3F);
+            key = (Uint16)(name[i] & 0x0F) << 12;
+            key |= (Uint16)(name[++i] & 0x3F) << 6;
+            key |= (Uint16)(name[++i] & 0x3F);
             return key;
         }
         return SDLK_UNKNOWN;
     } else if (key >= 0xC0) {
         if (SDL_strlen(name) == 2) {
             int i = 0;
-            key  = (Uint16)(name[i]&0x1F) << 6;
-            key |= (Uint16)(name[++i]&0x3F);
+            key = (Uint16)(name[i] & 0x1F) << 6;
+            key |= (Uint16)(name[++i] & 0x3F);
             return key;
         }
         return SDLK_UNKNOWN;

@@ -34,8 +34,8 @@ quit(int rc)
 int SDLCALL
 SubThreadFunc(void *data)
 {
-    while (!*(int volatile *) data) {
-        ;                       /* SDL_Delay(10); *//* do nothing */
+    while (!*(int volatile *)data) {
+        ; /* SDL_Delay(10); */ /* do nothing */
     }
     return 0;
 }
@@ -46,20 +46,20 @@ ThreadFunc(void *data)
     SDL_Thread *sub_threads[NUMTHREADS];
     int flags[NUMTHREADS];
     int i;
-    int tid = (int) (uintptr_t) data;
+    int tid = (int)(uintptr_t)data;
 
     SDL_Log("Creating Thread %d\n", tid);
 
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
-        SDL_snprintf(name, sizeof (name), "Child%d_%d", tid, i);
+        SDL_snprintf(name, sizeof(name), "Child%d_%d", tid, i);
         flags[i] = 0;
         sub_threads[i] = SDL_CreateThread(SubThreadFunc, name, &flags[i]);
     }
 
     SDL_Log("Thread '%d' waiting for signal\n", tid);
     while (SDL_AtomicGet(&time_for_threads_to_die[tid]) != 1) {
-        ;                       /* do nothing */
+        ; /* do nothing */
     }
 
     SDL_Log("Thread '%d' sending signals to subthreads\n", tid);
@@ -73,8 +73,7 @@ ThreadFunc(void *data)
     return 0;
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_Thread *threads[NUMTHREADS];
     int i;
@@ -91,9 +90,9 @@ main(int argc, char *argv[])
     signal(SIGSEGV, SIG_DFL);
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
-        SDL_snprintf(name, sizeof (name), "Parent%d", i);
+        SDL_snprintf(name, sizeof(name), "Parent%d", i);
         SDL_AtomicSet(&time_for_threads_to_die[i], 0);
-        threads[i] = SDL_CreateThread(ThreadFunc, name, (void*) (uintptr_t) i);
+        threads[i] = SDL_CreateThread(ThreadFunc, name, (void *)(uintptr_t)i);
 
         if (threads[i] == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());

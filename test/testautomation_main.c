@@ -9,14 +9,13 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
-
 /* !
  * \brief Tests SDL_Init() and SDL_Quit() of Joystick and Haptic subsystems
  * \sa
  * http://wiki.libsdl.org/SDL_Init
  * http://wiki.libsdl.org/SDL_Quit
  */
-static int main_testInitQuitJoystickHaptic (void *arg)
+static int main_testInitQuitJoystickHaptic(void *arg)
 {
 #if defined SDL_JOYSTICK_DISABLED || defined SDL_HAPTIC_DISABLED
     return TEST_SKIPPED;
@@ -24,15 +23,15 @@ static int main_testInitQuitJoystickHaptic (void *arg)
     int enabled_subsystems;
     int initialized_subsystems = SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC;
 
-    SDLTest_AssertCheck( SDL_Init(initialized_subsystems) == 0, "SDL_Init multiple systems." );
+    SDLTest_AssertCheck(SDL_Init(initialized_subsystems) == 0, "SDL_Init multiple systems.");
 
     enabled_subsystems = SDL_WasInit(initialized_subsystems);
-    SDLTest_AssertCheck( enabled_subsystems == initialized_subsystems, "SDL_WasInit(SDL_INIT_EVERYTHING) contains all systems (%i)", enabled_subsystems );
+    SDLTest_AssertCheck(enabled_subsystems == initialized_subsystems, "SDL_WasInit(SDL_INIT_EVERYTHING) contains all systems (%i)", enabled_subsystems);
 
     SDL_Quit();
 
     enabled_subsystems = SDL_WasInit(initialized_subsystems);
-    SDLTest_AssertCheck( enabled_subsystems == 0, "SDL_Quit should shut down everything (%i)", enabled_subsystems );
+    SDLTest_AssertCheck(enabled_subsystems == 0, "SDL_Quit should shut down everything (%i)", enabled_subsystems);
 
     return TEST_COMPLETED;
 #endif
@@ -44,7 +43,7 @@ static int main_testInitQuitJoystickHaptic (void *arg)
  * http://wiki.libsdl.org/SDL_Init
  * http://wiki.libsdl.org/SDL_Quit
  */
-static int main_testInitQuitSubSystem (void *arg)
+static int main_testInitQuitSubSystem(void *arg)
 {
 #if defined SDL_JOYSTICK_DISABLED || defined SDL_HAPTIC_DISABLED || defined SDL_GAMECONTROLLER_DISABLED
     return TEST_SKIPPED;
@@ -56,15 +55,15 @@ static int main_testInitQuitSubSystem (void *arg)
         int initialized_system;
         int subsystem = subsystems[i];
 
-        SDLTest_AssertCheck( (SDL_WasInit(subsystem) & subsystem) == 0, "SDL_WasInit(%x) before init should be false", subsystem );
-        SDLTest_AssertCheck( SDL_InitSubSystem(subsystem) == 0, "SDL_InitSubSystem(%x)", subsystem );
+        SDLTest_AssertCheck((SDL_WasInit(subsystem) & subsystem) == 0, "SDL_WasInit(%x) before init should be false", subsystem);
+        SDLTest_AssertCheck(SDL_InitSubSystem(subsystem) == 0, "SDL_InitSubSystem(%x)", subsystem);
 
         initialized_system = SDL_WasInit(subsystem);
-        SDLTest_AssertCheck( (initialized_system & subsystem) != 0, "SDL_WasInit(%x) should be true (%x)", subsystem, initialized_system );
+        SDLTest_AssertCheck((initialized_system & subsystem) != 0, "SDL_WasInit(%x) should be true (%x)", subsystem, initialized_system);
 
         SDL_QuitSubSystem(subsystem);
 
-        SDLTest_AssertCheck( (SDL_WasInit(subsystem) & subsystem) == 0, "SDL_WasInit(%x) after shutdown should be false", subsystem );
+        SDLTest_AssertCheck((SDL_WasInit(subsystem) & subsystem) == 0, "SDL_WasInit(%x) after shutdown should be false", subsystem);
     }
 
     return TEST_COMPLETED;
@@ -72,7 +71,7 @@ static int main_testInitQuitSubSystem (void *arg)
 }
 
 const int joy_and_controller = SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER;
-static int main_testImpliedJoystickInit (void *arg)
+static int main_testImpliedJoystickInit(void *arg)
 {
 #if defined SDL_JOYSTICK_DISABLED || defined SDL_GAMECONTROLLER_DISABLED
     return TEST_SKIPPED;
@@ -80,24 +79,24 @@ static int main_testImpliedJoystickInit (void *arg)
     int initialized_system;
 
     /* First initialize the controller */
-    SDLTest_AssertCheck( (SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller" );
-    SDLTest_AssertCheck( SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) == 0, "SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)" );
+    SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) == 0, "SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)");
 
     /* Then make sure this implicitly initialized the joystick subsystem */
     initialized_system = SDL_WasInit(joy_and_controller);
-    SDLTest_AssertCheck( (initialized_system & joy_and_controller) == joy_and_controller, "SDL_WasInit() should be true for joystick & controller (%x)", initialized_system );
+    SDLTest_AssertCheck((initialized_system & joy_and_controller) == joy_and_controller, "SDL_WasInit() should be true for joystick & controller (%x)", initialized_system);
 
     /* Then quit the controller, and make sure that implicitly also quits the */
     /* joystick subsystem */
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
     initialized_system = SDL_WasInit(joy_and_controller);
-    SDLTest_AssertCheck( (initialized_system & joy_and_controller) == 0, "SDL_WasInit() should be false for joystick & controller (%x)", initialized_system );
+    SDLTest_AssertCheck((initialized_system & joy_and_controller) == 0, "SDL_WasInit() should be false for joystick & controller (%x)", initialized_system);
 
     return TEST_COMPLETED;
 #endif
 }
 
-static int main_testImpliedJoystickQuit (void *arg)
+static int main_testImpliedJoystickQuit(void *arg)
 {
 #if defined SDL_JOYSTICK_DISABLED || defined SDL_GAMECONTROLLER_DISABLED
     return TEST_SKIPPED;
@@ -105,19 +104,19 @@ static int main_testImpliedJoystickQuit (void *arg)
     int initialized_system;
 
     /* First initialize the controller and the joystick (explicitly) */
-    SDLTest_AssertCheck( (SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller" );
-    SDLTest_AssertCheck( SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem(SDL_INIT_JOYSTICK)" );
-    SDLTest_AssertCheck( SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) == 0, "SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)" );
+    SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0, "SDL_InitSubSystem(SDL_INIT_JOYSTICK)");
+    SDLTest_AssertCheck(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) == 0, "SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)");
 
     /* Then make sure they're both initialized properly */
     initialized_system = SDL_WasInit(joy_and_controller);
-    SDLTest_AssertCheck( (initialized_system & joy_and_controller) == joy_and_controller, "SDL_WasInit() should be true for joystick & controller (%x)", initialized_system );
+    SDLTest_AssertCheck((initialized_system & joy_and_controller) == joy_and_controller, "SDL_WasInit() should be true for joystick & controller (%x)", initialized_system);
 
     /* Then quit the controller, and make sure that it does NOT quit the */
     /* explicitly initialized joystick subsystem. */
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
     initialized_system = SDL_WasInit(joy_and_controller);
-    SDLTest_AssertCheck( (initialized_system & joy_and_controller) == SDL_INIT_JOYSTICK, "SDL_WasInit() should be false for joystick & controller (%x)", initialized_system );
+    SDLTest_AssertCheck((initialized_system & joy_and_controller) == SDL_INIT_JOYSTICK, "SDL_WasInit() should be false for joystick & controller (%x)", initialized_system);
 
     SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 
@@ -140,7 +139,7 @@ main_testSetError(void *arg)
     SDL_SetError("");
     SDLTest_AssertCheck(SDL_strcmp(error, SDL_GetError()) == 0, "SDL_SetError(\"\")");
 
-    for (i = 0; i < (sizeof(error)-1); ++i) {
+    for (i = 0; i < (sizeof(error) - 1); ++i) {
         error[i] = 'a' + (i % 26);
     }
     error[i] = '\0';
@@ -154,23 +153,28 @@ main_testSetError(void *arg)
 #pragma GCC diagnostic pop
 #endif
 
-static const SDLTest_TestCaseReference mainTest1 =
-        { (SDLTest_TestCaseFp)main_testInitQuitJoystickHaptic, "main_testInitQuitJoystickHaptic", "Tests SDL_Init/Quit of Joystick and Haptic subsystem", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest1 = {
+    (SDLTest_TestCaseFp)main_testInitQuitJoystickHaptic, "main_testInitQuitJoystickHaptic", "Tests SDL_Init/Quit of Joystick and Haptic subsystem", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest2 =
-        { (SDLTest_TestCaseFp)main_testInitQuitSubSystem, "main_testInitQuitSubSystem", "Tests SDL_InitSubSystem/QuitSubSystem", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest2 = {
+    (SDLTest_TestCaseFp)main_testInitQuitSubSystem, "main_testInitQuitSubSystem", "Tests SDL_InitSubSystem/QuitSubSystem", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest3 =
-        { (SDLTest_TestCaseFp)main_testImpliedJoystickInit, "main_testImpliedJoystickInit", "Tests that init for gamecontroller properly implies joystick", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest3 = {
+    (SDLTest_TestCaseFp)main_testImpliedJoystickInit, "main_testImpliedJoystickInit", "Tests that init for gamecontroller properly implies joystick", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest4 =
-        { (SDLTest_TestCaseFp)main_testImpliedJoystickQuit, "main_testImpliedJoystickQuit", "Tests that quit for gamecontroller doesn't quit joystick if you inited it explicitly", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest4 = {
+    (SDLTest_TestCaseFp)main_testImpliedJoystickQuit, "main_testImpliedJoystickQuit", "Tests that quit for gamecontroller doesn't quit joystick if you inited it explicitly", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest5 =
-        { (SDLTest_TestCaseFp)main_testSetError, "main_testSetError", "Tests that SDL_SetError() handles arbitrarily large strings", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest5 = {
+    (SDLTest_TestCaseFp)main_testSetError, "main_testSetError", "Tests that SDL_SetError() handles arbitrarily large strings", TEST_ENABLED
+};
 
 /* Sequence of Main test cases */
-static const SDLTest_TestCaseReference *mainTests[] =  {
+static const SDLTest_TestCaseReference *mainTests[] = {
     &mainTest1,
     &mainTest2,
     &mainTest3,

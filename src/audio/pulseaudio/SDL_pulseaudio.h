@@ -43,7 +43,7 @@ struct SDL_PrivateAudioData
     Uint8 *mixbuf;
     int mixlen;
 
-    int bytes_requested;  /* bytes of data the hardware wants _now_. */
+    int bytes_requested; /* bytes of data the hardware wants _now_. */
 
     const Uint8 *capturebuf;
     int capturelen;

@@ -47,26 +47,24 @@ static pfnAvSetMmThreadCharacteristicsW pAvSetMmThreadCharacteristicsW = NULL;
 static pfnAvRevertMmThreadCharacteristics pAvRevertMmThreadCharacteristics = NULL;
 
 /* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
-static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32,{ 0xb1, 0x78, 0xc2, 0xf5, 0x68, 0xa7, 0x03, 0xb2 } };
+static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32, { 0xb1, 0x78, 0xc2, 0xf5, 0x68, 0xa7, 0x03, 0xb2 } };
 
-int
-WASAPI_PlatformInit(void)
+int WASAPI_PlatformInit(void)
 {
     if (SDL_IMMDevice_Init() < 0) {
         return -1; /* This is set by SDL_IMMDevice_Init */
     }
 
-    libavrt = LoadLibrary(TEXT("avrt.dll"));  /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
+    libavrt = LoadLibrary(TEXT("avrt.dll")); /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
     if (libavrt) {
-        pAvSetMmThreadCharacteristicsW = (pfnAvSetMmThreadCharacteristicsW) GetProcAddress(libavrt, "AvSetMmThreadCharacteristicsW");
-        pAvRevertMmThreadCharacteristics = (pfnAvRevertMmThreadCharacteristics) GetProcAddress(libavrt, "AvRevertMmThreadCharacteristics");
+        pAvSetMmThreadCharacteristicsW = (pfnAvSetMmThreadCharacteristicsW)GetProcAddress(libavrt, "AvSetMmThreadCharacteristicsW");
+        pAvRevertMmThreadCharacteristics = (pfnAvRevertMmThreadCharacteristics)GetProcAddress(libavrt, "AvRevertMmThreadCharacteristics");
     }
 
     return 0;
 }
 
-void
-WASAPI_PlatformDeinit(void)
+void WASAPI_PlatformDeinit(void)
 {
     if (libavrt) {
         FreeLibrary(libavrt);
@@ -79,11 +77,10 @@ WASAPI_PlatformDeinit(void)
     SDL_IMMDevice_Quit();
 }
 
-void
-WASAPI_PlatformThreadInit(_THIS)
+void WASAPI_PlatformThreadInit(_THIS)
 {
     /* this thread uses COM. */
-    if (SUCCEEDED(WIN_CoInitialize())) {    /* can't report errors, hope it worked! */
+    if (SUCCEEDED(WIN_CoInitialize())) { /* can't report errors, hope it worked! */
         this->hidden->coinitialized = SDL_TRUE;
     }
 
@@ -94,8 +91,7 @@ WASAPI_PlatformThreadInit(_THIS)
     }
 }
 
-void
-WASAPI_PlatformThreadDeinit(_THIS)
+void WASAPI_PlatformThreadDeinit(_THIS)
 {
     /* Set this thread back to normal priority. */
     if (this->hidden->task && pAvRevertMmThreadCharacteristics) {
@@ -109,8 +105,7 @@ WASAPI_PlatformThreadDeinit(_THIS)
     }
 }
 
-int
-WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
 {
     IMMDevice *device = NULL;
     HRESULT ret;
@@ -121,7 +116,7 @@ WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
     }
 
     /* this is not async in standard win32, yay! */
-    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **) &this->hidden->client);
+    ret = IMMDevice_Activate(device, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&this->hidden->client);
     IMMDevice_Release(device);
 
     if (FAILED(ret)) {
@@ -130,33 +125,29 @@ WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
     }
 
     SDL_assert(this->hidden->client != NULL);
-    if (WASAPI_PrepDevice(this, isrecovery) == -1) {   /* not async, fire it right away. */
+    if (WASAPI_PrepDevice(this, isrecovery) == -1) { /* not async, fire it right away. */
         return -1;
     }
 
-    return 0;  /* good to go. */
+    return 0; /* good to go. */
 }
 
-void
-WASAPI_EnumerateEndpoints(void)
+void WASAPI_EnumerateEndpoints(void)
 {
     SDL_IMMDevice_EnumerateEndpoints(SDL_FALSE);
 }
 
-int
-WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     return SDL_IMMDevice_GetDefaultAudioInfo(name, spec, iscapture);
 }
 
-void
-WASAPI_PlatformDeleteActivationHandler(void *handler)
+void WASAPI_PlatformDeleteActivationHandler(void *handler)
 {
     /* not asynchronous. */
     SDL_assert(!"This function should have only been called on WinRT.");
 }
 
-#endif  /* SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__) */
+#endif /* SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__) */
 
 /* vi: set ts=4 sw=4 expandtab: */
-

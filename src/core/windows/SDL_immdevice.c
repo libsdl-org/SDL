@@ -27,7 +27,7 @@
 #include "../../audio/SDL_sysaudio.h"
 #include <objbase.h> /* For CLSIDFromString */
 
-static const ERole SDL_IMMDevice_role = eConsole;  /* !!! FIXME: should this be eMultimedia? Should be a hint? */
+static const ERole SDL_IMMDevice_role = eConsole; /* !!! FIXME: should this be eMultimedia? Should be a hint? */
 
 /* This is global to the WASAPI target, to handle hotplug and default device lookup. */
 static IMMDeviceEnumerator *enumerator = NULL;
@@ -39,6 +39,7 @@ static IMMDeviceEnumerator *enumerator = NULL;
 #define PropVariantInit(p) SDL_zerop(p)
 
 /* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
+/* *INDENT-OFF* */ /* clang-format off */
 static const CLSID SDL_CLSID_MMDeviceEnumerator = { 0xbcde0395, 0xe52f, 0x467c,{ 0x8e, 0x3d, 0xc4, 0x57, 0x92, 0x91, 0x69, 0x2e } };
 static const IID SDL_IID_IMMDeviceEnumerator = { 0xa95664d2, 0x9614, 0x4f35,{ 0xa7, 0x46, 0xde, 0x8d, 0xb6, 0x36, 0x17, 0xe6 } };
 static const IID SDL_IID_IMMNotificationClient = { 0x7991eec9, 0x7e89, 0x4d85,{ 0x83, 0x90, 0x6c, 0x70, 0x3c, 0xec, 0x60, 0xc0 } };
@@ -48,13 +49,13 @@ static const PROPERTYKEY SDL_PKEY_AudioEngine_DeviceFormat = { { 0xf19f064d, 0x8
 static const PROPERTYKEY SDL_PKEY_AudioEndpoint_GUID = { { 0x1da5d803, 0xd492, 0x4edd,{ 0x8c, 0x23, 0xe0, 0xc0, 0xff, 0xee, 0x7f, 0x0e, } }, 4 };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+/* *INDENT-ON* */ /* clang-format on */
 
 /* these increment as default devices change. Opened default devices pick up changes in their threads. */
 SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
 SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
 
-static void
-GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSIBLE *fmt, GUID *guid)
+static void GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSIBLE *fmt, GUID *guid)
 {
     /* PKEY_Device_FriendlyName gives you "Speakers (SoundBlaster Pro)" which drives me nuts. I'd rather it be
        "SoundBlaster Pro (Speakers)" but I guess that's developers vs users. Windows uses the FriendlyName in
@@ -91,8 +92,7 @@ typedef struct DevIdList
 
 static DevIdList *deviceid_list = NULL;
 
-static void
-SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bool useguid)
+static void SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bool useguid)
 {
     DevIdList *i;
     DevIdList *next;
@@ -105,7 +105,7 @@ SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bool useguid)
             } else {
                 deviceid_list = next;
             }
-            SDL_RemoveAudioDevice(iscapture, useguid ? ((void *) i->guid) : ((void *) i->str));
+            SDL_RemoveAudioDevice(iscapture, useguid ? ((void *)i->guid) : ((void *)i->str));
             SDL_free(i->str);
             SDL_free(i);
         } else {
@@ -114,8 +114,7 @@ SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bool useguid)
     }
 }
 
-static void
-SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid, GUID *dsoundguid, SDL_bool useguid)
+static void SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid, GUID *dsoundguid, SDL_bool useguid)
 {
     DevIdList *devidlist;
     SDL_AudioSpec spec;
@@ -128,22 +127,22 @@ SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTEN
        phones and tablets, where you might have an internal speaker and a headphone jack and expect both to be
        available and switch automatically. (!!! FIXME...?) */
 
-       /* see if we already have this one. */
+    /* see if we already have this one. */
     for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
         if (SDL_wcscmp(devidlist->str, devid) == 0) {
-            return;  /* we already have this. */
+            return; /* we already have this. */
         }
     }
 
     devidlist = (DevIdList *)SDL_malloc(sizeof(*devidlist));
     if (devidlist == NULL) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     devidcopy = SDL_wcsdup(devid);
     if (!devidcopy) {
         SDL_free(devidlist);
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     if (useguid) {
@@ -185,8 +184,7 @@ typedef struct SDLMMNotificationClient
     SDL_bool useguid;
 } SDLMMNotificationClient;
 
-static HRESULT STDMETHODCALLTYPE
-SDLMMNotificationClient_QueryInterface(IMMNotificationClient *this, REFIID iid, void **ppv)
+static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_QueryInterface(IMMNotificationClient *this, REFIID iid, void **ppv)
 {
     if ((WIN_IsEqualIID(iid, &IID_IUnknown)) || (WIN_IsEqualIID(iid, &SDL_IID_IMMNotificationClient))) {
         *ppv = this;
@@ -198,32 +196,29 @@ SDLMMNotificationClient_QueryInterface(IMMNotificationClient *this, REFIID iid, 
     return E_NOINTERFACE;
 }
 
-static ULONG STDMETHODCALLTYPE
-SDLMMNotificationClient_AddRef(IMMNotificationClient *ithis)
+static ULONG STDMETHODCALLTYPE SDLMMNotificationClient_AddRef(IMMNotificationClient *ithis)
 {
     SDLMMNotificationClient *this = (SDLMMNotificationClient *)ithis;
     return (ULONG)(SDL_AtomicIncRef(&this->refcount) + 1);
 }
 
-static ULONG STDMETHODCALLTYPE
-SDLMMNotificationClient_Release(IMMNotificationClient *ithis)
+static ULONG STDMETHODCALLTYPE SDLMMNotificationClient_Release(IMMNotificationClient *ithis)
 {
     /* this is a static object; we don't ever free it. */
     SDLMMNotificationClient *this = (SDLMMNotificationClient *)ithis;
     const ULONG retval = SDL_AtomicDecRef(&this->refcount);
     if (retval == 0) {
-        SDL_AtomicSet(&this->refcount, 0);  /* uhh... */
+        SDL_AtomicSet(&this->refcount, 0); /* uhh... */
         return 0;
     }
     return retval - 1;
 }
 
 /* These are the entry points called when WASAPI device endpoints change. */
-static HRESULT STDMETHODCALLTYPE
-SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *ithis, EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId)
+static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *ithis, EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId)
 {
     if (role != SDL_IMMDevice_role) {
-        return S_OK;  /* ignore it. */
+        return S_OK; /* ignore it. */
     }
 
     /* Increment the "generation," so opened devices will pick this up in their threads. */
@@ -249,8 +244,7 @@ SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *ithis, EDa
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE
-SDLMMNotificationClient_OnDeviceAdded(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId)
+static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceAdded(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId)
 {
     /* we ignore this; devices added here then progress to ACTIVE, if appropriate, in
        OnDeviceStateChange, making that a better place to deal with device adds. More
@@ -260,15 +254,13 @@ SDLMMNotificationClient_OnDeviceAdded(IMMNotificationClient *ithis, LPCWSTR pwst
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE
-SDLMMNotificationClient_OnDeviceRemoved(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId)
+static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceRemoved(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId)
 {
     /* See notes in OnDeviceAdded handler about why we ignore this. */
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE
-SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId, DWORD dwNewState)
+static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId, DWORD dwNewState)
 {
     IMMDevice *device = NULL;
 
@@ -278,7 +270,7 @@ SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *ithis, LPCWS
             EDataFlow flow;
             if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
                 const SDL_bool iscapture = (flow == eCapture);
-                const SDLMMNotificationClient *client = (SDLMMNotificationClient*) ithis;
+                const SDLMMNotificationClient *client = (SDLMMNotificationClient *)ithis;
                 if (dwNewState == DEVICE_STATE_ACTIVE) {
                     char *utf8dev;
                     WAVEFORMATEXTENSIBLE fmt;
@@ -300,10 +292,9 @@ SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *ithis, LPCWS
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE
-SDLMMNotificationClient_OnPropertyValueChanged(IMMNotificationClient *this, LPCWSTR pwstrDeviceId, const PROPERTYKEY key)
+static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnPropertyValueChanged(IMMNotificationClient *this, LPCWSTR pwstrDeviceId, const PROPERTYKEY key)
 {
-    return S_OK;  /* we don't care about these. */
+    return S_OK; /* we don't care about these. */
 }
 
 static const IMMNotificationClientVtbl notification_client_vtbl = {
@@ -319,8 +310,7 @@ static const IMMNotificationClientVtbl notification_client_vtbl = {
 
 static SDLMMNotificationClient notification_client = { &notification_client_vtbl, { 1 } };
 
-int
-SDL_IMMDevice_Init(void)
+int SDL_IMMDevice_Init(void)
 {
     HRESULT ret;
 
@@ -344,8 +334,7 @@ SDL_IMMDevice_Init(void)
     return 0;
 }
 
-void
-SDL_IMMDevice_Quit(void)
+void SDL_IMMDevice_Quit(void)
 {
     DevIdList *devidlist;
     DevIdList *next;
@@ -366,8 +355,7 @@ SDL_IMMDevice_Quit(void)
     deviceid_list = NULL;
 }
 
-int
-SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
+int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
 {
     HRESULT ret;
 
@@ -422,8 +410,7 @@ static int SDLCALL sort_endpoints(const void *_a, const void *_b)
     return 0;
 }
 
-static void
-EnumerateEndpointsForFlow(const SDL_bool iscapture)
+static void EnumerateEndpointsForFlow(const SDL_bool iscapture)
 {
     IMMDeviceCollection *collection = NULL;
     EndpointItem *items;
@@ -443,7 +430,7 @@ EnumerateEndpointsForFlow(const SDL_bool iscapture)
 
     items = (EndpointItem *)SDL_calloc(total, sizeof(EndpointItem));
     if (items == NULL) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     for (i = 0; i < total; i++) {
@@ -474,20 +461,18 @@ EnumerateEndpointsForFlow(const SDL_bool iscapture)
     IMMDeviceCollection_Release(collection);
 }
 
-void
-SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid)
+void SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid)
 {
     notification_client.useguid = useguid;
 
-    EnumerateEndpointsForFlow(SDL_FALSE);  /* playback */
+    EnumerateEndpointsForFlow(SDL_FALSE); /* playback */
     EnumerateEndpointsForFlow(SDL_TRUE);  /* capture */
 
     /* if this fails, we just won't get hotplug events. Carry on anyhow. */
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);
 }
 
-int
-SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     WAVEFORMATEXTENSIBLE fmt;
     IMMDevice *device = NULL;
@@ -516,7 +501,7 @@ SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscaptur
     SDL_zerop(spec);
     spec->channels = (Uint8)fmt.Format.nChannels;
     spec->freq = fmt.Format.nSamplesPerSec;
-    spec->format = WaveFormatToSDLFormat((WAVEFORMATEX *) &fmt);
+    spec->format = WaveFormatToSDLFormat((WAVEFORMATEX *)&fmt);
     return 0;
 }
 

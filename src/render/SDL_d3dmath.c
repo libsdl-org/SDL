@@ -128,7 +128,6 @@ Float4X4 MatrixRotationZ(float r)
     m.v._33 = 1.0f;
     m.v._44 = 1.0f;
     return m;
-
 }
 
 #endif /* (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12) && !SDL_RENDER_DISABLED */

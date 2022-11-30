@@ -40,14 +40,19 @@ struct SDL_GLDriverData
     int initialized;
 };
 
-@interface SDLOpenGLContext : NSOpenGLContext {
+@interface SDLOpenGLContext : NSOpenGLContext
+{
     SDL_atomic_t dirty;
     SDL_Window *window;
     CVDisplayLinkRef displayLink;
-    @public SDL_mutex *swapIntervalMutex;
-    @public SDL_cond *swapIntervalCond;
-    @public SDL_atomic_t swapIntervalSetting;
-    @public SDL_atomic_t swapIntervalsPassed;
+  @public
+    SDL_mutex *swapIntervalMutex;
+  @public
+    SDL_cond *swapIntervalCond;
+  @public
+    SDL_atomic_t swapIntervalSetting;
+  @public
+    SDL_atomic_t swapIntervalsPassed;
 }
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format
@@ -56,11 +61,11 @@ struct SDL_GLDriverData
 - (void)updateIfNeeded;
 - (void)movedToNewScreen;
 - (void)setWindow:(SDL_Window *)window;
-- (SDL_Window*)window;
+- (SDL_Window *)window;
 - (void)explicitUpdate;
 - (void)dealloc;
 
-@property (retain, nonatomic) NSOpenGLPixelFormat* openglPixelFormat;  // macOS 10.10 has -[NSOpenGLContext pixelFormat] but this handles older OS releases.
+@property(retain, nonatomic) NSOpenGLPixelFormat *openglPixelFormat; // macOS 10.10 has -[NSOpenGLContext pixelFormat] but this handles older OS releases.
 
 @end
 
@@ -68,12 +73,12 @@ struct SDL_GLDriverData
 extern int Cocoa_GL_LoadLibrary(_THIS, const char *path);
 extern void *Cocoa_GL_GetProcAddress(_THIS, const char *proc);
 extern void Cocoa_GL_UnloadLibrary(_THIS);
-extern SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window * window);
-extern int Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window,
+extern SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window *window);
+extern int Cocoa_GL_MakeCurrent(_THIS, SDL_Window *window,
                                 SDL_GLContext context);
 extern int Cocoa_GL_SetSwapInterval(_THIS, int interval);
 extern int Cocoa_GL_GetSwapInterval(_THIS);
-extern int Cocoa_GL_SwapWindow(_THIS, SDL_Window * window);
+extern int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window);
 extern void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 #ifdef __clang__

@@ -33,7 +33,7 @@ void SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
         return;
     }
 
-    for (i = 0; i < sizeof(guid.data) && i < (cbGUID-1)/2; i++) {
+    for (i = 0; i < sizeof(guid.data) && i < (cbGUID - 1) / 2; i++) {
         /* each input byte writes 2 ascii chars, and might write a null byte. */
         /* If we don't have room for next input byte, stop */
         unsigned char c = guid.data[i];
@@ -72,7 +72,7 @@ static unsigned char nibble(unsigned char c)
 SDL_GUID SDL_GUIDFromString(const char *pchGUID)
 {
     SDL_GUID guid;
-    int maxoutputbytes= sizeof(guid);
+    int maxoutputbytes = sizeof(guid);
     size_t len = SDL_strlen(pchGUID);
     Uint8 *p;
     size_t i;
@@ -83,8 +83,8 @@ SDL_GUID SDL_GUIDFromString(const char *pchGUID)
     SDL_memset(&guid, 0x00, sizeof(guid));
 
     p = (Uint8 *)&guid;
-    for (i = 0; (i < len) && ((p - (Uint8 *)&guid) < maxoutputbytes); i+=2, p++) {
-        *p = (nibble((unsigned char)pchGUID[i]) << 4) | nibble((unsigned char)pchGUID[i+1]);
+    for (i = 0; (i < len) && ((p - (Uint8 *)&guid) < maxoutputbytes); i += 2, p++) {
+        *p = (nibble((unsigned char)pchGUID[i]) << 4) | nibble((unsigned char)pchGUID[i + 1]);
     }
 
     return guid;

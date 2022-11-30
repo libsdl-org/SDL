@@ -34,13 +34,12 @@
 
 SceHidKeyboardReport k_reports[SCE_HID_MAX_REPORT];
 int keyboard_hid_handle = 0;
-Uint8 prev_keys[6] = {0};
+Uint8 prev_keys[6] = { 0 };
 Uint8 prev_modifiers = 0;
 Uint8 locks = 0;
 Uint8 lock_key_down = 0;
 
-void 
-VITA_InitKeyboard(void)
+void VITA_InitKeyboard(void)
 {
 #if defined(SDL_VIDEO_VITA_PVR)
     sceSysmoduleLoadModule(SCE_SYSMODULE_IME); /** For PVR OSK Support **/
@@ -48,8 +47,7 @@ VITA_InitKeyboard(void)
     sceHidKeyboardEnumerate(&keyboard_hid_handle, 1);
 }
 
-void 
-VITA_PollKeyboard(void)
+void VITA_PollKeyboard(void)
 {
     // We skip polling keyboard if no window is created
     if (Vita_Window == NULL) {
@@ -57,7 +55,7 @@ VITA_PollKeyboard(void)
     }
 
     if (keyboard_hid_handle > 0) {
-        int numReports = sceHidKeyboardRead(keyboard_hid_handle, (SceHidKeyboardReport**)&k_reports, SCE_HID_MAX_REPORT);
+        int numReports = sceHidKeyboardRead(keyboard_hid_handle, (SceHidKeyboardReport **)&k_reports, SCE_HID_MAX_REPORT);
 
         if (numReports < 0) {
             keyboard_hid_handle = 0;
@@ -141,7 +139,7 @@ VITA_PollKeyboard(void)
                     } else {
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RCTRL);
                     }
-            }
+                }
                 if (changed_modifiers & 0x20) {
                     if (prev_modifiers & 0x20) {
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);

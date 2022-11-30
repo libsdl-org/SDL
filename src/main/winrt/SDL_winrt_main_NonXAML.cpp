@@ -40,7 +40,7 @@
    is compiled with C++/CX enabled (via the /ZW compiler flag).
 */
 #ifdef _MSC_VER
-#pragma warning(disable:4447)
+#pragma warning(disable : 4447)
 #endif
 
 /* Make sure the function to initialize the Windows Runtime gets linked in. */

@@ -22,32 +22,30 @@
 #ifndef SDL_pspgl_c_h_
 #define SDL_pspgl_c_h_
 
-
 #include <GLES/egl.h>
 #include <GLES/gl.h>
 
 #include "SDL_pspvideo.h"
 
-
-typedef struct SDL_GLDriverData {
-        EGLDisplay display;
-        EGLContext context;
-        EGLSurface surface;
+typedef struct SDL_GLDriverData
+{
+    EGLDisplay display;
+    EGLContext context;
+    EGLSurface surface;
     uint32_t swapinterval;
-}SDL_GLDriverData;
+} SDL_GLDriverData;
 
-extern void * PSP_GL_GetProcAddress(_THIS, const char *proc);
-extern int PSP_GL_MakeCurrent(_THIS,SDL_Window * window, SDL_GLContext context);
+extern void *PSP_GL_GetProcAddress(_THIS, const char *proc);
+extern int PSP_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 extern void PSP_GL_SwapBuffers(_THIS);
 
-extern int PSP_GL_SwapWindow(_THIS, SDL_Window * window);
-extern SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window * window);
+extern int PSP_GL_SwapWindow(_THIS, SDL_Window *window);
+extern SDL_GLContext PSP_GL_CreateContext(_THIS, SDL_Window *window);
 
 extern int PSP_GL_LoadLibrary(_THIS, const char *path);
 extern void PSP_GL_UnloadLibrary(_THIS);
 extern int PSP_GL_SetSwapInterval(_THIS, int interval);
 extern int PSP_GL_GetSwapInterval(_THIS);
-
 
 #endif /* SDL_pspgl_c_h_ */
 

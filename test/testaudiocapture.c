@@ -67,9 +67,9 @@ loop()
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
-        #ifdef __EMSCRIPTEN__
+#ifdef __EMSCRIPTEN__
         emscripten_cancel_main_loop();
-        #endif
+#endif
         exit(0);
     }
 
@@ -78,16 +78,15 @@ loop()
         trying to test the API, so we use SDL_DequeueAudio() here. */
     while (SDL_TRUE) {
         Uint8 buf[1024];
-        const Uint32 br = SDL_DequeueAudio(devid_in, buf, sizeof (buf));
+        const Uint32 br = SDL_DequeueAudio(devid_in, buf, sizeof(buf));
         SDL_QueueAudio(devid_out, buf, br);
-        if (br < sizeof (buf)) {
+        if (br < sizeof(buf)) {
             break;
         }
     }
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     /* (argv[1] == NULL means "open default device.") */
     const char *devname = argv[1];
@@ -157,7 +156,10 @@ main(int argc, char **argv)
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (1) { loop(); SDL_Delay(16); }
+    while (1) {
+        loop();
+        SDL_Delay(16);
+    }
 #endif
 
     return 0;

@@ -23,17 +23,17 @@ extern "C" int main(int argc, char *argv[]);
 TInt E32Main()
 {
     /*  Get the clean-up stack */
-    CTrapCleanup* cleanup = CTrapCleanup::New();
+    CTrapCleanup *cleanup = CTrapCleanup::New();
 
     /* Arrange for multi-threaded operation */
     SpawnPosixServerThread();
 
     /* Get args and environment */
-    int    argc = 0;
-    char** argv = 0;
-    char** envp = 0;
+    int argc = 0;
+    char **argv = 0;
+    char **envp = 0;
 
-    __crt0(argc,argv,envp);
+    __crt0(argc, argv, envp);
 
     /* Start the application! */
 
@@ -42,19 +42,19 @@ TInt E32Main()
 
     /* Set process and thread priority and name */
 
-    RThread  currentThread;
+    RThread currentThread;
     RProcess thisProcess;
-    TParse   exeName;
+    TParse exeName;
     exeName.Set(thisProcess.FileName(), NULL, NULL);
     currentThread.Rename(exeName.Name());
     currentThread.SetProcessPriority(EPriorityLow);
     currentThread.SetPriority(EPriorityMuchLess);
 
     /* Increase heap size */
-    RHeap* newHeap  = NULL;
-    RHeap* oldHeap  = NULL;
-    TInt   heapSize = 7500000;
-    int    ret;
+    RHeap *newHeap = NULL;
+    RHeap *oldHeap = NULL;
+    TInt heapSize = 7500000;
+    int ret;
 
     newHeap = User::ChunkHeap(NULL, heapSize, heapSize, KMinHeapGrowBy);
 

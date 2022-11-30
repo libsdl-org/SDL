@@ -41,26 +41,24 @@ __declspec(selectany) int _fltused = 1;
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
    Always provide it for the SDL2 DLL, but skip it when building static lib w/ static runtime. */
 #if (_MSC_VER >= 1400) && (!defined(_MT) || defined(DLL_EXPORT))
-extern void *memcpy(void* dst, const void* src, size_t len);
+extern void *memcpy(void *dst, const void *src, size_t len);
 #pragma intrinsic(memcpy)
 
 #if !defined(__clang__)
 #pragma function(memcpy)
 #endif
-void *
-memcpy(void *dst, const void *src, size_t len)
+void *memcpy(void *dst, const void *src, size_t len)
 {
     return SDL_memcpy(dst, src, len);
 }
 
-extern void *memset(void* dst, int c, size_t len);
+extern void *memset(void *dst, int c, size_t len);
 #pragma intrinsic(memset)
 
 #if !defined(__clang__)
 #pragma function(memset)
 #endif
-void *
-memset(void *dst, int c, size_t len)
+void *memset(void *dst, int c, size_t len)
 {
     return SDL_memset(dst, c, len);
 }
@@ -69,9 +67,7 @@ memset(void *dst, int c, size_t len)
 #ifdef _M_IX86
 
 /* Float to long */
-void
-__declspec(naked)
-_ftol()
+void __declspec(naked) _ftol()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -120,22 +116,18 @@ localexit:
     /* *INDENT-ON* */
 }
 
-void
-_ftol2_sse()
+void _ftol2_sse()
 {
     _ftol();
 }
 
-void
-_ftol2()
+void _ftol2()
 {
     _ftol();
 }
 
 /* 64-bit math operators for 32-bit systems */
-void
-__declspec(naked)
-_allmul()
+void __declspec(naked) _allmul()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -163,9 +155,7 @@ hard:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_alldiv()
+void __declspec(naked) _alldiv()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -251,9 +241,7 @@ L8:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_aulldiv()
+void __declspec(naked) _aulldiv()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -309,9 +297,7 @@ L2:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_allrem()
+void __declspec(naked) _allrem()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -396,9 +382,7 @@ L8:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_aullrem()
+void __declspec(naked) _aullrem()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -455,9 +439,7 @@ L2:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_alldvrm()
+void __declspec(naked) _alldvrm()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -565,9 +547,7 @@ L8:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_aulldvrm()
+void __declspec(naked) _aulldvrm()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -638,9 +618,7 @@ L2:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_allshl()
+void __declspec(naked) _allshl()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -665,9 +643,7 @@ RETZERO:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_allshr()
+void __declspec(naked) _allshr()
 {
     /* *INDENT-OFF* */
     __asm {
@@ -692,9 +668,7 @@ RETSIGN:
     /* *INDENT-ON* */
 }
 
-void
-__declspec(naked)
-_aullshr()
+void __declspec(naked) _aullshr()
 {
     /* *INDENT-OFF* */
     __asm {

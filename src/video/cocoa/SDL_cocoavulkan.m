@@ -37,7 +37,7 @@
 
 #include <dlfcn.h>
 
-const char* defaultPaths[] = {
+const char *defaultPaths[] = {
     "vulkan.framework/vulkan",
     "libvulkan.1.dylib",
     "libvulkan.dylib",
@@ -69,14 +69,14 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     if (!path) {
         /* Handle the case where Vulkan Portability is linked statically. */
         vkGetInstanceProcAddr =
-         (PFN_vkGetInstanceProcAddr)dlsym(DEFAULT_HANDLE,
-                                          "vkGetInstanceProcAddr");
+            (PFN_vkGetInstanceProcAddr)dlsym(DEFAULT_HANDLE,
+                                             "vkGetInstanceProcAddr");
     }
 
     if (vkGetInstanceProcAddr) {
         _this->vulkan_config.loader_handle = DEFAULT_HANDLE;
     } else {
-        const char** paths;
+        const char **paths;
         const char *foundPath = NULL;
         int numPaths;
         int i;
@@ -110,7 +110,7 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
         SDL_SetError("Failed to find %s in either executable or %s: %s",
                      "vkGetInstanceProcAddr",
                      _this->vulkan_config.loader_path,
-                     (const char *) dlerror());
+                     (const char *)dlerror());
         goto fail;
     }
 
@@ -139,13 +139,10 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     }
     SDL_free(extensions);
     if (!hasSurfaceExtension) {
-        SDL_SetError("Installed Vulkan Portability library doesn't implement the "
-                     VK_KHR_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan Portability library doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else if (!hasMetalSurfaceExtension && !hasMacOSSurfaceExtension) {
-        SDL_SetError("Installed Vulkan Portability library doesn't implement the "
-                     VK_EXT_METAL_SURFACE_EXTENSION_NAME " or "
-                     VK_MVK_MACOS_SURFACE_EXTENSION_NAME " extensions");
+        SDL_SetError("Installed Vulkan Portability library doesn't implement the " VK_EXT_METAL_SURFACE_EXTENSION_NAME " or " VK_MVK_MACOS_SURFACE_EXTENSION_NAME " extensions");
         goto fail;
     }
     return 0;
@@ -167,9 +164,9 @@ void Cocoa_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names)
+                                            SDL_Window *window,
+                                            unsigned *count,
+                                            const char **names)
 {
     static const char *const extensionsForCocoa[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
@@ -179,8 +176,8 @@ SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForCocoa),
-            extensionsForCocoa);
+        count, names, SDL_arraysize(extensionsForCocoa),
+        extensionsForCocoa);
 }
 
 SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
@@ -224,7 +221,7 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
         createInfo.pNext = NULL;
         createInfo.flags = 0;
         createInfo.pLayer = (__bridge const CAMetalLayer *)
-                            Cocoa_Metal_GetLayer(_this, metalview);
+            Cocoa_Metal_GetLayer(_this, metalview);
         result = vkCreateMetalSurfaceEXT(instance, &createInfo, NULL, surface);
         if (result != VK_SUCCESS) {
             Cocoa_Metal_DestroyView(_this, metalview);
@@ -239,7 +236,7 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
         createInfo.flags = 0;
         createInfo.pView = (const void *)metalview;
         result = vkCreateMacOSSurfaceMVK(instance, &createInfo,
-                                           NULL, surface);
+                                         NULL, surface);
         if (result != VK_SUCCESS) {
             Cocoa_Metal_DestroyView(_this, metalview);
             SDL_SetError("vkCreateMacOSSurfaceMVK failed: %s",

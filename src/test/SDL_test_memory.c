@@ -62,7 +62,7 @@ static unsigned int get_allocation_bucket(void *mem)
     index = (crc_value & (SDL_arraysize(s_tracked_allocations) - 1));
     return index;
 }
- 
+
 static SDL_bool SDL_IsAllocationTracked(void *mem)
 {
     SDL_tracked_allocation *entry;
@@ -145,7 +145,7 @@ static void SDL_UntrackAllocation(void *mem)
     }
 }
 
-static void * SDLCALL SDLTest_TrackedMalloc(size_t size)
+static void *SDLCALL SDLTest_TrackedMalloc(size_t size)
 {
     void *mem;
 
@@ -156,7 +156,7 @@ static void * SDLCALL SDLTest_TrackedMalloc(size_t size)
     return mem;
 }
 
-static void * SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
+static void *SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
 {
     void *mem;
 
@@ -167,7 +167,7 @@ static void * SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
     return mem;
 }
 
-static void * SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
+static void *SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
 {
     void *mem;
 
@@ -233,13 +233,13 @@ void SDLTest_LogAllocations()
         return;
     }
 
-#define ADD_LINE() \
-    message_size += (SDL_strlen(line) + 1); \
+#define ADD_LINE()                                         \
+    message_size += (SDL_strlen(line) + 1);                \
     tmp = (char *)SDL_realloc_orig(message, message_size); \
-    if (!tmp) { \
-        return; \
-    } \
-    message = tmp; \
+    if (!tmp) {                                            \
+        return;                                            \
+    }                                                      \
+    message = tmp;                                         \
     SDL_strlcat(message, line, message_size)
 
     SDL_strlcpy(line, "Memory allocations:\n", sizeof(line));
@@ -258,7 +258,7 @@ void SDLTest_LogAllocations()
                 if (!entry->stack[stack_index]) {
                     break;
                 }
-                SDL_snprintf(line, sizeof(line), "\t0x%"SDL_PRIx64": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
+                SDL_snprintf(line, sizeof(line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
                 ADD_LINE();
             }
             total_allocated += entry->size;

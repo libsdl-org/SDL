@@ -44,40 +44,40 @@ static void ANDROIDAUDIO_PauseDevices(void) {}
 extern void openslES_ResumeDevices(void);
 extern void openslES_PauseDevices(void);
 #else
-static void openslES_ResumeDevices(void) {}
+static void openslES_ResumeDevices(void)
+{
+}
 static void openslES_PauseDevices(void) {}
 #endif
 
 #if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_AAUDIO
 extern void aaudio_ResumeDevices(void);
 extern void aaudio_PauseDevices(void);
-SDL_bool aaudio_DetectBrokenPlayState( void );
+SDL_bool aaudio_DetectBrokenPlayState(void);
 #else
-static void aaudio_ResumeDevices(void) {}
+static void aaudio_ResumeDevices(void)
+{
+}
 static void aaudio_PauseDevices(void) {}
-static SDL_bool aaudio_DetectBrokenPlayState( void ) { return SDL_FALSE; }
+static SDL_bool aaudio_DetectBrokenPlayState(void) { return SDL_FALSE; }
 #endif
 
-
-
 /* Number of 'type' events in the event queue */
-static int
-SDL_NumberOfEvents(Uint32 type)
+static int SDL_NumberOfEvents(Uint32 type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type);
 }
 
 #if SDL_VIDEO_OPENGL_EGL
-static void
-android_egl_context_restore(SDL_Window *window)
+static void android_egl_context_restore(SDL_Window *window)
 {
     if (window) {
         SDL_Event event;
-        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-        if (SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context) < 0) {
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        if (SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context) < 0) {
             /* The context is no longer valid, create a new one */
-            data->egl_context = (EGLContext) SDL_GL_CreateContext(window);
-            SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context);
+            data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
+            SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context);
             event.type = SDL_RENDER_DEVICE_RESET;
             SDL_PushEvent(&event);
         }
@@ -85,12 +85,11 @@ android_egl_context_restore(SDL_Window *window)
     }
 }
 
-static void
-android_egl_context_backup(SDL_Window *window)
+static void android_egl_context_backup(SDL_Window *window)
 {
     if (window) {
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */
-        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
         data->egl_context = SDL_GL_GetCurrentContext();
         /* We need to do this so the EGLSurface can be freed */
         SDL_GL_MakeCurrent(window, NULL);
@@ -106,8 +105,7 @@ android_egl_context_backup(SDL_Window *window)
  * No polling necessary
  */
 
-void
-Android_PumpEvents_Blocking(_THIS)
+void Android_PumpEvents_Blocking(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
@@ -176,14 +174,13 @@ Android_PumpEvents_Blocking(_THIS)
         }
     }
 
-    if ( aaudio_DetectBrokenPlayState() ) {
+    if (aaudio_DetectBrokenPlayState()) {
         aaudio_PauseDevices();
         aaudio_ResumeDevices();
     }
 }
 
-void
-Android_PumpEvents_NonBlocking(_THIS)
+void Android_PumpEvents_NonBlocking(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     static int backup_context = 0;
@@ -209,7 +206,6 @@ Android_PumpEvents_NonBlocking(_THIS)
 
             backup_context = 0;
         }
-
 
         if (SDL_SemTryWait(Android_ResumeSem) == 0) {
 
@@ -263,7 +259,7 @@ Android_PumpEvents_NonBlocking(_THIS)
         }
     }
 
-    if ( aaudio_DetectBrokenPlayState() ) {
+    if (aaudio_DetectBrokenPlayState()) {
         aaudio_PauseDevices();
         aaudio_ResumeDevices();
     }

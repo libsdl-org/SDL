@@ -103,7 +103,7 @@ GetBatteryPercentage(void)
 
     mcuHwcExit();
 
-    return (int) SDL_round(data[0] + data[1] / 256.0);
+    return (int)SDL_round(data[0] + data[1] / 256.0);
 }
 
 #endif /* !SDL_POWER_DISABLED && SDL_POWER_N3DS */

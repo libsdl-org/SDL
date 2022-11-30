@@ -25,7 +25,6 @@
 
 #include <pthread.h>
 
-
 #define INVALID_PTHREAD_KEY ((pthread_key_t)-1)
 
 static pthread_key_t thread_local_storage = INVALID_PTHREAD_KEY;
@@ -55,8 +54,7 @@ SDL_SYS_GetTLSData(void)
     return (SDL_TLSData *)pthread_getspecific(thread_local_storage);
 }
 
-int
-SDL_SYS_SetTLSData(SDL_TLSData *data)
+int SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     if (generic_local_storage) {
         return SDL_Generic_SetTLSData(data);

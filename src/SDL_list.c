@@ -24,10 +24,9 @@
 #include "./SDL_list.h"
 
 /* Push */
-int
-SDL_ListAdd(SDL_ListNode **head, void *ent)
+int SDL_ListAdd(SDL_ListNode **head, void *ent)
 {
-    SDL_ListNode *node = SDL_malloc(sizeof (*node));
+    SDL_ListNode *node = SDL_malloc(sizeof(*node));
 
     if (node == NULL) {
         return SDL_OutOfMemory();
@@ -40,8 +39,7 @@ SDL_ListAdd(SDL_ListNode **head, void *ent)
 }
 
 /* Pop from end as a FIFO (if add with SDL_ListAdd) */
-void
-SDL_ListPop(SDL_ListNode **head, void **ent)
+void SDL_ListPop(SDL_ListNode **head, void **ent)
 {
     SDL_ListNode **ptr = head;
 
@@ -55,15 +53,14 @@ SDL_ListPop(SDL_ListNode **head, void **ent)
     }
 
     if (ent) {
-       *ent = (*ptr)->entry;
+        *ent = (*ptr)->entry;
     }
 
     SDL_free(*ptr);
     *ptr = NULL;
 }
 
-void
-SDL_ListRemove(SDL_ListNode **head, void *ent)
+void SDL_ListRemove(SDL_ListNode **head, void *ent)
 {
     SDL_ListNode **ptr = head;
 
@@ -78,8 +75,7 @@ SDL_ListRemove(SDL_ListNode **head, void *ent)
     }
 }
 
-void
-SDL_ListClear(SDL_ListNode **head)
+void SDL_ListClear(SDL_ListNode **head)
 {
     SDL_ListNode *l = *head;
     *head = NULL;

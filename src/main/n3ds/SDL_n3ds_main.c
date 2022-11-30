@@ -33,8 +33,7 @@
 SDL_FORCE_INLINE void N3DS_Init(void);
 SDL_FORCE_INLINE void N3DS_Quit(void);
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int result;
     N3DS_Init();

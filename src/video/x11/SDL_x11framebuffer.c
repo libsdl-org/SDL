@@ -25,7 +25,6 @@
 #include "SDL_x11video.h"
 #include "SDL_x11framebuffer.h"
 
-
 #ifndef NO_SHARED_MEMORY
 
 /* Shared memory error handler routine */
@@ -33,10 +32,10 @@ static int shm_error;
 static int (*X_handler)(Display *, XErrorEvent *) = NULL;
 static int shm_errhandler(Display *d, XErrorEvent *e)
 {
-        if ( e->error_code == BadAccess ) {
-            shm_error = True;
-            return 0;
-        } else
+    if (e->error_code == BadAccess) {
+        shm_error = True;
+        return 0;
+    } else
         return X_handler(d, e);
 }
 
@@ -48,11 +47,10 @@ static SDL_bool have_mitshm(Display *dpy)
 
 #endif /* !NO_SHARED_MEMORY */
 
-int
-X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
-                            void ** pixels, int *pitch)
+int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
+                                void **pixels, int *pitch)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
     XGCValues gcv;
     XVisualInfo vinfo;
@@ -85,11 +83,11 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
     if (have_mitshm(display)) {
         XShmSegmentInfo *shminfo = &data->shminfo;
 
-        shminfo->shmid = shmget(IPC_PRIVATE, window->h*(*pitch), IPC_CREAT | 0777);
-        if ( shminfo->shmid >= 0 ) {
+        shminfo->shmid = shmget(IPC_PRIVATE, window->h * (*pitch), IPC_CREAT | 0777);
+        if (shminfo->shmid >= 0) {
             shminfo->shmaddr = (char *)shmat(shminfo->shmid, 0, 0);
             shminfo->readOnly = False;
-            if ( shminfo->shmaddr != (char *)-1 ) {
+            if (shminfo->shmaddr != (char *)-1) {
                 shm_error = False;
                 X_handler = X11_XSetErrorHandler(shm_errhandler);
                 X11_XShmAttach(display, shminfo);
@@ -107,9 +105,9 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
         }
         if (!shm_error) {
             data->ximage = X11_XShmCreateImage(display, data->visual,
-                             vinfo.depth, ZPixmap,
-                             shminfo->shmaddr, shminfo,
-                             window->w, window->h);
+                                               vinfo.depth, ZPixmap,
+                                               shminfo->shmaddr, shminfo,
+                                               window->w, window->h);
             if (!data->ximage) {
                 X11_XShmDetach(display, shminfo);
                 X11_XSync(display, False);
@@ -125,14 +123,14 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
     }
 #endif /* not NO_SHARED_MEMORY */
 
-    *pixels = SDL_malloc(window->h*(*pitch));
+    *pixels = SDL_malloc(window->h * (*pitch));
     if (*pixels == NULL) {
         return SDL_OutOfMemory();
     }
 
     data->ximage = X11_XCreateImage(display, data->visual,
-                      vinfo.depth, ZPixmap, 0, (char *)(*pixels),
-                      window->w, window->h, 32, 0);
+                                    vinfo.depth, ZPixmap, 0, (char *)(*pixels),
+                                    window->w, window->h, 32, 0);
     if (!data->ximage) {
         SDL_free(*pixels);
         return SDL_SetError("Couldn't create XImage");
@@ -141,14 +139,13 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
     return 0;
 }
 
-int
-X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
-                            int numrects)
+int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects,
+                                int numrects)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
     int i;
-    int x, y, w ,h;
+    int x, y, w, h;
 #ifndef NO_SHARED_MEMORY
     if (data->use_mitshm) {
         for (i = 0; i < numrects; ++i) {
@@ -177,7 +174,7 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
             }
 
             X11_XShmPutImage(display, data->xwindow, data->gc, data->ximage,
-                x, y, x, y, w, h, False);
+                             x, y, x, y, w, h, False);
         }
     } else
 #endif /* !NO_SHARED_MEMORY */
@@ -208,7 +205,7 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
             }
 
             X11_XPutImage(display, data->xwindow, data->gc, data->ximage,
-                x, y, x, y, w, h);
+                          x, y, x, y, w, h);
         }
     }
 
@@ -217,10 +214,9 @@ X11_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects,
     return 0;
 }
 
-void
-X11_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
+void X11_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display;
 
     if (data == NULL) {

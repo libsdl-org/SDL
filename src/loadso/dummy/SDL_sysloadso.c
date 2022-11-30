@@ -43,8 +43,7 @@ SDL_LoadFunction(void *handle, const char *name)
     return NULL;
 }
 
-void
-SDL_UnloadObject(void *handle)
+void SDL_UnloadObject(void *handle)
 {
     /* no-op. */
 }

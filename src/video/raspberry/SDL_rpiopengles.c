@@ -29,22 +29,21 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-void
-RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+void RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
 {
     *mask = SDL_GL_CONTEXT_PROFILE_ES;
     *major = 2;
     *minor = 0;
 }
 
-int
-RPI_GLES_LoadLibrary(_THIS, const char *path) {
+int RPI_GLES_LoadLibrary(_THIS, const char *path)
+{
     return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
 }
 
-int
-RPI_GLES_SwapWindow(_THIS, SDL_Window * window) {
-    SDL_WindowData *wdata = ((SDL_WindowData *) window->driverdata);
+int RPI_GLES_SwapWindow(_THIS, SDL_Window *window)
+{
+    SDL_WindowData *wdata = ((SDL_WindowData *)window->driverdata);
 
     if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, wdata->egl_surface))) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed.");
@@ -63,9 +62,8 @@ RPI_GLES_SwapWindow(_THIS, SDL_Window * window) {
 }
 
 SDL_EGL_CreateContext_impl(RPI)
-SDL_EGL_MakeCurrent_impl(RPI)
+    SDL_EGL_MakeCurrent_impl(RPI)
 
 #endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
 
-/* vi: set ts=4 sw=4 expandtab: */
-
+    /* vi: set ts=4 sw=4 expandtab: */

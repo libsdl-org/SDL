@@ -32,10 +32,9 @@ const TUint32 WindowClientHandle = 9210;
 void DisableKeyBlocking(_THIS);
 void ConstructWindowL(_THIS);
 
-int
-NGAGE_CreateWindow(_THIS, SDL_Window* window)
+int NGAGE_CreateWindow(_THIS, SDL_Window *window)
 {
-    NGAGE_Window* ngage_window = (NGAGE_Window*)SDL_calloc(1, sizeof(NGAGE_Window));
+    NGAGE_Window *ngage_window = (NGAGE_Window *)SDL_calloc(1, sizeof(NGAGE_Window));
 
     if (ngage_window == NULL) {
         return SDL_OutOfMemory();
@@ -58,10 +57,9 @@ NGAGE_CreateWindow(_THIS, SDL_Window* window)
     return 0;
 }
 
-void
-NGAGE_DestroyWindow(_THIS, SDL_Window* window)
+void NGAGE_DestroyWindow(_THIS, SDL_Window *window)
 {
-    NGAGE_Window* ngage_window = (NGAGE_Window*)window->driverdata;
+    NGAGE_Window *ngage_window = (NGAGE_Window *)window->driverdata;
 
     if (ngage_window) {
         SDL_free(ngage_window);
@@ -76,8 +74,8 @@ NGAGE_DestroyWindow(_THIS, SDL_Window* window)
 
 void DisableKeyBlocking(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData*)_this->driverdata;
-    TRawEvent      event;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    TRawEvent event;
 
     event.Set((TRawEvent::TType) /*EDisableKeyBlock*/ 51);
     phdata->NGAGE_WsSession.SimulateRawEvent(event);
@@ -85,34 +83,34 @@ void DisableKeyBlocking(_THIS)
 
 void ConstructWindowL(_THIS)
 {
-    SDL_VideoData *phdata = (SDL_VideoData*)_this->driverdata;
-    TInt           error;
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->driverdata;
+    TInt error;
 
     error = phdata->NGAGE_WsSession.Connect();
     User::LeaveIfError(error);
-    phdata->NGAGE_WsScreen=new(ELeave) CWsScreenDevice(phdata->NGAGE_WsSession);
+    phdata->NGAGE_WsScreen = new (ELeave) CWsScreenDevice(phdata->NGAGE_WsSession);
     User::LeaveIfError(phdata->NGAGE_WsScreen->Construct());
     User::LeaveIfError(phdata->NGAGE_WsScreen->CreateContext(phdata->NGAGE_WindowGc));
 
-    phdata->NGAGE_WsWindowGroup=RWindowGroup(phdata->NGAGE_WsSession);
+    phdata->NGAGE_WsWindowGroup = RWindowGroup(phdata->NGAGE_WsSession);
     User::LeaveIfError(phdata->NGAGE_WsWindowGroup.Construct(WindowClientHandle));
     phdata->NGAGE_WsWindowGroup.SetOrdinalPosition(0);
 
     RProcess thisProcess;
-    TParse   exeName;
+    TParse exeName;
     exeName.Set(thisProcess.FileName(), NULL, NULL);
     TBuf<32> winGroupName;
     winGroupName.Append(0);
     winGroupName.Append(0);
-    winGroupName.Append(0);              // UID
+    winGroupName.Append(0); // UID
     winGroupName.Append(0);
     winGroupName.Append(exeName.Name()); // Caption
     winGroupName.Append(0);
-    winGroupName.Append(0);              // DOC name
+    winGroupName.Append(0); // DOC name
     phdata->NGAGE_WsWindowGroup.SetName(winGroupName);
 
-    phdata->NGAGE_WsWindow=RWindow(phdata->NGAGE_WsSession);
-    User::LeaveIfError(phdata->NGAGE_WsWindow.Construct(phdata->NGAGE_WsWindowGroup,WindowClientHandle - 1));
+    phdata->NGAGE_WsWindow = RWindow(phdata->NGAGE_WsSession);
+    User::LeaveIfError(phdata->NGAGE_WsWindow.Construct(phdata->NGAGE_WsWindowGroup, WindowClientHandle - 1));
     phdata->NGAGE_WsWindow.SetBackgroundColor(KRgbWhite);
     phdata->NGAGE_WsWindow.Activate();
     phdata->NGAGE_WsWindow.SetSize(phdata->NGAGE_WsScreen->SizeInPixels());

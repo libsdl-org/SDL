@@ -24,7 +24,7 @@
 
 #include "../SDL_internal.h"
 
-extern void SDL_Blit_Slow(SDL_BlitInfo * info);
+extern void SDL_Blit_Slow(SDL_BlitInfo *info);
 
 #endif /* SDL_blit_slow_h_ */
 

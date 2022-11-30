@@ -23,15 +23,14 @@
 
 #include <emscripten/emscripten.h>
 
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
     EM_ASM({
         window.open(UTF8ToString($0), "_blank");
-    }, url);
+    },
+           url);
 
     return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-

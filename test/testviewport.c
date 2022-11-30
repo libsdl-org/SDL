@@ -42,43 +42,42 @@ quit(int rc)
     exit(rc);
 }
 
-void
-DrawOnViewport(SDL_Renderer * renderer)
-{    
+void DrawOnViewport(SDL_Renderer *renderer)
+{
     SDL_Rect rect;
 
     /* Set the viewport */
     SDL_RenderSetViewport(renderer, &viewport);
-    
+
     /* Draw a gray background */
     SDL_SetRenderDrawColor(renderer, 0x80, 0x80, 0x80, 0xFF);
     SDL_RenderClear(renderer);
 
     /* Test inside points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawPoint(renderer, viewport.h/2 + 20, viewport.w/2);
-    SDL_RenderDrawPoint(renderer, viewport.h/2 - 20, viewport.w/2);
-    SDL_RenderDrawPoint(renderer, viewport.h/2     , viewport.w/2 - 20);
-    SDL_RenderDrawPoint(renderer, viewport.h/2     , viewport.w/2 + 20);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2 + 20, viewport.w / 2);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2 - 20, viewport.w / 2);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 - 20);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 + 20);
 
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawLine(renderer, 1, 0, viewport.w-2, 0);
-    SDL_RenderDrawLine(renderer, 1, viewport.h-1, viewport.w-2, viewport.h-1);
-    SDL_RenderDrawLine(renderer, 0, 1, 0, viewport.h-2);
-    SDL_RenderDrawLine(renderer, viewport.w-1, 1, viewport.w-1, viewport.h-2);
+    SDL_RenderDrawLine(renderer, 1, 0, viewport.w - 2, 0);
+    SDL_RenderDrawLine(renderer, 1, viewport.h - 1, viewport.w - 2, viewport.h - 1);
+    SDL_RenderDrawLine(renderer, 0, 1, 0, viewport.h - 2);
+    SDL_RenderDrawLine(renderer, viewport.w - 1, 1, viewport.w - 1, viewport.h - 2);
 
     /* Test diagonal lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xFF, 0xFF);
-    SDL_RenderDrawLine(renderer, 0, 0, viewport.w-1, viewport.h-1);
-    SDL_RenderDrawLine(renderer, viewport.w-1, 0, 0, viewport.h-1);                      
+    SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
+    SDL_RenderDrawLine(renderer, viewport.w - 1, 0, 0, viewport.h - 1);
 
     /* Test outside points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
-    SDL_RenderDrawPoint(renderer, viewport.h/2 + viewport.h, viewport.w/2);
-    SDL_RenderDrawPoint(renderer, viewport.h/2 - viewport.h, viewport.w/2);
-    SDL_RenderDrawPoint(renderer, viewport.h/2, viewport.w/2 - viewport.w);
-    SDL_RenderDrawPoint(renderer, viewport.h/2, viewport.w/2 + viewport.w);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2 + viewport.h, viewport.w / 2);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2 - viewport.h, viewport.w / 2);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 - viewport.w);
+    SDL_RenderDrawPoint(renderer, viewport.h / 2, viewport.w / 2 + viewport.w);
 
     /* Add a box at the top */
     rect.w = 8;
@@ -96,8 +95,7 @@ DrawOnViewport(SDL_Renderer * renderer)
     SDL_RenderSetClipRect(renderer, NULL);
 }
 
-void
-loop()
+void loop()
 {
     SDL_Event event;
     int i;
@@ -147,8 +145,7 @@ loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     Uint32 then, now, frames;
@@ -158,7 +155,6 @@ main(int argc, char *argv[])
     if (state == NULL) {
         return 1;
     }
-
 
     for (i = 1; i < argc;) {
         int consumed;
@@ -224,7 +220,7 @@ main(int argc, char *argv[])
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        double fps = ((double) frames * 1000) / (now - then);
+        double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
     }
     quit(0);

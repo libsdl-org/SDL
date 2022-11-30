@@ -32,8 +32,7 @@
 #include <kernel.h>
 #include <swis.h>
 
-static SDL_Scancode
-SDL_RISCOS_translate_keycode(int keycode)
+static SDL_Scancode SDL_RISCOS_translate_keycode(int keycode)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 
@@ -50,8 +49,7 @@ SDL_RISCOS_translate_keycode(int keycode)
     return scancode;
 }
 
-void
-RISCOS_PollKeyboard(_THIS)
+void RISCOS_PollKeyboard(_THIS)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
     Uint8 key = 2;
@@ -111,8 +109,7 @@ static const Uint8 mouse_button_map[] = {
     SDL_BUTTON_X2 + 3
 };
 
-void
-RISCOS_PollMouse(_THIS)
+void RISCOS_PollMouse(_THIS)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -141,10 +138,9 @@ RISCOS_PollMouse(_THIS)
     }
 }
 
-int
-RISCOS_InitEvents(_THIS)
+int RISCOS_InitEvents(_THIS)
 {
-    SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
     _kernel_swi_regs regs;
     int i, status;
 
@@ -153,8 +149,8 @@ RISCOS_InitEvents(_THIS)
     }
 
     status = (_kernel_osbyte(202, 0, 255) & 0xFF);
-    SDL_ToggleModState(KMOD_NUM,    (status & (1 << 2)) == 0);
-    SDL_ToggleModState(KMOD_CAPS,   (status & (1 << 4)) == 0);
+    SDL_ToggleModState(KMOD_NUM, (status & (1 << 2)) == 0);
+    SDL_ToggleModState(KMOD_CAPS, (status & (1 << 4)) == 0);
     SDL_ToggleModState(KMOD_SCROLL, (status & (1 << 1)) != 0);
 
     _kernel_swi(OS_Mouse, &regs, &regs);
@@ -166,15 +162,13 @@ RISCOS_InitEvents(_THIS)
     return 0;
 }
 
-void
-RISCOS_PumpEvents(_THIS)
+void RISCOS_PumpEvents(_THIS)
 {
     RISCOS_PollMouse(_this);
     RISCOS_PollKeyboard(_this);
 }
 
-void
-RISCOS_QuitEvents(_THIS)
+void RISCOS_QuitEvents(_THIS)
 {
     /* Re-enable escape. */
     _kernel_osbyte(229, 0, 0);

@@ -35,10 +35,10 @@
 
 /* EGL implementation of SDL OpenGL ES support */
 
-int
-Wayland_GLES_LoadLibrary(_THIS, const char *path) {
+int Wayland_GLES_LoadLibrary(_THIS, const char *path)
+{
     int ret;
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
 
@@ -48,13 +48,12 @@ Wayland_GLES_LoadLibrary(_THIS, const char *path) {
     return ret;
 }
 
-
 SDL_GLContext
-Wayland_GLES_CreateContext(_THIS, SDL_Window * window)
+Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
-    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
+    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
 
     return context;
 }
@@ -73,13 +72,12 @@ Wayland_GLES_CreateContext(_THIS, SDL_Window * window)
    libretro, Wayland, probably others...it feels like we're eventually going to have
    to give in with a future SDL API revision, since we can bend the other APIs to
    this style, but this style is much harder to bend the other way.  :/ */
-int
-Wayland_GLES_SetSwapInterval(_THIS, int interval)
+int Wayland_GLES_SetSwapInterval(_THIS, int interval)
 {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
-    
+
     /* technically, this is _all_ adaptive vsync (-1), because we can't
        actually wait for the _next_ vsync if you set 1, but things that
        request 1 probably won't care _that_ much. I hope. No matter what
@@ -96,8 +94,7 @@ Wayland_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int
-Wayland_GLES_GetSwapInterval(_THIS)
+int Wayland_GLES_GetSwapInterval(_THIS)
 {
     if (!_this->egl_data) {
         SDL_SetError("EGL not initialized");
@@ -107,10 +104,9 @@ Wayland_GLES_GetSwapInterval(_THIS)
     return _this->egl_data->egl_swapinterval;
 }
 
-int
-Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
+int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     const int swap_interval = _this->egl_data->egl_swapinterval;
 
     /* For windows that we know are hidden, skip swaps entirely, if we don't do
@@ -131,8 +127,7 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         struct wl_display *display = videodata->display;
         SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
         /* ~10 frames (or 1 sec), so we'll progress even if throttled to zero. */
-        const Uint32 max_wait = SDL_GetTicks() + (sdldisplay->current_mode.refresh_rate ?
-                                                  (10000 / sdldisplay->current_mode.refresh_rate) : 1000);
+        const Uint32 max_wait = SDL_GetTicks() + (sdldisplay->current_mode.refresh_rate ? (10000 / sdldisplay->current_mode.refresh_rate) : 1000);
         while (SDL_AtomicGet(&data->swap_interval_ready) == 0) {
             Uint32 now;
 
@@ -173,34 +168,32 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
     }
 
-    WAYLAND_wl_display_flush( data->waylandData->display );
+    WAYLAND_wl_display_flush(data->waylandData->display);
 
     return 0;
 }
 
-int
-Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+int Wayland_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     int ret;
 
     if (window && context) {
-        ret = SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *) window->driverdata)->egl_surface, context);
+        ret = SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *)window->driverdata)->egl_surface, context);
     } else {
         ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
 
-    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
 
-    _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0);  /* see comments on Wayland_GLES_SetSwapInterval. */
+    _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0); /* see comments on Wayland_GLES_SetSwapInterval. */
 
     return ret;
 }
 
-void
-Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
+void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
-    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */

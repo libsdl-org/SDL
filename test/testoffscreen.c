@@ -32,8 +32,7 @@ static int width = 640;
 static int height = 480;
 static unsigned int max_frames = 200;
 
-void
-draw()
+void draw()
 {
     SDL_Rect Rect;
 
@@ -51,10 +50,9 @@ draw()
     SDL_RenderPresent(renderer);
 }
 
-void
-save_surface_to_bmp()
+void save_surface_to_bmp()
 {
-    SDL_Surface* surface;
+    SDL_Surface *surface;
     Uint32 r_mask, g_mask, b_mask, a_mask;
     Uint32 pixel_format;
     char file[128];
@@ -73,15 +71,14 @@ save_surface_to_bmp()
     SDL_FreeSurface(surface);
 }
 
-void
-loop()
+void loop()
 {
     SDL_Event event;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-            case SDL_QUIT:
+        case SDL_QUIT:
             done = SDL_TRUE;
             break;
         }
@@ -97,8 +94,7 @@ loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 #ifndef __EMSCRIPTEN__
     Uint32 then, now, frames;
@@ -110,18 +106,18 @@ main(int argc, char *argv[])
     /* Force the offscreen renderer, if it cannot be created then fail out */
     if (SDL_VideoInit("offscreen") < 0) {
         SDL_Log("Couldn't initialize the offscreen video driver: %s\n",
-            SDL_GetError());
+                SDL_GetError());
         return SDL_FALSE;
     }
 
-	/* If OPENGL fails to init it will fallback to using a framebuffer for rendering */
+    /* If OPENGL fails to init it will fallback to using a framebuffer for rendering */
     window = SDL_CreateWindow("Offscreen Test",
-                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                 width, height, 0);
+                              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                              width, height, 0);
 
     if (window == NULL) {
         SDL_Log("Couldn't create window: %s\n",
-            SDL_GetError());
+                SDL_GetError());
         return SDL_FALSE;
     }
 
@@ -129,7 +125,7 @@ main(int argc, char *argv[])
 
     if (renderer == NULL) {
         SDL_Log("Couldn't create renderer: %s\n",
-            SDL_GetError());
+                SDL_GetError());
         return SDL_FALSE;
     }
 
@@ -157,7 +153,7 @@ main(int argc, char *argv[])
         if (frames % (max_frames / 10) == 0) {
             now = SDL_GetTicks();
             if (now > then) {
-                double fps = ((double) frames * 1000) / (now - then);
+                double fps = ((double)frames * 1000) / (now - then);
                 SDL_Log("Frames remaining: %" SDL_PRIu32 " rendering at %2.2f frames per second\n", max_frames - frames, fps);
             }
         }

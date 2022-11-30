@@ -22,10 +22,10 @@
 #include "SDL.h"
 #include "testutils.h"
 
-#define WINDOW_WIDTH    640
-#define WINDOW_HEIGHT   480
-#define NUM_SPRITES     100
-#define MAX_SPEED       1
+#define WINDOW_WIDTH  640
+#define WINDOW_HEIGHT 480
+#define NUM_SPRITES   100
+#define MAX_SPEED     1
 
 static SDL_Texture *sprite;
 static SDL_Rect positions[NUM_SPRITES];
@@ -43,8 +43,7 @@ quit(int rc)
     exit(rc);
 }
 
-void
-MoveSprites()
+void MoveSprites()
 {
     int i;
     int window_w = WINDOW_WIDTH;
@@ -96,12 +95,10 @@ void loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_Window *window;
     int i;
-
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);

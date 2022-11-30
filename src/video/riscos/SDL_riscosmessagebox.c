@@ -28,8 +28,7 @@
 #include <kernel.h>
 #include <swis.h>
 
-int
-RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     _kernel_swi_regs regs;
     _kernel_oserror error;
@@ -46,12 +45,12 @@ RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     } else if (messageboxdata->flags == SDL_MESSAGEBOX_WARNING) {
         regs.r[1] |= (2 << 9);
     }
-    
+
     regs.r[2] = (unsigned int)messageboxdata->title;
     regs.r[3] = 0;
     regs.r[4] = 0;
 
-    SDL_strlcpy(buttonstring, "" , 1024);
+    SDL_strlcpy(buttonstring, "", 1024);
     for (i = 0; i < messageboxdata->numbuttons; i++) {
         SDL_strlcat(buttonstring, messageboxdata->buttons[i].text, 1024);
         if (i + 1 < messageboxdata->numbuttons) {

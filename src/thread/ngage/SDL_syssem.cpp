@@ -37,18 +37,17 @@ struct SDL_semaphore
 
 struct TInfo
 {
-    TInfo(TInt aTime, TInt aHandle) :
-        iTime(aTime), iHandle(aHandle), iVal(0) {}
+    TInfo(TInt aTime, TInt aHandle) : iTime(aTime), iHandle(aHandle), iVal(0) {}
     TInt iTime;
     TInt iHandle;
     TInt iVal;
 };
 
-extern TInt CreateUnique(TInt (*aFunc)(const TDesC& aName, TAny*, TAny*), TAny*, TAny*);
+extern TInt CreateUnique(TInt (*aFunc)(const TDesC &aName, TAny *, TAny *), TAny *, TAny *);
 
-static TBool RunThread(TAny* aInfo)
+static TBool RunThread(TAny *aInfo)
 {
-    TInfo* info = STATIC_CAST(TInfo*, aInfo);
+    TInfo *info = STATIC_CAST(TInfo *, aInfo);
     User::After(info->iTime);
     RSemaphore sema;
     sema.SetHandle(info->iHandle);
@@ -57,15 +56,14 @@ static TBool RunThread(TAny* aInfo)
     return 0;
 }
 
-static TInt
-NewThread(const TDesC& aName, TAny* aPtr1, TAny* aPtr2)
+static TInt NewThread(const TDesC &aName, TAny *aPtr1, TAny *aPtr2)
 {
     return ((RThread *)(aPtr1))->Create(aName, RunThread, KDefaultStackSize, NULL, aPtr2);
 }
 
-static TInt NewSema(const TDesC& aName, TAny* aPtr1, TAny* aPtr2)
+static TInt NewSema(const TDesC &aName, TAny *aPtr1, TAny *aPtr2)
 {
-    TInt value = *((TInt*) aPtr2);
+    TInt value = *((TInt *)aPtr2);
     return ((RSemaphore *)aPtr1)->CreateGlobal(aName, value);
 }
 
@@ -87,14 +85,13 @@ SDL_CreateSemaphore(Uint32 initial_value)
     if (status != KErrNone) {
         SDL_SetError("Couldn't create semaphore");
     }
-    SDL_semaphore* sem = new /*(ELeave)*/ SDL_semaphore;
+    SDL_semaphore *sem = new /*(ELeave)*/ SDL_semaphore;
     sem->handle = s.Handle();
     sem->count = initial_value;
     return sem;
 }
 
-void
-SDL_DestroySemaphore(SDL_sem * sem)
+void SDL_DestroySemaphore(SDL_sem *sem)
 {
     if (sem != NULL) {
         RSemaphore sema;
@@ -106,8 +103,7 @@ SDL_DestroySemaphore(SDL_sem * sem)
     }
 }
 
-int
-SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
+int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -119,8 +115,8 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     }
 
     RThread thread;
-    TInfo*  info   = new (ELeave)TInfo(timeout, sem->handle);
-    TInt    status = CreateUnique(NewThread, &thread, info);
+    TInfo *info = new (ELeave) TInfo(timeout, sem->handle);
+    TInt status = CreateUnique(NewThread, &thread, info);
 
     if (status != KErrNone) {
         return status;
@@ -137,8 +133,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     return info->iVal;
 }
 
-int
-SDL_SemTryWait(SDL_sem *sem)
+int SDL_SemTryWait(SDL_sem *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -150,14 +145,13 @@ SDL_SemTryWait(SDL_sem *sem)
     return SDL_MUTEX_TIMEOUT;
 }
 
-int
-SDL_SemWait(SDL_sem * sem)
+int SDL_SemWait(SDL_sem *sem)
 {
     return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
 }
 
 Uint32
-SDL_SemValue(SDL_sem * sem)
+SDL_SemValue(SDL_sem *sem)
 {
     if (sem == NULL) {
         SDL_InvalidParamError("sem");
@@ -166,8 +160,7 @@ SDL_SemValue(SDL_sem * sem)
     return sem->count;
 }
 
-int
-SDL_SemPost(SDL_sem * sem)
+int SDL_SemPost(SDL_sem *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");

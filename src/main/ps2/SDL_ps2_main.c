@@ -1,5 +1,5 @@
 /*
-    SDL_ps2_main.c, fjtrujy@gmail.com 
+    SDL_ps2_main.c, fjtrujy@gmail.com
 */
 
 #include "SDL_config.h"
@@ -22,11 +22,11 @@
 #include <ps2_usb_driver.h>
 
 #ifdef main
-    #undef main
+#undef main
 #endif
 
-__attribute__((weak))
-void reset_IOP() {
+__attribute__((weak)) void reset_IOP()
+{
     SifInitRpc(0);
     while (!SifIopReset(NULL, 0)) {
     }
@@ -43,12 +43,14 @@ static void prepare_IOP()
     sbv_patch_fileio();
 }
 
-static void init_drivers() {
+static void init_drivers()
+{
     init_memcard_driver(true);
     init_usb_driver(true);
 }
 
-static void deinit_drivers() {
+static void deinit_drivers()
+{
     deinit_usb_driver(true);
     deinit_memcard_driver(true);
 }
@@ -75,14 +77,14 @@ int main(int argc, char *argv[])
 
     prepare_IOP();
     init_drivers();
-    
+
     getcwd(cwd, sizeof(cwd));
     waitUntilDeviceIsReady(cwd);
 
     res = SDL_main(argc, argv);
 
-    deinit_drivers();    
-    
+    deinit_drivers();
+
     return res;
 }
 

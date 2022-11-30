@@ -30,7 +30,6 @@
 
 #include "../../video/haiku/SDL_bkeyboard.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,65 +48,63 @@ extern "C" {
 
 #include <vector>
 
-
-
-
 /* Forward declarations */
 class SDL_BWin;
 
 /* Message constants */
-enum ToSDL {
+enum ToSDL
+{
     /* Intercepted by BWindow on its way to BView */
     BAPP_MOUSE_MOVED,
     BAPP_MOUSE_BUTTON,
     BAPP_MOUSE_WHEEL,
     BAPP_KEY,
-    BAPP_REPAINT,           /* from _UPDATE_ */
+    BAPP_REPAINT, /* from _UPDATE_ */
     /* From BWindow */
-    BAPP_MAXIMIZE,          /* from B_ZOOM */
+    BAPP_MAXIMIZE, /* from B_ZOOM */
     BAPP_MINIMIZE,
-    BAPP_RESTORE,           /* TODO: IMPLEMENT! */
+    BAPP_RESTORE, /* TODO: IMPLEMENT! */
     BAPP_SHOW,
     BAPP_HIDE,
-    BAPP_MOUSE_FOCUS,       /* caused by MOUSE_MOVE */
-    BAPP_KEYBOARD_FOCUS,    /* from WINDOW_ACTIVATED */
+    BAPP_MOUSE_FOCUS,    /* caused by MOUSE_MOVE */
+    BAPP_KEYBOARD_FOCUS, /* from WINDOW_ACTIVATED */
     BAPP_WINDOW_CLOSE_REQUESTED,
     BAPP_WINDOW_MOVED,
     BAPP_WINDOW_RESIZED,
     BAPP_SCREEN_CHANGED
 };
 
-
-
 /* Create a descendant of BApplication */
-class SDL_BApp : public BApplication {
-public:
-    SDL_BApp(const char* signature) :
-        BApplication(signature) {
+class SDL_BApp : public BApplication
+{
+  public:
+    SDL_BApp(const char *signature) : BApplication(signature)
+    {
 #if SDL_VIDEO_OPENGL
         _current_context = NULL;
 #endif
     }
 
-
-    virtual ~SDL_BApp() {
+    virtual ~SDL_BApp()
+    {
     }
 
+    virtual void RefsReceived(BMessage *message)
+    {
+        char filePath[512];
+        entry_ref entryRef;
+        for (int32 i = 0; message->FindRef("refs", i, &entryRef) == B_OK; i++) {
+            BPath referencePath = BPath(&entryRef);
+            SDL_SendDropFile(NULL, referencePath.Path());
+        }
+        return;
+    }
 
-	virtual void RefsReceived(BMessage* message) {
-		char filePath[512];
-		entry_ref entryRef;
-		for (int32 i = 0; message->FindRef("refs", i, &entryRef) == B_OK; i++) {
-			BPath referencePath = BPath(&entryRef);
-			SDL_SendDropFile(NULL, referencePath.Path());
-		}
-		return;
-	}
-
-        /* Event-handling functions */
-    virtual void MessageReceived(BMessage* message) {
+    /* Event-handling functions */
+    virtual void MessageReceived(BMessage *message)
+    {
         /* Sort out SDL-related messages */
-        switch ( message->what ) {
+        switch (message->what) {
         case BAPP_MOUSE_MOVED:
             _HandleMouseMove(message);
             break;
@@ -173,23 +170,24 @@ public:
             break;
 
         default:
-           BApplication::MessageReceived(message);
-           break;
+            BApplication::MessageReceived(message);
+            break;
         }
     }
 
     /* Window creation/destruction methods */
-    int32 GetID(SDL_Window *win) {
+    int32 GetID(SDL_Window *win)
+    {
         int32 i;
-        for(i = 0; i < _GetNumWindowSlots(); ++i) {
-            if( GetSDLWindow(i) == NULL ) {
+        for (i = 0; i < _GetNumWindowSlots(); ++i) {
+            if (GetSDLWindow(i) == NULL) {
                 _SetSDLWindow(win, i);
                 return i;
             }
         }
 
         /* Expand the vector if all slots are full */
-        if( i == _GetNumWindowSlots() ) {
+        if (i == _GetNumWindowSlots()) {
             _PushBackWindow(win);
             return i;
         }
@@ -202,18 +200,20 @@ public:
        there another way to do this? */
     void ClearID(SDL_BWin *bwin); /* Defined in SDL_BeApp.cc */
 
-
-    SDL_Window *GetSDLWindow(int32 winID) {
+    SDL_Window *GetSDLWindow(int32 winID)
+    {
         return _window_map[winID];
     }
 
 #if SDL_VIDEO_OPENGL
-    BGLView *GetCurrentContext() {
+    BGLView *GetCurrentContext()
+    {
         return _current_context;
     }
-    
-    void SetCurrentContext(BGLView *newContext) {
-        if(_current_context)
+
+    void SetCurrentContext(BGLView *newContext)
+    {
+        if (_current_context)
             _current_context->UnlockGL();
         _current_context = newContext;
         if (_current_context)
@@ -221,25 +221,26 @@ public:
     }
 #endif
 
-private:
+  private:
     /* Event management */
-    void _HandleBasicWindowEvent(BMessage *msg, int32 sdlEventType) {
+    void _HandleBasicWindowEvent(BMessage *msg, int32 sdlEventType)
+    {
         SDL_Window *win;
         int32 winID;
-        if(
-            !_GetWinID(msg, &winID)
-        ) {
+        if (
+            !_GetWinID(msg, &winID)) {
             return;
         }
         win = GetSDLWindow(winID);
         SDL_SendWindowEvent(win, sdlEventType, 0, 0);
     }
 
-    void _HandleMouseMove(BMessage *msg) {
+    void _HandleMouseMove(BMessage *msg)
+    {
         SDL_Window *win;
         int32 winID;
         int32 x = 0, y = 0;
-        if(
+        if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("x", &x) != B_OK || /* x movement */
             msg->FindInt32("y", &y) != B_OK    /* y movement */
@@ -266,47 +267,47 @@ private:
         }
     }
 
-    void _HandleMouseButton(BMessage *msg) {
+    void _HandleMouseButton(BMessage *msg)
+    {
         SDL_Window *win;
         int32 winID;
-        int32 button, state;    /* left/middle/right, pressed/released */
-        if(
+        int32 button, state; /* left/middle/right, pressed/released */
+        if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("button-id", &button) != B_OK ||
-            msg->FindInt32("button-state", &state) != B_OK
-        ) {
+            msg->FindInt32("button-state", &state) != B_OK) {
             return;
         }
         win = GetSDLWindow(winID);
         SDL_SendMouseButton(win, 0, state, button);
     }
 
-    void _HandleMouseWheel(BMessage *msg) {
+    void _HandleMouseWheel(BMessage *msg)
+    {
         SDL_Window *win;
         int32 winID;
         int32 xTicks, yTicks;
-        if(
+        if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("xticks", &xTicks) != B_OK ||
-            msg->FindInt32("yticks", &yTicks) != B_OK
-        ) {
+            msg->FindInt32("yticks", &yTicks) != B_OK) {
             return;
         }
         win = GetSDLWindow(winID);
         SDL_SendMouseWheel(win, 0, xTicks, -yTicks, SDL_MOUSEWHEEL_NORMAL);
     }
 
-    void _HandleKey(BMessage *msg) {
-        int32 scancode, state;  /* scancode, pressed/released */
-        if(
+    void _HandleKey(BMessage *msg)
+    {
+        int32 scancode, state; /* scancode, pressed/released */
+        if (
             msg->FindInt32("key-state", &state) != B_OK ||
-            msg->FindInt32("key-scancode", &scancode) != B_OK
-        ) {
+            msg->FindInt32("key-scancode", &scancode) != B_OK) {
             return;
         }
 
         /* Make sure this isn't a repeated event (key pressed and held) */
-        if(state == SDL_PRESSED && HAIKU_GetKeyState(scancode) == SDL_PRESSED) {
+        if (state == SDL_PRESSED && HAIKU_GetKeyState(scancode) == SDL_PRESSED) {
             return;
         }
         HAIKU_SetKeyState(scancode, state);
@@ -315,7 +316,7 @@ private:
         if (state == SDL_PRESSED && SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             const int8 *keyUtf8;
             ssize_t count;
-            if (msg->FindData("key-utf8", B_INT8_TYPE, (const void**)&keyUtf8, &count) == B_OK) {
+            if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {
                 char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
                 SDL_zeroa(text);
                 SDL_memcpy(text, keyUtf8, count);
@@ -324,107 +325,108 @@ private:
         }
     }
 
-    void _HandleMouseFocus(BMessage *msg) {
+    void _HandleMouseFocus(BMessage *msg)
+    {
         SDL_Window *win;
         int32 winID;
         bool bSetFocus; /* If false, lose focus */
-        if(
+        if (
             !_GetWinID(msg, &winID) ||
-            msg->FindBool("focusGained", &bSetFocus) != B_OK
-        ) {
+            msg->FindBool("focusGained", &bSetFocus) != B_OK) {
             return;
         }
         win = GetSDLWindow(winID);
-        if(bSetFocus) {
+        if (bSetFocus) {
             SDL_SetMouseFocus(win);
-        } else if(SDL_GetMouseFocus() == win) {
+        } else if (SDL_GetMouseFocus() == win) {
             /* Only lose all focus if this window was the current focus */
             SDL_SetMouseFocus(NULL);
         }
     }
 
-    void _HandleKeyboardFocus(BMessage *msg) {
+    void _HandleKeyboardFocus(BMessage *msg)
+    {
         SDL_Window *win;
         int32 winID;
         bool bSetFocus; /* If false, lose focus */
-        if(
+        if (
             !_GetWinID(msg, &winID) ||
-            msg->FindBool("focusGained", &bSetFocus) != B_OK
-        ) {
+            msg->FindBool("focusGained", &bSetFocus) != B_OK) {
             return;
         }
         win = GetSDLWindow(winID);
-        if(bSetFocus) {
+        if (bSetFocus) {
             SDL_SetKeyboardFocus(win);
-        } else if(SDL_GetKeyboardFocus() == win) {
+        } else if (SDL_GetKeyboardFocus() == win) {
             /* Only lose all focus if this window was the current focus */
             SDL_SetKeyboardFocus(NULL);
         }
     }
 
-    void _HandleWindowMoved(BMessage *msg) {
+    void _HandleWindowMoved(BMessage *msg)
+    {
         SDL_Window *win;
         int32 winID;
         int32 xPos, yPos;
         /* Get the window id and new x/y position of the window */
-        if(
+        if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("window-x", &xPos) != B_OK ||
-            msg->FindInt32("window-y", &yPos) != B_OK
-        ) {
+            msg->FindInt32("window-y", &yPos) != B_OK) {
             return;
         }
         win = GetSDLWindow(winID);
         SDL_SendWindowEvent(win, SDL_WINDOWEVENT_MOVED, xPos, yPos);
     }
 
-    void _HandleWindowResized(BMessage *msg) {
+    void _HandleWindowResized(BMessage *msg)
+    {
         SDL_Window *win;
         int32 winID;
         int32 w, h;
         /* Get the window id ]and new x/y position of the window */
-        if(
+        if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("window-w", &w) != B_OK ||
-            msg->FindInt32("window-h", &h) != B_OK
-        ) {
+            msg->FindInt32("window-h", &h) != B_OK) {
             return;
         }
         win = GetSDLWindow(winID);
         SDL_SendWindowEvent(win, SDL_WINDOWEVENT_RESIZED, w, h);
     }
 
-    bool _GetWinID(BMessage *msg, int32 *winID) {
+    bool _GetWinID(BMessage *msg, int32 *winID)
+    {
         return msg->FindInt32("window-id", winID) == B_OK;
     }
 
-
-
     /* Vector functions: Wraps vector stuff in case we need to change
        implementation */
-    void _SetSDLWindow(SDL_Window *win, int32 winID) {
+    void _SetSDLWindow(SDL_Window *win, int32 winID)
+    {
         _window_map[winID] = win;
     }
 
-    int32 _GetNumWindowSlots() {
+    int32 _GetNumWindowSlots()
+    {
         return _window_map.size();
     }
 
-
-    void _PopBackWindow() {
+    void _PopBackWindow()
+    {
         _window_map.pop_back();
     }
 
-    void _PushBackWindow(SDL_Window *win) {
+    void _PushBackWindow(SDL_Window *win)
+    {
         _window_map.push_back(win);
     }
 
-
     /* Members */
-    std::vector<SDL_Window*> _window_map; /* Keeps track of SDL_Windows by index-id */
+    std::vector<SDL_Window *> _window_map; /* Keeps track of SDL_Windows by index-id */
 
 #if SDL_VIDEO_OPENGL
-    BGLView      *_current_context;
+    BGLView *_current_context;
 #endif
 };
 

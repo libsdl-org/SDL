@@ -27,7 +27,8 @@
 extern "C" {
 #endif
 
-typedef enum {
+typedef enum
+{
     SHADER_SOLID,
     SHADER_RGB,
 #if SDL_HAVE_YUV
@@ -44,7 +45,8 @@ typedef enum {
     NUM_SHADERS
 } D3D12_Shader;
 
-typedef enum {
+typedef enum
+{
     ROOTSIG_COLOR,
     ROOTSIG_TEXTURE,
 #if SDL_HAVE_YUV
@@ -57,7 +59,7 @@ typedef enum {
 extern void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode);
 extern void D3D12_GetPixelShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode);
 extern D3D12_RootSignature D3D12_GetRootSignatureType(D3D12_Shader shader);
-extern void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE* outBytecode);
+extern void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE *outBytecode);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

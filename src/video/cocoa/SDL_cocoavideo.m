@@ -44,53 +44,22 @@ static void Cocoa_VideoQuit(_THIS);
 
 /* Cocoa driver bootstrap functions */
 
-static void
-Cocoa_DeleteDevice(SDL_VideoDevice * device)
-{ @autoreleasepool
+static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
 {
-    if (device->wakeup_lock) {
-        SDL_DestroyMutex(device->wakeup_lock);
-    }
-    CFBridgingRelease(device->driverdata);
-    SDL_free(device);
-}}
-
-static SDL_VideoDevice *
-Cocoa_CreateDevice(void)
-{ @autoreleasepool
-{
-    SDL_VideoDevice *device;
-    SDL_VideoData *data;
-
-    Cocoa_RegisterApp();
-
-    /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (device) {
-        data = [[SDL_VideoData alloc] init];
-    } else {
-        data = nil;
-    }
-    if (!data) {
-        SDL_OutOfMemory();
+    @autoreleasepool {
+        if (device->wakeup_lock) {
+            SDL_DestroyMutex(device->wakeup_lock);
+        }
+        CFBridgingRelease(device->driverdata);
         SDL_free(device);
-        return NULL;
     }
-    device->driverdata = (void *)CFBridgingRetain(data);
-    device->wakeup_lock = SDL_CreateMutex();
+}
 
-    /* Set the function pointers */
-    device->VideoInit = Cocoa_VideoInit;
-    device->VideoQuit = Cocoa_VideoQuit;
-    device->GetDisplayBounds = Cocoa_GetDisplayBounds;
-    device->GetDisplayUsableBounds = Cocoa_GetDisplayUsableBounds;
-    device->GetDisplayDPI = Cocoa_GetDisplayDPI;
-    device->GetDisplayModes = Cocoa_GetDisplayModes;
-    device->SetDisplayMode = Cocoa_SetDisplayMode;
-    device->PumpEvents = Cocoa_PumpEvents;
-    device->WaitEventTimeout = Cocoa_WaitEventTimeout;
-    device->SendWakeupEvent = Cocoa_SendWakeupEvent;
-    device->SuspendScreenSaver = Cocoa_SuspendScreenSaver;
+static SDL_VideoDevice *Cocoa_CreateDevice(void)
+{
+    @autoreleasepool {
+        SDL_VideoDevice *device;
+        SDL_VideoData *data;
 
     device->CreateSDLWindow = Cocoa_CreateWindow;
     device->CreateSDLWindowFrom = Cocoa_CreateWindowFrom;
@@ -125,9 +94,68 @@ Cocoa_CreateDevice(void)
     device->AcceptDragAndDrop = Cocoa_AcceptDragAndDrop;
     device->FlashWindow = Cocoa_FlashWindow;
 
-    device->shape_driver.CreateShaper = Cocoa_CreateShaper;
-    device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
-    device->shape_driver.ResizeWindowShape = Cocoa_ResizeWindowShape;
+        /* Initialize all variables that we clean on shutdown */
+        device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
+        if (device) {
+            data = [[SDL_VideoData alloc] init];
+        } else {
+            data = nil;
+        }
+        if (!data) {
+            SDL_OutOfMemory();
+            SDL_free(device);
+            return NULL;
+        }
+        device->driverdata = (void *)CFBridgingRetain(data);
+        device->wakeup_lock = SDL_CreateMutex();
+
+        /* Set the function pointers */
+        device->VideoInit = Cocoa_VideoInit;
+        device->VideoQuit = Cocoa_VideoQuit;
+        device->GetDisplayBounds = Cocoa_GetDisplayBounds;
+        device->GetDisplayUsableBounds = Cocoa_GetDisplayUsableBounds;
+        device->GetDisplayDPI = Cocoa_GetDisplayDPI;
+        device->GetDisplayModes = Cocoa_GetDisplayModes;
+        device->SetDisplayMode = Cocoa_SetDisplayMode;
+        device->PumpEvents = Cocoa_PumpEvents;
+        device->WaitEventTimeout = Cocoa_WaitEventTimeout;
+        device->SendWakeupEvent = Cocoa_SendWakeupEvent;
+        device->SuspendScreenSaver = Cocoa_SuspendScreenSaver;
+
+        device->CreateSDLWindow = Cocoa_CreateWindow;
+        device->CreateSDLWindowFrom = Cocoa_CreateWindowFrom;
+        device->SetWindowTitle = Cocoa_SetWindowTitle;
+        device->SetWindowIcon = Cocoa_SetWindowIcon;
+        device->SetWindowPosition = Cocoa_SetWindowPosition;
+        device->SetWindowSize = Cocoa_SetWindowSize;
+        device->SetWindowMinimumSize = Cocoa_SetWindowMinimumSize;
+        device->SetWindowMaximumSize = Cocoa_SetWindowMaximumSize;
+        device->SetWindowOpacity = Cocoa_SetWindowOpacity;
+        device->GetWindowSizeInPixels = Cocoa_GetWindowSizeInPixels;
+        device->ShowWindow = Cocoa_ShowWindow;
+        device->HideWindow = Cocoa_HideWindow;
+        device->RaiseWindow = Cocoa_RaiseWindow;
+        device->MaximizeWindow = Cocoa_MaximizeWindow;
+        device->MinimizeWindow = Cocoa_MinimizeWindow;
+        device->RestoreWindow = Cocoa_RestoreWindow;
+        device->SetWindowBordered = Cocoa_SetWindowBordered;
+        device->SetWindowResizable = Cocoa_SetWindowResizable;
+        device->SetWindowAlwaysOnTop = Cocoa_SetWindowAlwaysOnTop;
+        device->SetWindowFullscreen = Cocoa_SetWindowFullscreen;
+        device->GetWindowICCProfile = Cocoa_GetWindowICCProfile;
+        device->GetWindowDisplayIndex = Cocoa_GetWindowDisplayIndex;
+        device->SetWindowMouseRect = Cocoa_SetWindowMouseRect;
+        device->SetWindowMouseGrab = Cocoa_SetWindowMouseGrab;
+        device->SetWindowKeyboardGrab = Cocoa_SetWindowKeyboardGrab;
+        device->DestroyWindow = Cocoa_DestroyWindow;
+        device->GetWindowWMInfo = Cocoa_GetWindowWMInfo;
+        device->SetWindowHitTest = Cocoa_SetWindowHitTest;
+        device->AcceptDragAndDrop = Cocoa_AcceptDragAndDrop;
+        device->FlashWindow = Cocoa_FlashWindow;
+
+        device->shape_driver.CreateShaper = Cocoa_CreateShaper;
+        device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
+        device->shape_driver.ResizeWindowShape = Cocoa_ResizeWindowShape;
 
 #if SDL_VIDEO_OPENGL_CGL
     device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
@@ -152,77 +180,77 @@ Cocoa_CreateDevice(void)
 #endif
 
 #if SDL_VIDEO_VULKAN
-    device->Vulkan_LoadLibrary = Cocoa_Vulkan_LoadLibrary;
-    device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
-    device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
-    device->Vulkan_CreateSurface = Cocoa_Vulkan_CreateSurface;
-    device->Vulkan_GetDrawableSize = Cocoa_Vulkan_GetDrawableSize;
+        device->Vulkan_LoadLibrary = Cocoa_Vulkan_LoadLibrary;
+        device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
+        device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
+        device->Vulkan_CreateSurface = Cocoa_Vulkan_CreateSurface;
+        device->Vulkan_GetDrawableSize = Cocoa_Vulkan_GetDrawableSize;
 #endif
 
 #if SDL_VIDEO_METAL
-    device->Metal_CreateView = Cocoa_Metal_CreateView;
-    device->Metal_DestroyView = Cocoa_Metal_DestroyView;
-    device->Metal_GetLayer = Cocoa_Metal_GetLayer;
-    device->Metal_GetDrawableSize = Cocoa_Metal_GetDrawableSize;
+        device->Metal_CreateView = Cocoa_Metal_CreateView;
+        device->Metal_DestroyView = Cocoa_Metal_DestroyView;
+        device->Metal_GetLayer = Cocoa_Metal_GetLayer;
+        device->Metal_GetDrawableSize = Cocoa_Metal_GetDrawableSize;
 #endif
 
-    device->StartTextInput = Cocoa_StartTextInput;
-    device->StopTextInput = Cocoa_StopTextInput;
-    device->SetTextInputRect = Cocoa_SetTextInputRect;
+        device->StartTextInput = Cocoa_StartTextInput;
+        device->StopTextInput = Cocoa_StopTextInput;
+        device->SetTextInputRect = Cocoa_SetTextInputRect;
 
-    device->SetClipboardText = Cocoa_SetClipboardText;
-    device->GetClipboardText = Cocoa_GetClipboardText;
-    device->HasClipboardText = Cocoa_HasClipboardText;
+        device->SetClipboardText = Cocoa_SetClipboardText;
+        device->GetClipboardText = Cocoa_GetClipboardText;
+        device->HasClipboardText = Cocoa_HasClipboardText;
 
-    device->free = Cocoa_DeleteDevice;
+        device->free = Cocoa_DeleteDevice;
 
-    return device;
-}}
+        return device;
+    }
+}
 
 VideoBootStrap COCOA_bootstrap = {
     "cocoa", "SDL Cocoa video driver",
     Cocoa_CreateDevice
 };
 
-
-int
-Cocoa_VideoInit(_THIS)
-{ @autoreleasepool
+int Cocoa_VideoInit(_THIS)
 {
-    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
+    @autoreleasepool {
+        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
 
-    Cocoa_InitModes(_this);
-    Cocoa_InitKeyboard(_this);
-    if (Cocoa_InitMouse(_this) < 0) {
-        return -1;
+        Cocoa_InitModes(_this);
+        Cocoa_InitKeyboard(_this);
+        if (Cocoa_InitMouse(_this) < 0) {
+            return -1;
+        }
+
+        data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, SDL_TRUE);
+        data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, SDL_FALSE);
+
+        data.swaplock = SDL_CreateMutex();
+        if (!data.swaplock) {
+            return -1;
+        }
+
+        return 0;
     }
+}
 
-    data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, SDL_TRUE);
-    data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, SDL_FALSE);
-
-    data.swaplock = SDL_CreateMutex();
-    if (!data.swaplock) {
-        return -1;
-    }
-
-    return 0;
-}}
-
-void
-Cocoa_VideoQuit(_THIS)
-{ @autoreleasepool
+void Cocoa_VideoQuit(_THIS)
 {
-    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
-    Cocoa_QuitModes(_this);
-    Cocoa_QuitKeyboard(_this);
-    Cocoa_QuitMouse(_this);
-    SDL_DestroyMutex(data.swaplock);
-    data.swaplock = NULL;
-}}
+    @autoreleasepool {
+        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+        Cocoa_QuitModes(_this);
+        Cocoa_QuitKeyboard(_this);
+        Cocoa_QuitMouse(_this);
+        SDL_DestroyMutex(data.swaplock);
+        data.swaplock = NULL;
+    }
+}
 
 /* This function assumes that it's called from within an autorelease pool */
 NSImage *
-Cocoa_CreateImage(SDL_Surface * surface)
+Cocoa_CreateImage(SDL_Surface *surface)
 {
     SDL_Surface *converted;
     NSBitmapImageRep *imgrep;
@@ -235,16 +263,16 @@ Cocoa_CreateImage(SDL_Surface * surface)
         return nil;
     }
 
-    imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes: NULL
-                    pixelsWide: converted->w
-                    pixelsHigh: converted->h
-                    bitsPerSample: 8
-                    samplesPerPixel: 4
-                    hasAlpha: YES
-                    isPlanar: NO
-                    colorSpaceName: NSDeviceRGBColorSpace
-                    bytesPerRow: converted->pitch
-                    bitsPerPixel: converted->format->BitsPerPixel];
+    imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
+                                                     pixelsWide:converted->w
+                                                     pixelsHigh:converted->h
+                                                  bitsPerSample:8
+                                                samplesPerPixel:4
+                                                       hasAlpha:YES
+                                                       isPlanar:NO
+                                                 colorSpaceName:NSDeviceRGBColorSpace
+                                                    bytesPerRow:converted->pitch
+                                                   bitsPerPixel:converted->format->BitsPerPixel];
     if (imgrep == nil) {
         SDL_FreeSurface(converted);
         return nil;
@@ -256,7 +284,7 @@ Cocoa_CreateImage(SDL_Surface * surface)
     SDL_FreeSurface(converted);
 
     /* Premultiply the alpha channel */
-    for (i = (surface->h * surface->w); i--; ) {
+    for (i = (surface->h * surface->w); i--;) {
         Uint8 alpha = pixels[3];
         pixels[0] = (Uint8)(((Uint16)pixels[0] * alpha) / 255);
         pixels[1] = (Uint8)(((Uint16)pixels[1] * alpha) / 255);
@@ -264,9 +292,9 @@ Cocoa_CreateImage(SDL_Surface * surface)
         pixels += 4;
     }
 
-    img = [[NSImage alloc] initWithSize: NSMakeSize(surface->w, surface->h)];
+    img = [[NSImage alloc] initWithSize:NSMakeSize(surface->w, surface->h)];
     if (img != nil) {
-        [img addRepresentation: imgrep];
+        [img addRepresentation:imgrep];
     }
     return img;
 }

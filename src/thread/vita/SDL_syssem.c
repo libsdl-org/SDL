@@ -34,17 +34,17 @@
 #include <psp2/kernel/error.h>
 #include <psp2/kernel/threadmgr.h>
 
-struct SDL_semaphore {
-    SceUID  semid;
+struct SDL_semaphore
+{
+    SceUID semid;
 };
-
 
 /* Create a semaphore */
 SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_sem *sem;
 
-    sem = (SDL_sem *) SDL_malloc(sizeof(*sem));
+    sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
     if (sem != NULL) {
         /* TODO: Figure out the limit on the maximum value. */
         sem->semid = sceKernelCreateSema("SDL sema", 0, initial_value, 255, NULL);
@@ -97,7 +97,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     if (timeout == SDL_MUTEX_MAXWAIT) {
         pTimeout = NULL;
     } else {
-        timeout *= 1000;  /* Convert to microseconds. */
+        timeout *= 1000; /* Convert to microseconds. */
         pTimeout = &timeout;
     }
 

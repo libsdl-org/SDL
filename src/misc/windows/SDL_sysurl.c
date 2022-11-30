@@ -25,18 +25,16 @@
 #include <shellapi.h>
 
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
     /* Not supported */
     return SDL_Unsupported();
 }
 #else
 /* https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx */
-int
-SDL_SYS_OpenURL(const char *url)
+int SDL_SYS_OpenURL(const char *url)
 {
-    WCHAR* wurl;
+    WCHAR *wurl;
     HINSTANCE rc;
 
     /* MSDN says for safety's sake, make sure COM is initialized. */
@@ -55,9 +53,8 @@ SDL_SYS_OpenURL(const char *url)
     rc = ShellExecuteW(NULL, L"open", wurl, NULL, NULL, SW_SHOWNORMAL);
     SDL_free(wurl);
     WIN_CoUninitialize();
-    return (rc > ((HINSTANCE) 32)) ? 0 : WIN_SetError("Couldn't open given URL.");
+    return (rc > ((HINSTANCE)32)) ? 0 : WIN_SetError("Couldn't open given URL.");
 }
 #endif
 
 /* vi: set ts=4 sw=4 expandtab: */
-

@@ -42,24 +42,22 @@
 
 /* Initialization/Query functions */
 static int OFFSCREEN_VideoInit(_THIS);
-static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
+static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void OFFSCREEN_VideoQuit(_THIS);
 
 /* OFFSCREEN driver bootstrap functions */
 
-static void
-OFFSCREEN_DeleteDevice(SDL_VideoDevice * device)
+static void OFFSCREEN_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device);
 }
 
-static SDL_VideoDevice *
-OFFSCREEN_CreateDevice(void)
+static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return 0;
@@ -100,8 +98,7 @@ VideoBootStrap OFFSCREEN_bootstrap = {
     OFFSCREEN_CreateDevice
 };
 
-int
-OFFSCREEN_VideoInit(_THIS)
+int OFFSCREEN_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
 
@@ -122,14 +119,12 @@ OFFSCREEN_VideoInit(_THIS)
     return 0;
 }
 
-static int
-OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int OFFSCREEN_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-void
-OFFSCREEN_VideoQuit(_THIS)
+void OFFSCREEN_VideoQuit(_THIS)
 {
 }
 

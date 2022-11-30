@@ -26,9 +26,9 @@
 
 #include <psp2/kernel/sysmem.h>
 
-#define SCREEN_W 960
-#define SCREEN_H 544
-#define ALIGN(x, a)     (((x) + ((a) - 1)) & ~((a) - 1))
+#define SCREEN_W             960
+#define SCREEN_H             544
+#define ALIGN(x, a)          (((x) + ((a)-1)) & ~((a)-1))
 #define DISPLAY_PIXEL_FORMAT SCE_DISPLAY_PIXELFORMAT_A8B8G8R8
 
 void *vita_gpu_alloc(unsigned int type, unsigned int size, SceUID *uid)
@@ -36,9 +36,9 @@ void *vita_gpu_alloc(unsigned int type, unsigned int size, SceUID *uid)
     void *mem;
 
     if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW) {
-        size = ALIGN(size, 256*1024);
+        size = ALIGN(size, 256 * 1024);
     } else {
-        size = ALIGN(size, 4*1024);
+        size = ALIGN(size, 4 * 1024);
     }
 
     *uid = sceKernelAllocMemBlock("gpu_mem", type, size, NULL);
@@ -63,9 +63,9 @@ void vita_gpu_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-int VITA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+int VITA_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SceDisplayFrameBuf framebuf;
 
     *format = SDL_PIXELFORMAT_ABGR8888;
@@ -74,19 +74,18 @@ int VITA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, vo
     data->buffer = vita_gpu_alloc(
         SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
         4 * SCREEN_W * SCREEN_H,
-        &data->buffer_uid
-    );
+        &data->buffer_uid);
 
     // SDL_memset the buffer to black
-    SDL_memset(data->buffer, 0x0, SCREEN_W*SCREEN_H*4);
+    SDL_memset(data->buffer, 0x0, SCREEN_W * SCREEN_H * 4);
 
     SDL_memset(&framebuf, 0x00, sizeof(SceDisplayFrameBuf));
-    framebuf.size        = sizeof(SceDisplayFrameBuf);
-    framebuf.base        = data->buffer;
-    framebuf.pitch       = SCREEN_W;
+    framebuf.size = sizeof(SceDisplayFrameBuf);
+    framebuf.base = data->buffer;
+    framebuf.pitch = SCREEN_W;
     framebuf.pixelformat = DISPLAY_PIXEL_FORMAT;
-    framebuf.width       = SCREEN_W;
-    framebuf.height      = SCREEN_H;
+    framebuf.width = SCREEN_W;
+    framebuf.height = SCREEN_H;
     sceDisplaySetFrameBuf(&framebuf, SCE_DISPLAY_SETBUF_NEXTFRAME);
 
     *pixels = data->buffer;
@@ -94,15 +93,15 @@ int VITA_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format, vo
     return 0;
 }
 
-int VITA_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+int VITA_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     // do nothing
     return 0;
 }
 
-void VITA_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
+void VITA_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
     if (data == NULL) {
         /* The window wasn't fully initialized */

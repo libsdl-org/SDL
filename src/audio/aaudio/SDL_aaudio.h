@@ -28,7 +28,7 @@
 #include <aaudio/AAudio.h>
 
 /* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
+#define _THIS SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {
@@ -42,11 +42,10 @@ struct SDL_PrivateAudioData
     /* Resume device if it was paused automatically */
     int resume;
 };
- 
+
 void aaudio_ResumeDevices(void);
 void aaudio_PauseDevices(void);
 SDL_bool aaudio_DetectBrokenPlayState(void);
-
 
 #endif /* _SDL_aaudio_h */
 

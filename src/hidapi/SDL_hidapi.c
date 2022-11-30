@@ -65,7 +65,7 @@
 #include <unistd.h>  /* just in case we didn't use that SDL_USE_LIBUDEV block... */
 #include <errno.h>              /* errno, strerror */
 #include <fcntl.h>
-#include <limits.h>             /* For the definition of NAME_MAX */
+#include <limits.h> /* For the definition of NAME_MAX */
 #include <sys/inotify.h>
 #endif
 
@@ -85,7 +85,7 @@ static int inotify_fd = -1;
 #endif
 
 #if defined(SDL_USE_LIBUDEV)
-static const SDL_UDEV_Symbols * usyms = NULL;
+static const SDL_UDEV_Symbols *usyms = NULL;
 #endif
 
 static struct
@@ -115,32 +115,31 @@ static struct
 #endif
 } SDL_HIDAPI_discovery;
 
-
 #if defined(__WIN32__) || defined(__WINGDK__)
 struct _DEV_BROADCAST_HDR
 {
-    DWORD       dbch_size;
-    DWORD       dbch_devicetype;
-    DWORD       dbch_reserved;
+    DWORD dbch_size;
+    DWORD dbch_devicetype;
+    DWORD dbch_reserved;
 };
 
 typedef struct _DEV_BROADCAST_DEVICEINTERFACE_A
 {
-    DWORD       dbcc_size;
-    DWORD       dbcc_devicetype;
-    DWORD       dbcc_reserved;
-    GUID        dbcc_classguid;
-    char        dbcc_name[ 1 ];
+    DWORD dbcc_size;
+    DWORD dbcc_devicetype;
+    DWORD dbcc_reserved;
+    GUID dbcc_classguid;
+    char dbcc_name[1];
 } DEV_BROADCAST_DEVICEINTERFACE_A, *PDEV_BROADCAST_DEVICEINTERFACE_A;
 
-typedef struct  _DEV_BROADCAST_HDR      DEV_BROADCAST_HDR;
-#define DBT_DEVICEARRIVAL               0x8000  /* system detected a new device */
-#define DBT_DEVICEREMOVECOMPLETE        0x8004  /* device was removed from the system */
-#define DBT_DEVTYP_DEVICEINTERFACE      0x00000005  /* device interface class */
-#define DBT_DEVNODES_CHANGED            0x0007
-#define DBT_CONFIGCHANGED               0x0018
-#define DBT_DEVICETYPESPECIFIC          0x8005  /* type specific event */
-#define DBT_DEVINSTSTARTED              0x8008  /* device installed and started */
+typedef struct _DEV_BROADCAST_HDR DEV_BROADCAST_HDR;
+#define DBT_DEVICEARRIVAL          0x8000     /* system detected a new device */
+#define DBT_DEVICEREMOVECOMPLETE   0x8004     /* device was removed from the system */
+#define DBT_DEVTYP_DEVICEINTERFACE 0x00000005 /* device interface class */
+#define DBT_DEVNODES_CHANGED       0x0007
+#define DBT_CONFIGCHANGED          0x0018
+#define DBT_DEVICETYPESPECIFIC     0x8005 /* type specific event */
+#define DBT_DEVINSTSTARTED         0x8008 /* device installed and started */
 
 #include <initguid.h>
 DEFINE_GUID(GUID_DEVINTERFACE_USB_DEVICE, 0xA5DCBF10L, 0x6530, 0x11D2, 0x90, 0x1F, 0x00, 0xC0, 0x4F, 0xB9, 0x51, 0xED);
@@ -152,7 +151,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
         switch (wParam) {
         case DBT_DEVICEARRIVAL:
         case DBT_DEVICEREMOVECOMPLETE:
-            if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
+            if (((DEV_BROADCAST_HDR *)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
                 ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
             }
             break;
@@ -179,11 +178,13 @@ static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
 
 #ifdef HAVE_INOTIFY
 #ifdef HAVE_INOTIFY_INIT1
-static int SDL_inotify_init1(void) {
+static int SDL_inotify_init1(void)
+{
     return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 }
 #else
-static int SDL_inotify_init1(void) {
+static int SDL_inotify_init1(void)
+{
     int fd = inotify_init();
     if (fd < 0) {
         return -1;
@@ -233,7 +234,7 @@ HIDAPI_InitializeDiscovery()
     SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
     SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
     SDL_HIDAPI_discovery.m_wndClass.lpszClassName = "SDL_HIDAPI_DEVICE_DETECTION";
-    SDL_HIDAPI_discovery.m_wndClass.lpfnWndProc = ControllerWndProc;      /* This function is called by windows */
+    SDL_HIDAPI_discovery.m_wndClass.lpfnWndProc = ControllerWndProc; /* This function is called by windows */
     SDL_HIDAPI_discovery.m_wndClass.cbSize = sizeof(WNDCLASSEX);
 
     RegisterClassExA(&SDL_HIDAPI_discovery.m_wndClass);
@@ -243,7 +244,7 @@ HIDAPI_InitializeDiscovery()
         DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
 
         SDL_zero(devBroadcast);
-        devBroadcast.dbcc_size = sizeof( devBroadcast );
+        devBroadcast.dbcc_size = sizeof(devBroadcast);
         devBroadcast.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
         devBroadcast.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
 
@@ -251,8 +252,8 @@ HIDAPI_InitializeDiscovery()
          * but that seems to be necessary to get a notice after each individual usb input device actually
          * installs, rather than just as the composite device is seen.
          */
-        SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification( SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES );
-        SDL_HIDAPI_discovery.m_bCanGetNotifications = ( SDL_HIDAPI_discovery.m_hNotify != 0 );
+        SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification(SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+        SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_hNotify != 0);
     }
 #endif /* defined(__WIN32__) || defined(__WINGDK__) */
 
@@ -350,7 +351,7 @@ HIDAPI_InitializeDiscovery()
             inotify_fd = -1;
             SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                         "Unable to add inotify watch, falling back to polling: %s",
-                        strerror (errno));
+                        strerror(errno));
             return;
         }
 
@@ -367,7 +368,7 @@ HIDAPI_UpdateDiscovery()
     }
 
     if (!SDL_HIDAPI_discovery.m_bCanGetNotifications) {
-        const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
+        const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000; /* Update every 3 seconds */
         Uint32 now = SDL_GetTicks();
         if (!SDL_HIDAPI_discovery.m_unLastDetect || SDL_TICKS_PASSED(now, SDL_HIDAPI_discovery.m_unLastDetect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
             ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
@@ -393,7 +394,11 @@ HIDAPI_UpdateDiscovery()
 
 #if defined(__MACOSX__)
     if (SDL_HIDAPI_discovery.m_notificationPort) {
-        struct { mach_msg_header_t hdr; char payload[ 4096 ]; } msg;
+        struct
+        {
+            mach_msg_header_t hdr;
+            char payload[4096];
+        } msg;
         while (mach_msg(&msg.hdr, MACH_RCV_MSG | MACH_RCV_TIMEOUT, 0, sizeof(msg), SDL_HIDAPI_discovery.m_notificationMach, 0, MACH_PORT_NULL) == KERN_SUCCESS) {
             IODispatchCalloutFromMessage(NULL, &msg.hdr, SDL_HIDAPI_discovery.m_notificationPort);
         }
@@ -438,22 +443,22 @@ HIDAPI_UpdateDiscovery()
             {
                 struct inotify_event event;
                 char storage[4096];
-                char enough_for_inotify[sizeof (struct inotify_event) + NAME_MAX + 1];
+                char enough_for_inotify[sizeof(struct inotify_event) + NAME_MAX + 1];
             } buf;
             ssize_t bytes;
             size_t remain = 0;
             size_t len;
 
-            bytes = read(inotify_fd, &buf, sizeof (buf));
+            bytes = read(inotify_fd, &buf, sizeof(buf));
 
             if (bytes > 0) {
-                remain = (size_t) bytes;
+                remain = (size_t)bytes;
             }
 
             while (remain > 0) {
                 if (buf.event.len > 0) {
                     if (StrHasPrefix(buf.event.name, "hidraw") &&
-                        StrIsInteger(buf.event.name + SDL_strlen ("hidraw"))) {
+                        StrIsInteger(buf.event.name + SDL_strlen("hidraw"))) {
                         ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
                         /* We found an hidraw change. We still continue to
                          * drain the inotify fd to avoid leaving old
@@ -461,7 +466,7 @@ HIDAPI_UpdateDiscovery()
                     }
                 }
 
-                len = sizeof (struct inotify_event) + buf.event.len;
+                len = sizeof(struct inotify_event) + buf.event.len;
                 remain -= len;
 
                 if (remain != 0) {
@@ -526,32 +531,32 @@ HIDAPI_ShutdownDiscovery()
 
 /* Platform HIDAPI Implementation */
 
-#define hid_device                      PLATFORM_hid_device
-#define hid_device_                     PLATFORM_hid_device_
-#define hid_init                        PLATFORM_hid_init
-#define hid_exit                        PLATFORM_hid_exit
-#define hid_enumerate                   PLATFORM_hid_enumerate
-#define hid_free_enumeration            PLATFORM_hid_free_enumeration
-#define hid_open                        PLATFORM_hid_open
-#define hid_open_path                   PLATFORM_hid_open_path
-#define hid_write                       PLATFORM_hid_write
-#define hid_read_timeout                PLATFORM_hid_read_timeout
-#define hid_read                        PLATFORM_hid_read
-#define hid_set_nonblocking             PLATFORM_hid_set_nonblocking
-#define hid_send_feature_report         PLATFORM_hid_send_feature_report
-#define hid_get_feature_report          PLATFORM_hid_get_feature_report
-#define hid_close                       PLATFORM_hid_close
-#define hid_get_manufacturer_string     PLATFORM_hid_get_manufacturer_string
-#define hid_get_product_string          PLATFORM_hid_get_product_string
-#define hid_get_serial_number_string    PLATFORM_hid_get_serial_number_string
-#define hid_get_indexed_string          PLATFORM_hid_get_indexed_string
-#define hid_error                       PLATFORM_hid_error
-#define new_hid_device                  PLATFORM_new_hid_device
-#define free_hid_device                 PLATFORM_free_hid_device
-#define input_report                    PLATFORM_input_report
-#define return_data                     PLATFORM_return_data
-#define make_path                       PLATFORM_make_path
-#define read_thread                     PLATFORM_read_thread
+#define hid_device                   PLATFORM_hid_device
+#define hid_device_                  PLATFORM_hid_device_
+#define hid_init                     PLATFORM_hid_init
+#define hid_exit                     PLATFORM_hid_exit
+#define hid_enumerate                PLATFORM_hid_enumerate
+#define hid_free_enumeration         PLATFORM_hid_free_enumeration
+#define hid_open                     PLATFORM_hid_open
+#define hid_open_path                PLATFORM_hid_open_path
+#define hid_write                    PLATFORM_hid_write
+#define hid_read_timeout             PLATFORM_hid_read_timeout
+#define hid_read                     PLATFORM_hid_read
+#define hid_set_nonblocking          PLATFORM_hid_set_nonblocking
+#define hid_send_feature_report      PLATFORM_hid_send_feature_report
+#define hid_get_feature_report       PLATFORM_hid_get_feature_report
+#define hid_close                    PLATFORM_hid_close
+#define hid_get_manufacturer_string  PLATFORM_hid_get_manufacturer_string
+#define hid_get_product_string       PLATFORM_hid_get_product_string
+#define hid_get_serial_number_string PLATFORM_hid_get_serial_number_string
+#define hid_get_indexed_string       PLATFORM_hid_get_indexed_string
+#define hid_error                    PLATFORM_hid_error
+#define new_hid_device               PLATFORM_new_hid_device
+#define free_hid_device              PLATFORM_free_hid_device
+#define input_report                 PLATFORM_input_report
+#define return_data                  PLATFORM_return_data
+#define make_path                    PLATFORM_make_path
+#define read_thread                  PLATFORM_read_thread
 
 #undef HIDAPI_H__
 #if __LINUX__
@@ -559,21 +564,21 @@ HIDAPI_ShutdownDiscovery()
 #if SDL_USE_LIBUDEV
 static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
-#define udev_device_get_sysattr_value                    udev_ctx->udev_device_get_sysattr_value
-#define udev_new                                         udev_ctx->udev_new
-#define udev_unref                                       udev_ctx->udev_unref
-#define udev_device_new_from_devnum                      udev_ctx->udev_device_new_from_devnum
-#define udev_device_get_parent_with_subsystem_devtype    udev_ctx->udev_device_get_parent_with_subsystem_devtype
-#define udev_device_unref                                udev_ctx->udev_device_unref
-#define udev_enumerate_new                               udev_ctx->udev_enumerate_new
-#define udev_enumerate_add_match_subsystem               udev_ctx->udev_enumerate_add_match_subsystem
-#define udev_enumerate_scan_devices                      udev_ctx->udev_enumerate_scan_devices
-#define udev_enumerate_get_list_entry                    udev_ctx->udev_enumerate_get_list_entry
-#define udev_list_entry_get_name                         udev_ctx->udev_list_entry_get_name
-#define udev_device_new_from_syspath                     udev_ctx->udev_device_new_from_syspath
-#define udev_device_get_devnode                          udev_ctx->udev_device_get_devnode
-#define udev_list_entry_get_next                         udev_ctx->udev_list_entry_get_next
-#define udev_enumerate_unref                             udev_ctx->udev_enumerate_unref
+#define udev_device_get_sysattr_value                 udev_ctx->udev_device_get_sysattr_value
+#define udev_new                                      udev_ctx->udev_new
+#define udev_unref                                    udev_ctx->udev_unref
+#define udev_device_new_from_devnum                   udev_ctx->udev_device_new_from_devnum
+#define udev_device_get_parent_with_subsystem_devtype udev_ctx->udev_device_get_parent_with_subsystem_devtype
+#define udev_device_unref                             udev_ctx->udev_device_unref
+#define udev_enumerate_new                            udev_ctx->udev_enumerate_new
+#define udev_enumerate_add_match_subsystem            udev_ctx->udev_enumerate_add_match_subsystem
+#define udev_enumerate_scan_devices                   udev_ctx->udev_enumerate_scan_devices
+#define udev_enumerate_get_list_entry                 udev_ctx->udev_enumerate_get_list_entry
+#define udev_list_entry_get_name                      udev_ctx->udev_list_entry_get_name
+#define udev_device_new_from_syspath                  udev_ctx->udev_device_new_from_syspath
+#define udev_device_get_devnode                       udev_ctx->udev_device_get_devnode
+#define udev_list_entry_get_next                      udev_ctx->udev_list_entry_get_next
+#define udev_enumerate_unref                          udev_ctx->udev_enumerate_unref
 
 #include "linux/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
@@ -582,11 +587,11 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #elif __MACOSX__
 #include "mac/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx 1
+#define udev_ctx              1
 #elif __WINDOWS__ || __WINGDK__
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx 1
+#define udev_ctx              1
 #elif __ANDROID__
 /* The implementation for Android is in a separate .cpp file */
 #include "hidapi/hidapi.h"
@@ -596,7 +601,7 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 /* The implementation for iOS and tvOS is in a separate .m file */
 #include "hidapi/hidapi.h"
 #define HAVE_PLATFORM_BACKEND 1
-#define udev_ctx 1
+#define udev_ctx              1
 #endif
 
 #undef hid_device
@@ -634,26 +639,26 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
 /* DRIVER HIDAPI Implementation */
 
-#define hid_device                      DRIVER_hid_device
-#define hid_device_                     DRIVER_hid_device_
-#define hid_init                        DRIVER_hid_init
-#define hid_exit                        DRIVER_hid_exit
-#define hid_enumerate                   DRIVER_hid_enumerate
-#define hid_free_enumeration            DRIVER_hid_free_enumeration
-#define hid_open                        DRIVER_hid_open
-#define hid_open_path                   DRIVER_hid_open_path
-#define hid_write                       DRIVER_hid_write
-#define hid_read_timeout                DRIVER_hid_read_timeout
-#define hid_read                        DRIVER_hid_read
-#define hid_set_nonblocking             DRIVER_hid_set_nonblocking
-#define hid_send_feature_report         DRIVER_hid_send_feature_report
-#define hid_get_feature_report          DRIVER_hid_get_feature_report
-#define hid_close                       DRIVER_hid_close
-#define hid_get_manufacturer_string     DRIVER_hid_get_manufacturer_string
-#define hid_get_product_string          DRIVER_hid_get_product_string
-#define hid_get_serial_number_string    DRIVER_hid_get_serial_number_string
-#define hid_get_indexed_string          DRIVER_hid_get_indexed_string
-#define hid_error                       DRIVER_hid_error
+#define hid_device                   DRIVER_hid_device
+#define hid_device_                  DRIVER_hid_device_
+#define hid_init                     DRIVER_hid_init
+#define hid_exit                     DRIVER_hid_exit
+#define hid_enumerate                DRIVER_hid_enumerate
+#define hid_free_enumeration         DRIVER_hid_free_enumeration
+#define hid_open                     DRIVER_hid_open
+#define hid_open_path                DRIVER_hid_open_path
+#define hid_write                    DRIVER_hid_write
+#define hid_read_timeout             DRIVER_hid_read_timeout
+#define hid_read                     DRIVER_hid_read
+#define hid_set_nonblocking          DRIVER_hid_set_nonblocking
+#define hid_send_feature_report      DRIVER_hid_send_feature_report
+#define hid_get_feature_report       DRIVER_hid_get_feature_report
+#define hid_close                    DRIVER_hid_close
+#define hid_get_manufacturer_string  DRIVER_hid_get_manufacturer_string
+#define hid_get_product_string       DRIVER_hid_get_product_string
+#define hid_get_serial_number_string DRIVER_hid_get_serial_number_string
+#define hid_get_indexed_string       DRIVER_hid_get_indexed_string
+#define hid_error                    DRIVER_hid_error
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMXBOX
 #undef HIDAPI_H__
@@ -685,7 +690,6 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
 #endif /* HAVE_DRIVER_BACKEND */
 
-
 #ifdef HAVE_LIBUSB
 /* libusb HIDAPI Implementation */
 
@@ -694,8 +698,9 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 
 static struct
 {
-    void* libhandle;
+    void *libhandle;
 
+    /* *INDENT-OFF* */ /* clang-format off */
     int (LIBUSB_CALL *init)(libusb_context **ctx);
     void (LIBUSB_CALL *exit)(libusb_context *ctx);
     ssize_t (LIBUSB_CALL *get_device_list)(libusb_context *ctx, libusb_device ***list);
@@ -743,62 +748,64 @@ static struct
     int (LIBUSB_CALL *handle_events)(libusb_context *ctx);
     int (LIBUSB_CALL *handle_events_completed)(libusb_context *ctx, int *completed);
     const char * (LIBUSB_CALL *error_name)(int errcode);
+/* *INDENT-ON* */ /* clang-format on */
+
 } libusb_ctx;
 
-#define libusb_init                            libusb_ctx.init
-#define libusb_exit                            libusb_ctx.exit
-#define libusb_get_device_list                 libusb_ctx.get_device_list
-#define libusb_free_device_list                libusb_ctx.free_device_list
-#define libusb_get_device_descriptor           libusb_ctx.get_device_descriptor
-#define libusb_get_active_config_descriptor    libusb_ctx.get_active_config_descriptor
-#define libusb_get_config_descriptor           libusb_ctx.get_config_descriptor
-#define libusb_free_config_descriptor          libusb_ctx.free_config_descriptor
-#define libusb_get_bus_number                  libusb_ctx.get_bus_number
-#define libusb_get_device_address              libusb_ctx.get_device_address
-#define libusb_open                            libusb_ctx.open
-#define libusb_close                           libusb_ctx.close
-#define libusb_claim_interface                 libusb_ctx.claim_interface
-#define libusb_release_interface               libusb_ctx.release_interface
-#define libusb_kernel_driver_active            libusb_ctx.kernel_driver_active
-#define libusb_detach_kernel_driver            libusb_ctx.detach_kernel_driver
-#define libusb_attach_kernel_driver            libusb_ctx.attach_kernel_driver
-#define libusb_set_interface_alt_setting       libusb_ctx.set_interface_alt_setting
-#define libusb_alloc_transfer                  libusb_ctx.alloc_transfer
-#define libusb_submit_transfer                 libusb_ctx.submit_transfer
-#define libusb_cancel_transfer                 libusb_ctx.cancel_transfer
-#define libusb_free_transfer                   libusb_ctx.free_transfer
-#define libusb_control_transfer                libusb_ctx.control_transfer
-#define libusb_interrupt_transfer              libusb_ctx.interrupt_transfer
-#define libusb_handle_events                   libusb_ctx.handle_events
-#define libusb_handle_events_completed         libusb_ctx.handle_events_completed
-#define libusb_error_name                      libusb_ctx.error_name
+#define libusb_init                         libusb_ctx.init
+#define libusb_exit                         libusb_ctx.exit
+#define libusb_get_device_list              libusb_ctx.get_device_list
+#define libusb_free_device_list             libusb_ctx.free_device_list
+#define libusb_get_device_descriptor        libusb_ctx.get_device_descriptor
+#define libusb_get_active_config_descriptor libusb_ctx.get_active_config_descriptor
+#define libusb_get_config_descriptor        libusb_ctx.get_config_descriptor
+#define libusb_free_config_descriptor       libusb_ctx.free_config_descriptor
+#define libusb_get_bus_number               libusb_ctx.get_bus_number
+#define libusb_get_device_address           libusb_ctx.get_device_address
+#define libusb_open                         libusb_ctx.open
+#define libusb_close                        libusb_ctx.close
+#define libusb_claim_interface              libusb_ctx.claim_interface
+#define libusb_release_interface            libusb_ctx.release_interface
+#define libusb_kernel_driver_active         libusb_ctx.kernel_driver_active
+#define libusb_detach_kernel_driver         libusb_ctx.detach_kernel_driver
+#define libusb_attach_kernel_driver         libusb_ctx.attach_kernel_driver
+#define libusb_set_interface_alt_setting    libusb_ctx.set_interface_alt_setting
+#define libusb_alloc_transfer               libusb_ctx.alloc_transfer
+#define libusb_submit_transfer              libusb_ctx.submit_transfer
+#define libusb_cancel_transfer              libusb_ctx.cancel_transfer
+#define libusb_free_transfer                libusb_ctx.free_transfer
+#define libusb_control_transfer             libusb_ctx.control_transfer
+#define libusb_interrupt_transfer           libusb_ctx.interrupt_transfer
+#define libusb_handle_events                libusb_ctx.handle_events
+#define libusb_handle_events_completed      libusb_ctx.handle_events_completed
+#define libusb_error_name                   libusb_ctx.error_name
 
-#define hid_device                      LIBUSB_hid_device
-#define hid_device_                     LIBUSB_hid_device_
-#define hid_init                        LIBUSB_hid_init
-#define hid_exit                        LIBUSB_hid_exit
-#define hid_enumerate                   LIBUSB_hid_enumerate
-#define hid_free_enumeration            LIBUSB_hid_free_enumeration
-#define hid_open                        LIBUSB_hid_open
-#define hid_open_path                   LIBUSB_hid_open_path
-#define hid_write                       LIBUSB_hid_write
-#define hid_read_timeout                LIBUSB_hid_read_timeout
-#define hid_read                        LIBUSB_hid_read
-#define hid_set_nonblocking             LIBUSB_hid_set_nonblocking
-#define hid_send_feature_report         LIBUSB_hid_send_feature_report
-#define hid_get_feature_report          LIBUSB_hid_get_feature_report
-#define hid_close                       LIBUSB_hid_close
-#define hid_get_manufacturer_string     LIBUSB_hid_get_manufacturer_string
-#define hid_get_product_string          LIBUSB_hid_get_product_string
-#define hid_get_serial_number_string    LIBUSB_hid_get_serial_number_string
-#define hid_get_indexed_string          LIBUSB_hid_get_indexed_string
-#define hid_error                       LIBUSB_hid_error
-#define new_hid_device                  LIBUSB_new_hid_device
-#define free_hid_device                 LIBUSB_free_hid_device
-#define input_report                    LIBUSB_input_report
-#define return_data                     LIBUSB_return_data
-#define make_path                       LIBUSB_make_path
-#define read_thread                     LIBUSB_read_thread
+#define hid_device                   LIBUSB_hid_device
+#define hid_device_                  LIBUSB_hid_device_
+#define hid_init                     LIBUSB_hid_init
+#define hid_exit                     LIBUSB_hid_exit
+#define hid_enumerate                LIBUSB_hid_enumerate
+#define hid_free_enumeration         LIBUSB_hid_free_enumeration
+#define hid_open                     LIBUSB_hid_open
+#define hid_open_path                LIBUSB_hid_open_path
+#define hid_write                    LIBUSB_hid_write
+#define hid_read_timeout             LIBUSB_hid_read_timeout
+#define hid_read                     LIBUSB_hid_read
+#define hid_set_nonblocking          LIBUSB_hid_set_nonblocking
+#define hid_send_feature_report      LIBUSB_hid_send_feature_report
+#define hid_get_feature_report       LIBUSB_hid_get_feature_report
+#define hid_close                    LIBUSB_hid_close
+#define hid_get_manufacturer_string  LIBUSB_hid_get_manufacturer_string
+#define hid_get_product_string       LIBUSB_hid_get_product_string
+#define hid_get_serial_number_string LIBUSB_hid_get_serial_number_string
+#define hid_get_indexed_string       LIBUSB_hid_get_indexed_string
+#define hid_error                    LIBUSB_hid_error
+#define new_hid_device               LIBUSB_new_hid_device
+#define free_hid_device              LIBUSB_free_hid_device
+#define input_report                 LIBUSB_input_report
+#define return_data                  LIBUSB_return_data
+#define make_path                    LIBUSB_make_path
+#define read_thread                  LIBUSB_read_thread
 
 #ifndef __FreeBSD__
 /* this is awkwardly inlined, so we need to re-implement it here
@@ -878,69 +885,70 @@ SDL_libusb_get_string_descriptor(libusb_device_handle *dev,
 
 /* Shared HIDAPI Implementation */
 
-struct hidapi_backend {
-    int  (*hid_write)(void* device, const unsigned char* data, size_t length);
-    int  (*hid_read_timeout)(void* device, unsigned char* data, size_t length, int milliseconds);
-    int  (*hid_read)(void* device, unsigned char* data, size_t length);
-    int  (*hid_set_nonblocking)(void* device, int nonblock);
-    int  (*hid_send_feature_report)(void* device, const unsigned char* data, size_t length);
-    int  (*hid_get_feature_report)(void* device, unsigned char* data, size_t length);
-    void (*hid_close)(void* device);
-    int  (*hid_get_manufacturer_string)(void* device, wchar_t* string, size_t maxlen);
-    int  (*hid_get_product_string)(void* device, wchar_t* string, size_t maxlen);
-    int  (*hid_get_serial_number_string)(void* device, wchar_t* string, size_t maxlen);
-    int  (*hid_get_indexed_string)(void* device, int string_index, wchar_t* string, size_t maxlen);
-    const wchar_t* (*hid_error)(void* device);
+struct hidapi_backend
+{
+    int (*hid_write)(void *device, const unsigned char *data, size_t length);
+    int (*hid_read_timeout)(void *device, unsigned char *data, size_t length, int milliseconds);
+    int (*hid_read)(void *device, unsigned char *data, size_t length);
+    int (*hid_set_nonblocking)(void *device, int nonblock);
+    int (*hid_send_feature_report)(void *device, const unsigned char *data, size_t length);
+    int (*hid_get_feature_report)(void *device, unsigned char *data, size_t length);
+    void (*hid_close)(void *device);
+    int (*hid_get_manufacturer_string)(void *device, wchar_t *string, size_t maxlen);
+    int (*hid_get_product_string)(void *device, wchar_t *string, size_t maxlen);
+    int (*hid_get_serial_number_string)(void *device, wchar_t *string, size_t maxlen);
+    int (*hid_get_indexed_string)(void *device, int string_index, wchar_t *string, size_t maxlen);
+    const wchar_t *(*hid_error)(void *device);
 };
 
 #if HAVE_PLATFORM_BACKEND
 static const struct hidapi_backend PLATFORM_Backend = {
-    (void*)PLATFORM_hid_write,
-    (void*)PLATFORM_hid_read_timeout,
-    (void*)PLATFORM_hid_read,
-    (void*)PLATFORM_hid_set_nonblocking,
-    (void*)PLATFORM_hid_send_feature_report,
-    (void*)PLATFORM_hid_get_feature_report,
-    (void*)PLATFORM_hid_close,
-    (void*)PLATFORM_hid_get_manufacturer_string,
-    (void*)PLATFORM_hid_get_product_string,
-    (void*)PLATFORM_hid_get_serial_number_string,
-    (void*)PLATFORM_hid_get_indexed_string,
-    (void*)PLATFORM_hid_error
+    (void *)PLATFORM_hid_write,
+    (void *)PLATFORM_hid_read_timeout,
+    (void *)PLATFORM_hid_read,
+    (void *)PLATFORM_hid_set_nonblocking,
+    (void *)PLATFORM_hid_send_feature_report,
+    (void *)PLATFORM_hid_get_feature_report,
+    (void *)PLATFORM_hid_close,
+    (void *)PLATFORM_hid_get_manufacturer_string,
+    (void *)PLATFORM_hid_get_product_string,
+    (void *)PLATFORM_hid_get_serial_number_string,
+    (void *)PLATFORM_hid_get_indexed_string,
+    (void *)PLATFORM_hid_error
 };
 #endif /* HAVE_PLATFORM_BACKEND */
 
 #if HAVE_DRIVER_BACKEND
 static const struct hidapi_backend DRIVER_Backend = {
-    (void*)DRIVER_hid_write,
-    (void*)DRIVER_hid_read_timeout,
-    (void*)DRIVER_hid_read,
-    (void*)DRIVER_hid_set_nonblocking,
-    (void*)DRIVER_hid_send_feature_report,
-    (void*)DRIVER_hid_get_feature_report,
-    (void*)DRIVER_hid_close,
-    (void*)DRIVER_hid_get_manufacturer_string,
-    (void*)DRIVER_hid_get_product_string,
-    (void*)DRIVER_hid_get_serial_number_string,
-    (void*)DRIVER_hid_get_indexed_string,
-    (void*)DRIVER_hid_error
+    (void *)DRIVER_hid_write,
+    (void *)DRIVER_hid_read_timeout,
+    (void *)DRIVER_hid_read,
+    (void *)DRIVER_hid_set_nonblocking,
+    (void *)DRIVER_hid_send_feature_report,
+    (void *)DRIVER_hid_get_feature_report,
+    (void *)DRIVER_hid_close,
+    (void *)DRIVER_hid_get_manufacturer_string,
+    (void *)DRIVER_hid_get_product_string,
+    (void *)DRIVER_hid_get_serial_number_string,
+    (void *)DRIVER_hid_get_indexed_string,
+    (void *)DRIVER_hid_error
 };
 #endif /* HAVE_DRIVER_BACKEND */
 
 #ifdef HAVE_LIBUSB
 static const struct hidapi_backend LIBUSB_Backend = {
-    (void*)LIBUSB_hid_write,
-    (void*)LIBUSB_hid_read_timeout,
-    (void*)LIBUSB_hid_read,
-    (void*)LIBUSB_hid_set_nonblocking,
-    (void*)LIBUSB_hid_send_feature_report,
-    (void*)LIBUSB_hid_get_feature_report,
-    (void*)LIBUSB_hid_close,
-    (void*)LIBUSB_hid_get_manufacturer_string,
-    (void*)LIBUSB_hid_get_product_string,
-    (void*)LIBUSB_hid_get_serial_number_string,
-    (void*)LIBUSB_hid_get_indexed_string,
-    (void*)LIBUSB_hid_error
+    (void *)LIBUSB_hid_write,
+    (void *)LIBUSB_hid_read_timeout,
+    (void *)LIBUSB_hid_read,
+    (void *)LIBUSB_hid_set_nonblocking,
+    (void *)LIBUSB_hid_send_feature_report,
+    (void *)LIBUSB_hid_get_feature_report,
+    (void *)LIBUSB_hid_close,
+    (void *)LIBUSB_hid_get_manufacturer_string,
+    (void *)LIBUSB_hid_get_product_string,
+    (void *)LIBUSB_hid_get_serial_number_string,
+    (void *)LIBUSB_hid_get_indexed_string,
+    (void *)LIBUSB_hid_error
 };
 #endif /* HAVE_LIBUSB */
 
@@ -973,26 +981,26 @@ DeleteHIDDeviceWrapper(SDL_hid_device *device)
     SDL_free(device);
 }
 
-#define CHECK_DEVICE_MAGIC(device, retval) \
+#define CHECK_DEVICE_MAGIC(device, retval)           \
     if (!device || device->magic != &device_magic) { \
-        SDL_SetError("Invalid device"); \
-        return retval; \
+        SDL_SetError("Invalid device");              \
+        return retval;                               \
     }
 
 #if !SDL_HIDAPI_DISABLED
 #if HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || defined(HAVE_LIBUSB)
 
-#define COPY_IF_EXISTS(var) \
-    if (pSrc->var != NULL) { \
+#define COPY_IF_EXISTS(var)                \
+    if (pSrc->var != NULL) {               \
         pDst->var = SDL_strdup(pSrc->var); \
-    } else { \
-        pDst->var = NULL; \
+    } else {                               \
+        pDst->var = NULL;                  \
     }
-#define WCOPY_IF_EXISTS(var) \
-    if (pSrc->var != NULL) { \
+#define WCOPY_IF_EXISTS(var)               \
+    if (pSrc->var != NULL) {               \
         pDst->var = SDL_wcsdup(pSrc->var); \
-    } else { \
-        pDst->var = NULL; \
+    } else {                               \
+        pDst->var = NULL;                  \
     }
 
 static void
@@ -1022,7 +1030,7 @@ CopyHIDDeviceInfo(struct SDL_hid_device_info *pSrc, struct SDL_hid_device_info *
 
 static int SDL_hidapi_refcount = 0;
 
-static void SDL_SetHIDAPIError( const wchar_t *error )
+static void SDL_SetHIDAPIError(const wchar_t *error)
 {
     if (error) {
         char *error_utf8 = SDL_iconv_wchar_utf8(error);
@@ -1073,11 +1081,13 @@ int SDL_hid_init(void)
         if (libusb_ctx.libhandle != NULL) {
             SDL_bool loaded = SDL_TRUE;
 #ifdef SDL_LIBUSB_DYNAMIC
-            #define LOAD_LIBUSB_SYMBOL(func) \
-                if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) {loaded = SDL_FALSE;}
+#define LOAD_LIBUSB_SYMBOL(func)                                                        \
+    if (!(libusb_ctx.func = SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) { \
+        loaded = SDL_FALSE;                                                             \
+    }
 #else
-            #define LOAD_LIBUSB_SYMBOL(func) \
-                libusb_ctx.func = libusb_##func;
+#define LOAD_LIBUSB_SYMBOL(func) \
+    libusb_ctx.func = libusb_##func;
 #endif
             LOAD_LIBUSB_SYMBOL(init)
             LOAD_LIBUSB_SYMBOL(exit)
@@ -1106,7 +1116,7 @@ int SDL_hid_init(void)
             LOAD_LIBUSB_SYMBOL(handle_events)
             LOAD_LIBUSB_SYMBOL(handle_events_completed)
             LOAD_LIBUSB_SYMBOL(error_name)
-            #undef LOAD_LIBUSB_SYMBOL
+#undef LOAD_LIBUSB_SYMBOL
 
             if (!loaded) {
 #ifdef SDL_LIBUSB_DYNAMIC
@@ -1213,8 +1223,8 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
     struct SDL_hid_device_info *usb_dev;
 #endif
 #if HAVE_DRIVER_BACKEND
-    struct SDL_hid_device_info* driver_devs = NULL;
-    struct SDL_hid_device_info* driver_dev;
+    struct SDL_hid_device_info *driver_devs = NULL;
+    struct SDL_hid_device_info *driver_dev;
 #endif
 #if HAVE_PLATFORM_BACKEND
     struct SDL_hid_device_info *raw_devs = NULL;
@@ -1233,7 +1243,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
         SDL_Log("libusb devices found:");
 #endif
         for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
-            new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
+            new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
             if (new_dev == NULL) {
                 LIBUSB_hid_free_enumeration(usb_devs);
                 SDL_hid_free_enumeration(devs);
@@ -1260,7 +1270,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #ifdef HAVE_DRIVER_BACKEND
     driver_devs = DRIVER_hid_enumerate(vendor_id, product_id);
     for (driver_dev = driver_devs; driver_dev; driver_dev = driver_dev->next) {
-        new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
+        new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
         CopyHIDDeviceInfo(driver_dev, new_dev);
 
         if (last != NULL) {
@@ -1306,7 +1316,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
             }
 #endif
             if (!bFound) {
-                new_dev = (struct SDL_hid_device_info*) SDL_malloc(sizeof(struct SDL_hid_device_info));
+                new_dev = (struct SDL_hid_device_info *)SDL_malloc(sizeof(struct SDL_hid_device_info));
                 if (new_dev == NULL) {
 #ifdef HAVE_LIBUSB
                     if (libusb_ctx.libhandle) {
@@ -1506,7 +1516,7 @@ int SDL_hid_get_feature_report(SDL_hid_device *device, unsigned char *data, size
 
 void SDL_hid_close(SDL_hid_device *device)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
 
     device->backend->hid_close(device->device);
     DeleteHIDDeviceWrapper(device);

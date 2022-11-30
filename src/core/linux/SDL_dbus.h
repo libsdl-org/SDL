@@ -29,20 +29,20 @@
 #include "SDL_stdinc.h"
 #include <dbus/dbus.h>
 
-
-typedef struct SDL_DBusContext {
+typedef struct SDL_DBusContext
+{
     DBusConnection *session_conn;
     DBusConnection *system_conn;
 
     DBusConnection *(*bus_get_private)(DBusBusType, DBusError *);
     dbus_bool_t (*bus_register)(DBusConnection *, DBusError *);
     void (*bus_add_match)(DBusConnection *, const char *, DBusError *);
-    DBusConnection * (*connection_open_private)(const char *, DBusError *);
+    DBusConnection *(*connection_open_private)(const char *, DBusError *);
     void (*connection_set_exit_on_disconnect)(DBusConnection *, dbus_bool_t);
     dbus_bool_t (*connection_get_is_connected)(DBusConnection *);
     dbus_bool_t (*connection_add_filter)(DBusConnection *, DBusHandleMessageFunction, void *, DBusFreeFunction);
     dbus_bool_t (*connection_try_register_object_path)(DBusConnection *, const char *,
-        const DBusObjectPathVTable *, void *, DBusError *);
+                                                       const DBusObjectPathVTable *, void *, DBusError *);
     dbus_bool_t (*connection_send)(DBusConnection *, DBusMessage *, dbus_uint32_t *);
     DBusMessage *(*connection_send_with_reply_and_block)(DBusConnection *, DBusMessage *, int, DBusError *);
     void (*connection_close)(DBusConnection *);
@@ -50,7 +50,7 @@ typedef struct SDL_DBusContext {
     void (*connection_flush)(DBusConnection *);
     dbus_bool_t (*connection_read_write)(DBusConnection *, int);
     DBusDispatchStatus (*connection_dispatch)(DBusConnection *);
-    dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *); 
+    dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);
@@ -64,7 +64,7 @@ typedef struct SDL_DBusContext {
     dbus_bool_t (*message_iter_next)(DBusMessageIter *);
     void (*message_iter_get_basic)(DBusMessageIter *, void *);
     int (*message_iter_get_arg_type)(DBusMessageIter *);
-    void (*message_iter_recurse)(DBusMessageIter *, DBusMessageIter *); 
+    void (*message_iter_recurse)(DBusMessageIter *, DBusMessageIter *);
     void (*message_unref)(DBusMessage *);
     dbus_bool_t (*threads_init_default)(void);
     void (*error_init)(DBusError *);
@@ -79,7 +79,7 @@ typedef struct SDL_DBusContext {
 
 extern void SDL_DBus_Init(void);
 extern void SDL_DBus_Quit(void);
-extern SDL_DBusContext * SDL_DBus_GetContext(void);
+extern SDL_DBusContext *SDL_DBus_GetContext(void);
 
 /* These use the built-in Session connection. */
 extern SDL_bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...);

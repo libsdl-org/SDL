@@ -62,7 +62,6 @@
 
 #include "SDL_vulkan.h"
 
-
 extern const char *SDL_Vulkan_GetResultString(VkResult result);
 
 extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
@@ -88,8 +87,8 @@ extern SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
 /* No SDL Vulkan support, just include the header for typedefs */
 #include "SDL_vulkan.h"
 
-typedef void (*PFN_vkGetInstanceProcAddr) (void);
-typedef int  (*PFN_vkEnumerateInstanceExtensionProperties) (void);
+typedef void (*PFN_vkGetInstanceProcAddr)(void);
+typedef int (*PFN_vkEnumerateInstanceExtensionProperties)(void);
 
 #endif /* SDL_VIDEO_VULKAN */
 

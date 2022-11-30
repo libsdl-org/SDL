@@ -27,13 +27,14 @@
 #include "SDL_shape.h"
 #include "../SDL_sysvideo.h"
 
-typedef struct {
-    void* bitmap;
+typedef struct
+{
+    void *bitmap;
     Uint32 bitmapsize;
 } SDL_ShapeData;
 
-extern SDL_WindowShaper* X11_CreateShaper(SDL_Window* window);
-extern int X11_ResizeWindowShape(SDL_Window* window);
-extern int X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shapeMode);
+extern SDL_WindowShaper *X11_CreateShaper(SDL_Window *window);
+extern int X11_ResizeWindowShape(SDL_Window *window);
+extern int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shapeMode);
 
 #endif /* SDL_x11shape_h_ */

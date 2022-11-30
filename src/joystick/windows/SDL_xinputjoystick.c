@@ -42,9 +42,7 @@ extern "C" {
 static SDL_bool s_bXInputEnabled = SDL_TRUE;
 static char *s_arrXInputDevicePath[XUSER_MAX_COUNT];
 
-
-static SDL_bool
-SDL_XInputUseOldJoystickMapping()
+static SDL_bool SDL_XInputUseOldJoystickMapping()
 {
 #ifdef __WINRT__
     /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
@@ -66,8 +64,7 @@ SDL_bool SDL_XINPUT_Enabled(void)
     return s_bXInputEnabled;
 }
 
-int
-SDL_XINPUT_JoystickInit(void)
+int SDL_XINPUT_JoystickInit(void)
 {
     s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE);
 
@@ -79,13 +76,12 @@ SDL_XINPUT_JoystickInit(void)
 #endif
 
     if (s_bXInputEnabled && WIN_LoadXInputDLL() < 0) {
-        s_bXInputEnabled = SDL_FALSE;  /* oh well. */
+        s_bXInputEnabled = SDL_FALSE; /* oh well. */
     }
     return 0;
 }
 
-static const char *
-GetXInputName(const Uint8 userid, BYTE SubType)
+static const char *GetXInputName(const Uint8 userid, BYTE SubType)
 {
     static char name[32];
 
@@ -130,15 +126,14 @@ GetXInputName(const Uint8 userid, BYTE SubType)
 /* We can't really tell what device is being used for XInput, but we can guess
    and we'll be correct for the case where only one device is connected.
  */
-static void
-GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
+static void GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
 #if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
     PRAWINPUTDEVICELIST devices = NULL;
     UINT i, j, device_count = 0;
 
     if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!device_count)) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
@@ -148,7 +143,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 
     if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
         SDL_free(devices);
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     /* First see if we have a cached entry for this index */
@@ -231,7 +226,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
         }
     }
     SDL_free(devices);
-#endif  /* !__WINRT__ */
+#endif /* !__WINRT__ */
 
     /* The device wasn't in the raw HID device list, it's probably Bluetooth */
     *pVID = 0x045e; /* Microsoft */
@@ -239,8 +234,7 @@ GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
     *pVersion = 0;
 }
 
-static void
-AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
+static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
 {
     Uint16 vendor = 0;
     Uint16 product = 0;
@@ -267,7 +261,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
 
             pNewJoystick->pNext = SYS_Joystick;
             SYS_Joystick = pNewJoystick;
-            return;   /* already in the list. */
+            return; /* already in the list. */
         }
 
         pPrevJoystick = pNewJoystick;
@@ -319,8 +313,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     WINDOWS_AddJoystickDevice(pNewJoystick);
 }
 
-static void
-DelXInputDevice(Uint8 userid)
+static void DelXInputDevice(Uint8 userid)
 {
     if (s_arrXInputDevicePath[userid]) {
         SDL_free(s_arrXInputDevicePath[userid]);
@@ -328,8 +321,7 @@ DelXInputDevice(Uint8 userid)
     }
 }
 
-void
-SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
+void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
     int iuserid;
 
@@ -361,8 +353,7 @@ SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
     }
 }
 
-int
-SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickdevice)
+int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
 {
     const Uint8 userId = joystickdevice->XInputUserId;
     XINPUT_CAPABILITIES capabilities;
@@ -396,8 +387,7 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     return 0;
 }
 
-static void 
-UpdateXInputJoystickBatteryInformation(SDL_Joystick * joystick, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
+static void UpdateXInputJoystickBatteryInformation(SDL_Joystick *joystick, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
 {
     if (pBatteryInformation->BatteryType != BATTERY_TYPE_UNKNOWN) {
         SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
@@ -425,8 +415,7 @@ UpdateXInputJoystickBatteryInformation(SDL_Joystick * joystick, XINPUT_BATTERY_I
     }
 }
 
-static void
-UpdateXInputJoystickState_OLD(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
+static void UpdateXInputJoystickState_OLD(SDL_Joystick *joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
 {
     static WORD s_XInputButtons[] = {
         XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
@@ -452,8 +441,7 @@ UpdateXInputJoystickState_OLD(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputS
     UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
-static void
-UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
+static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
 {
     static WORD s_XInputButtons[] = {
         XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
@@ -493,8 +481,7 @@ UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState
     UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
-int
-SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     XINPUT_VIBRATION XVibration;
 
@@ -511,13 +498,12 @@ SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
 }
 
 Uint32
-SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     return SDL_JOYCAP_RUMBLE;
 }
 
-void
-SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
+void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
     HRESULT result;
     XINPUT_STATE_EX XInputState;
@@ -553,13 +539,11 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
 #endif
 }
 
-void
-SDL_XINPUT_JoystickClose(SDL_Joystick * joystick)
+void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
 {
 }
 
-void
-SDL_XINPUT_JoystickQuit(void)
+void SDL_XINPUT_JoystickQuit(void)
 {
     if (s_bXInputEnabled) {
         WIN_UnloadXInputDLL();
@@ -580,47 +564,40 @@ SDL_bool SDL_XINPUT_Enabled(void)
     return SDL_FALSE;
 }
 
-int
-SDL_XINPUT_JoystickInit(void)
+int SDL_XINPUT_JoystickInit(void)
 {
     return 0;
 }
 
-void
-SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
+void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
 }
 
-int
-SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickdevice)
+int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+int SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
 Uint32
-SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
+SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     return 0;
 }
 
-void
-SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
+void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
 }
 
-void
-SDL_XINPUT_JoystickClose(SDL_Joystick * joystick)
+void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
 {
 }
 
-void
-SDL_XINPUT_JoystickQuit(void)
+void SDL_XINPUT_JoystickQuit(void)
 {
 }
 

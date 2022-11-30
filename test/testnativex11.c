@@ -38,14 +38,14 @@ CreateWindowX11(int w, int h)
         XMapRaised(dpy, window);
         XSync(dpy, False);
     }
-    return (void *) window;
+    return (void *)window;
 }
 
 static void
 DestroyWindowX11(void *window)
 {
     if (dpy) {
-        XDestroyWindow(dpy, (Window) window);
+        XDestroyWindow(dpy, (Window)window);
         XCloseDisplay(dpy);
     }
 }

@@ -20,8 +20,8 @@
 #include "testutils.h"
 
 static SDL_AudioSpec spec;
-static Uint8 *sound = NULL;     /* Pointer to wave data */
-static Uint32 soundlen = 0;     /* Length of wave data */
+static Uint8 *sound = NULL; /* Pointer to wave data */
+static Uint32 soundlen = 0; /* Length of wave data */
 
 typedef struct
 {
@@ -33,9 +33,9 @@ typedef struct
 callback_data cbd[64];
 
 void SDLCALL
-play_through_once(void *arg, Uint8 * stream, int len)
+play_through_once(void *arg, Uint8 *stream, int len)
 {
-    callback_data *cbdata = (callback_data *) arg;
+    callback_data *cbdata = (callback_data *)arg;
     Uint8 *waveptr = sound + cbdata->soundpos;
     int waveleft = soundlen - cbdata->soundpos;
     int cpy = len;
@@ -53,8 +53,7 @@ play_through_once(void *arg, Uint8 * stream, int len)
     }
 }
 
-void
-loop()
+void loop()
 {
     if (SDL_AtomicGet(&cbd[0].done)) {
 #ifdef __EMSCRIPTEN__
@@ -72,17 +71,17 @@ test_multi_audio(int devcount)
 {
     int keep_going = 1;
     int i;
-    
-#ifdef __ANDROID__  
+
+#ifdef __ANDROID__
     SDL_Event event;
-  
+
     /* Create a Window to get fully initialized event processing for testing pause on Android. */
     SDL_CreateWindow("testmultiaudio", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 240, 0);
 #endif
 
     if (devcount > 64) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Too many devices (%d), clamping to 64...\n",
-                devcount);
+                     devcount);
         devcount = 64;
     }
 
@@ -104,10 +103,11 @@ test_multi_audio(int devcount)
             emscripten_set_main_loop(loop, 0, 1);
 #else
             while (!SDL_AtomicGet(&cbd[0].done)) {
-                #ifdef __ANDROID__                
+#ifdef __ANDROID__
                 /* Empty queue, some application events would prevent pause. */
-                while (SDL_PollEvent(&event)) {}
-                #endif                
+                while (SDL_PollEvent(&event)) {
+                }
+#endif
                 SDL_Delay(100);
             }
             SDL_PauseAudioDevice(cbd[0].dev, 1);
@@ -142,10 +142,11 @@ test_multi_audio(int devcount)
                 keep_going = 1;
             }
         }
-        #ifdef __ANDROID__        
+#ifdef __ANDROID__
         /* Empty queue, some application events would prevent pause. */
-        while (SDL_PollEvent(&event)) {}
-        #endif        
+        while (SDL_PollEvent(&event)) {
+        }
+#endif
 
         SDL_Delay(100);
     }
@@ -162,9 +163,7 @@ test_multi_audio(int devcount)
 #endif
 }
 
-
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int devcount = 0;
 
@@ -178,7 +177,7 @@ main(int argc, char **argv)
     }
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
-    
+
     devcount = SDL_GetNumAudioDevices(0);
     if (devcount < 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!\n");
@@ -188,7 +187,7 @@ main(int argc, char **argv)
         /* Load the wave file into memory */
         if (SDL_LoadWAV(file, &spec, &sound, &soundlen) == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", file,
-                    SDL_GetError());
+                         SDL_GetError());
         } else {
             test_multi_audio(devcount);
             SDL_FreeWAV(sound);

@@ -51,8 +51,7 @@ static SDL_Thread *SDL_AppThread = NULL;
 /* Default application signature */
 const char *signature = "application/x-SDL-executable";
 
-static int
-StartBeApp(void *unused)
+static int StartBeApp(void *unused)
 {
     BApplication *App;
 

@@ -55,7 +55,7 @@
 
 /* Initialization/Cleanup routines */
 #if !SDL_TIMERS_DISABLED
-# include "timer/SDL_timer_c.h"
+#include "timer/SDL_timer_c.h"
 #endif
 #if SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
@@ -98,8 +98,8 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
        ExitProcess here that will never be reached but make MingW happy. */
     ExitProcess(exitcode);
 #elif defined(__EMSCRIPTEN__)
-    emscripten_cancel_main_loop();  /* this should "kill" the app. */
-    emscripten_force_exit(exitcode);  /* this should "kill" the app. */
+    emscripten_cancel_main_loop();   /* this should "kill" the app. */
+    emscripten_force_exit(exitcode); /* this should "kill" the app. */
     exit(exitcode);
 #elif defined(__HAIKU__)  /* Haiku has _Exit, but it's not marked noreturn. */
     _exit(exitcode);
@@ -110,7 +110,6 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 #endif
 }
 
-
 /* The initialized subsystems */
 #ifdef SDL_MAIN_NEEDED
 static SDL_bool SDL_MainIsReady = SDL_FALSE;
@@ -118,11 +117,10 @@ static SDL_bool SDL_MainIsReady = SDL_FALSE;
 static SDL_bool SDL_MainIsReady = SDL_TRUE;
 #endif
 static SDL_bool SDL_bInMainQuit = SDL_FALSE;
-static Uint8 SDL_SubsystemRefCount[ 32 ];
+static Uint8 SDL_SubsystemRefCount[32];
 
 /* Private helper to increment a subsystem's ref counter. */
-static void
-SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
+static void SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -132,8 +130,7 @@ SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
 }
 
 /* Private helper to decrement a subsystem's ref counter. */
-static void
-SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
+static void SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] > 0)) {
@@ -142,8 +139,7 @@ SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 }
 
 /* Private helper to check if a system needs init. */
-static SDL_bool
-SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
+static SDL_bool SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -151,8 +147,8 @@ SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 }
 
 /* Private helper to check if a system needs to be quit. */
-static SDL_bool
-SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
+static SDL_bool SDL_PrivateShouldQuitSubsystem(Uint32 subsystem)
+{
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) {
         return SDL_FALSE;
@@ -164,14 +160,12 @@ SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
     return (((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 1)) || SDL_bInMainQuit) ? SDL_TRUE : SDL_FALSE;
 }
 
-void
-SDL_SetMainReady(void)
+void SDL_SetMainReady(void)
 {
     SDL_MainIsReady = SDL_TRUE;
 }
 
-int
-SDL_InitSubSystem(Uint32 flags)
+int SDL_InitSubSystem(Uint32 flags)
 {
     Uint32 flags_initialized = 0;
 
@@ -193,7 +187,7 @@ SDL_InitSubSystem(Uint32 flags)
         flags |= SDL_INIT_JOYSTICK;
     }
 
-    if ((flags & (SDL_INIT_VIDEO|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO))) {
+    if ((flags & (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO))) {
         /* video or joystick or audio implies events */
         flags |= SDL_INIT_EVENTS;
     }
@@ -203,7 +197,7 @@ SDL_InitSubSystem(Uint32 flags)
 #endif
 
 #if SDL_VIDEO_DRIVER_WINDOWS
-    if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
+    if ((flags & (SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK))) {
         if (SDL_HelperWindowCreate() < 0) {
             goto quit_and_error;
         }
@@ -282,9 +276,9 @@ SDL_InitSubSystem(Uint32 flags)
     if ((flags & SDL_INIT_JOYSTICK)) {
 #if !SDL_JOYSTICK_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_JOYSTICK)) {
-           if (SDL_JoystickInit() < 0) {
-               goto quit_and_error;
-           }
+            if (SDL_JoystickInit() < 0) {
+                goto quit_and_error;
+            }
         }
         SDL_PrivateSubsystemRefCountIncr(SDL_INIT_JOYSTICK);
         flags_initialized |= SDL_INIT_JOYSTICK;
@@ -341,7 +335,7 @@ SDL_InitSubSystem(Uint32 flags)
 #endif
     }
 
-    (void) flags_initialized;  /* make static analysis happy, since this only gets used in error cases. */
+    (void)flags_initialized; /* make static analysis happy, since this only gets used in error cases. */
 
     return 0;
 
@@ -350,14 +344,12 @@ quit_and_error:
     return -1;
 }
 
-int
-SDL_Init(Uint32 flags)
+int SDL_Init(Uint32 flags)
 {
     return SDL_InitSubSystem(flags);
 }
 
-void
-SDL_QuitSubSystem(Uint32 flags)
+void SDL_QuitSubSystem(Uint32 flags)
 {
 #if defined(__OS2__)
 #if SDL_THREAD_OS2
@@ -481,8 +473,7 @@ SDL_WasInit(Uint32 flags)
     return initialized;
 }
 
-void
-SDL_Quit(void)
+void SDL_Quit(void)
 {
     SDL_bInMainQuit = SDL_TRUE;
 
@@ -508,7 +499,7 @@ SDL_Quit(void)
     /* Now that every subsystem has been quit, we reset the subsystem refcount
      * and the list of initialized subsystems.
      */
-    SDL_memset( SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount) );
+    SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
 
     SDL_TLSCleanup();
 
@@ -516,13 +507,13 @@ SDL_Quit(void)
 }
 
 /* Get the library version number */
-void
-SDL_GetVersion(SDL_version * ver)
+void SDL_GetVersion(SDL_version *ver)
 {
     static SDL_bool check_hint = SDL_TRUE;
     static SDL_bool legacy_version = SDL_FALSE;
 
-    if (ver == NULL) {        return;
+    if (ver == NULL) {
+        return;
     }
 
     SDL_VERSION(ver);

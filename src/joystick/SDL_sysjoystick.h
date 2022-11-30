@@ -35,12 +35,12 @@ extern "C" {
 /* The SDL joystick structure */
 typedef struct _SDL_JoystickAxisInfo
 {
-    Sint16 initial_value;       /* Initial axis state */
-    Sint16 value;               /* Current axis state */
-    Sint16 zero;                /* Zero point on the axis (-32768 for triggers) */
-    SDL_bool has_initial_value; /* Whether we've seen a value on the axis yet */
-    SDL_bool has_second_value;  /* Whether we've seen a second value on the axis yet */
-    SDL_bool sent_initial_value; /* Whether we've sent the initial axis value */
+    Sint16 initial_value;           /* Initial axis state */
+    Sint16 value;                   /* Current axis state */
+    Sint16 zero;                    /* Zero point on the axis (-32768 for triggers) */
+    SDL_bool has_initial_value;     /* Whether we've seen a value on the axis yet */
+    SDL_bool has_second_value;      /* Whether we've seen a second value on the axis yet */
+    SDL_bool sent_initial_value;    /* Whether we've sent the initial axis value */
     SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
 
@@ -63,7 +63,7 @@ typedef struct _SDL_JoystickSensorInfo
     SDL_SensorType type;
     SDL_bool enabled;
     float rate;
-    float data[3];      /* If this needs to expand, update SDL_ControllerSensorEvent */
+    float data[3]; /* If this needs to expand, update SDL_ControllerSensorEvent */
     Uint64 timestamp_us;
 } SDL_JoystickSensorInfo;
 
@@ -78,25 +78,26 @@ struct _SDL_Joystick
     SDL_JoystickGUID guid;      /* Joystick guid */
     Uint16 firmware_version;    /* Firmware version, if available */
 
-    int naxes;                  /* Number of axis controls on the joystick */
+    int naxes; /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes;
 
-    int nhats;                  /* Number of hats on the joystick */
-    Uint8 *hats;                /* Current hat states */
+    int nhats;   /* Number of hats on the joystick */
+    Uint8 *hats; /* Current hat states */
 
-    int nballs;                 /* Number of trackballs on the joystick */
-    struct balldelta {
+    int nballs; /* Number of trackballs on the joystick */
+    struct balldelta
+    {
         int dx;
         int dy;
-    } *balls;                   /* Current ball motion deltas */
+    } * balls; /* Current ball motion deltas */
 
-    int nbuttons;               /* Number of buttons on the joystick */
-    Uint8 *buttons;             /* Current button states */
+    int nbuttons;   /* Number of buttons on the joystick */
+    Uint8 *buttons; /* Current button states */
 
-    int ntouchpads;             /* Number of touchpads on the joystick */
-    SDL_JoystickTouchpadInfo *touchpads;    /* Current touchpad states */
+    int ntouchpads;                      /* Number of touchpads on the joystick */
+    SDL_JoystickTouchpadInfo *touchpads; /* Current touchpad states */
 
-    int nsensors;               /* Number of sensors on the joystick */
+    int nsensors; /* Number of sensors on the joystick */
     int nsensors_enabled;
     SDL_JoystickSensorInfo *sensors;
 
@@ -116,31 +117,31 @@ struct _SDL_Joystick
 
     SDL_bool attached;
     SDL_bool is_game_controller;
-    SDL_bool delayed_guide_button; /* SDL_TRUE if this device has the guide button event delayed */
+    SDL_bool delayed_guide_button;      /* SDL_TRUE if this device has the guide button event delayed */
     SDL_JoystickPowerLevel epowerlevel; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 
     struct _SDL_JoystickDriver *driver;
 
-    struct joystick_hwdata *hwdata;     /* Driver dependent information */
+    struct joystick_hwdata *hwdata; /* Driver dependent information */
 
-    int ref_count;              /* Reference count for multiple opens */
+    int ref_count; /* Reference count for multiple opens */
 
     struct _SDL_Joystick *next; /* pointer to next joystick we have allocated */
 };
 
 /* Device bus definitions */
-#define SDL_HARDWARE_BUS_UNKNOWN    0x00
-#define SDL_HARDWARE_BUS_USB        0x03
-#define SDL_HARDWARE_BUS_BLUETOOTH  0x05
-#define SDL_HARDWARE_BUS_VIRTUAL    0xFF
+#define SDL_HARDWARE_BUS_UNKNOWN   0x00
+#define SDL_HARDWARE_BUS_USB       0x03
+#define SDL_HARDWARE_BUS_BLUETOOTH 0x05
+#define SDL_HARDWARE_BUS_VIRTUAL   0xFF
 
 /* Joystick capability flags for GetCapabilities() */
-#define SDL_JOYCAP_LED              0x01
-#define SDL_JOYCAP_RUMBLE           0x02
-#define SDL_JOYCAP_RUMBLE_TRIGGERS  0x04
+#define SDL_JOYCAP_LED             0x01
+#define SDL_JOYCAP_RUMBLE          0x02
+#define SDL_JOYCAP_RUMBLE_TRIGGERS 0x04
 
 /* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
-#define MAKE_VIDPID(VID, PID)   (((Uint32)(VID))<<16|(PID))
+#define MAKE_VIDPID(VID, PID) (((Uint32)(VID)) << 16 | (PID))
 
 typedef struct _SDL_JoystickDriver
 {
@@ -211,18 +212,18 @@ typedef struct _SDL_JoystickDriver
     void (*Quit)(void);
 
     /* Function to get the autodetected controller mapping; returns false if there isn't any. */
-    SDL_bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping * out);
+    SDL_bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping *out);
 
 } SDL_JoystickDriver;
 
 /* Windows and Mac OSX has a limit of MAX_DWORD / 1000, Linux kernel has a limit of 0xFFFF */
-#define SDL_MAX_RUMBLE_DURATION_MS  0xFFFF
+#define SDL_MAX_RUMBLE_DURATION_MS 0xFFFF
 
-/* Dualshock4 only rumbles for about 5 seconds max, resend rumble command every 2 seconds 
+/* Dualshock4 only rumbles for about 5 seconds max, resend rumble command every 2 seconds
  * to make long rumble work. */
-#define SDL_RUMBLE_RESEND_MS  2000
+#define SDL_RUMBLE_RESEND_MS 2000
 
-#define SDL_LED_MIN_REPEAT_MS  5000
+#define SDL_LED_MIN_REPEAT_MS 5000
 
 /* The available joystick drivers */
 extern SDL_JoystickDriver SDL_ANDROID_JoystickDriver;

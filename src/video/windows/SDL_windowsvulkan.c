@@ -79,8 +79,7 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
     if (extensions == NULL) {
         goto fail;
     }
-    for (i = 0; i < extensionCount; i++)
-    {
+    for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
         } else if (SDL_strcmp(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -89,12 +88,10 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
     }
     SDL_free(extensions);
     if (!hasSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else if (!hasWin32SurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_WIN32_SURFACE_EXTENSION_NAME "extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_WIN32_SURFACE_EXTENSION_NAME "extension");
         goto fail;
     }
     return 0;
@@ -126,8 +123,8 @@ SDL_bool WIN_Vulkan_GetInstanceExtensions(_THIS,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForWin32),
-            extensionsForWin32);
+        count, names, SDL_arraysize(extensionsForWin32),
+        extensionsForWin32);
 }
 
 SDL_bool WIN_Vulkan_CreateSurface(_THIS,
@@ -140,8 +137,8 @@ SDL_bool WIN_Vulkan_CreateSurface(_THIS,
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR =
         (PFN_vkCreateWin32SurfaceKHR)vkGetInstanceProcAddr(
-                                            (VkInstance)instance,
-                                            "vkCreateWin32SurfaceKHR");
+            (VkInstance)instance,
+            "vkCreateWin32SurfaceKHR");
     VkWin32SurfaceCreateInfoKHR createInfo;
     VkResult result;
 
@@ -161,7 +158,7 @@ SDL_bool WIN_Vulkan_CreateSurface(_THIS,
     createInfo.hinstance = windowData->hinstance;
     createInfo.hwnd = windowData->hwnd;
     result = vkCreateWin32SurfaceKHR(instance, &createInfo,
-                                       NULL, surface);
+                                     NULL, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateWin32SurfaceKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));

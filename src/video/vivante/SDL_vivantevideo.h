@@ -39,15 +39,15 @@ typedef struct SDL_VideoData
     vdkPrivate vdk_private;
 #else
     void *egl_handle; /* EGL shared library handle */
-    EGLNativeDisplayType (EGLAPIENTRY *fbGetDisplay)(void *context);
-    EGLNativeDisplayType (EGLAPIENTRY *fbGetDisplayByIndex)(int DisplayIndex);
-    void (EGLAPIENTRY *fbGetDisplayGeometry)(EGLNativeDisplayType Display, int *Width, int *Height);
-    void (EGLAPIENTRY *fbGetDisplayInfo)(EGLNativeDisplayType Display, int *Width, int *Height, unsigned long *Physical, int *Stride, int *BitsPerPixel);
-    void (EGLAPIENTRY *fbDestroyDisplay)(EGLNativeDisplayType Display);
-    EGLNativeWindowType (EGLAPIENTRY *fbCreateWindow)(EGLNativeDisplayType Display, int X, int Y, int Width, int Height);
-    void (EGLAPIENTRY *fbGetWindowGeometry)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height);
-    void (EGLAPIENTRY *fbGetWindowInfo)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height, int *BitsPerPixel, unsigned int *Offset);
-    void (EGLAPIENTRY *fbDestroyWindow)(EGLNativeWindowType Window);
+    EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplay)(void *context);
+    EGLNativeDisplayType(EGLAPIENTRY *fbGetDisplayByIndex)(int DisplayIndex);
+    void(EGLAPIENTRY *fbGetDisplayGeometry)(EGLNativeDisplayType Display, int *Width, int *Height);
+    void(EGLAPIENTRY *fbGetDisplayInfo)(EGLNativeDisplayType Display, int *Width, int *Height, unsigned long *Physical, int *Stride, int *BitsPerPixel);
+    void(EGLAPIENTRY *fbDestroyDisplay)(EGLNativeDisplayType Display);
+    EGLNativeWindowType(EGLAPIENTRY *fbCreateWindow)(EGLNativeDisplayType Display, int X, int Y, int Width, int Height);
+    void(EGLAPIENTRY *fbGetWindowGeometry)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height);
+    void(EGLAPIENTRY *fbGetWindowInfo)(EGLNativeWindowType Window, int *X, int *Y, int *Width, int *Height, int *BitsPerPixel, unsigned int *Offset);
+    void(EGLAPIENTRY *fbDestroyWindow)(EGLNativeWindowType Window);
 #endif
 } SDL_VideoData;
 
@@ -69,15 +69,15 @@ typedef struct SDL_WindowData
 /* Display and window functions */
 int VIVANTE_VideoInit(_THIS);
 void VIVANTE_VideoQuit(_THIS);
-void VIVANTE_GetDisplayModes(_THIS, SDL_VideoDisplay * display);
-int VIVANTE_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
-int VIVANTE_CreateWindow(_THIS, SDL_Window * window);
-void VIVANTE_SetWindowTitle(_THIS, SDL_Window * window);
-void VIVANTE_SetWindowPosition(_THIS, SDL_Window * window);
-void VIVANTE_SetWindowSize(_THIS, SDL_Window * window);
-void VIVANTE_ShowWindow(_THIS, SDL_Window * window);
-void VIVANTE_HideWindow(_THIS, SDL_Window * window);
-void VIVANTE_DestroyWindow(_THIS, SDL_Window * window);
+void VIVANTE_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
+int VIVANTE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+int VIVANTE_CreateWindow(_THIS, SDL_Window *window);
+void VIVANTE_SetWindowTitle(_THIS, SDL_Window *window);
+void VIVANTE_SetWindowPosition(_THIS, SDL_Window *window);
+void VIVANTE_SetWindowSize(_THIS, SDL_Window *window);
+void VIVANTE_ShowWindow(_THIS, SDL_Window *window);
+void VIVANTE_HideWindow(_THIS, SDL_Window *window);
+void VIVANTE_DestroyWindow(_THIS, SDL_Window *window);
 
 /* Window manager function */
 SDL_bool VIVANTE_GetWindowWMInfo(_THIS, SDL_Window * window,

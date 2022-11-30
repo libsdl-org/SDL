@@ -29,9 +29,9 @@
 #include "SDL_video.h"
 #include "SDL_events.h"
 
-#if NTDDI_VERSION >= NTDDI_WINBLUE  /* ApplicationView's functionality only becomes
-                                       useful for SDL in Win[Phone] 8.1 and up.
-                                       Plus, it is not available at all in WinPhone 8.0. */
+#if NTDDI_VERSION >= NTDDI_WINBLUE /* ApplicationView's functionality only becomes \
+                                      useful for SDL in Win[Phone] 8.1 and up.     \
+                                      Plus, it is not available at all in WinPhone 8.0. */
 #define SDL_WINRT_USE_APPLICATIONVIEW 1
 #endif
 
@@ -41,7 +41,8 @@ extern "C" {
 }
 
 /* Private display data */
-typedef struct SDL_VideoData {
+typedef struct SDL_VideoData
+{
     /* An object created by ANGLE/WinRT (OpenGL ES 2 for WinRT) that gets
      * passed to eglGetDisplay and eglCreateWindowSurface:
      */
@@ -55,7 +56,7 @@ typedef struct SDL_VideoData {
     /* A WinRT DisplayRequest, used for implementing SDL_*ScreenSaver() functions.
      * This is really a pointer to a 'ABI::Windows::System::Display::IDisplayRequest *',
      * It's casted to 'IUnknown *', to help with building SDL.
-    */
+     */
     IUnknown *displayRequest;
 } SDL_VideoData;
 
@@ -63,19 +64,19 @@ typedef struct SDL_VideoData {
    For now, SDL/WinRT only supports one window (due to platform limitations of
    WinRT.
 */
-extern SDL_Window * WINRT_GlobalSDLWindow;
+extern SDL_Window *WINRT_GlobalSDLWindow;
 
 /* Updates one or more SDL_Window flags, by querying the OS' native windowing APIs.
    SDL_Window flags that can be updated should be specified in 'mask'.
 */
-extern void WINRT_UpdateWindowFlags(SDL_Window * window, Uint32 mask);
-extern "C" Uint32 WINRT_DetectWindowFlags(SDL_Window * window);  /* detects flags w/o applying them */
+extern void WINRT_UpdateWindowFlags(SDL_Window *window, Uint32 mask);
+extern "C" Uint32 WINRT_DetectWindowFlags(SDL_Window *window); /* detects flags w/o applying them */
 
 /* Display mode internals */
-//typedef struct
+// typedef struct
 //{
-//    Windows::Graphics::Display::DisplayOrientations currentOrientation;
-//} SDL_DisplayModeData;
+//     Windows::Graphics::Display::DisplayOrientations currentOrientation;
+// } SDL_DisplayModeData;
 
 #ifdef __cplusplus_winrt
 
@@ -87,8 +88,8 @@ extern "C" Uint32 WINRT_DetectWindowFlags(SDL_Window * window);  /* detects flag
 #endif
 
 /* Converts DIPS to/from physical pixels */
-#define WINRT_DIPS_TO_PHYSICAL_PIXELS(DIPS)     ((int)(0.5f + (((float)(DIPS) * (float)WINRT_DISPLAY_PROPERTY(LogicalDpi)) / 96.f)))
-#define WINRT_PHYSICAL_PIXELS_TO_DIPS(PHYSPIX)  (((float)(PHYSPIX) * 96.f)/WINRT_DISPLAY_PROPERTY(LogicalDpi))
+#define WINRT_DIPS_TO_PHYSICAL_PIXELS(DIPS)    ((int)(0.5f + (((float)(DIPS) * (float)WINRT_DISPLAY_PROPERTY(LogicalDpi)) / 96.f)))
+#define WINRT_PHYSICAL_PIXELS_TO_DIPS(PHYSPIX) (((float)(PHYSPIX)*96.f) / WINRT_DISPLAY_PROPERTY(LogicalDpi))
 
 /* Internal window data */
 struct SDL_WindowData

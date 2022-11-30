@@ -38,17 +38,19 @@ enum SDL_WaylandAxisEvent
 
 struct SDL_WaylandTabletSeat;
 
-struct SDL_WaylandTabletObjectListNode {
-    void* object;
-    struct SDL_WaylandTabletObjectListNode* next;
+struct SDL_WaylandTabletObjectListNode
+{
+    void *object;
+    struct SDL_WaylandTabletObjectListNode *next;
 };
 
-struct SDL_WaylandTabletInput {
-    struct SDL_WaylandTabletSeat* seat;
+struct SDL_WaylandTabletInput
+{
+    struct SDL_WaylandTabletSeat *seat;
 
-    struct SDL_WaylandTabletObjectListNode* tablets;
-    struct SDL_WaylandTabletObjectListNode* tools;
-    struct SDL_WaylandTabletObjectListNode* pads;
+    struct SDL_WaylandTabletObjectListNode *tablets;
+    struct SDL_WaylandTabletObjectListNode *tools;
+    struct SDL_WaylandTabletObjectListNode *pads;
 
     SDL_WindowData *tool_focus;
     uint32_t tool_prox_serial;
@@ -64,7 +66,8 @@ struct SDL_WaylandTabletInput {
     SDL_bool btn_stylus3;
 };
 
-typedef struct {
+typedef struct
+{
     // repeat_rate in range of [1, 1000]
     int32_t repeat_rate;
     int32_t repeat_delay;
@@ -72,14 +75,15 @@ typedef struct {
 
     SDL_bool is_key_down;
     uint32_t key;
-    uint32_t wl_press_time; // Key press time as reported by the Wayland API
+    uint32_t wl_press_time;  // Key press time as reported by the Wayland API
     uint32_t sdl_press_time; // Key press time expressed in SDL ticks
     uint32_t next_repeat_ms;
     uint32_t scancode;
     char text[8];
 } SDL_WaylandKeyboardRepeat;
 
-struct SDL_WaylandInput {
+struct SDL_WaylandInput
+{
     SDL_VideoData *display;
     struct wl_seat *seat;
     struct wl_pointer *pointer;
@@ -102,7 +106,8 @@ struct SDL_WaylandInput {
     double dx_frac;
     double dy_frac;
 
-    struct {
+    struct
+    {
         struct xkb_keymap *keymap;
         struct xkb_state *state;
         struct xkb_compose_table *compose_table;
@@ -121,7 +126,8 @@ struct SDL_WaylandInput {
     } xkb;
 
     /* information about axis events on current frame */
-    struct {
+    struct
+    {
         enum SDL_WaylandAxisEvent x_axis_type;
         float x;
 
@@ -131,7 +137,7 @@ struct SDL_WaylandInput {
 
     SDL_WaylandKeyboardRepeat keyboard_repeat;
 
-    struct SDL_WaylandTabletInput* tablet;
+    struct SDL_WaylandTabletInput *tablet;
 
     /* are we forcing relative mouse mode? */
     SDL_bool cursor_visible;
@@ -166,7 +172,7 @@ extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
 extern int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
 extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
 
-extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTabletManager* tablet_manager);
+extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTabletManager *tablet_manager);
 extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 
 #endif /* SDL_waylandevents_h_ */

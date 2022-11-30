@@ -38,67 +38,67 @@
 
 /* Initialize random number generator with two integer variables */
 
-void SDLTest_RandomInit(SDLTest_RandomContext * rndContext, unsigned int xi, unsigned int ci)
+void SDLTest_RandomInit(SDLTest_RandomContext *rndContext, unsigned int xi, unsigned int ci)
 {
-  if (rndContext == NULL) {
-      return;
-  }
+    if (rndContext == NULL) {
+        return;
+    }
 
-  /*
-   * Choose a value for 'a' from this list
-   * 1791398085 1929682203 1683268614 1965537969 1675393560
-   * 1967773755 1517746329 1447497129 1655692410 1606218150
-   * 2051013963 1075433238 1557985959 1781943330 1893513180
-   * 1631296680 2131995753 2083801278 1873196400 1554115554
-   */
-  rndContext->a = 1655692410;
-  rndContext->x = 30903;
-  rndContext->c = 0;
-  if (xi != 0) {
-      rndContext->x = xi;
-  }
-  rndContext->c = ci;
-  rndContext->ah = rndContext->a >> 16;
-  rndContext->al = rndContext->a & 65535;
+    /*
+     * Choose a value for 'a' from this list
+     * 1791398085 1929682203 1683268614 1965537969 1675393560
+     * 1967773755 1517746329 1447497129 1655692410 1606218150
+     * 2051013963 1075433238 1557985959 1781943330 1893513180
+     * 1631296680 2131995753 2083801278 1873196400 1554115554
+     */
+    rndContext->a = 1655692410;
+    rndContext->x = 30903;
+    rndContext->c = 0;
+    if (xi != 0) {
+        rndContext->x = xi;
+    }
+    rndContext->c = ci;
+    rndContext->ah = rndContext->a >> 16;
+    rndContext->al = rndContext->a & 65535;
 }
 
 /* Initialize random number generator from system time */
 
-void SDLTest_RandomInitTime(SDLTest_RandomContext * rndContext)
+void SDLTest_RandomInitTime(SDLTest_RandomContext *rndContext)
 {
-  int a, b;
+    int a, b;
 
-  if (rndContext == NULL) {
-    return;
-  }
+    if (rndContext == NULL) {
+        return;
+    }
 
-  srand((unsigned int)time(NULL));
-  a=rand();
-  srand((unsigned int)SDL_GetPerformanceCounter());
-  b=rand();
-  SDLTest_RandomInit(rndContext, a, b);
+    srand((unsigned int)time(NULL));
+    a = rand();
+    srand((unsigned int)SDL_GetPerformanceCounter());
+    b = rand();
+    SDLTest_RandomInit(rndContext, a, b);
 }
 
 /* Returns random numbers */
 
-unsigned int SDLTest_Random(SDLTest_RandomContext * rndContext)
+unsigned int SDLTest_Random(SDLTest_RandomContext *rndContext)
 {
-  unsigned int xh, xl;
+    unsigned int xh, xl;
 
-  if (rndContext == NULL) {
-    return -1;
-  }
+    if (rndContext == NULL) {
+        return -1;
+    }
 
-  xh = rndContext->x >> 16;
-  xl = rndContext->x & 65535;
-  rndContext->x = rndContext->x * rndContext->a + rndContext->c;
-  rndContext->c =
-    xh * rndContext->ah + ((xh * rndContext->al) >> 16) +
-    ((xl * rndContext->ah) >> 16);
-  if (xl * rndContext->al >= (~rndContext->c + 1)) {
-    rndContext->c++;
-  }
-  return rndContext->x;
+    xh = rndContext->x >> 16;
+    xl = rndContext->x & 65535;
+    rndContext->x = rndContext->x * rndContext->a + rndContext->c;
+    rndContext->c =
+        xh * rndContext->ah + ((xh * rndContext->al) >> 16) +
+        ((xl * rndContext->ah) >> 16);
+    if (xl * rndContext->al >= (~rndContext->c + 1)) {
+        rndContext->c++;
+    }
+    return rndContext->x;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

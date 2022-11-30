@@ -20,8 +20,7 @@
 #include "SDL.h"
 #include "SDL_revision.h"
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_version compiled;
     SDL_version linked;
@@ -36,12 +35,12 @@ main(int argc, char *argv[])
 #endif
     SDL_VERSION(&compiled);
     SDL_Log("Compiled version: %d.%d.%d (%s)\n",
-           compiled.major, compiled.minor, compiled.patch,
-           SDL_REVISION);
+            compiled.major, compiled.minor, compiled.patch,
+            SDL_REVISION);
     SDL_GetVersion(&linked);
     SDL_Log("Linked version: %d.%d.%d (%s)\n",
-           linked.major, linked.minor, linked.patch,
-           SDL_GetRevision());
+            linked.major, linked.minor, linked.patch,
+            SDL_GetRevision());
     SDL_Quit();
     return 0;
 }

@@ -38,9 +38,9 @@
 #include "sys/ioctl.h"
 
 #if defined(__OpenBSD__)
-#define DEFAULT_VULKAN  "libvulkan.so"
+#define DEFAULT_VULKAN "libvulkan.so"
 #else
-#define DEFAULT_VULKAN  "libvulkan.so.1"
+#define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
 int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
@@ -97,8 +97,7 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
         goto fail;
     }
 
-    for (i = 0; i < extensionCount; i++)
-    {
+    for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
         } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -109,12 +108,10 @@ int KMSDRM_Vulkan_LoadLibrary(_THIS, const char *path)
     SDL_free(extensions);
 
     if (!hasSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else if (!hasDisplayExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_DISPLAY_EXTENSION_NAME "extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_DISPLAY_EXTENSION_NAME "extension");
         goto fail;
     }
 
@@ -145,9 +142,9 @@ void KMSDRM_Vulkan_UnloadLibrary(_THIS)
 /* vkCreateInstance().                                               */
 /*********************************************************************/
 SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names)
+                                             SDL_Window *window,
+                                             unsigned *count,
+                                             const char **names)
 {
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
@@ -157,8 +154,8 @@ SDL_bool KMSDRM_Vulkan_GetInstanceExtensions(_THIS,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForKMSDRM),
-            extensionsForKMSDRM);
+        count, names, SDL_arraysize(extensionsForKMSDRM),
+        extensionsForKMSDRM);
 }
 
 void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
@@ -178,12 +175,12 @@ void KMSDRM_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 /* and we get it here, ready to use.                                   */
 /* Extensions specific for this platform are activated in              */
 /* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
-/* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */                
+/* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */
 /***********************************************************************/
 SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface)
+                                     SDL_Window *window,
+                                     VkInstance instance,
+                                     VkSurfaceKHR *surface)
 {
     VkPhysicalDevice gpu = NULL;
     uint32_t gpu_count;
@@ -205,8 +202,8 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     VkExtent2D image_size;
     VkDisplayKHR display;
     VkDisplayModeKHR display_mode = (VkDisplayModeKHR)0;
-    VkDisplayModePropertiesKHR display_mode_props = {0};
-    VkDisplayModeParametersKHR new_mode_parameters = { {0, 0}, 0};
+    VkDisplayModePropertiesKHR display_mode_props = { 0 };
+    VkDisplayModeParametersKHR new_mode_parameters = { { 0, 0 }, 0 };
     /* Prefer a plane that supports per-pixel alpha. */
     VkDisplayPlaneAlphaFlagBitsKHR alpha_mode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
 
@@ -307,13 +304,11 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         /* Get the physical device properties. */
         vkGetPhysicalDeviceProperties(
             physical_devices[i],
-            device_props
-        );
+            device_props);
 
         /* Is this device a real GPU that supports API version 1 at least? */
-        if (device_props->apiVersion >= 1 && 
-           (device_props->deviceType == 1 || device_props->deviceType == 2))
-        {
+        if (device_props->apiVersion >= 1 &&
+            (device_props->deviceType == 1 || device_props->deviceType == 2)) {
             gpu = physical_devices[i];
             valid_gpu = SDL_TRUE;
             break;
@@ -335,29 +330,29 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     }
 
     /* Get the props of the displays of the physical device. */
-    display_props = (VkDisplayPropertiesKHR *) SDL_malloc(display_count * sizeof(*display_props));
+    display_props = (VkDisplayPropertiesKHR *)SDL_malloc(display_count * sizeof(*display_props));
     vkGetPhysicalDeviceDisplayPropertiesKHR(gpu,
-                                           &display_count,
-                                           display_props);
+                                            &display_count,
+                                            display_props);
 
     /* Get the chosen display based on the display index. */
     display = display_props[display_index].display;
 
     /* Get the list of the display videomodes. */
     vkGetDisplayModePropertiesKHR(gpu,
-                                 display,
-                                 &mode_count, NULL);
+                                  display,
+                                  &mode_count, NULL);
 
     if (mode_count == 0) {
         SDL_SetError("Vulkan can't find any video modes for display %i (%s)\n", 0,
-                               display_props[display_index].displayName);
+                     display_props[display_index].displayName);
         goto clean;
     }
 
-    mode_props = (VkDisplayModePropertiesKHR *) SDL_malloc(mode_count * sizeof(*mode_props));
+    mode_props = (VkDisplayModePropertiesKHR *)SDL_malloc(mode_count * sizeof(*mode_props));
     vkGetDisplayModePropertiesKHR(gpu,
-                                 display,
-                                 &mode_count, mode_props);
+                                  display,
+                                  &mode_count, mode_props);
 
     /* Get a video mode equal to the window size among the predefined ones,
        if possible.
@@ -367,8 +362,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
        buffer, and Vulkan would give us a confusing VK_ERROR_SURFACE_LOST_KHR). */
     for (i = 0; i < mode_count; i++) {
         if (mode_props[i].parameters.visibleRegion.width == window->w &&
-            mode_props[i].parameters.visibleRegion.height == window->h)
-        {
+            mode_props[i].parameters.visibleRegion.height == window->h) {
             display_mode_props = mode_props[i];
             mode_found = SDL_TRUE;
             break;
@@ -377,7 +371,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     if (mode_found &&
         display_mode_props.parameters.visibleRegion.width > 0 &&
-        display_mode_props.parameters.visibleRegion.height > 0 ) {
+        display_mode_props.parameters.visibleRegion.height > 0) {
         /* Found a suitable mode among the predefined ones. Use that. */
         display_mode = display_mode_props.displayMode;
     } else {
@@ -407,8 +401,8 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     /* Just in case we get here without a display_mode. */
     if (!display_mode) {
-            SDL_SetError("Vulkan couldn't get a display mode.");
-            goto clean;
+        SDL_SetError("Vulkan couldn't get a display mode.");
+        goto clean;
     }
 
     /* Get the list of the physical device planes. */
@@ -428,7 +422,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     for (i = 0; i < plane_count; i++) {
 
         uint32_t supported_displays_count = 0;
-        VkDisplayKHR* supported_displays;
+        VkDisplayKHR *supported_displays;
 
         /* See if the plane is compatible with the current display. */
         vkGetDisplayPlaneSupportedDisplaysKHR(gpu, i, &supported_displays_count, NULL);
@@ -438,9 +432,9 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
         }
 
         /* Get the list of displays supported by this plane. */
-        supported_displays = (VkDisplayKHR*)SDL_malloc(sizeof(VkDisplayKHR) * supported_displays_count);
+        supported_displays = (VkDisplayKHR *)SDL_malloc(sizeof(VkDisplayKHR) * supported_displays_count);
         vkGetDisplayPlaneSupportedDisplaysKHR(gpu, i,
-            &supported_displays_count, supported_displays);
+                                              &supported_displays_count, supported_displays);
 
         /* The plane must be bound to the chosen display, or not in use.
            If none of these is true, iterate to another plane. */
@@ -489,7 +483,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
 
     image_size.width = window->w;
     image_size.height = window->h;
-    
+
     SDL_zero(display_plane_surface_create_info);
     display_plane_surface_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
     display_plane_surface_create_info.displayMode = display_mode;
@@ -498,12 +492,12 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(_THIS,
     display_plane_surface_create_info.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     display_plane_surface_create_info.alphaMode = alpha_mode;
     result = vkCreateDisplayPlaneSurfaceKHR(instance,
-                                     &display_plane_surface_create_info,
-                                     NULL,
-                                     surface);
+                                            &display_plane_surface_create_info,
+                                            NULL,
+                                            surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateDisplayPlaneSurfaceKHR failed: %s",
-            SDL_Vulkan_GetResultString(result));
+                     SDL_Vulkan_GetResultString(result));
         goto clean;
     }
 

@@ -30,7 +30,7 @@
 #include "../video/SDL_pixels_c.h"
 
 #if defined(__ANDROID__)
-#  include "../core/android/SDL_android.h"
+#include "../core/android/SDL_android.h"
 #endif
 
 /* as a courtesy to iOS apps, we don't try to draw when in the background, as
@@ -45,47 +45,47 @@ this should probably be removed at some point in the future.  --ryan. */
 #define DONT_DRAW_WHILE_HIDDEN 0
 #endif
 
-#define SDL_WINDOWRENDERDATA    "_SDL_WindowRenderData"
+#define SDL_WINDOWRENDERDATA "_SDL_WindowRenderData"
 
-#define CHECK_RENDERER_MAGIC(renderer, retval) \
+#define CHECK_RENDERER_MAGIC(renderer, retval)             \
     if (!renderer || renderer->magic != &renderer_magic) { \
-        SDL_InvalidParamError("renderer"); \
-        return retval; \
+        SDL_InvalidParamError("renderer");                 \
+        return retval;                                     \
     }
 
-#define CHECK_TEXTURE_MAGIC(texture, retval) \
+#define CHECK_TEXTURE_MAGIC(texture, retval)            \
     if (!texture || texture->magic != &texture_magic) { \
-        SDL_InvalidParamError("texture"); \
-        return retval; \
+        SDL_InvalidParamError("texture");               \
+        return retval;                                  \
     }
 
 /* Predefined blend modes */
 #define SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
                               srcAlphaFactor, dstAlphaFactor, alphaOperation) \
-    (SDL_BlendMode)(((Uint32)colorOperation << 0) | \
-                    ((Uint32)srcColorFactor << 4) | \
-                    ((Uint32)dstColorFactor << 8) | \
-                    ((Uint32)alphaOperation << 16) | \
-                    ((Uint32)srcAlphaFactor << 20) | \
+    (SDL_BlendMode)(((Uint32)colorOperation << 0) |                           \
+                    ((Uint32)srcColorFactor << 4) |                           \
+                    ((Uint32)dstColorFactor << 8) |                           \
+                    ((Uint32)alphaOperation << 16) |                          \
+                    ((Uint32)srcAlphaFactor << 20) |                          \
                     ((Uint32)dstAlphaFactor << 24))
 
-#define SDL_BLENDMODE_NONE_FULL \
+#define SDL_BLENDMODE_NONE_FULL                                                              \
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD)
 
-#define SDL_BLENDMODE_BLEND_FULL \
+#define SDL_BLENDMODE_BLEND_FULL                                                                                  \
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD)
 
-#define SDL_BLENDMODE_ADD_FULL \
+#define SDL_BLENDMODE_ADD_FULL                                                                    \
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
-#define SDL_BLENDMODE_MOD_FULL \
+#define SDL_BLENDMODE_MOD_FULL                                                                     \
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_COLOR, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
-#define SDL_BLENDMODE_MUL_FULL \
+#define SDL_BLENDMODE_MUL_FULL                                                                                    \
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_DST_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
                           SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD)
 
@@ -133,8 +133,7 @@ static const SDL_RenderDriver *render_drivers[] = {
 static char renderer_magic;
 static char texture_magic;
 
-static SDL_INLINE void
-DebugLogRenderCommands(const SDL_RenderCommand *cmd)
+static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
 {
 #if 0
     unsigned int i = 1;
@@ -234,14 +233,13 @@ DebugLogRenderCommands(const SDL_RenderCommand *cmd)
 #endif
 }
 
-static int
-FlushRenderCommands(SDL_Renderer *renderer)
+static int FlushRenderCommands(SDL_Renderer *renderer)
 {
     int retval;
 
     SDL_assert((renderer->render_commands == NULL) == (renderer->render_commands_tail == NULL));
 
-    if (renderer->render_commands == NULL) {  /* nothing to do! */
+    if (renderer->render_commands == NULL) { /* nothing to do! */
         SDL_assert(renderer->vertex_data_used == 0);
         return 0;
     }
@@ -265,8 +263,7 @@ FlushRenderCommands(SDL_Renderer *renderer)
     return retval;
 }
 
-static int
-FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
+static int FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
 {
     SDL_Renderer *renderer = texture->renderer;
     if (texture->last_command_generation == renderer->render_command_generation) {
@@ -276,14 +273,12 @@ FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
     return 0;
 }
 
-static SDL_INLINE int
-FlushRenderCommandsIfNotBatching(SDL_Renderer *renderer)
+static SDL_INLINE int FlushRenderCommandsIfNotBatching(SDL_Renderer *renderer)
 {
     return renderer->batching ? 0 : FlushRenderCommands(renderer);
 }
 
-int
-SDL_RenderFlush(SDL_Renderer * renderer)
+int SDL_RenderFlush(SDL_Renderer *renderer)
 {
     return FlushRenderCommands(renderer);
 }
@@ -321,11 +316,10 @@ SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const 
 
     renderer->vertex_data_used += aligner + numbytes;
 
-    return ((Uint8 *) renderer->vertex_data) + aligned;
+    return ((Uint8 *)renderer->vertex_data) + aligned;
 }
 
-static SDL_RenderCommand *
-AllocateRenderCommand(SDL_Renderer *renderer)
+static SDL_RenderCommand *AllocateRenderCommand(SDL_Renderer *renderer)
 {
     SDL_RenderCommand *retval = NULL;
 
@@ -335,7 +329,7 @@ AllocateRenderCommand(SDL_Renderer *renderer)
         renderer->render_commands_pool = retval->next;
         retval->next = NULL;
     } else {
-        retval = SDL_calloc(1, sizeof (*retval));
+        retval = SDL_calloc(1, sizeof(*retval));
         if (retval == NULL) {
             SDL_OutOfMemory();
             return NULL;
@@ -353,16 +347,15 @@ AllocateRenderCommand(SDL_Renderer *renderer)
     return retval;
 }
 
-static int
-QueueCmdSetViewport(SDL_Renderer *renderer)
+static int QueueCmdSetViewport(SDL_Renderer *renderer)
 {
     int retval = 0;
-    if (!renderer->viewport_queued || (SDL_memcmp(&renderer->viewport, &renderer->last_queued_viewport, sizeof (SDL_DRect)) != 0)) {
+    if (!renderer->viewport_queued || (SDL_memcmp(&renderer->viewport, &renderer->last_queued_viewport, sizeof(SDL_DRect)) != 0)) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
         retval = -1;
         if (cmd != NULL) {
             cmd->command = SDL_RENDERCMD_SETVIEWPORT;
-            cmd->data.viewport.first = 0;  /* render backend will fill this in. */
+            cmd->data.viewport.first = 0; /* render backend will fill this in. */
             /* Convert SDL_DRect to SDL_Rect */
             cmd->data.viewport.rect.x = (int)SDL_floor(renderer->viewport.x);
             cmd->data.viewport.rect.y = (int)SDL_floor(renderer->viewport.y);
@@ -380,13 +373,12 @@ QueueCmdSetViewport(SDL_Renderer *renderer)
     return retval;
 }
 
-static int
-QueueCmdSetClipRect(SDL_Renderer *renderer)
+static int QueueCmdSetClipRect(SDL_Renderer *renderer)
 {
     int retval = 0;
     if ((!renderer->cliprect_queued) ||
-         (renderer->clipping_enabled != renderer->last_queued_cliprect_enabled) ||
-         (SDL_memcmp(&renderer->clip_rect, &renderer->last_queued_cliprect, sizeof (SDL_DRect)) != 0)) {
+        (renderer->clipping_enabled != renderer->last_queued_cliprect_enabled) ||
+        (SDL_memcmp(&renderer->clip_rect, &renderer->last_queued_cliprect, sizeof(SDL_DRect)) != 0)) {
         SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
         if (cmd == NULL) {
             retval = -1;
@@ -406,8 +398,7 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
     return retval;
 }
 
-static int
-QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_Color *col)
+static int QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_Color *col)
 {
     const Uint32 color = (((Uint32)col->a << 24) | (col->r << 16) | (col->g << 8) | col->b);
     int retval = 0;
@@ -418,7 +409,7 @@ QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_Color *col)
 
         if (cmd != NULL) {
             cmd->command = SDL_RENDERCMD_SETDRAWCOLOR;
-            cmd->data.color.first = 0;  /* render backend will fill this in. */
+            cmd->data.color.first = 0; /* render backend will fill this in. */
             cmd->data.color.r = col->r;
             cmd->data.color.g = col->g;
             cmd->data.color.b = col->b;
@@ -435,8 +426,7 @@ QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_Color *col)
     return retval;
 }
 
-static int
-QueueCmdClear(SDL_Renderer *renderer)
+static int QueueCmdClear(SDL_Renderer *renderer)
 {
     SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
     if (cmd == NULL) {
@@ -452,8 +442,7 @@ QueueCmdClear(SDL_Renderer *renderer)
     return 0;
 }
 
-static SDL_RenderCommand *
-PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype, SDL_Texture *texture)
+static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype, SDL_Texture *texture)
 {
     SDL_RenderCommand *cmd = NULL;
     int retval = 0;
@@ -486,8 +475,8 @@ PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype, SD
         cmd = AllocateRenderCommand(renderer);
         if (cmd != NULL) {
             cmd->command = cmdtype;
-            cmd->data.draw.first = 0;  /* render backend will fill this in. */
-            cmd->data.draw.count = 0;  /* render backend will fill this in. */
+            cmd->data.draw.first = 0; /* render backend will fill this in. */
+            cmd->data.draw.count = 0; /* render backend will fill this in. */
             cmd->data.draw.r = color->r;
             cmd->data.draw.g = color->g;
             cmd->data.draw.b = color->b;
@@ -499,8 +488,7 @@ PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype, SD
     return cmd;
 }
 
-static int
-QueueCmdDrawPoints(SDL_Renderer *renderer, const SDL_FPoint * points, const int count)
+static int QueueCmdDrawPoints(SDL_Renderer *renderer, const SDL_FPoint *points, const int count)
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_DRAW_POINTS, NULL);
     int retval = -1;
@@ -513,8 +501,7 @@ QueueCmdDrawPoints(SDL_Renderer *renderer, const SDL_FPoint * points, const int 
     return retval;
 }
 
-static int
-QueueCmdDrawLines(SDL_Renderer *renderer, const SDL_FPoint * points, const int count)
+static int QueueCmdDrawLines(SDL_Renderer *renderer, const SDL_FPoint *points, const int count)
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_DRAW_LINES, NULL);
     int retval = -1;
@@ -527,8 +514,7 @@ QueueCmdDrawLines(SDL_Renderer *renderer, const SDL_FPoint * points, const int c
     return retval;
 }
 
-static int
-QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int count)
+static int QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, const int count)
 {
     SDL_RenderCommand *cmd;
     int retval = -1;
@@ -547,7 +533,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 int i;
                 float *ptr_xy = xy;
                 int *ptr_indices = indices;
-                const int xy_stride = 2 * sizeof (float);
+                const int xy_stride = 2 * sizeof(float);
                 const int num_vertices = 4 * count;
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
@@ -581,9 +567,9 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 }
 
                 retval = renderer->QueueGeometry(renderer, cmd, NULL,
-                        xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
-                        num_vertices, indices, num_indices, size_indices,
-                        1.0f, 1.0f);
+                                                 xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
+                                                 num_vertices, indices, num_indices, size_indices,
+                                                 1.0f, 1.0f);
 
                 if (retval < 0) {
                     cmd->command = SDL_RENDERCMD_NO_OP;
@@ -591,7 +577,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
             }
             SDL_small_free(xy, isstack1);
             SDL_small_free(indices, isstack2);
-            
+
         } else {
             retval = renderer->QueueFillRects(renderer, cmd, rects, count);
             if (retval < 0) {
@@ -602,8 +588,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
     return retval;
 }
 
-static int
-QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_FRect * dstrect)
+static int QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_COPY, texture);
     int retval = -1;
@@ -616,10 +601,9 @@ QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * src
     return retval;
 }
 
-static int
-QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
-               const SDL_Rect * srcquad, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
+static int QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture *texture,
+                          const SDL_Rect *srcquad, const SDL_FRect *dstrect,
+                          const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_COPY_EX, texture);
     int retval = -1;
@@ -632,24 +616,23 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
     return retval;
 }
 
-static int
-QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
-        const float *xy, int xy_stride,
-        const SDL_Color *color, int color_stride,
-        const float *uv, int uv_stride,
-        int num_vertices,
-        const void *indices, int num_indices, int size_indices,
-        float scale_x, float scale_y)
+static int QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
+                            const float *xy, int xy_stride,
+                            const SDL_Color *color, int color_stride,
+                            const float *uv, int uv_stride,
+                            int num_vertices,
+                            const void *indices, int num_indices, int size_indices,
+                            float scale_x, float scale_y)
 {
     SDL_RenderCommand *cmd;
     int retval = -1;
     cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_GEOMETRY, texture);
     if (cmd != NULL) {
         retval = renderer->QueueGeometry(renderer, cmd, texture,
-                xy, xy_stride,
-                color, color_stride, uv, uv_stride,
-                num_vertices, indices, num_indices, size_indices,
-                scale_x, scale_y);
+                                         xy, xy_stride,
+                                         color, color_stride, uv, uv_stride,
+                                         num_vertices, indices, num_indices, size_indices,
+                                         scale_x, scale_y);
         if (retval < 0) {
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
@@ -659,8 +642,7 @@ QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd);
 
-int
-SDL_GetNumRenderDrivers(void)
+int SDL_GetNumRenderDrivers(void)
 {
 #if !SDL_RENDER_DISABLED
     return SDL_arraysize(render_drivers);
@@ -669,8 +651,7 @@ SDL_GetNumRenderDrivers(void)
 #endif
 }
 
-int
-SDL_GetRenderDriverInfo(int index, SDL_RendererInfo * info)
+int SDL_GetRenderDriverInfo(int index, SDL_RendererInfo *info)
 {
 #if !SDL_RENDER_DISABLED
     if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
@@ -694,8 +675,7 @@ static void GetWindowViewportValues(SDL_Renderer *renderer, int *logical_w, int 
     SDL_UnlockMutex(renderer->target_mutex);
 }
 
-static int SDLCALL
-SDL_RendererEventWatch(void *userdata, SDL_Event *event)
+static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
     SDL_Renderer *renderer = (SDL_Renderer *)userdata;
 
@@ -795,13 +775,13 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                     float rel = renderer->xrel + event->motion.xrel / (scale.x * renderer->dpi_scale.x);
                     float truncated = SDL_truncf(rel);
                     renderer->xrel = rel - truncated;
-                    event->motion.xrel = (Sint32) truncated;
+                    event->motion.xrel = (Sint32)truncated;
                 }
                 if (event->motion.yrel != 0 && renderer->relative_scaling) {
                     float rel = renderer->yrel + event->motion.yrel / (scale.y * renderer->dpi_scale.y);
                     float truncated = SDL_truncf(rel);
                     renderer->yrel = rel - truncated;
-                    event->motion.yrel = (Sint32) truncated;
+                    event->motion.yrel = (Sint32)truncated;
                 }
             }
         }
@@ -839,38 +819,38 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
         if (renderer->GetOutputSize) {
             int w, h;
             renderer->GetOutputSize(renderer, &w, &h);
-            physical_w = (float) w;
-            physical_h = (float) h;
+            physical_w = (float)w;
+            physical_h = (float)h;
         } else {
             int w, h;
             SDL_GetWindowSize(renderer->window, &w, &h);
-            physical_w = ((float) w) * renderer->dpi_scale.x;
-            physical_h = ((float) h) * renderer->dpi_scale.y;
+            physical_w = ((float)w) * renderer->dpi_scale.x;
+            physical_h = ((float)h) * renderer->dpi_scale.y;
         }
 
-        if (physical_w == 0.0f) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
+        if (physical_w == 0.0f) { /* nowhere for the touch to go, avoid division by zero and put it dead center. */
             event->tfinger.x = 0.5f;
         } else {
-            const float normalized_viewport_x = ((float) viewport.x) / physical_w;
-            const float normalized_viewport_w = ((float) viewport.w) / physical_w;
+            const float normalized_viewport_x = ((float)viewport.x) / physical_w;
+            const float normalized_viewport_w = ((float)viewport.w) / physical_w;
             if (event->tfinger.x <= normalized_viewport_x) {
-                event->tfinger.x = 0.0f;  /* to the left of the viewport, clamp to the edge. */
+                event->tfinger.x = 0.0f; /* to the left of the viewport, clamp to the edge. */
             } else if (event->tfinger.x >= (normalized_viewport_x + normalized_viewport_w)) {
-                event->tfinger.x = 1.0f;  /* to the right of the viewport, clamp to the edge. */
+                event->tfinger.x = 1.0f; /* to the right of the viewport, clamp to the edge. */
             } else {
                 event->tfinger.x = (event->tfinger.x - normalized_viewport_x) / normalized_viewport_w;
             }
         }
 
-        if (physical_h == 0.0f) {  /* nowhere for the touch to go, avoid division by zero and put it dead center. */
+        if (physical_h == 0.0f) { /* nowhere for the touch to go, avoid division by zero and put it dead center. */
             event->tfinger.y = 0.5f;
         } else {
-            const float normalized_viewport_y = ((float) viewport.y) / physical_h;
-            const float normalized_viewport_h = ((float) viewport.h) / physical_h;
+            const float normalized_viewport_y = ((float)viewport.y) / physical_h;
+            const float normalized_viewport_h = ((float)viewport.h) / physical_h;
             if (event->tfinger.y <= normalized_viewport_y) {
-                event->tfinger.y = 0.0f;  /* to the left of the viewport, clamp to the edge. */
+                event->tfinger.y = 0.0f; /* to the left of the viewport, clamp to the edge. */
             } else if (event->tfinger.y >= (normalized_viewport_y + normalized_viewport_h)) {
-                event->tfinger.y = 1.0f;  /* to the right of the viewport, clamp to the edge. */
+                event->tfinger.y = 1.0f; /* to the right of the viewport, clamp to the edge. */
             } else {
                 event->tfinger.y = (event->tfinger.y - normalized_viewport_y) / normalized_viewport_h;
             }
@@ -880,13 +860,12 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
     return 0;
 }
 
-int
-SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags,
-                            SDL_Window **window, SDL_Renderer **renderer)
+int SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags,
+                                SDL_Window **window, SDL_Renderer **renderer)
 {
     *window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED,
-                                     SDL_WINDOWPOS_UNDEFINED,
-                                     width, height, window_flags);
+                               SDL_WINDOWPOS_UNDEFINED,
+                               width, height, window_flags);
     if (!*window) {
         *renderer = NULL;
         return -1;
@@ -901,8 +880,7 @@ SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags,
 }
 
 #if !SDL_RENDER_DISABLED
-static SDL_INLINE
-void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
+static SDL_INLINE void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
 {
     /* all of these functions are required to be implemented, even as no-ops, so we don't
         have to check that they aren't NULL over and over. */
@@ -957,7 +935,7 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 #endif /* !SDL_RENDER_DISABLED */
 
 SDL_Renderer *
-SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
+SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
 {
 #if !SDL_RENDER_DISABLED
     SDL_Renderer *renderer = NULL;
@@ -1092,7 +1070,7 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 
     renderer->line_method = SDL_GetRenderLineMethod();
 
-    if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN|SDL_WINDOW_MINIMIZED)) {
+    if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) {
         renderer->hidden = SDL_TRUE;
     } else {
         renderer->hidden = SDL_FALSE;
@@ -1126,7 +1104,7 @@ error:
 }
 
 SDL_Renderer *
-SDL_CreateSoftwareRenderer(SDL_Surface * surface)
+SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
 #if !SDL_RENDER_DISABLED && SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
@@ -1156,7 +1134,7 @@ SDL_CreateSoftwareRenderer(SDL_Surface * surface)
 }
 
 SDL_Renderer *
-SDL_GetRenderer(SDL_Window * window)
+SDL_GetRenderer(SDL_Window *window)
 {
     return (SDL_Renderer *)SDL_GetWindowData(window, SDL_WINDOWRENDERDATA);
 }
@@ -1168,8 +1146,7 @@ SDL_RenderGetWindow(SDL_Renderer *renderer)
     return renderer->window;
 }
 
-int
-SDL_GetRendererInfo(SDL_Renderer * renderer, SDL_RendererInfo * info)
+int SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_RendererInfo *info)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -1177,8 +1154,7 @@ SDL_GetRendererInfo(SDL_Renderer * renderer, SDL_RendererInfo * info)
     return 0;
 }
 
-int
-SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
+int SDL_GetRendererOutputSize(SDL_Renderer *renderer, int *w, int *h)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -1195,11 +1171,9 @@ SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
     }
 }
 
-static SDL_bool
-IsSupportedBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+static SDL_bool IsSupportedBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
-    switch (blendMode)
-    {
+    switch (blendMode) {
     /* These are required to be supported by all renderers */
     case SDL_BLENDMODE_NONE:
     case SDL_BLENDMODE_BLEND:
@@ -1213,8 +1187,7 @@ IsSupportedBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     }
 }
 
-static SDL_bool
-IsSupportedFormat(SDL_Renderer * renderer, Uint32 format)
+static SDL_bool IsSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 {
     Uint32 i;
 
@@ -1226,8 +1199,7 @@ IsSupportedFormat(SDL_Renderer * renderer, Uint32 format)
     return SDL_FALSE;
 }
 
-static Uint32
-GetClosestSupportedFormat(SDL_Renderer * renderer, Uint32 format)
+static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, Uint32 format)
 {
     Uint32 i;
 
@@ -1252,7 +1224,6 @@ GetClosestSupportedFormat(SDL_Renderer * renderer, Uint32 format)
     return renderer->info.texture_formats[0];
 }
 
-
 static SDL_ScaleMode SDL_GetScaleMode(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
@@ -1269,7 +1240,7 @@ static SDL_ScaleMode SDL_GetScaleMode(void)
 }
 
 SDL_Texture *
-SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int h)
+SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access, int w, int h)
 {
     SDL_Texture *texture;
     SDL_bool texture_is_fourcc_and_target;
@@ -1298,7 +1269,7 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
         SDL_SetError("Texture dimensions are limited to %dx%d", renderer->info.max_texture_width, renderer->info.max_texture_height);
         return NULL;
     }
-    texture = (SDL_Texture *) SDL_calloc(1, sizeof(*texture));
+    texture = (SDL_Texture *)SDL_calloc(1, sizeof(*texture));
     if (texture == NULL) {
         SDL_OutOfMemory();
         return NULL;
@@ -1380,7 +1351,7 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
 }
 
 SDL_Texture *
-SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
+SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
 {
     const SDL_PixelFormat *fmt;
     SDL_bool needAlpha;
@@ -1446,7 +1417,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
         format = renderer->info.texture_formats[0];
         for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->info.texture_formats[i]) &&
-                    SDL_ISPIXELFORMAT_ALPHA(renderer->info.texture_formats[i]) == needAlpha) {
+                SDL_ISPIXELFORMAT_ALPHA(renderer->info.texture_formats[i]) == needAlpha) {
                 format = renderer->info.texture_formats[i];
                 break;
             }
@@ -1461,7 +1432,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 
     if (format == surface->format->format) {
         if (surface->format->Amask && SDL_HasColorKey(surface)) {
-            /* Surface and Renderer formats are identicals. 
+            /* Surface and Renderer formats are identicals.
              * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
             direct_update = SDL_FALSE;
         } else {
@@ -1500,8 +1471,8 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
         /* Set up a destination surface for the texture update */
         dst_fmt = SDL_AllocFormat(format);
         if (dst_fmt == NULL) {
-           SDL_DestroyTexture(texture);
-           return NULL;
+            SDL_DestroyTexture(texture);
+            return NULL;
         }
         temp = SDL_ConvertSurface(surface, dst_fmt, 0);
         SDL_FreeFormat(dst_fmt);
@@ -1535,9 +1506,8 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     return texture;
 }
 
-int
-SDL_QueryTexture(SDL_Texture * texture, Uint32 * format, int *access,
-                 int *w, int *h)
+int SDL_QueryTexture(SDL_Texture *texture, Uint32 *format, int *access,
+                     int *w, int *h)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1556,8 +1526,7 @@ SDL_QueryTexture(SDL_Texture * texture, Uint32 * format, int *access,
     return 0;
 }
 
-int
-SDL_SetTextureColorMod(SDL_Texture * texture, Uint8 r, Uint8 g, Uint8 b)
+int SDL_SetTextureColorMod(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1575,9 +1544,8 @@ SDL_SetTextureColorMod(SDL_Texture * texture, Uint8 r, Uint8 g, Uint8 b)
     return 0;
 }
 
-int
-SDL_GetTextureColorMod(SDL_Texture * texture, Uint8 * r, Uint8 * g,
-                       Uint8 * b)
+int SDL_GetTextureColorMod(SDL_Texture *texture, Uint8 *r, Uint8 *g,
+                           Uint8 *b)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1593,8 +1561,7 @@ SDL_GetTextureColorMod(SDL_Texture * texture, Uint8 * r, Uint8 * g,
     return 0;
 }
 
-int
-SDL_SetTextureAlphaMod(SDL_Texture * texture, Uint8 alpha)
+int SDL_SetTextureAlphaMod(SDL_Texture *texture, Uint8 alpha)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1610,8 +1577,7 @@ SDL_SetTextureAlphaMod(SDL_Texture * texture, Uint8 alpha)
     return 0;
 }
 
-int
-SDL_GetTextureAlphaMod(SDL_Texture * texture, Uint8 * alpha)
+int SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1621,8 +1587,7 @@ SDL_GetTextureAlphaMod(SDL_Texture * texture, Uint8 * alpha)
     return 0;
 }
 
-int
-SDL_SetTextureBlendMode(SDL_Texture * texture, SDL_BlendMode blendMode)
+int SDL_SetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode blendMode)
 {
     SDL_Renderer *renderer;
 
@@ -1639,8 +1604,7 @@ SDL_SetTextureBlendMode(SDL_Texture * texture, SDL_BlendMode blendMode)
     return 0;
 }
 
-int
-SDL_GetTextureBlendMode(SDL_Texture * texture, SDL_BlendMode *blendMode)
+int SDL_GetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode *blendMode)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1650,8 +1614,7 @@ SDL_GetTextureBlendMode(SDL_Texture * texture, SDL_BlendMode *blendMode)
     return 0;
 }
 
-int
-SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
+int SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
     SDL_Renderer *renderer;
 
@@ -1667,8 +1630,7 @@ SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
     return 0;
 }
 
-int
-SDL_GetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode *scaleMode)
+int SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1678,8 +1640,7 @@ SDL_GetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode *scaleMode)
     return 0;
 }
 
-int
-SDL_SetTextureUserData(SDL_Texture * texture, void *userdata)
+int SDL_SetTextureUserData(SDL_Texture *texture, void *userdata)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
@@ -1688,7 +1649,7 @@ SDL_SetTextureUserData(SDL_Texture * texture, void *userdata)
 }
 
 void *
-SDL_GetTextureUserData(SDL_Texture * texture)
+SDL_GetTextureUserData(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture, NULL);
 
@@ -1696,9 +1657,8 @@ SDL_GetTextureUserData(SDL_Texture * texture)
 }
 
 #if SDL_HAVE_YUV
-static int
-SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
-                     const void *pixels, int pitch)
+static int SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
+                                const void *pixels, int pitch)
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
@@ -1743,14 +1703,13 @@ SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
 }
 #endif /* SDL_HAVE_YUV */
 
-static int
-SDL_UpdateTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
-                        const void *pixels, int pitch)
+static int SDL_UpdateTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
+                                   const void *pixels, int pitch)
 {
     SDL_Texture *native = texture->native;
 
     if (!rect->w || !rect->h) {
-        return 0;  /* nothing to do. */
+        return 0; /* nothing to do. */
     }
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1784,9 +1743,8 @@ SDL_UpdateTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
     return 0;
 }
 
-int
-SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
-                  const void *pixels, int pitch)
+int SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect,
+                      const void *pixels, int pitch)
 {
     SDL_Rect real_rect;
 
@@ -1810,7 +1768,7 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
     }
 
     if (real_rect.w == 0 || real_rect.h == 0) {
-        return 0;  /* nothing to do. */
+        return 0; /* nothing to do. */
 #if SDL_HAVE_YUV
     } else if (texture->yuv) {
         return SDL_UpdateTextureYUV(texture, &real_rect, pixels, pitch);
@@ -1827,11 +1785,10 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
 }
 
 #if SDL_HAVE_YUV
-static int
-SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
-                           const Uint8 *Yplane, int Ypitch,
-                           const Uint8 *Uplane, int Upitch,
-                           const Uint8 *Vplane, int Vpitch)
+static int SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
+                                      const Uint8 *Yplane, int Ypitch,
+                                      const Uint8 *Uplane, int Upitch,
+                                      const Uint8 *Vplane, int Vpitch)
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
@@ -1847,7 +1804,7 @@ SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
     rect = &full_rect;
 
     if (!rect->w || !rect->h) {
-        return 0;  /* nothing to do. */
+        return 0; /* nothing to do. */
     }
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1879,10 +1836,9 @@ SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
     return 0;
 }
 
-static int
-SDL_UpdateTextureNVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
-                           const Uint8 *Yplane, int Ypitch,
-                           const Uint8 *UVplane, int UVpitch)
+static int SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
+                                     const Uint8 *Yplane, int Ypitch,
+                                     const Uint8 *UVplane, int UVpitch)
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
@@ -1898,7 +1854,7 @@ SDL_UpdateTextureNVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
     rect = &full_rect;
 
     if (!rect->w || !rect->h) {
-        return 0;  /* nothing to do. */
+        return 0; /* nothing to do. */
     }
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1930,10 +1886,9 @@ SDL_UpdateTextureNVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
     return 0;
 }
 
-
 #endif /* SDL_HAVE_YUV */
 
-int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
+int SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
                          const Uint8 *Yplane, int Ypitch,
                          const Uint8 *Uplane, int Upitch,
                          const Uint8 *Vplane, int Vpitch)
@@ -1977,7 +1932,7 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
     }
 
     if (real_rect.w == 0 || real_rect.h == 0) {
-        return 0;  /* nothing to do. */
+        return 0; /* nothing to do. */
     }
 
     if (texture->yuv) {
@@ -2000,9 +1955,9 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
 #endif
 }
 
-int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
-                         const Uint8 *Yplane, int Ypitch,
-                         const Uint8 *UVplane, int UVpitch)
+int SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
+                        const Uint8 *Yplane, int Ypitch,
+                        const Uint8 *UVplane, int UVpitch)
 {
 #if SDL_HAVE_YUV
     SDL_Renderer *renderer;
@@ -2037,7 +1992,7 @@ int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
     }
 
     if (real_rect.w == 0 || real_rect.h == 0) {
-        return 0;  /* nothing to do. */
+        return 0; /* nothing to do. */
     }
 
     if (texture->yuv) {
@@ -2060,32 +2015,27 @@ int SDL_UpdateNVTexture(SDL_Texture * texture, const SDL_Rect * rect,
 #endif
 }
 
-
-
 #if SDL_HAVE_YUV
-static int
-SDL_LockTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
-                   void **pixels, int *pitch)
+static int SDL_LockTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
+                              void **pixels, int *pitch)
 {
     return SDL_SW_LockYUVTexture(texture->yuv, rect, pixels, pitch);
 }
 #endif /* SDL_HAVE_YUV */
 
-static int
-SDL_LockTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
-                      void **pixels, int *pitch)
+static int SDL_LockTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
+                                 void **pixels, int *pitch)
 {
     texture->locked_rect = *rect;
-    *pixels = (void *) ((Uint8 *) texture->pixels +
-                        rect->y * texture->pitch +
-                        rect->x * SDL_BYTESPERPIXEL(texture->format));
+    *pixels = (void *)((Uint8 *)texture->pixels +
+                       rect->y * texture->pitch +
+                       rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = texture->pitch;
     return 0;
 }
 
-int
-SDL_LockTexture(SDL_Texture * texture, const SDL_Rect * rect,
-                void **pixels, int *pitch)
+int SDL_LockTexture(SDL_Texture *texture, const SDL_Rect *rect,
+                    void **pixels, int *pitch)
 {
     SDL_Rect full_rect;
 
@@ -2111,7 +2061,7 @@ SDL_LockTexture(SDL_Texture * texture, const SDL_Rect * rect,
         return SDL_LockTextureYUV(texture, rect, pixels, pitch);
     } else
 #endif
-    if (texture->native) {
+        if (texture->native) {
         /* Calls a real SDL_LockTexture/SDL_UnlockTexture on unlock, flushing then. */
         return SDL_LockTextureNative(texture, rect, pixels, pitch);
     } else {
@@ -2123,9 +2073,8 @@ SDL_LockTexture(SDL_Texture * texture, const SDL_Rect * rect,
     }
 }
 
-int
-SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
-                         SDL_Surface **surface)
+int SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
+                             SDL_Surface **surface)
 {
     SDL_Rect real_rect;
     void *pixels = NULL;
@@ -2160,8 +2109,7 @@ SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
 }
 
 #if SDL_HAVE_YUV
-static void
-SDL_UnlockTextureYUV(SDL_Texture * texture)
+static void SDL_UnlockTextureYUV(SDL_Texture *texture)
 {
     SDL_Texture *native = texture->native;
     void *native_pixels = NULL;
@@ -2182,16 +2130,15 @@ SDL_UnlockTextureYUV(SDL_Texture * texture)
 }
 #endif /* SDL_HAVE_YUV */
 
-static void
-SDL_UnlockTextureNative(SDL_Texture * texture)
+static void SDL_UnlockTextureNative(SDL_Texture *texture)
 {
     SDL_Texture *native = texture->native;
     void *native_pixels = NULL;
     int native_pitch = 0;
     const SDL_Rect *rect = &texture->locked_rect;
-    const void* pixels = (void *) ((Uint8 *) texture->pixels +
-                        rect->y * texture->pitch +
-                        rect->x * SDL_BYTESPERPIXEL(texture->format));
+    const void *pixels = (void *)((Uint8 *)texture->pixels +
+                                  rect->y * texture->pitch +
+                                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     int pitch = texture->pitch;
 
     if (SDL_LockTexture(native, rect, &native_pixels, &native_pitch) < 0) {
@@ -2203,8 +2150,7 @@ SDL_UnlockTextureNative(SDL_Texture * texture)
     SDL_UnlockTexture(native);
 }
 
-void
-SDL_UnlockTexture(SDL_Texture * texture)
+void SDL_UnlockTexture(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture, );
 
@@ -2216,7 +2162,7 @@ SDL_UnlockTexture(SDL_Texture * texture)
         SDL_UnlockTextureYUV(texture);
     } else
 #endif
-    if (texture->native) {
+        if (texture->native) {
         SDL_UnlockTextureNative(texture);
     } else {
         SDL_Renderer *renderer = texture->renderer;
@@ -2236,8 +2182,7 @@ SDL_RenderTargetSupported(SDL_Renderer *renderer)
     return (renderer->info.flags & SDL_RENDERER_TARGETTEXTURE) != 0;
 }
 
-int
-SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
+int SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     if (!SDL_RenderTargetSupported(renderer)) {
         return SDL_Unsupported();
@@ -2263,7 +2208,7 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         return 0;
     }
 
-    FlushRenderCommands(renderer);  /* time to send everything to the GPU! */
+    FlushRenderCommands(renderer); /* time to send everything to the GPU! */
 
     SDL_LockMutex(renderer->target_mutex);
 
@@ -2324,8 +2269,7 @@ SDL_GetRenderTarget(SDL_Renderer *renderer)
     return renderer->target;
 }
 
-static int
-UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
+static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
 {
     int w = 1, h = 1;
     float want_aspect;
@@ -2382,7 +2326,7 @@ UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
         viewport.x = (w - viewport.w) / 2;
         viewport.h = (int)SDL_floor(renderer->logical_h * scale);
         viewport.y = (h - viewport.h) / 2;
-    } else if (SDL_fabs(want_aspect-real_aspect) < 0.0001) {
+    } else if (SDL_fabs(want_aspect - real_aspect) < 0.0001) {
         /* The aspect ratios are the same, just scale appropriately */
         scale = (float)w / renderer->logical_w;
 
@@ -2390,9 +2334,9 @@ UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
         SDL_GetRendererOutputSize(renderer, &viewport.w, &viewport.h);
     } else if (want_aspect > real_aspect) {
         if (scale_policy == 1) {
-            /* We want a wider aspect ratio than is available - 
-             zoom so logical height matches the real height 
-             and the width will grow off the screen 
+            /* We want a wider aspect ratio than is available -
+             zoom so logical height matches the real height
+             and the width will grow off the screen
              */
             scale = (float)h / renderer->logical_h;
             viewport.y = 0;
@@ -2420,11 +2364,11 @@ UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
             viewport.y = (h - viewport.h) / 2;
         } else {
             /* We want a narrower aspect ratio than is available - use side-bars */
-             scale = (float)h / renderer->logical_h;
-             viewport.y = 0;
-             viewport.h = h;
-             viewport.w = (int)SDL_floor(renderer->logical_w * scale);
-             viewport.x = (w - viewport.w) / 2;
+            scale = (float)h / renderer->logical_h;
+            viewport.y = 0;
+            viewport.h = h;
+            viewport.w = (int)SDL_floor(renderer->logical_w * scale);
+            viewport.x = (w - viewport.w) / 2;
         }
     }
 
@@ -2444,8 +2388,7 @@ UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd)
     return 0;
 }
 
-int
-SDL_RenderSetLogicalSize(SDL_Renderer * renderer, int w, int h)
+int SDL_RenderSetLogicalSize(SDL_Renderer *renderer, int w, int h)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2464,8 +2407,7 @@ SDL_RenderSetLogicalSize(SDL_Renderer * renderer, int w, int h)
     return UpdateLogicalSize(renderer, SDL_TRUE);
 }
 
-void
-SDL_RenderGetLogicalSize(SDL_Renderer * renderer, int *w, int *h)
+void SDL_RenderGetLogicalSize(SDL_Renderer *renderer, int *w, int *h)
 {
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -2477,8 +2419,7 @@ SDL_RenderGetLogicalSize(SDL_Renderer * renderer, int *w, int *h)
     }
 }
 
-int
-SDL_RenderSetIntegerScale(SDL_Renderer * renderer, SDL_bool enable)
+int SDL_RenderSetIntegerScale(SDL_Renderer *renderer, SDL_bool enable)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2488,15 +2429,15 @@ SDL_RenderSetIntegerScale(SDL_Renderer * renderer, SDL_bool enable)
 }
 
 SDL_bool
-SDLCALL SDL_RenderGetIntegerScale(SDL_Renderer * renderer)
+    SDLCALL
+    SDL_RenderGetIntegerScale(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, SDL_FALSE);
 
     return renderer->integer_scale;
 }
 
-int
-SDL_RenderSetViewport(SDL_Renderer * renderer, const SDL_Rect * rect)
+int SDL_RenderSetViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     int retval;
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -2520,8 +2461,7 @@ SDL_RenderSetViewport(SDL_Renderer * renderer, const SDL_Rect * rect)
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-void
-SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
+void SDL_RenderGetViewport(SDL_Renderer *renderer, SDL_Rect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -2533,8 +2473,7 @@ SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
     }
 }
 
-static void
-RenderGetViewportSize(SDL_Renderer * renderer, SDL_FRect * rect)
+static void RenderGetViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     rect->x = 0.0f;
     rect->y = 0.0f;
@@ -2542,8 +2481,7 @@ RenderGetViewportSize(SDL_Renderer * renderer, SDL_FRect * rect)
     rect->h = (float)(renderer->viewport.h / renderer->scale.y);
 }
 
-int
-SDL_RenderSetClipRect(SDL_Renderer * renderer, const SDL_Rect * rect)
+int SDL_RenderSetClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     int retval;
     CHECK_RENDERER_MAGIC(renderer, -1)
@@ -2563,8 +2501,7 @@ SDL_RenderSetClipRect(SDL_Renderer * renderer, const SDL_Rect * rect)
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-void
-SDL_RenderGetClipRect(SDL_Renderer * renderer, SDL_Rect * rect)
+void SDL_RenderGetClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, )
 
@@ -2577,14 +2514,13 @@ SDL_RenderGetClipRect(SDL_Renderer * renderer, SDL_Rect * rect)
 }
 
 SDL_bool
-SDL_RenderIsClipEnabled(SDL_Renderer * renderer)
+SDL_RenderIsClipEnabled(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, SDL_FALSE)
     return renderer->clipping_enabled;
 }
 
-int
-SDL_RenderSetScale(SDL_Renderer * renderer, float scaleX, float scaleY)
+int SDL_RenderSetScale(SDL_Renderer *renderer, float scaleX, float scaleY)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2593,8 +2529,7 @@ SDL_RenderSetScale(SDL_Renderer * renderer, float scaleX, float scaleY)
     return 0;
 }
 
-void
-SDL_RenderGetScale(SDL_Renderer * renderer, float *scaleX, float *scaleY)
+void SDL_RenderGetScale(SDL_Renderer *renderer, float *scaleX, float *scaleY)
 {
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -2606,15 +2541,14 @@ SDL_RenderGetScale(SDL_Renderer * renderer, float *scaleX, float *scaleY)
     }
 }
 
-void
-SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, float *logicalX, float *logicalY)
+void SDL_RenderWindowToLogical(SDL_Renderer *renderer, int windowX, int windowY, float *logicalX, float *logicalY)
 {
     float window_physical_x, window_physical_y;
 
     CHECK_RENDERER_MAGIC(renderer, );
 
-    window_physical_x = ((float) windowX) / renderer->dpi_scale.x;
-    window_physical_y = ((float) windowY) / renderer->dpi_scale.y;
+    window_physical_x = ((float)windowX) / renderer->dpi_scale.x;
+    window_physical_y = ((float)windowY) / renderer->dpi_scale.y;
 
     if (logicalX) {
         *logicalX = (float)((window_physical_x - renderer->viewport.x) / renderer->scale.x);
@@ -2624,8 +2558,7 @@ SDL_RenderWindowToLogical(SDL_Renderer * renderer, int windowX, int windowY, flo
     }
 }
 
-void
-SDL_RenderLogicalToWindow(SDL_Renderer * renderer, float logicalX, float logicalY, int *windowX, int *windowY)
+void SDL_RenderLogicalToWindow(SDL_Renderer *renderer, float logicalX, float logicalY, int *windowX, int *windowY)
 {
     float window_physical_x, window_physical_y;
 
@@ -2642,9 +2575,8 @@ SDL_RenderLogicalToWindow(SDL_Renderer * renderer, float logicalX, float logical
     }
 }
 
-int
-SDL_SetRenderDrawColor(SDL_Renderer * renderer,
-                       Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+int SDL_SetRenderDrawColor(SDL_Renderer *renderer,
+                           Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2655,9 +2587,8 @@ SDL_SetRenderDrawColor(SDL_Renderer * renderer,
     return 0;
 }
 
-int
-SDL_GetRenderDrawColor(SDL_Renderer * renderer,
-                       Uint8 * r, Uint8 * g, Uint8 * b, Uint8 * a)
+int SDL_GetRenderDrawColor(SDL_Renderer *renderer,
+                           Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2676,8 +2607,7 @@ SDL_GetRenderDrawColor(SDL_Renderer * renderer,
     return 0;
 }
 
-int
-SDL_SetRenderDrawBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+int SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2688,8 +2618,7 @@ SDL_SetRenderDrawBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     return 0;
 }
 
-int
-SDL_GetRenderDrawBlendMode(SDL_Renderer * renderer, SDL_BlendMode *blendMode)
+int SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode *blendMode)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2697,8 +2626,7 @@ SDL_GetRenderDrawBlendMode(SDL_Renderer * renderer, SDL_BlendMode *blendMode)
     return 0;
 }
 
-int
-SDL_RenderClear(SDL_Renderer * renderer)
+int SDL_RenderClear(SDL_Renderer *renderer)
 {
     int retval;
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -2706,21 +2634,18 @@ SDL_RenderClear(SDL_Renderer * renderer)
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-
 /* !!! FIXME: delete all the duplicate code for the integer versions in 2.1,
    !!! FIXME:  making the floating point versions the only available APIs. */
 
-int
-SDL_RenderDrawPoint(SDL_Renderer * renderer, int x, int y)
+int SDL_RenderDrawPoint(SDL_Renderer *renderer, int x, int y)
 {
     SDL_FPoint fpoint;
-    fpoint.x = (float) x;
-    fpoint.y = (float) y;
+    fpoint.x = (float)x;
+    fpoint.y = (float)y;
     return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
 }
 
-int
-SDL_RenderDrawPointF(SDL_Renderer * renderer, float x, float y)
+int SDL_RenderDrawPointF(SDL_Renderer *renderer, float x, float y)
 {
     SDL_FPoint fpoint;
     fpoint.x = x;
@@ -2728,9 +2653,8 @@ SDL_RenderDrawPointF(SDL_Renderer * renderer, float x, float y)
     return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
 }
 
-static int
-RenderDrawPointsWithRects(SDL_Renderer * renderer,
-                          const SDL_Point * points, const int count)
+static int RenderDrawPointsWithRects(SDL_Renderer *renderer,
+                                     const SDL_Point *points, const int count)
 {
     int retval;
     SDL_bool isstack;
@@ -2760,9 +2684,8 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
     return retval;
 }
 
-int
-SDL_RenderDrawPoints(SDL_Renderer * renderer,
-                     const SDL_Point * points, int count)
+int SDL_RenderDrawPoints(SDL_Renderer *renderer,
+                         const SDL_Point *points, int count)
 {
     SDL_FPoint *fpoints;
     int i;
@@ -2793,8 +2716,8 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
             return SDL_OutOfMemory();
         }
         for (i = 0; i < count; ++i) {
-            fpoints[i].x = (float) points[i].x;
-            fpoints[i].y = (float) points[i].y;
+            fpoints[i].x = (float)points[i].x;
+            fpoints[i].y = (float)points[i].y;
         }
 
         retval = QueueCmdDrawPoints(renderer, fpoints, count);
@@ -2804,9 +2727,8 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-static int
-RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
-                           const SDL_FPoint * fpoints, const int count)
+static int RenderDrawPointsWithRectsF(SDL_Renderer *renderer,
+                                      const SDL_FPoint *fpoints, const int count)
 {
     int retval;
     SDL_bool isstack;
@@ -2836,9 +2758,8 @@ RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
     return retval;
 }
 
-int
-SDL_RenderDrawPointsF(SDL_Renderer * renderer,
-                      const SDL_FPoint * points, int count)
+int SDL_RenderDrawPointsF(SDL_Renderer *renderer,
+                          const SDL_FPoint *points, int count)
 {
     int retval;
 
@@ -2866,19 +2787,17 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderDrawLine(SDL_Renderer * renderer, int x1, int y1, int x2, int y2)
+int SDL_RenderDrawLine(SDL_Renderer *renderer, int x1, int y1, int x2, int y2)
 {
     SDL_FPoint points[2];
-    points[0].x = (float) x1;
-    points[0].y = (float) y1;
-    points[1].x = (float) x2;
-    points[1].y = (float) y2;
+    points[0].x = (float)x1;
+    points[0].y = (float)y1;
+    points[1].x = (float)x2;
+    points[1].y = (float)y2;
     return SDL_RenderDrawLinesF(renderer, points, 2);
 }
 
-int
-SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float y2)
+int SDL_RenderDrawLineF(SDL_Renderer *renderer, float x1, float y1, float x2, float y2)
 {
     SDL_FPoint points[2];
     points[0].x = x1;
@@ -2967,9 +2886,8 @@ static int RenderDrawLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x
     return retval;
 }
 
-static int
-RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
-                          const SDL_FPoint * points, const int count)
+static int RenderDrawLinesWithRectsF(SDL_Renderer *renderer,
+                                     const SDL_FPoint *points, const int count)
 {
     const float scale_x = renderer->scale.x;
     const float scale_y = renderer->scale.y;
@@ -2981,17 +2899,17 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
     SDL_bool drew_line = SDL_FALSE;
     SDL_bool draw_last = SDL_FALSE;
 
-    frects = SDL_small_alloc(SDL_FRect, count-1, &isstack);
+    frects = SDL_small_alloc(SDL_FRect, count - 1, &isstack);
     if (frects == NULL) {
         return SDL_OutOfMemory();
     }
 
-    for (i = 0; i < count-1; ++i) {
-        SDL_bool same_x = (points[i].x == points[i+1].x);
-        SDL_bool same_y = (points[i].y == points[i+1].y);
+    for (i = 0; i < count - 1; ++i) {
+        SDL_bool same_x = (points[i].x == points[i + 1].x);
+        SDL_bool same_y = (points[i].y == points[i + 1].y);
 
         if (i == (count - 2)) {
-            if (!drew_line || points[i+1].x != points[0].x || points[i+1].y != points[0].y) {
+            if (!drew_line || points[i + 1].x != points[0].x || points[i + 1].y != points[0].y) {
                 draw_last = SDL_TRUE;
             }
         } else {
@@ -3000,32 +2918,32 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
             }
         }
         if (same_x) {
-            const float minY = SDL_min(points[i].y, points[i+1].y);
-            const float maxY = SDL_max(points[i].y, points[i+1].y);
+            const float minY = SDL_min(points[i].y, points[i + 1].y);
+            const float maxY = SDL_max(points[i].y, points[i + 1].y);
 
             frect = &frects[nrects++];
             frect->x = points[i].x * scale_x;
             frect->y = minY * scale_y;
             frect->w = scale_x;
             frect->h = (maxY - minY + draw_last) * scale_y;
-            if (!draw_last && points[i+1].y < points[i].y) {
+            if (!draw_last && points[i + 1].y < points[i].y) {
                 frect->y += scale_y;
             }
         } else if (same_y) {
-            const float minX = SDL_min(points[i].x, points[i+1].x);
-            const float maxX = SDL_max(points[i].x, points[i+1].x);
+            const float minX = SDL_min(points[i].x, points[i + 1].x);
+            const float maxX = SDL_max(points[i].x, points[i + 1].x);
 
             frect = &frects[nrects++];
             frect->x = minX * scale_x;
             frect->y = points[i].y * scale_y;
             frect->w = (maxX - minX + draw_last) * scale_x;
             frect->h = scale_y;
-            if (!draw_last && points[i+1].x < points[i].x) {
+            if (!draw_last && points[i + 1].x < points[i].x) {
                 frect->x += scale_x;
             }
         } else {
             retval += RenderDrawLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
-                                                        (int)SDL_roundf(points[i+1].x), (int)SDL_roundf(points[i+1].y), draw_last);
+                                              (int)SDL_roundf(points[i + 1].x), (int)SDL_roundf(points[i + 1].y), draw_last);
         }
         drew_line = SDL_TRUE;
     }
@@ -3042,9 +2960,8 @@ RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
     return retval;
 }
 
-int
-SDL_RenderDrawLines(SDL_Renderer * renderer,
-                    const SDL_Point * points, int count)
+int SDL_RenderDrawLines(SDL_Renderer *renderer,
+                        const SDL_Point *points, int count)
 {
     SDL_FPoint *fpoints;
     int i;
@@ -3073,8 +2990,8 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     }
 
     for (i = 0; i < count; ++i) {
-        fpoints[i].x = (float) points[i].x;
-        fpoints[i].y = (float) points[i].y;
+        fpoints[i].x = (float)points[i].x;
+        fpoints[i].y = (float)points[i].y;
     }
 
     retval = SDL_RenderDrawLinesF(renderer, fpoints, count);
@@ -3084,9 +3001,8 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     return retval;
 }
 
-int
-SDL_RenderDrawLinesF(SDL_Renderer * renderer,
-                     const SDL_FPoint * points, int count)
+int SDL_RenderDrawLinesF(SDL_Renderer *renderer,
+                         const SDL_FPoint *points, int count)
 {
     int retval = 0;
 
@@ -3115,15 +3031,13 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
         const float scale_y = renderer->scale.y;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
         int *indices = SDL_small_alloc(int,
-                  (4) * 3 * (count - 1)
-                + (2) * 3 * (count)
-                , &isstack2);
+                                       (4) * 3 * (count - 1) + (2) * 3 * (count), &isstack2);
 
         if (xy && indices) {
             int i;
             float *ptr_xy = xy;
             int *ptr_indices = indices;
-            const int xy_stride = 2 * sizeof (float);
+            const int xy_stride = 2 * sizeof(float);
             int num_vertices = 4 * count;
             int num_indices = 0;
             const int size_indices = 4;
@@ -3153,11 +3067,11 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                 *ptr_xy++ = q.x;
                 *ptr_xy++ = q.y + scale_y;
 
-#define ADD_TRIANGLE(i1, i2, i3)                    \
-                *ptr_indices++ = cur_index + i1;    \
-                *ptr_indices++ = cur_index + i2;    \
-                *ptr_indices++ = cur_index + i3;    \
-                num_indices += 3;                   \
+#define ADD_TRIANGLE(i1, i2, i3)     \
+    *ptr_indices++ = cur_index + i1; \
+    *ptr_indices++ = cur_index + i2; \
+    *ptr_indices++ = cur_index + i3; \
+    num_indices += 3;
 
                 /* closed polyline, don´t draw twice the point */
                 if (i || is_looping == 0) {
@@ -3222,10 +3136,9 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
             }
 
             retval = QueueCmdGeometry(renderer, NULL,
-                    xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
-                    num_vertices, indices, num_indices, size_indices,
-                    1.0f, 1.0f);
-
+                                      xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
+                                      num_vertices, indices, num_indices, size_indices,
+                                      1.0f, 1.0f);
         }
 
         SDL_small_free(xy, isstack1);
@@ -3240,25 +3153,23 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderDrawRect(SDL_Renderer * renderer, const SDL_Rect * rect)
+int SDL_RenderDrawRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     SDL_FRect frect;
     SDL_FRect *prect = NULL;
 
     if (rect) {
-        frect.x = (float) rect->x;
-        frect.y = (float) rect->y;
-        frect.w = (float) rect->w;
-        frect.h = (float) rect->h;
+        frect.x = (float)rect->x;
+        frect.y = (float)rect->y;
+        frect.w = (float)rect->w;
+        frect.h = (float)rect->h;
         prect = &frect;
     }
 
     return SDL_RenderDrawRectF(renderer, prect);
 }
 
-int
-SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
+int SDL_RenderDrawRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     SDL_FRect frect;
     SDL_FPoint points[5];
@@ -3273,20 +3184,19 @@ SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
 
     points[0].x = rect->x;
     points[0].y = rect->y;
-    points[1].x = rect->x+rect->w-1;
+    points[1].x = rect->x + rect->w - 1;
     points[1].y = rect->y;
-    points[2].x = rect->x+rect->w-1;
-    points[2].y = rect->y+rect->h-1;
+    points[2].x = rect->x + rect->w - 1;
+    points[2].y = rect->y + rect->h - 1;
     points[3].x = rect->x;
-    points[3].y = rect->y+rect->h-1;
+    points[3].y = rect->y + rect->h - 1;
     points[4].x = rect->x;
     points[4].y = rect->y;
     return SDL_RenderDrawLinesF(renderer, points, 5);
 }
 
-int
-SDL_RenderDrawRects(SDL_Renderer * renderer,
-                    const SDL_Rect * rects, int count)
+int SDL_RenderDrawRects(SDL_Renderer *renderer,
+                        const SDL_Rect *rects, int count)
 {
     int i;
 
@@ -3314,9 +3224,8 @@ SDL_RenderDrawRects(SDL_Renderer * renderer,
     return 0;
 }
 
-int
-SDL_RenderDrawRectsF(SDL_Renderer * renderer,
-                     const SDL_FRect * rects, int count)
+int SDL_RenderDrawRectsF(SDL_Renderer *renderer,
+                         const SDL_FRect *rects, int count)
 {
     int i;
 
@@ -3344,8 +3253,7 @@ SDL_RenderDrawRectsF(SDL_Renderer * renderer,
     return 0;
 }
 
-int
-SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_Rect * rect)
+int SDL_RenderFillRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     SDL_FRect frect;
 
@@ -3353,18 +3261,17 @@ SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_Rect * rect)
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (rect) {
-        frect.x = (float) rect->x;
-        frect.y = (float) rect->y;
-        frect.w = (float) rect->w;
-        frect.h = (float) rect->h;
+        frect.x = (float)rect->x;
+        frect.y = (float)rect->y;
+        frect.w = (float)rect->w;
+        frect.h = (float)rect->h;
     } else {
         RenderGetViewportSize(renderer, &frect);
     }
     return SDL_RenderFillRectsF(renderer, &frect, 1);
 }
 
-int
-SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
+int SDL_RenderFillRectF(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     SDL_FRect frect;
 
@@ -3378,9 +3285,8 @@ SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
     return SDL_RenderFillRectsF(renderer, rect, 1);
 }
 
-int
-SDL_RenderFillRects(SDL_Renderer * renderer,
-                    const SDL_Rect * rects, int count)
+int SDL_RenderFillRects(SDL_Renderer *renderer,
+                        const SDL_Rect *rects, int count)
 {
     SDL_FRect *frects;
     int i;
@@ -3421,9 +3327,8 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderFillRectsF(SDL_Renderer * renderer,
-                     const SDL_FRect * rects, int count)
+int SDL_RenderFillRectsF(SDL_Renderer *renderer,
+                         const SDL_FRect *rects, int count)
 {
     SDL_FRect *frects;
     int i;
@@ -3464,31 +3369,28 @@ SDL_RenderFillRectsF(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_Rect * dstrect)
+int SDL_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture,
+                   const SDL_Rect *srcrect, const SDL_Rect *dstrect)
 {
     SDL_FRect dstfrect;
     SDL_FRect *pdstfrect = NULL;
     if (dstrect) {
-        dstfrect.x = (float) dstrect->x;
-        dstfrect.y = (float) dstrect->y;
-        dstfrect.w = (float) dstrect->w;
-        dstfrect.h = (float) dstrect->h;
+        dstfrect.x = (float)dstrect->x;
+        dstfrect.y = (float)dstrect->y;
+        dstfrect.w = (float)dstrect->w;
+        dstfrect.h = (float)dstrect->h;
         pdstfrect = &dstfrect;
     }
     return SDL_RenderCopyF(renderer, texture, srcrect, pdstfrect);
 }
 
-int
-SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
-                const SDL_Rect * srcrect, const SDL_FRect * dstrect)
+int SDL_RenderCopyF(SDL_Renderer *renderer, SDL_Texture *texture,
+                    const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
     SDL_Rect real_srcrect;
     SDL_FRect real_dstrect;
     int retval;
     int use_rendergeometry;
-
 
     CHECK_RENDERER_MAGIC(renderer, -1);
     CHECK_TEXTURE_MAGIC(texture, -1);
@@ -3532,9 +3434,9 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
 
     if (use_rendergeometry) {
         float xy[8];
-        const int xy_stride = 2 * sizeof (float);
+        const int xy_stride = 2 * sizeof(float);
         float uv[8];
-        const int uv_stride = 2 * sizeof (float);
+        const int uv_stride = 2 * sizeof(float);
         const int num_vertices = 4;
         const int *indices = renderer->rect_index_order;
         const int num_indices = 6;
@@ -3542,10 +3444,10 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         float minu, minv, maxu, maxv;
         float minx, miny, maxx, maxy;
 
-        minu = (float) (real_srcrect.x) / (float) texture->w;
-        minv = (float) (real_srcrect.y) / (float) texture->h;
-        maxu = (float) (real_srcrect.x + real_srcrect.w) / (float) texture->w;
-        maxv = (float) (real_srcrect.y + real_srcrect.h) / (float) texture->h;
+        minu = (float)(real_srcrect.x) / (float)texture->w;
+        minv = (float)(real_srcrect.y) / (float)texture->h;
+        maxu = (float)(real_srcrect.x + real_srcrect.w) / (float)texture->w;
+        maxv = (float)(real_srcrect.y + real_srcrect.h) / (float)texture->h;
 
         minx = real_dstrect.x;
         miny = real_dstrect.y;
@@ -3571,10 +3473,10 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = maxy;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
-                num_vertices,
-                indices, num_indices, size_indices,
-                renderer->scale.x, renderer->scale.y);
+                                  xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                                  num_vertices,
+                                  indices, num_indices, size_indices,
+                                  renderer->scale.x, renderer->scale.y);
     } else {
 
         real_dstrect.x *= renderer->scale.x;
@@ -3587,10 +3489,9 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_Rect * dstrect,
-               const double angle, const SDL_Point *center, const SDL_RendererFlip flip)
+int SDL_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture,
+                     const SDL_Rect *srcrect, const SDL_Rect *dstrect,
+                     const double angle, const SDL_Point *center, const SDL_RendererFlip flip)
 {
     SDL_FRect dstfrect;
     SDL_FRect *pdstfrect = NULL;
@@ -3598,26 +3499,25 @@ SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_FPoint *pfcenter = NULL;
 
     if (dstrect) {
-        dstfrect.x = (float) dstrect->x;
-        dstfrect.y = (float) dstrect->y;
-        dstfrect.w = (float) dstrect->w;
-        dstfrect.h = (float) dstrect->h;
+        dstfrect.x = (float)dstrect->x;
+        dstfrect.y = (float)dstrect->y;
+        dstfrect.w = (float)dstrect->w;
+        dstfrect.h = (float)dstrect->h;
         pdstfrect = &dstfrect;
     }
 
     if (center) {
-        fcenter.x = (float) center->x;
-        fcenter.y = (float) center->y;
+        fcenter.x = (float)center->x;
+        fcenter.y = (float)center->y;
         pfcenter = &fcenter;
     }
 
     return SDL_RenderCopyExF(renderer, texture, srcrect, pdstfrect, angle, pfcenter, flip);
 }
 
-int
-SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+int SDL_RenderCopyExF(SDL_Renderer *renderer, SDL_Texture *texture,
+                      const SDL_Rect *srcrect, const SDL_FRect *dstrect,
+                      const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
     SDL_Rect real_srcrect;
     SDL_FRect real_dstrect;
@@ -3625,7 +3525,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     int retval;
     int use_rendergeometry;
 
-    if (flip == SDL_FLIP_NONE && (int)(angle/360) == angle/360) { /* fast path when we don't need rotation or flipping */
+    if (flip == SDL_FLIP_NONE && (int)(angle / 360) == angle / 360) { /* fast path when we don't need rotation or flipping */
         return SDL_RenderCopyF(renderer, texture, srcrect, dstrect);
     }
 
@@ -3680,9 +3580,9 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
 
     if (use_rendergeometry) {
         float xy[8];
-        const int xy_stride = 2 * sizeof (float);
+        const int xy_stride = 2 * sizeof(float);
         float uv[8];
-        const int uv_stride = 2 * sizeof (float);
+        const int uv_stride = 2 * sizeof(float);
         const int num_vertices = 4;
         const int *indices = renderer->rect_index_order;
         const int num_indices = 6;
@@ -3698,10 +3598,10 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         const float s = SDL_sinf(radian_angle);
         const float c = SDL_cosf(radian_angle);
 
-        minu = (float) (real_srcrect.x) / (float) texture->w;
-        minv = (float) (real_srcrect.y) / (float) texture->h;
-        maxu = (float) (real_srcrect.x + real_srcrect.w) / (float) texture->w;
-        maxv = (float) (real_srcrect.y + real_srcrect.h) / (float) texture->h;
+        minu = (float)(real_srcrect.x) / (float)texture->w;
+        minv = (float)(real_srcrect.y) / (float)texture->h;
+        maxu = (float)(real_srcrect.x + real_srcrect.w) / (float)texture->w;
+        maxv = (float)(real_srcrect.y + real_srcrect.h) / (float)texture->h;
 
         centerx = real_center.x + real_dstrect.x;
         centery = real_center.y + real_dstrect.y;
@@ -3756,10 +3656,10 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         xy[7] = (s_minx + c_maxy) + centery;
 
         retval = QueueCmdGeometry(renderer, texture,
-                xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
-                num_vertices,
-                indices, num_indices, size_indices,
-                renderer->scale.x, renderer->scale.y);
+                                  xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                                  num_vertices,
+                                  indices, num_indices, size_indices,
+                                  renderer->scale.x, renderer->scale.y);
     } else {
 
         retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip, renderer->scale.x, renderer->scale.y);
@@ -3767,19 +3667,18 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderGeometry(SDL_Renderer *renderer,
-                               SDL_Texture *texture,
-                               const SDL_Vertex *vertices, int num_vertices,
-                               const int *indices, int num_indices)
+int SDL_RenderGeometry(SDL_Renderer *renderer,
+                       SDL_Texture *texture,
+                       const SDL_Vertex *vertices, int num_vertices,
+                       const int *indices, int num_indices)
 {
     if (vertices) {
         const float *xy = &vertices->position.x;
-        int xy_stride = sizeof (SDL_Vertex);
+        int xy_stride = sizeof(SDL_Vertex);
         const SDL_Color *color = &vertices->color;
-        int color_stride = sizeof (SDL_Vertex);
+        int color_stride = sizeof(SDL_Vertex);
         const float *uv = &vertices->tex_coord.x;
-        int uv_stride = sizeof (SDL_Vertex);
+        int uv_stride = sizeof(SDL_Vertex);
         int size_indices = 4;
         return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
     } else {
@@ -3787,19 +3686,18 @@ SDL_RenderGeometry(SDL_Renderer *renderer,
     }
 }
 
-static int
-remap_one_indice(
-        int prev,
-        int k,
-        SDL_Texture *texture,
-        const float *xy, int xy_stride,
-        const SDL_Color *color, int color_stride,
-        const float *uv, int uv_stride)
+static int remap_one_indice(
+    int prev,
+    int k,
+    SDL_Texture *texture,
+    const float *xy, int xy_stride,
+    const SDL_Color *color, int color_stride,
+    const float *uv, int uv_stride)
 {
     const float *xy0_, *xy1_, *uv0_, *uv1_;
     int col0_, col1_;
-    xy0_ = (const float *)((const char*)xy + prev * xy_stride);
-    xy1_ = (const float *)((const char*)xy + k * xy_stride);
+    xy0_ = (const float *)((const char *)xy + prev * xy_stride);
+    xy1_ = (const float *)((const char *)xy + k * xy_stride);
     if (xy0_[0] != xy1_[0]) {
         return k;
     }
@@ -3807,8 +3705,8 @@ remap_one_indice(
         return k;
     }
     if (texture) {
-        uv0_ = (const float *)((const char*)uv + prev * uv_stride);
-        uv1_ = (const float *)((const char*)uv + k * uv_stride);
+        uv0_ = (const float *)((const char *)uv + prev * uv_stride);
+        uv1_ = (const float *)((const char *)uv + k * uv_stride);
         if (uv0_[0] != uv1_[0]) {
             return k;
         }
@@ -3816,8 +3714,8 @@ remap_one_indice(
             return k;
         }
     }
-    col0_ = *(const int *)((const char*)color + prev * color_stride);
-    col1_ = *(const int *)((const char*)color + k * color_stride);
+    col0_ = *(const int *)((const char *)color + prev * color_stride);
+    col1_ = *(const int *)((const char *)color + k * color_stride);
 
     if (col0_ != col1_) {
         return k;
@@ -3826,14 +3724,13 @@ remap_one_indice(
     return prev;
 }
 
-static int
-remap_indices(
-        int prev[3],
-        int k,
-        SDL_Texture *texture,
-        const float *xy, int xy_stride,
-        const SDL_Color *color, int color_stride,
-        const float *uv, int uv_stride)
+static int remap_indices(
+    int prev[3],
+    int k,
+    SDL_Texture *texture,
+    const float *xy, int xy_stride,
+    const SDL_Color *color, int color_stride,
+    const float *uv, int uv_stride)
 {
     int i;
     if (prev[0] == -1) {
@@ -3851,14 +3748,13 @@ remap_indices(
 
 #define DEBUG_SW_RENDER_GEOMETRY 0
 /* For the software renderer, try to reinterpret triangles as SDL_Rect */
-static int SDLCALL
-SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
-                         SDL_Texture *texture,
-                         const float *xy, int xy_stride,
-                         const SDL_Color *color, int color_stride,
-                         const float *uv, int uv_stride,
-                         int num_vertices,
-                         const void *indices, int num_indices, int size_indices)
+static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
+                                            SDL_Texture *texture,
+                                            const float *xy, int xy_stride,
+                                            const SDL_Color *color, int color_stride,
+                                            const float *uv, int uv_stride,
+                                            int num_vertices,
+                                            const void *indices, int num_indices, int size_indices)
 {
     int i;
     int retval = 0;
@@ -3876,7 +3772,9 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
         SDL_QueryTexture(texture, NULL, NULL, &texw, &texh);
     }
 
-    prev[0] = -1; prev[1] = -1; prev[2] = -1;
+    prev[0] = -1;
+    prev[1] = -1;
+    prev[2] = -1;
     size_indices = indices ? size_indices : 0;
 
     for (i = 0; i < count; i += 3) {
@@ -3936,12 +3834,15 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             const float *xy0_, *xy1_, *xy2_;
             float x0, x1, x2;
             float y0, y1, y2;
-            xy0_ = (const float *)((const char*)xy + k0 * xy_stride);
-            xy1_ = (const float *)((const char*)xy + k1 * xy_stride);
-            xy2_ = (const float *)((const char*)xy + k2 * xy_stride);
-            x0 = xy0_[0]; y0 = xy0_[1];
-            x1 = xy1_[0]; y1 = xy1_[1];
-            x2 = xy2_[0]; y2 = xy2_[1];
+            xy0_ = (const float *)((const char *)xy + k0 * xy_stride);
+            xy1_ = (const float *)((const char *)xy + k1 * xy_stride);
+            xy2_ = (const float *)((const char *)xy + k2 * xy_stride);
+            x0 = xy0_[0];
+            y0 = xy0_[1];
+            x1 = xy1_[0];
+            y1 = xy1_[1];
+            x2 = xy2_[0];
+            y2 = xy2_[1];
 
             /* Find top-left */
             if (x0 <= x1 && y0 <= y1) {
@@ -3991,12 +3892,15 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 C2 = prev[2];
             }
 
-            xy0_ = (const float *)((const char*)xy + A * xy_stride);
-            xy1_ = (const float *)((const char*)xy + B * xy_stride);
-            xy2_ = (const float *)((const char*)xy + C * xy_stride);
-            x0 = xy0_[0]; y0 = xy0_[1];
-            x1 = xy1_[0]; y1 = xy1_[1];
-            x2 = xy2_[0]; y2 = xy2_[1];
+            xy0_ = (const float *)((const char *)xy + A * xy_stride);
+            xy1_ = (const float *)((const char *)xy + B * xy_stride);
+            xy2_ = (const float *)((const char *)xy + C * xy_stride);
+            x0 = xy0_[0];
+            y0 = xy0_[1];
+            x1 = xy1_[0];
+            y1 = xy1_[1];
+            x2 = xy2_[0];
+            y2 = xy2_[1];
 
             /* Check if triangle A B C is rectangle */
             if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)) {
@@ -4008,8 +3912,9 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
 #endif
             }
 
-            xy2_ = (const float *)((const char*)xy + C2 * xy_stride);
-            x2 = xy2_[0]; y2 = xy2_[1];
+            xy2_ = (const float *)((const char *)xy + C2 * xy_stride);
+            x2 = xy2_[0];
+            y2 = xy2_[1];
 
             /* Check if triangle A B C2 is rectangle */
             if ((x0 == x2 && y1 == y2) || (y0 == y2 && x1 == x2)) {
@@ -4024,10 +3929,10 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
 
         /* Check if uniformly colored */
         if (is_quad) {
-            const int col0_ = *(const int *)((const char*)color + A * color_stride);
-            const int col1_ = *(const int *)((const char*)color + B * color_stride);
-            const int col2_ = *(const int *)((const char*)color + C * color_stride);
-            const int col3_ = *(const int *)((const char*)color + C2 * color_stride);
+            const int col0_ = *(const int *)((const char *)color + A * color_stride);
+            const int col1_ = *(const int *)((const char *)color + B * color_stride);
+            const int col2_ = *(const int *)((const char *)color + C * color_stride);
+            const int col3_ = *(const int *)((const char *)color + C2 * color_stride);
             if (col0_ == col1_ && col0_ == col2_ && col0_ == col3_) {
                 /* ok */
             } else {
@@ -4043,18 +3948,18 @@ SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             SDL_Rect s;
             SDL_FRect d;
             const float *xy0_, *xy1_, *uv0_, *uv1_;
-            SDL_Color col0_ = *(const SDL_Color *)((const char*)color + k0 * color_stride);
+            SDL_Color col0_ = *(const SDL_Color *)((const char *)color + k0 * color_stride);
 
-            xy0_ = (const float *)((const char*)xy + A * xy_stride);
-            xy1_ = (const float *)((const char*)xy + B * xy_stride);
+            xy0_ = (const float *)((const char *)xy + A * xy_stride);
+            xy1_ = (const float *)((const char *)xy + B * xy_stride);
 
             if (texture) {
-                uv0_ = (const float *)((const char*)uv + A * uv_stride);
-                uv1_ = (const float *)((const char*)uv + B * uv_stride);
-                s.x = (int) (uv0_[0] * texw);
-                s.y = (int) (uv0_[1] * texh);
-                s.w = (int) (uv1_[0] * texw - s.x);
-                s.h = (int) (uv1_[1] * texh - s.y);
+                uv0_ = (const float *)((const char *)uv + A * uv_stride);
+                uv1_ = (const float *)((const char *)uv + B * uv_stride);
+                s.x = (int)(uv0_[0] * texw);
+                s.y = (int)(uv0_[1] * texh);
+                s.w = (int)(uv1_[0] * texw - s.x);
+                s.h = (int)(uv1_[1] * texh - s.y);
             }
 
             d.x = xy0_[0];
@@ -4146,14 +4051,13 @@ end:
     return retval;
 }
 
-int
-SDL_RenderGeometryRaw(SDL_Renderer *renderer,
-                                  SDL_Texture *texture,
-                                  const float *xy, int xy_stride,
-                                  const SDL_Color *color, int color_stride,
-                                  const float *uv, int uv_stride,
-                                  int num_vertices,
-                                  const void *indices, int num_indices, int size_indices)
+int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
+                          SDL_Texture *texture,
+                          const float *xy, int xy_stride,
+                          const SDL_Color *color, int color_stride,
+                          const float *uv, int uv_stride,
+                          int num_vertices,
+                          const void *indices, int num_indices, int size_indices)
 {
     int i;
     int retval = 0;
@@ -4214,7 +4118,7 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 
     if (texture) {
         for (i = 0; i < num_vertices; ++i) {
-            const float *uv_ = (const float *)((const char*)uv + i * uv_stride);
+            const float *uv_ = (const float *)((const char *)uv + i * uv_stride);
             float u = uv_[0];
             float v = uv_[1];
             if (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f) {
@@ -4246,23 +4150,21 @@ SDL_RenderGeometryRaw(SDL_Renderer *renderer,
     /* For the software renderer, try to reinterpret triangles as SDL_Rect */
     if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
         return SDL_SW_RenderGeometryRaw(renderer, texture,
-                xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
-                indices, num_indices, size_indices);
+                                        xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
+                                        indices, num_indices, size_indices);
     }
 
     retval = QueueCmdGeometry(renderer, texture,
-            xy, xy_stride, color, color_stride, uv, uv_stride,
-            num_vertices,
-            indices, num_indices, size_indices,
-            renderer->scale.x, renderer->scale.y);
+                              xy, xy_stride, color, color_stride, uv, uv_stride,
+                              num_vertices,
+                              indices, num_indices, size_indices,
+                              renderer->scale.x, renderer->scale.y);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-
-int
-SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
-                     Uint32 format, void * pixels, int pitch)
+int SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
+                         Uint32 format, void *pixels, int pitch)
 {
     SDL_Rect real_rect;
 
@@ -4272,7 +4174,7 @@ SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         return SDL_Unsupported();
     }
 
-    FlushRenderCommands(renderer);  /* we need to render before we read the results. */
+    FlushRenderCommands(renderer); /* we need to render before we read the results. */
 
     if (!format) {
         if (renderer->target == NULL) {
@@ -4303,8 +4205,7 @@ SDL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                                       format, pixels, pitch);
 }
 
-static void
-SDL_RenderSimulateVSync(SDL_Renderer * renderer)
+static void SDL_RenderSimulateVSync(SDL_Renderer *renderer)
 {
     Uint32 now, elapsed;
     const Uint32 interval = renderer->simulate_vsync_interval;
@@ -4331,14 +4232,13 @@ SDL_RenderSimulateVSync(SDL_Renderer * renderer)
     }
 }
 
-void
-SDL_RenderPresent(SDL_Renderer * renderer)
+void SDL_RenderPresent(SDL_Renderer *renderer)
 {
     SDL_bool presented = SDL_TRUE;
 
     CHECK_RENDERER_MAGIC(renderer, );
 
-    FlushRenderCommands(renderer);  /* time to send everything to the GPU! */
+    FlushRenderCommands(renderer); /* time to send everything to the GPU! */
 
 #if DONT_DRAW_WHILE_HIDDEN
     /* Don't present while we're hidden */
@@ -4346,18 +4246,17 @@ SDL_RenderPresent(SDL_Renderer * renderer)
         presented = SDL_FALSE;
     } else
 #endif
-    if (renderer->RenderPresent(renderer) < 0) {
+        if (renderer->RenderPresent(renderer) < 0) {
         presented = SDL_FALSE;
     }
 
-    if (renderer->simulate_vsync || 
+    if (renderer->simulate_vsync ||
         (!presented && renderer->wanted_vsync)) {
         SDL_RenderSimulateVSync(renderer);
     }
 }
 
-void
-SDL_DestroyTexture(SDL_Texture * texture)
+void SDL_DestroyTexture(SDL_Texture *texture)
 {
     SDL_Renderer *renderer;
 
@@ -4365,7 +4264,7 @@ SDL_DestroyTexture(SDL_Texture * texture)
 
     renderer = texture->renderer;
     if (texture == renderer->target) {
-        SDL_SetRenderTarget(renderer, NULL);  /* implies command queue flush */
+        SDL_SetRenderTarget(renderer, NULL); /* implies command queue flush */
     } else {
         FlushRenderCommandsIfTextureNeeded(texture);
     }
@@ -4399,8 +4298,7 @@ SDL_DestroyTexture(SDL_Texture * texture)
     SDL_free(texture);
 }
 
-void
-SDL_DestroyRenderer(SDL_Renderer * renderer)
+void SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
     SDL_RenderCommand *cmd;
 
@@ -4429,9 +4327,10 @@ SDL_DestroyRenderer(SDL_Renderer * renderer)
 
     /* Free existing textures for this renderer */
     while (renderer->textures) {
-        SDL_Texture *tex = renderer->textures; (void) tex;
+        SDL_Texture *tex = renderer->textures;
+        (void)tex;
         SDL_DestroyTexture(renderer->textures);
-        SDL_assert(tex != renderer->textures);  /* satisfy static analysis. */
+        SDL_assert(tex != renderer->textures); /* satisfy static analysis. */
     }
 
     if (renderer->window) {
@@ -4458,7 +4357,7 @@ int SDL_GL_BindTexture(SDL_Texture *texture, float *texw, float *texh)
     if (texture->native) {
         return SDL_GL_BindTexture(texture->native, texw, texh);
     } else if (renderer && renderer->GL_BindTexture) {
-        FlushRenderCommandsIfTextureNeeded(texture);  /* in case the app is going to mess with it. */
+        FlushRenderCommandsIfTextureNeeded(texture); /* in case the app is going to mess with it. */
         return renderer->GL_BindTexture(renderer, texture, texw, texh);
     } else {
         return SDL_Unsupported();
@@ -4474,7 +4373,7 @@ int SDL_GL_UnbindTexture(SDL_Texture *texture)
     if (texture->native) {
         return SDL_GL_UnbindTexture(texture->native);
     } else if (renderer && renderer->GL_UnbindTexture) {
-        FlushRenderCommandsIfTextureNeeded(texture);  /* in case the app messed with it. */
+        FlushRenderCommandsIfTextureNeeded(texture); /* in case the app messed with it. */
         return renderer->GL_UnbindTexture(renderer, texture);
     }
 
@@ -4482,31 +4381,30 @@ int SDL_GL_UnbindTexture(SDL_Texture *texture)
 }
 
 void *
-SDL_RenderGetMetalLayer(SDL_Renderer * renderer)
+SDL_RenderGetMetalLayer(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
     if (renderer->GetMetalLayer) {
-        FlushRenderCommands(renderer);  /* in case the app is going to mess with it. */
+        FlushRenderCommands(renderer); /* in case the app is going to mess with it. */
         return renderer->GetMetalLayer(renderer);
     }
     return NULL;
 }
 
 void *
-SDL_RenderGetMetalCommandEncoder(SDL_Renderer * renderer)
+SDL_RenderGetMetalCommandEncoder(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
     if (renderer->GetMetalCommandEncoder) {
-        FlushRenderCommands(renderer);  /* in case the app is going to mess with it. */
+        FlushRenderCommands(renderer); /* in case the app is going to mess with it. */
         return renderer->GetMetalCommandEncoder(renderer);
     }
     return NULL;
 }
 
-static SDL_BlendMode
-SDL_GetShortBlendMode(SDL_BlendMode blendMode)
+static SDL_BlendMode SDL_GetShortBlendMode(SDL_BlendMode blendMode)
 {
     if (blendMode == SDL_BLENDMODE_NONE_FULL) {
         return SDL_BLENDMODE_NONE;
@@ -4526,8 +4424,7 @@ SDL_GetShortBlendMode(SDL_BlendMode blendMode)
     return blendMode;
 }
 
-static SDL_BlendMode
-SDL_GetLongBlendMode(SDL_BlendMode blendMode)
+static SDL_BlendMode SDL_GetLongBlendMode(SDL_BlendMode blendMode)
 {
     if (blendMode == SDL_BLENDMODE_NONE) {
         return SDL_BLENDMODE_NONE_FULL;
@@ -4600,8 +4497,7 @@ SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
     return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
 }
 
-int
-SDL_RenderSetVSync(SDL_Renderer * renderer, int vsync)
+int SDL_RenderSetVSync(SDL_Renderer *renderer, int vsync)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 

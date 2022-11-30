@@ -28,126 +28,104 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-
-static int
-DUMMY_JoystickInit(void)
+static int DUMMY_JoystickInit(void)
 {
     return 0;
 }
 
-static int
-DUMMY_JoystickGetCount(void)
+static int DUMMY_JoystickGetCount(void)
 {
     return 0;
 }
 
-static void
-DUMMY_JoystickDetect(void)
+static void DUMMY_JoystickDetect(void)
 {
 }
 
-static const char *
-DUMMY_JoystickGetDeviceName(int device_index)
+static const char *DUMMY_JoystickGetDeviceName(int device_index)
 {
     return NULL;
 }
 
-static const char *
-DUMMY_JoystickGetDevicePath(int device_index)
+static const char *DUMMY_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }
 
-static int
-DUMMY_JoystickGetDevicePlayerIndex(int device_index)
+static int DUMMY_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
 }
 
-static void
-DUMMY_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+static void DUMMY_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID
-DUMMY_JoystickGetDeviceGUID(int device_index)
+static SDL_JoystickGUID DUMMY_JoystickGetDeviceGUID(int device_index)
 {
     SDL_JoystickGUID guid;
     SDL_zero(guid);
     return guid;
 }
 
-static SDL_JoystickID
-DUMMY_JoystickGetDeviceInstanceID(int device_index)
+static SDL_JoystickID DUMMY_JoystickGetDeviceInstanceID(int device_index)
 {
     return -1;
 }
 
-static int
-DUMMY_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static int DUMMY_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     return SDL_SetError("Logic error: No joysticks available");
 }
 
-static int
-DUMMY_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int DUMMY_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int
-DUMMY_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int DUMMY_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32
-DUMMY_JoystickGetCapabilities(SDL_Joystick *joystick)
+static Uint32 DUMMY_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     return 0;
 }
 
-static int
-DUMMY_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int DUMMY_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-DUMMY_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static int DUMMY_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static void
-DUMMY_JoystickUpdate(SDL_Joystick *joystick)
+static void DUMMY_JoystickUpdate(SDL_Joystick *joystick)
 {
 }
 
-static void
-DUMMY_JoystickClose(SDL_Joystick *joystick)
+static void DUMMY_JoystickClose(SDL_Joystick *joystick)
 {
 }
 
-static void
-DUMMY_JoystickQuit(void)
+static void DUMMY_JoystickQuit(void)
 {
 }
 
-static SDL_bool
-DUMMY_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static SDL_bool DUMMY_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
 }
 
-SDL_JoystickDriver SDL_DUMMY_JoystickDriver =
-{
+SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {
     DUMMY_JoystickInit,
     DUMMY_JoystickGetCount,
     DUMMY_JoystickDetect,

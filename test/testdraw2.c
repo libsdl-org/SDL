@@ -37,8 +37,7 @@ static const Uint32 fps_check_delay = 5000;
 
 int done;
 
-void
-DrawPoints(SDL_Renderer * renderer)
+void DrawPoints(SDL_Renderer *renderer)
 {
     int i;
     int x, y;
@@ -71,8 +70,8 @@ DrawPoints(SDL_Renderer * renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8) current_color,
-                               (Uint8) current_color, (Uint8) current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
+                               (Uint8)current_color, (Uint8)current_alpha);
 
         x = rand() % viewport.w;
         y = rand() % viewport.h;
@@ -80,8 +79,7 @@ DrawPoints(SDL_Renderer * renderer)
     }
 }
 
-void
-DrawLines(SDL_Renderer * renderer)
+void DrawLines(SDL_Renderer *renderer)
 {
     int i;
     int x1, y1, x2, y2;
@@ -114,8 +112,8 @@ DrawLines(SDL_Renderer * renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8) current_color,
-                               (Uint8) current_color, (Uint8) current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
+                               (Uint8)current_color, (Uint8)current_alpha);
 
         if (i == 0) {
             SDL_RenderDrawLine(renderer, 0, 0, viewport.w - 1, viewport.h - 1);
@@ -123,17 +121,16 @@ DrawLines(SDL_Renderer * renderer)
             SDL_RenderDrawLine(renderer, 0, viewport.h / 2, viewport.w - 1, viewport.h / 2);
             SDL_RenderDrawLine(renderer, viewport.w / 2, 0, viewport.w / 2, viewport.h - 1);
         } else {
-            x1 = (rand() % (viewport.w*2)) - viewport.w;
-            x2 = (rand() % (viewport.w*2)) - viewport.w;
-            y1 = (rand() % (viewport.h*2)) - viewport.h;
-            y2 = (rand() % (viewport.h*2)) - viewport.h;
+            x1 = (rand() % (viewport.w * 2)) - viewport.w;
+            x2 = (rand() % (viewport.w * 2)) - viewport.w;
+            y1 = (rand() % (viewport.h * 2)) - viewport.h;
+            y2 = (rand() % (viewport.h * 2)) - viewport.h;
             SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
         }
     }
 }
 
-void
-DrawRects(SDL_Renderer * renderer)
+void DrawRects(SDL_Renderer *renderer)
 {
     int i;
     SDL_Rect rect;
@@ -166,19 +163,18 @@ DrawRects(SDL_Renderer * renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8) current_color,
-                               (Uint8) current_color, (Uint8) current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
+                               (Uint8)current_color, (Uint8)current_alpha);
 
         rect.w = rand() % (viewport.h / 2);
         rect.h = rand() % (viewport.h / 2);
-        rect.x = (rand() % (viewport.w*2) - viewport.w) - (rect.w / 2);
-        rect.y = (rand() % (viewport.h*2) - viewport.h) - (rect.h / 2);
+        rect.x = (rand() % (viewport.w * 2) - viewport.w) - (rect.w / 2);
+        rect.y = (rand() % (viewport.h * 2) - viewport.h) - (rect.h / 2);
         SDL_RenderFillRect(renderer, &rect);
     }
 }
 
-void
-loop()
+void loop()
 {
     Uint32 now;
     int i;
@@ -212,16 +208,14 @@ loop()
     if (SDL_TICKS_PASSED(now, next_fps_check)) {
         /* Print out some timing information */
         const Uint32 then = next_fps_check - fps_check_delay;
-        const double fps = ((double) frames * 1000) / (now - then);
+        const double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }
-
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
 
@@ -270,12 +264,13 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            static const char *options[] = { 
-                "[--blend none|blend|add|mod]", 
+            static const char *options[] = {
+                "[--blend none|blend|add|mod]",
                 "[--cyclecolor]",
                 "[--cyclealpha]",
                 "[num_objects]",
-                NULL };
+                NULL
+            };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
@@ -307,7 +302,6 @@ main(int argc, char *argv[])
         loop();
     }
 #endif
-
 
     SDLTest_CommonQuit(state);
 

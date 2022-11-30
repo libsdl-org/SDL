@@ -18,16 +18,16 @@
 static int total_channels;
 static int active_channel;
 
-#define SAMPLE_RATE_HZ 48000
-#define QUICK_TEST_TIME_MSEC 100
+#define SAMPLE_RATE_HZ        48000
+#define QUICK_TEST_TIME_MSEC  100
 #define CHANNEL_TEST_TIME_SEC 5
-#define MAX_AMPLITUDE SDL_MAX_SINT16
+#define MAX_AMPLITUDE         SDL_MAX_SINT16
 
-#define SINE_FREQ_HZ 500
+#define SINE_FREQ_HZ     500
 #define LFE_SINE_FREQ_HZ 50
 
 /* The channel layout is defined in SDL_audio.h */
-const char*
+const char *
 get_channel_name(int channel_index, int channel_count)
 {
     switch (channel_index) {
@@ -92,9 +92,9 @@ is_lfe_channel(int channel_index, int channel_count)
 }
 
 void SDLCALL
-fill_buffer(void* unused, Uint8* stream, int len)
+fill_buffer(void *unused, Uint8 *stream, int len)
 {
-    Sint16* buffer = (Sint16*)stream;
+    Sint16 *buffer = (Sint16 *)stream;
     int samples = len / sizeof(Sint16);
     static int total_samples = 0;
     int i;
@@ -132,8 +132,7 @@ fill_buffer(void* unused, Uint8* stream, int len)
     }
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
 

@@ -33,12 +33,15 @@ quit(int rc)
 static const char *
 getprioritystr(SDL_ThreadPriority priority)
 {
-    switch(priority)
-    {
-    case SDL_THREAD_PRIORITY_LOW: return "SDL_THREAD_PRIORITY_LOW";
-    case SDL_THREAD_PRIORITY_NORMAL: return "SDL_THREAD_PRIORITY_NORMAL";
-    case SDL_THREAD_PRIORITY_HIGH: return "SDL_THREAD_PRIORITY_HIGH";
-    case SDL_THREAD_PRIORITY_TIME_CRITICAL: return "SDL_THREAD_PRIORITY_TIME_CRITICAL";
+    switch (priority) {
+    case SDL_THREAD_PRIORITY_LOW:
+        return "SDL_THREAD_PRIORITY_LOW";
+    case SDL_THREAD_PRIORITY_NORMAL:
+        return "SDL_THREAD_PRIORITY_NORMAL";
+    case SDL_THREAD_PRIORITY_HIGH:
+        return "SDL_THREAD_PRIORITY_HIGH";
+    case SDL_THREAD_PRIORITY_TIME_CRITICAL:
+        return "SDL_THREAD_PRIORITY_TIME_CRITICAL";
     }
 
     return "???";
@@ -51,9 +54,9 @@ ThreadFunc(void *data)
 
     SDL_TLSSet(tls, "baby thread", NULL);
     SDL_Log("Started thread %s: My thread id is %lu, thread data = %s\n",
-           (char *) data, SDL_ThreadID(), (const char *)SDL_TLSGet(tls));
+            (char *)data, SDL_ThreadID(), (const char *)SDL_TLSGet(tls));
     while (alive) {
-        SDL_Log("Thread '%s' is alive!\n", (char *) data);
+        SDL_Log("Thread '%s' is alive!\n", (char *)data);
 
         if (testprio) {
             SDL_Log("SDL_SetThreadPriority(%s):%d\n", getprioritystr(prio), SDL_SetThreadPriority(prio));
@@ -64,7 +67,7 @@ ThreadFunc(void *data)
 
         SDL_Delay(1 * 1000);
     }
-    SDL_Log("Thread '%s' exiting!\n", (char *) data);
+    SDL_Log("Thread '%s' exiting!\n", (char *)data);
     return 0;
 }
 
@@ -77,8 +80,7 @@ killed(int sig)
     quit(0);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int arg = 1;
     SDL_Thread *thread;
@@ -132,6 +134,6 @@ main(int argc, char *argv[])
     }
     raise(SIGTERM);
 
-    SDL_Quit();                 /* Never reached */
-    return 0;                 /* Never reached */
+    SDL_Quit(); /* Never reached */
+    return 0;   /* Never reached */
 }

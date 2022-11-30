@@ -40,11 +40,11 @@
 #include "samplerate.h"
 extern SDL_bool SRC_available;
 extern int SRC_converter;
-extern SRC_STATE* (*SRC_src_new)(int converter_type, int channels, int *error);
+extern SRC_STATE *(*SRC_src_new)(int converter_type, int channels, int *error);
 extern int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data);
 extern int (*SRC_src_reset)(SRC_STATE *state);
-extern SRC_STATE* (*SRC_src_delete)(SRC_STATE *state);
-extern const char* (*SRC_src_strerror)(int error);
+extern SRC_STATE *(*SRC_src_delete)(SRC_STATE *state);
+extern const char *(*SRC_src_strerror)(int error);
 extern int (*SRC_src_simple)(SRC_DATA *data, int converter_type, int channels);
 #endif
 
@@ -54,7 +54,7 @@ extern SDL_AudioFormat SDL_NextAudioFormat(void);
 
 /* Function to calculate the size and silence for a SDL_AudioSpec */
 extern Uint8 SDL_SilenceValueForFormat(const SDL_AudioFormat format);
-extern void SDL_CalculateAudioSpec(SDL_AudioSpec * spec);
+extern void SDL_CalculateAudioSpec(SDL_AudioSpec *spec);
 
 /* Choose the audio filter functions below */
 extern void SDL_ChooseAudioConverters(void);

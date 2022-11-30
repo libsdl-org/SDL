@@ -28,24 +28,24 @@ SDL_Rect rect;
 SDL_Event event;
 
 static void
-DrawRects(SDL_Renderer * renderer)
+DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &rect);
 }
 
 static void
-loop() {
+loop()
+{
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
-        switch(event.type) {
+        switch (event.type) {
         case SDL_MOUSEMOTION:
-            {
-                rect.x += event.motion.xrel;
-                rect.y += event.motion.yrel;
-            }
-            break;
+        {
+            rect.x += event.motion.xrel;
+            rect.y += event.motion.yrel;
+        } break;
         }
     }
     for (i = 0; i < state->num_windows; ++i) {
@@ -83,8 +83,7 @@ loop() {
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 
     /* Enable standard application logging */
@@ -126,7 +125,7 @@ main(int argc, char *argv[])
 #else
     while (!done) {
         loop();
-        }
+    }
 #endif
     SDLTest_CommonQuit(state);
     return 0;

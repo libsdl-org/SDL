@@ -40,8 +40,7 @@ SDL_FORCE_INLINE int GetDestOffset(int x, int y, int dest_width);
 SDL_FORCE_INLINE int GetSourceOffset(int x, int y, int source_width);
 SDL_FORCE_INLINE void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
 
-int
-SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+int SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 {
     SDL_Surface *framebuffer;
 
@@ -62,7 +61,7 @@ SDL_N3DS_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void
 SDL_FORCE_INLINE void
 FreePreviousWindowFramebuffer(SDL_Window *window)
 {
-    SDL_Surface *surface = (SDL_Surface *) SDL_GetWindowData(window, N3DS_SURFACE);
+    SDL_Surface *surface = (SDL_Surface *)SDL_GetWindowData(window, N3DS_SURFACE);
     SDL_FreeSurface(surface);
 }
 
@@ -76,26 +75,25 @@ CreateNewWindowFramebuffer(SDL_Window *window)
     return SDL_CreateRGBSurface(0, w, h, bpp, Rmask, Gmask, Bmask, Amask);
 }
 
-int
-SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
+int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *drv_data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *drv_data = (SDL_WindowData *)window->driverdata;
     SDL_Surface *surface;
     u16 width, height;
     u32 *framebuffer;
     u32 bufsize;
 
-    surface = (SDL_Surface *) SDL_GetWindowData(window, N3DS_SURFACE);
+    surface = (SDL_Surface *)SDL_GetWindowData(window, N3DS_SURFACE);
     if (surface == NULL) {
         return SDL_SetError("%s: Unable to get the window surface.", __func__);
     }
 
     /* Get the N3DS internal framebuffer and its size */
-    framebuffer = (u32 *) gfxGetFramebuffer(drv_data->screen, GFX_LEFT, &width, &height);
+    framebuffer = (u32 *)gfxGetFramebuffer(drv_data->screen, GFX_LEFT, &width, &height);
     bufsize = width * height * 4;
 
-    CopyFramebuffertoN3DS(framebuffer, (Dimensions) { width, height },
-                          surface->pixels, (Dimensions) { surface->w, surface->h });
+    CopyFramebuffertoN3DS(framebuffer, (Dimensions){ width, height },
+                          surface->pixels, (Dimensions){ surface->w, surface->h });
     FlushN3DSBuffer(framebuffer, bufsize, drv_data->screen);
 
     return 0;
@@ -135,11 +133,10 @@ FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen)
     gfxScreenSwapBuffers(screen, false);
 }
 
-void
-SDL_N3DS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
+void SDL_N3DS_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 {
     SDL_Surface *surface;
-    surface = (SDL_Surface *) SDL_SetWindowData(window, N3DS_SURFACE, NULL);
+    surface = (SDL_Surface *)SDL_SetWindowData(window, N3DS_SURFACE, NULL);
     SDL_FreeSurface(surface);
 }
 

@@ -31,15 +31,14 @@
 
 /* The first (low-resolution) ticks value of the application */
 static DWORD start = 0;
-static BOOL ticks_started = FALSE; 
+static BOOL ticks_started = FALSE;
 
 /* The first high-resolution ticks value of the application */
 static LARGE_INTEGER start_ticks;
 /* The number of ticks per second of the high-resolution performance counter */
 static LARGE_INTEGER ticks_per_second;
 
-static void
-SDL_SetSystemTimerResolution(const UINT uPeriod)
+static void SDL_SetSystemTimerResolution(const UINT uPeriod)
 {
 #if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     static UINT timer_period = 0;
@@ -58,8 +57,7 @@ SDL_SetSystemTimerResolution(const UINT uPeriod)
 #endif
 }
 
-static void SDLCALL
-SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     UINT uPeriod;
 
@@ -74,8 +72,7 @@ SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValu
     }
 }
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     BOOL rc;
 
@@ -94,17 +91,16 @@ SDL_TicksInit(void)
        so we'll rely on it here.
      */
     rc = QueryPerformanceFrequency(&ticks_per_second);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
     QueryPerformanceCounter(&start_ticks);
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
                         SDL_TimerResolutionChanged, NULL);
 
-    SDL_SetSystemTimerResolution(0);  /* always release our timer resolution request. */
+    SDL_SetSystemTimerResolution(0); /* always release our timer resolution request. */
 
     start = 0;
     ticks_started = SDL_FALSE;
@@ -121,8 +117,8 @@ SDL_GetTicks64(void)
     }
 
     rc = QueryPerformanceCounter(&now);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
-    return (Uint64) (((now.QuadPart - start_ticks.QuadPart) * 1000) / ticks_per_second.QuadPart);
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    return (Uint64)(((now.QuadPart - start_ticks.QuadPart) * 1000) / ticks_per_second.QuadPart);
 }
 
 Uint64
@@ -130,8 +126,8 @@ SDL_GetPerformanceCounter(void)
 {
     LARGE_INTEGER counter;
     const BOOL rc = QueryPerformanceCounter(&counter);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
-    return (Uint64) counter.QuadPart;
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    return (Uint64)counter.QuadPart;
 }
 
 Uint64
@@ -139,12 +135,11 @@ SDL_GetPerformanceFrequency(void)
 {
     LARGE_INTEGER frequency;
     const BOOL rc = QueryPerformanceFrequency(&frequency);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
-    return (Uint64) frequency.QuadPart;
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    return (Uint64)frequency.QuadPart;
 }
 
-void
-SDL_Delay(Uint32 ms)
+void SDL_Delay(Uint32 ms)
 {
     /* Sleep() is not publicly available to apps in early versions of WinRT.
      *

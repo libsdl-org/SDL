@@ -31,7 +31,6 @@
 
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 
-
 /* Direct3D 12 shaders
 
    SDL's shaders are compiled into SDL itself, to simplify distribution.
@@ -51,7 +50,7 @@
      Shader types:
      - ps_6_0: Pixel shader
      - vs_6_0: Vertex shader
-   
+
 
    Shader object code was converted to unsigned chars via the following
    *nix style command (available separately from Windows + MSVC):
@@ -1729,7 +1728,7 @@ static unsigned char D3D12_PixelShader_YUV_BT601[] = {
         float2 tex : TEXCOORD0;
         float4 color : COLOR0;
     };
-    
+
     #define YUVRS \
         "RootFlags ( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |" \
         "            DENY_DOMAIN_SHADER_ROOT_ACCESS |" \
@@ -6770,7 +6769,7 @@ static unsigned char D3D12_VertexShader_NV[] = {
 /* Root signature blobs extracted from Vertex Shader
    dxc command line is:
    dxc -E <RS> -T rootsig_1_1 -rootsig-define <RS> -Fo <OUTFILE> D3D12_VertexShader.hlsl
-    
+
     Variables:
      - <RS>: the root signature define
      - <OUTFILE>: the output file name.
@@ -6858,78 +6857,57 @@ static struct
 {
     const void *ps_shader_data;
     SIZE_T ps_shader_size;
-    const void* vs_shader_data;
+    const void *vs_shader_data;
     SIZE_T vs_shader_size;
     D3D12_RootSignature root_sig;
 } D3D12_shaders[NUM_SHADERS] = {
-    {
-        D3D12_PixelShader_Colors, sizeof(D3D12_PixelShader_Colors), 
-        D3D12_VertexShader_Colors, sizeof(D3D12_VertexShader_Colors),
-        ROOTSIG_COLOR
-    },
-    {
-        D3D12_PixelShader_Textures, sizeof(D3D12_PixelShader_Textures),
-        D3D12_VertexShader_Textures, sizeof(D3D12_VertexShader_Textures),
-        ROOTSIG_TEXTURE
-    },
+    { D3D12_PixelShader_Colors, sizeof(D3D12_PixelShader_Colors),
+      D3D12_VertexShader_Colors, sizeof(D3D12_VertexShader_Colors),
+      ROOTSIG_COLOR },
+    { D3D12_PixelShader_Textures, sizeof(D3D12_PixelShader_Textures),
+      D3D12_VertexShader_Textures, sizeof(D3D12_VertexShader_Textures),
+      ROOTSIG_TEXTURE },
 #if SDL_HAVE_YUV
-    { 
-        D3D12_PixelShader_YUV_JPEG, sizeof(D3D12_PixelShader_YUV_JPEG),
-        D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
-        ROOTSIG_YUV
-    },
-    {
-        D3D12_PixelShader_YUV_BT601, sizeof(D3D12_PixelShader_YUV_BT601),
-        D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
-        ROOTSIG_YUV
-    },
-    {
-        D3D12_PixelShader_YUV_BT709, sizeof(D3D12_PixelShader_YUV_BT709),
-        D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
-        ROOTSIG_YUV
-    },
-    {
-        D3D12_PixelShader_NV12_JPEG, sizeof(D3D12_PixelShader_NV12_JPEG),
-        D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-        ROOTSIG_NV
-    },
-    {
-        D3D12_PixelShader_NV12_BT601, sizeof(D3D12_PixelShader_NV12_BT601),
-        D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-        ROOTSIG_NV
-    },
-    {
-        D3D12_PixelShader_NV12_BT709, sizeof(D3D12_PixelShader_NV12_BT709),
-        D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-        ROOTSIG_NV
-    },
-    {
-        D3D12_PixelShader_NV21_JPEG, sizeof(D3D12_PixelShader_NV21_JPEG),
-        D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-        ROOTSIG_NV
-    },
-    {
-        D3D12_PixelShader_NV21_BT601, sizeof(D3D12_PixelShader_NV21_BT601),
-        D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-        ROOTSIG_NV
-    },
-    {
-        D3D12_PixelShader_NV21_BT709, sizeof(D3D12_PixelShader_NV21_BT709),
-        D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
-        ROOTSIG_NV
-    },
+    { D3D12_PixelShader_YUV_JPEG, sizeof(D3D12_PixelShader_YUV_JPEG),
+      D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
+      ROOTSIG_YUV },
+    { D3D12_PixelShader_YUV_BT601, sizeof(D3D12_PixelShader_YUV_BT601),
+      D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
+      ROOTSIG_YUV },
+    { D3D12_PixelShader_YUV_BT709, sizeof(D3D12_PixelShader_YUV_BT709),
+      D3D12_VertexShader_YUV, sizeof(D3D12_VertexShader_YUV),
+      ROOTSIG_YUV },
+    { D3D12_PixelShader_NV12_JPEG, sizeof(D3D12_PixelShader_NV12_JPEG),
+      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
+      ROOTSIG_NV },
+    { D3D12_PixelShader_NV12_BT601, sizeof(D3D12_PixelShader_NV12_BT601),
+      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
+      ROOTSIG_NV },
+    { D3D12_PixelShader_NV12_BT709, sizeof(D3D12_PixelShader_NV12_BT709),
+      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
+      ROOTSIG_NV },
+    { D3D12_PixelShader_NV21_JPEG, sizeof(D3D12_PixelShader_NV21_JPEG),
+      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
+      ROOTSIG_NV },
+    { D3D12_PixelShader_NV21_BT601, sizeof(D3D12_PixelShader_NV21_BT601),
+      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
+      ROOTSIG_NV },
+    { D3D12_PixelShader_NV21_BT709, sizeof(D3D12_PixelShader_NV21_BT709),
+      D3D12_VertexShader_NV, sizeof(D3D12_VertexShader_NV),
+      ROOTSIG_NV },
 #endif
 };
 
-static struct {
-    const void* rs_shader_data;
+static struct
+{
+    const void *rs_shader_data;
     SIZE_T rs_shader_size;
 } D3D12_rootsigs[NUM_ROOTSIGS] = {
-    {D3D12_RootSig_Color, sizeof(D3D12_RootSig_Color)},
-    {D3D12_RootSig_Texture, sizeof(D3D12_RootSig_Texture)},
+    { D3D12_RootSig_Color, sizeof(D3D12_RootSig_Color) },
+    { D3D12_RootSig_Texture, sizeof(D3D12_RootSig_Texture) },
 #if SDL_HAVE_YUV
-    {D3D12_RootSig_YUV, sizeof(D3D12_RootSig_YUV)},
-    {D3D12_RootSig_NV, sizeof(D3D12_RootSig_NV)},
+    { D3D12_RootSig_YUV, sizeof(D3D12_RootSig_YUV) },
+    { D3D12_RootSig_NV, sizeof(D3D12_RootSig_NV) },
 #endif
 };
 

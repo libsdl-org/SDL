@@ -72,11 +72,12 @@ TestVirtualJoystick(void *arg)
 /* ================= Test References ================== */
 
 /* Joystick routine test cases */
-static const SDLTest_TestCaseReference joystickTest1 =
-        { (SDLTest_TestCaseFp)TestVirtualJoystick, "TestVirtualJoystick", "Test virtual joystick functionality", TEST_ENABLED };
+static const SDLTest_TestCaseReference joystickTest1 = {
+    (SDLTest_TestCaseFp)TestVirtualJoystick, "TestVirtualJoystick", "Test virtual joystick functionality", TEST_ENABLED
+};
 
 /* Sequence of Joystick routine test cases */
-static const SDLTest_TestCaseReference *joystickTests[] =  {
+static const SDLTest_TestCaseReference *joystickTests[] = {
     &joystickTest1,
     NULL
 };

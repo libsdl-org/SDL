@@ -26,9 +26,7 @@
 #include "SDL_events_c.h"
 #include "SDL_clipboardevents_c.h"
 
-
-int
-SDL_SendClipboardUpdate(void)
+int SDL_SendClipboardUpdate(void)
 {
     int posted;
 

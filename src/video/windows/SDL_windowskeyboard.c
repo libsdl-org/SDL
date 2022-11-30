@@ -37,25 +37,24 @@ static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
 static void IME_ClearComposition(SDL_VideoData *videodata);
-static SDL_bool IME_IsTextInputShown(SDL_VideoData* videodata);
+static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
 #ifndef MAPVK_VK_TO_VSC
-#define MAPVK_VK_TO_VSC     0
+#define MAPVK_VK_TO_VSC 0
 #endif
 #ifndef MAPVK_VSC_TO_VK
-#define MAPVK_VSC_TO_VK     1
+#define MAPVK_VSC_TO_VK 1
 #endif
 #ifndef MAPVK_VK_TO_CHAR
-#define MAPVK_VK_TO_CHAR    2
+#define MAPVK_VK_TO_CHAR 2
 #endif
 
 /* Alphabetic scancodes for PC keyboards */
-void
-WIN_InitKeyboard(_THIS)
+void WIN_InitKeyboard(_THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     data->ime_com_initialized = SDL_FALSE;
     data->ime_threadmgr = 0;
@@ -66,7 +65,7 @@ WIN_InitKeyboard(_THIS)
     data->ime_hwnd_current = 0;
     data->ime_himc = 0;
     data->ime_composition_length = 32 * sizeof(WCHAR);
-    data->ime_composition = (WCHAR*)SDL_malloc(data->ime_composition_length + sizeof(WCHAR));
+    data->ime_composition = (WCHAR *)SDL_malloc(data->ime_composition_length + sizeof(WCHAR));
     data->ime_composition[0] = 0;
     data->ime_readingstring[0] = 0;
     data->ime_cursor = 0;
@@ -116,8 +115,7 @@ WIN_InitKeyboard(_THIS)
     SDL_ToggleModState(KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) != 0);
 }
 
-void
-WIN_UpdateKeymap(SDL_bool send_event)
+void WIN_UpdateKeymap(SDL_bool send_event)
 {
     int i;
     SDL_Scancode scancode;
@@ -129,7 +127,7 @@ WIN_UpdateKeymap(SDL_bool send_event)
         int vk;
         /* Make sure this scancode is a valid character scancode */
         scancode = windows_scancode_table[i];
-        if (scancode == SDL_SCANCODE_UNKNOWN ) {
+        if (scancode == SDL_SCANCODE_UNKNOWN) {
             continue;
         }
 
@@ -137,16 +135,16 @@ WIN_UpdateKeymap(SDL_bool send_event)
         /* Not mapping numbers fixes the French layout, giving numeric keycodes for the number keys, which is the expected behavior */
         if ((keymap[scancode] & SDLK_SCANCODE_MASK) ||
             /*  scancode == SDL_SCANCODE_GRAVE || */ /* Uncomment this line to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-            (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0) ) {
+            (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
             continue;
         }
 
-        vk =  MapVirtualKey(i, MAPVK_VSC_TO_VK);
-        if ( vk ) {
-            int ch = (MapVirtualKey( vk, MAPVK_VK_TO_CHAR ) & 0x7FFF);
-            if ( ch ) {
-                if ( ch >= 'A' && ch <= 'Z' ) {
-                    keymap[scancode] =  SDLK_a + ( ch - 'A' );
+        vk = MapVirtualKey(i, MAPVK_VSC_TO_VK);
+        if (vk) {
+            int ch = (MapVirtualKey(vk, MAPVK_VK_TO_CHAR) & 0x7FFF);
+            if (ch) {
+                if (ch >= 'A' && ch <= 'Z') {
+                    keymap[scancode] = SDLK_a + (ch - 'A');
                 } else {
                     keymap[scancode] = ch;
                 }
@@ -157,10 +155,9 @@ WIN_UpdateKeymap(SDL_bool send_event)
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
-void
-WIN_QuitKeyboard(_THIS)
+void WIN_QuitKeyboard(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     IME_Quit(data);
@@ -172,11 +169,10 @@ WIN_QuitKeyboard(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void
-WIN_ResetDeadKeys()
+void WIN_ResetDeadKeys()
 {
     /*
-    if a deadkey has been typed, but not the next character (which the deadkey might modify), 
+    if a deadkey has been typed, but not the next character (which the deadkey might modify),
     this tries to undo the effect pressing the deadkey.
     see: http://archives.miloush.net/michkap/archive/2006/09/10/748775.html
     */
@@ -202,8 +198,7 @@ WIN_ResetDeadKeys()
     }
 }
 
-void
-WIN_StartTextInput(_THIS)
+void WIN_StartTextInput(_THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -214,7 +209,7 @@ WIN_StartTextInput(_THIS)
 #ifndef SDL_DISABLE_WINDOWS_IME
     window = SDL_GetKeyboardFocus();
     if (window) {
-        HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+        HWND hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
         SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
         SDL_GetWindowSize(window, &videodata->ime_winwidth, &videodata->ime_winheight);
         IME_Init(videodata, hwnd);
@@ -223,8 +218,7 @@ WIN_StartTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void
-WIN_StopTextInput(_THIS)
+void WIN_StopTextInput(_THIS)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_Window *window;
@@ -235,7 +229,7 @@ WIN_StopTextInput(_THIS)
 #ifndef SDL_DISABLE_WINDOWS_IME
     window = SDL_GetKeyboardFocus();
     if (window) {
-        HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+        HWND hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
         SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
         IME_Init(videodata, hwnd);
         IME_Disable(videodata, hwnd);
@@ -243,8 +237,7 @@ WIN_StopTextInput(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void
-WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
+void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     HIMC himc = 0;
@@ -286,7 +279,6 @@ WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-
 #ifdef SDL_DISABLE_WINDOWS_IME
 
 void WIN_ClearComposition(_THIS)
@@ -317,58 +309,58 @@ void IME_Present(SDL_VideoData *videodata)
 #endif
 #ifdef USE_INIT_GUID
 #undef DEFINE_GUID
-#define DEFINE_GUID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const GUID n = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
-DEFINE_GUID(IID_ITfInputProcessorProfileActivationSink,        0x71C6E74E,0x0F28,0x11D8,0xA8,0x2A,0x00,0x06,0x5B,0x84,0x43,0x5C);
-DEFINE_GUID(IID_ITfUIElementSink,                              0xEA1EA136,0x19DF,0x11D7,0xA6,0xD2,0x00,0x06,0x5B,0x84,0x43,0x5C);
-DEFINE_GUID(GUID_TFCAT_TIP_KEYBOARD,                           0x34745C63,0xB2F0,0x4784,0x8B,0x67,0x5E,0x12,0xC8,0x70,0x1A,0x31);
-DEFINE_GUID(IID_ITfSource,                                     0x4EA48A35,0x60AE,0x446F,0x8F,0xD6,0xE6,0xA8,0xD8,0x24,0x59,0xF7);
-DEFINE_GUID(IID_ITfUIElementMgr,                               0xEA1EA135,0x19DF,0x11D7,0xA6,0xD2,0x00,0x06,0x5B,0x84,0x43,0x5C);
-DEFINE_GUID(IID_ITfCandidateListUIElement,                     0xEA1EA138,0x19DF,0x11D7,0xA6,0xD2,0x00,0x06,0x5B,0x84,0x43,0x5C);
-DEFINE_GUID(IID_ITfReadingInformationUIElement,                0xEA1EA139,0x19DF,0x11D7,0xA6,0xD2,0x00,0x06,0x5B,0x84,0x43,0x5C);
-DEFINE_GUID(IID_ITfThreadMgr,                                  0xAA80E801,0x2021,0x11D2,0x93,0xE0,0x00,0x60,0xB0,0x67,0xB8,0x6E);
-DEFINE_GUID(CLSID_TF_ThreadMgr,                                0x529A9E6B,0x6587,0x4F23,0xAB,0x9E,0x9C,0x7D,0x68,0x3E,0x3C,0x50);
-DEFINE_GUID(IID_ITfThreadMgrEx,                                0x3E90ADE3,0x7594,0x4CB0,0xBB,0x58,0x69,0x62,0x8F,0x5F,0x45,0x8C);
+#define DEFINE_GUID(n, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) static const GUID n = { l, w1, w2, { b1, b2, b3, b4, b5, b6, b7, b8 } }
+DEFINE_GUID(IID_ITfInputProcessorProfileActivationSink, 0x71C6E74E, 0x0F28, 0x11D8, 0xA8, 0x2A, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
+DEFINE_GUID(IID_ITfUIElementSink, 0xEA1EA136, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
+DEFINE_GUID(GUID_TFCAT_TIP_KEYBOARD, 0x34745C63, 0xB2F0, 0x4784, 0x8B, 0x67, 0x5E, 0x12, 0xC8, 0x70, 0x1A, 0x31);
+DEFINE_GUID(IID_ITfSource, 0x4EA48A35, 0x60AE, 0x446F, 0x8F, 0xD6, 0xE6, 0xA8, 0xD8, 0x24, 0x59, 0xF7);
+DEFINE_GUID(IID_ITfUIElementMgr, 0xEA1EA135, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
+DEFINE_GUID(IID_ITfCandidateListUIElement, 0xEA1EA138, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
+DEFINE_GUID(IID_ITfReadingInformationUIElement, 0xEA1EA139, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
+DEFINE_GUID(IID_ITfThreadMgr, 0xAA80E801, 0x2021, 0x11D2, 0x93, 0xE0, 0x00, 0x60, 0xB0, 0x67, 0xB8, 0x6E);
+DEFINE_GUID(CLSID_TF_ThreadMgr, 0x529A9E6B, 0x6587, 0x4F23, 0xAB, 0x9E, 0x9C, 0x7D, 0x68, 0x3E, 0x3C, 0x50);
+DEFINE_GUID(IID_ITfThreadMgrEx, 0x3E90ADE3, 0x7594, 0x4CB0, 0xBB, 0x58, 0x69, 0x62, 0x8F, 0x5F, 0x45, 0x8C);
 #endif
 
 #define LANG_CHT MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL)
 #define LANG_CHS MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)
 
-#define MAKEIMEVERSION(major,minor) ((DWORD) (((BYTE)(major) << 24) | ((BYTE)(minor) << 16) ))
-#define IMEID_VER(id) ((id) & 0xffff0000)
-#define IMEID_LANG(id) ((id) & 0x0000ffff)
+#define MAKEIMEVERSION(major, minor) ((DWORD)(((BYTE)(major) << 24) | ((BYTE)(minor) << 16)))
+#define IMEID_VER(id)                ((id)&0xffff0000)
+#define IMEID_LANG(id)               ((id)&0x0000ffff)
 
-#define CHT_HKL_DAYI            ((HKL)(UINT_PTR)0xE0060404)
-#define CHT_HKL_NEW_PHONETIC    ((HKL)(UINT_PTR)0xE0080404)
-#define CHT_HKL_NEW_CHANG_JIE   ((HKL)(UINT_PTR)0xE0090404)
-#define CHT_HKL_NEW_QUICK       ((HKL)(UINT_PTR)0xE00A0404)
-#define CHT_HKL_HK_CANTONESE    ((HKL)(UINT_PTR)0xE00B0404)
-#define CHT_IMEFILENAME1        "TINTLGNT.IME"
-#define CHT_IMEFILENAME2        "CINTLGNT.IME"
-#define CHT_IMEFILENAME3        "MSTCIPHA.IME"
-#define IMEID_CHT_VER42         (LANG_CHT | MAKEIMEVERSION(4, 2))
-#define IMEID_CHT_VER43         (LANG_CHT | MAKEIMEVERSION(4, 3))
-#define IMEID_CHT_VER44         (LANG_CHT | MAKEIMEVERSION(4, 4))
-#define IMEID_CHT_VER50         (LANG_CHT | MAKEIMEVERSION(5, 0))
-#define IMEID_CHT_VER51         (LANG_CHT | MAKEIMEVERSION(5, 1))
-#define IMEID_CHT_VER52         (LANG_CHT | MAKEIMEVERSION(5, 2))
-#define IMEID_CHT_VER60         (LANG_CHT | MAKEIMEVERSION(6, 0))
-#define IMEID_CHT_VER_VISTA     (LANG_CHT | MAKEIMEVERSION(7, 0))
+#define CHT_HKL_DAYI          ((HKL)(UINT_PTR)0xE0060404)
+#define CHT_HKL_NEW_PHONETIC  ((HKL)(UINT_PTR)0xE0080404)
+#define CHT_HKL_NEW_CHANG_JIE ((HKL)(UINT_PTR)0xE0090404)
+#define CHT_HKL_NEW_QUICK     ((HKL)(UINT_PTR)0xE00A0404)
+#define CHT_HKL_HK_CANTONESE  ((HKL)(UINT_PTR)0xE00B0404)
+#define CHT_IMEFILENAME1      "TINTLGNT.IME"
+#define CHT_IMEFILENAME2      "CINTLGNT.IME"
+#define CHT_IMEFILENAME3      "MSTCIPHA.IME"
+#define IMEID_CHT_VER42       (LANG_CHT | MAKEIMEVERSION(4, 2))
+#define IMEID_CHT_VER43       (LANG_CHT | MAKEIMEVERSION(4, 3))
+#define IMEID_CHT_VER44       (LANG_CHT | MAKEIMEVERSION(4, 4))
+#define IMEID_CHT_VER50       (LANG_CHT | MAKEIMEVERSION(5, 0))
+#define IMEID_CHT_VER51       (LANG_CHT | MAKEIMEVERSION(5, 1))
+#define IMEID_CHT_VER52       (LANG_CHT | MAKEIMEVERSION(5, 2))
+#define IMEID_CHT_VER60       (LANG_CHT | MAKEIMEVERSION(6, 0))
+#define IMEID_CHT_VER_VISTA   (LANG_CHT | MAKEIMEVERSION(7, 0))
 
-#define CHS_HKL                 ((HKL)(UINT_PTR)0xE00E0804)
-#define CHS_IMEFILENAME1        "PINTLGNT.IME"
-#define CHS_IMEFILENAME2        "MSSCIPYA.IME"
-#define IMEID_CHS_VER41         (LANG_CHS | MAKEIMEVERSION(4, 1))
-#define IMEID_CHS_VER42         (LANG_CHS | MAKEIMEVERSION(4, 2))
-#define IMEID_CHS_VER53         (LANG_CHS | MAKEIMEVERSION(5, 3))
+#define CHS_HKL          ((HKL)(UINT_PTR)0xE00E0804)
+#define CHS_IMEFILENAME1 "PINTLGNT.IME"
+#define CHS_IMEFILENAME2 "MSSCIPYA.IME"
+#define IMEID_CHS_VER41  (LANG_CHS | MAKEIMEVERSION(4, 1))
+#define IMEID_CHS_VER42  (LANG_CHS | MAKEIMEVERSION(4, 2))
+#define IMEID_CHS_VER53  (LANG_CHS | MAKEIMEVERSION(5, 3))
 
-#define LANG() LOWORD((videodata->ime_hkl))
-#define PRIMLANG() ((WORD)PRIMARYLANGID(LANG()))
-#define SUBLANG() SUBLANGID(LANG())
+#define LANG()         LOWORD((videodata->ime_hkl))
+#define PRIMLANG()     ((WORD)PRIMARYLANGID(LANG()))
+#define SUBLANG()      SUBLANGID(LANG())
 
 static void IME_UpdateInputLocale(SDL_VideoData *videodata);
 static int IME_ShowCandidateList(SDL_VideoData *videodata);
 static void IME_ClearComposition(SDL_VideoData *videodata);
-static void IME_SetWindow(SDL_VideoData* videodata, HWND hwnd);
+static void IME_SetWindow(SDL_VideoData *videodata, HWND hwnd);
 static void IME_SetupAPI(SDL_VideoData *videodata);
 static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
@@ -379,14 +371,12 @@ static void UILess_ReleaseSinks(SDL_VideoData *videodata);
 static void UILess_EnableUIUpdates(SDL_VideoData *videodata);
 static void UILess_DisableUIUpdates(SDL_VideoData *videodata);
 
-static SDL_bool
-WIN_ShouldShowNativeUI()
+static SDL_bool WIN_ShouldShowNativeUI()
 {
     return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
 }
 
-static void
-IME_Init(SDL_VideoData *videodata, HWND hwnd)
+static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
 {
     HRESULT hResult = S_OK;
 
@@ -410,10 +400,12 @@ IME_Init(SDL_VideoData *videodata, HWND hwnd)
         SDL_ClearError();
         return;
     }
+    /* *INDENT-OFF* */ /* clang-format off */
     videodata->ImmLockIMC = (LPINPUTCONTEXT2 (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMC");
     videodata->ImmUnlockIMC = (BOOL (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmUnlockIMC");
     videodata->ImmLockIMCC = (LPVOID (WINAPI *)(HIMCC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMCC");
     videodata->ImmUnlockIMCC = (BOOL (WINAPI *)(HIMCC))SDL_LoadFunction(videodata->ime_himm32, "ImmUnlockIMCC");
+    /* *INDENT-ON* */ /* clang-format on */
 
     IME_SetWindow(videodata, hwnd);
     videodata->ime_himc = ImmGetContext(hwnd);
@@ -434,8 +426,7 @@ IME_Init(SDL_VideoData *videodata, HWND hwnd)
     IME_Disable(videodata, hwnd);
 }
 
-static void
-IME_Enable(SDL_VideoData *videodata, HWND hwnd)
+static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)
 {
     if (!videodata->ime_initialized || !videodata->ime_hwnd_current) {
         return;
@@ -454,8 +445,7 @@ IME_Enable(SDL_VideoData *videodata, HWND hwnd)
     UILess_EnableUIUpdates(videodata);
 }
 
-static void
-IME_Disable(SDL_VideoData *videodata, HWND hwnd)
+static void IME_Disable(SDL_VideoData *videodata, HWND hwnd)
 {
     if (!videodata->ime_initialized || !videodata->ime_hwnd_current) {
         return;
@@ -470,8 +460,7 @@ IME_Disable(SDL_VideoData *videodata, HWND hwnd)
     UILess_DisableUIUpdates(videodata);
 }
 
-static void
-IME_Quit(SDL_VideoData *videodata)
+static void IME_Quit(SDL_VideoData *videodata)
 {
     if (!videodata->ime_initialized) {
         return;
@@ -500,8 +489,7 @@ IME_Quit(SDL_VideoData *videodata)
     videodata->ime_initialized = SDL_FALSE;
 }
 
-static void
-IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
+static void IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
 {
     DWORD id = 0;
     HIMC himc = 0;
@@ -517,7 +505,7 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     }
 
     videodata->ime_readingstring[0] = 0;
-    
+
     id = IME_GetId(videodata, 0);
     if (!id) {
         return;
@@ -542,8 +530,7 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
         LPINPUTCONTEXT2 lpimc = videodata->ImmLockIMC(himc);
         LPBYTE p = 0;
         s = 0;
-        switch (id)
-        {
+        switch (id) {
         case IMEID_CHT_VER42:
         case IMEID_CHT_VER43:
         case IMEID_CHT_VER44:
@@ -552,7 +539,7 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
                 break;
             }
 
-            len = *(DWORD *)(p + 7*4 + 32*4);
+            len = *(DWORD *)(p + 7 * 4 + 32 * 4);
             s = (WCHAR *)(p + 56);
             break;
         case IMEID_CHT_VER51:
@@ -563,34 +550,33 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
                 break;
             }
 
-            p = *(LPBYTE *)((LPBYTE)p + 1*4 + 5*4);
+            p = *(LPBYTE *)((LPBYTE)p + 1 * 4 + 5 * 4);
             if (!p) {
                 break;
             }
 
-            len = *(DWORD *)(p + 1*4 + (16*2+2*4) + 5*4 + 16*2);
-            s = (WCHAR *)(p + 1*4 + (16*2+2*4) + 5*4);
+            len = *(DWORD *)(p + 1 * 4 + (16 * 2 + 2 * 4) + 5 * 4 + 16 * 2);
+            s = (WCHAR *)(p + 1 * 4 + (16 * 2 + 2 * 4) + 5 * 4);
             break;
         case IMEID_CHS_VER41:
-            {
-                int offset = (IME_GetId(videodata, 1) >= 0x00000002) ? 8 : 7;
-                p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + offset * 4);
-                if (!p) {
-                    break;
-                }
-
-                len = *(DWORD *)(p + 7*4 + 16*2*4);
-                s = (WCHAR *)(p + 6*4 + 16*2*1);
-            }
-            break;
-        case IMEID_CHS_VER42:
-            p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + 1*4 + 1*4 + 6*4);
+        {
+            int offset = (IME_GetId(videodata, 1) >= 0x00000002) ? 8 : 7;
+            p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + offset * 4);
             if (!p) {
                 break;
             }
 
-            len = *(DWORD *)(p + 1*4 + (16*2+2*4) + 5*4 + 16*2);
-            s = (WCHAR *)(p + 1*4 + (16*2+2*4) + 5*4);
+            len = *(DWORD *)(p + 7 * 4 + 16 * 2 * 4);
+            s = (WCHAR *)(p + 6 * 4 + 16 * 2 * 1);
+        } break;
+        case IMEID_CHS_VER42:
+            p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + 1 * 4 + 1 * 4 + 6 * 4);
+            if (!p) {
+                break;
+            }
+
+            len = *(DWORD *)(p + 1 * 4 + (16 * 2 + 2 * 4) + 5 * 4 + 16 * 2);
+            s = (WCHAR *)(p + 1 * 4 + (16 * 2 + 2 * 4) + 5 * 4);
             break;
         }
         if (s) {
@@ -605,8 +591,7 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     IME_SendEditingEvent(videodata);
 }
 
-static void
-IME_InputLangChanged(SDL_VideoData *videodata)
+static void IME_InputLangChanged(SDL_VideoData *videodata)
 {
     UINT lang = PRIMLANG();
     IME_UpdateInputLocale(videodata);
@@ -620,11 +605,10 @@ IME_InputLangChanged(SDL_VideoData *videodata)
     }
 }
 
-static DWORD
-IME_GetId(SDL_VideoData *videodata, UINT uIndex)
+static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex)
 {
     static HKL hklprev = 0;
-    static DWORD dwRet[2] = {0};
+    static DWORD dwRet[2] = { 0 };
     DWORD dwVerSize = 0;
     DWORD dwVerHandle = 0;
     LPVOID lpVerBuffer = 0;
@@ -648,11 +632,7 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
         dwRet[1] = 0;
         return dwRet[0];
     }
-    if (hkl != CHT_HKL_NEW_PHONETIC
-        && hkl != CHT_HKL_NEW_CHANG_JIE
-        && hkl != CHT_HKL_NEW_QUICK
-        && hkl != CHT_HKL_HK_CANTONESE
-        && hkl != CHS_HKL) {
+    if (hkl != CHT_HKL_NEW_PHONETIC && hkl != CHT_HKL_NEW_CHANG_JIE && hkl != CHT_HKL_NEW_QUICK && hkl != CHT_HKL_HK_CANTONESE && hkl != CHS_HKL) {
         dwRet[0] = dwRet[1] = 0;
         return dwRet[0];
     }
@@ -661,45 +641,38 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
         return dwRet[0];
     }
     if (!videodata->GetReadingString) {
-        #define LCID_INVARIANT MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT)
-        if (CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHT_IMEFILENAME1, -1) != 2
-            && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHT_IMEFILENAME2, -1) != 2
-            && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHT_IMEFILENAME3, -1) != 2
-            && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHS_IMEFILENAME1, -1) != 2
-            && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHS_IMEFILENAME2, -1) != 2) {
+#define LCID_INVARIANT MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT)
+        if (CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHT_IMEFILENAME1, -1) != 2 && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHT_IMEFILENAME2, -1) != 2 && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHT_IMEFILENAME3, -1) != 2 && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHS_IMEFILENAME1, -1) != 2 && CompareStringA(LCID_INVARIANT, NORM_IGNORECASE, szTemp, -1, CHS_IMEFILENAME2, -1) != 2) {
             dwRet[0] = dwRet[1] = 0;
             return dwRet[0];
         }
-        #undef LCID_INVARIANT
+#undef LCID_INVARIANT
         dwVerSize = GetFileVersionInfoSizeA(szTemp, &dwVerHandle);
         if (dwVerSize) {
             lpVerBuffer = SDL_malloc(dwVerSize);
             if (lpVerBuffer) {
                 if (GetFileVersionInfoA(szTemp, dwVerHandle, dwVerSize, lpVerBuffer)) {
                     if (VerQueryValueA(lpVerBuffer, "\\", &lpVerData, &cbVerData)) {
-                        #define pVerFixedInfo   ((VS_FIXEDFILEINFO FAR*)lpVerData)
+#define pVerFixedInfo ((VS_FIXEDFILEINFO FAR *)lpVerData)
                         DWORD dwVer = pVerFixedInfo->dwFileVersionMS;
                         dwVer = (dwVer & 0x00ff0000) << 8 | (dwVer & 0x000000ff) << 16;
                         if ((videodata->GetReadingString) ||
-                            ((dwLang == LANG_CHT) && (
-                            dwVer == MAKEIMEVERSION(4, 2) ||
-                            dwVer == MAKEIMEVERSION(4, 3) ||
-                            dwVer == MAKEIMEVERSION(4, 4) ||
-                            dwVer == MAKEIMEVERSION(5, 0) ||
-                            dwVer == MAKEIMEVERSION(5, 1) ||
-                            dwVer == MAKEIMEVERSION(5, 2) ||
-                            dwVer == MAKEIMEVERSION(6, 0)))
-                            ||
-                            ((dwLang == LANG_CHS) && (
-                            dwVer == MAKEIMEVERSION(4, 1) ||
-                            dwVer == MAKEIMEVERSION(4, 2) ||
-                            dwVer == MAKEIMEVERSION(5, 3)))) {
+                            ((dwLang == LANG_CHT) && (dwVer == MAKEIMEVERSION(4, 2) ||
+                                                      dwVer == MAKEIMEVERSION(4, 3) ||
+                                                      dwVer == MAKEIMEVERSION(4, 4) ||
+                                                      dwVer == MAKEIMEVERSION(5, 0) ||
+                                                      dwVer == MAKEIMEVERSION(5, 1) ||
+                                                      dwVer == MAKEIMEVERSION(5, 2) ||
+                                                      dwVer == MAKEIMEVERSION(6, 0))) ||
+                            ((dwLang == LANG_CHS) && (dwVer == MAKEIMEVERSION(4, 1) ||
+                                                      dwVer == MAKEIMEVERSION(4, 2) ||
+                                                      dwVer == MAKEIMEVERSION(5, 3)))) {
                             dwRet[0] = dwVer | dwLang;
                             dwRet[1] = pVerFixedInfo->dwFileVersionLS;
                             SDL_free(lpVerBuffer);
                             return dwRet[0];
                         }
-                        #undef pVerFixedInfo
+#undef pVerFixedInfo
                     }
                 }
             }
@@ -710,11 +683,10 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
     return dwRet[0];
 }
 
-static void
-IME_SetupAPI(SDL_VideoData *videodata)
+static void IME_SetupAPI(SDL_VideoData *videodata)
 {
     char ime_file[MAX_PATH + 1];
-    void* hime = 0;
+    void *hime = 0;
     HKL hkl = 0;
     videodata->GetReadingString = 0;
     videodata->ShowReadingWindow = 0;
@@ -732,10 +704,12 @@ IME_SetupAPI(SDL_VideoData *videodata)
         return;
     }
 
+    /* *INDENT-OFF* */ /* clang-format off */
     videodata->GetReadingString = (UINT (WINAPI *)(HIMC, UINT, LPWSTR, PINT, BOOL*, PUINT))
         SDL_LoadFunction(hime, "GetReadingString");
     videodata->ShowReadingWindow = (BOOL (WINAPI *)(HIMC, BOOL))
         SDL_LoadFunction(hime, "ShowReadingWindow");
+    /* *INDENT-ON* */ /* clang-format on */
 
     if (videodata->ShowReadingWindow) {
         HIMC himc = ImmGetContext(videodata->ime_hwnd_current);
@@ -746,8 +720,7 @@ IME_SetupAPI(SDL_VideoData *videodata)
     }
 }
 
-static void
-IME_SetWindow(SDL_VideoData* videodata, HWND hwnd)
+static void IME_SetWindow(SDL_VideoData *videodata, HWND hwnd)
 {
     videodata->ime_hwnd_current = hwnd;
     if (videodata->ime_threadmgr) {
@@ -760,8 +733,7 @@ IME_SetWindow(SDL_VideoData* videodata, HWND hwnd)
     }
 }
 
-static void
-IME_UpdateInputLocale(SDL_VideoData *videodata)
+static void IME_UpdateInputLocale(SDL_VideoData *videodata)
 {
     HKL hklnext = GetKeyboardLayout(0);
 
@@ -773,8 +745,7 @@ IME_UpdateInputLocale(SDL_VideoData *videodata)
     videodata->ime_candvertical = (PRIMLANG() == LANG_KOREAN || LANG() == LANG_CHS) ? SDL_FALSE : SDL_TRUE;
 }
 
-static void
-IME_ClearComposition(SDL_VideoData *videodata)
+static void IME_ClearComposition(SDL_VideoData *videodata)
 {
     HIMC himc = 0;
     if (!videodata->ime_initialized) {
@@ -796,8 +767,7 @@ IME_ClearComposition(SDL_VideoData *videodata)
     SDL_SendEditingText("", 0, 0);
 }
 
-static SDL_bool
-IME_IsTextInputShown(SDL_VideoData* videodata)
+static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata)
 {
     if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
         return SDL_FALSE;
@@ -806,8 +776,7 @@ IME_IsTextInputShown(SDL_VideoData* videodata)
     return videodata->ime_uicontext != 0 ? SDL_TRUE : SDL_FALSE;
 }
 
-static void
-IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
+static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 {
     LONG length;
     DWORD dwLang = ((DWORD_PTR)videodata->ime_hkl & 0xffff);
@@ -818,7 +787,7 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
             SDL_free(videodata->ime_composition);
         }
 
-        videodata->ime_composition = (WCHAR*)SDL_malloc(length + sizeof(WCHAR));
+        videodata->ime_composition = (WCHAR *)SDL_malloc(length + sizeof(WCHAR));
         videodata->ime_composition_length = length;
     }
 
@@ -826,8 +795,7 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
         himc,
         string,
         videodata->ime_composition,
-        videodata->ime_composition_length
-    );
+        videodata->ime_composition_length);
 
     if (length < 0) {
         length = 0;
@@ -858,7 +826,7 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 
         length = ImmGetCompositionStringW(himc, GCS_COMPATTR, NULL, 0);
         if (length > 0) {
-            Uint8* attributes = (Uint8*)SDL_malloc(length + sizeof(WCHAR));
+            Uint8 *attributes = (Uint8 *)SDL_malloc(length + sizeof(WCHAR));
             ImmGetCompositionString(himc, GCS_COMPATTR, attributes, length);
 
             for (start = 0; start < length; ++start) {
@@ -885,8 +853,7 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
     }
 }
 
-static void
-IME_SendInputEvent(SDL_VideoData *videodata)
+static void IME_SendInputEvent(SDL_VideoData *videodata)
 {
     char *s = 0;
     s = WIN_StringToUTF8W(videodata->ime_composition);
@@ -898,8 +865,7 @@ IME_SendInputEvent(SDL_VideoData *videodata)
     videodata->ime_cursor = 0;
 }
 
-static void
-IME_SendEditingEvent(SDL_VideoData *videodata)
+static void IME_SendEditingEvent(SDL_VideoData *videodata)
 {
     char *s = NULL;
     WCHAR *buffer = NULL;
@@ -908,14 +874,14 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
         size_t len = SDL_min(SDL_wcslen(videodata->ime_composition), (size_t)videodata->ime_cursor);
 
         size += sizeof(videodata->ime_readingstring);
-        buffer = (WCHAR*)SDL_malloc(size + sizeof(WCHAR));
+        buffer = (WCHAR *)SDL_malloc(size + sizeof(WCHAR));
         buffer[0] = 0;
 
         SDL_wcslcpy(buffer, videodata->ime_composition, len + 1);
         SDL_wcslcat(buffer, videodata->ime_readingstring, size);
         SDL_wcslcat(buffer, &videodata->ime_composition[len], size);
     } else {
-        buffer = (WCHAR*)SDL_malloc(size + sizeof(WCHAR));
+        buffer = (WCHAR *)SDL_malloc(size + sizeof(WCHAR));
         buffer[0] = 0;
         SDL_wcslcpy(buffer, videodata->ime_composition, size);
     }
@@ -926,8 +892,7 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
     SDL_free(buffer);
 }
 
-static void
-IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
+static void IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
 {
     LPWSTR dst = &videodata->ime_candidates[i * MAX_CANDLENGTH];
     LPWSTR end = &dst[MAX_CANDLENGTH - 1];
@@ -944,8 +909,7 @@ IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
     *dst = (WCHAR)'\0';
 }
 
-static void
-IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
+static void IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
 {
     HIMC himc;
     DWORD size;
@@ -996,9 +960,8 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
                     IME_AddCandidate(videodata, j, candidate);
                 }
                 // TODO: why was this necessary? check ime_candvertical instead? PRIMLANG() never equals LANG_CHT !
-                //if (PRIMLANG() == LANG_KOREAN || (PRIMLANG() == LANG_CHT && !IME_GetId(videodata, 0)))
+                // if (PRIMLANG() == LANG_KOREAN || (PRIMLANG() == LANG_CHT && !IME_GetId(videodata, 0)))
                 //    videodata->ime_candsel = -1;
-
             }
             SDL_free(cand_list);
         }
@@ -1006,8 +969,7 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
     ImmReleaseContext(hwnd, himc);
 }
 
-static int
-IME_ShowCandidateList(SDL_VideoData *videodata)
+static int IME_ShowCandidateList(SDL_VideoData *videodata)
 {
     void *candidates;
 
@@ -1030,8 +992,7 @@ IME_ShowCandidateList(SDL_VideoData *videodata)
     return 0;
 }
 
-static void
-IME_HideCandidateList(SDL_VideoData *videodata)
+static void IME_HideCandidateList(SDL_VideoData *videodata)
 {
     videodata->ime_dirty = SDL_FALSE;
     videodata->ime_candlist = SDL_FALSE;
@@ -1064,7 +1025,7 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
             *lParam = 0;
         }
         break;
-    case WM_IME_STARTCOMPOSITION: 
+    case WM_IME_STARTCOMPOSITION:
         videodata->ime_suppress_endcomposition_event = SDL_FALSE;
         trap = SDL_TRUE;
         break;
@@ -1119,33 +1080,31 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
             IME_HideCandidateList(videodata);
             break;
         case IMN_PRIVATE:
-            {
-                DWORD dwId = IME_GetId(videodata, 0);
-                IME_GetReadingString(videodata, hwnd);
-                switch (dwId)
-                {
-                case IMEID_CHT_VER42:
-                case IMEID_CHT_VER43:
-                case IMEID_CHT_VER44:
-                case IMEID_CHS_VER41:
-                case IMEID_CHS_VER42:
-                    if (*lParam == 1 || *lParam == 2) {
-                        trap = SDL_TRUE;
-                    }
-
-                    break;
-                case IMEID_CHT_VER50:
-                case IMEID_CHT_VER51:
-                case IMEID_CHT_VER52:
-                case IMEID_CHT_VER60:
-                case IMEID_CHS_VER53:
-                    if (*lParam == 16 || *lParam == 17 || *lParam == 26 || *lParam == 27 || *lParam == 28) {
-                        trap = SDL_TRUE;
-                    }
-                    break;
+        {
+            DWORD dwId = IME_GetId(videodata, 0);
+            IME_GetReadingString(videodata, hwnd);
+            switch (dwId) {
+            case IMEID_CHT_VER42:
+            case IMEID_CHT_VER43:
+            case IMEID_CHT_VER44:
+            case IMEID_CHS_VER41:
+            case IMEID_CHS_VER42:
+                if (*lParam == 1 || *lParam == 2) {
+                    trap = SDL_TRUE;
                 }
+
+                break;
+            case IMEID_CHT_VER50:
+            case IMEID_CHT_VER51:
+            case IMEID_CHT_VER52:
+            case IMEID_CHT_VER60:
+            case IMEID_CHS_VER53:
+                if (*lParam == 16 || *lParam == 17 || *lParam == 26 || *lParam == 27 || *lParam == 28) {
+                    trap = SDL_TRUE;
+                }
+                break;
             }
-            break;
+        } break;
         default:
             trap = SDL_TRUE;
             break;
@@ -1155,8 +1114,7 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
     return trap;
 }
 
-static void
-IME_CloseCandidateList(SDL_VideoData *videodata)
+static void IME_CloseCandidateList(SDL_VideoData *videodata)
 {
     IME_HideCandidateList(videodata);
     videodata->ime_candcount = 0;
@@ -1164,8 +1122,7 @@ IME_CloseCandidateList(SDL_VideoData *videodata)
     videodata->ime_candidates = NULL;
 }
 
-static void
-UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pcandlist)
+static void UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pcandlist)
 {
     UINT selection = 0;
     UINT count = 0;
@@ -1212,16 +1169,18 @@ UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pca
         }
     }
     // TODO: why was this necessary? check ime_candvertical instead?
-    //if (PRIMLANG() == LANG_KOREAN)
+    // if (PRIMLANG() == LANG_KOREAN)
     //    videodata->ime_candsel = -1;
 }
 
-STDMETHODIMP_(ULONG) TSFSink_AddRef(TSFSink *sink)
+STDMETHODIMP_(ULONG)
+TSFSink_AddRef(TSFSink *sink)
 {
     return ++sink->refcount;
 }
 
-STDMETHODIMP_(ULONG) TSFSink_Release(TSFSink *sink)
+STDMETHODIMP_(ULONG)
+TSFSink_Release(TSFSink *sink)
 {
     --sink->refcount;
     if (sink->refcount == 0) {
@@ -1390,8 +1349,7 @@ static void *vtIPPASink[] = {
     (void *)(IPPASink_OnActivated)
 };
 
-static void
-UILess_EnableUIUpdates(SDL_VideoData *videodata)
+static void UILess_EnableUIUpdates(SDL_VideoData *videodata)
 {
     ITfSource *source = 0;
     if (!videodata->ime_threadmgrex || videodata->ime_uielemsinkcookie != TF_INVALID_COOKIE) {
@@ -1404,8 +1362,7 @@ UILess_EnableUIUpdates(SDL_VideoData *videodata)
     }
 }
 
-static void
-UILess_DisableUIUpdates(SDL_VideoData *videodata)
+static void UILess_DisableUIUpdates(SDL_VideoData *videodata)
 {
     ITfSource *source = 0;
     if (!videodata->ime_threadmgrex || videodata->ime_uielemsinkcookie == TF_INVALID_COOKIE) {
@@ -1419,8 +1376,7 @@ UILess_DisableUIUpdates(SDL_VideoData *videodata)
     }
 }
 
-static SDL_bool
-UILess_SetupSinks(SDL_VideoData *videodata)
+static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata)
 {
     TfClientId clientid = 0;
     SDL_bool result = SDL_FALSE;
@@ -1455,16 +1411,15 @@ UILess_SetupSinks(SDL_VideoData *videodata)
     return result;
 }
 
-#define SAFE_RELEASE(p)                             \
-{                                                   \
-    if (p) {                                        \
-        (p)->lpVtbl->Release((p));                  \
-        (p) = 0;                                    \
-    }                                               \
-}
+#define SAFE_RELEASE(p)                \
+    {                                  \
+        if (p) {                       \
+            (p)->lpVtbl->Release((p)); \
+            (p) = 0;                   \
+        }                              \
+    }
 
-static void
-UILess_ReleaseSinks(SDL_VideoData *videodata)
+static void UILess_ReleaseSinks(SDL_VideoData *videodata)
 {
     ITfSource *source = 0;
     if (videodata->ime_threadmgrex && SUCCEEDED(videodata->ime_threadmgrex->lpVtbl->QueryInterface(videodata->ime_threadmgrex, &IID_ITfSource, (LPVOID *)&source))) {
@@ -1480,8 +1435,7 @@ UILess_ReleaseSinks(SDL_VideoData *videodata)
     }
 }
 
-static void *
-StartDrawToBitmap(HDC hdc, HBITMAP *hhbm, int width, int height)
+static void *StartDrawToBitmap(HDC hdc, HBITMAP *hhbm, int width, int height)
 {
     BITMAPINFO info;
     BITMAPINFOHEADER *infoHeader = &info.bmiHeader;
@@ -1502,8 +1456,7 @@ StartDrawToBitmap(HDC hdc, HBITMAP *hhbm, int width, int height)
     return bits;
 }
 
-static void
-StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
+static void StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
 {
     if (hhbm && *hhbm) {
         DeleteObject(*hhbm);
@@ -1512,8 +1465,7 @@ StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
 }
 
 /* This draws only within the specified area and fills the entire region. */
-static void
-DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
+static void DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
 {
     /* The case of no pen (PenSize = 0) is automatically taken care of. */
     const int penadjust = (int)SDL_floor(pensize / 2.0f - 0.5f);
@@ -1524,19 +1476,18 @@ DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
     Rectangle(hdc, left, top, right, bottom);
 }
 
-static void
-IME_DestroyTextures(SDL_VideoData *videodata)
+static void IME_DestroyTextures(SDL_VideoData *videodata)
 {
 }
 
-#define SDL_swap(a,b) { \
-    int c = (a);        \
-    (a) = (b);          \
-    (b) = c;            \
+#define SDL_swap(a, b) \
+    {                  \
+        int c = (a);   \
+        (a) = (b);     \
+        (b) = c;       \
     }
 
-static void
-IME_PositionCandidateList(SDL_VideoData *videodata, SIZE size)
+static void IME_PositionCandidateList(SDL_VideoData *videodata, SIZE size)
 {
     int left, top, right, bottom;
     SDL_bool ok = SDL_FALSE;
@@ -1607,13 +1558,12 @@ IME_PositionCandidateList(SDL_VideoData *videodata, SIZE size)
     videodata->ime_candlistrect.h = bottom - top;
 }
 
-static void
-IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
+static void IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
 {
     int i, j;
-    SIZE size = {0};
+    SIZE size = { 0 };
     SIZE candsizes[MAX_CANDLIST];
-    SIZE maxcandsize = {0};
+    SIZE maxcandsize = { 0 };
     HBITMAP hbm = NULL;
     int candcount = SDL_min(SDL_min(MAX_CANDLIST, videodata->ime_candcount), videodata->ime_candpgsize);
     SDL_bool vertical = videodata->ime_candvertical;
@@ -1655,7 +1605,6 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
         GetTextExtentPoint32W(hdc, s, (int)SDL_wcslen(s), &candsizes[i]);
         maxcandsize.cx = SDL_max(maxcandsize.cx, candsizes[i].cx);
         maxcandsize.cy = SDL_max(maxcandsize.cy, candsizes[i].cy);
-
     }
     if (vertical) {
         size.cx =
@@ -1664,16 +1613,14 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             (candmargin * 2) +
             (candborder * 2) +
             (candpadding * 2) +
-            (maxcandsize.cx)
-            ;
+            (maxcandsize.cx);
         size.cy =
             (listborder * 2) +
             (listpadding * 2) +
             ((candcount + 1) * candmargin) +
             (candcount * candborder * 2) +
             (candcount * candpadding * 2) +
-            (candcount * maxcandsize.cy)
-            ;
+            (candcount * maxcandsize.cy);
     } else {
         size.cx =
             (listborder * 2) +
@@ -1693,8 +1640,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             (candmargin * 2) +
             (candborder * 2) +
             (candpadding * 2) +
-            (maxcandsize.cy)
-            ;
+            (maxcandsize.cy);
     }
 
     StartDrawToBitmap(hdc, &hbm, size.cx, size.cy);
@@ -1755,8 +1701,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
     IME_PositionCandidateList(videodata, size);
 }
 
-static void
-IME_Render(SDL_VideoData *videodata)
+static void IME_Render(SDL_VideoData *videodata)
 {
     HDC hdc = CreateCompatibleDC(NULL);
 
@@ -1780,7 +1725,7 @@ void IME_Present(SDL_VideoData *videodata)
 
 SDL_bool WIN_IsTextInputShown(_THIS)
 {
-    SDL_VideoData* videodata = (SDL_VideoData*)_this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     return IME_IsTextInputShown(videodata);
 }
 

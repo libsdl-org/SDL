@@ -49,7 +49,8 @@ typedef struct _SDL_TimerMap
 } SDL_TimerMap;
 
 /* The timers are kept in a sorted list */
-typedef struct {
+typedef struct
+{
     /* Data used by the main thread */
     SDL_Thread *thread;
     SDL_atomic_t nextID;
@@ -78,14 +79,13 @@ static SDL_TimerData SDL_timer_data;
  * Timers are removed by simply setting a canceled flag
  */
 
-static void
-SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
+static void SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
 {
     SDL_Timer *prev, *curr;
 
     prev = NULL;
     for (curr = data->timers; curr; prev = curr, curr = curr->next) {
-        if ((Sint32)(timer->scheduled-curr->scheduled) < 0) {
+        if ((Sint32)(timer->scheduled - curr->scheduled) < 0) {
             break;
         }
     }
@@ -99,8 +99,7 @@ SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
     timer->next = curr;
 }
 
-static int SDLCALL
-SDL_TimerThread(void *_data)
+static int SDLCALL SDL_TimerThread(void *_data)
 {
     SDL_TimerData *data = (SDL_TimerData *)_data;
     SDL_Timer *pending;
@@ -114,7 +113,7 @@ SDL_TimerThread(void *_data)
      *  2. Handle any timers that should dispatch this cycle
      *  3. Wait until next dispatch time or new timer arrives
      */
-    for ( ; ; ) {
+    for (;;) {
         /* Pending and freelist maintenance */
         SDL_AtomicLock(&data->lock);
         {
@@ -153,7 +152,7 @@ SDL_TimerThread(void *_data)
         while (data->timers) {
             current = data->timers;
 
-            if ((Sint32)(tick-current->scheduled) < 0) {
+            if ((Sint32)(tick - current->scheduled) < 0) {
                 /* Scheduled for the future, wait a bit */
                 delay = (current->scheduled - tick);
                 break;
@@ -205,8 +204,7 @@ SDL_TimerThread(void *_data)
     return 0;
 }
 
-int
-SDL_TimerInit(void)
+int SDL_TimerInit(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
 
@@ -237,14 +235,13 @@ SDL_TimerInit(void)
     return 0;
 }
 
-void
-SDL_TimerQuit(void)
+void SDL_TimerQuit(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (SDL_AtomicCAS(&data->active, 1, 0)) {  /* active? Move to inactive. */
+    if (SDL_AtomicCAS(&data->active, 1, 0)) { /* active? Move to inactive. */
         /* Shutdown the timer thread */
         if (data->thread) {
             SDL_SemPost(data->sem);
@@ -387,17 +384,17 @@ typedef struct _SDL_TimerMap
     struct _SDL_TimerMap *next;
 } SDL_TimerMap;
 
-typedef struct {
+typedef struct
+{
     int nextID;
     SDL_TimerMap *timermap;
 } SDL_TimerData;
 
 static SDL_TimerData SDL_timer_data;
 
-static void
-SDL_Emscripten_TimerHelper(void *userdata)
+static void SDL_Emscripten_TimerHelper(void *userdata)
 {
-    SDL_TimerMap *entry = (SDL_TimerMap*)userdata;
+    SDL_TimerMap *entry = (SDL_TimerMap *)userdata;
     entry->interval = entry->callback(entry->interval, entry->param);
     if (entry->interval > 0) {
         entry->timeoutID = emscripten_set_timeout(&SDL_Emscripten_TimerHelper,
@@ -406,14 +403,12 @@ SDL_Emscripten_TimerHelper(void *userdata)
     }
 }
 
-int
-SDL_TimerInit(void)
+int SDL_TimerInit(void)
 {
     return 0;
 }
 
-void
-SDL_TimerQuit(void)
+void SDL_TimerQuit(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
@@ -488,7 +483,7 @@ SDL_RemoveTimer(SDL_TimerID id)
 Uint32
 SDL_GetTicks(void)
 {
-    return (Uint32) (SDL_GetTicks64() & 0xFFFFFFFF);
+    return (Uint32)(SDL_GetTicks64() & 0xFFFFFFFF);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

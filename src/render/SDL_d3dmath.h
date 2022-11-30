@@ -52,8 +52,10 @@ typedef struct
 
 typedef struct
 {
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             float _11, _12, _13, _14;
             float _21, _22, _23, _24;
             float _31, _32, _33, _34;
@@ -62,7 +64,6 @@ typedef struct
         float m[4][4];
     };
 } Float4X4;
-
 
 Float4X4 MatrixIdentity();
 Float4X4 MatrixMultiply(Float4X4 M1, Float4X4 M2);

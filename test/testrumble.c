@@ -31,14 +31,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 static SDL_Haptic *haptic;
 
-
 /**
  * @brief The entry point of this force feedback demo.
  * @param[in] argc Number of arguments.
  * @param[in] argv Array of argc arguments.
  */
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int i;
     char *name;
@@ -54,9 +52,9 @@ main(int argc, char **argv)
         name = argv[1];
         if ((SDL_strcmp(name, "--help") == 0) || (SDL_strcmp(name, "-h") == 0)) {
             SDL_Log("USAGE: %s [device]\n"
-                   "If device is a two-digit number it'll use it as an index, otherwise\n"
-                   "it'll use it as if it were part of the device's name.\n",
-                   argv[0]);
+                    "If device is a two-digit number it'll use it as an index, otherwise\n"
+                    "it'll use it as if it were part of the device's name.\n",
+                    argv[0]);
             return 0;
         }
 
@@ -86,7 +84,7 @@ main(int argc, char **argv)
 
             if (i >= SDL_NumHaptics()) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n",
-                       name);
+                             name);
                 return 1;
             }
         }
@@ -94,7 +92,7 @@ main(int argc, char **argv)
         haptic = SDL_HapticOpen(i);
         if (haptic == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n",
-                   SDL_GetError());
+                         SDL_GetError());
             return 1;
         }
         SDL_Log("Device: %s\n", SDL_HapticName(i));
@@ -116,8 +114,8 @@ main(int argc, char **argv)
     }
     SDL_Log("Playing 2 second rumble at 0.5 magnitude.\n");
     if (SDL_HapticRumblePlay(haptic, 0.5, 5000) != 0) {
-       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError() );
-       return 1;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
+        return 1;
     }
     SDL_Delay(2000);
     SDL_Log("Stopping rumble.\n");
@@ -125,8 +123,8 @@ main(int argc, char **argv)
     SDL_Delay(2000);
     SDL_Log("Playing 2 second rumble at 0.3 magnitude.\n");
     if (SDL_HapticRumblePlay(haptic, 0.3f, 5000) != 0) {
-       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError() );
-       return 1;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
+        return 1;
     }
     SDL_Delay(2000);
 

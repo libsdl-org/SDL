@@ -33,11 +33,13 @@
 
 #include <kernel.h>
 
-struct SDL_semaphore {
-    s32  semid;
+struct SDL_semaphore
+{
+    s32 semid;
 };
 
-static void usercb(struct timer_alarm_t *alarm, void *arg) {
+static void usercb(struct timer_alarm_t *alarm, void *arg)
+{
     iReleaseWaitThread((int)arg);
 }
 
@@ -47,12 +49,12 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
     SDL_sem *sem;
     ee_sema_t sema;
 
-    sem = (SDL_sem *) SDL_malloc(sizeof(*sem));
+    sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
     if (sem != NULL) {
         /* TODO: Figure out the limit on the maximum value. */
         sema.init_count = initial_value;
-        sema.max_count  = 255;
-        sema.option     = 0;
+        sema.max_count = 255;
+        sema.option = 0;
         sem->semid = CreateSema(&sema);
 
         if (sem->semid < 0) {

@@ -66,7 +66,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     len = SDL_strlen(envr);
 
     len += SDL_strlen(org) + SDL_strlen(app) + 3;
-    retval = (char *) SDL_malloc(len);
+    retval = (char *)SDL_malloc(len);
     if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;
@@ -78,7 +78,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_snprintf(retval, len, "%s%s/", envr, app);
     }
 
-    for (ptr = retval+1; *ptr; ptr++) {
+    for (ptr = retval + 1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
             sceIoMkdir(retval, 0777);

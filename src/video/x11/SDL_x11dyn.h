@@ -69,28 +69,27 @@
 #endif
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /* evil function signatures... */
-typedef Bool(*SDL_X11_XESetWireToEventRetType) (Display *, XEvent *, xEvent *);
-typedef int (*SDL_X11_XSynchronizeRetType) (Display *);
-typedef Status(*SDL_X11_XESetEventToWireRetType) (Display *, XEvent *, xEvent *);
+typedef Bool (*SDL_X11_XESetWireToEventRetType)(Display *, XEvent *, xEvent *);
+typedef int (*SDL_X11_XSynchronizeRetType)(Display *);
+typedef Status (*SDL_X11_XESetEventToWireRetType)(Display *, XEvent *, xEvent *);
 
 int SDL_X11_LoadSymbols(void);
 void SDL_X11_UnloadSymbols(void);
 
 /* Declare all the function pointers and wrappers... */
-#define SDL_X11_SYM(rc,fn,params,args,ret) \
-    typedef rc (*SDL_DYNX11FN_##fn) params; \
+#define SDL_X11_SYM(rc, fn, params, args, ret) \
+    typedef rc(*SDL_DYNX11FN_##fn) params;     \
     extern SDL_DYNX11FN_##fn X11_##fn;
 #include "SDL_x11sym.h"
 
 /* Annoying varargs entry point... */
 #ifdef X_HAVE_UTF8_STRING
-typedef XIC(*SDL_DYNX11FN_XCreateIC) (XIM,...);
-typedef char *(*SDL_DYNX11FN_XGetICValues) (XIC, ...);
+typedef XIC (*SDL_DYNX11FN_XCreateIC)(XIM, ...);
+typedef char *(*SDL_DYNX11FN_XGetICValues)(XIC, ...);
 extern SDL_DYNX11FN_XCreateIC X11_XCreateIC;
 extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
 #endif
@@ -103,5 +102,5 @@ extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
 }
 #endif
 
-#endif                          /* !defined SDL_x11dyn_h_ */
+#endif /* !defined SDL_x11dyn_h_ */
 /* vi: set ts=4 sw=4 expandtab: */

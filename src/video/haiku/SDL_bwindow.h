@@ -22,9 +22,7 @@
 #ifndef SDL_BWINDOW_H
 #define SDL_BWINDOW_H
 
-
 #include "../SDL_sysvideo.h"
-
 
 extern int HAIKU_CreateWindow(_THIS, SDL_Window *window);
 extern int HAIKU_CreateWindowFrom(_THIS, SDL_Window * window, const void *data);
@@ -48,8 +46,6 @@ extern void HAIKU_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbe
 extern void HAIKU_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool HAIKU_GetWindowWMInfo(_THIS, SDL_Window * window,
                                     struct SDL_SysWMinfo *info);
-
-
 
 #endif
 

@@ -32,17 +32,16 @@ ThreadFunc(void *data)
 {
     /* Set the child thread error string */
     SDL_SetError("Thread %s (%lu) had a problem: %s",
-                 (char *) data, SDL_ThreadID(), "nevermind");
+                 (char *)data, SDL_ThreadID(), "nevermind");
     while (alive) {
-        SDL_Log("Thread '%s' is alive!\n", (char *) data);
+        SDL_Log("Thread '%s' is alive!\n", (char *)data);
         SDL_Delay(1 * 1000);
     }
     SDL_Log("Child thread error string: %s\n", SDL_GetError());
     return 0;
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_Thread *thread;
 

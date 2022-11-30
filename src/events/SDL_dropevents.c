@@ -26,11 +26,9 @@
 #include "SDL_events_c.h"
 #include "SDL_dropevents_c.h"
 
-#include "../video/SDL_sysvideo.h"  /* for SDL_Window internals. */
+#include "../video/SDL_sysvideo.h" /* for SDL_Window internals. */
 
-
-static int
-SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
+static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
 {
     static SDL_bool app_is_dropping = SDL_FALSE;
     int posted = 0;
@@ -76,23 +74,19 @@ SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
     return posted;
 }
 
-int
-SDL_SendDropFile(SDL_Window *window, const char *file)
+int SDL_SendDropFile(SDL_Window *window, const char *file)
 {
     return SDL_SendDrop(window, SDL_DROPFILE, file);
 }
 
-int
-SDL_SendDropText(SDL_Window *window, const char *text)
+int SDL_SendDropText(SDL_Window *window, const char *text)
 {
     return SDL_SendDrop(window, SDL_DROPTEXT, text);
 }
 
-int
-SDL_SendDropComplete(SDL_Window *window)
+int SDL_SendDropComplete(SDL_Window *window)
 {
     return SDL_SendDrop(window, SDL_DROPCOMPLETE, NULL);
 }
-
 
 /* vi: set ts=4 sw=4 expandtab: */

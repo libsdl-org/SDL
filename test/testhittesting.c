@@ -29,9 +29,10 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
 
     SDL_GetWindowSize(window, &w, &h);
 
-    #define REPORT_RESIZE_HIT(name) { \
+#define REPORT_RESIZE_HIT(name)                  \
+    {                                            \
         SDL_Log("HIT-TEST: RESIZE_" #name "\n"); \
-        return SDL_HITTEST_RESIZE_##name; \
+        return SDL_HITTEST_RESIZE_##name;        \
     }
 
     if (pt->x < RESIZE_BORDER && pt->y < RESIZE_BORDER) {
@@ -55,7 +56,6 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
     SDL_Log("HIT-TEST: NORMAL\n");
     return SDL_HITTEST_NORMAL;
 }
-
 
 int main(int argc, char **argv)
 {
@@ -87,39 +87,38 @@ int main(int argc, char **argv)
         while (SDL_PollEvent(&e)) {
             nothing_to_do = 0;
 
-            switch (e.type)
-            {
-                case SDL_MOUSEBUTTONDOWN:
-                    SDL_Log("button down!\n");
-                    break;
+            switch (e.type) {
+            case SDL_MOUSEBUTTONDOWN:
+                SDL_Log("button down!\n");
+                break;
 
-                case SDL_MOUSEBUTTONUP:
-                    SDL_Log("button up!\n");
-                    break;
+            case SDL_MOUSEBUTTONUP:
+                SDL_Log("button up!\n");
+                break;
 
-                case SDL_WINDOWEVENT:
-                    if (e.window.event == SDL_WINDOWEVENT_MOVED) {
-                        SDL_Log("Window event moved to (%d, %d)!\n", (int) e.window.data1, (int) e.window.data2);
-                    }
-                    break;
+            case SDL_WINDOWEVENT:
+                if (e.window.event == SDL_WINDOWEVENT_MOVED) {
+                    SDL_Log("Window event moved to (%d, %d)!\n", (int)e.window.data1, (int)e.window.data2);
+                }
+                break;
 
-                case SDL_KEYDOWN:
-                    if (e.key.keysym.sym == SDLK_ESCAPE) {
-                        done = 1;
-                    } else if (e.key.keysym.sym == SDLK_x) {
-                        if (areas == NULL) {
-                            areas = drag_areas;
-                            numareas = SDL_arraysize(drag_areas);
-                        } else {
-                            areas = NULL;
-                            numareas = 0;
-                        }
-                    }
-                    break;
-
-                case SDL_QUIT:
+            case SDL_KEYDOWN:
+                if (e.key.keysym.sym == SDLK_ESCAPE) {
                     done = 1;
-                    break;
+                } else if (e.key.keysym.sym == SDLK_x) {
+                    if (areas == NULL) {
+                        areas = drag_areas;
+                        numareas = SDL_arraysize(drag_areas);
+                    } else {
+                        areas = NULL;
+                        numareas = 0;
+                    }
+                }
+                break;
+
+            case SDL_QUIT:
+                done = 1;
+                break;
             }
         }
 

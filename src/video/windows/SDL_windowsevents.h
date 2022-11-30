@@ -32,7 +32,7 @@ extern LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam,
                                        LPARAM lParam);
 extern void WIN_PumpEvents(_THIS);
 extern void WIN_SendWakeupEvent(_THIS, SDL_Window *window);
-extern int  WIN_WaitEventTimeout(_THIS, int timeout);
+extern int WIN_WaitEventTimeout(_THIS, int timeout);
 
 #endif /* SDL_windowsevents_h_ */
 

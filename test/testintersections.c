@@ -22,7 +22,12 @@
 
 #include "SDL_test_common.h"
 
-#define SWAP(typ,a,b) do{typ t=a;a=b;b=t;}while (0)
+#define SWAP(typ, a, b) \
+    do {                \
+        typ t = a;      \
+        a = b;          \
+        b = t;          \
+    } while (0)
 #define NUM_OBJECTS 100
 
 static SDLTest_CommonState *state;
@@ -37,8 +42,7 @@ static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 int mouse_begin_x = -1, mouse_begin_y = -1;
 int done;
 
-void
-DrawPoints(SDL_Renderer * renderer)
+void DrawPoints(SDL_Renderer *renderer)
 {
     int i;
     int x, y;
@@ -71,8 +75,8 @@ DrawPoints(SDL_Renderer * renderer)
                 cycle_direction = -cycle_direction;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, (Uint8) current_color,
-                               (Uint8) current_color, (Uint8) current_alpha);
+        SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
+                               (Uint8)current_color, (Uint8)current_alpha);
 
         x = rand() % viewport.w;
         y = rand() % viewport.h;
@@ -102,9 +106,7 @@ add_line(int x1, int y1, int x2, int y2)
     return ++num_lines;
 }
 
-
-void
-DrawLines(SDL_Renderer * renderer)
+void DrawLines(SDL_Renderer *renderer)
 {
     int i;
     SDL_Rect viewport;
@@ -147,7 +149,7 @@ add_rect(int x1, int y1, int x2, int y2)
     }
 
     SDL_Log("adding rect (%d, %d), (%d, %d) [%dx%d]\n", x1, y1, x2, y2,
-           x2 - x1, y2 - y1);
+            x2 - x1, y2 - y1);
 
     rects[num_rects].x = x1;
     rects[num_rects].y = y1;
@@ -158,14 +160,14 @@ add_rect(int x1, int y1, int x2, int y2)
 }
 
 static void
-DrawRects(SDL_Renderer * renderer)
+DrawRects(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
     SDL_RenderFillRects(renderer, rects, num_rects);
 }
 
 static void
-DrawRectLineIntersections(SDL_Renderer * renderer)
+DrawRectLineIntersections(SDL_Renderer *renderer)
 {
     int i, j;
 
@@ -189,7 +191,7 @@ DrawRectLineIntersections(SDL_Renderer * renderer)
 }
 
 static void
-DrawRectRectIntersections(SDL_Renderer * renderer)
+DrawRectRectIntersections(SDL_Renderer *renderer)
 {
     int i, j;
 
@@ -204,8 +206,7 @@ DrawRectRectIntersections(SDL_Renderer * renderer)
         }
 }
 
-void
-loop()
+void loop()
 {
     int i;
     SDL_Event event;
@@ -271,8 +272,7 @@ loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     Uint32 then, now, frames;
@@ -361,7 +361,7 @@ main(int argc, char *argv[])
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        double fps = ((double) frames * 1000) / (now - then);
+        double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
     }
     return 0;

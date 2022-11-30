@@ -36,9 +36,9 @@
 #define WIN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 
 extern int WIN_GLES_LoadLibrary(_THIS, const char *path);
-extern SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window * window);
-extern int WIN_GLES_SwapWindow(_THIS, SDL_Window * window);
-extern int WIN_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+extern SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window *window);
+extern int WIN_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern int WIN_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 extern void WIN_GLES_DeleteContext(_THIS, SDL_GLContext context);
 extern int WIN_GLES_SetupWindow(_THIS, SDL_Window * window);
 

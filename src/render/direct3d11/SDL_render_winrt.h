@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-void * D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer);
+void *D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer *renderer);
 DXGI_MODE_ROTATION D3D11_GetCurrentRotation();
 
 #ifdef __cplusplus

@@ -47,7 +47,7 @@ SDL_LoadObject(const char *sofile)
     }
 #endif
 
-    handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
+    handle = dlopen(sofile, RTLD_NOW | RTLD_LOCAL);
     loaderror = dlerror();
     if (handle == NULL) {
         SDL_SetError("Failed loading %s: %s", sofile, loaderror);
@@ -70,14 +70,13 @@ SDL_LoadFunction(void *handle, const char *name)
         SDL_small_free(_name, isstack);
         if (symbol == NULL) {
             SDL_SetError("Failed loading %s: %s", name,
-                         (const char *) dlerror());
+                         (const char *)dlerror());
         }
     }
     return symbol;
 }
 
-void
-SDL_UnloadObject(void *handle)
+void SDL_UnloadObject(void *handle)
 {
     if (handle != NULL) {
         dlclose(handle);

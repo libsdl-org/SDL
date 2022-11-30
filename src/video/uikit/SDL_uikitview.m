@@ -1,22 +1,22 @@
- /*
-  Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+/*
+ Simple DirectMedia Layer
+ Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any damages
+ arising from the use of this software.
 
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
 
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
+ 1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+ 2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+ 3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
 
@@ -35,14 +35,15 @@
 #include "SDL_uikitwindow.h"
 
 /* The maximum number of mouse buttons we support */
-#define MAX_MOUSE_BUTTONS    5
+#define MAX_MOUSE_BUTTONS 5
 
 /* This is defined in SDL_sysjoystick.m */
 #if !SDL_JOYSTICK_DISABLED
 extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #endif
 
-@implementation SDL_uikitview {
+@implementation SDL_uikitview
+{
     SDL_Window *sdlwindow;
 
     SDL_TouchID directTouchId;
@@ -103,7 +104,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     /* Remove ourself from the old window. */
     if (sdlwindow) {
         SDL_uikitview *view = nil;
-        data = (__bridge SDL_WindowData *) sdlwindow->driverdata;
+        data = (__bridge SDL_WindowData *)sdlwindow->driverdata;
 
         [data.views removeObject:self];
 
@@ -122,7 +123,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     /* Add ourself to the new window. */
     if (window) {
-        data = (__bridge SDL_WindowData *) window->driverdata;
+        data = (__bridge SDL_WindowData *)window->driverdata;
 
         /* Make sure the SDL window has a strong reference to this view. */
         [data.views addObject:self];
@@ -149,7 +150,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 }
 
 #if !TARGET_OS_TV && defined(__IPHONE_13_4)
-- (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4)){
+- (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4))
+{
     if (request != nil && !SDL_GCMouseRelativeMode()) {
         CGPoint origin = self.bounds.origin;
         CGPoint point = request.location;
@@ -162,7 +164,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     return [UIPointerRegion regionWithRect:self.bounds identifier:nil];
 }
 
-- (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region  API_AVAILABLE(ios(13.4)){
+- (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4))
+{
     if (SDL_ShowCursor(-1)) {
         return nil;
     } else {
@@ -187,11 +190,11 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (SDL_TouchID)touchIdForType:(SDL_TouchDeviceType)type
 {
     switch (type) {
-        case SDL_TOUCH_DEVICE_DIRECT:
-        default:
-            return directTouchId;
-        case SDL_TOUCH_DEVICE_INDIRECT_RELATIVE:
-            return indirectTouchId;
+    case SDL_TOUCH_DEVICE_DIRECT:
+    default:
+        return directTouchId;
+    case SDL_TOUCH_DEVICE_INDIRECT_RELATIVE:
+        return indirectTouchId;
     }
 }
 
@@ -212,7 +215,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
 #ifdef __IPHONE_9_0
     if ([touch respondsToSelector:@selector(force)]) {
-        return (float) touch.force;
+        return (float)touch.force;
     }
 #endif
 
@@ -364,7 +367,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 }
 
 #if TARGET_OS_TV || defined(__IPHONE_9_1)
-- (SDL_Scancode)scancodeFromPress:(UIPress*)press
+- (SDL_Scancode)scancodeFromPress:(UIPress *)press
 {
 #ifdef __IPHONE_13_4
     if ([press respondsToSelector:@selector((key))]) {
@@ -446,7 +449,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #endif /* TARGET_OS_TV || defined(__IPHONE_9_1) */
 
 #if TARGET_OS_TV
--(void)swipeGesture:(UISwipeGestureRecognizer *)gesture
+- (void)swipeGesture:(UISwipeGestureRecognizer *)gesture
 {
     /* Swipe gestures don't trigger begin states. */
     if (gesture.state == UIGestureRecognizerStateEnded) {

@@ -39,20 +39,17 @@
 #define TOUCHSCREEN_SCALE_X 1.0f / GSP_SCREEN_HEIGHT_BOTTOM
 #define TOUCHSCREEN_SCALE_Y 1.0f / GSP_SCREEN_WIDTH
 
-void
-N3DS_InitTouch(void)
+void N3DS_InitTouch(void)
 {
     SDL_AddTouch(N3DS_TOUCH_ID, SDL_TOUCH_DEVICE_DIRECT, "Touchscreen");
 }
 
-void
-N3DS_QuitTouch(void)
+void N3DS_QuitTouch(void)
 {
     SDL_DelTouch(N3DS_TOUCH_ID);
 }
 
-void
-N3DS_PollTouch(void)
+void N3DS_PollTouch(void)
 {
     touchPosition touch;
     static SDL_bool was_pressed = SDL_FALSE;
