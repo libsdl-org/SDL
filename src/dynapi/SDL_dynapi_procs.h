@@ -965,7 +965,7 @@ SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
 SDL_DYNAPI_PROC(SDL_EGLSurface,SDL_EGL_GetWindowEGLSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_EGL_SetEGLAttributeCallbacks,(SDL_EGLAttribArrayCallback a, SDL_EGLIntArrayCallback b, SDL_EGLIntArrayCallback c),(a,b,c),)
 #if defined(__GDK__)
-SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),return)
+SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),)
 #endif
 SDL_DYNAPI_PROC(int,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(void*,SDL_memset4,(void *a, Uint32 b, size_t c),(a,b,c),return)

@@ -23,7 +23,7 @@
 #ifdef NULL
 #undef NULL
 #endif
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_NGAGE
 

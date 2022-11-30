@@ -19,7 +19,7 @@
  code repository located at:
         https://github.com/libusb/hidapi .
 ********************************************************/
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 #include <windows.h>

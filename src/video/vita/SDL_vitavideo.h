@@ -22,7 +22,7 @@
 #ifndef _SDL_vitavideo_h
 #define _SDL_vitavideo_h
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 

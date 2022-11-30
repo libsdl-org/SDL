@@ -22,7 +22,7 @@
 #ifndef math_libm_h_
 #define math_libm_h_
 
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* Math routines from uClibc: http://www.uclibc.org */
 

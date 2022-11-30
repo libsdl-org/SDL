@@ -18,13 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-/* Need this so Linux systems define fseek64o, ftell64o and off64_t */
-#ifndef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE
-#endif
-
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if defined(__WIN32__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"

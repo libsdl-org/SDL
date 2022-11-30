@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if (defined(__WIN32__) || defined(__GDK__)) && HAVE_MMDEVICEAPI_H
 

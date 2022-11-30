@@ -19,7 +19,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_evdev_capabilities_h_
 #define SDL_evdev_capabilities_h_

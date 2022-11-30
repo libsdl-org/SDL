@@ -24,7 +24,7 @@
 
 #include <GLES/egl.h>
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
 typedef struct SDL_VideoData
