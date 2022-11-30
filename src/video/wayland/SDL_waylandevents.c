@@ -719,10 +719,11 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
 
-    if (wl_seat_get_version(input->seat) >= 5)
+    if (wl_seat_get_version(input->seat) >= 5) {
         pointer_handle_axis_common(input, AXIS_EVENT_CONTINUOUS, axis, value);
-    else
+    } else {
         pointer_handle_axis_common_v1(input, time, axis, value);
+    }
 }
 
 static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
@@ -1003,9 +1004,12 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
      */
 
     /* Look up the preferred locale, falling back to "C" as default */
-    if (!(locale = SDL_getenv("LC_ALL"))) {
-        if (!(locale = SDL_getenv("LC_CTYPE"))) {
-            if (!(locale = SDL_getenv("LANG"))) {
+    locale = SDL_getenv("LC_ALL");
+    if (locale == NULL) {
+        locale = SDL_getenv("LC_CTYPE");
+        if (locale == NULL) {
+            locale = SDL_getenv("LANG");
+            if (locale == NULL) {
                 locale = "C";
             }
         }
