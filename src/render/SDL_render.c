@@ -2616,8 +2616,7 @@ int SDL_RenderClear(SDL_Renderer *renderer)
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderDrawPoint(SDL_Renderer * renderer, float x, float y)
+int SDL_RenderDrawPoint(SDL_Renderer *renderer, float x, float y)
 {
     SDL_FPoint fpoint;
     fpoint.x = x;
@@ -2656,9 +2655,8 @@ static int RenderDrawPointsWithRectsF(SDL_Renderer *renderer,
     return retval;
 }
 
-int
-SDL_RenderDrawPoints(SDL_Renderer * renderer,
-                      const SDL_FPoint * points, int count)
+int SDL_RenderDrawPoints(SDL_Renderer *renderer,
+                         const SDL_FPoint *points, int count)
 {
     int retval;
 
@@ -2686,8 +2684,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderDrawLine(SDL_Renderer * renderer, float x1, float y1, float x2, float y2)
+int SDL_RenderDrawLine(SDL_Renderer *renderer, float x1, float y1, float x2, float y2)
 {
     SDL_FPoint points[2];
     points[0].x = x1;
@@ -2850,9 +2847,8 @@ static int RenderDrawLinesWithRectsF(SDL_Renderer *renderer,
     return retval;
 }
 
-int
-SDL_RenderDrawLines(SDL_Renderer * renderer,
-                     const SDL_FPoint * points, int count)
+int SDL_RenderDrawLines(SDL_Renderer *renderer,
+                        const SDL_FPoint *points, int count)
 {
     int retval = 0;
 
@@ -3003,8 +2999,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderDrawRect(SDL_Renderer * renderer, const SDL_FRect * rect)
+int SDL_RenderDrawRect(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     SDL_FRect frect;
     SDL_FPoint points[5];
@@ -3030,9 +3025,8 @@ SDL_RenderDrawRect(SDL_Renderer * renderer, const SDL_FRect * rect)
     return SDL_RenderDrawLines(renderer, points, 5);
 }
 
-int
-SDL_RenderDrawRects(SDL_Renderer * renderer,
-                     const SDL_FRect * rects, int count)
+int SDL_RenderDrawRects(SDL_Renderer *renderer,
+                        const SDL_FRect *rects, int count)
 {
     int i;
 
@@ -3060,8 +3054,7 @@ SDL_RenderDrawRects(SDL_Renderer * renderer,
     return 0;
 }
 
-int
-SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_FRect * rect)
+int SDL_RenderFillRect(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     SDL_FRect frect;
 
@@ -3075,9 +3068,8 @@ SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_FRect * rect)
     return SDL_RenderFillRects(renderer, rect, 1);
 }
 
-int
-SDL_RenderFillRects(SDL_Renderer * renderer,
-                     const SDL_FRect * rects, int count)
+int SDL_RenderFillRects(SDL_Renderer *renderer,
+                        const SDL_FRect *rects, int count)
 {
     SDL_FRect *frects;
     int i;
@@ -3118,9 +3110,8 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
-                const SDL_Rect * srcrect, const SDL_FRect * dstrect)
+int SDL_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture,
+                   const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
     SDL_Rect real_srcrect;
     SDL_FRect real_dstrect;
@@ -3224,10 +3215,9 @@ SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
-int
-SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
-               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
-               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+int SDL_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture,
+                     const SDL_Rect *srcrect, const SDL_FRect *dstrect,
+                     const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
     SDL_Rect real_srcrect;
     SDL_FRect real_dstrect;
@@ -3235,7 +3225,7 @@ SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     int retval;
     int use_rendergeometry;
 
-    if (flip == SDL_FLIP_NONE && (int)(angle/360) == angle/360) { /* fast path when we don't need rotation or flipping */
+    if (flip == SDL_FLIP_NONE && (int)(angle / 360) == angle / 360) { /* fast path when we don't need rotation or flipping */
         return SDL_RenderCopy(renderer, texture, srcrect, dstrect);
     }
 
