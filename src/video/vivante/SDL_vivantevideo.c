@@ -38,8 +38,7 @@
 #include "SDL_vivantevulkan.h"
 
 
-static void
-VIVANTE_Destroy(SDL_VideoDevice * device)
+static void VIVANTE_Destroy(SDL_VideoDevice * device)
 {
     if (device->driverdata != NULL) {
         SDL_free(device->driverdata);
@@ -47,8 +46,7 @@ VIVANTE_Destroy(SDL_VideoDevice * device)
     }
 }
 
-static SDL_VideoDevice *
-VIVANTE_Create()
+static SDL_VideoDevice * VIVANTE_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -124,8 +122,7 @@ VideoBootStrap VIVANTE_bootstrap = {
 /* SDL Video and Display initialization/handling functions                   */
 /*****************************************************************************/
 
-static int
-VIVANTE_AddVideoDisplays(_THIS)
+static int VIVANTE_AddVideoDisplays(_THIS)
 {
     SDL_VideoData *videodata = _this->driverdata;
     SDL_VideoDisplay display;

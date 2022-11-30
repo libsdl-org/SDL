@@ -235,8 +235,7 @@ GL_CheckAllErrors (const char *prefix, SDL_Renderer *renderer, const char *file,
 #define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, SDL_FILE, SDL_LINE, SDL_FUNCTION)
 #endif
 
-static int
-GL_LoadFunctions(GL_RenderData * data)
+static int GL_LoadFunctions(GL_RenderData * data)
 {
 #ifdef __SDL_NOGETPROCADDR__
 #define SDL_PROC(ret,func,params) data->func=func;
@@ -256,8 +255,7 @@ GL_LoadFunctions(GL_RenderData * data)
     return retval;
 }
 
-static int
-GL_ActivateRenderer(SDL_Renderer * renderer)
+static int GL_ActivateRenderer(SDL_Renderer * renderer)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
 
@@ -272,8 +270,7 @@ GL_ActivateRenderer(SDL_Renderer * renderer)
     return 0;
 }
 
-static void APIENTRY
-GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message, const void *userParam)
+static void APIENTRY GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message, const void *userParam)
 {
     SDL_Renderer *renderer = (SDL_Renderer *) userParam;
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
@@ -301,8 +298,7 @@ GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GL
     }
 }
 
-static GL_FBOList *
-GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
+static GL_FBOList * GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
 {
     GL_FBOList *result = data->framebuffers;
 
@@ -323,8 +319,7 @@ GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
     return result;
 }
 
-static void
-GL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
+static void GL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
     /* If the window x/y/w/h changed at all, assume the viewport has been
      * changed behind our backs. x/y changes might seem weird but viewport
@@ -337,8 +332,7 @@ GL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-static int
-GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
+static int GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
     SDL_GL_GetDrawableSize(renderer->window, w, h);
     return 0;
@@ -386,8 +380,7 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
     }
 }
 
-static SDL_bool
-GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+static SDL_bool GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
     SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
@@ -448,8 +441,7 @@ convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
     return SDL_TRUE;
 }
 
-static int
-GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static int GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
     const GLenum textype = renderdata->textype;
@@ -694,8 +686,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return GL_CheckError("", renderer);
 }
 
-static int
-GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+static int GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                  const SDL_Rect * rect, const void *pixels, int pitch)
 {
     GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
@@ -757,8 +748,7 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 #if SDL_HAVE_YUV
-static int
-GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+static int GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                     const SDL_Rect * rect,
                     const Uint8 *Yplane, int Ypitch,
                     const Uint8 *Uplane, int Upitch,
@@ -794,8 +784,7 @@ GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
 
-static int
-GL_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
+static int GL_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
                     const SDL_Rect * rect,
                     const Uint8 *Yplane, int Ypitch,
                     const Uint8 *UVplane, int UVpitch)
@@ -826,8 +815,7 @@ GL_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 #endif
 
-static int
-GL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+static int GL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * rect, void **pixels, int *pitch)
 {
     GL_TextureData *data = (GL_TextureData *) texture->driverdata;
@@ -840,8 +828,7 @@ GL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-static void
-GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GL_TextureData *data = (GL_TextureData *) texture->driverdata;
     const SDL_Rect *rect;
@@ -854,8 +841,7 @@ GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GL_UpdateTexture(renderer, texture, rect, pixels, data->pitch);
 }
 
-static void
-GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+static void GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 {
     GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
     const GLenum textype = renderdata->textype;
@@ -887,8 +873,7 @@ GL_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_Scale
 #endif
 }
 
-static int
-GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
+static int GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
     GL_TextureData *texturedata;
@@ -922,14 +907,12 @@ GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 /* !!! FIXME: all these Queue* calls set up the vertex buffer the way the immediate mode
    !!! FIXME:  renderer wants it, but this might want to operate differently if we move to
    !!! FIXME:  VBOs at some point. */
-static int
-GL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+static int GL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {
     return 0;  /* nothing to do in this backend. */
 }
 
-static int
-GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+static int GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
     int i;
@@ -947,8 +930,7 @@ GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FP
     return 0;
 }
 
-static int
-GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+static int GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     int i;
     GLfloat prevx, prevy;
@@ -988,8 +970,7 @@ GL_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPo
     return 0;
 }
 
-static int
-GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static int GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
@@ -1044,8 +1025,7 @@ GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     return 0;
 }
 
-static int
-SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
+static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_bool vertex_array;
@@ -1155,8 +1135,7 @@ SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader 
     return 0;
 }
 
-static int
-SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
+static int SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     const GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
@@ -1195,8 +1174,7 @@ SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
     return 0;
 }
 
-static int
-GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
+static int GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     /* !!! FIXME: it'd be nice to use a vertex buffer instead of immediate mode... */
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
@@ -1428,8 +1406,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
     return GL_CheckError("", renderer);
 }
 
-static int
-GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
+static int GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
@@ -1499,16 +1476,14 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }
 
-static int
-GL_RenderPresent(SDL_Renderer * renderer)
+static int GL_RenderPresent(SDL_Renderer * renderer)
 {
     GL_ActivateRenderer(renderer);
 
     return SDL_GL_SwapWindowWithResult(renderer->window);
 }
 
-static void
-GL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void GL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
     GL_TextureData *data = (GL_TextureData *) texture->driverdata;
@@ -1539,8 +1514,7 @@ GL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texture->driverdata = NULL;
 }
 
-static void
-GL_DestroyRenderer(SDL_Renderer * renderer)
+static void GL_DestroyRenderer(SDL_Renderer * renderer)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
 
@@ -1577,8 +1551,7 @@ GL_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
-static int
-GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, float *texh)
+static int GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, float *texh)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
     GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
@@ -1628,8 +1601,7 @@ GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, floa
     return 0;
 }
 
-static int
-GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
+static int GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
     GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
@@ -1676,8 +1648,7 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
     return 0;
 }
 
-static int
-GL_SetVSync(SDL_Renderer * renderer, const int vsync)
+static int GL_SetVSync(SDL_Renderer * renderer, const int vsync)
 {
     int retval;
     if (vsync) {
@@ -1696,8 +1667,7 @@ GL_SetVSync(SDL_Renderer * renderer, const int vsync)
     return retval;
 }
 
-static SDL_bool
-GL_IsProbablyAccelerated(const GL_RenderData *data)
+static SDL_bool GL_IsProbablyAccelerated(const GL_RenderData *data)
 {
     /*const char *vendor = (const char *) data->glGetString(GL_VENDOR);*/
     const char *renderer = (const char *) data->glGetString(GL_RENDERER);
@@ -1723,8 +1693,7 @@ GL_IsProbablyAccelerated(const GL_RenderData *data)
     return SDL_TRUE;
 }
 
-static SDL_Renderer *
-GL_CreateRenderer(SDL_Window * window, Uint32 flags)
+static SDL_Renderer * GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     GL_RenderData *data;

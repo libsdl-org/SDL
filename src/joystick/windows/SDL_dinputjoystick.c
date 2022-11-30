@@ -231,14 +231,12 @@ const DIDATAFORMAT SDL_c_dfDIJoystick2 = {
 };
 
 /* Convert a DirectInput return code to a text message */
-static int
-SetDIerror(const char *function, HRESULT code)
+static int SetDIerror(const char *function, HRESULT code)
 {
     return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
 
-static SDL_bool
-SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
+static SDL_bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
 {
 #ifdef SDL_JOYSTICK_XINPUT
     SDL_GameControllerType type;
@@ -269,8 +267,7 @@ SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char* hidPath)
     return SDL_FALSE;
 }
 
-static SDL_bool
-QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char** device_name)
+static SDL_bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char** device_name)
 {
     DIPROPSTRING dipstr;
 
@@ -292,8 +289,7 @@ QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char** device_name)
     return SDL_TRUE;
 }
 
-static SDL_bool
-QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char** device_path)
+static SDL_bool QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char** device_path)
 {
     DIPROPGUIDANDPATH dippath;
 
@@ -318,8 +314,7 @@ QueryDevicePath(LPDIRECTINPUTDEVICE8 device, char** device_path)
     return SDL_TRUE;
 }
 
-static SDL_bool
-QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_id)
+static SDL_bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16* vendor_id, Uint16* product_id)
 {
     DIPROPDWORD dipdw;
 
@@ -442,8 +437,7 @@ SDL_DINPUT_JoystickInit(void)
 }
 
 /* helper function for direct input, gets called for each connected joystick */
-static BOOL CALLBACK
-EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
+static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
 #define CHECK(expression) { if (!(expression)) goto err; }
     JoyStick_DeviceData *pNewJoystick = NULL;
@@ -554,8 +548,7 @@ typedef struct
     SDL_bool present;
 } Joystick_PresentData;
 
-static BOOL CALLBACK
-EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
+static BOOL CALLBACK EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
 #define CHECK(expression) { if (!(expression)) goto err; }
     Joystick_PresentData *pData = (Joystick_PresentData *)pContext;
@@ -600,8 +593,7 @@ SDL_DINPUT_JoystickPresent(Uint16 vendor_id, Uint16 product_id, Uint16 version_n
     return data.present;
 }
 
-static BOOL CALLBACK
-EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObject, LPVOID pContext)
+static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObject, LPVOID pContext)
 {
     SDL_Joystick *joystick = (SDL_Joystick *)pContext;
     HRESULT result;
@@ -687,8 +679,7 @@ EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObject, LPVOID pContext)
 /* Sort using the data offset into the DInput struct.
  * This gives a reasonable ordering for the inputs.
  */
-static int SDLCALL
-SortDevFunc(const void *a, const void *b)
+static int SDLCALL SortDevFunc(const void *a, const void *b)
 {
     const input_t *inputA = (const input_t*)a;
     const input_t *inputB = (const input_t*)b;
@@ -703,8 +694,7 @@ SortDevFunc(const void *a, const void *b)
 }
 
 /* Sort the input objects and recalculate the indices for each input. */
-static void
-SortDevObjects(SDL_Joystick *joystick)
+static void SortDevObjects(SDL_Joystick *joystick)
 {
     input_t *inputs = joystick->hwdata->Inputs;
     int nButtons = 0;
@@ -862,8 +852,7 @@ SDL_DINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     return 0;
 }
 
-static int
-SDL_DINPUT_JoystickInitRumble(SDL_Joystick * joystick, Sint16 magnitude)
+static int SDL_DINPUT_JoystickInitRumble(SDL_Joystick * joystick, Sint16 magnitude)
 {
     HRESULT result;
 
@@ -956,8 +945,7 @@ SDL_DINPUT_JoystickGetCapabilities(SDL_Joystick * joystick)
     return result;
 }
 
-static Uint8
-TranslatePOV(DWORD value)
+static Uint8 TranslatePOV(DWORD value)
 {
     const int HAT_VALS[] = {
         SDL_HAT_UP,
@@ -991,8 +979,7 @@ TranslatePOV(DWORD value)
  * but instead should call SDL_PrivateJoystick*() to deliver events
  * and update joystick device state.
  */
-static void
-UpdateDINPUTJoystickState_Polled(SDL_Joystick * joystick)
+static void UpdateDINPUTJoystickState_Polled(SDL_Joystick * joystick)
 {
     DIJOYSTATE2 state;
     HRESULT result;
@@ -1060,8 +1047,7 @@ UpdateDINPUTJoystickState_Polled(SDL_Joystick * joystick)
     }
 }
 
-static void
-UpdateDINPUTJoystickState_Buffered(SDL_Joystick * joystick)
+static void UpdateDINPUTJoystickState_Buffered(SDL_Joystick * joystick)
 {
     int i;
     HRESULT result;

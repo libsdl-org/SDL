@@ -39,8 +39,7 @@ static CMMotionManager *SDL_motion_manager;
 static SDL_CoreMotionSensor *SDL_sensors;
 static int SDL_sensors_count;
 
-static int
-SDL_COREMOTION_SensorInit(void)
+static int SDL_COREMOTION_SensorInit(void)
 {
     int i, sensors_count = 0;
 
@@ -77,19 +76,16 @@ SDL_COREMOTION_SensorInit(void)
     return 0;
 }
 
-static int
-SDL_COREMOTION_SensorGetCount(void)
+static int SDL_COREMOTION_SensorGetCount(void)
 {
     return SDL_sensors_count;
 }
 
-static void
-SDL_COREMOTION_SensorDetect(void)
+static void SDL_COREMOTION_SensorDetect(void)
 {
 }
 
-static const char *
-SDL_COREMOTION_SensorGetDeviceName(int device_index)
+static const char * SDL_COREMOTION_SensorGetDeviceName(int device_index)
 {
     switch (SDL_sensors[device_index].type) {
     case SDL_SENSOR_ACCEL:
@@ -101,26 +97,22 @@ SDL_COREMOTION_SensorGetDeviceName(int device_index)
     }
 }
 
-static SDL_SensorType
-SDL_COREMOTION_SensorGetDeviceType(int device_index)
+static SDL_SensorType SDL_COREMOTION_SensorGetDeviceType(int device_index)
 {
     return SDL_sensors[device_index].type;
 }
 
-static int
-SDL_COREMOTION_SensorGetDeviceNonPortableType(int device_index)
+static int SDL_COREMOTION_SensorGetDeviceNonPortableType(int device_index)
 {
     return SDL_sensors[device_index].type;
 }
 
-static SDL_SensorID
-SDL_COREMOTION_SensorGetDeviceInstanceID(int device_index)
+static SDL_SensorID SDL_COREMOTION_SensorGetDeviceInstanceID(int device_index)
 {
     return SDL_sensors[device_index].instance_id;
 }
 
-static int
-SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
+static int SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     struct sensor_hwdata *hwdata;
 
@@ -144,8 +136,7 @@ SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
     return 0;
 }
     
-static void
-SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
+static void SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
 {
     switch (sensor->type)
     {
@@ -186,8 +177,7 @@ SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
     }
 }
 
-static void
-SDL_COREMOTION_SensorClose(SDL_Sensor *sensor)
+static void SDL_COREMOTION_SensorClose(SDL_Sensor *sensor)
 {
     if (sensor->hwdata) {
         switch (sensor->type)
@@ -206,8 +196,7 @@ SDL_COREMOTION_SensorClose(SDL_Sensor *sensor)
     }
 }
 
-static void
-SDL_COREMOTION_SensorQuit(void)
+static void SDL_COREMOTION_SensorQuit(void)
 {
 }
 

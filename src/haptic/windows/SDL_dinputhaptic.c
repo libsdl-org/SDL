@@ -48,8 +48,7 @@ static LPDIRECTINPUT8 dinput = NULL;
 /*
  * Like SDL_SetError but for DX error codes.
  */
-static int
-DI_SetError(const char *str, HRESULT err)
+static int DI_SetError(const char *str, HRESULT err)
 {
     return SDL_SetError("Haptic error %s", str);
 }
@@ -57,8 +56,7 @@ DI_SetError(const char *str, HRESULT err)
 /*
  * Callback to find the haptic devices.
  */
-static BOOL CALLBACK
-EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
+static BOOL CALLBACK EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
     (void) pContext;
     SDL_DINPUT_HapticMaybeAddDevice(pdidInstance);
@@ -212,8 +210,7 @@ SDL_DINPUT_HapticMaybeRemoveDevice(const DIDEVICEINSTANCE * pdidInstance)
 /*
  * Callback to get supported axes.
  */
-static BOOL CALLBACK
-DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
+static BOOL CALLBACK DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
 {
     SDL_Haptic *haptic = (SDL_Haptic *) pvRef;
 
@@ -254,8 +251,7 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
 #define EFFECT_TEST(e,s)               \
 if (WIN_IsEqualGUID(&pei->guid, &(e)))   \
    haptic->supported |= (s)
-static BOOL CALLBACK
-DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
+static BOOL CALLBACK DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
 {
     /* Prepare the haptic device. */
     SDL_Haptic *haptic = (SDL_Haptic *) pv;
@@ -289,8 +285,7 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
  *       - Reset actuators.
  *       - Get supported features.
  */
-static int
-SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE8 device8, SDL_bool is_joystick)
+static int SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE8 device8, SDL_bool is_joystick)
 {
     HRESULT ret;
     DIPROPDWORD dipdw;
@@ -527,8 +522,7 @@ SDL_DINPUT_HapticQuit(void)
 /*
  * Converts an SDL trigger button to an DIEFFECT trigger button.
  */
-static DWORD
-DIGetTriggerButton(Uint16 button)
+static DWORD DIGetTriggerButton(Uint16 button)
 {
     DWORD dwTriggerButton;
 
@@ -545,8 +539,7 @@ DIGetTriggerButton(Uint16 button)
 /*
  * Sets the direction.
  */
-static int
-SDL_SYS_SetDirection(DIEFFECT * effect, SDL_HapticDirection * dir, int naxes)
+static int SDL_SYS_SetDirection(DIEFFECT * effect, SDL_HapticDirection * dir, int naxes)
 {
     LONG *rglDir;
 
@@ -607,8 +600,7 @@ SDL_SYS_SetDirection(DIEFFECT * effect, SDL_HapticDirection * dir, int naxes)
 /*
  * Creates the DIEFFECT from a SDL_HapticEffect.
  */
-static int
-SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
+static int SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
                    SDL_HapticEffect * src)
 {
     int i;
@@ -889,8 +881,7 @@ SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
 /*
  * Frees an DIEFFECT allocated by SDL_SYS_ToDIEFFECT.
  */
-static void
-SDL_SYS_HapticFreeDIEFFECT(DIEFFECT * effect, int type)
+static void SDL_SYS_HapticFreeDIEFFECT(DIEFFECT * effect, int type)
 {
     DICUSTOMFORCE *custom;
 
@@ -914,8 +905,7 @@ SDL_SYS_HapticFreeDIEFFECT(DIEFFECT * effect, int type)
 /*
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
-static REFGUID
-SDL_SYS_HapticEffectType(SDL_HapticEffect * effect)
+static REFGUID SDL_SYS_HapticEffectType(SDL_HapticEffect * effect)
 {
     switch (effect->type) {
     case SDL_HAPTIC_CONSTANT:

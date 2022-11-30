@@ -264,8 +264,7 @@ SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Critical, CRITICAL)
 
 /* we make this a static function so we can call the correct one without the
    system's dynamic linker resolving to the wrong version of this. */
-static Sint32
-initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
+static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 {
     SDL_DYNAPI_jump_table *output_jump_table = (SDL_DYNAPI_jump_table *) table;
 
@@ -382,8 +381,7 @@ void SDL_ExitProcess(int exitcode);
 SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 
-static void
-SDL_InitDynamicAPILocked(void)
+static void SDL_InitDynamicAPILocked(void)
 {
     const char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
     SDL_DYNAPI_ENTRYFN entry = NULL;  /* funcs from here by default. */
@@ -418,8 +416,7 @@ SDL_InitDynamicAPILocked(void)
     /* we intentionally never close the newly-loaded lib, of course. */
 }
 
-static void
-SDL_InitDynamicAPI(void)
+static void SDL_InitDynamicAPI(void)
 {
     /* So the theory is that every function in the jump table defaults to
      *  calling this function, and then replaces itself with a version that

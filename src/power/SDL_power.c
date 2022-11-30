@@ -32,8 +32,7 @@ typedef SDL_bool
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_HARDWIRED
 /* This is for things that _never_ have a battery */
-static SDL_bool
-SDL_GetPowerInfo_Hardwired(SDL_PowerState * state, int *seconds, int *percent)
+static SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState * state, int *seconds, int *percent)
 {
     *seconds = -1;
     *percent = -1;

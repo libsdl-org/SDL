@@ -123,8 +123,7 @@ SDL_SensorID SDL_GetNextSensorInstanceID()
  * Get the driver and device index for an API device index
  * This should be called while the sensor lock is held, to prevent another thread from updating the list
  */
-static SDL_bool
-SDL_GetDriverAndSensorIndex(int device_index, SDL_SensorDriver **driver, int *driver_index)
+static SDL_bool SDL_GetDriverAndSensorIndex(int device_index, SDL_SensorDriver **driver, int *driver_index)
 {
     int i, num_sensors, total_sensors = 0;
 
@@ -306,8 +305,7 @@ SDL_SensorFromInstanceID(SDL_SensorID instance_id)
 /*
  * Checks to make sure the sensor is valid.
  */
-static int
-SDL_PrivateSensorValid(SDL_Sensor *sensor)
+static int SDL_PrivateSensorValid(SDL_Sensor *sensor)
 {
     int valid;
 

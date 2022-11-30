@@ -47,14 +47,12 @@
 static const IID SDL_IID_IAudioRenderClient = { 0xf294acfc, 0x3146, 0x4483,{ 0xa7, 0xbf, 0xad, 0xdc, 0xa7, 0xc2, 0x60, 0xe2 } };
 static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0,{ 0xa4, 0xde, 0x18, 0x5c, 0x39, 0x5c, 0xd3, 0x17 } };
 
-static void
-WASAPI_DetectDevices(void)
+static void WASAPI_DetectDevices(void)
 {
     WASAPI_EnumerateEndpoints();
 }
 
-static SDL_INLINE SDL_bool
-WasapiFailed(_THIS, const HRESULT err)
+static SDL_INLINE SDL_bool WasapiFailed(_THIS, const HRESULT err)
 {
     if (err == S_OK) {
         return SDL_FALSE;
@@ -71,8 +69,7 @@ WasapiFailed(_THIS, const HRESULT err)
     return SDL_TRUE;
 }
 
-static int
-UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
+static int UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
 {
     /* Since WASAPI requires us to handle all audio conversion, and our
        device format might have changed, we might have to add/remove/change
@@ -127,8 +124,7 @@ UpdateAudioStream(_THIS, const SDL_AudioSpec *oldspec)
 
 static void ReleaseWasapiDevice(_THIS);
 
-static SDL_bool
-RecoverWasapiDevice(_THIS)
+static SDL_bool RecoverWasapiDevice(_THIS)
 {
     ReleaseWasapiDevice(this);  /* dump the lost device's handles. */
 
@@ -151,8 +147,7 @@ RecoverWasapiDevice(_THIS)
     return SDL_TRUE;  /* okay, carry on with new device details! */
 }
 
-static SDL_bool
-RecoverWasapiIfLost(_THIS)
+static SDL_bool RecoverWasapiIfLost(_THIS)
 {
     const int generation = this->hidden->default_device_generation;
     SDL_bool lost = this->hidden->device_lost;
@@ -175,8 +170,7 @@ RecoverWasapiIfLost(_THIS)
     return lost ? RecoverWasapiDevice(this) : SDL_TRUE;
 }
 
-static Uint8 *
-WASAPI_GetDeviceBuf(_THIS)
+static Uint8 * WASAPI_GetDeviceBuf(_THIS)
 {
     /* get an endpoint buffer from WASAPI. */
     BYTE *buffer = NULL;
@@ -191,8 +185,7 @@ WASAPI_GetDeviceBuf(_THIS)
     return (Uint8 *) buffer;
 }
 
-static void
-WASAPI_PlayDevice(_THIS)
+static void WASAPI_PlayDevice(_THIS)
 {
     if (this->hidden->render != NULL) {  /* definitely activated? */
         /* WasapiFailed() will mark the device for reacquisition or removal elsewhere. */
@@ -200,8 +193,7 @@ WASAPI_PlayDevice(_THIS)
     }
 }
 
-static void
-WASAPI_WaitDevice(_THIS)
+static void WASAPI_WaitDevice(_THIS)
 {
     while (RecoverWasapiIfLost(this) && this->hidden->client && this->hidden->event) {
         DWORD waitResult = WaitForSingleObjectEx(this->hidden->event, 200, FALSE);
@@ -228,8 +220,7 @@ WASAPI_WaitDevice(_THIS)
     }
 }
 
-static int
-WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     SDL_AudioStream *stream = this->hidden->capturestream;
     const int avail = SDL_AudioStreamAvailable(stream);
@@ -293,8 +284,7 @@ WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return -1;  /* unrecoverable error. */
 }
 
-static void
-WASAPI_FlushCapture(_THIS)
+static void WASAPI_FlushCapture(_THIS)
 {
     BYTE *ptr = NULL;
     UINT32 frames = 0;
@@ -318,8 +308,7 @@ WASAPI_FlushCapture(_THIS)
     SDL_AudioStreamClear(this->hidden->capturestream);
 }
 
-static void
-ReleaseWasapiDevice(_THIS)
+static void ReleaseWasapiDevice(_THIS)
 {
     if (this->hidden->client) {
         IAudioClient_Stop(this->hidden->client);
@@ -358,8 +347,7 @@ ReleaseWasapiDevice(_THIS)
     }
 }
 
-static void
-WASAPI_CloseDevice(_THIS)
+static void WASAPI_CloseDevice(_THIS)
 {
     WASAPI_UnrefDevice(this);
 }
@@ -540,8 +528,7 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 }
 
 
-static int
-WASAPI_OpenDevice(_THIS, const char *devname)
+static int WASAPI_OpenDevice(_THIS, const char *devname)
 {
     LPCWSTR devid = (LPCWSTR) this->handle;
 
@@ -579,26 +566,22 @@ WASAPI_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void
-WASAPI_ThreadInit(_THIS)
+static void WASAPI_ThreadInit(_THIS)
 {
     WASAPI_PlatformThreadInit(this);
 }
 
-static void
-WASAPI_ThreadDeinit(_THIS)
+static void WASAPI_ThreadDeinit(_THIS)
 {
     WASAPI_PlatformThreadDeinit(this);
 }
 
-static void
-WASAPI_Deinitialize(void)
+static void WASAPI_Deinitialize(void)
 {
     WASAPI_PlatformDeinit();
 }
 
-static SDL_bool
-WASAPI_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool WASAPI_Init(SDL_AudioDriverImpl * impl)
 {
     if (WASAPI_PlatformInit() == -1) {
         return SDL_FALSE;

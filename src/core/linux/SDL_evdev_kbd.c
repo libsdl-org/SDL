@@ -69,8 +69,7 @@ static void fn_caps_on(SDL_EVDEV_keyboard_state *kbd);
 static void fn_num(SDL_EVDEV_keyboard_state *kbd);
 static void fn_compose(SDL_EVDEV_keyboard_state *kbd);
 
-static fn_handler_fn *fn_handler[] =
-{
+static fn_handler_fn *fn_handler[] = {
     NULL,       fn_enter,   NULL,       NULL,
     NULL,       NULL,       NULL,       fn_caps_toggle,
     fn_num,     NULL,       NULL,       NULL,
@@ -199,8 +198,7 @@ static int kbd_cleanup_atexit_installed = 0;
 
 static struct sigaction old_sigaction[NSIG];
 
-static int fatal_signals[] =
-{
+static int fatal_signals[] = {
     /* Handlers for SIGTERM and SIGINT are installed in SDL_QuitInit. */
     SIGHUP,  SIGQUIT, SIGILL,  SIGABRT,
     SIGFPE,  SIGSEGV, SIGPIPE, SIGBUS,
@@ -218,8 +216,7 @@ static void kbd_cleanup(void)
     ioctl(kbd->console_fd, KDSKBMODE, kbd->old_kbd_mode);
 }
 
-static void
-SDL_EVDEV_kbd_reraise_signal(int sig)
+static void SDL_EVDEV_kbd_reraise_signal(int sig)
 {
     raise(sig);
 }

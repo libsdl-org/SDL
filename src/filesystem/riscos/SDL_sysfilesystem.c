@@ -31,8 +31,7 @@
 
 
 /* Wrapper around __unixify_std that uses SDL's memory allocators */
-static char *
-SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
+static char * SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
 {
     const char *const in_buf = buffer; /* = NULL if we allocate the buffer.  */
 
@@ -70,8 +69,7 @@ SDL_unixify_std(const char *ro_path, char *buffer, size_t buf_len, int filetype)
     return buffer;
 }
 
-static char *
-canonicalisePath(const char *path, const char *pathVar)
+static char * canonicalisePath(const char *path, const char *pathVar)
 {
     _kernel_oserror *error;
     _kernel_swi_regs regs;
@@ -106,8 +104,7 @@ canonicalisePath(const char *path, const char *pathVar)
     return buf;
 }
 
-static _kernel_oserror *
-createDirectoryRecursive(char *path)
+static _kernel_oserror * createDirectoryRecursive(char *path)
 {
     char *ptr = NULL;
     _kernel_oserror *error;

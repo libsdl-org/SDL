@@ -28,8 +28,7 @@
 #include "../video/SDL_sysvideo.h"  /* for SDL_Window internals. */
 
 
-static int
-SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
+static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
 {
     static SDL_bool app_is_dropping = SDL_FALSE;
     int posted = 0;

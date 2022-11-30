@@ -164,8 +164,7 @@ Wayland_convert_mime_type(const char *mime_type)
     return found;
 }
 
-static SDL_MimeDataList*
-mime_data_list_find(struct wl_list* list,
+static SDL_MimeDataList* mime_data_list_find(struct wl_list* list,
                     const char* mime_type)
 {
     SDL_MimeDataList *found = NULL;
@@ -180,8 +179,7 @@ mime_data_list_find(struct wl_list* list,
     return found;
 }
 
-static int
-mime_data_list_add(struct wl_list* list,
+static int mime_data_list_add(struct wl_list* list,
                    const char* mime_type,
                    const void* buffer, size_t length)
 {
@@ -230,8 +228,7 @@ mime_data_list_add(struct wl_list* list,
     return status;
 }
 
-static void
-mime_data_list_free(struct wl_list *list)
+static void mime_data_list_free(struct wl_list *list)
 {
     SDL_MimeDataList *mime_data = NULL;
     SDL_MimeDataList *next = NULL;
@@ -331,8 +328,7 @@ Wayland_primary_selection_source_has_mime(SDL_WaylandPrimarySelectionSource *sou
     return found;
 }
 
-static void*
-Wayland_source_get_data(SDL_MimeDataList *mime_data,
+static void* Wayland_source_get_data(SDL_MimeDataList *mime_data,
                         size_t *length,
                         SDL_bool null_terminate)
 {

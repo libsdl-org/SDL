@@ -109,8 +109,7 @@
 #define IS_SURROGATE_PAIR(h,l) (IS_HIGH_SURROGATE(h) && IS_LOW_SURROGATE(l))
 #endif
 
-static SDL_Scancode
-VKeytoScancodeFallback(WPARAM vkey)
+static SDL_Scancode VKeytoScancodeFallback(WPARAM vkey)
 {
     switch (vkey) {
     case VK_LEFT: return SDL_SCANCODE_LEFT;
@@ -122,8 +121,7 @@ VKeytoScancodeFallback(WPARAM vkey)
     }
 }
 
-static SDL_Scancode
-VKeytoScancode(WPARAM vkey)
+static SDL_Scancode VKeytoScancode(WPARAM vkey)
 {
     switch (vkey) {
     case VK_MODECHANGE: return SDL_SCANCODE_MODE;
@@ -179,8 +177,7 @@ VKeytoScancode(WPARAM vkey)
     }
 }
 
-static SDL_Scancode
-WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
+static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 {
     SDL_Scancode code;
     int nScanCode = (lParam >> 16) & 0xFF;
@@ -265,14 +262,12 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-static SDL_bool
-WIN_ShouldIgnoreFocusClick()
+static SDL_bool WIN_ShouldIgnoreFocusClick()
 {
     return !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
 }
 
-static void
-WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_bool bSwapButtons, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
+static void WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_bool bSwapButtons, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
 {
     if (bSwapButtons) {
         if (button == SDL_BUTTON_LEFT) {
@@ -304,8 +299,7 @@ WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, Uint32 mouseFlags, SDL_
 * Some windows systems fail to send a WM_LBUTTONDOWN sometimes, but each mouse move contains the current button state also
 *  so this function reconciles our view of the world with the current buttons reported by windows
 */
-static void
-WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
+static void WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     if (wParam != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
@@ -321,8 +315,7 @@ WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mou
     }
 }
 
-static void
-WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
+static void WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     // Add a flag to distinguish raw mouse buttons from wParam above
     rawButtons |= 0x8000000;
@@ -364,8 +357,7 @@ WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mou
     }
 }
 
-static void
-WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
+static void WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
 {
     Uint32 mouseFlags;
     SHORT keyState;
@@ -400,8 +392,7 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     data->mouse_button_flags = (WPARAM)-1;
 }
 
-static void
-WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
+static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     HWND hwnd = data->hwnd;
@@ -480,8 +471,7 @@ WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
-static BOOL
-WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
+static BOOL WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
 {
     if (codepoint <= 0x7F) {
         text[0] = (char) codepoint;
@@ -507,16 +497,14 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
     return SDL_TRUE;
 }
 
-static BOOL
-WIN_ConvertUTF16toUTF8(UINT32 high_surrogate, UINT32 low_surrogate, char * text)
+static BOOL WIN_ConvertUTF16toUTF8(UINT32 high_surrogate, UINT32 low_surrogate, char * text)
 {
     const UINT32 SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
     const UINT32 codepoint = (high_surrogate << 10) + low_surrogate + SURROGATE_OFFSET;
     return WIN_ConvertUTF32toUTF8(codepoint, text);
 }
 
-static SDL_bool
-ShouldGenerateWindowCloseOnAltF4(void)
+static SDL_bool ShouldGenerateWindowCloseOnAltF4(void)
 {
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
@@ -554,8 +542,7 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource()
 }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
-static SDL_WindowData *
-WIN_GetWindowDataFromHWND(HWND hwnd)
+static SDL_WindowData * WIN_GetWindowDataFromHWND(HWND hwnd)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;

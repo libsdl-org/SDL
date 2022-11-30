@@ -54,8 +54,7 @@ static int last_state;
 /* Blank cursor */
 static SDL_Cursor *empty_cursor;
 
-static SDL_Cursor *
-Android_WrapCursor(int custom_cursor, int system_cursor)
+static SDL_Cursor * Android_WrapCursor(int custom_cursor, int system_cursor)
 {
     SDL_Cursor *cursor;
 
@@ -78,14 +77,12 @@ Android_WrapCursor(int custom_cursor, int system_cursor)
     return cursor;
 }
 
-static SDL_Cursor *
-Android_CreateDefaultCursor()
+static SDL_Cursor * Android_CreateDefaultCursor()
 {
     return Android_WrapCursor(0, SDL_SYSTEM_CURSOR_ARROW);
 }
 
-static SDL_Cursor *
-Android_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor * Android_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     int custom_cursor;
     SDL_Surface *converted;
@@ -103,14 +100,12 @@ Android_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     return Android_WrapCursor(custom_cursor, 0);
 }
 
-static SDL_Cursor *
-Android_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor * Android_CreateSystemCursor(SDL_SystemCursor id)
 {
     return Android_WrapCursor(0, id);
 }
 
-static void
-Android_FreeCursor(SDL_Cursor * cursor)
+static void Android_FreeCursor(SDL_Cursor * cursor)
 {
     SDL_AndroidCursorData *data = (SDL_AndroidCursorData*) cursor->driverdata;
     if (data->custom_cursor != 0) {
@@ -120,8 +115,7 @@ Android_FreeCursor(SDL_Cursor * cursor)
     SDL_free(cursor);
 }
 
-static SDL_Cursor *
-Android_CreateEmptyCursor()
+static SDL_Cursor * Android_CreateEmptyCursor()
 {
     if (empty_cursor == NULL) {
         SDL_Surface *empty_surface = SDL_CreateRGBSurfaceWithFormat(1, 1, SDL_PIXELFORMAT_ARGB8888);
@@ -134,8 +128,7 @@ Android_CreateEmptyCursor()
     return empty_cursor;
 }
 
-static void
-Android_DestroyEmptyCursor()
+static void Android_DestroyEmptyCursor()
 {
     if (empty_cursor) {
         Android_FreeCursor(empty_cursor);
@@ -143,8 +136,7 @@ Android_DestroyEmptyCursor()
     }
 }
 
-static int
-Android_ShowCursor(SDL_Cursor *cursor)
+static int Android_ShowCursor(SDL_Cursor *cursor)
 {
     if (cursor == NULL) {
         cursor = Android_CreateEmptyCursor();
@@ -167,8 +159,7 @@ Android_ShowCursor(SDL_Cursor *cursor)
     }
 }
 
-static int
-Android_SetRelativeMouseMode(SDL_bool enabled)
+static int Android_SetRelativeMouseMode(SDL_bool enabled)
 {
     if (!Android_JNI_SupportsRelativeMouse()) {
         return SDL_Unsupported();
@@ -204,8 +195,7 @@ Android_QuitMouse(void)
 }
 
 /* Translate Android mouse button state to SDL mouse button */
-static Uint8
-TranslateButton(int state)
+static Uint8 TranslateButton(int state)
 {
     if (state & BUTTON_PRIMARY) {
         return SDL_BUTTON_LEFT;

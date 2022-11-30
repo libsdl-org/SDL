@@ -40,8 +40,7 @@
 /* #define XRANDR_DISABLED_BY_DEFAULT */
 
 
-static int
-get_visualinfo(Display * display, int screen, XVisualInfo * vinfo)
+static int get_visualinfo(Display * display, int screen, XVisualInfo * vinfo)
 {
     const char *visual_id = SDL_getenv("SDL_VIDEO_X11_VISUALID");
     int depth;
@@ -147,8 +146,7 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
 }
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
-static SDL_bool
-CheckXRandR(Display * display, int *major, int *minor)
+static SDL_bool CheckXRandR(Display * display, int *major, int *minor)
 {
     /* Default the extension not available */
     *major = *minor = 0;
@@ -195,15 +193,13 @@ CheckXRandR(Display * display, int *major, int *minor)
 #define XRANDR_ROTATION_LEFT    (1 << 1)
 #define XRANDR_ROTATION_RIGHT   (1 << 3)
 
-static int
-CalculateXRandRRefreshRate(const XRRModeInfo *info)
+static int CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
     return (info->hTotal && info->vTotal) ?
         SDL_round(((double)info->dotClock / (double)(info->hTotal * info->vTotal))) : 0;
 }
 
-static SDL_bool
-SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
+static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
                   RRMode modeID, SDL_DisplayMode *mode)
 {
     int i;
@@ -237,8 +233,7 @@ SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
     return SDL_FALSE;
 }
 
-static void
-SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, RROutput output, const unsigned long widthmm, const unsigned long heightmm)
+static void SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, RROutput output, const unsigned long widthmm, const unsigned long heightmm)
 {
     /* See if we can get the EDID data for the real monitor name */
     int inches;
@@ -288,8 +283,7 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
 }
 
 
-static int
-X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_bool send_event)
+static int X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_bool send_event)
 {
     Atom EDID = X11_XInternAtom(dpy, "EDID", False);
     XRROutputInfo *output_info;
@@ -397,8 +391,7 @@ X11_AddXRandRDisplay(_THIS, Display *dpy, int screen, RROutput outputid, XRRScre
     return SDL_AddVideoDisplay(&display, send_event);
 }
 
-static void
-X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent *ev)
+static void X11_HandleXRandROutputChange(_THIS, const XRROutputChangeNotifyEvent *ev)
 {
     const int num_displays = SDL_GetNumVideoDisplays();
     SDL_VideoDisplay *display = NULL;
@@ -466,8 +459,7 @@ X11_HandleXRandREvent(_THIS, const XEvent *xevent)
 }
 
 
-static int
-X11_InitModes_XRandR(_THIS)
+static int X11_InitModes_XRandR(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     Display *dpy = data->display;
@@ -530,8 +522,7 @@ X11_InitModes_XRandR(_THIS)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
 
-static int
-GetXftDPI(Display* dpy)
+static int GetXftDPI(Display* dpy)
 {
     char* xdefault_resource;
     int xft_dpi, err;
@@ -735,8 +726,7 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
 /* This catches an error from XRRSetScreenSize, as a workaround for now. */
 /* !!! FIXME: remove this later when we have a better solution. */
 static int (*PreXRRSetScreenSizeErrorHandler)(Display *, XErrorEvent *) = NULL;
-static int
-SDL_XRRSetScreenSizeErrHandler(Display *d, XErrorEvent *e)
+static int SDL_XRRSetScreenSizeErrHandler(Display *d, XErrorEvent *e)
 {
     /* BadMatch: https://github.com/libsdl-org/SDL/issues/4561 */
     /* BadValue: https://github.com/libsdl-org/SDL/issues/4840 */

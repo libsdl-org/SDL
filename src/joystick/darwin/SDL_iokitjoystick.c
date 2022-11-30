@@ -110,8 +110,7 @@ static recDevice *GetDeviceForIndex(int device_index)
     return device;
 }
 
-static void
-FreeElementList(recElement *pElement)
+static void FreeElementList(recElement *pElement)
 {
     while (pElement) {
         recElement *pElementNext = pElement->pNext;
@@ -120,8 +119,7 @@ FreeElementList(recElement *pElement)
     }
 }
 
-static recDevice *
-FreeDevice(recDevice *removeDevice)
+static recDevice * FreeDevice(recDevice *removeDevice)
 {
     recDevice *pDeviceNext = NULL;
     if (removeDevice) {
@@ -175,8 +173,7 @@ FreeDevice(recDevice *removeDevice)
     return pDeviceNext;
 }
 
-static SDL_bool
-GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
+static SDL_bool GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
 {
     SInt32 value = 0;
     int returnValue = SDL_FALSE;
@@ -201,8 +198,7 @@ GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
     return returnValue;
 }
 
-static SDL_bool
-GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 min, SInt32 max, SInt32 *pValue)
+static SDL_bool GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 min, SInt32 max, SInt32 *pValue)
 {
     const float deviceScale = max - min;
     const float readScale = pElement->maxReport - pElement->minReport;
@@ -218,8 +214,7 @@ GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 m
     return returnValue;
 }
 
-static void
-JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
+static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
 {
     recDevice *device = (recDevice *) ctx;
     device->removed = SDL_TRUE;
@@ -252,15 +247,13 @@ JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
 static void AddHIDElement(const void *value, void *parameter);
 
 /* Call AddHIDElement() on all elements in an array of IOHIDElementRefs */
-static void
-AddHIDElements(CFArrayRef array, recDevice *pDevice)
+static void AddHIDElements(CFArrayRef array, recDevice *pDevice)
 {
     const CFRange range = { 0, CFArrayGetCount(array) };
     CFArrayApplyFunction(array, range, AddHIDElement, pDevice);
 }
 
-static SDL_bool
-ElementAlreadyAdded(const IOHIDElementCookie cookie, const recElement *listitem) {
+static SDL_bool ElementAlreadyAdded(const IOHIDElementCookie cookie, const recElement *listitem) {
     while (listitem) {
         if (listitem->cookie == cookie) {
             return SDL_TRUE;
@@ -271,8 +264,7 @@ ElementAlreadyAdded(const IOHIDElementCookie cookie, const recElement *listitem)
 }
 
 /* See if we care about this HID element, and if so, note it in our recDevice. */
-static void
-AddHIDElement(const void *value, void *parameter)
+static void AddHIDElement(const void *value, void *parameter)
 {
     recDevice *pDevice = (recDevice *) parameter;
     IOHIDElementRef refElement = (IOHIDElementRef) value;
@@ -415,8 +407,7 @@ AddHIDElement(const void *value, void *parameter)
 }
 
 
-static SDL_bool
-GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
+static SDL_bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
     Sint32 vendor = 0;
     Sint32 product = 0;
@@ -506,8 +497,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     return SDL_TRUE;
 }
 
-static SDL_bool
-JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
+static SDL_bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *i;
 
@@ -527,8 +517,7 @@ JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 }
 
 
-static void
-JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDeviceRef ioHIDDeviceObject)
+static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *device;
     int device_index = 0;
@@ -593,8 +582,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     SDL_PrivateJoystickAdded(device->instance_id);
 }
 
-static SDL_bool
-ConfigHIDManager(CFArrayRef matchingArray)
+static SDL_bool ConfigHIDManager(CFArrayRef matchingArray)
 {
     CFRunLoopRef runloop = CFRunLoopGetCurrent();
 
@@ -616,8 +604,7 @@ ConfigHIDManager(CFArrayRef matchingArray)
 }
 
 
-static CFDictionaryRef
-CreateHIDDeviceMatchDictionary(const UInt32 page, const UInt32 usage, int *okay)
+static CFDictionaryRef CreateHIDDeviceMatchDictionary(const UInt32 page, const UInt32 usage, int *okay)
 {
     CFDictionaryRef retval = NULL;
     CFNumberRef pageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
@@ -643,8 +630,7 @@ CreateHIDDeviceMatchDictionary(const UInt32 page, const UInt32 usage, int *okay)
     return retval;
 }
 
-static SDL_bool
-CreateHIDManager(void)
+static SDL_bool CreateHIDManager(void)
 {
     SDL_bool retval = SDL_FALSE;
     int okay = 1;
@@ -675,8 +661,7 @@ CreateHIDManager(void)
 }
 
 
-static int
-DARWIN_JoystickInit(void)
+static int DARWIN_JoystickInit(void)
 {
     if (gpDeviceList) {
         return SDL_SetError("Joystick: Device list already inited.");
@@ -689,8 +674,7 @@ DARWIN_JoystickInit(void)
     return 0;
 }
 
-static int
-DARWIN_JoystickGetCount(void)
+static int DARWIN_JoystickGetCount(void)
 {
     recDevice *device = gpDeviceList;
     int nJoySticks = 0;
@@ -705,8 +689,7 @@ DARWIN_JoystickGetCount(void)
     return nJoySticks;
 }
 
-static void
-DARWIN_JoystickDetect(void)
+static void DARWIN_JoystickDetect(void)
 {
     recDevice *device = gpDeviceList;
     while (device) {
@@ -737,19 +720,16 @@ DARWIN_JoystickGetDevicePath(int device_index)
     return NULL;
 }
 
-static int
-DARWIN_JoystickGetDevicePlayerIndex(int device_index)
+static int DARWIN_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
 }
 
-static void
-DARWIN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+static void DARWIN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID
-DARWIN_JoystickGetDeviceGUID( int device_index )
+static SDL_JoystickGUID DARWIN_JoystickGetDeviceGUID( int device_index )
 {
     recDevice *device = GetDeviceForIndex(device_index);
     SDL_JoystickGUID guid;
@@ -761,15 +741,13 @@ DARWIN_JoystickGetDeviceGUID( int device_index )
     return guid;
 }
 
-static SDL_JoystickID
-DARWIN_JoystickGetDeviceInstanceID(int device_index)
+static SDL_JoystickID DARWIN_JoystickGetDeviceInstanceID(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->instance_id : 0;
 }
 
-static int
-DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static int DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
 
@@ -788,8 +766,7 @@ DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 /*
  * Like strerror but for force feedback errors.
  */
-static const char *
-FFStrError(unsigned int err)
+static const char * FFStrError(unsigned int err)
 {
     switch (err) {
     case FFERR_DEVICEFULL:
@@ -841,8 +818,7 @@ FFStrError(unsigned int err)
     }
 }
 
-static int
-DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
+static int DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
 {
     HRESULT result;
 
@@ -878,8 +854,7 @@ DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude)
     return 0;
 }
 
-static int
-DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     HRESULT result;
     recDevice *device = joystick->hwdata;
@@ -918,14 +893,12 @@ DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint1
     return 0;
 }
 
-static int
-DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32
-DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
+static Uint32 DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     recDevice *device = joystick->hwdata;
     Uint32 result = 0;
@@ -941,26 +914,22 @@ DARWIN_JoystickGetCapabilities(SDL_Joystick *joystick)
     return result;
 }
 
-static int
-DARWIN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int DARWIN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-DARWIN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static int DARWIN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static void
-DARWIN_JoystickUpdate(SDL_Joystick *joystick)
+static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
 {
     recDevice *device = joystick->hwdata;
     recElement *element;
@@ -1063,8 +1032,7 @@ DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     }
 }
 
-static void
-DARWIN_JoystickClose(SDL_Joystick *joystick)
+static void DARWIN_JoystickClose(SDL_Joystick *joystick)
 {
     recDevice *device = joystick->hwdata;
     if (device) {
@@ -1072,8 +1040,7 @@ DARWIN_JoystickClose(SDL_Joystick *joystick)
     }
 }
 
-static void
-DARWIN_JoystickQuit(void)
+static void DARWIN_JoystickQuit(void)
 {
     while (FreeDevice(gpDeviceList)) {
         /* spin */
@@ -1087,8 +1054,7 @@ DARWIN_JoystickQuit(void)
     }
 }
 
-static SDL_bool
-DARWIN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static SDL_bool DARWIN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
 }

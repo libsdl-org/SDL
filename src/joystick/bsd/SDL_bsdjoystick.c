@@ -227,8 +227,7 @@ static void report_free(struct report *);
 #endif
 
 
-static int
-usage_to_joyaxe(int usage)
+static int usage_to_joyaxe(int usage)
 {
     int joyaxe;
     switch (usage) {
@@ -262,16 +261,14 @@ usage_to_joyaxe(int usage)
     return joyaxe;
 }
 
-static void
-FreeJoylistItem(SDL_joylist_item *item)
+static void FreeJoylistItem(SDL_joylist_item *item)
 {
     SDL_free(item->path);
     SDL_free(item->name);
     SDL_free(item);
 }
 
-static void
-FreeHwData(struct joystick_hwdata *hw)
+static void FreeHwData(struct joystick_hwdata *hw)
 {
     if (hw->type == BSDJOY_UHID) {
         report_free(&hw->inreport);
@@ -425,8 +422,7 @@ usberr:
     return NULL;
 }
 
-static int
-MaybeAddDevice(const char *path)
+static int MaybeAddDevice(const char *path)
 {
     struct stat sb;
     char *name = NULL;
@@ -518,8 +514,7 @@ MaybeAddDevice(const char *path)
     return numjoysticks;
 }
 
-static int
-BSD_JoystickInit(void)
+static int BSD_JoystickInit(void)
 {
     char s[16];
     int i;
@@ -545,19 +540,16 @@ BSD_JoystickInit(void)
     return numjoysticks;
 }
 
-static int
-BSD_JoystickGetCount(void)
+static int BSD_JoystickGetCount(void)
 {
     return numjoysticks;
 }
 
-static void
-BSD_JoystickDetect(void)
+static void BSD_JoystickDetect(void)
 {
 }
 
-static SDL_joylist_item *
-JoystickByDevIndex(int device_index)
+static SDL_joylist_item * JoystickByDevIndex(int device_index)
 {
     SDL_joylist_item *item = SDL_joylist;
 
@@ -574,44 +566,37 @@ JoystickByDevIndex(int device_index)
     return item;
 }
 
-static const char *
-BSD_JoystickGetDeviceName(int device_index)
+static const char * BSD_JoystickGetDeviceName(int device_index)
 {
     return JoystickByDevIndex(device_index)->name;
 }
 
-static const char *
-BSD_JoystickGetDevicePath(int device_index)
+static const char * BSD_JoystickGetDevicePath(int device_index)
 {
     return JoystickByDevIndex(device_index)->path;
 }
 
-static int
-BSD_JoystickGetDevicePlayerIndex(int device_index)
+static int BSD_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
 }
 
-static void
-BSD_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+static void BSD_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID
-BSD_JoystickGetDeviceGUID(int device_index)
+static SDL_JoystickGUID BSD_JoystickGetDeviceGUID(int device_index)
 {
     return JoystickByDevIndex(device_index)->guid;
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */
-static SDL_JoystickID
-BSD_JoystickGetDeviceInstanceID(int device_index)
+static SDL_JoystickID BSD_JoystickGetDeviceInstanceID(int device_index)
 {
     return JoystickByDevIndex(device_index)->device_instance;
 }
 
-static unsigned
-hatval_to_sdl(Sint32 hatval)
+static unsigned hatval_to_sdl(Sint32 hatval)
 {
     static const unsigned hat_dir_map[8] = {
         SDL_HAT_UP, SDL_HAT_RIGHTUP, SDL_HAT_RIGHT, SDL_HAT_RIGHTDOWN,
@@ -626,8 +611,7 @@ hatval_to_sdl(Sint32 hatval)
 }
 
 
-static int
-BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
+static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
 {
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
     struct joystick_hwdata *hw;
@@ -650,8 +634,7 @@ BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
     return 0;
 }
 
-static void
-BSD_JoystickUpdate(SDL_Joystick *joy)
+static void BSD_JoystickUpdate(SDL_Joystick *joy)
 {
     struct hid_item hitem;
     struct hid_data *hdata;
@@ -773,8 +756,7 @@ BSD_JoystickUpdate(SDL_Joystick *joy)
 }
 
 /* Function to close a joystick after use */
-static void
-BSD_JoystickClose(SDL_Joystick *joy)
+static void BSD_JoystickClose(SDL_Joystick *joy)
 {
     if (joy->hwdata) {
         FreeHwData(joy->hwdata);
@@ -782,8 +764,7 @@ BSD_JoystickClose(SDL_Joystick *joy)
     }
 }
 
-static void
-BSD_JoystickQuit(void)
+static void BSD_JoystickQuit(void)
 {
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
@@ -798,8 +779,7 @@ BSD_JoystickQuit(void)
     numjoysticks = 0;
 }
 
-static int
-report_alloc(struct report *r, struct report_desc *rd, int repind)
+static int report_alloc(struct report *r, struct report_desc *rd, int repind)
 {
     int len;
 
@@ -846,51 +826,43 @@ report_alloc(struct report *r, struct report_desc *rd, int repind)
     return 0;
 }
 
-static void
-report_free(struct report *r)
+static void report_free(struct report *r)
 {
     SDL_free(r->buf);
     r->status = SREPORT_UNINIT;
 }
 
-static int
-BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int
-BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static SDL_bool
-BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static SDL_bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
 }
 
-static Uint32
-BSD_JoystickGetCapabilities(SDL_Joystick *joystick)
+static Uint32 BSD_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     return 0;
 }
 
-static int
-BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static int BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }

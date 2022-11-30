@@ -40,8 +40,7 @@ static const char *proc_acpi_battery_path = "/proc/acpi/battery";
 static const char *proc_acpi_ac_adapter_path = "/proc/acpi/ac_adapter";
 static const char *sys_class_power_supply_path = "/sys/class/power_supply";
 
-static int
-open_power_file(const char *base, const char *node, const char *key)
+static int open_power_file(const char *base, const char *node, const char *key)
 {
     int fd;
     const size_t pathlen = SDL_strlen(base) + SDL_strlen(node) + SDL_strlen(key) + 3;
@@ -57,8 +56,7 @@ open_power_file(const char *base, const char *node, const char *key)
 }
 
 
-static SDL_bool
-read_power_file(const char *base, const char *node, const char *key,
+static SDL_bool read_power_file(const char *base, const char *node, const char *key,
                 char *buf, size_t buflen)
 {
     ssize_t br = 0;
@@ -76,8 +74,7 @@ read_power_file(const char *base, const char *node, const char *key,
 }
 
 
-static SDL_bool
-make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
+static SDL_bool make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
 {
     char *ptr = *_ptr;
 
@@ -123,8 +120,7 @@ make_proc_acpi_key_val(char **_ptr, char **_key, char **_val)
     return SDL_TRUE;
 }
 
-static void
-check_proc_acpi_battery(const char * node, SDL_bool * have_battery,
+static void check_proc_acpi_battery(const char * node, SDL_bool * have_battery,
                         SDL_bool * charging, int *seconds, int *percent)
 {
     const char *base = proc_acpi_battery_path;
@@ -212,8 +208,7 @@ check_proc_acpi_battery(const char * node, SDL_bool * have_battery,
     }
 }
 
-static void
-check_proc_acpi_ac_adapter(const char * node, SDL_bool * have_ac)
+static void check_proc_acpi_ac_adapter(const char * node, SDL_bool * have_ac)
 {
     const char *base = proc_acpi_ac_adapter_path;
     char state[256];
@@ -287,8 +282,7 @@ SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState * state,
 }
 
 
-static SDL_bool
-next_string(char **_ptr, char **_str)
+static SDL_bool next_string(char **_ptr, char **_str)
 {
     char *ptr = *_ptr;
     char *str;
@@ -315,8 +309,7 @@ next_string(char **_ptr, char **_str)
     return SDL_TRUE;
 }
 
-static SDL_bool
-int_string(char *str, int *val)
+static SDL_bool int_string(char *str, int *val)
 {
     char *endptr = NULL;
     *val = (int) SDL_strtol(str, &endptr, 0);
@@ -543,8 +536,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
 #define UPOWER_DBUS_INTERFACE "org.freedesktop.UPower"
 #define UPOWER_DEVICE_DBUS_INTERFACE "org.freedesktop.UPower.Device"
 
-static void
-check_upower_device(DBusConnection *conn, const char *path, SDL_PowerState *state, int *seconds, int *percent)
+static void check_upower_device(DBusConnection *conn, const char *path, SDL_PowerState *state, int *seconds, int *percent)
 {
     SDL_bool choose = SDL_FALSE;
     SDL_PowerState st;

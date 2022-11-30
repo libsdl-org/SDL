@@ -74,26 +74,22 @@ extern const struct wl_interface qt_extended_surface_interface;
 
 #define QT_SURFACE_EXTENSION_GET_EXTENDED_SURFACE   0
 
-static inline void
-qt_surface_extension_set_user_data(struct qt_surface_extension *qt_surface_extension, void *user_data)
+static inline void qt_surface_extension_set_user_data(struct qt_surface_extension *qt_surface_extension, void *user_data)
 {
     wl_proxy_set_user_data((struct wl_proxy *) qt_surface_extension, user_data);
 }
 
-static inline void *
-qt_surface_extension_get_user_data(struct qt_surface_extension *qt_surface_extension)
+static inline void * qt_surface_extension_get_user_data(struct qt_surface_extension *qt_surface_extension)
 {
     return wl_proxy_get_user_data((struct wl_proxy *) qt_surface_extension);
 }
 
-static inline void
-qt_surface_extension_destroy(struct qt_surface_extension *qt_surface_extension)
+static inline void qt_surface_extension_destroy(struct qt_surface_extension *qt_surface_extension)
 {
     WAYLAND_wl_proxy_destroy((struct wl_proxy *) qt_surface_extension);
 }
 
-static inline struct qt_extended_surface *
-qt_surface_extension_get_extended_surface(struct qt_surface_extension *qt_surface_extension, struct wl_surface *surface)
+static inline struct qt_extended_surface * qt_surface_extension_get_extended_surface(struct qt_surface_extension *qt_surface_extension, struct wl_surface *surface)
 {
     struct wl_proxy *id;
 
@@ -151,8 +147,7 @@ struct qt_extended_surface_listener {
               struct qt_extended_surface *qt_extended_surface);
 };
 
-static inline int
-qt_extended_surface_add_listener(struct qt_extended_surface *qt_extended_surface,
+static inline int qt_extended_surface_add_listener(struct qt_extended_surface *qt_extended_surface,
                  const struct qt_extended_surface_listener *listener, void *data)
 {
     return wl_proxy_add_listener((struct wl_proxy *) qt_extended_surface,
@@ -163,40 +158,34 @@ qt_extended_surface_add_listener(struct qt_extended_surface *qt_extended_surface
 #define QT_EXTENDED_SURFACE_SET_CONTENT_ORIENTATION 1
 #define QT_EXTENDED_SURFACE_SET_WINDOW_FLAGS    2
 
-static inline void
-qt_extended_surface_set_user_data(struct qt_extended_surface *qt_extended_surface, void *user_data)
+static inline void qt_extended_surface_set_user_data(struct qt_extended_surface *qt_extended_surface, void *user_data)
 {
     WAYLAND_wl_proxy_set_user_data((struct wl_proxy *) qt_extended_surface, user_data);
 }
 
-static inline void *
-qt_extended_surface_get_user_data(struct qt_extended_surface *qt_extended_surface)
+static inline void * qt_extended_surface_get_user_data(struct qt_extended_surface *qt_extended_surface)
 {
     return WAYLAND_wl_proxy_get_user_data((struct wl_proxy *) qt_extended_surface);
 }
 
-static inline void
-qt_extended_surface_destroy(struct qt_extended_surface *qt_extended_surface)
+static inline void qt_extended_surface_destroy(struct qt_extended_surface *qt_extended_surface)
 {
     WAYLAND_wl_proxy_destroy((struct wl_proxy *) qt_extended_surface);
 }
 
-static inline void
-qt_extended_surface_update_generic_property(struct qt_extended_surface *qt_extended_surface, const char *name, struct wl_array *value)
+static inline void qt_extended_surface_update_generic_property(struct qt_extended_surface *qt_extended_surface, const char *name, struct wl_array *value)
 {
     WAYLAND_wl_proxy_marshal((struct wl_proxy *) qt_extended_surface,
              QT_EXTENDED_SURFACE_UPDATE_GENERIC_PROPERTY, name, value);
 }
 
-static inline void
-qt_extended_surface_set_content_orientation(struct qt_extended_surface *qt_extended_surface, int32_t orientation)
+static inline void qt_extended_surface_set_content_orientation(struct qt_extended_surface *qt_extended_surface, int32_t orientation)
 {
     WAYLAND_wl_proxy_marshal((struct wl_proxy *) qt_extended_surface,
              QT_EXTENDED_SURFACE_SET_CONTENT_ORIENTATION, orientation);
 }
 
-static inline void
-qt_extended_surface_set_window_flags(struct qt_extended_surface *qt_extended_surface, int32_t flags)
+static inline void qt_extended_surface_set_window_flags(struct qt_extended_surface *qt_extended_surface, int32_t flags)
 {
     WAYLAND_wl_proxy_marshal((struct wl_proxy *) qt_extended_surface,
              QT_EXTENDED_SURFACE_SET_WINDOW_FLAGS, flags);
@@ -256,8 +245,7 @@ struct qt_touch_extension_listener {
               uint32_t flags);
 };
 
-static inline int
-qt_touch_extension_add_listener(struct qt_touch_extension *qt_touch_extension,
+static inline int qt_touch_extension_add_listener(struct qt_touch_extension *qt_touch_extension,
                 const struct qt_touch_extension_listener *listener, void *data)
 {
     return wl_proxy_add_listener((struct wl_proxy *) qt_touch_extension,
@@ -266,26 +254,22 @@ qt_touch_extension_add_listener(struct qt_touch_extension *qt_touch_extension,
 
 #define QT_TOUCH_EXTENSION_DUMMY    0
 
-static inline void
-qt_touch_extension_set_user_data(struct qt_touch_extension *qt_touch_extension, void *user_data)
+static inline void qt_touch_extension_set_user_data(struct qt_touch_extension *qt_touch_extension, void *user_data)
 {
     WAYLAND_wl_proxy_set_user_data((struct wl_proxy *) qt_touch_extension, user_data);
 }
 
-static inline void *
-qt_touch_extension_get_user_data(struct qt_touch_extension *qt_touch_extension)
+static inline void * qt_touch_extension_get_user_data(struct qt_touch_extension *qt_touch_extension)
 {
     return WAYLAND_wl_proxy_get_user_data((struct wl_proxy *) qt_touch_extension);
 }
 
-static inline void
-qt_touch_extension_destroy(struct qt_touch_extension *qt_touch_extension)
+static inline void qt_touch_extension_destroy(struct qt_touch_extension *qt_touch_extension)
 {
     WAYLAND_wl_proxy_destroy((struct wl_proxy *) qt_touch_extension);
 }
 
-static inline void
-qt_touch_extension_dummy(struct qt_touch_extension *qt_touch_extension)
+static inline void qt_touch_extension_dummy(struct qt_touch_extension *qt_touch_extension)
 {
     WAYLAND_wl_proxy_marshal((struct wl_proxy *) qt_touch_extension,
              QT_TOUCH_EXTENSION_DUMMY);
@@ -311,8 +295,7 @@ struct qt_windowmanager_listener {
              struct qt_windowmanager *qt_windowmanager);
 };
 
-static inline int
-qt_windowmanager_add_listener(struct qt_windowmanager *qt_windowmanager,
+static inline int qt_windowmanager_add_listener(struct qt_windowmanager *qt_windowmanager,
                   const struct qt_windowmanager_listener *listener, void *data)
 {
     return wl_proxy_add_listener((struct wl_proxy *) qt_windowmanager,
@@ -321,26 +304,22 @@ qt_windowmanager_add_listener(struct qt_windowmanager *qt_windowmanager,
 
 #define QT_WINDOWMANAGER_OPEN_URL   0
 
-static inline void
-qt_windowmanager_set_user_data(struct qt_windowmanager *qt_windowmanager, void *user_data)
+static inline void qt_windowmanager_set_user_data(struct qt_windowmanager *qt_windowmanager, void *user_data)
 {
     WAYLAND_wl_proxy_set_user_data((struct wl_proxy *) qt_windowmanager, user_data);
 }
 
-static inline void *
-qt_windowmanager_get_user_data(struct qt_windowmanager *qt_windowmanager)
+static inline void * qt_windowmanager_get_user_data(struct qt_windowmanager *qt_windowmanager)
 {
     return WAYLAND_wl_proxy_get_user_data((struct wl_proxy *) qt_windowmanager);
 }
 
-static inline void
-qt_windowmanager_destroy(struct qt_windowmanager *qt_windowmanager)
+static inline void qt_windowmanager_destroy(struct qt_windowmanager *qt_windowmanager)
 {
     WAYLAND_wl_proxy_destroy((struct wl_proxy *) qt_windowmanager);
 }
 
-static inline void
-qt_windowmanager_open_url(struct qt_windowmanager *qt_windowmanager, uint32_t remaining, const char *url)
+static inline void qt_windowmanager_open_url(struct qt_windowmanager *qt_windowmanager, uint32_t remaining, const char *url)
 {
     WAYLAND_wl_proxy_marshal((struct wl_proxy *) qt_windowmanager,
              QT_WINDOWMANAGER_OPEN_URL, remaining, url);

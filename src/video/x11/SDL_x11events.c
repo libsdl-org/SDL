@@ -179,8 +179,7 @@ static SDL_bool X11_KeyRepeat(Display *display, XEvent *event)
     return d.found;
 }
 
-static SDL_bool
-X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
+static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
 {
     /* according to the xlib docs, no specific mouse wheel events exist.
        However, the defacto standard is that the vertical wheel is X buttons
@@ -338,8 +337,7 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS */
 
-static unsigned
-X11_GetNumLockModifierMask(_THIS)
+static unsigned X11_GetNumLockModifierMask(_THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     Display *display = viddata->display;
@@ -364,8 +362,7 @@ X11_GetNumLockModifierMask(_THIS)
     return num_mask;
 }
 
-static unsigned
-X11_GetScrollLockModifierMask(_THIS)
+static unsigned X11_GetScrollLockModifierMask(_THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     Display *display = viddata->display;
@@ -441,8 +438,7 @@ X11_ReconcileKeyboardState(_THIS)
 }
 
 
-static void
-X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
+static void X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusIn\n", data);
@@ -462,8 +458,7 @@ X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
     }
 }
 
-static void
-X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
+static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusOut\n", data);
@@ -485,8 +480,7 @@ X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 #endif
 }
 
-static void
-X11_DispatchMapNotify(SDL_WindowData *data)
+static void X11_DispatchMapNotify(SDL_WindowData *data)
 {
     SDL_Window *window = data->window;
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
@@ -496,15 +490,13 @@ X11_DispatchMapNotify(SDL_WindowData *data)
     }
 }
 
-static void
-X11_DispatchUnmapNotify(SDL_WindowData *data)
+static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
     SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
     SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
 }
 
-static void
-InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
+static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SDL_Window* window = data->window;
@@ -529,8 +521,7 @@ InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
     X11_XSync(display, 0);
 }
 
-static void
-InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, int direction)
+static void InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, int direction)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SDL_Window* window = data->window;
@@ -559,8 +550,7 @@ InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, 
     X11_XSync(display, 0);
 }
 
-static SDL_bool
-ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
+static SDL_bool ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
 {
     SDL_Window *window = data->window;
 
@@ -597,8 +587,7 @@ ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
     return SDL_FALSE;
 }
 
-static void
-X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
+static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
 {
     if (latest && (latest != data->user_time)) {
         SDL_VideoData *videodata = data->videodata;
@@ -613,8 +602,7 @@ X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
     }
 }
 
-static void
-X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
+static void X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
 {
     int i;
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
@@ -718,8 +706,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
     }
 }
 
-static Bool
-isMapNotify(Display *display, XEvent *ev, XPointer arg)
+static Bool isMapNotify(Display *display, XEvent *ev, XPointer arg)
 {
     XUnmapEvent *unmap;
 
@@ -730,8 +717,7 @@ isMapNotify(Display *display, XEvent *ev, XPointer arg)
         ev->xmap.serial == unmap->serial;
 }
 
-static Bool
-isReparentNotify(Display *display, XEvent *ev, XPointer arg)
+static Bool isReparentNotify(Display *display, XEvent *ev, XPointer arg)
 {
     XUnmapEvent *unmap;
 
@@ -742,8 +728,7 @@ isReparentNotify(Display *display, XEvent *ev, XPointer arg)
         ev->xreparent.serial == unmap->serial;
 }
 
-static int
-XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out)
+static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out)
 {
     int result = X11_XLookupString(event_struct, buffer_return, bytes_buffer, keysym_return, status_in_out);
     if (result > 0) {
@@ -759,8 +744,7 @@ XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buff
     return result;
 }
 
-static void
-X11_DispatchEvent(_THIS, XEvent *xevent)
+static void X11_DispatchEvent(_THIS, XEvent *xevent)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display;
@@ -1575,8 +1559,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     }
 }
 
-static void
-X11_HandleFocusChanges(_THIS)
+static void X11_HandleFocusChanges(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     int i;
@@ -1599,14 +1582,12 @@ X11_HandleFocusChanges(_THIS)
     }
 }
 
-static Bool
-isAnyEvent(Display *display, XEvent *ev, XPointer arg)
+static Bool isAnyEvent(Display *display, XEvent *ev, XPointer arg)
 {
     return True;
 }
 
-static SDL_bool
-X11_PollEvent(Display *display, XEvent *event)
+static SDL_bool X11_PollEvent(Display *display, XEvent *event)
 {
     if (!X11_XCheckIfEvent(display, event, isAnyEvent, NULL)) {
         return SDL_FALSE;

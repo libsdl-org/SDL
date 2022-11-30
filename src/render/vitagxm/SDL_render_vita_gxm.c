@@ -84,8 +84,7 @@ static int VITA_GXM_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand
 static int VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count);
 static int VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count);
 
-static int
-VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y);
@@ -124,8 +123,7 @@ SDL_RenderDriver VITA_GXM_RenderDriver = {
      }
 };
 
-static int
-PixelFormatToVITAFMT(Uint32 format)
+static int PixelFormatToVITAFMT(Uint32 format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_ARGB8888:
@@ -205,8 +203,7 @@ StartDrawing(SDL_Renderer *renderer)
     data->drawing = SDL_TRUE;
 }
 
-static int
-VITA_GXM_SetVSync(SDL_Renderer * renderer, const int vsync)
+static int VITA_GXM_SetVSync(SDL_Renderer * renderer, const int vsync)
 {
     VITA_GXM_RenderData *data = renderer->driverdata;
     if (vsync) {
@@ -289,20 +286,17 @@ VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
     return renderer;
 }
 
-static void
-VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
+static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
 }
 
-static SDL_bool
-VITA_GXM_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     // only for custom modes. we build all modes on init, so no custom modes, sorry
     return SDL_FALSE;
 }
 
-static int
-VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData* vita_texture = (VITA_GXM_TextureData*) SDL_calloc(1, sizeof(VITA_GXM_TextureData));
@@ -362,8 +356,7 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer * renderer, SDL_Texture *texture
   }
 }
 
-static int
-VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static int VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     const SDL_Rect *rect, const void *pixels, int pitch)
 {
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
@@ -455,8 +448,7 @@ VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 #if SDL_HAVE_YUV
-static int
-VITA_GXM_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+static int VITA_GXM_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     const SDL_Rect * rect,
     const Uint8 *Yplane, int Ypitch,
     const Uint8 *Uplane, int Upitch,
@@ -531,8 +523,7 @@ VITA_GXM_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-static int
-VITA_GXM_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
+static int VITA_GXM_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
     const SDL_Rect * rect,
     const Uint8 *Yplane, int Ypitch,
     const Uint8 *UVplane, int UVpitch)
@@ -589,8 +580,7 @@ VITA_GXM_UpdateTextureNV(SDL_Renderer * renderer, SDL_Texture * texture,
 
 #endif
 
-static int
-VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+static int VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     const SDL_Rect *rect, void **pixels, int *pitch)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
@@ -609,16 +599,14 @@ VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     return 0;
 }
 
-static void
-VITA_GXM_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     // No need to update texture data on ps vita.
     // VITA_GXM_LockTexture already returns a pointer to the texture pixels buffer.
     // This really improves framerate when using lock/unlock.
 }
 
-static void
-VITA_GXM_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+static void VITA_GXM_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 {
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
 
@@ -637,14 +625,12 @@ VITA_GXM_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL
     return;
 }
 
-static int
-VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
+static int VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     return 0;
 }
 
-static void
-VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
+static void VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
 {
     if (blendMode != data->currentBlendMode) {
         fragment_programs *in = &data->blendFragmentPrograms.blend_mode_blend;
@@ -673,14 +659,12 @@ VITA_GXM_SetBlendMode(VITA_GXM_RenderData *data, int blendMode)
     }
 }
 
-static int
-VITA_GXM_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+static int VITA_GXM_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {
     return 0;
 }
 
-static int
-VITA_GXM_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+static int VITA_GXM_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
@@ -692,8 +676,7 @@ VITA_GXM_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
     return 0;
 }
 
-static int
-VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+static int VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
 
@@ -716,8 +699,7 @@ VITA_GXM_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const 
     return 0;
 }
 
-static int
-VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+static int VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     SDL_Color color = data->drawstate.color;
@@ -743,8 +725,7 @@ VITA_GXM_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const S
     return 0;
 }
 
-static int
-VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static int VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
@@ -837,8 +818,7 @@ VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Textu
     return 0;
 }
 
-static int
-VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     void *color_buffer;
     float clear_color[4];
@@ -870,8 +850,7 @@ VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 }
 
 
-static int
-SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
+static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     const SDL_BlendMode blend = cmd->data.draw.blend;
@@ -969,8 +948,7 @@ SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
     return 0;
 }
 
-static int
-VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
+static int VITA_GXM_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     StartDrawing(renderer);
@@ -1117,8 +1095,7 @@ void read_pixels(int x, int y, size_t width, size_t height, void *data) {
 }
 
 
-static int
-VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
+static int VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     Uint32 pixel_format, void *pixels, int pitch)
 {
     Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;
@@ -1179,8 +1156,7 @@ VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 }
 
 
-static int
-VITA_GXM_RenderPresent(SDL_Renderer *renderer)
+static int VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     SceCommonDialogUpdateParam updateParam;
@@ -1224,8 +1200,7 @@ VITA_GXM_RenderPresent(SDL_Renderer *renderer)
     return 0;
 }
 
-static void
-VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *) texture->driverdata;
@@ -1251,8 +1226,7 @@ VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     texture->driverdata = NULL;
 }
 
-static void
-VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
+static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *) renderer->driverdata;
     if (data) {

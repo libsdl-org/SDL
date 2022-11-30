@@ -79,8 +79,7 @@ static GUID IID_IGameBarStatics_ = { MAKELONG(0xA292, 0x1DB9), 0xCC78, 0x4173, {
    If a pointer is returned, it's ->Release() method must be called
    after the caller has finished using it.
 */
-static IGameBarStatics_ *
-WINRT_GetGameBar()
+static IGameBarStatics_ * WINRT_GetGameBar()
 {
     wchar_t *wClassName = L"Windows.Gaming.UI.GameBar";
     HSTRING hClassName;
@@ -110,8 +109,7 @@ done:
     return pGameBar;
 }
 
-static void
-WINRT_HandleGameBarIsInputRedirected_MainThread()
+static void WINRT_HandleGameBarIsInputRedirected_MainThread()
 {
     IGameBarStatics_ *gameBar;
     boolean isInputRedirected = 0;
@@ -137,8 +135,7 @@ WINRT_HandleGameBarIsInputRedirected_MainThread()
     gameBar->Release();
 }
 
-static void
-WINRT_HandleGameBarIsInputRedirected_NonMainThread(Platform::Object ^ o1, Platform::Object ^o2)
+static void WINRT_HandleGameBarIsInputRedirected_NonMainThread(Platform::Object ^ o1, Platform::Object ^o2)
 {
     Windows::UI::Core::CoreDispatcher ^dispatcher = WINRT_MainThreadDispatcher.Resolve<Windows::UI::Core::CoreDispatcher>();
     if (dispatcher) {

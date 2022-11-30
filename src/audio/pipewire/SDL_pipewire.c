@@ -123,8 +123,7 @@ static int         pipewire_version_patch;
 static const char *pipewire_library = SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC;
 static void       *pipewire_handle  = NULL;
 
-static int
-pipewire_dlsym(const char *fn, void **addr)
+static int pipewire_dlsym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(pipewire_handle, fn);
     if (*addr == NULL) {
@@ -140,8 +139,7 @@ pipewire_dlsym(const char *fn, void **addr)
         return -1;                                             \
     }
 
-static int
-load_pipewire_library()
+static int load_pipewire_library()
 {
     if ((pipewire_handle = SDL_LoadObject(pipewire_library))) {
         return 0;
@@ -150,8 +148,7 @@ load_pipewire_library()
     return -1;
 }
 
-static void
-unload_pipewire_library()
+static void unload_pipewire_library()
 {
     if (pipewire_handle) {
         SDL_UnloadObject(pipewire_handle);
@@ -163,21 +160,18 @@ unload_pipewire_library()
 
 #define SDL_PIPEWIRE_SYM(x) PIPEWIRE_##x = x
 
-static int
-load_pipewire_library()
+static int load_pipewire_library()
 {
     return 0;
 }
 
-static void
-unload_pipewire_library()
+static void unload_pipewire_library()
 { /* Nothing to do */
 }
 
 #endif /* SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC */
 
-static int
-load_pipewire_syms()
+static int load_pipewire_syms()
 {
     SDL_PIPEWIRE_SYM(pw_get_library_version);
     SDL_PIPEWIRE_SYM(pw_init);
@@ -219,8 +213,7 @@ pipewire_version_at_least(int major, int minor, int patch)
            (pipewire_version_major > major || pipewire_version_minor > minor || pipewire_version_patch >= patch);
 }
 
-static int
-init_pipewire_library()
+static int init_pipewire_library()
 {
     if (!load_pipewire_library()) {
         if (!load_pipewire_syms()) {
@@ -242,8 +235,7 @@ init_pipewire_library()
     return -1;
 }
 
-static void
-deinit_pipewire_library()
+static void deinit_pipewire_library()
 {
     PIPEWIRE_pw_deinit();
     unload_pipewire_library();
@@ -304,8 +296,7 @@ static char *pipewire_default_sink_id   = NULL;
 static char *pipewire_default_source_id = NULL;
 
 /* The active node list */
-static SDL_bool
-io_list_check_add(struct io_node *node)
+static SDL_bool io_list_check_add(struct io_node *node)
 {
     struct io_node *n;
     SDL_bool        ret = SDL_TRUE;
@@ -330,8 +321,7 @@ dup_found:
     return ret;
 }
 
-static void
-io_list_remove(Uint32 id)
+static void io_list_remove(Uint32 id)
 {
     struct io_node *n, *temp;
 
@@ -351,8 +341,7 @@ io_list_remove(Uint32 id)
     }
 }
 
-static void
-io_list_sort()
+static void io_list_sort()
 {
     struct io_node *default_sink = NULL, *default_source = NULL;
     struct io_node *n, *temp;
@@ -377,8 +366,7 @@ io_list_sort()
     }
 }
 
-static void
-io_list_clear()
+static void io_list_clear()
 {
     struct io_node *n, *temp;
 
@@ -412,8 +400,7 @@ io_list_get_by_path(char *path)
     return NULL;
 }
 
-static void
-node_object_destroy(struct node_object *node)
+static void node_object_destroy(struct node_object *node)
 {
     SDL_assert(node);
 
@@ -425,15 +412,13 @@ node_object_destroy(struct node_object *node)
 }
 
 /* The pending node list */
-static void
-pending_list_add(struct node_object *node)
+static void pending_list_add(struct node_object *node)
 {
     SDL_assert(node);
     spa_list_append(&hotplug_pending_list, &node->link);
 }
 
-static void
-pending_list_remove(Uint32 id)
+static void pending_list_remove(Uint32 id)
 {
     struct node_object *node, *temp;
 
@@ -444,8 +429,7 @@ pending_list_remove(Uint32 id)
     }
 }
 
-static void
-pending_list_clear()
+static void pending_list_clear()
 {
     struct node_object *node, *temp;
 
@@ -454,8 +438,7 @@ pending_list_clear()
     }
 }
 
-static void *
-node_object_new(Uint32 id, const char *type, Uint32 version, const void *funcs, const struct pw_core_events *core_events)
+static void * node_object_new(Uint32 id, const char *type, Uint32 version, const void *funcs, const struct pw_core_events *core_events)
 {
     struct pw_proxy    *proxy;
     struct node_object *node;
@@ -484,8 +467,7 @@ node_object_new(Uint32 id, const char *type, Uint32 version, const void *funcs, 
 }
 
 /* Core sync points */
-static void
-core_events_hotplug_init_callback(void *object, uint32_t id, int seq)
+static void core_events_hotplug_init_callback(void *object, uint32_t id, int seq)
 {
     if (id == PW_ID_CORE && seq == hotplug_init_seq_val) {
         /* This core listener is no longer needed. */
@@ -497,8 +479,7 @@ core_events_hotplug_init_callback(void *object, uint32_t id, int seq)
     }
 }
 
-static void
-core_events_interface_callback(void *object, uint32_t id, int seq)
+static void core_events_interface_callback(void *object, uint32_t id, int seq)
 {
     struct node_object *node = object;
     struct io_node     *io   = node->userdata;
@@ -516,8 +497,7 @@ core_events_interface_callback(void *object, uint32_t id, int seq)
     }
 }
 
-static void
-core_events_metadata_callback(void *object, uint32_t id, int seq)
+static void core_events_metadata_callback(void *object, uint32_t id, int seq)
 {
     struct node_object *node = object;
 
@@ -530,8 +510,7 @@ static const struct pw_core_events hotplug_init_core_events = { PW_VERSION_CORE_
 static const struct pw_core_events interface_core_events    = { PW_VERSION_CORE_EVENTS, .done = core_events_interface_callback };
 static const struct pw_core_events metadata_core_events     = { PW_VERSION_CORE_EVENTS, .done = core_events_metadata_callback };
 
-static void
-hotplug_core_sync(struct node_object *node)
+static void hotplug_core_sync(struct node_object *node)
 {
     /*
      * Node sync events *must* come before the hotplug init sync events or the initial
@@ -547,8 +526,7 @@ hotplug_core_sync(struct node_object *node)
 }
 
 /* Helpers for retrieving values from params */
-static SDL_bool
-get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int *max)
+static SDL_bool get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int *max)
 {
     const struct spa_pod_prop *prop;
     struct spa_pod            *value;
@@ -581,8 +559,7 @@ get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int
     return SDL_FALSE;
 }
 
-static SDL_bool
-get_int_param(const struct spa_pod *param, Uint32 key, int *val)
+static SDL_bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 {
     const struct spa_pod_prop *prop;
     Sint32                     v;
@@ -601,8 +578,7 @@ get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 }
 
 /* Interface node callbacks */
-static void
-node_event_info(void *object, const struct pw_node_info *info)
+static void node_event_info(void *object, const struct pw_node_info *info)
 {
     struct node_object *node = object;
     struct io_node     *io   = node->userdata;
@@ -624,8 +600,7 @@ node_event_info(void *object, const struct pw_node_info *info)
     }
 }
 
-static void
-node_event_param(void *object, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param)
+static void node_event_param(void *object, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param)
 {
     struct node_object *node = object;
     struct io_node     *io   = node->userdata;
@@ -650,8 +625,7 @@ node_event_param(void *object, int seq, uint32_t id, uint32_t index, uint32_t ne
 static const struct pw_node_events interface_node_events = { PW_VERSION_NODE_EVENTS, .info = node_event_info,
                                                              .param = node_event_param };
 
-static char*
-get_name_from_json(const char *json)
+static char* get_name_from_json(const char *json)
 {
     struct spa_json parser[2];
     char key[7]; /* "name" */
@@ -673,8 +647,7 @@ get_name_from_json(const char *json)
 }
 
 /* Metadata node callback */
-static int
-metadata_property(void *object, Uint32 subject, const char *key, const char *type, const char *value)
+static int metadata_property(void *object, Uint32 subject, const char *key, const char *type, const char *value)
 {
     struct node_object *node = object;
 
@@ -700,8 +673,7 @@ metadata_property(void *object, Uint32 subject, const char *key, const char *typ
 static const struct pw_metadata_events metadata_node_events = { PW_VERSION_METADATA_EVENTS, .property = metadata_property };
 
 /* Global registry callbacks */
-static void
-registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, const char *type, uint32_t version,
+static void registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, const char *type, uint32_t version,
                                const struct spa_dict *props)
 {
     struct node_object *node;
@@ -772,8 +744,7 @@ registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, 
     }
 }
 
-static void
-registry_event_remove_callback(void *object, uint32_t id)
+static void registry_event_remove_callback(void *object, uint32_t id)
 {
     io_list_remove(id);
     pending_list_remove(id);
@@ -783,8 +754,7 @@ static const struct pw_registry_events registry_events = { PW_VERSION_REGISTRY_E
                                                            .global_remove = registry_event_remove_callback };
 
 /* The hotplug thread */
-static int
-hotplug_loop_init()
+static int hotplug_loop_init()
 {
     int res;
 
@@ -827,8 +797,7 @@ hotplug_loop_init()
     return 0;
 }
 
-static void
-hotplug_loop_destroy()
+static void hotplug_loop_destroy()
 {
     if (hotplug_loop) {
         PIPEWIRE_pw_thread_loop_stop(hotplug_loop);
@@ -870,8 +839,7 @@ hotplug_loop_destroy()
     }
 }
 
-static void
-PIPEWIRE_DetectDevices()
+static void PIPEWIRE_DetectDevices()
 {
     struct io_node *io;
 
@@ -913,8 +881,7 @@ static const enum spa_audio_channel PIPEWIRE_channel_map_8[] = { SPA_AUDIO_CHANN
 
 #define COPY_CHANNEL_MAP(c) SDL_memcpy(info->position, PIPEWIRE_channel_map_##c, sizeof(PIPEWIRE_channel_map_##c))
 
-static void
-initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info_raw *info)
+static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info_raw *info)
 {
     info->channels = spec->channels;
     info->rate     = spec->freq;
@@ -981,8 +948,7 @@ initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info_raw *info)
     }
 }
 
-static void
-output_callback(void *data)
+static void output_callback(void *data)
 {
     struct pw_buffer  *pw_buf;
     struct spa_buffer *spa_buf;
@@ -1047,8 +1013,7 @@ output_callback(void *data)
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
 }
 
-static void
-input_callback(void *data)
+static void input_callback(void *data)
 {
     struct pw_buffer  *pw_buf;
     struct spa_buffer *spa_buf;
@@ -1103,8 +1068,7 @@ input_callback(void *data)
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
 }
 
-static void
-stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
+static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 {
     _THIS = data;
 
@@ -1134,8 +1098,7 @@ stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
     PIPEWIRE_pw_thread_loop_signal(this->hidden->loop, false);
 }
 
-static void
-stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stream_state state, const char *error)
+static void stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stream_state state, const char *error)
 {
     _THIS = data;
 
@@ -1157,8 +1120,7 @@ static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_
                                                               .add_buffer    = stream_add_buffer_callback,
                                                               .process       = input_callback };
 
-static int
-PIPEWIRE_OpenDevice(_THIS, const char *devname)
+static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
 {
     /*
      * NOTE: The PW_STREAM_FLAG_RT_PROCESS flag can be set to call the stream
@@ -1341,8 +1303,7 @@ static void PIPEWIRE_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
-PIPEWIRE_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+static int PIPEWIRE_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     struct io_node *node;
     char *target;
@@ -1380,8 +1341,7 @@ failed:
     return ret;
 }
 
-static void
-PIPEWIRE_Deinitialize()
+static void PIPEWIRE_Deinitialize()
 {
     if (pipewire_initialized) {
         hotplug_loop_destroy();
@@ -1390,8 +1350,7 @@ PIPEWIRE_Deinitialize()
     }
 }
 
-static SDL_bool
-PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
+static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 {
     if (!pipewire_initialized) {
         if (init_pipewire_library() < 0) {

@@ -110,15 +110,13 @@
    the idea is borrowed from the libmpeg2 library - thanks!
  */
 static jmp_buf jmpbuf;
-static void
-illegal_instruction(int sig)
+static void illegal_instruction(int sig)
 {
     longjmp(jmpbuf, 1);
 }
 #endif /* HAVE_SETJMP */
 
-static int
-CPU_haveCPUID(void)
+static int CPU_haveCPUID(void)
 {
     int has_CPUID = 0;
 
@@ -264,8 +262,7 @@ static int CPU_CPUIDMaxFunction = 0;
 static SDL_bool CPU_OSSavesYMM = SDL_FALSE;
 static SDL_bool CPU_OSSavesZMM = SDL_FALSE;
 
-static void
-CPU_calcCPUIDFeatures(void)
+static void CPU_calcCPUIDFeatures(void)
 {
     static SDL_bool checked = SDL_FALSE;
     if (!checked) {
@@ -304,8 +301,7 @@ CPU_calcCPUIDFeatures(void)
     }
 }
 
-static int
-CPU_haveAltiVec(void)
+static int CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
 #ifndef SDL_CPUINFO_DISABLED
@@ -340,22 +336,19 @@ CPU_haveAltiVec(void)
 }
 
 #if (defined(__ARM_ARCH) && (__ARM_ARCH >= 6)) || defined(__aarch64__)
-static int
-CPU_haveARMSIMD(void)
+static int CPU_haveARMSIMD(void)
 {
     return 1;
 }
 
 #elif !defined(__arm__)
-static int
-CPU_haveARMSIMD(void)
+static int CPU_haveARMSIMD(void)
 {
     return 0;
 }
 
 #elif defined(__LINUX__)
-static int
-CPU_haveARMSIMD(void)
+static int CPU_haveARMSIMD(void)
 {
     int arm_simd = 0;
     int fd;
@@ -378,8 +371,7 @@ CPU_haveARMSIMD(void)
 }
 
 #elif defined(__RISCOS__)
-static int
-CPU_haveARMSIMD(void)
+static int CPU_haveARMSIMD(void)
 {
     _kernel_swi_regs regs;
     regs.r[0] = 0;
@@ -401,8 +393,7 @@ CPU_haveARMSIMD(void)
 }
 
 #else
-static int
-CPU_haveARMSIMD(void)
+static int CPU_haveARMSIMD(void)
 {
 #warning SDL_HasARMSIMD is not implemented for this ARM platform. Write me.
     return 0;
@@ -410,8 +401,7 @@ CPU_haveARMSIMD(void)
 #endif
 
 #if defined(__LINUX__) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
-static int
-readProcAuxvForNeon(void)
+static int readProcAuxvForNeon(void)
 {
     int neon = 0;
     int fd;
@@ -431,8 +421,7 @@ readProcAuxvForNeon(void)
 }
 #endif
 
-static int
-CPU_haveNEON(void)
+static int CPU_haveNEON(void)
 {
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
@@ -501,8 +490,7 @@ CPU_haveNEON(void)
 #endif
 }
 
-static int
-CPU_readCPUCFG(void)
+static int CPU_readCPUCFG(void)
 {
     uint32_t cfg2 = 0;
 #if defined __loongarch__
@@ -529,8 +517,7 @@ CPU_have3DNow(void)
 #endif
 }
 #else
-static int
-CPU_have3DNow(void)
+static int CPU_have3DNow(void)
 {
     if (CPU_CPUIDMaxFunction > 0) {  /* that is, do we have CPUID at all? */
         int a, b, c, d;
@@ -603,8 +590,7 @@ CPU_haveAVX2(void)
 #endif
 }
 #else
-static int
-CPU_haveAVX2(void)
+static int CPU_haveAVX2(void)
 {
     if (CPU_OSSavesYMM && (CPU_CPUIDMaxFunction >= 7)) {
         int a, b, c, d;
@@ -623,8 +609,7 @@ CPU_haveAVX512F(void)
     return 0;
 }
 #else
-static int
-CPU_haveAVX512F(void)
+static int CPU_haveAVX512F(void)
 {
     if (CPU_OSSavesZMM && (CPU_CPUIDMaxFunction >= 7)) {
         int a, b, c, d;
@@ -682,8 +667,7 @@ SDL_GetCPUType(void)
 }
 #else
 /* Oh, such a sweet sweet trick, just not very useful. :) */
-static const char *
-SDL_GetCPUType(void)
+static const char * SDL_GetCPUType(void)
 {
     static char SDL_CPUType[13];
 
@@ -731,8 +715,7 @@ SDL_GetCPUName(void)
     return SDL_CPUName;
 }
 #else
-static const char *
-SDL_GetCPUName(void)
+static const char * SDL_GetCPUName(void)
 {
     static char SDL_CPUName[48];
 
@@ -827,8 +810,7 @@ SDL_GetCPUCacheLineSize(void)
 static Uint32 SDL_CPUFeatures = 0xFFFFFFFF;
 static Uint32 SDL_SIMDAlignment = 0xFFFFFFFF;
 
-static Uint32
-SDL_GetCPUFeatures(void)
+static Uint32 SDL_GetCPUFeatures(void)
 {
     if (SDL_CPUFeatures == 0xFFFFFFFF) {
         CPU_calcCPUIDFeatures();

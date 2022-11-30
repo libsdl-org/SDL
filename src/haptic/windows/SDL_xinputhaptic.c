@@ -142,8 +142,7 @@ SDL_XINPUT_HapticMaybeRemoveDevice(const DWORD dwUserid)
  * Mostly, this is here to get rumbling to work, and all the other features
  *  are absent in the XInput path for now.  :(
  */
-static int SDLCALL
-SDL_RunXInputHaptic(void *arg)
+static int SDLCALL SDL_RunXInputHaptic(void *arg)
 {
     struct haptic_hwdata *hwdata = (struct haptic_hwdata *) arg;
 
@@ -164,8 +163,7 @@ SDL_RunXInputHaptic(void *arg)
     return 0;
 }
 
-static int
-SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 userid)
+static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 userid)
 {
     char threadName[32];
     XINPUT_VIBRATION vibration = { 0, 0 };  /* stop any current vibration */

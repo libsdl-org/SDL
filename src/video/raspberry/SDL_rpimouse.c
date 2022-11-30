@@ -50,15 +50,13 @@ static int RPI_WarpMouseGlobal(int x, int y);
 
 static SDL_Cursor *global_cursor;
 
-static SDL_Cursor *
-RPI_CreateDefaultCursor(void)
+static SDL_Cursor * RPI_CreateDefaultCursor(void)
 {
     return SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH, DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
 }
 
 /* Create a cursor from a surface */
-static SDL_Cursor *
-RPI_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor * RPI_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     RPI_CursorData *curdata;
     SDL_Cursor *cursor;
@@ -106,8 +104,7 @@ RPI_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 }
 
 /* Show the specified cursor, or hide if cursor is NULL */
-static int
-RPI_ShowCursor(SDL_Cursor * cursor)
+static int RPI_ShowCursor(SDL_Cursor * cursor)
 {
     int ret;
     DISPMANX_UPDATE_HANDLE_T update;
@@ -195,8 +192,7 @@ RPI_ShowCursor(SDL_Cursor * cursor)
 }
 
 /* Free a window manager cursor */
-static void
-RPI_FreeCursor(SDL_Cursor * cursor)
+static void RPI_FreeCursor(SDL_Cursor * cursor)
 {
     int ret;
     DISPMANX_UPDATE_HANDLE_T update;
@@ -230,15 +226,13 @@ RPI_FreeCursor(SDL_Cursor * cursor)
 }
 
 /* Warp the mouse to (x,y) */
-static void
-RPI_WarpMouse(SDL_Window * window, int x, int y)
+static void RPI_WarpMouse(SDL_Window * window, int x, int y)
 {
     RPI_WarpMouseGlobal(x, y);
 }
 
 /* Warp the mouse to (x,y) */
-static int
-RPI_WarpMouseGlobal(int x, int y)
+static int RPI_WarpMouseGlobal(int x, int y)
 {
     RPI_CursorData *curdata;
     DISPMANX_UPDATE_HANDLE_T update;
@@ -296,8 +290,7 @@ RPI_WarpMouseGlobal(int x, int y)
 }
 
 /* Warp the mouse to (x,y) */
-static int
-RPI_WarpMouseGlobalGraphicOnly(int x, int y)
+static int RPI_WarpMouseGlobalGraphicOnly(int x, int y)
 {
     RPI_CursorData *curdata;
     DISPMANX_UPDATE_HANDLE_T update;
@@ -375,8 +368,7 @@ RPI_QuitMouse(_THIS)
 }
 
 /* This is called when a mouse motion event occurs */
-static void
-RPI_MoveCursor(SDL_Cursor * cursor)
+static void RPI_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     /* We must NOT call SDL_SendMouseMotion() on the next call or we will enter recursivity, 

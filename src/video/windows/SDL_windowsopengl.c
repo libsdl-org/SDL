@@ -207,8 +207,7 @@ WIN_GL_UnloadLibrary(_THIS)
     _this->gl_data = NULL;
 }
 
-static void
-WIN_GL_SetupPixelFormat(_THIS, PIXELFORMATDESCRIPTOR * pfd)
+static void WIN_GL_SetupPixelFormat(_THIS, PIXELFORMATDESCRIPTOR * pfd)
 {
     SDL_zerop(pfd);
     pfd->nSize = sizeof(*pfd);
@@ -246,8 +245,7 @@ WIN_GL_SetupPixelFormat(_THIS, PIXELFORMATDESCRIPTOR * pfd)
 /* Choose the closest pixel format that meets or exceeds the target.
    FIXME: Should we weight any particular attribute over any other?
 */
-static int
-WIN_GL_ChoosePixelFormat(HDC hdc, PIXELFORMATDESCRIPTOR * target)
+static int WIN_GL_ChoosePixelFormat(HDC hdc, PIXELFORMATDESCRIPTOR * target)
 {
     PIXELFORMATDESCRIPTOR pfd;
     int count, index, best = 0;
@@ -344,8 +342,7 @@ WIN_GL_ChoosePixelFormat(HDC hdc, PIXELFORMATDESCRIPTOR * target)
     return best;
 }
 
-static SDL_bool
-HasExtension(const char *extension, const char *extensions)
+static SDL_bool HasExtension(const char *extension, const char *extensions)
 {
     const char *start;
     const char *where, *terminator;
@@ -493,8 +490,7 @@ WIN_GL_InitExtensions(_THIS)
     WIN_PumpEvents(_this);
 }
 
-static int
-WIN_GL_ChoosePixelFormatARB(_THIS, int *iAttribs, float *fAttribs)
+static int WIN_GL_ChoosePixelFormatARB(_THIS, int *iAttribs, float *fAttribs)
 {
     HWND hwnd;
     HDC hdc;
@@ -535,8 +531,7 @@ WIN_GL_ChoosePixelFormatARB(_THIS, int *iAttribs, float *fAttribs)
 }
 
 /* actual work of WIN_GL_SetupWindow() happens here. */
-static int
-WIN_GL_SetupWindowInternal(_THIS, SDL_Window * window)
+static int WIN_GL_SetupWindowInternal(_THIS, SDL_Window * window)
 {
     HDC hdc = ((SDL_WindowData *) window->driverdata)->hdc;
     PIXELFORMATDESCRIPTOR pfd;

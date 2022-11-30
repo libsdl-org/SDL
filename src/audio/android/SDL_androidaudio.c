@@ -34,8 +34,7 @@
 static SDL_AudioDevice* audioDevice = NULL;
 static SDL_AudioDevice* captureDevice = NULL;
 
-static int
-ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
+static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
     SDL_bool iscapture = this->iscapture;
@@ -77,32 +76,27 @@ ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void
-ANDROIDAUDIO_PlayDevice(_THIS)
+static void ANDROIDAUDIO_PlayDevice(_THIS)
 {
     Android_JNI_WriteAudioBuffer();
 }
 
-static Uint8 *
-ANDROIDAUDIO_GetDeviceBuf(_THIS)
+static Uint8 * ANDROIDAUDIO_GetDeviceBuf(_THIS)
 {
     return Android_JNI_GetAudioBuffer();
 }
 
-static int
-ANDROIDAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int ANDROIDAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     return Android_JNI_CaptureAudioBuffer(buffer, buflen);
 }
 
-static void
-ANDROIDAUDIO_FlushCapture(_THIS)
+static void ANDROIDAUDIO_FlushCapture(_THIS)
 {
     Android_JNI_FlushCapturedAudio();
 }
 
-static void
-ANDROIDAUDIO_CloseDevice(_THIS)
+static void ANDROIDAUDIO_CloseDevice(_THIS)
 {
     /* At this point SDL_CloseAudioDevice via close_audio_device took care of terminating the audio thread
        so it's safe to terminate the Java side buffer and AudioTrack
@@ -118,8 +112,7 @@ ANDROIDAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static SDL_bool
-ANDROIDAUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool ANDROIDAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = ANDROIDAUDIO_OpenDevice;

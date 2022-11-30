@@ -96,8 +96,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
     return 0;
 }
 
-static void
-SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
+static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
     SDL_HIDAPI_RumbleRequest *request;
 
@@ -140,8 +139,7 @@ SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     SDL_AtomicSet(&ctx->initialized, SDL_FALSE);
 }
 
-static int
-SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
+static int SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
     ctx->lock = SDL_CreateMutex();
     if (!ctx->lock) {

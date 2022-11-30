@@ -86,8 +86,7 @@ static int numhaptics = 0;
  * Test whether a device has haptic properties.
  * Returns available properties or 0 if there are none.
  */
-static int
-EV_IsHaptic(int fd)
+static int EV_IsHaptic(int fd)
 {
     unsigned int ret;
     unsigned long features[1 + FF_MAX / sizeof(unsigned long)];
@@ -125,8 +124,7 @@ EV_IsHaptic(int fd)
 /*
  * Tests whether a device is a mouse or not.
  */
-static int
-EV_IsMouse(int fd)
+static int EV_IsMouse(int fd)
 {
     unsigned long argp[40];
 
@@ -187,8 +185,7 @@ SDL_SYS_NumHaptics(void)
     return numhaptics;
 }
 
-static SDL_hapticlist_item *
-HapticByDevIndex(int device_index)
+static SDL_hapticlist_item * HapticByDevIndex(int device_index)
 {
     SDL_hapticlist_item *item = SDL_hapticlist;
 
@@ -229,8 +226,7 @@ static void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class,
 }
 #endif /* SDL_USE_LIBUDEV */
 
-static int
-MaybeAddDevice(const char *path)
+static int MaybeAddDevice(const char *path)
 {
     struct stat sb;
     int fd;
@@ -299,8 +295,7 @@ MaybeAddDevice(const char *path)
 }
 
 #if SDL_USE_LIBUDEV
-static int
-MaybeRemoveDevice(const char* path)
+static int MaybeRemoveDevice(const char* path)
 {
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;
@@ -342,8 +337,7 @@ MaybeRemoveDevice(const char* path)
 /*
  * Gets the name from a file descriptor.
  */
-static const char *
-SDL_SYS_HapticNameFromFD(int fd)
+static const char * SDL_SYS_HapticNameFromFD(int fd)
 {
     static char namebuf[128];
 
@@ -388,8 +382,7 @@ SDL_SYS_HapticName(int index)
 /*
  * Opens the haptic device from the file descriptor.
  */
-static int
-SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
+static int SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
 {
     /* Allocate the hwdata */
     haptic->hwdata = (struct haptic_hwdata *)
@@ -641,8 +634,7 @@ SDL_SYS_HapticQuit(void)
 /*
  * Converts an SDL button to a ff_trigger button.
  */
-static Uint16
-SDL_SYS_ToButton(Uint16 button)
+static Uint16 SDL_SYS_ToButton(Uint16 button)
 {
     Uint16 ff_button;
 
@@ -663,8 +655,7 @@ SDL_SYS_ToButton(Uint16 button)
 /*
  * Initializes the ff_effect usable direction from a SDL_HapticDirection.
  */
-static int
-SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
+static int SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
 {
     Uint32 tmp;
 
@@ -737,8 +728,7 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
  * Initializes the Linux effect struct from a haptic_effect.
  * Values above 32767 (for unsigned) are unspecified so we must clamp.
  */
-static int
-SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
+static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 {
     SDL_HapticConstant *constant;
     SDL_HapticPeriodic *periodic;

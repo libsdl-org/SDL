@@ -297,8 +297,7 @@ X11_GL_UnloadLibrary(_THIS)
     _this->gl_data = NULL;
 }
 
-static SDL_bool
-HasExtension(const char *extension, const char *extensions)
+static SDL_bool HasExtension(const char *extension, const char *extensions)
 {
     const char *start;
     const char *where, *terminator;
@@ -337,8 +336,7 @@ HasExtension(const char *extension, const char *extensions)
     return SDL_FALSE;
 }
 
-static void
-X11_GL_InitExtensions(_THIS)
+static void X11_GL_InitExtensions(_THIS)
 {
     Display *display = ((SDL_VideoData *) _this->driverdata)->display;
     const int screen = DefaultScreen(display);
@@ -490,8 +488,7 @@ X11_GL_InitExtensions(_THIS)
  *  In case of failure, if that pointer is not NULL, set that pointer to None
  *  and try again.
  */
-static int
-X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int size, Bool for_FBConfig, int **_pvistypeattr)
+static int X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int size, Bool for_FBConfig, int **_pvistypeattr)
 {
     int i = 0;
     const int MAX_ATTRIBUTES = 64;
@@ -663,8 +660,7 @@ static int (*handler) (Display *, XErrorEvent *) = NULL;
 static const char *errorHandlerOperation = NULL;
 static int errorBase = 0;
 static int errorCode = 0;
-static int
-X11_GL_ErrorHandler(Display * d, XErrorEvent * e)
+static int X11_GL_ErrorHandler(Display * d, XErrorEvent * e)
 {
     char *x11_error = NULL;
     char x11_error_locale[256];

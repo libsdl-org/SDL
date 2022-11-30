@@ -39,8 +39,7 @@
 #define SCE_AUDIO_SAMPLE_ALIGN(s)   (((s) + 63) & ~63)
 #define SCE_AUDIO_MAX_VOLUME    0x8000
 
-static int
-VITAAUD_OpenCaptureDevice(_THIS)
+static int VITAAUD_OpenCaptureDevice(_THIS)
 {
     this->spec.freq = 16000;
     this->spec.samples = 512;
@@ -57,8 +56,7 @@ VITAAUD_OpenCaptureDevice(_THIS)
     return 0;
 }
 
-static int
-VITAAUD_OpenDevice(_THIS, const char *devname)
+static int VITAAUD_OpenDevice(_THIS, const char *devname)
 {
     int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
     int vols[2] = {SCE_AUDIO_MAX_VOLUME, SCE_AUDIO_MAX_VOLUME};
@@ -191,8 +189,7 @@ static void VITAAUD_ThreadInit(_THIS)
     }
 }
 
-static SDL_bool
-VITAAUD_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool VITAAUD_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = VITAAUD_OpenDevice;

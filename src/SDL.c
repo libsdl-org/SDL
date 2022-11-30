@@ -110,8 +110,7 @@ static SDL_bool SDL_bInMainQuit = SDL_FALSE;
 static Uint8 SDL_SubsystemRefCount[ 32 ];
 
 /* Private helper to increment a subsystem's ref counter. */
-static void
-SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
+static void SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -121,8 +120,7 @@ SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
 }
 
 /* Private helper to decrement a subsystem's ref counter. */
-static void
-SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
+static void SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] > 0)) {
@@ -131,8 +129,7 @@ SDL_PrivateSubsystemRefCountDecr(Uint32 subsystem)
 }
 
 /* Private helper to check if a system needs init. */
-static SDL_bool
-SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
+static SDL_bool SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -140,8 +137,7 @@ SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 }
 
 /* Private helper to check if a system needs to be quit. */
-static SDL_bool
-SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
+static SDL_bool SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) {
         return SDL_FALSE;

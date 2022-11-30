@@ -55,8 +55,7 @@ FloatEqual(float a, float b)
     return diff <= largest * SDL_FLT_EPSILON;
 }
 
-static void
-GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawable_width, int *drawable_height)
+static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height, int *drawable_width, int *drawable_height)
 {
     SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
     SDL_WaylandOutputData *output = (SDL_WaylandOutputData *) SDL_GetDisplayForWindow(window)->driverdata;
@@ -131,8 +130,7 @@ FullscreenModeEmulation(SDL_Window *window)
            ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP);
 }
 
-static SDL_bool
-NeedViewport(SDL_Window *window)
+static SDL_bool NeedViewport(SDL_Window *window)
 {
     SDL_WindowData        *wind   = window->driverdata;
     SDL_VideoData         *video  = wind->waylandData;
@@ -158,8 +156,7 @@ NeedViewport(SDL_Window *window)
     return SDL_FALSE;
 }
 
-static void
-GetBufferSize(SDL_Window *window, int *width, int *height)
+static void GetBufferSize(SDL_Window *window, int *width, int *height)
 {
     SDL_WindowData *data = window->driverdata;
     int             buf_width;
@@ -192,8 +189,7 @@ GetBufferSize(SDL_Window *window, int *width, int *height)
     }
 }
 
-static void
-SetDrawSurfaceViewport(SDL_Window *window, int src_width, int src_height, int dst_width, int dst_height)
+static void SetDrawSurfaceViewport(SDL_Window *window, int src_width, int src_height, int dst_width, int dst_height)
 {
     SDL_WindowData *wind  = window->driverdata;
     SDL_VideoData  *video = wind->waylandData;
@@ -208,8 +204,7 @@ SetDrawSurfaceViewport(SDL_Window *window, int src_width, int src_height, int ds
     }
 }
 
-static void
-UnsetDrawSurfaceViewport(SDL_Window *window)
+static void UnsetDrawSurfaceViewport(SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
 
@@ -219,8 +214,7 @@ UnsetDrawSurfaceViewport(SDL_Window *window)
     }
 }
 
-static void
-ConfigureWindowGeometry(SDL_Window *window)
+static void ConfigureWindowGeometry(SDL_Window *window)
 {
     SDL_WindowData        *data    = window->driverdata;
     SDL_VideoData         *viddata = data->waylandData;
@@ -304,8 +298,7 @@ ConfigureWindowGeometry(SDL_Window *window)
     }
 }
 
-static void
-CommitLibdecorFrame(SDL_Window *window)
+static void CommitLibdecorFrame(SDL_Window *window)
 {
 #ifdef HAVE_LIBDECOR_H
     SDL_WindowData *wind = (SDL_WindowData *) window->driverdata;
@@ -318,8 +311,7 @@ CommitLibdecorFrame(SDL_Window *window)
 #endif
 }
 
-static void
-SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
+static void SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = wind->waylandData;
@@ -385,8 +377,7 @@ SetMinMaxDimensions(SDL_Window *window, SDL_bool commit)
     }
 }
 
-static void
-SetFullscreen(SDL_Window *window, struct wl_output *output)
+static void SetFullscreen(SDL_Window *window, struct wl_output *output)
 {
     SDL_WindowData *wind = window->driverdata;
     SDL_VideoData *viddata = wind->waylandData;
@@ -443,8 +434,7 @@ SetFullscreen(SDL_Window *window, struct wl_output *output)
     }
 }
 
-static void
-UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
+static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
 {
     SDL_WindowData *wind = (SDL_WindowData*)window->driverdata;
 
@@ -492,8 +482,7 @@ UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
 
 static const struct wl_callback_listener surface_damage_frame_listener;
 
-static void
-surface_damage_frame_done(void *data, struct wl_callback *cb, uint32_t time)
+static void surface_damage_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
 
@@ -520,8 +509,7 @@ static const struct wl_callback_listener surface_damage_frame_listener = {
 
 static const struct wl_callback_listener gles_swap_frame_listener;
 
-static void
-gles_swap_frame_done(void *data, struct wl_callback *cb, uint32_t time)
+static void gles_swap_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
     SDL_WindowData *wind = (SDL_WindowData *) data;
     SDL_AtomicSet(&wind->swap_interval_ready, 1);  /* mark window as ready to present again. */
@@ -539,8 +527,7 @@ static const struct wl_callback_listener gles_swap_frame_listener = {
 
 static void Wayland_HandleResize(SDL_Window *window, int width, int height, float scale);
 
-static void
-handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t serial)
+static void handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t serial)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
@@ -555,8 +542,7 @@ static const struct xdg_surface_listener shell_surface_listener_xdg = {
     handle_configure_xdg_shell_surface
 };
 
-static void
-handle_configure_xdg_toplevel(void *data,
+static void handle_configure_xdg_toplevel(void *data,
               struct xdg_toplevel *xdg_toplevel,
               int32_t width,
               int32_t height,
@@ -680,8 +666,7 @@ handle_configure_xdg_toplevel(void *data,
     }
 }
 
-static void
-handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel)
+static void handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
     SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
@@ -692,8 +677,7 @@ static const struct xdg_toplevel_listener toplevel_listener_xdg = {
     handle_close_xdg_toplevel
 };
 
-static void
-handle_configure_xdg_popup(void *data,
+static void handle_configure_xdg_popup(void *data,
                            struct xdg_popup *xdg_popup,
                            int32_t x,
                            int32_t y,
@@ -703,15 +687,13 @@ handle_configure_xdg_popup(void *data,
     /* No-op, we don't use x/y and width/height are fixed-size */
 }
 
-static void
-handle_done_xdg_popup(void *data, struct xdg_popup *xdg_popup)
+static void handle_done_xdg_popup(void *data, struct xdg_popup *xdg_popup)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
     SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
 }
 
-static void
-handle_repositioned_xdg_popup(void *data,
+static void handle_repositioned_xdg_popup(void *data,
                               struct xdg_popup *xdg_popup,
                               uint32_t token)
 {
@@ -726,8 +708,7 @@ static const struct xdg_popup_listener popup_listener_xdg = {
 
 #define TOOLTIP_CURSOR_OFFSET 8 /* FIXME: Arbitrary, eyeballed from X tooltip */
 
-static int
-Wayland_PopupWatch(void *data, SDL_Event *event)
+static int Wayland_PopupWatch(void *data, SDL_Event *event)
 {
     if (event->type == SDL_MOUSEMOTION) {
         SDL_Window *window = (SDL_Window *) data;
@@ -746,8 +727,7 @@ Wayland_PopupWatch(void *data, SDL_Event *event)
     return 1;
 }
 
-static void
-handle_configure_zxdg_decoration(void *data,
+static void handle_configure_zxdg_decoration(void *data,
                                  struct zxdg_toplevel_decoration_v1 *zxdg_toplevel_decoration_v1,
                                  uint32_t mode)
 {
@@ -785,8 +765,7 @@ static const struct zxdg_toplevel_decoration_v1_listener decoration_listener = {
 };
 
 #ifdef HAVE_LIBDECOR_H
-static void
-decoration_frame_configure(struct libdecor_frame *frame,
+static void decoration_frame_configure(struct libdecor_frame *frame,
                            struct libdecor_configuration *configuration,
                            void *user_data)
 {
@@ -930,14 +909,12 @@ decoration_frame_configure(struct libdecor_frame *frame,
                                window->flags & SDL_WINDOW_RESIZABLE);
 }
 
-static void
-decoration_frame_close(struct libdecor_frame *frame, void *user_data)
+static void decoration_frame_close(struct libdecor_frame *frame, void *user_data)
 {
     SDL_SendWindowEvent(((SDL_WindowData *)user_data)->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
 }
 
-static void
-decoration_frame_commit(struct libdecor_frame *frame, void *user_data)
+static void decoration_frame_commit(struct libdecor_frame *frame, void *user_data)
 {
     SDL_WindowData *wind = user_data;
 
@@ -952,21 +929,18 @@ static struct libdecor_frame_interface libdecor_frame_interface = {
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-static void
-handle_onscreen_visibility(void *data,
+static void handle_onscreen_visibility(void *data,
         struct qt_extended_surface *qt_extended_surface, int32_t visible)
 {
 }
 
-static void
-handle_set_generic_property(void *data,
+static void handle_set_generic_property(void *data,
         struct qt_extended_surface *qt_extended_surface, const char *name,
         struct wl_array *value)
 {
 }
 
-static void
-handle_close(void *data, struct qt_extended_surface *qt_extended_surface)
+static void handle_close(void *data, struct qt_extended_surface *qt_extended_surface)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
     SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
@@ -979,8 +953,7 @@ static const struct qt_extended_surface_listener extended_surface_listener = {
 };
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-static void
-update_scale_factor(SDL_WindowData *window)
+static void update_scale_factor(SDL_WindowData *window)
 {
     float old_factor = window->scale_factor;
     float new_factor;
@@ -1017,8 +990,7 @@ update_scale_factor(SDL_WindowData *window)
  * what monitor we're on, so let's send move events that put the window at the
  * center of the whatever display the wl_surface_listener events give us.
  */
-static void
-Wayland_move_window(SDL_Window *window,
+static void Wayland_move_window(SDL_Window *window,
                     SDL_WaylandOutputData *driverdata)
 {
     SDL_WindowData *wind = (SDL_WindowData*)window->driverdata;
@@ -1088,8 +1060,7 @@ Wayland_move_window(SDL_Window *window,
     }
 }
 
-static void
-handle_surface_enter(void *data, struct wl_surface *surface,
+static void handle_surface_enter(void *data, struct wl_surface *surface,
                      struct wl_output *output)
 {
     SDL_WindowData *window = data;
@@ -1111,8 +1082,7 @@ handle_surface_enter(void *data, struct wl_surface *surface,
     }
 }
 
-static void
-handle_surface_leave(void *data, struct wl_surface *surface,
+static void handle_surface_leave(void *data, struct wl_surface *surface,
                      struct wl_output *output)
 {
     SDL_WindowData *window = data;
@@ -1408,8 +1378,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     WAYLAND_wl_display_roundtrip(c->display);
 }
 
-static void
-Wayland_ReleasePopup(_THIS, SDL_Window *popup)
+static void Wayland_ReleasePopup(_THIS, SDL_Window *popup)
 {
     SDL_WindowData *popupdata;
 
@@ -1486,8 +1455,7 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
     WAYLAND_wl_display_roundtrip(data->display);
 }
 
-static void
-handle_xdg_activation_done(void *data,
+static void handle_xdg_activation_done(void *data,
                            struct xdg_activation_token_v1 *xdg_activation_token_v1,
                            const char *token)
 {
@@ -1525,8 +1493,7 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  *
  * -flibit
  */
-static void
-Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
+static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *wind,
                         struct wl_surface *surface,
                         uint32_t serial, struct wl_seat *seat)
 {
@@ -1611,8 +1578,7 @@ static const struct wp_fractional_scale_v1_listener fractional_scale_listener = 
 
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-static void SDLCALL
-QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
+static void SDLCALL QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
         const char *oldValue, const char *newValue)
 {
     struct qt_extended_surface *qt_extended_surface = userdata;
@@ -2060,8 +2026,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 }
 
 
-static void
-Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
+static void Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     const int old_w = window->w, old_h = window->h;
@@ -2258,8 +2223,7 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-static void
-EGLTransparencyChangedCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void EGLTransparencyChangedCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     const SDL_bool oldval = SDL_GetStringBoolean(oldValue, SDL_FALSE);
     const SDL_bool newval = SDL_GetStringBoolean(newValue, SDL_FALSE);

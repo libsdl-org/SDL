@@ -182,8 +182,7 @@
 
 @end
 
-static void
-HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
+static void HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
 {
     SDL_Scancode code = darwin_scancode_table[scancode];
 
@@ -227,8 +226,7 @@ HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
     }
 }
 
-static void
-UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
+static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
 {
     TISInputSourceRef key_layout;
     const void *chr_data;

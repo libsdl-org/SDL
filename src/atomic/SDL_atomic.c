@@ -108,16 +108,14 @@ extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
 #if EMULATE_CAS
 static SDL_SpinLock locks[32];
 
-static SDL_INLINE void
-enterLock(void *a)
+static SDL_INLINE void enterLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);
 
     SDL_AtomicLock(&locks[index]);
 }
 
-static SDL_INLINE void
-leaveLock(void *a)
+static SDL_INLINE void leaveLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);
 

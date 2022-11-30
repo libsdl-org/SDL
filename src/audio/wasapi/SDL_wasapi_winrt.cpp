@@ -378,8 +378,7 @@ WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
     return 0;
 }
 
-static void
-WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
+static void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
 {
     DevIdList *i;
     DevIdList *next;
@@ -401,8 +400,7 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
     }
 }
 
-static void
-WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
+static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
 {
     DevIdList *devidlist;
     SDL_AudioSpec spec;

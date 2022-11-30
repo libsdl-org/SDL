@@ -160,14 +160,12 @@ extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool sta
 #endif
 
 /* Convenience functions for reading driver flags */
-static SDL_bool
-DisableDisplayModeSwitching(_THIS)
+static SDL_bool DisableDisplayModeSwitching(_THIS)
 {
     return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_DISPLAY_MODE_SWITCHING);
 }
 
-static SDL_bool
-DisableUnsetFullscreenOnMinimize(_THIS)
+static SDL_bool DisableUnsetFullscreenOnMinimize(_THIS)
 {
     return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE);
 }
@@ -185,8 +183,7 @@ typedef struct {
 } SDL_WindowTextureData;
 
 
-static Uint32
-SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
+static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
 {
 #if (SDL_VIDEO_OPENGL && __MACOS__) || (__IOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__
     if (_this->GL_CreateContext != NULL) {
@@ -201,8 +198,7 @@ SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
     return 0;
 }
 
-static int
-SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
     SDL_RendererInfo info;
     SDL_WindowTextureData *data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
@@ -320,8 +316,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
 static SDL_VideoDevice *_this = NULL;
 static SDL_atomic_t SDL_messagebox_count;
 
-static int
-SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, const SDL_Rect * rects, int numrects)
+static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
     SDL_WindowTextureData *data;
     SDL_Rect rect;
@@ -350,8 +345,7 @@ SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, const SDL_
     return 0;
 }
 
-static void
-SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window * window)
+static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window * window)
 {
     SDL_WindowTextureData *data;
 
@@ -369,8 +363,7 @@ SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window * window)
     SDL_free(data);
 }
 
-static int SDLCALL
-cmpmodes(const void *A, const void *B)
+static int SDLCALL cmpmodes(const void *A, const void *B)
 {
     const SDL_DisplayMode *a = (const SDL_DisplayMode *) A;
     const SDL_DisplayMode *b = (const SDL_DisplayMode *) B;
@@ -390,8 +383,7 @@ cmpmodes(const void *A, const void *B)
     return 0;
 }
 
-static int
-SDL_UninitializedVideo()
+static int SDL_UninitializedVideo()
 {
     return SDL_SetError("Video subsystem has not been initialized");
 }
@@ -722,8 +714,7 @@ SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect)
     return 0;
 }
 
-static int
-ParseDisplayUsableBoundsHint(SDL_Rect *rect)
+static int ParseDisplayUsableBoundsHint(SDL_Rect *rect)
 {
     const char *hint = SDL_GetHint(SDL_HINT_DISPLAY_USABLE_BOUNDS);
     return hint && (SDL_sscanf(hint, "%d,%d,%d,%d", &rect->x, &rect->y, &rect->w, &rect->h) == 4);
@@ -835,8 +826,7 @@ SDL_SetDesktopDisplayMode(SDL_VideoDisplay * display, const SDL_DisplayMode * mo
     SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
 }
 
-static int
-SDL_GetNumDisplayModesForDisplay(SDL_VideoDisplay * display)
+static int SDL_GetNumDisplayModesForDisplay(SDL_VideoDisplay * display)
 {
     if (!display->num_display_modes && _this->GetDisplayModes) {
         _this->GetDisplayModes(_this, display);
@@ -918,8 +908,7 @@ SDL_GetCurrentDisplayMode(int displayIndex, SDL_DisplayMode * mode)
     return 0;
 }
 
-static SDL_DisplayMode *
-SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay * display,
+static SDL_DisplayMode * SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay * display,
                                     const SDL_DisplayMode * mode,
                                     SDL_DisplayMode * closest)
 {
@@ -1038,8 +1027,7 @@ SDL_GetClosestDisplayMode(int displayIndex,
     return SDL_GetClosestDisplayModeForDisplay(display, mode, closest);
 }
 
-static int
-SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode * mode)
+static int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode * mode)
 {
     SDL_DisplayMode display_mode;
     SDL_DisplayMode current_mode;
@@ -1107,8 +1095,7 @@ SDL_GetDisplay(int displayIndex)
  * If x, y are outside of rect, snaps them to the closest point inside rect
  * (between rect->x, rect->y, inclusive, and rect->x + w, rect->y + h, exclusive)
  */
-static void
-SDL_GetClosestPointOnRect(const SDL_Rect *rect, SDL_Point *point)
+static void SDL_GetClosestPointOnRect(const SDL_Rect *rect, SDL_Point *point)
 {
     const int right = rect->x + rect->w - 1;
     const int bottom = rect->y + rect->h - 1;
@@ -1126,8 +1113,7 @@ SDL_GetClosestPointOnRect(const SDL_Rect *rect, SDL_Point *point)
     }
 }
 
-static int
-GetRectDisplayIndex(int x, int y, int w, int h)
+static int GetRectDisplayIndex(int x, int y, int w, int h)
 {
     int i, dist;
     int closest = -1;
@@ -1325,8 +1311,7 @@ SDL_GetWindowPixelFormat(SDL_Window * window)
     return display->current_mode.format;
 }
 
-static void
-SDL_RestoreMousePosition(SDL_Window *window)
+static void SDL_RestoreMousePosition(SDL_Window *window)
 {
     int x, y;
 
@@ -1340,8 +1325,7 @@ SDL_RestoreMousePosition(SDL_Window *window)
 extern Uint32 WINRT_DetectWindowFlags(SDL_Window * window);
 #endif
 
-static int
-SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
+static int SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display;
     SDL_Window *other;
@@ -1514,8 +1498,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 #define CREATE_FLAGS \
     (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL)
 
-static SDL_INLINE SDL_bool
-IsAcceptingDragAndDrop(void)
+static SDL_INLINE SDL_bool IsAcceptingDragAndDrop(void)
 {
     if ((SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) ||
         (SDL_GetEventState(SDL_DROPTEXT) == SDL_ENABLE)) {
@@ -1525,8 +1508,7 @@ IsAcceptingDragAndDrop(void)
 }
 
 /* prepare a newly-created window */
-static SDL_INLINE void
-PrepareDragAndDropSupport(SDL_Window *window)
+static SDL_INLINE void PrepareDragAndDropSupport(SDL_Window *window)
 {
     if (_this->AcceptDragAndDrop) {
         _this->AcceptDragAndDrop(window, IsAcceptingDragAndDrop());
@@ -1546,8 +1528,7 @@ SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-static void
-SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
+static void SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
 {
     PrepareDragAndDropSupport(window);
 
@@ -1576,15 +1557,13 @@ SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
     }
 }
 
-static int
-SDL_ContextNotSupported(const char *name)
+static int SDL_ContextNotSupported(const char *name)
 {
     return SDL_SetError("%s support is either not configured in SDL " "or not available in current SDL video driver " "(%s) or platform", name,
                         _this->name);
 }
 
-static int
-SDL_DllNotSupported(const char *name)
+static int SDL_DllNotSupported(const char *name)
 {
     return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
 }
@@ -2538,8 +2517,7 @@ SDL_MaximizeWindow(SDL_Window * window)
     }
 }
 
-static SDL_bool
-CanMinimizeWindow(SDL_Window * window)
+static SDL_bool CanMinimizeWindow(SDL_Window * window)
 {
     if (!_this->MinimizeWindow) {
         return SDL_FALSE;
@@ -2609,8 +2587,7 @@ SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags)
     return -1;
 }
 
-static SDL_Surface *
-SDL_CreateWindowFramebuffer(SDL_Window * window)
+static SDL_Surface * SDL_CreateWindowFramebuffer(SDL_Window * window)
 {
     Uint32 format = 0;
     void *pixels = NULL;
@@ -3063,8 +3040,7 @@ SDL_OnWindowFocusGained(SDL_Window * window)
     SDL_UpdateWindowGrab(window);
 }
 
-static SDL_bool
-ShouldMinimizeOnFocusLoss(SDL_Window * window)
+static SDL_bool ShouldMinimizeOnFocusLoss(SDL_Window * window)
 {
     const char *hint;
 
@@ -3390,8 +3366,7 @@ SDL_GL_UnloadLibrary(void)
 }
 
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-static SDL_INLINE SDL_bool
-isAtLeastGL3(const char *verstr)
+static SDL_INLINE SDL_bool isAtLeastGL3(const char *verstr)
 {
     return verstr && (SDL_atoi(verstr) >= 3);
 }
@@ -4203,8 +4178,7 @@ SDL_GL_DeleteContext(SDL_GLContext context)
  * Utility function used by SDL_WM_SetIcon(); flags & 1 for color key, flags
  * & 2 for alpha channel.
  */
-static void
-CreateMaskFromColorKeyOrAlpha(SDL_Surface * icon, Uint8 * mask, int flags)
+static void CreateMaskFromColorKeyOrAlpha(SDL_Surface * icon, Uint8 * mask, int flags)
 {
     int x, y;
     Uint32 colorkey;

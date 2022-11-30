@@ -75,8 +75,7 @@ static SDL_Thread * _XAMLThread = nullptr;
 static SDL_mutex * _mutex = nullptr;
 static SDL_cond * _cond = nullptr;
 
-static void
-WINRT_YieldXAMLThread()
+static void WINRT_YieldXAMLThread()
 {
     SDL_LockMutex(_mutex);
     SDL_assert(_threadState == ThreadState_Running);
@@ -92,8 +91,7 @@ WINRT_YieldXAMLThread()
     SDL_UnlockMutex(_mutex);
 }
 
-static int
-WINRT_XAMLThreadMain(void * userdata)
+static int WINRT_XAMLThreadMain(void * userdata)
 {
     // TODO, WinRT: pass the C-style main() a reasonably realistic
     // representation of command line arguments.

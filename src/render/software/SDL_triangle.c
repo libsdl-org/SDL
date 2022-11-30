@@ -744,8 +744,7 @@ static int SDL_INLINE detect_format(SDL_PixelFormat *pf) {
     }
 }
 
-static void
-SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
+static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
         SDL_Point s2_x_area, SDL_Rect dstrect, int area, int bias_w0, int bias_w1, int bias_w2,
     int d2d1_y, int d1d2_x, int d0d2_y, int d2d0_x, int d1d0_y, int d0d1_x,
     int s2s0_x, int s2s1_x, int s2s0_y, int s2s1_y, int w0_row, int w1_row, int w2_row,

@@ -135,8 +135,7 @@ typedef struct
 #define radToDeg(x) ((x)*180.f/PI)
 #define degToRad(x) ((x)*PI/180.f)
 
-static float
-MathAbs(float x)
+static float MathAbs(float x)
 {
     float result;
 
@@ -149,8 +148,7 @@ MathAbs(float x)
     return result;
 }
 
-static void
-MathSincos(float r, float *s, float *c)
+static void MathSincos(float r, float *s, float *c)
 {
     __asm__ volatile (
         "mtv      %2, S002\n"
@@ -162,23 +160,20 @@ MathSincos(float r, float *s, float *c)
     : "=r"(*s), "=r"(*c): "r"(r));
 }
 
-static void
-Swap(float *a, float *b)
+static void Swap(float *a, float *b)
 {
     float n=*a;
     *a = *b;
     *b = n;
 }
 
-static inline int
-InVram(void* data)
+static inline int InVram(void* data)
 {
     return data < (void*)0x04200000;
 }
 
 /* Return next power of 2 */
-static int
-TextureNextPow2(unsigned int w)
+static int TextureNextPow2(unsigned int w)
 {
     unsigned int n = 2;
     if (w == 0) {
@@ -200,8 +195,7 @@ static void psp_on_vblank(u32 sub, PSP_RenderData *data)
 }
 
 
-static int
-PixelFormatToPSPFMT(Uint32 format)
+static int PixelFormatToPSPFMT(Uint32 format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_BGR565:
@@ -218,8 +212,7 @@ PixelFormatToPSPFMT(Uint32 format)
 }
 
 ///SECTION render target LRU management
-static void
-LRUTargetRelink(PSP_TextureData* psp_texture) {
+static void LRUTargetRelink(PSP_TextureData* psp_texture) {
     if (psp_texture->prevhotw) {
         psp_texture->prevhotw->nexthotw = psp_texture->nexthotw;
     }
@@ -228,8 +221,7 @@ LRUTargetRelink(PSP_TextureData* psp_texture) {
     }
 }
 
-static void
-LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
+static void LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     psp_texture->nexthotw = data->most_recent_target;
     if (data->most_recent_target) {
         data->most_recent_target->prevhotw = psp_texture;
@@ -240,8 +232,7 @@ LRUTargetPushFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     }
 }
 
-static void
-LRUTargetRemove(PSP_RenderData* data, PSP_TextureData* psp_texture) {
+static void LRUTargetRemove(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     LRUTargetRelink(psp_texture);
     if (data->most_recent_target == psp_texture) {
         data->most_recent_target = psp_texture->nexthotw;
@@ -253,8 +244,7 @@ LRUTargetRemove(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     psp_texture->nexthotw = NULL;
 }
 
-static void
-LRUTargetBringFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
+static void LRUTargetBringFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     if (data->most_recent_target == psp_texture) {
         return; //nothing to do
     }
@@ -262,8 +252,7 @@ LRUTargetBringFront(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     LRUTargetPushFront(data, psp_texture);
 }
 
-static void
-TextureStorageFree(void* storage) {
+static void TextureStorageFree(void* storage) {
     if (InVram(storage)) {
         vfree(storage);
     } else {
@@ -271,8 +260,7 @@ TextureStorageFree(void* storage) {
     }
 }
 
-static int
-TextureSwizzle(PSP_TextureData *psp_texture, void* dst)
+static int TextureSwizzle(PSP_TextureData *psp_texture, void* dst)
 {
     int bytewidth, height;
     int rowblocks, rowblocksadd;
@@ -330,8 +318,7 @@ TextureSwizzle(PSP_TextureData *psp_texture, void* dst)
     return 1;
 }
 
-static int
-TextureUnswizzle(PSP_TextureData *psp_texture, void* dst)
+static int TextureUnswizzle(PSP_TextureData *psp_texture, void* dst)
 {
     int bytewidth, height;
     int widthblocks, heightblocks;
@@ -404,8 +391,7 @@ TextureUnswizzle(PSP_TextureData *psp_texture, void* dst)
     return 1;
 }
 
-static int
-TextureSpillToSram(PSP_RenderData* data, PSP_TextureData* psp_texture)
+static int TextureSpillToSram(PSP_RenderData* data, PSP_TextureData* psp_texture)
 {
     // Assumes the texture is in VRAM
     if (psp_texture->swizzled) {
@@ -424,8 +410,7 @@ TextureSpillToSram(PSP_RenderData* data, PSP_TextureData* psp_texture)
     }
 }
 
-static int
-TexturePromoteToVram(PSP_RenderData* data, PSP_TextureData* psp_texture, SDL_bool target)
+static int TexturePromoteToVram(PSP_RenderData* data, PSP_TextureData* psp_texture, SDL_bool target)
 {
     // Assumes texture in sram and a large enough continuous block in vram
     void* tdata = vramalloc(psp_texture->size);
@@ -439,8 +424,7 @@ TexturePromoteToVram(PSP_RenderData* data, PSP_TextureData* psp_texture, SDL_boo
     }
 }
 
-static int
-TextureSpillLRU(PSP_RenderData* data, size_t wanted) {
+static int TextureSpillLRU(PSP_RenderData* data, size_t wanted) {
     PSP_TextureData* lru = data->least_recent_target;
     if (lru) {
         if (TextureSpillToSram(data, lru) < 0) {
@@ -454,8 +438,7 @@ TextureSpillLRU(PSP_RenderData* data, size_t wanted) {
     return 0;
 }
 
-static int
-TextureSpillTargetsForSpace(PSP_RenderData* data, size_t size)
+static int TextureSpillTargetsForSpace(PSP_RenderData* data, size_t size)
 {
     while (vlargestblock() < size) {
         if (TextureSpillLRU(data, size) < 0) {
@@ -465,8 +448,7 @@ TextureSpillTargetsForSpace(PSP_RenderData* data, size_t size)
     return 0;
 }
 
-static int
-TextureBindAsTarget(PSP_RenderData* data, PSP_TextureData* psp_texture) {
+static int TextureBindAsTarget(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     unsigned int dstFormat;
 
     if (!InVram(psp_texture->data)) {
@@ -496,14 +478,12 @@ TextureBindAsTarget(PSP_RenderData* data, PSP_TextureData* psp_texture) {
     return 0;
 }
 
-static void
-PSP_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
+static void PSP_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
 }
 
 
-static int
-PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static int PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     PSP_RenderData *data = renderer->driverdata;
     PSP_TextureData* psp_texture = (PSP_TextureData*) SDL_calloc(1, sizeof(*psp_texture));
@@ -560,16 +540,14 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }
 
-static int
-TextureShouldSwizzle(PSP_TextureData* psp_texture, SDL_Texture *texture)
+static int TextureShouldSwizzle(PSP_TextureData* psp_texture, SDL_Texture *texture)
 {
     return !((texture->access == SDL_TEXTUREACCESS_TARGET) && InVram(psp_texture->data))
             && texture->access != SDL_TEXTUREACCESS_STREAMING
             && (texture->w >= 16 || texture->h >= 16);
 }
 
-static void
-TextureActivate(SDL_Texture * texture)
+static void TextureActivate(SDL_Texture * texture)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata;
     int scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GU_NEAREST : GU_LINEAR;
@@ -586,12 +564,10 @@ TextureActivate(SDL_Texture * texture)
     sceGuTexImage(0, psp_texture->textureWidth, psp_texture->textureHeight, psp_texture->textureWidth, psp_texture->data);
 }
 
-static int
-PSP_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+static int PSP_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                  const SDL_Rect * rect, void **pixels, int *pitch);
 
-static int
-PSP_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+static int PSP_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * rect, const void *pixels, int pitch)
 {
 /*  PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata; */
@@ -616,8 +592,7 @@ PSP_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-static int
-PSP_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+static int PSP_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                  const SDL_Rect * rect, void **pixels, int *pitch)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata;
@@ -629,8 +604,7 @@ PSP_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-static void
-PSP_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void PSP_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata;
     SDL_Rect rect;
@@ -643,26 +617,22 @@ PSP_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     PSP_UpdateTexture(renderer, texture, &rect, psp_texture->data, psp_texture->pitch);
 }
 
-static void
-PSP_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+static void PSP_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 {
     /* Nothing to do because TextureActivate takes care of it */
 }
 
-static int
-PSP_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
+static int PSP_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     return 0;
 }
 
-static int
-PSP_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+static int PSP_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {
     return 0;  /* nothing to do in this backend. */
 }
 
-static int
-PSP_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+static int PSP_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     VertV *verts = (VertV *) SDL_AllocateRenderVertices(renderer, count * sizeof (VertV), 4, &cmd->data.draw.first);
     int i;
@@ -682,8 +652,7 @@ PSP_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
     return 0;
 }
 
-static int
-PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
@@ -770,8 +739,7 @@ PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *t
     return 0;
 }
 
-static int
-PSP_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
+static int PSP_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
     VertV *verts = (VertV *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (VertV), 4, &cmd->data.draw.first);
     int i;
@@ -796,8 +764,7 @@ PSP_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FR
     return 0;
 }
 
-static int
-PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
+static int PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
     VertTV *verts;
@@ -883,8 +850,7 @@ PSP_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
     return 0;
 }
 
-static int
-PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
+static int PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
@@ -972,8 +938,7 @@ PSP_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     return 0;
 }
 
-static void
-ResetBlendState(PSP_BlendState* state) {
+static void ResetBlendState(PSP_BlendState* state) {
     sceGuColor(0xffffffff);
     state->color = 0xffffffff;
     state->mode = SDL_BLENDMODE_INVALID;
@@ -983,8 +948,7 @@ ResetBlendState(PSP_BlendState* state) {
     state->shadeModel = GU_SMOOTH;
 }
 
-static void
-StartDrawing(SDL_Renderer * renderer)
+static void StartDrawing(SDL_Renderer * renderer)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
 
@@ -1011,8 +975,7 @@ StartDrawing(SDL_Renderer * renderer)
 }
 
 
-static void
-PSP_SetBlendState(PSP_RenderData* data, PSP_BlendState* state)
+static void PSP_SetBlendState(PSP_RenderData* data, PSP_BlendState* state)
 {
     PSP_BlendState* current = &data->blendState;
 
@@ -1067,8 +1030,7 @@ PSP_SetBlendState(PSP_RenderData* data, PSP_BlendState* state)
     *current = *state;
 }
 
-static int
-PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
+static int PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
     Uint8 *gpumem = NULL;
@@ -1248,15 +1210,13 @@ PSP_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
     return 0;
 }
 
-static int
-PSP_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
+static int PSP_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 {
     return SDL_Unsupported();
 }
 
-static int
-PSP_RenderPresent(SDL_Renderer * renderer)
+static int PSP_RenderPresent(SDL_Renderer * renderer)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
     if (!data->displayListAvail) {
@@ -1278,8 +1238,7 @@ PSP_RenderPresent(SDL_Renderer * renderer)
     return 0;
 }
 
-static void
-PSP_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void PSP_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     PSP_RenderData *renderdata = (PSP_RenderData *) renderer->driverdata;
     PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata;
@@ -1298,8 +1257,7 @@ PSP_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texture->driverdata = NULL;
 }
 
-static void
-PSP_DestroyRenderer(SDL_Renderer * renderer)
+static void PSP_DestroyRenderer(SDL_Renderer * renderer)
 {
     PSP_RenderData *data = (PSP_RenderData *) renderer->driverdata;
     if (data) {
@@ -1324,8 +1282,7 @@ PSP_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
-static int
-PSP_SetVSync(SDL_Renderer * renderer, const int vsync)
+static int PSP_SetVSync(SDL_Renderer * renderer, const int vsync)
 {
     PSP_RenderData *data = renderer->driverdata;
     data->vsync = vsync;

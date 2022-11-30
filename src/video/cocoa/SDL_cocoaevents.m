@@ -310,8 +310,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 static SDLAppDelegate *appDelegate = nil;
 
-static NSString *
-GetApplicationName(void)
+static NSString * GetApplicationName(void)
 {
     NSString *appName;
 
@@ -328,8 +327,7 @@ GetApplicationName(void)
     return appName;
 }
 
-static bool
-LoadMainMenuNibIfAvailable(void)
+static bool LoadMainMenuNibIfAvailable(void)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
     NSDictionary *infoDict;
@@ -354,8 +352,7 @@ LoadMainMenuNibIfAvailable(void)
 #endif
 }
 
-static void
-CreateApplicationMenus(void)
+static void CreateApplicationMenus(void)
 {
     NSString *appName;
     NSString *title;

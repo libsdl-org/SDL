@@ -89,8 +89,7 @@ struct SDL_WaylandTouchPointList {
 
 static struct SDL_WaylandTouchPointList touch_points = {NULL, NULL};
 
-static void
-touch_add(SDL_TouchID id, float x, float y, struct wl_surface *surface)
+static void touch_add(SDL_TouchID id, float x, float y, struct wl_surface *surface)
 {
     struct SDL_WaylandTouchPoint* tp = SDL_malloc(sizeof(struct SDL_WaylandTouchPoint));
 
@@ -111,8 +110,7 @@ touch_add(SDL_TouchID id, float x, float y, struct wl_surface *surface)
     tp->next = NULL;
 }
 
-static void
-touch_update(SDL_TouchID id, float x, float y)
+static void touch_update(SDL_TouchID id, float x, float y)
 {
     struct SDL_WaylandTouchPoint* tp = touch_points.head;
 
@@ -126,8 +124,7 @@ touch_update(SDL_TouchID id, float x, float y)
     }
 }
 
-static void
-touch_del(SDL_TouchID id, float* x, float* y, struct wl_surface **surface)
+static void touch_del(SDL_TouchID id, float* x, float* y, struct wl_surface **surface)
 {
     struct SDL_WaylandTouchPoint* tp = touch_points.head;
 
@@ -177,8 +174,7 @@ touch_surface(SDL_TouchID id)
 }
 
 /* Returns SDL_TRUE if a key repeat event was due */
-static SDL_bool
-keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t elapsed)
+static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t elapsed)
 {
     SDL_bool ret = SDL_FALSE;
     while ((elapsed - repeat_info->next_repeat_ms) < 0x80000000U) {
@@ -194,16 +190,14 @@ keyboard_repeat_handle(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t elapsed)
     return ret;
 }
 
-static void
-keyboard_repeat_clear(SDL_WaylandKeyboardRepeat* repeat_info) {
+static void keyboard_repeat_clear(SDL_WaylandKeyboardRepeat* repeat_info) {
     if (!repeat_info->is_initialized) {
         return;
     }
     repeat_info->is_key_down = SDL_FALSE;
 }
 
-static void
-keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key, uint32_t wl_press_time,
+static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key, uint32_t wl_press_time,
                     uint32_t scancode, SDL_bool has_text, char text[8]) {
     if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
         return;
@@ -221,8 +215,7 @@ keyboard_repeat_set(SDL_WaylandKeyboardRepeat* repeat_info, uint32_t key, uint32
     }
 }
 
-static uint32_t
-keyboard_repeat_get_key(SDL_WaylandKeyboardRepeat *repeat_info)
+static uint32_t keyboard_repeat_get_key(SDL_WaylandKeyboardRepeat *repeat_info)
 {
     if (repeat_info->is_initialized && repeat_info->is_key_down) {
         return repeat_info->key;
@@ -231,8 +224,7 @@ keyboard_repeat_get_key(SDL_WaylandKeyboardRepeat *repeat_info)
     return 0;
 }
 
-static void
-keyboard_repeat_set_text(SDL_WaylandKeyboardRepeat *repeat_info, const char text[8])
+static void keyboard_repeat_set_text(SDL_WaylandKeyboardRepeat *repeat_info, const char text[8])
 {
     if (repeat_info->is_initialized) {
         SDL_memcpy(repeat_info->text, text, 8);
@@ -257,8 +249,7 @@ Wayland_SendWakeupEvent(_THIS, SDL_Window *window)
     WAYLAND_wl_display_flush(d->display);
 }
 
-static int
-dispatch_queued_events(SDL_VideoData *viddata)
+static int dispatch_queued_events(SDL_VideoData *viddata)
 {
     int ret;
 
@@ -405,8 +396,7 @@ Wayland_PumpEvents(_THIS)
     }
 }
 
-static void
-pointer_handle_motion(void *data, struct wl_pointer *pointer,
+static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
                       uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
     struct SDL_WaylandInput *input = data;
@@ -422,8 +412,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
     }
 }
 
-static void
-pointer_handle_enter(void *data, struct wl_pointer *pointer,
+static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
                      uint32_t serial, struct wl_surface *surface,
                      wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
@@ -463,8 +452,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
     }
 }
 
-static void
-pointer_handle_leave(void *data, struct wl_pointer *pointer,
+static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
                      uint32_t serial, struct wl_surface *surface)
 {
     struct SDL_WaylandInput *input = data;
@@ -479,8 +467,7 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
     }
 }
 
-static SDL_bool
-ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
+static SDL_bool ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
 {
     SDL_WindowData *window_data = input->pointer_focus;
     SDL_Window *window = window_data->sdlwindow;
@@ -555,8 +542,7 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
     return SDL_FALSE;
 }
 
-static void
-pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
+static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
                              uint32_t time, uint32_t button, uint32_t state_w)
 {
     SDL_WindowData *window = input->pointer_focus;
@@ -616,8 +602,7 @@ pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
     }
 }
 
-static void
-pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
+static void pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
                       uint32_t time, uint32_t button, uint32_t state_w)
 {
     struct SDL_WaylandInput *input = data;
@@ -625,8 +610,7 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
     pointer_handle_button_common(input, serial, time, button, state_w);
 }
 
-static void
-pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
+static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
                               uint32_t time, uint32_t axis, wl_fixed_t value)
 {
     SDL_WindowData *window = input->pointer_focus;
@@ -654,8 +638,7 @@ pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
     }
 }
 
-static void
-pointer_handle_axis_common(struct SDL_WaylandInput *input, enum SDL_WaylandAxisEvent type,
+static void pointer_handle_axis_common(struct SDL_WaylandInput *input, enum SDL_WaylandAxisEvent type,
                            uint32_t axis, wl_fixed_t value)
 {
     enum wl_pointer_axis a = axis;
@@ -728,8 +711,7 @@ pointer_handle_axis_common(struct SDL_WaylandInput *input, enum SDL_WaylandAxisE
     }
 }
 
-static void
-pointer_handle_axis(void *data, struct wl_pointer *pointer,
+static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
                     uint32_t time, uint32_t axis, wl_fixed_t value)
 {
     struct SDL_WaylandInput *input = data;
@@ -740,8 +722,7 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
         pointer_handle_axis_common_v1(input, time, axis, value);
 }
 
-static void
-pointer_handle_frame(void *data, struct wl_pointer *pointer)
+static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 {
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window = input->pointer_focus;
@@ -785,22 +766,19 @@ pointer_handle_frame(void *data, struct wl_pointer *pointer)
     }
 }
 
-static void
-pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
+static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
                            uint32_t axis_source)
 {
     /* unimplemented */
 }
 
-static void
-pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
+static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
                          uint32_t time, uint32_t axis)
 {
     /* unimplemented */
 }
 
-static void
-pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
+static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
                              uint32_t axis, int32_t discrete)
 {
     struct SDL_WaylandInput *input = data;
@@ -808,8 +786,7 @@ pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
     pointer_handle_axis_common(input, AXIS_EVENT_DISCRETE, axis, wl_fixed_from_int(discrete));
 }
 
-static void
-pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
+static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
                              uint32_t axis, int32_t value120)
 {
     struct SDL_WaylandInput *input = data;
@@ -830,8 +807,7 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_axis_value120    /* Version 8 */
 };
 
-static void
-touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
+static void touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
                    unsigned int timestamp, struct wl_surface *surface,
                    int id, wl_fixed_t fx, wl_fixed_t fy)
 {
@@ -846,8 +822,7 @@ touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
     SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
 }
 
-static void
-touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
+static void touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
                  unsigned int timestamp, int id)
 {
     float x = 0, y = 0;
@@ -864,8 +839,7 @@ touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
     SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
 }
 
-static void
-touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
+static void touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
                      int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(touch_surface(id));
@@ -878,14 +852,12 @@ touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
     SDL_SendTouchMotion((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
 }
 
-static void
-touch_handler_frame(void *data, struct wl_touch *touch)
+static void touch_handler_frame(void *data, struct wl_touch *touch)
 {
 
 }
 
-static void
-touch_handler_cancel(void *data, struct wl_touch *touch)
+static void touch_handler_cancel(void *data, struct wl_touch *touch)
 {
 
 }
@@ -906,8 +878,7 @@ typedef struct Wayland_Keymap
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
 } Wayland_Keymap;
 
-static void
-Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
+static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
     const xkb_keysym_t *syms;
     Wayland_Keymap *sdlKeymap = (Wayland_Keymap *)data;
@@ -953,8 +924,7 @@ Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
     }
 }
 
-static void
-keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
                        uint32_t format, int fd, uint32_t size)
 {
     struct SDL_WaylandInput *input = data;
@@ -1059,8 +1029,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
  * Virtual keyboards can have arbitrary layouts, arbitrary scancodes/keycodes, etc...
  * Key presses from these devices must be looked up by their keysym value.
  */
-static SDL_Scancode
-Wayland_get_scancode_from_key(struct SDL_WaylandInput *input, uint32_t key)
+static SDL_Scancode Wayland_get_scancode_from_key(struct SDL_WaylandInput *input, uint32_t key)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 
@@ -1076,8 +1045,7 @@ Wayland_get_scancode_from_key(struct SDL_WaylandInput *input, uint32_t key)
     return scancode;
 }
 
-static void
-keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface,
                       struct wl_array *keys)
 {
@@ -1136,8 +1104,7 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     }
 }
 
-static void
-keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
                       uint32_t serial, struct wl_surface *surface)
 {
     struct SDL_WaylandInput *input = data;
@@ -1165,8 +1132,7 @@ keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 #endif
 }
 
-static SDL_bool
-keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, SDL_bool *handled_by_ime)
+static SDL_bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, SDL_bool *handled_by_ime)
 {
     SDL_WindowData *window = input->keyboard_focus;
     const xkb_keysym_t *syms;
@@ -1217,8 +1183,7 @@ keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint
     return WAYLAND_xkb_keysym_to_utf8(sym, text, 8) > 0;
 }
 
-static void
-keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
                     uint32_t serial, uint32_t time, uint32_t key,
                     uint32_t state_w)
 {
@@ -1263,8 +1228,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     }
 }
 
-static void
-keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                           uint32_t serial, uint32_t mods_depressed,
                           uint32_t mods_latched, uint32_t mods_locked,
                           uint32_t group)
@@ -1312,8 +1276,7 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
 }
 
-static void
-keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
+static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
                             int32_t rate, int32_t delay)
 {
     struct SDL_WaylandInput *input = data;
@@ -1331,8 +1294,7 @@ static const struct wl_keyboard_listener keyboard_listener = {
     keyboard_handle_repeat_info,    /* Version 4 */
 };
 
-static void
-seat_handle_capabilities(void *data, struct wl_seat *seat,
+static void seat_handle_capabilities(void *data, struct wl_seat *seat,
                          enum wl_seat_capability caps)
 {
     struct SDL_WaylandInput *input = data;
@@ -1373,8 +1335,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
     }
 }
 
-static void
-seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name)
+static void seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name)
 {
     /* unimplemented */
 }
@@ -1384,37 +1345,31 @@ static const struct wl_seat_listener seat_listener = {
     seat_handle_name,           /* Version 2 */
 };
 
-static void
-data_source_handle_target(void *data, struct wl_data_source *wl_data_source,
+static void data_source_handle_target(void *data, struct wl_data_source *wl_data_source,
                           const char *mime_type)
 {
 }
 
-static void
-data_source_handle_send(void *data, struct wl_data_source *wl_data_source,
+static void data_source_handle_send(void *data, struct wl_data_source *wl_data_source,
                         const char *mime_type, int32_t fd)
 {
     Wayland_data_source_send((SDL_WaylandDataSource *)data, mime_type, fd);
 }
 
-static void
-data_source_handle_cancelled(void *data, struct wl_data_source *wl_data_source)
+static void data_source_handle_cancelled(void *data, struct wl_data_source *wl_data_source)
 {
     Wayland_data_source_destroy(data);
 }
 
-static void
-data_source_handle_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source)
+static void data_source_handle_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source)
 {
 }
 
-static void
-data_source_handle_dnd_finished(void *data, struct wl_data_source *wl_data_source)
+static void data_source_handle_dnd_finished(void *data, struct wl_data_source *wl_data_source)
 {
 }
 
-static void
-data_source_handle_action(void *data, struct wl_data_source *wl_data_source,
+static void data_source_handle_action(void *data, struct wl_data_source *wl_data_source,
                           uint32_t dnd_action)
 {
 }
@@ -1428,16 +1383,14 @@ static const struct wl_data_source_listener data_source_listener = {
     data_source_handle_action,             /* Version 3 */
 };
 
-static void
-primary_selection_source_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1,
+static void primary_selection_source_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1,
 		                      const char *mime_type, int32_t fd)
 {
     Wayland_primary_selection_source_send((SDL_WaylandPrimarySelectionSource *)data,
                                           mime_type, fd);
 }
 
-static void
-primary_selection_source_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1)
+static void primary_selection_source_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1)
 {
     Wayland_primary_selection_source_destroy(data);
 }
@@ -1518,22 +1471,19 @@ Wayland_primary_selection_source_create(_THIS)
     return primary_selection_source;
 }
 
-static void
-data_offer_handle_offer(void *data, struct wl_data_offer *wl_data_offer,
+static void data_offer_handle_offer(void *data, struct wl_data_offer *wl_data_offer,
                         const char *mime_type)
 {
     SDL_WaylandDataOffer *offer = data;
     Wayland_data_offer_add_mime(offer, mime_type);
 }
 
-static void
-data_offer_handle_source_actions(void *data, struct wl_data_offer *wl_data_offer,
+static void data_offer_handle_source_actions(void *data, struct wl_data_offer *wl_data_offer,
                                  uint32_t source_actions)
 {
 }
 
-static void
-data_offer_handle_actions(void *data, struct wl_data_offer *wl_data_offer,
+static void data_offer_handle_actions(void *data, struct wl_data_offer *wl_data_offer,
                           uint32_t dnd_action)
 {
 }
@@ -1544,8 +1494,7 @@ static const struct wl_data_offer_listener data_offer_listener = {
     data_offer_handle_actions,        /* Version 3 */
 };
 
-static void
-primary_selection_offer_handle_offer(void *data, struct zwp_primary_selection_offer_v1 *zwp_primary_selection_offer_v1,
+static void primary_selection_offer_handle_offer(void *data, struct zwp_primary_selection_offer_v1 *zwp_primary_selection_offer_v1,
                                      const char *mime_type)
 {
     SDL_WaylandPrimarySelectionOffer *offer = data;
@@ -1556,8 +1505,7 @@ static const struct zwp_primary_selection_offer_v1_listener primary_selection_of
     primary_selection_offer_handle_offer,
 };
 
-static void
-data_device_handle_data_offer(void *data, struct wl_data_device *wl_data_device,
+static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_data_device,
                               struct wl_data_offer *id)
 {
     SDL_WaylandDataOffer *data_offer = NULL;
@@ -1574,8 +1522,7 @@ data_device_handle_data_offer(void *data, struct wl_data_device *wl_data_device,
     }
 }
 
-static void
-data_device_handle_enter(void *data, struct wl_data_device *wl_data_device,
+static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_device,
                          uint32_t serial, struct wl_surface *surface,
                          wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id)
 {
@@ -1607,8 +1554,7 @@ data_device_handle_enter(void *data, struct wl_data_device *wl_data_device,
     }
 }
 
-static void
-data_device_handle_leave(void *data, struct wl_data_device *wl_data_device)
+static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_device)
 {
     SDL_WaylandDataDevice *data_device = data;
     SDL_WaylandDataOffer *offer = NULL;
@@ -1619,8 +1565,7 @@ data_device_handle_leave(void *data, struct wl_data_device *wl_data_device)
     }
 }
 
-static void
-data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
+static void data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
                           uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 }
@@ -1744,8 +1689,7 @@ static char* Wayland_URIToLocal(char* uri) {
     return file;
 }
 
-static void
-data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
+static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
 {
     SDL_WaylandDataDevice *data_device = data;
 
@@ -1770,8 +1714,7 @@ data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
     }
 }
 
-static void
-data_device_handle_selection(void *data, struct wl_data_device *wl_data_device,
+static void data_device_handle_selection(void *data, struct wl_data_device *wl_data_device,
                              struct wl_data_offer *id)
 {
     SDL_WaylandDataDevice *data_device = data;
@@ -1798,8 +1741,7 @@ static const struct wl_data_device_listener data_device_listener = {
     data_device_handle_selection
 };
 
-static void
-primary_selection_device_handle_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
+static void primary_selection_device_handle_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
                                       struct zwp_primary_selection_offer_v1 *id)
 {
     SDL_WaylandPrimarySelectionOffer *primary_selection_offer = NULL;
@@ -1816,8 +1758,7 @@ primary_selection_device_handle_offer(void *data, struct zwp_primary_selection_d
     }
 }
 
-static void
-primary_selection_device_handle_selection(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
+static void primary_selection_device_handle_selection(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1,
                                           struct zwp_primary_selection_offer_v1 *id)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = data;
@@ -1840,24 +1781,21 @@ static const struct zwp_primary_selection_device_v1_listener primary_selection_d
     primary_selection_device_handle_selection
 };
 
-static void
-text_input_enter(void *data,
+static void text_input_enter(void *data,
                  struct zwp_text_input_v3 *zwp_text_input_v3,
                  struct wl_surface *surface)
 {
     /* No-op */
 }
 
-static void
-text_input_leave(void *data,
+static void text_input_leave(void *data,
                  struct zwp_text_input_v3 *zwp_text_input_v3,
                  struct wl_surface *surface)
 {
     /* No-op */
 }
 
-static void
-text_input_preedit_string(void *data,
+static void text_input_preedit_string(void *data,
                           struct zwp_text_input_v3 *zwp_text_input_v3,
                           const char *text,
                           int32_t cursor_begin,
@@ -1900,8 +1838,7 @@ text_input_preedit_string(void *data,
     }
 }
 
-static void
-text_input_commit_string(void *data,
+static void text_input_commit_string(void *data,
                          struct zwp_text_input_v3 *zwp_text_input_v3,
                          const char *text)
 {
@@ -1918,8 +1855,7 @@ text_input_commit_string(void *data,
     }
 }
 
-static void
-text_input_delete_surrounding_text(void *data,
+static void text_input_delete_surrounding_text(void *data,
                                    struct zwp_text_input_v3 *zwp_text_input_v3,
                                    uint32_t before_length,
                                    uint32_t after_length)
@@ -1927,8 +1863,7 @@ text_input_delete_surrounding_text(void *data,
     /* FIXME: Do we care about this event? */
 }
 
-static void
-text_input_done(void *data,
+static void text_input_done(void *data,
                 struct zwp_text_input_v3 *zwp_text_input_v3,
                 uint32_t serial)
 {
@@ -1948,8 +1883,7 @@ static const struct zwp_text_input_v3_listener text_input_listener = {
     text_input_done
 };
 
-static void
-Wayland_create_data_device(SDL_VideoData *d)
+static void Wayland_create_data_device(SDL_VideoData *d)
 {
     SDL_WaylandDataDevice *data_device = NULL;
 
@@ -1973,8 +1907,7 @@ Wayland_create_data_device(SDL_VideoData *d)
     }
 }
 
-static void
-Wayland_create_primary_selection_device(SDL_VideoData *d)
+static void Wayland_create_primary_selection_device(SDL_VideoData *d)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
 
@@ -1999,8 +1932,7 @@ Wayland_create_primary_selection_device(SDL_VideoData *d)
     }
 }
 
-static void
-Wayland_create_text_input(SDL_VideoData *d)
+static void Wayland_create_text_input(SDL_VideoData *d)
 {
     SDL_WaylandTextInput *text_input = NULL;
 
@@ -2053,44 +1985,37 @@ Wayland_add_text_input_manager(SDL_VideoData *d, uint32_t id, uint32_t version)
     }
 }
 
-static void
-tablet_tool_handle_type(void* data, struct zwp_tablet_tool_v2* tool, uint32_t type)
+static void tablet_tool_handle_type(void* data, struct zwp_tablet_tool_v2* tool, uint32_t type)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_hardware_serial(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial_hi, uint32_t serial_lo)
+static void tablet_tool_handle_hardware_serial(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial_hi, uint32_t serial_lo)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_hardware_id_wacom(void* data, struct zwp_tablet_tool_v2* tool, uint32_t id_hi, uint32_t id_lo)
+static void tablet_tool_handle_hardware_id_wacom(void* data, struct zwp_tablet_tool_v2* tool, uint32_t id_hi, uint32_t id_lo)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_capability(void* data, struct zwp_tablet_tool_v2* tool, uint32_t capability)
+static void tablet_tool_handle_capability(void* data, struct zwp_tablet_tool_v2* tool, uint32_t capability)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_done(void* data, struct zwp_tablet_tool_v2* tool)
+static void tablet_tool_handle_done(void* data, struct zwp_tablet_tool_v2* tool)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_removed(void* data, struct zwp_tablet_tool_v2* tool)
+static void tablet_tool_handle_removed(void* data, struct zwp_tablet_tool_v2* tool)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_proximity_in(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial, struct zwp_tablet_v2* tablet, struct wl_surface* surface)
+static void tablet_tool_handle_proximity_in(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial, struct zwp_tablet_v2* tablet, struct wl_surface* surface)
 {
     struct SDL_WaylandTabletInput* input = data;
     SDL_WindowData* window;
@@ -2120,8 +2045,7 @@ tablet_tool_handle_proximity_in(void* data, struct zwp_tablet_tool_v2* tool, uin
     }
 }
 
-static void
-tablet_tool_handle_proximity_out(void* data, struct zwp_tablet_tool_v2* tool)
+static void tablet_tool_handle_proximity_out(void* data, struct zwp_tablet_tool_v2* tool)
 {
     struct SDL_WaylandTabletInput* input = data;
 
@@ -2149,8 +2073,7 @@ tablet_tool_btn_to_sdl_button(struct SDL_WaylandTabletInput* input)
     }
 }
 
-static void
-tablet_tool_handle_down(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial)
+static void tablet_tool_handle_down(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial)
 {
     struct SDL_WaylandTabletInput* input = data;
     SDL_WindowData* window = input->tool_focus;
@@ -2166,8 +2089,7 @@ tablet_tool_handle_down(void* data, struct zwp_tablet_tool_v2* tool, uint32_t se
     SDL_SendMouseButton(window->sdlwindow, 0, SDL_PRESSED, tablet_tool_btn_to_sdl_button(input));
 }
 
-static void
-tablet_tool_handle_up(void* data, struct zwp_tablet_tool_v2* tool)
+static void tablet_tool_handle_up(void* data, struct zwp_tablet_tool_v2* tool)
 {
     struct SDL_WaylandTabletInput* input = data;
     SDL_WindowData* window = input->tool_focus;
@@ -2185,8 +2107,7 @@ tablet_tool_handle_up(void* data, struct zwp_tablet_tool_v2* tool)
     SDL_SendMouseButton(window->sdlwindow, 0, SDL_RELEASED, tablet_tool_btn_to_sdl_button(input));
 }
 
-static void
-tablet_tool_handle_motion(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t sx_w, wl_fixed_t sy_w)
+static void tablet_tool_handle_motion(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
     struct SDL_WaylandTabletInput* input = data;
     SDL_WindowData* window = input->tool_focus;
@@ -2202,26 +2123,22 @@ tablet_tool_handle_motion(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_
     }
 }
 
-static void
-tablet_tool_handle_pressure(void* data, struct zwp_tablet_tool_v2* tool, uint32_t pressure)
+static void tablet_tool_handle_pressure(void* data, struct zwp_tablet_tool_v2* tool, uint32_t pressure)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_distance(void* data, struct zwp_tablet_tool_v2* tool, uint32_t distance)
+static void tablet_tool_handle_distance(void* data, struct zwp_tablet_tool_v2* tool, uint32_t distance)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_tilt(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t xtilt, wl_fixed_t ytilt)
+static void tablet_tool_handle_tilt(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t xtilt, wl_fixed_t ytilt)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_button(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial, uint32_t button, uint32_t state)
+static void tablet_tool_handle_button(void* data, struct zwp_tablet_tool_v2* tool, uint32_t serial, uint32_t button, uint32_t state)
 {
     struct SDL_WaylandTabletInput* input = data;
 
@@ -2248,26 +2165,22 @@ tablet_tool_handle_button(void* data, struct zwp_tablet_tool_v2* tool, uint32_t 
     }
 }
 
-static void
-tablet_tool_handle_rotation(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t degrees)
+static void tablet_tool_handle_rotation(void* data, struct zwp_tablet_tool_v2* tool, wl_fixed_t degrees)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_slider(void* data, struct zwp_tablet_tool_v2* tool, int32_t position)
+static void tablet_tool_handle_slider(void* data, struct zwp_tablet_tool_v2* tool, int32_t position)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_wheel(void* data, struct zwp_tablet_tool_v2* tool, int32_t degrees, int32_t clicks)
+static void tablet_tool_handle_wheel(void* data, struct zwp_tablet_tool_v2* tool, int32_t degrees, int32_t clicks)
 {
     /* unimplemented */
 }
 
-static void
-tablet_tool_handle_frame(void* data, struct zwp_tablet_tool_v2* tool, uint32_t time)
+static void tablet_tool_handle_frame(void* data, struct zwp_tablet_tool_v2* tool, uint32_t time)
 {
     /* unimplemented */
 }
@@ -2338,16 +2251,14 @@ void tablet_object_list_destroy(struct SDL_WaylandTabletObjectListNode* head, vo
 }
 
 
-static void
-tablet_seat_handle_tablet_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_v2* tablet)
+static void tablet_seat_handle_tablet_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_v2* tablet)
 {
     struct SDL_WaylandTabletInput* input = data;
 
     tablet_object_list_append(input->tablets, tablet);
 }
 
-static void
-tablet_seat_handle_tool_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_tool_v2* tool)
+static void tablet_seat_handle_tool_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_tool_v2* tool)
 {
     struct SDL_WaylandTabletInput* input = data;
 
@@ -2357,8 +2268,7 @@ tablet_seat_handle_tool_added(void* data, struct zwp_tablet_seat_v2* seat, struc
     tablet_object_list_append(input->tools, tool);
 }
 
-static void
-tablet_seat_handle_pad_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_pad_v2* pad)
+static void tablet_seat_handle_pad_added(void* data, struct zwp_tablet_seat_v2* seat, struct zwp_tablet_pad_v2* pad)
 {
     struct SDL_WaylandTabletInput* input = data;
 
@@ -2544,8 +2454,7 @@ void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d)
     }
 }
 
-static void
-relative_pointer_handle_relative_motion(void *data,
+static void relative_pointer_handle_relative_motion(void *data,
                                         struct zwp_relative_pointer_v1 *pointer,
                                         uint32_t time_hi,
                                         uint32_t time_lo,
@@ -2581,14 +2490,12 @@ static const struct zwp_relative_pointer_v1_listener relative_pointer_listener =
     relative_pointer_handle_relative_motion,
 };
 
-static void
-locked_pointer_locked(void *data,
+static void locked_pointer_locked(void *data,
                       struct zwp_locked_pointer_v1 *locked_pointer)
 {
 }
 
-static void
-locked_pointer_unlocked(void *data,
+static void locked_pointer_unlocked(void *data,
                         struct zwp_locked_pointer_v1 *locked_pointer)
 {
 }
@@ -2598,8 +2505,7 @@ static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
     locked_pointer_unlocked,
 };
 
-static void
-lock_pointer_to_window(SDL_Window *window,
+static void lock_pointer_to_window(SDL_Window *window,
                        struct SDL_WaylandInput *input)
 {
     SDL_WindowData *w = window->driverdata;
@@ -2705,14 +2611,12 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
     return 0;
 }
 
-static void
-confined_pointer_confined(void *data,
+static void confined_pointer_confined(void *data,
                           struct zwp_confined_pointer_v1 *confined_pointer)
 {
 }
 
-static void
-confined_pointer_unconfined(void *data,
+static void confined_pointer_unconfined(void *data,
                             struct zwp_confined_pointer_v1 *confined_pointer)
 {
 }

@@ -34,8 +34,7 @@
 #include "SDL_uikitopengles.h"
 
 #if TARGET_OS_TV
-static void SDLCALL
-SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *) userdata;
@@ -45,8 +44,7 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
 #endif
 
 #if !TARGET_OS_TV
-static void SDLCALL
-SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *) userdata;
@@ -486,8 +484,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 /* iPhone keyboard addition functions */
 #if SDL_IPHONE_KEYBOARD
 
-static SDL_uikitviewcontroller *
-GetWindowViewController(SDL_Window * window)
+static SDL_uikitviewcontroller * GetWindowViewController(SDL_Window * window)
 {
     if (!window || !window->driverdata) {
         SDL_SetError("Invalid window");

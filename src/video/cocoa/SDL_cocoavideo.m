@@ -42,8 +42,7 @@ static void Cocoa_VideoQuit(_THIS);
 
 /* Cocoa driver bootstrap functions */
 
-static void
-Cocoa_DeleteDevice(SDL_VideoDevice * device)
+static void Cocoa_DeleteDevice(SDL_VideoDevice * device)
 { @autoreleasepool
 {
     if (device->wakeup_lock) {
@@ -53,8 +52,7 @@ Cocoa_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }}
 
-static SDL_VideoDevice *
-Cocoa_CreateDevice(void)
+static SDL_VideoDevice * Cocoa_CreateDevice(void)
 { @autoreleasepool
 {
     SDL_VideoDevice *device;

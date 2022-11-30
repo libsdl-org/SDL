@@ -60,15 +60,13 @@ static SDL_bool aaudio_DetectBrokenPlayState( void ) { return SDL_FALSE; }
 
 
 /* Number of 'type' events in the event queue */
-static int
-SDL_NumberOfEvents(Uint32 type)
+static int SDL_NumberOfEvents(Uint32 type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type);
 }
 
 #if SDL_VIDEO_OPENGL_EGL
-static void
-android_egl_context_restore(SDL_Window *window)
+static void android_egl_context_restore(SDL_Window *window)
 {
     if (window) {
         SDL_Event event;
@@ -84,8 +82,7 @@ android_egl_context_restore(SDL_Window *window)
     }
 }
 
-static void
-android_egl_context_backup(SDL_Window *window)
+static void android_egl_context_backup(SDL_Window *window)
 {
     if (window) {
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */

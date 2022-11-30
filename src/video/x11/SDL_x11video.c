@@ -45,8 +45,7 @@ static int X11_VideoInit(_THIS);
 static void X11_VideoQuit(_THIS);
 
 /* Find out what class name we should use */
-static char *
-get_classname()
+static char * get_classname()
 {
     char *spot;
 #if defined(__LINUX__) || defined(__FREEBSD__)
@@ -91,8 +90,7 @@ get_classname()
 
 static int (*orig_x11_errhandler) (Display *, XErrorEvent *) = NULL;
 
-static void
-X11_DeleteDevice(SDL_VideoDevice * device)
+static void X11_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_VideoData *data = (SDL_VideoData *) device->driverdata;
     if (device->vulkan_config.loader_handle) {
@@ -117,8 +115,7 @@ X11_DeleteDevice(SDL_VideoDevice * device)
 
 /* An error handler to reset the vidmode and then call the default handler. */
 static SDL_bool safety_net_triggered = SDL_FALSE;
-static int
-X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
+static int X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
 {
     SDL_VideoDevice *device = NULL;
     /* if we trigger an error in our error handler, don't try again. */
@@ -144,8 +141,7 @@ X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
     return 0;
 }
 
-static SDL_VideoDevice *
-X11_CreateDevice(void)
+static SDL_VideoDevice * X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -332,8 +328,7 @@ VideoBootStrap X11_bootstrap = {
 };
 
 static int (*handler) (Display *, XErrorEvent *) = NULL;
-static int
-X11_CheckWindowManagerErrorHandler(Display * d, XErrorEvent * e)
+static int X11_CheckWindowManagerErrorHandler(Display * d, XErrorEvent * e)
 {
     if (e->error_code == BadWindow) {
         return 0;
@@ -342,8 +337,7 @@ X11_CheckWindowManagerErrorHandler(Display * d, XErrorEvent * e)
     }
 }
 
-static void
-X11_CheckWindowManager(_THIS)
+static void X11_CheckWindowManager(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     Display *display = data->display;

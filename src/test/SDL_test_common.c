@@ -589,8 +589,7 @@ SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, const cha
     }
 }
 
-static const char *
-BuildCommonUsageString(char **pstr, const char **strlist, const int numitems, const char **strlist2, const int numitems2)
+static const char * BuildCommonUsageString(char **pstr, const char **strlist, const int numitems, const char **strlist2, const int numitems2)
 {
     char *str = *pstr;
     if (str == NULL) {
@@ -663,8 +662,7 @@ SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **arg
     return SDL_TRUE;
 }
 
-static void
-SDLTest_PrintDisplayOrientation(char* text, size_t maxlen, SDL_DisplayOrientation orientation)
+static void SDLTest_PrintDisplayOrientation(char* text, size_t maxlen, SDL_DisplayOrientation orientation)
 {
     switch (orientation) {
     case SDL_ORIENTATION_UNKNOWN:
@@ -688,8 +686,7 @@ SDLTest_PrintDisplayOrientation(char* text, size_t maxlen, SDL_DisplayOrientatio
     }
 }
 
-static void
-SDLTest_PrintWindowFlag(char* text, size_t maxlen, Uint32 flag)
+static void SDLTest_PrintWindowFlag(char* text, size_t maxlen, Uint32 flag)
 {
     switch (flag) {
     case SDL_WINDOW_FULLSCREEN:
@@ -767,8 +764,7 @@ SDLTest_PrintWindowFlag(char* text, size_t maxlen, Uint32 flag)
     }
 }
 
-static void
-SDLTest_PrintWindowFlags(char* text, size_t maxlen, Uint32 flags)
+static void SDLTest_PrintWindowFlags(char* text, size_t maxlen, Uint32 flags)
 {
     const Uint32 window_flags[] = {
         SDL_WINDOW_FULLSCREEN,
@@ -810,8 +806,7 @@ SDLTest_PrintWindowFlags(char* text, size_t maxlen, Uint32 flags)
     }
 }
 
-static void
-SDLTest_PrintButtonMask(char* text, size_t maxlen, Uint32 flags)
+static void SDLTest_PrintButtonMask(char* text, size_t maxlen, Uint32 flags)
 {
     int i;
     int count = 0;
@@ -827,8 +822,7 @@ SDLTest_PrintButtonMask(char* text, size_t maxlen, Uint32 flags)
     }
 }
 
-static void
-SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
+static void SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
 {
     switch (flag) {
     case SDL_RENDERER_SOFTWARE:
@@ -849,8 +843,7 @@ SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
     }
 }
 
-static void
-SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
+static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_UNKNOWN:
@@ -958,8 +951,7 @@ SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
     }
 }
 
-static void
-SDLTest_PrintRenderer(SDL_RendererInfo * info)
+static void SDLTest_PrintRenderer(SDL_RendererInfo * info)
 {
     int i, count;
     char text[1024];
@@ -997,8 +989,7 @@ SDLTest_PrintRenderer(SDL_RendererInfo * info)
     }
 }
 
-static SDL_Surface *
-SDLTest_LoadIcon(const char *file)
+static SDL_Surface * SDLTest_LoadIcon(const char *file)
 {
     SDL_Surface *icon;
 
@@ -1017,8 +1008,7 @@ SDLTest_LoadIcon(const char *file)
     return icon;
 }
 
-static SDL_HitTestResult SDLCALL
-SDLTest_ExampleHitTestCallback(SDL_Window *win, const SDL_Point *area, void *data)
+static SDL_HitTestResult SDLCALL SDLTest_ExampleHitTestCallback(SDL_Window *win, const SDL_Point *area, void *data)
 {
     int w, h;
     const int RESIZE_BORDER = 8;
@@ -1402,8 +1392,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
     return SDL_TRUE;
 }
 
-static const char *
-DisplayOrientationName(int orientation)
+static const char * DisplayOrientationName(int orientation)
 {
     switch (orientation)
     {
@@ -1418,8 +1407,7 @@ default: return "???";
     }
 }
 
-static const char *
-ControllerAxisName(const SDL_GameControllerAxis axis)
+static const char * ControllerAxisName(const SDL_GameControllerAxis axis)
 {
     switch (axis)
     {
@@ -1436,8 +1424,7 @@ default: return "???";
     }
 }
 
-static const char *
-ControllerButtonName(const SDL_GameControllerButton button)
+static const char * ControllerButtonName(const SDL_GameControllerButton button)
 {
     switch (button)
     {
@@ -1463,8 +1450,7 @@ default: return "???";
     }
 }
 
-static void
-SDLTest_PrintEvent(SDL_Event * event)
+static void SDLTest_PrintEvent(SDL_Event * event)
 {
     switch (event->type) {
     case SDL_DISPLAYEVENT:
@@ -1755,8 +1741,7 @@ SDLTest_PrintEvent(SDL_Event * event)
     }
 }
 
-static void
-SDLTest_ScreenShot(SDL_Renderer *renderer)
+static void SDLTest_ScreenShot(SDL_Renderer *renderer)
 {
     SDL_Rect viewport;
     SDL_Surface *surface;
@@ -1792,8 +1777,7 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
     }
 }
 
-static void
-FullscreenTo(int index, int windowId)
+static void FullscreenTo(int index, int windowId)
 {
     Uint32 flags;
     struct SDL_Rect rect = { 0, 0, 0, 0 };

@@ -50,8 +50,7 @@ typedef struct
 } SW_RenderData;
 
 
-static SDL_Surface *
-SW_ActivateRenderer(SDL_Renderer * renderer)
+static SDL_Surface * SW_ActivateRenderer(SDL_Renderer * renderer)
 {
     SW_RenderData *data = (SW_RenderData *) renderer->driverdata;
 
@@ -67,8 +66,7 @@ SW_ActivateRenderer(SDL_Renderer * renderer)
     return data->surface;
 }
 
-static void
-SW_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
+static void SW_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
     SW_RenderData *data = (SW_RenderData *) renderer->driverdata;
 
@@ -78,8 +76,7 @@ SW_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-static int
-SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
+static int SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
     SW_RenderData *data = (SW_RenderData *) renderer->driverdata;
 
@@ -101,8 +98,7 @@ SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
     return SDL_SetError("Software renderer doesn't have an output surface");
 }
 
-static int
-SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static int SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
@@ -132,8 +128,7 @@ SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }
 
-static int
-SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+static int SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                  const SDL_Rect * rect, const void *pixels, int pitch)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
@@ -160,8 +155,7 @@ SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-static int
-SW_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+static int SW_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * rect, void **pixels, int *pitch)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
@@ -173,18 +167,15 @@ SW_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-static void
-SW_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void SW_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
 }
 
-static void
-SW_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
+static void SW_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture, SDL_ScaleMode scaleMode)
 {
 }
 
-static int
-SW_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
+static int SW_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SW_RenderData *data = (SW_RenderData *) renderer->driverdata;
 
@@ -196,14 +187,12 @@ SW_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }
 
-static int
-SW_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+static int SW_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
 {
     return 0;  /* nothing to do in this backend. */
 }
 
-static int
-SW_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+static int SW_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     SDL_Point *verts = (SDL_Point *) SDL_AllocateRenderVertices(renderer, count * sizeof (SDL_Point), 0, &cmd->data.draw.first);
     int i;
@@ -222,8 +211,7 @@ SW_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FP
     return 0;
 }
 
-static int
-SW_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
+static int SW_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
     SDL_Rect *verts = (SDL_Rect *) SDL_AllocateRenderVertices(renderer, count * sizeof (SDL_Rect), 0, &cmd->data.draw.first);
     int i;
@@ -244,8 +232,7 @@ SW_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRe
     return 0;
 }
 
-static int
-SW_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
+static int SW_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
     SDL_Rect *verts = (SDL_Rect *) SDL_AllocateRenderVertices(renderer, 2 * sizeof (SDL_Rect), 0, &cmd->data.draw.first);
@@ -278,8 +265,7 @@ typedef struct CopyExData
     float scale_y;
 } CopyExData;
 
-static int
-SW_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
+static int SW_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
@@ -306,8 +292,7 @@ SW_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     return 0;
 }
 
-static int
-Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *surface, SDL_Rect *dstrect,
+static int Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *surface, SDL_Rect *dstrect,
         float scale_x, float scale_y, SDL_ScaleMode scaleMode)
 {
     int retval;
@@ -325,8 +310,7 @@ Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *surface, SDL_Re
     return retval;
 }
 
-static int
-SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * texture,
+static int SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Surface *surface, SDL_Texture * texture,
                 const SDL_Rect * srcrect, const SDL_Rect * final_rect,
                 const double angle, const SDL_FPoint * center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
@@ -548,8 +532,7 @@ typedef struct GeometryCopyData
     SDL_Color color;
 } GeometryCopyData;
 
-static int
-SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
+static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
         const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride,
         int num_vertices, const void *indices, int num_indices, int size_indices,
         float scale_x, float scale_y)
@@ -632,8 +615,7 @@ SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *te
     return 0;
 }
 
-static void
-PrepTextureForCopy(const SDL_RenderCommand *cmd)
+static void PrepTextureForCopy(const SDL_RenderCommand *cmd)
 {
     const Uint8 r = cmd->data.draw.r;
     const Uint8 g = cmd->data.draw.g;
@@ -656,8 +638,7 @@ PrepTextureForCopy(const SDL_RenderCommand *cmd)
     SDL_SetSurfaceBlendMode(surface, blend);
 }
 
-static void
-SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
+static void SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
 {
     if (drawstate->surface_cliprect_dirty) {
         const SDL_Rect *viewport = drawstate->viewport;
@@ -679,8 +660,7 @@ SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
     }
 }
 
-static int
-SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
+static int SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     SDL_Surface *surface = SW_ActivateRenderer(renderer);
     SW_DrawStateCache drawstate;
@@ -953,8 +933,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
     return 0;
 }
 
-static int
-SW_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
+static int SW_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 format, void * pixels, int pitch)
 {
     SDL_Surface *surface = SW_ActivateRenderer(renderer);
@@ -984,8 +963,7 @@ SW_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                              format, pixels, pitch);
 }
 
-static int
-SW_RenderPresent(SDL_Renderer * renderer)
+static int SW_RenderPresent(SDL_Renderer * renderer)
 {
     SDL_Window *window = renderer->window;
 
@@ -995,16 +973,14 @@ SW_RenderPresent(SDL_Renderer * renderer)
     return SDL_UpdateWindowSurface(window);
 }
 
-static void
-SW_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void SW_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
 
     SDL_FreeSurface(surface);
 }
 
-static void
-SW_DestroyRenderer(SDL_Renderer * renderer)
+static void SW_DestroyRenderer(SDL_Renderer * renderer)
 {
     SW_RenderData *data = (SW_RenderData *) renderer->driverdata;
 
@@ -1012,8 +988,7 @@ SW_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
-static void
-SW_SelectBestFormats(SDL_Renderer *renderer, Uint32 format)
+static void SW_SelectBestFormats(SDL_Renderer *renderer, Uint32 format)
 {
     /* Prefer the format used by the framebuffer by default. */
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = format;
@@ -1163,8 +1138,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     return renderer;
 }
 
-static SDL_Renderer *
-SW_CreateRenderer(SDL_Window * window, Uint32 flags)
+static SDL_Renderer * SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     const char *hint;
     SDL_Surface *surface;

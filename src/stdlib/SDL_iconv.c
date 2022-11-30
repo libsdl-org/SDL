@@ -156,8 +156,7 @@ static struct
 /* *INDENT-ON* */ /* clang-format on */
 };
 
-static const char *
-getlocale(char *buffer, size_t bufsize)
+static const char *getlocale(char *buffer, size_t bufsize)
 {
     const char *lang;
     char *ptr;

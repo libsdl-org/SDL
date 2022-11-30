@@ -28,8 +28,7 @@
 #include "SDL_x11clipboard.h"
 
 /* Get any application owned window handle for clipboard association */
-static Window
-GetWindow(_THIS)
+static Window GetWindow(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
@@ -118,8 +117,7 @@ X11_GetSDLCutBufferClipboardInternalFormat(Display *display, enum ESDLX11Clipboa
     }
 }
 
-static int
-SetSelectionText(_THIS, const char *text, Atom selection_type)
+static int SetSelectionText(_THIS, const char *text, Atom selection_type)
 {
     Display *display = ((SDL_VideoData *) _this->driverdata)->display;
     Window window;
@@ -143,8 +141,7 @@ SetSelectionText(_THIS, const char *text, Atom selection_type)
     return 0;
 }
 
-static char *
-GetSlectionText(_THIS, Atom selection_type)
+static char * GetSlectionText(_THIS, Atom selection_type)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display = videodata->display;

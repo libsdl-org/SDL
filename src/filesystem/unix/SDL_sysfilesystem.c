@@ -39,8 +39,7 @@
 #endif
 
 
-static char *
-readSymLink(const char *path)
+static char * readSymLink(const char *path)
 {
     char *retval = NULL;
     ssize_t len = 64;

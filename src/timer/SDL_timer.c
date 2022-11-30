@@ -75,8 +75,7 @@ static SDL_TimerData SDL_timer_data;
  * Timers are removed by simply setting a canceled flag
  */
 
-static void
-SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
+static void SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
 {
     SDL_Timer *prev, *curr;
 
@@ -96,8 +95,7 @@ SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
     timer->next = curr;
 }
 
-static int SDLCALL
-SDL_TimerThread(void *_data)
+static int SDLCALL SDL_TimerThread(void *_data)
 {
     SDL_TimerData *data = (SDL_TimerData *)_data;
     SDL_Timer *pending;
@@ -391,8 +389,7 @@ typedef struct {
 
 static SDL_TimerData SDL_timer_data;
 
-static void
-SDL_Emscripten_TimerHelper(void *userdata)
+static void SDL_Emscripten_TimerHelper(void *userdata)
 {
     SDL_TimerMap *entry = (SDL_TimerMap*)userdata;
     entry->interval = entry->callback(entry->interval, entry->param);

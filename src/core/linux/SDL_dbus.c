@@ -31,8 +31,7 @@ static char *inhibit_handle = NULL;
 static unsigned int screensaver_cookie = 0;
 static SDL_DBusContext dbus;
 
-static int
-LoadDBUSSyms(void)
+static int LoadDBUSSyms(void)
 {
     #define SDL_DBUS_SYM2(x, y) \
         if (!(dbus.x = SDL_LoadFunction(dbus_handle, #y))) return -1
@@ -86,8 +85,7 @@ LoadDBUSSyms(void)
     return 0;
 }
 
-static void
-UnloadDBUSLibrary(void)
+static void UnloadDBUSLibrary(void)
 {
     if (dbus_handle != NULL) {
         SDL_UnloadObject(dbus_handle);
@@ -95,8 +93,7 @@ UnloadDBUSLibrary(void)
     }
 }
 
-static int
-LoadDBUSLibrary(void)
+static int LoadDBUSLibrary(void)
 {
     int retval = 0;
     if (dbus_handle == NULL) {
@@ -119,8 +116,7 @@ LoadDBUSLibrary(void)
 static SDL_SpinLock spinlock_dbus_init = 0;
 
 /* you must hold spinlock_dbus_init before calling this! */
-static void
-SDL_DBus_Init_Spinlocked(void)
+static void SDL_DBus_Init_Spinlocked(void)
 {
     static SDL_bool is_dbus_available = SDL_TRUE;
     if (!is_dbus_available) {
@@ -205,8 +201,7 @@ SDL_DBus_GetContext(void)
     return (dbus_handle && dbus.session_conn) ? &dbus : NULL;
 }
 
-static SDL_bool
-SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, va_list ap)
+static SDL_bool SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, va_list ap)
 {
     SDL_bool retval = SDL_FALSE;
 
@@ -265,8 +260,7 @@ SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, c
     return retval;
 }
 
-static SDL_bool
-SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, va_list ap)
+static SDL_bool SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, va_list ap)
 {
     SDL_bool retval = SDL_FALSE;
 
@@ -288,8 +282,7 @@ SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *node, const ch
     return retval;
 }
 
-static SDL_bool
-SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage *msg, const int expectedtype, void *result)
+static SDL_bool SDL_DBus_CallWithBasicReply(DBusConnection *conn, DBusMessage *msg, const int expectedtype, void *result)
 {
     SDL_bool retval = SDL_FALSE;
 
@@ -371,8 +364,7 @@ SDL_DBus_ScreensaverTickle(void)
     }
 }
 
-static SDL_bool
-SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
+static SDL_bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
 {
     DBusMessageIter iterDict, iterEntry, iterValue;
 

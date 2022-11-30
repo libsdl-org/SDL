@@ -930,8 +930,7 @@ SDL_GetRGBA(Uint32 pixel, const SDL_PixelFormat * format,
 }
 
 /* Map from Palette to Palette */
-static Uint8 *
-Map1to1(SDL_Palette * src, SDL_Palette * dst, int *identical)
+static Uint8 * Map1to1(SDL_Palette * src, SDL_Palette * dst, int *identical)
 {
     Uint8 *map;
     int i;
@@ -964,8 +963,7 @@ Map1to1(SDL_Palette * src, SDL_Palette * dst, int *identical)
 }
 
 /* Map from Palette to BitField */
-static Uint8 *
-Map1toN(SDL_PixelFormat * src, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod, Uint8 Amod,
+static Uint8 * Map1toN(SDL_PixelFormat * src, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod, Uint8 Amod,
         SDL_PixelFormat * dst)
 {
     Uint8 *map;
@@ -992,8 +990,7 @@ Map1toN(SDL_PixelFormat * src, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod, Uint8 Amod,
 }
 
 /* Map from BitField to Dithered-Palette to Palette */
-static Uint8 *
-MapNto1(SDL_PixelFormat * src, SDL_PixelFormat * dst, int *identical)
+static Uint8 * MapNto1(SDL_PixelFormat * src, SDL_PixelFormat * dst, int *identical)
 {
     /* Generate a 256 color dither palette */
     SDL_Palette dithered;

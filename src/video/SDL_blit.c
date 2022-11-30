@@ -29,8 +29,7 @@
 #include "SDL_pixels_c.h"
 
 /* The general purpose software blit routine */
-static int SDLCALL
-SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
+static int SDLCALL SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
              SDL_Surface * dst, SDL_Rect * dstrect)
 {
     int okay;
@@ -103,8 +102,7 @@ SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
 #ifdef __MACOS__
 #include <sys/sysctl.h>
 
-static SDL_bool
-SDL_UseAltivecPrefetch()
+static SDL_bool SDL_UseAltivecPrefetch()
 {
     const char key[] = "hw.l3cachesize";
     u_int64_t result = 0;
@@ -117,16 +115,14 @@ SDL_UseAltivecPrefetch()
     }
 }
 #else
-static SDL_bool
-SDL_UseAltivecPrefetch()
+static SDL_bool SDL_UseAltivecPrefetch()
 {
     /* Just guess G4 */
     return SDL_TRUE;
 }
 #endif /* __MACOS__ */
 
-static SDL_BlitFunc
-SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,
+static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,
                    SDL_BlitFuncEntry * entries)
 {
     int i, flagcheck = (flags & (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_COLORKEY | SDL_COPY_NEAREST));

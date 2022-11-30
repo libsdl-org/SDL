@@ -31,8 +31,7 @@
 #include <kernel.h>
 #include <swis.h>
 
-static SDL_Scancode
-SDL_RISCOS_translate_keycode(int keycode)
+static SDL_Scancode SDL_RISCOS_translate_keycode(int keycode)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 

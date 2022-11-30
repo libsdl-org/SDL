@@ -137,8 +137,7 @@ static Uint8 EVDEV_MouseButtons[] = {
     SDL_BUTTON_X2 + 3           /*  BTN_TASK        0x117 */
 };
 
-static int
-SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
+static int SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
 {
     /* Mice already send relative events through this interface */
     return 0;
@@ -519,8 +518,7 @@ SDL_EVDEV_Poll(void)
     }
 }
 
-static SDL_Scancode
-SDL_EVDEV_translate_keycode(int keycode)
+static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
 {
     SDL_Scancode scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, keycode);
 
@@ -541,8 +539,7 @@ SDL_EVDEV_translate_keycode(int keycode)
     return scancode;
 }
 
-static int
-SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
+static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
 {
     int ret, i;
     unsigned long xreq, yreq;
@@ -643,8 +640,7 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item, int udev_class)
     return 0;
 }
 
-static void
-SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item* item) {
+static void SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item* item) {
     if (!item->is_touchscreen) {
         return;
     }
@@ -655,8 +651,7 @@ SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item* item) {
     SDL_free(item->touchscreen_data);
 }
 
-static void
-SDL_EVDEV_sync_device(SDL_evdevlist_item *item) 
+static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item) 
 {
 #ifdef EVIOCGMTSLOTS
     int i, ret;
@@ -781,8 +776,7 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
 #endif /* EVIOCGMTSLOTS */
 }
 
-static int
-SDL_EVDEV_device_added(const char *dev_path, int udev_class)
+static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 {
     int ret;
     SDL_evdevlist_item *item;
@@ -843,8 +837,7 @@ SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     return _this->num_devices++;
 }
 
-static int
-SDL_EVDEV_device_removed(const char *dev_path)
+static int SDL_EVDEV_device_removed(const char *dev_path)
 {
     SDL_evdevlist_item *item;
     SDL_evdevlist_item *prev = NULL;

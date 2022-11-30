@@ -45,8 +45,7 @@ static SDL_bool send_backgrounding_pending = SDL_FALSE;
 static SDL_bool send_foregrounding_pending = SDL_FALSE;
 #endif
 
-static void
-SDL_HandleSIG(int sig)
+static void SDL_HandleSIG(int sig)
 {
     /* Reset the signal handler */
     signal(sig, SDL_HandleSIG);
@@ -70,8 +69,7 @@ SDL_HandleSIG(int sig)
     #endif
 }
 
-static void
-SDL_EventSignal_Init(const int sig)
+static void SDL_EventSignal_Init(const int sig)
 {
 #ifdef HAVE_SIGACTION
     struct sigaction action;
@@ -93,8 +91,7 @@ SDL_EventSignal_Init(const int sig)
 #endif
 }
 
-static void
-SDL_EventSignal_Quit(const int sig)
+static void SDL_EventSignal_Quit(const int sig)
 {
 #ifdef HAVE_SIGACTION
     struct sigaction action;
@@ -112,8 +109,7 @@ SDL_EventSignal_Quit(const int sig)
 }
 
 /* Public functions */
-static int
-SDL_QuitInit_Internal(void)
+static int SDL_QuitInit_Internal(void)
 {
     /* Both SIGINT and SIGTERM are translated into quit interrupts */
     /* and SDL can be built to simulate iOS/Android semantics with arbitrary signals. */
@@ -132,8 +128,7 @@ SDL_QuitInit_Internal(void)
     return 0;
 }
 
-static void
-SDL_QuitQuit_Internal(void)
+static void SDL_QuitQuit_Internal(void)
 {
     SDL_EventSignal_Quit(SIGINT);
     SDL_EventSignal_Quit(SIGTERM);

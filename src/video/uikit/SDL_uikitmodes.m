@@ -214,8 +214,7 @@
 
 @end
 
-static int
-UIKit_AllocateDisplayModeData(SDL_DisplayMode * mode,
+static int UIKit_AllocateDisplayModeData(SDL_DisplayMode * mode,
     UIScreenMode * uiscreenmode)
 {
     SDL_DisplayModeData *data = nil;
@@ -235,8 +234,7 @@ UIKit_AllocateDisplayModeData(SDL_DisplayMode * mode,
     return 0;
 }
 
-static void
-UIKit_FreeDisplayModeData(SDL_DisplayMode * mode)
+static void UIKit_FreeDisplayModeData(SDL_DisplayMode * mode)
 {
     if (mode->driverdata != NULL) {
         CFRelease(mode->driverdata);
@@ -244,8 +242,7 @@ UIKit_FreeDisplayModeData(SDL_DisplayMode * mode)
     }
 }
 
-static NSUInteger
-UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
+static NSUInteger UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
 {
 #ifdef __IPHONE_10_3
     if ([uiscreen respondsToSelector:@selector(maximumFramesPerSecond)]) {
@@ -255,8 +252,7 @@ UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
     return 0;
 }
 
-static int
-UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
+static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
     UIScreen * uiscreen, UIScreenMode * uiscreenmode)
 {
     SDL_DisplayMode mode;
@@ -279,8 +275,7 @@ UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
     }
 }
 
-static int
-UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, UIScreen * uiscreen,
+static int UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, UIScreen * uiscreen,
                      UIScreenMode * uiscreenmode, SDL_bool addRotation)
 {
     if (UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode) < 0) {

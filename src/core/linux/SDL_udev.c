@@ -45,8 +45,7 @@ static int SDL_UDEV_load_syms(void);
 static SDL_bool SDL_UDEV_hotplug_update_available(void);
 static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev);
 
-static SDL_bool
-SDL_UDEV_load_sym(const char *fn, void **addr)
+static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(_this->udev_handle, fn);
     if (*addr == NULL) {
@@ -57,8 +56,7 @@ SDL_UDEV_load_sym(const char *fn, void **addr)
     return SDL_TRUE;
 }
 
-static int
-SDL_UDEV_load_syms(void)
+static int SDL_UDEV_load_syms(void)
 {
     /* cast funcs to char* first, to please GCC's strict aliasing rules. */
     #define SDL_UDEV_SYM(x) \
@@ -95,8 +93,7 @@ SDL_UDEV_load_syms(void)
     return 0;
 }
 
-static SDL_bool
-SDL_UDEV_hotplug_update_available(void)
+static SDL_bool SDL_UDEV_hotplug_update_available(void)
 {
     if (_this->udev_mon != NULL) {
         const int fd = _this->syms.udev_monitor_get_fd(_this->udev_mon);
@@ -374,8 +371,7 @@ static void get_caps(struct udev_device *dev, struct udev_device *pdev, const ch
     }
 }
 
-static int
-guess_device_class(struct udev_device *dev)
+static int guess_device_class(struct udev_device *dev)
 {
     struct udev_device *pdev;
     unsigned long bitmask_ev[NBITS(EV_MAX)];
@@ -404,8 +400,7 @@ guess_device_class(struct udev_device *dev)
                                       &bitmask_rel[0]);
 }
 
-static void
-device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
+static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
 {
     const char *subsystem;
     const char *val = NULL;

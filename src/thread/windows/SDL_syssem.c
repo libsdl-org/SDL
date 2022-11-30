@@ -90,8 +90,7 @@ typedef struct SDL_semaphore_atom
     LONG count;
 } SDL_sem_atom;
 
-static SDL_sem *
-SDL_CreateSemaphore_atom(Uint32 initial_value)
+static SDL_sem * SDL_CreateSemaphore_atom(Uint32 initial_value)
 {
     SDL_sem_atom *sem;
 
@@ -104,16 +103,14 @@ SDL_CreateSemaphore_atom(Uint32 initial_value)
     return (SDL_sem *)sem;
 }
 
-static void
-SDL_DestroySemaphore_atom(SDL_sem * sem)
+static void SDL_DestroySemaphore_atom(SDL_sem * sem)
 {
     if (sem != NULL) {
         SDL_free(sem);
     }
 }
 
-static int
-SDL_SemTryWait_atom(SDL_sem * _sem)
+static int SDL_SemTryWait_atom(SDL_sem * _sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
@@ -134,8 +131,7 @@ SDL_SemTryWait_atom(SDL_sem * _sem)
     return SDL_MUTEX_TIMEDOUT;
 }
 
-static int
-SDL_SemWait_atom(SDL_sem * _sem)
+static int SDL_SemWait_atom(SDL_sem * _sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
@@ -159,8 +155,7 @@ SDL_SemWait_atom(SDL_sem * _sem)
     }
 }
 
-static int
-SDL_SemWaitTimeout_atom(SDL_sem * _sem, Uint32 timeout)
+static int SDL_SemWaitTimeout_atom(SDL_sem * _sem, Uint32 timeout)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
@@ -210,8 +205,7 @@ SDL_SemWaitTimeout_atom(SDL_sem * _sem, Uint32 timeout)
     }
 }
 
-static Uint32
-SDL_SemValue_atom(SDL_sem * _sem)
+static Uint32 SDL_SemValue_atom(SDL_sem * _sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
@@ -223,8 +217,7 @@ SDL_SemValue_atom(SDL_sem * _sem)
     return (Uint32)sem->count;
 }
 
-static int
-SDL_SemPost_atom(SDL_sem * _sem)
+static int SDL_SemPost_atom(SDL_sem * _sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
@@ -238,8 +231,7 @@ SDL_SemPost_atom(SDL_sem * _sem)
     return 0;
 }
 
-static const SDL_sem_impl_t SDL_sem_impl_atom =
-{
+static const SDL_sem_impl_t SDL_sem_impl_atom = {
     &SDL_CreateSemaphore_atom,
     &SDL_DestroySemaphore_atom,
     &SDL_SemWaitTimeout_atom,
@@ -262,8 +254,7 @@ typedef struct SDL_semaphore_kern
 } SDL_sem_kern;
 
 /* Create a semaphore */
-static SDL_sem *
-SDL_CreateSemaphore_kern(Uint32 initial_value)
+static SDL_sem * SDL_CreateSemaphore_kern(Uint32 initial_value)
 {
     SDL_sem_kern *sem;
 
@@ -289,8 +280,7 @@ SDL_CreateSemaphore_kern(Uint32 initial_value)
 }
 
 /* Free the semaphore */
-static void
-SDL_DestroySemaphore_kern(SDL_sem * _sem)
+static void SDL_DestroySemaphore_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     if (sem != NULL) {
@@ -302,8 +292,7 @@ SDL_DestroySemaphore_kern(SDL_sem * _sem)
     }
 }
 
-static int
-SDL_SemWaitTimeout_kern(SDL_sem * _sem, Uint32 timeout)
+static int SDL_SemWaitTimeout_kern(SDL_sem * _sem, Uint32 timeout)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     int retval;
@@ -333,21 +322,18 @@ SDL_SemWaitTimeout_kern(SDL_sem * _sem, Uint32 timeout)
     return retval;
 }
 
-static int
-SDL_SemTryWait_kern(SDL_sem * sem)
+static int SDL_SemTryWait_kern(SDL_sem * sem)
 {
     return SDL_SemWaitTimeout_kern(sem, 0);
 }
 
-static int
-SDL_SemWait_kern(SDL_sem * sem)
+static int SDL_SemWait_kern(SDL_sem * sem)
 {
     return SDL_SemWaitTimeout_kern(sem, SDL_MUTEX_MAXWAIT);
 }
 
 /* Returns the current count of the semaphore */
-static Uint32
-SDL_SemValue_kern(SDL_sem * _sem)
+static Uint32 SDL_SemValue_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     if (sem == NULL) {
@@ -357,8 +343,7 @@ SDL_SemValue_kern(SDL_sem * _sem)
     return (Uint32)sem->count;
 }
 
-static int
-SDL_SemPost_kern(SDL_sem * _sem)
+static int SDL_SemPost_kern(SDL_sem * _sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     if (sem == NULL) {
@@ -377,8 +362,7 @@ SDL_SemPost_kern(SDL_sem * _sem)
     return 0;
 }
 
-static const SDL_sem_impl_t SDL_sem_impl_kern =
-{
+static const SDL_sem_impl_t SDL_sem_impl_kern = {
     &SDL_CreateSemaphore_kern,
     &SDL_DestroySemaphore_kern,
     &SDL_SemWaitTimeout_kern,

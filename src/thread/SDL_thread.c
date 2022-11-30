@@ -199,8 +199,7 @@ SDL_Generic_SetTLSData(SDL_TLSData *storage)
 }
 
 /* Non-thread-safe global error variable */
-static SDL_error *
-SDL_GetStaticErrBuf()
+static SDL_error * SDL_GetStaticErrBuf()
 {
     static SDL_error SDL_global_error;
     static char SDL_global_error_str[128];
@@ -210,8 +209,7 @@ SDL_GetStaticErrBuf()
 }
 
 #if !SDL_THREADS_DISABLED
-static void SDLCALL
-SDL_FreeErrBuf(void *data)
+static void SDLCALL SDL_FreeErrBuf(void *data)
 {
     SDL_error *errbuf = (SDL_error *)data;
 

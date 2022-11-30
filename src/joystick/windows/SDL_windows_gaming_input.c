@@ -99,8 +99,7 @@ static const IID IID_IRacingWheelStatics2 = { 0xE666BCAA, 0xEDFD, 0x4323, { 0xA9
 extern SDL_bool SDL_XINPUT_Enabled(void);
 extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
 
-static SDL_bool
-SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
+static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 {
 #ifdef SDL_JOYSTICK_XINPUT
     PRAWINPUTDEVICELIST raw_devices = NULL;
@@ -465,8 +464,7 @@ static RawGameControllerDelegate controller_removed = {
     { 1 }
 };
 
-static int
-WGI_JoystickInit(void)
+static int WGI_JoystickInit(void)
 {
     typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
     typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
@@ -606,54 +604,45 @@ WGI_JoystickInit(void)
     return 0;
 }
 
-static int
-WGI_JoystickGetCount(void)
+static int WGI_JoystickGetCount(void)
 {
     return wgi.controller_count;
 }
 
-static void
-WGI_JoystickDetect(void)
+static void WGI_JoystickDetect(void)
 {
 }
 
-static const char *
-WGI_JoystickGetDeviceName(int device_index)
+static const char * WGI_JoystickGetDeviceName(int device_index)
 {
     return wgi.controllers[device_index].name;
 }
 
-static const char *
-WGI_JoystickGetDevicePath(int device_index)
+static const char * WGI_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }
 
-static int
-WGI_JoystickGetDevicePlayerIndex(int device_index)
+static int WGI_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
 }
 
-static void
-WGI_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+static void WGI_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID
-WGI_JoystickGetDeviceGUID(int device_index)
+static SDL_JoystickGUID WGI_JoystickGetDeviceGUID(int device_index)
 {
     return wgi.controllers[device_index].guid;
 }
 
-static SDL_JoystickID
-WGI_JoystickGetDeviceInstanceID(int device_index)
+static SDL_JoystickID WGI_JoystickGetDeviceInstanceID(int device_index)
 {
     return wgi.controllers[device_index].instance_id;
 }
 
-static int
-WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     WindowsGamingInputControllerState *state = &wgi.controllers[device_index];
     struct joystick_hwdata *hwdata;
@@ -724,8 +713,7 @@ WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     return 0;
 }
 
-static int
-WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -745,8 +733,7 @@ WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
     }
 }
 
-static int
-WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -766,8 +753,7 @@ WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
     }
 }
 
-static Uint32
-WGI_JoystickGetCapabilities(SDL_Joystick *joystick)
+static Uint32 WGI_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -779,26 +765,22 @@ WGI_JoystickGetCapabilities(SDL_Joystick *joystick)
     }
 }
 
-static int
-WGI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int WGI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-WGI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static int WGI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static Uint8
-ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition value)
+static Uint8 ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition value)
 {
     switch (value) {
     case GameControllerSwitchPosition_Up:
@@ -822,8 +804,7 @@ ConvertHatValue(__x_ABI_CWindows_CGaming_CInput_CGameControllerSwitchPosition va
     }
 }
 
-static void
-WGI_JoystickUpdate(SDL_Joystick *joystick)
+static void WGI_JoystickUpdate(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     HRESULT hr;
@@ -878,8 +859,7 @@ WGI_JoystickUpdate(SDL_Joystick *joystick)
     SDL_stack_free(axes);
 }
 
-static void
-WGI_JoystickClose(SDL_Joystick *joystick)
+static void WGI_JoystickClose(SDL_Joystick *joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
 
@@ -901,8 +881,7 @@ WGI_JoystickClose(SDL_Joystick *joystick)
     joystick->hwdata = NULL;
 }
 
-static void
-WGI_JoystickQuit(void)
+static void WGI_JoystickQuit(void)
 {
     if (wgi.statics) {
         while (wgi.controller_count > 0) {
@@ -946,8 +925,7 @@ WGI_JoystickQuit(void)
     SDL_zero(wgi);
 }
 
-static SDL_bool
-WGI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static SDL_bool WGI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
 }

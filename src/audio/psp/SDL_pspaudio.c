@@ -38,8 +38,7 @@
 /* The tag name used by PSP audio */
 #define PSPAUDIO_DRIVER_NAME    "psp"
 
-static int
-PSPAUDIO_OpenDevice(_THIS, const char *devname)
+static int PSPAUDIO_OpenDevice(_THIS, const char *devname)
 {
     int format, mixlen, i;
 
@@ -155,8 +154,7 @@ static void PSPAUDIO_ThreadInit(_THIS)
     }
 }
 
-static SDL_bool
-PSPAUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool PSPAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = PSPAUDIO_OpenDevice;

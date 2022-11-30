@@ -45,8 +45,7 @@
 #define _PATH_DEV_AUDIO "/dev/audio"
 #endif
 
-static void
-test_device(const int iscapture, const char *fname, int flags, int (*test) (int fd))
+static void test_device(const int iscapture, const char *fname, int flags, int (*test) (int fd))
 {
     struct stat sb;
     if ((stat(fname, &sb) == 0) && (S_ISCHR(sb.st_mode))) {
@@ -70,14 +69,12 @@ test_device(const int iscapture, const char *fname, int flags, int (*test) (int 
     }
 }
 
-static int
-test_stub(int fd)
+static int test_stub(int fd)
 {
     return 1;
 }
 
-static void
-SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*test)(int))
+static void SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*test)(int))
 {
     const int flags = iscapture ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
     const char *audiodev;

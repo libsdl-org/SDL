@@ -115,15 +115,13 @@ typedef struct SDL_MessageBoxDataX11
 } SDL_MessageBoxDataX11;
 
 /* Maximum helper for ints. */
-static SDL_INLINE int
-IntMax( int a, int b )
+static SDL_INLINE int IntMax( int a, int b )
 {
     return ( a > b  ) ? a : b;
 }
 
 /* Return width and height for a string. */
-static void
-GetTextWidthHeight( SDL_MessageBoxDataX11 *data, const char *str, int nbytes, int *pwidth, int *pheight )
+static void GetTextWidthHeight( SDL_MessageBoxDataX11 *data, const char *str, int nbytes, int *pwidth, int *pheight )
 {
     if (SDL_X11_HAVE_UTF8) {
         XRectangle overall_ink, overall_logical;
@@ -142,8 +140,7 @@ GetTextWidthHeight( SDL_MessageBoxDataX11 *data, const char *str, int nbytes, in
 }
 
 /* Return index of button if position x,y is contained therein. */
-static int
-GetHitButtonIndex( SDL_MessageBoxDataX11 *data, int x, int y )
+static int GetHitButtonIndex( SDL_MessageBoxDataX11 *data, int x, int y )
 {
     int i;
     int numbuttons = data->numbuttons;
@@ -164,8 +161,7 @@ GetHitButtonIndex( SDL_MessageBoxDataX11 *data, int x, int y )
 }
 
 /* Initialize SDL_MessageBoxData structure and Display, etc. */
-static int
-X11_MessageBoxInit( SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData * messageboxdata, int * pbuttonid )
+static int X11_MessageBoxInit( SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData * messageboxdata, int * pbuttonid )
 {
     int i;
     int numbuttons = messageboxdata->numbuttons;
@@ -220,8 +216,7 @@ X11_MessageBoxInit( SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData * mess
     return 0;
 }
 
-static int
-CountLinesOfText(const char *text)
+static int CountLinesOfText(const char *text)
 {
     int retval = 0;
     while (text && *text) {
@@ -233,8 +228,7 @@ CountLinesOfText(const char *text)
 }
 
 /* Calculate and initialize text and button locations. */
-static int
-X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
+static int X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
 {
     int i;
     int ybuttons;
@@ -364,8 +358,7 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
 }
 
 /* Free SDL_MessageBoxData data. */
-static void
-X11_MessageBoxShutdown( SDL_MessageBoxDataX11 *data )
+static void X11_MessageBoxShutdown( SDL_MessageBoxDataX11 *data )
 {
     if ( data->font_set != NULL ) {
         X11_XFreeFontSet( data->display, data->font_set );
@@ -398,8 +391,7 @@ X11_MessageBoxShutdown( SDL_MessageBoxDataX11 *data )
 }
 
 /* Create and set up our X11 dialog box indow. */
-static int
-X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
+static int X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
 {
     int x, y;
     XSizeHints *sizehints;
@@ -522,8 +514,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
 }
 
 /* Draw our message box. */
-static void
-X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
+static void X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
 {
     int i;
     Drawable window = data->window;
@@ -597,16 +588,14 @@ X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
 #endif
 }
 
-static Bool
-X11_MessageBoxEventTest(Display *display, XEvent *event, XPointer arg)
+static Bool X11_MessageBoxEventTest(Display *display, XEvent *event, XPointer arg)
 {
     const SDL_MessageBoxDataX11 *data = (const SDL_MessageBoxDataX11 *) arg;
     return ((event->xany.display == data->display) && (event->xany.window == data->window)) ? True : False;
 }
 
 /* Loop and handle message box event messages until something kills it. */
-static int
-X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
+static int X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
 {
     GC ctx;
     XGCValues ctx_vals;
@@ -755,8 +744,7 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
     return 0;
 }
 
-static int
-X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     int ret;
     SDL_MessageBoxDataX11 data;

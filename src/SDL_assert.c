@@ -40,8 +40,7 @@
 /* The size of the stack buffer to use for rendering assert messages. */
 #define SDL_MAX_ASSERT_MESSAGE_STACK 256
 
-static SDL_assert_state SDLCALL
-SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
+static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
 
 /*
  * We keep all triggered assertions in a singly-linked list so we can
@@ -57,12 +56,10 @@ static SDL_AssertionHandler assertion_handler = SDL_PromptAssertion;
 static void *assertion_userdata = NULL;
 
 #ifdef __GNUC__
-static void
-debug_print(const char *fmt, ...) __attribute__((format (printf, 1, 2)));
+static void debug_print(const char *fmt, ...) __attribute__((format (printf, 1, 2)));
 #endif
 
-static void
-debug_print(const char *fmt, ...)
+static void debug_print(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -145,8 +142,7 @@ static SDL_NORETURN void SDL_AbortAssertion(void)
     SDL_ExitProcess(42);
 }
 
-static SDL_assert_state SDLCALL
-SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
+static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
 {
     const char *envr;
     SDL_assert_state state = SDL_ASSERTION_ABORT;

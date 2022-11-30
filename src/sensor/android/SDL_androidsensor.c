@@ -45,8 +45,7 @@ static ALooper* SDL_sensor_looper;
 static SDL_AndroidSensor *SDL_sensors;
 static int SDL_sensors_count;
 
-static int
-SDL_ANDROID_SensorInit(void)
+static int SDL_ANDROID_SensorInit(void)
 {
     int i, sensors_count;
     ASensorList sensors;
@@ -81,25 +80,21 @@ SDL_ANDROID_SensorInit(void)
     return 0;
 }
 
-static int
-SDL_ANDROID_SensorGetCount(void)
+static int SDL_ANDROID_SensorGetCount(void)
 {
     return SDL_sensors_count;
 }
 
-static void
-SDL_ANDROID_SensorDetect(void)
+static void SDL_ANDROID_SensorDetect(void)
 {
 }
 
-static const char *
-SDL_ANDROID_SensorGetDeviceName(int device_index)
+static const char * SDL_ANDROID_SensorGetDeviceName(int device_index)
 {
     return ASensor_getName(SDL_sensors[device_index].asensor);
 }
 
-static SDL_SensorType
-SDL_ANDROID_SensorGetDeviceType(int device_index)
+static SDL_SensorType SDL_ANDROID_SensorGetDeviceType(int device_index)
 {
     switch (ASensor_getType(SDL_sensors[device_index].asensor)) {
     case 0x00000001:
@@ -111,20 +106,17 @@ SDL_ANDROID_SensorGetDeviceType(int device_index)
     }
 }
 
-static int
-SDL_ANDROID_SensorGetDeviceNonPortableType(int device_index)
+static int SDL_ANDROID_SensorGetDeviceNonPortableType(int device_index)
 {
     return ASensor_getType(SDL_sensors[device_index].asensor);
 }
 
-static SDL_SensorID
-SDL_ANDROID_SensorGetDeviceInstanceID(int device_index)
+static SDL_SensorID SDL_ANDROID_SensorGetDeviceInstanceID(int device_index)
 {
     return SDL_sensors[device_index].instance_id;
 }
 
-static int
-SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
+static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     struct sensor_hwdata *hwdata;
     int delay_us, min_delay_us;
@@ -160,8 +152,7 @@ SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
     return 0;
 }
     
-static void
-SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
+static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
 {
     int events;
     ASensorEvent event;
@@ -175,8 +166,7 @@ SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
     }
 }
 
-static void
-SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
+static void SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 {
     if (sensor->hwdata) {
         ASensorEventQueue_disableSensor(sensor->hwdata->eventqueue, sensor->hwdata->asensor);
@@ -186,8 +176,7 @@ SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
     }
 }
 
-static void
-SDL_ANDROID_SensorQuit(void)
+static void SDL_ANDROID_SensorQuit(void)
 {
     if (SDL_sensors) {
         SDL_free(SDL_sensors);

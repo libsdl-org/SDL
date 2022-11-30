@@ -242,8 +242,7 @@ static void PSP_JoystickQuit(void)
 {
 }
 
-static SDL_bool
-PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static SDL_bool PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
 }

@@ -72,8 +72,7 @@ SDL_GetTouchName(int index)
     return SDL_touchDevices[index]->name;
 }
 
-static int
-SDL_GetTouchIndex(SDL_TouchID id)
+static int SDL_GetTouchIndex(SDL_TouchID id)
 {
     int index;
     SDL_Touch *touch;
@@ -113,8 +112,7 @@ SDL_GetTouchDeviceType(SDL_TouchID id)
     return SDL_TOUCH_DEVICE_INVALID;
 }
 
-static int
-SDL_GetFingerIndex(const SDL_Touch * touch, SDL_FingerID fingerid)
+static int SDL_GetFingerIndex(const SDL_Touch * touch, SDL_FingerID fingerid)
 {
     int index;
     for (index = 0; index < touch->num_fingers; ++index) {
@@ -125,8 +123,7 @@ SDL_GetFingerIndex(const SDL_Touch * touch, SDL_FingerID fingerid)
     return -1;
 }
 
-static SDL_Finger *
-SDL_GetFinger(const SDL_Touch * touch, SDL_FingerID id)
+static SDL_Finger * SDL_GetFinger(const SDL_Touch * touch, SDL_FingerID id)
 {
     int index = SDL_GetFingerIndex(touch, id);
     if (index < 0 || index >= touch->num_fingers) {
@@ -203,8 +200,7 @@ SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name)
     return index;
 }
 
-static int
-SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float y, float pressure)
+static int SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float y, float pressure)
 {
     SDL_Finger *finger;
 
@@ -230,8 +226,7 @@ SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float y, float p
     return 0;
 }
 
-static int
-SDL_DelFinger(SDL_Touch* touch, SDL_FingerID fingerid)
+static int SDL_DelFinger(SDL_Touch* touch, SDL_FingerID fingerid)
 {
     SDL_Finger *temp;
 

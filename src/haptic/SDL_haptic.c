@@ -51,8 +51,7 @@ SDL_HapticInit(void)
 /*
  * Checks to see if the haptic device is valid
  */
-static int
-ValidHaptic(SDL_Haptic * haptic)
+static int ValidHaptic(SDL_Haptic * haptic)
 {
     int valid;
     SDL_Haptic *hapticlist;
@@ -504,8 +503,7 @@ SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
 /*
  * Checks to see if an effect is valid.
  */
-static int
-ValidEffect(SDL_Haptic * haptic, int effect)
+static int ValidEffect(SDL_Haptic * haptic, int effect)
 {
     if ((effect < 0) || (effect >= haptic->neffects)) {
         SDL_SetError("Haptic: Invalid effect identifier.");

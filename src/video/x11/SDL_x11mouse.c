@@ -32,14 +32,12 @@
 /* FIXME: Find a better place to put this... */
 static Cursor x11_empty_cursor = None;
 
-static Display *
-GetDisplay(void)
+static Display * GetDisplay(void)
 {
     return ((SDL_VideoData *)SDL_GetVideoDevice()->driverdata)->display;
 }
 
-static Cursor
-X11_CreateEmptyCursor()
+static Cursor X11_CreateEmptyCursor()
 {
     if (x11_empty_cursor == None) {
         Display *display = GetDisplay();
@@ -60,8 +58,7 @@ X11_CreateEmptyCursor()
     return x11_empty_cursor;
 }
 
-static void
-X11_DestroyEmptyCursor(void)
+static void X11_DestroyEmptyCursor(void)
 {
     if (x11_empty_cursor != None) {
         X11_XFreeCursor(GetDisplay(), x11_empty_cursor);
@@ -69,8 +66,7 @@ X11_DestroyEmptyCursor(void)
     }
 }
 
-static SDL_Cursor *
-X11_CreateDefaultCursor()
+static SDL_Cursor * X11_CreateDefaultCursor()
 {
     SDL_Cursor *cursor;
 
@@ -86,8 +82,7 @@ X11_CreateDefaultCursor()
 }
 
 #if SDL_VIDEO_DRIVER_X11_XCURSOR
-static Cursor
-X11_CreateXCursorCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static Cursor X11_CreateXCursorCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     Display *display = GetDisplay();
     Cursor cursor = None;
@@ -114,8 +109,7 @@ X11_CreateXCursorCursor(SDL_Surface * surface, int hot_x, int hot_y)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XCURSOR */
 
-static Cursor
-X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static Cursor X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     Display *display = GetDisplay();
     XColor fg, bg;
@@ -199,8 +193,7 @@ X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
     return cursor;
 }
 
-static SDL_Cursor *
-X11_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor * X11_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     SDL_Cursor *cursor;
 
@@ -224,8 +217,7 @@ X11_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     return cursor;
 }
 
-static SDL_Cursor *
-X11_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor * X11_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor;
     unsigned int shape;
@@ -265,8 +257,7 @@ X11_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
-static void
-X11_FreeCursor(SDL_Cursor * cursor)
+static void X11_FreeCursor(SDL_Cursor * cursor)
 {
     Cursor x11_cursor = (Cursor)cursor->driverdata;
 
@@ -276,8 +267,7 @@ X11_FreeCursor(SDL_Cursor * cursor)
     SDL_free(cursor);
 }
 
-static int
-X11_ShowCursor(SDL_Cursor * cursor)
+static int X11_ShowCursor(SDL_Cursor * cursor)
 {
     Cursor x11_cursor = 0;
 
@@ -308,8 +298,7 @@ X11_ShowCursor(SDL_Cursor * cursor)
     return 0;
 }
 
-static void
-WarpMouseInternal(Window xwindow, const int x, const int y)
+static void WarpMouseInternal(Window xwindow, const int x, const int y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
@@ -332,8 +321,7 @@ WarpMouseInternal(Window xwindow, const int x, const int y)
     videodata->global_mouse_changed = SDL_TRUE;
 }
 
-static void
-X11_WarpMouse(SDL_Window * window, int x, int y)
+static void X11_WarpMouse(SDL_Window * window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
@@ -347,15 +335,13 @@ X11_WarpMouse(SDL_Window * window, int x, int y)
 #endif
 }
 
-static int
-X11_WarpMouseGlobal(int x, int y)
+static int X11_WarpMouseGlobal(int x, int y)
 {
     WarpMouseInternal(DefaultRootWindow(GetDisplay()), x, y);
     return 0;
 }
 
-static int
-X11_SetRelativeMouseMode(SDL_bool enabled)
+static int X11_SetRelativeMouseMode(SDL_bool enabled)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
     if (X11_Xinput2IsInitialized()) {
@@ -367,8 +353,7 @@ X11_SetRelativeMouseMode(SDL_bool enabled)
     return -1;
 }
 
-static int
-X11_CaptureMouse(SDL_Window *window)
+static int X11_CaptureMouse(SDL_Window *window)
 {
     Display *display = GetDisplay();
     SDL_Window *mouse_focus = SDL_GetMouseFocus();
@@ -394,8 +379,7 @@ X11_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32
-X11_GetGlobalMouseState(int *x, int *y)
+static Uint32 X11_GetGlobalMouseState(int *x, int *y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) SDL_GetVideoDevice()->driverdata;
     Display *display = GetDisplay();

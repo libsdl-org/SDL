@@ -56,8 +56,7 @@
 #define SSE_END
 
 #define DEFINE_SSE_FILLRECT(bpp, type) \
-static void \
-SDL_FillRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
+static void SDL_FillRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
 { \
     int i, n; \
     Uint8 *p = NULL; \
@@ -94,8 +93,7 @@ SDL_FillRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
     SSE_END; \
 }
 
-static void
-SDL_FillRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
+static void SDL_FillRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
     int i, n;
 
@@ -129,8 +127,7 @@ DEFINE_SSE_FILLRECT(4, Uint32)
 /* *INDENT-ON* */ /* clang-format on */
 #endif /* __SSE__ */
 
-static void
-SDL_FillRect1(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
+static void SDL_FillRect1(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
     int n;
     Uint8 *p = NULL;
@@ -168,8 +165,7 @@ SDL_FillRect1(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
     }
 }
 
-static void
-SDL_FillRect2(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
+static void SDL_FillRect2(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
     int n;
     Uint16 *p = NULL;
@@ -192,8 +188,7 @@ SDL_FillRect2(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
     }
 }
 
-static void
-SDL_FillRect3(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
+static void SDL_FillRect3(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     Uint8 b1 = (Uint8) (color & 0xFF);
@@ -220,8 +215,7 @@ SDL_FillRect3(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
     }
 }
 
-static void
-SDL_FillRect4(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
+static void SDL_FillRect4(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
     while (h--) {
         SDL_memset4(pixels, color, w);

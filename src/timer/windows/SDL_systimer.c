@@ -36,8 +36,7 @@ static LARGE_INTEGER start_ticks;
 /* The number of ticks per second of the high-resolution performance counter */
 static LARGE_INTEGER ticks_per_second;
 
-static void
-SDL_SetSystemTimerResolution(const UINT uPeriod)
+static void SDL_SetSystemTimerResolution(const UINT uPeriod)
 {
 #if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     static UINT timer_period = 0;
@@ -56,8 +55,7 @@ SDL_SetSystemTimerResolution(const UINT uPeriod)
 #endif
 }
 
-static void SDLCALL
-SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     UINT uPeriod;
 

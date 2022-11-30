@@ -122,8 +122,7 @@ static int inotify_fd = -1;
 static Uint32 last_joy_detect_time;
 static time_t last_input_dir_mtime;
 
-static void
-FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
+static void FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
 {
     if (inpid->vendor == 0x045e && inpid->product == 0x0b05 && inpid->version == 0x0903) {
         /* This is a Microsoft Xbox One Elite Series 2 controller */
@@ -147,8 +146,7 @@ FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
 }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-static SDL_bool
-IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *name)
+static SDL_bool IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *name)
 {
     if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_S && version == 0 &&
         SDL_strcmp(name, "Xbox One S Controller") == 0) {
@@ -159,8 +157,7 @@ IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *nam
 }
 #endif /* SDL_JOYSTICK_HIDAPI */
 
-static int
-GuessIsJoystick(int fd)
+static int GuessIsJoystick(int fd)
 {
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
@@ -184,8 +181,7 @@ GuessIsJoystick(int fd)
     return 0;
 }
 
-static int
-IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
+static int IsJoystick(const char *path, int fd, char **name_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     char *name;
@@ -280,8 +276,7 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
 }
 #endif /* SDL_USE_LIBUDEV */
 
-static void
-FreeJoylistItem(SDL_joylist_item *item)
+static void FreeJoylistItem(SDL_joylist_item *item)
 {
     SDL_free(item->mapping);
     SDL_free(item->path);
@@ -289,8 +284,7 @@ FreeJoylistItem(SDL_joylist_item *item)
     SDL_free(item);
 }
 
-static int
-MaybeAddDevice(const char *path)
+static int MaybeAddDevice(const char *path)
 {
     struct stat sb;
     int fd = -1;
@@ -361,8 +355,7 @@ MaybeAddDevice(const char *path)
     return numjoysticks;
 }
 
-static void
-RemoveJoylistItem(SDL_joylist_item *item, SDL_joylist_item *prev)
+static void RemoveJoylistItem(SDL_joylist_item *item, SDL_joylist_item *prev)
 {
     if (item->hwdata) {
         item->hwdata->item = NULL;
@@ -386,8 +379,7 @@ RemoveJoylistItem(SDL_joylist_item *item, SDL_joylist_item *prev)
     FreeJoylistItem(item);
 }
 
-static int
-MaybeRemoveDevice(const char *path)
+static int MaybeRemoveDevice(const char *path)
 {
     SDL_joylist_item *item;
     SDL_joylist_item *prev = NULL;
@@ -409,8 +401,7 @@ MaybeRemoveDevice(const char *path)
     return -1;
 }
 
-static void
-HandlePendingRemovals(void)
+static void HandlePendingRemovals(void)
 {
     SDL_joylist_item *prev = NULL;
     SDL_joylist_item *item = SDL_joylist;
@@ -481,14 +472,12 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     }
 }
 
-static int
-StrHasPrefix(const char *string, const char *prefix)
+static int StrHasPrefix(const char *string, const char *prefix)
 {
     return SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0;
 }
 
-static int
-StrIsInteger(const char *string)
+static int StrIsInteger(const char *string)
 {
     const char *p;
 
@@ -505,8 +494,7 @@ StrIsInteger(const char *string)
     return 1;
 }
 
-static SDL_bool
-IsJoystickJSNode(const char *node)
+static SDL_bool IsJoystickJSNode(const char *node)
 {
     const char *last_slash = SDL_strrchr(node, '/');
     if (last_slash) {
@@ -515,8 +503,7 @@ IsJoystickJSNode(const char *node)
     return StrHasPrefix(node, "js") && StrIsInteger(node + 2);
 }
 
-static SDL_bool
-IsJoystickEventNode(const char *node)
+static SDL_bool IsJoystickEventNode(const char *node)
 {
     const char *last_slash = SDL_strrchr(node, '/');
     if (last_slash) {
@@ -525,8 +512,7 @@ IsJoystickEventNode(const char *node)
     return StrHasPrefix(node, "event") && StrIsInteger(node + 5);
 }
 
-static SDL_bool
-IsJoystickDeviceNode(const char *node)
+static SDL_bool IsJoystickDeviceNode(const char *node)
 {
     if (SDL_classic_joysticks) {
         return IsJoystickJSNode(node);
@@ -552,8 +538,7 @@ static int SDL_inotify_init1(void) {
 }
 #endif
 
-static void
-LINUX_InotifyJoystickDetect(void)
+static void LINUX_InotifyJoystickDetect(void)
 {
     union
     {
@@ -619,13 +604,11 @@ static int get_event_joystick_index(int event)
  * have to do this the first time, to detect devices that already existed
  * before we started; in the non-inotify code path we do this repeatedly
  * (polling). */
-static int
-filter_entries(const struct dirent *entry)
+static int filter_entries(const struct dirent *entry)
 {
     return IsJoystickDeviceNode(entry->d_name);
 }
-static int
-sort_entries(const void *_a, const void *_b)
+static int sort_entries(const void *_a, const void *_b)
 {
     const struct dirent **a = (const struct dirent **)_a;
     const struct dirent **b = (const struct dirent **)_b;
@@ -658,8 +641,7 @@ sort_entries(const void *_a, const void *_b)
     return numA - numB;
 }
 
-static void
-LINUX_FallbackJoystickDetect(void)
+static void LINUX_FallbackJoystickDetect(void)
 {
     const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
     Uint32 now = SDL_GetTicks();
@@ -692,8 +674,7 @@ LINUX_FallbackJoystickDetect(void)
     }
 }
 
-static void
-LINUX_JoystickDetect(void)
+static void LINUX_JoystickDetect(void)
 {
 #if SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
@@ -714,8 +695,7 @@ LINUX_JoystickDetect(void)
     SDL_UpdateSteamControllers();
 }
 
-static int
-LINUX_JoystickInit(void)
+static int LINUX_JoystickInit(void)
 {
     const char *devices = SDL_GetHint(SDL_HINT_JOYSTICK_DEVICE);
 
@@ -811,14 +791,12 @@ LINUX_JoystickInit(void)
     return 0;
 }
 
-static int
-LINUX_JoystickGetCount(void)
+static int LINUX_JoystickGetCount(void)
 {
     return numjoysticks;
 }
 
-static SDL_joylist_item *
-JoystickByDevIndex(int device_index)
+static SDL_joylist_item * JoystickByDevIndex(int device_index)
 {
     SDL_joylist_item *item = SDL_joylist;
 
@@ -835,44 +813,37 @@ JoystickByDevIndex(int device_index)
     return item;
 }
 
-static const char *
-LINUX_JoystickGetDeviceName(int device_index)
+static const char * LINUX_JoystickGetDeviceName(int device_index)
 {
     return JoystickByDevIndex(device_index)->name;
 }
 
-static const char *
-LINUX_JoystickGetDevicePath(int device_index)
+static const char * LINUX_JoystickGetDevicePath(int device_index)
 {
     return JoystickByDevIndex(device_index)->path;
 }
 
-static int
-LINUX_JoystickGetDevicePlayerIndex(int device_index)
+static int LINUX_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
 }
 
-static void
-LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID
-LINUX_JoystickGetDeviceGUID( int device_index )
+static SDL_JoystickGUID LINUX_JoystickGetDeviceGUID( int device_index )
 {
     return JoystickByDevIndex(device_index)->guid;
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */
-static SDL_JoystickID
-LINUX_JoystickGetDeviceInstanceID(int device_index)
+static SDL_JoystickID LINUX_JoystickGetDeviceInstanceID(int device_index)
 {
     return JoystickByDevIndex(device_index)->device_instance;
 }
 
-static int
-allocate_hatdata(SDL_Joystick *joystick)
+static int allocate_hatdata(SDL_Joystick *joystick)
 {
     int i;
 
@@ -889,8 +860,7 @@ allocate_hatdata(SDL_Joystick *joystick)
     return 0;
 }
 
-static int
-allocate_balldata(SDL_Joystick *joystick)
+static int allocate_balldata(SDL_Joystick *joystick)
 {
     int i;
 
@@ -907,8 +877,7 @@ allocate_balldata(SDL_Joystick *joystick)
     return 0;
 }
 
-static SDL_bool
-GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *absinfo_y)
+static SDL_bool GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *absinfo_y)
 {
     /* A "hat" is assumed to be a digital input with at most 9 possible states
      * (3 per axis: negative/zero/positive), as opposed to a true "axis" which
@@ -940,8 +909,7 @@ GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct input_absinfo *
     return SDL_FALSE;
 }
 
-static void
-ConfigJoystick(SDL_Joystick *joystick, int fd)
+static void ConfigJoystick(SDL_Joystick *joystick, int fd)
 {
     int i, t;
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
@@ -1158,8 +1126,7 @@ ConfigJoystick(SDL_Joystick *joystick, int fd)
    without adding an opened SDL_Joystick object to the system.
    This expects `joystick->hwdata` to be allocated and will not free it
    on error. Returns -1 on error, 0 on success. */
-static int
-PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
+static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
 {
     joystick->hwdata->item = item;
     joystick->hwdata->guid = item->guid;
@@ -1206,8 +1173,7 @@ PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
-static int
-LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
 
@@ -1237,8 +1203,7 @@ LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     return 0;
 }
 
-static int
-LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct input_event event;
 
@@ -1279,14 +1244,12 @@ LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16
     return 0;
 }
 
-static int
-LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32
-LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
+static Uint32 LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     Uint32 result = 0;
 
@@ -1297,26 +1260,22 @@ LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
     return result;
 }
 
-static int
-LINUX_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int LINUX_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-LINUX_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static int LINUX_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static void
-HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
+static void HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
 {
     const int hatnum = stick->hwdata->hats_indices[hatidx];
     struct hwdata_hat *the_hat;
@@ -1362,15 +1321,13 @@ HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
     }
 }
 
-static void
-HandleBall(SDL_Joystick *stick, Uint8 ball, int axis, int value)
+static void HandleBall(SDL_Joystick *stick, Uint8 ball, int axis, int value)
 {
     stick->hwdata->balls[ball].axis[axis] += value;
 }
 
 
-static int
-AxisCorrect(SDL_Joystick *joystick, int which, int value)
+static int AxisCorrect(SDL_Joystick *joystick, int which, int value)
 {
     struct axis_correct *correct;
 
@@ -1403,8 +1360,7 @@ AxisCorrect(SDL_Joystick *joystick, int which, int value)
     return value;
 }
 
-static void
-PollAllValues(SDL_Joystick *joystick)
+static void PollAllValues(SDL_Joystick *joystick)
 {
     struct input_absinfo absinfo;
     unsigned long keyinfo[NBITS(KEY_MAX)];
@@ -1461,8 +1417,7 @@ PollAllValues(SDL_Joystick *joystick)
     /* Joyballs are relative input, so there's no poll state. Events only! */
 }
 
-static void
-HandleInputEvents(SDL_Joystick *joystick)
+static void HandleInputEvents(SDL_Joystick *joystick)
 {
     struct input_event events[32];
     int i, len, code, hat_index;
@@ -1553,8 +1508,7 @@ HandleInputEvents(SDL_Joystick *joystick)
     }
 }
 
-static void
-HandleClassicEvents(SDL_Joystick *joystick)
+static void HandleClassicEvents(SDL_Joystick *joystick)
 {
     struct js_event events[32];
     int i, len, code, hat_index;
@@ -1597,8 +1551,7 @@ HandleClassicEvents(SDL_Joystick *joystick)
     }
 }
 
-static void
-LINUX_JoystickUpdate(SDL_Joystick *joystick)
+static void LINUX_JoystickUpdate(SDL_Joystick *joystick)
 {
     int i;
 
@@ -1628,8 +1581,7 @@ LINUX_JoystickUpdate(SDL_Joystick *joystick)
 }
 
 /* Function to close a joystick after use */
-static void
-LINUX_JoystickClose(SDL_Joystick *joystick)
+static void LINUX_JoystickClose(SDL_Joystick *joystick)
 {
     if (joystick->hwdata) {
         if (joystick->hwdata->effect.id >= 0) {
@@ -1652,8 +1604,7 @@ LINUX_JoystickClose(SDL_Joystick *joystick)
 }
 
 /* Function to perform any system-specific joystick related cleanup */
-static void
-LINUX_JoystickQuit(void)
+static void LINUX_JoystickQuit(void)
 {
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
@@ -1686,8 +1637,7 @@ LINUX_JoystickQuit(void)
    This is based on the Linux Gamepad Specification
    available at: https://www.kernel.org/doc/html/v4.15/input/gamepad.html
  */
-static SDL_bool
-LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;
     SDL_joylist_item *item = JoystickByDevIndex(device_index);

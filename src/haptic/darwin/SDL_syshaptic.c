@@ -87,8 +87,7 @@ static int numhaptics = -1;
 /*
  * Like strerror but for force feedback errors.
  */
-static const char *
-FFStrError(unsigned int err)
+static const char * FFStrError(unsigned int err)
 {
     switch (err) {
     case FFERR_DEVICEFULL:
@@ -190,8 +189,7 @@ SDL_SYS_NumHaptics(void)
     return numhaptics;
 }
 
-static SDL_hapticlist_item *
-HapticByDevIndex(int device_index)
+static SDL_hapticlist_item * HapticByDevIndex(int device_index)
 {
     SDL_hapticlist_item *item = SDL_hapticlist;
 
@@ -336,8 +334,7 @@ SDL_SYS_HapticName(int index)
 /*
  * Gets the device's product name.
  */
-static int
-HIDGetDeviceProduct(io_service_t dev, char *name)
+static int HIDGetDeviceProduct(io_service_t dev, char *name)
 {
     CFMutableDictionaryRef hidProperties, usbProperties;
     io_registry_entry_t parent1, parent2;
@@ -407,8 +404,7 @@ if (features.supportedEffects & (ff)) supported |= (s)
 /*
  * Gets supported features.
  */
-static unsigned int
-GetSupportedFeatures(SDL_Haptic * haptic)
+static unsigned int GetSupportedFeatures(SDL_Haptic * haptic)
 {
     HRESULT ret;
     FFDeviceObjectReference device;
@@ -482,8 +478,7 @@ GetSupportedFeatures(SDL_Haptic * haptic)
 /*
  * Opens the haptic device from the file descriptor.
  */
-static int
-SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
+static int SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
 {
     HRESULT ret;
     int ret2;
@@ -705,8 +700,7 @@ SDL_SYS_HapticQuit(void)
 /*
  * Converts an SDL trigger button to an FFEFFECT trigger button.
  */
-static DWORD
-FFGetTriggerButton(Uint16 button)
+static DWORD FFGetTriggerButton(Uint16 button)
 {
     DWORD dwTriggerButton;
 
@@ -723,8 +717,7 @@ FFGetTriggerButton(Uint16 button)
 /*
  * Sets the direction.
  */
-static int
-SDL_SYS_SetDirection(FFEFFECT * effect, SDL_HapticDirection * dir, int naxes)
+static int SDL_SYS_SetDirection(FFEFFECT * effect, SDL_HapticDirection * dir, int naxes)
 {
     LONG *rglDir;
 
@@ -786,8 +779,7 @@ SDL_SYS_SetDirection(FFEFFECT * effect, SDL_HapticDirection * dir, int naxes)
 /*
  * Creates the FFEFFECT from a SDL_HapticEffect.
  */
-static int
-SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src)
+static int SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src)
 {
     int i;
     FFCONSTANTFORCE *constant = NULL;
@@ -1074,8 +1066,7 @@ SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src)
 /*
  * Frees an FFEFFECT allocated by SDL_SYS_ToFFEFFECT.
  */
-static void
-SDL_SYS_HapticFreeFFEFFECT(FFEFFECT * effect, int type)
+static void SDL_SYS_HapticFreeFFEFFECT(FFEFFECT * effect, int type)
 {
     FFCUSTOMFORCE *custom;
 

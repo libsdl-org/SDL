@@ -258,8 +258,7 @@ static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
     r->origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - r->origin.y - r->size.height;
 }
 
-static void
-ScheduleContextUpdates(SDL_WindowData *data)
+static void ScheduleContextUpdates(SDL_WindowData *data)
 {
     /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
     #if SDL_VIDEO_OPENGL
@@ -295,14 +294,12 @@ ScheduleContextUpdates(SDL_WindowData *data)
 }
 
 /* !!! FIXME: this should use a hint callback. */
-static int
-GetHintCtrlClickEmulateRightClick()
+static int GetHintCtrlClickEmulateRightClick()
 {
     return SDL_GetHintBoolean(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, SDL_FALSE);
 }
 
-static NSUInteger
-GetWindowWindowedStyle(SDL_Window * window)
+static NSUInteger GetWindowWindowedStyle(SDL_Window * window)
 {
     /* IF YOU CHANGE ANY FLAGS IN HERE, PLEASE READ
        the NSWindowStyleMaskBorderless comments in SetupWindowData()! */
@@ -322,8 +319,7 @@ GetWindowWindowedStyle(SDL_Window * window)
     return style;
 }
 
-static NSUInteger
-GetWindowStyle(SDL_Window * window)
+static NSUInteger GetWindowStyle(SDL_Window * window)
 {
     NSUInteger style = 0;
 
@@ -335,8 +331,7 @@ GetWindowStyle(SDL_Window * window)
     return style;
 }
 
-static SDL_bool
-SetWindowStyle(SDL_Window * window, NSUInteger style)
+static SDL_bool SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = data.nswindow;
@@ -356,8 +351,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     return SDL_TRUE;
 }
 
-static SDL_bool
-ShouldAdjustCoordinatesForGrab(SDL_Window * window)
+static SDL_bool ShouldAdjustCoordinatesForGrab(SDL_Window * window)
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
 
@@ -375,8 +369,7 @@ ShouldAdjustCoordinatesForGrab(SDL_Window * window)
     return SDL_FALSE;
 }
 
-static SDL_bool
-AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
+static SDL_bool AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
 {
     if (window->mouse_rect.w > 0 && window->mouse_rect.h > 0) {
         SDL_Rect window_rect;
@@ -415,8 +408,7 @@ AdjustCoordinatesForGrab(SDL_Window * window, int x, int y, CGPoint *adjusted)
     return SDL_FALSE;
 }
 
-static void
-Cocoa_UpdateClipCursor(SDL_Window * window)
+static void Cocoa_UpdateClipCursor(SDL_Window * window)
 {
     SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
 
@@ -1188,8 +1180,7 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     return NO;  /* not a special area, carry on. */
 }
 
-static int
-Cocoa_SendMouseButtonClicks(SDL_Mouse * mouse, NSEvent *theEvent, SDL_Window * window, const Uint8 state, const Uint8 button)
+static int Cocoa_SendMouseButtonClicks(SDL_Mouse * mouse, NSEvent *theEvent, SDL_Window * window, const Uint8 state, const Uint8 button)
 {
     const SDL_MouseID mouseID = mouse->mouseID;
     const int clicks = (int) [theEvent clickCount];
@@ -1618,8 +1609,7 @@ Cocoa_SendMouseButtonClicks(SDL_Mouse * mouse, NSEvent *theEvent, SDL_Window * w
 }
 @end
 
-static int
-SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
+static int SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, SDL_bool created)
 { @autoreleasepool
 {
     SDL_VideoData *videodata = (__bridge SDL_VideoData *) _this->driverdata;

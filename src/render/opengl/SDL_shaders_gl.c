@@ -235,8 +235,7 @@ struct GL_ShaderContext
  * NOTE: Always use sampler2D, etc here. We'll #define them to the
  *  texture_rectangle versions if we choose to use that extension.
  */
-static const char *shader_source[NUM_SHADERS][2] =
-{
+static const char *shader_source[NUM_SHADERS][2] = {
     /* SHADER_NONE */
     { NULL, NULL },
 
@@ -389,8 +388,7 @@ static const char *shader_source[NUM_SHADERS][2] =
 
 /* *INDENT-ON* */ /* clang-format on */
 
-static SDL_bool
-CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, const char *source)
+static SDL_bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, const char *source)
 {
     GLint status;
     const char *sources[2];
@@ -423,8 +421,7 @@ CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, co
     }
 }
 
-static SDL_bool
-CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
+static SDL_bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
 {
     const int num_tmus_bound = 4;
     const char *vert_defines = "";
@@ -484,8 +481,7 @@ CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
     return ctx->glGetError() == GL_NO_ERROR;
 }
 
-static void
-DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
+static void DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
 {
     ctx->glDeleteObjectARB(data->vert_shader);
     ctx->glDeleteObjectARB(data->frag_shader);

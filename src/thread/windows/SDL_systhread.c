@@ -55,8 +55,7 @@ typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 #endif /* !SDL_PASSED_BEGINTHREAD_ENDTHREAD */
 
 
-static DWORD
-RunThread(void *data)
+static DWORD RunThread(void *data)
 {
     SDL_Thread *thread = (SDL_Thread *) data;
     pfnSDL_CurrentEndThread pfnEndThread = (pfnSDL_CurrentEndThread) thread->endfunc;
@@ -67,14 +66,12 @@ RunThread(void *data)
     return 0;
 }
 
-static DWORD WINAPI
-RunThreadViaCreateThread(LPVOID data)
+static DWORD WINAPI RunThreadViaCreateThread(LPVOID data)
 {
   return RunThread(data);
 }
 
-static unsigned __stdcall
-RunThreadViaBeginThreadEx(void *data)
+static unsigned __stdcall RunThreadViaBeginThreadEx(void *data)
 {
   return (unsigned)RunThread(data);
 }

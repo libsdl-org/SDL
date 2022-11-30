@@ -43,15 +43,13 @@
 
 /* #define DEBUG_AUDIO */
 
-static void
-NETBSDAUDIO_DetectDevices(void)
+static void NETBSDAUDIO_DetectDevices(void)
 {
     SDL_EnumUnixAudioDevices(0, NULL);
 }
 
 
-static void
-NETBSDAUDIO_Status(_THIS)
+static void NETBSDAUDIO_Status(_THIS)
 {
 #ifdef DEBUG_AUDIO
     /* *INDENT-OFF* */ /* clang-format off */
@@ -121,8 +119,7 @@ NETBSDAUDIO_Status(_THIS)
 }
 
 
-static void
-NETBSDAUDIO_PlayDevice(_THIS)
+static void NETBSDAUDIO_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     int written;
@@ -141,15 +138,13 @@ NETBSDAUDIO_PlayDevice(_THIS)
 #endif
 }
 
-static Uint8 *
-NETBSDAUDIO_GetDeviceBuf(_THIS)
+static Uint8 * NETBSDAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
 
-static int
-NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
+static int NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
 {
     Uint8 *buffer = (Uint8 *) _buffer;
     int br;
@@ -167,8 +162,7 @@ NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
     return 0;
 }
 
-static void
-NETBSDAUDIO_FlushCapture(_THIS)
+static void NETBSDAUDIO_FlushCapture(_THIS)
 {
     audio_info_t info;
     size_t remain;
@@ -189,8 +183,7 @@ NETBSDAUDIO_FlushCapture(_THIS)
     }
 }
 
-static void
-NETBSDAUDIO_CloseDevice(_THIS)
+static void NETBSDAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->audio_fd >= 0) {
         close(this->hidden->audio_fd);
@@ -199,8 +192,7 @@ NETBSDAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
-NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
+static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     SDL_AudioFormat test_format;
@@ -318,8 +310,7 @@ NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static SDL_bool
-NETBSDAUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->DetectDevices = NETBSDAUDIO_DetectDevices;

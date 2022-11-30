@@ -57,8 +57,7 @@ static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
 #endif
 
-static SDL_mutex *
-SDL_CreateMutex_srw(void)
+static SDL_mutex * SDL_CreateMutex_srw(void)
 {
     SDL_mutex_srw *mutex;
 
@@ -71,8 +70,7 @@ SDL_CreateMutex_srw(void)
     return (SDL_mutex *)mutex;
 }
 
-static void
-SDL_DestroyMutex_srw(SDL_mutex * mutex)
+static void SDL_DestroyMutex_srw(SDL_mutex * mutex)
 {
     if (mutex != NULL) {
         /* There are no kernel allocated resources */
@@ -80,8 +78,7 @@ SDL_DestroyMutex_srw(SDL_mutex * mutex)
     }
 }
 
-static int
-SDL_LockMutex_srw(SDL_mutex * _mutex)
+static int SDL_LockMutex_srw(SDL_mutex * _mutex)
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     DWORD this_thread;
@@ -106,8 +103,7 @@ SDL_LockMutex_srw(SDL_mutex * _mutex)
     return 0;
 }
 
-static int
-SDL_TryLockMutex_srw(SDL_mutex * _mutex)
+static int SDL_TryLockMutex_srw(SDL_mutex * _mutex)
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     DWORD this_thread;
@@ -132,8 +128,7 @@ SDL_TryLockMutex_srw(SDL_mutex * _mutex)
     return retval;
 }
 
-static int
-SDL_UnlockMutex_srw(SDL_mutex * _mutex)
+static int SDL_UnlockMutex_srw(SDL_mutex * _mutex)
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
 
@@ -153,8 +148,7 @@ SDL_UnlockMutex_srw(SDL_mutex * _mutex)
     return 0;
 }
 
-static const SDL_mutex_impl_t SDL_mutex_impl_srw =
-{
+static const SDL_mutex_impl_t SDL_mutex_impl_srw = {
     &SDL_CreateMutex_srw,
     &SDL_DestroyMutex_srw,
     &SDL_LockMutex_srw,
@@ -169,8 +163,7 @@ static const SDL_mutex_impl_t SDL_mutex_impl_srw =
  */
 
 /* Create a mutex */
-static SDL_mutex *
-SDL_CreateMutex_cs(void)
+static SDL_mutex * SDL_CreateMutex_cs(void)
 {
     SDL_mutex_cs *mutex;
 
@@ -191,8 +184,7 @@ SDL_CreateMutex_cs(void)
 }
 
 /* Free the mutex */
-static void
-SDL_DestroyMutex_cs(SDL_mutex * mutex_)
+static void SDL_DestroyMutex_cs(SDL_mutex * mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     if (mutex != NULL) {
@@ -202,8 +194,7 @@ SDL_DestroyMutex_cs(SDL_mutex * mutex_)
 }
 
 /* Lock the mutex */
-static int
-SDL_LockMutex_cs(SDL_mutex * mutex_)
+static int SDL_LockMutex_cs(SDL_mutex * mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     if (mutex == NULL) {
@@ -215,8 +206,7 @@ SDL_LockMutex_cs(SDL_mutex * mutex_)
 }
 
 /* TryLock the mutex */
-static int
-SDL_TryLockMutex_cs(SDL_mutex * mutex_)
+static int SDL_TryLockMutex_cs(SDL_mutex * mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     int retval = 0;
@@ -231,8 +221,7 @@ SDL_TryLockMutex_cs(SDL_mutex * mutex_)
 }
 
 /* Unlock the mutex */
-static int
-SDL_UnlockMutex_cs(SDL_mutex * mutex_)
+static int SDL_UnlockMutex_cs(SDL_mutex * mutex_)
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     if (mutex == NULL) {
@@ -243,8 +232,7 @@ SDL_UnlockMutex_cs(SDL_mutex * mutex_)
     return 0;
 }
 
-static const SDL_mutex_impl_t SDL_mutex_impl_cs =
-{
+static const SDL_mutex_impl_t SDL_mutex_impl_cs = {
     &SDL_CreateMutex_cs,
     &SDL_DestroyMutex_cs,
     &SDL_LockMutex_cs,

@@ -389,8 +389,7 @@ static jobject javaAssetManagerRef = 0;
  */
 
 /* Set local storage value */
-static int
-Android_JNI_SetEnv(JNIEnv *env) {
+static int Android_JNI_SetEnv(JNIEnv *env) {
     int status = pthread_setspecific(mThreadKey, env);
     if (status < 0) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
@@ -459,8 +458,7 @@ int Android_JNI_SetupThread(void)
 }
 
 /* Destructor called for each thread where mThreadKey is not NULL */
-static void
-Android_JNI_ThreadDestroyed(void *value)
+static void Android_JNI_ThreadDestroyed(void *value)
 {
     /* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
     JNIEnv *env = (JNIEnv *) value;
@@ -471,8 +469,7 @@ Android_JNI_ThreadDestroyed(void *value)
 }
 
 /* Creation of local storage mThreadKey */
-static void
-Android_JNI_CreateKey(void)
+static void Android_JNI_CreateKey(void)
 {
     int status = pthread_key_create(&mThreadKey, Android_JNI_ThreadDestroyed);
     if (status < 0) {
@@ -480,8 +477,7 @@ Android_JNI_CreateKey(void)
     }
 }
 
-static void
-Android_JNI_CreateKey_once(void)
+static void Android_JNI_CreateKey_once(void)
 {
     int status = pthread_once(&key_once, Android_JNI_CreateKey);
     if (status < 0) {
@@ -489,8 +485,7 @@ Android_JNI_CreateKey_once(void)
     }
 }
 
-static void
-register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, int nb)
+static void register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, int nb)
 {
     jclass clazz = (*env)->FindClass(env, classname);
     if (clazz == NULL || (*env)->RegisterNatives(env, clazz, methods, nb) < 0) {

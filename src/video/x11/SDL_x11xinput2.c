@@ -61,23 +61,20 @@ static void parse_valuators(const double *input_values, const unsigned char *mas
     }
 }
 
-static int
-query_xinput2_version(Display *display, int major, int minor)
+static int query_xinput2_version(Display *display, int major, int minor)
 {
     /* We don't care if this fails, so long as it sets major/minor on it's way out the door. */
     X11_XIQueryVersion(display, &major, &minor);
     return (major * 1000) + minor;
 }
 
-static SDL_bool
-xinput2_version_atleast(const int version, const int wantmajor, const int wantminor)
+static SDL_bool xinput2_version_atleast(const int version, const int wantmajor, const int wantminor)
 {
     return version >= ((wantmajor * 1000) + wantminor);
 }
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-static SDL_Window *
-xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window)
+static SDL_Window * xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window)
 {
     int i;
     for (i = 0; i < videodata->numwindows; i++) {
@@ -89,8 +86,7 @@ xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window)
     return NULL;
 }
 
-static void
-xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x, double in_y, float *out_x, float *out_y)
+static void xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x, double in_y, float *out_x, float *out_y)
 {
     if (window) {
         if (window->w == 1) {
@@ -186,8 +182,7 @@ X11_InitXinput2(_THIS)
 }
 
 /* xi2 device went away? take it out of the list. */
-static void
-xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
+static void xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
 {
     SDL_XInput2DeviceInfo *prev = NULL;
     SDL_XInput2DeviceInfo *devinfo;
@@ -208,8 +203,7 @@ xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
 }
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
-static SDL_XInput2DeviceInfo *
-xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
+static SDL_XInput2DeviceInfo * xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
 {
     /* cache device info as we see new devices. */
     SDL_XInput2DeviceInfo *prev = NULL;

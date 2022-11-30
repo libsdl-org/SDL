@@ -79,8 +79,7 @@ typedef struct SDL_cond_cv
 } SDL_cond_cv;
 
 
-static SDL_cond *
-SDL_CreateCond_cv(void)
+static SDL_cond * SDL_CreateCond_cv(void)
 {
     SDL_cond_cv *cond;
 
@@ -93,8 +92,7 @@ SDL_CreateCond_cv(void)
     return (SDL_cond *)cond;
 }
 
-static void
-SDL_DestroyCond_cv(SDL_cond * cond)
+static void SDL_DestroyCond_cv(SDL_cond * cond)
 {
     if (cond != NULL) {
         /* There are no kernel allocated resources */
@@ -102,8 +100,7 @@ SDL_DestroyCond_cv(SDL_cond * cond)
     }
 }
 
-static int
-SDL_CondSignal_cv(SDL_cond * _cond)
+static int SDL_CondSignal_cv(SDL_cond * _cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     if (cond == NULL) {
@@ -115,8 +112,7 @@ SDL_CondSignal_cv(SDL_cond * _cond)
     return 0;
 }
 
-static int
-SDL_CondBroadcast_cv(SDL_cond * _cond)
+static int SDL_CondBroadcast_cv(SDL_cond * _cond)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     if (cond == NULL) {
@@ -128,8 +124,7 @@ SDL_CondBroadcast_cv(SDL_cond * _cond)
     return 0;
 }
 
-static int
-SDL_CondWaitTimeout_cv(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
+static int SDL_CondWaitTimeout_cv(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     DWORD timeout;
@@ -192,13 +187,11 @@ SDL_CondWaitTimeout_cv(SDL_cond * _cond, SDL_mutex * _mutex, Uint32 ms)
     return ret;
 }
 
-static int
-SDL_CondWait_cv(SDL_cond * cond, SDL_mutex * mutex) {
+static int SDL_CondWait_cv(SDL_cond * cond, SDL_mutex * mutex) {
     return SDL_CondWaitTimeout_cv(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
 
-static const SDL_cond_impl_t SDL_cond_impl_cv =
-{
+static const SDL_cond_impl_t SDL_cond_impl_cv = {
     &SDL_CreateCond_cv,
     &SDL_DestroyCond_cv,
     &SDL_CondSignal_cv,
@@ -211,8 +204,7 @@ static const SDL_cond_impl_t SDL_cond_impl_cv =
  * Generic Condition Variable implementation using SDL_mutex and SDL_sem
  */
 
-static const SDL_cond_impl_t SDL_cond_impl_generic =
-{
+static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_CreateCond_generic,
     &SDL_DestroyCond_generic,
     &SDL_CondSignal_generic,

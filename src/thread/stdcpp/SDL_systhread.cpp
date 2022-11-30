@@ -35,8 +35,7 @@ extern "C" {
 #include <Windows.h>
 #endif
 
-static void
-RunThread(void *args)
+static void RunThread(void *args)
 {
     SDL_RunThread((SDL_Thread *) args);
 }

@@ -274,8 +274,7 @@ SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE * points, int count, const RECTTYPE *
 }
 
 /* Use the Cohen-Sutherland algorithm for line clipping */
-static int
-COMPUTEOUTCODE(const RECTTYPE * rect, SCALARTYPE x, SCALARTYPE y)
+static int COMPUTEOUTCODE(const RECTTYPE * rect, SCALARTYPE x, SCALARTYPE y)
 {
     int code = 0;
     if (y < rect->y) {

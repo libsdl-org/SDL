@@ -63,8 +63,7 @@ SDL_SYS_NumHaptics(void)
     return numhaptics;
 }
 
-static SDL_hapticlist_item *
-HapticByOrder(int index)
+static SDL_hapticlist_item * HapticByOrder(int index)
 {
     SDL_hapticlist_item *item = SDL_hapticlist;
     if ((index < 0) || (index >= numhaptics)) {
@@ -78,8 +77,7 @@ HapticByOrder(int index)
     return item;
 }
 
-static SDL_hapticlist_item *
-HapticByDevId (int device_id)
+static SDL_hapticlist_item * HapticByDevId (int device_id)
 {
     SDL_hapticlist_item *item;
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
@@ -103,8 +101,7 @@ SDL_SYS_HapticName(int index)
 }
 
 
-static SDL_hapticlist_item *
-OpenHaptic(SDL_Haptic *haptic, SDL_hapticlist_item *item)
+static SDL_hapticlist_item * OpenHaptic(SDL_Haptic *haptic, SDL_hapticlist_item *item)
 {
     if (item == NULL ) {
         SDL_SetError("No such device");
@@ -130,14 +127,12 @@ OpenHaptic(SDL_Haptic *haptic, SDL_hapticlist_item *item)
     return item;
 }
 
-static SDL_hapticlist_item *
-OpenHapticByOrder(SDL_Haptic *haptic, int index)
+static SDL_hapticlist_item * OpenHapticByOrder(SDL_Haptic *haptic, int index)
 {
     return OpenHaptic(haptic, HapticByOrder(index));
 }
 
-static SDL_hapticlist_item *
-OpenHapticByDevId(SDL_Haptic *haptic, int device_id)
+static SDL_hapticlist_item * OpenHapticByDevId(SDL_Haptic *haptic, int device_id)
 {
     return OpenHaptic(haptic, HapticByDevId(device_id));
 }

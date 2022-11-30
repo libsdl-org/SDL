@@ -77,8 +77,7 @@ int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
 
 #if !TARGET_OS_TV
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
-static UIImage *
-SDL_LoadLaunchImageNamed(NSString *name, int screenh)
+static UIImage * SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
     UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
     UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;

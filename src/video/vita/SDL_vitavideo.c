@@ -54,8 +54,7 @@
 
 SDL_Window *Vita_Window;
 
-static void
-VITA_Destroy(SDL_VideoDevice * device)
+static void VITA_Destroy(SDL_VideoDevice * device)
 {
 /*    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata; */
 
@@ -66,8 +65,7 @@ VITA_Destroy(SDL_VideoDevice * device)
 //    }
 }
 
-static SDL_VideoDevice *
-VITA_Create()
+static SDL_VideoDevice * VITA_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;

@@ -26,8 +26,7 @@
 
 /* Functions to blit from bitmaps to other surfaces */
 
-static void
-BlitBto1(SDL_BlitInfo * info)
+static void BlitBto1(SDL_BlitInfo * info)
 {
     int c;
     int width, height;
@@ -81,8 +80,7 @@ BlitBto1(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto2(SDL_BlitInfo * info)
+static void BlitBto2(SDL_BlitInfo * info)
 {
     int c;
     int width, height;
@@ -118,8 +116,7 @@ BlitBto2(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto3(SDL_BlitInfo * info)
+static void BlitBto3(SDL_BlitInfo * info)
 {
     int c, o;
     int width, height;
@@ -157,8 +154,7 @@ BlitBto3(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto4(SDL_BlitInfo * info)
+static void BlitBto4(SDL_BlitInfo * info)
 {
     int width, height;
     Uint8 *src;
@@ -194,8 +190,7 @@ BlitBto4(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto1Key(SDL_BlitInfo * info)
+static void BlitBto1Key(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -247,8 +242,7 @@ BlitBto1Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto2Key(SDL_BlitInfo * info)
+static void BlitBto2Key(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -282,8 +276,7 @@ BlitBto2Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto3Key(SDL_BlitInfo * info)
+static void BlitBto3Key(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -316,8 +309,7 @@ BlitBto3Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto4Key(SDL_BlitInfo * info)
+static void BlitBto4Key(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -351,8 +343,7 @@ BlitBto4Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBtoNAlpha(SDL_BlitInfo * info)
+static void BlitBtoNAlpha(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -396,8 +387,7 @@ BlitBtoNAlpha(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBtoNAlphaKey(SDL_BlitInfo * info)
+static void BlitBtoNAlphaKey(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -452,8 +442,7 @@ static const SDL_BlitFunc colorkey_blit[] = {
 };
 
 
-static void
-Blit4bto4(SDL_BlitInfo * info)
+static void Blit4bto4(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -485,8 +474,7 @@ Blit4bto4(SDL_BlitInfo * info)
     }
 }
 
-static void
-Blit4bto4Key(SDL_BlitInfo * info)
+static void Blit4bto4Key(SDL_BlitInfo * info)
 {
     int width = info->dst_w;
     int height = info->dst_h;

@@ -37,11 +37,9 @@ static SDL_Mouse SDL_mouse;
 /* for mapping mouse events to touch */
 static SDL_bool track_mouse_down = SDL_FALSE;
 
-static int
-SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);
+static int SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);
 
-static void SDLCALL
-SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
@@ -56,8 +54,7 @@ SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *ol
     }
 }
 
-static void SDLCALL
-SDL_MouseDoubleClickRadiusChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseDoubleClickRadiusChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
@@ -68,8 +65,7 @@ SDL_MouseDoubleClickRadiusChanged(void *userdata, const char *name, const char *
     }
 }
 
-static void SDLCALL
-SDL_MouseNormalSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseNormalSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
@@ -82,8 +78,7 @@ SDL_MouseNormalSpeedScaleChanged(void *userdata, const char *name, const char *o
     }
 }
 
-static void SDLCALL
-SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
@@ -96,16 +91,14 @@ SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char 
     }
 }
 
-static void SDLCALL
-SDL_MouseRelativeSystemScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseRelativeSystemScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
     mouse->enable_relative_system_scale = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
-static void SDLCALL
-SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
@@ -113,8 +106,7 @@ SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldVal
 }
 
 #if defined(__vita__)
-static void SDLCALL
-SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
     if (hint) {
@@ -134,8 +126,7 @@ SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *name, const char *ol
 }
 #endif
 
-static void SDLCALL
-SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
     SDL_bool default_value;
@@ -152,8 +143,7 @@ SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldVal
     }
 }
 
-static void SDLCALL
-SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
     SDL_bool auto_capture = SDL_GetStringBoolean(hint, SDL_TRUE);
@@ -164,8 +154,7 @@ SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldVal
     }
 }
 
-static void SDLCALL
-SDL_MouseRelativeWarpMotionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_MouseRelativeWarpMotionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
@@ -319,8 +308,7 @@ SDL_SetMouseFocus(SDL_Window * window)
 }
 
 /* Check to see if we need to synthesize focus events */
-static SDL_bool
-SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_bool send_mouse_motion)
+static SDL_bool SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_bool send_mouse_motion)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool inWindow = SDL_TRUE;
@@ -371,8 +359,7 @@ SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int 
     return SDL_PrivateSendMouseMotion(window, mouseID, relative, x, y);
 }
 
-static int
-GetScaledMouseDelta(float scale, int value, float *accum)
+static int GetScaledMouseDelta(float scale, int value, float *accum)
 {
     if (value && scale != 1.0f) {
         if ((value > 0) != (*accum > 0)) {
@@ -389,8 +376,7 @@ GetScaledMouseDelta(float scale, int value, float *accum)
     return value;
 }
 
-static float
-CalculateSystemScale(SDL_Mouse *mouse, int *x, int *y)
+static float CalculateSystemScale(SDL_Mouse *mouse, int *x, int *y)
 {
     int i;
     int n = mouse->num_system_scale_values;
@@ -463,8 +449,7 @@ SDL_SetMouseSystemScale(int num_values, const float *values)
     return 0;
 }
 
-static void
-GetScaledMouseDeltas(SDL_Mouse *mouse, int *x, int *y)
+static void GetScaledMouseDeltas(SDL_Mouse *mouse, int *x, int *y)
 {
     if (mouse->relative_mode) {
         if (mouse->enable_relative_speed_scale) {
@@ -483,8 +468,7 @@ GetScaledMouseDeltas(SDL_Mouse *mouse, int *x, int *y)
     }
 }
 
-static int
-SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y)
+static int SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int posted;
@@ -689,8 +673,7 @@ static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
     return &mouse->clickstate[button];
 }
 
-static int
-SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
+static int SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int posted;
@@ -1075,8 +1058,7 @@ SDL_WarpMouseGlobal(int x, int y)
     return SDL_Unsupported();
 }
 
-static SDL_bool
-ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
+static SDL_bool ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
     if (!mouse->WarpMouse) {
         /* Need this functionality for relative mode warp implementation */

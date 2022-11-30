@@ -674,8 +674,7 @@ static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
 }
 
 /* This function is called if a Task Dialog is unsupported. */
-static int
-WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     WIN_DialogData *dialog;
     int i, x, y, retval;

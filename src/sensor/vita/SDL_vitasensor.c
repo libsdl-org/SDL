@@ -39,8 +39,7 @@ typedef struct
 static SDL_VitaSensor *SDL_sensors;
 static int SDL_sensors_count;
 
-static int
-SDL_VITA_SensorInit(void)
+static int SDL_VITA_SensorInit(void)
 {
     sceMotionReset();
     sceMotionStartSampling();
@@ -64,19 +63,16 @@ SDL_VITA_SensorInit(void)
     return 0;
 }
 
-static int
-SDL_VITA_SensorGetCount(void)
+static int SDL_VITA_SensorGetCount(void)
 {
     return SDL_sensors_count;
 }
 
-static void
-SDL_VITA_SensorDetect(void)
+static void SDL_VITA_SensorDetect(void)
 {
 }
 
-static const char *
-SDL_VITA_SensorGetDeviceName(int device_index)
+static const char * SDL_VITA_SensorGetDeviceName(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         switch (SDL_sensors[device_index].type) {
@@ -92,8 +88,7 @@ SDL_VITA_SensorGetDeviceName(int device_index)
     return NULL;
 }
 
-static SDL_SensorType
-SDL_VITA_SensorGetDeviceType(int device_index)
+static SDL_SensorType SDL_VITA_SensorGetDeviceType(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         return SDL_sensors[device_index].type;
@@ -102,8 +97,7 @@ SDL_VITA_SensorGetDeviceType(int device_index)
     return SDL_SENSOR_INVALID;
 }
 
-static int
-SDL_VITA_SensorGetDeviceNonPortableType(int device_index)
+static int SDL_VITA_SensorGetDeviceNonPortableType(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         return SDL_sensors[device_index].type;
@@ -111,8 +105,7 @@ SDL_VITA_SensorGetDeviceNonPortableType(int device_index)
     return -1;
 }
 
-static SDL_SensorID
-SDL_VITA_SensorGetDeviceInstanceID(int device_index)
+static SDL_SensorID SDL_VITA_SensorGetDeviceInstanceID(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         return SDL_sensors[device_index].instance_id;
@@ -120,8 +113,7 @@ SDL_VITA_SensorGetDeviceInstanceID(int device_index)
     return -1;
 }
 
-static int
-SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
+static int SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     struct sensor_hwdata *hwdata;
 
@@ -134,8 +126,7 @@ SDL_VITA_SensorOpen(SDL_Sensor *sensor, int device_index)
     return 0;
 }
 
-static void
-SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
+static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
 {
     int err = 0;
     SceMotionSensorState motionState[SCE_MOTION_MAX_NUM_STATES];
@@ -193,13 +184,11 @@ SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
     }
 }
 
-static void
-SDL_VITA_SensorClose(SDL_Sensor *sensor)
+static void SDL_VITA_SensorClose(SDL_Sensor *sensor)
 {
 }
 
-static void
-SDL_VITA_SensorQuit(void)
+static void SDL_VITA_SensorQuit(void)
 {
     sceMotionStopSampling();
 }

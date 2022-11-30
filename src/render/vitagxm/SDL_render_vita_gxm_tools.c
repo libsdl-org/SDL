@@ -67,16 +67,14 @@ init_orthographic_matrix(float *m, float left, float right, float bottom, float 
     m[0xF] = 1.0f;
 }
 
-static void *
-patcher_host_alloc(void *user_data, unsigned int size)
+static void * patcher_host_alloc(void *user_data, unsigned int size)
 {
     void *mem = SDL_malloc(size);
     (void)user_data;
     return mem;
 }
 
-static void
-patcher_host_free(void *user_data, void *mem)
+static void patcher_host_free(void *user_data, void *mem)
 {
     (void)user_data;
     SDL_free(mem);
@@ -108,8 +106,7 @@ pool_memalign(VITA_GXM_RenderData *data, unsigned int size, unsigned int alignme
     return NULL;
 }
 
-static int
-tex_format_to_bytespp(SceGxmTextureFormat format)
+static int tex_format_to_bytespp(SceGxmTextureFormat format)
 {
     switch (format & 0x9f000000U) {
     case SCE_GXM_TEXTURE_BASE_FORMAT_U8:
@@ -139,8 +136,7 @@ tex_format_to_bytespp(SceGxmTextureFormat format)
     }
 }
 
-static void
-display_callback(const void *callback_data)
+static void display_callback(const void *callback_data)
 {
     SceDisplayFrameBuf framebuf;
     const VITA_GXM_DisplayData *display_data = (const VITA_GXM_DisplayData *)callback_data;
@@ -159,15 +155,13 @@ display_callback(const void *callback_data)
     }
 }
 
-static void
-free_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out)
+static void free_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out)
 {
     sceGxmShaderPatcherReleaseFragmentProgram(data->shaderPatcher, out->color);
     sceGxmShaderPatcherReleaseFragmentProgram(data->shaderPatcher, out->texture);
 }
 
-static void
-make_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out,
+static void make_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out,
     const SceGxmBlendInfo *blend_info)
 {
     int err;
@@ -204,8 +198,7 @@ make_fragment_programs(VITA_GXM_RenderData *data, fragment_programs *out,
 }
 
 
-static void
-set_stencil_mask(VITA_GXM_RenderData *data, float x, float y, float w, float h)
+static void set_stencil_mask(VITA_GXM_RenderData *data, float x, float y, float w, float h)
 {
     void *vertexDefaultBuffer;
     color_vertex *vertices = (color_vertex *)pool_memalign(

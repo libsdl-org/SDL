@@ -35,8 +35,7 @@
 #include <SDL3/SDL_syswm.h>
 
 
-static int SDLCALL
-SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
+static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 {
     /* Update the drawable size when SDL receives a size changed event for
      * the window that contains the metal view. It would be nice to use

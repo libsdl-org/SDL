@@ -49,8 +49,7 @@ static kmsdrmdynlib kmsdrmlibs[] = {
     {NULL, SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC}
 };
 
-static void *
-KMSDRM_GetSym(const char *fnname, int *pHasModule)
+static void * KMSDRM_GetSym(const char *fnname, int *pHasModule)
 {
     int i;
     void *fn = NULL;

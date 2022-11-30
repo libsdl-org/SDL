@@ -1553,8 +1553,7 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
     return length;
 }
 
-static void
-SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
+static void SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
 {/* left-pad num with zeroes. */
     size_t sz, pad, have_sign;
 

@@ -98,8 +98,7 @@ static struct
 
 static SDL_bool SDL_update_joysticks = SDL_TRUE;
 
-static void
-SDL_CalculateShouldUpdateJoysticks(SDL_bool hint_value)
+static void SDL_CalculateShouldUpdateJoysticks(SDL_bool hint_value)
 {
     if (hint_value &&
         (!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY))) {
@@ -109,8 +108,7 @@ SDL_CalculateShouldUpdateJoysticks(SDL_bool hint_value)
     }
 }
 
-static void SDLCALL
-SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_CalculateShouldUpdateJoysticks(SDL_GetStringBoolean(hint, SDL_TRUE));
 }
@@ -122,8 +120,7 @@ SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *old
 
 static SDL_bool SDL_update_sensors = SDL_TRUE;
 
-static void
-SDL_CalculateShouldUpdateSensors(SDL_bool hint_value)
+static void SDL_CalculateShouldUpdateSensors(SDL_bool hint_value)
 {
     if (hint_value &&
         !SDL_disabled_events[SDL_SENSORUPDATE >> 8]) {
@@ -133,16 +130,14 @@ SDL_CalculateShouldUpdateSensors(SDL_bool hint_value)
     }
 }
 
-static void SDLCALL
-SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_CalculateShouldUpdateSensors(SDL_GetStringBoolean(hint, SDL_TRUE));
 }
 
 #endif /* !SDL_SENSOR_DISABLED */
 
-static void SDLCALL
-SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     (void)SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
@@ -156,14 +151,12 @@ SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, 
  */
 static int SDL_EventLoggingVerbosity = 0;
 
-static void SDLCALL
-SDL_EventLoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_EventLoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_EventLoggingVerbosity = (hint && *hint) ? SDL_clamp(SDL_atoi(hint), 0, 3) : 0;
 }
 
-static void
-SDL_LogEvent(const SDL_Event *event)
+static void SDL_LogEvent(const SDL_Event *event)
 {
     char name[32];
     char details[128];
@@ -580,8 +573,7 @@ SDL_StartEventLoop(void)
 
 
 /* Add an event to the event queue -- called with the queue locked */
-static int
-SDL_AddEvent(SDL_Event * event)
+static int SDL_AddEvent(SDL_Event * event)
 {
     SDL_EventEntry *entry;
     const int initial_count = SDL_AtomicGet(&SDL_EventQ.count);
@@ -636,8 +628,7 @@ SDL_AddEvent(SDL_Event * event)
 }
 
 /* Remove an event from the queue -- called with the queue locked */
-static void
-SDL_CutEvent(SDL_EventEntry *entry)
+static void SDL_CutEvent(SDL_EventEntry *entry)
 {
     if (entry->prev) {
         entry->prev->next = entry->next;
@@ -665,8 +656,7 @@ SDL_CutEvent(SDL_EventEntry *entry)
     SDL_AtomicAdd(&SDL_EventQ.count, -1);
 }
 
-static int
-SDL_SendWakeupEvent()
+static int SDL_SendWakeupEvent()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this == NULL || !_this->SendWakeupEvent) {
@@ -687,8 +677,7 @@ SDL_SendWakeupEvent()
 }
 
 /* Lock the event queue, take a peep at it, and unlock it */
-static int
-SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action,
+static int SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action,
                Uint32 minType, Uint32 maxType, SDL_bool include_sentinel)
 {
     int i, used, sentinels_expected = 0;
@@ -851,8 +840,7 @@ SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 }
 
 /* Run the system dependent event loops */
-static void
-SDL_PumpEventsInternal(SDL_bool push_sentinel)
+static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -903,8 +891,7 @@ SDL_PollEvent(SDL_Event * event)
     return SDL_WaitEventTimeout(event, 0);
 }
 
-static SDL_bool
-SDL_events_need_periodic_poll() {
+static SDL_bool SDL_events_need_periodic_poll() {
     SDL_bool need_periodic_poll = SDL_FALSE;
 
 #if !SDL_JOYSTICK_DISABLED
@@ -920,8 +907,7 @@ SDL_events_need_periodic_poll() {
     return need_periodic_poll;
 }
 
-static int
-SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, Uint32 start, int timeout)
+static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event, Uint32 start, int timeout)
 {
     int loop_timeout = timeout;
     SDL_bool need_periodic_poll = SDL_events_need_periodic_poll();
@@ -992,8 +978,7 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
     return 0;
 }
 
-static SDL_bool
-SDL_events_need_polling() {
+static SDL_bool SDL_events_need_polling() {
     SDL_bool need_polling = SDL_FALSE;
 
 #if !SDL_JOYSTICK_DISABLED
@@ -1011,8 +996,7 @@ SDL_events_need_polling() {
     return need_polling;
 }
 
-static SDL_Window *
-SDL_find_active_window(SDL_VideoDevice * _this)
+static SDL_Window *SDL_find_active_window(SDL_VideoDevice * _this)
 {
     SDL_Window *window;
     for (window = _this->windows; window; window = window->next) {

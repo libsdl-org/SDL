@@ -33,8 +33,7 @@
 /* The tag name used by PS2 audio */
 #define PS2AUDIO_DRIVER_NAME    "ps2"
 
-static int
-PS2AUDIO_OpenDevice(_THIS, const char *devname)
+static int PS2AUDIO_OpenDevice(_THIS, const char *devname)
 {
     int i, mixlen;
     struct audsrv_fmt_t format;

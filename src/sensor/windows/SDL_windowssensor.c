@@ -338,8 +338,7 @@ static int DisconnectSensor(ISensor *sensor)
     return 0;
 }
 
-static int
-SDL_WINDOWS_SensorInit(void)
+static int SDL_WINDOWS_SensorInit(void)
 {
     HRESULT hr;
     ISensorCollection *sensor_collection = NULL;
@@ -387,55 +386,46 @@ SDL_WINDOWS_SensorInit(void)
     return 0;
 }
 
-static int
-SDL_WINDOWS_SensorGetCount(void)
+static int SDL_WINDOWS_SensorGetCount(void)
 {
     return SDL_num_sensors;
 }
 
-static void
-SDL_WINDOWS_SensorDetect(void)
+static void SDL_WINDOWS_SensorDetect(void)
 {
 }
 
-static const char *
-SDL_WINDOWS_SensorGetDeviceName(int device_index)
+static const char * SDL_WINDOWS_SensorGetDeviceName(int device_index)
 {
     return SDL_sensors[device_index].name;
 }
 
-static SDL_SensorType
-SDL_WINDOWS_SensorGetDeviceType(int device_index)
+static SDL_SensorType SDL_WINDOWS_SensorGetDeviceType(int device_index)
 {
     return SDL_sensors[device_index].type;
 }
 
-static int
-SDL_WINDOWS_SensorGetDeviceNonPortableType(int device_index)
+static int SDL_WINDOWS_SensorGetDeviceNonPortableType(int device_index)
 {
     return -1;
 }
 
-static SDL_SensorID
-SDL_WINDOWS_SensorGetDeviceInstanceID(int device_index)
+static SDL_SensorID SDL_WINDOWS_SensorGetDeviceInstanceID(int device_index)
 {
     return SDL_sensors[device_index].id;
 }
 
-static int
-SDL_WINDOWS_SensorOpen(SDL_Sensor *sensor, int device_index)
+static int SDL_WINDOWS_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     SDL_sensors[device_index].sensor_opened = sensor;
     return 0;
 }
 
-static void
-SDL_WINDOWS_SensorUpdate(SDL_Sensor *sensor)
+static void SDL_WINDOWS_SensorUpdate(SDL_Sensor *sensor)
 {
 }
 
-static void
-SDL_WINDOWS_SensorClose(SDL_Sensor *sensor)
+static void SDL_WINDOWS_SensorClose(SDL_Sensor *sensor)
 {
     int i;
 
@@ -447,8 +437,7 @@ SDL_WINDOWS_SensorClose(SDL_Sensor *sensor)
     }
 }
 
-static void
-SDL_WINDOWS_SensorQuit(void)
+static void SDL_WINDOWS_SensorQuit(void)
 {
     while (SDL_num_sensors > 0) {
         DisconnectSensor(SDL_sensors[0].sensor);

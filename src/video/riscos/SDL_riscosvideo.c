@@ -41,15 +41,13 @@ static void RISCOS_VideoQuit(_THIS);
 
 /* RISC OS driver bootstrap functions */
 
-static void
-RISCOS_DeleteDevice(SDL_VideoDevice * device)
+static void RISCOS_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_free(device->driverdata);
     SDL_free(device);
 }
 
-static SDL_VideoDevice *
-RISCOS_CreateDevice(void)
+static SDL_VideoDevice * RISCOS_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
@@ -97,8 +95,7 @@ VideoBootStrap RISCOS_bootstrap = {
     RISCOS_CreateDevice
 };
 
-static int
-RISCOS_VideoInit(_THIS)
+static int RISCOS_VideoInit(_THIS)
 {
     if (RISCOS_InitEvents(_this) < 0) {
         return -1;
@@ -116,8 +113,7 @@ RISCOS_VideoInit(_THIS)
     return 0;
 }
 
-static void
-RISCOS_VideoQuit(_THIS)
+static void RISCOS_VideoQuit(_THIS)
 {
     RISCOS_QuitEvents(_this);
 }

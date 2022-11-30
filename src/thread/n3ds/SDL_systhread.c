@@ -37,8 +37,7 @@
 
 static size_t GetStackSize(size_t requested_size);
 
-static void
-ThreadEntry(void *arg)
+static void ThreadEntry(void *arg)
 {
     SDL_RunThread((SDL_Thread *) arg);
     threadExit(0);

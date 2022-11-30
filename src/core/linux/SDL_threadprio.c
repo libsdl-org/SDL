@@ -68,16 +68,14 @@ static Sint64 rtkit_max_rttime_usec = 200000;
  *  - The desktop portal exists and supports the realtime interface.
  *  - The realtime interface is new enough to have the required bug fixes applied.
  */
-static SDL_bool
-realtime_portal_supported(DBusConnection *conn)
+static SDL_bool realtime_portal_supported(DBusConnection *conn)
 {
     Sint64 res;
     return SDL_DBus_QueryPropertyOnConnection(conn, XDG_PORTAL_DBUS_NODE, XDG_PORTAL_DBUS_PATH, XDG_PORTAL_DBUS_INTERFACE,
                                               "RTTimeUSecMax", DBUS_TYPE_INT64, &res);
 }
 
-static void
-set_rtkit_interface()
+static void set_rtkit_interface()
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -95,8 +93,7 @@ set_rtkit_interface()
     }
 }
 
-static DBusConnection*
-get_rtkit_dbus_connection()
+static DBusConnection* get_rtkit_dbus_connection()
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -107,8 +104,7 @@ get_rtkit_dbus_connection()
     return NULL;
 }
 
-static void
-rtkit_initialize()
+static void rtkit_initialize()
 {
     DBusConnection *dbus_conn;
 
@@ -134,8 +130,7 @@ rtkit_initialize()
     }
 }
 
-static SDL_bool
-rtkit_initialize_realtime_thread()
+static SDL_bool rtkit_initialize_realtime_thread()
 {
     // Following is an excerpt from rtkit README that outlines the requirements
     // a thread must meet before making rtkit requests:
@@ -194,8 +189,7 @@ rtkit_initialize_realtime_thread()
     return SDL_TRUE;
 }
 
-static SDL_bool
-rtkit_setpriority_nice(pid_t thread, int nice_level)
+static SDL_bool rtkit_setpriority_nice(pid_t thread, int nice_level)
 {
     DBusConnection *dbus_conn;
     Uint64 pid = (Uint64)getpid();
@@ -218,8 +212,7 @@ rtkit_setpriority_nice(pid_t thread, int nice_level)
     return SDL_TRUE;
 }
 
-static SDL_bool
-rtkit_setpriority_realtime(pid_t thread, int rt_priority)
+static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 {
     DBusConnection *dbus_conn;
     Uint64 pid = (Uint64)getpid();

@@ -45,8 +45,7 @@ static SDL_ScancodeTable scancode_set[] = {
 };
 
 /* This function only correctly maps letters and numbers for keyboards in US QWERTY layout */
-static SDL_Scancode
-X11_KeyCodeToSDLScancode(_THIS, KeyCode keycode)
+static SDL_Scancode X11_KeyCodeToSDLScancode(_THIS, KeyCode keycode)
 {
     const KeySym keysym = X11_KeyCodeToSym(_this, keycode, 0);
 
@@ -57,8 +56,7 @@ X11_KeyCodeToSDLScancode(_THIS, KeyCode keycode)
     return SDL_GetScancodeFromKeySym(keysym, keycode);
 }
 
-static Uint32
-X11_KeyCodeToUcs4(_THIS, KeyCode keycode, unsigned char group)
+static Uint32 X11_KeyCodeToUcs4(_THIS, KeyCode keycode, unsigned char group)
 {
     KeySym keysym = X11_KeyCodeToSym(_this, keycode, group);
 
@@ -392,8 +390,7 @@ X11_QuitKeyboard(_THIS)
 #endif
 }
 
-static void
-X11_ResetXIM(_THIS)
+static void X11_ResetXIM(_THIS)
 {
 #ifdef X_HAVE_UTF8_STRING
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;

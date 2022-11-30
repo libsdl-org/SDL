@@ -59,8 +59,7 @@ static Bool isConfigureNotify(Display *dpy, XEvent *ev, XPointer win)
 {
     return ev->type == ConfigureNotify && ev->xconfigure.window == *((Window*)win);
 }
-static Bool
-X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*predicate)(), XPointer arg, int timeoutMS)
+static Bool X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*predicate)(), XPointer arg, int timeoutMS)
 {
     Uint32 start = SDL_GetTicks();
 
@@ -73,8 +72,7 @@ X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*predicate)(),
 }
 */
 
-static SDL_bool
-X11_IsWindowMapped(_THIS, SDL_Window * window)
+static SDL_bool X11_IsWindowMapped(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
@@ -89,8 +87,7 @@ X11_IsWindowMapped(_THIS, SDL_Window * window)
 }
 
 #if 0
-static SDL_bool
-X11_IsActionAllowed(SDL_Window *window, Atom action)
+static SDL_bool X11_IsActionAllowed(SDL_Window *window, Atom action)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Atom _NET_WM_ALLOWED_ACTIONS = data->videodata->_NET_WM_ALLOWED_ACTIONS;
@@ -252,8 +249,7 @@ X11_GetNetWMState(_THIS, SDL_Window *window, Window xwindow)
     return flags;
 }
 
-static int
-SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
+static int SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data;
@@ -342,8 +338,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
     return 0;
 }
 
-static void
-SetWindowBordered(Display *display, int screen, Window window, SDL_bool border)
+static void SetWindowBordered(Display *display, int screen, Window window, SDL_bool border)
 {
     /*
      * this code used to check for KWM_WIN_DECORATION, but KDE hasn't
@@ -788,8 +783,7 @@ X11_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
 }
 
 static SDL_bool caught_x11_error = SDL_FALSE;
-static int
-X11_CatchAnyError(Display * d, XErrorEvent * e)
+static int X11_CatchAnyError(Display * d, XErrorEvent * e)
 {
     /* this may happen during tumultuous times when we are polling anyhow,
         so just note we had an error and return control. */
@@ -1205,8 +1199,7 @@ X11_HideWindow(_THIS, SDL_Window * window)
     }
 }
 
-static void
-SetWindowActive(_THIS, SDL_Window * window)
+static void SetWindowActive(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata =
@@ -1246,8 +1239,7 @@ X11_RaiseWindow(_THIS, SDL_Window * window)
     X11_XFlush(display);
 }
 
-static void
-SetWindowMaximized(_THIS, SDL_Window * window, SDL_bool maximized)
+static void SetWindowMaximized(_THIS, SDL_Window * window, SDL_bool maximized)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata =
@@ -1320,8 +1312,7 @@ X11_RestoreWindow(_THIS, SDL_Window * window)
 }
 
 /* This asks the Window Manager to handle fullscreen for us. This is the modern way. */
-static void
-X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen)
+static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_DisplayData *displaydata = (SDL_DisplayData *) _display->driverdata;

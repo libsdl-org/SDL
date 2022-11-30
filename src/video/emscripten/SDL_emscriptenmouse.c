@@ -31,8 +31,7 @@
 
 #include "../../events/SDL_mouse_c.h"
 
-static SDL_Cursor*
-Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
+static SDL_Cursor* Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
 {
     SDL_Cursor* cursor;
     Emscripten_CursorData *curdata;
@@ -56,15 +55,13 @@ Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
     return cursor;
 }
 
-static SDL_Cursor*
-Emscripten_CreateDefaultCursor()
+static SDL_Cursor* Emscripten_CreateDefaultCursor()
 {
     return Emscripten_CreateCursorFromString("default", SDL_FALSE);
 }
 
 
-static SDL_Cursor*
-Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
+static SDL_Cursor* Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
 {
     const char *cursor_url = NULL;
     SDL_Surface *conv_surf;
@@ -113,8 +110,7 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
     return Emscripten_CreateCursorFromString(cursor_url, SDL_TRUE);
 }
 
-static SDL_Cursor*
-Emscripten_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor* Emscripten_CreateSystemCursor(SDL_SystemCursor id)
 {
     const char *cursor_name = NULL;
 
@@ -163,8 +159,7 @@ Emscripten_CreateSystemCursor(SDL_SystemCursor id)
     return Emscripten_CreateCursorFromString(cursor_name, SDL_FALSE);
 }
 
-static void
-Emscripten_FreeCursor(SDL_Cursor* cursor)
+static void Emscripten_FreeCursor(SDL_Cursor* cursor)
 {
     Emscripten_CursorData *curdata;
     if (cursor) {
@@ -181,8 +176,7 @@ Emscripten_FreeCursor(SDL_Cursor* cursor)
     }
 }
 
-static int
-Emscripten_ShowCursor(SDL_Cursor* cursor)
+static int Emscripten_ShowCursor(SDL_Cursor* cursor)
 {
     Emscripten_CursorData *curdata;
     if (SDL_GetMouseFocus() != NULL) {
@@ -211,14 +205,12 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
     return 0;
 }
 
-static void
-Emscripten_WarpMouse(SDL_Window* window, int x, int y)
+static void Emscripten_WarpMouse(SDL_Window* window, int x, int y)
 {
     SDL_Unsupported();
 }
 
-static int
-Emscripten_SetRelativeMouseMode(SDL_bool enabled)
+static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
 {
     SDL_Window *window;
     SDL_WindowData *window_data;

@@ -55,8 +55,7 @@ static int KMSDRM_WarpMouseGlobal(int x, int y);
 /*  and mouse->cursor_shown is 1.                                                     */
 /**************************************************************************************/
 
-static SDL_Cursor *
-KMSDRM_CreateDefaultCursor(void)
+static SDL_Cursor * KMSDRM_CreateDefaultCursor(void)
 {
     return SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH, DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
 }
@@ -122,8 +121,7 @@ KMSDRM_CreateCursorBO (SDL_VideoDisplay *display) {
 } 
 
 /* Remove a cursor buffer from a display's DRM cursor BO. */
-static int
-KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
+static int KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
 {
     int ret = 0;
     SDL_DisplayData *dispdata = (SDL_DisplayData *) display->driverdata;
@@ -141,8 +139,7 @@ KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
 }
 
 /* Dump a cursor buffer to a display's DRM cursor BO.  */
-static int
-KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
+static int KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
 {
     SDL_DisplayData *dispdata = (SDL_DisplayData *) display->driverdata;
     KMSDRM_CursorData *curdata = (KMSDRM_CursorData *) cursor->driverdata;
@@ -215,8 +212,7 @@ cleanup:
 }
 
 /* This is only for freeing the SDL_cursor.*/
-static void
-KMSDRM_FreeCursor(SDL_Cursor * cursor)
+static void KMSDRM_FreeCursor(SDL_Cursor * cursor)
 {
     KMSDRM_CursorData *curdata;
 
@@ -239,8 +235,7 @@ KMSDRM_FreeCursor(SDL_Cursor * cursor)
 /* This simply gets the cursor soft-buffer ready.
    We don't copy it to a GBO BO until ShowCursor() because the cusor GBM BO (living
    in dispata) is destroyed and recreated when we recreate windows, etc. */
-static SDL_Cursor *
-KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor * KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     KMSDRM_CursorData *curdata;
     SDL_Cursor *cursor, *ret;
@@ -306,8 +301,7 @@ cleanup:
 }
 
 /* Show the specified cursor, or hide if cursor is NULL or has no focus. */
-static int
-KMSDRM_ShowCursor(SDL_Cursor * cursor)
+static int KMSDRM_ShowCursor(SDL_Cursor * cursor)
 {
     SDL_VideoDisplay *display;
     SDL_Window *window;
@@ -364,16 +358,14 @@ KMSDRM_ShowCursor(SDL_Cursor * cursor)
 }
 
 /* Warp the mouse to (x,y) */
-static void
-KMSDRM_WarpMouse(SDL_Window * window, int x, int y)
+static void KMSDRM_WarpMouse(SDL_Window * window, int x, int y)
 {
     /* Only one global/fullscreen window is supported */
     KMSDRM_WarpMouseGlobal(x, y);
 }
 
 /* Warp the mouse to (x,y) */
-static int
-KMSDRM_WarpMouseGlobal(int x, int y)
+static int KMSDRM_WarpMouseGlobal(int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -434,8 +426,7 @@ KMSDRM_QuitMouse(_THIS)
 }
 
 /* This is called when a mouse motion event occurs */
-static void
-KMSDRM_MoveCursor(SDL_Cursor * cursor)
+static void KMSDRM_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int ret = 0;

@@ -75,8 +75,7 @@ to a situation where the program can segfault.
 /* !
 \brief Returns colorkey info for a surface
 */
-static Uint32
-get_colorkey(SDL_Surface *src)
+static Uint32 get_colorkey(SDL_Surface *src)
 {
     Uint32 key = 0;
     if (SDL_HasColorKey(src)) {
@@ -86,8 +85,7 @@ get_colorkey(SDL_Surface *src)
 }
 
 /* rotate (sx, sy) by (angle, center) into (dx, dy) */
-static void
-rotate(double sx, double sy, double sinangle, double cosangle, const SDL_FPoint *center, double *dx, double *dy) {
+static void rotate(double sx, double sy, double sinangle, double cosangle, const SDL_FPoint *center, double *dx, double *dy) {
     sx -= center->x;
     sy -= center->y;
 
@@ -173,8 +171,7 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FP
 }
 
 /* Computes source pointer X/Y increments for a rotation that's a multiple of 90 degrees. */
-static void
-computeSourceIncrements90(SDL_Surface * src, int bpp, int angle, int flipx, int flipy,
+static void computeSourceIncrements90(SDL_Surface * src, int bpp, int angle, int flipx, int flipy,
                           int *sincx, int *sincy, int *signx, int *signy)
 {
     int pitch = flipy ? -src->pitch : src->pitch;
@@ -216,14 +213,12 @@ computeSourceIncrements90(SDL_Surface * src, int bpp, int angle, int flipx, int 
         }                                                                                                   \
     }
 
-static void
-transformSurfaceRGBA90(SDL_Surface * src, SDL_Surface * dst, int angle, int flipx, int flipy)
+static void transformSurfaceRGBA90(SDL_Surface * src, SDL_Surface * dst, int angle, int flipx, int flipy)
 {
     TRANSFORM_SURFACE_90(tColorRGBA);
 }
 
-static void
-transformSurfaceY90(SDL_Surface * src, SDL_Surface * dst, int angle, int flipx, int flipy)
+static void transformSurfaceY90(SDL_Surface * src, SDL_Surface * dst, int angle, int flipx, int flipy)
 {
     TRANSFORM_SURFACE_90(tColorY);
 }
@@ -249,8 +244,7 @@ Assumes dst surface was allocated with the correct dimensions.
 \param dst_rect destination coordinates
 \param center true center.
 */
-static void
-transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int isin, int icos,
+static void transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int isin, int icos,
         int flipx, int flipy, int smooth,
         const SDL_Rect *rect_dest,
         const SDL_FPoint *center)
@@ -382,8 +376,7 @@ Assumes dst surface was allocated with the correct dimensions.
 \param dst_rect destination coordinates
 \param center true center.
 */
-static void
-transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int isin, int icos, int flipx, int flipy,
+static void transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int isin, int icos, int flipx, int flipy,
         const SDL_Rect *rect_dest,
         const SDL_FPoint *center)
 {

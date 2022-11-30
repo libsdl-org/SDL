@@ -33,8 +33,7 @@ static SDL_Cursor *SDL_blank_cursor = NULL;
 
 static int rawInputEnableCount = 0;
 
-static int
-ToggleRawInput(SDL_bool enabled)
+static int ToggleRawInput(SDL_bool enabled)
 {
     RAWINPUTDEVICE rawMouse = { 0x01, 0x02, 0, NULL }; /* Mouse: UsagePage = 1, Usage = 2 */
 
@@ -73,8 +72,7 @@ ToggleRawInput(SDL_bool enabled)
 }
 
 
-static SDL_Cursor *
-WIN_CreateDefaultCursor()
+static SDL_Cursor * WIN_CreateDefaultCursor()
 {
     SDL_Cursor *cursor;
 
@@ -88,8 +86,7 @@ WIN_CreateDefaultCursor()
     return cursor;
 }
 
-static SDL_Cursor *
-WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor * WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     /* msdn says cursor mask has to be padded out to word alignment. Not sure
         if that means machine word or WORD, but this handles either case. */
@@ -172,8 +169,7 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     return cursor;
 }
 
-static SDL_Cursor *
-WIN_CreateBlankCursor()
+static SDL_Cursor * WIN_CreateBlankCursor()
 {
     SDL_Cursor *cursor = NULL;
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(32, 32, SDL_PIXELFORMAT_ARGB8888);
@@ -184,8 +180,7 @@ WIN_CreateBlankCursor()
     return cursor;
 }
 
-static SDL_Cursor *
-WIN_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor * WIN_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor;
     LPCTSTR name;
@@ -223,8 +218,7 @@ WIN_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
-static void
-WIN_FreeCursor(SDL_Cursor * cursor)
+static void WIN_FreeCursor(SDL_Cursor * cursor)
 {
     HICON hicon = (HICON)cursor->driverdata;
 
@@ -232,8 +226,7 @@ WIN_FreeCursor(SDL_Cursor * cursor)
     SDL_free(cursor);
 }
 
-static int
-WIN_ShowCursor(SDL_Cursor * cursor)
+static int WIN_ShowCursor(SDL_Cursor * cursor)
 {
     if (cursor == NULL) {
         cursor = SDL_blank_cursor;
@@ -264,8 +257,7 @@ WIN_SetCursorPos(int x, int y)
     }
 }
 
-static void
-WIN_WarpMouse(SDL_Window * window, int x, int y)
+static void WIN_WarpMouse(SDL_Window * window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -285,8 +277,7 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 
-static int
-WIN_WarpMouseGlobal(int x, int y)
+static int WIN_WarpMouseGlobal(int x, int y)
 {
     POINT pt;
 
@@ -297,14 +288,12 @@ WIN_WarpMouseGlobal(int x, int y)
     return 0;
 }
 
-static int
-WIN_SetRelativeMouseMode(SDL_bool enabled)
+static int WIN_SetRelativeMouseMode(SDL_bool enabled)
 {
     return ToggleRawInput(enabled);
 }
 
-static int
-WIN_CaptureMouse(SDL_Window *window)
+static int WIN_CaptureMouse(SDL_Window *window)
 {
     if (window) {
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -324,8 +313,7 @@ WIN_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32
-WIN_GetGlobalMouseState(int *x, int *y)
+static Uint32 WIN_GetGlobalMouseState(int *x, int *y)
 {
     Uint32 retval = 0;
     POINT pt = { 0, 0 };
@@ -385,8 +373,7 @@ WIN_QuitMouse(_THIS)
  * https://superuser.com/questions/278362/windows-mouse-acceleration-curve-smoothmousexcurve-and-smoothmouseycurve
  * http://www.esreality.com/?a=post&id=1846538/
  */
-static SDL_bool
-LoadFiveFixedPointFloats(BYTE *bytes, float *values)
+static SDL_bool LoadFiveFixedPointFloats(BYTE *bytes, float *values)
 {
     int i;
 
@@ -399,8 +386,7 @@ LoadFiveFixedPointFloats(BYTE *bytes, float *values)
     return SDL_TRUE;
 }
 
-static void
-WIN_SetEnhancedMouseScale(int mouse_speed)
+static void WIN_SetEnhancedMouseScale(int mouse_speed)
 {
     float scale = (float) mouse_speed / 10.0f;
     HKEY hKey;
@@ -436,8 +422,7 @@ WIN_SetEnhancedMouseScale(int mouse_speed)
     }
 }
 
-static void
-WIN_SetLinearMouseScale(int mouse_speed)
+static void WIN_SetLinearMouseScale(int mouse_speed)
 {
     static float mouse_speed_scale[] = {
         0.0f,

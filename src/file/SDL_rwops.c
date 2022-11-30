@@ -58,8 +58,7 @@
 
 #define READAHEAD_BUFFER_SIZE   1024
 
-static int SDLCALL
-windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
+static int SDLCALL windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
 {
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     UINT old_error_mode;
@@ -135,8 +134,7 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
     return 0;                   /* ok */
 }
 
-static Sint64 SDLCALL
-windows_file_size(SDL_RWops * context)
+static Sint64 SDLCALL windows_file_size(SDL_RWops * context)
 {
     LARGE_INTEGER size;
 
@@ -151,8 +149,7 @@ windows_file_size(SDL_RWops * context)
     return size.QuadPart;
 }
 
-static Sint64 SDLCALL
-windows_file_seek(SDL_RWops * context, Sint64 offset, int whence)
+static Sint64 SDLCALL windows_file_seek(SDL_RWops * context, Sint64 offset, int whence)
 {
     DWORD windowswhence;
     LARGE_INTEGER windowsoffset;
@@ -283,8 +280,7 @@ windows_file_write(SDL_RWops * context, const void *ptr, size_t size,
     return nwritten;
 }
 
-static int SDLCALL
-windows_file_close(SDL_RWops * context)
+static int SDLCALL windows_file_close(SDL_RWops * context)
 {
 
     if (context) {
@@ -341,8 +337,7 @@ windows_file_close(SDL_RWops * context)
 #define fseek_off_t long
 #endif
 
-static Sint64 SDLCALL
-stdio_size(SDL_RWops * context)
+static Sint64 SDLCALL stdio_size(SDL_RWops * context)
 {
     Sint64 pos, size;
 
@@ -356,8 +351,7 @@ stdio_size(SDL_RWops * context)
     return size;
 }
 
-static Sint64 SDLCALL
-stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
 {
     int stdiowhence;
 
@@ -415,8 +409,7 @@ stdio_write(SDL_RWops * context, const void *ptr, size_t size, size_t num)
     return nwrote;
 }
 
-static int SDLCALL
-stdio_close(SDL_RWops * context)
+static int SDLCALL stdio_close(SDL_RWops * context)
 {
     int status = 0;
     if (context) {
@@ -430,8 +423,7 @@ stdio_close(SDL_RWops * context)
     return status;
 }
 
-static SDL_RWops *
-SDL_RWFromFP(void *fp, SDL_bool autoclose)
+static SDL_RWops * SDL_RWFromFP(void *fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
 
@@ -453,14 +445,12 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 
 /* Functions to read/write memory pointers */
 
-static Sint64 SDLCALL
-mem_size(SDL_RWops * context)
+static Sint64 SDLCALL mem_size(SDL_RWops * context)
 {
     return (Sint64)(context->hidden.mem.stop - context->hidden.mem.base);
 }
 
-static Sint64 SDLCALL
-mem_seek(SDL_RWops * context, Sint64 offset, int whence)
+static Sint64 SDLCALL mem_seek(SDL_RWops * context, Sint64 offset, int whence)
 {
     Uint8 *newpos;
 
@@ -527,8 +517,7 @@ mem_writeconst(SDL_RWops * context, const void *ptr, size_t size, size_t num)
     return 0;
 }
 
-static int SDLCALL
-mem_close(SDL_RWops * context)
+static int SDLCALL mem_close(SDL_RWops * context)
 {
     if (context) {
         SDL_FreeRW(context);

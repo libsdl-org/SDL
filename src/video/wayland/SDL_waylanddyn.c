@@ -58,8 +58,7 @@ static waylanddynlib waylandlibs[] = {
     {NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR}
 };
 
-static void *
-WAYLAND_GetSym(const char *fnname, int *pHasModule)
+static void * WAYLAND_GetSym(const char *fnname, int *pHasModule)
 {
     int i;
     void *fn = NULL;

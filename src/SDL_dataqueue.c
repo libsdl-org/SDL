@@ -39,8 +39,7 @@ struct SDL_DataQueue
     size_t queued_bytes;  /* number of bytes of data in the queue. */
 };
 
-static void
-SDL_FreeDataQueueList(SDL_DataQueuePacket *packet)
+static void SDL_FreeDataQueueList(SDL_DataQueuePacket *packet)
 {
     while (packet) {
         SDL_DataQueuePacket *next = packet->next;
@@ -135,8 +134,7 @@ SDL_ClearDataQueue(SDL_DataQueue *queue, const size_t slack)
     SDL_FreeDataQueueList(packet);  /* free extra packets */
 }
 
-static SDL_DataQueuePacket *
-AllocateDataQueuePacket(SDL_DataQueue *queue)
+static SDL_DataQueuePacket * AllocateDataQueuePacket(SDL_DataQueue *queue)
 {
     SDL_DataQueuePacket *packet;
 

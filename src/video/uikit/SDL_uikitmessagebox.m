@@ -35,8 +35,7 @@ UIKit_ShowingMessageBox(void)
     return s_showingMessageBox;
 }
 
-static void
-UIKit_WaitUntilMessageBoxClosed(const SDL_MessageBoxData *messageboxdata, int *clickedindex)
+static void UIKit_WaitUntilMessageBoxClosed(const SDL_MessageBoxData *messageboxdata, int *clickedindex)
 {
     *clickedindex = messageboxdata->numbuttons;
 
@@ -51,8 +50,7 @@ UIKit_WaitUntilMessageBoxClosed(const SDL_MessageBoxData *messageboxdata, int *c
     }
 }
 
-static BOOL
-UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     int i;
     int __block clickedindex = messageboxdata->numbuttons;
@@ -123,8 +121,7 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
     return YES;
 }
 
-static void
-UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
+static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
 { @autoreleasepool
 {
     if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonid)) {

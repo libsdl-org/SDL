@@ -182,14 +182,12 @@ const char *VITA_JoystickGetDevicePath(int index)
     return NULL;
 }
 
-static int
-VITA_JoystickGetDevicePlayerIndex(int device_index)
+static int VITA_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
 }
 
-static void
-VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+static void VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
@@ -315,8 +313,7 @@ SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
     return SDL_CreateJoystickGUIDForName(name);
 }
 
-static int
-VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     int index = (int) SDL_JoystickInstanceID(joystick);
     SceCtrlActuator act;
@@ -330,22 +327,19 @@ VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 
     return 0;
 }
 
-static int
-VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
+static int VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
 {
     return SDL_Unsupported();
 }
 
-static Uint32
-VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
+static Uint32 VITA_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     // always return LED and rumble supported for now
     return SDL_JOYCAP_LED | SDL_JOYCAP_RUMBLE;
 }
 
 
-static int
-VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int) SDL_JoystickInstanceID(joystick);
     if (sceCtrlSetLightBar(ext_port_map[index], red, green, blue) < 0) {
@@ -354,20 +348,17 @@ VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
     return 0;
 }
 
-static int
-VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static int VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static SDL_bool
-VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static SDL_bool VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     return SDL_FALSE;
 }

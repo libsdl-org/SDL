@@ -214,8 +214,7 @@ static SDL_Scancode WinRT_Official_Keycodes[] = {
 
 /* Attempt to translate a keycode that isn't listed in WinRT's VirtualKey enum.
  */
-static SDL_Scancode
-WINRT_TranslateUnofficialKeycode(int keycode)
+static SDL_Scancode WINRT_TranslateUnofficialKeycode(int keycode)
 {
     switch (keycode) {
         case 173: return SDL_SCANCODE_MUTE;         /* VK_VOLUME_MUTE */
@@ -250,8 +249,7 @@ WINRT_TranslateUnofficialKeycode(int keycode)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-static SDL_Scancode
-WINRT_TranslateKeycode(int keycode, unsigned int nativeScancode)
+static SDL_Scancode WINRT_TranslateKeycode(int keycode, unsigned int nativeScancode)
 {
     // TODO, WinRT: try filling out the WinRT keycode table as much as possible, using the Win32 table for interpretation hints
 

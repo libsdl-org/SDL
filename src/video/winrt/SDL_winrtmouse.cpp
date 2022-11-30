@@ -47,8 +47,7 @@ extern "C" {
 extern "C" SDL_bool WINRT_UsingRelativeMouseMode = SDL_FALSE;
 
 
-static SDL_Cursor *
-WINRT_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor * WINRT_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor;
     CoreCursorType cursorType = CoreCursorType::Arrow;
@@ -89,14 +88,12 @@ WINRT_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
-static SDL_Cursor *
-WINRT_CreateDefaultCursor()
+static SDL_Cursor * WINRT_CreateDefaultCursor()
 {
     return WINRT_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 }
 
-static void
-WINRT_FreeCursor(SDL_Cursor * cursor)
+static void WINRT_FreeCursor(SDL_Cursor * cursor)
 {
     if (cursor->driverdata) {
         CoreCursor ^* theCursor = (CoreCursor ^*) cursor->driverdata;
@@ -106,8 +103,7 @@ WINRT_FreeCursor(SDL_Cursor * cursor)
     SDL_free(cursor);
 }
 
-static int
-WINRT_ShowCursor(SDL_Cursor * cursor)
+static int WINRT_ShowCursor(SDL_Cursor * cursor)
 {
     // TODO, WinRT, XAML: make WINRT_ShowCursor work when XAML support is enabled.
     if ( ! CoreWindow::GetForCurrentThread()) {
@@ -181,8 +177,7 @@ WINRT_ShowCursor(SDL_Cursor * cursor)
     return 0;
 }
 
-static int
-WINRT_SetRelativeMouseMode(SDL_bool enabled)
+static int WINRT_SetRelativeMouseMode(SDL_bool enabled)
 {
     WINRT_UsingRelativeMouseMode = enabled;
     return 0;

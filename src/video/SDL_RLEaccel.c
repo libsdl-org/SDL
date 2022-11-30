@@ -434,8 +434,7 @@
     } while (0)
 
 
-static void
-RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
+static void RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
             Uint8 * dstbuf, SDL_Rect * srcrect, unsigned alpha)
 {
     SDL_PixelFormat *fmt = surf_dst->format;
@@ -446,8 +445,7 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
 #undef RLECLIPBLIT
 
 /* blit a colorkeyed RLE surface */
-static int SDLCALL
-SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
+static int SDLCALL SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
             SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {
     Uint8 *dstbuf;
@@ -632,8 +630,7 @@ typedef struct
 } RLEDestFormat;
 
 /* blit a pixel-alpha RLE surface clipped at the right and/or left edges */
-static void
-RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
+static void RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
                  Uint8 * dstbuf, SDL_Rect * srcrect)
 {
     SDL_PixelFormat *df = surf_dst->format;
@@ -724,8 +721,7 @@ RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
 }
 
 /* blit a pixel-alpha RLE surface */
-static int SDLCALL
-SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
+static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
                  SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {
     int x, y;
@@ -889,8 +885,7 @@ SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
  */
 
 /* encode 32bpp rgb + a into 16bpp rgb, losing alpha */
-static int
-copy_opaque_16(void *dst, Uint32 * src, int n,
+static int copy_opaque_16(void *dst, Uint32 * src, int n,
                SDL_PixelFormat * sfmt, SDL_PixelFormat * dfmt)
 {
     int i;
@@ -906,8 +901,7 @@ copy_opaque_16(void *dst, Uint32 * src, int n,
 }
 
 /* decode opaque pixels from 16bpp to 32bpp rgb + a */
-static int
-uncopy_opaque_16(Uint32 * dst, void *src, int n,
+static int uncopy_opaque_16(Uint32 * dst, void *src, int n,
                  RLEDestFormat * sfmt, SDL_PixelFormat * dfmt)
 {
     int i;
@@ -926,8 +920,7 @@ uncopy_opaque_16(Uint32 * dst, void *src, int n,
 
 
 /* encode 32bpp rgb + a into 32bpp G0RAB format for blitting into 565 */
-static int
-copy_transl_565(void *dst, Uint32 * src, int n,
+static int copy_transl_565(void *dst, Uint32 * src, int n,
                 SDL_PixelFormat * sfmt, SDL_PixelFormat * dfmt)
 {
     int i;
@@ -945,8 +938,7 @@ copy_transl_565(void *dst, Uint32 * src, int n,
 }
 
 /* encode 32bpp rgb + a into 32bpp G0RAB format for blitting into 555 */
-static int
-copy_transl_555(void *dst, Uint32 * src, int n,
+static int copy_transl_555(void *dst, Uint32 * src, int n,
                 SDL_PixelFormat * sfmt, SDL_PixelFormat * dfmt)
 {
     int i;
@@ -964,8 +956,7 @@ copy_transl_555(void *dst, Uint32 * src, int n,
 }
 
 /* decode translucent pixels from 32bpp GORAB to 32bpp rgb + a */
-static int
-uncopy_transl_16(Uint32 * dst, void *src, int n,
+static int uncopy_transl_16(Uint32 * dst, void *src, int n,
                  RLEDestFormat * sfmt, SDL_PixelFormat * dfmt)
 {
     int i;
@@ -983,8 +974,7 @@ uncopy_transl_16(Uint32 * dst, void *src, int n,
 }
 
 /* encode 32bpp rgba into 32bpp rgba, keeping alpha (dual purpose) */
-static int
-copy_32(void *dst, Uint32 * src, int n,
+static int copy_32(void *dst, Uint32 * src, int n,
         SDL_PixelFormat * sfmt, SDL_PixelFormat * dfmt)
 {
     int i;
@@ -1000,8 +990,7 @@ copy_32(void *dst, Uint32 * src, int n,
 }
 
 /* decode 32bpp rgba into 32bpp rgba, keeping alpha (dual purpose) */
-static int
-uncopy_32(Uint32 * dst, void *src, int n,
+static int uncopy_32(Uint32 * dst, void *src, int n,
           RLEDestFormat * sfmt, SDL_PixelFormat * dfmt)
 {
     int i;
@@ -1023,8 +1012,7 @@ uncopy_32(Uint32 * dst, void *src, int n,
     ((unsigned)((((pixel) & fmt->Amask) >> fmt->Ashift) - 1U) < 254U)
 
 /* convert surface to be quickly alpha-blittable onto dest, if possible */
-static int
-RLEAlphaSurface(SDL_Surface * surface)
+static int RLEAlphaSurface(SDL_Surface * surface)
 {
     SDL_Surface *dest;
     SDL_PixelFormat *df;
@@ -1246,20 +1234,17 @@ RLEAlphaSurface(SDL_Surface * surface)
     return 0;
 }
 
-static Uint32
-getpix_8(const Uint8 * srcbuf)
+static Uint32 getpix_8(const Uint8 * srcbuf)
 {
     return *srcbuf;
 }
 
-static Uint32
-getpix_16(const Uint8 * srcbuf)
+static Uint32 getpix_16(const Uint8 * srcbuf)
 {
     return *(const Uint16 *)srcbuf;
 }
 
-static Uint32
-getpix_24(const Uint8 * srcbuf)
+static Uint32 getpix_24(const Uint8 * srcbuf)
 {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     return srcbuf[0] + (srcbuf[1] << 8) + (srcbuf[2] << 16);
@@ -1268,8 +1253,7 @@ getpix_24(const Uint8 * srcbuf)
 #endif
 }
 
-static Uint32
-getpix_32(const Uint8 * srcbuf)
+static Uint32 getpix_32(const Uint8 * srcbuf)
 {
     return *(const Uint32 *)srcbuf;
 }
@@ -1280,8 +1264,7 @@ static const getpix_func getpixes[4] = {
     getpix_8, getpix_16, getpix_24, getpix_32
 };
 
-static int
-RLEColorkeySurface(SDL_Surface * surface)
+static int RLEColorkeySurface(SDL_Surface * surface)
 {
     Uint8 *rlebuf, *dst;
     int maxn;
@@ -1486,8 +1469,7 @@ SDL_RLESurface(SDL_Surface * surface)
  * completely transparent pixels will be lost, and color and alpha depth
  * may have been reduced (when encoding for 16bpp targets).
  */
-static SDL_bool
-UnRLEAlpha(SDL_Surface * surface)
+static SDL_bool UnRLEAlpha(SDL_Surface * surface)
 {
     Uint8 *srcbuf;
     Uint32 *dst;

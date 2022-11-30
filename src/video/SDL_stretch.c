@@ -40,8 +40,7 @@ SDL_SoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect,
     return SDL_UpperSoftStretch(src, srcrect, dst, dstrect, SDL_ScaleModeLinear);
 }
 
-static int
-SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
+static int SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
                 SDL_Surface * dst, const SDL_Rect * dstrect, SDL_ScaleMode scaleMode)
 {
     int ret;
@@ -196,8 +195,7 @@ SDL_UpperSoftStretch(SDL_Surface * src, const SDL_Rect * srcrect,
 // OK with clang 12.0.0 / Xcode
 __attribute__((noinline))
 #endif
-static void
-get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
+static void get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_pad, int *right_pad)
 {
 
     int step = FIXED_POINT(src_nb) / (dst_nb);  /* source step in fixed point */
@@ -246,8 +244,7 @@ typedef struct color_t {
 } color_t;
 
 #if 0
-static void
-printf_64(const char *str, void *var)
+static void printf_64(const char *str, void *var)
 {
     uint8_t *val = (uint8_t*) var;
     printf(" *   %s: %02x %02x %02x %02x _ %02x %02x %02x %02x\n",
@@ -257,8 +254,7 @@ printf_64(const char *str, void *var)
 
 /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
 
-static SDL_INLINE void
-INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int frac0, int frac1, Uint32 *dst)
+static SDL_INLINE void INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int frac0, int frac1, Uint32 *dst)
 {
     const color_t *c0 = (const color_t *)src_x0;
     const color_t *c1 = (const color_t *)src_x1;
@@ -276,8 +272,7 @@ INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int frac0, int frac1, Uint3
 #endif
 }
 
-static SDL_INLINE void
-INTERPOL_BILINEAR(const Uint32 *s0, const Uint32 *s1, int frac_w0, int frac_h0, int frac_h1, Uint32 *dst)
+static SDL_INLINE void INTERPOL_BILINEAR(const Uint32 *s0, const Uint32 *s1, int frac_w0, int frac_h0, int frac_h1, Uint32 *dst)
 {
     Uint32 tmp[2];
     unsigned int frac_w1 = FRAC_ONE - frac_w0;
@@ -290,8 +285,7 @@ INTERPOL_BILINEAR(const Uint32 *s0, const Uint32 *s1, int frac_w0, int frac_h0, 
     INTERPOL(tmp,   tmp + 1, frac_w0, frac_w1, dst);
 }
 
-static int
-scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
+static int scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
@@ -362,8 +356,7 @@ scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch,
 #if defined(HAVE_SSE2_INTRINSICS)
 
 #if 0
-static void
-printf_128(const char *str, __m128i var)
+static void printf_128(const char *str, __m128i var)
 {
     uint16_t *val = (uint16_t*) &var;
     printf(" *   %s: %04x %04x %04x %04x _ %04x %04x %04x %04x\n",
@@ -371,8 +364,7 @@ printf_128(const char *str, __m128i var)
 }
 #endif
 
-static SDL_INLINE int
-hasSSE2()
+static SDL_INLINE int hasSSE2()
 {
     static int val = -1;
     if (val != -1) {
@@ -382,8 +374,7 @@ hasSSE2()
     return val;
 }
 
-static SDL_INLINE void
-INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_frac_h0, __m128i v_frac_h1, Uint32 *dst, __m128i zero)
+static SDL_INLINE void INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_frac_h0, __m128i v_frac_h1, Uint32 *dst, __m128i zero)
 {
     __m128i x_00_01, x_10_11; /* Pixels in 4*uint8 in row */
     __m128i v_frac_w0, k0, l0, d0, e0;
@@ -421,8 +412,7 @@ INTERPOL_BILINEAR_SSE(const Uint32 *s0, const Uint32 *s1, int frac_w, __m128i v_
     *dst = _mm_cvtsi128_si32(e0);
 }
 
-static int
-scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
+static int scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     BILINEAR___START
 
@@ -544,8 +534,7 @@ scale_mat_SSE(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *ds
 
 #if defined(HAVE_NEON_INTRINSICS)
 
-static SDL_INLINE int
-hasNEON()
+static SDL_INLINE int hasNEON()
 {
     static int val = -1;
     if (val != -1) {
@@ -555,8 +544,7 @@ hasNEON()
     return val;
 }
 
-static SDL_INLINE void
-INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1, int frac_w, uint8x8_t v_frac_h0, uint8x8_t v_frac_h1, Uint32 *dst)
+static SDL_INLINE void INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1, int frac_w, uint8x8_t v_frac_h0, uint8x8_t v_frac_h1, Uint32 *dst)
 {
     uint8x8_t x_00_01, x_10_11; /* Pixels in 4*uint8 in row */
     uint16x8_t k0;
@@ -865,8 +853,7 @@ SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect,
     n = dst_w;
 
 
-static int
-scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
+static int scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 1;
@@ -886,8 +873,7 @@ scale_mat_nearest_1(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
     return 0;
 }
 
-static int
-scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
+static int scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 2;
@@ -907,8 +893,7 @@ scale_mat_nearest_2(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
     return 0;
 }
 
-static int
-scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
+static int scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 3;
@@ -930,8 +915,7 @@ scale_mat_nearest_3(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
     return 0;
 }
 
-static int
-scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
+static int scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int src_pitch,
         Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
 {
     Uint32 bpp = 4;

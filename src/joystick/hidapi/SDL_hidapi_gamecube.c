@@ -50,28 +50,24 @@ typedef struct {
     SDL_bool useRumbleBrake;
 } SDL_DriverGameCube_Context;
 
-static void
-HIDAPI_DriverGameCube_RegisterHints(SDL_HintCallback callback, void *userdata)
+static void HIDAPI_DriverGameCube_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE, callback, userdata);
 }
 
-static void
-HIDAPI_DriverGameCube_UnregisterHints(SDL_HintCallback callback, void *userdata)
+static void HIDAPI_DriverGameCube_UnregisterHints(SDL_HintCallback callback, void *userdata)
 {
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE, callback, userdata);
 }
 
-static SDL_bool
-HIDAPI_DriverGameCube_IsEnabled(void)
+static SDL_bool HIDAPI_DriverGameCube_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE,
                SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
                    SDL_HIDAPI_DEFAULT));
 }
 
-static SDL_bool
-HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static SDL_bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
         /* Nintendo Co., Ltd.  Wii U GameCube Controller Adapter */
@@ -84,8 +80,7 @@ HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *n
     return SDL_FALSE;
 }
 
-static void
-ResetAxisRange(SDL_DriverGameCube_Context *ctx, int joystick_index)
+static void ResetAxisRange(SDL_DriverGameCube_Context *ctx, int joystick_index)
 {
     SDL_memset(&ctx->min_axis[joystick_index*SDL_CONTROLLER_AXIS_MAX], 128-88, SDL_CONTROLLER_AXIS_MAX);
     SDL_memset(&ctx->max_axis[joystick_index*SDL_CONTROLLER_AXIS_MAX], 128+88, SDL_CONTROLLER_AXIS_MAX);
@@ -125,8 +120,7 @@ static Uint8 RemapButton(SDL_DriverGameCube_Context *ctx, Uint8 button)
     return button;
 }
 
-static SDL_bool
-HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
+static SDL_bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx;
     Uint8 packet[37];
@@ -217,8 +211,7 @@ HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     return SDL_TRUE;
 }
 
-static int
-HIDAPI_DriverGameCube_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
+static int HIDAPI_DriverGameCube_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 i;
@@ -231,13 +224,11 @@ HIDAPI_DriverGameCube_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_Joysti
     return -1;
 }
 
-static void
-HIDAPI_DriverGameCube_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
+static void HIDAPI_DriverGameCube_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
 }
 
-static void
-HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 *packet, int size)
+static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 *packet, int size)
 {
     SDL_Joystick *joystick;
     Uint8 i, v;
@@ -300,8 +291,7 @@ HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_Driver
     #undef READ_AXIS
 }
 
-static void
-HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 *packet, int size)
+static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 *packet, int size)
 {
     SDL_Joystick *joystick;
     Uint8 *curSlot;
@@ -381,8 +371,7 @@ HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device, SDL_Driver
     }
 }
 
-static SDL_bool
-HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
+static SDL_bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 packet[USB_PACKET_LENGTH];
@@ -410,8 +399,7 @@ HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
     return SDL_TRUE;
 }
 
-static SDL_bool
-HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static SDL_bool HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 i;
@@ -426,8 +414,7 @@ HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joys
     return SDL_FALSE; /* Should never get here! */
 }
 
-static int
-HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static int HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 i, val;
@@ -467,14 +454,12 @@ HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *jo
     return SDL_SetError("Couldn't find joystick");
 }
 
-static int
-HIDAPI_DriverGameCube_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static int HIDAPI_DriverGameCube_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static Uint32
-HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint32 result = 0;
@@ -495,26 +480,22 @@ HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joy
     return result;
 }
 
-static int
-HIDAPI_DriverGameCube_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static int HIDAPI_DriverGameCube_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int
-HIDAPI_DriverGameCube_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+static int HIDAPI_DriverGameCube_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int
-HIDAPI_DriverGameCube_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static int HIDAPI_DriverGameCube_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static void
-HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static void HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
 
@@ -525,8 +506,7 @@ HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     }
 }
 
-static void
-HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
+static void HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
 

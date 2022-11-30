@@ -34,8 +34,7 @@
     CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **) v)
 
 /* Note that AC power sources also include a laptop battery it is charging. */
-static void
-checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
+static void checkps(CFDictionaryRef dict, SDL_bool * have_ac, SDL_bool * have_battery,
         SDL_bool * charging, int *seconds, int *percent)
 {
     CFStringRef strval;         /* don't CFRelease() this. */

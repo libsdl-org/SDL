@@ -33,8 +33,7 @@
 /* #define DEBUG_MODES */
 /* #define HIGHDPI_DEBUG_VERBOSE */
 
-static void
-WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode)
+static void WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode)
 {
     SDL_DisplayModeData *data = (SDL_DisplayModeData *) mode->driverdata;
     HDC hdc;
@@ -119,8 +118,7 @@ WIN_UpdateDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * 
     }
 }
 
-static SDL_DisplayOrientation
-WIN_GetDisplayOrientation(DEVMODE *mode)
+static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
 {
     int width = mode->dmPelsWidth;
     int height = mode->dmPelsHeight;
@@ -161,8 +159,7 @@ WIN_GetDisplayOrientation(DEVMODE *mode)
     }
 }
 
-static SDL_bool
-WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode, SDL_DisplayOrientation *orientation)
+static SDL_bool WIN_GetDisplayMode(_THIS, LPCWSTR deviceName, DWORD index, SDL_DisplayMode * mode, SDL_DisplayOrientation *orientation)
 {
     SDL_DisplayModeData *data;
     DEVMODE devmode;
@@ -203,8 +200,7 @@ typedef LONG (WINAPI *SDL_WIN32PROC_QueryDisplayConfig)(UINT32 flags, UINT32* nu
 typedef LONG (WINAPI *SDL_WIN32PROC_DisplayConfigGetDeviceInfo)(DISPLAYCONFIG_DEVICE_INFO_HEADER* requestPacket);
 /* *INDENT-ON* */ /* clang-format on */
 
-static char *
-WIN_GetDisplayNameVista(const WCHAR *deviceName)
+static char * WIN_GetDisplayNameVista(const WCHAR *deviceName)
 {
     void *dll;
     SDL_WIN32PROC_GetDisplayConfigBufferSizes pGetDisplayConfigBufferSizes;
@@ -298,8 +294,7 @@ WIN_GetDisplayNameVista_failed:
     return NULL;
 }
 
-static SDL_bool
-WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool send_event)
+static SDL_bool WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool send_event)
 {
     int i;
     SDL_VideoDisplay display;
@@ -368,8 +363,7 @@ typedef struct _WIN_AddDisplaysData {
     SDL_bool want_primary;
 } WIN_AddDisplaysData;
 
-static BOOL CALLBACK
-WIN_AddDisplaysCallback(HMONITOR hMonitor,
+static BOOL CALLBACK WIN_AddDisplaysCallback(HMONITOR hMonitor,
                         HDC      hdcMonitor,
                         LPRECT   lprcMonitor,
                         LPARAM   dwData)
@@ -392,8 +386,7 @@ WIN_AddDisplaysCallback(HMONITOR hMonitor,
     return TRUE;
 }
 
-static void
-WIN_AddDisplays(_THIS, SDL_bool send_event)
+static void WIN_AddDisplays(_THIS, SDL_bool send_event)
 {
     WIN_AddDisplaysData callback_data;
     callback_data.video_device = _this;
@@ -423,8 +416,7 @@ WIN_InitModes(_THIS)
  * 
  * No-op if DPI scaling is not enabled.
  */
-static void
-WIN_MonitorInfoToSDL(const SDL_VideoData *videodata, HMONITOR monitor, MONITORINFO *info)
+static void WIN_MonitorInfoToSDL(const SDL_VideoData *videodata, HMONITOR monitor, MONITORINFO *info)
 {
     UINT xdpi, ydpi;
 
@@ -709,8 +701,7 @@ WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 }
 
 #ifdef DEBUG_MODES
-static void
-WIN_LogMonitor(_THIS, HMONITOR mon)
+static void WIN_LogMonitor(_THIS, HMONITOR mon)
 {
     const SDL_VideoData *vid_data = (const SDL_VideoData *)_this->driverdata;
     MONITORINFOEX minfo;

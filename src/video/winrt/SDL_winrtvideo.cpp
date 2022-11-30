@@ -99,8 +99,7 @@ SDL_Window * WINRT_GlobalSDLWindow = NULL;
 
 /* WinRT driver bootstrap functions */
 
-static void
-WINRT_DeleteDevice(SDL_VideoDevice * device)
+static void WINRT_DeleteDevice(SDL_VideoDevice * device)
 {
     if (device->driverdata) {
         SDL_VideoData * video_data = (SDL_VideoData *)device->driverdata;
@@ -113,8 +112,7 @@ WINRT_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
-static SDL_VideoDevice *
-WINRT_CreateDevice(void)
+static SDL_VideoDevice * WINRT_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -177,8 +175,7 @@ VideoBootStrap WINRT_bootstrap = {
     WINRT_CreateDevice
 };
 
-static void SDLCALL
-WINRT_SetDisplayOrientationsPreference(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void SDLCALL WINRT_SetDisplayOrientationsPreference(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     SDL_assert(SDL_strcmp(name, SDL_HINT_ORIENTATIONS) == 0);
 
@@ -264,8 +261,7 @@ WINRT_VideoInit(_THIS)
 extern "C"
 Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
 
-static void
-WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC * dxgiMode, SDL_DisplayMode * sdlMode)
+static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC * dxgiMode, SDL_DisplayMode * sdlMode)
 {
     SDL_zerop(sdlMode);
     sdlMode->w = dxgiMode->Width;
@@ -274,8 +270,7 @@ WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC * dxgiMode, SDL_DisplayMode 
     sdlMode->format = D3D11_DXGIFormatToSDLPixelFormat(dxgiMode->Format);
 }
 
-static int
-WINRT_AddDisplaysForOutput (_THIS, IDXGIAdapter1 * dxgiAdapter1, int outputIndex)
+static int WINRT_AddDisplaysForOutput (_THIS, IDXGIAdapter1 * dxgiAdapter1, int outputIndex)
 {
     HRESULT hr;
     IDXGIOutput * dxgiOutput = NULL;
@@ -384,8 +379,7 @@ done:
     return functionResult;
 }
 
-static int
-WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterIndex)
+static int WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterIndex)
 {
     HRESULT hr;
     IDXGIAdapter1 * dxgiAdapter1;
@@ -489,8 +483,7 @@ WINRT_InitModes(_THIS)
     return 0;
 }
 
-static int
-WINRT_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int WINRT_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     return 0;
 }
@@ -507,12 +500,7 @@ WINRT_VideoQuit(_THIS)
     WINRT_QuitMouse(_this);
 }
 
-static const Uint32 WINRT_DetectableFlags =
-    SDL_WINDOW_MAXIMIZED |
-    SDL_WINDOW_FULLSCREEN_DESKTOP |
-    SDL_WINDOW_SHOWN |
-    SDL_WINDOW_HIDDEN |
-    SDL_WINDOW_MOUSE_FOCUS;
+static const Uint32 WINRT_DetectableFlags = SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_SHOWN | SDL_WINDOW_HIDDEN | SDL_WINDOW_MOUSE_FOCUS;
 
 extern "C" Uint32
 WINRT_DetectWindowFlags(SDL_Window * window)
@@ -596,8 +584,7 @@ WINRT_UpdateWindowFlags(SDL_Window * window, Uint32 mask)
     }
 }
 
-static bool
-WINRT_IsCoreWindowActive(CoreWindow ^ coreWindow)
+static bool WINRT_IsCoreWindowActive(CoreWindow ^ coreWindow)
 {
     /* WinRT does not appear to offer API(s) to determine window-activation state,
        at least not that I am aware of in Win8 - Win10.  As such, SDL tracks this
@@ -833,8 +820,7 @@ WINRT_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
     return 0;
 }
 
-static ABI::Windows::System::Display::IDisplayRequest *
-WINRT_CreateDisplayRequest(_THIS)
+static ABI::Windows::System::Display::IDisplayRequest * WINRT_CreateDisplayRequest(_THIS)
 {
     /* Setup a WinRT DisplayRequest object, usable for enabling/disabling screensaver requests */
     wchar_t *wClassName = L"Windows.System.Display.DisplayRequest";

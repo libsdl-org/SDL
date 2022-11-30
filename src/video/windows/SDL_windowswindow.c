@@ -70,8 +70,7 @@ static ATOM SDL_HelperWindowClass = 0;
 #define STYLE_RESIZABLE     (WS_THICKFRAME | WS_MAXIMIZEBOX)
 #define STYLE_MASK          (STYLE_FULLSCREEN | STYLE_BORDERLESS | STYLE_NORMAL | STYLE_RESIZABLE)
 
-static DWORD
-GetWindowStyle(SDL_Window * window)
+static DWORD GetWindowStyle(SDL_Window * window)
 {
     DWORD style = 0;
 
@@ -106,8 +105,7 @@ GetWindowStyle(SDL_Window * window)
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
  * Can be called before we have a HWND.
  */
-static void
-WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
+static void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
 {
     SDL_VideoData* videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
     RECT rect;
@@ -193,8 +191,7 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
 #endif
 }
 
-static void
-WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_bool use_current)
+static void WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_bool use_current)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -210,8 +207,7 @@ WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height
     WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, use_current);
 }
 
-static void
-WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
+static void WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -233,15 +229,13 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
     data->expected_resize = SDL_FALSE;
 }
 
-static void SDLCALL
-WIN_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_WindowData *data = (SDL_WindowData *)userdata;
     data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
-static int
-WIN_GetScalingDPIForHWND(const SDL_VideoData *videodata, HWND hwnd)
+static int WIN_GetScalingDPIForHWND(const SDL_VideoData *videodata, HWND hwnd)
 {
 #if defined(__XBOXONE__) || defined(__XBOXSERIES__)
     return 96;
@@ -281,8 +275,7 @@ WIN_GetScalingDPIForHWND(const SDL_VideoData *videodata, HWND hwnd)
 #endif
 }
 
-static int
-SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool created)
+static int SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool created)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data;

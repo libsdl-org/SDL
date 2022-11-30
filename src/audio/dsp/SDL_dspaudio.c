@@ -41,15 +41,13 @@
 #include "SDL_dspaudio.h"
 
 
-static void
-DSP_DetectDevices(void)
+static void DSP_DetectDevices(void)
 {
     SDL_EnumUnixAudioDevices(0, NULL);
 }
 
 
-static void
-DSP_CloseDevice(_THIS)
+static void DSP_CloseDevice(_THIS)
 {
     if (this->hidden->audio_fd >= 0) {
         close(this->hidden->audio_fd);
@@ -59,8 +57,7 @@ DSP_CloseDevice(_THIS)
 }
 
 
-static int
-DSP_OpenDevice(_THIS, const char *devname)
+static int DSP_OpenDevice(_THIS, const char *devname)
 {
     SDL_bool iscapture = this->iscapture;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
@@ -243,8 +240,7 @@ DSP_OpenDevice(_THIS, const char *devname)
 }
 
 
-static void
-DSP_PlayDevice(_THIS)
+static void DSP_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     if (write(h->audio_fd, h->mixbuf, h->mixlen) == -1) {
@@ -256,20 +252,17 @@ DSP_PlayDevice(_THIS)
 #endif
 }
 
-static Uint8 *
-DSP_GetDeviceBuf(_THIS)
+static Uint8 * DSP_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
-static int
-DSP_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int DSP_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     return (int)read(this->hidden->audio_fd, buffer, buflen);
 }
 
-static void
-DSP_FlushCapture(_THIS)
+static void DSP_FlushCapture(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     audio_buf_info info;
@@ -287,16 +280,14 @@ DSP_FlushCapture(_THIS)
 }
 
 static SDL_bool InitTimeDevicesExist = SDL_FALSE;
-static int
-look_for_devices_test(int fd)
+static int look_for_devices_test(int fd)
 {
     InitTimeDevicesExist = SDL_TRUE;  /* note that _something_ exists. */
     /* Don't add to the device list, we're just seeing if any devices exist. */
     return 0;
 }
 
-static SDL_bool
-DSP_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool DSP_Init(SDL_AudioDriverImpl * impl)
 {
     InitTimeDevicesExist = SDL_FALSE;
     SDL_EnumUnixAudioDevices(0, look_for_devices_test);

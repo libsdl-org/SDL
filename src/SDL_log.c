@@ -276,8 +276,7 @@ SDL_LogMessage(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING 
 }
 
 #ifdef __ANDROID__
-static const char *
-GetCategoryPrefix(int category)
+static const char * GetCategoryPrefix(int category)
 {
     if (category < SDL_LOG_CATEGORY_RESERVED1) {
         return SDL_category_prefixes[category];
@@ -373,8 +372,7 @@ static int consoleAttached = 0;
 static HANDLE stderrHandle = NULL;
 #endif
 
-static void SDLCALL
-SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
+static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
               const char *message)
 {
 #if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)

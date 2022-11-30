@@ -55,8 +55,7 @@ static TBool RunThread(TAny* aInfo)
     return 0;
 }
 
-static TInt
-NewThread(const TDesC& aName, TAny* aPtr1, TAny* aPtr2)
+static TInt NewThread(const TDesC& aName, TAny* aPtr1, TAny* aPtr2)
 {
     return ((RThread *)(aPtr1))->Create(aName, RunThread, KDefaultStackSize, NULL, aPtr2);
 }

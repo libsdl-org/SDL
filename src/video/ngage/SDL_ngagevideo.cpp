@@ -53,8 +53,7 @@ static void NGAGE_VideoQuit(_THIS);
 
 /* NGAGE driver bootstrap functions */
 
-static void
-NGAGE_DeleteDevice(SDL_VideoDevice * device)
+static void NGAGE_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_VideoData *phdata = (SDL_VideoData*)device->driverdata;
 
@@ -99,8 +98,7 @@ NGAGE_DeleteDevice(SDL_VideoDevice * device)
     }
 }
 
-static SDL_VideoDevice *
-NGAGE_CreateDevice(void)
+static SDL_VideoDevice * NGAGE_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData   *phdata;
@@ -167,8 +165,7 @@ NGAGE_VideoInit(_THIS)
     return 0;
 }
 
-static int
-NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int NGAGE_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     return 0;
 }

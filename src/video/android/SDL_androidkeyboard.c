@@ -313,8 +313,7 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_PASTE, /* AKEYCODE_PASTE */
 };
 
-static SDL_Scancode
-TranslateKeycode(int keycode)
+static SDL_Scancode TranslateKeycode(int keycode)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 

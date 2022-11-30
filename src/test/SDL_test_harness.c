@@ -91,8 +91,7 @@ SDLTest_GenerateRunSeed(const int length)
 * \returns The generated execution key to initialize the fuzzer with.
 *
 */
-static Uint64
-SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName, const char *testName, int iteration)
+static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName, const char *testName, int iteration)
 {
     SDLTest_Md5Context md5Context;
     Uint64 *keys;
@@ -162,8 +161,7 @@ SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName, const char *
 *
 * \return Timer id or -1 on failure.
 */
-static SDL_TimerID
-SDLTest_SetTestTimeout(int timeout, void (SDLCALL *callback)(void))
+static SDL_TimerID SDLTest_SetTestTimeout(int timeout, void (SDLCALL *callback)(void))
 {
     Uint32 timeoutInMilliseconds;
     SDL_TimerID timerID;
@@ -203,8 +201,7 @@ SDLTest_SetTestTimeout(int timeout, void (SDLCALL *callback)(void))
 #if defined(__WATCOMC__)
 #pragma aux SDLTest_BailOut aborts;
 #endif
-static SDL_NORETURN void SDLCALL
-SDLTest_BailOut(void)
+static SDL_NORETURN void SDLCALL SDLTest_BailOut(void)
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
     exit(TEST_ABORTED); /* bail out from the test */
@@ -220,8 +217,7 @@ SDLTest_BailOut(void)
 *
 * \returns Test case result.
 */
-static int
-SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, SDL_bool forceTestRun)
+static int SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, const SDLTest_TestCaseReference *testCase, Uint64 execKey, SDL_bool forceTestRun)
 {
     SDL_TimerID timer = 0;
     int testCaseResult = 0;

@@ -69,8 +69,7 @@ static x11dynlib x11libs[] = {
     {NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS}
 };
 
-static void *
-X11_GetSym(const char *fnname, int *pHasModule)
+static void * X11_GetSym(const char *fnname, int *pHasModule)
 {
     int i;
     void *fn = NULL;

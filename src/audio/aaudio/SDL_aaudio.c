@@ -68,8 +68,7 @@ void aaudio_errorCallback( AAudioStream *stream, void *userData, aaudio_result_t
 
 #define LIB_AAUDIO_SO "libaaudio.so"
 
-static int
-aaudio_OpenDevice(_THIS, const char *devname)
+static int aaudio_OpenDevice(_THIS, const char *devname)
 {
     struct SDL_PrivateAudioData *private;
     SDL_bool iscapture = this->iscapture;
@@ -165,8 +164,7 @@ aaudio_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void
-aaudio_CloseDevice(_THIS)
+static void aaudio_CloseDevice(_THIS)
 {
     struct SDL_PrivateAudioData *private = this->hidden;
     aaudio_result_t res;
@@ -200,15 +198,13 @@ aaudio_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static Uint8 *
-aaudio_GetDeviceBuf(_THIS)
+static Uint8 * aaudio_GetDeviceBuf(_THIS)
 {
     struct SDL_PrivateAudioData *private = this->hidden;
     return private->mixbuf;
 }
 
-static void
-aaudio_PlayDevice(_THIS)
+static void aaudio_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *private = this->hidden;
     aaudio_result_t res;
@@ -233,8 +229,7 @@ aaudio_PlayDevice(_THIS)
 #endif
 }
 
-static int
-aaudio_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int aaudio_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *private = this->hidden;
     aaudio_result_t res;
@@ -248,8 +243,7 @@ aaudio_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return res * private->frame_size;
 }
 
-static void
-aaudio_Deinitialize(void)
+static void aaudio_Deinitialize(void)
 {
     LOGI(__func__);
     if (ctx.handle) {
@@ -267,8 +261,7 @@ aaudio_Deinitialize(void)
     LOGI("End AAUDIO %s", SDL_GetError());
 }
 
-static SDL_bool
-aaudio_Init(SDL_AudioDriverImpl *impl)
+static SDL_bool aaudio_Init(SDL_AudioDriverImpl *impl)
 {
     aaudio_result_t res;
     LOGI(__func__);

@@ -63,8 +63,7 @@ static const int sig_list[] = {
     SIGVTALRM, SIGPROF, 0
 };
 
-static void *
-RunThread(void *data)
+static void * RunThread(void *data)
 {
 #ifdef __ANDROID__
     Android_JNI_SetupThread();

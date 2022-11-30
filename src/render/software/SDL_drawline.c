@@ -27,8 +27,7 @@
 #include "SDL_drawpoint.h"
 
 
-static void
-SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
+static void SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
               SDL_bool draw_end)
 {
     if (y1 == y2) {
@@ -55,8 +54,7 @@ SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
     }
 }
 
-static void
-SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
+static void SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
               SDL_bool draw_end)
 {
     if (y1 == y2) {
@@ -85,8 +83,7 @@ SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
     }
 }
 
-static void
-SDL_DrawLine4(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
+static void SDL_DrawLine4(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
               SDL_bool draw_end)
 {
     if (y1 == y2) {
@@ -121,8 +118,7 @@ typedef void (*DrawLineFunc) (SDL_Surface * dst,
                               int x1, int y1, int x2, int y2,
                               Uint32 color, SDL_bool draw_end);
 
-static DrawLineFunc
-SDL_CalculateDrawLineFunc(const SDL_PixelFormat * fmt)
+static DrawLineFunc SDL_CalculateDrawLineFunc(const SDL_PixelFormat * fmt)
 {
     switch (fmt->BytesPerPixel) {
     case 1:

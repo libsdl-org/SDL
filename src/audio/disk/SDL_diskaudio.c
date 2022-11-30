@@ -40,14 +40,12 @@
 #define DISKENVR_IODELAY      "SDL_DISKAUDIODELAY"
 
 /* This function waits until it is possible to write a full sound buffer */
-static void
-DISKAUDIO_WaitDevice(_THIS)
+static void DISKAUDIO_WaitDevice(_THIS)
 {
     SDL_Delay(_this->hidden->io_delay);
 }
 
-static void
-DISKAUDIO_PlayDevice(_THIS)
+static void DISKAUDIO_PlayDevice(_THIS)
 {
     const size_t written = SDL_RWwrite(_this->hidden->io,
                                        _this->hidden->mixbuf,
@@ -62,14 +60,12 @@ DISKAUDIO_PlayDevice(_THIS)
 #endif
 }
 
-static Uint8 *
-DISKAUDIO_GetDeviceBuf(_THIS)
+static Uint8 * DISKAUDIO_GetDeviceBuf(_THIS)
 {
     return _this->hidden->mixbuf;
 }
 
-static int
-DISKAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int DISKAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = _this->hidden;
     const int origbuflen = buflen;
@@ -92,15 +88,13 @@ DISKAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return origbuflen;
 }
 
-static void
-DISKAUDIO_FlushCapture(_THIS)
+static void DISKAUDIO_FlushCapture(_THIS)
 {
     /* no op...we don't advance the file pointer or anything. */
 }
 
 
-static void
-DISKAUDIO_CloseDevice(_THIS)
+static void DISKAUDIO_CloseDevice(_THIS)
 {
     if (_this->hidden->io != NULL) {
         SDL_RWclose(_this->hidden->io);
@@ -110,8 +104,7 @@ DISKAUDIO_CloseDevice(_THIS)
 }
 
 
-static const char *
-get_filename(const SDL_bool iscapture, const char *devname)
+static const char * get_filename(const SDL_bool iscapture, const char *devname)
 {
     if (devname == NULL) {
         devname = SDL_getenv(iscapture ? DISKENVR_INFILE : DISKENVR_OUTFILE);
@@ -122,8 +115,7 @@ get_filename(const SDL_bool iscapture, const char *devname)
     return devname;
 }
 
-static int
-DISKAUDIO_OpenDevice(_THIS, const char *devname)
+static int DISKAUDIO_OpenDevice(_THIS, const char *devname)
 {
     void *handle = _this->handle;
     /* handle != NULL means "user specified the placeholder name on the fake detected device list" */
@@ -169,15 +161,13 @@ DISKAUDIO_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static void
-DISKAUDIO_DetectDevices(void)
+static void DISKAUDIO_DetectDevices(void)
 {
     SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, NULL, (void *) 0x1);
     SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *) 0x2);
 }
 
-static SDL_bool
-DISKAUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = DISKAUDIO_OpenDevice;

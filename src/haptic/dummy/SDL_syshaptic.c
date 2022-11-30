@@ -25,8 +25,7 @@
 #include "../SDL_syshaptic.h"
 
 
-static int
-SDL_SYS_LogicError(void)
+static int SDL_SYS_LogicError(void)
 {
     return SDL_SetError("Logic error: No haptic devices available.");
 }

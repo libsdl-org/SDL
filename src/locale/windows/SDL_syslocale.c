@@ -33,8 +33,7 @@ static HMODULE kernel32 = 0;
 
 
 /* this is the fallback for WinXP...one language, not a list. */
-static void
-SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
+static void SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
 {
     char lang[16];
     char country[16];
@@ -56,8 +55,7 @@ SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
 }
 
 /* this works on Windows Vista and later. */
-static void
-SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
+static void SDL_SYS_GetPreferredLocales_vista(char *buf, size_t buflen)
 {
     ULONG numlangs = 0;
     WCHAR *wbuf = NULL;

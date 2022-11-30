@@ -47,8 +47,7 @@ enum QtWaylandTouchPointState {
     QtWaylandTouchPointReleased   = 0x08,
 };
 
-static void
-touch_handle_touch(void *data,
+static void touch_handle_touch(void *data,
         struct qt_touch_extension *qt_touch_extension,
         uint32_t time,
         uint32_t id,
@@ -117,8 +116,7 @@ touch_handle_touch(void *data,
     }
 }
 
-static void
-touch_handle_configure(void *data,
+static void touch_handle_configure(void *data,
         struct qt_touch_extension *qt_touch_extension,
         uint32_t flags)
 {

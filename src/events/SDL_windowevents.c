@@ -31,8 +31,7 @@ typedef struct RemovePendingSizeChangedAndResizedEvents_Data
     SDL_bool saw_resized;
 } RemovePendingSizeChangedAndResizedEvents_Data;
 
-static int SDLCALL
-RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
+static int SDLCALL RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
 {
     RemovePendingSizeChangedAndResizedEvents_Data *userdata = (RemovePendingSizeChangedAndResizedEvents_Data *) _userdata;
     const SDL_Event *new_event = userdata->new_event;
@@ -52,8 +51,7 @@ RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL_Event *event)
     return 1;
 }
 
-static int SDLCALL
-RemovePendingMoveEvents(void * userdata, SDL_Event *event)
+static int SDLCALL RemovePendingMoveEvents(void * userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
@@ -66,8 +64,7 @@ RemovePendingMoveEvents(void * userdata, SDL_Event *event)
     return 1;
 }
 
-static int SDLCALL
-RemovePendingExposedEvents(void * userdata, SDL_Event *event)
+static int SDLCALL RemovePendingExposedEvents(void * userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 

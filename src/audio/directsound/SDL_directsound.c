@@ -54,8 +54,7 @@ static fnDirectSoundCaptureEnumerateW pDirectSoundCaptureEnumerateW = NULL;
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 
-static void
-DSOUND_Unload(void)
+static void DSOUND_Unload(void)
 {
     pDirectSoundCreate8 = NULL;
     pDirectSoundEnumerateW = NULL;
@@ -69,8 +68,7 @@ DSOUND_Unload(void)
 }
 
 
-static int
-DSOUND_Load(void)
+static int DSOUND_Load(void)
 {
     int loaded = 0;
 
@@ -104,8 +102,7 @@ DSOUND_Load(void)
     return loaded;
 }
 
-static int
-SetDSerror(const char *function, int code)
+static int SetDSerror(const char *function, int code)
 {
     const char *error;
 
@@ -151,14 +148,12 @@ SetDSerror(const char *function, int code)
     return SDL_SetError("%s: %s (0x%x)", function, error, code);
 }
 
-static void
-DSOUND_FreeDeviceHandle(void *handle)
+static void DSOUND_FreeDeviceHandle(void *handle)
 {
     SDL_free(handle);
 }
 
-static int
-DSOUND_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+static int DSOUND_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
 #if HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
@@ -168,8 +163,7 @@ DSOUND_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
     return SDL_Unsupported();
 }
 
-static BOOL CALLBACK
-FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
+static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
 {
     const int iscapture = (int) ((size_t) data);
     if (guid != NULL) {  /* skip default device */
@@ -189,8 +183,7 @@ FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
     return TRUE;  /* keep enumerating. */
 }
 
-static void
-DSOUND_DetectDevices(void)
+static void DSOUND_DetectDevices(void)
 {
 #if HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
@@ -205,8 +198,7 @@ DSOUND_DetectDevices(void)
 }
 
 
-static void
-DSOUND_WaitDevice(_THIS)
+static void DSOUND_WaitDevice(_THIS)
 {
     DWORD status = 0;
     DWORD cursor = 0;
@@ -263,8 +255,7 @@ DSOUND_WaitDevice(_THIS)
     }
 }
 
-static void
-DSOUND_PlayDevice(_THIS)
+static void DSOUND_PlayDevice(_THIS)
 {
     /* Unlock the buffer, allowing it to play */
     if (this->hidden->locked_buf) {
@@ -274,8 +265,7 @@ DSOUND_PlayDevice(_THIS)
     }
 }
 
-static Uint8 *
-DSOUND_GetDeviceBuf(_THIS)
+static Uint8 * DSOUND_GetDeviceBuf(_THIS)
 {
     DWORD cursor = 0;
     DWORD junk = 0;
@@ -333,8 +323,7 @@ DSOUND_GetDeviceBuf(_THIS)
     return this->hidden->locked_buf;
 }
 
-static int
-DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     DWORD junk, cursor, ptr1len, ptr2len;
@@ -377,8 +366,7 @@ DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
     return ptr1len;
 }
 
-static void
-DSOUND_FlushCapture(_THIS)
+static void DSOUND_FlushCapture(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     DWORD junk, cursor;
@@ -387,8 +375,7 @@ DSOUND_FlushCapture(_THIS)
     }
 }
 
-static void
-DSOUND_CloseDevice(_THIS)
+static void DSOUND_CloseDevice(_THIS)
 {
     if (this->hidden->mixbuf != NULL) {
         IDirectSoundBuffer_Stop(this->hidden->mixbuf);
@@ -411,8 +398,7 @@ DSOUND_CloseDevice(_THIS)
    number of audio chunks available in the created buffer. This is for
    playback devices, not capture.
 */
-static int
-CreateSecondary(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
+static int CreateSecondary(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
 {
     LPDIRECTSOUND sndObj = this->hidden->sound;
     LPDIRECTSOUNDBUFFER *sndbuf = &this->hidden->mixbuf;
@@ -454,8 +440,7 @@ CreateSecondary(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
    number of audio chunks available in the created buffer. This is for
    capture devices, not playback.
 */
-static int
-CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
+static int CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
 {
     LPDIRECTSOUNDCAPTURE capture = this->hidden->capture;
     LPDIRECTSOUNDCAPTUREBUFFER *capturebuf = &this->hidden->capturebuf;
@@ -494,8 +479,7 @@ CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
     return 0;
 }
 
-static int
-DSOUND_OpenDevice(_THIS, const char *devname)
+static int DSOUND_OpenDevice(_THIS, const char *devname)
 {
     const DWORD numchunks = 8;
     HRESULT result;
@@ -627,8 +611,7 @@ DSOUND_OpenDevice(_THIS, const char *devname)
 }
 
 
-static void
-DSOUND_Deinitialize(void)
+static void DSOUND_Deinitialize(void)
 {
 #if HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
@@ -640,8 +623,7 @@ DSOUND_Deinitialize(void)
 }
 
 
-static SDL_bool
-DSOUND_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool DSOUND_Init(SDL_AudioDriverImpl * impl)
 {
     if (!DSOUND_Load()) {
         return SDL_FALSE;

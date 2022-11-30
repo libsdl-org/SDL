@@ -55,8 +55,7 @@ typedef struct _FcitxClient
 
 static FcitxClient fcitx_client;
 
-static char*
-GetAppName()
+static char* GetAppName()
 {
 #if defined(__LINUX__) || defined(__FREEBSD__)
     char *spot;
@@ -167,8 +166,7 @@ Fcitx_GetPreeditString(SDL_DBusContext *dbus,
     return text_bytes;
 }
 
-static Sint32
-Fcitx_GetPreeditCursorByte(SDL_DBusContext *dbus, DBusMessage *msg)
+static Sint32 Fcitx_GetPreeditCursorByte(SDL_DBusContext *dbus, DBusMessage *msg)
 {
     Sint32 byte = -1;
     DBusMessageIter iter;
@@ -186,8 +184,7 @@ Fcitx_GetPreeditCursorByte(SDL_DBusContext *dbus, DBusMessage *msg)
     return byte;
 }
 
-static DBusHandlerResult
-DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
+static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
 {
     SDL_DBusContext *dbus = (SDL_DBusContext *)data;
 
@@ -250,8 +247,7 @@ DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static void
-FcitxClientICCallMethod(FcitxClient *client, const char *method)
+static void FcitxClientICCallMethod(FcitxClient *client, const char *method)
 {
     if (!client->ic_path) {
         return;
@@ -259,8 +255,7 @@ FcitxClientICCallMethod(FcitxClient *client, const char *method)
     SDL_DBus_CallVoidMethod(FCITX_DBUS_SERVICE, client->ic_path, FCITX_IC_DBUS_INTERFACE, method, DBUS_TYPE_INVALID);
 }
 
-static void SDLCALL
-Fcitx_SetCapabilities(void *data,
+static void SDLCALL Fcitx_SetCapabilities(void *data,
         const char *name,
         const char *old_val,
         const char *internal_editing)
@@ -279,8 +274,7 @@ Fcitx_SetCapabilities(void *data,
     SDL_DBus_CallVoidMethod(FCITX_DBUS_SERVICE, client->ic_path, FCITX_IC_DBUS_INTERFACE, "SetCapability", DBUS_TYPE_UINT64, &caps, DBUS_TYPE_INVALID);
 }
 
-static SDL_bool
-FcitxCreateInputContext(SDL_DBusContext* dbus, const char *appname, char **ic_path) {
+static SDL_bool FcitxCreateInputContext(SDL_DBusContext* dbus, const char *appname, char **ic_path) {
     const char *program = "program";
     SDL_bool retval = SDL_FALSE;
     if (dbus->session_conn) {
@@ -308,8 +302,7 @@ FcitxCreateInputContext(SDL_DBusContext* dbus, const char *appname, char **ic_pa
     return retval;
 }
 
-static SDL_bool
-FcitxClientCreateIC(FcitxClient *client)
+static SDL_bool FcitxClientCreateIC(FcitxClient *client)
 {
     char *appname = GetAppName();
     char *ic_path = NULL;
@@ -341,8 +334,7 @@ FcitxClientCreateIC(FcitxClient *client)
     return SDL_FALSE;
 }
 
-static Uint32
-Fcitx_ModState(void)
+static Uint32 Fcitx_ModState(void)
 {
     Uint32 fcitx_mods = 0;
     SDL_Keymod sdl_mods = SDL_GetModState();

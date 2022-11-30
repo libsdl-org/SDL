@@ -378,14 +378,12 @@ static void UILess_ReleaseSinks(SDL_VideoData *videodata);
 static void UILess_EnableUIUpdates(SDL_VideoData *videodata);
 static void UILess_DisableUIUpdates(SDL_VideoData *videodata);
 
-static SDL_bool
-WIN_ShouldShowNativeUI()
+static SDL_bool WIN_ShouldShowNativeUI()
 {
     return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
 }
 
-static void
-IME_Init(SDL_VideoData *videodata, HWND hwnd)
+static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
 {
     HRESULT hResult = S_OK;
 
@@ -435,8 +433,7 @@ IME_Init(SDL_VideoData *videodata, HWND hwnd)
     IME_Disable(videodata, hwnd);
 }
 
-static void
-IME_Enable(SDL_VideoData *videodata, HWND hwnd)
+static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)
 {
     if (!videodata->ime_initialized || !videodata->ime_hwnd_current) {
         return;
@@ -455,8 +452,7 @@ IME_Enable(SDL_VideoData *videodata, HWND hwnd)
     UILess_EnableUIUpdates(videodata);
 }
 
-static void
-IME_Disable(SDL_VideoData *videodata, HWND hwnd)
+static void IME_Disable(SDL_VideoData *videodata, HWND hwnd)
 {
     if (!videodata->ime_initialized || !videodata->ime_hwnd_current) {
         return;
@@ -471,8 +467,7 @@ IME_Disable(SDL_VideoData *videodata, HWND hwnd)
     UILess_DisableUIUpdates(videodata);
 }
 
-static void
-IME_Quit(SDL_VideoData *videodata)
+static void IME_Quit(SDL_VideoData *videodata)
 {
     if (!videodata->ime_initialized) {
         return;
@@ -501,8 +496,7 @@ IME_Quit(SDL_VideoData *videodata)
     videodata->ime_initialized = SDL_FALSE;
 }
 
-static void
-IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
+static void IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
 {
     DWORD id = 0;
     HIMC himc = 0;
@@ -606,8 +600,7 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     IME_SendEditingEvent(videodata);
 }
 
-static void
-IME_InputLangChanged(SDL_VideoData *videodata)
+static void IME_InputLangChanged(SDL_VideoData *videodata)
 {
     UINT lang = PRIMLANG();
     IME_UpdateInputLocale(videodata);
@@ -621,8 +614,7 @@ IME_InputLangChanged(SDL_VideoData *videodata)
     }
 }
 
-static DWORD
-IME_GetId(SDL_VideoData *videodata, UINT uIndex)
+static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex)
 {
     static HKL hklprev = 0;
     static DWORD dwRet[2] = {0};
@@ -711,8 +703,7 @@ IME_GetId(SDL_VideoData *videodata, UINT uIndex)
     return dwRet[0];
 }
 
-static void
-IME_SetupAPI(SDL_VideoData *videodata)
+static void IME_SetupAPI(SDL_VideoData *videodata)
 {
     char ime_file[MAX_PATH + 1];
     void* hime = 0;
@@ -749,8 +740,7 @@ IME_SetupAPI(SDL_VideoData *videodata)
     }
 }
 
-static void
-IME_SetWindow(SDL_VideoData* videodata, HWND hwnd)
+static void IME_SetWindow(SDL_VideoData* videodata, HWND hwnd)
 {
     videodata->ime_hwnd_current = hwnd;
     if (videodata->ime_threadmgr) {
@@ -763,8 +753,7 @@ IME_SetWindow(SDL_VideoData* videodata, HWND hwnd)
     }
 }
 
-static void
-IME_UpdateInputLocale(SDL_VideoData *videodata)
+static void IME_UpdateInputLocale(SDL_VideoData *videodata)
 {
     HKL hklnext = GetKeyboardLayout(0);
 
@@ -776,8 +765,7 @@ IME_UpdateInputLocale(SDL_VideoData *videodata)
     videodata->ime_candvertical = (PRIMLANG() == LANG_KOREAN || LANG() == LANG_CHS) ? SDL_FALSE : SDL_TRUE;
 }
 
-static void
-IME_ClearComposition(SDL_VideoData *videodata)
+static void IME_ClearComposition(SDL_VideoData *videodata)
 {
     HIMC himc = 0;
     if (!videodata->ime_initialized) {
@@ -799,8 +787,7 @@ IME_ClearComposition(SDL_VideoData *videodata)
     SDL_SendEditingText("", 0, 0);
 }
 
-static SDL_bool
-IME_IsTextInputShown(SDL_VideoData* videodata)
+static SDL_bool IME_IsTextInputShown(SDL_VideoData* videodata)
 {
     if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
         return SDL_FALSE;
@@ -809,8 +796,7 @@ IME_IsTextInputShown(SDL_VideoData* videodata)
     return videodata->ime_uicontext != 0 ? SDL_TRUE : SDL_FALSE;
 }
 
-static void
-IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
+static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
 {
     LONG length;
     DWORD dwLang = ((DWORD_PTR)videodata->ime_hkl & 0xffff);
@@ -888,8 +874,7 @@ IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
     }
 }
 
-static void
-IME_SendInputEvent(SDL_VideoData *videodata)
+static void IME_SendInputEvent(SDL_VideoData *videodata)
 {
     char *s = 0;
     s = WIN_StringToUTF8W(videodata->ime_composition);
@@ -901,8 +886,7 @@ IME_SendInputEvent(SDL_VideoData *videodata)
     videodata->ime_cursor = 0;
 }
 
-static void
-IME_SendEditingEvent(SDL_VideoData *videodata)
+static void IME_SendEditingEvent(SDL_VideoData *videodata)
 {
     char *s = NULL;
     WCHAR *buffer = NULL;
@@ -929,8 +913,7 @@ IME_SendEditingEvent(SDL_VideoData *videodata)
     SDL_free(buffer);
 }
 
-static void
-IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
+static void IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
 {
     LPWSTR dst = &videodata->ime_candidates[i * MAX_CANDLENGTH];
     LPWSTR end = &dst[MAX_CANDLENGTH - 1];
@@ -947,8 +930,7 @@ IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
     *dst = (WCHAR)'\0';
 }
 
-static void
-IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
+static void IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
 {
     HIMC himc;
     DWORD size;
@@ -1009,8 +991,7 @@ IME_GetCandidateList(HWND hwnd, SDL_VideoData *videodata)
     ImmReleaseContext(hwnd, himc);
 }
 
-static int
-IME_ShowCandidateList(SDL_VideoData *videodata)
+static int IME_ShowCandidateList(SDL_VideoData *videodata)
 {
     void *candidates;
 
@@ -1033,8 +1014,7 @@ IME_ShowCandidateList(SDL_VideoData *videodata)
     return 0;
 }
 
-static void
-IME_HideCandidateList(SDL_VideoData *videodata)
+static void IME_HideCandidateList(SDL_VideoData *videodata)
 {
     videodata->ime_dirty = SDL_FALSE;
     videodata->ime_candlist = SDL_FALSE;
@@ -1158,8 +1138,7 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
     return trap;
 }
 
-static void
-IME_CloseCandidateList(SDL_VideoData *videodata)
+static void IME_CloseCandidateList(SDL_VideoData *videodata)
 {
     IME_HideCandidateList(videodata);
     videodata->ime_candcount = 0;
@@ -1167,8 +1146,7 @@ IME_CloseCandidateList(SDL_VideoData *videodata)
     videodata->ime_candidates = NULL;
 }
 
-static void
-UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pcandlist)
+static void UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pcandlist)
 {
     UINT selection = 0;
     UINT count = 0;
@@ -1393,8 +1371,7 @@ static void *vtIPPASink[] = {
     (void *)(IPPASink_OnActivated)
 };
 
-static void
-UILess_EnableUIUpdates(SDL_VideoData *videodata)
+static void UILess_EnableUIUpdates(SDL_VideoData *videodata)
 {
     ITfSource *source = 0;
     if (!videodata->ime_threadmgrex || videodata->ime_uielemsinkcookie != TF_INVALID_COOKIE) {
@@ -1407,8 +1384,7 @@ UILess_EnableUIUpdates(SDL_VideoData *videodata)
     }
 }
 
-static void
-UILess_DisableUIUpdates(SDL_VideoData *videodata)
+static void UILess_DisableUIUpdates(SDL_VideoData *videodata)
 {
     ITfSource *source = 0;
     if (!videodata->ime_threadmgrex || videodata->ime_uielemsinkcookie == TF_INVALID_COOKIE) {
@@ -1422,8 +1398,7 @@ UILess_DisableUIUpdates(SDL_VideoData *videodata)
     }
 }
 
-static SDL_bool
-UILess_SetupSinks(SDL_VideoData *videodata)
+static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata)
 {
     TfClientId clientid = 0;
     SDL_bool result = SDL_FALSE;
@@ -1466,8 +1441,7 @@ UILess_SetupSinks(SDL_VideoData *videodata)
     }                                               \
 }
 
-static void
-UILess_ReleaseSinks(SDL_VideoData *videodata)
+static void UILess_ReleaseSinks(SDL_VideoData *videodata)
 {
     ITfSource *source = 0;
     if (videodata->ime_threadmgrex && SUCCEEDED(videodata->ime_threadmgrex->lpVtbl->QueryInterface(videodata->ime_threadmgrex, &IID_ITfSource, (LPVOID *)&source))) {
@@ -1483,8 +1457,7 @@ UILess_ReleaseSinks(SDL_VideoData *videodata)
     }
 }
 
-static void *
-StartDrawToBitmap(HDC hdc, HBITMAP *hhbm, int width, int height)
+static void * StartDrawToBitmap(HDC hdc, HBITMAP *hhbm, int width, int height)
 {
     BITMAPINFO info;
     BITMAPINFOHEADER *infoHeader = &info.bmiHeader;
@@ -1505,8 +1478,7 @@ StartDrawToBitmap(HDC hdc, HBITMAP *hhbm, int width, int height)
     return bits;
 }
 
-static void
-StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
+static void StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
 {
     if (hhbm && *hhbm) {
         DeleteObject(*hhbm);
@@ -1515,8 +1487,7 @@ StopDrawToBitmap(HDC hdc, HBITMAP *hhbm)
 }
 
 /* This draws only within the specified area and fills the entire region. */
-static void
-DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
+static void DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
 {
     /* The case of no pen (PenSize = 0) is automatically taken care of. */
     const int penadjust = (int)SDL_floor(pensize / 2.0f - 0.5f);
@@ -1527,8 +1498,7 @@ DrawRect(HDC hdc, int left, int top, int right, int bottom, int pensize)
     Rectangle(hdc, left, top, right, bottom);
 }
 
-static void
-IME_DestroyTextures(SDL_VideoData *videodata)
+static void IME_DestroyTextures(SDL_VideoData *videodata)
 {
 }
 
@@ -1538,8 +1508,7 @@ IME_DestroyTextures(SDL_VideoData *videodata)
     (b) = c;            \
     }
 
-static void
-IME_PositionCandidateList(SDL_VideoData *videodata, SIZE size)
+static void IME_PositionCandidateList(SDL_VideoData *videodata, SIZE size)
 {
     int left, top, right, bottom;
     SDL_bool ok = SDL_FALSE;
@@ -1610,8 +1579,7 @@ IME_PositionCandidateList(SDL_VideoData *videodata, SIZE size)
     videodata->ime_candlistrect.h = bottom - top;
 }
 
-static void
-IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
+static void IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
 {
     int i, j;
     SIZE size = {0};
@@ -1758,8 +1726,7 @@ IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
     IME_PositionCandidateList(videodata, size);
 }
 
-static void
-IME_Render(SDL_VideoData *videodata)
+static void IME_Render(SDL_VideoData *videodata)
 {
     HDC hdc = CreateCompatibleDC(NULL);
 

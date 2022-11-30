@@ -16,8 +16,7 @@
 #endif /* main */
 
 /* Pop up an out of memory message, returns to Windows */
-static BOOL
-OutOfMemory(void)
+static BOOL OutOfMemory(void)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
     return FALSE;
@@ -33,8 +32,7 @@ OutOfMemory(void)
 
 /* Gets the arguments with GetCommandLine, converts them to argc and argv
    and calls SDL_main */
-static int
-main_getcmdline(void)
+static int main_getcmdline(void)
 {
     LPWSTR *argvw;
     char **argv;

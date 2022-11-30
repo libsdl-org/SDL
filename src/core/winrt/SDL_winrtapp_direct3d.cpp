@@ -113,8 +113,7 @@ int SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **))
     return 0;
 }
 
-static void
-WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identifying thing into WINRT_ProcessWindowSizeChange()
+static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identifying thing into WINRT_ProcessWindowSizeChange()
 {
     CoreWindow ^ coreWindow = CoreWindow::GetForCurrentThread();
     if (coreWindow) {
@@ -660,8 +659,7 @@ void SDL_WinRTApp::OnExiting(Platform::Object^ sender, Platform::Object^ args)
     SDL_SendAppEvent(SDL_APP_TERMINATING);
 }
 
-static void
-WINRT_LogPointerEvent(const char * header, Windows::UI::Core::PointerEventArgs ^ args, Windows::Foundation::Point transformedPoint)
+static void WINRT_LogPointerEvent(const char * header, Windows::UI::Core::PointerEventArgs ^ args, Windows::Foundation::Point transformedPoint)
 {
     Uint8 button, pressed;
     Windows::UI::Input::PointerPoint ^ pt = args->CurrentPoint;

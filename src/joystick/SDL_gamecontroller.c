@@ -149,8 +149,7 @@ typedef struct
 static SDL_vidpid_list SDL_allowed_controllers;
 static SDL_vidpid_list SDL_ignored_controllers;
 
-static void
-SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
+static void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
 {
     Uint32 entry;
     char *spot;
@@ -195,14 +194,12 @@ SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
     }
 }
 
-static void SDLCALL
-SDL_GameControllerIgnoreDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_GameControllerIgnoreDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_LoadVIDPIDListFromHint(hint, &SDL_ignored_controllers);
 }
 
-static void SDLCALL
-SDL_GameControllerIgnoreDevicesExceptChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_GameControllerIgnoreDevicesExceptChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_LoadVIDPIDListFromHint(hint, &SDL_allowed_controllers);
 }
@@ -1016,8 +1013,7 @@ static void SDL_PrivateGameControllerParseElement(SDL_GameController *gamecontro
 /*
  * given a controller mapping string update our mapping object
  */
-static void
-SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecontroller, const char *pchString)
+static void SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecontroller, const char *pchString)
 {
     char szGameButton[20];
     char szJoystickButton[20];
@@ -1215,8 +1211,7 @@ static void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pContro
 /*
  * Helper function to add a mapping for a guid
  */
-static ControllerMapping_t *
-SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing, SDL_ControllerMappingPriority priority)
+static ControllerMapping_t * SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing, SDL_ControllerMappingPriority priority)
 {
     char *pchName;
     char *pchMapping;
@@ -1532,8 +1527,7 @@ SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, int freerw)
 /*
  * Add or update an entry into the Mappings Database with a priority
  */
-static int
-SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMappingPriority priority)
+static int SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMappingPriority priority)
 {
     char *pchGUID;
     SDL_JoystickGUID jGUID;
@@ -1667,8 +1661,7 @@ SDL_GameControllerNumMappings(void)
 /*
  * Create a mapping string for a mapping
  */
-static char *
-CreateMappingString(ControllerMapping_t *mapping, SDL_JoystickGUID guid)
+static char * CreateMappingString(ControllerMapping_t *mapping, SDL_JoystickGUID guid)
 {
     char *pMappingString, *pPlatformString;
     char pchGUID[33];
@@ -1762,8 +1755,7 @@ SDL_GameControllerMapping(SDL_GameController *gamecontroller)
     return CreateMappingString(gamecontroller->mapping, gamecontroller->joystick->guid);
 }
 
-static void
-SDL_GameControllerLoadHints()
+static void SDL_GameControllerLoadHints()
 {
     const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG);
     if (hint && hint[0]) {
@@ -2900,8 +2892,7 @@ SDL_GameControllerQuitMappings(void)
 /*
  * Event filter to transform joystick events into appropriate game controller ones
  */
-static int
-SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value)
+static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value)
 {
     int posted;
 
@@ -2926,8 +2917,7 @@ SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameContro
 /*
  * Event filter to transform joystick events into appropriate game controller ones
  */
-static int
-SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state)
+static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state)
 {
     int posted;
 #if !SDL_EVENTS_DISABLED

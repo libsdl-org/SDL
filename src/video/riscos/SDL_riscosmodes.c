@@ -68,8 +68,7 @@ static const struct {
     { SDL_PIXELFORMAT_ARGB8888,  MODE_FLAG_ARGB, -1, 5 }
 };
 
-static SDL_PixelFormatEnum
-RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
+static SDL_PixelFormatEnum RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
 {
     int i;
 
@@ -96,8 +95,7 @@ measure_mode_block(const int *block)
     return blockSize * 4;
 }
 
-static int
-read_mode_variable(int *block, int var)
+static int read_mode_variable(int *block, int var)
 {
     _kernel_swi_regs regs;
     regs.r[0] = (int)block;
@@ -106,8 +104,7 @@ read_mode_variable(int *block, int var)
     return regs.r[2];
 }
 
-static SDL_bool
-read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
+static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
 {
     int xres, yres, ncolour, modeflags, log2bpp, rate;
 
@@ -145,8 +142,7 @@ read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
     return SDL_TRUE;
 }
 
-static void *
-convert_mode_block(const int *block)
+static void * convert_mode_block(const int *block)
 {
     int xres, yres, log2bpp, rate, ncolour = 0, modeflags = 0;
     size_t pos = 0;
@@ -191,8 +187,7 @@ convert_mode_block(const int *block)
     return dst;
 }
 
-static void *
-copy_memory(const void *src, size_t size, size_t alloc)
+static void * copy_memory(const void *src, size_t size, size_t alloc)
 {
     void *dst = SDL_malloc(alloc);
     if (dst) {

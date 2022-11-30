@@ -57,8 +57,7 @@ Win32_CreateShaper(SDL_Window * window) {
     return result;
 }
 
-static void
-CombineRectRegions(SDL_ShapeTree* node,void* closure) {
+static void CombineRectRegions(SDL_ShapeTree* node,void* closure) {
     HRGN mask_region = *((HRGN*)closure),temp_region = NULL;
     if (node->kind == OpaqueShape) {
         /* Win32 API regions exclude their outline, so we widen the region by one pixel in each direction to include the real outline. */

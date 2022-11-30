@@ -22,8 +22,7 @@
 #include "SDL_internal.h"
 #include "SDL_syslocale.h"
 
-static SDL_Locale *
-build_locales_from_csv_string(char *csv)
+static SDL_Locale *build_locales_from_csv_string(char *csv)
 {
     size_t num_locales = 1;  /* at least one */
     size_t slen;

@@ -60,8 +60,7 @@ static void DUMMY_EVDEV_Poll(_THIS);
 
 /* DUMMY driver bootstrap functions */
 
-static int
-DUMMY_Available(void)
+static int DUMMY_Available(void)
 {
     const char *envr = SDL_GetHint(SDL_HINT_VIDEODRIVER);
     if (envr) {
@@ -78,14 +77,12 @@ DUMMY_Available(void)
     return 0;
 }
 
-static void
-DUMMY_DeleteDevice(SDL_VideoDevice * device)
+static void DUMMY_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_free(device);
 }
 
-static SDL_VideoDevice *
-DUMMY_CreateDevice(void)
+static SDL_VideoDevice * DUMMY_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
@@ -165,8 +162,7 @@ DUMMY_VideoInit(_THIS)
     return 0;
 }
 
-static int
-DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     return 0;
 }

@@ -47,15 +47,13 @@
 #include "SDL_rpiopengles.h"
 #include "SDL_rpimouse.h"
 
-static void
-RPI_Destroy(SDL_VideoDevice * device)
+static void RPI_Destroy(SDL_VideoDevice * device)
 {
     SDL_free(device->driverdata);
     SDL_free(device);
 }
 
-static int 
-RPI_GetRefreshRate()
+static int RPI_GetRefreshRate()
 {
     TV_DISPLAY_STATE_T tvstate;
     if (vc_tv_get_display_state( &tvstate ) == 0) {
@@ -71,8 +69,7 @@ RPI_GetRefreshRate()
     return 60;  /* Failed to get display state, default to 60 */
 }
 
-static SDL_VideoDevice *
-RPI_Create()
+static SDL_VideoDevice * RPI_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
@@ -145,8 +142,7 @@ VideoBootStrap RPI_bootstrap = {
 /* SDL Video and Display initialization/handling functions                   */
 /*****************************************************************************/
 
-static void
-AddDispManXDisplay(const int display_id)
+static void AddDispManXDisplay(const int display_id)
 {
     DISPMANX_MODEINFO_T modeinfo;
     DISPMANX_DISPLAY_HANDLE_T handle;
@@ -233,8 +229,7 @@ RPI_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     return 0;
 }
 
-static void
-RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
+static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
 {
    SDL_WindowData *wdata = ((SDL_WindowData *) data);
 

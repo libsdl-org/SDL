@@ -57,8 +57,7 @@ static char *ibus_addr_file = NULL;
 static int inotify_fd = -1, inotify_wd = -1;
 
 
-static Uint32
-IBus_ModState(void)
+static Uint32 IBus_ModState(void)
 {
     Uint32 ibus_mods = 0;
     SDL_Keymod sdl_mods = SDL_GetModState();
@@ -92,8 +91,7 @@ IBus_ModState(void)
     return ibus_mods;
 }
 
-static SDL_bool
-IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
+static SDL_bool IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
                   DBusMessageIter *inside, const char * struct_id, size_t id_size)
 {
     DBusMessageIter sub;
@@ -120,8 +118,7 @@ IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *
     return SDL_TRUE;
 }
 
-static SDL_bool
-IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
+static SDL_bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
                            Uint32 *start_pos, Uint32 *end_pos)
 {
     DBusMessageIter sub1, sub2, array;
@@ -185,8 +182,7 @@ IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *iter, SDL_DBus
     return SDL_FALSE;
 }
 
-static const char *
-IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus)
+static const char * IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus)
 {
     /* The text we need is nested weirdly, use dbus-monitor to see the structure better */
     const char *text = NULL;
@@ -207,8 +203,7 @@ IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext
     return text;
 }
 
-static SDL_bool
-IBus_GetVariantCursorPos(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
+static SDL_bool IBus_GetVariantCursorPos(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
                          Uint32 *pos)
 {
     dbus->message_iter_next(iter);
@@ -222,8 +217,7 @@ IBus_GetVariantCursorPos(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusCo
     return SDL_TRUE;
 }
 
-static DBusHandlerResult
-IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
+static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
     SDL_DBusContext *dbus = (SDL_DBusContext *)user_data;
 
@@ -305,8 +299,7 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static char *
-IBus_ReadAddressFromFile(const char *file_path)
+static char * IBus_ReadAddressFromFile(const char *file_path)
 {
     char addr_buf[1024];
     SDL_bool success = SDL_FALSE;
@@ -340,8 +333,7 @@ IBus_ReadAddressFromFile(const char *file_path)
     }
 }
 
-static char *
-IBus_GetDBusAddressFilename(void)
+static char * IBus_GetDBusAddressFilename(void)
 {
     SDL_DBusContext *dbus;
     const char *disp_env;
@@ -431,8 +423,7 @@ IBus_GetDBusAddressFilename(void)
 
 static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus);
 
-static void SDLCALL
-IBus_SetCapabilities(void *data, const char *name, const char *old_val,
+static void SDLCALL IBus_SetCapabilities(void *data, const char *name, const char *old_val,
                                                    const char *internal_editing)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -449,8 +440,7 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
 }
 
 
-static SDL_bool
-IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
+static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 {
     const char *client_name = "SDL3_Application";
     const char *path = NULL;
@@ -514,8 +504,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     return result;
 }
 
-static SDL_bool
-IBus_CheckConnection(SDL_DBusContext *dbus)
+static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus)
 {
     if (dbus == NULL) {
         return SDL_FALSE;
@@ -661,8 +650,7 @@ SDL_IBus_Quit(void)
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
 }
 
-static void
-IBus_SimpleMessage(const char *method)
+static void IBus_SimpleMessage(const char *method)
 {   
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     

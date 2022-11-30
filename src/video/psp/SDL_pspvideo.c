@@ -40,8 +40,7 @@
 static SDL_bool PSP_initialized = SDL_FALSE;
 */
 
-static void
-PSP_Destroy(SDL_VideoDevice * device)
+static void PSP_Destroy(SDL_VideoDevice * device)
 {
 /*    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata; */
 
@@ -50,8 +49,7 @@ PSP_Destroy(SDL_VideoDevice * device)
     }
 }
 
-static SDL_VideoDevice *
-PSP_Create()
+static SDL_VideoDevice * PSP_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;

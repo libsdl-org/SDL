@@ -22,8 +22,7 @@
 #include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-static void
-normalize_locale_str(char *dst, char *str, size_t buflen)
+static void normalize_locale_str(char *dst, char *str, size_t buflen)
 {
     char *ptr;
 
@@ -50,8 +49,7 @@ normalize_locale_str(char *dst, char *str, size_t buflen)
     }
 }
 
-static void
-normalize_locales(char *dst, char *src, size_t buflen)
+static void normalize_locales(char *dst, char *src, size_t buflen)
 {
     char *ptr;
 

@@ -116,8 +116,7 @@ SDL_SYS_NumHaptics(void)
     return numhaptics;
 }
 
-static SDL_hapticlist_item *
-HapticByDevIndex(int device_index)
+static SDL_hapticlist_item * HapticByDevIndex(int device_index)
 {
     SDL_hapticlist_item *item = SDL_hapticlist;
 

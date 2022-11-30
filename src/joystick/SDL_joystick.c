@@ -177,8 +177,7 @@ SDL_AssertJoysticksLocked(void)
  * Get the driver and device index for an API device index
  * This should be called while the joystick lock is held, to prevent another thread from updating the list
  */
-static SDL_bool
-SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriver **driver, int *driver_index)
+static SDL_bool SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriver **driver, int *driver_index)
 {
     int i, num_joysticks, total_joysticks = 0;
 
@@ -201,8 +200,7 @@ SDL_GetDriverAndJoystickIndex(int device_index, SDL_JoystickDriver **driver, int
     return SDL_FALSE;
 }
 
-static int
-SDL_FindFreePlayerIndex()
+static int SDL_FindFreePlayerIndex()
 {
     int player_index;
 
@@ -216,8 +214,7 @@ SDL_FindFreePlayerIndex()
     return player_index;
 }
 
-static int
-SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
+static int SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
 {
     int player_index;
 
@@ -234,8 +231,7 @@ SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
     return player_index;
 }
 
-static SDL_JoystickID
-SDL_GetJoystickIDForPlayerIndex(int player_index)
+static SDL_JoystickID SDL_GetJoystickIDForPlayerIndex(int player_index)
 {
     SDL_AssertJoysticksLocked();
 
@@ -245,8 +241,7 @@ SDL_GetJoystickIDForPlayerIndex(int player_index)
     return SDL_joystick_players[player_index];
 }
 
-static SDL_bool
-SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
+static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
 {
     SDL_JoystickID existing_instance = SDL_GetJoystickIDForPlayerIndex(player_index);
     SDL_JoystickDriver *driver;
@@ -293,8 +288,7 @@ SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
     return SDL_TRUE;
 }
 
-static void SDLCALL
-SDL_JoystickAllowBackgroundEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_JoystickAllowBackgroundEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_joystick_allows_background_events = SDL_TRUE;
@@ -429,8 +423,7 @@ SDL_JoystickGetDevicePlayerIndex(int device_index)
  * This isn't generally needed unless the joystick never generates an initial axis value near zero,
  * e.g. it's emulating axes with digital buttons
  */
-static SDL_bool
-SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
+static SDL_bool SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 {
 #ifdef __WINRT__
     return SDL_TRUE;
@@ -1261,8 +1254,7 @@ SDL_JoystickQuit(void)
 }
 
 
-static SDL_bool
-SDL_PrivateJoystickShouldIgnoreEvent()
+static SDL_bool SDL_PrivateJoystickShouldIgnoreEvent()
 {
     if (SDL_joystick_allows_background_events) {
         return SDL_FALSE;
@@ -1862,8 +1854,7 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
     }
 }
 
-static int
-PrefixMatch(const char *a, const char *b)
+static int PrefixMatch(const char *a, const char *b)
 {
     int matchlen = 0;
     while (*a && *b) {

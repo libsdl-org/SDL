@@ -42,8 +42,7 @@
 #endif
 
 
-static int
-CG_SetError(const char *prefix, CGDisplayErr result)
+static int CG_SetError(const char *prefix, CGDisplayErr result)
 {
     const char *error;
 
@@ -85,8 +84,7 @@ CG_SetError(const char *prefix, CGDisplayErr result)
     return SDL_SetError("%s: %s", prefix, error);
 }
 
-static int
-GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRef link)
+static int GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRef link)
 {
     int refreshRate = (int) (CGDisplayModeGetRefreshRate(vidmode) + 0.5);
 
@@ -101,8 +99,7 @@ GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRef link)
     return refreshRate;
 }
 
-static SDL_bool
-HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
+static SDL_bool HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
 {
     uint32_t ioflags = CGDisplayModeGetIOFlags(vidmode);
 
@@ -119,8 +116,7 @@ HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
     return SDL_TRUE;
 }
 
-static Uint32
-GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
+static Uint32 GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
 {
     /* This API is deprecated in 10.11 with no good replacement (as of 10.15). */
     CFStringRef fmt = CGDisplayModeCopyPixelEncoding(vidmode);
@@ -144,8 +140,7 @@ GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
     return pixelformat;
 }
 
-static SDL_bool
-GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
+static SDL_bool GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
     bool usableForGUI = CGDisplayModeIsUsableForDesktopGUI(vidmode);
@@ -283,8 +278,7 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, SDL_bool vidmodeCurrent, CFArray
     return SDL_TRUE;
 }
 
-static const char *
-Cocoa_GetDisplayName(CGDirectDisplayID displayID)
+static const char * Cocoa_GetDisplayName(CGDirectDisplayID displayID)
 {
     /* This API is deprecated in 10.9 with no good replacement (as of 10.15). */
     io_service_t servicePort = CGDisplayIOServicePort(displayID);
@@ -591,8 +585,7 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     CVDisplayLinkRelease(link);
 }
 
-static CGError
-SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayModeData *data)
+static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayModeData *data)
 {
     /* SDL_DisplayModeData can contain multiple CGDisplayModes to try (with
      * identical properties), some of which might not work. See GetDisplayMode.

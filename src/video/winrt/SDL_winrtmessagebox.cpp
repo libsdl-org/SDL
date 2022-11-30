@@ -33,8 +33,7 @@ using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Popups;
 
-static String ^
-WINRT_UTF8ToPlatformString(const char * str)
+static String ^ WINRT_UTF8ToPlatformString(const char * str)
 {
     wchar_t * wstr = WIN_UTF8ToString(str);
     String ^ rtstr = ref new String(wstr);

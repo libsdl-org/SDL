@@ -291,8 +291,7 @@ SDL_EGL_UnloadLibrary(_THIS)
     }
 }
 
-static int
-SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
+static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
 {
     void *egl_dll_handle = NULL, *opengl_dll_handle = NULL;
     const char *path = NULL;
@@ -483,8 +482,7 @@ SDL_EGL_LoadLibraryOnly(_THIS, const char *egl_path)
     return 0;
 }
 
-static void
-SDL_EGL_GetVersion(_THIS) {
+static void SDL_EGL_GetVersion(_THIS) {
     if (_this->egl_data->eglQueryString) {
         const char *egl_version = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_VERSION);
         if (egl_version) {
@@ -724,8 +722,7 @@ static void dumpconfig(_THIS, EGLConfig config)
 
 #endif /* DUMP_EGL_CONFIG */
 
-static int
-SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
+static int SDL_EGL_PrivateChooseConfig(_THIS, SDL_bool set_config_caveat_none)
 {
     /* 64 seems nice. */
     EGLint attribs[64];

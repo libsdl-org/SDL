@@ -35,8 +35,7 @@
 
 
 /* Get any application owned window handle for clipboard association */
-static HWND
-GetWindowHandle(_THIS)
+static HWND GetWindowHandle(_THIS)
 {
     SDL_Window *window;
 
