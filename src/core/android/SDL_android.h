@@ -30,7 +30,6 @@ extern "C" {
 #include <EGL/eglplatform.h>
 #include <android/native_window_jni.h>
 
-
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
@@ -42,14 +41,14 @@ extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
 extern void Android_JNI_ShowTextInput(SDL_Rect *inputRect);
 extern void Android_JNI_HideTextInput(void);
 extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
-extern ANativeWindow* Android_JNI_GetNativeWindow(void);
+extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
 extern SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void);
 extern int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi);
 
 /* Audio support */
 extern int Android_JNI_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec);
-extern void* Android_JNI_GetAudioBuffer(void);
+extern void *Android_JNI_GetAudioBuffer(void);
 extern void Android_JNI_WriteAudioBuffer(void);
 extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);
 extern void Android_JNI_FlushCapturedAudio(void);
@@ -60,24 +59,23 @@ extern void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id);
 extern SDL_bool Android_IsDeXMode(void);
 extern SDL_bool Android_IsChromebook(void);
 
-
-int Android_JNI_FileOpen(SDL_RWops* ctx, const char* fileName, const char* mode);
-Sint64 Android_JNI_FileSize(SDL_RWops* ctx);
-Sint64 Android_JNI_FileSeek(SDL_RWops* ctx, Sint64 offset, int whence);
-size_t Android_JNI_FileRead(SDL_RWops* ctx, void* buffer, size_t size, size_t maxnum);
-size_t Android_JNI_FileWrite(SDL_RWops* ctx, const void* buffer, size_t size, size_t num);
-int Android_JNI_FileClose(SDL_RWops* ctx);
+int Android_JNI_FileOpen(SDL_RWops *ctx, const char *fileName, const char *mode);
+Sint64 Android_JNI_FileSize(SDL_RWops *ctx);
+Sint64 Android_JNI_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence);
+size_t Android_JNI_FileRead(SDL_RWops *ctx, void *buffer, size_t size, size_t maxnum);
+size_t Android_JNI_FileWrite(SDL_RWops *ctx, const void *buffer, size_t size, size_t num);
+int Android_JNI_FileClose(SDL_RWops *ctx);
 
 /* Environment support */
 void Android_JNI_GetManifestEnvironmentVariables(void);
 
 /* Clipboard support */
-int Android_JNI_SetClipboardText(const char* text);
-char* Android_JNI_GetClipboardText(void);
+int Android_JNI_SetClipboardText(const char *text);
+char *Android_JNI_GetClipboardText(void);
 SDL_bool Android_JNI_HasClipboardText(void);
 
 /* Power support */
-int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seconds, int* percent);
+int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent);
 
 /* Joystick support */
 void Android_JNI_PollInputDevices(void);
@@ -105,7 +103,7 @@ int Android_JNI_GetLocale(char *buf, size_t buflen);
 int Android_JNI_SendMessage(int command, int param);
 
 /* Init */
-JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls);
+JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv *mEnv, jclass cls);
 
 /* MessageBox */
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
@@ -124,7 +122,7 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
 SDL_bool Android_JNI_RequestPermission(const char *permission);
 
 /* Show toast notification */
-int Android_JNI_ShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset);
+int Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset);
 
 int Android_JNI_OpenURL(const char *url);
 

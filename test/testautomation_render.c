@@ -7,14 +7,14 @@
 
 /* ================= Test Case Implementation ================== */
 
-#define TESTRENDER_SCREEN_W     80
-#define TESTRENDER_SCREEN_H     60
+#define TESTRENDER_SCREEN_W 80
+#define TESTRENDER_SCREEN_H 60
 
-#define RENDER_COMPARE_FORMAT  SDL_PIXELFORMAT_ARGB8888
-#define RENDER_COMPARE_AMASK   0xff000000 /**< Alpha bit mask. */
-#define RENDER_COMPARE_RMASK   0x00ff0000 /**< Red bit mask. */
-#define RENDER_COMPARE_GMASK   0x0000ff00 /**< Green bit mask. */
-#define RENDER_COMPARE_BMASK   0x000000ff /**< Blue bit mask. */
+#define RENDER_COMPARE_FORMAT SDL_PIXELFORMAT_ARGB8888
+#define RENDER_COMPARE_AMASK  0xff000000 /**< Alpha bit mask. */
+#define RENDER_COMPARE_RMASK  0x00ff0000 /**< Red bit mask. */
+#define RENDER_COMPARE_GMASK  0x0000ff00 /**< Green bit mask. */
+#define RENDER_COMPARE_BMASK  0x000000ff /**< Blue bit mask. */
 
 #define ALLOWABLE_ERROR_OPAQUE  0
 #define ALLOWABLE_ERROR_BLENDED 64
@@ -25,7 +25,7 @@ SDL_Renderer *renderer = NULL;
 
 /* Prototypes for helper functions */
 
-static int _clearScreen (void);
+static int _clearScreen(void);
 static void _compare(SDL_Surface *reference, int allowable_error);
 static int _hasTexAlpha(void);
 static int _hasTexColor(void);
@@ -39,22 +39,22 @@ static int _isSupported(int code);
  */
 void InitCreateRenderer(void *arg)
 {
-  int posX = 100, posY = 100, width = 320, height = 240;
-  renderer = NULL;
-  window = SDL_CreateWindow("render_testCreateRenderer", posX, posY, width, height, 0);
-  SDLTest_AssertPass("SDL_CreateWindow()");
-  SDLTest_AssertCheck(window != NULL, "Check SDL_CreateWindow result");
-  if (window == NULL) {
-      return;
-  }
+    int posX = 100, posY = 100, width = 320, height = 240;
+    renderer = NULL;
+    window = SDL_CreateWindow("render_testCreateRenderer", posX, posY, width, height, 0);
+    SDLTest_AssertPass("SDL_CreateWindow()");
+    SDLTest_AssertCheck(window != NULL, "Check SDL_CreateWindow result");
+    if (window == NULL) {
+        return;
+    }
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-  SDLTest_AssertPass("SDL_CreateRenderer()");
-  SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result");
-  if (renderer == NULL) {
-      SDL_DestroyWindow(window);
-      return;
-  }
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDLTest_AssertPass("SDL_CreateRenderer()");
+    SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result");
+    if (renderer == NULL) {
+        SDL_DestroyWindow(window);
+        return;
+    }
 }
 
 /*
@@ -62,19 +62,18 @@ void InitCreateRenderer(void *arg)
  */
 void CleanupDestroyRenderer(void *arg)
 {
-  if (renderer != NULL) {
-     SDL_DestroyRenderer(renderer);
-     renderer = NULL;
-     SDLTest_AssertPass("SDL_DestroyRenderer()");
-  }
+    if (renderer != NULL) {
+        SDL_DestroyRenderer(renderer);
+        renderer = NULL;
+        SDLTest_AssertPass("SDL_DestroyRenderer()");
+    }
 
-  if (window != NULL) {
-     SDL_DestroyWindow(window);
-     window = NULL;
-     SDLTest_AssertPass("SDL_DestroyWindow");
-  }
+    if (window != NULL) {
+        SDL_DestroyWindow(window);
+        window = NULL;
+        SDLTest_AssertPass("SDL_DestroyWindow");
+    }
 }
-
 
 /**
  * @brief Tests call to SDL_GetNumRenderDrivers
@@ -82,15 +81,13 @@ void CleanupDestroyRenderer(void *arg)
  * \sa
  * http://wiki.libsdl.org/SDL_GetNumRenderDrivers
  */
-int
-render_testGetNumRenderDrivers(void *arg)
+int render_testGetNumRenderDrivers(void *arg)
 {
-  int n;
-  n = SDL_GetNumRenderDrivers();
-  SDLTest_AssertCheck(n >= 1, "Number of renderers >= 1, reported as %i", n);
-  return TEST_COMPLETED;
+    int n;
+    n = SDL_GetNumRenderDrivers();
+    SDLTest_AssertCheck(n >= 1, "Number of renderers >= 1, reported as %i", n);
+    return TEST_COMPLETED;
 }
-
 
 /**
  * @brief Tests the SDL primitives for rendering.
@@ -101,7 +98,7 @@ render_testGetNumRenderDrivers(void *arg)
  * http://wiki.libsdl.org/SDL_RenderDrawLine
  *
  */
-int render_testPrimitives (void *arg)
+int render_testPrimitives(void *arg)
 {
    int ret;
    int x, y;
@@ -211,7 +208,7 @@ int render_testPrimitives (void *arg)
  * http://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
  * http://wiki.libsdl.org/SDL_RenderFillRect
  */
-int render_testPrimitivesBlend (void *arg)
+int render_testPrimitivesBlend(void *arg)
 {
    int ret;
    int i, j;
@@ -368,8 +365,6 @@ int render_testPrimitivesBlend (void *arg)
    return TEST_COMPLETED;
 }
 
-
-
 /**
  * @brief Tests some blitting routines.
  *
@@ -377,8 +372,7 @@ int render_testPrimitivesBlend (void *arg)
  * http://wiki.libsdl.org/SDL_RenderCopy
  * http://wiki.libsdl.org/SDL_DestroyTexture
  */
-int
-render_testBlit(void *arg)
+int render_testBlit(void *arg)
 {
    int ret;
    SDL_FRect rect;
@@ -440,7 +434,6 @@ render_testBlit(void *arg)
    return TEST_COMPLETED;
 }
 
-
 /**
  * @brief Blits doing color tests.
  *
@@ -449,8 +442,7 @@ render_testBlit(void *arg)
  * http://wiki.libsdl.org/SDL_RenderCopy
  * http://wiki.libsdl.org/SDL_DestroyTexture
  */
-int
-render_testBlitColor (void *arg)
+int render_testBlitColor(void *arg)
 {
    int ret;
    SDL_FRect rect;
@@ -518,7 +510,6 @@ render_testBlitColor (void *arg)
    return TEST_COMPLETED;
 }
 
-
 /**
  * @brief Tests blitting with alpha.
  *
@@ -527,8 +518,7 @@ render_testBlitColor (void *arg)
  * http://wiki.libsdl.org/SDL_RenderCopy
  * http://wiki.libsdl.org/SDL_DestroyTexture
  */
-int
-render_testBlitAlpha (void *arg)
+int render_testBlitAlpha(void *arg)
 {
    int ret;
    SDL_FRect rect;
@@ -654,7 +644,6 @@ _testBlitBlendMode( SDL_Texture * tface, int mode)
    SDLTest_AssertCheck(checkFailCount2 == 0, "Validate results from calls to SDL_RenderCopy, expected: 0, got: %i", checkFailCount2);
 }
 
-
 /**
  * @brief Tests some more blitting routines.
  *
@@ -664,8 +653,7 @@ _testBlitBlendMode( SDL_Texture * tface, int mode)
  * http://wiki.libsdl.org/SDL_SetTextureBlendMode
  * http://wiki.libsdl.org/SDL_DestroyTexture
  */
-int
-render_testBlitBlend (void *arg)
+int render_testBlitBlend(void *arg)
 {
    int ret;
    SDL_FRect rect;
@@ -816,14 +804,13 @@ render_testBlitBlend (void *arg)
    return TEST_COMPLETED;
 }
 
-
 /**
  * @brief Checks to see if functionality is supported. Helper function.
  */
 static int
-_isSupported( int code)
+_isSupported(int code)
 {
-   return code == 0;
+    return code == 0;
 }
 
 /**
@@ -834,7 +821,7 @@ _isSupported( int code)
  * http://wiki.libsdl.org/SDL_GetRenderDrawColor
  */
 static int
-_hasDrawColor (void)
+_hasDrawColor(void)
 {
    int ret, fail;
    Uint8 r, g, b, a;
@@ -876,7 +863,7 @@ _hasDrawColor (void)
  * http://wiki.libsdl.org/SDL_GetRenderDrawBlendMode
  */
 static int
-_hasBlendModes (void)
+_hasBlendModes(void)
 {
    int fail;
    int ret;
@@ -936,7 +923,6 @@ _hasBlendModes (void)
    return !fail;
 }
 
-
 /**
  * @brief Loads the test image 'Face' as texture. Helper function.
  *
@@ -946,24 +932,23 @@ _hasBlendModes (void)
 static SDL_Texture *
 _loadTestFace(void)
 {
-   SDL_Surface *face;
-   SDL_Texture *tface;
+    SDL_Surface *face;
+    SDL_Texture *tface;
 
-   face = SDLTest_ImageFace();
-   if (face == NULL) {
-      return NULL;
-   }
+    face = SDLTest_ImageFace();
+    if (face == NULL) {
+        return NULL;
+    }
 
-   tface = SDL_CreateTextureFromSurface(renderer, face);
-   if (tface == NULL) {
-       SDLTest_LogError("SDL_CreateTextureFromSurface() failed with error: %s", SDL_GetError());
-   }
+    tface = SDL_CreateTextureFromSurface(renderer, face);
+    if (tface == NULL) {
+        SDLTest_LogError("SDL_CreateTextureFromSurface() failed with error: %s", SDL_GetError());
+    }
 
-   SDL_FreeSurface(face);
+    SDL_FreeSurface(face);
 
-   return tface;
+    return tface;
 }
-
 
 /**
  * @brief Test to see if can set texture color mode. Helper function.
@@ -974,7 +959,7 @@ _loadTestFace(void)
  * http://wiki.libsdl.org/SDL_DestroyTexture
  */
 static int
-_hasTexColor (void)
+_hasTexColor(void)
 {
    int fail;
    int ret;
@@ -1051,6 +1036,7 @@ _hasTexAlpha(void)
       return 0;
    }
    return 1;
+
 }
 
 /**
@@ -1112,19 +1098,19 @@ _compare(SDL_Surface *referenceSurface, int allowable_error)
 static int
 _clearScreen(void)
 {
-   int ret;
+    int ret;
 
-   /* Set color. */
-   ret = SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-   SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
+    /* Set color. */
+    ret = SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
-   /* Clear screen. */
-   ret = SDL_RenderClear(renderer);
-   SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderClear, expected: 0, got: %i", ret);
+    /* Clear screen. */
+    ret = SDL_RenderClear(renderer);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_RenderClear, expected: 0, got: %i", ret);
 
-   /* Make current */
-   SDL_RenderPresent(renderer);
-
+    /* Make current */
+    SDL_RenderPresent(renderer);
+    
    /* Set defaults. */
    ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawBlendMode, expected: 0, got: %i", ret);
@@ -1132,38 +1118,45 @@ _clearScreen(void)
    ret = SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
    SDLTest_AssertCheck(ret == 0, "Validate result from SDL_SetRenderDrawColor, expected: 0, got: %i", ret);
 
-   return 0;
+    return 0;
 }
 
 /* ================= Test References ================== */
 
 /* Render test cases */
-static const SDLTest_TestCaseReference renderTest1 =
-        { (SDLTest_TestCaseFp)render_testGetNumRenderDrivers, "render_testGetNumRenderDrivers", "Tests call to SDL_GetNumRenderDrivers", TEST_ENABLED };
+static const SDLTest_TestCaseReference renderTest1 = {
+    (SDLTest_TestCaseFp)render_testGetNumRenderDrivers, "render_testGetNumRenderDrivers", "Tests call to SDL_GetNumRenderDrivers", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference renderTest2 =
-        { (SDLTest_TestCaseFp)render_testPrimitives, "render_testPrimitives", "Tests rendering primitives", TEST_ENABLED };
-
-/* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference renderTest3 =
-        { (SDLTest_TestCaseFp)render_testPrimitivesBlend, "render_testPrimitivesBlend", "Tests rendering primitives with blending", TEST_DISABLED };
-
-static const SDLTest_TestCaseReference renderTest4 =
-        { (SDLTest_TestCaseFp)render_testBlit, "render_testBlit", "Tests blitting", TEST_ENABLED };
-
-static const SDLTest_TestCaseReference renderTest5 =
-        { (SDLTest_TestCaseFp)render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED };
+static const SDLTest_TestCaseReference renderTest2 = {
+    (SDLTest_TestCaseFp)render_testPrimitives, "render_testPrimitives", "Tests rendering primitives", TEST_ENABLED
+};
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference renderTest6 =
-        { (SDLTest_TestCaseFp)render_testBlitAlpha, "render_testBlitAlpha", "Tests blitting with alpha", TEST_DISABLED };
+static const SDLTest_TestCaseReference renderTest3 = {
+    (SDLTest_TestCaseFp)render_testPrimitivesBlend, "render_testPrimitivesBlend", "Tests rendering primitives with blending", TEST_DISABLED
+};
+
+static const SDLTest_TestCaseReference renderTest4 = {
+    (SDLTest_TestCaseFp)render_testBlit, "render_testBlit", "Tests blitting", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference renderTest5 = {
+    (SDLTest_TestCaseFp)render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED
+};
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference renderTest7 =
-        {  (SDLTest_TestCaseFp)render_testBlitBlend, "render_testBlitBlend", "Tests blitting with blending", TEST_DISABLED };
+static const SDLTest_TestCaseReference renderTest6 = {
+    (SDLTest_TestCaseFp)render_testBlitAlpha, "render_testBlitAlpha", "Tests blitting with alpha", TEST_DISABLED
+};
+
+/* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
+static const SDLTest_TestCaseReference renderTest7 = {
+    (SDLTest_TestCaseFp)render_testBlitBlend, "render_testBlitBlend", "Tests blitting with blending", TEST_DISABLED
+};
 
 /* Sequence of Render test cases */
-static const SDLTest_TestCaseReference *renderTests[] =  {
+static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, NULL
 };
 

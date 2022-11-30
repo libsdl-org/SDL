@@ -26,10 +26,8 @@
 #include "SDL_drawline.h"
 #include "SDL_drawpoint.h"
 
-
-static void
-SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
-              SDL_bool draw_end)
+static void SDL_DrawLine1(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color,
+                          SDL_bool draw_end)
 {
     if (y1 == y2) {
         int length;
@@ -37,13 +35,13 @@ SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
         Uint8 *pixel;
         if (x1 <= x2) {
             pixel = (Uint8 *)dst->pixels + y1 * pitch + x1;
-            length = draw_end ? (x2-x1+1) : (x2-x1);
+            length = draw_end ? (x2 - x1 + 1) : (x2 - x1);
         } else {
             pixel = (Uint8 *)dst->pixels + y1 * pitch + x2;
             if (!draw_end) {
                 ++pixel;
             }
-            length = draw_end ? (x1-x2+1) : (x1-x2);
+            length = draw_end ? (x1 - x2 + 1) : (x1 - x2);
         }
         SDL_memset(pixel, color, length);
     } else if (x1 == x2) {
@@ -55,9 +53,8 @@ SDL_DrawLine1(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
     }
 }
 
-static void
-SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
-              SDL_bool draw_end)
+static void SDL_DrawLine2(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color,
+                          SDL_bool draw_end)
 {
     if (y1 == y2) {
         HLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
@@ -67,7 +64,7 @@ SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
         DLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
     } else {
         Uint8 _r, _g, _b, _a;
-        const SDL_PixelFormat * fmt = dst->format;
+        const SDL_PixelFormat *fmt = dst->format;
         SDL_GetRGBA(color, fmt, &_r, &_g, &_b, &_a);
         if (fmt->Rmask == 0x7C00) {
             AALINE(x1, y1, x2, y2,
@@ -85,9 +82,8 @@ SDL_DrawLine2(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
     }
 }
 
-static void
-SDL_DrawLine4(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
-              SDL_bool draw_end)
+static void SDL_DrawLine4(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color,
+                          SDL_bool draw_end)
 {
     if (y1 == y2) {
         HLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
@@ -97,7 +93,7 @@ SDL_DrawLine4(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
         DLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
     } else {
         Uint8 _r, _g, _b, _a;
-        const SDL_PixelFormat * fmt = dst->format;
+        const SDL_PixelFormat *fmt = dst->format;
         SDL_GetRGBA(color, fmt, &_r, &_g, &_b, &_a);
         if (fmt->Rmask == 0x00FF0000) {
             if (!fmt->Amask) {
@@ -117,12 +113,11 @@ SDL_DrawLine4(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color,
     }
 }
 
-typedef void (*DrawLineFunc) (SDL_Surface * dst,
-                              int x1, int y1, int x2, int y2,
-                              Uint32 color, SDL_bool draw_end);
+typedef void (*DrawLineFunc)(SDL_Surface *dst,
+                             int x1, int y1, int x2, int y2,
+                             Uint32 color, SDL_bool draw_end);
 
-static DrawLineFunc
-SDL_CalculateDrawLineFunc(const SDL_PixelFormat * fmt)
+static DrawLineFunc SDL_CalculateDrawLineFunc(const SDL_PixelFormat *fmt)
 {
     switch (fmt->BytesPerPixel) {
     case 1:
@@ -138,8 +133,7 @@ SDL_CalculateDrawLineFunc(const SDL_PixelFormat * fmt)
     return NULL;
 }
 
-int
-SDL_DrawLine(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color)
+int SDL_DrawLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint32 color)
 {
     DrawLineFunc func;
 
@@ -162,9 +156,8 @@ SDL_DrawLine(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color)
     return 0;
 }
 
-int
-SDL_DrawLines(SDL_Surface * dst, const SDL_Point * points, int count,
-              Uint32 color)
+int SDL_DrawLines(SDL_Surface *dst, const SDL_Point *points, int count,
+                  Uint32 color)
 {
     int i;
     int x1, y1;
@@ -182,8 +175,8 @@ SDL_DrawLines(SDL_Surface * dst, const SDL_Point * points, int count,
     }
 
     for (i = 1; i < count; ++i) {
-        x1 = points[i-1].x;
-        y1 = points[i-1].y;
+        x1 = points[i - 1].x;
+        y1 = points[i - 1].y;
         x2 = points[i].x;
         y2 = points[i].y;
 
@@ -198,8 +191,8 @@ SDL_DrawLines(SDL_Surface * dst, const SDL_Point * points, int count,
 
         func(dst, x1, y1, x2, y2, color, draw_end);
     }
-    if (points[0].x != points[count-1].x || points[0].y != points[count-1].y) {
-        SDL_DrawPoint(dst, points[count-1].x, points[count-1].y, color);
+    if (points[0].x != points[count - 1].x || points[0].y != points[count - 1].y) {
+        SDL_DrawPoint(dst, points[count - 1].x, points[count - 1].y, color);
     }
     return 0;
 }

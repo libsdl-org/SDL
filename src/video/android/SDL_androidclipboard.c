@@ -26,8 +26,7 @@
 #include "SDL_androidclipboard.h"
 #include "../../core/android/SDL_android.h"
 
-int
-Android_SetClipboardText(_THIS, const char *text)
+int Android_SetClipboardText(_THIS, const char *text)
 {
     return Android_JNI_SetClipboardText(text);
 }

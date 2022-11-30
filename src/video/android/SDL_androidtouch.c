@@ -30,12 +30,12 @@
 #include "../../core/android/SDL_android.h"
 
 #define ACTION_DOWN 0
-#define ACTION_UP 1
+#define ACTION_UP   1
 #define ACTION_MOVE 2
 /* #define ACTION_CANCEL 3 */
 /* #define ACTION_OUTSIDE 4 */
 #define ACTION_POINTER_DOWN 5
-#define ACTION_POINTER_UP 6
+#define ACTION_POINTER_UP   6
 
 void Android_InitTouch(void)
 {
@@ -63,22 +63,22 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
 
     fingerId = (SDL_FingerID)pointer_finger_id_in;
     switch (action) {
-        case ACTION_DOWN:
-        case ACTION_POINTER_DOWN:
-            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_TRUE, x, y, p);
-            break;
+    case ACTION_DOWN:
+    case ACTION_POINTER_DOWN:
+        SDL_SendTouch(touchDeviceId, fingerId, window, SDL_TRUE, x, y, p);
+        break;
 
-        case ACTION_MOVE:
-            SDL_SendTouchMotion(touchDeviceId, fingerId, window, x, y, p);
-            break;
+    case ACTION_MOVE:
+        SDL_SendTouchMotion(touchDeviceId, fingerId, window, x, y, p);
+        break;
 
-        case ACTION_UP:
-        case ACTION_POINTER_UP:
-            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_FALSE, x, y, p);
-            break;
+    case ACTION_UP:
+    case ACTION_POINTER_UP:
+        SDL_SendTouch(touchDeviceId, fingerId, window, SDL_FALSE, x, y, p);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 

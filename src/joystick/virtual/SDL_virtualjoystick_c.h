@@ -25,7 +25,6 @@
 
 #if SDL_JOYSTICK_VIRTUAL
 
-
 /**
  * Data for a virtual, software-only joystick.
  */
@@ -48,12 +47,12 @@ typedef struct joystick_hwdata
 int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc);
 int SDL_JoystickDetachVirtualInner(int device_index);
 
-int SDL_JoystickSetVirtualAxisInner(SDL_Joystick * joystick, int axis, Sint16 value);
-int SDL_JoystickSetVirtualButtonInner(SDL_Joystick * joystick, int button, Uint8 value);
-int SDL_JoystickSetVirtualHatInner(SDL_Joystick * joystick, int hat, Uint8 value);
+int SDL_JoystickSetVirtualAxisInner(SDL_Joystick *joystick, int axis, Sint16 value);
+int SDL_JoystickSetVirtualButtonInner(SDL_Joystick *joystick, int button, Uint8 value);
+int SDL_JoystickSetVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8 value);
 
-#endif  /* SDL_JOYSTICK_VIRTUAL */
+#endif /* SDL_JOYSTICK_VIRTUAL */
 
-#endif  /* SDL_VIRTUALJOYSTICK_C_H */
+#endif /* SDL_VIRTUALJOYSTICK_C_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

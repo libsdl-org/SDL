@@ -27,31 +27,29 @@
 /*using namespace Windows::Graphics::Display;*/
 #include <wchar.h>
 
-void
-SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     WCHAR wbuffer[128] = L"";
     int ret = 0;
 
     /* !!! FIXME: do we not have GetUserPreferredUILanguages on WinPhone or UWP? */
-# if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_SNAME, wbuffer, SDL_arraysize(wbuffer));
-# else
+#else
     ret = GetSystemDefaultLocaleName(wbuffer, SDL_arraysize(wbuffer));
-# endif
+#endif
 
     if (ret > 0) {
         /* Need to convert LPWSTR to LPSTR, that is wide char to char. */
         int i;
 
-        if ( ((size_t) ret) >= (buflen - 1) ) {
-            ret = (int) (buflen - 1);
+        if (((size_t)ret) >= (buflen - 1)) {
+            ret = (int)(buflen - 1);
         }
         for (i = 0; i < ret; i++) {
-            buf[i] = (char) wbuffer[i];  /* assume this was ASCII anyhow. */
+            buf[i] = (char)wbuffer[i]; /* assume this was ASCII anyhow. */
         }
     }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-

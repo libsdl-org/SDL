@@ -27,11 +27,11 @@
 
 /* quiet windows compiler warnings */
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-# define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 #include <SDL3/SDL_test.h>
 
-#include <time.h>   /* Needed for localtime() */
+#include <time.h> /* Needed for localtime() */
 
 /* work around compiler warning on older GCCs. */
 #if (defined(__GNUC__) && (__GNUC__ <= 2))

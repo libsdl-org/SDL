@@ -26,8 +26,7 @@
 
 /* Functions to blit from bitmaps to other surfaces */
 
-static void
-BlitBto1(SDL_BlitInfo * info)
+static void BlitBto1(SDL_BlitInfo *info)
 {
     int c;
     int width, height;
@@ -81,8 +80,7 @@ BlitBto1(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto2(SDL_BlitInfo * info)
+static void BlitBto2(SDL_BlitInfo *info)
 {
     int c;
     int width, height;
@@ -95,9 +93,9 @@ BlitBto2(SDL_BlitInfo * info)
     height = info->dst_h;
     src = info->src;
     srcskip = info->src_skip;
-    dst = (Uint16 *) info->dst;
+    dst = (Uint16 *)info->dst;
     dstskip = info->dst_skip / 2;
-    map = (Uint16 *) info->table;
+    map = (Uint16 *)info->table;
     srcskip += width - (width + 7) / 8;
 
     while (height--) {
@@ -118,8 +116,7 @@ BlitBto2(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto3(SDL_BlitInfo * info)
+static void BlitBto3(SDL_BlitInfo *info)
 {
     int c, o;
     int width, height;
@@ -157,8 +154,7 @@ BlitBto3(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto4(SDL_BlitInfo * info)
+static void BlitBto4(SDL_BlitInfo *info)
 {
     int width, height;
     Uint8 *src;
@@ -171,9 +167,9 @@ BlitBto4(SDL_BlitInfo * info)
     height = info->dst_h;
     src = info->src;
     srcskip = info->src_skip;
-    dst = (Uint32 *) info->dst;
+    dst = (Uint32 *)info->dst;
     dstskip = info->dst_skip / 4;
-    map = (Uint32 *) info->table;
+    map = (Uint32 *)info->table;
     srcskip += width - (width + 7) / 8;
 
     while (height--) {
@@ -194,8 +190,7 @@ BlitBto4(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto1Key(SDL_BlitInfo * info)
+static void BlitBto1Key(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -247,13 +242,12 @@ BlitBto1Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto2Key(SDL_BlitInfo * info)
+static void BlitBto2Key(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
     Uint8 *src = info->src;
-    Uint16 *dstp = (Uint16 *) info->dst;
+    Uint16 *dstp = (Uint16 *)info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
     Uint32 ckey = info->colorkey;
@@ -272,7 +266,7 @@ BlitBto2Key(SDL_BlitInfo * info)
             }
             bit = (byte & 0x80) >> 7;
             if (bit != ckey) {
-                *dstp = ((Uint16 *) palmap)[bit];
+                *dstp = ((Uint16 *)palmap)[bit];
             }
             byte <<= 1;
             dstp++;
@@ -282,8 +276,7 @@ BlitBto2Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto3Key(SDL_BlitInfo * info)
+static void BlitBto3Key(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -316,13 +309,12 @@ BlitBto3Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBto4Key(SDL_BlitInfo * info)
+static void BlitBto4Key(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
     Uint8 *src = info->src;
-    Uint32 *dstp = (Uint32 *) info->dst;
+    Uint32 *dstp = (Uint32 *)info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
     Uint32 ckey = info->colorkey;
@@ -341,7 +333,7 @@ BlitBto4Key(SDL_BlitInfo * info)
             }
             bit = (byte & 0x80) >> 7;
             if (bit != ckey) {
-                *dstp = ((Uint32 *) palmap)[bit];
+                *dstp = ((Uint32 *)palmap)[bit];
             }
             byte <<= 1;
             dstp++;
@@ -351,8 +343,7 @@ BlitBto4Key(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBtoNAlpha(SDL_BlitInfo * info)
+static void BlitBtoNAlpha(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -396,8 +387,7 @@ BlitBtoNAlpha(SDL_BlitInfo * info)
     }
 }
 
-static void
-BlitBtoNAlphaKey(SDL_BlitInfo * info)
+static void BlitBtoNAlphaKey(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -444,24 +434,22 @@ BlitBtoNAlphaKey(SDL_BlitInfo * info)
 }
 
 static const SDL_BlitFunc bitmap_blit[] = {
-    (SDL_BlitFunc) NULL, BlitBto1, BlitBto2, BlitBto3, BlitBto4
+    (SDL_BlitFunc)NULL, BlitBto1, BlitBto2, BlitBto3, BlitBto4
 };
 
 static const SDL_BlitFunc colorkey_blit[] = {
-    (SDL_BlitFunc) NULL, BlitBto1Key, BlitBto2Key, BlitBto3Key, BlitBto4Key
+    (SDL_BlitFunc)NULL, BlitBto1Key, BlitBto2Key, BlitBto3Key, BlitBto4Key
 };
 
-
-static void
-Blit4bto4(SDL_BlitInfo * info)
+static void Blit4bto4(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
     Uint8 *src = info->src;
-    Uint32 *dst = (Uint32 *) info->dst;
+    Uint32 *dst = (Uint32 *)info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
-    Uint32 *map = (Uint32 *) info->table;
+    Uint32 *map = (Uint32 *)info->table;
     int c;
 
     /* Set up some basic variables */
@@ -481,21 +469,20 @@ Blit4bto4(SDL_BlitInfo * info)
             dst++;
         }
         src += srcskip;
-        dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+        dst = (Uint32 *)((Uint8 *)dst + dstskip);
     }
 }
 
-static void
-Blit4bto4Key(SDL_BlitInfo * info)
+static void Blit4bto4Key(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
     Uint8 *src = info->src;
-    Uint32 *dst = (Uint32 *) info->dst;
+    Uint32 *dst = (Uint32 *)info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
     Uint32 ckey = info->colorkey;
-    Uint32 *map = (Uint32 *) info->table;
+    Uint32 *map = (Uint32 *)info->table;
     int c;
 
     /* Set up some basic variables */
@@ -515,12 +502,12 @@ Blit4bto4Key(SDL_BlitInfo * info)
             dst++;
         }
         src += srcskip;
-        dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+        dst = (Uint32 *)((Uint8 *)dst + dstskip);
     }
 }
 
 SDL_BlitFunc
-SDL_CalculateBlit0(SDL_Surface * surface)
+SDL_CalculateBlit0(SDL_Surface *surface)
 {
     int which;
 
@@ -528,11 +515,11 @@ SDL_CalculateBlit0(SDL_Surface * surface)
     if (surface->format->format == SDL_PIXELFORMAT_INDEX4MSB) {
         if (surface->map->dst->format->BytesPerPixel == 4) {
             switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
-                case 0:
-                    return Blit4bto4;
+            case 0:
+                return Blit4bto4;
 
-                case SDL_COPY_COLORKEY:
-                    return Blit4bto4Key;
+            case SDL_COPY_COLORKEY:
+                return Blit4bto4Key;
             }
         }
         return NULL;
@@ -552,10 +539,10 @@ SDL_CalculateBlit0(SDL_Surface * surface)
             return colorkey_blit[which];
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
-            return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc) NULL;
+            return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc)NULL;
 
         case SDL_COPY_COLORKEY | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
-            return which >= 2 ? BlitBtoNAlphaKey : (SDL_BlitFunc) NULL;
+            return which >= 2 ? BlitBtoNAlphaKey : (SDL_BlitFunc)NULL;
         }
         return NULL;
     }

@@ -26,7 +26,6 @@
 
 #include <3ds.h>
 
-
 struct SDL_semaphore
 {
     LightSemaphore semaphore;
@@ -42,7 +41,7 @@ SDL_CreateSemaphore(Uint32 initial_value)
         return NULL;
     }
 
-    sem = (SDL_sem *) SDL_malloc(sizeof(*sem));
+    sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
     if (sem == NULL) {
         SDL_OutOfMemory();
         return NULL;
@@ -56,16 +55,14 @@ SDL_CreateSemaphore(Uint32 initial_value)
 /* WARNING:
    You cannot call this function when another thread is using the semaphore.
 */
-void
-SDL_DestroySemaphore(SDL_sem *sem)
+void SDL_DestroySemaphore(SDL_sem *sem)
 {
     if (sem) {
         SDL_free(sem);
     }
 }
 
-int
-SDL_SemTryWait(SDL_sem *sem)
+int SDL_SemTryWait(SDL_sem *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
@@ -74,8 +71,7 @@ SDL_SemTryWait(SDL_sem *sem)
     return SDL_SemWaitTimeout(sem, 0);
 }
 
-int
-SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
+int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 {
     int retval;
 
@@ -103,8 +99,7 @@ SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     return retval;
 }
 
-int
-SDL_SemWait(SDL_sem *sem)
+int SDL_SemWait(SDL_sem *sem)
 {
     return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
 }
@@ -119,8 +114,7 @@ SDL_SemValue(SDL_sem *sem)
     return sem->semaphore.current_count;
 }
 
-int
-SDL_SemPost(SDL_sem *sem)
+int SDL_SemPost(SDL_sem *sem)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");

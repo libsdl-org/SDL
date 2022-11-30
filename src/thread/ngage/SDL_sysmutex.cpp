@@ -31,9 +31,9 @@ struct SDL_mutex
     TInt handle;
 };
 
-extern TInt CreateUnique(TInt (*aFunc)(const TDesC& aName, TAny*, TAny*), TAny*, TAny*);
+extern TInt CreateUnique(TInt (*aFunc)(const TDesC &aName, TAny *, TAny *), TAny *, TAny *);
 
-static TInt NewMutex(const TDesC& aName, TAny* aPtr1, TAny*)
+static TInt NewMutex(const TDesC &aName, TAny *aPtr1, TAny *)
 {
     return ((RMutex *)aPtr1)->CreateGlobal(aName);
 }
@@ -49,21 +49,20 @@ SDL_CreateMutex(void)
         SDL_SetError("Couldn't create mutex.");
         return NULL;
     }
-    SDL_mutex* mutex = new /*(ELeave)*/ SDL_mutex;
+    SDL_mutex *mutex = new /*(ELeave)*/ SDL_mutex;
     mutex->handle = rmutex.Handle();
     return mutex;
 }
 
 /* Free the mutex */
-void
-SDL_DestroyMutex(SDL_mutex * mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         RMutex rmutex;
         rmutex.SetHandle(mutex->handle);
         rmutex.Signal();
         rmutex.Close();
-        delete(mutex);
+        delete (mutex);
         mutex = NULL;
     }
 }
@@ -84,8 +83,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 #endif
 
 /* Lock the mutex */
-int
-SDL_LockMutex(SDL_mutex * mutex)
+int SDL_LockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
         return SDL_InvalidParamError("mutex");
@@ -99,8 +97,7 @@ SDL_LockMutex(SDL_mutex * mutex)
 }
 
 /* Unlock the mutex */
-int
-SDL_UnlockMutex(SDL_mutex * mutex)
+int SDL_UnlockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
         return SDL_InvalidParamError("mutex");

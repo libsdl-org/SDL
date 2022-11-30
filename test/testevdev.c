@@ -30,10 +30,11 @@ static const struct
 {
     int code;
     const char *name;
-} device_classes[] =
-{
-#define CLS(x) \
-    { SDL_UDEV_DEVICE_ ## x, #x }
+} device_classes[] = {
+#define CLS(x)                  \
+    {                           \
+        SDL_UDEV_DEVICE_##x, #x \
+    }
     CLS(MOUSE),
     CLS(KEYBOARD),
     CLS(JOYSTICK),
@@ -47,18 +48,18 @@ static const struct
 
 typedef struct
 {
-  const char *name;
-  uint16_t bus_type;
-  uint16_t vendor_id;
-  uint16_t product_id;
-  uint16_t version;
-  uint8_t ev[(EV_MAX + 1) / 8];
-  uint8_t keys[(KEY_MAX + 1) / 8];
-  uint8_t abs[(ABS_MAX + 1) / 8];
-  uint8_t rel[(REL_MAX + 1) / 8];
-  uint8_t ff[(FF_MAX + 1) / 8];
-  uint8_t props[INPUT_PROP_MAX / 8];
-  int expected;
+    const char *name;
+    uint16_t bus_type;
+    uint16_t vendor_id;
+    uint16_t product_id;
+    uint16_t version;
+    uint8_t ev[(EV_MAX + 1) / 8];
+    uint8_t keys[(KEY_MAX + 1) / 8];
+    uint8_t abs[(ABS_MAX + 1) / 8];
+    uint8_t rel[(REL_MAX + 1) / 8];
+    uint8_t ff[(FF_MAX + 1) / 8];
+    uint8_t props[INPUT_PROP_MAX / 8];
+    int expected;
 } GuessTest;
 
 /*
@@ -72,10 +73,11 @@ typedef struct
  */
 #define ZEROx4 0, 0, 0, 0
 #define ZEROx8 ZEROx4, ZEROx4
-#define FFx4 0xff, 0xff, 0xff, 0xff
-#define FFx8 FFx4, FFx4
+#define FFx4   0xff, 0xff, 0xff, 0xff
+#define FFx8   FFx4, FFx4
 
 /* Test-cases derived from real devices or from Linux kernel source */
+/* *INDENT-OFF* */ /* clang-format off */
 static const GuessTest guess_tests[] =
 {
     {
@@ -933,6 +935,7 @@ static const GuessTest guess_tests[] =
       .expected = SDL_UDEV_DEVICE_UNKNOWN,
     }
 };
+/* *INDENT-ON* */ /* clang-format on */
 
 /* The Linux kernel provides capability info in EVIOCGBIT and in /sys
  * as an array of unsigned long in native byte order, rather than an array
@@ -949,7 +952,7 @@ static const GuessTest guess_tests[] =
  * an appropriate byteswapping function for the architecture's word size. */
 SDL_COMPILE_TIME_ASSERT(sizeof_long, sizeof(unsigned long) == 4 || sizeof(unsigned long) == 8);
 #define SwapLongLE(X) \
-	((sizeof(unsigned long) == 4) ? SDL_SwapLE32(X) : SDL_SwapLE64(X))
+    ((sizeof(unsigned long) == 4) ? SDL_SwapLE32(X) : SDL_SwapLE64(X))
 
 static int
 run_test(void)
@@ -961,7 +964,8 @@ run_test(void)
         const GuessTest *t = &guess_tests[i];
         size_t j;
         int actual;
-        struct {
+        struct
+        {
             unsigned long ev[NBITS(EV_MAX)];
             unsigned long abs[NBITS(ABS_MAX)];
             unsigned long keys[NBITS(KEY_MAX)];
@@ -1032,8 +1036,7 @@ run_test(void)
 
 #endif
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     return run_test() ? 0 : 1;
 }

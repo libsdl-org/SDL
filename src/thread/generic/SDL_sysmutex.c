@@ -24,7 +24,6 @@
 
 #include "SDL_systhread_c.h"
 
-
 struct SDL_mutex
 {
     int recursive;
@@ -39,7 +38,7 @@ SDL_CreateMutex(void)
     SDL_mutex *mutex;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *) SDL_calloc(1, sizeof(*mutex));
+    mutex = (SDL_mutex *)SDL_calloc(1, sizeof(*mutex));
 
 #if !SDL_THREADS_DISABLED
     if (mutex) {
@@ -60,8 +59,7 @@ SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void
-SDL_DestroyMutex(SDL_mutex * mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         if (mutex->sem) {
@@ -72,8 +70,7 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 }
 
 /* Lock the mutex */
-int
-SDL_LockMutex(SDL_mutex * mutex)
+int SDL_LockMutex(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -102,8 +99,7 @@ SDL_LockMutex(SDL_mutex * mutex)
 }
 
 /* try Lock the mutex */
-int
-SDL_TryLockMutex(SDL_mutex * mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -135,8 +131,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 }
 
 /* Unlock the mutex */
-int
-SDL_mutexV(SDL_mutex * mutex)
+int SDL_mutexV(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;

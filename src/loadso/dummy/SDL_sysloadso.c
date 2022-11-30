@@ -25,7 +25,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent library loading routines                           */
 
-
 void *
 SDL_LoadObject(const char *sofile)
 {
@@ -42,8 +41,7 @@ SDL_LoadFunction(void *handle, const char *name)
     return NULL;
 }
 
-void
-SDL_UnloadObject(void *handle)
+void SDL_UnloadObject(void *handle)
 {
     /* no-op. */
 }

@@ -34,14 +34,12 @@ SceHidMouseReport m_reports[SCE_HID_MAX_REPORT];
 int mouse_hid_handle = 0;
 Uint8 prev_buttons = 0;
 
-void 
-VITA_InitMouse(void)
+void VITA_InitMouse(void)
 {
     sceHidMouseEnumerate(&mouse_hid_handle, 1);
 }
 
-void 
-VITA_PollMouse(void)
+void VITA_PollMouse(void)
 {
     // We skip polling mouse if no window is created
     if (Vita_Window == NULL) {
@@ -49,7 +47,7 @@ VITA_PollMouse(void)
     }
 
     if (mouse_hid_handle > 0) {
-        int numReports = sceHidMouseRead(mouse_hid_handle, (SceHidMouseReport**)&m_reports, SCE_HID_MAX_REPORT);
+        int numReports = sceHidMouseRead(mouse_hid_handle, (SceHidMouseReport **)&m_reports, SCE_HID_MAX_REPORT);
         if (numReports > 0) {
             for (int i = 0; i <= numReports - 1; i++) {
                 Uint8 changed_buttons = m_reports[i].buttons ^ prev_buttons;

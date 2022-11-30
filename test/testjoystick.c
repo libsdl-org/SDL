@@ -21,11 +21,11 @@
 #endif
 
 #ifdef __IOS__
-#define SCREEN_WIDTH    320
-#define SCREEN_HEIGHT   480
+#define SCREEN_WIDTH  320
+#define SCREEN_HEIGHT 480
 #else
-#define SCREEN_WIDTH    640
-#define SCREEN_HEIGHT   480
+#define SCREEN_WIDTH  640
+#define SCREEN_HEIGHT 480
 #endif
 
 static SDL_Window *window = NULL;
@@ -40,7 +40,7 @@ PrintJoystick(SDL_Joystick *joy)
     char guid[64];
 
     SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joy)) == joy);
-    SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, sizeof (guid));
+    SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, sizeof(guid));
     switch (SDL_JoystickGetType(joy)) {
     case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
         type = "Game Controller";
@@ -99,8 +99,7 @@ DrawRect(SDL_Renderer *r, const int x, const int y, const int w, const int h)
     SDL_RenderFillRect(r, &area);
 }
 
-void
-loop(void *arg)
+void loop(void *arg)
 {
     SDL_Event event;
     int i;
@@ -113,7 +112,7 @@ loop(void *arg)
         switch (event.type) {
 
         case SDL_JOYDEVICEADDED:
-            SDL_Log("Joystick device %d added.\n", (int) event.jdevice.which);
+            SDL_Log("Joystick device %d added.\n", (int)event.jdevice.which);
             if (joystick == NULL) {
                 joystick = SDL_JoystickOpen(event.jdevice.which);
                 if (joystick) {
@@ -125,7 +124,7 @@ loop(void *arg)
             break;
 
         case SDL_JOYDEVICEREMOVED:
-            SDL_Log("Joystick device %d removed.\n", (int) event.jdevice.which);
+            SDL_Log("Joystick device %d removed.\n", (int)event.jdevice.which);
             if (event.jdevice.which == SDL_JoystickInstanceID(joystick)) {
                 SDL_JoystickClose(joystick);
                 joystick = SDL_JoystickOpen(0);
@@ -218,7 +217,7 @@ loop(void *arg)
         SDL_SetRenderDrawColor(screen, 0xFF, 0x00, 0x00, SDL_ALPHA_OPAQUE);
         for (i = 0; i < SDL_JoystickNumAxes(joystick); ++i) {
             /* Draw the X/Y axis */
-            x = (((int) SDL_JoystickGetAxis(joystick, i)) + 32768);
+            x = (((int)SDL_JoystickGetAxis(joystick, i)) + 32768);
             x *= SCREEN_WIDTH;
             x /= 65535;
             if (x < 0) {
@@ -228,7 +227,7 @@ loop(void *arg)
             }
             ++i;
             if (i < SDL_JoystickNumAxes(joystick)) {
-                y = (((int) SDL_JoystickGetAxis(joystick, i)) + 32768);
+                y = (((int)SDL_JoystickGetAxis(joystick, i)) + 32768);
             } else {
                 y = 32768;
             }
@@ -247,19 +246,19 @@ loop(void *arg)
         for (i = 0; i < SDL_JoystickNumHats(joystick); ++i) {
             /* Derive the new position */
             const Uint8 hat_pos = SDL_JoystickGetHat(joystick, i);
-            x = SCREEN_WIDTH/2;
-            y = SCREEN_HEIGHT/2;
+            x = SCREEN_WIDTH / 2;
+            y = SCREEN_HEIGHT / 2;
 
             if (hat_pos & SDL_HAT_UP) {
                 y = 0;
             } else if (hat_pos & SDL_HAT_DOWN) {
-                y = SCREEN_HEIGHT-8;
+                y = SCREEN_HEIGHT - 8;
             }
 
             if (hat_pos & SDL_HAT_LEFT) {
                 x = 0;
             } else if (hat_pos & SDL_HAT_RIGHT) {
-                x = SCREEN_WIDTH-8;
+                x = SCREEN_WIDTH - 8;
             }
 
             DrawRect(screen, x, y, 8, 8);
@@ -276,8 +275,7 @@ loop(void *arg)
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 

@@ -18,8 +18,8 @@
 typedef struct
 {
     const char *tag;
-    void *(*CreateNativeWindow) (int w, int h);
-    void (*DestroyNativeWindow) (void *window);
+    void *(*CreateNativeWindow)(int w, int h);
+    void (*DestroyNativeWindow)(void *window);
 } NativeWindowFactory;
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS

@@ -22,7 +22,8 @@
 
 static SDLTest_CommonState *state;
 
-typedef struct {
+typedef struct
+{
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *background;
@@ -42,8 +43,7 @@ quit(int rc)
     exit(rc);
 }
 
-void
-Draw(DrawState *s)
+void Draw(DrawState *s)
 {
     SDL_Rect viewport;
     SDL_Texture *target;
@@ -108,8 +108,7 @@ void loop()
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     int frames;
@@ -160,12 +159,12 @@ main(int argc, char *argv[])
     while (!done) {
         ++frames;
         loop();
-        }
+    }
 #endif
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        double fps = ((double) frames * 1000) / (now - then);
+        double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
     }
 

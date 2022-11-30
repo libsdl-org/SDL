@@ -31,8 +31,7 @@
 static uint64_t start;
 static SDL_bool ticks_started = SDL_FALSE;
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -42,8 +41,7 @@ SDL_TicksInit(void)
     start = sceKernelGetProcessTimeWide();
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     ticks_started = SDL_FALSE;
 }
@@ -58,7 +56,7 @@ SDL_GetTicks64(void)
     }
 
     now = sceKernelGetProcessTimeWide();
-    return (Uint64) ((now - start) / 1000);
+    return (Uint64)((now - start) / 1000);
 }
 
 Uint64

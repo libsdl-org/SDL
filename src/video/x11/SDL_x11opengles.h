@@ -30,25 +30,25 @@
 
 typedef struct SDL_PrivateGLESData
 {
-  /* 1401 If the struct-declaration-list contains no named members, the behavior is undefined. */
-  /* warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat] */
-  int dummy; 
+    /* 1401 If the struct-declaration-list contains no named members, the behavior is undefined. */
+    /* warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat] */
+    int dummy;
 } SDL_PrivateGLESData;
 
 /* OpenGLES functions */
-#define X11_GLES_GetAttribute SDL_EGL_GetAttribute
-#define X11_GLES_GetProcAddress SDL_EGL_GetProcAddressInternal
-#define X11_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
+#define X11_GLES_GetAttribute    SDL_EGL_GetAttribute
+#define X11_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
+#define X11_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define X11_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define X11_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define X11_GLES_DeleteContext SDL_EGL_DeleteContext
+#define X11_GLES_DeleteContext   SDL_EGL_DeleteContext
 
 extern int X11_GLES_LoadLibrary(_THIS, const char *path);
-extern XVisualInfo *X11_GLES_GetVisual(_THIS, Display * display, int screen);
-extern SDL_GLContext X11_GLES_CreateContext(_THIS, SDL_Window * window);
-extern int X11_GLES_SwapWindow(_THIS, SDL_Window * window);
-extern int X11_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
-extern SDL_EGLSurface X11_GLES_GetEGLSurface(_THIS, SDL_Window * window);
+extern XVisualInfo *X11_GLES_GetVisual(_THIS, Display *display, int screen);
+extern SDL_GLContext X11_GLES_CreateContext(_THIS, SDL_Window *window);
+extern int X11_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern int X11_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
+extern SDL_EGLSurface X11_GLES_GetEGLSurface(_THIS, SDL_Window *window);
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 

@@ -24,67 +24,68 @@ extern int SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **));
 
 ref class SDL_WinRTApp sealed : public Windows::ApplicationModel::Core::IFrameworkView
 {
-public:
+  public:
     SDL_WinRTApp();
-    
+
     // IFrameworkView Methods.
-    virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
-    virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
-    virtual void Load(Platform::String^ entryPoint);
+    virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView ^ applicationView);
+    virtual void SetWindow(Windows::UI::Core::CoreWindow ^ window);
+    virtual void Load(Platform::String ^ entryPoint);
     virtual void Run();
     virtual void Uninitialize();
 
-internal:
-    // SDL-specific methods
-    void PumpEvents();
+    internal :
+        // SDL-specific methods
+        void
+        PumpEvents();
 
-protected:
+  protected:
     bool ShouldWaitForAppResumeEvents();
 
     // Event Handlers.
 
-#if (WINAPI_FAMILY == WINAPI_FAMILY_APP) && (NTDDI_VERSION < NTDDI_WIN10)  // for Windows 8/8.1/RT apps... (and not Phone apps)
+#if (WINAPI_FAMILY == WINAPI_FAMILY_APP) && (NTDDI_VERSION < NTDDI_WIN10) // for Windows 8/8.1/RT apps... (and not Phone apps)
     void OnSettingsPaneCommandsRequested(
-        Windows::UI::ApplicationSettings::SettingsPane ^p,
-        Windows::UI::ApplicationSettings::SettingsPaneCommandsRequestedEventArgs ^args);
+        Windows::UI::ApplicationSettings::SettingsPane ^ p,
+        Windows::UI::ApplicationSettings::SettingsPaneCommandsRequestedEventArgs ^ args);
 #endif // if (WINAPI_FAMILY == WINAPI_FAMILY_APP) && (NTDDI_VERSION < NTDDI_WIN10)
 
 #if NTDDI_VERSION > NTDDI_WIN8
-    void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
+    void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation ^ sender, Platform::Object ^ args);
 #else
-    void OnOrientationChanged(Platform::Object^ sender);
+    void OnOrientationChanged(Platform::Object ^ sender);
 #endif
-    void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args);
-    void OnLogicalDpiChanged(Platform::Object^ sender);
-    void OnAppActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
-    void OnSuspending(Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
-    void OnResuming(Platform::Object^ sender, Platform::Object^ args);
-    void OnExiting(Platform::Object^ sender, Platform::Object^ args);
-    void OnWindowActivated(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowActivatedEventArgs^ args);
-    void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args);
-    void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
-    void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerWheelChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
-    void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
-    void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
-    void OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args);
+    void OnWindowSizeChanged(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::WindowSizeChangedEventArgs ^ args);
+    void OnLogicalDpiChanged(Platform::Object ^ sender);
+    void OnAppActivated(Windows::ApplicationModel::Core::CoreApplicationView ^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args);
+    void OnSuspending(Platform::Object ^ sender, Windows::ApplicationModel::SuspendingEventArgs ^ args);
+    void OnResuming(Platform::Object ^ sender, Platform::Object ^ args);
+    void OnExiting(Platform::Object ^ sender, Platform::Object ^ args);
+    void OnWindowActivated(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::WindowActivatedEventArgs ^ args);
+    void OnWindowClosed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CoreWindowEventArgs ^ args);
+    void OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::VisibilityChangedEventArgs ^ args);
+    void OnPointerPressed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args);
+    void OnPointerReleased(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args);
+    void OnPointerWheelChanged(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args);
+    void OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args);
+    void OnPointerEntered(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args);
+    void OnPointerExited(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args);
+    void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, Windows::Devices::Input::MouseEventArgs ^ args);
+    void OnKeyDown(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::KeyEventArgs ^ args);
+    void OnKeyUp(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::KeyEventArgs ^ args);
+    void OnCharacterReceived(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
 #if NTDDI_VERSION >= NTDDI_WIN10
-    void OnBackButtonPressed(Platform::Object^ sender, Windows::UI::Core::BackRequestedEventArgs^ args);
+    void OnBackButtonPressed(Platform::Object ^ sender, Windows::UI::Core::BackRequestedEventArgs ^ args);
 #elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    void OnBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs^ args);
+    void OnBackButtonPressed(Platform::Object ^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^ args);
 #endif
 
 #if NTDDI_VERSION >= NTDDI_WIN10
-    void OnGamepadAdded(Platform::Object ^sender, Windows::Gaming::Input::Gamepad ^gamepad);
+    void OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ gamepad);
 #endif
 
-private:
+  private:
     bool m_windowClosed;
     bool m_windowVisible;
 };

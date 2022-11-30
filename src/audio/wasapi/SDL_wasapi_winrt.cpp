@@ -51,13 +51,13 @@ using namespace Windows::Media::Devices;
 using namespace Windows::Foundation;
 using namespace Microsoft::WRL;
 
-static Platform::String^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4e27-bc73-6882a1bb8e4c} 0";
+static Platform::String ^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4e27-bc73-6882a1bb8e4c} 0";
 
 static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid);
 static void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid);
 extern "C" {
-    SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
-    SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
+SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
+SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
 }
 
 /* This is a list of device id strings we have inflight, so we have consistent pointers to the same device. */
@@ -71,20 +71,20 @@ static DevIdList *deviceid_list = NULL;
 
 class SDL_WasapiDeviceEventHandler
 {
-public:
+  public:
     SDL_WasapiDeviceEventHandler(const SDL_bool _iscapture);
     ~SDL_WasapiDeviceEventHandler();
-    void OnDeviceAdded(DeviceWatcher^ sender, DeviceInformation^ args);
-    void OnDeviceRemoved(DeviceWatcher^ sender, DeviceInformationUpdate^ args);
-    void OnDeviceUpdated(DeviceWatcher^ sender, DeviceInformationUpdate^ args);
-    void OnEnumerationCompleted(DeviceWatcher^ sender, Platform::Object^ args);
-    void OnDefaultRenderDeviceChanged(Platform::Object^ sender, DefaultAudioRenderDeviceChangedEventArgs^ args);
-    void OnDefaultCaptureDeviceChanged(Platform::Object^ sender, DefaultAudioCaptureDeviceChangedEventArgs^ args);
-    SDL_semaphore* completed;
+    void OnDeviceAdded(DeviceWatcher ^ sender, DeviceInformation ^ args);
+    void OnDeviceRemoved(DeviceWatcher ^ sender, DeviceInformationUpdate ^ args);
+    void OnDeviceUpdated(DeviceWatcher ^ sender, DeviceInformationUpdate ^ args);
+    void OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args);
+    void OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args);
+    void OnDefaultCaptureDeviceChanged(Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args);
+    SDL_semaphore *completed;
 
-private:
+  private:
     const SDL_bool iscapture;
-    DeviceWatcher^ watcher;
+    DeviceWatcher ^ watcher;
     Windows::Foundation::EventRegistrationToken added_handler;
     Windows::Foundation::EventRegistrationToken removed_handler;
     Windows::Foundation::EventRegistrationToken updated_handler;
@@ -93,29 +93,27 @@ private:
 };
 
 SDL_WasapiDeviceEventHandler::SDL_WasapiDeviceEventHandler(const SDL_bool _iscapture)
-    : iscapture(_iscapture)
-    , completed(SDL_CreateSemaphore(0))
+    : iscapture(_iscapture), completed(SDL_CreateSemaphore(0))
 {
     if (!completed)
-        return;  // uhoh.
+        return; // uhoh.
 
-    Platform::String^ selector = _iscapture ? MediaDevice::GetAudioCaptureSelector() :
-                                              MediaDevice::GetAudioRenderSelector();
-    Platform::Collections::Vector<Platform::String^> properties;
+    Platform::String ^ selector = _iscapture ? MediaDevice::GetAudioCaptureSelector() : MediaDevice::GetAudioRenderSelector();
+    Platform::Collections::Vector<Platform::String ^> properties;
     properties.Append(SDL_PKEY_AudioEngine_DeviceFormat);
     watcher = DeviceInformation::CreateWatcher(selector, properties.GetView());
     if (!watcher)
-        return;  // uhoh.
+        return; // uhoh.
 
     // !!! FIXME: this doesn't need a lambda here, I think, if I make SDL_WasapiDeviceEventHandler a proper C++/CX class. --ryan.
-    added_handler = watcher->Added += ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this](DeviceWatcher^ sender, DeviceInformation^ args) { OnDeviceAdded(sender, args); } );
-    removed_handler = watcher->Removed += ref new TypedEventHandler<DeviceWatcher^, DeviceInformationUpdate^>([this](DeviceWatcher^ sender, DeviceInformationUpdate^ args) { OnDeviceRemoved(sender, args); } );
-    updated_handler = watcher->Updated += ref new TypedEventHandler<DeviceWatcher^, DeviceInformationUpdate^>([this](DeviceWatcher^ sender, DeviceInformationUpdate^ args) { OnDeviceUpdated(sender, args); } );
-    completed_handler = watcher->EnumerationCompleted += ref new TypedEventHandler<DeviceWatcher^, Platform::Object^>([this](DeviceWatcher^ sender, Platform::Object^ args) { OnEnumerationCompleted(sender, args); } );
+    added_handler = watcher->Added += ref new TypedEventHandler<DeviceWatcher ^, DeviceInformation ^>([this](DeviceWatcher ^ sender, DeviceInformation ^ args) { OnDeviceAdded(sender, args); });
+    removed_handler = watcher->Removed += ref new TypedEventHandler<DeviceWatcher ^, DeviceInformationUpdate ^>([this](DeviceWatcher ^ sender, DeviceInformationUpdate ^ args) { OnDeviceRemoved(sender, args); });
+    updated_handler = watcher->Updated += ref new TypedEventHandler<DeviceWatcher ^, DeviceInformationUpdate ^>([this](DeviceWatcher ^ sender, DeviceInformationUpdate ^ args) { OnDeviceUpdated(sender, args); });
+    completed_handler = watcher->EnumerationCompleted += ref new TypedEventHandler<DeviceWatcher ^, Platform::Object ^>([this](DeviceWatcher ^ sender, Platform::Object ^ args) { OnEnumerationCompleted(sender, args); });
     if (iscapture) {
-        default_changed_handler = MediaDevice::DefaultAudioCaptureDeviceChanged += ref new TypedEventHandler<Platform::Object^, DefaultAudioCaptureDeviceChangedEventArgs^>([this](Platform::Object^ sender, DefaultAudioCaptureDeviceChangedEventArgs^ args) { OnDefaultCaptureDeviceChanged(sender, args); } );
+        default_changed_handler = MediaDevice::DefaultAudioCaptureDeviceChanged += ref new TypedEventHandler<Platform::Object ^, DefaultAudioCaptureDeviceChangedEventArgs ^>([this](Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args) { OnDefaultCaptureDeviceChanged(sender, args); });
     } else {
-        default_changed_handler = MediaDevice::DefaultAudioRenderDeviceChanged += ref new TypedEventHandler<Platform::Object^, DefaultAudioRenderDeviceChangedEventArgs^>([this](Platform::Object^ sender, DefaultAudioRenderDeviceChangedEventArgs^ args) { OnDefaultRenderDeviceChanged(sender, args); } );
+        default_changed_handler = MediaDevice::DefaultAudioRenderDeviceChanged += ref new TypedEventHandler<Platform::Object ^, DefaultAudioRenderDeviceChangedEventArgs ^>([this](Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args) { OnDefaultRenderDeviceChanged(sender, args); });
     }
     watcher->Start();
 }
@@ -142,17 +140,16 @@ SDL_WasapiDeviceEventHandler::~SDL_WasapiDeviceEventHandler()
     }
 }
 
-void
-SDL_WasapiDeviceEventHandler::OnDeviceAdded(DeviceWatcher^ sender, DeviceInformation^ info)
+void SDL_WasapiDeviceEventHandler::OnDeviceAdded(DeviceWatcher ^ sender, DeviceInformation ^ info)
 {
     SDL_assert(sender == this->watcher);
     char *utf8dev = WIN_StringToUTF8(info->Name->Data());
     if (utf8dev) {
         WAVEFORMATEXTENSIBLE fmt;
-        Platform::Object^ obj = info->Properties->Lookup(SDL_PKEY_AudioEngine_DeviceFormat);
+        Platform::Object ^ obj = info->Properties->Lookup(SDL_PKEY_AudioEngine_DeviceFormat);
         if (obj) {
-            IPropertyValue^ property = (IPropertyValue^) obj;
-            Platform::Array<unsigned char>^ data;
+            IPropertyValue ^ property = (IPropertyValue ^) obj;
+            Platform::Array<unsigned char> ^ data;
             property->GetUInt8Array(&data);
             SDL_memcpy(&fmt, data->Data, SDL_min(data->Length, sizeof(WAVEFORMATEXTENSIBLE)));
         } else {
@@ -164,40 +161,34 @@ SDL_WasapiDeviceEventHandler::OnDeviceAdded(DeviceWatcher^ sender, DeviceInforma
     }
 }
 
-void
-SDL_WasapiDeviceEventHandler::OnDeviceRemoved(DeviceWatcher^ sender, DeviceInformationUpdate^ info)
+void SDL_WasapiDeviceEventHandler::OnDeviceRemoved(DeviceWatcher ^ sender, DeviceInformationUpdate ^ info)
 {
     SDL_assert(sender == this->watcher);
     WASAPI_RemoveDevice(this->iscapture, info->Id->Data());
 }
 
-void
-SDL_WasapiDeviceEventHandler::OnDeviceUpdated(DeviceWatcher^ sender, DeviceInformationUpdate^ args)
+void SDL_WasapiDeviceEventHandler::OnDeviceUpdated(DeviceWatcher ^ sender, DeviceInformationUpdate ^ args)
 {
     SDL_assert(sender == this->watcher);
 }
 
-void
-SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher^ sender, Platform::Object^ args)
+void SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher ^ sender, Platform::Object ^ args)
 {
     SDL_assert(sender == this->watcher);
     SDL_SemPost(this->completed);
 }
 
-void
-SDL_WasapiDeviceEventHandler::OnDefaultRenderDeviceChanged(Platform::Object^ sender, DefaultAudioRenderDeviceChangedEventArgs^ args)
+void SDL_WasapiDeviceEventHandler::OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args)
 {
     SDL_assert(this->iscapture);
     SDL_AtomicAdd(&SDL_IMMDevice_DefaultPlaybackGeneration, 1);
 }
 
-void
-SDL_WasapiDeviceEventHandler::OnDefaultCaptureDeviceChanged(Platform::Object^ sender, DefaultAudioCaptureDeviceChangedEventArgs^ args)
+void SDL_WasapiDeviceEventHandler::OnDefaultCaptureDeviceChanged(Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args)
 {
     SDL_assert(!this->iscapture);
     SDL_AtomicAdd(&SDL_IMMDevice_DefaultCaptureGeneration, 1);
 }
-
 
 static SDL_WasapiDeviceEventHandler *playback_device_event_handler;
 static SDL_WasapiDeviceEventHandler *capture_device_event_handler;
@@ -238,10 +229,11 @@ void WASAPI_EnumerateEndpoints(void)
     SDL_SemWait(capture_device_event_handler->completed);
 }
 
-struct SDL_WasapiActivationHandler : public RuntimeClass< RuntimeClassFlags< ClassicCom >, FtmBase, IActivateAudioInterfaceCompletionHandler >
+struct SDL_WasapiActivationHandler : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>
 {
     SDL_WasapiActivationHandler() : device(nullptr) {}
-    STDMETHOD(ActivateCompleted)(IActivateAudioInterfaceAsyncOperation *operation);
+    STDMETHOD(ActivateCompleted)
+    (IActivateAudioInterfaceAsyncOperation *operation);
     SDL_AudioDevice *device;
 };
 
@@ -254,23 +246,20 @@ SDL_WasapiActivationHandler::ActivateCompleted(IActivateAudioInterfaceAsyncOpera
     return S_OK;
 }
 
-void
-WASAPI_PlatformDeleteActivationHandler(void *handler)
+void WASAPI_PlatformDeleteActivationHandler(void *handler)
 {
-    ((SDL_WasapiActivationHandler *) handler)->Release();
+    ((SDL_WasapiActivationHandler *)handler)->Release();
 }
 
-int
-WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+int WASAPI_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     return SDL_Unsupported();
 }
 
-int
-WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
+int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
 {
     LPCWSTR devid = _this->hidden->devid;
-    Platform::String^ defdevid;
+    Platform::String ^ defdevid;
 
     if (devid == nullptr) {
         defdevid = _this->iscapture ? MediaDevice::GetDefaultAudioCaptureId(AudioDeviceRole::Default) : MediaDevice::GetDefaultAudioRenderId(AudioDeviceRole::Default);
@@ -286,11 +275,11 @@ WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
         return SDL_SetError("Failed to allocate WASAPI activation handler");
     }
 
-    handler.Get()->AddRef();  // we hold a reference after ComPtr destructs on return, causing a Release, and Release ourselves in WASAPI_PlatformDeleteActivationHandler(), etc.
+    handler.Get()->AddRef(); // we hold a reference after ComPtr destructs on return, causing a Release, and Release ourselves in WASAPI_PlatformDeleteActivationHandler(), etc.
     handler.Get()->device = _this;
     _this->hidden->activation_handler = handler.Get();
 
-    WASAPI_RefDevice(_this);  /* completion handler will unref it. */
+    WASAPI_RefDevice(_this); /* completion handler will unref it. */
     IActivateAudioInterfaceAsyncOperation *async = nullptr;
     const HRESULT ret = ActivateAudioInterfaceAsync(devid, __uuidof(IAudioClient), nullptr, handler.Get(), &async);
 
@@ -337,22 +326,20 @@ WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
     return 0;
 }
 
-void
-WASAPI_PlatformThreadInit(_THIS)
+void WASAPI_PlatformThreadInit(_THIS)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
 }
 
-void
-WASAPI_PlatformThreadDeinit(_THIS)
+void WASAPI_PlatformThreadDeinit(_THIS)
 {
     // !!! FIXME: set this thread to "Pro Audio" priority.
 }
 
 /* Everything below was copied from SDL_wasapi.c, before it got moved to SDL_immdevice.c! */
 
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
-static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
+static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 
 extern "C" SDL_AudioFormat
 WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
@@ -376,8 +363,7 @@ WaveFormatToSDLFormat(WAVEFORMATEX *waveformat)
     return 0;
 }
 
-static void
-WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
+static void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
 {
     DevIdList *i;
     DevIdList *next;
@@ -399,8 +385,7 @@ WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid)
     }
 }
 
-static void
-WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
+static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid)
 {
     DevIdList *devidlist;
     SDL_AudioSpec spec;
@@ -410,22 +395,22 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENS
        phones and tablets, where you might have an internal speaker and a headphone jack and expect both to be
        available and switch automatically. (!!! FIXME...?) */
 
-       /* see if we already have this one. */
+    /* see if we already have this one. */
     for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
         if (SDL_wcscmp(devidlist->str, devid) == 0) {
-            return;  /* we already have this. */
+            return; /* we already have this. */
         }
     }
 
     devidlist = (DevIdList *)SDL_malloc(sizeof(*devidlist));
     if (devidlist == NULL) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     devid = SDL_wcsdup(devid);
     if (!devid) {
         SDL_free(devidlist);
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     devidlist->str = (WCHAR *)devid;
@@ -439,6 +424,6 @@ WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVEFORMATEXTENS
     SDL_AddAudioDevice(iscapture, devname, &spec, (void *)devid);
 }
 
-#endif  // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
+#endif // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
 
 /* vi: set ts=4 sw=4 expandtab: */

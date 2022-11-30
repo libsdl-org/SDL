@@ -22,7 +22,6 @@
 
 /* This is the system specific header for the SDL locale API */
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -27,12 +27,12 @@
 #include <psp2/kernel/sysmem.h>
 #include "SDL_render_vita_gxm_types.h"
 
-#define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
+#define ALIGN(x, a) (((x) + ((a)-1)) & ~((a)-1))
 
 void *vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid);
 void vita_mem_free(SceUID uid);
 void *vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size);
-void vita_gpu_mem_free(VITA_GXM_RenderData *data, void* ptr);
+void vita_gpu_mem_free(VITA_GXM_RenderData *data, void *ptr);
 void vita_gpu_mem_destroy(VITA_GXM_RenderData *data);
 void *vita_mem_vertex_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset);
 void vita_mem_vertex_usse_free(SceUID uid);

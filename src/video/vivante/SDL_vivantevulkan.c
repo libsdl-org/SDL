@@ -86,8 +86,7 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
     if (extensions == NULL) {
         goto fail;
     }
-    for (i = 0; i < extensionCount; i++)
-    {
+    for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
         } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
@@ -96,12 +95,10 @@ int VIVANTE_Vulkan_LoadLibrary(_THIS, const char *path)
     }
     SDL_free(extensions);
     if (!hasSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else if (!hasDisplayExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the "
-                     VK_KHR_DISPLAY_EXTENSION_NAME "extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_DISPLAY_EXTENSION_NAME "extension");
         goto fail;
     }
     return 0;
@@ -121,9 +118,9 @@ void VIVANTE_Vulkan_UnloadLibrary(_THIS)
 }
 
 SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names)
+                                              SDL_Window *window,
+                                              unsigned *count,
+                                              const char **names)
 {
     static const char *const extensionsForVivante[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
@@ -133,14 +130,14 @@ SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(_THIS,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForVivante),
-            extensionsForVivante);
+        count, names, SDL_arraysize(extensionsForVivante),
+        extensionsForVivante);
 }
 
 SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface)
+                                      SDL_Window *window,
+                                      VkInstance instance,
+                                      VkSurfaceKHR *surface)
 {
     if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
@@ -152,4 +149,3 @@ SDL_bool VIVANTE_Vulkan_CreateSurface(_THIS,
 #endif
 
 /* vi: set ts=4 sw=4 expandtab: */
-

@@ -45,8 +45,7 @@ static int X11_VideoInit(_THIS);
 static void X11_VideoQuit(_THIS);
 
 /* Find out what class name we should use */
-static char *
-get_classname()
+static char *get_classname()
 {
     char *spot;
 #if defined(__LINUX__) || defined(__FREEBSD__)
@@ -89,12 +88,11 @@ get_classname()
 
 /* X11 driver bootstrap functions */
 
-static int (*orig_x11_errhandler) (Display *, XErrorEvent *) = NULL;
+static int (*orig_x11_errhandler)(Display *, XErrorEvent *) = NULL;
 
-static void
-X11_DeleteDevice(SDL_VideoDevice * device)
+static void X11_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *data = (SDL_VideoData *) device->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)device->driverdata;
     if (device->vulkan_config.loader_handle) {
         device->Vulkan_UnloadLibrary(device);
     }
@@ -117,8 +115,7 @@ X11_DeleteDevice(SDL_VideoDevice * device)
 
 /* An error handler to reset the vidmode and then call the default handler. */
 static SDL_bool safety_net_triggered = SDL_FALSE;
-static int
-X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
+static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
 {
     SDL_VideoDevice *device = NULL;
     /* if we trigger an error in our error handler, don't try again. */
@@ -130,7 +127,7 @@ X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
             for (i = 0; i < device->num_displays; i++) {
                 SDL_VideoDisplay *display = &device->displays[i];
                 if (SDL_memcmp(&display->current_mode, &display->desktop_mode,
-                               sizeof (SDL_DisplayMode)) != 0) {
+                               sizeof(SDL_DisplayMode)) != 0) {
                     X11_SetDisplayMode(device, display, &display->desktop_mode);
                 }
             }
@@ -138,14 +135,13 @@ X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
     }
 
     if (orig_x11_errhandler != NULL) {
-        return orig_x11_errhandler(d, e);  /* probably terminate. */
+        return orig_x11_errhandler(d, e); /* probably terminate. */
     }
 
     return 0;
 }
 
-static SDL_VideoDevice *
-X11_CreateDevice(void)
+static SDL_VideoDevice *X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -169,12 +165,12 @@ X11_CreateDevice(void)
     }
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
-    data = (struct SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
+    data = (struct SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (data == NULL) {
         SDL_free(device);
         SDL_OutOfMemory();
@@ -331,9 +327,8 @@ VideoBootStrap X11_bootstrap = {
     X11_CreateDevice
 };
 
-static int (*handler) (Display *, XErrorEvent *) = NULL;
-static int
-X11_CheckWindowManagerErrorHandler(Display * d, XErrorEvent * e)
+static int (*handler)(Display *, XErrorEvent *) = NULL;
+static int X11_CheckWindowManagerErrorHandler(Display *d, XErrorEvent *e)
 {
     if (e->error_code == BadWindow) {
         return 0;
@@ -342,10 +337,9 @@ X11_CheckWindowManagerErrorHandler(Display * d, XErrorEvent * e)
     }
 }
 
-static void
-X11_CheckWindowManager(_THIS)
+static void X11_CheckWindowManager(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     Display *display = data->display;
     Atom _NET_SUPPORTING_WM_CHECK;
     int status, real_format;
@@ -365,7 +359,7 @@ X11_CheckWindowManager(_THIS)
     status = X11_XGetWindowProperty(display, DefaultRootWindow(display), _NET_SUPPORTING_WM_CHECK, 0L, 1L, False, XA_WINDOW, &real_type, &real_format, &items_read, &items_left, &propdata);
     if (status == Success) {
         if (items_read) {
-            wm_window = ((Window*)propdata)[0];
+            wm_window = ((Window *)propdata)[0];
         }
         if (propdata) {
             X11_XFree(propdata);
@@ -375,7 +369,7 @@ X11_CheckWindowManager(_THIS)
 
     if (wm_window) {
         status = X11_XGetWindowProperty(display, wm_window, _NET_SUPPORTING_WM_CHECK, 0L, 1L, False, XA_WINDOW, &real_type, &real_format, &items_read, &items_left, &propdata);
-        if (status != Success || !items_read || wm_window != ((Window*)propdata)[0]) {
+        if (status != Success || !items_read || wm_window != ((Window *)propdata)[0]) {
             wm_window = None;
         }
         if (status == Success && propdata) {
@@ -403,11 +397,9 @@ X11_CheckWindowManager(_THIS)
 #endif
 }
 
-
-int
-X11_VideoInit(_THIS)
+int X11_VideoInit(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     /* Get the window class name, usually the name of the application */
     data->classname = get_classname();
@@ -416,7 +408,7 @@ X11_VideoInit(_THIS)
     data->pid = getpid();
 
     /* I have no idea how random this actually is, or has to be. */
-    data->window_group = (XID) (((size_t) data->pid) ^ ((size_t) _this));
+    data->window_group = (XID)(((size_t)data->pid) ^ ((size_t)_this));
 
     /* Look up some useful Atoms */
 #define GET_ATOM(X) data->X = X11_XInternAtom(data->display, #X, False)
@@ -483,10 +475,9 @@ X11_VideoInit(_THIS)
     return 0;
 }
 
-void
-X11_VideoQuit(_THIS)
+void X11_VideoQuit(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
 
     if (data->clipboard_window) {
         X11_XDestroyWindow(data->display, data->clipboard_window);

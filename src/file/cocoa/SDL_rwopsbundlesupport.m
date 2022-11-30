@@ -32,34 +32,35 @@
  but we would somehow need to know what the bundle identifiers we need to search are.
  Also, note the bundle layouts are different for iPhone and Mac.
 */
-FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
-{ @autoreleasepool
+FILE *SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
 {
-    FILE* fp = NULL;
-    NSFileManager* file_manager;
-    NSString* resource_path;
-    NSString* ns_string_file_component;
-    NSString* full_path_with_file_to_try;
+    @autoreleasepool {
+        FILE *fp = NULL;
+        NSFileManager *file_manager;
+        NSString *resource_path;
+        NSString *ns_string_file_component;
+        NSString *full_path_with_file_to_try;
 
-    /* If the file mode is writable, skip all the bundle stuff because generally the bundle is read-only. */
-    if(strcmp("r", mode) && strcmp("rb", mode)) {
-        return fopen(file, mode);
+        /* If the file mode is writable, skip all the bundle stuff because generally the bundle is read-only. */
+        if (strcmp("r", mode) && strcmp("rb", mode)) {
+            return fopen(file, mode);
+        }
+
+        file_manager = [NSFileManager defaultManager];
+        resource_path = [[NSBundle mainBundle] resourcePath];
+
+        ns_string_file_component = [file_manager stringWithFileSystemRepresentation:file length:strlen(file)];
+
+        full_path_with_file_to_try = [resource_path stringByAppendingPathComponent:ns_string_file_component];
+        if ([file_manager fileExistsAtPath:full_path_with_file_to_try]) {
+            fp = fopen([full_path_with_file_to_try fileSystemRepresentation], mode);
+        } else {
+            fp = fopen(file, mode);
+        }
+
+        return fp;
     }
-
-    file_manager = [NSFileManager defaultManager];
-    resource_path = [[NSBundle mainBundle] resourcePath];
-
-    ns_string_file_component = [file_manager stringWithFileSystemRepresentation:file length:strlen(file)];
-
-    full_path_with_file_to_try = [resource_path stringByAppendingPathComponent:ns_string_file_component];
-    if([file_manager fileExistsAtPath:full_path_with_file_to_try]) {
-        fp = fopen([full_path_with_file_to_try fileSystemRepresentation], mode);
-    } else {
-        fp = fopen(file, mode);
-    }
-
-    return fp;
-}}
+}
 
 #endif /* __APPLE__ */
 

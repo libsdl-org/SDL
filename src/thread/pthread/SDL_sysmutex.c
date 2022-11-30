@@ -23,7 +23,6 @@
 #include <errno.h>
 #include <pthread.h>
 
-
 #if !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX && \
     !SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
 #define FAKE_RECURSIVE_MUTEX 1
@@ -45,7 +44,7 @@ SDL_CreateMutex(void)
     pthread_mutexattr_t attr;
 
     /* Allocate the structure */
-    mutex = (SDL_mutex *) SDL_calloc(1, sizeof(*mutex));
+    mutex = (SDL_mutex *)SDL_calloc(1, sizeof(*mutex));
     if (mutex) {
         pthread_mutexattr_init(&attr);
 #if SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
@@ -66,8 +65,7 @@ SDL_CreateMutex(void)
     return mutex;
 }
 
-void
-SDL_DestroyMutex(SDL_mutex * mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
     if (mutex) {
         pthread_mutex_destroy(&mutex->id);
@@ -76,8 +74,7 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 }
 
 /* Lock the mutex */
-int
-SDL_LockMutex(SDL_mutex * mutex)
+int SDL_LockMutex(SDL_mutex *mutex)
 {
 #if FAKE_RECURSIVE_MUTEX
     pthread_t this_thread;
@@ -111,8 +108,7 @@ SDL_LockMutex(SDL_mutex * mutex)
     return 0;
 }
 
-int
-SDL_TryLockMutex(SDL_mutex * mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     int retval;
     int result;
@@ -157,8 +153,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     return retval;
 }
 
-int
-SDL_UnlockMutex(SDL_mutex * mutex)
+int SDL_UnlockMutex(SDL_mutex *mutex)
 {
     if (mutex == NULL) {
         return SDL_InvalidParamError("mutex");
