@@ -28,7 +28,8 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-int Cocoa_GLES_LoadLibrary(_THIS, const char *path)
+int
+Cocoa_GLES_LoadLibrary(_THIS, const char *path)
 {
     /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
@@ -48,7 +49,7 @@ int Cocoa_GLES_LoadLibrary(_THIS, const char *path)
         return SDL_SetError("SDL not configured with OpenGL/CGL support");
 #endif
     }
-
+    
     if (_this->egl_data == NULL) {
         return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0);
     }
@@ -57,11 +58,11 @@ int Cocoa_GLES_LoadLibrary(_THIS, const char *path)
 }
 
 SDL_GLContext
-Cocoa_GLES_CreateContext(_THIS, SDL_Window *window)
+Cocoa_GLES_CreateContext(_THIS, SDL_Window * window)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        SDL_GLContext context;
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+    SDL_GLContext context;
+    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
 
 #if SDL_VIDEO_OPENGL_CGL
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
@@ -77,12 +78,12 @@ Cocoa_GLES_CreateContext(_THIS, SDL_Window *window)
         _this->GL_SwapWindow = Cocoa_GL_SwapWindow;
         _this->GL_DeleteContext = Cocoa_GL_DeleteContext;
 
-            if (Cocoa_GL_LoadLibrary(_this, NULL) != 0) {
-                return NULL;
-            }
-
-            return Cocoa_GL_CreateContext(_this, window);
+        if (Cocoa_GL_LoadLibrary(_this, NULL) != 0) {
+            return NULL;
         }
+
+        return Cocoa_GL_CreateContext(_this, window);
+    }
 #endif
 
     context = SDL_EGL_CreateContext(_this, data.egl_surface);
@@ -114,18 +115,12 @@ Cocoa_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 int
 Cocoa_GLES_SetupWindow(_THIS, SDL_Window * window)
 {
-    @autoreleasepool {
-        SDL_EGL_DeleteContext(_this, context);
-        Cocoa_GLES_UnloadLibrary(_this);
-    }
-}
+    NSView* v;
+    /* The current context is lost in here; save it and reset it. */
+    SDL_WindowData *windowdata = (__bridge SDL_WindowData *) window->driverdata;
+    SDL_Window *current_win = SDL_GL_GetCurrentWindow();
+    SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
-int Cocoa_GLES_SwapWindow(_THIS, SDL_Window *window)
-{
-    @autoreleasepool {
-        return SDL_EGL_SwapBuffers(_this, ((__bridge SDL_WindowData *)window->driverdata).egl_surface);
-    }
-}
 
     if (_this->egl_data == NULL) {
         /* !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan. */
@@ -136,12 +131,16 @@ int Cocoa_GLES_SwapWindow(_THIS, SDL_Window *window)
             SDL_EGL_UnloadLibrary(_this);
             return -1;
         }
-
-        if (h) {
-            *h = height;
-        }
+        _this->gl_config.driver_loaded = 1;
     }
-}
+  
+    /* Create the GLES window surface */
+    v = windowdata.nswindow.contentView;
+    windowdata.egl_surface = SDL_EGL_CreateSurface(_this, (__bridge NativeWindowType)[v layer]);
+
+    if (windowdata.egl_surface == EGL_NO_SURFACE) {
+        return SDL_SetError("Could not create GLES window surface");
+    }
 
     return Cocoa_GLES_MakeCurrent(_this, current_win, current_ctx);
 }

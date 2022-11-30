@@ -27,8 +27,7 @@
 #import "SDL_uikitopenglview.h"
 #include "SDL_uikitwindow.h"
 
-@implementation SDL_uikitopenglview
-{
+@implementation SDL_uikitopenglview {
     /* The renderbuffer and framebuffer used to render to this layer. */
     GLuint viewRenderbuffer, viewFramebuffer;
 
@@ -110,8 +109,8 @@
 
         eaglLayer.opaque = YES;
         eaglLayer.drawableProperties = @{
-            kEAGLDrawablePropertyRetainedBacking : @(retained),
-            kEAGLDrawablePropertyColorFormat : colorFormat
+            kEAGLDrawablePropertyRetainedBacking:@(retained),
+            kEAGLDrawablePropertyColorFormat:colorFormat
         };
 
         /* Set the appropriate scale (for retina display support) */
@@ -280,7 +279,7 @@
 - (void)swapBuffers
 {
     if (msaaFramebuffer) {
-        const GLenum attachments[] = { GL_COLOR_ATTACHMENT0 };
+        const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, viewFramebuffer);
 
@@ -318,8 +317,8 @@
 {
     [super layoutSubviews];
 
-    int width = (int)(self.bounds.size.width * self.contentScaleFactor);
-    int height = (int)(self.bounds.size.height * self.contentScaleFactor);
+    int width  = (int) (self.bounds.size.width * self.contentScaleFactor);
+    int height = (int) (self.bounds.size.height * self.contentScaleFactor);
 
     /* Update the color and depth buffer storage if the layer size has changed. */
     if (width != backingWidth || height != backingHeight) {

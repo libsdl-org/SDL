@@ -25,54 +25,53 @@
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_clipboardevents_c.h"
 
-int Cocoa_SetClipboardText(_THIS, const char *text)
+int
+Cocoa_SetClipboardText(_THIS, const char *text)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
-        NSPasteboard *pasteboard;
-        NSString *format = NSPasteboardTypeString;
-        NSString *nsstr = [NSString stringWithUTF8String:text];
-        if (nsstr == nil) {
-            return SDL_SetError("Couldn't create NSString; is your string data in UTF-8 format?");
-        }
-
-        pasteboard = [NSPasteboard generalPasteboard];
-        data.clipboard_count = [pasteboard declareTypes:[NSArray arrayWithObject:format] owner:nil];
-        [pasteboard setString:nsstr forType:format];
-
-        return 0;
+    SDL_VideoData *data = (__bridge SDL_VideoData *) _this->driverdata;
+    NSPasteboard *pasteboard;
+    NSString *format = NSPasteboardTypeString;
+    NSString *nsstr = [NSString stringWithUTF8String:text];
+    if (nsstr == nil) {
+        return SDL_SetError("Couldn't create NSString; is your string data in UTF-8 format?");
     }
-}
+
+    pasteboard = [NSPasteboard generalPasteboard];
+    data.clipboard_count = [pasteboard declareTypes:[NSArray arrayWithObject:format] owner:nil];
+    [pasteboard setString:nsstr forType:format];
+
+    return 0;
+}}
 
 char *
 Cocoa_GetClipboardText(_THIS)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        NSPasteboard *pasteboard;
-        NSString *format = NSPasteboardTypeString;
-        NSString *available;
-        char *text;
+    NSPasteboard *pasteboard;
+    NSString *format = NSPasteboardTypeString;
+    NSString *available;
+    char *text;
 
-        pasteboard = [NSPasteboard generalPasteboard];
-        available = [pasteboard availableTypeFromArray:[NSArray arrayWithObject:format]];
-        if ([available isEqualToString:format]) {
-            NSString *string;
-            const char *utf8;
+    pasteboard = [NSPasteboard generalPasteboard];
+    available = [pasteboard availableTypeFromArray:[NSArray arrayWithObject:format]];
+    if ([available isEqualToString:format]) {
+        NSString* string;
+        const char *utf8;
 
-            string = [pasteboard stringForType:format];
-            if (string == nil) {
-                utf8 = "";
-            } else {
-                utf8 = [string UTF8String];
-            }
-            text = SDL_strdup(utf8 ? utf8 : "");
+        string = [pasteboard stringForType:format];
+        if (string == nil) {
+            utf8 = "";
         } else {
-            text = SDL_strdup("");
+            utf8 = [string UTF8String];
         }
-
-        return text;
+        text = SDL_strdup(utf8 ? utf8 : "");
+    } else {
+        text = SDL_strdup("");
     }
-}
+
+    return text;
+}}
 
 SDL_bool
 Cocoa_HasClipboardText(_THIS)
@@ -86,22 +85,22 @@ Cocoa_HasClipboardText(_THIS)
     return result;
 }
 
-void Cocoa_CheckClipboardUpdate(SDL_VideoData *data)
+void
+Cocoa_CheckClipboardUpdate(SDL_VideoData * data)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        NSPasteboard *pasteboard;
-        NSInteger count;
+    NSPasteboard *pasteboard;
+    NSInteger count;
 
-        pasteboard = [NSPasteboard generalPasteboard];
-        count = [pasteboard changeCount];
-        if (count != data.clipboard_count) {
-            if (data.clipboard_count) {
-                SDL_SendClipboardUpdate();
-            }
-            data.clipboard_count = count;
+    pasteboard = [NSPasteboard generalPasteboard];
+    count = [pasteboard changeCount];
+    if (count != data.clipboard_count) {
+        if (data.clipboard_count) {
+            SDL_SendClipboardUpdate();
         }
+        data.clipboard_count = count;
     }
-}
+}}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
 

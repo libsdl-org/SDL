@@ -41,8 +41,9 @@
 
 static BOOL UIKit_EventPumpEnabled = YES;
 
+
 @interface SDL_LifecycleObserver : NSObject
-@property(nonatomic, assign) BOOL isObservingNotifications;
+@property (nonatomic, assign) BOOL isObservingNotifications;
 @end
 
 @implementation SDL_LifecycleObserver
@@ -59,10 +60,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
         [notificationCenter addObserver:self selector:@selector(applicationWillTerminate) name:UIApplicationWillTerminateNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(applicationDidReceiveMemoryWarning) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
 #if !TARGET_OS_TV
-        [notificationCenter addObserver:self
-                               selector:@selector(applicationDidChangeStatusBarOrientation)
-                                   name:UIApplicationDidChangeStatusBarOrientationNotification
-                                 object:nil];
+        [notificationCenter addObserver:self selector:@selector(applicationDidChangeStatusBarOrientation) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
 #endif
     } else if (!UIKit_EventPumpEnabled && self.isObservingNotifications) {
         self.isObservingNotifications = NO;
@@ -109,19 +107,22 @@ static BOOL UIKit_EventPumpEnabled = YES;
 
 @end
 
-void SDL_iPhoneSetEventPump(SDL_bool enabled)
+
+void
+SDL_iPhoneSetEventPump(SDL_bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
 
     static SDL_LifecycleObserver *lifecycleObserver;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-      lifecycleObserver = [SDL_LifecycleObserver new];
+        lifecycleObserver = [SDL_LifecycleObserver new];
     });
     [lifecycleObserver eventPumpChanged];
 }
 
-void UIKit_PumpEvents(_THIS)
+void
+UIKit_PumpEvents(_THIS)
 {
     if (!UIKit_EventPumpEnabled) {
         return;
@@ -144,7 +145,7 @@ void UIKit_PumpEvents(_THIS)
     /* Make sure UIScrollView objects scroll properly. */
     do {
         result = CFRunLoopRunInMode((CFStringRef)UITrackingRunLoopMode, seconds, TRUE);
-    } while (result == kCFRunLoopRunHandledSource);
+    } while(result == kCFRunLoopRunHandledSource);
 
     /* See the comment in the function definition. */
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
@@ -161,12 +162,13 @@ static id keyboard_disconnect_observer = nil;
 static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
     keyboard_connected = SDL_TRUE;
-    keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
-      SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
+    keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed)
+    {
+        SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
     };
 
-    dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL);
-    dispatch_set_target_queue(queue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+    dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL );
+    dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
     keyboard.handlerQueue = queue;
 }
 
@@ -186,16 +188,16 @@ void SDL_InitGCKeyboard(void)
                                                             object:nil
                                                              queue:nil
                                                         usingBlock:^(NSNotification *note) {
-                                                          GCKeyboard *keyboard = note.object;
-                                                          OnGCKeyboardConnected(keyboard);
+                                                            GCKeyboard *keyboard = note.object;
+                                                            OnGCKeyboardConnected(keyboard);
                                                         }];
 
             keyboard_disconnect_observer = [center addObserverForName:GCKeyboardDidDisconnectNotification
                                                                object:nil
                                                                 queue:nil
                                                            usingBlock:^(NSNotification *note) {
-                                                             GCKeyboard *keyboard = note.object;
-                                                             OnGCKeyboardDisconnected(keyboard);
+                                                                GCKeyboard *keyboard = note.object;
+                                                                OnGCKeyboardDisconnected(keyboard);
                                                            }];
 
             if (GCKeyboard.coalescedKeyboard != nil) {
@@ -250,6 +252,7 @@ void SDL_QuitGCKeyboard(void)
 
 #endif /* ENABLE_GCKEYBOARD */
 
+
 #ifdef ENABLE_GCMOUSE
 
 static int mice_connected = 0;
@@ -283,36 +286,42 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 {
     SDL_MouseID mouseID = mice_connected;
 
-    mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-      OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
+    mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
+    {
+        OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
     };
-    mouse.mouseInput.middleButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-      OnGCMouseButtonChanged(mouseID, SDL_BUTTON_MIDDLE, pressed);
+    mouse.mouseInput.middleButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
+    {
+        OnGCMouseButtonChanged(mouseID, SDL_BUTTON_MIDDLE, pressed);
     };
-    mouse.mouseInput.rightButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-      OnGCMouseButtonChanged(mouseID, SDL_BUTTON_RIGHT, pressed);
+    mouse.mouseInput.rightButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
+    {
+        OnGCMouseButtonChanged(mouseID, SDL_BUTTON_RIGHT, pressed);
     };
 
     int auxiliary_button = SDL_BUTTON_X1;
     for (GCControllerButtonInput *btn in mouse.mouseInput.auxiliaryButtons) {
-        btn.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-          OnGCMouseButtonChanged(mouseID, auxiliary_button, pressed);
+        btn.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed)
+        {
+            OnGCMouseButtonChanged(mouseID, auxiliary_button, pressed);
         };
         ++auxiliary_button;
     }
 
-    mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
-      if (SDL_GCMouseRelativeMode()) {
-          SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
-      }
+    mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY)
+    {
+        if (SDL_GCMouseRelativeMode()) {
+            SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
+        }
     };
 
-    mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-      SDL_SendMouseWheel(SDL_GetMouseFocus(), 0, xValue, yValue, SDL_MOUSEWHEEL_NORMAL);
+    mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue)
+    {
+        SDL_SendMouseWheel(SDL_GetMouseFocus(), 0, xValue, yValue, SDL_MOUSEWHEEL_NORMAL);
     };
 
-    dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL);
-    dispatch_set_target_queue(queue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+    dispatch_queue_t queue = dispatch_queue_create( "org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL );
+    dispatch_set_target_queue( queue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0 ) );
     mouse.handlerQueue = queue;
 
     ++mice_connected;
@@ -353,17 +362,17 @@ void SDL_InitGCMouse(void)
                                                              object:nil
                                                               queue:nil
                                                          usingBlock:^(NSNotification *note) {
-                                                           GCMouse *mouse = note.object;
-                                                           OnGCMouseConnected(mouse);
+                                                             GCMouse *mouse = note.object;
+                                                             OnGCMouseConnected(mouse);
                                                          }];
 
                 mouse_disconnect_observer = [center addObserverForName:GCMouseDidDisconnectNotification
                                                                 object:nil
                                                                  queue:nil
                                                             usingBlock:^(NSNotification *note) {
-                                                              GCMouse *mouse = note.object;
-                                                              OnGCMouseDisconnected(mouse);
-                                                            }];
+                                                                GCMouse *mouse = note.object;
+                                                                OnGCMouseDisconnected(mouse);
+                                                           }];
 
                 for (GCMouse *mouse in [GCMouse mice]) {
                     OnGCMouseConnected(mouse);

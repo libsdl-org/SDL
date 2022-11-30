@@ -39,18 +39,18 @@
 @interface SDL_uikitviewcontroller : SDLRootViewController
 #endif
 
-@property(nonatomic, assign) SDL_Window *window;
+@property (nonatomic, assign) SDL_Window *window;
 
 - (instancetype)initWithSDLWindow:(SDL_Window *)_window;
 
 - (void)setAnimationCallback:(int)interval
-                    callback:(void (*)(void *))callback
-               callbackParam:(void *)callbackParam;
+                    callback:(void (*)(void*))callback
+               callbackParam:(void*)callbackParam;
 
 - (void)startAnimation;
 - (void)stopAnimation;
 
-- (void)doLoop:(CADisplayLink *)sender;
+- (void)doLoop:(CADisplayLink*)sender;
 
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
@@ -61,7 +61,7 @@
 - (BOOL)prefersHomeIndicatorAutoHidden;
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures;
 
-@property(nonatomic, assign) int homeIndicatorHidden;
+@property (nonatomic, assign) int homeIndicatorHidden;
 #endif
 
 #if SDL_IPHONE_KEYBOARD
@@ -75,9 +75,9 @@
 
 - (void)updateKeyboard;
 
-@property(nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
-@property(nonatomic, assign) SDL_Rect textInputRect;
-@property(nonatomic, assign) int keyboardHeight;
+@property (nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
+@property (nonatomic, assign) SDL_Rect textInputRect;
+@property (nonatomic, assign) int keyboardHeight;
 #endif
 
 @end

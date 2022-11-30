@@ -45,7 +45,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     if (device && device->windows) {
         for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
-            NSWindow *nswindow = ((__bridge SDL_WindowData *)sdlwindow->driverdata).nswindow;
+            NSWindow *nswindow = ((__bridge SDL_WindowData *) sdlwindow->driverdata).nswindow;
             if (win == nswindow)
                 return sdlwindow;
         }
@@ -78,26 +78,26 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     switch ([theEvent type]) {
-    case NSEventTypeLeftMouseDown:
-    case NSEventTypeOtherMouseDown:
-    case NSEventTypeRightMouseDown:
-    case NSEventTypeLeftMouseUp:
-    case NSEventTypeOtherMouseUp:
-    case NSEventTypeRightMouseUp:
-    case NSEventTypeLeftMouseDragged:
-    case NSEventTypeRightMouseDragged:
-    case NSEventTypeOtherMouseDragged: /* usually middle mouse dragged */
-    case NSEventTypeMouseMoved:
-    case NSEventTypeScrollWheel:
-        Cocoa_HandleMouseEvent(_this, theEvent);
-        break;
-    case NSEventTypeKeyDown:
-    case NSEventTypeKeyUp:
-    case NSEventTypeFlagsChanged:
-        Cocoa_HandleKeyEvent(_this, theEvent);
-        break;
-    default:
-        break;
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeOtherMouseDown:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeOtherMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDragged: /* usually middle mouse dragged */
+        case NSEventTypeMouseMoved:
+        case NSEventTypeScrollWheel:
+            Cocoa_HandleMouseEvent(_this, theEvent);
+            break;
+        case NSEventTypeKeyDown:
+        case NSEventTypeKeyUp:
+        case NSEventTypeFlagsChanged:
+            Cocoa_HandleKeyEvent(_this, theEvent);
+            break;
+        default:
+            break;
     }
 }
 
@@ -116,23 +116,22 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 + (void)registerUserDefaults
 {
     NSDictionary *appDefaults = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                                          [NSNumber numberWithBool:NO], @"AppleMomentumScrollSupported",
-                                                          [NSNumber numberWithBool:NO], @"ApplePressAndHoldEnabled",
-                                                          [NSNumber numberWithBool:YES], @"ApplePersistenceIgnoreState",
-                                                          nil];
+                                 [NSNumber numberWithBool:NO], @"AppleMomentumScrollSupported",
+                                 [NSNumber numberWithBool:NO], @"ApplePressAndHoldEnabled",
+                                 [NSNumber numberWithBool:YES], @"ApplePersistenceIgnoreState",
+                                 nil];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
 }
 
 @end // SDLApplication
 
 /* setAppleMenu disappeared from the headers in 10.4 */
-@interface NSApplication (NSAppleMenu)
+@interface NSApplication(NSAppleMenu)
 - (void)setAppleMenu:(NSMenu *)menu;
 @end
 
-@interface SDLAppDelegate : NSObject <NSApplicationDelegate>
-{
-  @public
+@interface SDLAppDelegate : NSObject <NSApplicationDelegate> {
+@public
     BOOL seenFirstActivate;
 }
 
@@ -186,7 +185,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (void)windowWillClose:(NSNotification *)notification;
 {
-    NSWindow *win = (NSWindow *)[notification object];
+    NSWindow *win = (NSWindow*)[notification object];
 
     if (![win isKeyWindow]) {
         return;
@@ -293,7 +292,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
             [i activateWithOptions:NSApplicationActivateIgnoringOtherApps];
             break;
         }
-        SDL_Delay(300); /* !!! FIXME: this isn't right. */
+        SDL_Delay(300);  /* !!! FIXME: this isn't right. */
         [NSApp activateIgnoringOtherApps:YES];
     }
 
@@ -304,7 +303,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (void)handleURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
-    NSString *path = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+    NSString* path = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
     SDL_SendDropFile(NULL, [path UTF8String]);
     SDL_SendDropComplete(NULL);
 }
@@ -313,7 +312,8 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 static SDLAppDelegate *appDelegate = nil;
 
-static NSString *GetApplicationName(void)
+static NSString *
+GetApplicationName(void)
 {
     NSString *appName;
 
@@ -330,7 +330,8 @@ static NSString *GetApplicationName(void)
     return appName;
 }
 
-static bool LoadMainMenuNibIfAvailable(void)
+static bool
+LoadMainMenuNibIfAvailable(void)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
     NSDictionary *infoDict;
@@ -343,19 +344,20 @@ static bool LoadMainMenuNibIfAvailable(void)
     infoDict = [[NSBundle mainBundle] infoDictionary];
     if (infoDict) {
         mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];
-
+        
         if (mainNibFileName) {
             success = [[NSBundle mainBundle] loadNibNamed:mainNibFileName owner:[NSApplication sharedApplication] topLevelObjects:nil];
         }
     }
-
+    
     return success;
 #else
     return false;
 #endif
 }
 
-static void CreateApplicationMenus(void)
+static void
+CreateApplicationMenus(void)
 {
     NSString *appName;
     NSString *title;
@@ -368,7 +370,7 @@ static void CreateApplicationMenus(void)
     if (NSApp == nil) {
         return;
     }
-
+    
     mainMenu = [[NSMenu alloc] init];
 
     /* Create the main menu bar */
@@ -400,7 +402,7 @@ static void CreateApplicationMenus(void)
     [appleMenu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
 
     menuItem = (NSMenuItem *)[appleMenu addItemWithTitle:@"Hide Others" action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
-    [menuItem setKeyEquivalentModifierMask:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
+    [menuItem setKeyEquivalentModifierMask:(NSEventModifierFlagOption|NSEventModifierFlagCommand)];
 
     [appleMenu addItemWithTitle:@"Show All" action:@selector(unhideAllApplications:) keyEquivalent:@""];
 
@@ -426,7 +428,7 @@ static void CreateApplicationMenus(void)
     [windowMenu addItemWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
 
     [windowMenu addItemWithTitle:@"Zoom" action:@selector(performZoom:) keyEquivalent:@""];
-
+    
     /* Add the fullscreen toggle menu option. */
     /* Cocoa should update the title to Enter or Exit Full Screen automatically.
      * But if not, then just fallback to Toggle Full Screen.
@@ -444,70 +446,71 @@ static void CreateApplicationMenus(void)
     [NSApp setWindowsMenu:windowMenu];
 }
 
-void Cocoa_RegisterApp(void)
+void
+Cocoa_RegisterApp(void)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        /* This can get called more than once! Be careful what you initialize! */
+    /* This can get called more than once! Be careful what you initialize! */
 
-        if (NSApp == nil) {
-            [SDLApplication sharedApplication];
-            SDL_assert(NSApp != nil);
+    if (NSApp == nil) {
+        [SDLApplication sharedApplication];
+        SDL_assert(NSApp != nil);
 
-            s_bShouldHandleEventsInSDLApplication = SDL_TRUE;
+        s_bShouldHandleEventsInSDLApplication = SDL_TRUE;
 
-            if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
-                [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-            }
+        if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
+            [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+        }
 
-            /* If there aren't already menus in place, look to see if there's
-             * a nib we should use. If not, then manually create the basic
-             * menus we meed.
-             */
-            if ([NSApp mainMenu] == nil) {
-                bool nibLoaded;
-
-                nibLoaded = LoadMainMenuNibIfAvailable();
-                if (!nibLoaded) {
-                    CreateApplicationMenus();
-                }
-            }
-            [NSApp finishLaunching];
-            if ([NSApp delegate]) {
-                /* The SDL app delegate calls this in didFinishLaunching if it's
-                 * attached to the NSApp, otherwise we need to call it manually.
-                 */
-                [SDLApplication registerUserDefaults];
+        /* If there aren't already menus in place, look to see if there's
+         * a nib we should use. If not, then manually create the basic
+         * menus we meed.
+         */
+        if ([NSApp mainMenu] == nil) {
+            bool nibLoaded;
+            
+            nibLoaded = LoadMainMenuNibIfAvailable();
+            if (!nibLoaded) {
+                CreateApplicationMenus();
             }
         }
-        if (NSApp && !appDelegate) {
-            appDelegate = [[SDLAppDelegate alloc] init];
-
-            /* If someone else has an app delegate, it means we can't turn a
-             * termination into SDL_Quit, and we can't handle application:openFile:
+        [NSApp finishLaunching];
+        if ([NSApp delegate]) {
+            /* The SDL app delegate calls this in didFinishLaunching if it's
+             * attached to the NSApp, otherwise we need to call it manually.
              */
-            if (![NSApp delegate]) {
-                /* Only register the URL event handler if we are being set as the
-                 * app delegate to avoid replacing any existing event handler.
-                 */
-                [[NSAppleEventManager sharedAppleEventManager]
-                    setEventHandler:appDelegate
-                        andSelector:@selector(handleURLEvent:withReplyEvent:)
-                      forEventClass:kInternetEventClass
-                         andEventID:kAEGetURL];
-
-                [(NSApplication *)NSApp setDelegate:appDelegate];
-            } else {
-                appDelegate->seenFirstActivate = YES;
-            }
+            [SDLApplication registerUserDefaults];
         }
     }
-}
+    if (NSApp && !appDelegate) {
+        appDelegate = [[SDLAppDelegate alloc] init];
 
-int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
+        /* If someone else has an app delegate, it means we can't turn a
+         * termination into SDL_Quit, and we can't handle application:openFile:
+         */
+        if (![NSApp delegate]) {
+            /* Only register the URL event handler if we are being set as the
+             * app delegate to avoid replacing any existing event handler.
+             */
+            [[NSAppleEventManager sharedAppleEventManager]
+                setEventHandler:appDelegate
+                    andSelector:@selector(handleURLEvent:withReplyEvent:)
+                  forEventClass:kInternetEventClass
+                     andEventID:kAEGetURL];
+
+            [(NSApplication *)NSApp setDelegate:appDelegate];
+        } else {
+            appDelegate->seenFirstActivate = YES;
+        }
+    }
+}}
+
+int
+Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
 {
-    for (;;) {
-        NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES];
-        if (event == nil) {
+    for ( ; ; ) {
+        NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES ];
+        if ( event == nil ) {
             return 0;
         }
 
@@ -517,62 +520,62 @@ int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
 
         // Pass events down to SDLApplication to be handled in sendEvent:
         [NSApp sendEvent:event];
-        if (!accumulate) {
+        if ( !accumulate) {
             break;
         }
     }
     return 1;
 }
 
-int Cocoa_WaitEventTimeout(_THIS, int timeout)
+int
+Cocoa_WaitEventTimeout(_THIS, int timeout)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        if (timeout > 0) {
-            NSDate *limitDate = [NSDate dateWithTimeIntervalSinceNow:(double)timeout / 1000.0];
-            return Cocoa_PumpEventsUntilDate(_this, limitDate, false);
-        } else if (timeout == 0) {
-            return Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], false);
-        } else {
-            while (Cocoa_PumpEventsUntilDate(_this, [NSDate distantFuture], false) == 0) {
-            }
+    if (timeout > 0) {
+        NSDate *limitDate = [NSDate dateWithTimeIntervalSinceNow: (double) timeout / 1000.0];
+        return Cocoa_PumpEventsUntilDate(_this, limitDate, false);
+    } else if (timeout == 0) {
+        return Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], false);
+    } else {
+        while (Cocoa_PumpEventsUntilDate(_this, [NSDate distantFuture], false) == 0) {
         }
-        return 1;
     }
-}
+    return 1;
+}}
 
-void Cocoa_PumpEvents(_THIS)
+void
+Cocoa_PumpEvents(_THIS)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], true);
-    }
-}
+    Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], true);
+}}
 
 void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window)
+{ @autoreleasepool
 {
-    @autoreleasepool {
-        NSEvent *event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
-                                            location:NSMakePoint(0, 0)
-                                       modifierFlags:0
-                                           timestamp:0.0
-                                        windowNumber:((__bridge SDL_WindowData *)window->driverdata).window_number
-                                             context:nil
-                                             subtype:0
-                                               data1:0
-                                               data2:0];
+    NSEvent* event = [NSEvent otherEventWithType: NSEventTypeApplicationDefined
+                                    location: NSMakePoint(0,0)
+                               modifierFlags: 0
+                                   timestamp: 0.0
+                                windowNumber: ((__bridge SDL_WindowData *) window->driverdata).window_number
+                                     context: nil
+                                     subtype: 0
+                                       data1: 0
+                                       data2: 0];
 
-        [NSApp postEvent:event atStart:YES];
+    [NSApp postEvent: event atStart: YES];
+}}
+
+void
+Cocoa_SuspendScreenSaver(_THIS)
+{ @autoreleasepool
+{
+    SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
+
+    if (data.screensaver_assertion) {
+        IOPMAssertionRelease(data.screensaver_assertion);
+        data.screensaver_assertion = kIOPMNullAssertionID;
     }
-}
-
-void Cocoa_SuspendScreenSaver(_THIS)
-{
-    @autoreleasepool {
-        SDL_VideoData *data = (__bridge SDL_VideoData *)_this->driverdata;
-
-        if (data.screensaver_assertion) {
-            IOPMAssertionRelease(data.screensaver_assertion);
-            data.screensaver_assertion = kIOPMNullAssertionID;
-        }
 
     if (_this->suspend_screensaver) {
         /* FIXME: this should ideally describe the real reason why the game
@@ -588,7 +591,7 @@ void Cocoa_SuspendScreenSaver(_THIS)
                                            &assertion);
         data.screensaver_assertion = assertion;
     }
-}
+}}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
 
