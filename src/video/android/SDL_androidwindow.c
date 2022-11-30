@@ -37,8 +37,7 @@
 /* Currently only one window */
 SDL_Window *Android_Window = NULL;
 
-int
-Android_CreateWindow(_THIS, SDL_Window * window)
+int Android_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data;
     int retval = 0;
@@ -60,13 +59,13 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     window->h = Android_SurfaceHeight;
 
     window->flags &= ~SDL_WINDOW_HIDDEN;
-    window->flags |= SDL_WINDOW_SHOWN;          /* only one window on Android */
+    window->flags |= SDL_WINDOW_SHOWN; /* only one window on Android */
 
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
-    data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
+    data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
     if (data == NULL) {
         retval = SDL_OutOfMemory();
         goto endfunction;
@@ -84,7 +83,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
        incompatible with vkCreateAndroidSurfaceKHR */
 #if SDL_VIDEO_OPENGL_EGL
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
-        data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->native_window);
+        data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
             ANativeWindow_release(data->native_window);
@@ -105,14 +104,12 @@ endfunction:
     return retval;
 }
 
-void
-Android_SetWindowTitle(_THIS, SDL_Window *window)
+void Android_SetWindowTitle(_THIS, SDL_Window *window)
 {
     Android_JNI_SetActivityTitle(window->title);
 }
 
-void
-Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+void Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -163,8 +160,7 @@ endfunction:
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-void
-Android_MinimizeWindow(_THIS, SDL_Window *window)
+void Android_MinimizeWindow(_THIS, SDL_Window *window)
 {
     Android_JNI_MinizeWindow();
 }
@@ -175,8 +171,7 @@ void Android_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable)
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
 }
 
-void
-Android_DestroyWindow(_THIS, SDL_Window *window)
+void Android_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
@@ -184,7 +179,7 @@ Android_DestroyWindow(_THIS, SDL_Window *window)
         Android_Window = NULL;
 
         if (window->driverdata) {
-            SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+            SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
 #if SDL_VIDEO_OPENGL_EGL
             if (data->egl_surface != EGL_NO_SURFACE) {
@@ -203,10 +198,9 @@ Android_DestroyWindow(_THIS, SDL_Window *window)
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-int
-Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
+int Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
     info->subsystem = SDL_SYSWM_ANDROID;
     info->info.android.window = data->native_window;

@@ -28,11 +28,10 @@
 #include "SDL_hidapi_rumble.h"
 #include "../../thread/SDL_systhread.h"
 
-
 typedef struct SDL_HIDAPI_RumbleRequest
 {
     SDL_HIDAPI_Device *device;
-    Uint8 data[2*USB_PACKET_LENGTH]; /* need enough space for the biggest report: dualshock4 is 78 bytes */
+    Uint8 data[2 * USB_PACKET_LENGTH]; /* need enough space for the biggest report: dualshock4 is 78 bytes */
     int size;
     SDL_HIDAPI_RumbleSentCallback callback;
     void *userdata;
@@ -96,8 +95,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
     return 0;
 }
 
-static void
-SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
+static void SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
     SDL_HIDAPI_RumbleRequest *request;
 
@@ -140,8 +138,7 @@ SDL_HIDAPI_StopRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     SDL_AtomicSet(&ctx->initialized, SDL_FALSE);
 }
 
-static int
-SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
+static int SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 {
     ctx->lock = SDL_CreateMutex();
     if (!ctx->lock) {
@@ -224,7 +221,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
     request->userdata = userdata;
 
     SDL_AtomicIncRef(&device->rumble_pending);
-    
+
     if (ctx->requests_head) {
         ctx->requests_head->prev = request;
     } else {

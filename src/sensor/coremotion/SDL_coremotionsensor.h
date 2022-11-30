@@ -26,5 +26,4 @@ struct sensor_hwdata
     float data[3];
 };
 
-
 /* vi: set ts=4 sw=4 expandtab: */

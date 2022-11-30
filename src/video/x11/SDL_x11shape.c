@@ -27,13 +27,14 @@
 #include "SDL_x11window.h"
 #include "../SDL_shape_internals.h"
 
-SDL_WindowShaper*
-X11_CreateShaper(SDL_Window* window) {
-    SDL_WindowShaper* result = NULL;
-    SDL_ShapeData* data = NULL;
+SDL_WindowShaper *
+X11_CreateShaper(SDL_Window *window)
+{
+    SDL_WindowShaper *result = NULL;
+    SDL_ShapeData *data = NULL;
 
 #if SDL_VIDEO_DRIVER_X11_XSHAPE
-    if (SDL_X11_HAVE_XSHAPE) {  /* Make sure X server supports it. */
+    if (SDL_X11_HAVE_XSHAPE) { /* Make sure X server supports it. */
         result = SDL_malloc(sizeof(SDL_WindowShaper));
         if (result == NULL) {
             SDL_OutOfMemory();
@@ -65,9 +66,9 @@ X11_CreateShaper(SDL_Window* window) {
     return result;
 }
 
-int
-X11_ResizeWindowShape(SDL_Window* window) {
-    SDL_ShapeData* data = window->shaper->driverdata;
+int X11_ResizeWindowShape(SDL_Window *window)
+{
+    SDL_ShapeData *data = window->shaper->driverdata;
     unsigned int bitmapsize = window->w / 8;
     SDL_assert(data != NULL);
 
@@ -83,21 +84,21 @@ X11_ResizeWindowShape(SDL_Window* window) {
             return SDL_OutOfMemory();
         }
     }
-    SDL_memset(data->bitmap,0,data->bitmapsize);
+    SDL_memset(data->bitmap, 0, data->bitmapsize);
 
     window->shaper->userx = window->x;
     window->shaper->usery = window->y;
-    SDL_SetWindowPosition(window,-1000,-1000);
+    SDL_SetWindowPosition(window, -1000, -1000);
 
     return 0;
 }
 
-int
-X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode) {
+int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
+{
     SDL_ShapeData *data = NULL;
     SDL_WindowData *windowdata = NULL;
     Pixmap shapemask;
-    
+
     if (shaper == NULL || shape == NULL || shaper->driverdata == NULL) {
         return -1;
     }
@@ -112,15 +113,15 @@ X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMo
     data = shaper->driverdata;
 
     /* Assume that shaper->alphacutoff already has a value, because SDL_SetWindowShape() should have given it one. */
-    SDL_CalculateShapeBitmap(shaper->mode,shape,data->bitmap,8);
+    SDL_CalculateShapeBitmap(shaper->mode, shape, data->bitmap, 8);
 
-    windowdata = (SDL_WindowData*)(shaper->window->driverdata);
-    shapemask = X11_XCreateBitmapFromData(windowdata->videodata->display,windowdata->xwindow,data->bitmap,shaper->window->w,shaper->window->h);
+    windowdata = (SDL_WindowData *)(shaper->window->driverdata);
+    shapemask = X11_XCreateBitmapFromData(windowdata->videodata->display, windowdata->xwindow, data->bitmap, shaper->window->w, shaper->window->h);
 
-    X11_XShapeCombineMask(windowdata->videodata->display,windowdata->xwindow, ShapeBounding, 0, 0,shapemask, ShapeSet);
-    X11_XSync(windowdata->videodata->display,False);
+    X11_XShapeCombineMask(windowdata->videodata->display, windowdata->xwindow, ShapeBounding, 0, 0, shapemask, ShapeSet);
+    X11_XSync(windowdata->videodata->display, False);
 
-    X11_XFreePixmap(windowdata->videodata->display,shapemask);
+    X11_XFreePixmap(windowdata->videodata->display, shapemask);
 #endif
 
     return 0;

@@ -24,7 +24,7 @@
 #include "../../core/windows/SDL_windows.h"
 
 #ifdef main
-#  undef main
+#undef main
 #endif /* main */
 
 /* This is where execution begins */

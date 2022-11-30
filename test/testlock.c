@@ -34,21 +34,18 @@ SDL_Quit_Wrapper(void)
     SDL_Quit();
 }
 
-void
-printid(void)
+void printid(void)
 {
     SDL_Log("Process %lu:  exiting\n", SDL_ThreadID());
 }
 
-void
-terminate(int sig)
+void terminate(int sig)
 {
     signal(SIGINT, terminate);
     SDL_AtomicSet(&doterminate, 1);
 }
 
-void
-closemutex(int sig)
+void closemutex(int sig)
 {
     SDL_threadID id = SDL_ThreadID();
     int i;
@@ -90,8 +87,7 @@ Run(void *data)
     return 0;
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     int maxproc = 6;
@@ -118,7 +114,7 @@ main(int argc, char *argv[])
     atexit(printid);
     for (i = 0; i < maxproc; ++i) {
         char name[64];
-        SDL_snprintf(name, sizeof (name), "Worker%d", i);
+        SDL_snprintf(name, sizeof(name), "Worker%d", i);
         if ((threads[i] = SDL_CreateThread(Run, name, NULL)) == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread!\n");
         }
@@ -126,7 +122,7 @@ main(int argc, char *argv[])
     signal(SIGINT, terminate);
     Run(NULL);
 
-    return 0;                 /* Never reached */
+    return 0; /* Never reached */
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

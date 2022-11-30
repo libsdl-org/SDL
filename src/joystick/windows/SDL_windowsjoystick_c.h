@@ -24,7 +24,7 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_directx.h"
 
-#define MAX_INPUTS  256     /* each joystick can have up to 256 inputs */
+#define MAX_INPUTS 256 /* each joystick can have up to 256 inputs */
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -45,7 +45,7 @@ typedef struct JoyStick_DeviceData
     struct JoyStick_DeviceData *pNext;
 } JoyStick_DeviceData;
 
-extern JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
+extern JoyStick_DeviceData *SYS_Joystick; /* array to hold joystick ID values */
 
 typedef enum Type
 {
@@ -85,7 +85,7 @@ struct joystick_hwdata
 
     SDL_bool bXInputDevice; /* SDL_TRUE if this device supports using the xinput API rather than DirectInput */
     SDL_bool bXInputHaptic; /* Supports force feedback via XInput. */
-    Uint8 userid; /* XInput userid index for this joystick */
+    Uint8 userid;           /* XInput userid index for this joystick */
     DWORD dwPacketNumber;
 };
 

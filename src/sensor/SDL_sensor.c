@@ -53,25 +53,21 @@ static SDL_bool SDL_updating_sensor = SDL_FALSE;
 static SDL_mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
 static SDL_atomic_t SDL_next_sensor_instance_id;
 
-void
-SDL_LockSensors(void)
+void SDL_LockSensors(void)
 {
     if (SDL_sensor_lock) {
         SDL_LockMutex(SDL_sensor_lock);
     }
 }
 
-void
-SDL_UnlockSensors(void)
+void SDL_UnlockSensors(void)
 {
     if (SDL_sensor_lock) {
         SDL_UnlockMutex(SDL_sensor_lock);
     }
 }
 
-
-int
-SDL_SensorInit(void)
+int SDL_SensorInit(void)
 {
     int i, status;
 
@@ -98,8 +94,7 @@ SDL_SensorInit(void)
 /*
  * Count the number of sensors attached to the system
  */
-int
-SDL_NumSensors(void)
+int SDL_NumSensors(void)
 {
     int i, total_sensors = 0;
     SDL_LockSensors();
@@ -123,8 +118,7 @@ SDL_SensorID SDL_GetNextSensorInstanceID()
  * Get the driver and device index for an API device index
  * This should be called while the sensor lock is held, to prevent another thread from updating the list
  */
-static SDL_bool
-SDL_GetDriverAndSensorIndex(int device_index, SDL_SensorDriver **driver, int *driver_index)
+static SDL_bool SDL_GetDriverAndSensorIndex(int device_index, SDL_SensorDriver **driver, int *driver_index)
 {
     int i, num_sensors, total_sensors = 0;
 
@@ -179,8 +173,7 @@ SDL_SensorGetDeviceType(int device_index)
     return type;
 }
 
-int
-SDL_SensorGetDeviceNonPortableType(int device_index)
+int SDL_SensorGetDeviceNonPortableType(int device_index)
 {
     SDL_SensorDriver *driver;
     int type = -1;
@@ -239,16 +232,16 @@ SDL_SensorOpen(int device_index)
     instance_id = driver->GetDeviceInstanceID(device_index);
     while (sensorlist) {
         if (instance_id == sensorlist->instance_id) {
-                sensor = sensorlist;
-                ++sensor->ref_count;
-                SDL_UnlockSensors();
-                return sensor;
+            sensor = sensorlist;
+            ++sensor->ref_count;
+            SDL_UnlockSensors();
+            return sensor;
         }
         sensorlist = sensorlist->next;
     }
 
     /* Create and initialize the sensor */
-    sensor = (SDL_Sensor *) SDL_calloc(sizeof(*sensor), 1);
+    sensor = (SDL_Sensor *)SDL_calloc(sizeof(*sensor), 1);
     if (sensor == NULL) {
         SDL_OutOfMemory();
         SDL_UnlockSensors();
@@ -306,8 +299,7 @@ SDL_SensorFromInstanceID(SDL_SensorID instance_id)
 /*
  * Checks to make sure the sensor is valid.
  */
-static int
-SDL_PrivateSensorValid(SDL_Sensor *sensor)
+static int SDL_PrivateSensorValid(SDL_Sensor *sensor)
 {
     int valid;
 
@@ -350,8 +342,7 @@ SDL_SensorGetType(SDL_Sensor *sensor)
 /*
  * Get the platform dependent type of this sensor
  */
-int
-SDL_SensorGetNonPortableType(SDL_Sensor *sensor)
+int SDL_SensorGetNonPortableType(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return -1;
@@ -376,8 +367,7 @@ SDL_SensorGetInstanceID(SDL_Sensor *sensor)
 /*
  * Get the current state of this sensor
  */
-int
-SDL_SensorGetData(SDL_Sensor *sensor, float *data, int num_values)
+int SDL_SensorGetData(SDL_Sensor *sensor, float *data, int num_values)
 {
     return SDL_SensorGetDataWithTimestamp(sensor, NULL, data, num_values);
 }
@@ -385,15 +375,14 @@ SDL_SensorGetData(SDL_Sensor *sensor, float *data, int num_values)
 /*
  * Get the current state of this sensor
  */
-int
-SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *data, int num_values)
+int SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *data, int num_values)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return -1;
     }
 
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
-    SDL_memcpy(data, sensor->data, num_values*sizeof(*data));
+    SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
     if (timestamp) {
         *timestamp = sensor->timestamp_us;
     }
@@ -403,8 +392,7 @@ SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *dat
 /*
  * Close a sensor previously opened with SDL_SensorOpen()
  */
-void
-SDL_SensorClose(SDL_Sensor *sensor)
+void SDL_SensorClose(SDL_Sensor *sensor)
 {
     SDL_Sensor *sensorlist;
     SDL_Sensor *sensorlistprev;
@@ -453,8 +441,7 @@ SDL_SensorClose(SDL_Sensor *sensor)
     SDL_UnlockSensors();
 }
 
-void
-SDL_SensorQuit(void)
+void SDL_SensorQuit(void)
 {
     int i;
 
@@ -471,7 +458,7 @@ SDL_SensorQuit(void)
 
     /* Quit the sensor setup */
     for (i = 0; i < SDL_arraysize(SDL_sensor_drivers); ++i) {
-       SDL_sensor_drivers[i]->Quit();
+        SDL_sensor_drivers[i]->Quit();
     }
 
     SDL_UnlockSensors();
@@ -486,11 +473,9 @@ SDL_SensorQuit(void)
     }
 }
 
-
 /* These are global for SDL_syssensor.c and SDL_events.c */
 
-int
-SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, int num_values)
+int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, int num_values)
 {
     int posted;
 
@@ -498,7 +483,7 @@ SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, in
 
     /* Update internal sensor state */
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
-    SDL_memcpy(sensor->data, data, num_values*sizeof(*data));
+    SDL_memcpy(sensor->data, data, num_values * sizeof(*data));
     sensor->timestamp_us = timestamp_us;
 
     /* Post the event, if desired */
@@ -510,7 +495,7 @@ SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, in
         event.sensor.which = sensor->instance_id;
         num_values = SDL_min(num_values, SDL_arraysize(event.sensor.data));
         SDL_memset(event.sensor.data, 0, sizeof(event.sensor.data));
-        SDL_memcpy(event.sensor.data, data, num_values*sizeof(*data));
+        SDL_memcpy(event.sensor.data, data, num_values * sizeof(*data));
         event.sensor.timestamp_us = timestamp_us;
         posted = SDL_PushEvent(&event) == 1;
     }
@@ -518,8 +503,7 @@ SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, in
     return posted;
 }
 
-void
-SDL_SensorUpdate(void)
+void SDL_SensorUpdate(void)
 {
     int i;
     SDL_Sensor *sensor, *next;

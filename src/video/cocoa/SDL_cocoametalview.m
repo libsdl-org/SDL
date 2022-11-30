@@ -30,13 +30,10 @@
 
 #if SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 
-
 #define SDL_ENABLE_SYSWM_COCOA
 #include <SDL3/SDL_syswm.h>
 
-
-static int SDLCALL
-SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
+static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 {
     /* Update the drawable size when SDL receives a size changed event for
      * the window that contains the metal view. It would be nice to use
@@ -73,7 +70,7 @@ SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 /* When the wantsLayer property is set to YES, this method will be invoked to
  * return a layer instance.
  */
-- (CALayer*)makeBackingLayer
+- (CALayer *)makeBackingLayer
 {
     return [self.class.layerClass layer];
 }
@@ -94,7 +91,7 @@ SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
         [self updateDrawableSize];
     }
-  
+
     return self;
 }
 
@@ -125,71 +122,78 @@ SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
     metalLayer.drawableSize = NSSizeToCGSize(backingSize);
 }
 
-- (NSView *)hitTest:(NSPoint)point {
+- (NSView *)hitTest:(NSPoint)point
+{
     return nil;
 }
 
 @end
 
 SDL_MetalView
-Cocoa_Metal_CreateView(_THIS, SDL_Window * window)
-{ @autoreleasepool {
-    SDL_WindowData* data = (__bridge SDL_WindowData *)window->driverdata;
-    NSView *view = data.nswindow.contentView;
-    BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
-    Uint32 windowID = SDL_GetWindowID(window);
-    SDL_cocoametalview *newview;
-    SDL_MetalView metalview;
+Cocoa_Metal_CreateView(_THIS, SDL_Window *window)
+{
+    @autoreleasepool {
+        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        NSView *view = data.nswindow.contentView;
+        BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        Uint32 windowID = SDL_GetWindowID(window);
+        SDL_cocoametalview *newview;
+        SDL_MetalView metalview;
 
-    newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame
-                                                highDPI:highDPI
-                                                windowID:windowID];
-    if (newview == nil) {
-        SDL_OutOfMemory();
-        return NULL;
+        newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame
+                                                    highDPI:highDPI
+                                                   windowID:windowID];
+        if (newview == nil) {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+
+        [view addSubview:newview];
+
+        metalview = (SDL_MetalView)CFBridgingRetain(newview);
+
+        return metalview;
     }
+}
 
-    [view addSubview:newview];
-
-    metalview = (SDL_MetalView)CFBridgingRetain(newview);
-
-    return metalview;
-}}
-
-void
-Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view)
-{ @autoreleasepool {
-    SDL_cocoametalview *metalview = CFBridgingRelease(view);
-    [metalview removeFromSuperview];
-}}
+void Cocoa_Metal_DestroyView(_THIS, SDL_MetalView view)
+{
+    @autoreleasepool {
+        SDL_cocoametalview *metalview = CFBridgingRelease(view);
+        [metalview removeFromSuperview];
+    }
+}
 
 void *
 Cocoa_Metal_GetLayer(_THIS, SDL_MetalView view)
-{ @autoreleasepool {
-    SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;
-    return (__bridge void *)cocoaview.layer;
-}}
-
-void
-Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
-{ @autoreleasepool {
-    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-    NSView *contentView = data.sdlContentView;
-    SDL_cocoametalview* metalview = [contentView viewWithTag:SDL_METALVIEW_TAG];
-    if (metalview) {
-        CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
-        SDL_assert(layer != NULL);
-        if (w) {
-            *w = layer.drawableSize.width;
-        }
-        if (h) {
-            *h = layer.drawableSize.height;
-        }
-    } else {
-        /* Fall back to the viewport size. */
-        SDL_GetWindowSizeInPixels(window, w, h);
+{
+    @autoreleasepool {
+        SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;
+        return (__bridge void *)cocoaview.layer;
     }
-}}
+}
+
+void Cocoa_Metal_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
+{
+    @autoreleasepool {
+        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        NSView *contentView = data.sdlContentView;
+        SDL_cocoametalview *metalview = [contentView viewWithTag:SDL_METALVIEW_TAG];
+        if (metalview) {
+            CAMetalLayer *layer = (CAMetalLayer *)metalview.layer;
+            SDL_assert(layer != NULL);
+            if (w) {
+                *w = layer.drawableSize.width;
+            }
+            if (h) {
+                *h = layer.drawableSize.height;
+            }
+        } else {
+            /* Fall back to the viewport size. */
+            SDL_GetWindowSizeInPixels(window, w, h);
+        }
+    }
+}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) */
 

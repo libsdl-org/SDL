@@ -48,38 +48,34 @@ quit(int rc)
 static void
 Render()
 {
-    static GLubyte color[8][4] = { {255, 0, 0, 0},
-    {255, 0, 0, 255},
-    {0, 255, 0, 255},
-    {0, 255, 0, 255},
-    {0, 255, 0, 255},
-    {255, 255, 255, 255},
-    {255, 0, 255, 255},
-    {0, 0, 255, 255}
-    };
-    static GLfloat cube[8][3] = { {0.5, 0.5, -0.5},
-    {0.5f, -0.5f, -0.5f},
-    {-0.5f, -0.5f, -0.5f},
-    {-0.5f, 0.5f, -0.5f},
-    {-0.5f, 0.5f, 0.5f},
-    {0.5f, 0.5f, 0.5f},
-    {0.5f, -0.5f, 0.5f},
-    {-0.5f, -0.5f, 0.5f}
-    };
+    static GLubyte color[8][4] = { { 255, 0, 0, 0 },
+                                   { 255, 0, 0, 255 },
+                                   { 0, 255, 0, 255 },
+                                   { 0, 255, 0, 255 },
+                                   { 0, 255, 0, 255 },
+                                   { 255, 255, 255, 255 },
+                                   { 255, 0, 255, 255 },
+                                   { 0, 0, 255, 255 } };
+    static GLfloat cube[8][3] = { { 0.5, 0.5, -0.5 },
+                                  { 0.5f, -0.5f, -0.5f },
+                                  { -0.5f, -0.5f, -0.5f },
+                                  { -0.5f, 0.5f, -0.5f },
+                                  { -0.5f, 0.5f, 0.5f },
+                                  { 0.5f, 0.5f, 0.5f },
+                                  { 0.5f, -0.5f, 0.5f },
+                                  { -0.5f, -0.5f, 0.5f } };
     static GLubyte indices[36] = { 0, 3, 4,
-        4, 5, 0,
-        0, 5, 6,
-        6, 1, 0,
-        6, 7, 2,
-        2, 1, 6,
-        7, 4, 3,
-        3, 2, 7,
-        5, 4, 7,
-        7, 6, 5,
-        2, 3, 1,
-        3, 0, 1
-    };
-
+                                   4, 5, 0,
+                                   0, 5, 6,
+                                   6, 1, 0,
+                                   6, 7, 2,
+                                   2, 1, 6,
+                                   7, 4, 3,
+                                   3, 2, 7,
+                                   5, 4, 7,
+                                   7, 6, 5,
+                                   2, 3, 1,
+                                   3, 0, 1 };
 
     /* Do our drawing, too. */
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -96,8 +92,7 @@ Render()
     glRotatef(5.0, 1.0, 1.0, 1.0);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int fsaa, accel;
     int value;
@@ -160,11 +155,11 @@ main(int argc, char *argv[])
     state->gl_minor_version = 1;
     state->gl_profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
     if (fsaa) {
-        state->gl_multisamplebuffers=1;
-        state->gl_multisamplesamples=fsaa;
+        state->gl_multisamplebuffers = 1;
+        state->gl_multisamplesamples = fsaa;
     }
     if (accel) {
-        state->gl_accelerated=1;
+        state->gl_accelerated = 1;
     }
     if (!SDLTest_CommonInit(state)) {
         quit(2);
@@ -205,28 +200,28 @@ main(int argc, char *argv[])
         SDL_Log("SDL_GL_RED_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_RED_SIZE: %s\n",
-                SDL_GetError());
+                     SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
     if (!status) {
         SDL_Log("SDL_GL_GREEN_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_GREEN_SIZE: %s\n",
-                SDL_GetError());
+                     SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
     if (!status) {
         SDL_Log("SDL_GL_BLUE_SIZE: requested %d, got %d\n", 5, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_BLUE_SIZE: %s\n",
-                SDL_GetError());
+                     SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
     if (!status) {
         SDL_Log("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", depth, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_DEPTH_SIZE: %s\n",
-                SDL_GetError());
+                     SDL_GetError());
     }
     if (fsaa) {
         status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
@@ -234,15 +229,15 @@ main(int argc, char *argv[])
             SDL_Log("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value);
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n",
-                    SDL_GetError());
+                         SDL_GetError());
         }
         status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value);
         if (!status) {
             SDL_Log("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa,
-                   value);
+                    value);
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_MULTISAMPLESAMPLES: %s\n",
-                    SDL_GetError());
+                         SDL_GetError());
         }
     }
     if (accel) {
@@ -251,7 +246,7 @@ main(int argc, char *argv[])
             SDL_Log("SDL_GL_ACCELERATED_VISUAL: requested 1, got %d\n", value);
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_ACCELERATED_VISUAL: %s\n",
-                    SDL_GetError());
+                         SDL_GetError());
         }
     }
 
@@ -290,23 +285,23 @@ main(int argc, char *argv[])
             switch (event.type) {
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
-                    case SDL_WINDOWEVENT_RESIZED:
-                        for (i = 0; i < state->num_windows; ++i) {
-                            if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
-                                status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-                                if (status) {
-                                    SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
-                                    break;
-                                }
-                                /* Change view port to the new window dimensions */
-                                glViewport(0, 0, event.window.data1, event.window.data2);
-                                /* Update window content */
-                                Render();
-                                SDL_GL_SwapWindow(state->windows[i]);
+                case SDL_WINDOWEVENT_RESIZED:
+                    for (i = 0; i < state->num_windows; ++i) {
+                        if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
+                            status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
+                            if (status) {
+                                SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
                                 break;
                             }
+                            /* Change view port to the new window dimensions */
+                            glViewport(0, 0, event.window.data1, event.window.data2);
+                            /* Update window content */
+                            Render();
+                            SDL_GL_SwapWindow(state->windows[i]);
+                            break;
                         }
-                        break;
+                    }
+                    break;
                 }
             }
             SDLTest_CommonEvent(state, &event, &done);
@@ -331,18 +326,17 @@ main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         SDL_Log("%2.2f frames per second\n",
-               ((double) frames * 1000) / (now - then));
+                ((double)frames * 1000) / (now - then));
     }
 #if !defined(__ANDROID__)
     quit(0);
-#endif        
+#endif
     return 0;
 }
 
 #else /* HAVE_OPENGLES */
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No OpenGL ES support on this system\n");
     return 1;

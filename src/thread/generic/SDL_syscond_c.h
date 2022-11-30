@@ -20,19 +20,18 @@
 */
 #include "SDL_internal.h"
 
-
 #ifndef SDL_syscond_generic_h_
 #define SDL_syscond_generic_h_
 
 #if SDL_THREAD_GENERIC_COND_SUFFIX
 
-SDL_cond * SDL_CreateCond_generic(void);
-void SDL_DestroyCond_generic(SDL_cond * cond);
-int SDL_CondSignal_generic(SDL_cond * cond);
-int SDL_CondBroadcast_generic(SDL_cond * cond);
-int SDL_CondWait_generic(SDL_cond * cond, SDL_mutex * mutex);
-int SDL_CondWaitTimeout_generic(SDL_cond * cond,
-                                SDL_mutex * mutex, Uint32 ms);
+SDL_cond *SDL_CreateCond_generic(void);
+void SDL_DestroyCond_generic(SDL_cond *cond);
+int SDL_CondSignal_generic(SDL_cond *cond);
+int SDL_CondBroadcast_generic(SDL_cond *cond);
+int SDL_CondWait_generic(SDL_cond *cond, SDL_mutex *mutex);
+int SDL_CondWaitTimeout_generic(SDL_cond *cond,
+                                SDL_mutex *mutex, Uint32 ms);
 
 #endif /* SDL_THREAD_GENERIC_COND_SUFFIX */
 

@@ -24,7 +24,6 @@
 
 #include "SDL_internal.h"
 
-
 extern SDL_bool SDL_IME_Init(void);
 extern void SDL_IME_Quit(void);
 extern void SDL_IME_SetFocus(SDL_bool focused);

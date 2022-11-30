@@ -24,7 +24,6 @@
 
 #include "SDL_internal.h"
 
-
 extern SDL_bool SDL_Fcitx_Init(void);
 extern void SDL_Fcitx_Quit(void);
 extern void SDL_Fcitx_SetFocus(SDL_bool focused);

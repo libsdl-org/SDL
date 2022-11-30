@@ -33,9 +33,9 @@
 #if !TARGET_OS_TV
 #include <AvailabilityVersions.h>
 
-# ifndef __IPHONE_13_0
-# define __IPHONE_13_0 130000
-# endif
+#ifndef __IPHONE_13_0
+#define __IPHONE_13_0 130000
+#endif
 #endif
 
 #ifdef main
@@ -54,9 +54,9 @@ int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
     /* store arguments */
     forward_main = mainFunction;
     forward_argc = argc;
-    forward_argv = (char **)malloc((argc+1) * sizeof(char *));
+    forward_argv = (char **)malloc((argc + 1) * sizeof(char *));
     for (i = 0; i < argc; i++) {
-        forward_argv[i] = malloc( (strlen(argv[i])+1) * sizeof(char));
+        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char));
         strcpy(forward_argv[i], argv[i]);
     }
     forward_argv[i] = NULL;
@@ -77,8 +77,7 @@ int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
 
 #if !TARGET_OS_TV
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
-static UIImage *
-SDL_LoadLaunchImageNamed(NSString *name, int screenh)
+static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
     UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
     UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
@@ -116,19 +115,21 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 }
 
 @interface SDLLaunchStoryboardViewController : UIViewController
-@property (nonatomic, strong) UIViewController *storyboardViewController;
+@property(nonatomic, strong) UIViewController *storyboardViewController;
 - (instancetype)initWithStoryboardViewController:(UIViewController *)storyboardViewController;
 @end
 
 @implementation SDLLaunchStoryboardViewController
 
-- (instancetype)initWithStoryboardViewController:(UIViewController *)storyboardViewController {
+- (instancetype)initWithStoryboardViewController:(UIViewController *)storyboardViewController
+{
     self = [super init];
     self.storyboardViewController = storyboardViewController;
     return self;
 }
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
 
     [self addChildViewController:self.storyboardViewController];
@@ -141,11 +142,13 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     UIApplication.sharedApplication.statusBarStyle = self.preferredStatusBarStyle;
 }
 
-- (BOOL)prefersStatusBarHidden {
+- (BOOL)prefersStatusBarHidden
+{
     return [[NSBundle.mainBundle objectForInfoDictionaryKey:@"UIStatusBarHidden"] boolValue];
 }
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
     NSString *statusBarStyle = [NSBundle.mainBundle objectForInfoDictionaryKey:@"UIStatusBarStyle"];
     if ([statusBarStyle isEqualToString:@"UIStatusBarStyleLightContent"]) {
         return UIStatusBarStyleLightContent;
@@ -334,7 +337,8 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 @end
 
-@implementation SDLUIKitDelegate {
+@implementation SDLUIKitDelegate
+{
     UIWindow *launchWindow;
 }
 
@@ -365,12 +369,14 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     launchWindow = nil;
 
     /* Do a nice animated fade-out (roughly matches the real launch behavior.) */
-    [UIView animateWithDuration:0.2 animations:^{
-        window.alpha = 0.0;
-    } completion:^(BOOL finished) {
-        window.hidden = YES;
-        UIKit_ForceUpdateHomeIndicator(); /* Wait for launch screen to hide so settings are applied to the actual view controller. */
-    }];
+    [UIView animateWithDuration:0.2
+        animations:^{
+          window.alpha = 0.0;
+        }
+        completion:^(BOOL finished) {
+          window.hidden = YES;
+          UIKit_ForceUpdateHomeIndicator(); /* Wait for launch screen to hide so settings are applied to the actual view controller. */
+        }];
 }
 
 - (void)postFinishLaunch
@@ -462,7 +468,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     if (_this) {
         SDL_Window *window = NULL;
         for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+            SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
             if (data != nil) {
                 return data.uiwindow;
             }
@@ -489,7 +495,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 #if TARGET_OS_TV || (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0)
 
-- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
     /* TODO: Handle options */
     [self sendDropFileForURL:url];

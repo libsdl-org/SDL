@@ -30,13 +30,13 @@
 /* OpenGLES functions */
 extern int Emscripten_GLES_LoadLibrary(_THIS, const char *path);
 extern void Emscripten_GLES_UnloadLibrary(_THIS);
-extern void * Emscripten_GLES_GetProcAddress(_THIS, const char *proc);
+extern void *Emscripten_GLES_GetProcAddress(_THIS, const char *proc);
 extern int Emscripten_GLES_SetSwapInterval(_THIS, int interval);
 extern int Emscripten_GLES_GetSwapInterval(_THIS);
-extern SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window * window);
+extern SDL_GLContext Emscripten_GLES_CreateContext(_THIS, SDL_Window *window);
 extern void Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context);
-extern int Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window);
-extern int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+extern int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window);
+extern int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
 

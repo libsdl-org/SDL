@@ -45,17 +45,17 @@
 
 /* PS2 driver bootstrap functions */
 
-static int PS2_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int PS2_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-static void PS2_DeleteDevice(SDL_VideoDevice * device)
+static void PS2_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device);
 }
 
-static int PS2_CreateWindow(_THIS, SDL_Window * window)
+static int PS2_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_SetKeyboardFocus(window);
 
@@ -73,7 +73,7 @@ static int PS2_VideoInit(_THIS)
     current_mode.w = 640;
     current_mode.h = 480;
     current_mode.refresh_rate = 60;
-    
+
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
     current_mode.driverdata = NULL;
@@ -91,7 +91,6 @@ static int PS2_VideoInit(_THIS)
 
 static void PS2_VideoQuit(_THIS)
 {
-    
 }
 
 static void PS2_PumpEvents(_THIS)
@@ -104,7 +103,7 @@ static SDL_VideoDevice *PS2_CreateDevice(void)
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return 0;
@@ -122,7 +121,7 @@ static SDL_VideoDevice *PS2_CreateDevice(void)
 }
 
 VideoBootStrap PS2_bootstrap = {
-    "PS2", 
+    "PS2",
     "PS2 Video Driver",
     PS2_CreateDevice
 };

@@ -27,21 +27,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include <pspthreadman.h>
 #include <pspkerror.h>
 
-struct SDL_semaphore {
-    SceUID  semid;
+struct SDL_semaphore
+{
+    SceUID semid;
 };
-
 
 /* Create a semaphore */
 SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_sem *sem;
 
-    sem = (SDL_sem *) SDL_malloc(sizeof(*sem));
+    sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
     if (sem != NULL) {
         /* TODO: Figure out the limit on the maximum value. */
         sem->semid = sceKernelCreateSema("SDL sema", 0, initial_value, 255, NULL);
@@ -94,18 +93,18 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     if (timeout == SDL_MUTEX_MAXWAIT) {
         pTimeout = NULL;
     } else {
-        timeout *= 1000;  /* Convert to microseconds. */
+        timeout *= 1000; /* Convert to microseconds. */
         pTimeout = &timeout;
     }
 
-    res = sceKernelWaitSema(sem->semid, 1, (SceUInt *) pTimeout);
-       switch (res) {
-               case SCE_KERNEL_ERROR_OK:
-                       return 0;
-               case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
-                       return SDL_MUTEX_TIMEDOUT;
-               default:
-                       return SDL_SetError("sceKernelWaitSema() failed");
+    res = sceKernelWaitSema(sem->semid, 1, (SceUInt *)pTimeout);
+    switch (res) {
+    case SCE_KERNEL_ERROR_OK:
+        return 0;
+    case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
+        return SDL_MUTEX_TIMEDOUT;
+    default:
+        return SDL_SetError("sceKernelWaitSema() failed");
     }
 }
 

@@ -29,7 +29,7 @@
 
 @interface SDL_VideoData : NSObject
 
-@property (nonatomic, assign) id pasteboardObserver;
+@property(nonatomic, assign) id pasteboardObserver;
 
 @end
 

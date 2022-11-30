@@ -19,52 +19,60 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#define SCREEN_WIDTH    512
-#define SCREEN_HEIGHT   320
+#define SCREEN_WIDTH  512
+#define SCREEN_HEIGHT 320
 
-#define BUTTON_SIZE     50
-#define AXIS_SIZE       50
-
+#define BUTTON_SIZE 50
+#define AXIS_SIZE   50
 
 /* This is indexed by SDL_GameControllerButton. */
-static const struct { int x; int y; } button_positions[] = {
-    {387, 167},  /* SDL_CONTROLLER_BUTTON_A */
-    {431, 132},  /* SDL_CONTROLLER_BUTTON_B */
-    {342, 132},  /* SDL_CONTROLLER_BUTTON_X */
-    {389, 101},  /* SDL_CONTROLLER_BUTTON_Y */
-    {174, 132},  /* SDL_CONTROLLER_BUTTON_BACK */
-    {232, 128},  /* SDL_CONTROLLER_BUTTON_GUIDE */
-    {289, 132},  /* SDL_CONTROLLER_BUTTON_START */
-    {75,  154},  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
-    {305, 230},  /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
-    {77,  40},   /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
-    {396, 36},   /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
-    {154, 188},  /* SDL_CONTROLLER_BUTTON_DPAD_UP */
-    {154, 249},  /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
-    {116, 217},  /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
-    {186, 217},  /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
-    {232, 174},  /* SDL_CONTROLLER_BUTTON_MISC1 */
-    {132, 135},  /* SDL_CONTROLLER_BUTTON_PADDLE1 */
-    {330, 135},  /* SDL_CONTROLLER_BUTTON_PADDLE2 */
-    {132, 175},  /* SDL_CONTROLLER_BUTTON_PADDLE3 */
-    {330, 175},  /* SDL_CONTROLLER_BUTTON_PADDLE4 */
-    {0, 0},      /* SDL_CONTROLLER_BUTTON_TOUCHPAD */
+static const struct
+{
+    int x;
+    int y;
+} button_positions[] = {
+    { 387, 167 }, /* SDL_CONTROLLER_BUTTON_A */
+    { 431, 132 }, /* SDL_CONTROLLER_BUTTON_B */
+    { 342, 132 }, /* SDL_CONTROLLER_BUTTON_X */
+    { 389, 101 }, /* SDL_CONTROLLER_BUTTON_Y */
+    { 174, 132 }, /* SDL_CONTROLLER_BUTTON_BACK */
+    { 232, 128 }, /* SDL_CONTROLLER_BUTTON_GUIDE */
+    { 289, 132 }, /* SDL_CONTROLLER_BUTTON_START */
+    { 75, 154 },  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
+    { 305, 230 }, /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
+    { 77, 40 },   /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
+    { 396, 36 },  /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
+    { 154, 188 }, /* SDL_CONTROLLER_BUTTON_DPAD_UP */
+    { 154, 249 }, /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
+    { 116, 217 }, /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
+    { 186, 217 }, /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
+    { 232, 174 }, /* SDL_CONTROLLER_BUTTON_MISC1 */
+    { 132, 135 }, /* SDL_CONTROLLER_BUTTON_PADDLE1 */
+    { 330, 135 }, /* SDL_CONTROLLER_BUTTON_PADDLE2 */
+    { 132, 175 }, /* SDL_CONTROLLER_BUTTON_PADDLE3 */
+    { 330, 175 }, /* SDL_CONTROLLER_BUTTON_PADDLE4 */
+    { 0, 0 },     /* SDL_CONTROLLER_BUTTON_TOUCHPAD */
 };
 SDL_COMPILE_TIME_ASSERT(button_positions, SDL_arraysize(button_positions) == SDL_CONTROLLER_BUTTON_MAX);
 
 /* This is indexed by SDL_GameControllerAxis. */
-static const struct { int x; int y; double angle; } axis_positions[] = {
-    {74,  153, 270.0},  /* LEFTX */
-    {74,  153,   0.0},  /* LEFTY */
-    {306, 231, 270.0},  /* RIGHTX */
-    {306, 231,   0.0},  /* RIGHTY */
-    {91,  -20,   0.0},  /* TRIGGERLEFT */
-    {375, -20,   0.0},  /* TRIGGERRIGHT */
+static const struct
+{
+    int x;
+    int y;
+    double angle;
+} axis_positions[] = {
+    { 74, 153, 270.0 },  /* LEFTX */
+    { 74, 153, 0.0 },    /* LEFTY */
+    { 306, 231, 270.0 }, /* RIGHTX */
+    { 306, 231, 0.0 },   /* RIGHTY */
+    { 91, -20, 0.0 },    /* TRIGGERLEFT */
+    { 375, -20, 0.0 },   /* TRIGGERRIGHT */
 };
 SDL_COMPILE_TIME_ASSERT(axis_positions, SDL_arraysize(axis_positions) == SDL_CONTROLLER_AXIS_MAX);
 
 /* This is indexed by SDL_JoystickPowerLevel + 1. */
-static const char* power_level_strings[] = {
+static const char *power_level_strings[] = {
     "unknown", /* SDL_JOYSTICK_POWER_UNKNOWN */
     "empty",   /* SDL_JOYSTICK_POWER_EMPTY */
     "low",     /* SDL_JOYSTICK_POWER_LOW */
@@ -261,7 +269,7 @@ static void DelController(SDL_JoystickID controller)
 
     --num_controllers;
     if (i < num_controllers) {
-        SDL_memcpy(&gamecontrollers[i], &gamecontrollers[i+1], (num_controllers - i) * sizeof(*gamecontrollers));
+        SDL_memcpy(&gamecontrollers[i], &gamecontrollers[i + 1], (num_controllers - i) * sizeof(*gamecontrollers));
     }
 
     if (num_controllers > 0) {
@@ -288,35 +296,34 @@ static Uint16 ConvertAxisToRumble(Sint16 axisval)
 */
 typedef struct
 {
-    Uint8 ucEnableBits1;                /* 0 */
-    Uint8 ucEnableBits2;                /* 1 */
-    Uint8 ucRumbleRight;                /* 2 */
-    Uint8 ucRumbleLeft;                 /* 3 */
-    Uint8 ucHeadphoneVolume;            /* 4 */
-    Uint8 ucSpeakerVolume;              /* 5 */
-    Uint8 ucMicrophoneVolume;           /* 6 */
-    Uint8 ucAudioEnableBits;            /* 7 */
-    Uint8 ucMicLightMode;               /* 8 */
-    Uint8 ucAudioMuteBits;              /* 9 */
-    Uint8 rgucRightTriggerEffect[11];   /* 10 */
-    Uint8 rgucLeftTriggerEffect[11];    /* 21 */
-    Uint8 rgucUnknown1[6];              /* 32 */
-    Uint8 ucLedFlags;                   /* 38 */
-    Uint8 rgucUnknown2[2];              /* 39 */
-    Uint8 ucLedAnim;                    /* 41 */
-    Uint8 ucLedBrightness;              /* 42 */
-    Uint8 ucPadLights;                  /* 43 */
-    Uint8 ucLedRed;                     /* 44 */
-    Uint8 ucLedGreen;                   /* 45 */
-    Uint8 ucLedBlue;                    /* 46 */
+    Uint8 ucEnableBits1;              /* 0 */
+    Uint8 ucEnableBits2;              /* 1 */
+    Uint8 ucRumbleRight;              /* 2 */
+    Uint8 ucRumbleLeft;               /* 3 */
+    Uint8 ucHeadphoneVolume;          /* 4 */
+    Uint8 ucSpeakerVolume;            /* 5 */
+    Uint8 ucMicrophoneVolume;         /* 6 */
+    Uint8 ucAudioEnableBits;          /* 7 */
+    Uint8 ucMicLightMode;             /* 8 */
+    Uint8 ucAudioMuteBits;            /* 9 */
+    Uint8 rgucRightTriggerEffect[11]; /* 10 */
+    Uint8 rgucLeftTriggerEffect[11];  /* 21 */
+    Uint8 rgucUnknown1[6];            /* 32 */
+    Uint8 ucLedFlags;                 /* 38 */
+    Uint8 rgucUnknown2[2];            /* 39 */
+    Uint8 ucLedAnim;                  /* 41 */
+    Uint8 ucLedBrightness;            /* 42 */
+    Uint8 ucPadLights;                /* 43 */
+    Uint8 ucLedRed;                   /* 44 */
+    Uint8 ucLedGreen;                 /* 45 */
+    Uint8 ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
 
 static void CyclePS5TriggerEffect()
 {
     DS5EffectsState_t state;
 
-    Uint8 effects[3][11] =
-    {
+    Uint8 effects[3][11] = {
         /* Clear trigger effect */
         { 0x05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         /* Constant resistance across entire trigger pull */
@@ -407,7 +414,7 @@ static void CloseVirtualController()
 {
     int i;
 
-    for (i = SDL_NumJoysticks(); i--; ) {
+    for (i = SDL_NumJoysticks(); i--;) {
         if (SDL_JoystickIsVirtual(i)) {
             SDL_JoystickDetachVirtual(i);
         }
@@ -502,7 +509,7 @@ static void VirtualControllerMouseMotion(int x, int y)
                 valueY = (Sint16)(distanceY * -SDL_JOYSTICK_AXIS_MIN);
             }
             SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active, valueX);
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active+1, valueY);
+            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active + 1, valueY);
         }
     }
 }
@@ -539,14 +546,13 @@ static void VirtualControllerMouseUp(int x, int y)
             SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active, SDL_JOYSTICK_AXIS_MIN);
         } else {
             SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active, 0);
-            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active+1, 0);
+            SDL_JoystickSetVirtualAxis(virtual_joystick, virtual_axis_active + 1, 0);
         }
         virtual_axis_active = SDL_CONTROLLER_AXIS_INVALID;
     }
 }
 
-void
-loop(void *arg)
+void loop(void *arg)
 {
     SDL_Event event;
     int i;
@@ -559,12 +565,12 @@ loop(void *arg)
     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) == 1) {
         switch (event.type) {
         case SDL_CONTROLLERDEVICEADDED:
-            SDL_Log("Game controller device %d added.\n", (int) SDL_JoystickGetDeviceInstanceID(event.cdevice.which));
+            SDL_Log("Game controller device %d added.\n", (int)SDL_JoystickGetDeviceInstanceID(event.cdevice.which));
             AddController(event.cdevice.which, SDL_TRUE);
             break;
 
         case SDL_CONTROLLERDEVICEREMOVED:
-            SDL_Log("Game controller device %d removed.\n", (int) event.cdevice.which);
+            SDL_Log("Game controller device %d removed.\n", (int)event.cdevice.which);
             DelController(event.cdevice.which);
             break;
 
@@ -586,7 +592,7 @@ loop(void *arg)
         case SDL_CONTROLLERSENSORUPDATE:
             SDL_Log("Controller %" SDL_PRIs32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")\n",
                     event.csensor.which,
-                    GetSensorName((SDL_SensorType) event.csensor.sensor),
+                    GetSensorName((SDL_SensorType)event.csensor.sensor),
                     event.csensor.data[0],
                     event.csensor.data[1],
                     event.csensor.data[2],
@@ -600,7 +606,7 @@ loop(void *arg)
             if (event.caxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event.caxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
                 SetController(event.caxis.which);
             }
-            SDL_Log("Controller %" SDL_PRIs32 " axis %s changed to %d\n", event.caxis.which, SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis) event.caxis.axis), event.caxis.value);
+            SDL_Log("Controller %" SDL_PRIs32 " axis %s changed to %d\n", event.caxis.which, SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis), event.caxis.value);
             break;
 #endif /* VERBOSE_AXES */
 
@@ -609,7 +615,7 @@ loop(void *arg)
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
                 SetController(event.cbutton.which);
             }
-            SDL_Log("Controller %" SDL_PRIs32 " button %s %s\n", event.cbutton.which, SDL_GameControllerGetStringForButton((SDL_GameControllerButton) event.cbutton.button), event.cbutton.state ? "pressed" : "released");
+            SDL_Log("Controller %" SDL_PRIs32 " button %s %s\n", event.cbutton.which, SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
 
             /* Cycle PS5 trigger effects when the microphone button is pressed */
             if (event.type == SDL_CONTROLLERBUTTONDOWN &&
@@ -695,7 +701,7 @@ loop(void *arg)
 
         if (showing_front) {
             for (i = 0; i < SDL_CONTROLLER_AXIS_MAX; ++i) {
-                const Sint16 deadzone = 8000;  /* !!! FIXME: real deadzone */
+                const Sint16 deadzone = 8000; /* !!! FIXME: real deadzone */
                 const Sint16 value = SDL_GameControllerGetAxis(gamecontroller, (SDL_GameControllerAxis)(i));
                 if (value < -deadzone) {
                     const double angle = axis_positions[i].angle;
@@ -733,10 +739,10 @@ loop(void *arg)
                     b = 0;
                 } else {
                     r = 0;
-                    b = (Uint8)(((int)(x) * 255) / 32767);
+                    b = (Uint8)(((int)(x)*255) / 32767);
                 }
                 if (y > 0) {
-                    g = (Uint8)(((int)(y) * 255) / 32767);
+                    g = (Uint8)(((int)(y)*255) / 32767);
                 } else {
                     g = 0;
                 }
@@ -776,8 +782,7 @@ loop(void *arg)
 #endif
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     int controller_count = 0;
@@ -796,7 +801,7 @@ main(int argc, char *argv[])
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize SDL (Note: video is required to start event loop) */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER ) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 1;
     }
@@ -823,7 +828,7 @@ main(int argc, char *argv[])
         const char *description;
 
         SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i),
-                                  guid, sizeof (guid));
+                                  guid, sizeof(guid));
 
         if (SDL_IsGameController(i)) {
             controller_count++;
@@ -873,8 +878,8 @@ main(int argc, char *argv[])
             description = "Joystick";
         }
         SDL_Log("%s %d: %s%s%s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
-            description, i, name ? name : "Unknown", path ? ", " : "", path ? path : "", guid,
-            SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i), SDL_JoystickGetDevicePlayerIndex(i));
+                description, i, name ? name : "Unknown", path ? ", " : "", path ? path : "", guid,
+                SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i), SDL_JoystickGetDevicePlayerIndex(i));
     }
     SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", controller_count, SDL_NumJoysticks());
 

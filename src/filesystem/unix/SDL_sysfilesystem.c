@@ -38,16 +38,14 @@
 #include <sys/sysctl.h>
 #endif
 
-
-static char *
-readSymLink(const char *path)
+static char *readSymLink(const char *path)
 {
     char *retval = NULL;
     ssize_t len = 64;
     ssize_t rc = -1;
 
     while (1) {
-        char *ptr = (char *) SDL_realloc(retval, (size_t) len);
+        char *ptr = (char *)SDL_realloc(retval, (size_t)len);
         if (ptr == NULL) {
             SDL_OutOfMemory();
             break;
@@ -57,13 +55,13 @@ readSymLink(const char *path)
 
         rc = readlink(path, retval, len);
         if (rc == -1) {
-            break;  /* not a symlink, i/o error, etc. */
+            break; /* not a symlink, i/o error, etc. */
         } else if (rc < len) {
-            retval[rc] = '\0';  /* readlink doesn't null-terminate. */
-            return retval;  /* we're good to go. */
+            retval[rc] = '\0'; /* readlink doesn't null-terminate. */
+            return retval;     /* we're good to go. */
         }
 
-        len *= 2;  /* grow buffer, try again. */
+        len *= 2; /* grow buffer, try again. */
     }
 
     SDL_free(retval);
@@ -93,10 +91,10 @@ static char *search_path_for_binary(const char *bin)
     SDL_assert(bin != NULL);
 
     alloc_size = SDL_strlen(bin) + SDL_strlen(envr) + 2;
-    exe = (char *) SDL_malloc(alloc_size);
+    exe = (char *)SDL_malloc(alloc_size);
 
     do {
-        ptr = SDL_strchr(start, ':');  /* find next $PATH separator. */
+        ptr = SDL_strchr(start, ':'); /* find next $PATH separator. */
         if (ptr != start) {
             if (ptr) {
                 *ptr = '\0';
@@ -110,18 +108,16 @@ static char *search_path_for_binary(const char *bin)
                 return exe;
             }
         }
-        start = ptr + 1;  /* start points to beginning of next element. */
+        start = ptr + 1; /* start points to beginning of next element. */
     } while (ptr != NULL);
 
     SDL_free(envr);
     SDL_free(exe);
 
     SDL_SetError("Process not found in $PATH");
-    return NULL;  /* doesn't exist in path. */
+    return NULL; /* doesn't exist in path. */
 }
 #endif
-
-
 
 char *
 SDL_GetBasePath(void)
@@ -130,7 +126,7 @@ SDL_GetBasePath(void)
 
 #if defined(__FREEBSD__)
     char fullpath[PATH_MAX];
-    size_t buflen = sizeof (fullpath);
+    size_t buflen = sizeof(fullpath);
     const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
     if (sysctl(mib, SDL_arraysize(mib), fullpath, &buflen, NULL, 0) != -1) {
         retval = SDL_strdup(fullpath);
@@ -147,7 +143,7 @@ SDL_GetBasePath(void)
     const int mib[] = { CTL_KERN, KERN_PROC_ARGS, getpid(), KERN_PROC_ARGV };
     if (sysctl(mib, 4, NULL, &len, NULL, 0) != -1) {
         char *exe, *pwddst;
-        char *realpathbuf = (char *) SDL_malloc(PATH_MAX + 1);
+        char *realpathbuf = (char *)SDL_malloc(PATH_MAX + 1);
         if (realpathbuf == NULL) {
             SDL_OutOfMemory();
             return NULL;
@@ -164,13 +160,13 @@ SDL_GetBasePath(void)
 
         exe = cmdline[0];
         pwddst = NULL;
-        if (SDL_strchr(exe, '/') == NULL) {  /* not a relative or absolute path, check $PATH for it */
+        if (SDL_strchr(exe, '/') == NULL) { /* not a relative or absolute path, check $PATH for it */
             exe = search_path_for_binary(cmdline[0]);
         } else {
             if (exe && *exe == '.') {
                 const char *pwd = SDL_getenv("PWD");
                 if (pwd && *pwd) {
-                    SDL_asprintf(&pwddst, "%s/%s", pwd, exe); 
+                    SDL_asprintf(&pwddst, "%s/%s", pwd, exe);
                 }
             }
         }
@@ -212,14 +208,14 @@ SDL_GetBasePath(void)
 #elif defined(__SOLARIS__)
         retval = readSymLink("/proc/self/path/a.out");
 #else
-        retval = readSymLink("/proc/self/exe");  /* linux. */
+        retval = readSymLink("/proc/self/exe"); /* linux. */
         if (retval == NULL) {
             /* older kernels don't have /proc/self ... try PID version... */
             char path[64];
             const int rc = SDL_snprintf(path, sizeof(path),
-                                              "/proc/%llu/exe",
-                                              (unsigned long long) getpid());
-            if ( (rc > 0) && (rc < sizeof(path)) ) {
+                                        "/proc/%llu/exe",
+                                        (unsigned long long)getpid());
+            if ((rc > 0) && (rc < sizeof(path))) {
                 retval = readSymLink(path);
             }
         }
@@ -243,8 +239,8 @@ SDL_GetBasePath(void)
     if (retval != NULL) { /* chop off filename. */
         char *ptr = SDL_strrchr(retval, '/');
         if (ptr != NULL) {
-            *(ptr+1) = '\0';
-        } else {  /* shouldn't happen, but just in case... */
+            *(ptr + 1) = '\0';
+        } else { /* shouldn't happen, but just in case... */
             SDL_free(retval);
             retval = NULL;
         }
@@ -252,7 +248,7 @@ SDL_GetBasePath(void)
 
     if (retval != NULL) {
         /* try to shrink buffer... */
-        char *ptr = (char *) SDL_realloc(retval, SDL_strlen(retval) + 1);
+        char *ptr = (char *)SDL_realloc(retval, SDL_strlen(retval) + 1);
         if (ptr != NULL) {
             retval = ptr; /* oh well if it failed. */
         }
@@ -304,7 +300,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    retval = (char *) SDL_malloc(len);
+    retval = (char *)SDL_malloc(len);
     if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;
@@ -316,7 +312,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_snprintf(retval, len, "%s%s%s/", envr, append, app);
     }
 
-    for (ptr = retval+1; *ptr; ptr++) {
+    for (ptr = retval + 1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
             if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
@@ -326,7 +322,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         }
     }
     if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
-error:
+    error:
         SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));
         SDL_free(retval);
         return NULL;

@@ -22,9 +22,7 @@
 
 #include "SDL_sysvideo.h"
 
-
-int
-SDL_SetClipboardText(const char *text)
+int SDL_SetClipboardText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -44,8 +42,7 @@ SDL_SetClipboardText(const char *text)
     }
 }
 
-int
-SDL_SetPrimarySelectionText(const char *text)
+int SDL_SetPrimarySelectionText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 

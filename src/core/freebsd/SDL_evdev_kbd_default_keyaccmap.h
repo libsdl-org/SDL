@@ -1,5 +1,6 @@
 #include <sys/kbio.h>
 
+/* *INDENT-OFF* */ /* clang-format off */
 /*
  * Automatically generated from /usr/share/vt/keymaps/us.acc.kbd.
  * DO NOT EDIT!
@@ -163,3 +164,4 @@ static accentmap_t accentmap_default_us_acc = { 11, {
     { 0x00 }, 
 } };
 
+/* *INDENT-ON* */ /* clang-format on */
