@@ -554,9 +554,9 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  * surface. The new, optimized surface can then be used as the source for
  * future blits, making them faster.
  *
- * \param src the existing SDL_Surface structure to convert
- * \param fmt the SDL_PixelFormat structure that the new surface is optimized
- *            for
+ * \param surface the existing SDL_Surface structure to convert
+ * \param format the SDL_PixelFormat structure that the new surface is
+ *               optimized for
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -566,8 +566,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  * \sa SDL_ConvertSurfaceFormat
  * \sa SDL_CreateSurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
-    (SDL_Surface * src, const SDL_PixelFormat * fmt);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface,
+                                                        const SDL_PixelFormat *format);
 
 /**
  * Copy an existing surface to a new surface of the specified format enum.
@@ -577,7 +577,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * it might be easier to call but it doesn't have access to palette
  * information for the destination surface, in case that would be important.
  *
- * \param src the existing SDL_Surface structure to convert
+ * \param surface the existing SDL_Surface structure to convert
  * \param pixel_format the SDL_PixelFormatEnum that the new surface is
  *                     optimized for
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
@@ -589,8 +589,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  * \sa SDL_ConvertSurface
  * \sa SDL_CreateSurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
-    (SDL_Surface * src, Uint32 pixel_format);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *surface,
+                                                              Uint32 pixel_format);
 
 /**
  * Copy a block of pixels of one format to another format.
