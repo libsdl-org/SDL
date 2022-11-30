@@ -1669,7 +1669,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     elseif(SOLARIS)
       set(SDL_RLD_FLAGS "-R\${libdir}")
     endif()
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
     set(HAVE_RPATH TRUE)
   endif()
 
