@@ -1,87 +1,37 @@
 cmake_minimum_required(VERSION 3.0)
 project(SDL3_test)
 
+enable_testing()
+
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/sdlplatform.cmake")
+SDL_DetectCMakePlatform()
+
 include(CheckCCompilerFlag)
 include(CheckIncludeFile)
 include(CMakeParseArguments)
 include(CMakePushCheckState)
+include(GNUInstallDirs)
 
-set(SDL_TEST_EXECUTABLES)
-set(SDL_TESTS_NONINTERACTIVE)
-set(SDL_TESTS_NEEDS_ESOURCES)
-
-macro(add_sdl_test_executable TARGET)
-    cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES" "" "" ${ARGN})
-    add_executable(${TARGET} ${AST_UNPARSED_ARGUMENTS})
-
-    list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
-    if(AST_NONINTERACTIVE)
-        list(APPEND SDL_TESTS_NONINTERACTIVE ${TARGET})
-    endif()
-    if(AST_NEEDS_RESOURCES)
-        list(APPEND SDL_TESTS_NEEDS_ESOURCES ${TARGET})
-    endif()
-endmacro()
-
-if(NOT TARGET SDL3::SDL3-static)
-    find_package(SDL3 3.0.0 REQUIRED COMPONENTS SDL3-static SDL3_test)
-endif()
-
-enable_testing()
-
-if(SDL_INSTALL_TESTS)
-    include(GNUInstallDirs)
-endif()
-
-if(N3DS)
-    link_libraries(SDL3::SDL3_main)
-endif()
-
-if(PSP)
-    link_libraries(
-        SDL3::SDL3_main
-        SDL3::SDL3_test
-        SDL3::SDL3-static
-        GL
-        pspvram
-        pspvfpu
-        pspdisplay
-        pspgu
-        pspge
-        pspaudio
-        pspctrl
-        psphprm
-        psppower
-    )
-elseif(PS2)
-link_libraries(
-        SDL3_main
-        SDL3_test
-        SDL3-static
-        patches
-        gskit
-        dmakit
-        ps2_drivers
-)
-else()
-    link_libraries(SDL3::SDL3_test SDL3::SDL3-static)
-endif()
-
+set(SDL_TESTS_LINK_SHARED_DEFAULT ON)
 if(WINDOWS)
-    # mingw32 must come before SDL3_main to link successfully
-    if(MINGW OR CYGWIN)
-        link_libraries(mingw32)
-    endif()
+    # Avoid missing dll error by linking to static SDL library,
+    # alternatively, copy dll to build directory in a post build event.
+    set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
+endif()
+if(EMSCRIPTEN OR N3DS OR PS2 OR PSP OR RISCOS OR VITA)
+    set(SDL_TESTS_LINK_SHARED_DEFAULT OFF)
+endif()
 
-    # CET support was added in VS 16.7
-    if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
-        link_libraries(-CETCOMPAT)
-    endif()
+option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" ${SDL_TESTS_LINK_SHARED_DEFAULT})
 
-    # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
-    # but we need them for VS as well.
-    link_libraries(SDL3_main)
-    add_definitions(-Dmain=SDL_main)
+if(SDL_TESTS_LINK_SHARED)
+    set(sdl_name_component SDL3)
+else()
+    set(sdl_name_component SDL3-static)
+endif()
+
+if(NOT TARGET SDL3::${sdl_name_component})
+    find_package(SDL3 3.0.0 REQUIRED COMPONENTS ${sdl_name_component} SDL3_main SDL3_test)
 endif()
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
@@ -91,32 +41,83 @@ if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
     find_package(OpenGL)
 endif()
 
-if (OPENGL_FOUND)
-    add_definitions(-DHAVE_OPENGL)
-endif()
+set(SDL_TEST_EXECUTABLES)
+set(SDL_TESTS_NONINTERACTIVE)
+
+add_library(sdltests_utils OBJECT
+    testutils.c
+)
+target_link_libraries(sdltests_utils PRIVATE SDL3::${sdl_name_component})
+
+file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
+
+macro(add_sdl_test_executable TARGET)
+    cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS" "" "" ${ARGN})
+    set(SOURCES ${AST_UNPARSED_ARGUMENTS})
+    if(AST_TESTUTILS)
+        list(APPEND SOURCES $<TARGET_OBJECTS:sdltests_utils>)
+    endif()
+    if(AST_NEEDS_RESOURCES)
+        list(APPEND SOURCES ${RESOURCE_FILES})
+    endif()
+    add_executable(${TARGET} ${SOURCES})
+    target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_main SDL3::SDL3_test SDL3::${sdl_name_component})
+
+    list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
+    if(AST_NONINTERACTIVE)
+        list(APPEND SDL_TESTS_NONINTERACTIVE ${TARGET})
+    endif()
+    if(AST_NEEDS_RESOURCES)
+        if(PSP OR PS2)
+            add_custom_command(TARGET ${TARGET} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} ARGS -E make_directory $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
+                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET})
+        else()
+            add_custom_command(TARGET ${TARGET} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILES} $<TARGET_FILE_DIR:${TARGET}>)
+        endif()
+        if(APPLE)
+            # Make sure resource files get installed into macOS/iOS .app bundles.
+            set_target_properties(${TARGET} PROPERTIES RESOURCE "${RESOURCE_FILES}")
+        endif()
+    endif()
+
+    if(WINDOWS)
+        # CET support was added in VS 16.7
+        if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
+            set_property(TARGET ${TARGET} APPEND_STRING PROPERTY LINK_FLAGS " -CETCOMPAT")
+        endif()
+    elseif(PSP)
+        target_link_libraries(${TARGET} PRIVATE GL)
+    endif()
+
+    if(OPENGL_FOUND)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
+    endif()
+endmacro()
 
 check_include_file(signal.h HAVE_SIGNAL_H)
-if (HAVE_SIGNAL_H)
+if(HAVE_SIGNAL_H)
     add_definitions(-DHAVE_SIGNAL_H)
 endif()
 
 check_include_file(libudev.h HAVE_LIBUDEV_H)
-if (HAVE_LIBUDEV_H)
+if(HAVE_LIBUDEV_H)
     add_definitions(-DHAVE_LIBUDEV_H)
 endif()
 
 add_sdl_test_executable(checkkeys checkkeys.c)
 add_sdl_test_executable(checkkeysthreads checkkeysthreads.c)
-add_sdl_test_executable(loopwave NEEDS_RESOURCES loopwave.c testutils.c)
-add_sdl_test_executable(loopwavequeue NEEDS_RESOURCES loopwavequeue.c testutils.c)
+add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS loopwave.c)
+add_sdl_test_executable(loopwavequeue NEEDS_RESOURCES TESTUTILS loopwavequeue.c)
 add_sdl_test_executable(testsurround testsurround.c)
 add_sdl_test_executable(testresample NEEDS_RESOURCES testresample.c)
 add_sdl_test_executable(testaudioinfo testaudioinfo.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
 add_sdl_test_executable(testautomation NEEDS_RESOURCES ${TESTAUTOMATION_SOURCE_FILES})
-add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES testmultiaudio.c testutils.c)
-add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES testaudiohotplug.c testutils.c)
+add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS testmultiaudio.c)
+add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS testaudiohotplug.c)
 add_sdl_test_executable(testaudiocapture testaudiocapture.c)
 add_sdl_test_executable(testatomic NONINTERACTIVE testatomic.c)
 add_sdl_test_executable(testintersections testintersections.c)
@@ -134,19 +135,19 @@ if(LINUX AND TARGET sdl-build-options)
 endif()
 
 add_sdl_test_executable(testfile testfile.c)
-add_sdl_test_executable(testgamecontroller NEEDS_RESOURCES testgamecontroller.c testutils.c)
-add_sdl_test_executable(testgeometry testgeometry.c testutils.c)
+add_sdl_test_executable(testgamecontroller NEEDS_RESOURCES TESTUTILS testgamecontroller.c)
+add_sdl_test_executable(testgeometry TESTUTILS testgeometry.c)
 add_sdl_test_executable(testgesture testgesture.c)
 add_sdl_test_executable(testgl2 testgl2.c)
 add_sdl_test_executable(testgles testgles.c)
 add_sdl_test_executable(testgles2 testgles2.c)
-add_sdl_test_executable(testgles2_sdf testgles2_sdf.c testutils.c)
+add_sdl_test_executable(testgles2_sdf TESTUTILS testgles2_sdf.c)
 add_sdl_test_executable(testhaptic testhaptic.c)
 add_sdl_test_executable(testhotplug testhotplug.c)
 add_sdl_test_executable(testrumble testrumble.c)
 add_sdl_test_executable(testthread NONINTERACTIVE testthread.c)
-add_sdl_test_executable(testiconv NEEDS_RESOURCES testiconv.c testutils.c)
-add_sdl_test_executable(testime NEEDS_RESOURCES testime.c testutils.c)
+add_sdl_test_executable(testiconv NEEDS_RESOURCES TESTUTILS testiconv.c)
+add_sdl_test_executable(testime NEEDS_RESOURCES TESTUTILS testime.c)
 add_sdl_test_executable(testjoystick testjoystick.c)
 add_sdl_test_executable(testkeys testkeys.c)
 add_sdl_test_executable(testloadso testloadso.c)
@@ -155,11 +156,10 @@ add_sdl_test_executable(testlock testlock.c)
 add_sdl_test_executable(testmouse testmouse.c)
 
 if(APPLE)
-    add_sdl_test_executable(testnative NEEDS_RESOURCES
+    add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS
         testnative.c
         testnativecocoa.m
         testnativex11.c
-        testutils.c
     )
 
     cmake_push_check_state()
@@ -169,39 +169,39 @@ if(APPLE)
         set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
     endif()
 elseif(WINDOWS)
-    add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativew32.c testutils.c)
+    add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS testnative.c testnativew32.c)
 elseif(HAVE_X11)
-    add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativex11.c testutils.c)
-    target_link_libraries(testnative X11)
+    add_sdl_test_executable(testnative NEEDS_RESOURCES TESTUTILS testnative.c testnativex11.c)
+    target_link_libraries(testnative PRIVATE X11)
 endif()
 
-add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES testoverlay2.c testyuv_cvt.c testutils.c)
+add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES TESTUTILS testoverlay2.c testyuv_cvt.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE testpower.c)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE testfilesystem.c)
-add_sdl_test_executable(testrendertarget NEEDS_RESOURCES testrendertarget.c testutils.c)
-add_sdl_test_executable(testscale NEEDS_RESOURCES testscale.c testutils.c)
+add_sdl_test_executable(testrendertarget NEEDS_RESOURCES TESTUTILS testrendertarget.c)
+add_sdl_test_executable(testscale NEEDS_RESOURCES TESTUTILS testscale.c)
 add_sdl_test_executable(testsem testsem.c)
 add_sdl_test_executable(testsensor testsensor.c)
 add_sdl_test_executable(testshader NEEDS_RESOURCES testshader.c)
 add_sdl_test_executable(testshape NEEDS_RESOURCES testshape.c)
-add_sdl_test_executable(testsprite2 NEEDS_RESOURCES testsprite2.c testutils.c)
-add_sdl_test_executable(testspriteminimal NEEDS_RESOURCES testspriteminimal.c testutils.c)
-add_sdl_test_executable(teststreaming NEEDS_RESOURCES teststreaming.c testutils.c)
+add_sdl_test_executable(testsprite2 NEEDS_RESOURCES TESTUTILS testsprite2.c)
+add_sdl_test_executable(testspriteminimal NEEDS_RESOURCES TESTUTILS testspriteminimal.c)
+add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS teststreaming.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE testtimer.c)
 add_sdl_test_executable(testurl testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE testver.c)
-add_sdl_test_executable(testviewport NEEDS_RESOURCES testviewport.c testutils.c)
+add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS testviewport.c)
 add_sdl_test_executable(testwm2 testwm2.c)
 add_sdl_test_executable(testyuv NEEDS_RESOURCES testyuv.c testyuv_cvt.c)
 add_sdl_test_executable(torturethread torturethread.c)
-add_sdl_test_executable(testrendercopyex NEEDS_RESOURCES testrendercopyex.c testutils.c)
+add_sdl_test_executable(testrendercopyex NEEDS_RESOURCES TESTUTILS testrendercopyex.c)
 add_sdl_test_executable(testmessage testmessage.c)
 add_sdl_test_executable(testdisplayinfo testdisplayinfo.c)
 add_sdl_test_executable(testqsort NONINTERACTIVE testqsort.c)
 add_sdl_test_executable(testbounds testbounds.c)
 add_sdl_test_executable(testcustomcursor testcustomcursor.c)
-add_sdl_test_executable(controllermap NEEDS_RESOURCES controllermap.c testutils.c)
+add_sdl_test_executable(controllermap NEEDS_RESOURCES TESTUTILS controllermap.c)
 add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
 
@@ -241,61 +241,24 @@ endif()
 
 if(OPENGL_FOUND)
     if(TARGET OpenGL::GL)
-        target_link_libraries(testshader OpenGL::GL)
-        target_link_libraries(testgl2 OpenGL::GL)
+        target_link_libraries(testshader PRIVATE OpenGL::GL)
+        target_link_libraries(testgl2 PRIVATE OpenGL::GL)
     else()
         if(EMSCRIPTEN AND OPENGL_gl_LIBRARY STREQUAL "nul")
             set(OPENGL_gl_LIBRARY GL)
         endif()
         # emscripten's FindOpenGL.cmake does not create OpenGL::GL
-        target_link_libraries(testshader ${OPENGL_gl_LIBRARY})
-        target_link_libraries(testgl2 ${OPENGL_gl_LIBRARY})
+        target_link_libraries(testshader PRIVATE ${OPENGL_gl_LIBRARY})
+        target_link_libraries(testgl2 PRIVATE ${OPENGL_gl_LIBRARY})
     endif()
 endif()
 if(EMSCRIPTEN)
-    target_link_libraries(testshader -sLEGACY_GL_EMULATION)
+    set_property(TARGET testshader APPEND_STRING PROPERTY LINK_FLAGS " -sLEGACY_GL_EMULATION")
 endif()
-
-file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
-file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 if(PSP)
     # Build EBOOT files if building for PSP
-    set(BUILD_EBOOT
-        ${SDL_TESTS_NEEDS_ESOURCES}
-        testatomic
-        testaudiocapture
-        testaudioinfo
-        testbounds
-        testdisplayinfo
-        testdraw2
-        testdrawchessboard
-        testerror
-        testfile
-        testfilesystem
-        testgeometry
-        testgl2
-        testhittesting
-        testiconv
-        testintersections
-        testjoystick
-        testlock
-        testmessage
-        testoverlay2
-        testplatform
-        testpower
-        testqsort
-        testsem
-        teststreaming
-        testsurround
-        testthread
-        testtimer
-        testver
-        testviewport
-        testwm2
-        torturethread
-    )
-    foreach(APP IN LISTS BUILD_EBOOT)
+    foreach(APP ${SDL_TEST_EXECUTABLES})
         create_pbp_file(
             TARGET          ${APP}
             TITLE           SDL-${APP}
@@ -314,7 +277,7 @@ if(PSP)
             $<TARGET_FILE_DIR:${ARG_TARGET}>/EBOOT.PBP
             $<TARGET_FILE_DIR:${ARG_TARGET}>/sdl-${APP}/EBOOT.PBP
         )
-        if(${BUILD_PRX})
+        if(BUILD_PRX)
             add_custom_command(
                 TARGET ${APP} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
@@ -340,7 +303,7 @@ if(N3DS)
     set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs")
     file(COPY ${RESOURCE_FILES} DESTINATION "${ROMFS_DIR}")
 
-    foreach(APP IN LISTS SDL_TEST_EXECUTABLES)
+    foreach(APP ${SDL_TEST_EXECUTABLES})
         get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
         set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
         ctr_generate_smdh("${SMDH_FILE}" 
@@ -359,8 +322,8 @@ endif()
 
 if(RISCOS)
     set(SDL_TEST_EXECUTABLES_AIF)
-    foreach(APP IN LISTS SDL_TEST_EXECUTABLES)
-        target_link_options(${APP} PRIVATE -static)
+    foreach(APP ${SDL_TEST_EXECUTABLES})
+        set_property(TARGET ${APP} APPEND_STRING PROPERTY LINK_FLAGS " -static")
         add_custom_command(
             OUTPUT ${APP},ff8
             COMMAND elf2aif ${APP} ${APP},ff8
@@ -371,39 +334,20 @@ if(RISCOS)
     endforeach()
 endif()
 
-foreach(APP IN LISTS SDL_TESTS_NEEDS_RESOURCES)
-    foreach(RESOURCE_FILE ${RESOURCE_FILES})
-        if(PSP OR PS2)
-            add_custom_command(TARGET ${APP} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:${APP}>/sdl-${APP})
-        else()
-            add_custom_command(TARGET ${APP} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILE} $<TARGET_FILE_DIR:${APP}>)
-        endif()
-    endforeach(RESOURCE_FILE)
-    if(APPLE)
-        # Make sure resource files get installed into macOS/iOS .app bundles.  
-        target_sources(${APP} PRIVATE "${RESOURCE_FILES}")
-        set_target_properties(${APP} PROPERTIES RESOURCE "${RESOURCE_FILES}")
-    endif()
-endforeach()
-
 # Set Apple App ID / Bundle ID.  This is needed to launch apps on some Apple
 # platforms (iOS, for example).
 if(APPLE)
-    if(${CMAKE_VERSION} VERSION_LESS "3.7.0")
+    if(CMAKE_VERSION VERSION_LESS "3.7.0")
         # CMake's 'BUILDSYSTEM_TARGETS' property is only available in
         # CMake 3.7 and above.
         message(WARNING "Unable to set Bundle ID for Apple .app builds due to old CMake (pre 3.7).")
     else()
-        get_property(TARGETS DIRECTORY ${CMAKE_CURRENT_LIST_DIR} PROPERTY BUILDSYSTEM_TARGETS)
-        foreach(CURRENT_TARGET IN LISTS TARGETS)
-            get_property(TARGET_TYPE TARGET ${CURRENT_TARGET} PROPERTY TYPE)
-            if(TARGET_TYPE STREQUAL "EXECUTABLE")
-                set_target_properties("${CURRENT_TARGET}" PROPERTIES
-                    MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-                    MACOSX_BUNDLE_BUNDLE_VERSION "${SDL_VERSION}"
-                    MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL_VERSION}"
-                )
-            endif()
+        foreach(CURRENT_TARGET ${SDL_TEST_EXECUTABLES})
+            set_target_properties("${CURRENT_TARGET}" PROPERTIES
+                MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
+                MACOSX_BUNDLE_BUNDLE_VERSION "${SDL_VERSION}"
+                MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL_VERSION}"
+            )
         endforeach()
     endif()
 endif()
