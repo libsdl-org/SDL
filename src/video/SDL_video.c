@@ -1157,25 +1157,27 @@ GetRectDisplayIndex(int x, int y, int w, int h)
     center.x = x + w / 2;
     center.y = y + h / 2;
 
-    for (i = 0; i < _this->num_displays; ++i) {
-        SDL_Rect display_rect;
-        SDL_GetDisplayBounds(i, &display_rect);
+    if (_this) {
+        for (i = 0; i < _this->num_displays; ++i) {
+            SDL_Rect display_rect;
+            SDL_GetDisplayBounds(i, &display_rect);
 
-        /* Check if the window is fully enclosed */
-        if (SDL_EnclosePoints(&center, 1, &display_rect, NULL)) {
-            return i;
-        }
+            /* Check if the window is fully enclosed */
+            if (SDL_EnclosePoints(&center, 1, &display_rect, NULL)) {
+                return i;
+            }
 
-        /* Snap window center to the display rect */
-        closest_point_on_display = center;
-        SDL_GetClosestPointOnRect(&display_rect, &closest_point_on_display);
+            /* Snap window center to the display rect */
+            closest_point_on_display = center;
+            SDL_GetClosestPointOnRect(&display_rect, &closest_point_on_display);
 
-        delta.x = center.x - closest_point_on_display.x;
-        delta.y = center.y - closest_point_on_display.y;
-        dist = (delta.x*delta.x + delta.y*delta.y);
-        if (dist < closest_dist) {
-            closest = i;
-            closest_dist = dist;
+            delta.x = center.x - closest_point_on_display.x;
+            delta.y = center.y - closest_point_on_display.y;
+            dist = (delta.x * delta.x + delta.y * delta.y);
+            if (dist < closest_dist) {
+                closest = i;
+                closest_dist = dist;
+            }
         }
     }
 
