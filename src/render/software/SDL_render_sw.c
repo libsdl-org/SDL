@@ -842,9 +842,6 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                             SDL_FreeSurface(tmp);
                             /* No need to set back r/g/b/a/blendmode to 'src' since it's done in PrepTextureForCopy() */
                         }
-                    } else{
-                        SDL_PrivateUpperBlitScaled(src, srcrect, surface, dstrect, texture->scaleMode);
-                    }
                 } else {
                     SDL_PrivateUpperBlitScaled(src, srcrect, surface, dstrect, texture->scaleMode);
                 }
