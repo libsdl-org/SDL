@@ -1518,6 +1518,8 @@ Blit_RGB565_32(SDL_BlitInfo * info, const Uint32 * map)
 #endif /* USE_DUFFS_LOOP */
 }
 
+/* *INDENT-OFF* */ /* clang-format off */
+
 /* Special optimized blit for RGB 5-6-5 --> ARGB 8-8-8-8 */
 static const Uint32 RGB565_ARGB8888_LUT[512] = {
     0x00000000, 0xff000000, 0x00000008, 0xff002000,
@@ -2069,6 +2071,8 @@ Blit_RGB565_BGRA8888(SDL_BlitInfo * info)
 {
     Blit_RGB565_32(info, RGB565_BGRA8888_LUT);
 }
+
+/* *INDENT-ON* */ /* clang-format on */
 
 #endif /* SDL_HAVE_BLIT_N_RGB565 */
 
