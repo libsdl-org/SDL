@@ -65,7 +65,7 @@ extern "C" {
 /* ------------ Definitions --------- */
 
 /* typedef a 32-bit type */
-  typedef Uint32 MD5UINT4;
+  typedef unsigned long int MD5UINT4;
 
 /* Data structure for MD5 (Message-Digest) computation */
   typedef struct {
