@@ -511,9 +511,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int smooth, int flipx, int
         }
     } else {
         /* Target surface is 32 bit with source RGBA ordering */
-        rz_dst = SDL_CreateRGBSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, 32,
-                                      src->format->Rmask, src->format->Gmask,
-                                      src->format->Bmask, src->format->Amask);
+        rz_dst = SDL_CreateRGBSurfaceWithFormat(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format->format);
     }
 
     /* Check target */

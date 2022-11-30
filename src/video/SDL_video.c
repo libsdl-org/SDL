@@ -2615,8 +2615,6 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
     Uint32 format = 0;
     void *pixels = NULL;
     int pitch = 0;
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_bool created_framebuffer = SDL_FALSE;
 
     /* This will switch the video backend from using a software surface to
@@ -2692,11 +2690,7 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
         return window->surface;
     }
 
-    if (!SDL_PixelFormatEnumToMasks(format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
-        return NULL;
-    }
-
-    return SDL_CreateRGBSurfaceFrom(pixels, window->w, window->h, bpp, pitch, Rmask, Gmask, Bmask, Amask);
+    return SDL_CreateRGBSurfaceWithFormatFrom(pixels, window->w, window->h, pitch, format);
 }
 
 SDL_Surface *

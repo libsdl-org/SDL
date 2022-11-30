@@ -380,16 +380,19 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         switch (biBitCount) {
         case 15:
         case 16:
+            /* SDL_PIXELFORMAT_RGB555 or SDL_PIXELFORMAT_ARGB1555 if Amask */
             Rmask = 0x7C00;
             Gmask = 0x03E0;
             Bmask = 0x001F;
             break;
         case 24:
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            /* SDL_PIXELFORMAT_RGB24 */
             Rmask = 0x000000FF;
             Gmask = 0x0000FF00;
             Bmask = 0x00FF0000;
 #else
+            /* SDL_PIXELFORMAT_BGR24 */
             Rmask = 0x00FF0000;
             Gmask = 0x0000FF00;
             Bmask = 0x000000FF;
@@ -398,6 +401,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         case 32:
             /* We don't know if this has alpha channel or not */
             correctAlpha = SDL_TRUE;
+            /* SDL_PIXELFORMAT_RGBA8888 */
             Amask = 0xFF000000;
             Rmask = 0x00FF0000;
             Gmask = 0x0000FF00;
@@ -416,12 +420,17 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     }
 
     /* Create a compatible surface, note that the colors are RGB ordered */
-    surface =
-        SDL_CreateRGBSurface(biWidth, biHeight, biBitCount, Rmask, Gmask,
-                             Bmask, Amask);
-    if (surface == NULL) {
-        was_error = SDL_TRUE;
-        goto done;
+    {
+        Uint32 format;
+        
+        /* Get the pixel format */
+        format = SDL_MasksToPixelFormatEnum(biBitCount, Rmask, Gmask, Bmask, Amask);
+        surface = SDL_CreateRGBSurfaceWithFormat(biWidth, biHeight, format);
+    
+        if (surface == NULL) {
+            was_error = SDL_TRUE;
+            goto done;
+        }
     }
 
     /* Load the palette, if any */

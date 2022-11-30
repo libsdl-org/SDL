@@ -1184,10 +1184,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format)
     }
 
     /* Create a new surface with the desired format */
-    convert = SDL_CreateRGBSurface(surface->w, surface->h,
-                                   format->BitsPerPixel, format->Rmask,
-                                   format->Gmask, format->Bmask,
-                                   format->Amask);
+    convert = SDL_CreateRGBSurfaceWithFormat(surface->w, surface->h, format->format);
     if (convert == NULL) {
         return NULL;
     }
@@ -1329,10 +1326,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format)
             int converted_colorkey = 0;
 
             /* Create a dummy surface to get the colorkey converted */
-            tmp = SDL_CreateRGBSurface(1, 1,
-                                   surface->format->BitsPerPixel, surface->format->Rmask,
-                                   surface->format->Gmask, surface->format->Bmask,
-                                   surface->format->Amask);
+            tmp = SDL_CreateRGBSurfaceWithFormat(1, 1, surface->format->format);
 
             /* Share the palette, if any */
             if (surface->format->palette) {
