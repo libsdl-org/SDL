@@ -33,6 +33,7 @@
 #define MOOSEFRAME_SIZE (MOOSEPIC_W * MOOSEPIC_H)
 #define MOOSEFRAMES_COUNT 10
 
+/* *INDENT-OFF* */ /* clang-format off */
 SDL_Color MooseColors[84] = {
     {49, 49, 49, SDL_ALPHA_OPAQUE}
     , {66, 24, 0, SDL_ALPHA_OPAQUE}
@@ -139,6 +140,7 @@ SDL_Color MooseColors[84] = {
     , {231, 231, 231, SDL_ALPHA_OPAQUE}
     , {239, 206, 173, SDL_ALPHA_OPAQUE}
 };
+/* *INDENT-ON* */ /* clang-format on */
 
 Uint8 MooseFrame[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE*2];
 SDL_Texture *MooseTexture;
