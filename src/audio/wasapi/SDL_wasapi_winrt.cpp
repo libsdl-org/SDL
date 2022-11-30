@@ -441,6 +441,6 @@ static void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, WAVE
 
 /* *INDENT-ON* */ /* clang-format on */
 
-#endif  // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
+#endif // SDL_AUDIO_DRIVER_WASAPI && defined(__WINRT__)
 
 /* vi: set ts=4 sw=4 expandtab: */
