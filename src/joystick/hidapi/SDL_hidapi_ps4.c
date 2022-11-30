@@ -374,6 +374,15 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported);
 
+    if (device->vendor_id == USB_VENDOR_PDP &&
+        device->product_id == USB_PRODUCT_VICTRIX_FS_PRO_V2) {
+        /* The Victrix FS Pro V2 reports that it has lightbar support,
+         * but it doesn't respond to the effects packet, and will hang
+         * on reboot if we send it.
+         */
+        ctx->effects_supported = SDL_FALSE;
+    }
+
     device->joystick_type = joystick_type;
     device->type = SDL_CONTROLLER_TYPE_PS4;
     if (device->vendor_id == USB_VENDOR_SONY) {
