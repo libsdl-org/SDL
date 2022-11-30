@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* This is the joystick API for Simple DirectMedia Layer */
 
@@ -2222,7 +2222,8 @@ SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
     if (vendor_id == USB_VENDOR_MICROSOFT) {
         if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1 ||
             product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2 ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH) {
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH ||
+            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLE) {
             return SDL_TRUE;
         }
     }

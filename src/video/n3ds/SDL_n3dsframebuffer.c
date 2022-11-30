@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_N3DS
 
@@ -73,7 +73,7 @@ CreateNewWindowFramebuffer(SDL_Window *window)
     Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_PixelFormatEnumToMasks(FRAMEBUFFER_FORMAT, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
     SDL_GetWindowSize(window, &w, &h);
-    return SDL_CreateRGBSurface(0, w, h, bpp, Rmask, Gmask, Bmask, Amask);
+    return SDL_CreateRGBSurface(w, h, bpp, Rmask, Gmask, Bmask, Amask);
 }
 
 int

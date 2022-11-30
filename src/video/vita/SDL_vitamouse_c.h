@@ -22,7 +22,7 @@
 #ifndef _SDL_vitamouse_h
 #define _SDL_vitamouse_h
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* mouse functions */
 extern void VITA_InitMouse(void);

@@ -25,7 +25,7 @@
  */
 
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_cocoavulkan_h_
 #define SDL_cocoavulkan_h_

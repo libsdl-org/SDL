@@ -22,7 +22,7 @@
 #ifndef SDL_triangle_h_
 #define SDL_triangle_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 extern int SDL_SW_FillTriangle(SDL_Surface *dst,
         SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,

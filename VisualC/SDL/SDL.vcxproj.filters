@@ -1337,7 +1337,12 @@
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.c">
       <Filter>render\direct3d12</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
+    <ClCompile Include="..\..\src\core\windows\pch.c">
+      <Filter>core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c">
+      <Filter>stdlib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />

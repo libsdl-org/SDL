@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
@@ -52,6 +52,7 @@
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
+#include "fractional-scale-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -884,7 +885,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_init_xdg_output(d);
     } else if (SDL_strcmp(interface, "wp_viewporter") == 0) {
         d->viewporter = wl_registry_bind(d->registry, id, &wp_viewporter_interface, 1);
-
+    } else if (SDL_strcmp(interface, "wp_fractional_scale_manager_v1") == 0) {
+        d->fractional_scale_manager = wl_registry_bind(d->registry, id, &wp_fractional_scale_manager_v1_interface, 1);
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (SDL_strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
@@ -1134,6 +1136,11 @@ Wayland_VideoCleanup(_THIS)
     if (data->primary_selection_device_manager) {
         zwp_primary_selection_device_manager_v1_destroy(data->primary_selection_device_manager);
         data->primary_selection_device_manager = NULL;
+    }
+
+    if (data->fractional_scale_manager) {
+        wp_fractional_scale_manager_v1_destroy(data->fractional_scale_manager);
+        data->fractional_scale_manager = NULL;
     }
 
     if (data->compositor) {

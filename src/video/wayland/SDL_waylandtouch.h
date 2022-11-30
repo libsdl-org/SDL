@@ -22,7 +22,7 @@
 #ifndef SDL_waylandtouch_h_
 #define SDL_waylandtouch_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 

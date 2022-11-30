@@ -21,7 +21,7 @@
 
 #include <emscripten.h>
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
 void

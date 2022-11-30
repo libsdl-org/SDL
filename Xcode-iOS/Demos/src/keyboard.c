@@ -178,7 +178,7 @@ loadFont(void)
         SDL_PixelFormatEnumToMasks(format, &bpp, &Rmask, &Gmask, &Bmask,
                                    &Amask);
         SDL_Surface *converted =
-            SDL_CreateRGBSurface(0, surface->w, surface->h, bpp, Rmask, Gmask,
+            SDL_CreateRGBSurface(surface->w, surface->h, bpp, Rmask, Gmask,
                                  Bmask, Amask);
         SDL_BlitSurface(surface, NULL, converted, NULL);
         /* create our texture */

@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /*
    Code to load and save surfaces in Windows BMP format.
@@ -417,7 +417,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
 
     /* Create a compatible surface, note that the colors are RGB ordered */
     surface =
-        SDL_CreateRGBSurface(0, biWidth, biHeight, biBitCount, Rmask, Gmask,
+        SDL_CreateRGBSurface(biWidth, biHeight, biBitCount, Rmask, Gmask,
                              Bmask, Amask);
     if (surface == NULL) {
         was_error = SDL_TRUE;
@@ -689,7 +689,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
             } else {
                 SDL_InitFormat(&format, SDL_PIXELFORMAT_BGR24);
             }
-            surface = SDL_ConvertSurface(saveme, &format, 0);
+            surface = SDL_ConvertSurface(saveme, &format);
             if (surface == NULL) {
                 SDL_SetError("Couldn't convert image to %d bpp",
                              format.BitsPerPixel);

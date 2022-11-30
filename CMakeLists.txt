@@ -73,6 +73,7 @@ find_package(PkgConfig)
 list(APPEND CMAKE_MODULE_PATH "${SDL3_SOURCE_DIR}/cmake")
 include(${SDL3_SOURCE_DIR}/cmake/macros.cmake)
 include(${SDL3_SOURCE_DIR}/cmake/sdlchecks.cmake)
+include(${SDL3_SOURCE_DIR}/cmake/sdlplatform.cmake)
 include(${SDL3_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake)
 
 # Enable large file support on 32-bit glibc, so that we can access files
@@ -88,42 +89,32 @@ set(SDL_MINOR_VERSION 0)
 set(SDL_MICRO_VERSION 0)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
-# Set defaults preventing destination file conflicts
-set(SDL_CMAKE_DEBUG_POSTFIX "d"
-    CACHE STRING "Name suffix for debug builds")
-
-mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX SDL_CMAKE_DEBUG_POSTFIX)
-
-# Calculate a libtool-like version number
-math(EXPR SDL_BINARY_AGE "${SDL_MINOR_VERSION} * 100 + ${SDL_MICRO_VERSION}")
-if(SDL_MINOR_VERSION MATCHES "[02468]$")
-    # Stable branch, 3.24.1 -> libSDL3-3.0.so.0.2400.1
-    set(SDL_INTERFACE_AGE ${SDL_MICRO_VERSION})
-else()
-    # Development branch, 3.23.1 -> libSDL3-3.0.so.0.2301.0
-    set(SDL_INTERFACE_AGE 0)
-endif()
-
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL3 to SDL4, at which point this would
 # reset to 0 anyway.
-set(LT_MAJOR "0")
+set(SDL_SO_VERSION_MAJOR "0")
+set(SDL_SO_VERSION_MINOR "${SDL_MINOR_VERSION}")
+set(SDL_SO_VERSION_MICRO "${SDL_MICRO_VERSION}")
+set(SDL_SO_VERSION "${SDL_SO_VERSION_MAJOR}.${SDL_SO_VERSION_MINOR}.${SDL_SO_VERSION_MICRO}")
 
-math(EXPR LT_AGE "${SDL_BINARY_AGE} - ${SDL_INTERFACE_AGE}")
-math(EXPR LT_CURRENT "${LT_MAJOR} + ${LT_AGE}")
-set(LT_REVISION "${SDL_INTERFACE_AGE}")
-set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
+if(SDL_MINOR_VERSION MATCHES "[02468]$")
+  math(EXPR SDL_DYLIB_COMPAT_VERSION_MAJOR "100 * ${SDL_MINOR_VERSION} + 1")
+  set(SDL_DYLIB_COMPAT_VERSION_MINOR "0")
+  math(EXPR SDL_DYLIB_CURRENT_VERSION_MAJOR "${SDL_DYLIB_COMPAT_VERSION_MAJOR}")
+  set(SDL_DYLIB_CURRENT_VERSION_MINOR "${SDL_MICRO_VERSION}")
+else()
+  math(EXPR SDL_DYLIB_COMPAT_VERSION_MAJOR "100 * ${SDL_MINOR_VERSION} + ${SDL_MICRO_VERSION} + 1")
+  set(SDL_DYLIB_COMPAT_VERSION_MINOR "0")
+  math(EXPR SDL_DYLIB_CURRENT_VERSION_MAJOR "${SDL_DYLIB_COMPAT_VERSION_MAJOR}")
+  set(SDL_DYLIB_CURRENT_VERSION_MINOR "0")
+endif()
+set(SDL_DYLIB_COMPAT_VERSION_MICRO "0")
+set(SDL_DYLIB_CURRENT_VERSION_MICRO "0")
 
-# The following should match the versions in the Xcode project file.
-# Each version is 1 higher than you might expect, for compatibility
-# with libtool: macOS ABI versioning is 1-based, unlike other platforms
-# which are normally 0-based.
-math(EXPR DYLIB_CURRENT_VERSION_MAJOR "${LT_MAJOR} + ${LT_AGE} + 1")
-math(EXPR DYLIB_CURRENT_VERSION_MINOR "${LT_REVISION}")
-set(DYLIB_CURRENT_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.${DYLIB_CURRENT_VERSION_MINOR}.0")
-set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.0.0")
+set(SDL_DYLIB_CURRENT_VERSION "${SDL_DYLIB_CURRENT_VERSION_MAJOR}.${SDL_DYLIB_CURRENT_VERSION_MINOR}.${SDL_DYLIB_CURRENT_VERSION_MICRO}")
+set(SDL_DYLIB_COMPAT_VERSION "${SDL_DYLIB_COMPAT_VERSION_MAJOR}.${SDL_DYLIB_COMPAT_VERSION_MINOR}.${SDL_DYLIB_COMPAT_VERSION_MICRO}")
 
-#message(STATUS "${LT_VERSION} :: ${LT_AGE} :: ${LT_REVISION} :: ${LT_CURRENT}")
+#message("SDL_SO_VERSION=${SDL_SO_VERSION} SDL_DYLIB_CURRENT_VERSION=${SDL_DYLIB_CURRENT_VERSION} SDL_DYLIB_COMPAT_VERSION=${SDL_DYLIB_COMPAT_VERSION}")
 
 check_cpu_architecture(x86 SDL_CPU_X86)
 check_cpu_architecture(x64 SDL_CPU_X64)
@@ -146,56 +137,7 @@ if(NOT LIBTYPE)
 endif()
 
 # Get the platform
-if(WIN32)
-  if(NOT WINDOWS)
-    set(WINDOWS TRUE)
-  endif()
-elseif(UNIX AND NOT APPLE)
-  if(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
-    set(LINUX TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "kFreeBSD.*")
-    set(FREEBSD TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "kNetBSD.*|NetBSD.*")
-    set(NETBSD TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "kOpenBSD.*|OpenBSD.*")
-    set(OPENBSD TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES ".*GNU.*")
-    set(GNU TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES ".*BSDI.*")
-    set(BSDI TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "DragonFly.*|FreeBSD")
-    set(FREEBSD TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "SYSV5.*")
-    set(SYSV5 TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "Solaris.*|SunOS.*")
-    set(SOLARIS TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "HP-UX.*")
-    set(HPUX TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "AIX.*")
-    set(AIX TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES "Minix.*")
-    set(MINIX TRUE)
-  endif()
-elseif(APPLE)
-  if(CMAKE_SYSTEM_NAME MATCHES ".*Darwin.*")
-    set(DARWIN TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES ".*MacOS.*")
-    set(MACOSX TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES ".*tvOS.*")
-    set(TVOS TRUE)
-  elseif(CMAKE_SYSTEM_NAME MATCHES ".*iOS.*")
-    # !!! FIXME: remove the version check when we start requiring >= 3.14.0
-    if(CMAKE_VERSION VERSION_LESS 3.14)
-      set(IOS TRUE)
-    endif()
-  endif()
-elseif(CMAKE_SYSTEM_NAME MATCHES "BeOS.*")
-  message_error("BeOS support has been removed as of SDL 2.0.2.")
-elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku.*")
-  set(HAIKU TRUE)
-elseif(NINTENDO_3DS)
-  set(N3DS TRUE)
-endif()
+SDL_DetectCMakePlatform()
 
 set(SDL_CHECK_REQUIRED_INCLUDES "" CACHE STRING "Extra includes (for CMAKE_REQUIRED_INCLUDES)")
 set(SDL_CHECK_REQUIRED_LINK_OPTIONS "" CACHE STRING "Extra link options (for CMAKE_REQUIRED_LINK_OPTIONS)")
@@ -429,7 +371,7 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
 endforeach()
 
 # Allow some projects to be built conditionally.
-set_option(SDL3_DISABLE_SDL3MAIN   "Disable building/installation of SDL3main" OFF)
+set_option(SDL3_DISABLE_SDL3MAIN   "Disable building/installation of SDL3_main" OFF)
 set_option(SDL3_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 set_option(SDL3_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
@@ -698,8 +640,8 @@ if(USE_GCC OR USE_CLANG)
     cmake_pop_check_state()
 
     # FIXME: use generator expression instead of appending to EXTRA_LDFLAGS_BUILD
-    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${DYLIB_COMPATIBILITY_VERSION}")
-    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${DYLIB_CURRENT_VERSION}")
+    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${SDL_DYLIB_COMPAT_VERSION}")
+    list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${SDL_DYLIB_CURRENT_VERSION}")
   elseif(NOT OPENBSD)
     set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
@@ -2042,7 +1984,7 @@ elseif(WINDOWS)
   if(MINGW OR CYGWIN)
     if(NOT SDL3_DISABLE_SDL3MAIN)
       list(APPEND SDL_CFLAGS "-Dmain=SDL_main")
-      list(INSERT SDL_LIBS 0 "-lSDL3main")
+      list(INSERT SDL_LIBS 0 "-lSDL3_main")
     endif(NOT SDL3_DISABLE_SDL3MAIN)
     list(INSERT SDL_LIBS 0 "-lmingw32" "-mwindows")
   endif()
@@ -2680,7 +2622,7 @@ elseif(PSP)
       psppower
   )
   if(NOT SDL3_DISABLE_SDL3MAIN)
-    list(INSERT SDL_LIBS 0 "-lSDL3main")
+    list(INSERT SDL_LIBS 0 "-lSDL3_main")
   endif(NOT SDL3_DISABLE_SDL3MAIN)
 
 elseif(PS2)
@@ -3191,11 +3133,11 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} ${EXTRA_CFLAGS_BUILD}")
 
 if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
-  # Build SDLmain
-  add_library(SDL3main STATIC ${SDLMAIN_SOURCES})
+  # Build SDL_main
+  add_library(SDL3_main STATIC ${SDLMAIN_SOURCES})
   # alias target for in-tree builds
-  add_library(SDL3::SDL3main ALIAS SDL3main)
-  target_include_directories(SDL3main
+  add_library(SDL3::SDL3_main ALIAS SDL3_main)
+  target_include_directories(SDL3_main
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
     PUBLIC
@@ -3204,18 +3146,14 @@ if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
   if (WIN32)
-    target_link_libraries(SDL3main PRIVATE shell32)
+    target_link_libraries(SDL3_main PRIVATE shell32)
   endif()
   if(MINGW OR CYGWIN)
-    cmake_minimum_required(VERSION 3.13)
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-      target_link_options(SDL3main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=_WinMain@16>")
+      target_link_libraries(SDL3_main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=_WinMain@16>")
     else()
-      target_link_options(SDL3main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>")
+      target_link_libraries(SDL3_main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>")
     endif()
-  endif()
-  if (NOT ANDROID)
-    set_target_properties(SDL3main PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
   endif()
 endif()
 
@@ -3240,6 +3178,9 @@ if(APPLE)
   endforeach()
 endif()
 
+# Disable precompiled headers on SDL_dynapi.c to avoid applying dynapi overrides
+set_source_files_properties(src/dynapi/SDL_dynapi.c PROPERTIES SKIP_PRECOMPILE_HEADERS 1)
+
 if(SDL_SHARED)
   add_library(SDL3 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
   # alias target for in-tree builds
@@ -3252,22 +3193,17 @@ if(SDL_SHARED)
     endif()
   endif()
   if(APPLE)
-    # FIXME: Remove SOVERSION in SDL3
     set_target_properties(SDL3 PROPERTIES
-      MACOSX_RPATH 1
-      SOVERSION 0)
+      MACOSX_RPATH 1)
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3 PROPERTIES
-      VERSION ${LT_VERSION}
-      SOVERSION ${LT_MAJOR})
+      VERSION "${SDL_SO_VERSION}"
+      SOVERSION "${SDL_SO_VERSION_MAJOR}")
   else()
     if(WINDOWS OR CYGWIN)
       set_target_properties(SDL3 PROPERTIES
         DEFINE_SYMBOL DLL_EXPORT)
     endif()
-    set_target_properties(SDL3 PROPERTIES
-      VERSION ${SDL_VERSION}
-      SOVERSION ${LT_REVISION})
   endif()
   # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
   if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
@@ -3283,6 +3219,7 @@ if(SDL_SHARED)
   target_include_directories(SDL3
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
     PUBLIC
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
@@ -3295,12 +3232,12 @@ if(SDL_SHARED)
       target_link_options(SDL3 PRIVATE -static-libgcc)
     endif()
   endif()
-  if(NOT ANDROID)
-    set_target_properties(SDL3 PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
   set_property(TARGET SDL3 PROPERTY INTERFACE_SDL3_SHARED TRUE)
   set_property(TARGET SDL3 APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
+  if(NOT CMAKE_VERSION VERSION_LESS "3.16")
+    target_precompile_headers(SDL3 PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
+  endif()
 endif()
 
 if(SDL_STATIC)
@@ -3317,6 +3254,7 @@ if(SDL_STATIC)
   target_include_directories(SDL3-static
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
+      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src>"
     PUBLIC
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
@@ -3324,12 +3262,12 @@ if(SDL_STATIC)
   )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL3-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
-  if(NOT ANDROID)
-    set_target_properties(SDL3-static PROPERTIES DEBUG_POSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
-  endif()
   # Use `Compatible Interface Properties` to allow consumers to enforce a shared/static library
   set_property(TARGET SDL3-static PROPERTY INTERFACE_SDL3_SHARED FALSE)
   set_property(TARGET SDL3-static APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
+  if(NOT CMAKE_VERSION VERSION_LESS "3.16")
+    target_precompile_headers(SDL3-static PRIVATE "${PROJECT_SOURCE_DIR}/src/SDL_internal.h")
+  endif()
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MAJOR_VERSION=${SDL_MAJOR_VERSION}")
@@ -3341,9 +3279,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDL_BUILD_MICRO_VERSION=${SDL_MICRO_VERSIO
 if(SDL_TEST)
   file(GLOB TEST_SOURCES ${SDL3_SOURCE_DIR}/src/test/*.c)
   add_library(SDL3_test STATIC ${TEST_SOURCES})
-  add_library(SDL3::SDL3test ALIAS SDL3_test)
+  add_library(SDL3::SDL3_test ALIAS SDL3_test)
   set_target_properties(SDL3_test PROPERTIES
-      EXPORT_NAME SDL3test)
+      EXPORT_NAME SDL3_test)
   target_include_directories(SDL3_test
     PRIVATE
       "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
@@ -3365,7 +3303,7 @@ if(NOT SDL3_DISABLE_INSTALL)
   endif()
 
   if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
-    install(TARGETS SDL3main EXPORT SDL3mainTargets
+    install(TARGETS SDL3_main EXPORT SDL3mainTargets
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -3425,7 +3363,7 @@ if(NOT SDL3_DISABLE_INSTALL)
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL3mainTargets
-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3main")
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3_main")
     endif()
   endif()
 
@@ -3449,7 +3387,7 @@ if(NOT SDL3_DISABLE_INSTALL)
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL3testTargets
-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3test")
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3_test")
     endif()
   endif()
 

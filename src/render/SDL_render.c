@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* The SDL 2D rendering system */
 
@@ -1485,7 +1485,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
            SDL_DestroyTexture(texture);
            return NULL;
         }
-        temp = SDL_ConvertSurface(surface, dst_fmt, 0);
+        temp = SDL_ConvertSurface(surface, dst_fmt);
         SDL_FreeFormat(dst_fmt);
         if (temp) {
             SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);
@@ -2131,7 +2131,7 @@ SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
         return ret;
     }
 
-    texture->locked_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, real_rect.w, real_rect.h, 0, pitch, texture->format);
+    texture->locked_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, real_rect.w, real_rect.h, pitch, texture->format);
     if (texture->locked_surface == NULL) {
         SDL_UnlockTexture(texture);
         return -1;

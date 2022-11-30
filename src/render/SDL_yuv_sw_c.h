@@ -22,7 +22,7 @@
 #ifndef SDL_yuv_sw_c_h_
 #define SDL_yuv_sw_c_h_
 
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 /* This is the software implementation of the YUV texture support */

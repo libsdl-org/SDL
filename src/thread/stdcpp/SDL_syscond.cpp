@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 extern "C" {
 }
@@ -58,7 +58,7 @@ extern "C"
 void
 SDL_DestroyCond(SDL_cond * cond)
 {
-    if (cond) {
+    if (cond != NULL) {
         delete cond;
     }
 }
@@ -114,11 +114,11 @@ extern "C"
 int
 SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
 {
-    if (!cond) {
+    if (cond == NULL) {
         return SDL_InvalidParamError("cond");
     }
 
-    if (!mutex) {
+    if (mutex == NULL) {
         return SDL_InvalidParamError("mutex");
     }
 
@@ -131,7 +131,7 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
             cpp_lock.release();
             return 0;
         } else {
-            auto wait_result = cond->cpp_cond.wait_for (
+            auto wait_result = cond->cpp_cond.wait_for(
                 cpp_lock,
                 std::chrono::duration<Uint32, std::milli>(ms)
                 );

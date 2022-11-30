@@ -22,7 +22,7 @@
 #ifndef _SDL_vitakeyboard_h
 #define _SDL_vitakeyboard_h
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* Keyboard functions */
 extern void VITA_InitKeyboard(void);

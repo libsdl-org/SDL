@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
 
@@ -45,7 +45,7 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * form
     SDL_PixelFormatEnumToMasks(surface_format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
     SDL_GetWindowSize(window, &w, &h);
 
-    surface = SDL_CreateRGBSurface(0, w, h, bpp, Rmask, Gmask, Bmask, Amask);
+    surface = SDL_CreateRGBSurface(w, h, bpp, Rmask, Gmask, Bmask, Amask);
     if (surface == NULL) {
         return -1;
     }

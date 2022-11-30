@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_THREAD_VITA
 
@@ -45,7 +45,7 @@ SDL_CreateCond(void)
     SDL_cond *cond;
 
     cond = (SDL_cond *) SDL_malloc(sizeof(SDL_cond));
-    if (cond) {
+    if (cond != NULL) {
         cond->lock = SDL_CreateMutex();
         cond->wait_sem = SDL_CreateSemaphore(0);
         cond->wait_done = SDL_CreateSemaphore(0);
@@ -64,7 +64,7 @@ SDL_CreateCond(void)
 void
 SDL_DestroyCond(SDL_cond * cond)
 {
-    if (cond) {
+    if (cond != NULL) {
         if (cond->wait_sem) {
             SDL_DestroySemaphore(cond->wait_sem);
         }

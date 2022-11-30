@@ -21,7 +21,7 @@
 #ifndef SDL_waylanddyn_h_
 #define SDL_waylanddyn_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* We can't include wayland-client.h here
  * but we need some structs from it

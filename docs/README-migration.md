@@ -9,9 +9,9 @@ SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's 
 CMake users should use this snippet to include SDL support in their project:
 ```
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
-find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3main)
-if(TARGET SDL3::SDL3main)
-    target_link_libraries(mygame PRIVATE SDL3::SDL3main)
+find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3_main)
+if(TARGET SDL3::SDL3_main)
+    target_link_libraries(mygame PRIVATE SDL3::SDL3_main)
 endif()
 target_link_libraries(mygame PRIVATE SDL3::SDL3)
 ```
@@ -27,6 +27,8 @@ Makefile users can use this snippet to include SDL support in their project:
 CFLAGS += $(shell pkg-config sdl3 --cflags)
 LDFLAGS += $(shell pkg-config sdl3 --libs)
 ```
+
+The SDL3main and SDL3test libraries have been renamed SDL3_main and SDL3_test, respectively.
 
 
 ## SDL_platform.h
@@ -156,6 +158,13 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
 
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
+
+
+## SDL_surface.h
+
+Removed unused 'depth' parameter from SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom()
+Removed unused 'flags' parameter from SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceWithFormat()
+Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
 
 
 ## SDL_syswm.h

@@ -26,6 +26,11 @@
 #define _GNU_SOURCE
 #endif
 
+/* Need this so Linux systems define fseek64o, ftell64o and off64_t */
+#ifndef _LARGEFILE64_SOURCE
+#define _LARGEFILE64_SOURCE
+#endif
+
 /* This is for a variable-length array at the end of a struct:
     struct x { int y; char z[SDL_VARIABLE_LENGTH_ARRAY]; };
    Use this because GCC 2 needs different magic than other compilers. */

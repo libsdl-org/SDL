@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #if SDL_THREAD_PS2
 
@@ -83,10 +83,9 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     int ret;
     struct timer_alarm_t alarm;
     InitializeTimerAlarm(&alarm);
-    
+
     if (sem == NULL) {
-        SDL_InvalidParamError("sem");
-        return 0;
+        return SDL_InvalidParamError("sem");
     }
 
     if (timeout == 0) {
@@ -106,7 +105,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     if (ret < 0) {
         return SDL_MUTEX_TIMEDOUT;
     }
-    return 0; //Wait condition satisfied.
+    return 0; // Wait condition satisfied.
 }
 
 int SDL_SemTryWait(SDL_sem *sem)

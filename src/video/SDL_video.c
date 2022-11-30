@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* The high-level video driver subsystem */
 
@@ -67,11 +67,11 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_COCOA
     &COCOA_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_X11
-    &X11_bootstrap,
-#endif
 #if SDL_VIDEO_DRIVER_WAYLAND
     &Wayland_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_X11
+    &X11_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
@@ -2065,7 +2065,7 @@ SDL_SetWindowIcon(SDL_Window * window, SDL_Surface * icon)
     SDL_FreeSurface(window->icon);
 
     /* Convert the icon into ARGB8888 */
-    window->icon = SDL_ConvertSurfaceFormat(icon, SDL_PIXELFORMAT_ARGB8888, 0);
+    window->icon = SDL_ConvertSurfaceFormat(icon, SDL_PIXELFORMAT_ARGB8888);
     if (!window->icon) {
         return;
     }
@@ -3900,7 +3900,6 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
             *value = _this->gl_config.egl_platform;
             return 0;
         }
-        break;
     default:
         return SDL_SetError("Unknown OpenGL attribute");
     }
@@ -4421,11 +4420,11 @@ SDL_GetMessageBoxCount(void)
 #if SDL_VIDEO_DRIVER_UIKIT
 #include "uikit/SDL_uikitmessagebox.h"
 #endif
-#if SDL_VIDEO_DRIVER_X11
-#include "x11/SDL_x11messagebox.h"
-#endif
 #if SDL_VIDEO_DRIVER_WAYLAND
 #include "wayland/SDL_waylandmessagebox.h"
+#endif
+#if SDL_VIDEO_DRIVER_X11
+#include "x11/SDL_x11messagebox.h"
 #endif
 #if SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
@@ -4530,17 +4529,17 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_X11
-    if (retval == -1 &&
-        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
-        X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
-        retval = 0;
-    }
-#endif
 #if SDL_VIDEO_DRIVER_WAYLAND
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WAYLAND) &&
         Wayland_ShowMessageBox(messageboxdata, buttonid) == 0) {
+        retval = 0;
+    }
+#endif
+#if SDL_VIDEO_DRIVER_X11
+    if (retval == -1 &&
+        SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_X11) &&
+        X11_ShowMessageBox(messageboxdata, buttonid) == 0) {
         retval = 0;
     }
 #endif

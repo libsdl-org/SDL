@@ -22,7 +22,7 @@
 #ifndef SDL_riscosevents_c_h_
 #define SDL_riscosevents_c_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "SDL_riscosvideo.h"
 

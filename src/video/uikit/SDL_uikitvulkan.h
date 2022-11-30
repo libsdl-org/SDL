@@ -24,7 +24,7 @@
  * SDL_x11vulkan.h.
  */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_uikitvulkan_h_
 #define SDL_uikitvulkan_h_

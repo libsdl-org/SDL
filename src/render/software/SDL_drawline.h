@@ -22,7 +22,7 @@
 #ifndef SDL_drawline_h_
 #define SDL_drawline_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 
 extern int SDL_DrawLine(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color);

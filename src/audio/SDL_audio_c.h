@@ -22,7 +22,7 @@
 #ifndef SDL_audio_c_h_
 #define SDL_audio_c_h_
 
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef DEBUG_CONVERT
 #define DEBUG_CONVERT 0

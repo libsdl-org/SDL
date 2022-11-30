@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "../SDL_syshaptic.h"
 
@@ -31,7 +31,11 @@
 /*
  * External stuff.
  */
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern HWND SDL_HelperWindow;
+#else
+static const HWND SDL_HelperWindow = NULL;
+#endif
 
 
 /*

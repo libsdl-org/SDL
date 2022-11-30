@@ -61,9 +61,9 @@ if(NOT TARGET SDL3::SDL3)
 endif()
 set(SDL3_SDL3_FOUND TRUE)
 
-if(NOT TARGET SDL3::SDL3main)
-    add_library(SDL3::SDL3main INTERFACE IMPORTED)
+if(NOT TARGET SDL3::SDL3_main)
+    add_library(SDL3::SDL3_main INTERFACE IMPORTED)
 endif()
-set(SDL3_SDL3main_FOUND TRUE)
+set(SDL3_SDL3_main_FOUND TRUE)
 
 check_required_components(SDL3)

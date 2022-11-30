@@ -24,6 +24,8 @@
 
 #if SDL_DYNAMIC_API
 
+#define SDL_DYNAMIC_API_ENVVAR "SDL3_DYNAMIC_API"
+
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
@@ -383,21 +385,21 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode);
 static void
 SDL_InitDynamicAPILocked(void)
 {
-    const char *libname = SDL_getenv_REAL("SDL_DYNAMIC_API");
+    const char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
     SDL_DYNAPI_ENTRYFN entry = NULL;  /* funcs from here by default. */
     SDL_bool use_internal = SDL_TRUE;
 
     if (libname) {
         entry = (SDL_DYNAPI_ENTRYFN) get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
         if (!entry) {
-            dynapi_warn("Couldn't load overriding SDL library. Please fix or remove the SDL_DYNAMIC_API environment variable. Using the default SDL.");
+            dynapi_warn("Couldn't load overriding SDL library. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
             /* Just fill in the function pointers from this library, later. */
         }
     }
 
     if (entry) {
         if (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table)) < 0) {
-            dynapi_warn("Couldn't override SDL library. Using a newer SDL build might help. Please fix or remove the SDL_DYNAMIC_API environment variable. Using the default SDL.");
+            dynapi_warn("Couldn't override SDL library. Using a newer SDL build might help. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
             /* Just fill in the function pointers from this library, later. */
         } else {
             use_internal = SDL_FALSE;   /* We overrode SDL! Don't use the internal version! */

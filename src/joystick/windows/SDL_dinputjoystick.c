@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "../SDL_sysjoystick.h"
 
@@ -40,7 +40,11 @@
 #define CONVERT_MAGNITUDE(x)    (((x)*10000) / 0x7FFF)
 
 /* external variables referenced. */
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern HWND SDL_HelperWindow;
+#else
+static const HWND SDL_HelperWindow = NULL;
+#endif
 
 /* local variables */
 static SDL_bool coinitialized = SDL_FALSE;

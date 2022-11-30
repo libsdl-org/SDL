@@ -27,7 +27,7 @@
  * Last upstream update was from July 25, 2019, Git commit 93dca807.
  */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "../../thread/SDL_systhread.h"
 
 #ifdef realloc
@@ -682,6 +682,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
 		0x2c22, /* Qanba */
+		0x2dc8, /* 8BitDo */
 	};
 
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&

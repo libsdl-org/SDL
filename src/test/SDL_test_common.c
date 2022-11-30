@@ -1766,7 +1766,7 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
     }
 
     SDL_RenderGetViewport(renderer, &viewport);
-    surface = SDL_CreateRGBSurface(0, viewport.w, viewport.h, 24,
+    surface = SDL_CreateRGBSurface(viewport.w, viewport.h, 24,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                     0x00FF0000, 0x0000FF00, 0x000000FF,
 #else

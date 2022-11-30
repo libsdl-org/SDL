@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 /* An implementation of mutexes using the Symbian API. */
 
@@ -47,6 +47,7 @@ SDL_CreateMutex(void)
     TInt status = CreateUnique(NewMutex, &rmutex, NULL);
     if (status != KErrNone) {
         SDL_SetError("Couldn't create mutex.");
+        return NULL;
     }
     SDL_mutex* mutex = new /*(ELeave)*/ SDL_mutex;
     mutex->handle = rmutex.Handle();

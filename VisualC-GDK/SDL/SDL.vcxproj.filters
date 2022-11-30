@@ -1364,6 +1364,12 @@
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxseries.cpp">
       <Filter>render\direct3d12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\core\windows\pch.c">
+      <Filter>core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\windows\pch_cpp.cpp">
+      <Filter>core\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />

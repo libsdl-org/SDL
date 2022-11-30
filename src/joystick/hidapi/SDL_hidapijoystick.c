@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
@@ -165,6 +165,7 @@ SDL_GetJoystickGameControllerProtocol(const char *name, Uint16 vendor, Uint16 pr
             0x20d6, /* PowerA */
             0x24c6, /* PowerA */
             0x2c22, /* Qanba */
+            0x2dc8, /* 8BitDo */
         };
 
         int i;
