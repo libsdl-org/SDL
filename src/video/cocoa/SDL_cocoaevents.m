@@ -43,8 +43,9 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     if (device && device->windows) {
         for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
             NSWindow *nswindow = ((__bridge SDL_WindowData *)sdlwindow->driverdata).nswindow;
-            if (win == nswindow)
+            if (win == nswindow) {
                 return sdlwindow;
+            }
         }
     }
 
@@ -190,8 +191,9 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     }
 
     /* Don't do anything if this was not an SDL window that was closed */
-    if (FindSDLWindowForNSWindow(win) == NULL)
+    if (FindSDLWindowForNSWindow(win) == NULL) {
         return;
+    }
 
     /* HACK: Make the next window in the z-order key when the key window is
      * closed. The custom event loop and/or windowing code we have seems to
@@ -386,7 +388,7 @@ static void CreateApplicationMenus(void)
     [appleMenu addItem:[NSMenuItem separatorItem]];
 
     serviceMenu = [[NSMenu alloc] initWithTitle:@""];
-    menuItem = (NSMenuItem *)[appleMenu addItemWithTitle:@"Services" action:nil keyEquivalent:@""];
+    menuItem = [appleMenu addItemWithTitle:@"Services" action:nil keyEquivalent:@""];
     [menuItem setSubmenu:serviceMenu];
 
     [NSApp setServicesMenu:serviceMenu];
@@ -396,7 +398,7 @@ static void CreateApplicationMenus(void)
     title = [@"Hide " stringByAppendingString:appName];
     [appleMenu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
 
-    menuItem = (NSMenuItem *)[appleMenu addItemWithTitle:@"Hide Others" action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
+    menuItem = [appleMenu addItemWithTitle:@"Hide Others" action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
     [menuItem setKeyEquivalentModifierMask:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
 
     [appleMenu addItemWithTitle:@"Show All" action:@selector(unhideAllApplications:) keyEquivalent:@""];
