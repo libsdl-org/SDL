@@ -121,16 +121,18 @@ WIN_GL_LoadLibrary(_THIS, const char *path)
 
     /* Load function pointers */
     handle = _this->gl_config.dll_handle;
-    _this->gl_data->wglGetProcAddress = (void *(WINAPI *) (const char *))
+    /* *INDENT-OFF* */ /* clang-format off */
+    _this->gl_data->wglGetProcAddress = (void *(WINAPI *)(const char *))
         SDL_LoadFunction(handle, "wglGetProcAddress");
-    _this->gl_data->wglCreateContext = (HGLRC(WINAPI *) (HDC))
+    _this->gl_data->wglCreateContext = (HGLRC (WINAPI *)(HDC))
         SDL_LoadFunction(handle, "wglCreateContext");
-    _this->gl_data->wglDeleteContext = (BOOL(WINAPI *) (HGLRC))
+    _this->gl_data->wglDeleteContext = (BOOL (WINAPI *)(HGLRC))
         SDL_LoadFunction(handle, "wglDeleteContext");
-    _this->gl_data->wglMakeCurrent = (BOOL(WINAPI *) (HDC, HGLRC))
+    _this->gl_data->wglMakeCurrent = (BOOL (WINAPI *)(HDC, HGLRC))
         SDL_LoadFunction(handle, "wglMakeCurrent");
-    _this->gl_data->wglShareLists = (BOOL(WINAPI *) (HGLRC, HGLRC))
+    _this->gl_data->wglShareLists = (BOOL (WINAPI *)(HGLRC, HGLRC))
         SDL_LoadFunction(handle, "wglShareLists");
+    /* *INDENT-ON* */ /* clang-format on */
 
     if (!_this->gl_data->wglGetProcAddress ||
         !_this->gl_data->wglCreateContext ||
@@ -385,7 +387,9 @@ HasExtension(const char *extension, const char *extensions)
 void
 WIN_GL_InitExtensions(_THIS)
 {
-    const char *(WINAPI * wglGetExtensionsStringARB) (HDC) = 0;
+    /* *INDENT-OFF* */ /* clang-format off */
+    const char *(WINAPI * wglGetExtensionsStringARB)(HDC) = 0;
+    /* *INDENT-ON* */ /* clang-format on */
     const char *extensions;
     HWND hwnd;
     HDC hdc;
@@ -416,8 +420,10 @@ WIN_GL_InitExtensions(_THIS)
     }
     _this->gl_data->wglMakeCurrent(hdc, hglrc);
 
-    wglGetExtensionsStringARB = (const char *(WINAPI *) (HDC))
+    /* *INDENT-OFF* */ /* clang-format off */
+    wglGetExtensionsStringARB = (const char *(WINAPI *)(HDC))
         _this->gl_data->wglGetProcAddress("wglGetExtensionsStringARB");
+    /* *INDENT-ON* */ /* clang-format on */
     if (wglGetExtensionsStringARB) {
         extensions = wglGetExtensionsStringARB(hdc);
     } else {
@@ -427,14 +433,14 @@ WIN_GL_InitExtensions(_THIS)
     /* Check for WGL_ARB_pixel_format */
     _this->gl_data->HAS_WGL_ARB_pixel_format = SDL_FALSE;
     if (HasExtension("WGL_ARB_pixel_format", extensions)) {
-        _this->gl_data->wglChoosePixelFormatARB = (BOOL(WINAPI *)
-                                                   (HDC, const int *,
-                                                    const FLOAT *, UINT,
-                                                    int *, UINT *))
+        /* *INDENT-OFF* */ /* clang-format off */
+        _this->gl_data->wglChoosePixelFormatARB =
+            (BOOL (WINAPI *)(HDC, const int *, const FLOAT *, UINT, int *, UINT *))
             WIN_GL_GetProcAddress(_this, "wglChoosePixelFormatARB");
         _this->gl_data->wglGetPixelFormatAttribivARB =
-            (BOOL(WINAPI *) (HDC, int, int, UINT, const int *, int *))
+            (BOOL (WINAPI *)(HDC, int, int, UINT, const int *, int *))
             WIN_GL_GetProcAddress(_this, "wglGetPixelFormatAttribivARB");
+        /* *INDENT-ON* */ /* clang-format on */
 
         if ((_this->gl_data->wglChoosePixelFormatARB != NULL) &&
             (_this->gl_data->wglGetPixelFormatAttribivARB != NULL)) {

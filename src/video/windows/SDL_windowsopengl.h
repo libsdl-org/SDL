@@ -42,24 +42,17 @@ struct SDL_GLDriverData
         int minor;
     } es_profile_max_supported_version;
 
-    void *(WINAPI * wglGetProcAddress) (const char *proc);
-    HGLRC(WINAPI * wglCreateContext) (HDC hdc);
-    BOOL(WINAPI * wglDeleteContext) (HGLRC hglrc);
-    BOOL(WINAPI * wglMakeCurrent) (HDC hdc, HGLRC hglrc);
-    BOOL(WINAPI * wglShareLists) (HGLRC hglrc1, HGLRC hglrc2);
-    BOOL(WINAPI * wglChoosePixelFormatARB) (HDC hdc,
-                                            const int *piAttribIList,
-                                            const FLOAT * pfAttribFList,
-                                            UINT nMaxFormats,
-                                            int *piFormats,
-                                            UINT * nNumFormats);
-    BOOL(WINAPI * wglGetPixelFormatAttribivARB) (HDC hdc, int iPixelFormat,
-                                                 int iLayerPlane,
-                                                 UINT nAttributes,
-                                                 const int *piAttributes,
-                                                 int *piValues);
-    BOOL (WINAPI * wglSwapIntervalEXT) (int interval);
-    int (WINAPI * wglGetSwapIntervalEXT) (void);
+    /* *INDENT-OFF* */ /* clang-format off */
+    void *(WINAPI *wglGetProcAddress)(const char *proc);
+    HGLRC (WINAPI *wglCreateContext)(HDC hdc);
+    BOOL (WINAPI *wglDeleteContext)(HGLRC hglrc);
+    BOOL (WINAPI *wglMakeCurrent)(HDC hdc, HGLRC hglrc);
+    BOOL (WINAPI *wglShareLists)(HGLRC hglrc1, HGLRC hglrc2);
+    BOOL (WINAPI *wglChoosePixelFormatARB)(HDC hdc, const int *piAttribIList, const FLOAT * pfAttribFList, UINT nMaxFormats, int *piFormats, UINT * nNumFormats);
+    BOOL (WINAPI *wglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
+    BOOL (WINAPI *wglSwapIntervalEXT)(int interval);
+    int (WINAPI *wglGetSwapIntervalEXT)(void);
+    /* *INDENT-ON* */ /* clang-format on */
 };
 
 /* OpenGL functions */

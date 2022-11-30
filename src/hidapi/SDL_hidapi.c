@@ -693,6 +693,7 @@ static struct
 {
     void* libhandle;
 
+/* *INDENT-OFF* */ /* clang-format off */
     int (LIBUSB_CALL *init)(libusb_context **ctx);
     void (LIBUSB_CALL *exit)(libusb_context *ctx);
     ssize_t (LIBUSB_CALL *get_device_list)(libusb_context *ctx, libusb_device ***list);
@@ -740,6 +741,8 @@ static struct
     int (LIBUSB_CALL *handle_events)(libusb_context *ctx);
     int (LIBUSB_CALL *handle_events_completed)(libusb_context *ctx, int *completed);
     const char * (LIBUSB_CALL *error_name)(int errcode);
+/* *INDENT-ON* */ /* clang-format on */
+
 } libusb_ctx;
 
 #define libusb_init                            libusb_ctx.init

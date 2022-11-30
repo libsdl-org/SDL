@@ -142,12 +142,14 @@ LoadLibSampleRate(void)
         return SDL_FALSE;
     }
 
+/* *INDENT-OFF* */ /* clang-format off */
     SRC_src_new = (SRC_STATE* (*)(int converter_type, int channels, int *error))SDL_LoadFunction(SRC_lib, "src_new");
     SRC_src_process = (int (*)(SRC_STATE *state, SRC_DATA *data))SDL_LoadFunction(SRC_lib, "src_process");
     SRC_src_reset = (int(*)(SRC_STATE *state))SDL_LoadFunction(SRC_lib, "src_reset");
     SRC_src_delete = (SRC_STATE* (*)(SRC_STATE *state))SDL_LoadFunction(SRC_lib, "src_delete");
     SRC_src_strerror = (const char* (*)(int error))SDL_LoadFunction(SRC_lib, "src_strerror");
     SRC_src_simple = (int(*)(SRC_DATA *data, int converter_type, int channels))SDL_LoadFunction(SRC_lib, "src_simple");
+/* *INDENT-ON* */ /* clang-format on */
 
     if (!SRC_src_new || !SRC_src_process || !SRC_src_reset || !SRC_src_delete || !SRC_src_strerror || !SRC_src_simple) {
         SDL_UnloadObject(SRC_lib);

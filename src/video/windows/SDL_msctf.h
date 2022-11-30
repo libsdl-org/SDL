@@ -28,6 +28,8 @@
 #define     TF_IPSINK_FLAG_ACTIVE           0x0001
 #define     TF_TMAE_UIELEMENTENABLEDONLY    0x00000004
 
+/* *INDENT-OFF* */ /* clang-format off */
+
 typedef struct ITfThreadMgr ITfThreadMgr;
 typedef struct ITfDocumentMgr ITfDocumentMgr;
 typedef struct ITfClientId ITfClientId;
@@ -238,5 +240,7 @@ struct ITfSource
 {
     const struct ITfSourceVtbl *lpVtbl;
 };
+
+/* *INDENT-ON* */ /* clang-format on */
 
 #endif /* SDL_msctf_h_ */
