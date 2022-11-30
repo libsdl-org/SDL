@@ -24,6 +24,8 @@
 
 #include <psp2/gxm.h>
 
+/* *INDENT-OFF* */ /* clang-format off */
+
 #define gxm_shader_clear_f_size 232
 static const unsigned char gxm_shader_clear_f[gxm_shader_clear_f_size] = {
     0x47, 0x58, 0x50, 0x00, 0x01, 0x05, 0x50, 0x03, 
@@ -267,6 +269,8 @@ static const unsigned char gxm_shader_texture_v[gxm_shader_texture_v_size] = {
     0x6f, 0x72, 0x64, 0x00, 0x61, 0x43, 0x6f, 0x6c, 
     0x6f, 0x72, 0x00, 0x77, 0x76, 0x70, 0x00, 0x00, 
 };
+
+/* *INDENT-ON* */ /* clang-format on */
 
 static const SceGxmProgram *const clearVertexProgramGxp         = (const SceGxmProgram *)gxm_shader_clear_v;
 static const SceGxmProgram *const clearFragmentProgramGxp       = (const SceGxmProgram *)gxm_shader_clear_f;

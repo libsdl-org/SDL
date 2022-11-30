@@ -59,6 +59,8 @@ struct GL_ShaderContext
     GL_ShaderData shaders[NUM_SHADERS];
 };
 
+/* *INDENT-OFF* */ /* clang-format off */
+
 #define COLOR_VERTEX_SHADER                                     \
 "varying vec4 v_color;\n"                                       \
 "\n"                                                            \
@@ -384,6 +386,8 @@ static const char *shader_source[NUM_SHADERS][2] =
     },
 #endif /* SDL_HAVE_YUV */
 };
+
+/* *INDENT-ON* */ /* clang-format on */
 
 static SDL_bool
 CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, const char *source)

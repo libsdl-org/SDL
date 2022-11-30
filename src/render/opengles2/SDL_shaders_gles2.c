@@ -25,6 +25,8 @@
 #include <SDL3/SDL_opengles2.h>
 #include "SDL_shaders_gles2.h"
 
+/* *INDENT-OFF* */ /* clang-format off */
+
 /*************************************************************************************************
  * Vertex/fragment shader source                                                                 *
  *************************************************************************************************/
@@ -343,6 +345,7 @@ static const char GLES2_Fragment_TextureExternalOES[] =         \
 "}\n"                                                           \
 ;
 
+/* *INDENT-ON* */ /* clang-format on */
 
 /*************************************************************************************************
  * Shader selector                                                                               *
