@@ -22,7 +22,6 @@
 #ifndef SDL_IMMDEVICE_H
 #define SDL_IMMDEVICE_H
 
-
 #define COBJMACROS
 #include <mmdeviceapi.h>
 #include <mmreg.h>

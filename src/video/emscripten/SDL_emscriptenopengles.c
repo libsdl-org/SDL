@@ -29,15 +29,12 @@
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
 
-
-int
-Emscripten_GLES_LoadLibrary(_THIS, const char *path)
+int Emscripten_GLES_LoadLibrary(_THIS, const char *path)
 {
     return 0;
 }
 
-void
-Emscripten_GLES_UnloadLibrary(_THIS)
+void Emscripten_GLES_UnloadLibrary(_THIS)
 {
 }
 
@@ -47,12 +44,11 @@ Emscripten_GLES_GetProcAddress(_THIS, const char *proc)
     return emscripten_webgl_get_proc_address(proc);
 }
 
-int
-Emscripten_GLES_SetSwapInterval(_THIS, int interval)
+int Emscripten_GLES_SetSwapInterval(_THIS, int interval)
 {
     if (interval < 0) {
         return SDL_SetError("Late swap tearing currently unsupported");
-    } else if(interval == 0) {
+    } else if (interval == 0) {
         emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
     } else {
         emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
@@ -61,21 +57,20 @@ Emscripten_GLES_SetSwapInterval(_THIS, int interval)
     return 0;
 }
 
-int
-Emscripten_GLES_GetSwapInterval(_THIS)
+int Emscripten_GLES_GetSwapInterval(_THIS)
 {
     int mode, value;
 
     emscripten_get_main_loop_timing(&mode, &value);
 
-    if(mode == EM_TIMING_RAF)
+    if (mode == EM_TIMING_RAF)
         return value;
 
     return 0;
 }
 
 SDL_GLContext
-Emscripten_GLES_CreateContext(_THIS, SDL_Window * window)
+Emscripten_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_WindowData *window_data;
 
@@ -89,10 +84,10 @@ Emscripten_GLES_CreateContext(_THIS, SDL_Window * window)
     attribs.stencil = _this->gl_config.stencil_size > 0;
     attribs.antialias = _this->gl_config.multisamplebuffers == 1;
 
-    if(_this->gl_config.major_version == 3)
+    if (_this->gl_config.major_version == 3)
         attribs.majorVersion = 2; /* WebGL 2.0 ~= GLES 3.0 */
 
-    window_data = (SDL_WindowData *) window->driverdata;
+    window_data = (SDL_WindowData *)window->driverdata;
 
     if (window_data->gl_context) {
         SDL_SetError("Cannot create multiple webgl contexts per window");
@@ -116,15 +111,14 @@ Emscripten_GLES_CreateContext(_THIS, SDL_Window * window)
     return (SDL_GLContext)context;
 }
 
-void
-Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
+void Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_Window *window;
 
     /* remove the context from its window */
     for (window = _this->windows; window != NULL; window = window->next) {
         SDL_WindowData *window_data;
-        window_data = (SDL_WindowData *) window->driverdata;
+        window_data = (SDL_WindowData *)window->driverdata;
 
         if (window_data->gl_context == context) {
             window_data->gl_context = NULL;
@@ -134,8 +128,7 @@ Emscripten_GLES_DeleteContext(_THIS, SDL_GLContext context)
     emscripten_webgl_destroy_context((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context);
 }
 
-int
-Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window)
+int Emscripten_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */
@@ -144,13 +137,12 @@ Emscripten_GLES_SwapWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
-int
-Emscripten_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+int Emscripten_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
 {
     /* it isn't possible to reuse contexts across canvases */
     if (window && context) {
         SDL_WindowData *window_data;
-        window_data = (SDL_WindowData *) window->driverdata;
+        window_data = (SDL_WindowData *)window->driverdata;
 
         if (context != window_data->gl_context) {
             return SDL_SetError("Cannot make context current to another window");
@@ -166,4 +158,3 @@ Emscripten_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
 
 /* vi: set ts=4 sw=4 expandtab: */
-

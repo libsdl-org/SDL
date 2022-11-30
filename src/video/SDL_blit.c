@@ -29,8 +29,8 @@
 #include "SDL_pixels_c.h"
 
 /* The general purpose software blit routine */
-static int SDLCALL SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
-             SDL_Surface * dst, SDL_Rect * dstrect)
+static int SDLCALL SDL_SoftBlit(SDL_Surface *src, SDL_Rect *srcrect,
+                                SDL_Surface *dst, SDL_Rect *dstrect)
 {
     int okay;
     int src_locked;
@@ -64,23 +64,23 @@ static int SDLCALL SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
         SDL_BlitInfo *info = &src->map->info;
 
         /* Set up the blit information */
-        info->src = (Uint8 *) src->pixels +
-            (Uint16) srcrect->y * src->pitch +
-            (Uint16) srcrect->x * info->src_fmt->BytesPerPixel;
+        info->src = (Uint8 *)src->pixels +
+                    (Uint16)srcrect->y * src->pitch +
+                    (Uint16)srcrect->x * info->src_fmt->BytesPerPixel;
         info->src_w = srcrect->w;
         info->src_h = srcrect->h;
         info->src_pitch = src->pitch;
         info->src_skip =
             info->src_pitch - info->src_w * info->src_fmt->BytesPerPixel;
         info->dst =
-            (Uint8 *) dst->pixels + (Uint16) dstrect->y * dst->pitch +
-            (Uint16) dstrect->x * info->dst_fmt->BytesPerPixel;
+            (Uint8 *)dst->pixels + (Uint16)dstrect->y * dst->pitch +
+            (Uint16)dstrect->x * info->dst_fmt->BytesPerPixel;
         info->dst_w = dstrect->w;
         info->dst_h = dstrect->h;
         info->dst_pitch = dst->pitch;
         info->dst_skip =
             info->dst_pitch - info->dst_w * info->dst_fmt->BytesPerPixel;
-        RunBlit = (SDL_BlitFunc) src->map->data;
+        RunBlit = (SDL_BlitFunc)src->map->data;
 
         /* Run the actual software blit */
         RunBlit(info);
@@ -123,7 +123,7 @@ static SDL_bool SDL_UseAltivecPrefetch()
 #endif /* __MACOS__ */
 
 static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int flags,
-                   SDL_BlitFuncEntry * entries)
+                                       SDL_BlitFuncEntry *entries)
 {
     int i, flagcheck = (flags & (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL | SDL_COPY_COLORKEY | SDL_COPY_NEAREST));
     static int features = 0x7fffffff;
@@ -187,8 +187,7 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int
 #endif /* SDL_HAVE_BLIT_AUTO */
 
 /* Figure out which of many blit routines to set up on a surface */
-int
-SDL_CalculateBlit(SDL_Surface * surface)
+int SDL_CalculateBlit(SDL_Surface *surface)
 {
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = surface->map;
@@ -230,13 +229,13 @@ SDL_CalculateBlit(SDL_Surface * surface)
     }
 #if SDL_HAVE_BLIT_0
     else if (surface->format->BitsPerPixel < 8 &&
-               SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
+             SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
         blit = SDL_CalculateBlit0(surface);
     }
 #endif
 #if SDL_HAVE_BLIT_1
     else if (surface->format->BytesPerPixel == 1 &&
-               SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
+             SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
         blit = SDL_CalculateBlit1(surface);
     }
 #endif

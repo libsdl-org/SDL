@@ -44,4 +44,3 @@ extern int OFFSCREEN_GLES_SwapWindow(_THIS, SDL_Window *window);
 #endif /* _SDL_offscreenopengles_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
-

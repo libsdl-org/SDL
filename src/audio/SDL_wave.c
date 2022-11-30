@@ -52,32 +52,35 @@ static int SafeMult(size_t *f1, size_t f2)
 
 typedef struct ADPCM_DecoderState
 {
-    Uint32 channels;        /* Number of channels. */
-    size_t blocksize;       /* Size of an ADPCM block in bytes. */
+    Uint32 channels; /* Number of channels. */
+    size_t blocksize; /* Size of an ADPCM block in bytes. */
     size_t blockheadersize; /* Size of an ADPCM block header in bytes. */
     size_t samplesperblock; /* Number of samples per channel in an ADPCM block. */
-    size_t framesize;       /* Size of a sample frame (16-bit PCM) in bytes. */
-    Sint64 framestotal;     /* Total number of sample frames. */
-    Sint64 framesleft;      /* Number of sample frames still to be decoded. */
-    void *ddata;            /* Decoder data from initialization. */
-    void *cstate;           /* Decoding state for each channel. */
+    size_t framesize; /* Size of a sample frame (16-bit PCM) in bytes. */
+    Sint64 framestotal; /* Total number of sample frames. */
+    Sint64 framesleft; /* Number of sample frames still to be decoded. */
+    void *ddata; /* Decoder data from initialization. */
+    void *cstate; /* Decoding state for each channel. */
 
     /* ADPCM data. */
-    struct {
+    struct
+    {
         Uint8 *data;
         size_t size;
         size_t pos;
     } input;
 
     /* Current ADPCM block in the ADPCM data above. */
-    struct {
+    struct
+    {
         Uint8 *data;
         size_t size;
         size_t pos;
     } block;
 
     /* Decoded 16-bit PCM data. */
-    struct {
+    struct
+    {
         Sint16 *data;
         size_t size;
         size_t pos;
@@ -133,55 +136,60 @@ static void WaveDebugLogFormat(WaveFile *file)
         break;
     }
 
-#define SDL_WAVE_DEBUG_CHANNELCFG(STR, CODE) case CODE: wavechannel = STR; break;
-#define SDL_WAVE_DEBUG_CHANNELSTR(STR, CODE) if (format->channelmask & CODE) { \
-    SDL_strlcat(channelstr, channelstr[0] ? "-" STR : STR, sizeof(channelstr));}
+#define SDL_WAVE_DEBUG_CHANNELCFG(STR, CODE) \
+    case CODE:                               \
+        wavechannel = STR;                   \
+        break;
+#define SDL_WAVE_DEBUG_CHANNELSTR(STR, CODE)                                        \
+    if (format->channelmask & CODE) {                                               \
+        SDL_strlcat(channelstr, channelstr[0] ? "-" STR : STR, sizeof(channelstr)); \
+    }
 
     if (format->formattag == EXTENSIBLE_CODE && format->channelmask > 0) {
         switch (format->channelmask) {
-            SDL_WAVE_DEBUG_CHANNELCFG("1.0 Mono",         0x4)
-            SDL_WAVE_DEBUG_CHANNELCFG("1.1 Mono",         0xc)
-            SDL_WAVE_DEBUG_CHANNELCFG("2.0 Stereo",       0x3)
-            SDL_WAVE_DEBUG_CHANNELCFG("2.1 Stereo",       0xb)
-            SDL_WAVE_DEBUG_CHANNELCFG("3.0 Stereo",       0x7)
-            SDL_WAVE_DEBUG_CHANNELCFG("3.1 Stereo",       0xf)
-            SDL_WAVE_DEBUG_CHANNELCFG("3.0 Surround",     0x103)
-            SDL_WAVE_DEBUG_CHANNELCFG("3.1 Surround",     0x10b)
-            SDL_WAVE_DEBUG_CHANNELCFG("4.0 Quad",         0x33)
-            SDL_WAVE_DEBUG_CHANNELCFG("4.1 Quad",         0x3b)
-            SDL_WAVE_DEBUG_CHANNELCFG("4.0 Surround",     0x107)
-            SDL_WAVE_DEBUG_CHANNELCFG("4.1 Surround",     0x10f)
-            SDL_WAVE_DEBUG_CHANNELCFG("5.0",              0x37)
-            SDL_WAVE_DEBUG_CHANNELCFG("5.1",              0x3f)
-            SDL_WAVE_DEBUG_CHANNELCFG("5.0 Side",         0x607)
-            SDL_WAVE_DEBUG_CHANNELCFG("5.1 Side",         0x60f)
-            SDL_WAVE_DEBUG_CHANNELCFG("6.0",              0x137)
-            SDL_WAVE_DEBUG_CHANNELCFG("6.1",              0x13f)
-            SDL_WAVE_DEBUG_CHANNELCFG("6.0 Side",         0x707)
-            SDL_WAVE_DEBUG_CHANNELCFG("6.1 Side",         0x70f)
-            SDL_WAVE_DEBUG_CHANNELCFG("7.0",              0xf7)
-            SDL_WAVE_DEBUG_CHANNELCFG("7.1",              0xff)
-            SDL_WAVE_DEBUG_CHANNELCFG("7.0 Side",         0x6c7)
-            SDL_WAVE_DEBUG_CHANNELCFG("7.1 Side",         0x6cf)
-            SDL_WAVE_DEBUG_CHANNELCFG("7.0 Surround",     0x637)
-            SDL_WAVE_DEBUG_CHANNELCFG("7.1 Surround",     0x63f)
-            SDL_WAVE_DEBUG_CHANNELCFG("9.0 Surround",     0x5637)
-            SDL_WAVE_DEBUG_CHANNELCFG("9.1 Surround",     0x563f)
-            SDL_WAVE_DEBUG_CHANNELCFG("11.0 Surround",    0x56f7)
-            SDL_WAVE_DEBUG_CHANNELCFG("11.1 Surround",    0x56ff)
+            SDL_WAVE_DEBUG_CHANNELCFG("1.0 Mono", 0x4)
+            SDL_WAVE_DEBUG_CHANNELCFG("1.1 Mono", 0xc)
+            SDL_WAVE_DEBUG_CHANNELCFG("2.0 Stereo", 0x3)
+            SDL_WAVE_DEBUG_CHANNELCFG("2.1 Stereo", 0xb)
+            SDL_WAVE_DEBUG_CHANNELCFG("3.0 Stereo", 0x7)
+            SDL_WAVE_DEBUG_CHANNELCFG("3.1 Stereo", 0xf)
+            SDL_WAVE_DEBUG_CHANNELCFG("3.0 Surround", 0x103)
+            SDL_WAVE_DEBUG_CHANNELCFG("3.1 Surround", 0x10b)
+            SDL_WAVE_DEBUG_CHANNELCFG("4.0 Quad", 0x33)
+            SDL_WAVE_DEBUG_CHANNELCFG("4.1 Quad", 0x3b)
+            SDL_WAVE_DEBUG_CHANNELCFG("4.0 Surround", 0x107)
+            SDL_WAVE_DEBUG_CHANNELCFG("4.1 Surround", 0x10f)
+            SDL_WAVE_DEBUG_CHANNELCFG("5.0", 0x37)
+            SDL_WAVE_DEBUG_CHANNELCFG("5.1", 0x3f)
+            SDL_WAVE_DEBUG_CHANNELCFG("5.0 Side", 0x607)
+            SDL_WAVE_DEBUG_CHANNELCFG("5.1 Side", 0x60f)
+            SDL_WAVE_DEBUG_CHANNELCFG("6.0", 0x137)
+            SDL_WAVE_DEBUG_CHANNELCFG("6.1", 0x13f)
+            SDL_WAVE_DEBUG_CHANNELCFG("6.0 Side", 0x707)
+            SDL_WAVE_DEBUG_CHANNELCFG("6.1 Side", 0x70f)
+            SDL_WAVE_DEBUG_CHANNELCFG("7.0", 0xf7)
+            SDL_WAVE_DEBUG_CHANNELCFG("7.1", 0xff)
+            SDL_WAVE_DEBUG_CHANNELCFG("7.0 Side", 0x6c7)
+            SDL_WAVE_DEBUG_CHANNELCFG("7.1 Side", 0x6cf)
+            SDL_WAVE_DEBUG_CHANNELCFG("7.0 Surround", 0x637)
+            SDL_WAVE_DEBUG_CHANNELCFG("7.1 Surround", 0x63f)
+            SDL_WAVE_DEBUG_CHANNELCFG("9.0 Surround", 0x5637)
+            SDL_WAVE_DEBUG_CHANNELCFG("9.1 Surround", 0x563f)
+            SDL_WAVE_DEBUG_CHANNELCFG("11.0 Surround", 0x56f7)
+            SDL_WAVE_DEBUG_CHANNELCFG("11.1 Surround", 0x56ff)
         default:
-            SDL_WAVE_DEBUG_CHANNELSTR("FL",  0x1)
-            SDL_WAVE_DEBUG_CHANNELSTR("FR",  0x2)
-            SDL_WAVE_DEBUG_CHANNELSTR("FC",  0x4)
-            SDL_WAVE_DEBUG_CHANNELSTR("LF",  0x8)
-            SDL_WAVE_DEBUG_CHANNELSTR("BL",  0x10)
-            SDL_WAVE_DEBUG_CHANNELSTR("BR",  0x20)
+            SDL_WAVE_DEBUG_CHANNELSTR("FL", 0x1)
+            SDL_WAVE_DEBUG_CHANNELSTR("FR", 0x2)
+            SDL_WAVE_DEBUG_CHANNELSTR("FC", 0x4)
+            SDL_WAVE_DEBUG_CHANNELSTR("LF", 0x8)
+            SDL_WAVE_DEBUG_CHANNELSTR("BL", 0x10)
+            SDL_WAVE_DEBUG_CHANNELSTR("BR", 0x20)
             SDL_WAVE_DEBUG_CHANNELSTR("FLC", 0x40)
             SDL_WAVE_DEBUG_CHANNELSTR("FRC", 0x80)
-            SDL_WAVE_DEBUG_CHANNELSTR("BC",  0x100)
-            SDL_WAVE_DEBUG_CHANNELSTR("SL",  0x200)
-            SDL_WAVE_DEBUG_CHANNELSTR("SR",  0x400)
-            SDL_WAVE_DEBUG_CHANNELSTR("TC",  0x800)
+            SDL_WAVE_DEBUG_CHANNELSTR("BC", 0x100)
+            SDL_WAVE_DEBUG_CHANNELSTR("SL", 0x200)
+            SDL_WAVE_DEBUG_CHANNELSTR("SR", 0x400)
+            SDL_WAVE_DEBUG_CHANNELSTR("TC", 0x800)
             SDL_WAVE_DEBUG_CHANNELSTR("TFL", 0x1000)
             SDL_WAVE_DEBUG_CHANNELSTR("TFC", 0x2000)
             SDL_WAVE_DEBUG_CHANNELSTR("TFR", 0x4000)
@@ -226,28 +234,28 @@ static void WaveDebugDumpFormat(WaveFile *file, Uint32 rifflen, Uint32 fmtlen, U
 {
     WaveFormat *format = &file->format;
     const char *fmtstr1 = "WAVE chunk dump:\n"
-        "-------------------------------------------\n"
-        "RIFF                            %11u\n"
-        "-------------------------------------------\n"
-        "    fmt                         %11u\n"
-        "        wFormatTag                   0x%04x\n"
-        "        nChannels               %11u\n"
-        "        nSamplesPerSec          %11u\n"
-        "        nAvgBytesPerSec         %11u\n"
-        "        nBlockAlign             %11u\n";
+                          "-------------------------------------------\n"
+                          "RIFF                            %11u\n"
+                          "-------------------------------------------\n"
+                          "    fmt                         %11u\n"
+                          "        wFormatTag                   0x%04x\n"
+                          "        nChannels               %11u\n"
+                          "        nSamplesPerSec          %11u\n"
+                          "        nAvgBytesPerSec         %11u\n"
+                          "        nBlockAlign             %11u\n";
     const char *fmtstr2 = "        wBitsPerSample          %11u\n";
     const char *fmtstr3 = "        cbSize                  %11u\n";
     const char *fmtstr4a = "        wValidBitsPerSample     %11u\n";
     const char *fmtstr4b = "        wSamplesPerBlock        %11u\n";
     const char *fmtstr5 = "        dwChannelMask            0x%08x\n"
-        "        SubFormat\n"
-        "        %08x-%04x-%04x-%02x%02x%02x%02x%02x%02x%02x%02x\n";
+                          "        SubFormat\n"
+                          "        %08x-%04x-%04x-%02x%02x%02x%02x%02x%02x%02x%02x\n";
     const char *fmtstr6 = "-------------------------------------------\n"
-        " fact\n"
-        "  dwSampleLength                %11u\n";
+                          " fact\n"
+                          "  dwSampleLength                %11u\n";
     const char *fmtstr7 = "-------------------------------------------\n"
-        " data                           %11u\n"
-        "-------------------------------------------\n";
+                          " data                           %11u\n"
+                          "-------------------------------------------\n";
     char *dumpstr;
     size_t dumppos = 0;
     const size_t bufsize = 1024;
@@ -372,7 +380,7 @@ static int MS_ADPCM_Init(WaveFile *file, size_t datalength)
     const size_t blockdatasize = (size_t)format->blockalign - blockheadersize;
     const size_t blockframebitsize = (size_t)format->bitspersample * format->channels;
     const size_t blockdatasamples = (blockdatasize * 8) / blockframebitsize;
-    const Sint16 presetcoeffs[14] = {256, 0, 512, -256, 0, 0, 192, 64, 240, 0, 460, -208, 392, -232};
+    const Sint16 presetcoeffs[14] = { 256, 0, 512, -256, 0, 0, 192, 64, 240, 0, 460, -208, 392, -232 };
     size_t i, coeffcount;
     MS_ADPCM_CoeffData *coeffdata;
 
@@ -915,7 +923,7 @@ static int IMA_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
 {
     Sint16 step;
     Uint32 c;
-    Uint8 *cstate = (Uint8 *) state->cstate;
+    Uint8 *cstate = (Uint8 *)state->cstate;
 
     for (c = 0; c < state->channels; c++) {
         size_t o = state->block.pos + c * 4;
@@ -933,7 +941,7 @@ static int IMA_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
 
         /* Reserved byte in block header, should be 0. */
         if (state->block.data[o + 3] != 0) {
-            /* Uh oh, corrupt data?  Buggy code? */ ;
+            /* Uh oh, corrupt data?  Buggy code? */;
         }
     }
 
@@ -1535,7 +1543,7 @@ static int WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t len
     }
 
     if (length > 0) {
-        chunk->data = (Uint8 *) SDL_malloc(length);
+        chunk->data = (Uint8 *)SDL_malloc(length);
         if (chunk->data == NULL) {
             return SDL_OutOfMemory();
         }
@@ -1559,20 +1567,24 @@ static int WaveReadChunkData(SDL_RWops *src, WaveChunk *chunk)
     return WaveReadPartialChunkData(src, chunk, chunk->length);
 }
 
-typedef struct WaveExtensibleGUID {
+typedef struct WaveExtensibleGUID
+{
     Uint16 encoding;
     Uint8 guid[16];
 } WaveExtensibleGUID;
 
 /* Some of the GUIDs that are used by WAVEFORMATEXTENSIBLE. */
-#define WAVE_FORMATTAG_GUID(tag) {(tag) & 0xff, (tag) >> 8, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113}
+#define WAVE_FORMATTAG_GUID(tag)                                                     \
+    {                                                                                \
+        (tag) & 0xff, (tag) >> 8, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113 \
+    }
 static WaveExtensibleGUID extensible_guids[] = {
-    {PCM_CODE,        WAVE_FORMATTAG_GUID(PCM_CODE)},
-    {MS_ADPCM_CODE,   WAVE_FORMATTAG_GUID(MS_ADPCM_CODE)},
-    {IEEE_FLOAT_CODE, WAVE_FORMATTAG_GUID(IEEE_FLOAT_CODE)},
-    {ALAW_CODE,       WAVE_FORMATTAG_GUID(ALAW_CODE)},
-    {MULAW_CODE,      WAVE_FORMATTAG_GUID(MULAW_CODE)},
-    {IMA_ADPCM_CODE,  WAVE_FORMATTAG_GUID(IMA_ADPCM_CODE)}
+    { PCM_CODE, WAVE_FORMATTAG_GUID(PCM_CODE) },
+    { MS_ADPCM_CODE, WAVE_FORMATTAG_GUID(MS_ADPCM_CODE) },
+    { IEEE_FLOAT_CODE, WAVE_FORMATTAG_GUID(IEEE_FLOAT_CODE) },
+    { ALAW_CODE, WAVE_FORMATTAG_GUID(ALAW_CODE) },
+    { MULAW_CODE, WAVE_FORMATTAG_GUID(MULAW_CODE) },
+    { IMA_ADPCM_CODE, WAVE_FORMATTAG_GUID(IMA_ADPCM_CODE) }
 };
 
 static Uint16 WaveGetFormatGUIDEncoding(WaveFormat *format)
@@ -2019,7 +2031,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     SDL_zerop(spec);
     spec->freq = format->frequency;
     spec->channels = (Uint8)format->channels;
-    spec->samples = 4096;       /* Good default buffer size */
+    spec->samples = 4096; /* Good default buffer size */
 
     switch (format->encoding) {
     case MS_ADPCM_CODE:
@@ -2116,8 +2128,7 @@ SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, Uint8 **audio_b
 /* Since the WAV memory is allocated in the shared library, it must also
    be freed here.  (Necessary under Win32, VC++)
  */
-void
-SDL_FreeWAV(Uint8 *audio_buf)
+void SDL_FreeWAV(Uint8 *audio_buf)
 {
     SDL_free(audio_buf);
 }

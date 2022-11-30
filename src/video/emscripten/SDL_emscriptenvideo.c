@@ -36,33 +36,32 @@
 
 /* Initialization/Query functions */
 static int Emscripten_VideoInit(_THIS);
-static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
+static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void Emscripten_VideoQuit(_THIS);
-static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
-static int Emscripten_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
+static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect);
+static int Emscripten_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 
-static int Emscripten_CreateWindow(_THIS, SDL_Window * window);
-static void Emscripten_SetWindowSize(_THIS, SDL_Window * window);
-static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h);
-static void Emscripten_DestroyWindow(_THIS, SDL_Window * window);
-static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
+static int Emscripten_CreateWindow(_THIS, SDL_Window *window);
+static void Emscripten_SetWindowSize(_THIS, SDL_Window *window);
+static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h);
+static void Emscripten_DestroyWindow(_THIS, SDL_Window *window);
+static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
 static void Emscripten_PumpEvents(_THIS);
-static void Emscripten_SetWindowTitle(_THIS, SDL_Window * window);
-
+static void Emscripten_SetWindowTitle(_THIS, SDL_Window *window);
 
 /* Emscripten driver bootstrap functions */
 
-static void Emscripten_DeleteDevice(SDL_VideoDevice * device)
+static void Emscripten_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device);
 }
 
-static SDL_VideoDevice * Emscripten_CreateDevice(void)
+static SDL_VideoDevice *Emscripten_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return 0;
@@ -71,7 +70,7 @@ static SDL_VideoDevice * Emscripten_CreateDevice(void)
     /* Firefox sends blur event which would otherwise prevent full screen
      * when the user clicks to allow full screen.
      * See https://bugzilla.mozilla.org/show_bug.cgi?id=1144964
-    */
+     */
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
     /* Set the function pointers */
@@ -80,7 +79,6 @@ static SDL_VideoDevice * Emscripten_CreateDevice(void)
     device->GetDisplayUsableBounds = Emscripten_GetDisplayUsableBounds;
     device->GetDisplayDPI = Emscripten_GetDisplayDPI;
     device->SetDisplayMode = Emscripten_SetDisplayMode;
-
 
     device->PumpEvents = Emscripten_PumpEvents;
 
@@ -124,9 +122,7 @@ VideoBootStrap Emscripten_bootstrap = {
     Emscripten_CreateDevice
 };
 
-
-int
-Emscripten_VideoInit(_THIS)
+int Emscripten_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
 
@@ -148,7 +144,7 @@ Emscripten_VideoInit(_THIS)
     return 0;
 }
 
-static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int Emscripten_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     /* can't do this */
     return 0;
@@ -159,7 +155,7 @@ static void Emscripten_VideoQuit(_THIS)
     Emscripten_FiniMouse();
 }
 
-static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
+static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     if (rect) {
         rect->x = 0;
@@ -174,7 +170,7 @@ static int Emscripten_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, 
     return 0;
 }
 
-static int Emscripten_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi_out, float * hdpi_out, float * vdpi_out)
+static int Emscripten_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi_out, float *hdpi_out, float *vdpi_out)
 {
     const float dpi_reference = 96.0f;
     float dpi;
@@ -199,7 +195,7 @@ static void Emscripten_PumpEvents(_THIS)
     /* do nothing. */
 }
 
-static int Emscripten_CreateWindow(_THIS, SDL_Window * window)
+static int Emscripten_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wdata;
     double scaled_w, scaled_h;
@@ -207,7 +203,7 @@ static int Emscripten_CreateWindow(_THIS, SDL_Window * window)
     const char *selector;
 
     /* Allocate window internal data */
-    wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
+    wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (wdata == NULL) {
         return SDL_OutOfMemory();
     }
@@ -266,12 +262,12 @@ static int Emscripten_CreateWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
-static void Emscripten_SetWindowSize(_THIS, SDL_Window * window)
+static void Emscripten_SetWindowSize(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data;
 
     if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
+        data = (SDL_WindowData *)window->driverdata;
         /* update pixel ratio */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
@@ -285,23 +281,22 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window * window)
     }
 }
 
-
-static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
+static void Emscripten_GetWindowSizeInPixels(_THIS, SDL_Window *window, int *w, int *h)
 {
     SDL_WindowData *data;
     if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
+        data = (SDL_WindowData *)window->driverdata;
         *w = window->w * data->pixel_ratio;
         *h = window->h * data->pixel_ratio;
     }
 }
 
-static void Emscripten_DestroyWindow(_THIS, SDL_Window * window)
+static void Emscripten_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data;
 
     if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
+        data = (SDL_WindowData *)window->driverdata;
 
         Emscripten_UnregisterEventHandlers(data);
 
@@ -314,11 +309,11 @@ static void Emscripten_DestroyWindow(_THIS, SDL_Window * window)
     }
 }
 
-static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_WindowData *data;
     if (window->driverdata) {
-        data = (SDL_WindowData *) window->driverdata;
+        data = (SDL_WindowData *)window->driverdata;
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;
@@ -353,7 +348,8 @@ static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_Video
     }
 }
 
-static void Emscripten_SetWindowTitle(_THIS, SDL_Window * window) {
+static void Emscripten_SetWindowTitle(_THIS, SDL_Window *window)
+{
     emscripten_set_window_title(window->title);
 }
 

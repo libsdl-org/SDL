@@ -28,7 +28,8 @@
 #include "scancodes_linux.h"
 #include "scancodes_xfree86.h"
 
-static const struct {
+static const struct
+{
     SDL_ScancodeTable table;
     SDL_Scancode const *scancodes;
     int num_entries;

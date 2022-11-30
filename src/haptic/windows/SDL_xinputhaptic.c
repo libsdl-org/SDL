@@ -40,9 +40,7 @@ extern "C" {
  */
 static SDL_bool loaded_xinput = SDL_FALSE;
 
-
-int
-SDL_XINPUT_HapticInit(void)
+int SDL_XINPUT_HapticInit(void)
 {
     if (SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE)) {
         loaded_xinput = (WIN_LoadXInputDLL() == 0) ? SDL_TRUE : SDL_FALSE;
@@ -58,8 +56,7 @@ SDL_XINPUT_HapticInit(void)
     return 0;
 }
 
-int
-SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
+int SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
 {
     const Uint8 userid = (Uint8)dwUserid;
     SDL_hapticlist_item *item;
@@ -72,13 +69,13 @@ SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
     /* Make sure we don't already have it */
     for (item = SDL_hapticlist; item; item = item->next) {
         if (item->bXInputHaptic && item->userid == userid) {
-            return -1;  /* Already added */
+            return -1; /* Already added */
         }
     }
 
     SDL_zero(state);
     if (XINPUTSETSTATE(dwUserid, &state) != ERROR_SUCCESS) {
-        return -1;  /* no force feedback on this device. */
+        return -1; /* no force feedback on this device. */
     }
 
     item = (SDL_hapticlist_item *)SDL_malloc(sizeof(SDL_hapticlist_item));
@@ -107,8 +104,7 @@ SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
     return SDL_SYS_AddHapticDevice(item);
 }
 
-int
-SDL_XINPUT_HapticMaybeRemoveDevice(const DWORD dwUserid)
+int SDL_XINPUT_HapticMaybeRemoveDevice(const DWORD dwUserid)
 {
     const Uint8 userid = (Uint8)dwUserid;
     SDL_hapticlist_item *item;
@@ -144,7 +140,7 @@ SDL_XINPUT_HapticMaybeRemoveDevice(const DWORD dwUserid)
  */
 static int SDLCALL SDL_RunXInputHaptic(void *arg)
 {
-    struct haptic_hwdata *hwdata = (struct haptic_hwdata *) arg;
+    struct haptic_hwdata *hwdata = (struct haptic_hwdata *)arg;
 
     while (!SDL_AtomicGet(&hwdata->stopThread)) {
         SDL_Delay(50);
@@ -166,7 +162,7 @@ static int SDLCALL SDL_RunXInputHaptic(void *arg)
 static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 userid)
 {
     char threadName[32];
-    XINPUT_VIBRATION vibration = { 0, 0 };  /* stop any current vibration */
+    XINPUT_VIBRATION vibration = { 0, 0 }; /* stop any current vibration */
     XINPUTSETSTATE(userid, &vibration);
 
     haptic->supported = SDL_HAPTIC_LEFTRIGHT;
@@ -182,9 +178,9 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
     }
     /* Clear the memory */
     SDL_memset(haptic->effects, 0,
-        sizeof(struct haptic_effect) * haptic->neffects);
+               sizeof(struct haptic_effect) * haptic->neffects);
 
-    haptic->hwdata = (struct haptic_hwdata *) SDL_malloc(sizeof(*haptic->hwdata));
+    haptic->hwdata = (struct haptic_hwdata *)SDL_malloc(sizeof(*haptic->hwdata));
     if (haptic->hwdata == NULL) {
         SDL_free(haptic->effects);
         haptic->effects = NULL;
@@ -217,20 +213,17 @@ static int SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 us
     return 0;
 }
 
-int
-SDL_XINPUT_HapticOpen(SDL_Haptic * haptic, SDL_hapticlist_item *item)
+int SDL_XINPUT_HapticOpen(SDL_Haptic *haptic, SDL_hapticlist_item *item)
 {
     return SDL_XINPUT_HapticOpenFromUserIndex(haptic, item->userid);
 }
 
-int
-SDL_XINPUT_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
+int SDL_XINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     return haptic->hwdata->userid == joystick->hwdata->userid;
 }
 
-int
-SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
+int SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
     int index = 0;
@@ -247,16 +240,14 @@ SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
     return SDL_SetError("Couldn't find joystick in haptic device list");
 }
 
-void
-SDL_XINPUT_HapticClose(SDL_Haptic * haptic)
+void SDL_XINPUT_HapticClose(SDL_Haptic *haptic)
 {
     SDL_AtomicSet(&haptic->hwdata->stopThread, 1);
     SDL_WaitThread(haptic->hwdata->thread, NULL);
     SDL_DestroyMutex(haptic->hwdata->mutex);
 }
 
-void
-SDL_XINPUT_HapticQuit(void)
+void SDL_XINPUT_HapticQuit(void)
 {
     if (loaded_xinput) {
         WIN_UnloadXInputDLL();
@@ -264,15 +255,13 @@ SDL_XINPUT_HapticQuit(void)
     }
 }
 
-int
-SDL_XINPUT_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect *effect, SDL_HapticEffect * base)
+int SDL_XINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *base)
 {
-    SDL_assert(base->type == SDL_HAPTIC_LEFTRIGHT);  /* should catch this at higher level */
+    SDL_assert(base->type == SDL_HAPTIC_LEFTRIGHT); /* should catch this at higher level */
     return SDL_XINPUT_HapticUpdateEffect(haptic, effect, base);
 }
 
-int
-SDL_XINPUT_HapticUpdateEffect(SDL_Haptic * haptic, struct haptic_effect *effect, SDL_HapticEffect * data)
+int SDL_XINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *data)
 {
     XINPUT_VIBRATION *vib = &effect->hweffect->vibration;
     SDL_assert(data->type == SDL_HAPTIC_LEFTRIGHT);
@@ -280,18 +269,17 @@ SDL_XINPUT_HapticUpdateEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
     vib->wLeftMotorSpeed = data->leftright.large_magnitude * 2;
     vib->wRightMotorSpeed = data->leftright.small_magnitude * 2;
     SDL_LockMutex(haptic->hwdata->mutex);
-    if (haptic->hwdata->stopTicks) {  /* running right now? Update it. */
+    if (haptic->hwdata->stopTicks) { /* running right now? Update it. */
         XINPUTSETSTATE(haptic->hwdata->userid, vib);
     }
     SDL_UnlockMutex(haptic->hwdata->mutex);
     return 0;
 }
 
-int
-SDL_XINPUT_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect *effect, Uint32 iterations)
+int SDL_XINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, Uint32 iterations)
 {
     XINPUT_VIBRATION *vib = &effect->hweffect->vibration;
-    SDL_assert(effect->effect.type == SDL_HAPTIC_LEFTRIGHT);  /* should catch this at higher level */
+    SDL_assert(effect->effect.type == SDL_HAPTIC_LEFTRIGHT); /* should catch this at higher level */
     SDL_LockMutex(haptic->hwdata->mutex);
     if (effect->effect.leftright.length == SDL_HAPTIC_INFINITY || iterations == SDL_HAPTIC_INFINITY) {
         haptic->hwdata->stopTicks = SDL_HAPTIC_INFINITY;
@@ -300,15 +288,14 @@ SDL_XINPUT_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect *effect, Ui
     } else {
         haptic->hwdata->stopTicks = SDL_GetTicks() + (effect->effect.leftright.length * iterations);
         if ((haptic->hwdata->stopTicks == SDL_HAPTIC_INFINITY) || (haptic->hwdata->stopTicks == 0)) {
-            haptic->hwdata->stopTicks = 1;  /* fix edge cases. */
+            haptic->hwdata->stopTicks = 1; /* fix edge cases. */
         }
     }
     SDL_UnlockMutex(haptic->hwdata->mutex);
     return (XINPUTSETSTATE(haptic->hwdata->userid, vib) == ERROR_SUCCESS) ? 0 : -1;
 }
 
-int
-SDL_XINPUT_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect *effect)
+int SDL_XINPUT_HapticStopEffect(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
     XINPUT_VIBRATION vibration = { 0, 0 };
     SDL_LockMutex(haptic->hwdata->mutex);
@@ -317,44 +304,37 @@ SDL_XINPUT_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect *effect)
     return (XINPUTSETSTATE(haptic->hwdata->userid, &vibration) == ERROR_SUCCESS) ? 0 : -1;
 }
 
-void
-SDL_XINPUT_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect *effect)
+void SDL_XINPUT_HapticDestroyEffect(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
     SDL_XINPUT_HapticStopEffect(haptic, effect);
 }
 
-int
-SDL_XINPUT_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect *effect)
+int SDL_XINPUT_HapticGetEffectStatus(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticSetGain(SDL_Haptic * haptic, int gain)
+int SDL_XINPUT_HapticSetGain(SDL_Haptic *haptic, int gain)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
+int SDL_XINPUT_HapticSetAutocenter(SDL_Haptic *haptic, int autocenter)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticPause(SDL_Haptic * haptic)
+int SDL_XINPUT_HapticPause(SDL_Haptic *haptic)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticUnpause(SDL_Haptic * haptic)
+int SDL_XINPUT_HapticUnpause(SDL_Haptic *haptic)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticStopAll(SDL_Haptic * haptic)
+int SDL_XINPUT_HapticStopAll(SDL_Haptic *haptic)
 {
     XINPUT_VIBRATION vibration = { 0, 0 };
     SDL_LockMutex(haptic->hwdata->mutex);
@@ -374,113 +354,94 @@ SDL_XINPUT_HapticStopAll(SDL_Haptic * haptic)
 
 typedef struct SDL_hapticlist_item SDL_hapticlist_item;
 
-int
-SDL_XINPUT_HapticInit(void)
+int SDL_XINPUT_HapticInit(void)
 {
     return 0;
 }
 
-int
-SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
+int SDL_XINPUT_HapticMaybeAddDevice(const DWORD dwUserid)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticMaybeRemoveDevice(const DWORD dwUserid)
+int SDL_XINPUT_HapticMaybeRemoveDevice(const DWORD dwUserid)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticOpen(SDL_Haptic * haptic, SDL_hapticlist_item *item)
+int SDL_XINPUT_HapticOpen(SDL_Haptic *haptic, SDL_hapticlist_item *item)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
+int SDL_XINPUT_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
+int SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
     return SDL_Unsupported();
 }
 
-void
-SDL_XINPUT_HapticClose(SDL_Haptic * haptic)
+void SDL_XINPUT_HapticClose(SDL_Haptic *haptic)
 {
 }
 
-void
-SDL_XINPUT_HapticQuit(void)
+void SDL_XINPUT_HapticQuit(void)
 {
 }
 
-int
-SDL_XINPUT_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect *effect, SDL_HapticEffect * base)
+int SDL_XINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *base)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticUpdateEffect(SDL_Haptic * haptic, struct haptic_effect *effect, SDL_HapticEffect * data)
+int SDL_XINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, SDL_HapticEffect *data)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect *effect, Uint32 iterations)
+int SDL_XINPUT_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect, Uint32 iterations)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect *effect)
+int SDL_XINPUT_HapticStopEffect(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
     return SDL_Unsupported();
 }
 
-void
-SDL_XINPUT_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect *effect)
+void SDL_XINPUT_HapticDestroyEffect(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
 }
 
-int
-SDL_XINPUT_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect *effect)
+int SDL_XINPUT_HapticGetEffectStatus(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticSetGain(SDL_Haptic * haptic, int gain)
+int SDL_XINPUT_HapticSetGain(SDL_Haptic *haptic, int gain)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
+int SDL_XINPUT_HapticSetAutocenter(SDL_Haptic *haptic, int autocenter)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticPause(SDL_Haptic * haptic)
+int SDL_XINPUT_HapticPause(SDL_Haptic *haptic)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticUnpause(SDL_Haptic * haptic)
+int SDL_XINPUT_HapticUnpause(SDL_Haptic *haptic)
 {
     return SDL_Unsupported();
 }
 
-int
-SDL_XINPUT_HapticStopAll(SDL_Haptic * haptic)
+int SDL_XINPUT_HapticStopAll(SDL_Haptic *haptic)
 {
     return SDL_Unsupported();
 }

@@ -23,7 +23,6 @@
 #ifndef SDL_x11video_h_
 #define SDL_x11video_h_
 
-
 #include "../SDL_sysvideo.h"
 
 #include <X11/Xlib.h>
@@ -125,7 +124,7 @@ typedef struct SDL_VideoData
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
 
-    SDL_bool broken_pointer_grab;  /* true if XGrabPointer seems unreliable. */
+    SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
 
     Uint32 last_mode_change_deadline;
 
@@ -143,7 +142,7 @@ typedef struct SDL_VideoData
     int xkb_event;
 
     KeyCode filter_code;
-    Time    filter_time;
+    Time filter_time;
 
 #if SDL_VIDEO_VULKAN
     /* Vulkan variables only valid if _this->vulkan_config.loader_handle is not NULL */

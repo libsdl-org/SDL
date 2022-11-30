@@ -41,26 +41,26 @@ static void RISCOS_VideoQuit(_THIS);
 
 /* RISC OS driver bootstrap functions */
 
-static void RISCOS_DeleteDevice(SDL_VideoDevice * device)
+static void RISCOS_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device->driverdata);
     SDL_free(device);
 }
 
-static SDL_VideoDevice * RISCOS_CreateDevice(void)
+static SDL_VideoDevice *RISCOS_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return 0;
     }
 
     /* Initialize internal data */
-    phdata = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
+    phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (phdata == NULL) {
         SDL_OutOfMemory();
         SDL_free(device);

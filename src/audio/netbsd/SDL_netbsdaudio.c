@@ -48,7 +48,6 @@ static void NETBSDAUDIO_DetectDevices(void)
     SDL_EnumUnixAudioDevices(0, NULL);
 }
 
-
 static void NETBSDAUDIO_Status(_THIS)
 {
 #ifdef DEBUG_AUDIO
@@ -118,7 +117,6 @@ static void NETBSDAUDIO_Status(_THIS)
 #endif /* DEBUG_AUDIO */
 }
 
-
 static void NETBSDAUDIO_PlayDevice(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
@@ -138,15 +136,14 @@ static void NETBSDAUDIO_PlayDevice(_THIS)
 #endif
 }
 
-static Uint8 * NETBSDAUDIO_GetDeviceBuf(_THIS)
+static Uint8 *NETBSDAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
-
 static int NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
 {
-    Uint8 *buffer = (Uint8 *) _buffer;
+    Uint8 *buffer = (Uint8 *)_buffer;
     int br;
 
     br = read(this->hidden->audio_fd, buffer, buflen);
@@ -169,15 +166,15 @@ static void NETBSDAUDIO_FlushCapture(_THIS)
     Uint8 buf[512];
 
     if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
-    remain = (size_t) (info.record.samples * (SDL_AUDIO_BITSIZE(this->spec.format) / 8));
+    remain = (size_t)(info.record.samples * (SDL_AUDIO_BITSIZE(this->spec.format) / 8));
     while (remain > 0) {
-        const size_t len = SDL_min(sizeof (buf), remain);
+        const size_t len = SDL_min(sizeof(buf), remain);
         const int br = read(this->hidden->audio_fd, buf, len);
         if (br <= 0) {
-            return;  /* oh well. */
+            return; /* oh well. */
         }
         remain -= br;
     }
@@ -231,8 +228,7 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
          * Use the device's native sample rate so the kernel doesn't have to
          * resample.
          */
-        this->spec.freq = iscapture ?
-            hwinfo.record.sample_rate : hwinfo.play.sample_rate;
+        this->spec.freq = iscapture ? hwinfo.record.sample_rate : hwinfo.play.sample_rate;
     }
 #endif
 
@@ -297,7 +293,7 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
     if (!iscapture) {
         /* Allocate mixing buffer */
         this->hidden->mixlen = this->spec.size;
-        this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
+        this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->hidden->mixlen);
         if (this->hidden->mixbuf == NULL) {
             return SDL_OutOfMemory();
         }
@@ -310,7 +306,7 @@ static int NETBSDAUDIO_OpenDevice(_THIS, const char *devname)
     return 0;
 }
 
-static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
     impl->DetectDevices = NETBSDAUDIO_DetectDevices;
@@ -324,9 +320,8 @@ static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->HasCaptureSupport = SDL_TRUE;
     impl->AllowsArbitraryDeviceNames = SDL_TRUE;
 
-    return SDL_TRUE;   /* this audio target is available. */
+    return SDL_TRUE; /* this audio target is available. */
 }
-
 
 AudioBootStrap NETBSDAUDIO_bootstrap = {
     "netbsd", "NetBSD audio", NETBSDAUDIO_Init, SDL_FALSE

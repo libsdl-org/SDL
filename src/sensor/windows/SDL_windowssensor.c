@@ -60,7 +60,7 @@ static SDL_Windows_Sensor *SDL_sensors;
 static int ConnectSensor(ISensor *sensor);
 static int DisconnectSensor(ISensor *sensor);
 
-static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_QueryInterface(ISensorManagerEvents * This, REFIID riid, void **ppvObject)
+static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_QueryInterface(ISensorManagerEvents *This, REFIID riid, void **ppvObject)
 {
     if (ppvObject == NULL) {
         return E_INVALIDARG;
@@ -74,17 +74,17 @@ static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_QueryInterface(ISensor
     return E_NOINTERFACE;
 }
 
-static ULONG STDMETHODCALLTYPE ISensorManagerEventsVtbl_AddRef(ISensorManagerEvents * This)
+static ULONG STDMETHODCALLTYPE ISensorManagerEventsVtbl_AddRef(ISensorManagerEvents *This)
 {
     return 1;
 }
 
-static ULONG STDMETHODCALLTYPE ISensorManagerEventsVtbl_Release(ISensorManagerEvents * This)
+static ULONG STDMETHODCALLTYPE ISensorManagerEventsVtbl_Release(ISensorManagerEvents *This)
 {
     return 1;
 }
 
-static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_OnSensorEnter(ISensorManagerEvents * This, ISensor *pSensor, SensorState state)
+static HRESULT STDMETHODCALLTYPE ISensorManagerEventsVtbl_OnSensorEnter(ISensorManagerEvents *This, ISensor *pSensor, SensorState state)
 {
     ConnectSensor(pSensor);
     return S_OK;
@@ -100,7 +100,7 @@ static ISensorManagerEvents sensor_manager_events = {
     &sensor_manager_events_vtbl
 };
 
-static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_QueryInterface(ISensorEvents * This, REFIID riid, void **ppvObject)
+static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_QueryInterface(ISensorEvents *This, REFIID riid, void **ppvObject)
 {
     if (ppvObject == NULL) {
         return E_INVALIDARG;
@@ -114,17 +114,17 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_QueryInterface(ISensorEvents 
     return E_NOINTERFACE;
 }
 
-static ULONG STDMETHODCALLTYPE ISensorEventsVtbl_AddRef(ISensorEvents * This)
+static ULONG STDMETHODCALLTYPE ISensorEventsVtbl_AddRef(ISensorEvents *This)
 {
     return 1;
 }
 
-static ULONG STDMETHODCALLTYPE ISensorEventsVtbl_Release(ISensorEvents * This)
+static ULONG STDMETHODCALLTYPE ISensorEventsVtbl_Release(ISensorEvents *This)
 {
     return 1;
 }
 
-static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents * This, ISensor *pSensor, SensorState state)
+static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents *This, ISensor *pSensor, SensorState state)
 {
 #ifdef DEBUG_SENSORS
     int i;
@@ -140,7 +140,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents 
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents * This, ISensor *pSensor, ISensorDataReport *pNewData)
+static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *This, ISensor *pSensor, ISensorDataReport *pNewData)
 {
     int i;
 
@@ -197,7 +197,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnEvent(ISensorEvents * This, ISensor *pSensor, REFGUID eventID, IPortableDeviceValues *pEventData)
+static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnEvent(ISensorEvents *This, ISensor *pSensor, REFGUID eventID, IPortableDeviceValues *pEventData)
 {
 #ifdef DEBUG_SENSORS
     int i;
@@ -213,7 +213,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnEvent(ISensorEvents * This,
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnLeave(ISensorEvents * This, REFSENSOR_ID ID)
+static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnLeave(ISensorEvents *This, REFSENSOR_ID ID)
 {
     int i;
 
@@ -347,7 +347,7 @@ static int SDL_WINDOWS_SensorInit(void)
         SDL_windowscoinit = SDL_TRUE;
     }
 
-    hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *) &SDL_sensor_manager);
+    hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *)&SDL_sensor_manager);
     if (FAILED(hr)) {
         /* If we can't create a sensor manager (i.e. on Wine), we won't have any sensors, but don't fail the init */
         return 0; /* WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr); */
@@ -395,7 +395,7 @@ static void SDL_WINDOWS_SensorDetect(void)
 {
 }
 
-static const char * SDL_WINDOWS_SensorGetDeviceName(int device_index)
+static const char *SDL_WINDOWS_SensorGetDeviceName(int device_index)
 {
     return SDL_sensors[device_index].name;
 }
@@ -454,8 +454,7 @@ static void SDL_WINDOWS_SensorQuit(void)
     }
 }
 
-SDL_SensorDriver SDL_WINDOWS_SensorDriver =
-{
+SDL_SensorDriver SDL_WINDOWS_SensorDriver = {
     SDL_WINDOWS_SensorInit,
     SDL_WINDOWS_SensorGetCount,
     SDL_WINDOWS_SensorDetect,

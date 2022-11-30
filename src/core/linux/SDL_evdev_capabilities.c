@@ -23,7 +23,6 @@
 
 #include "SDL_evdev_capabilities.h"
 
-
 #if HAVE_LINUX_INPUT_H
 
 /* missing defines in older Linux kernel headers */
@@ -31,10 +30,10 @@
 #define BTN_TRIGGER_HAPPY 0x2c0
 #endif
 #ifndef BTN_DPAD_UP
-#define BTN_DPAD_UP       0x220
+#define BTN_DPAD_UP 0x220
 #endif
 #ifndef KEY_ALS_TOGGLE
-#define KEY_ALS_TOGGLE    0x230
+#define KEY_ALS_TOGGLE 0x230
 #endif
 
 extern int
@@ -43,7 +42,8 @@ SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
                            unsigned long bitmask_key[NBITS(KEY_MAX)],
                            unsigned long bitmask_rel[NBITS(REL_MAX)])
 {
-    struct range {
+    struct range
+    {
         unsigned start;
         unsigned end;
     };
@@ -114,7 +114,7 @@ SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
         unsigned i;
         unsigned long found = 0;
 
-        for (i = 0; i < BTN_MISC/BITS_PER_LONG; ++i) {
+        for (i = 0; i < BTN_MISC / BITS_PER_LONG; ++i) {
             found |= bitmask_key[i];
         }
         /* If there are no keys in the lower block, check the higher blocks */

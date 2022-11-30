@@ -22,7 +22,6 @@
 
 #ifdef SDL_AUDIO_DRIVER_N3DS
 
-
 /* N3DS Audio driver */
 
 #include "../SDL_sysaudio.h"
@@ -71,7 +70,7 @@ static void AudioFrameFinished(void *device)
 {
     bool shouldBroadcast = false;
     unsigned i;
-    SDL_AudioDevice *this = (SDL_AudioDevice *) device;
+    SDL_AudioDevice *this = (SDL_AudioDevice *)device;
 
     contextLock(this);
 
@@ -94,7 +93,7 @@ static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
     Result ndsp_init_res;
     Uint8 *data_vaddr;
     float mix[12];
-    this->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof *this->hidden);
+    this->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof *this->hidden);
 
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
@@ -133,14 +132,14 @@ static int N3DSAUDIO_OpenDevice(_THIS, const char *devname)
     }
 
     this->hidden->mixlen = this->spec.size;
-    this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->spec.size);
+    this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->spec.size);
     if (this->hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }
 
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
 
-    data_vaddr = (Uint8 *) linearAlloc(this->hidden->mixlen * NUM_BUFFERS);
+    data_vaddr = (Uint8 *)linearAlloc(this->hidden->mixlen * NUM_BUFFERS);
     if (data_vaddr == NULL) {
         return SDL_OutOfMemory();
     }
@@ -208,7 +207,7 @@ static void N3DSAUDIO_PlayDevice(_THIS)
 
     contextUnlock(this);
 
-    memcpy((void *) this->hidden->waveBuf[nextbuf].data_vaddr,
+    memcpy((void *)this->hidden->waveBuf[nextbuf].data_vaddr,
            this->hidden->mixbuf, sampleLen);
     DSP_FlushDataCache(this->hidden->waveBuf[nextbuf].data_vaddr, sampleLen);
 
@@ -225,7 +224,7 @@ static void N3DSAUDIO_WaitDevice(_THIS)
     contextUnlock(this);
 }
 
-static Uint8 * N3DSAUDIO_GetDeviceBuf(_THIS)
+static Uint8 *N3DSAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
@@ -297,7 +296,7 @@ static void FreePrivateData(_THIS)
     }
 
     if (this->hidden->waveBuf[0].data_vaddr) {
-        linearFree((void *) this->hidden->waveBuf[0].data_vaddr);
+        linearFree((void *)this->hidden->waveBuf[0].data_vaddr);
     }
 
     if (this->hidden->mixbuf) {

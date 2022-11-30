@@ -31,14 +31,14 @@
 
 #include "../../events/SDL_mouse_c.h"
 
-static SDL_Cursor* Emscripten_CreateCursorFromString(const char* cursor_str, SDL_bool is_custom)
+static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL_bool is_custom)
 {
-    SDL_Cursor* cursor;
+    SDL_Cursor *cursor;
     Emscripten_CursorData *curdata;
 
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
-        curdata = (Emscripten_CursorData *) SDL_calloc(1, sizeof(*curdata));
+        curdata = (Emscripten_CursorData *)SDL_calloc(1, sizeof(*curdata));
         if (curdata == NULL) {
             SDL_OutOfMemory();
             SDL_free(cursor);
@@ -55,13 +55,12 @@ static SDL_Cursor* Emscripten_CreateCursorFromString(const char* cursor_str, SDL
     return cursor;
 }
 
-static SDL_Cursor* Emscripten_CreateDefaultCursor()
+static SDL_Cursor *Emscripten_CreateDefaultCursor()
 {
     return Emscripten_CreateCursorFromString("default", SDL_FALSE);
 }
 
-
-static SDL_Cursor* Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
+static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     const char *cursor_url = NULL;
     SDL_Surface *conv_surf;
@@ -110,60 +109,60 @@ static SDL_Cursor* Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int 
     return Emscripten_CreateCursorFromString(cursor_url, SDL_TRUE);
 }
 
-static SDL_Cursor* Emscripten_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor *Emscripten_CreateSystemCursor(SDL_SystemCursor id)
 {
     const char *cursor_name = NULL;
 
-    switch(id) {
-        case SDL_SYSTEM_CURSOR_ARROW:
-            cursor_name = "default";
-            break;
-        case SDL_SYSTEM_CURSOR_IBEAM:
-            cursor_name = "text";
-            break;
-        case SDL_SYSTEM_CURSOR_WAIT:
-            cursor_name = "wait";
-            break;
-        case SDL_SYSTEM_CURSOR_CROSSHAIR:
-            cursor_name = "crosshair";
-            break;
-        case SDL_SYSTEM_CURSOR_WAITARROW:
-            cursor_name = "progress";
-            break;
-        case SDL_SYSTEM_CURSOR_SIZENWSE:
-            cursor_name = "nwse-resize";
-            break;
-        case SDL_SYSTEM_CURSOR_SIZENESW:
-            cursor_name = "nesw-resize";
-            break;
-        case SDL_SYSTEM_CURSOR_SIZEWE:
-            cursor_name = "ew-resize";
-            break;
-        case SDL_SYSTEM_CURSOR_SIZENS:
-            cursor_name = "ns-resize";
-            break;
-        case SDL_SYSTEM_CURSOR_SIZEALL:
-            cursor_name = "move";
-            break;
-        case SDL_SYSTEM_CURSOR_NO:
-            cursor_name = "not-allowed";
-            break;
-        case SDL_SYSTEM_CURSOR_HAND:
-            cursor_name = "pointer";
-            break;
-        default:
-            SDL_assert(0);
-            return NULL;
+    switch (id) {
+    case SDL_SYSTEM_CURSOR_ARROW:
+        cursor_name = "default";
+        break;
+    case SDL_SYSTEM_CURSOR_IBEAM:
+        cursor_name = "text";
+        break;
+    case SDL_SYSTEM_CURSOR_WAIT:
+        cursor_name = "wait";
+        break;
+    case SDL_SYSTEM_CURSOR_CROSSHAIR:
+        cursor_name = "crosshair";
+        break;
+    case SDL_SYSTEM_CURSOR_WAITARROW:
+        cursor_name = "progress";
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENWSE:
+        cursor_name = "nwse-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENESW:
+        cursor_name = "nesw-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEWE:
+        cursor_name = "ew-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENS:
+        cursor_name = "ns-resize";
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEALL:
+        cursor_name = "move";
+        break;
+    case SDL_SYSTEM_CURSOR_NO:
+        cursor_name = "not-allowed";
+        break;
+    case SDL_SYSTEM_CURSOR_HAND:
+        cursor_name = "pointer";
+        break;
+    default:
+        SDL_assert(0);
+        return NULL;
     }
 
     return Emscripten_CreateCursorFromString(cursor_name, SDL_FALSE);
 }
 
-static void Emscripten_FreeCursor(SDL_Cursor* cursor)
+static void Emscripten_FreeCursor(SDL_Cursor *cursor)
 {
     Emscripten_CursorData *curdata;
     if (cursor) {
-        curdata = (Emscripten_CursorData *) cursor->driverdata;
+        curdata = (Emscripten_CursorData *)cursor->driverdata;
 
         if (curdata != NULL) {
             if (curdata->is_custom) {
@@ -176,12 +175,12 @@ static void Emscripten_FreeCursor(SDL_Cursor* cursor)
     }
 }
 
-static int Emscripten_ShowCursor(SDL_Cursor* cursor)
+static int Emscripten_ShowCursor(SDL_Cursor *cursor)
 {
     Emscripten_CursorData *curdata;
     if (SDL_GetMouseFocus() != NULL) {
         if (cursor && cursor->driverdata) {
-            curdata = (Emscripten_CursorData *) cursor->driverdata;
+            curdata = (Emscripten_CursorData *)cursor->driverdata;
 
             if (curdata->system_cursor) {
                 /* *INDENT-OFF* */ /* clang-format off */
@@ -205,7 +204,7 @@ static int Emscripten_ShowCursor(SDL_Cursor* cursor)
     return 0;
 }
 
-static void Emscripten_WarpMouse(SDL_Window* window, int x, int y)
+static void Emscripten_WarpMouse(SDL_Window *window, int x, int y)
 {
     SDL_Unsupported();
 }
@@ -222,7 +221,7 @@ static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
             return -1;
         }
 
-        window_data = (SDL_WindowData *) window->driverdata;
+        window_data = (SDL_WindowData *)window->driverdata;
 
         if (emscripten_request_pointerlock(window_data->canvas_id, 1) >= EMSCRIPTEN_RESULT_SUCCESS) {
             return 0;
@@ -235,27 +234,24 @@ static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
     return -1;
 }
 
-void
-Emscripten_InitMouse()
+void Emscripten_InitMouse()
 {
-    SDL_Mouse* mouse = SDL_GetMouse();
+    SDL_Mouse *mouse = SDL_GetMouse();
 
-    mouse->CreateCursor         = Emscripten_CreateCursor;
-    mouse->ShowCursor           = Emscripten_ShowCursor;
-    mouse->FreeCursor           = Emscripten_FreeCursor;
-    mouse->WarpMouse            = Emscripten_WarpMouse;
-    mouse->CreateSystemCursor   = Emscripten_CreateSystemCursor;
+    mouse->CreateCursor = Emscripten_CreateCursor;
+    mouse->ShowCursor = Emscripten_ShowCursor;
+    mouse->FreeCursor = Emscripten_FreeCursor;
+    mouse->WarpMouse = Emscripten_WarpMouse;
+    mouse->CreateSystemCursor = Emscripten_CreateSystemCursor;
     mouse->SetRelativeMouseMode = Emscripten_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(Emscripten_CreateDefaultCursor());
 }
 
-void
-Emscripten_FiniMouse()
+void Emscripten_FiniMouse()
 {
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
 
 /* vi: set ts=4 sw=4 expandtab: */
-

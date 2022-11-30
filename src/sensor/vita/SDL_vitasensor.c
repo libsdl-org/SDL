@@ -72,16 +72,16 @@ static void SDL_VITA_SensorDetect(void)
 {
 }
 
-static const char * SDL_VITA_SensorGetDeviceName(int device_index)
+static const char *SDL_VITA_SensorGetDeviceName(int device_index)
 {
     if (device_index < SDL_sensors_count) {
         switch (SDL_sensors[device_index].type) {
-            case SDL_SENSOR_ACCEL:
-                return "Accelerometer";
-            case SDL_SENSOR_GYRO:
-                return "Gyro";
-            default:
-                return "Unknown";
+        case SDL_SENSOR_ACCEL:
+            return "Accelerometer";
+        case SDL_SENSOR_GYRO:
+            return "Gyro";
+        default:
+            return "Unknown";
         }
     }
 
@@ -157,27 +157,24 @@ static void SDL_VITA_SensorUpdate(SDL_Sensor *sensor)
             }
             sensor->hwdata->last_timestamp = timestamp;
 
-            switch (sensor->type)
+            switch (sensor->type) {
+            case SDL_SENSOR_ACCEL:
             {
-                case SDL_SENSOR_ACCEL:
-                {
-                    float data[3];
-                    data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
-                    data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
-                    data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
-                    SDL_PrivateSensorUpdate(sensor, sensor->hwdata->timestamp_us, data, SDL_arraysize(data));
-                }
-                break;
-                case SDL_SENSOR_GYRO:
-                {
-                    float data[3];
-                    data[0] = motionState[i].gyro.x;
-                    data[1] = motionState[i].gyro.y;
-                    data[2] = motionState[i].gyro.z;
-                    SDL_PrivateSensorUpdate(sensor, sensor->hwdata->timestamp_us, data, SDL_arraysize(data));
-                }
-                break;
-                default:
+                float data[3];
+                data[0] = motionState[i].accelerometer.x * SDL_STANDARD_GRAVITY;
+                data[1] = motionState[i].accelerometer.y * SDL_STANDARD_GRAVITY;
+                data[2] = motionState[i].accelerometer.z * SDL_STANDARD_GRAVITY;
+                SDL_PrivateSensorUpdate(sensor, sensor->hwdata->timestamp_us, data, SDL_arraysize(data));
+            } break;
+            case SDL_SENSOR_GYRO:
+            {
+                float data[3];
+                data[0] = motionState[i].gyro.x;
+                data[1] = motionState[i].gyro.y;
+                data[2] = motionState[i].gyro.z;
+                SDL_PrivateSensorUpdate(sensor, sensor->hwdata->timestamp_us, data, SDL_arraysize(data));
+            } break;
+            default:
                 break;
             }
         }
@@ -193,8 +190,7 @@ static void SDL_VITA_SensorQuit(void)
     sceMotionStopSampling();
 }
 
-SDL_SensorDriver SDL_VITA_SensorDriver =
-{
+SDL_SensorDriver SDL_VITA_SensorDriver = {
     SDL_VITA_SensorInit,
     SDL_VITA_SensorGetCount,
     SDL_VITA_SensorDetect,

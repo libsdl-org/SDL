@@ -27,13 +27,12 @@
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 
-
 #ifdef SDL_JOYSTICK_HIDAPI_PS3
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_PS3_PROTOCOL*/
 
-#define LOAD16(A, B)  (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
 typedef enum
 {
@@ -41,7 +40,8 @@ typedef enum
     k_EPS3ReportIdEffects = 1,
 } EPS3ReportId;
 
-typedef struct {
+typedef struct
+{
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     SDL_bool is_shanwan;
@@ -52,7 +52,6 @@ typedef struct {
     Uint8 rumble_right;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverPS3_Context;
-
 
 static int HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size);
 
@@ -206,7 +205,7 @@ static int HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
     effects[2] = ctx->rumble_right ? 1 : 0;
     effects[4] = ctx->rumble_left;
 
-    effects[9] = (0x01 << (1+(ctx->player_index % 4)));
+    effects[9] = (0x01 << (1 + (ctx->player_index % 4)));
 
     return HIDAPI_DriverPS3_SendJoystickEffect(device, ctx->joystick, effects, sizeof(effects));
 }
@@ -431,11 +430,11 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
             23, /* SDL_CONTROLLER_BUTTON_B */
             25, /* SDL_CONTROLLER_BUTTON_X */
             22, /* SDL_CONTROLLER_BUTTON_Y */
-            0,  /* SDL_CONTROLLER_BUTTON_BACK */
-            0,  /* SDL_CONTROLLER_BUTTON_GUIDE */
-            0,  /* SDL_CONTROLLER_BUTTON_START */
-            0,  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
-            0,  /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
+            0, /* SDL_CONTROLLER_BUTTON_BACK */
+            0, /* SDL_CONTROLLER_BUTTON_GUIDE */
+            0, /* SDL_CONTROLLER_BUTTON_START */
+            0, /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
+            0, /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
             20, /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
             21, /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
             14, /* SDL_CONTROLLER_BUTTON_DPAD_UP */
@@ -543,8 +542,7 @@ static void HIDAPI_DriverPS3_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 = {
     SDL_HINT_JOYSTICK_HIDAPI_PS3,
     SDL_TRUE,
     HIDAPI_DriverPS3_RegisterHints,
@@ -566,15 +564,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 =
     HIDAPI_DriverPS3_FreeDevice,
 };
 
-
 static SDL_bool HIDAPI_DriverPS3ThirdParty_IsEnabled(void)
 {
 #if 1 /* Not enabled by default, we don't know what the L3/R3 buttons are */
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
 #else
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
-               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
-                   SDL_HIDAPI_DEFAULT));
+                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
+                                                 SDL_HIDAPI_DEFAULT));
 #endif
 }
 
@@ -755,17 +752,17 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket(SDL_Joystick *joystick,
             12, /* SDL_CONTROLLER_BUTTON_B */
             14, /* SDL_CONTROLLER_BUTTON_X */
             11, /* SDL_CONTROLLER_BUTTON_Y */
-            0,  /* SDL_CONTROLLER_BUTTON_BACK */
-            0,  /* SDL_CONTROLLER_BUTTON_GUIDE */
-            0,  /* SDL_CONTROLLER_BUTTON_START */
-            0,  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
-            0,  /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
+            0, /* SDL_CONTROLLER_BUTTON_BACK */
+            0, /* SDL_CONTROLLER_BUTTON_GUIDE */
+            0, /* SDL_CONTROLLER_BUTTON_START */
+            0, /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
+            0, /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
             15, /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
             16, /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
-            9,  /* SDL_CONTROLLER_BUTTON_DPAD_UP */
+            9, /* SDL_CONTROLLER_BUTTON_DPAD_UP */
             10, /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
-            8,  /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
-            7,  /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
+            8, /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
+            7, /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
         };
         int i, axis_index = 6;
 
@@ -833,8 +830,7 @@ static void HIDAPI_DriverPS3ThirdParty_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3ThirdParty =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3ThirdParty = {
     SDL_HINT_JOYSTICK_HIDAPI_PS3,
     SDL_TRUE,
     HIDAPI_DriverPS3_RegisterHints,

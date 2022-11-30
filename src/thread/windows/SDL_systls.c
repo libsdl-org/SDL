@@ -31,7 +31,7 @@
 #include <fibersapi.h>
 
 #ifndef TLS_OUT_OF_INDEXES
-#define TLS_OUT_OF_INDEXES  FLS_OUT_OF_INDEXES
+#define TLS_OUT_OF_INDEXES FLS_OUT_OF_INDEXES
 #endif
 
 #define TlsAlloc()  FlsAlloc(NULL)
@@ -66,8 +66,7 @@ SDL_SYS_GetTLSData(void)
     return (SDL_TLSData *)TlsGetValue(thread_local_storage);
 }
 
-int
-SDL_SYS_SetTLSData(SDL_TLSData *data)
+int SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     if (generic_local_storage) {
         return SDL_Generic_SetTLSData(data);

@@ -272,12 +272,12 @@ static const unsigned char gxm_shader_texture_v[gxm_shader_texture_v_size] = {
 
 /* *INDENT-ON* */ /* clang-format on */
 
-static const SceGxmProgram *const clearVertexProgramGxp         = (const SceGxmProgram *)gxm_shader_clear_v;
-static const SceGxmProgram *const clearFragmentProgramGxp       = (const SceGxmProgram *)gxm_shader_clear_f;
-static const SceGxmProgram *const colorVertexProgramGxp         = (const SceGxmProgram *)gxm_shader_color_v;
-static const SceGxmProgram *const colorFragmentProgramGxp       = (const SceGxmProgram *)gxm_shader_color_f;
-static const SceGxmProgram *const textureVertexProgramGxp       = (const SceGxmProgram *)gxm_shader_texture_v;
-static const SceGxmProgram *const textureFragmentProgramGxp     = (const SceGxmProgram *)gxm_shader_texture_f;
+static const SceGxmProgram *const clearVertexProgramGxp = (const SceGxmProgram *)gxm_shader_clear_v;
+static const SceGxmProgram *const clearFragmentProgramGxp = (const SceGxmProgram *)gxm_shader_clear_f;
+static const SceGxmProgram *const colorVertexProgramGxp = (const SceGxmProgram *)gxm_shader_color_v;
+static const SceGxmProgram *const colorFragmentProgramGxp = (const SceGxmProgram *)gxm_shader_color_f;
+static const SceGxmProgram *const textureVertexProgramGxp = (const SceGxmProgram *)gxm_shader_texture_v;
+static const SceGxmProgram *const textureFragmentProgramGxp = (const SceGxmProgram *)gxm_shader_texture_f;
 
 #endif // SDL_RENDER_VITA_GXM_SHADERS_H
 

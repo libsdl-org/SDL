@@ -26,7 +26,6 @@
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 
-
 #ifdef SDL_JOYSTICK_HIDAPI_LUNA
 
 /* Define this if you want to log all packets from the controller */
@@ -43,10 +42,10 @@ enum
     SDL_CONTROLLER_NUM_LUNA_BUTTONS,
 };
 
-typedef struct {
+typedef struct
+{
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverLuna_Context;
-
 
 static void HIDAPI_DriverLuna_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -127,8 +126,8 @@ static int HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     }
 #endif /* ENABLE_LUNA_BLUETOOTH_RUMBLE */
 
-	/* There is currently no rumble packet over USB */
-	return SDL_Unsupported();
+    /* There is currently no rumble packet over USB */
+    return SDL_Unsupported();
 }
 
 static int HIDAPI_DriverLuna_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
@@ -228,8 +227,7 @@ static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_D
     }
 
 #define READ_STICK_AXIS(offset) \
-    (data[offset] == 0x7f ? 0 : \
-    (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         Sint16 axis = READ_STICK_AXIS(4);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
@@ -243,7 +241,7 @@ static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_D
 #undef READ_STICK_AXIS
 
 #define READ_TRIGGER_AXIS(offset) \
-    (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16)
+    (Sint16) HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16)
     {
         Sint16 axis = READ_TRIGGER_AXIS(8);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
@@ -347,8 +345,7 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
     }
 
 #define READ_STICK_AXIS(offset) \
-    (data[offset] == 0x7f ? 0 : \
-    (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         Sint16 axis = READ_STICK_AXIS(2);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
@@ -362,7 +359,7 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
 #undef READ_STICK_AXIS
 
 #define READ_TRIGGER_AXIS(offset) \
-    (Sint16)HIDAPI_RemapVal((float)((int)(((data[offset] | (data[offset + 1] << 8)) & 0x3ff) - 0x200)), 0x00 - 0x200, 0x3ff - 0x200, SDL_MIN_SINT16, SDL_MAX_SINT16)
+    (Sint16) HIDAPI_RemapVal((float)((int)(((data[offset] | (data[offset + 1] << 8)) & 0x3ff) - 0x200)), 0x00 - 0x200, 0x3ff - 0x200, SDL_MIN_SINT16, SDL_MAX_SINT16)
     {
         Sint16 axis = READ_TRIGGER_AXIS(9);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
@@ -420,8 +417,7 @@ static void HIDAPI_DriverLuna_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna = {
     SDL_HINT_JOYSTICK_HIDAPI_LUNA,
     SDL_TRUE,
     HIDAPI_DriverLuna_RegisterHints,

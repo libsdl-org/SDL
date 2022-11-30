@@ -27,13 +27,13 @@
 typedef struct _RPI_CursorData RPI_CursorData;
 struct _RPI_CursorData
 {
-    DISPMANX_RESOURCE_HANDLE_T  resource;
-    DISPMANX_ELEMENT_HANDLE_T   element;
-    int                         hot_x, hot_y;
-    int                         w, h;
+    DISPMANX_RESOURCE_HANDLE_T resource;
+    DISPMANX_ELEMENT_HANDLE_T element;
+    int hot_x, hot_y;
+    int w, h;
 };
 
-#define SDL_RPI_CURSORDATA(curs)  RPI_CursorData *curdata = (RPI_CursorData *) ((curs) ? (curs)->driverdata : NULL)
+#define SDL_RPI_CURSORDATA(curs) RPI_CursorData *curdata = (RPI_CursorData *)((curs) ? (curs)->driverdata : NULL)
 
 extern void RPI_InitMouse(_THIS);
 extern void RPI_QuitMouse(_THIS);

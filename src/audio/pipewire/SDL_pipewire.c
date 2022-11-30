@@ -74,7 +74,7 @@ enum PW_READY_FLAGS
 {
     PW_READY_FLAG_BUFFER_ADDED = 0x1,
     PW_READY_FLAG_STREAM_READY = 0x2,
-    PW_READY_FLAG_ALL_BITS     = 0x3
+    PW_READY_FLAG_ALL_BITS = 0x3
 };
 
 #define PW_ID_TO_HANDLE(x) (void *)((uintptr_t)x)
@@ -114,14 +114,14 @@ static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
 
-static int         pipewire_version_major;
-static int         pipewire_version_minor;
-static int         pipewire_version_patch;
+static int pipewire_version_major;
+static int pipewire_version_minor;
+static int pipewire_version_patch;
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
 static const char *pipewire_library = SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC;
-static void       *pipewire_handle  = NULL;
+static void *pipewire_handle = NULL;
 
 static int pipewire_dlsym(const char *fn, void **addr)
 {
@@ -246,8 +246,8 @@ struct node_object
 {
     struct spa_list link;
 
-    Uint32   id;
-    int      seq;
+    Uint32 id;
+    int seq;
     SDL_bool persist;
 
     /*
@@ -260,8 +260,8 @@ struct node_object
     void *userdata;
 
     struct pw_proxy *proxy;
-    struct spa_hook  node_listener;
-    struct spa_hook  core_listener;
+    struct spa_hook node_listener;
+    struct spa_hook core_listener;
 };
 
 /* A sink/source node used for stream I/O. */
@@ -269,8 +269,8 @@ struct io_node
 {
     struct spa_list link;
 
-    Uint32        id;
-    SDL_bool      is_capture;
+    Uint32 id;
+    SDL_bool is_capture;
     SDL_AudioSpec spec;
 
     const char *name; /* Friendly name */
@@ -281,25 +281,25 @@ struct io_node
 
 /* The global hotplug thread and associated objects. */
 static struct pw_thread_loop *hotplug_loop;
-static struct pw_core        *hotplug_core;
-static struct pw_context     *hotplug_context;
-static struct pw_registry    *hotplug_registry;
-static struct spa_hook        hotplug_registry_listener;
-static struct spa_hook        hotplug_core_listener;
-static struct spa_list        hotplug_pending_list;
-static struct spa_list        hotplug_io_list;
-static int                    hotplug_init_seq_val;
-static SDL_bool               hotplug_init_complete;
-static SDL_bool               hotplug_events_enabled;
+static struct pw_core *hotplug_core;
+static struct pw_context *hotplug_context;
+static struct pw_registry *hotplug_registry;
+static struct spa_hook hotplug_registry_listener;
+static struct spa_hook hotplug_core_listener;
+static struct spa_list hotplug_pending_list;
+static struct spa_list hotplug_io_list;
+static int hotplug_init_seq_val;
+static SDL_bool hotplug_init_complete;
+static SDL_bool hotplug_events_enabled;
 
-static char *pipewire_default_sink_id   = NULL;
+static char *pipewire_default_sink_id = NULL;
 static char *pipewire_default_source_id = NULL;
 
 /* The active node list */
 static SDL_bool io_list_check_add(struct io_node *node)
 {
     struct io_node *n;
-    SDL_bool        ret = SDL_TRUE;
+    SDL_bool ret = SDL_TRUE;
 
     /* See if the node is already in the list */
     spa_list_for_each (n, &hotplug_io_list, link) {
@@ -376,7 +376,7 @@ static void io_list_clear()
     }
 }
 
-static struct io_node*
+static struct io_node *
 io_list_get_by_id(Uint32 id)
 {
     struct io_node *n, *temp;
@@ -388,7 +388,7 @@ io_list_get_by_id(Uint32 id)
     return NULL;
 }
 
-static struct io_node*
+static struct io_node *
 io_list_get_by_path(char *path)
 {
     struct io_node *n, *temp;
@@ -438,9 +438,9 @@ static void pending_list_clear()
     }
 }
 
-static void * node_object_new(Uint32 id, const char *type, Uint32 version, const void *funcs, const struct pw_core_events *core_events)
+static void *node_object_new(Uint32 id, const char *type, Uint32 version, const void *funcs, const struct pw_core_events *core_events)
 {
-    struct pw_proxy    *proxy;
+    struct pw_proxy *proxy;
     struct node_object *node;
 
     /* Create the proxy object */
@@ -453,7 +453,7 @@ static void * node_object_new(Uint32 id, const char *type, Uint32 version, const
     node = PIPEWIRE_pw_proxy_get_user_data(proxy);
     SDL_zerop(node);
 
-    node->id    = id;
+    node->id = id;
     node->proxy = proxy;
 
     /* Add the callbacks */
@@ -482,7 +482,7 @@ static void core_events_hotplug_init_callback(void *object, uint32_t id, int seq
 static void core_events_interface_callback(void *object, uint32_t id, int seq)
 {
     struct node_object *node = object;
-    struct io_node     *io   = node->userdata;
+    struct io_node *io = node->userdata;
 
     if (id == PW_ID_CORE && seq == node->seq) {
         /*
@@ -507,8 +507,8 @@ static void core_events_metadata_callback(void *object, uint32_t id, int seq)
 }
 
 static const struct pw_core_events hotplug_init_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_hotplug_init_callback };
-static const struct pw_core_events interface_core_events    = { PW_VERSION_CORE_EVENTS, .done = core_events_interface_callback };
-static const struct pw_core_events metadata_core_events     = { PW_VERSION_CORE_EVENTS, .done = core_events_metadata_callback };
+static const struct pw_core_events interface_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_interface_callback };
+static const struct pw_core_events metadata_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_metadata_callback };
 
 static void hotplug_core_sync(struct node_object *node)
 {
@@ -529,8 +529,8 @@ static void hotplug_core_sync(struct node_object *node)
 static SDL_bool get_range_param(const struct spa_pod *param, Uint32 key, int *def, int *min, int *max)
 {
     const struct spa_pod_prop *prop;
-    struct spa_pod            *value;
-    Uint32                     n_values, choice;
+    struct spa_pod *value;
+    Uint32 n_values, choice;
 
     prop = spa_pod_find_prop(param, NULL, key);
 
@@ -562,7 +562,7 @@ static SDL_bool get_range_param(const struct spa_pod *param, Uint32 key, int *de
 static SDL_bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 {
     const struct spa_pod_prop *prop;
-    Sint32                     v;
+    Sint32 v;
 
     prop = spa_pod_find_prop(param, NULL, key);
 
@@ -581,9 +581,9 @@ static SDL_bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
 static void node_event_info(void *object, const struct pw_node_info *info)
 {
     struct node_object *node = object;
-    struct io_node     *io   = node->userdata;
-    const char         *prop_val;
-    Uint32              i;
+    struct io_node *io = node->userdata;
+    const char *prop_val;
+    Uint32 i;
 
     if (info) {
         prop_val = spa_dict_lookup(info->props, PW_KEY_AUDIO_CHANNELS);
@@ -603,7 +603,7 @@ static void node_event_info(void *object, const struct pw_node_info *info)
 static void node_event_param(void *object, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param)
 {
     struct node_object *node = object;
-    struct io_node     *io   = node->userdata;
+    struct io_node *io = node->userdata;
 
     /* Get the default frequency */
     if (io->spec.freq == 0) {
@@ -625,7 +625,7 @@ static void node_event_param(void *object, int seq, uint32_t id, uint32_t index,
 static const struct pw_node_events interface_node_events = { PW_VERSION_NODE_EVENTS, .info = node_event_info,
                                                              .param = node_event_param };
 
-static char* get_name_from_json(const char *json)
+static char *get_name_from_json(const char *json)
 {
     struct spa_json parser[2];
     char key[7]; /* "name" */
@@ -674,7 +674,7 @@ static const struct pw_metadata_events metadata_node_events = { PW_VERSION_METAD
 
 /* Global registry callbacks */
 static void registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, const char *type, uint32_t version,
-                               const struct spa_dict *props)
+                                           const struct spa_dict *props)
 {
     struct node_object *node;
 
@@ -683,12 +683,12 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
         const char *media_class = spa_dict_lookup(props, PW_KEY_MEDIA_CLASS);
 
         if (media_class) {
-            const char     *node_desc;
-            const char     *node_path;
+            const char *node_desc;
+            const char *node_path;
             struct io_node *io;
-            SDL_bool        is_capture;
-            int             desc_buffer_len;
-            int             path_buffer_len;
+            SDL_bool is_capture;
+            int desc_buffer_len;
+            int path_buffer_len;
 
             /* Just want sink and capture */
             if (!SDL_strcasecmp(media_class, "Audio/Sink")) {
@@ -720,11 +720,11 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
                 }
 
                 /* Begin setting the node properties */
-                io->id          = id;
-                io->is_capture  = is_capture;
+                io->id = id;
+                io->is_capture = is_capture;
                 io->spec.format = AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion. */
-                io->name        = io->buf;
-                io->path        = io->buf + desc_buffer_len;
+                io->name = io->buf;
+                io->path = io->buf + desc_buffer_len;
                 SDL_strlcpy(io->buf, node_desc, desc_buffer_len);
                 SDL_strlcpy(io->buf + desc_buffer_len, node_path, path_buffer_len);
 
@@ -806,7 +806,7 @@ static void hotplug_loop_destroy()
     pending_list_clear();
     io_list_clear();
 
-    hotplug_init_complete  = SDL_FALSE;
+    hotplug_init_complete = SDL_FALSE;
     hotplug_events_enabled = SDL_FALSE;
 
     if (pipewire_default_sink_id != NULL) {
@@ -884,7 +884,7 @@ static const enum spa_audio_channel PIPEWIRE_channel_map_8[] = { SPA_AUDIO_CHANN
 static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info_raw *info)
 {
     info->channels = spec->channels;
-    info->rate     = spec->freq;
+    info->rate = spec->freq;
 
     switch (spec->channels) {
     case 1:
@@ -950,11 +950,11 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
 
 static void output_callback(void *data)
 {
-    struct pw_buffer  *pw_buf;
+    struct pw_buffer *pw_buf;
     struct spa_buffer *spa_buf;
-    Uint8             *dst;
+    Uint8 *dst;
 
-    _THIS                    = (SDL_AudioDevice *)data;
+    _THIS = (SDL_AudioDevice *)data;
     struct pw_stream *stream = this->hidden->stream;
 
     /* Shutting down, don't do anything */
@@ -1008,17 +1008,17 @@ static void output_callback(void *data)
 
     spa_buf->datas[0].chunk->offset = 0;
     spa_buf->datas[0].chunk->stride = this->hidden->stride;
-    spa_buf->datas[0].chunk->size   = this->spec.size;
+    spa_buf->datas[0].chunk->size = this->spec.size;
 
     PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
 }
 
 static void input_callback(void *data)
 {
-    struct pw_buffer  *pw_buf;
+    struct pw_buffer *pw_buf;
     struct spa_buffer *spa_buf;
-    Uint8             *src;
-    _THIS                    = (SDL_AudioDevice *)data;
+    Uint8 *src;
+    _THIS = (SDL_AudioDevice *)data;
     struct pw_stream *stream = this->hidden->stream;
 
     /* Shutting down, don't do anything */
@@ -1040,7 +1040,7 @@ static void input_callback(void *data)
     if (!SDL_AtomicGet(&this->paused)) {
         /* Calculate the offset and data size */
         const Uint32 offset = SPA_MIN(spa_buf->datas[0].chunk->offset, spa_buf->datas[0].maxsize);
-        const Uint32 size   = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
+        const Uint32 size = SPA_MIN(spa_buf->datas[0].chunk->size, spa_buf->datas[0].maxsize - offset);
 
         src += offset;
 
@@ -1079,7 +1079,7 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
          */
         if (this->spec.size > buffer->buffer->datas[0].maxsize) {
             this->spec.samples = buffer->buffer->datas[0].maxsize / this->hidden->stride;
-            this->spec.size    = buffer->buffer->datas[0].maxsize;
+            this->spec.size = buffer->buffer->datas[0].maxsize;
         }
     } else if (this->hidden->buffer == NULL) {
         /*
@@ -1091,7 +1091,7 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
          * A packet size of 2 periods should be more than is ever needed.
          */
         this->hidden->input_buffer_packet_size = SPA_MAX(this->spec.size, buffer->buffer->datas[0].maxsize) * 2;
-        this->hidden->buffer                   = SDL_NewDataQueue(this->hidden->input_buffer_packet_size, this->hidden->input_buffer_packet_size);
+        this->hidden->buffer = SDL_NewDataQueue(this->hidden->input_buffer_packet_size, this->hidden->input_buffer_packet_size);
     }
 
     this->hidden->stream_init_status |= PW_READY_FLAG_BUFFER_ADDED;
@@ -1113,12 +1113,12 @@ static void stream_state_changed_callback(void *data, enum pw_stream_state old, 
 
 static const struct pw_stream_events stream_output_events = { PW_VERSION_STREAM_EVENTS,
                                                               .state_changed = stream_state_changed_callback,
-                                                              .add_buffer    = stream_add_buffer_callback,
-                                                              .process       = output_callback };
-static const struct pw_stream_events stream_input_events  = { PW_VERSION_STREAM_EVENTS,
-                                                              .state_changed = stream_state_changed_callback,
-                                                              .add_buffer    = stream_add_buffer_callback,
-                                                              .process       = input_callback };
+                                                              .add_buffer = stream_add_buffer_callback,
+                                                              .process = output_callback };
+static const struct pw_stream_events stream_input_events = { PW_VERSION_STREAM_EVENTS,
+                                                             .state_changed = stream_state_changed_callback,
+                                                             .add_buffer = stream_add_buffer_callback,
+                                                             .process = input_callback };
 
 static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
 {
@@ -1131,17 +1131,17 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
      */
     static const enum pw_stream_flags STREAM_FLAGS = PW_STREAM_FLAG_AUTOCONNECT | PW_STREAM_FLAG_MAP_BUFFERS;
 
-    char                         thread_name[PW_THREAD_NAME_BUFFER_LENGTH];
-    Uint8                        pod_buffer[PW_POD_BUFFER_LENGTH];
-    struct spa_pod_builder       b        = SPA_POD_BUILDER_INIT(pod_buffer, sizeof(pod_buffer));
-    struct spa_audio_info_raw    spa_info = { 0 };
-    const struct spa_pod        *params   = NULL;
+    char thread_name[PW_THREAD_NAME_BUFFER_LENGTH];
+    Uint8 pod_buffer[PW_POD_BUFFER_LENGTH];
+    struct spa_pod_builder b = SPA_POD_BUILDER_INIT(pod_buffer, sizeof(pod_buffer));
+    struct spa_audio_info_raw spa_info = { 0 };
+    const struct spa_pod *params = NULL;
     struct SDL_PrivateAudioData *priv;
-    struct pw_properties        *props;
-    const char                  *app_name, *stream_name, *stream_role, *error;
-    Uint32                       node_id   = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
-    SDL_bool                     iscapture = this->iscapture;
-    int                          res;
+    struct pw_properties *props;
+    const char *app_name, *stream_name, *stream_role, *error;
+    Uint32 node_id = this->handle == NULL ? PW_ID_ANY : PW_HANDLE_TO_ID(this->handle);
+    SDL_bool iscapture = this->iscapture;
+    int res;
 
     /* Clamp the period size to sane values */
     const int min_period = PW_MIN_SAMPLES * SPA_MAX(this->spec.freq / PW_BASE_CLOCK_RATE, 1);
@@ -1185,7 +1185,7 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
 
     if (this->spec.samples < min_period) {
         this->spec.samples = min_period;
-        this->spec.size    = this->spec.samples * priv->stride;
+        this->spec.size = this->spec.samples * priv->stride;
     }
 
     SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)this->handle);
@@ -1366,15 +1366,15 @@ static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
     }
 
     /* Set the function pointers */
-    impl->DetectDevices       = PIPEWIRE_DetectDevices;
-    impl->OpenDevice          = PIPEWIRE_OpenDevice;
-    impl->CloseDevice         = PIPEWIRE_CloseDevice;
-    impl->Deinitialize        = PIPEWIRE_Deinitialize;
+    impl->DetectDevices = PIPEWIRE_DetectDevices;
+    impl->OpenDevice = PIPEWIRE_OpenDevice;
+    impl->CloseDevice = PIPEWIRE_CloseDevice;
+    impl->Deinitialize = PIPEWIRE_Deinitialize;
     impl->GetDefaultAudioInfo = PIPEWIRE_GetDefaultAudioInfo;
 
-    impl->HasCaptureSupport         = SDL_TRUE;
+    impl->HasCaptureSupport = SDL_TRUE;
     impl->ProvidesOwnCallbackThread = SDL_TRUE;
-    impl->SupportsNonPow2Samples    = SDL_TRUE;
+    impl->SupportsNonPow2Samples = SDL_TRUE;
 
     return SDL_TRUE;
 }

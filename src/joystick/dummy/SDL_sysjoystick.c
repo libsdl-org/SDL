@@ -27,7 +27,6 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-
 static int DUMMY_JoystickInit(void)
 {
     return 0;
@@ -42,12 +41,12 @@ static void DUMMY_JoystickDetect(void)
 {
 }
 
-static const char * DUMMY_JoystickGetDeviceName(int device_index)
+static const char *DUMMY_JoystickGetDeviceName(int device_index)
 {
     return NULL;
 }
 
-static const char * DUMMY_JoystickGetDevicePath(int device_index)
+static const char *DUMMY_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }
@@ -125,8 +124,7 @@ static SDL_bool DUMMY_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     return SDL_FALSE;
 }
 
-SDL_JoystickDriver SDL_DUMMY_JoystickDriver =
-{
+SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {
     DUMMY_JoystickInit,
     DUMMY_JoystickGetCount,
     DUMMY_JoystickDetect,

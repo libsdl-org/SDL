@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfacePresentModesKHR) \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)
 
-#define VULKAN_DEVICE_FUNCTION(name) static PFN_##name name = NULL;
-#define VULKAN_GLOBAL_FUNCTION(name) static PFN_##name name = NULL;
+#define VULKAN_DEVICE_FUNCTION(name)   static PFN_##name name = NULL;
+#define VULKAN_GLOBAL_FUNCTION(name)   static PFN_##name name = NULL;
 #define VULKAN_INSTANCE_FUNCTION(name) static PFN_##name name = NULL;
 VULKAN_FUNCTIONS()
 #undef VULKAN_DEVICE_FUNCTION
@@ -100,16 +100,18 @@ enum
 };
 #endif
 #if VK_HEADER_VERSION < 38
-enum {
+enum
+{
     VK_ERROR_OUT_OF_POOL_MEMORY_KHR = -1000069000
 };
 #endif
 
 static const char *getVulkanResultString(VkResult result)
 {
-    switch((int) result)
-    {
-        #define RESULT_CASE(x) case x: return #x
+    switch ((int)result) {
+#define RESULT_CASE(x) \
+    case x:            \
+        return #x
         RESULT_CASE(VK_SUCCESS);
         RESULT_CASE(VK_NOT_READY);
         RESULT_CASE(VK_TIMEOUT);
@@ -136,8 +138,9 @@ static const char *getVulkanResultString(VkResult result)
         RESULT_CASE(VK_ERROR_VALIDATION_FAILED_EXT);
         RESULT_CASE(VK_ERROR_OUT_OF_POOL_MEMORY_KHR);
         RESULT_CASE(VK_ERROR_INVALID_SHADER_NV);
-        #undef RESULT_CASE
-        default: break;
+#undef RESULT_CASE
+    default:
+        break;
     }
     return (result < 0) ? "VK_ERROR_<Unknown>" : "VK_<Unknown>";
 }
@@ -173,8 +176,8 @@ typedef struct VulkanContext
 } VulkanContext;
 
 static SDLTest_CommonState *state;
-static VulkanContext *vulkanContexts = NULL;  // an array of state->num_windows items
-static VulkanContext *vulkanContext = NULL;  // for the currently-rendering window
+static VulkanContext *vulkanContexts = NULL; // an array of state->num_windows items
+static VulkanContext *vulkanContext = NULL; // for the currently-rendering window
 
 static void shutdownVulkan(SDL_bool doDestroySwapchain);
 
@@ -213,8 +216,8 @@ static void loadGlobalFunctions(void)
 
 static void createInstance(void)
 {
-    VkApplicationInfo appInfo = {0};
-    VkInstanceCreateInfo instanceCreateInfo = {0};
+    VkApplicationInfo appInfo = { 0 };
+    VkInstanceCreateInfo instanceCreateInfo = { 0 };
     const char **extensions = NULL;
     unsigned extensionCount = 0;
     VkResult result;
@@ -229,13 +232,13 @@ static void createInstance(void)
                      SDL_GetError());
         quit(2);
     }
-    extensions = (const char **) SDL_malloc(sizeof(const char *) * extensionCount);
+    extensions = (const char **)SDL_malloc(sizeof(const char *) * extensionCount);
     if (extensions == NULL) {
         SDL_OutOfMemory();
         quit(2);
     }
     if (!SDL_Vulkan_GetInstanceExtensions(NULL, &extensionCount, extensions)) {
-        SDL_free((void*)extensions);
+        SDL_free((void *)extensions);
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "SDL_Vulkan_GetInstanceExtensions(): %s\n",
                      SDL_GetError());
@@ -244,7 +247,7 @@ static void createInstance(void)
     instanceCreateInfo.enabledExtensionCount = extensionCount;
     instanceCreateInfo.ppEnabledExtensionNames = extensions;
     result = vkCreateInstance(&instanceCreateInfo, NULL, &vulkanContext->instance);
-    SDL_free((void*)extensions);
+    SDL_free((void *)extensions);
     if (result != VK_SUCCESS) {
         vulkanContext->instance = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -274,8 +277,8 @@ static void loadInstanceFunctions(void)
 static void createSurface(void)
 {
     if (!SDL_Vulkan_CreateSurface(vulkanContext->window,
-                                 vulkanContext->instance,
-                                 &vulkanContext->surface)) {
+                                  vulkanContext->instance,
+                                  &vulkanContext->surface)) {
         vulkanContext->surface = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Vulkan_CreateSurface(): %s\n", SDL_GetError());
         quit(2);
@@ -305,7 +308,7 @@ static void findPhysicalDevice(void)
                      "vkEnumeratePhysicalDevices(): no physical devices\n");
         quit(2);
     }
-    physicalDevices = (VkPhysicalDevice *) SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
+    physicalDevices = (VkPhysicalDevice *)SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
     if (physicalDevices == NULL) {
         SDL_OutOfMemory();
         quit(2);
@@ -339,7 +342,7 @@ static void findPhysicalDevice(void)
         if (queueFamiliesPropertiesAllocatedSize < queueFamiliesCount) {
             SDL_free(queueFamiliesProperties);
             queueFamiliesPropertiesAllocatedSize = queueFamiliesCount;
-            queueFamiliesProperties = (VkQueueFamilyProperties *) SDL_malloc(sizeof(VkQueueFamilyProperties) * queueFamiliesPropertiesAllocatedSize);
+            queueFamiliesProperties = (VkQueueFamilyProperties *)SDL_malloc(sizeof(VkQueueFamilyProperties) * queueFamiliesPropertiesAllocatedSize);
             if (queueFamiliesProperties == NULL) {
                 SDL_free(physicalDevices);
                 SDL_free(deviceExtensions);
@@ -379,10 +382,10 @@ static void findPhysicalDevice(void)
             }
         }
 
-        if (vulkanContext->graphicsQueueFamilyIndex == queueFamiliesCount) {  // no good queues found
+        if (vulkanContext->graphicsQueueFamilyIndex == queueFamiliesCount) { // no good queues found
             continue;
         }
-        if (vulkanContext->presentQueueFamilyIndex == queueFamiliesCount) {  // no good queues found
+        if (vulkanContext->presentQueueFamilyIndex == queueFamiliesCount) { // no good queues found
             continue;
         }
         result = vkEnumerateDeviceExtensionProperties(physicalDevice, NULL, &deviceExtensionCount, NULL);
@@ -442,9 +445,9 @@ static void findPhysicalDevice(void)
 
 static void createDevice(void)
 {
-    VkDeviceQueueCreateInfo deviceQueueCreateInfo[1] = { {0} };
-    static const float queuePriority[] = {1.0f};
-    VkDeviceCreateInfo deviceCreateInfo = {0};
+    VkDeviceQueueCreateInfo deviceQueueCreateInfo[1] = { { 0 } };
+    static const float queuePriority[] = { 1.0f };
+    VkDeviceCreateInfo deviceCreateInfo = { 0 };
     static const char *const deviceExtensionNames[] = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
@@ -508,7 +511,7 @@ static void createSemaphore(VkSemaphore *semaphore)
 {
     VkResult result;
 
-    VkSemaphoreCreateInfo createInfo = {0};
+    VkSemaphoreCreateInfo createInfo = { 0 };
     createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     result = vkCreateSemaphore(vulkanContext->device, &createInfo, NULL, semaphore);
     if (result != VK_SUCCESS) {
@@ -560,7 +563,7 @@ static void getSurfaceFormats(void)
     if (vulkanContext->surfaceFormatsCount > vulkanContext->surfaceFormatsAllocatedCount) {
         vulkanContext->surfaceFormatsAllocatedCount = vulkanContext->surfaceFormatsCount;
         SDL_free(vulkanContext->surfaceFormats);
-        vulkanContext->surfaceFormats = (VkSurfaceFormatKHR *) SDL_malloc(sizeof(VkSurfaceFormatKHR) * vulkanContext->surfaceFormatsAllocatedCount);
+        vulkanContext->surfaceFormats = (VkSurfaceFormatKHR *)SDL_malloc(sizeof(VkSurfaceFormatKHR) * vulkanContext->surfaceFormatsAllocatedCount);
         if (!vulkanContext->surfaceFormats) {
             vulkanContext->surfaceFormatsCount = 0;
             SDL_OutOfMemory();
@@ -618,19 +621,19 @@ static SDL_bool createSwapchain(void)
 {
     uint32_t i;
     int w, h;
-    VkSwapchainCreateInfoKHR createInfo = {0};
+    VkSwapchainCreateInfoKHR createInfo = { 0 };
     VkResult result;
 
     // pick an image count
     vulkanContext->swapchainDesiredImageCount = vulkanContext->surfaceCapabilities.minImageCount + 1;
-    if ( (vulkanContext->swapchainDesiredImageCount > vulkanContext->surfaceCapabilities.maxImageCount) &&
-         (vulkanContext->surfaceCapabilities.maxImageCount > 0) ) {
+    if ((vulkanContext->swapchainDesiredImageCount > vulkanContext->surfaceCapabilities.maxImageCount) &&
+        (vulkanContext->surfaceCapabilities.maxImageCount > 0)) {
         vulkanContext->swapchainDesiredImageCount = vulkanContext->surfaceCapabilities.maxImageCount;
     }
 
     // pick a format
-    if ( (vulkanContext->surfaceFormatsCount == 1) &&
-         (vulkanContext->surfaceFormats[0].format == VK_FORMAT_UNDEFINED) ) {
+    if ((vulkanContext->surfaceFormatsCount == 1) &&
+        (vulkanContext->surfaceFormats[0].format == VK_FORMAT_UNDEFINED)) {
         // aren't any preferred formats, so we pick
         vulkanContext->surfaceFormat.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
         vulkanContext->surfaceFormat.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -649,13 +652,13 @@ static SDL_bool createSwapchain(void)
 
     // Clamp the size to the allowable image extent.
     // SDL_Vulkan_GetDrawableSize()'s result it not always in this range (bug #3287)
-    vulkanContext->swapchainSize.width = SDL_clamp((uint32_t) w,
-                                                  vulkanContext->surfaceCapabilities.minImageExtent.width,
-                                                  vulkanContext->surfaceCapabilities.maxImageExtent.width);
+    vulkanContext->swapchainSize.width = SDL_clamp((uint32_t)w,
+                                                   vulkanContext->surfaceCapabilities.minImageExtent.width,
+                                                   vulkanContext->surfaceCapabilities.maxImageExtent.width);
 
-    vulkanContext->swapchainSize.height = SDL_clamp((uint32_t) h,
-                                                   vulkanContext->surfaceCapabilities.minImageExtent.height,
-                                                   vulkanContext->surfaceCapabilities.maxImageExtent.height);
+    vulkanContext->swapchainSize.height = SDL_clamp((uint32_t)h,
+                                                    vulkanContext->surfaceCapabilities.minImageExtent.height,
+                                                    vulkanContext->surfaceCapabilities.maxImageExtent.height);
 
     if (w == 0 || h == 0) {
         return SDL_FALSE;
@@ -728,7 +731,7 @@ static void destroyCommandPool(void)
 static void createCommandPool(void)
 {
     VkResult result;
-    VkCommandPoolCreateInfo createInfo = {0};
+    VkCommandPoolCreateInfo createInfo = { 0 };
     createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
     createInfo.queueFamilyIndex = vulkanContext->graphicsQueueFamilyIndex;
@@ -745,12 +748,12 @@ static void createCommandPool(void)
 static void createCommandBuffers(void)
 {
     VkResult result;
-    VkCommandBufferAllocateInfo allocateInfo = {0};
+    VkCommandBufferAllocateInfo allocateInfo = { 0 };
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocateInfo.commandPool = vulkanContext->commandPool;
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocateInfo.commandBufferCount = vulkanContext->swapchainImageCount;
-    vulkanContext->commandBuffers = (VkCommandBuffer *) SDL_malloc(sizeof(VkCommandBuffer) * vulkanContext->swapchainImageCount);
+    vulkanContext->commandBuffers = (VkCommandBuffer *)SDL_malloc(sizeof(VkCommandBuffer) * vulkanContext->swapchainImageCount);
     result = vkAllocateCommandBuffers(vulkanContext->device, &allocateInfo, vulkanContext->commandBuffers);
     if (result != VK_SUCCESS) {
         SDL_free(vulkanContext->commandBuffers);
@@ -773,7 +776,7 @@ static void createFences(void)
     }
     for (i = 0; i < vulkanContext->swapchainImageCount; i++) {
         VkResult result;
-        VkFenceCreateInfo createInfo = {0};
+        VkFenceCreateInfo createInfo = { 0 };
         createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         result = vkCreateFence(vulkanContext->device, &createInfo, NULL, &vulkanContext->fences[i]);
@@ -813,7 +816,7 @@ static void recordPipelineImageBarrier(VkCommandBuffer commandBuffer,
                                        VkImageLayout destLayout,
                                        VkImage image)
 {
-    VkImageMemoryBarrier barrier = {0};
+    VkImageMemoryBarrier barrier = { 0 };
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.srcAccessMask = sourceAccessMask;
     barrier.dstAccessMask = destAccessMask;
@@ -843,8 +846,8 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
 {
     VkCommandBuffer commandBuffer = vulkanContext->commandBuffers[frameIndex];
     VkImage image = vulkanContext->swapchainImages[frameIndex];
-    VkCommandBufferBeginInfo beginInfo = {0};
-    VkImageSubresourceRange clearRange = {0};
+    VkCommandBufferBeginInfo beginInfo = { 0 };
+    VkImageSubresourceRange clearRange = { 0 };
 
     VkResult result = vkResetCommandBuffer(commandBuffer, 0);
     if (result != VK_SUCCESS) {
@@ -920,7 +923,7 @@ static void initVulkan(void)
 
     SDL_Vulkan_LoadLibrary(NULL);
 
-    vulkanContexts = (VulkanContext *) SDL_calloc(state->num_windows, sizeof (VulkanContext));
+    vulkanContexts = (VulkanContext *)SDL_calloc(state->num_windows, sizeof(VulkanContext));
     if (vulkanContexts == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
@@ -988,10 +991,10 @@ static SDL_bool render(void)
     uint32_t frameIndex;
     VkResult result;
     double currentTime;
-    VkClearColorValue clearColor = { {0} };
+    VkClearColorValue clearColor = { { 0 } };
     VkPipelineStageFlags waitDestStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    VkSubmitInfo submitInfo = {0};
-    VkPresentInfoKHR presentInfo = {0};
+    VkSubmitInfo submitInfo = { 0 };
+    VkPresentInfoKHR presentInfo = { 0 };
     int w, h;
 
     if (!vulkanContext->swapchain) {
@@ -1002,11 +1005,11 @@ static SDL_bool render(void)
         return retval;
     }
     result = vkAcquireNextImageKHR(vulkanContext->device,
-                                            vulkanContext->swapchain,
-                                            UINT64_MAX,
-                                            vulkanContext->imageAvailableSemaphore,
-                                            VK_NULL_HANDLE,
-                                            &frameIndex);
+                                   vulkanContext->swapchain,
+                                   UINT64_MAX,
+                                   vulkanContext->imageAvailableSemaphore,
+                                   VK_NULL_HANDLE,
+                                   &frameIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         return createNewSwapchainAndSwapchainSpecificStuff();
     }

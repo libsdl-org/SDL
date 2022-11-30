@@ -31,7 +31,7 @@
 //#include "../../core/android/SDL_android.h"
 
 #ifndef LOOPER_ID_USER
-#define LOOPER_ID_USER  3
+#define LOOPER_ID_USER 3
 #endif
 
 typedef struct
@@ -40,8 +40,8 @@ typedef struct
     SDL_SensorID instance_id;
 } SDL_AndroidSensor;
 
-static ASensorManager* SDL_sensor_manager;
-static ALooper* SDL_sensor_looper;
+static ASensorManager *SDL_sensor_manager;
+static ALooper *SDL_sensor_looper;
 static SDL_AndroidSensor *SDL_sensors;
 static int SDL_sensors_count;
 
@@ -89,7 +89,7 @@ static void SDL_ANDROID_SensorDetect(void)
 {
 }
 
-static const char * SDL_ANDROID_SensorGetDeviceName(int device_index)
+static const char *SDL_ANDROID_SensorGetDeviceName(int device_index)
 {
     return ASensor_getName(SDL_sensors[device_index].asensor);
 }
@@ -151,14 +151,14 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
     sensor->hwdata = hwdata;
     return 0;
 }
-    
+
 static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
 {
     int events;
     ASensorEvent event;
-    struct android_poll_source* source;
+    struct android_poll_source *source;
 
-    if (ALooper_pollAll(0, NULL, &events, (void**)&source) == LOOPER_ID_USER) {
+    if (ALooper_pollAll(0, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
         SDL_zero(event);
         while (ASensorEventQueue_getEvents(sensor->hwdata->eventqueue, &event, 1) > 0) {
             SDL_PrivateSensorUpdate(sensor, 0, event.data, SDL_arraysize(event.data));
@@ -185,8 +185,7 @@ static void SDL_ANDROID_SensorQuit(void)
     }
 }
 
-SDL_SensorDriver SDL_ANDROID_SensorDriver =
-{
+SDL_SensorDriver SDL_ANDROID_SensorDriver = {
     SDL_ANDROID_SensorInit,
     SDL_ANDROID_SensorGetCount,
     SDL_ANDROID_SensorDetect,

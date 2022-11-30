@@ -77,7 +77,7 @@ static const SDLTest_TestCaseReference joystickTest1 = {
 };
 
 /* Sequence of Joystick routine test cases */
-static const SDLTest_TestCaseReference *joystickTests[] =  {
+static const SDLTest_TestCaseReference *joystickTests[] = {
     &joystickTest1,
     NULL
 };

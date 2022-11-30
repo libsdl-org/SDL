@@ -24,8 +24,7 @@ quit(int rc)
     exit(rc);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i, done;
     SDL_Event event;
@@ -44,7 +43,7 @@ main(int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         /* needed voodoo to allow app to launch via macOS Finder */
-        if (SDL_strncmp(argv[i], "-psn", 4)==0) {
+        if (SDL_strncmp(argv[i], "-psn", 4) == 0) {
             consumed = 1;
         }
         if (consumed == 0) {
@@ -75,13 +74,13 @@ main(int argc, char *argv[])
         /* Check for events */
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_DROPBEGIN) {
-                SDL_Log("Drop beginning on window %u", (unsigned int) event.drop.windowID);
+                SDL_Log("Drop beginning on window %u", (unsigned int)event.drop.windowID);
             } else if (event.type == SDL_DROPCOMPLETE) {
-                SDL_Log("Drop complete on window %u", (unsigned int) event.drop.windowID);
+                SDL_Log("Drop complete on window %u", (unsigned int)event.drop.windowID);
             } else if ((event.type == SDL_DROPFILE) || (event.type == SDL_DROPTEXT)) {
                 const char *typestr = (event.type == SDL_DROPFILE) ? "File" : "Text";
                 char *dropped_filedir = event.drop.file;
-                SDL_Log("%s dropped on window %u: %s", typestr, (unsigned int) event.drop.windowID, dropped_filedir);
+                SDL_Log("%s dropped on window %u: %s", typestr, (unsigned int)event.drop.windowID, dropped_filedir);
                 /* Normally you'd have to do this, but this is freed in SDLTest_CommonEvent() */
                 /*SDL_free(dropped_filedir);*/
             }

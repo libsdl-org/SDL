@@ -34,7 +34,7 @@
 #include "SDL_windowsvideo.h"
 
 #ifndef SS_EDITCONTROL
-#define SS_EDITCONTROL  0x2000
+#define SS_EDITCONTROL 0x2000
 #endif
 
 #ifndef IDOK
@@ -46,11 +46,11 @@
 #endif
 
 /* Custom dialog return codes */
-#define IDCLOSED 20
-#define IDINVALPTRINIT 50
-#define IDINVALPTRCOMMAND 51
+#define IDCLOSED           20
+#define IDINVALPTRINIT     50
+#define IDINVALPTRCOMMAND  51
 #define IDINVALPTRSETFOCUS 52
-#define IDINVALPTRDLGITEM 53
+#define IDINVALPTRDLGITEM  53
 /* First button ID */
 #define IDBUTTONINDEX0 100
 
@@ -63,7 +63,6 @@
  * everyone, no need to make the code more complex.
  */
 #define MAX_BUTTONS (0xffff - 100)
-
 
 /* Display a Windows message box */
 
@@ -90,9 +89,9 @@ enum _TASKDIALOG_FLAGS
     //#if (NTDDI_VERSION >= NTDDI_WIN8)
     TDF_NO_SET_FOREGROUND = 0x00010000, // Don't call SetForegroundWindow() when activating the dialog
                                         //#endif // (NTDDI_VERSION >= NTDDI_WIN8)
-                                        TDF_SIZE_TO_CONTENT = 0x01000000  // used by ShellMessageBox to emulate MessageBox sizing behavior
+    TDF_SIZE_TO_CONTENT = 0x01000000 // used by ShellMessageBox to emulate MessageBox sizing behavior
 };
-typedef int TASKDIALOG_FLAGS;                         // Note: _TASKDIALOG_FLAGS is an int
+typedef int TASKDIALOG_FLAGS; // Note: _TASKDIALOG_FLAGS is an int
 
 typedef enum _TASKDIALOG_MESSAGES
 {
@@ -110,22 +109,22 @@ typedef enum _TASKDIALOG_MESSAGES
     TDM_CLICK_VERIFICATION = WM_USER + 113, // wParam = 0 (unchecked), 1 (checked), lParam = 1 (set key focus)
     TDM_UPDATE_ELEMENT_TEXT = WM_USER + 114, // wParam = element (TASKDIALOG_ELEMENTS), lParam = new element text (LPCWSTR)
     TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE = WM_USER + 115, // wParam = Button ID, lParam = 0 (elevation not required), lParam != 0 (elevation required)
-    TDM_UPDATE_ICON = WM_USER + 116  // wParam = icon element (TASKDIALOG_ICON_ELEMENTS), lParam = new icon (hIcon if TDF_USE_HICON_* was set, PCWSTR otherwise)
+    TDM_UPDATE_ICON = WM_USER + 116 // wParam = icon element (TASKDIALOG_ICON_ELEMENTS), lParam = new icon (hIcon if TDF_USE_HICON_* was set, PCWSTR otherwise)
 } TASKDIALOG_MESSAGES;
 
 typedef enum _TASKDIALOG_NOTIFICATIONS
 {
     TDN_CREATED = 0,
     TDN_NAVIGATED = 1,
-    TDN_BUTTON_CLICKED = 2,            // wParam = Button ID
-    TDN_HYPERLINK_CLICKED = 3,            // lParam = (LPCWSTR)pszHREF
-    TDN_TIMER = 4,            // wParam = Milliseconds since dialog created or timer reset
+    TDN_BUTTON_CLICKED = 2, // wParam = Button ID
+    TDN_HYPERLINK_CLICKED = 3, // lParam = (LPCWSTR)pszHREF
+    TDN_TIMER = 4, // wParam = Milliseconds since dialog created or timer reset
     TDN_DESTROYED = 5,
-    TDN_RADIO_BUTTON_CLICKED = 6,            // wParam = Radio Button ID
+    TDN_RADIO_BUTTON_CLICKED = 6, // wParam = Radio Button ID
     TDN_DIALOG_CONSTRUCTED = 7,
-    TDN_VERIFICATION_CLICKED = 8,             // wParam = 1 if checkbox checked, 0 if not, lParam is unused and always 0
+    TDN_VERIFICATION_CLICKED = 8, // wParam = 1 if checkbox checked, 0 if not, lParam is unused and always 0
     TDN_HELP = 9,
-    TDN_EXPANDO_BUTTON_CLICKED = 10            // wParam = 0 (dialog is now collapsed), wParam != 0 (dialog is now expanded)
+    TDN_EXPANDO_BUTTON_CLICKED = 10 // wParam = 0 (dialog is now collapsed), wParam != 0 (dialog is now expanded)
 } TASKDIALOG_NOTIFICATIONS;
 
 typedef enum _TASKDIALOG_ELEMENTS
@@ -142,10 +141,10 @@ typedef enum _TASKDIALOG_ICON_ELEMENTS
     TDIE_ICON_FOOTER
 } TASKDIALOG_ICON_ELEMENTS;
 
-#define TD_WARNING_ICON         MAKEINTRESOURCEW(-1)
-#define TD_ERROR_ICON           MAKEINTRESOURCEW(-2)
-#define TD_INFORMATION_ICON     MAKEINTRESOURCEW(-3)
-#define TD_SHIELD_ICON          MAKEINTRESOURCEW(-4)
+#define TD_WARNING_ICON     MAKEINTRESOURCEW(-1)
+#define TD_ERROR_ICON       MAKEINTRESOURCEW(-2)
+#define TD_INFORMATION_ICON MAKEINTRESOURCEW(-3)
+#define TD_SHIELD_ICON      MAKEINTRESOURCEW(-4)
 
 enum _TASKDIALOG_COMMON_BUTTON_FLAGS
 {
@@ -154,52 +153,52 @@ enum _TASKDIALOG_COMMON_BUTTON_FLAGS
     TDCBF_NO_BUTTON = 0x0004, // selected control return value IDNO
     TDCBF_CANCEL_BUTTON = 0x0008, // selected control return value IDCANCEL
     TDCBF_RETRY_BUTTON = 0x0010, // selected control return value IDRETRY
-    TDCBF_CLOSE_BUTTON = 0x0020  // selected control return value IDCLOSE
+    TDCBF_CLOSE_BUTTON = 0x0020 // selected control return value IDCLOSE
 };
-typedef int TASKDIALOG_COMMON_BUTTON_FLAGS;           // Note: _TASKDIALOG_COMMON_BUTTON_FLAGS is an int
+typedef int TASKDIALOG_COMMON_BUTTON_FLAGS; // Note: _TASKDIALOG_COMMON_BUTTON_FLAGS is an int
 
 #pragma pack(push, 1)
 
 typedef struct _TASKDIALOG_BUTTON
 {
-    int     nButtonID;
-    PCWSTR  pszButtonText;
+    int nButtonID;
+    PCWSTR pszButtonText;
 } TASKDIALOG_BUTTON;
 
 typedef struct _TASKDIALOGCONFIG
 {
-    UINT        cbSize;
-    HWND        hwndParent;                             // incorrectly named, this is the owner window, not a parent.
-    HINSTANCE   hInstance;                              // used for MAKEINTRESOURCE() strings
-    TASKDIALOG_FLAGS                dwFlags;            // TASKDIALOG_FLAGS (TDF_XXX) flags
-    TASKDIALOG_COMMON_BUTTON_FLAGS  dwCommonButtons;    // TASKDIALOG_COMMON_BUTTON (TDCBF_XXX) flags
-    PCWSTR      pszWindowTitle;                         // string or MAKEINTRESOURCE()
+    UINT cbSize;
+    HWND hwndParent; // incorrectly named, this is the owner window, not a parent.
+    HINSTANCE hInstance; // used for MAKEINTRESOURCE() strings
+    TASKDIALOG_FLAGS dwFlags; // TASKDIALOG_FLAGS (TDF_XXX) flags
+    TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons; // TASKDIALOG_COMMON_BUTTON (TDCBF_XXX) flags
+    PCWSTR pszWindowTitle; // string or MAKEINTRESOURCE()
     union
     {
-        HICON   hMainIcon;
-        PCWSTR  pszMainIcon;
+        HICON hMainIcon;
+        PCWSTR pszMainIcon;
     } /*DUMMYUNIONNAME*/;
-    PCWSTR      pszMainInstruction;
-    PCWSTR      pszContent;
-    UINT        cButtons;
-    const TASKDIALOG_BUTTON  *pButtons;
-    int         nDefaultButton;
-    UINT        cRadioButtons;
-    const TASKDIALOG_BUTTON  *pRadioButtons;
-    int         nDefaultRadioButton;
-    PCWSTR      pszVerificationText;
-    PCWSTR      pszExpandedInformation;
-    PCWSTR      pszExpandedControlText;
-    PCWSTR      pszCollapsedControlText;
+    PCWSTR pszMainInstruction;
+    PCWSTR pszContent;
+    UINT cButtons;
+    const TASKDIALOG_BUTTON *pButtons;
+    int nDefaultButton;
+    UINT cRadioButtons;
+    const TASKDIALOG_BUTTON *pRadioButtons;
+    int nDefaultRadioButton;
+    PCWSTR pszVerificationText;
+    PCWSTR pszExpandedInformation;
+    PCWSTR pszExpandedControlText;
+    PCWSTR pszCollapsedControlText;
     union
     {
-        HICON   hFooterIcon;
-        PCWSTR  pszFooterIcon;
+        HICON hFooterIcon;
+        PCWSTR pszFooterIcon;
     } /*DUMMYUNIONNAME2*/;
-    PCWSTR      pszFooter;
+    PCWSTR pszFooter;
     PFTASKDIALOGCALLBACK pfCallback;
-    LONG_PTR    lpCallbackData;
-    UINT        cxWidth;                                // width of the Task Dialog's client area in DLU's. If 0, Task Dialog will calculate the ideal width.
+    LONG_PTR lpCallbackData;
+    UINT cxWidth; // width of the Task Dialog's client area in DLU's. If 0, Task Dialog will calculate the ideal width.
 } TASKDIALOGCONFIG;
 
 typedef struct
@@ -232,7 +231,7 @@ typedef struct
 
 typedef struct
 {
-    DLGTEMPLATEEX* lpDialog;
+    DLGTEMPLATEEX *lpDialog;
     Uint8 *data;
     size_t size;
     size_t used;
@@ -254,7 +253,7 @@ static INT_PTR CALLBACK MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wP
     const SDL_MessageBoxData *messageboxdata;
     size_t buttonindex;
 
-    switch ( iMessage ) {
+    switch (iMessage) {
     case WM_INITDIALOG:
         if (lParam == 0) {
             EndDialog(hDlg, IDINVALPTRINIT);
@@ -351,7 +350,7 @@ static SDL_bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
         }
         dialog->data = data;
         dialog->size = size;
-        dialog->lpDialog = (DLGTEMPLATEEX*)dialog->data;
+        dialog->lpDialog = (DLGTEMPLATEEX *)dialog->data;
     }
     return SDL_TRUE;
 }
@@ -375,7 +374,7 @@ static SDL_bool AddDialogData(WIN_DialogData *dialog, const void *data, size_t s
         return SDL_FALSE;
     }
 
-    SDL_memcpy(dialog->data+dialog->used, data, size);
+    SDL_memcpy(dialog->data + dialog->used, data, size);
     dialog->used += size;
 
     return SDL_TRUE;
@@ -404,7 +403,7 @@ static SDL_bool AddDialogString(WIN_DialogData *dialog, const char *string)
     }
     ++count;
 
-    status = AddDialogData(dialog, wstring, count*sizeof(WCHAR));
+    status = AddDialogData(dialog, wstring, count * sizeof(WCHAR));
     SDL_free(wstring);
     return status;
 }
@@ -418,7 +417,6 @@ static void Vec2ToDLU(short *x, short *y)
     *x = MulDiv(*x, 4, s_BaseUnitsX);
     *y = MulDiv(*y, 8, s_BaseUnitsY);
 }
-
 
 static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style, DWORD exStyle, int x, int y, int w, int h, int id, const char *caption, WORD ordinal)
 {
@@ -681,7 +679,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     HFONT DialogFont;
     SIZE Size;
     RECT TextSize;
-    wchar_t* wmessage;
+    wchar_t *wmessage;
     TEXTMETRIC TM;
     HDC FontDC;
     INT_PTR result;
@@ -823,7 +821,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
         return -1;
     }
 
-    if (icon && ! AddDialogStaticIcon(dialog, IconMargin, IconMargin, IconWidth, IconHeight, icon)) {
+    if (icon && !AddDialogStaticIcon(dialog, IconMargin, IconMargin, IconWidth, IconHeight, icon)) {
         FreeDialogData(dialog);
         return -1;
     }
@@ -873,10 +871,10 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     /* If we have a parent window, get the Instance and HWND for them
      * so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = ((SDL_WindowData*)messageboxdata->window->driverdata)->hwnd;
+        ParentWindow = ((SDL_WindowData *)messageboxdata->window->driverdata)->hwnd;
     }
 
-    result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
+    result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE *)dialog->lpDialog, ParentWindow, MessageBoxDialogProc, (LPARAM)messageboxdata);
     if (result >= IDBUTTONINDEX0 && result - IDBUTTONINDEX0 < messageboxdata->numbuttons) {
         *buttonid = messageboxdata->buttons[result - IDBUTTONINDEX0].buttonid;
         retval = 0;
@@ -911,8 +909,7 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
 typedef HRESULT (FAR WINAPI *TASKDIALOGINDIRECTPROC)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
 /* *INDENT-ON* */ /* clang-format on */
 
-int
-WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     HWND ParentWindow = NULL;
     wchar_t *wmessage;
@@ -946,7 +943,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
        If you don't want to bother with manifests, put this #pragma in your app's source code somewhere:
        pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
      */
-    pfnTaskDialogIndirect = (TASKDIALOGINDIRECTPROC) GetProcAddress(hComctl32, "TaskDialogIndirect");
+    pfnTaskDialogIndirect = (TASKDIALOGINDIRECTPROC)GetProcAddress(hComctl32, "TaskDialogIndirect");
     if (pfnTaskDialogIndirect == NULL) {
         FreeLibrary(hComctl32);
         return WIN_ShowOldMessageBox(messageboxdata, buttonid);
@@ -955,14 +952,14 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     /* If we have a parent window, get the Instance and HWND for them
        so that our little dialog gets exclusive focus at all times. */
     if (messageboxdata->window) {
-        ParentWindow = ((SDL_WindowData *) messageboxdata->window->driverdata)->hwnd;
+        ParentWindow = ((SDL_WindowData *)messageboxdata->window->driverdata)->hwnd;
     }
 
     wmessage = WIN_UTF8ToStringW(messageboxdata->message);
     wtitle = WIN_UTF8ToStringW(messageboxdata->title);
 
     SDL_zero(TaskConfig);
-    TaskConfig.cbSize = sizeof (TASKDIALOGCONFIG);
+    TaskConfig.cbSize = sizeof(TASKDIALOGCONFIG);
     TaskConfig.hwndParent = ParentWindow;
     TaskConfig.dwFlags = TDF_SIZE_TO_CONTENT;
     TaskConfig.pszWindowTitle = wtitle;
@@ -978,7 +975,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     TaskConfig.pszContent = wmessage;
     TaskConfig.cButtons = messageboxdata->numbuttons;
-    pButtons = SDL_malloc(sizeof (TASKDIALOG_BUTTON) * messageboxdata->numbuttons);
+    pButtons = SDL_malloc(sizeof(TASKDIALOG_BUTTON) * messageboxdata->numbuttons);
     TaskConfig.nDefaultButton = 0;
     nCancelButton = 0;
     for (i = 0; i < messageboxdata->numbuttons; i++) {
@@ -1002,7 +999,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
             SDL_free(wmessage);
             SDL_free(wtitle);
             for (j = 0; j < i; j++) {
-                SDL_free((wchar_t *) pButtons[j].pszButtonText);
+                SDL_free((wchar_t *)pButtons[j].pszButtonText);
             }
             SDL_free(pButtons);
             return -1;
@@ -1023,7 +1020,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_free(wmessage);
     SDL_free(wtitle);
     for (i = 0; i < messageboxdata->numbuttons; i++) {
-        SDL_free((wchar_t *) pButtons[i].pszButtonText);
+        SDL_free((wchar_t *)pButtons[i].pszButtonText);
     }
     SDL_free(pButtons);
 

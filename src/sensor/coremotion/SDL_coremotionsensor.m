@@ -85,7 +85,7 @@ static void SDL_COREMOTION_SensorDetect(void)
 {
 }
 
-static const char * SDL_COREMOTION_SensorGetDeviceName(int device_index)
+static const char *SDL_COREMOTION_SensorGetDeviceName(int device_index)
 {
     switch (SDL_sensors[device_index].type) {
     case SDL_SENSOR_ACCEL:
@@ -122,8 +122,7 @@ static int SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
     }
     sensor->hwdata = hwdata;
 
-    switch (sensor->type)
-    {
+    switch (sensor->type) {
     case SDL_SENSOR_ACCEL:
         [SDL_motion_manager startAccelerometerUpdates];
         break;
@@ -135,43 +134,40 @@ static int SDL_COREMOTION_SensorOpen(SDL_Sensor *sensor, int device_index)
     }
     return 0;
 }
-    
+
 static void SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
 {
-    switch (sensor->type)
-    {
+    switch (sensor->type) {
     case SDL_SENSOR_ACCEL:
-        {
-            CMAccelerometerData *accelerometerData = SDL_motion_manager.accelerometerData;
-            if (accelerometerData) {
-                CMAcceleration acceleration = accelerometerData.acceleration;
-                float data[3];
-                data[0] = -acceleration.x * SDL_STANDARD_GRAVITY;
-                data[1] = -acceleration.y * SDL_STANDARD_GRAVITY;
-                data[2] = -acceleration.z * SDL_STANDARD_GRAVITY;
-                if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                    SDL_PrivateSensorUpdate(sensor, 0, data, SDL_arraysize(data));
-                    SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
-                }
+    {
+        CMAccelerometerData *accelerometerData = SDL_motion_manager.accelerometerData;
+        if (accelerometerData) {
+            CMAcceleration acceleration = accelerometerData.acceleration;
+            float data[3];
+            data[0] = -acceleration.x * SDL_STANDARD_GRAVITY;
+            data[1] = -acceleration.y * SDL_STANDARD_GRAVITY;
+            data[2] = -acceleration.z * SDL_STANDARD_GRAVITY;
+            if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
+                SDL_PrivateSensorUpdate(sensor, 0, data, SDL_arraysize(data));
+                SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
             }
         }
-        break;
+    } break;
     case SDL_SENSOR_GYRO:
-        {
-            CMGyroData *gyroData = SDL_motion_manager.gyroData;
-            if (gyroData) {
-                CMRotationRate rotationRate = gyroData.rotationRate;
-                float data[3];
-                data[0] = rotationRate.x;
-                data[1] = rotationRate.y;
-                data[2] = rotationRate.z;
-                if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
-                    SDL_PrivateSensorUpdate(sensor, 0, data, SDL_arraysize(data));
-                    SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
-                }
+    {
+        CMGyroData *gyroData = SDL_motion_manager.gyroData;
+        if (gyroData) {
+            CMRotationRate rotationRate = gyroData.rotationRate;
+            float data[3];
+            data[0] = rotationRate.x;
+            data[1] = rotationRate.y;
+            data[2] = rotationRate.z;
+            if (SDL_memcmp(data, sensor->hwdata->data, sizeof(data)) != 0) {
+                SDL_PrivateSensorUpdate(sensor, 0, data, SDL_arraysize(data));
+                SDL_memcpy(sensor->hwdata->data, data, sizeof(data));
             }
         }
-        break;
+    } break;
     default:
         break;
     }
@@ -180,8 +176,7 @@ static void SDL_COREMOTION_SensorUpdate(SDL_Sensor *sensor)
 static void SDL_COREMOTION_SensorClose(SDL_Sensor *sensor)
 {
     if (sensor->hwdata) {
-        switch (sensor->type)
-        {
+        switch (sensor->type) {
         case SDL_SENSOR_ACCEL:
             [SDL_motion_manager stopAccelerometerUpdates];
             break;
@@ -200,8 +195,7 @@ static void SDL_COREMOTION_SensorQuit(void)
 {
 }
 
-SDL_SensorDriver SDL_COREMOTION_SensorDriver =
-{
+SDL_SensorDriver SDL_COREMOTION_SensorDriver = {
     SDL_COREMOTION_SensorInit,
     SDL_COREMOTION_SensorGetCount,
     SDL_COREMOTION_SensorDetect,

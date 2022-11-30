@@ -87,7 +87,7 @@ static void N3DS_SensorDetect(void)
 {
 }
 
-static const char * N3DS_SensorGetDeviceName(int device_index)
+static const char *N3DS_SensorGetDeviceName(int device_index)
 {
     if (IsDeviceIndexValid(device_index)) {
         switch (N3DS_sensors[device_index].type) {
@@ -113,7 +113,7 @@ static SDL_SensorType N3DS_SensorGetDeviceType(int device_index)
 
 static int N3DS_SensorGetDeviceNonPortableType(int device_index)
 {
-    return (int) N3DS_SensorGetDeviceType(device_index);
+    return (int)N3DS_SensorGetDeviceType(device_index);
 }
 
 static SDL_SensorID N3DS_SensorGetDeviceInstanceID(int device_index)
@@ -153,9 +153,9 @@ UpdateN3DSAccelerometer(SDL_Sensor *sensor)
     hidAccelRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(accelVector)) != 0) {
         SDL_memcpy(&previous_state, &current_state, sizeof(accelVector));
-        data[0] = (float) current_state.x * SDL_STANDARD_GRAVITY;
-        data[1] = (float) current_state.y * SDL_STANDARD_GRAVITY;
-        data[2] = (float) current_state.z * SDL_STANDARD_GRAVITY;
+        data[0] = (float)current_state.x * SDL_STANDARD_GRAVITY;
+        data[1] = (float)current_state.y * SDL_STANDARD_GRAVITY;
+        data[2] = (float)current_state.z * SDL_STANDARD_GRAVITY;
         SDL_PrivateSensorUpdate(sensor, 0, data, sizeof data);
     }
 }
@@ -170,9 +170,9 @@ UpdateN3DSGyroscope(SDL_Sensor *sensor)
     hidGyroRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(angularRate)) != 0) {
         SDL_memcpy(&previous_state, &current_state, sizeof(angularRate));
-        data[0] = (float) current_state.x;
-        data[1] = (float) current_state.y;
-        data[2] = (float) current_state.z;
+        data[0] = (float)current_state.x;
+        data[1] = (float)current_state.y;
+        data[2] = (float)current_state.z;
         SDL_PrivateSensorUpdate(sensor, 0, data, sizeof data);
     }
 }

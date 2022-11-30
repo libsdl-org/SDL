@@ -26,7 +26,6 @@
 
 #include "../../events/SDL_mouse_c.h"
 
-
 DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
 static SDL_Cursor *SDL_blank_cursor = NULL;
@@ -40,15 +39,15 @@ static int ToggleRawInput(SDL_bool enabled)
     if (enabled) {
         rawInputEnableCount++;
         if (rawInputEnableCount > 1) {
-            return 0;  /* already done. */
+            return 0; /* already done. */
         }
     } else {
         if (rawInputEnableCount == 0) {
-            return 0;  /* already done. */
+            return 0; /* already done. */
         }
         rawInputEnableCount--;
         if (rawInputEnableCount > 0) {
-            return 0;  /* not time to disable yet */
+            return 0; /* not time to disable yet */
         }
     }
 
@@ -71,8 +70,7 @@ static int ToggleRawInput(SDL_bool enabled)
     return 0;
 }
 
-
-static SDL_Cursor * WIN_CreateDefaultCursor()
+static SDL_Cursor *WIN_CreateDefaultCursor()
 {
     SDL_Cursor *cursor;
 
@@ -86,11 +84,11 @@ static SDL_Cursor * WIN_CreateDefaultCursor()
     return cursor;
 }
 
-static SDL_Cursor * WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     /* msdn says cursor mask has to be padded out to word alignment. Not sure
         if that means machine word or WORD, but this handles either case. */
-    const size_t pad = (sizeof (size_t) * 8);  /* 32 or 64, or whatever. */
+    const size_t pad = (sizeof(size_t) * 8); /* 32 or 64, or whatever. */
     SDL_Cursor *cursor;
     HICON hicon;
     HICON hcursor;
@@ -110,9 +108,9 @@ static SDL_Cursor * WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y
     bmh.bV4BitCount = 32;
     bmh.bV4V4Compression = BI_BITFIELDS;
     bmh.bV4AlphaMask = 0xFF000000;
-    bmh.bV4RedMask   = 0x00FF0000;
+    bmh.bV4RedMask = 0x00FF0000;
     bmh.bV4GreenMask = 0x0000FF00;
-    bmh.bV4BlueMask  = 0x000000FF;
+    bmh.bV4BlueMask = 0x000000FF;
 
     maskbitslen = ((surface->w + (pad - (surface->w % pad))) / 8) * surface->h;
     maskbits = SDL_small_alloc(Uint8, maskbitslen, &isstack);
@@ -129,7 +127,7 @@ static SDL_Cursor * WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y
     ii.fIcon = FALSE;
     ii.xHotspot = (DWORD)hot_x;
     ii.yHotspot = (DWORD)hot_y;
-    ii.hbmColor = CreateDIBSection(hdc, (BITMAPINFO*)&bmh, DIB_RGB_COLORS, &pixels, NULL, 0);
+    ii.hbmColor = CreateDIBSection(hdc, (BITMAPINFO *)&bmh, DIB_RGB_COLORS, &pixels, NULL, 0);
     ii.hbmMask = CreateBitmap(surface->w, surface->h, 1, 1, maskbits);
     ReleaseDC(NULL, hdc);
     SDL_small_free(maskbits, isstack);
@@ -169,7 +167,7 @@ static SDL_Cursor * WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y
     return cursor;
 }
 
-static SDL_Cursor * WIN_CreateBlankCursor()
+static SDL_Cursor *WIN_CreateBlankCursor()
 {
     SDL_Cursor *cursor = NULL;
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(32, 32, SDL_PIXELFORMAT_ARGB8888);
@@ -180,28 +178,51 @@ static SDL_Cursor * WIN_CreateBlankCursor()
     return cursor;
 }
 
-static SDL_Cursor * WIN_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
 {
     SDL_Cursor *cursor;
     LPCTSTR name;
 
-    switch(id)
-    {
+    switch (id) {
     default:
         SDL_assert(0);
         return NULL;
-    case SDL_SYSTEM_CURSOR_ARROW:     name = IDC_ARROW; break;
-    case SDL_SYSTEM_CURSOR_IBEAM:     name = IDC_IBEAM; break;
-    case SDL_SYSTEM_CURSOR_WAIT:      name = IDC_WAIT; break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR: name = IDC_CROSS; break;
-    case SDL_SYSTEM_CURSOR_WAITARROW: name = IDC_WAIT; break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:  name = IDC_SIZENWSE; break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:  name = IDC_SIZENESW; break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:    name = IDC_SIZEWE; break;
-    case SDL_SYSTEM_CURSOR_SIZENS:    name = IDC_SIZENS; break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:   name = IDC_SIZEALL; break;
-    case SDL_SYSTEM_CURSOR_NO:        name = IDC_NO; break;
-    case SDL_SYSTEM_CURSOR_HAND:      name = IDC_HAND; break;
+    case SDL_SYSTEM_CURSOR_ARROW:
+        name = IDC_ARROW;
+        break;
+    case SDL_SYSTEM_CURSOR_IBEAM:
+        name = IDC_IBEAM;
+        break;
+    case SDL_SYSTEM_CURSOR_WAIT:
+        name = IDC_WAIT;
+        break;
+    case SDL_SYSTEM_CURSOR_CROSSHAIR:
+        name = IDC_CROSS;
+        break;
+    case SDL_SYSTEM_CURSOR_WAITARROW:
+        name = IDC_WAIT;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENWSE:
+        name = IDC_SIZENWSE;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENESW:
+        name = IDC_SIZENESW;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEWE:
+        name = IDC_SIZEWE;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZENS:
+        name = IDC_SIZENS;
+        break;
+    case SDL_SYSTEM_CURSOR_SIZEALL:
+        name = IDC_SIZEALL;
+        break;
+    case SDL_SYSTEM_CURSOR_NO:
+        name = IDC_NO;
+        break;
+    case SDL_SYSTEM_CURSOR_HAND:
+        name = IDC_HAND;
+        break;
     }
 
     cursor = SDL_calloc(1, sizeof(*cursor));
@@ -218,7 +239,7 @@ static SDL_Cursor * WIN_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
-static void WIN_FreeCursor(SDL_Cursor * cursor)
+static void WIN_FreeCursor(SDL_Cursor *cursor)
 {
     HICON hicon = (HICON)cursor->driverdata;
 
@@ -226,7 +247,7 @@ static void WIN_FreeCursor(SDL_Cursor * cursor)
     SDL_free(cursor);
 }
 
-static int WIN_ShowCursor(SDL_Cursor * cursor)
+static int WIN_ShowCursor(SDL_Cursor *cursor)
 {
     if (cursor == NULL) {
         cursor = SDL_blank_cursor;
@@ -242,12 +263,11 @@ static int WIN_ShowCursor(SDL_Cursor * cursor)
     return 0;
 }
 
-void
-WIN_SetCursorPos(int x, int y)
+void WIN_SetCursorPos(int x, int y)
 {
     /* We need to jitter the value because otherwise Windows will occasionally inexplicably ignore the SetCursorPos() or SendInput() */
     SetCursorPos(x, y);
-    SetCursorPos(x+1, y);
+    SetCursorPos(x + 1, y);
     SetCursorPos(x, y);
 
     /* Flush any mouse motion prior to or associated with this warp */
@@ -257,7 +277,7 @@ WIN_SetCursorPos(int x, int y)
     }
 }
 
-static void WIN_WarpMouse(SDL_Window * window, int x, int y)
+static void WIN_WarpMouse(SDL_Window *window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
@@ -300,7 +320,7 @@ static int WIN_CaptureMouse(SDL_Window *window)
         SetCapture(data->hwnd);
     } else {
         SDL_Window *focus_window = SDL_GetMouseFocus();
-       
+
         if (focus_window) {
             SDL_WindowData *data = (SDL_WindowData *)focus_window->driverdata;
             if (!data->mouse_tracked) {
@@ -320,8 +340,8 @@ static Uint32 WIN_GetGlobalMouseState(int *x, int *y)
     SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
     GetCursorPos(&pt);
-    *x = (int) pt.x;
-    *y = (int) pt.y;
+    *x = (int)pt.x;
+    *y = (int)pt.y;
     WIN_ScreenPointToSDL(x, y);
 
     retval |= GetAsyncKeyState(!swapButtons ? VK_LBUTTON : VK_RBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
@@ -333,8 +353,7 @@ static Uint32 WIN_GetGlobalMouseState(int *x, int *y)
     return retval;
 }
 
-void
-WIN_InitMouse(_THIS)
+void WIN_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -355,10 +374,9 @@ WIN_InitMouse(_THIS)
     WIN_UpdateMouseSystemScale();
 }
 
-void
-WIN_QuitMouse(_THIS)
+void WIN_QuitMouse(_THIS)
 {
-    if (rawInputEnableCount) {  /* force RAWINPUT off here. */
+    if (rawInputEnableCount) { /* force RAWINPUT off here. */
         rawInputEnableCount = 1;
         ToggleRawInput(SDL_FALSE);
     }
@@ -378,7 +396,7 @@ static SDL_bool LoadFiveFixedPointFloats(BYTE *bytes, float *values)
     int i;
 
     for (i = 0; i < 5; ++i) {
-        float fraction = (float)((Uint16) bytes[1] << 8 | bytes[0]) / 65535.0f;
+        float fraction = (float)((Uint16)bytes[1] << 8 | bytes[0]) / 65535.0f;
         float value = (float)(((Uint16)bytes[3] << 8) | bytes[2]) + fraction;
         *values++ = value;
         bytes += 8;
@@ -388,7 +406,7 @@ static SDL_bool LoadFiveFixedPointFloats(BYTE *bytes, float *values)
 
 static void WIN_SetEnhancedMouseScale(int mouse_speed)
 {
-    float scale = (float) mouse_speed / 10.0f;
+    float scale = (float)mouse_speed / 10.0f;
     HKEY hKey;
     DWORD dwType = REG_BINARY;
     BYTE value[40];
@@ -400,7 +418,7 @@ static void WIN_SetEnhancedMouseScale(int mouse_speed)
     const int dpi = 96; // FIXME, how do we handle different monitors with different DPI?
     const float display_factor = 3.5f * (150.0f / dpi);
 
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Mouse", 0, KEY_READ, &hKey)  == ERROR_SUCCESS) {
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Mouse", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
         if (RegQueryValueExW(hKey, L"SmoothMouseXCurve", 0, &dwType, value, &length) == ERROR_SUCCESS &&
             LoadFiveFixedPointFloats(value, xpoints) &&
             RegQueryValueExW(hKey, L"SmoothMouseYCurve", 0, &dwType, value, &length) == ERROR_SUCCESS &&
@@ -414,7 +432,7 @@ static void WIN_SetEnhancedMouseScale(int mouse_speed)
                 }
                 scale_points[i * 2] = xpoints[i];
                 scale_points[i * 2 + 1] = gain / display_factor;
-                //SDL_Log("Point %d = %f,%f\n", i, scale_points[i * 2], scale_points[i * 2 + 1]);
+                // SDL_Log("Point %d = %f,%f\n", i, scale_points[i * 2], scale_points[i * 2 + 1]);
             }
             SDL_SetMouseSystemScale(SDL_arraysize(scale_points), scale_points);
         }
@@ -453,8 +471,7 @@ static void WIN_SetLinearMouseScale(int mouse_speed)
     }
 }
 
-void
-WIN_UpdateMouseSystemScale()
+void WIN_UpdateMouseSystemScale()
 {
     int mouse_speed;
     int params[3] = { 0, 0, 0 };

@@ -50,7 +50,7 @@
 #define SIO_DEVANY "default"
 #endif
 
-static struct sio_hdl * (*SNDIO_sio_open)(const char *, unsigned int, int);
+static struct sio_hdl *(*SNDIO_sio_open)(const char *, unsigned int, int);
 static void (*SNDIO_sio_close)(struct sio_hdl *);
 static int (*SNDIO_sio_setpar)(struct sio_hdl *, struct sio_par *);
 static int (*SNDIO_sio_getpar)(struct sio_hdl *, struct sio_par *);
@@ -80,8 +80,9 @@ static int load_sndio_sym(const char *fn, void **addr)
 }
 
 /* cast funcs to char* first, to please GCC's strict aliasing rules. */
-#define SDL_SNDIO_SYM(x) \
-    if (!load_sndio_sym(#x, (void **) (char *) &SNDIO_##x)) return -1
+#define SDL_SNDIO_SYM(x)                                  \
+    if (!load_sndio_sym(#x, (void **)(char *)&SNDIO_##x)) \
+    return -1
 #else
 #define SDL_SNDIO_SYM(x) SNDIO_##x = x
 #endif
@@ -148,9 +149,6 @@ static int LoadSNDIOLibrary(void)
 
 #endif /* SDL_AUDIO_DRIVER_SNDIO_DYNAMIC */
 
-
-
-
 static void SNDIO_WaitDevice(_THIS)
 {
     /* no-op; SNDIO_sio_write() blocks if necessary. */
@@ -163,7 +161,7 @@ static void SNDIO_PlayDevice(_THIS)
                                         this->hidden->mixlen);
 
     /* If we couldn't write, assume fatal error for now */
-    if ( written == 0 ) {
+    if (written == 0) {
         SDL_OpenedAudioDeviceDisconnected(this);
     }
 #ifdef DEBUG_AUDIO
@@ -180,8 +178,7 @@ static int SNDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     /* Emulate a blocking read */
     r = SNDIO_sio_read(this->hidden->dev, buffer, buflen);
     while (r == 0 && !SNDIO_sio_eof(this->hidden->dev)) {
-        if ((nfds = SNDIO_sio_pollfd(this->hidden->dev, this->hidden->pfd, POLLIN)) <= 0
-            || poll(this->hidden->pfd, nfds, INFTIM) < 0) {
+        if ((nfds = SNDIO_sio_pollfd(this->hidden->dev, this->hidden->pfd, POLLIN)) <= 0 || poll(this->hidden->pfd, nfds, INFTIM) < 0) {
             return -1;
         }
         revents = SNDIO_sio_revents(this->hidden->dev, this->hidden->pfd);
@@ -192,7 +189,7 @@ static int SNDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
             break;
         }
     }
-    return (int) r;
+    return (int)r;
 }
 
 static void SNDIO_FlushCapture(_THIS)
@@ -204,17 +201,17 @@ static void SNDIO_FlushCapture(_THIS)
     }
 }
 
-static Uint8 * SNDIO_GetDeviceBuf(_THIS)
+static Uint8 *SNDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbuf;
 }
 
 static void SNDIO_CloseDevice(_THIS)
 {
-    if ( this->hidden->pfd != NULL ) {
+    if (this->hidden->pfd != NULL) {
         SDL_free(this->hidden->pfd);
     }
-    if ( this->hidden->dev != NULL ) {
+    if (this->hidden->dev != NULL) {
         SNDIO_sio_stop(this->hidden->dev);
         SNDIO_sio_close(this->hidden->dev);
     }
@@ -239,14 +236,14 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
 
     /* Capture devices must be non-blocking for SNDIO_FlushCapture */
     if ((this->hidden->dev =
-        SNDIO_sio_open(devname != NULL ? devname : SIO_DEVANY,
-                       iscapture ? SIO_REC : SIO_PLAY, iscapture)) == NULL) {
+             SNDIO_sio_open(devname != NULL ? devname : SIO_DEVANY,
+                            iscapture ? SIO_REC : SIO_PLAY, iscapture)) == NULL) {
         return SDL_SetError("sio_open() failed");
     }
 
     /* Allocate the pollfd array for capture devices */
     if (iscapture && (this->hidden->pfd =
-        SDL_malloc(sizeof(struct pollfd) * SNDIO_sio_nfds(this->hidden->dev))) == NULL) {
+                          SDL_malloc(sizeof(struct pollfd) * SNDIO_sio_nfds(this->hidden->dev))) == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -312,7 +309,7 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
 
     /* Allocate mixing buffer */
     this->hidden->mixlen = this->spec.size;
-    this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
+    this->hidden->mixbuf = (Uint8 *)SDL_malloc(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }
@@ -333,11 +330,11 @@ static void SNDIO_Deinitialize(void)
 
 static void SNDIO_DetectDevices(void)
 {
-	SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, NULL, (void *) 0x1);
-	SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *) 0x2);
+    SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, NULL, (void *)0x1);
+    SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *)0x2);
 }
 
-static SDL_bool SNDIO_Init(SDL_AudioDriverImpl * impl)
+static SDL_bool SNDIO_Init(SDL_AudioDriverImpl *impl)
 {
     if (LoadSNDIOLibrary() < 0) {
         return SDL_FALSE;
@@ -357,7 +354,7 @@ static SDL_bool SNDIO_Init(SDL_AudioDriverImpl * impl)
     impl->AllowsArbitraryDeviceNames = SDL_TRUE;
     impl->HasCaptureSupport = SDL_TRUE;
 
-    return SDL_TRUE;   /* this audio target is available. */
+    return SDL_TRUE; /* this audio target is available. */
 }
 
 AudioBootStrap SNDIO_bootstrap = {

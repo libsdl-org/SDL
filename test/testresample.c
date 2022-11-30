@@ -12,8 +12,7 @@
 
 #include <SDL3/SDL.h>
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     SDL_AudioSpec spec;
     SDL_AudioCVT cvt;
@@ -57,7 +56,7 @@ main(int argc, char **argv)
     }
 
     cvt.len = len;
-    cvt.buf = (Uint8 *) SDL_malloc(len * cvt.len_mult);
+    cvt.buf = (Uint8 *)SDL_malloc(len * cvt.len_mult);
     if (cvt.buf == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory.\n");
         SDL_FreeWAV(data);
@@ -88,19 +87,19 @@ main(int argc, char **argv)
     blockalign = (bitsize / 8) * cvtchans;
     avgbytes = cvtfreq * blockalign;
 
-    SDL_WriteLE32(io, 0x46464952);      /* RIFF */
+    SDL_WriteLE32(io, 0x46464952); /* RIFF */
     SDL_WriteLE32(io, cvt.len_cvt + 36);
-    SDL_WriteLE32(io, 0x45564157);      /* WAVE */
-    SDL_WriteLE32(io, 0x20746D66);      /* fmt */
-    SDL_WriteLE32(io, 16);      /* chunk size */
-    SDL_WriteLE16(io, SDL_AUDIO_ISFLOAT(spec.format) ? 3 : 1);       /* uncompressed */
-    SDL_WriteLE16(io, cvtchans);   /* channels */
+    SDL_WriteLE32(io, 0x45564157); /* WAVE */
+    SDL_WriteLE32(io, 0x20746D66); /* fmt */
+    SDL_WriteLE32(io, 16); /* chunk size */
+    SDL_WriteLE16(io, SDL_AUDIO_ISFLOAT(spec.format) ? 3 : 1); /* uncompressed */
+    SDL_WriteLE16(io, cvtchans); /* channels */
     SDL_WriteLE32(io, cvtfreq); /* sample rate */
-    SDL_WriteLE32(io, avgbytes);        /* average bytes per second */
-    SDL_WriteLE16(io, blockalign);      /* block align */
+    SDL_WriteLE32(io, avgbytes); /* average bytes per second */
+    SDL_WriteLE16(io, blockalign); /* block align */
     SDL_WriteLE16(io, bitsize); /* significant bits per sample */
-    SDL_WriteLE32(io, 0x61746164);      /* data */
-    SDL_WriteLE32(io, cvt.len_cvt);     /* size */
+    SDL_WriteLE32(io, 0x61746164); /* data */
+    SDL_WriteLE32(io, cvt.len_cvt); /* size */
     SDL_RWwrite(io, cvt.buf, cvt.len_cvt, 1);
 
     if (SDL_RWclose(io) == -1) {
@@ -109,13 +108,13 @@ main(int argc, char **argv)
         SDL_FreeWAV(data);
         SDL_Quit();
         return 8;
-    }                           /* if */
+    } /* if */
 
     SDL_free(cvt.buf);
     SDL_FreeWAV(data);
     SDL_Quit();
     return 0;
-}                               /* main */
+} /* main */
 
 /* end of testresample.c ... */
 

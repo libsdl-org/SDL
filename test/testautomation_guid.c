@@ -11,30 +11,36 @@
 
 #define NUM_TEST_GUIDS 5
 
-static struct {
+static struct
+{
     char *str;
     Uint64 upper, lower;
 } test_guids[NUM_TEST_GUIDS] = {
-    { "0000000000000000"    "ffffffffffffffff",
-     0x0000000000000000,   0xfffffffffffffffflu },
-    { "0011223344556677"    "8091a2b3c4d5e6f0",
-     0x0011223344556677lu, 0x8091a2b3c4d5e6f0lu },
-    { "a011223344556677"    "8091a2b3c4d5e6f0",
-     0xa011223344556677lu, 0x8091a2b3c4d5e6f0lu },
-    { "a011223344556677"    "8091a2b3c4d5e6f1",
-     0xa011223344556677lu, 0x8091a2b3c4d5e6f1lu },
-    { "a011223344556677"    "8191a2b3c4d5e6f0",
-     0xa011223344556677lu, 0x8191a2b3c4d5e6f0lu },
+    { "0000000000000000"
+      "ffffffffffffffff",
+      0x0000000000000000, 0xfffffffffffffffflu },
+    { "0011223344556677"
+      "8091a2b3c4d5e6f0",
+      0x0011223344556677lu, 0x8091a2b3c4d5e6f0lu },
+    { "a011223344556677"
+      "8091a2b3c4d5e6f0",
+      0xa011223344556677lu, 0x8091a2b3c4d5e6f0lu },
+    { "a011223344556677"
+      "8091a2b3c4d5e6f1",
+      0xa011223344556677lu, 0x8091a2b3c4d5e6f1lu },
+    { "a011223344556677"
+      "8191a2b3c4d5e6f0",
+      0xa011223344556677lu, 0x8191a2b3c4d5e6f0lu },
 };
 
 static void
-upper_lower_to_bytestring(Uint8* out, Uint64 upper, Uint64 lower)
+upper_lower_to_bytestring(Uint8 *out, Uint64 upper, Uint64 lower)
 {
     Uint64 values[2];
     int i, k;
 
     values[0] = upper;
-    values [1] = lower;
+    values[1] = lower;
 
     for (i = 0; i < 2; ++i) {
         Uint64 v = values[i];
@@ -45,7 +51,6 @@ upper_lower_to_bytestring(Uint8* out, Uint64 upper, Uint64 lower)
         }
     }
 }
-
 
 /* Test case functions */
 
@@ -137,7 +142,7 @@ static const SDLTest_TestCaseReference guidTest2 = {
 };
 
 /* Sequence of GUID routine test cases */
-static const SDLTest_TestCaseReference *guidTests[] =  {
+static const SDLTest_TestCaseReference *guidTests[] = {
     &guidTest1,
     &guidTest2,
     NULL

@@ -27,7 +27,7 @@
 #include "../../audio/SDL_sysaudio.h"
 #include <objbase.h> /* For CLSIDFromString */
 
-static const ERole SDL_IMMDevice_role = eConsole;  /* !!! FIXME: should this be eMultimedia? Should be a hint? */
+static const ERole SDL_IMMDevice_role = eConsole; /* !!! FIXME: should this be eMultimedia? Should be a hint? */
 
 /* This is global to the WASAPI target, to handle hotplug and default device lookup. */
 static IMMDeviceEnumerator *enumerator = NULL;
@@ -105,7 +105,7 @@ static void SDL_IMMDevice_Remove(const SDL_bool iscapture, LPCWSTR devid, SDL_bo
             } else {
                 deviceid_list = next;
             }
-            SDL_RemoveAudioDevice(iscapture, useguid ? ((void *) i->guid) : ((void *) i->str));
+            SDL_RemoveAudioDevice(iscapture, useguid ? ((void *)i->guid) : ((void *)i->str));
             SDL_free(i->str);
             SDL_free(i);
         } else {
@@ -127,22 +127,22 @@ static void SDL_IMMDevice_Add(const SDL_bool iscapture, const char *devname, WAV
        phones and tablets, where you might have an internal speaker and a headphone jack and expect both to be
        available and switch automatically. (!!! FIXME...?) */
 
-       /* see if we already have this one. */
+    /* see if we already have this one. */
     for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
         if (SDL_wcscmp(devidlist->str, devid) == 0) {
-            return;  /* we already have this. */
+            return; /* we already have this. */
         }
     }
 
     devidlist = (DevIdList *)SDL_malloc(sizeof(*devidlist));
     if (devidlist == NULL) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     devidcopy = SDL_wcsdup(devid);
     if (!devidcopy) {
         SDL_free(devidlist);
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     if (useguid) {
@@ -208,7 +208,7 @@ static ULONG STDMETHODCALLTYPE SDLMMNotificationClient_Release(IMMNotificationCl
     SDLMMNotificationClient *this = (SDLMMNotificationClient *)ithis;
     const ULONG retval = SDL_AtomicDecRef(&this->refcount);
     if (retval == 0) {
-        SDL_AtomicSet(&this->refcount, 0);  /* uhh... */
+        SDL_AtomicSet(&this->refcount, 0); /* uhh... */
         return 0;
     }
     return retval - 1;
@@ -218,7 +218,7 @@ static ULONG STDMETHODCALLTYPE SDLMMNotificationClient_Release(IMMNotificationCl
 static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *ithis, EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId)
 {
     if (role != SDL_IMMDevice_role) {
-        return S_OK;  /* ignore it. */
+        return S_OK; /* ignore it. */
     }
 
     /* Increment the "generation," so opened devices will pick this up in their threads. */
@@ -270,7 +270,7 @@ static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceStateChanged(IM
             EDataFlow flow;
             if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
                 const SDL_bool iscapture = (flow == eCapture);
-                const SDLMMNotificationClient *client = (SDLMMNotificationClient*) ithis;
+                const SDLMMNotificationClient *client = (SDLMMNotificationClient *)ithis;
                 if (dwNewState == DEVICE_STATE_ACTIVE) {
                     char *utf8dev;
                     WAVEFORMATEXTENSIBLE fmt;
@@ -294,7 +294,7 @@ static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceStateChanged(IM
 
 static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnPropertyValueChanged(IMMNotificationClient *this, LPCWSTR pwstrDeviceId, const PROPERTYKEY key)
 {
-    return S_OK;  /* we don't care about these. */
+    return S_OK; /* we don't care about these. */
 }
 
 static const IMMNotificationClientVtbl notification_client_vtbl = {
@@ -310,8 +310,7 @@ static const IMMNotificationClientVtbl notification_client_vtbl = {
 
 static SDLMMNotificationClient notification_client = { &notification_client_vtbl, { 1 } };
 
-int
-SDL_IMMDevice_Init(void)
+int SDL_IMMDevice_Init(void)
 {
     HRESULT ret;
 
@@ -335,8 +334,7 @@ SDL_IMMDevice_Init(void)
     return 0;
 }
 
-void
-SDL_IMMDevice_Quit(void)
+void SDL_IMMDevice_Quit(void)
 {
     DevIdList *devidlist;
     DevIdList *next;
@@ -357,8 +355,7 @@ SDL_IMMDevice_Quit(void)
     deviceid_list = NULL;
 }
 
-int
-SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
+int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture)
 {
     HRESULT ret;
 
@@ -433,7 +430,7 @@ static void EnumerateEndpointsForFlow(const SDL_bool iscapture)
 
     items = (EndpointItem *)SDL_calloc(total, sizeof(EndpointItem));
     if (items == NULL) {
-        return;  /* oh well. */
+        return; /* oh well. */
     }
 
     for (i = 0; i < total; i++) {
@@ -464,20 +461,18 @@ static void EnumerateEndpointsForFlow(const SDL_bool iscapture)
     IMMDeviceCollection_Release(collection);
 }
 
-void
-SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid)
+void SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid)
 {
     notification_client.useguid = useguid;
 
-    EnumerateEndpointsForFlow(SDL_FALSE);  /* playback */
-    EnumerateEndpointsForFlow(SDL_TRUE);  /* capture */
+    EnumerateEndpointsForFlow(SDL_FALSE); /* playback */
+    EnumerateEndpointsForFlow(SDL_TRUE); /* capture */
 
     /* if this fails, we just won't get hotplug events. Carry on anyhow. */
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);
 }
 
-int
-SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     WAVEFORMATEXTENSIBLE fmt;
     IMMDevice *device = NULL;
@@ -506,7 +501,7 @@ SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscaptur
     SDL_zerop(spec);
     spec->channels = (Uint8)fmt.Format.nChannels;
     spec->freq = fmt.Format.nSamplesPerSec;
-    spec->format = WaveFormatToSDLFormat((WAVEFORMATEX *) &fmt);
+    spec->format = WaveFormatToSDLFormat((WAVEFORMATEX *)&fmt);
     return 0;
 }
 

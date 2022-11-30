@@ -82,10 +82,10 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
         }
 
         action = [UIAlertAction actionWithTitle:@(sdlButton->text)
-                                style:style
-                                handler:^(UIAlertAction *alertAction) {
-                                    clickedindex = (int)(sdlButton - messageboxdata->buttons);
-                                }];
+                                          style:style
+                                        handler:^(UIAlertAction *alertAction) {
+                                          clickedindex = (int)(sdlButton - messageboxdata->buttons);
+                                        }];
         [alert addAction:action];
 
         if (sdlButton->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
@@ -94,7 +94,7 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     }
 
     if (messageboxdata->window) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *) messageboxdata->window->driverdata;
+        SDL_WindowData *data = (__bridge SDL_WindowData *)messageboxdata->window->driverdata;
         window = data.uiwindow;
     }
 
@@ -122,28 +122,31 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
 }
 
 static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
-{ @autoreleasepool
 {
-    if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonid)) {
-        *returnValue = 0;
-    } else {
-        *returnValue = SDL_SetError("Could not show message box.");
+    @autoreleasepool {
+        if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonid)) {
+            *returnValue = 0;
+        } else {
+            *returnValue = SDL_SetError("Could not show message box.");
+        }
     }
-}}
+}
 
-int
-UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
-{ @autoreleasepool
+int UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-    __block int returnValue = 0;
+    @autoreleasepool {
+        __block int returnValue = 0;
 
-    if ([NSThread isMainThread]) {
-        UIKit_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), ^{ UIKit_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue); });
+        if ([NSThread isMainThread]) {
+            UIKit_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+              UIKit_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+            });
+        }
+        return returnValue;
     }
-    return returnValue;
-}}
+}
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
 

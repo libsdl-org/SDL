@@ -22,7 +22,6 @@
 
 #ifdef __LINUX__
 
-
 #if !SDL_THREADS_DISABLED
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -44,16 +43,16 @@
 #include <sched.h>
 
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
-#define RTKIT_DBUS_NODE "org.freedesktop.RealtimeKit1"
-#define RTKIT_DBUS_PATH "/org/freedesktop/RealtimeKit1"
+#define RTKIT_DBUS_NODE      "org.freedesktop.RealtimeKit1"
+#define RTKIT_DBUS_PATH      "/org/freedesktop/RealtimeKit1"
 #define RTKIT_DBUS_INTERFACE "org.freedesktop.RealtimeKit1"
 
 /* d-bus queries to the XDG portal interface to RealtimeKit1 */
-#define XDG_PORTAL_DBUS_NODE "org.freedesktop.portal.Desktop"
-#define XDG_PORTAL_DBUS_PATH "/org/freedesktop/portal/desktop"
+#define XDG_PORTAL_DBUS_NODE      "org.freedesktop.portal.Desktop"
+#define XDG_PORTAL_DBUS_PATH      "/org/freedesktop/portal/desktop"
 #define XDG_PORTAL_DBUS_INTERFACE "org.freedesktop.portal.Realtime"
 
-static SDL_bool    rtkit_use_session_conn;
+static SDL_bool rtkit_use_session_conn;
 static const char *rtkit_dbus_node;
 static const char *rtkit_dbus_path;
 static const char *rtkit_dbus_interface;
@@ -93,7 +92,7 @@ static void set_rtkit_interface()
     }
 }
 
-static DBusConnection* get_rtkit_dbus_connection()
+static DBusConnection *get_rtkit_dbus_connection()
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -155,7 +154,7 @@ static SDL_bool rtkit_initialize_realtime_thread()
     int err;
     struct rlimit rlimit;
     int nLimit = RLIMIT_RTTIME;
-    pid_t nPid = 0; //self
+    pid_t nPid = 0; // self
     int nSchedPolicy = sched_getscheduler(nPid) | SCHED_RESET_ON_FORK;
     struct sched_param schedParam;
 
@@ -250,8 +249,7 @@ static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 #endif /* threads */
 
 /* this is a public symbol, so it has to exist even if threads are disabled. */
-int
-SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
+int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 {
 #if SDL_THREADS_DISABLED
     return SDL_Unsupported();
@@ -283,8 +281,7 @@ SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 }
 
 /* this is a public symbol, so it has to exist even if threads are disabled. */
-int
-SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
 #if SDL_THREADS_DISABLED
     return SDL_Unsupported();
@@ -345,6 +342,6 @@ SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedP
 #endif
 }
 
-#endif  /* __LINUX__ */
+#endif /* __LINUX__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

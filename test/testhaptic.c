@@ -20,21 +20,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 static SDL_Haptic *haptic;
 
-
 /*
  * prototypes
  */
 static void abort_execution(void);
 static void HapticPrintSupported(SDL_Haptic *);
 
-
 /**
  * @brief The entry point of this force feedback demo.
  * @param[in] argc Number of arguments.
  * @param[in] argv Array of argc arguments.
  */
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int i;
     char *name;
@@ -53,9 +50,9 @@ main(int argc, char **argv)
         name = argv[1];
         if ((SDL_strcmp(name, "--help") == 0) || (SDL_strcmp(name, "-h") == 0)) {
             SDL_Log("USAGE: %s [device]\n"
-                   "If device is a two-digit number it'll use it as an index, otherwise\n"
-                   "it'll use it as if it were part of the device's name.\n",
-                   argv[0]);
+                    "If device is a two-digit number it'll use it as an index, otherwise\n"
+                    "it'll use it as if it were part of the device's name.\n",
+                    argv[0]);
             return 0;
         }
 
@@ -85,7 +82,7 @@ main(int argc, char **argv)
 
             if (i >= SDL_NumHaptics()) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n",
-                       name);
+                             name);
                 return 1;
             }
         }
@@ -93,7 +90,7 @@ main(int argc, char **argv)
         haptic = SDL_HapticOpen(i);
         if (haptic == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n",
-                   SDL_GetError());
+                         SDL_GetError());
             return 1;
         }
         SDL_Log("Device: %s\n", SDL_HapticName(i));
@@ -117,8 +114,8 @@ main(int argc, char **argv)
         SDL_Log("   effect %d: Sine Wave\n", nefx);
         efx[nefx].type = SDL_HAPTIC_SINE;
         efx[nefx].periodic.period = 1000;
-        efx[nefx].periodic.magnitude = -0x2000;    /* Negative magnitude and ...                      */
-        efx[nefx].periodic.phase = 18000;          /* ... 180 degrees phase shift => cancel eachother */
+        efx[nefx].periodic.magnitude = -0x2000; /* Negative magnitude and ...                      */
+        efx[nefx].periodic.phase = 18000; /* ... 180 degrees phase shift => cancel eachother */
         efx[nefx].periodic.length = 5000;
         efx[nefx].periodic.attack_length = 1000;
         efx[nefx].periodic.fade_length = 1000;
@@ -145,13 +142,13 @@ main(int argc, char **argv)
         }
         nefx++;
     }
-    
+
     /* Now the classical constant effect. */
     if (supported & SDL_HAPTIC_CONSTANT) {
         SDL_Log("   effect %d: Constant Force\n", nefx);
         efx[nefx].type = SDL_HAPTIC_CONSTANT;
         efx[nefx].constant.direction.type = SDL_HAPTIC_POLAR;
-        efx[nefx].constant.direction.dir[0] = 20000;    /* Force comes from the south-west. */
+        efx[nefx].constant.direction.dir[0] = 20000; /* Force comes from the south-west. */
         efx[nefx].constant.length = 5000;
         efx[nefx].constant.level = 0x6000;
         efx[nefx].constant.attack_length = 1000;
@@ -163,7 +160,7 @@ main(int argc, char **argv)
         }
         nefx++;
     }
-    
+
     /* The cute spring effect. */
     if (supported & SDL_HAPTIC_SPRING) {
         SDL_Log("   effect %d: Condition Spring\n", nefx);
@@ -174,7 +171,7 @@ main(int argc, char **argv)
             efx[nefx].condition.left_sat[i] = 0xFFFF;
             efx[nefx].condition.right_coeff[i] = 0x2000;
             efx[nefx].condition.left_coeff[i] = 0x2000;
-            efx[nefx].condition.center[i] = 0x1000;     /* Displace the center for it to move. */
+            efx[nefx].condition.center[i] = 0x1000; /* Displace the center for it to move. */
         }
         id[nefx] = SDL_HapticNewEffect(haptic, &efx[nefx]);
         if (id[nefx] < 0) {
@@ -211,7 +208,7 @@ main(int argc, char **argv)
             efx[nefx].condition.left_sat[i] = 0xFFFF;
             efx[nefx].condition.right_coeff[i] = 0x2000;
             efx[nefx].condition.left_coeff[i] = 0x2000;
-            efx[nefx].condition.deadband[i] = 0x1000;    /* 1/16th of axis-range around the center is 'dead'. */
+            efx[nefx].condition.deadband[i] = 0x1000; /* 1/16th of axis-range around the center is 'dead'. */
         }
         id[nefx] = SDL_HapticNewEffect(haptic, &efx[nefx]);
         if (id[nefx] < 0) {
@@ -238,14 +235,14 @@ main(int argc, char **argv)
         }
         nefx++;
     }
-    
+
     /* Now we'll try a ramp effect */
     if (supported & SDL_HAPTIC_RAMP) {
         SDL_Log("   effect %d: Ramp\n", nefx);
         efx[nefx].type = SDL_HAPTIC_RAMP;
         efx[nefx].ramp.direction.type = SDL_HAPTIC_CARTESIAN;
-        efx[nefx].ramp.direction.dir[0] = 1;     /* Force comes from                 */
-        efx[nefx].ramp.direction.dir[1] = -1;    /*                  the north-east. */
+        efx[nefx].ramp.direction.dir[0] = 1; /* Force comes from                 */
+        efx[nefx].ramp.direction.dir[1] = -1; /*                  the north-east. */
         efx[nefx].ramp.length = 5000;
         efx[nefx].ramp.start = 0x4000;
         efx[nefx].ramp.end = -0x4000;
@@ -274,13 +271,11 @@ main(int argc, char **argv)
         nefx++;
     }
 
-
-    SDL_Log
-        ("\nNow playing effects for 5 seconds each with 1 second delay between\n");
+    SDL_Log("\nNow playing effects for 5 seconds each with 1 second delay between\n");
     for (i = 0; i < nefx; i++) {
         SDL_Log("   Playing effect %d\n", i);
         SDL_HapticRunEffect(haptic, id[i], 1);
-        SDL_Delay(6000);        /* Effects only have length 5000 */
+        SDL_Delay(6000); /* Effects only have length 5000 */
     }
 
     /* Quit */
@@ -291,7 +286,6 @@ main(int argc, char **argv)
 
     return 0;
 }
-
 
 /*
  * Cleans up a bit.
@@ -307,18 +301,17 @@ abort_execution(void)
     exit(1);
 }
 
-
 /*
  * Displays information about the haptic device.
  */
 static void
-HapticPrintSupported(SDL_Haptic * ptr)
+HapticPrintSupported(SDL_Haptic *ptr)
 {
     unsigned int supported;
 
     supported = SDL_HapticQuery(ptr);
     SDL_Log("   Supported effects [%d effects, %d playing]:\n",
-           SDL_HapticNumEffects(ptr), SDL_HapticNumEffectsPlaying(ptr));
+            SDL_HapticNumEffects(ptr), SDL_HapticNumEffectsPlaying(ptr));
     if (supported & SDL_HAPTIC_CONSTANT) {
         SDL_Log("      constant\n");
     }

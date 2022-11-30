@@ -25,12 +25,11 @@
 /* This is the PSP implementation of the SDL joystick API */
 #include <pspctrl.h>
 
-#include <stdio.h>      /* For the definition of NULL */
+#include <stdio.h> /* For the definition of NULL */
 #include <stdlib.h>
 
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
-
 
 /* Current pad state */
 static SceCtrlData pad = { .Lx = 0, .Ly = 0, .Buttons = 0 };
@@ -38,38 +37,39 @@ static const enum PspCtrlButtons button_map[] = {
     PSP_CTRL_TRIANGLE, PSP_CTRL_CIRCLE, PSP_CTRL_CROSS, PSP_CTRL_SQUARE,
     PSP_CTRL_LTRIGGER, PSP_CTRL_RTRIGGER,
     PSP_CTRL_DOWN, PSP_CTRL_LEFT, PSP_CTRL_UP, PSP_CTRL_RIGHT,
-    PSP_CTRL_SELECT, PSP_CTRL_START, PSP_CTRL_HOME, PSP_CTRL_HOLD };
-static int analog_map[256];  /* Map analog inputs to -32768 -> 32767 */
+    PSP_CTRL_SELECT, PSP_CTRL_START, PSP_CTRL_HOME, PSP_CTRL_HOLD
+};
+static int analog_map[256]; /* Map analog inputs to -32768 -> 32767 */
 
 typedef struct
 {
-  int x;
-  int y;
+    int x;
+    int y;
 } point;
 
 /* 4 points define the bezier-curve. */
 static point a = { 0, 0 };
-static point b = { 50, 0  };
+static point b = { 50, 0 };
 static point c = { 78, 32767 };
 static point d = { 128, 32767 };
 
 /* simple linear interpolation between two points */
-static SDL_INLINE void lerp (point *dest, point *pt_a, point *pt_b, float t)
+static SDL_INLINE void lerp(point *dest, point *pt_a, point *pt_b, float t)
 {
-    dest->x = pt_a->x + (pt_b->x - pt_a->x)*t;
-    dest->y = pt_a->y + (pt_b->y - pt_a->y)*t;
+    dest->x = pt_a->x + (pt_b->x - pt_a->x) * t;
+    dest->y = pt_a->y + (pt_b->y - pt_a->y) * t;
 }
 
 /* evaluate a point on a bezier-curve. t goes from 0 to 1.0 */
 static int calc_bezier_y(float t)
 {
     point ab, bc, cd, abbc, bccd, dest;
-    lerp (&ab, &a, &b, t);           /* point between a and b */
-    lerp (&bc, &b, &c, t);           /* point between b and c */
-    lerp (&cd, &c, &d, t);           /* point between c and d */
-    lerp (&abbc, &ab, &bc, t);       /* point between ab and bc */
-    lerp (&bccd, &bc, &cd, t);       /* point between bc and cd */
-    lerp (&dest, &abbc, &bccd, t);   /* point on the bezier-curve */
+    lerp(&ab, &a, &b, t); /* point between a and b */
+    lerp(&bc, &b, &c, t); /* point between b and c */
+    lerp(&cd, &c, &d, t); /* point between c and d */
+    lerp(&abbc, &ab, &bc, t); /* point between ab and bc */
+    lerp(&bccd, &bc, &cd, t); /* point between bc and cd */
+    lerp(&dest, &abbc, &bccd, t); /* point on the bezier-curve */
     return dest.y;
 }
 
@@ -88,9 +88,9 @@ static int PSP_JoystickInit(void)
     /* Create an accurate map from analog inputs (0 to 255)
        to SDL joystick positions (-32768 to 32767) */
     for (i = 0; i < 128; i++) {
-        float t = (float)i/127.0f;
-        analog_map[i+128] = calc_bezier_y(t);
-        analog_map[127-i] = -1 * analog_map[i+128];
+        float t = (float)i / 127.0f;
+        analog_map[i + 128] = calc_bezier_y(t);
+        analog_map[127 - i] = -1 * analog_map[i + 128];
     }
 
     return 1;
@@ -225,8 +225,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
             if (changed & button_map[i]) {
                 SDL_PrivateJoystickButton(
                     joystick, i,
-                    (buttons & button_map[i]) ?
-                    SDL_PRESSED : SDL_RELEASED);
+                    (buttons & button_map[i]) ? SDL_PRESSED : SDL_RELEASED);
             }
         }
     }
@@ -247,8 +246,7 @@ static SDL_bool PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
     return SDL_FALSE;
 }
 
-SDL_JoystickDriver SDL_PSP_JoystickDriver =
-{
+SDL_JoystickDriver SDL_PSP_JoystickDriver = {
     PSP_JoystickInit,
     PSP_JoystickGetCount,
     PSP_JoystickDetect,

@@ -27,7 +27,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-
 #include <emscripten/emscripten.h>
 
 char *
@@ -54,7 +53,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     len = SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    retval = (char *) SDL_malloc(len);
+    retval = (char *)SDL_malloc(len);
     if (retval == NULL) {
         SDL_OutOfMemory();
         return NULL;
@@ -66,7 +65,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_snprintf(retval, len, "%s%s/", append, app);
     }
 
-    for (ptr = retval+1; *ptr; ptr++) {
+    for (ptr = retval + 1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
             if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
@@ -77,7 +76,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
-error:
+    error:
         SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));
         SDL_free(retval);
         return NULL;

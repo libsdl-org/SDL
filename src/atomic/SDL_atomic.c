@@ -20,13 +20,12 @@
 */
 #include "SDL_internal.h"
 
-
 #if defined(_MSC_VER) && (_MSC_VER >= 1500)
 #include <intrin.h>
 #define HAVE_MSC_ATOMICS 1
 #endif
 
-#if defined(__MACOS__)  /* !!! FIXME: should we favor gcc atomics? */
+#if defined(__MACOS__) /* !!! FIXME: should we favor gcc atomics? */
 #include <libkern/OSAtomic.h>
 #endif
 
@@ -36,17 +35,17 @@
 
 /* The __atomic_load_n() intrinsic showed up in different times for different compilers. */
 #if defined(__clang__)
-#  if __has_builtin(__atomic_load_n) || defined(HAVE_GCC_ATOMICS)
-     /* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
-        It might be in a later NDK or we might need an extra library? --ryan. */
-#    if !defined(__ANDROID__)
-#      define HAVE_ATOMIC_LOAD_N 1
-#    endif
-#  endif
+#if __has_builtin(__atomic_load_n) || defined(HAVE_GCC_ATOMICS)
+/* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
+   It might be in a later NDK or we might need an extra library? --ryan. */
+#if !defined(__ANDROID__)
+#define HAVE_ATOMIC_LOAD_N 1
+#endif
+#endif
 #elif defined(__GNUC__)
-#   if (__GNUC__ >= 5)
-#     define HAVE_ATOMIC_LOAD_N 1
-#   endif
+#if (__GNUC__ >= 5)
+#define HAVE_ATOMIC_LOAD_N 1
+#endif
 #endif
 
 /* *INDENT-OFF* */ /* clang-format off */
@@ -123,7 +122,6 @@ static SDL_INLINE void leaveLock(void *a)
 }
 #endif
 
-
 SDL_bool
 SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
 {
@@ -133,9 +131,9 @@ SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
 #elif defined(HAVE_WATCOM_ATOMICS)
     return (SDL_bool)_SDL_cmpxchg_watcom(&a->value, newval, oldval);
 #elif defined(HAVE_GCC_ATOMICS)
-    return (SDL_bool) __sync_bool_compare_and_swap(&a->value, oldval, newval);
+    return (SDL_bool)__sync_bool_compare_and_swap(&a->value, oldval, newval);
 #elif defined(__MACOS__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
-    return (SDL_bool) OSAtomicCompareAndSwap32Barrier(oldval, newval, &a->value);
+    return (SDL_bool)OSAtomicCompareAndSwap32Barrier(oldval, newval, &a->value);
 #elif defined(__SOLARIS__)
     return (SDL_bool)((int)atomic_cas_uint((volatile uint_t *)&a->value, (uint_t)oldval, (uint_t)newval) == oldval);
 #elif EMULATE_CAS
@@ -150,7 +148,7 @@ SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
 
     return retval;
 #else
-    #error Please define your platform.
+#error Please define your platform.
 #endif
 }
 
@@ -164,9 +162,9 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_bool_compare_and_swap(a, oldval, newval);
 #elif defined(__MACOS__) && defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
-    return (SDL_bool) OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t*) a);
+    return (SDL_bool)OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t *)a);
 #elif defined(__MACOS__) && !defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
-    return (SDL_bool) OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t*) a);
+    return (SDL_bool)OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t *)a);
 #elif defined(__SOLARIS__)
     return (SDL_bool)(atomic_cas_ptr(a, oldval, newval) == oldval);
 #elif EMULATE_CAS
@@ -181,12 +179,11 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
 
     return retval;
 #else
-    #error Please define your platform.
+#error Please define your platform.
 #endif
 }
 
-int
-SDL_AtomicSet(SDL_atomic_t *a, int v)
+int SDL_AtomicSet(SDL_atomic_t *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
@@ -206,7 +203,7 @@ SDL_AtomicSet(SDL_atomic_t *a, int v)
 #endif
 }
 
-void*
+void *
 SDL_AtomicSetPtr(void **a, void *v)
 {
 #if defined(HAVE_MSC_ATOMICS)
@@ -226,8 +223,7 @@ SDL_AtomicSetPtr(void **a, void *v)
 #endif
 }
 
-int
-SDL_AtomicAdd(SDL_atomic_t *a, int v)
+int SDL_AtomicAdd(SDL_atomic_t *a, int v)
 {
 #ifdef HAVE_MSC_ATOMICS
     SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
@@ -239,7 +235,7 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 #elif defined(__SOLARIS__)
     int pv = a->value;
     membar_consumer();
-    atomic_add_int((volatile uint_t*)&a->value, v);
+    atomic_add_int((volatile uint_t *)&a->value, v);
     return pv;
 #else
     int value;
@@ -250,8 +246,7 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 #endif
 }
 
-int
-SDL_AtomicGet(SDL_atomic_t *a)
+int SDL_AtomicGet(SDL_atomic_t *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
@@ -299,14 +294,12 @@ SDL_AtomicGetPtr(void **a)
 #error This file should be built in arm mode so the mcr instruction is available for memory barriers
 #endif
 
-void
-SDL_MemoryBarrierReleaseFunction(void)
+void SDL_MemoryBarrierReleaseFunction(void)
 {
     SDL_MemoryBarrierRelease();
 }
 
-void
-SDL_MemoryBarrierAcquireFunction(void)
+void SDL_MemoryBarrierAcquireFunction(void)
 {
     SDL_MemoryBarrierAcquire();
 }

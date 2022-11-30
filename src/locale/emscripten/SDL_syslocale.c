@@ -24,8 +24,7 @@
 #include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-void
-SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     EM_ASM({
         var buf = $0;
@@ -36,20 +35,20 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             list = navigator.languages;
         } else {
             var oneOfThese = navigator.userLanguage || navigator.language || navigator.browserLanguage || navigator.systemLanguage;
-            if (oneOfThese !== undefined) {
-                list = [ oneOfThese ];
+            if (oneOfThese != = undefined) {
+                list = [oneOfThese];
             }
         }
 
-        if (list === undefined) {
-            return;  /* we've got nothing. */
+        if (list == = undefined) {
+            return; /* we've got nothing. */
         }
 
-        var str = "";  /* Can't do list.join() because we need to fit in buflen. */
+        var str = ""; /* Can't do list.join() because we need to fit in buflen. */
         for (var i = 0; i < list.length; i++) {
             var item = list[i];
             if ((str.length + item.length + 1) > buflen) {
-                break;   /* don't add, we're out of space. */
+                break; /* don't add, we're out of space. */
             }
             if (str.length > 0) {
                 str += ",";
@@ -57,16 +56,16 @@ SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             str += item;
         }
 
-        str = str.replace(/-/g, "_");
+        str = str.replace(/ - / g, "_");
         if (buflen > str.length) {
-            buflen = str.length;  /* clamp to size of string. */
+            buflen = str.length; /* clamp to size of string. */
         }
 
         for (var i = 0; i < buflen; i++) {
-            setValue(buf + i, str.charCodeAt(i), "i8");  /* fill in C array. */
+            setValue(buf + i, str.charCodeAt(i), "i8"); /* fill in C array. */
         }
-    }, buf, buflen);
+    },
+           buf, buflen);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
-

@@ -26,7 +26,6 @@
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 
-
 #ifdef SDL_JOYSTICK_HIDAPI_STADIA
 
 /* Define this if you want to log all packets from the controller */
@@ -39,10 +38,10 @@ enum
     SDL_CONTROLLER_NUM_STADIA_BUTTONS,
 };
 
-typedef struct {
+typedef struct
+{
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverStadia_Context;
-
 
 static void HIDAPI_DriverStadia_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -148,7 +147,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 {
     Sint16 axis;
 
-	// The format is the same but the original FW will send 10 bytes and January '21 FW update will send 11
+    // The format is the same but the original FW will send 10 bytes and January '21 FW update will send 11
     if (size < 10 || data[0] != 0x03) {
         /* We don't know how to handle this report */
         return;
@@ -218,8 +217,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
 #define READ_STICK_AXIS(offset) \
-    (data[offset] == 0x80 ? 0 : \
-    (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x80), 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    (data[offset] == 0x80 ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x80), 0x01 - 0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         axis = READ_STICK_AXIS(4);
         SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
@@ -284,8 +282,7 @@ static void HIDAPI_DriverStadia_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia = {
     SDL_HINT_JOYSTICK_HIDAPI_STADIA,
     SDL_TRUE,
     HIDAPI_DriverStadia_RegisterHints,

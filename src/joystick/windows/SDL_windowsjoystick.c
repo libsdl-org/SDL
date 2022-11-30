@@ -45,9 +45,8 @@
 #include "SDL_xinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
 
-#include "../../haptic/windows/SDL_dinputhaptic_c.h"    /* For haptic hot plugging */
-#include "../../haptic/windows/SDL_xinputhaptic_c.h"    /* For haptic hot plugging */
-
+#include "../../haptic/windows/SDL_dinputhaptic_c.h" /* For haptic hot plugging */
+#include "../../haptic/windows/SDL_xinputhaptic_c.h" /* For haptic hot plugging */
 
 #ifndef DEVICE_NOTIFY_WINDOW_HANDLE
 #define DEVICE_NOTIFY_WINDOW_HANDLE 0x00000000
@@ -63,34 +62,42 @@ extern "C" {
 #endif
 
 DECLARE_HANDLE(HCMNOTIFICATION);
-typedef HCMNOTIFICATION* PHCMNOTIFICATION;
+typedef HCMNOTIFICATION *PHCMNOTIFICATION;
 
-typedef enum _CM_NOTIFY_FILTER_TYPE {
+typedef enum _CM_NOTIFY_FILTER_TYPE
+{
     CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE = 0,
     CM_NOTIFY_FILTER_TYPE_DEVICEHANDLE,
     CM_NOTIFY_FILTER_TYPE_DEVICEINSTANCE,
     CM_NOTIFY_FILTER_TYPE_MAX
-} CM_NOTIFY_FILTER_TYPE, * PCM_NOTIFY_FILTER_TYPE;
+} CM_NOTIFY_FILTER_TYPE,
+    *PCM_NOTIFY_FILTER_TYPE;
 
-typedef struct _CM_NOTIFY_FILTER {
+typedef struct _CM_NOTIFY_FILTER
+{
     DWORD cbSize;
     DWORD Flags;
     CM_NOTIFY_FILTER_TYPE FilterType;
     DWORD Reserved;
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             GUID ClassGuid;
         } DeviceInterface;
-        struct {
-            HANDLE  hTarget;
+        struct
+        {
+            HANDLE hTarget;
         } DeviceHandle;
-        struct {
+        struct
+        {
             WCHAR InstanceId[200];
         } DeviceInstance;
     } u;
-} CM_NOTIFY_FILTER, * PCM_NOTIFY_FILTER;
+} CM_NOTIFY_FILTER, *PCM_NOTIFY_FILTER;
 
-typedef enum _CM_NOTIFY_ACTION {
+typedef enum _CM_NOTIFY_ACTION
+{
     CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL = 0,
     CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL,
     CM_NOTIFY_ACTION_DEVICEQUERYREMOVE,
@@ -102,32 +109,38 @@ typedef enum _CM_NOTIFY_ACTION {
     CM_NOTIFY_ACTION_DEVICEINSTANCESTARTED,
     CM_NOTIFY_ACTION_DEVICEINSTANCEREMOVED,
     CM_NOTIFY_ACTION_MAX
-} CM_NOTIFY_ACTION, * PCM_NOTIFY_ACTION;
+} CM_NOTIFY_ACTION,
+    *PCM_NOTIFY_ACTION;
 
-typedef struct _CM_NOTIFY_EVENT_DATA {
+typedef struct _CM_NOTIFY_EVENT_DATA
+{
     CM_NOTIFY_FILTER_TYPE FilterType;
     DWORD Reserved;
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             GUID ClassGuid;
             WCHAR SymbolicLink[ANYSIZE_ARRAY];
         } DeviceInterface;
-        struct {
+        struct
+        {
             GUID EventGuid;
             LONG NameOffset;
             DWORD DataSize;
             BYTE Data[ANYSIZE_ARRAY];
         } DeviceHandle;
-        struct {
+        struct
+        {
             WCHAR InstanceId[ANYSIZE_ARRAY];
         } DeviceInstance;
     } u;
-} CM_NOTIFY_EVENT_DATA, * PCM_NOTIFY_EVENT_DATA;
+} CM_NOTIFY_EVENT_DATA, *PCM_NOTIFY_EVENT_DATA;
 
-typedef DWORD (CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action, PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize);
+typedef DWORD(CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action, PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize);
 
-typedef DWORD (WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
-typedef DWORD (WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
+typedef DWORD(WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
+typedef DWORD(WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
 
 /* local variables */
 static SDL_bool s_bJoystickThread = SDL_FALSE;
@@ -138,7 +151,7 @@ static SDL_Thread *s_joystickThread = NULL;
 static SDL_bool s_bJoystickThreadQuit = SDL_FALSE;
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
-JoyStick_DeviceData *SYS_Joystick;    /* array to hold joystick ID values */
+JoyStick_DeviceData *SYS_Joystick; /* array to hold joystick ID values */
 
 #if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 static HMODULE cfgmgr32_lib_handle;
@@ -210,7 +223,7 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
         switch (wParam) {
         case DBT_DEVICEARRIVAL:
         case DBT_DEVICEREMOVECOMPLETE:
-            if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
+            if (((DEV_BROADCAST_HDR *)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
                 /* notify 300ms and 2 seconds later to ensure all APIs have updated status */
                 SetTimer(hwnd, IDT_SDL_DEVICE_CHANGE_TIMER_1, 300, NULL);
                 SetTimer(hwnd, IDT_SDL_DEVICE_CHANGE_TIMER_2, 2000, NULL);
@@ -266,8 +279,8 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
 
     data->wincl.hInstance = GetModuleHandle(NULL);
     data->wincl.lpszClassName = TEXT("Message");
-    data->wincl.lpfnWndProc = SDL_PrivateJoystickDetectProc;      /* This function is called by windows */
-    data->wincl.cbSize = sizeof (WNDCLASSEX);
+    data->wincl.lpfnWndProc = SDL_PrivateJoystickDetectProc; /* This function is called by windows */
+    data->wincl.cbSize = sizeof(WNDCLASSEX);
 
     if (!RegisterClassEx(&data->wincl)) {
         WIN_SetError("Failed to create register class for joystick autodetect");
@@ -275,7 +288,7 @@ static int SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
         return -1;
     }
 
-    data->messageWindow = (HWND)CreateWindowEx(0,  TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+    data->messageWindow = (HWND)CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
     if (!data->messageWindow) {
         WIN_SetError("Failed to create message window for joystick autodetect");
         SDL_CleanupDeviceNotification(data);
@@ -322,7 +335,6 @@ static SDL_bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, 
 }
 
 #endif /* !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__) */
-
 
 #if !defined(__WINRT__)
 
@@ -509,7 +521,7 @@ static void WINDOWS_JoystickDetect(void)
 
     /* only enum the devices if the joystick thread told us something changed */
     if (!s_bWindowsDeviceChanged) {
-        return;  /* thread hasn't signaled, nothing to do right now. */
+        return; /* thread hasn't signaled, nothing to do right now. */
     }
 
     if (s_mutexJoyStickEnum) {
@@ -571,7 +583,7 @@ static void WINDOWS_JoystickDetect(void)
     }
 }
 
-static const char * WINDOWS_JoystickGetDeviceName(int device_index)
+static const char *WINDOWS_JoystickGetDeviceName(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
@@ -583,7 +595,7 @@ static const char * WINDOWS_JoystickGetDeviceName(int device_index)
     return device->joystickname;
 }
 
-static const char * WINDOWS_JoystickGetDevicePath(int device_index)
+static const char *WINDOWS_JoystickGetDevicePath(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
@@ -654,7 +666,7 @@ static int WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     /* allocate memory for system specific hardware data */
     joystick->instance_id = device->nInstanceID;
     joystick->hwdata =
-        (struct joystick_hwdata *) SDL_malloc(sizeof(struct joystick_hwdata));
+        (struct joystick_hwdata *)SDL_malloc(sizeof(struct joystick_hwdata));
     if (joystick->hwdata == NULL) {
         return SDL_OutOfMemory();
     }
@@ -771,8 +783,7 @@ static SDL_bool WINDOWS_JoystickGetGamepadMapping(int device_index, SDL_GamepadM
     return SDL_FALSE;
 }
 
-SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
-{
+SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
     WINDOWS_JoystickInit,
     WINDOWS_JoystickGetCount,
     WINDOWS_JoystickDetect,

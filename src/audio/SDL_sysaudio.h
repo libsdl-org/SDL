@@ -28,11 +28,11 @@
 
 /* !!! FIXME: These are wordy and unlocalized... */
 #define DEFAULT_OUTPUT_DEVNAME "System audio output device"
-#define DEFAULT_INPUT_DEVNAME "System audio capture device"
+#define DEFAULT_INPUT_DEVNAME  "System audio capture device"
 
 /* The SDL audio driver */
 typedef struct SDL_AudioDevice SDL_AudioDevice;
-#define _THIS   SDL_AudioDevice *_this
+#define _THIS SDL_AudioDevice *_this
 
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
@@ -62,21 +62,21 @@ extern void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device);
 
 typedef struct SDL_AudioDriverImpl
 {
-    void (*DetectDevices) (void);
-    int (*OpenDevice) (_THIS, const char *devname);
-    void (*ThreadInit) (_THIS); /* Called by audio thread at start */
-    void (*ThreadDeinit) (_THIS); /* Called by audio thread at end */
-    void (*WaitDevice) (_THIS);
-    void (*PlayDevice) (_THIS);
-    Uint8 *(*GetDeviceBuf) (_THIS);
-    int (*CaptureFromDevice) (_THIS, void *buffer, int buflen);
-    void (*FlushCapture) (_THIS);
-    void (*CloseDevice) (_THIS);
-    void (*LockDevice) (_THIS);
-    void (*UnlockDevice) (_THIS);
-    void (*FreeDeviceHandle) (void *handle);  /**< SDL is done with handle from SDL_AddAudioDevice() */
-    void (*Deinitialize) (void);
-    int (*GetDefaultAudioInfo) (char **name, SDL_AudioSpec *spec, int iscapture);
+    void (*DetectDevices)(void);
+    int (*OpenDevice)(_THIS, const char *devname);
+    void (*ThreadInit)(_THIS); /* Called by audio thread at start */
+    void (*ThreadDeinit)(_THIS); /* Called by audio thread at end */
+    void (*WaitDevice)(_THIS);
+    void (*PlayDevice)(_THIS);
+    Uint8 *(*GetDeviceBuf)(_THIS);
+    int (*CaptureFromDevice)(_THIS, void *buffer, int buflen);
+    void (*FlushCapture)(_THIS);
+    void (*CloseDevice)(_THIS);
+    void (*LockDevice)(_THIS);
+    void (*UnlockDevice)(_THIS);
+    void (*FreeDeviceHandle)(void *handle); /**< SDL is done with handle from SDL_AddAudioDevice() */
+    void (*Deinitialize)(void);
+    int (*GetDefaultAudioInfo)(char **name, SDL_AudioSpec *spec, int iscapture);
 
     /* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
 
@@ -89,7 +89,6 @@ typedef struct SDL_AudioDriverImpl
     SDL_bool SupportsNonPow2Samples;
 } SDL_AudioDriverImpl;
 
-
 typedef struct SDL_AudioDeviceItem
 {
     void *handle;
@@ -99,7 +98,6 @@ typedef struct SDL_AudioDeviceItem
     int dupenum;
     struct SDL_AudioDeviceItem *next;
 } SDL_AudioDeviceItem;
-
 
 typedef struct SDL_AudioDriver
 {
@@ -123,7 +121,6 @@ typedef struct SDL_AudioDriver
     SDL_AudioDeviceItem *inputDevices;
 } SDL_AudioDriver;
 
-
 /* Define the SDL audio driver structure */
 struct SDL_AudioDevice
 {
@@ -142,7 +139,7 @@ struct SDL_AudioDevice
 
     /* Current state flags */
     SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
-    SDL_atomic_t enabled;  /* true if device is functioning and connected. */
+    SDL_atomic_t enabled; /* true if device is functioning and connected. */
     SDL_atomic_t paused;
     SDL_bool iscapture;
 
@@ -174,8 +171,8 @@ typedef struct AudioBootStrap
 {
     const char *name;
     const char *desc;
-    SDL_bool (*init) (SDL_AudioDriverImpl * impl);
-    SDL_bool demand_only;  /* 1==request explicitly, or it won't be available. */
+    SDL_bool (*init)(SDL_AudioDriverImpl *impl);
+    SDL_bool demand_only; /* 1==request explicitly, or it won't be available. */
 } AudioBootStrap;
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */

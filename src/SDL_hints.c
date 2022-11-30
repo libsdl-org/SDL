@@ -22,17 +22,18 @@
 
 #include "SDL_hints_c.h"
 
-
 /* Assuming there aren't many hints set and they aren't being queried in
    critical performance paths, we'll just use linked lists here.
  */
-typedef struct SDL_HintWatch {
+typedef struct SDL_HintWatch
+{
     SDL_HintCallback callback;
     void *userdata;
     struct SDL_HintWatch *next;
 } SDL_HintWatch;
 
-typedef struct SDL_Hint {
+typedef struct SDL_Hint
+{
     char *name;
     char *value;
     SDL_HintPriority priority;
@@ -66,7 +67,7 @@ SDL_SetHintWithPriority(const char *name, const char *value,
             }
             if (hint->value != value &&
                 (value == NULL || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
-                for (entry = hint->callbacks; entry; ) {
+                for (entry = hint->callbacks; entry;) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
                     entry->callback(entry->userdata, name, hint->value, value);
@@ -111,7 +112,7 @@ SDL_ResetHint(const char *name)
             if ((env == NULL && hint->value != NULL) ||
                 (env != NULL && hint->value == NULL) ||
                 (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
-                for (entry = hint->callbacks; entry; ) {
+                for (entry = hint->callbacks; entry;) {
                     /* Save the next entry in case this one is deleted */
                     SDL_HintWatch *next = entry->next;
                     entry->callback(entry->userdata, name, hint->value, env);
@@ -127,8 +128,7 @@ SDL_ResetHint(const char *name)
     return SDL_FALSE;
 }
 
-void
-SDL_ResetHints(void)
+void SDL_ResetHints(void)
 {
     const char *env;
     SDL_Hint *hint;
@@ -139,7 +139,7 @@ SDL_ResetHints(void)
         if ((env == NULL && hint->value != NULL) ||
             (env != NULL && hint->value == NULL) ||
             (env != NULL && SDL_strcmp(env, hint->value) != 0)) {
-            for (entry = hint->callbacks; entry; ) {
+            for (entry = hint->callbacks; entry;) {
                 /* Save the next entry in case this one is deleted */
                 SDL_HintWatch *next = entry->next;
                 entry->callback(entry->userdata, hint->name, hint->value, env);
@@ -195,8 +195,7 @@ SDL_GetHintBoolean(const char *name, SDL_bool default_value)
     return SDL_GetStringBoolean(hint, default_value);
 }
 
-void
-SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
+void SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
     SDL_Hint *hint;
     SDL_HintWatch *entry;
@@ -257,8 +256,7 @@ SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
     callback(userdata, name, value, value);
 }
 
-void
-SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
+void SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
     SDL_Hint *hint;
     SDL_HintWatch *entry, *prev;
@@ -294,7 +292,7 @@ void SDL_ClearHints(void)
 
         SDL_free(hint->name);
         SDL_free(hint->value);
-        for (entry = hint->callbacks; entry; ) {
+        for (entry = hint->callbacks; entry;) {
             SDL_HintWatch *freeable = entry;
             entry = entry->next;
             SDL_free(freeable);

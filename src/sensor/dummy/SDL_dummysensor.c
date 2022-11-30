@@ -39,7 +39,7 @@ static void SDL_DUMMY_SensorDetect(void)
 {
 }
 
-static const char * SDL_DUMMY_SensorGetDeviceName(int device_index)
+static const char *SDL_DUMMY_SensorGetDeviceName(int device_index)
 {
     return NULL;
 }
@@ -63,7 +63,7 @@ static int SDL_DUMMY_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     return SDL_Unsupported();
 }
-    
+
 static void SDL_DUMMY_SensorUpdate(SDL_Sensor *sensor)
 {
 }
@@ -76,8 +76,7 @@ static void SDL_DUMMY_SensorQuit(void)
 {
 }
 
-SDL_SensorDriver SDL_DUMMY_SensorDriver =
-{
+SDL_SensorDriver SDL_DUMMY_SensorDriver = {
     SDL_DUMMY_SensorInit,
     SDL_DUMMY_SensorGetCount,
     SDL_DUMMY_SensorDetect,

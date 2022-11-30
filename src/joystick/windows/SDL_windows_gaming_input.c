@@ -33,12 +33,11 @@
 #include <objidlbase.h>
 #include <roapi.h>
 
-
 #ifdef ____FIReference_1_INT32_INTERFACE_DEFINED__
 /* MinGW-64 uses __FIReference_1_INT32 instead of Microsoft's __FIReference_1_int */
-#define __FIReference_1_int __FIReference_1_INT32
+#define __FIReference_1_int           __FIReference_1_INT32
 #define __FIReference_1_int_get_Value __FIReference_1_INT32_get_Value
-#define __FIReference_1_int_Release __FIReference_1_INT32_Release
+#define __FIReference_1_int_Release   __FIReference_1_INT32_Release
 #endif
 
 struct joystick_hwdata
@@ -51,7 +50,8 @@ struct joystick_hwdata
     UINT64 timestamp;
 };
 
-typedef struct WindowsGamingInputControllerState {
+typedef struct WindowsGamingInputControllerState
+{
     SDL_JoystickID instance_id;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller;
     char *name;
@@ -62,7 +62,8 @@ typedef struct WindowsGamingInputControllerState {
     int nbuttons;
 } WindowsGamingInputControllerState;
 
-static struct {
+static struct
+{
     __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics *statics;
     __x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics *arcade_stick_statics;
     __x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics2 *arcade_stick_statics2;
@@ -111,13 +112,13 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 #ifdef SDL_JOYSTICK_RAWINPUT
         && !RAWINPUT_IsEnabled()
 #endif
-      ) {
+    ) {
         return SDL_FALSE;
     }
 
     /* Go through RAWINPUT (WinXP and later) to find HID devices. */
     if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
-        return SDL_FALSE;  /* oh well. */
+        return SDL_FALSE; /* oh well. */
     }
 
     raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * raw_device_count);
@@ -129,7 +130,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     if (GetRawInputDeviceList(raw_devices, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
         SDL_free(raw_devices);
         raw_devices = NULL;
-        return SDL_FALSE;  /* oh well. */
+        return SDL_FALSE; /* oh well. */
     }
 
     for (i = 0; i < raw_device_count; i++) {
@@ -204,12 +205,13 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     return SDL_FALSE;
 }
 
-typedef struct RawGameControllerDelegate {
+typedef struct RawGameControllerDelegate
+{
     __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController iface;
     SDL_atomic_t refcount;
 } RawGameControllerDelegate;
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, REFIID riid, void **ppvObject)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInterface(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, REFIID riid, void **ppvObject)
 {
     if (ppvObject == NULL) {
         return E_INVALIDARG;
@@ -228,13 +230,13 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
     }
 }
 
-static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This)
+static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_AddRef(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
 {
     RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
     return SDL_AtomicAdd(&self->refcount, 1) + 1;
 }
 
-static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This)
+static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This)
 {
     RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
     int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
@@ -243,7 +245,7 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
     return rc;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdded(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
@@ -274,8 +276,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 
         hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(controller, &IID_IRawGameController2, (void **)&controller2);
         if (SUCCEEDED(hr)) {
-            typedef PCWSTR (WINAPI *WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 *length);
-            typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);
+            typedef PCWSTR(WINAPI * WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 * length);
+            typedef HRESULT(WINAPI * WindowsDeleteString_t)(HSTRING string);
 
             WindowsGetStringRawBuffer_t WindowsGetStringRawBufferFunc = NULL;
             WindowsDeleteString_t WindowsDeleteStringFunc = NULL;
@@ -335,7 +337,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             __x_ABI_CWindows_CGaming_CInput_CIGameController_Release(gamecontroller);
         }
 
-        guid = SDL_CreateJoystickGUID(bus, vendor, product, version, name, 'w', (Uint8) type);
+        guid = SDL_CreateJoystickGUID(bus, vendor, product, version, name, 'w', (Uint8)type);
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if (!ignore_joystick && HIDAPI_IsDevicePresent(vendor, product, version, name)) {
@@ -398,7 +400,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     return S_OK;
 }
 
-static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController * This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
+static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemoved(__FIEventHandler_1_Windows__CGaming__CInput__CRawGameController *This, IInspectable *sender, __x_ABI_CWindows_CGaming_CInput_CIRawGameController *e)
 {
     HRESULT hr;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller = NULL;
@@ -415,7 +417,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
     if (SUCCEEDED(hr)) {
         int i;
 
-        for (i = 0; i < wgi.controller_count ; i++) {
+        for (i = 0; i < wgi.controller_count; i++) {
             if (wgi.controllers[i].controller == controller) {
                 WindowsGamingInputControllerState *state = &wgi.controllers[i];
                 SDL_JoystickID joystickID = state->instance_id;
@@ -466,8 +468,8 @@ static RawGameControllerDelegate controller_removed = {
 
 static int WGI_JoystickInit(void)
 {
-    typedef HRESULT (WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING* string);
-    typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
+    typedef HRESULT(WINAPI * WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER * hstringHeader, HSTRING * string);
+    typedef HRESULT(WINAPI * RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void **factory);
 
     WindowsCreateStringReference_t WindowsCreateStringReferenceFunc = NULL;
     RoGetActivationFactory_t RoGetActivationFactoryFunc = NULL;
@@ -487,7 +489,7 @@ static int WGI_JoystickInit(void)
          */
         static PVOID cookie = NULL;
         if (!cookie) {
-            typedef HRESULT (WINAPI *CoIncrementMTAUsage_t)(PVOID* pCookie);
+            typedef HRESULT(WINAPI * CoIncrementMTAUsage_t)(PVOID * pCookie);
             CoIncrementMTAUsage_t CoIncrementMTAUsageFunc = (CoIncrementMTAUsage_t)WIN_LoadComBaseFunction("CoIncrementMTAUsage");
             if (CoIncrementMTAUsageFunc) {
                 if (FAILED(CoIncrementMTAUsageFunc(&cookie))) {
@@ -613,12 +615,12 @@ static void WGI_JoystickDetect(void)
 {
 }
 
-static const char * WGI_JoystickGetDeviceName(int device_index)
+static const char *WGI_JoystickGetDeviceName(int device_index)
 {
     return wgi.controllers[device_index].name;
 }
 
-static const char * WGI_JoystickGetDevicePath(int device_index)
+static const char *WGI_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }
@@ -842,13 +844,13 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
             SDL_PrivateJoystickForceRecentering(joystick);
         } else {
             for (i = 0; i < nbuttons; ++i) {
-                SDL_PrivateJoystickButton(joystick, (Uint8) i, buttons[i]);
+                SDL_PrivateJoystickButton(joystick, (Uint8)i, buttons[i]);
             }
             for (i = 0; i < nhats; ++i) {
-                SDL_PrivateJoystickHat(joystick, (Uint8) i, ConvertHatValue(hats[i]));
+                SDL_PrivateJoystickHat(joystick, (Uint8)i, ConvertHatValue(hats[i]));
             }
             for (i = 0; i < naxes; ++i) {
-                SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int) (axes[i] * 65535) - 32768));
+                SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
             }
         }
         hwdata->timestamp = timestamp;
@@ -930,8 +932,7 @@ static SDL_bool WGI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
     return SDL_FALSE;
 }
 
-SDL_JoystickDriver SDL_WGI_JoystickDriver =
-{
+SDL_JoystickDriver SDL_WGI_JoystickDriver = {
     WGI_JoystickInit,
     WGI_JoystickGetCount,
     WGI_JoystickDetect,

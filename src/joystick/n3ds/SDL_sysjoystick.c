@@ -55,7 +55,7 @@ static int N3DS_JoystickInit(void)
     return 0;
 }
 
-static const char * N3DS_JoystickGetDeviceName(int device_index)
+static const char *N3DS_JoystickGetDeviceName(int device_index)
 {
     return "Nintendo 3DS";
 }
@@ -183,7 +183,7 @@ static void N3DS_JoystickQuit(void)
 static SDL_bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
     /* There is only one possible mapping. */
-    *out = (SDL_GamepadMapping) {
+    *out = (SDL_GamepadMapping){
         .a = { EMappingKind_Button, 0 },
         .b = { EMappingKind_Button, 1 },
         .x = { EMappingKind_Button, 10 },
@@ -218,7 +218,7 @@ static void N3DS_JoystickDetect(void)
 {
 }
 
-static const char * N3DS_JoystickGetDevicePath(int device_index)
+static const char *N3DS_JoystickGetDevicePath(int device_index)
 {
     return NULL;
 }

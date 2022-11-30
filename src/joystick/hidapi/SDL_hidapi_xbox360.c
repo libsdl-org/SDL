@@ -27,14 +27,13 @@
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 
-
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
 
-
-typedef struct {
+typedef struct
+{
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     int player_index;
@@ -210,8 +209,8 @@ static int HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
          */
         Uint8 rumble_packet[] = { 'M', 'A', 'G', 'I', 'C', '0', 0x00, 0x04, 0x00, 0x00 };
 
-        rumble_packet[6+2] = (low_frequency_rumble >> 8);
-        rumble_packet[6+3] = (high_frequency_rumble >> 8);
+        rumble_packet[6 + 2] = (low_frequency_rumble >> 8);
+        rumble_packet[6 + 3] = (high_frequency_rumble >> 8);
 
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
@@ -290,16 +289,16 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
     axis = ((int)data[5] * 257) - 32768;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
-    axis = SDL_SwapLE16(*(Sint16*)(&data[6]));
+    axis = SDL_SwapLE16(*(Sint16 *)(&data[6]));
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
-    axis = SDL_SwapLE16(*(Sint16*)(&data[8]));
+    axis = SDL_SwapLE16(*(Sint16 *)(&data[8]));
     if (invert_y_axes) {
         axis = ~axis;
     }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
-    axis = SDL_SwapLE16(*(Sint16*)(&data[10]));
+    axis = SDL_SwapLE16(*(Sint16 *)(&data[10]));
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
-    axis = SDL_SwapLE16(*(Sint16*)(&data[12]));
+    axis = SDL_SwapLE16(*(Sint16 *)(&data[12]));
     if (invert_y_axes) {
         axis = ~axis;
     }
@@ -355,8 +354,7 @@ static void HIDAPI_DriverXbox360_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 = {
     SDL_HINT_JOYSTICK_HIDAPI_XBOX_360,
     SDL_TRUE,
     HIDAPI_DriverXbox360_RegisterHints,

@@ -26,7 +26,6 @@
 #include "SDL_hidapijoystick_c.h"
 #include "../SDL_sysjoystick.h"
 
-
 static void HIDAPI_DriverCombined_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
 }
@@ -208,8 +207,7 @@ static void HIDAPI_DriverCombined_FreeDevice(SDL_HIDAPI_Device *device)
 {
 }
 
-SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined =
-{
+SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined = {
     "SDL_JOYSTICK_HIDAPI_COMBINED",
     SDL_TRUE,
     HIDAPI_DriverCombined_RegisterHints,

@@ -45,12 +45,12 @@
 #include "SDL_nullevents_c.h"
 #include "SDL_nullframebuffer_c.h"
 
-#define DUMMYVID_DRIVER_NAME "dummy"
+#define DUMMYVID_DRIVER_NAME       "dummy"
 #define DUMMYVID_DRIVER_EVDEV_NAME "evdev"
 
 /* Initialization/Query functions */
 static int DUMMY_VideoInit(_THIS);
-static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
+static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static void DUMMY_VideoQuit(_THIS);
 
 #if SDL_INPUT_LINUXEV
@@ -67,22 +67,22 @@ static int DUMMY_Available(void)
         if (SDL_strcmp(envr, DUMMYVID_DRIVER_NAME) == 0) {
             return 1;
         }
-        #if SDL_INPUT_LINUXEV
+#if SDL_INPUT_LINUXEV
         if (SDL_strcmp(envr, DUMMYVID_DRIVER_EVDEV_NAME) == 0) {
             evdev = 1;
             return 1;
         }
-        #endif
+#endif
     }
     return 0;
 }
 
-static void DUMMY_DeleteDevice(SDL_VideoDevice * device)
+static void DUMMY_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device);
 }
 
-static SDL_VideoDevice * DUMMY_CreateDevice(void)
+static SDL_VideoDevice *DUMMY_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
@@ -91,7 +91,7 @@ static SDL_VideoDevice * DUMMY_CreateDevice(void)
     }
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return 0;
@@ -103,11 +103,11 @@ static SDL_VideoDevice * DUMMY_CreateDevice(void)
     device->VideoQuit = DUMMY_VideoQuit;
     device->SetDisplayMode = DUMMY_SetDisplayMode;
     device->PumpEvents = DUMMY_PumpEvents;
-    #if SDL_INPUT_LINUXEV
+#if SDL_INPUT_LINUXEV
     if (evdev) {
         device->PumpEvents = DUMMY_EVDEV_Poll;
     }
-    #endif
+#endif
     device->CreateWindowFramebuffer = SDL_DUMMY_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = SDL_DUMMY_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = SDL_DUMMY_DestroyWindowFramebuffer;
@@ -130,14 +130,14 @@ VideoBootStrap DUMMY_evdev_bootstrap = {
 void SDL_EVDEV_Init(void);
 void SDL_EVDEV_Poll();
 void SDL_EVDEV_Quit(void);
-static void DUMMY_EVDEV_Poll(_THIS) {
-    (void) _this;
+static void DUMMY_EVDEV_Poll(_THIS)
+{
+    (void)_this;
     SDL_EVDEV_Poll();
 }
 #endif
 
-int
-DUMMY_VideoInit(_THIS)
+int DUMMY_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
 
@@ -154,26 +154,24 @@ DUMMY_VideoInit(_THIS)
 
     SDL_AddDisplayMode(&_this->displays[0], &mode);
 
-    #if SDL_INPUT_LINUXEV
+#if SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
-    #endif
+#endif
 
     /* We're done! */
     return 0;
 }
 
-static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+static int DUMMY_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
-
-void
-DUMMY_VideoQuit(_THIS)
+void DUMMY_VideoQuit(_THIS)
 {
-    #if SDL_INPUT_LINUXEV
+#if SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
-    #endif
+#endif
 }
 
 #endif /* SDL_VIDEO_DRIVER_DUMMY */

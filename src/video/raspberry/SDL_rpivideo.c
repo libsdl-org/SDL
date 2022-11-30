@@ -47,7 +47,7 @@
 #include "SDL_rpiopengles.h"
 #include "SDL_rpimouse.h"
 
-static void RPI_Destroy(SDL_VideoDevice * device)
+static void RPI_Destroy(SDL_VideoDevice *device)
 {
     SDL_free(device->driverdata);
     SDL_free(device);
@@ -56,33 +56,31 @@ static void RPI_Destroy(SDL_VideoDevice * device)
 static int RPI_GetRefreshRate()
 {
     TV_DISPLAY_STATE_T tvstate;
-    if (vc_tv_get_display_state( &tvstate ) == 0) {
-        //The width/height parameters are in the same position in the union
-        //for HDMI and SDTV
+    if (vc_tv_get_display_state(&tvstate) == 0) {
+        // The width/height parameters are in the same position in the union
+        // for HDMI and SDTV
         HDMI_PROPERTY_PARAM_T property;
         property.property = HDMI_PROPERTY_PIXEL_CLOCK_TYPE;
         vc_tv_hdmi_get_property(&property);
-        return property.param1 == HDMI_PIXEL_CLOCK_TYPE_NTSC ? 
-            tvstate.display.hdmi.frame_rate * (1000.0f/1001.0f) : 
-            tvstate.display.hdmi.frame_rate;
-    } 
-    return 60;  /* Failed to get display state, default to 60 */
+        return property.param1 == HDMI_PIXEL_CLOCK_TYPE_NTSC ? tvstate.display.hdmi.frame_rate * (1000.0f / 1001.0f) : tvstate.display.hdmi.frame_rate;
+    }
+    return 60; /* Failed to get display state, default to 60 */
 }
 
-static SDL_VideoDevice * RPI_Create()
+static SDL_VideoDevice *RPI_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
 
     /* Initialize SDL_VideoDevice structure */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
     /* Initialize internal data */
-    phdata = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
+    phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (phdata == NULL) {
         SDL_OutOfMemory();
         SDL_free(device);
@@ -137,7 +135,6 @@ VideoBootStrap RPI_bootstrap = {
     RPI_Create
 };
 
-
 /*****************************************************************************/
 /* SDL Video and Display initialization/handling functions                   */
 /*****************************************************************************/
@@ -152,7 +149,7 @@ static void AddDispManXDisplay(const int display_id)
 
     handle = vc_dispmanx_display_open(display_id);
     if (!handle) {
-        return;  /* this display isn't available */
+        return; /* this display isn't available */
     }
 
     if (vc_dispmanx_display_get_info(handle, &modeinfo) < 0) {
@@ -175,10 +172,10 @@ static void AddDispManXDisplay(const int display_id)
     display.current_mode = current_mode;
 
     /* Allocate display internal data */
-    data = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
+    data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
     if (data == NULL) {
         vc_dispmanx_display_close(handle);
-        return;  /* oh well */
+        return; /* oh well */
     }
 
     data->dispman_display = handle;
@@ -188,81 +185,76 @@ static void AddDispManXDisplay(const int display_id)
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
 
-int
-RPI_VideoInit(_THIS)
+int RPI_VideoInit(_THIS)
 {
     /* Initialize BCM Host */
     bcm_host_init();
 
-    AddDispManXDisplay(DISPMANX_ID_MAIN_LCD);  /* your default display */
-    AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER);  /* an "other" display...maybe DSI-connected screen while HDMI is your main */
+    AddDispManXDisplay(DISPMANX_ID_MAIN_LCD); /* your default display */
+    AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER); /* an "other" display...maybe DSI-connected screen while HDMI is your main */
 
-#ifdef SDL_INPUT_LINUXEV    
+#ifdef SDL_INPUT_LINUXEV
     if (SDL_EVDEV_Init() < 0) {
         return -1;
     }
-#endif    
-    
+#endif
+
     RPI_InitMouse(_this);
 
     return 1;
 }
 
-void
-RPI_VideoQuit(_THIS)
+void RPI_VideoQuit(_THIS)
 {
-#ifdef SDL_INPUT_LINUXEV    
+#ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
-#endif    
+#endif
 }
 
-void
-RPI_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
+void RPI_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 {
     /* Only one display mode available, the current one */
     SDL_AddDisplayMode(display, &display->current_mode);
 }
 
-int
-RPI_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
+int RPI_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     return 0;
 }
 
 static void RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
 {
-   SDL_WindowData *wdata = ((SDL_WindowData *) data);
+    SDL_WindowData *wdata = ((SDL_WindowData *)data);
 
-   SDL_LockMutex(wdata->vsync_cond_mutex);
-   SDL_CondSignal(wdata->vsync_cond);
-   SDL_UnlockMutex(wdata->vsync_cond_mutex);
+    SDL_LockMutex(wdata->vsync_cond_mutex);
+    SDL_CondSignal(wdata->vsync_cond);
+    SDL_UnlockMutex(wdata->vsync_cond_mutex);
 }
 
-int
-RPI_CreateWindow(_THIS, SDL_Window * window)
+int RPI_CreateWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wdata;
     SDL_VideoDisplay *display;
     SDL_DisplayData *displaydata;
     VC_RECT_T dst_rect;
     VC_RECT_T src_rect;
-    VC_DISPMANX_ALPHA_T         dispman_alpha;
+    VC_DISPMANX_ALPHA_T dispman_alpha;
     DISPMANX_UPDATE_HANDLE_T dispman_update;
     uint32_t layer = SDL_RPI_VIDEOLAYER;
     const char *env;
 
     /* Disable alpha, otherwise the app looks composed with whatever dispman is showing (X11, console,etc) */
-    dispman_alpha.flags = DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS; 
-    dispman_alpha.opacity = 0xFF; 
+    dispman_alpha.flags = DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS;
+    dispman_alpha.opacity = 0xFF;
     dispman_alpha.mask = 0;
 
     /* Allocate window internal data */
-    wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
+    wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (wdata == NULL) {
         return SDL_OutOfMemory();
     }
     display = SDL_GetDisplayForWindow(window);
-    displaydata = (SDL_DisplayData *) display->driverdata;
+    displaydata = (SDL_DisplayData *)display->driverdata;
 
     /* Windows have one size for now */
     window->w = display->desktop_mode.w;
@@ -287,27 +279,27 @@ RPI_CreateWindow(_THIS, SDL_Window * window)
         layer = SDL_atoi(env);
     }
 
-    dispman_update = vc_dispmanx_update_start( 0 );
-    wdata->dispman_window.element = vc_dispmanx_element_add (dispman_update,
-                                                             displaydata->dispman_display,
-                                                             layer /* layer */,
-                                                             &dst_rect,
-                                                             0 /*src*/,
-                                                             &src_rect,
-                                                             DISPMANX_PROTECTION_NONE,
-                                                             &dispman_alpha /*alpha*/,
-                                                             0 /*clamp*/,
-                                                             0 /*transform*/);
+    dispman_update = vc_dispmanx_update_start(0);
+    wdata->dispman_window.element = vc_dispmanx_element_add(dispman_update,
+                                                            displaydata->dispman_display,
+                                                            layer /* layer */,
+                                                            &dst_rect,
+                                                            0 /*src*/,
+                                                            &src_rect,
+                                                            DISPMANX_PROTECTION_NONE,
+                                                            &dispman_alpha /*alpha*/,
+                                                            0 /*clamp*/,
+                                                            0 /*transform*/);
     wdata->dispman_window.width = window->w;
     wdata->dispman_window.height = window->h;
     vc_dispmanx_update_submit_sync(dispman_update);
-    
+
     if (!_this->egl_data) {
         if (SDL_GL_LoadLibrary(NULL) < 0) {
             return -1;
         }
     }
-    wdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) &wdata->dispman_window);
+    wdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)&wdata->dispman_window);
 
     if (wdata->egl_surface == EGL_NO_SURFACE) {
         return SDL_SetError("Could not create GLES window surface");
@@ -319,7 +311,7 @@ RPI_CreateWindow(_THIS, SDL_Window * window)
         wdata->vsync_cond = SDL_CreateCond();
         wdata->vsync_cond_mutex = SDL_CreateMutex();
         wdata->double_buffer = SDL_TRUE;
-        vc_dispmanx_vsync_callback(displaydata->dispman_display, RPI_vsync_callback, (void*)wdata);
+        vc_dispmanx_vsync_callback(displaydata->dispman_display, RPI_vsync_callback, (void *)wdata);
     }
 
     /* Setup driver data for this window */
@@ -333,12 +325,11 @@ RPI_CreateWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
-void
-RPI_DestroyWindow(_THIS, SDL_Window * window)
+void RPI_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
 
     if (data) {
         if (data->double_buffer) {
@@ -363,50 +354,39 @@ RPI_DestroyWindow(_THIS, SDL_Window * window)
     }
 }
 
-int
-RPI_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
+int RPI_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
 {
     return -1;
 }
 
-void
-RPI_SetWindowTitle(_THIS, SDL_Window * window)
+void RPI_SetWindowTitle(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
+void RPI_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
 {
 }
-void
-RPI_SetWindowPosition(_THIS, SDL_Window * window)
+void RPI_SetWindowPosition(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_SetWindowSize(_THIS, SDL_Window * window)
+void RPI_SetWindowSize(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_ShowWindow(_THIS, SDL_Window * window)
+void RPI_ShowWindow(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_HideWindow(_THIS, SDL_Window * window)
+void RPI_HideWindow(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_RaiseWindow(_THIS, SDL_Window * window)
+void RPI_RaiseWindow(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_MaximizeWindow(_THIS, SDL_Window * window)
+void RPI_MaximizeWindow(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_MinimizeWindow(_THIS, SDL_Window * window)
+void RPI_MinimizeWindow(_THIS, SDL_Window *window)
 {
 }
-void
-RPI_RestoreWindow(_THIS, SDL_Window * window)
+void RPI_RestoreWindow(_THIS, SDL_Window *window)
 {
 }
 

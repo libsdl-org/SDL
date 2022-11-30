@@ -326,14 +326,12 @@ static SDL_Scancode TranslateKeycode(int keycode)
     return scancode;
 }
 
-int
-Android_OnKeyDown(int keycode)
+int Android_OnKeyDown(int keycode)
 {
     return SDL_SendKeyboardKey(SDL_PRESSED, TranslateKeycode(keycode));
 }
 
-int
-Android_OnKeyUp(int keycode)
+int Android_OnKeyUp(int keycode)
 {
     return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
 }
@@ -345,26 +343,23 @@ Android_HasScreenKeyboardSupport(_THIS)
 }
 
 SDL_bool
-Android_IsScreenKeyboardShown(_THIS, SDL_Window * window)
+Android_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     return Android_JNI_IsScreenKeyboardShown();
 }
 
-void
-Android_StartTextInput(_THIS)
+void Android_StartTextInput(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Android_JNI_ShowTextInput(&videodata->textRect);
 }
 
-void
-Android_StopTextInput(_THIS)
+void Android_StopTextInput(_THIS)
 {
     Android_JNI_HideTextInput();
 }
 
-void
-Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
+void Android_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 

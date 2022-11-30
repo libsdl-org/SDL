@@ -13,8 +13,7 @@
 
 #include <SDL3/SDL.h>
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char *base_path;
     char *pref_path;
@@ -29,8 +28,8 @@ main(int argc, char *argv[])
 
     base_path = SDL_GetBasePath();
     if (base_path == NULL) {
-      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
-                   SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
+                     SDL_GetError());
     } else {
         SDL_Log("base path: '%s'\n", base_path);
         SDL_free(base_path);
@@ -38,8 +37,8 @@ main(int argc, char *argv[])
 
     pref_path = SDL_GetPrefPath("libsdl", "test_filesystem");
     if (pref_path == NULL) {
-      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path: %s\n",
-                   SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path: %s\n",
+                     SDL_GetError());
     } else {
         SDL_Log("pref path: '%s'\n", pref_path);
         SDL_free(pref_path);
@@ -47,8 +46,8 @@ main(int argc, char *argv[])
 
     pref_path = SDL_GetPrefPath(NULL, "test_filesystem");
     if (pref_path == NULL) {
-      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path without organization: %s\n",
-                   SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path without organization: %s\n",
+                     SDL_GetError());
     } else {
         SDL_Log("pref path: '%s'\n", pref_path);
         SDL_free(pref_path);

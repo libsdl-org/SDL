@@ -40,8 +40,8 @@ struct haptic_hwdata
 #if SDL_HAPTIC_DINPUT
     LPDIRECTINPUTDEVICE8 device;
 #endif
-    DWORD axes[3];              /* Axes to use. */
-    SDL_bool is_joystick;       /* Device is loaded as joystick. */
+    DWORD axes[3]; /* Axes to use. */
+    SDL_bool is_joystick; /* Device is loaded as joystick. */
     Uint8 bXInputHaptic; /* Supports force feedback via XInput. */
     Uint8 userid; /* XInput userid index for this joystick */
     SDL_Thread *thread;
@@ -49,7 +49,6 @@ struct haptic_hwdata
     Uint32 stopTicks;
     SDL_atomic_t stopThread;
 };
-
 
 /*
  * Haptic system effect data.
@@ -68,8 +67,8 @@ struct haptic_hweffect
 #endif
 
 /*
-* List of available haptic devices.
-*/
+ * List of available haptic devices.
+ */
 typedef struct SDL_hapticlist_item
 {
     char *name;
@@ -96,4 +95,3 @@ extern int SDL_SYS_RemoveHapticDevice(SDL_hapticlist_item *prev, SDL_hapticlist_
 #endif /* SDL_windowshaptic_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
-

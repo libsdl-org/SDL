@@ -25,11 +25,9 @@
 #include "../../core/windows/SDL_windows.h"
 #include <mmsystem.h>
 
-
-
 /* The first (low-resolution) ticks value of the application */
 static DWORD start = 0;
-static BOOL ticks_started = FALSE; 
+static BOOL ticks_started = FALSE;
 
 /* The first high-resolution ticks value of the application */
 static LARGE_INTEGER start_ticks;
@@ -70,8 +68,7 @@ static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name,
     }
 }
 
-void
-SDL_TicksInit(void)
+void SDL_TicksInit(void)
 {
     BOOL rc;
 
@@ -90,17 +87,16 @@ SDL_TicksInit(void)
        so we'll rely on it here.
      */
     rc = QueryPerformanceFrequency(&ticks_per_second);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
     QueryPerformanceCounter(&start_ticks);
 }
 
-void
-SDL_TicksQuit(void)
+void SDL_TicksQuit(void)
 {
     SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
                         SDL_TimerResolutionChanged, NULL);
 
-    SDL_SetSystemTimerResolution(0);  /* always release our timer resolution request. */
+    SDL_SetSystemTimerResolution(0); /* always release our timer resolution request. */
 
     start = 0;
     ticks_started = SDL_FALSE;
@@ -117,8 +113,8 @@ SDL_GetTicks64(void)
     }
 
     rc = QueryPerformanceCounter(&now);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
-    return (Uint64) (((now.QuadPart - start_ticks.QuadPart) * 1000) / ticks_per_second.QuadPart);
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    return (Uint64)(((now.QuadPart - start_ticks.QuadPart) * 1000) / ticks_per_second.QuadPart);
 }
 
 Uint64
@@ -126,8 +122,8 @@ SDL_GetPerformanceCounter(void)
 {
     LARGE_INTEGER counter;
     const BOOL rc = QueryPerformanceCounter(&counter);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
-    return (Uint64) counter.QuadPart;
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    return (Uint64)counter.QuadPart;
 }
 
 Uint64
@@ -135,28 +131,27 @@ SDL_GetPerformanceFrequency(void)
 {
     LARGE_INTEGER frequency;
     const BOOL rc = QueryPerformanceFrequency(&frequency);
-    SDL_assert(rc != 0);  /* this should _never_ fail if you're on XP or later. */
-    return (Uint64) frequency.QuadPart;
+    SDL_assert(rc != 0); /* this should _never_ fail if you're on XP or later. */
+    return (Uint64)frequency.QuadPart;
 }
 
-void
-SDL_Delay(Uint32 ms)
+void SDL_Delay(Uint32 ms)
 {
     /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803.
-    * 
-    * Sleep() is not publicly available to apps in early versions of WinRT.
-    *
-    * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
-    * Windows Phone 8.1.
-    *
-    * Use the compiler version to determine availability.
-    *
-    * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
-    * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
-    *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
-    *    apps and libraries.
-    */
-#ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 
+     *
+     * Sleep() is not publicly available to apps in early versions of WinRT.
+     *
+     * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
+     * Windows Phone 8.1.
+     *
+     * Use the compiler version to determine availability.
+     *
+     * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
+     * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
+     *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
+     *    apps and libraries.
+     */
+#ifdef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
     HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
     if (timer) {
         LARGE_INTEGER due_time;

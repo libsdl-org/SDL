@@ -29,9 +29,9 @@
 /* This is the Linux implementation of the SDL joystick API */
 
 #include <sys/stat.h>
-#include <errno.h>              /* errno, strerror */
+#include <errno.h> /* errno, strerror */
 #include <fcntl.h>
-#include <limits.h>             /* For the definition of PATH_MAX */
+#include <limits.h> /* For the definition of PATH_MAX */
 #ifdef HAVE_INOTIFY
 #include <sys/inotify.h>
 #endif
@@ -52,22 +52,22 @@
 #define SYN_DROPPED 3
 #endif
 #ifndef BTN_NORTH
-#define BTN_NORTH       0x133
+#define BTN_NORTH 0x133
 #endif
 #ifndef BTN_WEST
-#define BTN_WEST        0x134
+#define BTN_WEST 0x134
 #endif
 #ifndef BTN_DPAD_UP
-#define BTN_DPAD_UP     0x220
+#define BTN_DPAD_UP 0x220
 #endif
 #ifndef BTN_DPAD_DOWN
-#define BTN_DPAD_DOWN   0x221
+#define BTN_DPAD_DOWN 0x221
 #endif
 #ifndef BTN_DPAD_LEFT
-#define BTN_DPAD_LEFT   0x222
+#define BTN_DPAD_LEFT 0x222
 #endif
 #ifndef BTN_DPAD_RIGHT
-#define BTN_DPAD_RIGHT  0x223
+#define BTN_DPAD_RIGHT 0x223
 #endif
 
 #include "../../core/linux/SDL_evdev_capabilities.h"
@@ -99,8 +99,8 @@ static int MaybeRemoveDevice(const char *path);
 typedef struct SDL_joylist_item
 {
     SDL_JoystickID device_instance;
-    char *path;   /* "/dev/input/event2" or whatever */
-    char *name;   /* "SideWinder 3D Pro" or whatever */
+    char *path; /* "/dev/input/event2" or whatever */
+    char *name; /* "SideWinder 3D Pro" or whatever */
     SDL_JoystickGUID guid;
     dev_t devnum;
     struct joystick_hwdata *hwdata;
@@ -139,8 +139,7 @@ static void FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
     /* For Atari vcs modern and classic controllers have the version reflecting
      * firmware version, but the mapping stays stable so ignore
      * version information */
-    if (inpid->vendor == 0x3250
-            && (inpid->product == 0x1001 || inpid->product == 0x1002)) {
+    if (inpid->vendor == 0x3250 && (inpid->product == 0x1001 || inpid->product == 0x1002)) {
         inpid->version = 0;
     }
 }
@@ -245,34 +244,33 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
     }
 
     switch (udev_type) {
-        case SDL_UDEV_DEVICEADDED:
-            if (!(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+    case SDL_UDEV_DEVICEADDED:
+        if (!(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+            return;
+        }
+        if (SDL_classic_joysticks) {
+            if (!IsJoystickJSNode(devpath)) {
                 return;
             }
-            if (SDL_classic_joysticks) {
-                if (!IsJoystickJSNode(devpath)) {
-                    return;
-                }
-            } else {
-                if (IsJoystickJSNode(devpath)) {
-                    return;
-                }
+        } else {
+            if (IsJoystickJSNode(devpath)) {
+                return;
             }
+        }
 
-            /* Wait a bit for the hidraw udev node to initialize */
-            SDL_Delay(10);
+        /* Wait a bit for the hidraw udev node to initialize */
+        SDL_Delay(10);
 
-            MaybeAddDevice(devpath);
-            break;
-            
-        case SDL_UDEV_DEVICEREMOVED:
-            MaybeRemoveDevice(devpath);
-            break;
-            
-        default:
-            break;
+        MaybeAddDevice(devpath);
+        break;
+
+    case SDL_UDEV_DEVICEREMOVED:
+        MaybeRemoveDevice(devpath);
+        break;
+
+    default:
+        break;
     }
-    
 }
 #endif /* SDL_USE_LIBUDEV */
 
@@ -304,7 +302,7 @@ static int MaybeAddDevice(const char *path)
     /* Check to make sure it's not already in list. */
     for (item = SDL_joylist; item != NULL; item = item->next) {
         if (sb.st_rdev == item->devnum) {
-            return -1;  /* already have this one */
+            return -1; /* already have this one */
         }
     }
 
@@ -323,7 +321,7 @@ static int MaybeAddDevice(const char *path)
         return -1;
     }
 
-    item = (SDL_joylist_item *) SDL_calloc(1, sizeof (SDL_joylist_item));
+    item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
     if (item == NULL) {
         SDL_free(name);
         return -1;
@@ -335,8 +333,8 @@ static int MaybeAddDevice(const char *path)
     item->guid = guid;
 
     if ((item->path == NULL) || (item->name == NULL)) {
-         FreeJoylistItem(item);
-         return -1;
+        FreeJoylistItem(item);
+        return -1;
     }
 
     item->device_instance = SDL_GetNextJoystickInstanceID();
@@ -426,7 +424,7 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
 {
     SDL_joylist_item *item;
 
-    item = (SDL_joylist_item *) SDL_calloc(1, sizeof (SDL_joylist_item));
+    item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
     if (item == NULL) {
         return SDL_FALSE;
     }
@@ -437,8 +435,8 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     item->m_bSteamController = SDL_TRUE;
 
     if ((item->path == NULL) || (item->name == NULL)) {
-         FreeJoylistItem(item);
-         return SDL_FALSE;
+        FreeJoylistItem(item);
+        return SDL_FALSE;
     }
 
     *device_instance = item->device_instance = SDL_GetNextJoystickInstanceID();
@@ -523,11 +521,13 @@ static SDL_bool IsJoystickDeviceNode(const char *node)
 
 #ifdef HAVE_INOTIFY
 #ifdef HAVE_INOTIFY_INIT1
-static int SDL_inotify_init1(void) {
+static int SDL_inotify_init1(void)
+{
     return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
 }
 #else
-static int SDL_inotify_init1(void) {
+static int SDL_inotify_init1(void)
+{
     int fd = inotify_init();
     if (fd < 0) {
         return -1;
@@ -544,17 +544,17 @@ static void LINUX_InotifyJoystickDetect(void)
     {
         struct inotify_event event;
         char storage[4096];
-        char enough_for_inotify[sizeof (struct inotify_event) + NAME_MAX + 1];
+        char enough_for_inotify[sizeof(struct inotify_event) + NAME_MAX + 1];
     } buf;
     ssize_t bytes;
     size_t remain = 0;
     size_t len;
     char path[PATH_MAX];
 
-    bytes = read(inotify_fd, &buf, sizeof (buf));
+    bytes = read(inotify_fd, &buf, sizeof(buf));
 
     if (bytes > 0) {
-        remain = (size_t) bytes;
+        remain = (size_t)bytes;
     }
 
     while (remain > 0) {
@@ -570,11 +570,11 @@ static void LINUX_InotifyJoystickDetect(void)
             }
         }
 
-        len = sizeof (struct inotify_event) + buf.event.len;
+        len = sizeof(struct inotify_event) + buf.event.len;
         remain -= len;
 
         if (remain != 0) {
-            SDL_memmove (&buf.storage[0], &buf.storage[len], remain);
+            SDL_memmove(&buf.storage[0], &buf.storage[len], remain);
         }
     }
 }
@@ -591,7 +591,7 @@ static int get_event_joystick_index(int event)
     count = scandir(path, &entries, NULL, alphasort);
     for (i = 0; i < count; ++i) {
         if (SDL_strncmp(entries[i]->d_name, "js", 2) == 0) {
-            joystick_index = SDL_atoi(entries[i]->d_name+2);
+            joystick_index = SDL_atoi(entries[i]->d_name + 2);
         }
         free(entries[i]); /* This should NOT be SDL_free() */
     }
@@ -617,12 +617,12 @@ static int sort_entries(const void *_a, const void *_b)
 
     if (SDL_classic_joysticks) {
         offset = 2; /* strlen("js") */
-        numA = SDL_atoi((*a)->d_name+offset);
-        numB = SDL_atoi((*b)->d_name+offset);
+        numA = SDL_atoi((*a)->d_name + offset);
+        numB = SDL_atoi((*b)->d_name + offset);
     } else {
         offset = 5; /* strlen("event") */
-        numA = SDL_atoi((*a)->d_name+offset);
-        numB = SDL_atoi((*b)->d_name+offset);
+        numA = SDL_atoi((*a)->d_name + offset);
+        numB = SDL_atoi((*b)->d_name + offset);
 
         /* See if we can get the joystick ordering */
         {
@@ -643,7 +643,7 @@ static int sort_entries(const void *_a, const void *_b)
 
 static void LINUX_FallbackJoystickDetect(void)
 {
-    const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
+    const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000; /* Update every 3 seconds */
     Uint32 now = SDL_GetTicks();
 
     if (!last_joy_detect_time || SDL_TICKS_PASSED(now, last_joy_detect_time + SDL_JOY_DETECT_INTERVAL_MS)) {
@@ -682,7 +682,7 @@ static void LINUX_JoystickDetect(void)
     } else
 #endif
 #ifdef HAVE_INOTIFY
-    if (inotify_fd >= 0 && last_joy_detect_time != 0) {
+        if (inotify_fd >= 0 && last_joy_detect_time != 0) {
         LINUX_InotifyJoystickDetect();
     } else
 #endif
@@ -769,7 +769,7 @@ static int LINUX_JoystickInit(void)
         if (inotify_fd < 0) {
             SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                         "Unable to initialize inotify, falling back to polling: %s",
-                        strerror (errno));
+                        strerror(errno));
         } else {
             /* We need to watch for attribute changes in addition to
              * creation, because when a device is first created, it has
@@ -782,7 +782,7 @@ static int LINUX_JoystickInit(void)
                 inotify_fd = -1;
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                             "Unable to add inotify watch, falling back to polling: %s",
-                            strerror (errno));
+                            strerror(errno));
             }
         }
 #endif /* HAVE_INOTIFY */
@@ -796,7 +796,7 @@ static int LINUX_JoystickGetCount(void)
     return numjoysticks;
 }
 
-static SDL_joylist_item * JoystickByDevIndex(int device_index)
+static SDL_joylist_item *JoystickByDevIndex(int device_index)
 {
     SDL_joylist_item *item = SDL_joylist;
 
@@ -813,12 +813,12 @@ static SDL_joylist_item * JoystickByDevIndex(int device_index)
     return item;
 }
 
-static const char * LINUX_JoystickGetDeviceName(int device_index)
+static const char *LINUX_JoystickGetDeviceName(int device_index)
 {
     return JoystickByDevIndex(device_index)->name;
 }
 
-static const char * LINUX_JoystickGetDevicePath(int device_index)
+static const char *LINUX_JoystickGetDevicePath(int device_index)
 {
     return JoystickByDevIndex(device_index)->path;
 }
@@ -832,7 +832,7 @@ static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_inde
 {
 }
 
-static SDL_JoystickGUID LINUX_JoystickGetDeviceGUID( int device_index )
+static SDL_JoystickGUID LINUX_JoystickGetDeviceGUID(int device_index)
 {
     return JoystickByDevIndex(device_index)->guid;
 }
@@ -848,8 +848,8 @@ static int allocate_hatdata(SDL_Joystick *joystick)
     int i;
 
     joystick->hwdata->hats =
-        (struct hwdata_hat *) SDL_malloc(joystick->nhats *
-                                         sizeof(struct hwdata_hat));
+        (struct hwdata_hat *)SDL_malloc(joystick->nhats *
+                                        sizeof(struct hwdata_hat));
     if (joystick->hwdata->hats == NULL) {
         return -1;
     }
@@ -865,8 +865,8 @@ static int allocate_balldata(SDL_Joystick *joystick)
     int i;
 
     joystick->hwdata->balls =
-        (struct hwdata_ball *) SDL_malloc(joystick->nballs *
-                                          sizeof(struct hwdata_ball));
+        (struct hwdata_ball *)SDL_malloc(joystick->nballs *
+                                         sizeof(struct hwdata_ball));
     if (joystick->hwdata->balls == NULL) {
         return -1;
     }
@@ -957,8 +957,8 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
             if (test_bit(i + 1, absbit)) {
                 hat_y = ioctl(fd, EVIOCGABS(i + 1), &absinfo_y);
             }
-            if (GuessIfAxesAreDigitalHat((hat_x < 0 ? (void*)0 : &absinfo_x),
-                                         (hat_y < 0 ? (void*)0 : &absinfo_y))) {
+            if (GuessIfAxesAreDigitalHat((hat_x < 0 ? (void *)0 : &absinfo_x),
+                                         (hat_y < 0 ? (void *)0 : &absinfo_y))) {
                 const int hat_index = (i - ABS_HAT0X) / 2;
                 struct hat_axis_correct *correct = &joystick->hwdata->hat_correct[hat_index];
 #ifdef DEBUG_INPUT_EVENTS
@@ -978,9 +978,9 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
                 joystick->hwdata->has_hat[hat_index] = SDL_TRUE;
                 correct->use_deadzones = use_hat_deadzones;
                 correct->minimum[0] = (hat_x < 0) ? -1 : absinfo_x.minimum;
-                correct->maximum[0] = (hat_x < 0) ?  1 : absinfo_x.maximum;
+                correct->maximum[0] = (hat_x < 0) ? 1 : absinfo_x.maximum;
                 correct->minimum[1] = (hat_y < 0) ? -1 : absinfo_y.minimum;
-                correct->maximum[1] = (hat_y < 0) ?  1 : absinfo_y.maximum;
+                correct->maximum[1] = (hat_y < 0) ? 1 : absinfo_y.maximum;
                 ++joystick->nhats;
             }
         }
@@ -1083,9 +1083,9 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
                     joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
                     joystick->hwdata->has_hat[hat_index] = SDL_TRUE;
                     joystick->hwdata->hat_correct[hat_index].minimum[0] = -1;
-                    joystick->hwdata->hat_correct[hat_index].maximum[0] =  1;
+                    joystick->hwdata->hat_correct[hat_index].maximum[0] = 1;
                     joystick->hwdata->hat_correct[hat_index].minimum[1] = -1;
-                    joystick->hwdata->hat_correct[hat_index].maximum[1] =  1;
+                    joystick->hwdata->hat_correct[hat_index].maximum[1] = 1;
                 }
             } else {
 #ifdef DEBUG_INPUT_EVENTS
@@ -1119,7 +1119,6 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
         }
     }
 }
-
 
 /* This is used to do the heavy lifting for LINUX_JoystickOpen and
    also LINUX_JoystickGetGamepadMapping, so we can query the hardware
@@ -1167,7 +1166,6 @@ static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
     return 0;
 }
 
-
 /* Function to open a joystick for use.
    The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
@@ -1191,7 +1189,7 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     if (PrepareJoystickHwdata(joystick, item) == -1) {
         SDL_free(joystick->hwdata);
         joystick->hwdata = NULL;
-        return -1;  /* SDL_SetError will already have been called */
+        return -1; /* SDL_SetError will already have been called */
     }
 
     SDL_assert(item->hwdata == NULL);
@@ -1281,9 +1279,9 @@ static void HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
     struct hwdata_hat *the_hat;
     struct hat_axis_correct *correct;
     const Uint8 position_map[3][3] = {
-        {SDL_HAT_LEFTUP, SDL_HAT_UP, SDL_HAT_RIGHTUP},
-        {SDL_HAT_LEFT, SDL_HAT_CENTERED, SDL_HAT_RIGHT},
-        {SDL_HAT_LEFTDOWN, SDL_HAT_DOWN, SDL_HAT_RIGHTDOWN}
+        { SDL_HAT_LEFTUP, SDL_HAT_UP, SDL_HAT_RIGHTUP },
+        { SDL_HAT_LEFT, SDL_HAT_CENTERED, SDL_HAT_RIGHT },
+        { SDL_HAT_LEFTDOWN, SDL_HAT_DOWN, SDL_HAT_RIGHTDOWN }
     };
 
     the_hat = &stick->hwdata->hats[hatnum];
@@ -1325,7 +1323,6 @@ static void HandleBall(SDL_Joystick *stick, Uint8 ball, int axis, int value)
 {
     stick->hwdata->balls[ball].axis[axis] += value;
 }
-
 
 static int AxisCorrect(SDL_Joystick *joystick, int which, int value)
 {
@@ -1375,11 +1372,11 @@ static void PollAllValues(SDL_Joystick *joystick)
 
 #ifdef DEBUG_INPUT_EVENTS
                 SDL_Log("Joystick : Re-read Axis %d (%d) val= %d\n",
-                    joystick->hwdata->abs_map[i], i, absinfo.value);
+                        joystick->hwdata->abs_map[i], i, absinfo.value);
 #endif
                 SDL_PrivateJoystickAxis(joystick,
-                        joystick->hwdata->abs_map[i],
-                        absinfo.value);
+                                        joystick->hwdata->abs_map[i],
+                                        absinfo.value);
             }
         }
     }
@@ -1400,16 +1397,16 @@ static void PollAllValues(SDL_Joystick *joystick)
 
     /* Poll all buttons */
     SDL_zeroa(keyinfo);
-    if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof (keyinfo)), keyinfo) >= 0) {
+    if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof(keyinfo)), keyinfo) >= 0) {
         for (i = 0; i < KEY_MAX; i++) {
             if (joystick->hwdata->has_key[i]) {
                 const Uint8 value = test_bit(i, keyinfo) ? SDL_PRESSED : SDL_RELEASED;
 #ifdef DEBUG_INPUT_EVENTS
                 SDL_Log("Joystick : Re-read Button %d (%d) val= %d\n",
-                    joystick->hwdata->key_map[i], i, value);
+                        joystick->hwdata->key_map[i], i, value);
 #endif
                 SDL_PrivateJoystickButton(joystick,
-                        joystick->hwdata->key_map[i], value);
+                                          joystick->hwdata->key_map[i], value);
             }
         }
     }
@@ -1434,8 +1431,8 @@ static void HandleInputEvents(SDL_Joystick *joystick)
 
             /* If the kernel sent a SYN_DROPPED, we are supposed to ignore the
                rest of the packet (the end of it signified by a SYN_REPORT) */
-            if ( joystick->hwdata->recovering_from_dropped &&
-                 ((events[i].type != EV_SYN) || (code != SYN_REPORT)) ) {
+            if (joystick->hwdata->recovering_from_dropped &&
+                ((events[i].type != EV_SYN) || (code != SYN_REPORT))) {
                 continue;
             }
 
@@ -1481,16 +1478,16 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 break;
             case EV_SYN:
                 switch (code) {
-                case SYN_DROPPED :
+                case SYN_DROPPED:
 #ifdef DEBUG_INPUT_EVENTS
                     SDL_Log("Event SYN_DROPPED detected\n");
 #endif
                     joystick->hwdata->recovering_from_dropped = SDL_TRUE;
                     break;
-                case SYN_REPORT :
+                case SYN_REPORT:
                     if (joystick->hwdata->recovering_from_dropped) {
                         joystick->hwdata->recovering_from_dropped = SDL_FALSE;
-                        PollAllValues(joystick);  /* try to sync up to current state now */
+                        PollAllValues(joystick); /* try to sync up to current state now */
                     }
                     break;
                 default:
@@ -1575,7 +1572,7 @@ static void LINUX_JoystickUpdate(SDL_Joystick *joystick)
         if (xrel || yrel) {
             joystick->hwdata->balls[i].axis[0] = 0;
             joystick->hwdata->balls[i].axis[1] = 0;
-            SDL_PrivateJoystickBall(joystick, (Uint8) i, xrel, yrel);
+            SDL_PrivateJoystickBall(joystick, (Uint8)i, xrel, yrel);
         }
     }
 }
@@ -1657,7 +1654,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 
     /* We temporarily open the device to check how it's configured. Make
        a fake SDL_Joystick object to do so. */
-    joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
+    joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
     if (joystick == NULL) {
         SDL_OutOfMemory();
         return SDL_FALSE;
@@ -1677,7 +1674,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (PrepareJoystickHwdata(joystick, item) == -1) {
         SDL_free(joystick->hwdata);
         SDL_free(joystick);
-        return SDL_FALSE;  /* SDL_SetError will already have been called */
+        return SDL_FALSE; /* SDL_SetError will already have been called */
     }
 
     /* don't assign `item->hwdata` so it's not in any global state. */
@@ -1957,7 +1954,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             out->dpdown.target = hat | 0x4;
             mapped |= 0xF;
 #ifdef DEBUG_GAMEPAD_MAPPING
-        SDL_Log("Mapped DPUP+DOWN+LEFT+RIGHT to hat 0 (ABS_HAT0X, ABS_HAT0Y)");
+            SDL_Log("Mapped DPUP+DOWN+LEFT+RIGHT to hat 0 (ABS_HAT0X, ABS_HAT0Y)");
 #endif
         } else if (joystick->hwdata->has_abs[ABS_HAT0X] && joystick->hwdata->has_abs[ABS_HAT0Y]) {
             out->dpleft.kind = EMappingKind_Axis;
@@ -1970,8 +1967,8 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
             out->dpdown.target = joystick->hwdata->abs_map[ABS_HAT0Y];
             mapped |= 0xF;
 #ifdef DEBUG_GAMEPAD_MAPPING
-        SDL_Log("Mapped DPUP+DOWN to axis %d (ABS_HAT0Y)", out->dpup.target);
-        SDL_Log("Mapped DPLEFT+RIGHT to axis %d (ABS_HAT0X)", out->dpleft.target);
+            SDL_Log("Mapped DPUP+DOWN to axis %d (ABS_HAT0Y)", out->dpup.target);
+            SDL_Log("Mapped DPLEFT+RIGHT to axis %d (ABS_HAT0X)", out->dpleft.target);
 #endif
         }
     }
@@ -2013,8 +2010,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     return SDL_TRUE;
 }
 
-SDL_JoystickDriver SDL_LINUX_JoystickDriver =
-{
+SDL_JoystickDriver SDL_LINUX_JoystickDriver = {
     LINUX_JoystickInit,
     LINUX_JoystickGetCount,
     LINUX_JoystickDetect,

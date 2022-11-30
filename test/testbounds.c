@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 
     total = SDL_GetNumVideoDisplays();
     for (i = 0; i < total; i++) {
-        SDL_Rect bounds = { -1,-1,-1,-1 }, usable = { -1,-1,-1,-1 };
+        SDL_Rect bounds = { -1, -1, -1, -1 }, usable = { -1, -1, -1, -1 };
         SDL_GetDisplayBounds(i, &bounds);
         SDL_GetDisplayUsableBounds(i, &usable);
         SDL_Log("Display #%d ('%s'): bounds={(%d,%d),%dx%d}, usable={(%d,%d),%dx%d}",

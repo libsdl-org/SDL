@@ -27,8 +27,7 @@
 #include "SDL_waylandevents_c.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
-int
-Wayland_InitKeyboard(_THIS)
+int Wayland_InitKeyboard(_THIS)
 {
 #ifdef SDL_USE_IME
     SDL_VideoData *driverdata = _this->driverdata;
@@ -40,8 +39,7 @@ Wayland_InitKeyboard(_THIS)
     return 0;
 }
 
-void
-Wayland_QuitKeyboard(_THIS)
+void Wayland_QuitKeyboard(_THIS)
 {
 #ifdef SDL_USE_IME
     SDL_VideoData *driverdata = _this->driverdata;
@@ -51,8 +49,7 @@ Wayland_QuitKeyboard(_THIS)
 #endif
 }
 
-void
-Wayland_StartTextInput(_THIS)
+void Wayland_StartTextInput(_THIS)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
@@ -93,8 +90,7 @@ Wayland_StartTextInput(_THIS)
     }
 }
 
-void
-Wayland_StopTextInput(_THIS)
+void Wayland_StopTextInput(_THIS)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
@@ -114,8 +110,7 @@ Wayland_StopTextInput(_THIS)
 #endif
 }
 
-void
-Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
+void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 

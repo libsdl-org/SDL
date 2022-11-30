@@ -29,10 +29,9 @@
 static struct
 {
     SDL_AudioSpec spec;
-    Uint8 *sound;               /* Pointer to wave data */
-    Uint32 soundlen;            /* Length of wave data */
+    Uint8 *sound; /* Pointer to wave data */
+    Uint32 soundlen; /* Length of wave data */
 } wave;
-
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -43,14 +42,12 @@ quit(int rc)
 }
 
 static int done = 0;
-void
-poked(int sig)
+void poked(int sig)
 {
     done = 1;
 }
 
-void
-loop()
+void loop()
 {
 #ifdef __EMSCRIPTEN__
     if (done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)) {
@@ -60,19 +57,18 @@ loop()
     {
         /* The device from SDL_OpenAudio() is always device #1. */
         const Uint32 queued = SDL_GetQueuedAudioSize(1);
-        SDL_Log("Device has %u bytes queued.\n", (unsigned int) queued);
-        if (queued <= 8192) {  /* time to requeue the whole thing? */
+        SDL_Log("Device has %u bytes queued.\n", (unsigned int)queued);
+        if (queued <= 8192) { /* time to requeue the whole thing? */
             if (SDL_QueueAudio(1, wave.sound, wave.soundlen) == 0) {
-                SDL_Log("Device queued %u more bytes.\n", (unsigned int) wave.soundlen);
+                SDL_Log("Device queued %u more bytes.\n", (unsigned int)wave.soundlen);
             } else {
-                SDL_Log("Device FAILED to queue %u more bytes: %s\n", (unsigned int) wave.soundlen, SDL_GetError());
+                SDL_Log("Device FAILED to queue %u more bytes: %s\n", (unsigned int)wave.soundlen, SDL_GetError());
             }
         }
     }
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     char *filename = NULL;
 
@@ -98,7 +94,7 @@ main(int argc, char *argv[])
         quit(1);
     }
 
-    wave.spec.callback = NULL;  /* we'll push audio. */
+    wave.spec.callback = NULL; /* we'll push audio. */
 
 #if HAVE_SIGNAL_H
     /* Set the signals */
@@ -129,14 +125,14 @@ main(int argc, char *argv[])
     /* Note that we stuff the entire audio buffer into the queue in one
        shot. Most apps would want to feed it a little at a time, as it
        plays, but we're going for simplicity here. */
-    
+
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING)) {
         loop();
 
-        SDL_Delay(100);  /* let it play for awhile. */
+        SDL_Delay(100); /* let it play for awhile. */
     }
 #endif
 
