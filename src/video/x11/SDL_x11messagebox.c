@@ -40,8 +40,8 @@
 #include <errno.h>
 #endif
 
-#define MAX_BUTTONS       8 /* Maximum number of buttons supported */
-#define MIN_BUTTON_WIDTH  64 /* Minimum button width */
+#define MAX_BUTTONS       8   /* Maximum number of buttons supported */
+#define MIN_BUTTON_WIDTH  64  /* Minimum button width */
 #define MIN_DIALOG_WIDTH  200 /* Minimum dialog width */
 #define MIN_DIALOG_HEIGHT 100 /* Minimum dialog height */
 
@@ -49,11 +49,11 @@ static const char g_MessageBoxFontLatin1[] = "-*-*-medium-r-normal--0-120-*-*-p-
 static const char g_MessageBoxFont[] = "-*-*-medium-r-normal--*-120-*-*-*-*-*-*";
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_MAX] = {
-    { 56, 54, 53 }, /* SDL_MESSAGEBOX_COLOR_BACKGROUND, */
+    { 56, 54, 53 },    /* SDL_MESSAGEBOX_COLOR_BACKGROUND, */
     { 209, 207, 205 }, /* SDL_MESSAGEBOX_COLOR_TEXT, */
     { 140, 135, 129 }, /* SDL_MESSAGEBOX_COLOR_BUTTON_BORDER, */
-    { 105, 102, 99 }, /* SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND, */
-    { 205, 202, 53 }, /* SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED, */
+    { 105, 102, 99 },  /* SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND, */
+    { 205, 202, 53 },  /* SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED, */
 };
 
 #define SDL_MAKE_RGB(_r, _g, _b) (((Uint32)(_r) << 16) | \
@@ -62,8 +62,8 @@ static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_MAX] = {
 
 typedef struct SDL_MessageBoxButtonDataX11
 {
-    int x, y; /* Text position */
-    int length; /* Text length */
+    int x, y;       /* Text position */
+    int length;     /* Text length */
     int text_width; /* Text width */
 
     SDL_Rect rect; /* Rectangle for entire button */
@@ -73,8 +73,8 @@ typedef struct SDL_MessageBoxButtonDataX11
 
 typedef struct TextLineData
 {
-    int width; /* Width of this text line */
-    int length; /* String length of this text line */
+    int width;        /* Width of this text line */
+    int length;       /* String length of this text line */
     const char *text; /* Text for this line */
 } TextLineData;
 
@@ -91,20 +91,20 @@ typedef struct SDL_MessageBoxDataX11
     Atom wm_protocols;
     Atom wm_delete_message;
 
-    int dialog_width; /* Dialog box width. */
+    int dialog_width;  /* Dialog box width. */
     int dialog_height; /* Dialog box height. */
 
-    XFontSet font_set; /* for UTF-8 systems */
+    XFontSet font_set;        /* for UTF-8 systems */
     XFontStruct *font_struct; /* Latin1 (ASCII) fallback. */
-    int xtext, ytext; /* Text position to start drawing at. */
-    int numlines; /* Count of Text lines. */
-    int text_height; /* Height for text lines. */
+    int xtext, ytext;         /* Text position to start drawing at. */
+    int numlines;             /* Count of Text lines. */
+    int text_height;          /* Height for text lines. */
     TextLineData *linedata;
 
     int *pbuttonid; /* Pointer to user return buttonid value. */
 
     int button_press_index; /* Index into buttondata/buttonpos for button which is pressed (or -1). */
-    int mouse_over_index; /* Index into buttondata/buttonpos for button mouse is over (or -1). */
+    int mouse_over_index;   /* Index into buttondata/buttonpos for button mouse is over (or -1). */
 
     int numbuttons; /* Count of buttons. */
     const SDL_MessageBoxButtonData *buttondata;
@@ -618,7 +618,7 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
     }
 
     data->button_press_index = -1; /* Reset what button is currently depressed. */
-    data->mouse_over_index = -1; /* Reset what button the mouse is over. */
+    data->mouse_over_index = -1;   /* Reset what button the mouse is over. */
 
     while (!close_dialog) {
         XEvent e;
@@ -817,7 +817,7 @@ int X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         close(fds[0]);
         close(fds[1]);
         return X11_ShowMessageBoxImpl(messageboxdata, buttonid); /* oh well. */
-    } else if (pid == 0) { /* we're the child */
+    } else if (pid == 0) {                                       /* we're the child */
         int exitcode = 0;
         close(fds[0]);
         status = X11_ShowMessageBoxImpl(messageboxdata, buttonid);
@@ -828,7 +828,7 @@ int X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         }
         close(fds[1]);
         _exit(exitcode); /* don't run atexit() stuff, static destructors, etc. */
-    } else { /* we're the parent */
+    } else {             /* we're the parent */
         pid_t rc;
         close(fds[1]);
         do {

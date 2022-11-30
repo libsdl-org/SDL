@@ -95,7 +95,7 @@ typedef enum
 
 typedef enum
 {
-    k_eWiiCommunicationState_None, /* No special communications happening */
+    k_eWiiCommunicationState_None,                  /* No special communications happening */
     k_eWiiCommunicationState_CheckMotionPlusStage1, /* Sent standard extension identify request */
     k_eWiiCommunicationState_CheckMotionPlusStage2, /* Sent Motion Plus extension identify request */
 } EWiiCommunicationState;

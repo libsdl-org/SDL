@@ -24,7 +24,7 @@
 
 /* Allow access to a raw mixing buffer */
 
-#include <stdio.h> /* For perror() */
+#include <stdio.h>  /* For perror() */
 #include <string.h> /* For strerror() */
 #include <errno.h>
 #include <unistd.h>

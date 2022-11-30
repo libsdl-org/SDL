@@ -114,6 +114,7 @@ static void NETBSDAUDIO_Status(_THIS)
             this->spec.format,
             this->spec.size);
     /* *INDENT-ON* */ /* clang-format on */
+
 #endif /* DEBUG_AUDIO */
 }
 

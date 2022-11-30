@@ -49,14 +49,14 @@ typedef struct SDL_RenderDriver SDL_RenderDriver;
 struct SDL_Texture
 {
     const void *magic;
-    Uint32 format; /**< The pixel format of the texture */
-    int access; /**< SDL_TextureAccess */
-    int w; /**< The width of the texture */
-    int h; /**< The height of the texture */
-    int modMode; /**< The texture modulation mode */
+    Uint32 format;           /**< The pixel format of the texture */
+    int access;              /**< SDL_TextureAccess */
+    int w;                   /**< The width of the texture */
+    int h;                   /**< The height of the texture */
+    int modMode;             /**< The texture modulation mode */
     SDL_BlendMode blendMode; /**< The texture blend mode */
     SDL_ScaleMode scaleMode; /**< The texture scale mode */
-    SDL_Color color; /**< Texture modulation values */
+    SDL_Color color;         /**< Texture modulation values */
 
     SDL_Renderer *renderer;
 
@@ -258,7 +258,7 @@ struct SDL_Renderer
     SDL_Texture *target;
     SDL_mutex *target_mutex;
 
-    SDL_Color color; /**< Color for drawing operations values */
+    SDL_Color color;         /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
 
     SDL_bool always_batch;

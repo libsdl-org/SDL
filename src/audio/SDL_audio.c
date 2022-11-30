@@ -518,9 +518,9 @@ static void SDLCALL SDL_BufferQueueDrainCallback(void *userdata, Uint8 *stream, 
     SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
     size_t dequeued;
 
-    SDL_assert(device != NULL); /* this shouldn't ever happen, right?! */
+    SDL_assert(device != NULL);     /* this shouldn't ever happen, right?! */
     SDL_assert(!device->iscapture); /* this shouldn't ever happen, right?! */
-    SDL_assert(len >= 0); /* this shouldn't ever happen, right?! */
+    SDL_assert(len >= 0);           /* this shouldn't ever happen, right?! */
 
     dequeued = SDL_ReadFromDataQueue(device->buffer_queue, stream, len);
     stream += dequeued;
@@ -537,9 +537,9 @@ static void SDLCALL SDL_BufferQueueFillCallback(void *userdata, Uint8 *stream, i
     /* this function always holds the mixer lock before being called. */
     SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
 
-    SDL_assert(device != NULL); /* this shouldn't ever happen, right?! */
+    SDL_assert(device != NULL);    /* this shouldn't ever happen, right?! */
     SDL_assert(device->iscapture); /* this shouldn't ever happen, right?! */
-    SDL_assert(len >= 0); /* this shouldn't ever happen, right?! */
+    SDL_assert(len >= 0);          /* this shouldn't ever happen, right?! */
 
     /* note that if this needs to allocate more space and run out of memory,
        we have no choice but to quietly drop the data and hope it works out
@@ -575,11 +575,11 @@ SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
     SDL_AudioDevice *device = get_audio_device(devid);
     Uint32 rc;
 
-    if ((len == 0) || /* nothing to do? */
-        (!device) || /* called with bogus device id */
-        (!device->iscapture) || /* playback devices can't dequeue */
+    if ((len == 0) ||                                                     /* nothing to do? */
+        (!device) ||                                                      /* called with bogus device id */
+        (!device->iscapture) ||                                           /* playback devices can't dequeue */
         (device->callbackspec.callback != SDL_BufferQueueFillCallback)) { /* not set for queueing */
-        return 0; /* just report zero bytes dequeued. */
+        return 0;                                                         /* just report zero bytes dequeued. */
     }
 
     current_audio.impl.LockDevice(device);

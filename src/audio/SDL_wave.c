@@ -52,15 +52,15 @@ static int SafeMult(size_t *f1, size_t f2)
 
 typedef struct ADPCM_DecoderState
 {
-    Uint32 channels; /* Number of channels. */
-    size_t blocksize; /* Size of an ADPCM block in bytes. */
+    Uint32 channels;        /* Number of channels. */
+    size_t blocksize;       /* Size of an ADPCM block in bytes. */
     size_t blockheadersize; /* Size of an ADPCM block header in bytes. */
     size_t samplesperblock; /* Number of samples per channel in an ADPCM block. */
-    size_t framesize; /* Size of a sample frame (16-bit PCM) in bytes. */
-    Sint64 framestotal; /* Total number of sample frames. */
-    Sint64 framesleft; /* Number of sample frames still to be decoded. */
-    void *ddata; /* Decoder data from initialization. */
-    void *cstate; /* Decoding state for each channel. */
+    size_t framesize;       /* Size of a sample frame (16-bit PCM) in bytes. */
+    Sint64 framestotal;     /* Total number of sample frames. */
+    Sint64 framesleft;      /* Number of sample frames still to be decoded. */
+    void *ddata;            /* Decoder data from initialization. */
+    void *cstate;           /* Decoding state for each channel. */
 
     /* ADPCM data. */
     struct

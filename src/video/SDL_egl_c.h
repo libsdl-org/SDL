@@ -41,7 +41,7 @@ typedef struct SDL_EGL_VideoData
     int egl_version_major, egl_version_minor;
     EGLint egl_required_visual_id;
     SDL_bool is_offscreen; /* whether EGL display was offscreen */
-    EGLenum apitype; /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
+    EGLenum apitype;       /* EGL_OPENGL_ES_API, EGL_OPENGL_API, etc */
 
     EGLDisplay(EGLAPIENTRY *eglGetDisplay)(NativeDisplayType display);
     EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplay)(EGLenum platform,

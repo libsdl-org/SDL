@@ -58,7 +58,7 @@ static char *readSymLink(const char *path)
             break; /* not a symlink, i/o error, etc. */
         } else if (rc < len) {
             retval[rc] = '\0'; /* readlink doesn't null-terminate. */
-            return retval; /* we're good to go. */
+            return retval;     /* we're good to go. */
         }
 
         len *= 2; /* grow buffer, try again. */

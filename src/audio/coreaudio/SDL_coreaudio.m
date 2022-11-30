@@ -1134,7 +1134,7 @@ static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int i
     spec->channels = [session outputNumberOfChannels];
     return 0;
 }
-#else /* MACOSX_COREAUDIO */
+#else  /* MACOSX_COREAUDIO */
 static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
 {
     AudioDeviceID devid;

@@ -85,7 +85,7 @@ struct joystick_hwdata
 
     SDL_bool bXInputDevice; /* SDL_TRUE if this device supports using the xinput API rather than DirectInput */
     SDL_bool bXInputHaptic; /* Supports force feedback via XInput. */
-    Uint8 userid; /* XInput userid index for this joystick */
+    Uint8 userid;           /* XInput userid index for this joystick */
     DWORD dwPacketNumber;
 };
 

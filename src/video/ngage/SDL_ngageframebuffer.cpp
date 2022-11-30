@@ -271,7 +271,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
                 }
             } else {
                 for (TInt y = 0; y < sourceRectHeight; y++) {
-                    TUint16 *bitmapPos = bitmapLine; /* 2 bytes per pixel */
+                    TUint16 *bitmapPos = bitmapLine;             /* 2 bytes per pixel */
                     TUint16 *screenMemoryLinePos = screenMemory; /* 2 bytes per pixel */
                     for (TInt x = 0; x < sourceRectWidth; x++) {
                         __ASSERT_DEBUG(screenMemory < (screenBuffer + phdata->NGAGE_ScreenSize.iWidth * phdata->NGAGE_ScreenSize.iHeight), User::Panic(_L("SDL"), KErrCorrupt));
@@ -295,7 +295,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
                 TUint16 *screenMemory = screenBuffer + targetStartOffset;
 
                 for (TInt y = 0; y < sourceRectHeight; y++) {
-                    TUint8 *bitmapPos = bitmapLine; /* 1 byte per pixel */
+                    TUint8 *bitmapPos = bitmapLine;              /* 1 byte per pixel */
                     TUint16 *screenMemoryLinePos = screenMemory; /* 2 bytes per pixel */
                     /* Convert each pixel from 256 palette to 4k color values */
                     for (TInt x = 0; x < sourceRectWidth; x++) {
@@ -312,7 +312,7 @@ void DirectDraw(_THIS, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
                 TUint8 *bitmapLine = (TUint8 *)screen->pixels + sourceStartOffset;
                 TUint32 *screenMemory = reinterpret_cast<TUint32 *>(screenBuffer + targetStartOffset);
                 for (TInt y = 0; y < sourceRectHeight; y++) {
-                    TUint8 *bitmapPos = bitmapLine; /* 1 byte per pixel */
+                    TUint8 *bitmapPos = bitmapLine;              /* 1 byte per pixel */
                     TUint32 *screenMemoryLinePos = screenMemory; /* 2 bytes per pixel */
                     /* Convert each pixel from 256 palette to 4k color values */
                     for (TInt x = 0; x < sourceRectWidth; x++) {

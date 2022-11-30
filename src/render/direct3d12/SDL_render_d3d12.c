@@ -1159,9 +1159,9 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     } else {
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
     }
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; /* All Windows Store apps must use this SwapEffect. */
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;               /* All Windows Store apps must use this SwapEffect. */
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
-                          DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING; /* To support presenting with allow tearing on */
+                          DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
     if (SDL_GetWindowWMInfo(renderer->window, &windowinfo, SDL_SYSWM_CURRENT_VERSION) < 0 ||
         windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
@@ -3029,8 +3029,8 @@ SDL_RenderDriver D3D12_RenderDriver = {
             SDL_RENDERER_ACCELERATED |
             SDL_RENDERER_PRESENTVSYNC |
             SDL_RENDERER_TARGETTEXTURE), /* flags.  see SDL_RendererFlags */
-        6, /* num_texture_formats */
-        { /* texture_formats */
+        6,                               /* num_texture_formats */
+        {                                /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_RGB888,
           SDL_PIXELFORMAT_YV12,
@@ -3038,7 +3038,7 @@ SDL_RenderDriver D3D12_RenderDriver = {
           SDL_PIXELFORMAT_NV12,
           SDL_PIXELFORMAT_NV21 },
         16384, /* max_texture_width */
-        16384 /* max_texture_height */
+        16384  /* max_texture_height */
     }
 };
 

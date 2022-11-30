@@ -607,9 +607,9 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
 
     /* Set global stuff. */
     SDL_memset(dest, 0, sizeof(DIEFFECT));
-    dest->dwSize = sizeof(DIEFFECT); /* Set the structure size. */
-    dest->dwSamplePeriod = 0; /* Not used by us. */
-    dest->dwGain = 10000; /* Gain is set globally, not locally. */
+    dest->dwSize = sizeof(DIEFFECT);     /* Set the structure size. */
+    dest->dwSamplePeriod = 0;            /* Not used by us. */
+    dest->dwGain = 10000;                /* Gain is set globally, not locally. */
     dest->dwFlags = DIEFF_OBJECTOFFSETS; /* Seems obligatory. */
 
     /* Envelope. */

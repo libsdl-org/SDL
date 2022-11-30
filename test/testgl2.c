@@ -152,7 +152,7 @@ Render()
     ctx.glVertex3fv(cube[2]);
     ctx.glColor3fv(color[7]);
     ctx.glVertex3fv(cube[7]);
-#else /* flat cube */
+#else  /* flat cube */
     ctx.glColor3f(1.0, 0.0, 0.0);
     ctx.glVertex3fv(cube[0]);
     ctx.glVertex3fv(cube[1]);

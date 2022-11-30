@@ -24,9 +24,9 @@
 
 typedef struct SDL_DataQueuePacket
 {
-    size_t datalen; /* bytes currently in use in this packet. */
-    size_t startpos; /* bytes currently consumed in this packet. */
-    struct SDL_DataQueuePacket *next; /* next item in linked list. */
+    size_t datalen;                        /* bytes currently in use in this packet. */
+    size_t startpos;                       /* bytes currently consumed in this packet. */
+    struct SDL_DataQueuePacket *next;      /* next item in linked list. */
     Uint8 data[SDL_VARIABLE_LENGTH_ARRAY]; /* packet data */
 } SDL_DataQueuePacket;
 
@@ -35,8 +35,8 @@ struct SDL_DataQueue
     SDL_DataQueuePacket *head; /* device fed from here. */
     SDL_DataQueuePacket *tail; /* queue fills to here. */
     SDL_DataQueuePacket *pool; /* these are unused packets. */
-    size_t packet_size; /* size of new packets */
-    size_t queued_bytes; /* number of bytes of data in the queue. */
+    size_t packet_size;        /* size of new packets */
+    size_t queued_bytes;       /* number of bytes of data in the queue. */
 };
 
 static void SDL_FreeDataQueueList(SDL_DataQueuePacket *packet)

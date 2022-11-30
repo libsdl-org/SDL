@@ -23,11 +23,11 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#include <stdlib.h> /* fgets */
-#include <stdio.h> /* FILE, STDOUT_FILENO, fdopen, fclose */
-#include <unistd.h> /* pid_t, pipe, fork, close, dup2, execvp, _exit */
+#include <stdlib.h>   /* fgets */
+#include <stdio.h>    /* FILE, STDOUT_FILENO, fdopen, fclose */
+#include <unistd.h>   /* pid_t, pipe, fork, close, dup2, execvp, _exit */
 #include <sys/wait.h> /* waitpid, WIFEXITED, WEXITSTATUS */
-#include <string.h> /* strerr */
+#include <string.h>   /* strerr */
 #include <errno.h>
 
 #include "SDL_waylandmessagebox.h"

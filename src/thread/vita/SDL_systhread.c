@@ -32,9 +32,9 @@
 #include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
 
-#define VITA_THREAD_STACK_SIZE_MIN     0x1000 // 4KiB
+#define VITA_THREAD_STACK_SIZE_MIN     0x1000    // 4KiB
 #define VITA_THREAD_STACK_SIZE_MAX     0x2000000 // 32MiB
-#define VITA_THREAD_STACK_SIZE_DEFAULT 0x10000 // 64KiB
+#define VITA_THREAD_STACK_SIZE_DEFAULT 0x10000   // 64KiB
 #define VITA_THREAD_NAME_MAX           32
 
 #define VITA_THREAD_PRIORITY_LOW           191
@@ -72,11 +72,11 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     thread->handle = sceKernelCreateThread(
         thread_name, // name
         ThreadEntry, // function to run
-        0, // priority. 0 means priority of calling thread
-        stack_size, // stack size
-        0, // attibutes. always 0
-        0, // cpu affinity mask. 0 = all CPUs
-        NULL // opt. always NULL
+        0,           // priority. 0 means priority of calling thread
+        stack_size,  // stack size
+        0,           // attibutes. always 0
+        0,           // cpu affinity mask. 0 = all CPUs
+        NULL         // opt. always NULL
     );
 
     if (thread->handle < 0) {

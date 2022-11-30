@@ -40,10 +40,10 @@ struct haptic_hwdata
 #if SDL_HAPTIC_DINPUT
     LPDIRECTINPUTDEVICE8 device;
 #endif
-    DWORD axes[3]; /* Axes to use. */
+    DWORD axes[3];        /* Axes to use. */
     SDL_bool is_joystick; /* Device is loaded as joystick. */
-    Uint8 bXInputHaptic; /* Supports force feedback via XInput. */
-    Uint8 userid; /* XInput userid index for this joystick */
+    Uint8 bXInputHaptic;  /* Supports force feedback via XInput. */
+    Uint8 userid;         /* XInput userid index for this joystick */
     SDL_Thread *thread;
     SDL_mutex *mutex;
     Uint32 stopTicks;
@@ -78,7 +78,7 @@ typedef struct SDL_hapticlist_item
     DIDEVCAPS capabilities;
 #endif
     SDL_bool bXInputHaptic; /* Supports force feedback via XInput. */
-    Uint8 userid; /* XInput userid index for this joystick */
+    Uint8 userid;           /* XInput userid index for this joystick */
     struct SDL_hapticlist_item *next;
 } SDL_hapticlist_item;
 

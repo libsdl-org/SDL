@@ -30,7 +30,7 @@
 typedef struct SDL_VideoData
 {
     SDL_bool egl_initialized; /* OpenGL ES device initialization status */
-    uint32_t egl_refcount; /* OpenGL ES reference count              */
+    uint32_t egl_refcount;    /* OpenGL ES reference count              */
 
 } SDL_VideoData;
 

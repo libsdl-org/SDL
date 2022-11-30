@@ -703,7 +703,7 @@ int WIN_GetWindowBordersSize(_THIS, SDL_Window *window, int *top, int *left, int
     *right = rcClient.right;
 
     return 0;
-#else /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#else  /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     HWND hwnd = ((SDL_WindowData *)window->driverdata)->hwnd;
     RECT rcClient, rcWindow;
     POINT ptDiff;

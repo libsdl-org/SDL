@@ -30,7 +30,7 @@
 #include <SDL3/SDL_test.h>
 
 #include <stdlib.h> /* Needed for srand() and rand() */
-#include <time.h> /* Needed for time() */
+#include <time.h>   /* Needed for time() */
 
 /* Initialize random number generator with two integer variables */
 

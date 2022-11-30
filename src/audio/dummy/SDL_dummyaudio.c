@@ -28,6 +28,7 @@
 static int DUMMYAUDIO_OpenDevice(_THIS, const char *devname)
 {
     _this->hidden = (void *)0x1; /* just something non-NULL */
+
     return 0; /* always succeeds. */
 }
 

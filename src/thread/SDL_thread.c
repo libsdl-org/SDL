@@ -393,7 +393,7 @@ SDL_CreateThread(int(SDLCALL *fn)(void *),
         char *endp = NULL;
         const Sint64 hintval = SDL_strtoll(stackhint, &endp, 10);
         if ((*stackhint != '\0') && (*endp == '\0')) { /* a valid number? */
-            if (hintval > 0) { /* reject bogus values. */
+            if (hintval > 0) {                         /* reject bogus values. */
                 stacksize = (size_t)hintval;
             }
         }

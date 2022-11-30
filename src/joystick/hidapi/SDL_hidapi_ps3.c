@@ -430,11 +430,11 @@ static void HIDAPI_DriverPS3_HandleStatePacket(SDL_Joystick *joystick, SDL_Drive
             23, /* SDL_CONTROLLER_BUTTON_B */
             25, /* SDL_CONTROLLER_BUTTON_X */
             22, /* SDL_CONTROLLER_BUTTON_Y */
-            0, /* SDL_CONTROLLER_BUTTON_BACK */
-            0, /* SDL_CONTROLLER_BUTTON_GUIDE */
-            0, /* SDL_CONTROLLER_BUTTON_START */
-            0, /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
-            0, /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
+            0,  /* SDL_CONTROLLER_BUTTON_BACK */
+            0,  /* SDL_CONTROLLER_BUTTON_GUIDE */
+            0,  /* SDL_CONTROLLER_BUTTON_START */
+            0,  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
+            0,  /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
             20, /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
             21, /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
             14, /* SDL_CONTROLLER_BUTTON_DPAD_UP */
@@ -752,17 +752,17 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket(SDL_Joystick *joystick,
             12, /* SDL_CONTROLLER_BUTTON_B */
             14, /* SDL_CONTROLLER_BUTTON_X */
             11, /* SDL_CONTROLLER_BUTTON_Y */
-            0, /* SDL_CONTROLLER_BUTTON_BACK */
-            0, /* SDL_CONTROLLER_BUTTON_GUIDE */
-            0, /* SDL_CONTROLLER_BUTTON_START */
-            0, /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
-            0, /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
+            0,  /* SDL_CONTROLLER_BUTTON_BACK */
+            0,  /* SDL_CONTROLLER_BUTTON_GUIDE */
+            0,  /* SDL_CONTROLLER_BUTTON_START */
+            0,  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
+            0,  /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
             15, /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
             16, /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
-            9, /* SDL_CONTROLLER_BUTTON_DPAD_UP */
+            9,  /* SDL_CONTROLLER_BUTTON_DPAD_UP */
             10, /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
-            8, /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
-            7, /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
+            8,  /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
+            7,  /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
         };
         int i, axis_index = 6;
 

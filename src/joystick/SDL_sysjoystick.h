@@ -34,12 +34,12 @@ extern "C" {
 /* The SDL joystick structure */
 typedef struct _SDL_JoystickAxisInfo
 {
-    Sint16 initial_value; /* Initial axis state */
-    Sint16 value; /* Current axis state */
-    Sint16 zero; /* Zero point on the axis (-32768 for triggers) */
-    SDL_bool has_initial_value; /* Whether we've seen a value on the axis yet */
-    SDL_bool has_second_value; /* Whether we've seen a second value on the axis yet */
-    SDL_bool sent_initial_value; /* Whether we've sent the initial axis value */
+    Sint16 initial_value;           /* Initial axis state */
+    Sint16 value;                   /* Current axis state */
+    Sint16 zero;                    /* Zero point on the axis (-32768 for triggers) */
+    SDL_bool has_initial_value;     /* Whether we've seen a value on the axis yet */
+    SDL_bool has_second_value;      /* Whether we've seen a second value on the axis yet */
+    SDL_bool sent_initial_value;    /* Whether we've sent the initial axis value */
     SDL_bool sending_initial_value; /* Whether we are sending the initial axis value */
 } SDL_JoystickAxisInfo;
 
@@ -71,16 +71,16 @@ struct _SDL_Joystick
     const void *magic;
 
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
-    char *name; /* Joystick name - system dependent */
-    char *path; /* Joystick path - system dependent */
-    char *serial; /* Joystick serial */
-    SDL_JoystickGUID guid; /* Joystick guid */
-    Uint16 firmware_version; /* Firmware version, if available */
+    char *name;                 /* Joystick name - system dependent */
+    char *path;                 /* Joystick path - system dependent */
+    char *serial;               /* Joystick serial */
+    SDL_JoystickGUID guid;      /* Joystick guid */
+    Uint16 firmware_version;    /* Firmware version, if available */
 
     int naxes; /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes;
 
-    int nhats; /* Number of hats on the joystick */
+    int nhats;   /* Number of hats on the joystick */
     Uint8 *hats; /* Current hat states */
 
     int nballs; /* Number of trackballs on the joystick */
@@ -90,10 +90,10 @@ struct _SDL_Joystick
         int dy;
     } * balls; /* Current ball motion deltas */
 
-    int nbuttons; /* Number of buttons on the joystick */
+    int nbuttons;   /* Number of buttons on the joystick */
     Uint8 *buttons; /* Current button states */
 
-    int ntouchpads; /* Number of touchpads on the joystick */
+    int ntouchpads;                      /* Number of touchpads on the joystick */
     SDL_JoystickTouchpadInfo *touchpads; /* Current touchpad states */
 
     int nsensors; /* Number of sensors on the joystick */
@@ -116,7 +116,7 @@ struct _SDL_Joystick
 
     SDL_bool attached;
     SDL_bool is_game_controller;
-    SDL_bool delayed_guide_button; /* SDL_TRUE if this device has the guide button event delayed */
+    SDL_bool delayed_guide_button;      /* SDL_TRUE if this device has the guide button event delayed */
     SDL_JoystickPowerLevel epowerlevel; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 
     struct _SDL_JoystickDriver *driver;

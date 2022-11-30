@@ -309,7 +309,7 @@ static struct
     XINPUT_STATE_EX state;
     XINPUT_BATTERY_INFORMATION_EX battery;
     SDL_bool connected; /* Currently has an active XInput device */
-    SDL_bool used; /* Is currently mapped to an SDL device */
+    SDL_bool used;      /* Is currently mapped to an SDL device */
     Uint8 correlation_id;
 } xinput_state[XUSER_MAX_COUNT];
 static SDL_bool xinput_device_change = SDL_TRUE;
@@ -418,7 +418,7 @@ typedef struct WindowsGamingInputGamepadState
     __x_ABI_CWindows_CGaming_CInput_CIGamepad *gamepad;
     struct __x_ABI_CWindows_CGaming_CInput_CGamepadReading state;
     RAWINPUT_DeviceContext *correlated_context;
-    SDL_bool used; /* Is currently mapped to an SDL device */
+    SDL_bool used;      /* Is currently mapped to an SDL device */
     SDL_bool connected; /* Just used during update to track disconnected */
     Uint8 correlation_id;
     struct __x_ABI_CWindows_CGaming_CInput_CGamepadVibration vibration;
@@ -1790,7 +1790,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
     if (!has_trigger_data && ctx->wgi_correlated) {
         RAWINPUT_UpdateWindowsGamingInput(); /* May detect disconnect / cause uncorrelation */
-        if (ctx->wgi_correlated) { /* Still connected */
+        if (ctx->wgi_correlated) {           /* Still connected */
             struct __x_ABI_CWindows_CGaming_CInput_CGamepadReading *state = &ctx->wgi_slot->state;
 
             if (ctx->guide_hack) {

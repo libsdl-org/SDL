@@ -83,7 +83,7 @@ static int get_driindex(void)
         char *endptr = NULL;
         const int idx = (int)SDL_strtol(hint, &endptr, 10);
         if ((*endptr == '\0') && (idx >= 0)) { /* *endptr==0 means "whole string was a valid number" */
-            return idx; /* we'll take the user's request here. */
+            return idx;                        /* we'll take the user's request here. */
         }
     }
 
@@ -1400,7 +1400,7 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->driverdata;
     SDL_bool is_vulkan = window->flags & SDL_WINDOW_VULKAN; /* Is this a VK window? */
-    SDL_bool vulkan_mode = viddata->vulkan_mode; /* Do we have any Vulkan windows? */
+    SDL_bool vulkan_mode = viddata->vulkan_mode;            /* Do we have any Vulkan windows? */
     NativeDisplayType egl_display;
     drmModeModeInfo *mode;
     int ret = 0;

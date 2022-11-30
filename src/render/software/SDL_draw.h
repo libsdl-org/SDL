@@ -550,7 +550,7 @@
             /* Draw all pixels other than the first and last */                     \
             while (--DeltaY) {                                                      \
                 ErrorAccTemp = ErrorAcc; /* remember currrent accumulated error */  \
-                ErrorAcc += ErrorAdj; /* calculate error for next pixel */          \
+                ErrorAcc += ErrorAdj;    /* calculate error for next pixel */       \
                 if (ErrorAcc <= ErrorAccTemp) {                                     \
                     /* The error accumulator turned over, so advance the X coord */ \
                     x1 += XDir;                                                     \
@@ -585,7 +585,7 @@
             /* Draw all pixels other than the first and last */                     \
             while (--DeltaX) {                                                      \
                 ErrorAccTemp = ErrorAcc; /* remember currrent accumulated error */  \
-                ErrorAcc += ErrorAdj; /* calculate error for next pixel */          \
+                ErrorAcc += ErrorAdj;    /* calculate error for next pixel */       \
                 if (ErrorAcc <= ErrorAccTemp) {                                     \
                     /* The error accumulator turned over, so advance the Y coord */ \
                     y1++;                                                           \

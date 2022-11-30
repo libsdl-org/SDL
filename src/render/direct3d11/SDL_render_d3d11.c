@@ -494,10 +494,10 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         creationFlags, /* Set set debug and Direct2D compatibility flags. */
         featureLevels, /* List of feature levels this app can support. */
         SDL_arraysize(featureLevels),
-        D3D11_SDK_VERSION, /* Always set this to D3D11_SDK_VERSION for Windows Store apps. */
-        &d3dDevice, /* Returns the Direct3D device created. */
+        D3D11_SDK_VERSION,   /* Always set this to D3D11_SDK_VERSION for Windows Store apps. */
+        &d3dDevice,          /* Returns the Direct3D device created. */
         &data->featureLevel, /* Returns feature level of device created. */
-        &d3dContext /* Returns the device immediate context. */
+        &d3dContext          /* Returns the device immediate context. */
     );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D11CreateDevice"), result);
@@ -757,7 +757,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapChainDesc.BufferCount = 2; /* Use double-buffering to minimize latency. */
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    swapChainDesc.Scaling = DXGI_SCALING_STRETCH; /* On phone, only stretch and aspect-ratio stretch scaling are allowed. */
+    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;        /* On phone, only stretch and aspect-ratio stretch scaling are allowed. */
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; /* On phone, no swap effects are supported. */
     /* TODO, WinRT: see if Win 8.x DXGI_SWAP_CHAIN_DESC1 settings are available on Windows Phone 8.1, and if there's any advantage to having them on */
 #else
@@ -2398,8 +2398,8 @@ SDL_RenderDriver D3D11_RenderDriver = {
             SDL_RENDERER_ACCELERATED |
             SDL_RENDERER_PRESENTVSYNC |
             SDL_RENDERER_TARGETTEXTURE), /* flags.  see SDL_RendererFlags */
-        6, /* num_texture_formats */
-        { /* texture_formats */
+        6,                               /* num_texture_formats */
+        {                                /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_RGB888,
           SDL_PIXELFORMAT_YV12,
@@ -2407,7 +2407,7 @@ SDL_RenderDriver D3D11_RenderDriver = {
           SDL_PIXELFORMAT_NV12,
           SDL_PIXELFORMAT_NV21 },
         0, /* max_texture_width: will be filled in later */
-        0 /* max_texture_height: will be filled in later */
+        0  /* max_texture_height: will be filled in later */
     }
 };
 

@@ -429,10 +429,10 @@ void SDL_WinRTApp::OnSettingsPaneCommandsRequested(
     using namespace Windows::UI::ApplicationSettings;
     using namespace Windows::UI::Popups;
 
-    String ^ privacyPolicyURL = nullptr; // a URL to an app's Privacy Policy
+    String ^ privacyPolicyURL = nullptr;   // a URL to an app's Privacy Policy
     String ^ privacyPolicyLabel = nullptr; // label/link text
-    const char *tmpHintValue = NULL; // SDL_GetHint-retrieved value, used immediately
-    wchar_t *tmpStr = NULL; // used for UTF8 to UCS2 conversion
+    const char *tmpHintValue = NULL;       // SDL_GetHint-retrieved value, used immediately
+    wchar_t *tmpStr = NULL;                // used for UTF8 to UCS2 conversion
 
     // Setup a 'Privacy Policy' link, if one is available (via SDL_GetHint):
     tmpHintValue = SDL_GetHint(SDL_HINT_WINRT_PRIVACY_POLICY_URL);

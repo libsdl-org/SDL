@@ -183,7 +183,7 @@ static void BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
 
     hmask = _mm_set_pi32(0x00fefefe, 0x00fefefe); /* alpha128 mask -> hmask */
     lmask = _mm_set_pi32(0x00010101, 0x00010101); /* !alpha128 mask -> lmask */
-    dsta = _mm_set_pi32(dalpha, dalpha); /* dst alpha mask -> dsta */
+    dsta = _mm_set_pi32(dalpha, dalpha);          /* dst alpha mask -> dsta */
 
     while (height--) {
         int n = width;
@@ -196,20 +196,20 @@ static void BlitRGBtoRGBSurfaceAlpha128MMX(SDL_BlitInfo *info)
 
         for (n >>= 1; n > 0; --n) {
             dst1 = *(__m64 *)dstp; /* 2 x dst -> dst1(ARGBARGB) */
-            dst2 = dst1; /* 2 x dst -> dst2(ARGBARGB) */
+            dst2 = dst1;           /* 2 x dst -> dst2(ARGBARGB) */
 
             src1 = *(__m64 *)srcp; /* 2 x src -> src1(ARGBARGB) */
-            src2 = src1; /* 2 x src -> src2(ARGBARGB) */
+            src2 = src1;           /* 2 x src -> src2(ARGBARGB) */
 
             dst2 = _mm_and_si64(dst2, hmask); /* dst & mask -> dst2 */
             src2 = _mm_and_si64(src2, hmask); /* src & mask -> src2 */
-            src2 = _mm_add_pi32(src2, dst2); /* dst2 + src2 -> src2 */
-            src2 = _mm_srli_pi32(src2, 1); /* src2 >> 1 -> src2 */
+            src2 = _mm_add_pi32(src2, dst2);  /* dst2 + src2 -> src2 */
+            src2 = _mm_srli_pi32(src2, 1);    /* src2 >> 1 -> src2 */
 
-            dst1 = _mm_and_si64(dst1, src1); /* src & dst -> dst1 */
+            dst1 = _mm_and_si64(dst1, src1);  /* src & dst -> dst1 */
             dst1 = _mm_and_si64(dst1, lmask); /* dst1 & !mask -> dst1 */
-            dst1 = _mm_add_pi32(dst1, src2); /* src2 + dst1 -> dst1 */
-            dst1 = _mm_or_si64(dst1, dsta); /* dsta(full alpha) | dst1 -> dst1 */
+            dst1 = _mm_add_pi32(dst1, src2);  /* src2 + dst1 -> dst1 */
+            dst1 = _mm_or_si64(dst1, dsta);   /* dsta(full alpha) | dst1 -> dst1 */
 
             *(__m64 *)dstp = dst1; /* dst1 -> 2 x dst pixels */
             dstp += 2;
@@ -250,7 +250,7 @@ static void BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
         amult = amult | (amult << 16);
         chanmask =
             (0xff << df->Rshift) | (0xff << df->Gshift) | (0xff << df->Bshift);
-        mm_alpha = _mm_set_pi32(0, amult & chanmask); /* 0000AAAA -> mm_alpha, minus 1 chan */
+        mm_alpha = _mm_set_pi32(0, amult & chanmask);   /* 0000AAAA -> mm_alpha, minus 1 chan */
         mm_alpha = _mm_unpacklo_pi8(mm_alpha, mm_zero); /* 0A0A0A0A -> mm_alpha, minus 1 chan */
         /* at this point mm_alpha can be 000A0A0A or 0A0A0A00 or another combo */
         dsta = _mm_set_pi32(dalpha, dalpha); /* dst alpha mask -> dsta */
@@ -259,20 +259,20 @@ static void BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
             int n = width;
             if (n & 1) {
                 /* One Pixel Blend */
-                src2 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src2 (0000ARGB) */
+                src2 = _mm_cvtsi32_si64(*srcp);         /* src(ARGB) -> src2 (0000ARGB) */
                 src2 = _mm_unpacklo_pi8(src2, mm_zero); /* 0A0R0G0B -> src2 */
 
-                dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB) */
+                dst1 = _mm_cvtsi32_si64(*dstp);         /* dst(ARGB) -> dst1 (0000ARGB) */
                 dst1 = _mm_unpacklo_pi8(dst1, mm_zero); /* 0A0R0G0B -> dst1 */
 
-                src2 = _mm_sub_pi16(src2, dst1); /* src2 - dst2 -> src2 */
+                src2 = _mm_sub_pi16(src2, dst1);       /* src2 - dst2 -> src2 */
                 src2 = _mm_mullo_pi16(src2, mm_alpha); /* src2 * alpha -> src2 */
-                src2 = _mm_srli_pi16(src2, 8); /* src2 >> 8 -> src2 */
-                dst1 = _mm_add_pi8(src2, dst1); /* src2 + dst1 -> dst1 */
+                src2 = _mm_srli_pi16(src2, 8);         /* src2 >> 8 -> src2 */
+                dst1 = _mm_add_pi8(src2, dst1);        /* src2 + dst1 -> dst1 */
 
                 dst1 = _mm_packs_pu16(dst1, mm_zero); /* 0000ARGB -> dst1 */
-                dst1 = _mm_or_si64(dst1, dsta); /* dsta | dst1 -> dst1 */
-                *dstp = _mm_cvtsi64_si32(dst1); /* dst1 -> pixel */
+                dst1 = _mm_or_si64(dst1, dsta);       /* dsta | dst1 -> dst1 */
+                *dstp = _mm_cvtsi64_si32(dst1);       /* dst1 -> pixel */
 
                 ++srcp;
                 ++dstp;
@@ -282,28 +282,28 @@ static void BlitRGBtoRGBSurfaceAlphaMMX(SDL_BlitInfo *info)
 
             for (n >>= 1; n > 0; --n) {
                 /* Two Pixels Blend */
-                src1 = *(__m64 *)srcp; /* 2 x src -> src1(ARGBARGB) */
-                src2 = src1; /* 2 x src -> src2(ARGBARGB) */
+                src1 = *(__m64 *)srcp;                  /* 2 x src -> src1(ARGBARGB) */
+                src2 = src1;                            /* 2 x src -> src2(ARGBARGB) */
                 src1 = _mm_unpacklo_pi8(src1, mm_zero); /* low - 0A0R0G0B -> src1 */
                 src2 = _mm_unpackhi_pi8(src2, mm_zero); /* high - 0A0R0G0B -> src2 */
 
-                dst1 = *(__m64 *)dstp; /* 2 x dst -> dst1(ARGBARGB) */
-                dst2 = dst1; /* 2 x dst -> dst2(ARGBARGB) */
+                dst1 = *(__m64 *)dstp;                  /* 2 x dst -> dst1(ARGBARGB) */
+                dst2 = dst1;                            /* 2 x dst -> dst2(ARGBARGB) */
                 dst1 = _mm_unpacklo_pi8(dst1, mm_zero); /* low - 0A0R0G0B -> dst1 */
                 dst2 = _mm_unpackhi_pi8(dst2, mm_zero); /* high - 0A0R0G0B -> dst2 */
 
-                src1 = _mm_sub_pi16(src1, dst1); /* src1 - dst1 -> src1 */
+                src1 = _mm_sub_pi16(src1, dst1);       /* src1 - dst1 -> src1 */
                 src1 = _mm_mullo_pi16(src1, mm_alpha); /* src1 * alpha -> src1 */
-                src1 = _mm_srli_pi16(src1, 8); /* src1 >> 8 -> src1 */
-                dst1 = _mm_add_pi8(src1, dst1); /* src1 + dst1(dst1) -> dst1 */
+                src1 = _mm_srli_pi16(src1, 8);         /* src1 >> 8 -> src1 */
+                dst1 = _mm_add_pi8(src1, dst1);        /* src1 + dst1(dst1) -> dst1 */
 
-                src2 = _mm_sub_pi16(src2, dst2); /* src2 - dst2 -> src2 */
+                src2 = _mm_sub_pi16(src2, dst2);       /* src2 - dst2 -> src2 */
                 src2 = _mm_mullo_pi16(src2, mm_alpha); /* src2 * alpha -> src2 */
-                src2 = _mm_srli_pi16(src2, 8); /* src2 >> 8 -> src2 */
-                dst2 = _mm_add_pi8(src2, dst2); /* src2 + dst2(dst2) -> dst2 */
+                src2 = _mm_srli_pi16(src2, 8);         /* src2 >> 8 -> src2 */
+                dst2 = _mm_add_pi8(src2, dst2);        /* src2 + dst2(dst2) -> dst2 */
 
                 dst1 = _mm_packs_pu16(dst1, dst2); /* 0A0R0G0B(res1), 0A0R0G0B(res2) -> dst1(ARGBARGB) */
-                dst1 = _mm_or_si64(dst1, dsta); /* dsta | dst1 -> dst1 */
+                dst1 = _mm_or_si64(dst1, dsta);    /* dsta | dst1 -> dst1 */
 
                 *(__m64 *)dstp = dst1; /* dst1 -> 2 x pixel */
 
@@ -812,9 +812,9 @@ static void Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
 
         __m64 src1, dst1, src2, dst2, gmask, bmask, mm_res, mm_alpha;
 
-        alpha &= ~(1 + 2 + 4); /* cut alpha to get the exact same behaviour */
+        alpha &= ~(1 + 2 + 4);             /* cut alpha to get the exact same behaviour */
         mm_alpha = _mm_set_pi32(0, alpha); /* 0000000A -> mm_alpha */
-        alpha >>= 3; /* downscale alpha to 5 bits */
+        alpha >>= 3;                       /* downscale alpha to 5 bits */
 
         mm_alpha = _mm_unpacklo_pi16(mm_alpha, mm_alpha); /* 00000A0A -> mm_alpha */
         mm_alpha = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha */
@@ -948,9 +948,9 @@ static void Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
 
         __m64 src1, dst1, src2, dst2, rmask, gmask, bmask, mm_res, mm_alpha;
 
-        alpha &= ~(1 + 2 + 4); /* cut alpha to get the exact same behaviour */
+        alpha &= ~(1 + 2 + 4);             /* cut alpha to get the exact same behaviour */
         mm_alpha = _mm_set_pi32(0, alpha); /* 0000000A -> mm_alpha */
-        alpha >>= 3; /* downscale alpha to 5 bits */
+        alpha >>= 3;                       /* downscale alpha to 5 bits */
 
         mm_alpha = _mm_unpacklo_pi16(mm_alpha, mm_alpha); /* 00000A0A -> mm_alpha */
         mm_alpha = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha */

@@ -190,7 +190,7 @@ int RPI_VideoInit(_THIS)
     /* Initialize BCM Host */
     bcm_host_init();
 
-    AddDispManXDisplay(DISPMANX_ID_MAIN_LCD); /* your default display */
+    AddDispManXDisplay(DISPMANX_ID_MAIN_LCD);    /* your default display */
     AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER); /* an "other" display...maybe DSI-connected screen while HDMI is your main */
 
 #ifdef SDL_INPUT_LINUXEV

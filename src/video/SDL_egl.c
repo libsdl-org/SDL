@@ -83,7 +83,7 @@
 /* EGL AND OpenGL ES support via ANGLE */
 #define DEFAULT_EGL        "libEGL.dylib"
 #define DEFAULT_OGL_ES2    "libGLESv2.dylib"
-#define DEFAULT_OGL_ES_PVR "libGLES_CM.dylib" //???
+#define DEFAULT_OGL_ES_PVR "libGLES_CM.dylib"   //???
 #define DEFAULT_OGL_ES     "libGLESv1_CM.dylib" //???
 
 #elif defined(__OpenBSD__)

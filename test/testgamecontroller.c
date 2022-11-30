@@ -38,10 +38,10 @@ static const struct
     { 174, 132 }, /* SDL_CONTROLLER_BUTTON_BACK */
     { 232, 128 }, /* SDL_CONTROLLER_BUTTON_GUIDE */
     { 289, 132 }, /* SDL_CONTROLLER_BUTTON_START */
-    { 75, 154 }, /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
+    { 75, 154 },  /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
     { 305, 230 }, /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
-    { 77, 40 }, /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
-    { 396, 36 }, /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
+    { 77, 40 },   /* SDL_CONTROLLER_BUTTON_LEFTSHOULDER */
+    { 396, 36 },  /* SDL_CONTROLLER_BUTTON_RIGHTSHOULDER */
     { 154, 188 }, /* SDL_CONTROLLER_BUTTON_DPAD_UP */
     { 154, 249 }, /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
     { 116, 217 }, /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
@@ -51,7 +51,7 @@ static const struct
     { 330, 135 }, /* SDL_CONTROLLER_BUTTON_PADDLE2 */
     { 132, 175 }, /* SDL_CONTROLLER_BUTTON_PADDLE3 */
     { 330, 175 }, /* SDL_CONTROLLER_BUTTON_PADDLE4 */
-    { 0, 0 }, /* SDL_CONTROLLER_BUTTON_TOUCHPAD */
+    { 0, 0 },     /* SDL_CONTROLLER_BUTTON_TOUCHPAD */
 };
 SDL_COMPILE_TIME_ASSERT(button_positions, SDL_arraysize(button_positions) == SDL_CONTROLLER_BUTTON_MAX);
 
@@ -62,23 +62,23 @@ static const struct
     int y;
     double angle;
 } axis_positions[] = {
-    { 74, 153, 270.0 }, /* LEFTX */
-    { 74, 153, 0.0 }, /* LEFTY */
+    { 74, 153, 270.0 },  /* LEFTX */
+    { 74, 153, 0.0 },    /* LEFTY */
     { 306, 231, 270.0 }, /* RIGHTX */
-    { 306, 231, 0.0 }, /* RIGHTY */
-    { 91, -20, 0.0 }, /* TRIGGERLEFT */
-    { 375, -20, 0.0 }, /* TRIGGERRIGHT */
+    { 306, 231, 0.0 },   /* RIGHTY */
+    { 91, -20, 0.0 },    /* TRIGGERLEFT */
+    { 375, -20, 0.0 },   /* TRIGGERRIGHT */
 };
 SDL_COMPILE_TIME_ASSERT(axis_positions, SDL_arraysize(axis_positions) == SDL_CONTROLLER_AXIS_MAX);
 
 /* This is indexed by SDL_JoystickPowerLevel + 1. */
 static const char *power_level_strings[] = {
     "unknown", /* SDL_JOYSTICK_POWER_UNKNOWN */
-    "empty", /* SDL_JOYSTICK_POWER_EMPTY */
-    "low", /* SDL_JOYSTICK_POWER_LOW */
-    "medium", /* SDL_JOYSTICK_POWER_MEDIUM */
-    "full", /* SDL_JOYSTICK_POWER_FULL */
-    "wired", /* SDL_JOYSTICK_POWER_WIRED */
+    "empty",   /* SDL_JOYSTICK_POWER_EMPTY */
+    "low",     /* SDL_JOYSTICK_POWER_LOW */
+    "medium",  /* SDL_JOYSTICK_POWER_MEDIUM */
+    "full",    /* SDL_JOYSTICK_POWER_FULL */
+    "wired",   /* SDL_JOYSTICK_POWER_WIRED */
 };
 SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) == SDL_JOYSTICK_POWER_MAX + 1);
 
@@ -296,27 +296,27 @@ static Uint16 ConvertAxisToRumble(Sint16 axisval)
 */
 typedef struct
 {
-    Uint8 ucEnableBits1; /* 0 */
-    Uint8 ucEnableBits2; /* 1 */
-    Uint8 ucRumbleRight; /* 2 */
-    Uint8 ucRumbleLeft; /* 3 */
-    Uint8 ucHeadphoneVolume; /* 4 */
-    Uint8 ucSpeakerVolume; /* 5 */
-    Uint8 ucMicrophoneVolume; /* 6 */
-    Uint8 ucAudioEnableBits; /* 7 */
-    Uint8 ucMicLightMode; /* 8 */
-    Uint8 ucAudioMuteBits; /* 9 */
+    Uint8 ucEnableBits1;              /* 0 */
+    Uint8 ucEnableBits2;              /* 1 */
+    Uint8 ucRumbleRight;              /* 2 */
+    Uint8 ucRumbleLeft;               /* 3 */
+    Uint8 ucHeadphoneVolume;          /* 4 */
+    Uint8 ucSpeakerVolume;            /* 5 */
+    Uint8 ucMicrophoneVolume;         /* 6 */
+    Uint8 ucAudioEnableBits;          /* 7 */
+    Uint8 ucMicLightMode;             /* 8 */
+    Uint8 ucAudioMuteBits;            /* 9 */
     Uint8 rgucRightTriggerEffect[11]; /* 10 */
-    Uint8 rgucLeftTriggerEffect[11]; /* 21 */
-    Uint8 rgucUnknown1[6]; /* 32 */
-    Uint8 ucLedFlags; /* 38 */
-    Uint8 rgucUnknown2[2]; /* 39 */
-    Uint8 ucLedAnim; /* 41 */
-    Uint8 ucLedBrightness; /* 42 */
-    Uint8 ucPadLights; /* 43 */
-    Uint8 ucLedRed; /* 44 */
-    Uint8 ucLedGreen; /* 45 */
-    Uint8 ucLedBlue; /* 46 */
+    Uint8 rgucLeftTriggerEffect[11];  /* 21 */
+    Uint8 rgucUnknown1[6];            /* 32 */
+    Uint8 ucLedFlags;                 /* 38 */
+    Uint8 rgucUnknown2[2];            /* 39 */
+    Uint8 ucLedAnim;                  /* 41 */
+    Uint8 ucLedBrightness;            /* 42 */
+    Uint8 ucPadLights;                /* 43 */
+    Uint8 ucLedRed;                   /* 44 */
+    Uint8 ucLedGreen;                 /* 45 */
+    Uint8 ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
 
 static void CyclePS5TriggerEffect()

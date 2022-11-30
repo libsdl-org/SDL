@@ -418,7 +418,8 @@ static int PULSEAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
         /* a new fragment is available! */
         PULSEAUDIO_pa_stream_peek(h->stream, &data, &nbytes);
         SDL_assert(nbytes > 0);
-        if (data == NULL) { /* NULL==buffer had a hole. Ignore that. */
+        /* If data == NULL, then the buffer had a hole, ignore that */
+        if (data == NULL) {
             PULSEAUDIO_pa_stream_drop(h->stream); /* drop this fragment. */
         } else {
             /* store this fragment's data, start feeding it to SDL. */
@@ -615,8 +616,8 @@ static int PULSEAUDIO_OpenDevice(_THIS, const char *devname)
     h->stream = PULSEAUDIO_pa_stream_new(
         h->context,
         (name && *name) ? name : "Audio Stream", /* stream description */
-        &paspec, /* sample format spec */
-        &pacmap /* channel map */
+        &paspec,                                 /* sample format spec */
+        &pacmap                                  /* channel map */
     );
 
     if (h->stream == NULL) {

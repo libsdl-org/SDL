@@ -322,9 +322,9 @@ class SDL_BWin : public BWindow
     /* BView message interruption */
     void DispatchMessage(BMessage *msg, BHandler *target)
     {
-        BPoint where; /* Used by mouse moved */
+        BPoint where;  /* Used by mouse moved */
         int32 buttons; /* Used for mouse button events */
-        int32 key; /* Used for key events */
+        int32 key;     /* Used for key events */
 
         switch (msg->what) {
         case B_MOUSE_MOVED:
@@ -717,7 +717,7 @@ class SDL_BWin : public BWindow
 #endif
 
     int32 _last_buttons;
-    int32 _id; /* Window id used by SDL_BApp */
+    int32 _id;           /* Window id used by SDL_BApp */
     bool _mouse_focused; /* Does this window have mouse focus? */
     bool _shown;
     bool _inhibit_resize;

@@ -214,21 +214,21 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 170 */ SDLK_KP_MULTIPLY, /*KaiOS phone keypad*/
     /* 171 */ SDLK_RIGHTBRACKET,
     /* 172 */ SDLK_UNKNOWN,
-    /* 173 */ SDLK_MINUS, /*FX*/
+    /* 173 */ SDLK_MINUS,      /*FX*/
     /* 174 */ SDLK_VOLUMEDOWN, /*IE, Chrome*/
-    /* 175 */ SDLK_VOLUMEUP, /*IE, Chrome*/
-    /* 176 */ SDLK_AUDIONEXT, /*IE, Chrome*/
-    /* 177 */ SDLK_AUDIOPREV, /*IE, Chrome*/
+    /* 175 */ SDLK_VOLUMEUP,   /*IE, Chrome*/
+    /* 176 */ SDLK_AUDIONEXT,  /*IE, Chrome*/
+    /* 177 */ SDLK_AUDIOPREV,  /*IE, Chrome*/
     /* 178 */ SDLK_UNKNOWN,
     /* 179 */ SDLK_AUDIOPLAY, /*IE, Chrome*/
     /* 180 */ SDLK_UNKNOWN,
-    /* 181 */ SDLK_AUDIOMUTE, /*FX*/
+    /* 181 */ SDLK_AUDIOMUTE,  /*FX*/
     /* 182 */ SDLK_VOLUMEDOWN, /*FX*/
-    /* 183 */ SDLK_VOLUMEUP, /*FX*/
+    /* 183 */ SDLK_VOLUMEUP,   /*FX*/
     /* 184 */ SDLK_UNKNOWN,
     /* 185 */ SDLK_UNKNOWN,
     /* 186 */ SDLK_SEMICOLON, /*IE, Chrome, D3E legacy*/
-    /* 187 */ SDLK_EQUALS, /*IE, Chrome, D3E legacy*/
+    /* 187 */ SDLK_EQUALS,    /*IE, Chrome, D3E legacy*/
     /* 188 */ SDLK_COMMA,
     /* 189 */ SDLK_MINUS, /*IE, Chrome, D3E legacy*/
     /* 190 */ SDLK_PERIOD,

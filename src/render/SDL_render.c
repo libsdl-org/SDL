@@ -3766,9 +3766,9 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
         int is_uniform = 1;
         int is_rectangle = 1;
 #endif
-        int A = -1; /* Top left vertex */
-        int B = -1; /* Bottom right vertex */
-        int C = -1; /* Third vertex of current triangle */
+        int A = -1;  /* Top left vertex */
+        int B = -1;  /* Bottom right vertex */
+        int C = -1;  /* Third vertex of current triangle */
         int C2 = -1; /* Last, vertex of previous triangle */
 
         if (size_indices == 4) {

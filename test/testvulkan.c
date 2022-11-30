@@ -177,7 +177,7 @@ typedef struct VulkanContext
 
 static SDLTest_CommonState *state;
 static VulkanContext *vulkanContexts = NULL; // an array of state->num_windows items
-static VulkanContext *vulkanContext = NULL; // for the currently-rendering window
+static VulkanContext *vulkanContext = NULL;  // for the currently-rendering window
 
 static void shutdownVulkan(SDL_bool doDestroySwapchain);
 

@@ -57,7 +57,7 @@ SDL_GetPowerInfo_UIKit(SDL_PowerState *state, int *seconds, int *percent)
     *state = SDL_POWERSTATE_NO_BATTERY;
     *seconds = -1;
     *percent = -1;
-#else /* TARGET_OS_TV */
+#else  /* TARGET_OS_TV */
     @autoreleasepool {
         UIDevice *uidev = [UIDevice currentDevice];
 

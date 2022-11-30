@@ -49,12 +49,12 @@
 /* Stores the WAVE format information. */
 typedef struct WaveFormat
 {
-    Uint16 formattag; /* Raw value of the first field in the fmt chunk data. */
-    Uint16 encoding; /* Actual encoding, possibly from the extensible header. */
-    Uint16 channels; /* Number of channels. */
-    Uint32 frequency; /* Sampling rate in Hz. */
-    Uint32 byterate; /* Average bytes per second. */
-    Uint16 blockalign; /* Bytes per block. */
+    Uint16 formattag;     /* Raw value of the first field in the fmt chunk data. */
+    Uint16 encoding;      /* Actual encoding, possibly from the extensible header. */
+    Uint16 channels;      /* Number of channels. */
+    Uint32 frequency;     /* Sampling rate in Hz. */
+    Uint32 byterate;      /* Average bytes per second. */
+    Uint16 blockalign;    /* Bytes per block. */
     Uint16 bitspersample; /* Currently supported are 8, 16, 24, 32, and 4 for ADPCM. */
 
     /* Extra information size. Number of extra bytes starting at byte 18 in the
@@ -94,11 +94,11 @@ typedef struct WaveFact
 /* Generic struct for the chunks in the WAVE file. */
 typedef struct WaveChunk
 {
-    Uint32 fourcc; /* FOURCC of the chunk. */
-    Uint32 length; /* Size of the chunk data. */
+    Uint32 fourcc;   /* FOURCC of the chunk. */
+    Uint32 length;   /* Size of the chunk data. */
     Sint64 position; /* Position of the data in the stream. */
-    Uint8 *data; /* When allocated, this points to the chunk data. length is used for the memory allocation size. */
-    size_t size; /* Number of bytes in data that could be read from the stream. Can be smaller than length. */
+    Uint8 *data;     /* When allocated, this points to the chunk data. length is used for the memory allocation size. */
+    size_t size;     /* Number of bytes in data that could be read from the stream. Can be smaller than length. */
 } WaveChunk;
 
 /* Controls how the size of the RIFF chunk affects the loading of a WAVE file. */

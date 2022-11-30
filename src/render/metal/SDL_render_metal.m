@@ -1722,23 +1722,23 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, Uint32 flags)
         /* Metal pads float3s to 16 bytes. */
         float decodetransformJPEG[4 * 4] = {
             0.0, -0.501960814, -0.501960814, 0.0, /* offset */
-            1.0000, 0.0000, 1.4020, 0.0, /* Rcoeff */
-            1.0000, -0.3441, -0.7141, 0.0, /* Gcoeff */
-            1.0000, 1.7720, 0.0000, 0.0, /* Bcoeff */
+            1.0000, 0.0000, 1.4020, 0.0,          /* Rcoeff */
+            1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
+            1.0000, 1.7720, 0.0000, 0.0,          /* Bcoeff */
         };
 
         float decodetransformBT601[4 * 4] = {
             -0.0627451017, -0.501960814, -0.501960814, 0.0, /* offset */
-            1.1644, 0.0000, 1.5960, 0.0, /* Rcoeff */
-            1.1644, -0.3918, -0.8130, 0.0, /* Gcoeff */
-            1.1644, 2.0172, 0.0000, 0.0, /* Bcoeff */
+            1.1644, 0.0000, 1.5960, 0.0,                    /* Rcoeff */
+            1.1644, -0.3918, -0.8130, 0.0,                  /* Gcoeff */
+            1.1644, 2.0172, 0.0000, 0.0,                    /* Bcoeff */
         };
 
         float decodetransformBT709[4 * 4] = {
             0.0, -0.501960814, -0.501960814, 0.0, /* offset */
-            1.0000, 0.0000, 1.4020, 0.0, /* Rcoeff */
-            1.0000, -0.3441, -0.7141, 0.0, /* Gcoeff */
-            1.0000, 1.7720, 0.0000, 0.0, /* Bcoeff */
+            1.0000, 0.0000, 1.4020, 0.0,          /* Rcoeff */
+            1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
+            1.0000, 1.7720, 0.0000, 0.0,          /* Bcoeff */
         };
 
         if (SDL_GetWindowWMInfo(window, &syswm, SDL_SYSWM_CURRENT_VERSION) < 0) {

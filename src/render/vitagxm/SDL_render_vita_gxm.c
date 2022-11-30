@@ -1168,7 +1168,7 @@ static int VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 
     sceGxmDisplayQueueAddEntry(
         data->displayBufferSync[data->frontBufferIndex], // OLD fb
-        data->displayBufferSync[data->backBufferIndex], // NEW fb
+        data->displayBufferSync[data->backBufferIndex],  // NEW fb
         &data->displayData);
 
     // update buffer indices

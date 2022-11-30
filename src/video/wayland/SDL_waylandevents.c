@@ -803,11 +803,11 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_motion,
     pointer_handle_button,
     pointer_handle_axis,
-    pointer_handle_frame, /* Version 5 */
-    pointer_handle_axis_source, /* Version 5 */
-    pointer_handle_axis_stop, /* Version 5 */
+    pointer_handle_frame,         /* Version 5 */
+    pointer_handle_axis_source,   /* Version 5 */
+    pointer_handle_axis_stop,     /* Version 5 */
     pointer_handle_axis_discrete, /* Version 5 */
-    pointer_handle_axis_value120 /* Version 8 */
+    pointer_handle_axis_value120  /* Version 8 */
 };
 
 static void touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
@@ -1380,8 +1380,8 @@ static const struct wl_data_source_listener data_source_listener = {
     data_source_handle_send,
     data_source_handle_cancelled,
     data_source_handle_dnd_drop_performed, /* Version 3 */
-    data_source_handle_dnd_finished, /* Version 3 */
-    data_source_handle_action, /* Version 3 */
+    data_source_handle_dnd_finished,       /* Version 3 */
+    data_source_handle_action,             /* Version 3 */
 };
 
 static void primary_selection_source_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1,
@@ -1492,7 +1492,7 @@ static void data_offer_handle_actions(void *data, struct wl_data_offer *wl_data_
 static const struct wl_data_offer_listener data_offer_listener = {
     data_offer_handle_offer,
     data_offer_handle_source_actions, /* Version 3 */
-    data_offer_handle_actions, /* Version 3 */
+    data_offer_handle_actions,        /* Version 3 */
 };
 
 static void primary_selection_offer_handle_offer(void *data, struct zwp_primary_selection_offer_v1 *zwp_primary_selection_offer_v1,

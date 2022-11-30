@@ -67,10 +67,10 @@ static DBusMessage *wayland_read_dbus_setting(SDL_DBusContext *dbus, const char 
     static const char *iface = "org.gnome.desktop.interface";
 
     DBusMessage *reply = NULL;
-    DBusMessage *msg = dbus->message_new_method_call("org.freedesktop.portal.Desktop", /* Node */
+    DBusMessage *msg = dbus->message_new_method_call("org.freedesktop.portal.Desktop",  /* Node */
                                                      "/org/freedesktop/portal/desktop", /* Path */
                                                      "org.freedesktop.portal.Settings", /* Interface */
-                                                     "Read"); /* Method */
+                                                     "Read");                           /* Method */
 
     if (msg) {
         if (dbus->message_append_args(msg, DBUS_TYPE_STRING, &iface, DBUS_TYPE_STRING, &key, DBUS_TYPE_INVALID)) {
@@ -577,7 +577,7 @@ static void SDLCALL Wayland_EmulateMouseWarpChanged(void *userdata, const char *
     input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
 }
 
-#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
+#if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
 static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
 {
     Wayland_CursorData *cdata = (Wayland_CursorData *) cursor->driverdata;

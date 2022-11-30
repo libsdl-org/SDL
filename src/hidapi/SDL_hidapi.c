@@ -60,7 +60,7 @@
 #ifdef HAVE_INOTIFY
 #include <unistd.h> /* just in case we didn't use that SDL_USE_LIBUDEV block... */
 #include <string.h> /* strerror */
-#include <errno.h> /* errno */
+#include <errno.h>  /* errno */
 #include <fcntl.h>
 #include <limits.h> /* For the definition of NAME_MAX */
 #include <sys/inotify.h>
@@ -130,8 +130,8 @@ typedef struct _DEV_BROADCAST_DEVICEINTERFACE_A
 } DEV_BROADCAST_DEVICEINTERFACE_A, *PDEV_BROADCAST_DEVICEINTERFACE_A;
 
 typedef struct _DEV_BROADCAST_HDR DEV_BROADCAST_HDR;
-#define DBT_DEVICEARRIVAL          0x8000 /* system detected a new device */
-#define DBT_DEVICEREMOVECOMPLETE   0x8004 /* device was removed from the system */
+#define DBT_DEVICEARRIVAL          0x8000     /* system detected a new device */
+#define DBT_DEVICEREMOVECOMPLETE   0x8004     /* device was removed from the system */
 #define DBT_DEVTYP_DEVICEINTERFACE 0x00000005 /* device interface class */
 #define DBT_DEVNODES_CHANGED       0x0007
 #define DBT_CONFIGCHANGED          0x0018

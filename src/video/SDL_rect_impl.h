@@ -132,7 +132,7 @@ void SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
         SDL_InvalidParamError("result");
         return;
     } else if (SDL_RECTEMPTY(A)) { /* Special cases for empty Rects */
-        if (SDL_RECTEMPTY(B)) { /* A and B empty */
+        if (SDL_RECTEMPTY(B)) {    /* A and B empty */
             SDL_zerop(result);
         } else { /* A empty, B not empty */
             *result = *B;

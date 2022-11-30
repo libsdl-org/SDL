@@ -169,7 +169,7 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
     }
 
     SDL_SemPost(this->hidden->iosem); /* tell SDL thread we're done; refill the buffer. */
-    return 0; /* success */
+    return 0;
 }
 
 /* This function waits until it is possible to write a full sound buffer */
@@ -210,7 +210,7 @@ static int jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
     }
 
     SDL_SemPost(this->hidden->iosem); /* tell SDL thread we're done; new buffer is ready! */
-    return 0; /* success */
+    return 0;
 }
 
 static int JACK_CaptureFromDevice(_THIS, void *buffer, int buflen)

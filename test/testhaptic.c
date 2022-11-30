@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         efx[nefx].type = SDL_HAPTIC_SINE;
         efx[nefx].periodic.period = 1000;
         efx[nefx].periodic.magnitude = -0x2000; /* Negative magnitude and ...                      */
-        efx[nefx].periodic.phase = 18000; /* ... 180 degrees phase shift => cancel eachother */
+        efx[nefx].periodic.phase = 18000;       /* ... 180 degrees phase shift => cancel eachother */
         efx[nefx].periodic.length = 5000;
         efx[nefx].periodic.attack_length = 1000;
         efx[nefx].periodic.fade_length = 1000;
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
         SDL_Log("   effect %d: Ramp\n", nefx);
         efx[nefx].type = SDL_HAPTIC_RAMP;
         efx[nefx].ramp.direction.type = SDL_HAPTIC_CARTESIAN;
-        efx[nefx].ramp.direction.dir[0] = 1; /* Force comes from                 */
+        efx[nefx].ramp.direction.dir[0] = 1;  /* Force comes from                 */
         efx[nefx].ramp.direction.dir[1] = -1; /*                  the north-east. */
         efx[nefx].ramp.length = 5000;
         efx[nefx].ramp.start = 0x4000;

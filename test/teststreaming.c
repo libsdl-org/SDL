@@ -27,7 +27,7 @@
 #define MOOSEPIC_W 64
 #define MOOSEPIC_H 88
 
-#define MOOSEFRAME_SIZE (MOOSEPIC_W * MOOSEPIC_H)
+#define MOOSEFRAME_SIZE   (MOOSEPIC_W * MOOSEPIC_H)
 #define MOOSEFRAMES_COUNT 10
 
 /* *INDENT-OFF* */ /* clang-format off */
@@ -84,17 +84,16 @@ void UpdateTexture(SDL_Texture *texture)
     }
     src = MooseFrames[frame];
     for (row = 0; row < MOOSEPIC_H; ++row) {
-        dst = (Uint32*)((Uint8*)pixels + row * pitch);
+        dst = (Uint32 *)((Uint8 *)pixels + row * pitch);
         for (col = 0; col < MOOSEPIC_W; ++col) {
             color = &MooseColors[*src++];
-            *dst++ = (0xFF000000|(color->r<<16)|(color->g<<8)|color->b);
+            *dst++ = (0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
         }
     }
     SDL_UnlockTexture(texture);
 }
 
-void
-loop()
+void loop()
 {
     SDL_Event event;
 
@@ -125,8 +124,7 @@ loop()
 #endif
 }
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     SDL_Window *window;
     SDL_RWops *handle;
@@ -155,12 +153,11 @@ main(int argc, char **argv)
     SDL_RWread(handle, MooseFrames, MOOSEFRAME_SIZE, MOOSEFRAMES_COUNT);
     SDL_RWclose(handle);
 
-
     /* Create the window and renderer */
     window = SDL_CreateWindow("Happy Moose",
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
-                              MOOSEPIC_W*4, MOOSEPIC_H*4,
+                              MOOSEPIC_W * 4, MOOSEPIC_H * 4,
                               SDL_WINDOW_RESIZABLE);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
@@ -187,7 +184,7 @@ main(int argc, char **argv)
 #else
     while (!done) {
         loop();
-        }
+    }
 #endif
 
     SDL_DestroyRenderer(renderer);

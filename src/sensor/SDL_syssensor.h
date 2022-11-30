@@ -31,12 +31,12 @@
 struct _SDL_Sensor
 {
     SDL_SensorID instance_id; /* Device instance, monotonically increasing from 0 */
-    char *name; /* Sensor name - system dependent */
-    SDL_SensorType type; /* Type of the sensor */
-    int non_portable_type; /* Platform dependent type of the sensor */
+    char *name;               /* Sensor name - system dependent */
+    SDL_SensorType type;      /* Type of the sensor */
+    int non_portable_type;    /* Platform dependent type of the sensor */
 
     Uint64 timestamp_us; /* The timestamp of the last sensor update */
-    float data[16]; /* The current state of the sensor */
+    float data[16];      /* The current state of the sensor */
 
     struct _SDL_SensorDriver *driver;
 

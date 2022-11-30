@@ -340,7 +340,7 @@ SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state,
         return SDL_FALSE;
     }
 
-    buf[br] = '\0'; /* null-terminate the string. */
+    buf[br] = '\0';                 /* null-terminate the string. */
     if (!next_string(&ptr, &str)) { /* driver version */
         return SDL_FALSE;
     }
@@ -410,7 +410,7 @@ SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *state,
         const int pct = battery_percent;
         const int secs = battery_time;
 
-        if (pct >= 0) { /* -1 == unknown */
+        if (pct >= 0) {                         /* -1 == unknown */
             *percent = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
         }
         if (secs >= 0) { /* -1 == unknown */
@@ -542,9 +542,9 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
     double d = 0.0;
 
     if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Type", DBUS_TYPE_UINT32, &ui32)) {
-        return; /* Don't know _what_ we're looking at. Give up on it. */
+        return;             /* Don't know _what_ we're looking at. Give up on it. */
     } else if (ui32 != 2) { /* 2==Battery*/
-        return; /* we don't care about UPS and such. */
+        return;             /* we don't care about UPS and such. */
     } else if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "PowerSupply", DBUS_TYPE_BOOLEAN, &ui32)) {
         return;
     } else if (!ui32) {
@@ -564,7 +564,7 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
 
         if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
             st = SDL_POWERSTATE_UNKNOWN; /* uh oh */
-        } else if (ui32 == 1) { /* 1 == charging */
+        } else if (ui32 == 1) {          /* 1 == charging */
             st = SDL_POWERSTATE_CHARGING;
         } else if ((ui32 == 2) || (ui32 == 3)) { /* 2 == discharging, 3 == empty. */
             st = SDL_POWERSTATE_ON_BATTERY;
@@ -627,7 +627,7 @@ SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *second
         return SDL_FALSE; /* try a different approach than UPower. */
     }
 
-    retval = SDL_TRUE; /* Clearly we can use this interface. */
+    retval = SDL_TRUE;                  /* Clearly we can use this interface. */
     *state = SDL_POWERSTATE_NO_BATTERY; /* assume we're just plugged in. */
     *seconds = -1;
     *percent = -1;

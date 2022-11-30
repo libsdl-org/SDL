@@ -74,105 +74,105 @@ typedef struct
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX; /* 0 */
-    Uint8 ucLeftJoystickY; /* 1 */
-    Uint8 ucRightJoystickX; /* 2 */
-    Uint8 ucRightJoystickY; /* 3 */
-    Uint8 ucTriggerLeft; /* 4 */
-    Uint8 ucTriggerRight; /* 5 */
-    Uint8 ucCounter; /* 6 */
-    Uint8 rgucButtonsAndHat[4]; /* 7 */
-    Uint8 rgucPacketSequence[4]; /* 11 - 32 bit little endian */
-    Uint8 rgucGyroX[2]; /* 15 */
-    Uint8 rgucGyroY[2]; /* 17 */
-    Uint8 rgucGyroZ[2]; /* 19 */
-    Uint8 rgucAccelX[2]; /* 21 */
-    Uint8 rgucAccelY[2]; /* 23 */
-    Uint8 rgucAccelZ[2]; /* 25 */
+    Uint8 ucLeftJoystickX;        /* 0 */
+    Uint8 ucLeftJoystickY;        /* 1 */
+    Uint8 ucRightJoystickX;       /* 2 */
+    Uint8 ucRightJoystickY;       /* 3 */
+    Uint8 ucTriggerLeft;          /* 4 */
+    Uint8 ucTriggerRight;         /* 5 */
+    Uint8 ucCounter;              /* 6 */
+    Uint8 rgucButtonsAndHat[4];   /* 7 */
+    Uint8 rgucPacketSequence[4];  /* 11 - 32 bit little endian */
+    Uint8 rgucGyroX[2];           /* 15 */
+    Uint8 rgucGyroY[2];           /* 17 */
+    Uint8 rgucGyroZ[2];           /* 19 */
+    Uint8 rgucAccelX[2];          /* 21 */
+    Uint8 rgucAccelY[2];          /* 23 */
+    Uint8 rgucAccelZ[2];          /* 25 */
     Uint8 rgucSensorTimestamp[4]; /* 27 - 32 bit little endian */
 
 } PS5StatePacketCommon_t;
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX; /* 0 */
-    Uint8 ucLeftJoystickY; /* 1 */
-    Uint8 ucRightJoystickX; /* 2 */
-    Uint8 ucRightJoystickY; /* 3 */
-    Uint8 ucTriggerLeft; /* 4 */
-    Uint8 ucTriggerRight; /* 5 */
-    Uint8 ucCounter; /* 6 */
-    Uint8 rgucButtonsAndHat[4]; /* 7 */
-    Uint8 rgucPacketSequence[4]; /* 11 - 32 bit little endian */
-    Uint8 rgucGyroX[2]; /* 15 */
-    Uint8 rgucGyroY[2]; /* 17 */
-    Uint8 rgucGyroZ[2]; /* 19 */
-    Uint8 rgucAccelX[2]; /* 21 */
-    Uint8 rgucAccelY[2]; /* 23 */
-    Uint8 rgucAccelZ[2]; /* 25 */
+    Uint8 ucLeftJoystickX;        /* 0 */
+    Uint8 ucLeftJoystickY;        /* 1 */
+    Uint8 ucRightJoystickX;       /* 2 */
+    Uint8 ucRightJoystickY;       /* 3 */
+    Uint8 ucTriggerLeft;          /* 4 */
+    Uint8 ucTriggerRight;         /* 5 */
+    Uint8 ucCounter;              /* 6 */
+    Uint8 rgucButtonsAndHat[4];   /* 7 */
+    Uint8 rgucPacketSequence[4];  /* 11 - 32 bit little endian */
+    Uint8 rgucGyroX[2];           /* 15 */
+    Uint8 rgucGyroY[2];           /* 17 */
+    Uint8 rgucGyroZ[2];           /* 19 */
+    Uint8 rgucAccelX[2];          /* 21 */
+    Uint8 rgucAccelY[2];          /* 23 */
+    Uint8 rgucAccelZ[2];          /* 25 */
     Uint8 rgucSensorTimestamp[4]; /* 27 - 32 bit little endian */
-    Uint8 ucSensorTemp; /* 31 */
-    Uint8 ucTouchpadCounter1; /* 32 - high bit clear + counter */
-    Uint8 rgucTouchpadData1[3]; /* 33 - X/Y, 12 bits per axis */
-    Uint8 ucTouchpadCounter2; /* 36 - high bit clear + counter */
-    Uint8 rgucTouchpadData2[3]; /* 37 - X/Y, 12 bits per axis */
-    Uint8 rgucUnknown1[8]; /* 40 */
-    Uint8 rgucTimer2[4]; /* 48 - 32 bit little endian */
-    Uint8 ucBatteryLevel; /* 52 */
-    Uint8 ucConnectState; /* 53 - 0x08 = USB, 0x01 = headphone */
+    Uint8 ucSensorTemp;           /* 31 */
+    Uint8 ucTouchpadCounter1;     /* 32 - high bit clear + counter */
+    Uint8 rgucTouchpadData1[3];   /* 33 - X/Y, 12 bits per axis */
+    Uint8 ucTouchpadCounter2;     /* 36 - high bit clear + counter */
+    Uint8 rgucTouchpadData2[3];   /* 37 - X/Y, 12 bits per axis */
+    Uint8 rgucUnknown1[8];        /* 40 */
+    Uint8 rgucTimer2[4];          /* 48 - 32 bit little endian */
+    Uint8 ucBatteryLevel;         /* 52 */
+    Uint8 ucConnectState;         /* 53 - 0x08 = USB, 0x01 = headphone */
 
     /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
 } PS5StatePacket_t;
 
 typedef struct
 {
-    Uint8 ucLeftJoystickX; /* 0 */
-    Uint8 ucLeftJoystickY; /* 1 */
-    Uint8 ucRightJoystickX; /* 2 */
-    Uint8 ucRightJoystickY; /* 3 */
-    Uint8 ucTriggerLeft; /* 4 */
-    Uint8 ucTriggerRight; /* 5 */
-    Uint8 ucCounter; /* 6 */
-    Uint8 rgucButtonsAndHat[4]; /* 7 */
-    Uint8 rgucPacketSequence[4]; /* 11 - 32 bit little endian */
-    Uint8 rgucGyroX[2]; /* 15 */
-    Uint8 rgucGyroY[2]; /* 17 */
-    Uint8 rgucGyroZ[2]; /* 19 */
-    Uint8 rgucAccelX[2]; /* 21 */
-    Uint8 rgucAccelY[2]; /* 23 */
-    Uint8 rgucAccelZ[2]; /* 25 */
+    Uint8 ucLeftJoystickX;        /* 0 */
+    Uint8 ucLeftJoystickY;        /* 1 */
+    Uint8 ucRightJoystickX;       /* 2 */
+    Uint8 ucRightJoystickY;       /* 3 */
+    Uint8 ucTriggerLeft;          /* 4 */
+    Uint8 ucTriggerRight;         /* 5 */
+    Uint8 ucCounter;              /* 6 */
+    Uint8 rgucButtonsAndHat[4];   /* 7 */
+    Uint8 rgucPacketSequence[4];  /* 11 - 32 bit little endian */
+    Uint8 rgucGyroX[2];           /* 15 */
+    Uint8 rgucGyroY[2];           /* 17 */
+    Uint8 rgucGyroZ[2];           /* 19 */
+    Uint8 rgucAccelX[2];          /* 21 */
+    Uint8 rgucAccelY[2];          /* 23 */
+    Uint8 rgucAccelZ[2];          /* 25 */
     Uint8 rgucSensorTimestamp[4]; /* 27 - 32 bit little endian */
-    Uint8 ucTouchpadCounter1; /* 31 - high bit clear + counter */
-    Uint8 rgucTouchpadData1[3]; /* 32 - X/Y, 12 bits per axis */
-    Uint8 ucTouchpadCounter2; /* 35 - high bit clear + counter */
-    Uint8 rgucTouchpadData2[3]; /* 36 - X/Y, 12 bits per axis */
+    Uint8 ucTouchpadCounter1;     /* 31 - high bit clear + counter */
+    Uint8 rgucTouchpadData1[3];   /* 32 - X/Y, 12 bits per axis */
+    Uint8 ucTouchpadCounter2;     /* 35 - high bit clear + counter */
+    Uint8 rgucTouchpadData2[3];   /* 36 - X/Y, 12 bits per axis */
 
     /* There's more unknown data at the end, and a 32-bit CRC on Bluetooth */
 } PS5StatePacketAlt_t;
 
 typedef struct
 {
-    Uint8 ucEnableBits1; /* 0 */
-    Uint8 ucEnableBits2; /* 1 */
-    Uint8 ucRumbleRight; /* 2 */
-    Uint8 ucRumbleLeft; /* 3 */
-    Uint8 ucHeadphoneVolume; /* 4 */
-    Uint8 ucSpeakerVolume; /* 5 */
-    Uint8 ucMicrophoneVolume; /* 6 */
-    Uint8 ucAudioEnableBits; /* 7 */
-    Uint8 ucMicLightMode; /* 8 */
-    Uint8 ucAudioMuteBits; /* 9 */
+    Uint8 ucEnableBits1;              /* 0 */
+    Uint8 ucEnableBits2;              /* 1 */
+    Uint8 ucRumbleRight;              /* 2 */
+    Uint8 ucRumbleLeft;               /* 3 */
+    Uint8 ucHeadphoneVolume;          /* 4 */
+    Uint8 ucSpeakerVolume;            /* 5 */
+    Uint8 ucMicrophoneVolume;         /* 6 */
+    Uint8 ucAudioEnableBits;          /* 7 */
+    Uint8 ucMicLightMode;             /* 8 */
+    Uint8 ucAudioMuteBits;            /* 9 */
     Uint8 rgucRightTriggerEffect[11]; /* 10 */
-    Uint8 rgucLeftTriggerEffect[11]; /* 21 */
-    Uint8 rgucUnknown1[6]; /* 32 */
-    Uint8 ucEnableBits3; /* 38 */
-    Uint8 rgucUnknown2[2]; /* 39 */
-    Uint8 ucLedAnim; /* 41 */
-    Uint8 ucLedBrightness; /* 42 */
-    Uint8 ucPadLights; /* 43 */
-    Uint8 ucLedRed; /* 44 */
-    Uint8 ucLedGreen; /* 45 */
-    Uint8 ucLedBlue; /* 46 */
+    Uint8 rgucLeftTriggerEffect[11];  /* 21 */
+    Uint8 rgucUnknown1[6];            /* 32 */
+    Uint8 ucEnableBits3;              /* 38 */
+    Uint8 rgucUnknown2[2];            /* 39 */
+    Uint8 ucLedAnim;                  /* 41 */
+    Uint8 ucLedBrightness;            /* 42 */
+    Uint8 ucPadLights;                /* 43 */
+    Uint8 ucLedRed;                   /* 44 */
+    Uint8 ucLedGreen;                 /* 45 */
+    Uint8 ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
 
 typedef enum
@@ -298,7 +298,7 @@ static void SetLedsForPlayerIndex(DS5EffectsState_t *effects, int player_index)
         { 0x20, 0x00, 0x20 }, /* Pink */
         { 0x20, 0x10, 0x00 }, /* Orange */
         { 0x00, 0x10, 0x10 }, /* Teal */
-        { 0x10, 0x10, 0x10 } /* White */
+        { 0x10, 0x10, 0x10 }  /* White */
     };
 
     if (player_index >= 0) {

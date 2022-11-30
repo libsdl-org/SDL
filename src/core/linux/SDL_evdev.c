@@ -130,14 +130,14 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_cla
 #endif /* SDL_USE_LIBUDEV */
 
 static Uint8 EVDEV_MouseButtons[] = {
-    SDL_BUTTON_LEFT, /*  BTN_LEFT        0x110 */
-    SDL_BUTTON_RIGHT, /*  BTN_RIGHT       0x111 */
+    SDL_BUTTON_LEFT,   /*  BTN_LEFT        0x110 */
+    SDL_BUTTON_RIGHT,  /*  BTN_RIGHT       0x111 */
     SDL_BUTTON_MIDDLE, /*  BTN_MIDDLE      0x112 */
-    SDL_BUTTON_X1, /*  BTN_SIDE        0x113 */
-    SDL_BUTTON_X2, /*  BTN_EXTRA       0x114 */
+    SDL_BUTTON_X1,     /*  BTN_SIDE        0x113 */
+    SDL_BUTTON_X2,     /*  BTN_EXTRA       0x114 */
     SDL_BUTTON_X2 + 1, /*  BTN_FORWARD     0x115 */
     SDL_BUTTON_X2 + 2, /*  BTN_BACK        0x116 */
-    SDL_BUTTON_X2 + 3 /*  BTN_TASK        0x117 */
+    SDL_BUTTON_X2 + 3  /*  BTN_TASK        0x117 */
 };
 
 static int SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)

@@ -12,7 +12,7 @@
 /* Simple program:  Create a native window and attach an SDL renderer */
 
 #include <stdlib.h> /* for srand() */
-#include <time.h> /* for time() */
+#include <time.h>   /* for time() */
 
 #include "testnative.h"
 #include "testutils.h"

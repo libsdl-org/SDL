@@ -86,7 +86,7 @@ struct MonitorInfo
 
     int production_week; /* -1 if not specified */
     int production_year; /* -1 if not specified */
-    int model_year; /* -1 if not specified */
+    int model_year;      /* -1 if not specified */
 
     int major_version;
     int minor_version;
@@ -120,8 +120,8 @@ struct MonitorInfo
         } analog;
     } ad;
 
-    int width_mm; /* -1 if not specified */
-    int height_mm; /* -1 if not specified */
+    int width_mm;        /* -1 if not specified */
+    int height_mm;       /* -1 if not specified */
     double aspect_ratio; /* -1.0 if not specififed */
 
     double gamma; /* -1.0 if not specified */

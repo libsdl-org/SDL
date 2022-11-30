@@ -124,7 +124,7 @@ static SDL_GameControllerType SDL_GetJoystickGameControllerProtocol(const char *
 {
     static const int LIBUSB_CLASS_VENDOR_SPEC = 0xFF;
     static const int XB360_IFACE_SUBCLASS = 93;
-    static const int XB360_IFACE_PROTOCOL = 1; /* Wired */
+    static const int XB360_IFACE_PROTOCOL = 1;    /* Wired */
     static const int XB360W_IFACE_PROTOCOL = 129; /* Wireless */
     static const int XBONE_IFACE_SUBCLASS = 71;
     static const int XBONE_IFACE_PROTOCOL = 208;

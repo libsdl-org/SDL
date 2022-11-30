@@ -23,17 +23,17 @@
 #ifdef SDL_HAPTIC_LINUX
 
 #include "../SDL_syshaptic.h"
-#include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
+#include "../../joystick/SDL_sysjoystick.h"         /* For the real SDL_Joystick */
 #include "../../joystick/linux/SDL_sysjoystick_c.h" /* For joystick hwdata */
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
 
-#include <unistd.h> /* close */
+#include <unistd.h>      /* close */
 #include <linux/input.h> /* Force feedback linux stuff. */
-#include <fcntl.h> /* O_RDWR */
-#include <limits.h> /* INT_MAX */
-#include <errno.h> /* errno, strerror */
-#include <sys/stat.h> /* stat */
+#include <fcntl.h>       /* O_RDWR */
+#include <limits.h>      /* INT_MAX */
+#include <errno.h>       /* errno, strerror */
+#include <sys/stat.h>    /* stat */
 
 #define MAX_HAPTICS 32 /* It's doubtful someone has more then 32 evdev */
 
@@ -48,7 +48,7 @@ static void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class,
  */
 typedef struct SDL_hapticlist_item
 {
-    char *fname; /* Dev path name (like /dev/input/event1) */
+    char *fname;        /* Dev path name (like /dev/input/event1) */
     SDL_Haptic *haptic; /* Associated haptic. */
     dev_t dev_num;
     struct SDL_hapticlist_item *next;
@@ -59,7 +59,7 @@ typedef struct SDL_hapticlist_item
  */
 struct haptic_hwdata
 {
-    int fd; /* File descriptor of the device. */
+    int fd;      /* File descriptor of the device. */
     char *fname; /* Points to the name in SDL_hapticlist. */
 };
 
@@ -660,7 +660,7 @@ static int SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection *src)
             --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
         */
         tmp = ((src->dir[0]) + 9000) % 36000; /* Convert to polars */
-        tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
+        tmp = (tmp * 0x8000) / 18000;         /* convert to range [0,0xFFFF] */
         *dest = (Uint16)tmp;
         break;
 

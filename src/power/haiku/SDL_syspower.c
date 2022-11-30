@@ -109,7 +109,7 @@ SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
         const int pct = (int)battery_life;
         const int secs = (int)battery_time;
 
-        if (pct != 255) { /* 255 == unknown */
+        if (pct != 255) {                       /* 255 == unknown */
             *percent = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
         }
         if (secs != 0xFFFF) { /* 0xFFFF == unknown */

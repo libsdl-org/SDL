@@ -223,18 +223,18 @@ typedef struct
 
 /* Forward decl's for XInput API's we load dynamically and use if available */
 typedef DWORD(WINAPI *XInputGetState_t)(
-    DWORD dwUserIndex, /* [in] Index of the gamer associated with the device */
+    DWORD dwUserIndex,      /* [in] Index of the gamer associated with the device */
     XINPUT_STATE_EX *pState /* [out] Receives the current state */
 );
 
 typedef DWORD(WINAPI *XInputSetState_t)(
-    DWORD dwUserIndex, /* [in] Index of the gamer associated with the device */
+    DWORD dwUserIndex,           /* [in] Index of the gamer associated with the device */
     XINPUT_VIBRATION *pVibration /* [in, out] The vibration information to send to the controller */
 );
 
 typedef DWORD(WINAPI *XInputGetCapabilities_t)(
-    DWORD dwUserIndex, /* [in] Index of the gamer associated with the device */
-    DWORD dwFlags, /* [in] Input flags that identify the device type */
+    DWORD dwUserIndex,                 /* [in] Index of the gamer associated with the device */
+    DWORD dwFlags,                     /* [in] Input flags that identify the device type */
     XINPUT_CAPABILITIES *pCapabilities /* [out] Receives the capabilities */
 );
 

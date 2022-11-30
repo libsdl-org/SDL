@@ -56,7 +56,7 @@ SDL_GetPowerInfo_Windows(SDL_PowerState *state, int *seconds, int *percent)
         const int pct = (int)status.BatteryLifePercent;
         const int secs = (int)status.BatteryLifeTime;
 
-        if (pct != 255) { /* 255 == unknown */
+        if (pct != 255) {                       /* 255 == unknown */
             *percent = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
         }
         if (secs != 0xFFFFFFFF) { /* ((DWORD)-1) == unknown */

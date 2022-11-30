@@ -466,7 +466,7 @@ void SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid)
     notification_client.useguid = useguid;
 
     EnumerateEndpointsForFlow(SDL_FALSE); /* playback */
-    EnumerateEndpointsForFlow(SDL_TRUE); /* capture */
+    EnumerateEndpointsForFlow(SDL_TRUE);  /* capture */
 
     /* if this fails, we just won't get hotplug events. Carry on anyhow. */
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);

@@ -114,9 +114,9 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
                 ofs = 0;
                 bits -= pitch; /* go to previous */
                 break;
-            case 1: /* end of bitmap */
+            case 1:               /* end of bitmap */
                 return SDL_FALSE; /* success! */
-            case 2: /* delta */
+            case 2:               /* delta */
                 if (!SDL_RWread(src, &ch, 1, 1)) {
                     return SDL_TRUE;
                 }

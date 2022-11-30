@@ -64,7 +64,7 @@ typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(void);
     int (*OpenDevice)(_THIS, const char *devname);
-    void (*ThreadInit)(_THIS); /* Called by audio thread at start */
+    void (*ThreadInit)(_THIS);   /* Called by audio thread at start */
     void (*ThreadDeinit)(_THIS); /* Called by audio thread at end */
     void (*WaitDevice)(_THIS);
     void (*PlayDevice)(_THIS);
@@ -139,7 +139,7 @@ struct SDL_AudioDevice
 
     /* Current state flags */
     SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
-    SDL_atomic_t enabled; /* true if device is functioning and connected. */
+    SDL_atomic_t enabled;  /* true if device is functioning and connected. */
     SDL_atomic_t paused;
     SDL_bool iscapture;
 

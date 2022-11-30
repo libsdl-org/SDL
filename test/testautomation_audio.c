@@ -205,7 +205,7 @@ int audio_initOpenCloseQuitAudio()
             }
 
         } /* spec loop */
-    } /* driver loop */
+    }     /* driver loop */
 
     /* Restart audio again */
     _audioSetUp(NULL);
@@ -324,7 +324,7 @@ int audio_pauseUnpauseAudio()
             SDLTest_AssertPass("Call to SDL_AudioQuit()");
 
         } /* spec loop */
-    } /* driver loop */
+    }     /* driver loop */
 
     /* Restart audio again */
     _audioSetUp(NULL);

@@ -668,7 +668,7 @@ void SDL_GestureProcessEvent(SDL_Event *event)
             /* printf("Centrid : (%f,%f)\n",inTouch->centroid.x,inTouch->centroid.y); */
             if (inTouch->numDownFingers > 1) {
                 SDL_FloatPoint lv; /* Vector from centroid to last x,y position */
-                SDL_FloatPoint v; /* Vector from centroid to current x,y position */
+                SDL_FloatPoint v;  /* Vector from centroid to current x,y position */
                 /* lv = inTouch->gestureLast[j].cv; */
                 lv.x = lastP.x - lastCentroid.x;
                 lv.y = lastP.y - lastCentroid.y;

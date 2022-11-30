@@ -846,8 +846,8 @@ int X11_GL_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context)
     X11_XSetErrorHandler(handler);
 
     if (errorCode != Success) { /* uhoh, an X error was thrown! */
-        return -1; /* the error handler called SDL_SetError() already. */
-    } else if (!rc) { /* glXMakeCurrent() failed without throwing an X error */
+        return -1;              /* the error handler called SDL_SetError() already. */
+    } else if (!rc) {           /* glXMakeCurrent() failed without throwing an X error */
         return SDL_SetError("Unable to make GL context current");
     }
 

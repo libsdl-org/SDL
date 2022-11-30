@@ -26,7 +26,7 @@
 */
 #include <SDL3/SDL_test.h>
 
-#include <float.h> /* Needed for FLT_MAX and DBL_EPSILON */
+#include <float.h>  /* Needed for FLT_MAX and DBL_EPSILON */
 #include <limits.h> /* Needed for UCHAR_MAX, etc. */
 
 /**

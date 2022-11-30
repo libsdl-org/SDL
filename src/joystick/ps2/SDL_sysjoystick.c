@@ -220,7 +220,7 @@ static int PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     }
 
     // Initial value
-    actAlign[0] = low_frequency_rumble >> 8; // Enable small engine
+    actAlign[0] = low_frequency_rumble >> 8;  // Enable small engine
     actAlign[1] = high_frequency_rumble >> 8; // Enable big engine
     actAlign[2] = 0xff;
     actAlign[3] = 0xff;

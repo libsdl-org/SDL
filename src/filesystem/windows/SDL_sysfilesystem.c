@@ -70,7 +70,7 @@ SDL_GetBasePath(void)
         }
     }
 
-    SDL_assert(i > 0); /* Should have been an absolute path. */
+    SDL_assert(i > 0);  /* Should have been an absolute path. */
     path[i + 1] = '\0'; /* chop off filename. */
 
     retval = WIN_StringToUTF8W(path);

@@ -59,16 +59,16 @@ static unsigned int __attribute__((aligned(16))) DisplayList[262144];
  */
 typedef struct PSP_TextureData
 {
-    void *data; /**< Image data. */
-    unsigned int size; /**< Size of data in bytes. */
-    unsigned int width; /**< Image width. */
-    unsigned int height; /**< Image height. */
-    unsigned int textureWidth; /**< Texture width (power of two). */
+    void *data;                 /**< Image data. */
+    unsigned int size;          /**< Size of data in bytes. */
+    unsigned int width;         /**< Image width. */
+    unsigned int height;        /**< Image height. */
+    unsigned int textureWidth;  /**< Texture width (power of two). */
     unsigned int textureHeight; /**< Texture height (power of two). */
-    unsigned int bits; /**< Image bits per pixel. */
-    unsigned int format; /**< Image format - one of ::pgePixelFormat. */
+    unsigned int bits;          /**< Image bits per pixel. */
+    unsigned int format;        /**< Image format - one of ::pgePixelFormat. */
     unsigned int pitch;
-    SDL_bool swizzled; /**< Is image swizzled. */
+    SDL_bool swizzled;                /**< Is image swizzled. */
     struct PSP_TextureData *prevhotw; /**< More recently used render target */
     struct PSP_TextureData *nexthotw; /**< Less recently used render target */
 } PSP_TextureData;
@@ -83,17 +83,17 @@ typedef struct
 
 typedef struct
 {
-    void *frontbuffer; /**< main screen buffer */
-    void *backbuffer; /**< buffer presented to display */
-    SDL_Texture *boundTarget; /**< currently bound rendertarget */
-    SDL_bool initialized; /**< is driver initialized */
+    void *frontbuffer;         /**< main screen buffer */
+    void *backbuffer;          /**< buffer presented to display */
+    SDL_Texture *boundTarget;  /**< currently bound rendertarget */
+    SDL_bool initialized;      /**< is driver initialized */
     SDL_bool displayListAvail; /**< is the display list already initialized for this frame */
-    unsigned int psm; /**< format of the display buffers */
-    unsigned int bpp; /**< bits per pixel of the main display */
+    unsigned int psm;          /**< format of the display buffers */
+    unsigned int bpp;          /**< bits per pixel of the main display */
 
-    SDL_bool vsync; /**< whether we do vsync */
-    PSP_BlendState blendState; /**< current blend mode */
-    PSP_TextureData *most_recent_target; /**< start of render target LRU double linked list */
+    SDL_bool vsync;                       /**< whether we do vsync */
+    PSP_BlendState blendState;            /**< current blend mode */
+    PSP_TextureData *most_recent_target;  /**< start of render target LRU double linked list */
     PSP_TextureData *least_recent_target; /**< end of the LRU list */
 
     SDL_bool vblank_not_reached; /**< whether vblank wasn't reached */

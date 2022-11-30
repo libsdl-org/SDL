@@ -64,7 +64,7 @@ enum ToSDL
     BAPP_RESTORE, /* TODO: IMPLEMENT! */
     BAPP_SHOW,
     BAPP_HIDE,
-    BAPP_MOUSE_FOCUS, /* caused by MOUSE_MOVE */
+    BAPP_MOUSE_FOCUS,    /* caused by MOUSE_MOVE */
     BAPP_KEYBOARD_FOCUS, /* from WINDOW_ACTIVATED */
     BAPP_WINDOW_CLOSE_REQUESTED,
     BAPP_WINDOW_MOVED,
@@ -241,7 +241,7 @@ class SDL_BApp : public BApplication
         if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("x", &x) != B_OK || /* x movement */
-            msg->FindInt32("y", &y) != B_OK /* y movement */
+            msg->FindInt32("y", &y) != B_OK    /* y movement */
         ) {
             return;
         }

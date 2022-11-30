@@ -616,7 +616,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         int proto_count = 0;
 
         protocols[proto_count++] = data->WM_DELETE_WINDOW; /* Allow window to be deleted by the WM */
-        protocols[proto_count++] = data->WM_TAKE_FOCUS; /* Since we will want to set input focus explicitly */
+        protocols[proto_count++] = data->WM_TAKE_FOCUS;    /* Since we will want to set input focus explicitly */
 
         /* Default to using ping if there is no hint */
         if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NET_WM_PING, SDL_TRUE)) {

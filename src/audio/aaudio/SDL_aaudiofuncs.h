@@ -33,12 +33,12 @@ SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSharingMode, (AAudioStreamBuilder *
 SDL_PROC(void, AAudioStreamBuilder_setDirection, (AAudioStreamBuilder * builder, aaudio_direction_t direction))
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setBufferCapacityInFrames, (AAudioStreamBuilder * builder, int32_t numFrames))
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setPerformanceMode, (AAudioStreamBuilder * builder, aaudio_performance_mode_t mode))
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage)) /* API 28 */
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setContentType, (AAudioStreamBuilder * builder, aaudio_content_type_t contentType)) /* API 28 */
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setInputPreset, (AAudioStreamBuilder * builder, aaudio_input_preset_t inputPreset)) /* API 28 */
+SDL_PROC_UNUSED(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage))                                         /* API 28 */
+SDL_PROC_UNUSED(void, AAudioStreamBuilder_setContentType, (AAudioStreamBuilder * builder, aaudio_content_type_t contentType))                      /* API 28 */
+SDL_PROC_UNUSED(void, AAudioStreamBuilder_setInputPreset, (AAudioStreamBuilder * builder, aaudio_input_preset_t inputPreset))                      /* API 28 */
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setAllowedCapturePolicy, (AAudioStreamBuilder * builder, aaudio_allowed_capture_policy_t capturePolicy)) /* API 29 */
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSessionId, (AAudioStreamBuilder * builder, aaudio_session_id_t sessionId)) /* API 28 */
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setPrivacySensitive, (AAudioStreamBuilder * builder, bool privacySensitive)) /* API 30 */
+SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSessionId, (AAudioStreamBuilder * builder, aaudio_session_id_t sessionId))                            /* API 28 */
+SDL_PROC_UNUSED(void, AAudioStreamBuilder_setPrivacySensitive, (AAudioStreamBuilder * builder, bool privacySensitive))                             /* API 30 */
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setDataCallback, (AAudioStreamBuilder * builder, AAudioStream_dataCallback callback, void *userData))
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setFramesPerDataCallback, (AAudioStreamBuilder * builder, int32_t numFrames))
 SDL_PROC(void, AAudioStreamBuilder_setErrorCallback, (AAudioStreamBuilder * builder, AAudioStream_errorCallback callback, void *userData))
@@ -72,8 +72,8 @@ SDL_PROC_UNUSED(int64_t, AAudioStream_getFramesWritten, (AAudioStream * stream))
 SDL_PROC_UNUSED(int64_t, AAudioStream_getFramesRead, (AAudioStream * stream))
 SDL_PROC_UNUSED(aaudio_session_id_t, AAudioStream_getSessionId, (AAudioStream * stream)) /* API 28 */
 SDL_PROC(aaudio_result_t, AAudioStream_getTimestamp, (AAudioStream * stream, clockid_t clockid, int64_t *framePosition, int64_t *timeNanoseconds))
-SDL_PROC_UNUSED(aaudio_usage_t, AAudioStream_getUsage, (AAudioStream * stream)) /* API 28 */
-SDL_PROC_UNUSED(aaudio_content_type_t, AAudioStream_getContentType, (AAudioStream * stream)) /* API 28 */
-SDL_PROC_UNUSED(aaudio_input_preset_t, AAudioStream_getInputPreset, (AAudioStream * stream)) /* API 28 */
+SDL_PROC_UNUSED(aaudio_usage_t, AAudioStream_getUsage, (AAudioStream * stream))                                 /* API 28 */
+SDL_PROC_UNUSED(aaudio_content_type_t, AAudioStream_getContentType, (AAudioStream * stream))                    /* API 28 */
+SDL_PROC_UNUSED(aaudio_input_preset_t, AAudioStream_getInputPreset, (AAudioStream * stream))                    /* API 28 */
 SDL_PROC_UNUSED(aaudio_allowed_capture_policy_t, AAudioStream_getAllowedCapturePolicy, (AAudioStream * stream)) /* API 29 */
-SDL_PROC_UNUSED(bool, AAudioStream_isPrivacySensitive, (AAudioStream * stream)) /* API 30 */
+SDL_PROC_UNUSED(bool, AAudioStream_isPrivacySensitive, (AAudioStream * stream))                                 /* API 30 */

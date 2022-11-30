@@ -397,7 +397,7 @@ typedef struct SDL_VideoData
                                         UINT             *dpiY );
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
     /* *INDENT-ON* */ /* clang-format on */
-#endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+#endif                /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
     SDL_bool dpi_scaling_enabled;
     SDL_bool cleared;

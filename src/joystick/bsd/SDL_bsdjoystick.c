@@ -139,7 +139,7 @@ struct report
     struct usb_ctl_report *buf; /* Buffer */
 #endif
     size_t size; /* Buffer size */
-    int rid; /* Report ID */
+    int rid;     /* Report ID */
     enum
     {
         SREPORT_UNINIT,
@@ -185,7 +185,7 @@ struct joystick_hwdata
     enum
     {
         BSDJOY_UHID, /* uhid(4) */
-        BSDJOY_JOY /* joy(4) */
+        BSDJOY_JOY   /* joy(4) */
     } type;
 
     int naxes;

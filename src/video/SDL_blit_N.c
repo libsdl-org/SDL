@@ -751,7 +751,7 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
             vpermute = reorder_ppc64le_vec(vpermute);
 #endif
             vbits = vec_perm(vbits, vzero, vpermute); /* swizzle it. */
-            vec_st(vbits, 0, dst); /* store it back out. */
+            vec_st(vbits, 0, dst);                    /* store it back out. */
             dst += 4;
             vbits = voverflow;
         }
@@ -844,7 +844,7 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
             vpermute = reorder_ppc64le_vec(vpermute);
 #endif
             vbits = vec_perm(vbits, vzero, vpermute); /* swizzle it. */
-            vec_st(vbits, 0, dst); /* store it back out. */
+            vec_st(vbits, 0, dst);                    /* store it back out. */
             dst += 4;
             vbits = voverflow;
         }

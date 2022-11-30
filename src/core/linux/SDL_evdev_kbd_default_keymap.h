@@ -4508,7 +4508,7 @@ static unsigned short *default_key_maps[MAX_NR_KEYMAPS] = {
     default_key_map_125,
     default_key_map_126,
     default_key_map_127,
-#else /* !INCLUDE_EXTENDED_KEYMAP */
+#else  /* !INCLUDE_EXTENDED_KEYMAP */
     NULL,
     NULL,
     NULL,

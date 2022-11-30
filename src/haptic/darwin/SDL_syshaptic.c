@@ -23,7 +23,7 @@
 #ifdef SDL_HAPTIC_IOKIT
 
 #include "../SDL_syshaptic.h"
-#include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
+#include "../../joystick/SDL_sysjoystick.h"            /* For the real SDL_Joystick */
 #include "../../joystick/darwin/SDL_iokitjoystick_c.h" /* For joystick hwdata */
 #include "SDL_syshaptic_c.h"
 
@@ -44,7 +44,7 @@ typedef struct SDL_hapticlist_item
 {
     char name[256]; /* Name of the device. */
 
-    io_service_t dev; /* Node we use to create the device. */
+    io_service_t dev;   /* Node we use to create the device. */
     SDL_Haptic *haptic; /* Haptic currently associated with it. */
 
     /* Usage pages for determining if it's a mouse or not. */
@@ -69,7 +69,7 @@ struct haptic_hwdata
 struct haptic_hweffect
 {
     FFEffectObjectReference ref; /* Reference. */
-    struct FFEFFECT effect; /* Hardware effect. */
+    struct FFEFFECT effect;      /* Hardware effect. */
 };
 
 /*
@@ -767,9 +767,9 @@ static int SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, SDL_HapticEffe
 
     /* Set global stuff. */
     SDL_memset(dest, 0, sizeof(FFEFFECT));
-    dest->dwSize = sizeof(FFEFFECT); /* Set the structure size. */
-    dest->dwSamplePeriod = 0; /* Not used by us. */
-    dest->dwGain = 10000; /* Gain is set globally, not locally. */
+    dest->dwSize = sizeof(FFEFFECT);     /* Set the structure size. */
+    dest->dwSamplePeriod = 0;            /* Not used by us. */
+    dest->dwGain = 10000;                /* Gain is set globally, not locally. */
     dest->dwFlags = FFEFF_OBJECTOFFSETS; /* Seems obligatory. */
 
     /* Envelope. */

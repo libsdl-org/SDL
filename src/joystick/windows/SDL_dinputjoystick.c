@@ -34,7 +34,7 @@
 #define DIDFT_OPTIONAL 0x80000000
 #endif
 
-#define INPUT_QSIZE        128 /* Buffer up to 128 input messages */
+#define INPUT_QSIZE        128                                                         /* Buffer up to 128 input messages */
 #define JOY_AXIS_THRESHOLD (((SDL_JOYSTICK_AXIS_MAX) - (SDL_JOYSTICK_AXIS_MIN)) / 100) /* 1% motion */
 
 #define CONVERT_MAGNITUDE(x) (((x)*10000) / 0x7FFF)

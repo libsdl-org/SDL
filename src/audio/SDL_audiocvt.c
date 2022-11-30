@@ -141,9 +141,9 @@ static void SDLCALL SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT *cvt, SDL_AudioForm
        Just use unaligned load/stores, if the memory at runtime is
        aligned it'll be just as fast on modern processors */
     /* convert backwards, since output is growing in-place. */
-    while (i >= 4) { /* 4 * float32 */
-        const __m128 input = _mm_loadu_ps(src); /* A B C D */
-        _mm_storeu_ps(dst, _mm_unpacklo_ps(input, input)); /* A A B B */
+    while (i >= 4) {                                           /* 4 * float32 */
+        const __m128 input = _mm_loadu_ps(src);                /* A B C D */
+        _mm_storeu_ps(dst, _mm_unpacklo_ps(input, input));     /* A A B B */
         _mm_storeu_ps(dst + 4, _mm_unpackhi_ps(input, input)); /* C C D D */
         i -= 4;
         src -= 4;
@@ -152,7 +152,7 @@ static void SDLCALL SDL_ConvertMonoToStereo_SSE(SDL_AudioCVT *cvt, SDL_AudioForm
 
     /* Finish off any leftovers with scalar operations. */
     src += 3;
-    dst += 6; /* adjust for smaller buffers. */
+    dst += 6;   /* adjust for smaller buffers. */
     while (i) { /* convert backwards, since output is growing in-place. */
         const float srcFC = src[0];
         dst[1] /* FR */ = srcFC;

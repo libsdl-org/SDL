@@ -957,9 +957,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 mouse = SDL_GetMouse();
                 if (!mouse->was_touch_mouse_events) { /* we're not a touch handler causing a mouse leave? */
                     SDL_SendMouseMotion(data->window, 0, 0, point.x, point.y);
-                } else { /* touch handling? */
+                } else {                                       /* touch handling? */
                     mouse->was_touch_mouse_events = SDL_FALSE; /* not anymore */
-                    if (mouse->touch_mouse_events) { /* convert touch to mouse events */
+                    if (mouse->touch_mouse_events) {           /* convert touch to mouse events */
                         SDL_SendMouseMotion(data->window, SDL_TOUCH_MOUSEID, 0, point.x, point.y);
                     } else { /* normal handling */
                         SDL_SendMouseMotion(data->window, 0, 0, point.x, point.y);
@@ -1401,9 +1401,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          * Not all of these settings are documented.
          * The use of the undocumented ones was suggested by https://github.com/bjarkeck/GCGJ/blob/master/Monogame/Windows/WinFormsGameForm.cs . */
         return TABLET_DISABLE_PRESSANDHOLD | TABLET_DISABLE_PENTAPFEEDBACK | TABLET_DISABLE_PENBARRELFEEDBACK | TABLET_DISABLE_TOUCHUIFORCEON | TABLET_DISABLE_TOUCHUIFORCEOFF | TABLET_DISABLE_TOUCHSWITCH | TABLET_DISABLE_FLICKS | TABLET_DISABLE_SMOOTHSCROLLING | TABLET_DISABLE_FLICKFALLBACKKEYS; /*  disables press and hold (right-click) gesture */
-        /*  disables UI feedback on pen up (waves) */
-        /*  disables UI feedback on pen button down (circle) */
-        /*  disables pen flicks (back, forward, drag down, drag up) */
+                                                                                                                                                                                                                                                                                                         /*  disables UI feedback on pen up (waves) */
+                                                                                                                                                                                                                                                                                                         /*  disables UI feedback on pen button down (circle) */
+                                                                                                                                                                                                                                                                                                         /*  disables pen flicks (back, forward, drag down, drag up) */
 
 #endif /* HAVE_TPCSHRD_H */
 

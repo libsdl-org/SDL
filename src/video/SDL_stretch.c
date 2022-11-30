@@ -196,7 +196,7 @@ get_scaler_datas(int src_nb, int dst_nb, int *fp_start, int *fp_step, int *left_
 {
 
     int step = FIXED_POINT(src_nb) / (dst_nb); /* source step in fixed point */
-    int x0 = FP_ONE / 2; /* dst first pixel center at 0.5 in fixed point */
+    int x0 = FP_ONE / 2;                       /* dst first pixel center at 0.5 in fixed point */
     int fp_sum;
     int i;
 #if 0
@@ -553,7 +553,7 @@ static SDL_INLINE void INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1
     x_10_11 = CAST_uint8x8_t vld1_u32(s1);
 
     /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
-    k0 = vmull_u8(x_00_01, v_frac_h1); /* k0 := x0 * (1 - frac)    */
+    k0 = vmull_u8(x_00_01, v_frac_h1);     /* k0 := x0 * (1 - frac)    */
     k0 = vmlal_u8(k0, x_10_11, v_frac_h0); /* k0 += x1 * frac          */
 
     /* k0 now contains 2 interpolated pixels { j0, j1 } */
@@ -645,7 +645,7 @@ scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *d
             x_16_17 = CAST_uint8x8_t vld1_u32(s_16_17);
 
             /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
-            k0 = vmull_u8(x_00_01, v_frac_h1); /* k0 := x0 * (1 - frac)    */
+            k0 = vmull_u8(x_00_01, v_frac_h1);     /* k0 := x0 * (1 - frac)    */
             k0 = vmlal_u8(k0, x_10_11, v_frac_h0); /* k0 += x1 * frac          */
 
             k1 = vmull_u8(x_02_03, v_frac_h1);
@@ -737,7 +737,7 @@ scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *d
             x_12_13 = CAST_uint8x8_t vld1_u32(s_12_13);
 
             /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
-            k0 = vmull_u8(x_00_01, v_frac_h1); /* k0 := x0 * (1 - frac)    */
+            k0 = vmull_u8(x_00_01, v_frac_h1);     /* k0 := x0 * (1 - frac)    */
             k0 = vmlal_u8(k0, x_10_11, v_frac_h0); /* k0 += x1 * frac          */
 
             k1 = vmull_u8(x_02_03, v_frac_h1);

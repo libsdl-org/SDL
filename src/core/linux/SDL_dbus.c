@@ -128,7 +128,7 @@ static void SDL_DBus_Init_Spinlocked(void)
 
         if (LoadDBUSLibrary() == -1) {
             is_dbus_available = SDL_FALSE; /* can't load at all? Don't keep trying. */
-            return; /* oh well */
+            return;
         }
 
         if (!dbus.threads_init_default()) {
@@ -422,7 +422,7 @@ SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
         const char *bus_name = "org.freedesktop.portal.Desktop";
         const char *path = "/org/freedesktop/portal/desktop";
         const char *interface = "org.freedesktop.portal.Inhibit";
-        const char *window = ""; /* As a future improvement we could gather the X11 XID or Wayland surface identifier */
+        const char *window = "";                    /* As a future improvement we could gather the X11 XID or Wayland surface identifier */
         static const unsigned int INHIBIT_IDLE = 8; /* Taken from the portal API reference */
         DBusMessageIter iterInit;
 

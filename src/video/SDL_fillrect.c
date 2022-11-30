@@ -124,7 +124,7 @@ DEFINE_SSE_FILLRECT(2, Uint16)
 DEFINE_SSE_FILLRECT(4, Uint32)
 
 /* *INDENT-ON* */ /* clang-format on */
-#endif /* __SSE__ */
+#endif            /* __SSE__ */
 
 static void SDL_FillRect1(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {

@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     raise(SIGTERM);
 
     SDL_Quit(); /* Never reached */
-    return 0; /* Never reached */
+    return 0;   /* Never reached */
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

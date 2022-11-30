@@ -646,10 +646,10 @@ static SDL_bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
         }
     }
 
-    rgucBuffer[0] = (0x0 << 4) | 0x1; /* 0 mini cycles (besides first), cycle duration 8ms */
+    rgucBuffer[0] = (0x0 << 4) | 0x1;                    /* 0 mini cycles (besides first), cycle duration 8ms */
     rgucBuffer[1] = ((ucLedIntensity & 0xF) << 4) | 0x0; /* LED start intensity (0x0-0xF), 0 cycles (LED stays on at start intensity after first cycle) */
     rgucBuffer[2] = ((ucLedIntensity & 0xF) << 4) | 0x0; /* First cycle LED intensity, 0x0 intensity for second cycle */
-    rgucBuffer[3] = (0x0 << 4) | 0x0; /* 8ms fade transition to first cycle, 8ms first cycle LED duration */
+    rgucBuffer[3] = (0x0 << 4) | 0x0;                    /* 8ms fade transition to first cycle, 8ms first cycle LED duration */
 
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof(rgucBuffer), NULL);
 }
@@ -725,20 +725,20 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_
     pStickCal = reply->spiReadData.rgucReadData;
 
     /* Left stick */
-    ctx->m_StickCalData[0].axis[0].sMax = ((pStickCal[1] << 8) & 0xF00) | pStickCal[0]; /* X Axis max above center */
-    ctx->m_StickCalData[0].axis[1].sMax = (pStickCal[2] << 4) | (pStickCal[1] >> 4); /* Y Axis max above center */
+    ctx->m_StickCalData[0].axis[0].sMax = ((pStickCal[1] << 8) & 0xF00) | pStickCal[0];    /* X Axis max above center */
+    ctx->m_StickCalData[0].axis[1].sMax = (pStickCal[2] << 4) | (pStickCal[1] >> 4);       /* Y Axis max above center */
     ctx->m_StickCalData[0].axis[0].sCenter = ((pStickCal[4] << 8) & 0xF00) | pStickCal[3]; /* X Axis center */
-    ctx->m_StickCalData[0].axis[1].sCenter = (pStickCal[5] << 4) | (pStickCal[4] >> 4); /* Y Axis center */
-    ctx->m_StickCalData[0].axis[0].sMin = ((pStickCal[7] << 8) & 0xF00) | pStickCal[6]; /* X Axis min below center */
-    ctx->m_StickCalData[0].axis[1].sMin = (pStickCal[8] << 4) | (pStickCal[7] >> 4); /* Y Axis min below center */
+    ctx->m_StickCalData[0].axis[1].sCenter = (pStickCal[5] << 4) | (pStickCal[4] >> 4);    /* Y Axis center */
+    ctx->m_StickCalData[0].axis[0].sMin = ((pStickCal[7] << 8) & 0xF00) | pStickCal[6];    /* X Axis min below center */
+    ctx->m_StickCalData[0].axis[1].sMin = (pStickCal[8] << 4) | (pStickCal[7] >> 4);       /* Y Axis min below center */
 
     /* Right stick */
     ctx->m_StickCalData[1].axis[0].sCenter = ((pStickCal[10] << 8) & 0xF00) | pStickCal[9]; /* X Axis center */
-    ctx->m_StickCalData[1].axis[1].sCenter = (pStickCal[11] << 4) | (pStickCal[10] >> 4); /* Y Axis center */
-    ctx->m_StickCalData[1].axis[0].sMin = ((pStickCal[13] << 8) & 0xF00) | pStickCal[12]; /* X Axis min below center */
-    ctx->m_StickCalData[1].axis[1].sMin = (pStickCal[14] << 4) | (pStickCal[13] >> 4); /* Y Axis min below center */
-    ctx->m_StickCalData[1].axis[0].sMax = ((pStickCal[16] << 8) & 0xF00) | pStickCal[15]; /* X Axis max above center */
-    ctx->m_StickCalData[1].axis[1].sMax = (pStickCal[17] << 4) | (pStickCal[16] >> 4); /* Y Axis max above center */
+    ctx->m_StickCalData[1].axis[1].sCenter = (pStickCal[11] << 4) | (pStickCal[10] >> 4);   /* Y Axis center */
+    ctx->m_StickCalData[1].axis[0].sMin = ((pStickCal[13] << 8) & 0xF00) | pStickCal[12];   /* X Axis min below center */
+    ctx->m_StickCalData[1].axis[1].sMin = (pStickCal[14] << 4) | (pStickCal[13] >> 4);      /* Y Axis min below center */
+    ctx->m_StickCalData[1].axis[0].sMax = ((pStickCal[16] << 8) & 0xF00) | pStickCal[15];   /* X Axis max above center */
+    ctx->m_StickCalData[1].axis[1].sMax = (pStickCal[17] << 4) | (pStickCal[16] >> 4);      /* Y Axis max above center */
 
     /* Filter out any values that were uninitialized (0xFFF) in the SPI read */
     for (stick = 0; stick < 2; ++stick) {

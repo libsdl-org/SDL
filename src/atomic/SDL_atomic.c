@@ -161,7 +161,7 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
     return (SDL_bool)_SDL_cmpxchg_watcom((int *)a, (long)newval, (long)oldval);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_bool_compare_and_swap(a, oldval, newval);
-#elif defined(__MACOS__) && defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(__MACOS__) && defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return (SDL_bool)OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t *)a);
 #elif defined(__MACOS__) && !defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return (SDL_bool)OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t *)a);

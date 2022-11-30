@@ -31,7 +31,7 @@ extern "C" {
 
 struct haptic_effect
 {
-    SDL_HapticEffect effect; /* The current event */
+    SDL_HapticEffect effect;          /* The current event */
     struct haptic_hweffect *hweffect; /* The hardware behind the event */
 };
 
@@ -43,17 +43,17 @@ struct _SDL_Haptic
     Uint8 index; /* Stores index it is attached to */
 
     struct haptic_effect *effects; /* Allocated effects */
-    int neffects; /* Maximum amount of effects */
-    int nplaying; /* Maximum amount of effects to play at the same time */
-    unsigned int supported; /* Supported effects */
-    int naxes; /* Number of axes on the device. */
+    int neffects;                  /* Maximum amount of effects */
+    int nplaying;                  /* Maximum amount of effects to play at the same time */
+    unsigned int supported;        /* Supported effects */
+    int naxes;                     /* Number of axes on the device. */
 
     struct haptic_hwdata *hwdata; /* Driver dependent */
-    int ref_count; /* Count for multiple opens */
+    int ref_count;                /* Count for multiple opens */
 
-    int rumble_id; /* ID of rumble effect for simple rumble API. */
+    int rumble_id;                  /* ID of rumble effect for simple rumble API. */
     SDL_HapticEffect rumble_effect; /* Rumble effect. */
-    struct _SDL_Haptic *next; /* pointer to next haptic we have allocated */
+    struct _SDL_Haptic *next;       /* pointer to next haptic we have allocated */
 };
 
 /*

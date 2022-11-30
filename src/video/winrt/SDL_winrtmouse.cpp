@@ -119,7 +119,7 @@ static void WINRT_FreeCursor(SDL_Cursor *cursor)
     if (cursor->driverdata) {
         CoreCursor ^ *theCursor = (CoreCursor ^ *)cursor->driverdata;
         *theCursor = nullptr; // Release the COM reference to the CoreCursor
-        delete theCursor; // Delete the pointer to the COM reference
+        delete theCursor;     // Delete the pointer to the COM reference
     }
     SDL_free(cursor);
 }

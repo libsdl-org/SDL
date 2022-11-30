@@ -35,14 +35,14 @@
 
 typedef struct SDL_VideoData
 {
-    int devindex; /* device index that was passed on creation */
-    int drm_fd; /* DRM file desc */
+    int devindex;     /* device index that was passed on creation */
+    int drm_fd;       /* DRM file desc */
     char devpath[32]; /* DRM dev path. */
 
     struct gbm_device *gbm_dev;
 
-    SDL_bool video_init; /* Has VideoInit succeeded? */
-    SDL_bool vulkan_mode; /* Are we in Vulkan mode? One VK window is enough to be. */
+    SDL_bool video_init;             /* Has VideoInit succeeded? */
+    SDL_bool vulkan_mode;            /* Are we in Vulkan mode? One VK window is enough to be. */
     SDL_bool async_pageflip_support; /* Does the hardware support async. pageflips? */
 
     SDL_Window **windows;
@@ -102,7 +102,7 @@ typedef struct SDL_WindowData
 
 typedef struct KMSDRM_FBInfo
 {
-    int drm_fd; /* DRM file desc */
+    int drm_fd;     /* DRM file desc */
     uint32_t fb_id; /* DRM framebuffer ID */
 } KMSDRM_FBInfo;
 

@@ -692,7 +692,7 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
         window->x = 0;
         window->y = 0;
         window->flags |= SDL_WINDOW_SHOWN;
-        SDL_SetMouseFocus(NULL); // TODO: detect this
+        SDL_SetMouseFocus(NULL);    // TODO: detect this
         SDL_SetKeyboardFocus(NULL); // TODO: detect this
     } else {
         /* WinRT 8.x apps seem to live in an environment where the OS controls the

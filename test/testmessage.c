@@ -43,7 +43,7 @@ button_messagebox(void *eventNumber)
         "This is a custom messagebox",
         2,
         NULL, /* buttons */
-        NULL /* Default color scheme */
+        NULL  /* Default color scheme */
     };
 
     int button = -1;

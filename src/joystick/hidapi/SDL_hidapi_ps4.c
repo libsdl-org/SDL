@@ -213,7 +213,7 @@ static void SetLedsForPlayerIndex(DS4EffectsState_t *effects, int player_index)
         { 0x20, 0x00, 0x20 }, /* Pink */
         { 0x02, 0x01, 0x00 }, /* Orange */
         { 0x00, 0x01, 0x01 }, /* Teal */
-        { 0x01, 0x01, 0x01 } /* White */
+        { 0x01, 0x01, 0x01 }  /* White */
     };
 
     if (player_index >= 0) {
@@ -757,7 +757,7 @@ static int HIDAPI_DriverPS4_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Jo
     if (device->is_bluetooth && ctx->official_controller) {
         data[0] = k_EPS4ReportIdBluetoothEffects;
         data[1] = 0xC0 | 0x04; /* Magic value HID + CRC, also sets interval to 4ms for samples */
-        data[3] = 0x03; /* 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval */
+        data[3] = 0x03;        /* 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval */
 
         report_size = 78;
         offset = 6;
