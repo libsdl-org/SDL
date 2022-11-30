@@ -564,20 +564,25 @@ stdlib_overflow(void *arg)
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
-static const SDLTest_TestCaseReference stdlibTest1 =
-        { (SDLTest_TestCaseFp)stdlib_strlcpy, "stdlib_strlcpy", "Call to SDL_strlcpy", TEST_ENABLED };
+static const SDLTest_TestCaseReference stdlibTest1 = {
+    (SDLTest_TestCaseFp)stdlib_strlcpy, "stdlib_strlcpy", "Call to SDL_strlcpy", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference stdlibTest2 =
-        { (SDLTest_TestCaseFp)stdlib_snprintf, "stdlib_snprintf", "Call to SDL_snprintf", TEST_ENABLED };
+static const SDLTest_TestCaseReference stdlibTest2 = {
+    (SDLTest_TestCaseFp)stdlib_snprintf, "stdlib_snprintf", "Call to SDL_snprintf", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference stdlibTest3 =
-        { (SDLTest_TestCaseFp)stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_getenv and SDL_setenv", TEST_ENABLED };
+static const SDLTest_TestCaseReference stdlibTest3 = {
+    (SDLTest_TestCaseFp)stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_getenv and SDL_setenv", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference stdlibTest4 =
-        { (SDLTest_TestCaseFp)stdlib_sscanf, "stdlib_sscanf", "Call to SDL_sscanf", TEST_ENABLED };
+static const SDLTest_TestCaseReference stdlibTest4 = {
+    (SDLTest_TestCaseFp)stdlib_sscanf, "stdlib_sscanf", "Call to SDL_sscanf", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference stdlibTestOverflow =
-        { stdlib_overflow, "stdlib_overflow", "Overflow detection", TEST_ENABLED };
+static const SDLTest_TestCaseReference stdlibTestOverflow = {
+    stdlib_overflow, "stdlib_overflow", "Overflow detection", TEST_ENABLED
+};
 
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] =  {

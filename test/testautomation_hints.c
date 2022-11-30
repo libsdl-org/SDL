@@ -245,11 +245,13 @@ hints_setHint(void *arg)
 /* ================= Test References ================== */
 
 /* Hints test cases */
-static const SDLTest_TestCaseReference hintsTest1 =
-        { (SDLTest_TestCaseFp)hints_getHint, "hints_getHint", "Call to SDL_GetHint", TEST_ENABLED };
+static const SDLTest_TestCaseReference hintsTest1 = {
+    (SDLTest_TestCaseFp)hints_getHint, "hints_getHint", "Call to SDL_GetHint", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference hintsTest2 =
-        { (SDLTest_TestCaseFp)hints_setHint, "hints_setHint", "Call to SDL_SetHint", TEST_ENABLED };
+static const SDLTest_TestCaseReference hintsTest2 = {
+    (SDLTest_TestCaseFp)hints_setHint, "hints_setHint", "Call to SDL_SetHint", TEST_ENABLED
+};
 
 /* Sequence of Hints test cases */
 static const SDLTest_TestCaseReference *hintsTests[] =  {

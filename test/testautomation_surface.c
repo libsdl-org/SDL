@@ -780,47 +780,60 @@ surface_testOverflow(void *arg)
 /* ================= Test References ================== */
 
 /* Surface test cases */
-static const SDLTest_TestCaseReference surfaceTest1 =
-        { (SDLTest_TestCaseFp)surface_testSaveLoadBitmap, "surface_testSaveLoadBitmap", "Tests sprite saving and loading.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest1 = {
+    (SDLTest_TestCaseFp)surface_testSaveLoadBitmap, "surface_testSaveLoadBitmap", "Tests sprite saving and loading.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest2 =
-        { (SDLTest_TestCaseFp)surface_testBlit, "surface_testBlit", "Tests basic blitting.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest2 = {
+    (SDLTest_TestCaseFp)surface_testBlit, "surface_testBlit", "Tests basic blitting.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest3 =
-        { (SDLTest_TestCaseFp)surface_testBlitBlendNone, "surface_testBlitBlendNone", "Tests blitting routines with none blending mode.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest3 = {
+    (SDLTest_TestCaseFp)surface_testBlitBlendNone, "surface_testBlitBlendNone", "Tests blitting routines with none blending mode.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest4 =
-        { (SDLTest_TestCaseFp)surface_testLoadFailure, "surface_testLoadFailure", "Tests sprite loading. A failure case.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest4 = {
+    (SDLTest_TestCaseFp)surface_testLoadFailure, "surface_testLoadFailure", "Tests sprite loading. A failure case.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest5 =
-        { (SDLTest_TestCaseFp)surface_testSurfaceConversion, "surface_testSurfaceConversion", "Tests surface conversion.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest5 = {
+    (SDLTest_TestCaseFp)surface_testSurfaceConversion, "surface_testSurfaceConversion", "Tests surface conversion.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest6 =
-        { (SDLTest_TestCaseFp)surface_testCompleteSurfaceConversion, "surface_testCompleteSurfaceConversion", "Tests surface conversion across all pixel formats", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest6 = {
+    (SDLTest_TestCaseFp)surface_testCompleteSurfaceConversion, "surface_testCompleteSurfaceConversion", "Tests surface conversion across all pixel formats", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest7 =
-        { (SDLTest_TestCaseFp)surface_testBlitColorMod, "surface_testBlitColorMod", "Tests some blitting routines with color mod.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest7 = {
+    (SDLTest_TestCaseFp)surface_testBlitColorMod, "surface_testBlitColorMod", "Tests some blitting routines with color mod.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest8 =
-        { (SDLTest_TestCaseFp)surface_testBlitAlphaMod, "surface_testBlitAlphaMod", "Tests some blitting routines with alpha mod.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest8 = {
+    (SDLTest_TestCaseFp)surface_testBlitAlphaMod, "surface_testBlitAlphaMod", "Tests some blitting routines with alpha mod.", TEST_ENABLED
+};
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference surfaceTest9 =
-        { (SDLTest_TestCaseFp)surface_testBlitBlendLoop, "surface_testBlitBlendLoop", "Test blitting routines with various blending modes", TEST_DISABLED};
+static const SDLTest_TestCaseReference surfaceTest9 = {
+    (SDLTest_TestCaseFp)surface_testBlitBlendLoop, "surface_testBlitBlendLoop", "Test blitting routines with various blending modes", TEST_DISABLED
+};
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference surfaceTest10 =
-        { (SDLTest_TestCaseFp)surface_testBlitBlendBlend, "surface_testBlitBlendBlend", "Tests blitting routines with blend blending mode.", TEST_DISABLED};
+static const SDLTest_TestCaseReference surfaceTest10 = {
+    (SDLTest_TestCaseFp)surface_testBlitBlendBlend, "surface_testBlitBlendBlend", "Tests blitting routines with blend blending mode.", TEST_DISABLED
+};
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
-static const SDLTest_TestCaseReference surfaceTest11 =
-        { (SDLTest_TestCaseFp)surface_testBlitBlendAdd, "surface_testBlitBlendAdd", "Tests blitting routines with add blending mode.", TEST_DISABLED};
+static const SDLTest_TestCaseReference surfaceTest11 = {
+    (SDLTest_TestCaseFp)surface_testBlitBlendAdd, "surface_testBlitBlendAdd", "Tests blitting routines with add blending mode.", TEST_DISABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTest12 =
-        { (SDLTest_TestCaseFp)surface_testBlitBlendMod, "surface_testBlitBlendMod", "Tests blitting routines with mod blending mode.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTest12 = {
+    (SDLTest_TestCaseFp)surface_testBlitBlendMod, "surface_testBlitBlendMod", "Tests blitting routines with mod blending mode.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference surfaceTestOverflow =
-        { surface_testOverflow, "surface_testOverflow", "Test overflow detection.", TEST_ENABLED};
+static const SDLTest_TestCaseReference surfaceTestOverflow = {
+    surface_testOverflow, "surface_testOverflow", "Test overflow detection.", TEST_ENABLED
+};
 
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] =  {

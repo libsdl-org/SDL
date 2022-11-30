@@ -400,14 +400,17 @@ pixels_allocFreePalette(void *arg)
 /* ================= Test References ================== */
 
 /* Pixels test cases */
-static const SDLTest_TestCaseReference pixelsTest1 =
-        { (SDLTest_TestCaseFp)pixels_allocFreeFormat, "pixels_allocFreeFormat", "Call to SDL_AllocFormat and SDL_FreeFormat", TEST_ENABLED };
+static const SDLTest_TestCaseReference pixelsTest1 = {
+     (SDLTest_TestCaseFp)pixels_allocFreeFormat, "pixels_allocFreeFormat", "Call to SDL_AllocFormat and SDL_FreeFormat", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference pixelsTest2 =
-        { (SDLTest_TestCaseFp)pixels_allocFreePalette, "pixels_allocFreePalette", "Call to SDL_AllocPalette and SDL_FreePalette", TEST_ENABLED };
+static const SDLTest_TestCaseReference pixelsTest2 = {
+     (SDLTest_TestCaseFp)pixels_allocFreePalette, "pixels_allocFreePalette", "Call to SDL_AllocPalette and SDL_FreePalette", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference pixelsTest3 =
-        { (SDLTest_TestCaseFp)pixels_getPixelFormatName, "pixels_getPixelFormatName", "Call to SDL_GetPixelFormatName", TEST_ENABLED };
+static const SDLTest_TestCaseReference pixelsTest3 = {
+     (SDLTest_TestCaseFp)pixels_getPixelFormatName, "pixels_getPixelFormatName", "Call to SDL_GetPixelFormatName", TEST_ENABLED
+};
 
 /* Sequence of Pixels test cases */
 static const SDLTest_TestCaseReference *pixelsTests[] =  {

@@ -38,8 +38,9 @@ syswm_getWindowWMInfo(void *arg)
 /* ================= Test References ================== */
 
 /* SysWM test cases */
-static const SDLTest_TestCaseReference syswmTest1 =
-        { (SDLTest_TestCaseFp)syswm_getWindowWMInfo, "syswm_getWindowWMInfo", "Call to SDL_GetWindowWMInfo", TEST_ENABLED };
+static const SDLTest_TestCaseReference syswmTest1 = {
+    (SDLTest_TestCaseFp)syswm_getWindowWMInfo, "syswm_getWindowWMInfo", "Call to SDL_GetWindowWMInfo", TEST_ENABLED
+};
 
 /* Sequence of SysWM test cases */
 static const SDLTest_TestCaseReference *syswmTests[] =  {

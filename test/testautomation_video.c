@@ -1852,65 +1852,85 @@ video_setWindowCenteredOnDisplay(void *arg)
 /* ================= Test References ================== */
 
 /* Video test cases */
-static const SDLTest_TestCaseReference videoTest1 =
-        { (SDLTest_TestCaseFp)video_enableDisableScreensaver, "video_enableDisableScreensaver",  "Enable and disable screenaver while checking state", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest1 = {
+    (SDLTest_TestCaseFp)video_enableDisableScreensaver, "video_enableDisableScreensaver",  "Enable and disable screenaver while checking state", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest2 =
-        { (SDLTest_TestCaseFp)video_createWindowVariousPositions, "video_createWindowVariousPositions",  "Create windows at various locations", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest2 = {
+    (SDLTest_TestCaseFp)video_createWindowVariousPositions, "video_createWindowVariousPositions",  "Create windows at various locations", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest3 =
-        { (SDLTest_TestCaseFp)video_createWindowVariousSizes, "video_createWindowVariousSizes",  "Create windows with various sizes", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest3 = {
+    (SDLTest_TestCaseFp)video_createWindowVariousSizes, "video_createWindowVariousSizes",  "Create windows with various sizes", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest4 =
-        { (SDLTest_TestCaseFp)video_createWindowVariousFlags, "video_createWindowVariousFlags",  "Create windows using various flags", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest4 = {
+    (SDLTest_TestCaseFp)video_createWindowVariousFlags, "video_createWindowVariousFlags",  "Create windows using various flags", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest5 =
-        { (SDLTest_TestCaseFp)video_getWindowFlags, "video_getWindowFlags",  "Get window flags set during SDL_CreateWindow", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest5 = {
+    (SDLTest_TestCaseFp)video_getWindowFlags, "video_getWindowFlags",  "Get window flags set during SDL_CreateWindow", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest6 =
-        { (SDLTest_TestCaseFp)video_getNumDisplayModes, "video_getNumDisplayModes",  "Use SDL_GetNumDisplayModes function to get number of display modes", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest6 = {
+    (SDLTest_TestCaseFp)video_getNumDisplayModes, "video_getNumDisplayModes",  "Use SDL_GetNumDisplayModes function to get number of display modes", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest7 =
-        { (SDLTest_TestCaseFp)video_getNumDisplayModesNegative, "video_getNumDisplayModesNegative",  "Negative tests for SDL_GetNumDisplayModes", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest7 = {
+    (SDLTest_TestCaseFp)video_getNumDisplayModesNegative, "video_getNumDisplayModesNegative",  "Negative tests for SDL_GetNumDisplayModes", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest8 =
-        { (SDLTest_TestCaseFp)video_getClosestDisplayModeCurrentResolution, "video_getClosestDisplayModeCurrentResolution",  "Use function to get closes match to requested display mode for current resolution", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest8 = {
+    (SDLTest_TestCaseFp)video_getClosestDisplayModeCurrentResolution, "video_getClosestDisplayModeCurrentResolution",  "Use function to get closes match to requested display mode for current resolution", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest9 =
-        { (SDLTest_TestCaseFp)video_getClosestDisplayModeRandomResolution, "video_getClosestDisplayModeRandomResolution",  "Use function to get closes match to requested display mode for random resolution", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest9 = {
+    (SDLTest_TestCaseFp)video_getClosestDisplayModeRandomResolution, "video_getClosestDisplayModeRandomResolution",  "Use function to get closes match to requested display mode for random resolution", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest10 =
-        { (SDLTest_TestCaseFp)video_getWindowDisplayMode, "video_getWindowDisplayMode",  "Get window display mode", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest10 = {
+    (SDLTest_TestCaseFp)video_getWindowDisplayMode, "video_getWindowDisplayMode",  "Get window display mode", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest11 =
-        { (SDLTest_TestCaseFp)video_getWindowDisplayModeNegative, "video_getWindowDisplayModeNegative",  "Get window display mode with invalid input", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest11 = {
+    (SDLTest_TestCaseFp)video_getWindowDisplayModeNegative, "video_getWindowDisplayModeNegative",  "Get window display mode with invalid input", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest12 =
-        { (SDLTest_TestCaseFp)video_getSetWindowGrab, "video_getSetWindowGrab",  "Checks SDL_GetWindowGrab and SDL_SetWindowGrab positive and negative cases", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest12 = {
+    (SDLTest_TestCaseFp)video_getSetWindowGrab, "video_getSetWindowGrab",  "Checks SDL_GetWindowGrab and SDL_SetWindowGrab positive and negative cases", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest13 =
-        { (SDLTest_TestCaseFp)video_getWindowId, "video_getWindowId",  "Checks SDL_GetWindowID and SDL_GetWindowFromID", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest13 = {
+    (SDLTest_TestCaseFp)video_getWindowId, "video_getWindowId",  "Checks SDL_GetWindowID and SDL_GetWindowFromID", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest14 =
-        { (SDLTest_TestCaseFp)video_getWindowPixelFormat, "video_getWindowPixelFormat",  "Checks SDL_GetWindowPixelFormat", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest14 = {
+    (SDLTest_TestCaseFp)video_getWindowPixelFormat, "video_getWindowPixelFormat",  "Checks SDL_GetWindowPixelFormat", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest15 =
-        { (SDLTest_TestCaseFp)video_getSetWindowPosition, "video_getSetWindowPosition",  "Checks SDL_GetWindowPosition and SDL_SetWindowPosition positive and negative cases", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest15 = {
+    (SDLTest_TestCaseFp)video_getSetWindowPosition, "video_getSetWindowPosition",  "Checks SDL_GetWindowPosition and SDL_SetWindowPosition positive and negative cases", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest16 =
-        { (SDLTest_TestCaseFp)video_getSetWindowSize, "video_getSetWindowSize",  "Checks SDL_GetWindowSize and SDL_SetWindowSize positive and negative cases", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest16 = {
+    (SDLTest_TestCaseFp)video_getSetWindowSize, "video_getSetWindowSize",  "Checks SDL_GetWindowSize and SDL_SetWindowSize positive and negative cases", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest17 =
-        { (SDLTest_TestCaseFp)video_getSetWindowMinimumSize, "video_getSetWindowMinimumSize",  "Checks SDL_GetWindowMinimumSize and SDL_SetWindowMinimumSize positive and negative cases", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest17 = {
+    (SDLTest_TestCaseFp)video_getSetWindowMinimumSize, "video_getSetWindowMinimumSize",  "Checks SDL_GetWindowMinimumSize and SDL_SetWindowMinimumSize positive and negative cases", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest18 =
-        { (SDLTest_TestCaseFp)video_getSetWindowMaximumSize, "video_getSetWindowMaximumSize",  "Checks SDL_GetWindowMaximumSize and SDL_SetWindowMaximumSize positive and negative cases", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest18 = {
+    (SDLTest_TestCaseFp)video_getSetWindowMaximumSize, "video_getSetWindowMaximumSize",  "Checks SDL_GetWindowMaximumSize and SDL_SetWindowMaximumSize positive and negative cases", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest19 =
-        { (SDLTest_TestCaseFp)video_getSetWindowData, "video_getSetWindowData",  "Checks SDL_SetWindowData and SDL_GetWindowData positive and negative cases", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest19 = {
+    (SDLTest_TestCaseFp)video_getSetWindowData, "video_getSetWindowData",  "Checks SDL_SetWindowData and SDL_GetWindowData positive and negative cases", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference videoTest20 =
-        { (SDLTest_TestCaseFp) video_setWindowCenteredOnDisplay, "video_setWindowCenteredOnDisplay", "Checks using SDL_WINDOWPOS_CENTERED_DISPLAY centers the window on a display", TEST_ENABLED };
+static const SDLTest_TestCaseReference videoTest20 = {
+    (SDLTest_TestCaseFp) video_setWindowCenteredOnDisplay, "video_setWindowCenteredOnDisplay", "Checks using SDL_WINDOWPOS_CENTERED_DISPLAY centers the window on a display", TEST_ENABLED
+};
 
 /* Sequence of Video test cases */
 static const SDLTest_TestCaseReference *videoTests[] =  {

@@ -172,17 +172,21 @@ timer_addRemoveTimer(void *arg)
 /* ================= Test References ================== */
 
 /* Timer test cases */
-static const SDLTest_TestCaseReference timerTest1 =
-        { (SDLTest_TestCaseFp)timer_getPerformanceCounter, "timer_getPerformanceCounter", "Call to SDL_GetPerformanceCounter", TEST_ENABLED };
+static const SDLTest_TestCaseReference timerTest1 = {
+    (SDLTest_TestCaseFp)timer_getPerformanceCounter, "timer_getPerformanceCounter", "Call to SDL_GetPerformanceCounter", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference timerTest2 =
-        { (SDLTest_TestCaseFp)timer_getPerformanceFrequency, "timer_getPerformanceFrequency", "Call to SDL_GetPerformanceFrequency", TEST_ENABLED };
+static const SDLTest_TestCaseReference timerTest2 = {
+    (SDLTest_TestCaseFp)timer_getPerformanceFrequency, "timer_getPerformanceFrequency", "Call to SDL_GetPerformanceFrequency", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference timerTest3 =
-        { (SDLTest_TestCaseFp)timer_delayAndGetTicks, "timer_delayAndGetTicks", "Call to SDL_Delay and SDL_GetTicks", TEST_ENABLED };
+static const SDLTest_TestCaseReference timerTest3 = {
+    (SDLTest_TestCaseFp)timer_delayAndGetTicks, "timer_delayAndGetTicks", "Call to SDL_Delay and SDL_GetTicks", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference timerTest4 =
-        { (SDLTest_TestCaseFp)timer_addRemoveTimer, "timer_addRemoveTimer", "Call to SDL_AddTimer and SDL_RemoveTimer", TEST_ENABLED };
+static const SDLTest_TestCaseReference timerTest4 = {
+    (SDLTest_TestCaseFp)timer_addRemoveTimer, "timer_addRemoveTimer", "Call to SDL_AddTimer and SDL_RemoveTimer", TEST_ENABLED
+};
 
 /* Sequence of Timer test cases */
 static const SDLTest_TestCaseReference *timerTests[] =  {

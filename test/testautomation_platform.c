@@ -538,38 +538,49 @@ int platform_testGetPowerInfo(void *arg)
 /* ================= Test References ================== */
 
 /* Platform test cases */
-static const SDLTest_TestCaseReference platformTest1 =
-        { (SDLTest_TestCaseFp)platform_testTypes, "platform_testTypes", "Tests predefined types", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest1 = {
+     (SDLTest_TestCaseFp)platform_testTypes, "platform_testTypes", "Tests predefined types", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest2 =
-        { (SDLTest_TestCaseFp)platform_testEndianessAndSwap, "platform_testEndianessAndSwap", "Tests endianness and swap functions", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest2 = {
+     (SDLTest_TestCaseFp)platform_testEndianessAndSwap, "platform_testEndianessAndSwap", "Tests endianness and swap functions", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest3 =
-        { (SDLTest_TestCaseFp)platform_testGetFunctions, "platform_testGetFunctions", "Tests various SDL_GetXYZ functions", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest3 = {
+     (SDLTest_TestCaseFp)platform_testGetFunctions, "platform_testGetFunctions", "Tests various SDL_GetXYZ functions", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest4 =
-        { (SDLTest_TestCaseFp)platform_testHasFunctions, "platform_testHasFunctions", "Tests various SDL_HasXYZ functions", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest4 = {
+     (SDLTest_TestCaseFp)platform_testHasFunctions, "platform_testHasFunctions", "Tests various SDL_HasXYZ functions", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest5 =
-        { (SDLTest_TestCaseFp)platform_testGetVersion, "platform_testGetVersion", "Tests SDL_GetVersion function", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest5 = {
+     (SDLTest_TestCaseFp)platform_testGetVersion, "platform_testGetVersion", "Tests SDL_GetVersion function", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest6 =
-        { (SDLTest_TestCaseFp)platform_testSDLVersion, "platform_testSDLVersion", "Tests SDL_VERSION macro", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest6 = {
+     (SDLTest_TestCaseFp)platform_testSDLVersion, "platform_testSDLVersion", "Tests SDL_VERSION macro", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest7 =
-        { (SDLTest_TestCaseFp)platform_testDefaultInit, "platform_testDefaultInit", "Tests default SDL_Init", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest7 = {
+     (SDLTest_TestCaseFp)platform_testDefaultInit, "platform_testDefaultInit", "Tests default SDL_Init", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest8 =
-        { (SDLTest_TestCaseFp)platform_testGetSetClearError, "platform_testGetSetClearError", "Tests SDL_Get/Set/ClearError", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest8 = {
+     (SDLTest_TestCaseFp)platform_testGetSetClearError, "platform_testGetSetClearError", "Tests SDL_Get/Set/ClearError", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest9 =
-        { (SDLTest_TestCaseFp)platform_testSetErrorEmptyInput, "platform_testSetErrorEmptyInput", "Tests SDL_SetError with empty input", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest9 = {
+     (SDLTest_TestCaseFp)platform_testSetErrorEmptyInput, "platform_testSetErrorEmptyInput", "Tests SDL_SetError with empty input", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest10 =
-        { (SDLTest_TestCaseFp)platform_testSetErrorInvalidInput, "platform_testSetErrorInvalidInput", "Tests SDL_SetError with invalid input", TEST_ENABLED};
+static const SDLTest_TestCaseReference platformTest10 = {
+     (SDLTest_TestCaseFp)platform_testSetErrorInvalidInput, "platform_testSetErrorInvalidInput", "Tests SDL_SetError with invalid input", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference platformTest11 =
-        { (SDLTest_TestCaseFp)platform_testGetPowerInfo, "platform_testGetPowerInfo", "Tests SDL_GetPowerInfo function", TEST_ENABLED };
+static const SDLTest_TestCaseReference platformTest11 = {
+     (SDLTest_TestCaseFp)platform_testGetPowerInfo, "platform_testGetPowerInfo", "Tests SDL_GetPowerInfo function", TEST_ENABLED
+};
 
 /* Sequence of Platform test cases */
 static const SDLTest_TestCaseReference *platformTests[] =  {

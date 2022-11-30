@@ -621,29 +621,37 @@ rwops_testFileWriteReadEndian(void)
 /* ================= Test References ================== */
 
 /* RWops test cases */
-static const SDLTest_TestCaseReference rwopsTest1 =
-        { (SDLTest_TestCaseFp)rwops_testParamNegative, "rwops_testParamNegative", "Negative test for SDL_RWFromFile parameters", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest1 = {
+    (SDLTest_TestCaseFp)rwops_testParamNegative, "rwops_testParamNegative", "Negative test for SDL_RWFromFile parameters", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference rwopsTest2 =
-        { (SDLTest_TestCaseFp)rwops_testMem, "rwops_testMem", "Tests opening from memory", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest2 = {
+    (SDLTest_TestCaseFp)rwops_testMem, "rwops_testMem", "Tests opening from memory", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference rwopsTest3 =
-        { (SDLTest_TestCaseFp)rwops_testConstMem, "rwops_testConstMem", "Tests opening from (const) memory", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest3 = {
+    (SDLTest_TestCaseFp)rwops_testConstMem, "rwops_testConstMem", "Tests opening from (const) memory", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference rwopsTest4 =
-        { (SDLTest_TestCaseFp)rwops_testFileRead, "rwops_testFileRead", "Tests reading from a file", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest4 = {
+    (SDLTest_TestCaseFp)rwops_testFileRead, "rwops_testFileRead", "Tests reading from a file", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference rwopsTest5 =
-        { (SDLTest_TestCaseFp)rwops_testFileWrite, "rwops_testFileWrite", "Test writing to a file", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest5 = {
+    (SDLTest_TestCaseFp)rwops_testFileWrite, "rwops_testFileWrite", "Test writing to a file", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference rwopsTest6 =
-        { (SDLTest_TestCaseFp)rwops_testAllocFree, "rwops_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest6 = {
+    (SDLTest_TestCaseFp)rwops_testAllocFree, "rwops_testAllocFree", "Test alloc and free of RW context", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference rwopsTest7 =
-        { (SDLTest_TestCaseFp)rwops_testFileWriteReadEndian, "rwops_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest7 = {
+    (SDLTest_TestCaseFp)rwops_testFileWriteReadEndian, "rwops_testFileWriteReadEndian", "Test writing and reading via the Endian aware functions", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference rwopsTest8 =
-        { (SDLTest_TestCaseFp)rwops_testCompareRWFromMemWithRWFromFile, "rwops_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile RWops for read and seek", TEST_ENABLED };
+static const SDLTest_TestCaseReference rwopsTest8 = {
+    (SDLTest_TestCaseFp)rwops_testCompareRWFromMemWithRWFromFile, "rwops_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile RWops for read and seek", TEST_ENABLED
+};
 
 /* Sequence of RWops test cases */
 static const SDLTest_TestCaseReference *rwopsTests[] =  {

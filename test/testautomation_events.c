@@ -175,14 +175,17 @@ events_addDelEventWatchWithUserdata(void *arg)
 /* ================= Test References ================== */
 
 /* Events test cases */
-static const SDLTest_TestCaseReference eventsTest1 =
-        { (SDLTest_TestCaseFp)events_pushPumpAndPollUserevent, "events_pushPumpAndPollUserevent", "Pushes, pumps and polls a user event", TEST_ENABLED };
+static const SDLTest_TestCaseReference eventsTest1 = {
+    (SDLTest_TestCaseFp)events_pushPumpAndPollUserevent, "events_pushPumpAndPollUserevent", "Pushes, pumps and polls a user event", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference eventsTest2 =
-        { (SDLTest_TestCaseFp)events_addDelEventWatch, "events_addDelEventWatch", "Adds and deletes an event watch function with NULL userdata", TEST_ENABLED };
+static const SDLTest_TestCaseReference eventsTest2 = {
+    (SDLTest_TestCaseFp)events_addDelEventWatch, "events_addDelEventWatch", "Adds and deletes an event watch function with NULL userdata", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference eventsTest3 =
-        { (SDLTest_TestCaseFp)events_addDelEventWatchWithUserdata, "events_addDelEventWatchWithUserdata", "Adds and deletes an event watch function with userdata", TEST_ENABLED };
+static const SDLTest_TestCaseReference eventsTest3 = {
+    (SDLTest_TestCaseFp)events_addDelEventWatchWithUserdata, "events_addDelEventWatchWithUserdata", "Adds and deletes an event watch function with userdata", TEST_ENABLED
+};
 
 /* Sequence of Events test cases */
 static const SDLTest_TestCaseReference *eventsTests[] =  {

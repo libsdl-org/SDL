@@ -294,29 +294,37 @@ clipboard_testPrimarySelectionTextFunctions(void *arg)
 /* ================= Test References ================== */
 
 /* Clipboard test cases */
-static const SDLTest_TestCaseReference clipboardTest1 =
-        { (SDLTest_TestCaseFp)clipboard_testHasClipboardText, "clipboard_testHasClipboardText", "Check call to SDL_HasClipboardText", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest1 = {
+    (SDLTest_TestCaseFp)clipboard_testHasClipboardText, "clipboard_testHasClipboardText", "Check call to SDL_HasClipboardText", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference clipboardTest2 =
-        { (SDLTest_TestCaseFp)clipboard_testHasPrimarySelectionText, "clipboard_testHasPrimarySelectionText", "Check call to SDL_HasPrimarySelectionText", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest2 = {
+    (SDLTest_TestCaseFp)clipboard_testHasPrimarySelectionText, "clipboard_testHasPrimarySelectionText", "Check call to SDL_HasPrimarySelectionText", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference clipboardTest3 =
-        { (SDLTest_TestCaseFp)clipboard_testGetClipboardText, "clipboard_testGetClipboardText", "Check call to SDL_GetClipboardText", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest3 = {
+    (SDLTest_TestCaseFp)clipboard_testGetClipboardText, "clipboard_testGetClipboardText", "Check call to SDL_GetClipboardText", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference clipboardTest4 =
-        { (SDLTest_TestCaseFp)clipboard_testGetPrimarySelectionText, "clipboard_testGetPrimarySelectionText", "Check call to SDL_GetPrimarySelectionText", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest4 = {
+    (SDLTest_TestCaseFp)clipboard_testGetPrimarySelectionText, "clipboard_testGetPrimarySelectionText", "Check call to SDL_GetPrimarySelectionText", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference clipboardTest5 =
-        { (SDLTest_TestCaseFp)clipboard_testSetClipboardText, "clipboard_testSetClipboardText", "Check call to SDL_SetClipboardText", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest5 = {
+    (SDLTest_TestCaseFp)clipboard_testSetClipboardText, "clipboard_testSetClipboardText", "Check call to SDL_SetClipboardText", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference clipboardTest6 =
-        { (SDLTest_TestCaseFp)clipboard_testSetPrimarySelectionText, "clipboard_testSetPrimarySelectionText", "Check call to SDL_SetPrimarySelectionText", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest6 = {
+    (SDLTest_TestCaseFp)clipboard_testSetPrimarySelectionText, "clipboard_testSetPrimarySelectionText", "Check call to SDL_SetPrimarySelectionText", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference clipboardTest7 =
-        { (SDLTest_TestCaseFp)clipboard_testClipboardTextFunctions, "clipboard_testClipboardTextFunctions", "End-to-end test of SDL_xyzClipboardText functions", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest7 = {
+    (SDLTest_TestCaseFp)clipboard_testClipboardTextFunctions, "clipboard_testClipboardTextFunctions", "End-to-end test of SDL_xyzClipboardText functions", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference clipboardTest8 =
-        { (SDLTest_TestCaseFp)clipboard_testPrimarySelectionTextFunctions, "clipboard_testPrimarySelectionTextFunctions", "End-to-end test of SDL_xyzPrimarySelectionText functions", TEST_ENABLED };
+static const SDLTest_TestCaseReference clipboardTest8 = {
+    (SDLTest_TestCaseFp)clipboard_testPrimarySelectionTextFunctions, "clipboard_testPrimarySelectionTextFunctions", "End-to-end test of SDL_xyzPrimarySelectionText functions", TEST_ENABLED
+};
 
 /* Sequence of Clipboard test cases */
 static const SDLTest_TestCaseReference *clipboardTests[] =  {

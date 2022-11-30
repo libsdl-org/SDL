@@ -982,55 +982,70 @@ int audio_openCloseAudioDeviceConnected()
 /* ================= Test Case References ================== */
 
 /* Audio test cases */
-static const SDLTest_TestCaseReference audioTest1 =
-        { (SDLTest_TestCaseFp)audio_enumerateAndNameAudioDevices, "audio_enumerateAndNameAudioDevices", "Enumerate and name available audio devices (output and capture)", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest1 = {
+    (SDLTest_TestCaseFp)audio_enumerateAndNameAudioDevices, "audio_enumerateAndNameAudioDevices", "Enumerate and name available audio devices (output and capture)", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest2 =
-        { (SDLTest_TestCaseFp)audio_enumerateAndNameAudioDevicesNegativeTests, "audio_enumerateAndNameAudioDevicesNegativeTests", "Negative tests around enumeration and naming of audio devices.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest2 = {
+    (SDLTest_TestCaseFp)audio_enumerateAndNameAudioDevicesNegativeTests, "audio_enumerateAndNameAudioDevicesNegativeTests", "Negative tests around enumeration and naming of audio devices.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest3 =
-        { (SDLTest_TestCaseFp)audio_printAudioDrivers, "audio_printAudioDrivers", "Checks available audio driver names.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest3 = {
+    (SDLTest_TestCaseFp)audio_printAudioDrivers, "audio_printAudioDrivers", "Checks available audio driver names.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest4 =
-        { (SDLTest_TestCaseFp)audio_printCurrentAudioDriver, "audio_printCurrentAudioDriver", "Checks current audio driver name with initialized audio.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest4 = {
+    (SDLTest_TestCaseFp)audio_printCurrentAudioDriver, "audio_printCurrentAudioDriver", "Checks current audio driver name with initialized audio.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest5 =
-        { (SDLTest_TestCaseFp)audio_buildAudioCVT, "audio_buildAudioCVT", "Builds various audio conversion structures.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest5 = {
+    (SDLTest_TestCaseFp)audio_buildAudioCVT, "audio_buildAudioCVT", "Builds various audio conversion structures.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest6 =
-        { (SDLTest_TestCaseFp)audio_buildAudioCVTNegative, "audio_buildAudioCVTNegative", "Checks calls with invalid input to SDL_BuildAudioCVT", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest6 = {
+    (SDLTest_TestCaseFp)audio_buildAudioCVTNegative, "audio_buildAudioCVTNegative", "Checks calls with invalid input to SDL_BuildAudioCVT", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest7 =
-        { (SDLTest_TestCaseFp)audio_getAudioStatus, "audio_getAudioStatus", "Checks current audio status.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest7 = {
+    (SDLTest_TestCaseFp)audio_getAudioStatus, "audio_getAudioStatus", "Checks current audio status.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest8 =
-        { (SDLTest_TestCaseFp)audio_openCloseAndGetAudioStatus, "audio_openCloseAndGetAudioStatus", "Opens and closes audio device and get audio status.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest8 = {
+    (SDLTest_TestCaseFp)audio_openCloseAndGetAudioStatus, "audio_openCloseAndGetAudioStatus", "Opens and closes audio device and get audio status.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest9 =
-        { (SDLTest_TestCaseFp)audio_lockUnlockOpenAudioDevice, "audio_lockUnlockOpenAudioDevice", "Locks and unlocks an open audio device.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest9 = {
+    (SDLTest_TestCaseFp)audio_lockUnlockOpenAudioDevice, "audio_lockUnlockOpenAudioDevice", "Locks and unlocks an open audio device.", TEST_ENABLED
+};
 
 /* TODO: enable test when SDL_ConvertAudio segfaults on cygwin have been fixed.    */
 /* For debugging, test case can be run manually using --filter audio_convertAudio  */
 
-static const SDLTest_TestCaseReference audioTest10 =
-        { (SDLTest_TestCaseFp)audio_convertAudio, "audio_convertAudio", "Convert audio using available formats.", TEST_DISABLED };
+static const SDLTest_TestCaseReference audioTest10 = {
+    (SDLTest_TestCaseFp)audio_convertAudio, "audio_convertAudio", "Convert audio using available formats.", TEST_DISABLED
+};
 
 /* TODO: enable test when SDL_AudioDeviceConnected has been implemented.           */
 
-static const SDLTest_TestCaseReference audioTest11 =
-        { (SDLTest_TestCaseFp)audio_openCloseAudioDeviceConnected, "audio_openCloseAudioDeviceConnected", "Opens and closes audio device and get connected status.", TEST_DISABLED };
+static const SDLTest_TestCaseReference audioTest11 = {
+    (SDLTest_TestCaseFp)audio_openCloseAudioDeviceConnected, "audio_openCloseAudioDeviceConnected", "Opens and closes audio device and get connected status.", TEST_DISABLED
+};
 
-static const SDLTest_TestCaseReference audioTest12 =
-        { (SDLTest_TestCaseFp)audio_quitInitAudioSubSystem, "audio_quitInitAudioSubSystem", "Quit and re-init audio subsystem.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest12 = {
+    (SDLTest_TestCaseFp)audio_quitInitAudioSubSystem, "audio_quitInitAudioSubSystem", "Quit and re-init audio subsystem.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest13 =
-        { (SDLTest_TestCaseFp)audio_initQuitAudio, "audio_initQuitAudio", "Init and quit audio drivers directly.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest13 = {
+    (SDLTest_TestCaseFp)audio_initQuitAudio, "audio_initQuitAudio", "Init and quit audio drivers directly.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest14 =
-        { (SDLTest_TestCaseFp)audio_initOpenCloseQuitAudio, "audio_initOpenCloseQuitAudio", "Cycle through init, open, close and quit with various audio specs.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest14 = {
+    (SDLTest_TestCaseFp)audio_initOpenCloseQuitAudio, "audio_initOpenCloseQuitAudio", "Cycle through init, open, close and quit with various audio specs.", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference audioTest15 =
-        { (SDLTest_TestCaseFp)audio_pauseUnpauseAudio, "audio_pauseUnpauseAudio", "Pause and Unpause audio for various audio specs while testing callback.", TEST_ENABLED };
+static const SDLTest_TestCaseReference audioTest15 = {
+    (SDLTest_TestCaseFp)audio_pauseUnpauseAudio, "audio_pauseUnpauseAudio", "Pause and Unpause audio for various audio specs while testing callback.", TEST_ENABLED
+};
 
 /* Sequence of Audio test cases */
 static const SDLTest_TestCaseReference *audioTests[] =  {

@@ -138,20 +138,25 @@ main_testSetError(void *arg)
 #pragma GCC diagnostic pop
 #endif
 
-static const SDLTest_TestCaseReference mainTest1 =
-        { (SDLTest_TestCaseFp)main_testInitQuitJoystickHaptic, "main_testInitQuitJoystickHaptic", "Tests SDL_Init/Quit of Joystick and Haptic subsystem", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest1 = {
+    (SDLTest_TestCaseFp)main_testInitQuitJoystickHaptic, "main_testInitQuitJoystickHaptic", "Tests SDL_Init/Quit of Joystick and Haptic subsystem", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest2 =
-        { (SDLTest_TestCaseFp)main_testInitQuitSubSystem, "main_testInitQuitSubSystem", "Tests SDL_InitSubSystem/QuitSubSystem", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest2 = {
+    (SDLTest_TestCaseFp)main_testInitQuitSubSystem, "main_testInitQuitSubSystem", "Tests SDL_InitSubSystem/QuitSubSystem", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest3 =
-        { (SDLTest_TestCaseFp)main_testImpliedJoystickInit, "main_testImpliedJoystickInit", "Tests that init for gamecontroller properly implies joystick", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest3 = {
+    (SDLTest_TestCaseFp)main_testImpliedJoystickInit, "main_testImpliedJoystickInit", "Tests that init for gamecontroller properly implies joystick", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest4 =
-        { (SDLTest_TestCaseFp)main_testImpliedJoystickQuit, "main_testImpliedJoystickQuit", "Tests that quit for gamecontroller doesn't quit joystick if you inited it explicitly", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest4 = {
+    (SDLTest_TestCaseFp)main_testImpliedJoystickQuit, "main_testImpliedJoystickQuit", "Tests that quit for gamecontroller doesn't quit joystick if you inited it explicitly", TEST_ENABLED
+};
 
-static const SDLTest_TestCaseReference mainTest5 =
-        { (SDLTest_TestCaseFp)main_testSetError, "main_testSetError", "Tests that SDL_SetError() handles arbitrarily large strings", TEST_ENABLED};
+static const SDLTest_TestCaseReference mainTest5 = {
+    (SDLTest_TestCaseFp)main_testSetError, "main_testSetError", "Tests that SDL_SetError() handles arbitrarily large strings", TEST_ENABLED
+};
 
 /* Sequence of Main test cases */
 static const SDLTest_TestCaseReference *mainTests[] =  {
