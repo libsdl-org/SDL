@@ -45,6 +45,7 @@
 #include <libkern/OSAtomic.h>
 #endif
 
+/* *INDENT-OFF* */ /* clang-format off */
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
 extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
@@ -54,6 +55,7 @@ extern __inline int _SDL_xchg_watcom(volatile int *a, int v);
   value [eax] \
   modify exact [eax];
 #endif /* __WATCOMC__ && __386__ */
+/* *INDENT-ON* */ /* clang-format on */
 
 /* This function is where all the magic happens... */
 SDL_bool

@@ -49,6 +49,7 @@
 #   endif
 #endif
 
+/* *INDENT-OFF* */ /* clang-format off */
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(intsize, 4==sizeof(int));
 #define HAVE_WATCOM_ATOMICS
@@ -73,7 +74,9 @@ extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
   parm [ecx] [eax] \
   value [eax] \
   modify exact [eax];
+
 #endif /* __WATCOMC__ && __386__ */
+/* *INDENT-ON* */ /* clang-format on */
 
 /*
   If any of the operations are not provided then we must emulate some
