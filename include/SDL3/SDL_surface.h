@@ -116,10 +116,6 @@ typedef enum
 /**
  * Allocate a new RGB surface with a specific pixel format.
  *
- * This function operates mostly like SDL_CreateRGBSurface(), except instead
- * of providing pixel color masks, you provide it with a predefined format
- * from SDL_PixelFormatEnum.
- *
  * \param width the width of the surface
  * \param height the height of the surface
  * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
@@ -128,20 +124,15 @@ typedef enum
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRGBSurface
  * \sa SDL_CreateRGBSurfaceFrom
  * \sa SDL_FreeSurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
     (int width, int height, Uint32 format);
 
 /**
  * Allocate a new RGB surface with with a specific pixel format and existing
  * pixel data.
- *
- * This function operates mostly like SDL_CreateRGBSurfaceFrom(), except
- * instead of providing pixel color masks, you provide it with a predefined
- * format from SDL_PixelFormatEnum.
  *
  * No copy is made of the pixel data. Pixel data is not managed automatically;
  * you must free the surface before you free the pixel data.
@@ -156,11 +147,10 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRGBSurfaceFrom
- * \sa SDL_CreateRGBSurfaceWithFormat
+ * \sa SDL_CreateRGBSurface
  * \sa SDL_FreeSurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormatFrom
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom
     (void *pixels, int width, int height, int pitch, Uint32 format);
 
 /**

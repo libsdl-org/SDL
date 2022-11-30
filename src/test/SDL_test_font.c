@@ -3185,7 +3185,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
         /*
          * Redraw character into surface
          */
-        character = SDL_CreateRGBSurfaceWithFormat(charWidth, charHeight, SDL_PIXELFORMAT_RGBA8888);
+        character = SDL_CreateRGBSurface(charWidth, charHeight, SDL_PIXELFORMAT_RGBA8888);
         if (character == NULL) {
             return -1;
         }

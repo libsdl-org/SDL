@@ -538,7 +538,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlit = {
  */
 SDL_Surface *SDLTest_ImageBlit()
 {
-   SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
+   SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
         (void*)SDLTest_imageBlit.pixel_data,
         SDLTest_imageBlit.width,
         SDLTest_imageBlit.height,
@@ -1008,7 +1008,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitColor = {
  */
 SDL_Surface *SDLTest_ImageBlitColor()
 {
-   SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
+   SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
         (void*)SDLTest_imageBlitColor.pixel_data,
         SDLTest_imageBlitColor.width,
         SDLTest_imageBlitColor.height,
@@ -1507,7 +1507,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitAlpha = {
  */
 SDL_Surface *SDLTest_ImageBlitAlpha()
 {
-   SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
+   SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
         (void*)SDLTest_imageBlitAlpha.pixel_data,
         SDLTest_imageBlitAlpha.width,
         SDLTest_imageBlitAlpha.height,

@@ -71,7 +71,7 @@ CreateNewWindowFramebuffer(SDL_Window *window)
 {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
-    return SDL_CreateRGBSurfaceWithFormat(w, h, FRAMEBUFFER_FORMAT);
+    return SDL_CreateRGBSurface(w, h, FRAMEBUFFER_FORMAT);
 }
 
 int

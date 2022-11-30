@@ -425,7 +425,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         
         /* Get the pixel format */
         format = SDL_MasksToPixelFormatEnum(biBitCount, Rmask, Gmask, Bmask, Amask);
-        surface = SDL_CreateRGBSurfaceWithFormat(biWidth, biHeight, format);
+        surface = SDL_CreateRGBSurface(biWidth, biHeight, format);
     
         if (surface == NULL) {
             was_error = SDL_TRUE;

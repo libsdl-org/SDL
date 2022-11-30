@@ -58,7 +58,7 @@ save_surface_to_bmp()
 
     pixel_format = SDL_GetWindowPixelFormat(window);
 
-    surface = SDL_CreateRGBSurfaceWithFormat(width, height, pixel_format);
+    surface = SDL_CreateRGBSurface(width, height, pixel_format);
 
     SDL_RenderReadPixels(renderer, NULL, pixel_format, (void*)surface->pixels, surface->pitch);
 

@@ -324,7 +324,7 @@ SDL_GL_LoadTexture(SDL_Surface * surface, GLfloat * texcoord)
     texcoord[2] = (GLfloat) surface->w / w;     /* Max X */
     texcoord[3] = (GLfloat) surface->h / h;     /* Max Y */
 
-    image = SDL_CreateRGBSurfaceWithFormat(w, h, SDL_PIXELFORMAT_RGBA32);
+    image = SDL_CreateRGBSurface(w, h, SDL_PIXELFORMAT_RGBA32);
     if (image == NULL) {
         return 0;
     }
