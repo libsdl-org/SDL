@@ -106,9 +106,6 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
-#if SDL_VIDEO_RENDER_OGL_ES
-    &GLES_RenderDriver,
-#endif
 #if SDL_VIDEO_RENDER_PS2 && !SDL_RENDER_DISABLED
     &PS2_RenderDriver,
 #endif

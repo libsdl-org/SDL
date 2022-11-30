@@ -710,7 +710,6 @@ macro(CheckOpenGLES)
     if(HAVE_OPENGLES_V1)
         set(HAVE_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES 1)
-        set(SDL_VIDEO_RENDER_OGL_ES 1)
     endif()
     check_c_source_compiles("
         #include <GLES2/gl2.h>
