@@ -75,12 +75,6 @@
 #endif
 #endif /* SDLCALL */
 
-/* Removed DECLSPEC on Symbian OS because SDL cannot be a DLL in EPOC */
-#ifdef __SYMBIAN32__
-#undef DECLSPEC
-#define DECLSPEC
-#endif /* __SYMBIAN32__ */
-
 /* Force structure packing at 4 byte alignment.
    This is necessary if the header is included in code which has structure
    packing set to an alternate value, say for loading structures from disk.
