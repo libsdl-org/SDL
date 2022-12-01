@@ -158,8 +158,7 @@ static void touch_del(SDL_TouchID id, float *x, float *y, struct wl_surface **su
     }
 }
 
-static struct wl_surface *
-touch_surface(SDL_TouchID id)
+static struct wl_surface *touch_surface(SDL_TouchID id)
 {
     struct SDL_WaylandTouchPoint *tp = touch_points.head;
 
@@ -1405,8 +1404,7 @@ static const struct zwp_primary_selection_source_v1_listener primary_selection_s
     primary_selection_source_cancelled,
 };
 
-SDL_WaylandDataSource *
-Wayland_data_source_create(_THIS)
+SDL_WaylandDataSource *Wayland_data_source_create(_THIS)
 {
     SDL_WaylandDataSource *data_source = NULL;
     SDL_VideoData *driver_data = NULL;
@@ -1441,8 +1439,7 @@ Wayland_data_source_create(_THIS)
     return data_source;
 }
 
-SDL_WaylandPrimarySelectionSource *
-Wayland_primary_selection_source_create(_THIS)
+SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(_THIS)
 {
     SDL_WaylandPrimarySelectionSource *primary_selection_source = NULL;
     SDL_VideoData *driver_data = NULL;
@@ -2056,8 +2053,7 @@ static void tablet_tool_handle_proximity_out(void *data, struct zwp_tablet_tool_
     }
 }
 
-uint32_t
-tablet_tool_btn_to_sdl_button(struct SDL_WaylandTabletInput *input)
+uint32_t tablet_tool_btn_to_sdl_button(struct SDL_WaylandTabletInput *input)
 {
     unsigned int tool_btn = input->btn_stylus3 << 2 | input->btn_stylus2 << 1 | input->btn_stylus << 0;
     switch (tool_btn) {
@@ -2208,8 +2204,7 @@ static const struct zwp_tablet_tool_v2_listener tablet_tool_listener = {
     tablet_tool_handle_frame
 };
 
-struct SDL_WaylandTabletObjectListNode *
-tablet_object_list_new_node(void *object)
+struct SDL_WaylandTabletObjectListNode *tablet_object_list_new_node(void *object)
 {
     struct SDL_WaylandTabletObjectListNode *node;
 

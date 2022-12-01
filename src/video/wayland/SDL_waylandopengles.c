@@ -47,8 +47,7 @@ int Wayland_GLES_LoadLibrary(_THIS, const char *path)
     return ret;
 }
 
-SDL_GLContext
-Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
     context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
@@ -195,8 +194,7 @@ void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
     WAYLAND_wl_display_flush(((SDL_VideoData *)_this->driverdata)->display);
 }
 
-EGLSurface
-Wayland_GLES_GetEGLSurface(_THIS, SDL_Window *window)
+EGLSurface Wayland_GLES_GetEGLSurface(_THIS, SDL_Window *window)
 {
     SDL_WindowData *windowdata = (SDL_WindowData *)window->driverdata;
 

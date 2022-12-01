@@ -39,8 +39,7 @@
  */
 #define PIPE_MS_TIMEOUT 14
 
-static ssize_t
-write_pipe(int fd, const void *buffer, size_t total_length, size_t *pos)
+static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_t *pos)
 {
     int ready = 0;
     ssize_t bytes_written = 0;
@@ -86,8 +85,7 @@ write_pipe(int fd, const void *buffer, size_t total_length, size_t *pos)
     return bytes_written;
 }
 
-static ssize_t
-read_pipe(int fd, void **buffer, size_t *total_length, SDL_bool null_terminate)
+static ssize_t read_pipe(int fd, void **buffer, size_t *total_length, SDL_bool null_terminate)
 {
     int ready = 0;
     void *output_buffer = NULL;
@@ -147,8 +145,7 @@ static const char *mime_conversion_list[MIME_LIST_SIZE][2] = {
     { "STRING", TEXT_MIME }
 };
 
-const char *
-Wayland_convert_mime_type(const char *mime_type)
+const char *Wayland_convert_mime_type(const char *mime_type)
 {
     const char *found = mime_type;
 
@@ -308,9 +305,8 @@ int Wayland_primary_selection_source_add_data(SDL_WaylandPrimarySelectionSource 
     return mime_data_list_add(&source->mimes, mime_type, buffer, length);
 }
 
-SDL_bool
-Wayland_data_source_has_mime(SDL_WaylandDataSource *source,
-                             const char *mime_type)
+SDL_bool Wayland_data_source_has_mime(SDL_WaylandDataSource *source,
+                                      const char *mime_type)
 {
     SDL_bool found = SDL_FALSE;
 
@@ -320,9 +316,8 @@ Wayland_data_source_has_mime(SDL_WaylandDataSource *source,
     return found;
 }
 
-SDL_bool
-Wayland_primary_selection_source_has_mime(SDL_WaylandPrimarySelectionSource *source,
-                                          const char *mime_type)
+SDL_bool Wayland_primary_selection_source_has_mime(SDL_WaylandPrimarySelectionSource *source,
+                                                   const char *mime_type)
 {
     SDL_bool found = SDL_FALSE;
 
@@ -359,10 +354,9 @@ static void *Wayland_source_get_data(SDL_MimeDataList *mime_data,
     return buffer;
 }
 
-void *
-Wayland_data_source_get_data(SDL_WaylandDataSource *source,
-                             size_t *length, const char *mime_type,
-                             SDL_bool null_terminate)
+void *Wayland_data_source_get_data(SDL_WaylandDataSource *source,
+                                   size_t *length, const char *mime_type,
+                                   SDL_bool null_terminate)
 {
     SDL_MimeDataList *mime_data = NULL;
     void *buffer = NULL;
@@ -378,10 +372,9 @@ Wayland_data_source_get_data(SDL_WaylandDataSource *source,
     return buffer;
 }
 
-void *
-Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSource *source,
-                                          size_t *length, const char *mime_type,
-                                          SDL_bool null_terminate)
+void *Wayland_primary_selection_source_get_data(SDL_WaylandPrimarySelectionSource *source,
+                                                size_t *length, const char *mime_type,
+                                                SDL_bool null_terminate)
 {
     SDL_MimeDataList *mime_data = NULL;
     void *buffer = NULL;
@@ -457,10 +450,9 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
     return buffer;
 }
 
-void *
-Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
-                                        size_t *length, const char *mime_type,
-                                        SDL_bool null_terminate)
+void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
+                                              size_t *length, const char *mime_type,
+                                              SDL_bool null_terminate)
 {
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
 
@@ -504,9 +496,8 @@ int Wayland_primary_selection_offer_add_mime(SDL_WaylandPrimarySelectionOffer *o
     return mime_data_list_add(&offer->mimes, mime_type, NULL, 0);
 }
 
-SDL_bool
-Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
-                            const char *mime_type)
+SDL_bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
+                                     const char *mime_type)
 {
     SDL_bool found = SDL_FALSE;
 
@@ -516,9 +507,8 @@ Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
     return found;
 }
 
-SDL_bool
-Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
-                                         const char *mime_type)
+SDL_bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
+                                                  const char *mime_type)
 {
     SDL_bool found = SDL_FALSE;
 
