@@ -10,11 +10,8 @@
 #define TESTRENDER_SCREEN_W 80
 #define TESTRENDER_SCREEN_H 60
 
+
 #define RENDER_COMPARE_FORMAT SDL_PIXELFORMAT_ARGB8888
-#define RENDER_COMPARE_AMASK  0xff000000 /**< Alpha bit mask. */
-#define RENDER_COMPARE_RMASK  0x00ff0000 /**< Red bit mask. */
-#define RENDER_COMPARE_GMASK  0x0000ff00 /**< Green bit mask. */
-#define RENDER_COMPARE_BMASK  0x000000ff /**< Blue bit mask. */
 
 #define ALLOWABLE_ERROR_OPAQUE  0
 #define ALLOWABLE_ERROR_BLENDED 64
@@ -1044,44 +1041,43 @@ _hasTexAlpha(void)
  *
  * \sa
  * http://wiki.libsdl.org/SDL_RenderReadPixels
- * http://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
+ * http://wiki.libsdl.org/SDL_CreateSurfaceFrom
  * http://wiki.libsdl.org/SDL_FreeSurface
  */
 static void
 _compare(SDL_Surface *referenceSurface, int allowable_error)
 {
-    int result;
-    SDL_Rect rect;
-    Uint8 *pixels;
-    SDL_Surface *testSurface;
+   int result;
+   SDL_Rect rect;
+   Uint8 *pixels;
+   SDL_Surface *testSurface;
 
-    /* Read pixels. */
-    pixels = (Uint8 *)SDL_malloc(4 * TESTRENDER_SCREEN_W * TESTRENDER_SCREEN_H);
-    SDLTest_AssertCheck(pixels != NULL, "Validate allocated temp pixel buffer");
-    if (pixels == NULL) {
-        return;
-    }
+   /* Read pixels. */
+   pixels = (Uint8 *)SDL_malloc(4*TESTRENDER_SCREEN_W*TESTRENDER_SCREEN_H);
+   SDLTest_AssertCheck(pixels != NULL, "Validate allocated temp pixel buffer");
+   if (pixels == NULL) {
+      return;
+   }
 
-    /* Explicitly specify the rect in case the window isn't the expected size... */
-    rect.x = 0;
-    rect.y = 0;
-    rect.w = TESTRENDER_SCREEN_W;
-    rect.h = TESTRENDER_SCREEN_H;
-    result = SDL_RenderReadPixels(renderer, &rect, RENDER_COMPARE_FORMAT, pixels, 80 * 4);
-    SDLTest_AssertCheck(result == 0, "Validate result from SDL_RenderReadPixels, expected: 0, got: %i", result);
+   /* Explicitly specify the rect in case the window isn't the expected size... */
+   rect.x = 0;
+   rect.y = 0;
+   rect.w = TESTRENDER_SCREEN_W;
+   rect.h = TESTRENDER_SCREEN_H;
+   result = SDL_RenderReadPixels(renderer, &rect, RENDER_COMPARE_FORMAT, pixels, 80*4 );
+   SDLTest_AssertCheck(result == 0, "Validate result from SDL_RenderReadPixels, expected: 0, got: %i", result);
 
-    /* Create surface. */
-    testSurface = SDL_CreateRGBSurfaceFrom(pixels, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, 32, TESTRENDER_SCREEN_W * 4,
-                                           RENDER_COMPARE_RMASK, RENDER_COMPARE_GMASK, RENDER_COMPARE_BMASK, RENDER_COMPARE_AMASK);
-    SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateRGBSurfaceFrom is not NULL");
+   /* Create surface. */
+   testSurface = SDL_CreateSurfaceFrom(pixels, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, TESTRENDER_SCREEN_W*4, RENDER_COMPARE_FORMAT);
+   SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateSurfaceFrom is not NULL");
 
-    /* Compare surface. */
-    result = SDLTest_CompareSurfaces(testSurface, referenceSurface, allowable_error);
-    SDLTest_AssertCheck(result == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", result);
+   /* Compare surface. */
+   result = SDLTest_CompareSurfaces( testSurface, referenceSurface, allowable_error );
+   SDLTest_AssertCheck(result == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", result);
 
-    /* Clean up. */
-    SDL_free(pixels);
-    SDL_FreeSurface(testSurface);
+   /* Clean up. */
+   SDL_free(pixels);
+   SDL_FreeSurface(testSurface);
 }
 
 /**

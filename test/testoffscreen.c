@@ -50,17 +50,16 @@ void draw()
 
 void save_surface_to_bmp()
 {
-    SDL_Surface *surface;
-    Uint32 r_mask, g_mask, b_mask, a_mask;
+    SDL_Surface* surface;
     Uint32 pixel_format;
     char file[128];
-    int bbp;
 
     pixel_format = SDL_GetWindowPixelFormat(window);
-    SDL_PixelFormatEnumToMasks(pixel_format, &bbp, &r_mask, &g_mask, &b_mask, &a_mask);
 
-    surface = SDL_CreateRGBSurface(width, height, bbp, r_mask, g_mask, b_mask, a_mask);
-    SDL_RenderReadPixels(renderer, NULL, pixel_format, (void *)surface->pixels, surface->pitch);
+    surface = SDL_CreateSurface(width, height, pixel_format);
+
+    SDL_RenderReadPixels(renderer, NULL, pixel_format, (void*)surface->pixels, surface->pitch);
+
 
     SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
                  SDL_GetWindowID(window), ++frame_number);

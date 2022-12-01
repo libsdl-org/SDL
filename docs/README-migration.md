@@ -162,9 +162,38 @@ M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D 
 
 ## SDL_surface.h
 
-Removed unused 'depth' parameter from SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom()
-Removed unused 'flags' parameter from SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceWithFormat()
-Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
+Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat.
+
+
+Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which take a format.
+SDL_CreateRGBSurface(), SDL_CreateRGBSurfaceFrom(), SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom() are removed.
+
+This code:
+
+```c
+SDL_Surface *surface = SDL_CreateRGBSurface(0, width, height, 0, Rmask, Gmask, Bmask, Amask);
+```
+
+can be replaced with this:
+
+```c
+Uint32 format = SDL_MasksToPixelFormatEnum(0, Rmask, Gmask, Bmask, Amask);
+SDL_Surface *surface = SDL_CreateSurface(width, height, format);
+```
+
+but in general, you probably have a format that you know you're using, possibly one of these:
+
+
+```c
+// Various mask (R, G, B, A) in little endian and their corresponding format:
+0xFF000000 0x00FF0000 0x0000FF00 0x000000FF => SDL_PIXELFORMAT_RGBA8888
+0x000000FF 0x0000FF00 0x00FF0000 0xFF000000 => SDL_PIXELFORMAT_ABGR8888
+0x00FF0000 0x0000FF00 0x000000FF 0xFF000000 => SDL_PIXELFORMAT_ARGB8888
+0x00FF0000 0x0000FF00 0x000000FF 0x00000000 => SDL_PIXELFORMAT_BGR24
+0x000000FF 0x0000FF00 0x000000FF 0x00000000 => SDL_PIXELFORMAT_RGB24
+0x00007C00 00000x03E0 00000x001F 0x00000000 => SDL_PIXELFORMAT_RGB555
+0x00007C00 00000x03E0 00000x001F 0x00008000 => SDL_PIXELFORMAT_ARGB1555
+```
 
 
 ## SDL_syswm.h

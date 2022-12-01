@@ -1749,13 +1749,9 @@ static void SDLTest_ScreenShot(SDL_Renderer *renderer)
     }
 
     SDL_RenderGetViewport(renderer, &viewport);
-    surface = SDL_CreateRGBSurface(viewport.w, viewport.h, 24,
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                   0x00FF0000, 0x0000FF00, 0x000000FF,
-#else
-                                   0x000000FF, 0x0000FF00, 0x00FF0000,
-#endif
-                                   0x00000000);
+
+    surface = SDL_CreateSurface(viewport.w, viewport.h, SDL_PIXELFORMAT_BGR24);
+
     if (surface == NULL) {
         SDL_Log("Couldn't create surface: %s\n", SDL_GetError());
         return;

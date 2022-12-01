@@ -2077,7 +2077,7 @@ int SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect,
         return ret;
     }
 
-    texture->locked_surface = SDL_CreateRGBSurfaceWithFormatFrom(pixels, real_rect.w, real_rect.h, pitch, texture->format);
+    texture->locked_surface = SDL_CreateSurfaceFrom(pixels, real_rect.w, real_rect.h, pitch, texture->format);
     if (texture->locked_surface == NULL) {
         SDL_UnlockTexture(texture);
         return -1;

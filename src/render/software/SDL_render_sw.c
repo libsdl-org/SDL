@@ -99,16 +99,12 @@ static int SW_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 
 static int SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
+    SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
 
-    if (!SDL_PixelFormatEnumToMasks(texture->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
-        return SDL_SetError("Unknown texture format");
+    if (surface == NULL) {
+        return SDL_SetError("Cannot create surface");
     }
-
-    texture->driverdata =
-        SDL_CreateRGBSurface(texture->w, texture->h, bpp, Rmask, Gmask,
-                             Bmask, Amask);
+    texture->driverdata = surface;
     SDL_SetSurfaceColorMod(texture->driverdata, texture->color.r, texture->color.g, texture->color.b);
     SDL_SetSurfaceAlphaMod(texture->driverdata, texture->color.a);
     SDL_SetSurfaceBlendMode(texture->driverdata, texture->blendMode);
@@ -116,7 +112,7 @@ static int SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     /* Only RLE encode textures without an alpha channel since the RLE coder
      * discards the color values of pixels with an alpha value of zero.
      */
-    if (texture->access == SDL_TEXTUREACCESS_STATIC && !Amask) {
+    if (texture->access == SDL_TEXTUREACCESS_STATIC && !surface->format->Amask) {
         SDL_SetSurfaceRLE(texture->driverdata, 1);
     }
 
@@ -342,9 +338,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
     /* Clone the source surface but use its pixel buffer directly.
      * The original source surface must be treated as read-only.
      */
-    src_clone = SDL_CreateRGBSurfaceFrom(src->pixels, src->w, src->h, src->format->BitsPerPixel, src->pitch,
-                                         src->format->Rmask, src->format->Gmask,
-                                         src->format->Bmask, src->format->Amask);
+    src_clone = SDL_CreateSurfaceFrom(src->pixels, src->w, src->h, src->pitch, src->format->format);
     if (src_clone == NULL) {
         if (SDL_MUSTLOCK(src)) {
             SDL_UnlockSurface(src);
@@ -387,8 +381,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
      * to clear the pixels in the destination surface. The other steps are explained below.
      */
     if (blendmode == SDL_BLENDMODE_NONE && !isOpaque) {
-        mask = SDL_CreateRGBSurface(final_rect->w, final_rect->h, 32,
-                                    0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+        mask = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
         if (mask == NULL) {
             retval = -1;
         } else {
@@ -401,8 +394,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
      */
     if (!retval && (blitRequired || applyModulation)) {
         SDL_Rect scale_rect = tmp_rect;
-        src_scaled = SDL_CreateRGBSurface(final_rect->w, final_rect->h, 32,
-                                          0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+        src_scaled = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
         if (src_scaled == NULL) {
             retval = -1;
         } else {
@@ -482,10 +474,14 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
                          * to be created. This makes all source pixels opaque and the colors get copied correctly.
                          */
                         SDL_Surface *src_rotated_rgb;
-                        src_rotated_rgb = SDL_CreateRGBSurfaceFrom(src_rotated->pixels, src_rotated->w, src_rotated->h,
-                                                                   src_rotated->format->BitsPerPixel, src_rotated->pitch,
-                                                                   src_rotated->format->Rmask, src_rotated->format->Gmask,
-                                                                   src_rotated->format->Bmask, 0);
+                        int f = SDL_MasksToPixelFormatEnum(src_rotated->format->BitsPerPixel,
+                                                           src_rotated->format->Rmask,
+                                                           src_rotated->format->Gmask,
+                                                           src_rotated->format->Bmask,
+                                                           0);
+
+                        src_rotated_rgb = SDL_CreateSurfaceFrom(src_rotated->pixels, src_rotated->w, src_rotated->h,
+                                                                   src_rotated->pitch, f);
                         if (src_rotated_rgb == NULL) {
                             retval = -1;
                         } else {
@@ -816,7 +812,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 
                 /* Prevent to do scaling + clipping on viewport boundaries as it may lose proportion */
                 if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
-                    SDL_Surface *tmp = SDL_CreateRGBSurfaceWithFormat(dstrect->w, dstrect->h, src->format->format);
+                    SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, src->format->format);
                     /* Scale to an intermediate surface, then blit */
                     if (tmp) {
                         SDL_Rect r;
