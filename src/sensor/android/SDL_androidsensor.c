@@ -32,7 +32,6 @@
 #include "SDL_androidsensor.h"
 #include "../SDL_syssensor.h"
 #include "../SDL_sensor_c.h"
-//#include "../../core/android/SDL_android.h"
 
 #ifndef LOOPER_ID_USER
 #define LOOPER_ID_USER 3

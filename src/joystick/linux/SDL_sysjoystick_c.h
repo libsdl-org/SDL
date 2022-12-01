@@ -43,12 +43,12 @@ struct joystick_hwdata
     struct hwdata_hat
     {
         int axis[2];
-    } * hats;
+    } *hats;
     /* The current Linux joystick driver maps balls to two axes */
     struct hwdata_ball
     {
         int axis[2];
-    } * balls;
+    } *balls;
 
     /* Support for the Linux 2.4 unified input interface */
     Uint8 key_map[KEY_MAX];

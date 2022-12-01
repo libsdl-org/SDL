@@ -89,7 +89,7 @@ struct _SDL_Joystick
     {
         int dx;
         int dy;
-    } * balls; /* Current ball motion deltas */
+    } *balls; /* Current ball motion deltas */
 
     int nbuttons;   /* Number of buttons on the joystick */
     Uint8 *buttons; /* Current button states */

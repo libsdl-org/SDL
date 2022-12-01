@@ -51,7 +51,6 @@ extern "C" {
 #include "SDL_stdinc.h"
 #include "SDL_render.h"
 #include "../../video/SDL_sysvideo.h"
-//#include "../../SDL_hints_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -74,9 +73,9 @@ extern "C" void D3D11_Trim(SDL_Renderer *);
 
 // Compile-time debugging options:
 // To enable, uncomment; to disable, comment them out.
-//#define LOG_POINTER_EVENTS 1
-//#define LOG_WINDOW_EVENTS 1
-//#define LOG_ORIENTATION_EVENTS 1
+// #define LOG_POINTER_EVENTS 1
+// #define LOG_WINDOW_EVENTS 1
+// #define LOG_ORIENTATION_EVENTS 1
 
 // HACK, DLudwig: record a reference to the global, WinRT 'app'/view.
 // SDL/WinRT will use this throughout its code.

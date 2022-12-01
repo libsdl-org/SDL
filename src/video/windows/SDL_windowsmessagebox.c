@@ -86,9 +86,9 @@ enum _TASKDIALOG_FLAGS
     TDF_RTL_LAYOUT = 0x2000,
     TDF_NO_DEFAULT_RADIO_BUTTON = 0x4000,
     TDF_CAN_BE_MINIMIZED = 0x8000,
-    //#if (NTDDI_VERSION >= NTDDI_WIN8)
+    // #if (NTDDI_VERSION >= NTDDI_WIN8)
     TDF_NO_SET_FOREGROUND = 0x00010000, // Don't call SetForegroundWindow() when activating the dialog
-                                        //#endif // (NTDDI_VERSION >= NTDDI_WIN8)
+                                        // #endif // (NTDDI_VERSION >= NTDDI_WIN8)
     TDF_SIZE_TO_CONTENT = 0x01000000    // used by ShellMessageBox to emulate MessageBox sizing behavior
 };
 typedef int TASKDIALOG_FLAGS; // Note: _TASKDIALOG_FLAGS is an int
