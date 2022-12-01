@@ -22,7 +22,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build
-      run: cmake --build build --config Release
+      run: cmake --build build --config Release --verbose
     - name: Install
       run: |
         echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV

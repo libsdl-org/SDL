@@ -38,14 +38,15 @@
 
 static unsigned UTF8_TrailingBytes(unsigned char c)
 {
-    if (c >= 0xC0 && c <= 0xDF)
+    if (c >= 0xC0 && c <= 0xDF) {
         return 1;
-    else if (c >= 0xE0 && c <= 0xEF)
+    } else if (c >= 0xE0 && c <= 0xEF) {
         return 2;
-    else if (c >= 0xF0 && c <= 0xF4)
+    } else if (c >= 0xF0 && c <= 0xF4) {
         return 3;
-    else
-        return 0;
+    }
+
+    return 0;
 }
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD)
@@ -438,7 +439,7 @@ int SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
         ++str1;
         ++str2;
     }
-    return (int)(*str1 - *str2);
+    return *str1 - *str2;
 #endif /* HAVE_WCSCMP */
 }
 
@@ -458,7 +459,7 @@ int SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
     if (!maxlen) {
         return 0;
     }
-    return (int)(*str1 - *str2);
+    return *str1 - *str2;
 
 #endif /* HAVE_WCSNCMP */
 }
@@ -661,7 +662,7 @@ SDL_strrev(char *string)
     char *b = &string[len - 1];
     len /= 2;
     while (len--) {
-        char c = *a;
+        char c = *a; /* NOLINT(clang-analyzer-core.uninitialized.Assign) */
         *a++ = *b;
         *b-- = c;
     }
@@ -1033,7 +1034,7 @@ int SDL_strcmp(const char *str1, const char *str2)
     int result;
 
     while (1) {
-        result = (int)((unsigned char)*str1 - (unsigned char)*str2);
+        result = ((unsigned char)*str1 - (unsigned char)*str2);
         if (result != 0 || (*str1 == '\0' /* && *str2 == '\0'*/)) {
             break;
         }
@@ -1133,6 +1134,7 @@ int SDL_vsscanf(const char *text, const char *fmt, va_list ap)
     return vsscanf(text, fmt, ap);
 }
 #else
+/* NOLINTNEXTLINE(readability-non-const-parameter) */
 int SDL_vsscanf(const char *text, const char *fmt, va_list ap)
 {
     int retval = 0;
@@ -1673,6 +1675,7 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
     return length;
 }
 
+/* NOLINTNEXTLINE(readability-non-const-parameter) */
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
     size_t length = 0;

@@ -648,7 +648,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectB = refRectB;
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
-    empty = (SDL_bool)SDL_RectEmpty(&result);
+    empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
     /* Rect B empty */
@@ -665,7 +665,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectB = refRectB;
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
-    empty = (SDL_bool)SDL_RectEmpty(&result);
+    empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
     /* Rect A and B empty */
@@ -684,7 +684,7 @@ int rect_testIntersectRectEmpty(void *arg)
     rectB = refRectB;
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB, (SDL_Rect *)NULL, (SDL_Rect *)NULL);
-    empty = (SDL_bool)SDL_RectEmpty(&result);
+    empty = SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
     return TEST_COMPLETED;
@@ -1530,7 +1530,7 @@ int rect_testRectEmpty(void *arg)
     refRect.h = SDLTest_RandomIntegerInRange(256, 1024);
     expectedResult = SDL_FALSE;
     rect = refRect;
-    result = (SDL_bool)SDL_RectEmpty((const SDL_Rect *)&rect);
+    result = SDL_RectEmpty(&rect);
     _validateRectEmptyResults(result, expectedResult, &rect, &refRect);
 
     /* Empty case */
@@ -1543,7 +1543,7 @@ int rect_testRectEmpty(void *arg)
                 refRect.h = h;
                 expectedResult = SDL_TRUE;
                 rect = refRect;
-                result = (SDL_bool)SDL_RectEmpty((const SDL_Rect *)&rect);
+                result = SDL_RectEmpty(&rect);
                 _validateRectEmptyResults(result, expectedResult, &rect, &refRect);
             }
         }
@@ -1563,7 +1563,7 @@ int rect_testRectEmptyParam(void *arg)
     SDL_bool result;
 
     /* invalid parameter combinations */
-    result = (SDL_bool)SDL_RectEmpty((const SDL_Rect *)NULL);
+    result = SDL_RectEmpty(NULL);
     SDLTest_AssertCheck(result == SDL_TRUE, "Check that function returns TRUE when 1st parameter is NULL");
 
     return TEST_COMPLETED;
@@ -1593,7 +1593,7 @@ int rect_testRectEquals(void *arg)
     expectedResult = SDL_TRUE;
     rectA = refRectA;
     rectB = refRectB;
-    result = (SDL_bool)SDL_RectEquals((const SDL_Rect *)&rectA, (const SDL_Rect *)&rectB);
+    result = SDL_RectEquals(&rectA, &rectB);
     _validateRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
@@ -1622,11 +1622,11 @@ int rect_testRectEqualsParam(void *arg)
     rectB.h = SDLTest_RandomIntegerInRange(1, 1024);
 
     /* invalid parameter combinations */
-    result = (SDL_bool)SDL_RectEquals((const SDL_Rect *)NULL, (const SDL_Rect *)&rectB);
+    result = SDL_RectEquals(NULL, &rectB);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
-    result = (SDL_bool)SDL_RectEquals((const SDL_Rect *)&rectA, (const SDL_Rect *)NULL);
+    result = SDL_RectEquals(&rectA, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
-    result = (SDL_bool)SDL_RectEquals((const SDL_Rect *)NULL, (const SDL_Rect *)NULL);
+    result = SDL_RectEquals(NULL, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st and 2nd parameter are NULL");
 
     return TEST_COMPLETED;
@@ -1656,7 +1656,7 @@ int rect_testFRectEquals(void *arg)
     expectedResult = SDL_TRUE;
     rectA = refRectA;
     rectB = refRectB;
-    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)&rectA, (const SDL_FRect *)&rectB);
+    result = SDL_FRectEquals(&rectA, &rectB);
     _validateFRectEqualsResults(result, expectedResult, &rectA, &rectB, &refRectA, &refRectB);
 
     return TEST_COMPLETED;
@@ -1685,11 +1685,11 @@ int rect_testFRectEqualsParam(void *arg)
     rectB.h = SDLTest_RandomFloat();
 
     /* invalid parameter combinations */
-    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)NULL, (const SDL_FRect *)&rectB);
+    result = SDL_FRectEquals(NULL, &rectB);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
-    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)&rectA, (const SDL_FRect *)NULL);
+    result = SDL_FRectEquals(&rectA, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 2nd parameter is NULL");
-    result = (SDL_bool)SDL_FRectEquals((const SDL_FRect *)NULL, (const SDL_FRect *)NULL);
+    result = SDL_FRectEquals(NULL, NULL);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st and 2nd parameter are NULL");
 
     return TEST_COMPLETED;

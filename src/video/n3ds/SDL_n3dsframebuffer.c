@@ -68,11 +68,9 @@ FreePreviousWindowFramebuffer(SDL_Window *window)
 SDL_FORCE_INLINE SDL_Surface *
 CreateNewWindowFramebuffer(SDL_Window *window)
 {
-    int w, h, bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
-    SDL_PixelFormatEnumToMasks(FRAMEBUFFER_FORMAT, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
+    int w, h;
     SDL_GetWindowSize(window, &w, &h);
-    return SDL_CreateRGBSurface(w, h, bpp, Rmask, Gmask, Bmask, Amask);
+    return SDL_CreateSurface(w, h, FRAMEBUFFER_FORMAT);
 }
 
 int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)

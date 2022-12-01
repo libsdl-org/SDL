@@ -146,7 +146,7 @@ typedef struct METAL_ShaderPipelines
 
 @interface METAL_TextureData : NSObject
 @property(nonatomic, retain) id<MTLTexture> mtltexture;
-@property(nonatomic, retain) id<MTLTexture> mtltexture_uv;
+@property(nonatomic, retain) id<MTLTexture> mtltextureUv;
 @property(nonatomic, retain) id<MTLSamplerState> mtlsampler;
 @property(nonatomic, assign) SDL_MetalFragmentFunction fragmentFunction;
 #if SDL_HAVE_YUV
@@ -551,13 +551,14 @@ static SDL_bool METAL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode bl
     return SDL_TRUE;
 }
 
-static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
+static int
+METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     @autoreleasepool {
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
         MTLPixelFormat pixfmt;
         MTLTextureDescriptor *mtltexdesc;
-        id<MTLTexture> mtltexture, mtltexture_uv;
+        id<MTLTexture> mtltexture, mtltextureUv;
         BOOL yuv, nv12;
         METAL_TextureData *texturedata;
 
@@ -597,7 +598,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             return SDL_SetError("Texture allocation failed");
         }
 
-        mtltexture_uv = nil;
+        mtltextureUv = nil;
 #if SDL_HAVE_YUV
         yuv = (texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12);
         nv12 = (texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21);
@@ -615,8 +616,8 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         }
 
         if (yuv || nv12) {
-            mtltexture_uv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
-            if (mtltexture_uv == nil) {
+            mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+            if (mtltextureUv == nil) {
                 return SDL_SetError("Texture allocation failed");
             }
         }
@@ -628,7 +629,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             texturedata.mtlsampler = data.mtlsamplerlinear;
         }
         texturedata.mtltexture = mtltexture;
-        texturedata.mtltexture_uv = mtltexture_uv;
+        texturedata.mtltextureUv = mtltextureUv;
 #if SDL_HAVE_YUV
         texturedata.yuv = yuv;
         texturedata.nv12 = nv12;
@@ -777,13 +778,13 @@ static int METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
             /* Skip to the correct offset into the next texture */
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
-            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Uslice, pixels, UVpitch) < 0) {
+            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Uslice, pixels, UVpitch) < 0) {
                 return -1;
             }
 
             /* Skip to the correct offset into the next texture */
             pixels = (const void *)((const Uint8 *)pixels + UVrect.h * UVpitch);
-            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Vslice, pixels, UVpitch) < 0) {
+            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Vslice, pixels, UVpitch) < 0) {
                 return -1;
             }
         }
@@ -794,7 +795,7 @@ static int METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
             /* Skip to the correct offset into the next texture */
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
-            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, 0, pixels, UVpitch) < 0) {
+            if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, 0, pixels, UVpitch) < 0) {
                 return -1;
             }
         }
@@ -826,10 +827,10 @@ static int METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
         if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch) < 0) {
             return -1;
         }
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Uslice, Uplane, Upitch)) {
+        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Uslice, Uplane, Upitch)) {
             return -1;
         }
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Vslice, Vplane, Vpitch)) {
+        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, Vslice, Vplane, Vpitch)) {
             return -1;
         }
 
@@ -857,7 +858,7 @@ static int METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
             return -1;
         }
 
-        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, 0, UVplane, UVpitch) < 0) {
+        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltextureUv, UVrect, 0, UVplane, UVpitch) < 0) {
             return -1;
         }
 
@@ -949,7 +950,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
                   sourceBytesPerRow:UVpitch
                 sourceBytesPerImage:UVpitch * UVrect.h
                          sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
-                          toTexture:texturedata.mtltexture_uv
+                          toTexture:texturedata.mtltextureUv
                    destinationSlice:Uslice
                    destinationLevel:0
                   destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
@@ -959,7 +960,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
                   sourceBytesPerRow:UVpitch
                 sourceBytesPerImage:UVpitch * UVrect.h
                          sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
-                          toTexture:texturedata.mtltexture_uv
+                          toTexture:texturedata.mtltextureUv
                    destinationSlice:Vslice
                    destinationLevel:0
                   destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
@@ -973,7 +974,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
                   sourceBytesPerRow:UVpitch
                 sourceBytesPerImage:0
                          sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
-                          toTexture:texturedata.mtltexture_uv
+                          toTexture:texturedata.mtltextureUv
                    destinationSlice:0
                    destinationLevel:0
                   destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
@@ -1308,7 +1309,7 @@ static SDL_bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cm
         [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
 #if SDL_HAVE_YUV
         if (texturedata.yuv || texturedata.nv12) {
-            [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture_uv atIndex:1];
+            [data.mtlcmdencoder setFragmentTexture:texturedata.mtltextureUv atIndex:1];
             [data.mtlcmdencoder setFragmentBuffer:data.mtlbufconstants offset:texturedata.conversionBufferOffset atIndex:1];
         }
 #endif
@@ -1466,14 +1467,16 @@ static int METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     }
 }
 
-static int METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                  Uint32 pixel_format, void *pixels, int pitch)
+static int
+METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
+                       Uint32 pixel_format, void *pixels, int pitch)
 {
     @autoreleasepool {
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
         id<MTLTexture> mtltexture;
         MTLRegion mtlregion;
-        int temp_pitch, status;
+        size_t temp_pitch;
+        int status;
         Uint32 temp_format;
         void *temp_pixels;
         if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil)) {
@@ -1505,7 +1508,7 @@ static int METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
         mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
 
         // we only do BGRA8 or RGBA8 at the moment, so 4 will do.
-        temp_pitch = rect->w * 4;
+        temp_pitch = rect->w * 4UL;
         temp_pixels = SDL_malloc(temp_pitch * rect->h);
         if (!temp_pixels) {
             return SDL_OutOfMemory();

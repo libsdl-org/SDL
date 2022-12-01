@@ -25,7 +25,7 @@ static SDL_bool is_packed_yuv_format(Uint32 format)
 /* Create a surface with a good pattern for verifying YUV conversion */
 static SDL_Surface *generate_test_pattern(int pattern_size)
 {
-    SDL_Surface *pattern = SDL_CreateRGBSurfaceWithFormat(pattern_size, pattern_size, SDL_PIXELFORMAT_RGB24);
+    SDL_Surface *pattern = SDL_CreateSurface(pattern_size, pattern_size, SDL_PIXELFORMAT_RGB24);
 
     if (pattern) {
         int i, x, y;
@@ -334,7 +334,7 @@ int main(int argc, char **argv)
                     0, 100);
     pitch = CalculateYUVPitch(yuv_format, original->w);
 
-    converted = SDL_CreateRGBSurfaceWithFormat(original->w, original->h, rgb_format);
+    converted = SDL_CreateSurface(original->w, original->h, rgb_format);
     if (converted == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create converted surface: %s\n", SDL_GetError());
         return 3;
@@ -432,7 +432,7 @@ int main(int argc, char **argv)
             if (current == 0) {
                 SDLTest_DrawString(renderer, 4, 4, titles[current]);
             } else {
-                SDL_snprintf(title, sizeof(title), "%s %s %s", titles[current], yuv_name, yuv_mode);
+                (void)SDL_snprintf(title, sizeof title, "%s %s %s", titles[current], yuv_name, yuv_mode);
                 SDLTest_DrawString(renderer, 4, 4, title);
             }
             SDL_RenderPresent(renderer);

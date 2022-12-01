@@ -43,7 +43,7 @@ static void
 quit(int rc)
 {
     SDL_VideoQuit();
-    if (native_window) {
+    if (native_window != NULL && factory != NULL) {
         factory->DestroyNativeWindow(native_window);
     }
     exit(rc);

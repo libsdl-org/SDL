@@ -51,10 +51,11 @@ int main(int argc, char *argv[])
     if (argc > 1) {
         int success;
         Uint64 seed = 0;
-        if (argv[1][0] == '0' && argv[1][1] == 'x')
+        if (argv[1][0] == '0' && argv[1][1] == 'x') {
             success = SDL_sscanf(argv[1] + 2, "%" SDL_PRIx64, &seed);
-        else
+        } else {
             success = SDL_sscanf(argv[1], "%" SDL_PRIu64, &seed);
+        }
         if (!success) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid seed. Use a decimal or hexadecimal number.\n");
             return 1;

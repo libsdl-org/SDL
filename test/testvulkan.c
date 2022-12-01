@@ -894,7 +894,9 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
 
 static void destroySwapchainAndSwapchainSpecificStuff(SDL_bool doDestroySwapchain)
 {
-    vkDeviceWaitIdle(vulkanContext->device);
+    if (vkDeviceWaitIdle != NULL) {
+        vkDeviceWaitIdle(vulkanContext->device);
+    }
     destroyFences();
     destroyCommandBuffers();
     destroyCommandPool();

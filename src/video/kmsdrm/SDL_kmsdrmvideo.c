@@ -197,8 +197,8 @@ static int KMSDRM_Available(void)
 
     kmsdrm_dri_pathsize = SDL_strlen(kmsdrm_dri_path);
     kmsdrm_dri_devnamesize = SDL_strlen(kmsdrm_dri_devname);
-    SDL_snprintf(kmsdrm_dri_cardpath, sizeof(kmsdrm_dri_cardpath), "%s%s",
-                 kmsdrm_dri_path, kmsdrm_dri_devname);
+    (void)SDL_snprintf(kmsdrm_dri_cardpath, sizeof kmsdrm_dri_cardpath, "%s%s",
+                       kmsdrm_dri_path, kmsdrm_dri_devname);
 
     ret = get_driindex();
     if (ret >= 0) {
@@ -876,7 +876,7 @@ cleanup:
             SDL_free(dispdata);
         }
     }
-}
+} /* NOLINT(clang-analyzer-unix.Malloc): If no error `dispdata` is saved in the display */
 
 /* Initializes the list of SDL displays: we build a new display for each
    connecter connector we find.
@@ -895,8 +895,8 @@ static int KMSDRM_InitDisplays(_THIS)
     int i;
 
     /* Open /dev/dri/cardNN (/dev/drmN if on OpenBSD version less than 6.9) */
-    SDL_snprintf(viddata->devpath, sizeof(viddata->devpath), "%s%d",
-                 kmsdrm_dri_cardpath, viddata->devindex);
+    (void)SDL_snprintf(viddata->devpath, sizeof viddata->devpath, "%s%d",
+                       kmsdrm_dri_cardpath, viddata->devindex);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device %s", viddata->devpath);
     viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
@@ -1439,7 +1439,8 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
             /* Reopen FD, create gbm dev, setup display plane, etc,.
                but only when we come here for the first time,
                and only if it's not a VK window. */
-            if ((ret = KMSDRM_GBMInit(_this, dispdata))) {
+            ret = KMSDRM_GBMInit(_this, dispdata);
+            if (ret != 0) {
                 return SDL_SetError("Can't init GBM on window creation.");
             }
         }
@@ -1488,7 +1489,8 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
 
         /* Create the window surfaces with the size we have just chosen.
            Needs the window diverdata in place. */
-        if ((ret = KMSDRM_CreateSurfaces(_this, window))) {
+        ret = KMSDRM_CreateSurfaces(_this, window);
+        if (ret == 0) {
             return SDL_SetError("Can't window GBM/EGL surfaces on window creation.");
         }
     } /* NON-Vulkan block ends. */

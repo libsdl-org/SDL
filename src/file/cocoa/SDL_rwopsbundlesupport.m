@@ -42,7 +42,7 @@ FILE *SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
         NSString *full_path_with_file_to_try;
 
         /* If the file mode is writable, skip all the bundle stuff because generally the bundle is read-only. */
-        if (strcmp("r", mode) && strcmp("rb", mode)) {
+        if (SDL_strchr(mode, 'r') == NULL) {
             return fopen(file, mode);
         }
 
