@@ -31,6 +31,7 @@
 #define USB_VENDOR_GOOGLE       0x18d1
 #define USB_VENDOR_HORI         0x0f0d
 #define USB_VENDOR_HYPERKIN     0x2e24
+#define USB_VENDOR_LOGITECH     0x046d
 #define USB_VENDOR_MADCATZ      0x0738
 #define USB_VENDOR_MICROSOFT    0x045e
 #define USB_VENDOR_NACON        0x146b
@@ -51,6 +52,7 @@
 #define SONY_THIRDPARTY_VENDOR(X)    \
     (X == USB_VENDOR_DRAGONRISE ||   \
      X == USB_VENDOR_HORI ||         \
+     X == USB_VENDOR_LOGITECH ||     \
      X == USB_VENDOR_MADCATZ ||      \
      X == USB_VENDOR_NACON ||        \
      X == USB_VENDOR_PDP ||          \
