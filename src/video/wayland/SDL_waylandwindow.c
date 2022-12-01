@@ -48,8 +48,7 @@
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)
 
-SDL_FORCE_INLINE SDL_bool
-FloatEqual(float a, float b)
+SDL_FORCE_INLINE SDL_bool FloatEqual(float a, float b)
 {
     const float diff = SDL_fabsf(a - b);
     const float largest = SDL_max(SDL_fabsf(a), SDL_fabsf(b));
@@ -118,15 +117,13 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
     }
 }
 
-SDL_FORCE_INLINE SDL_bool
-SurfaceScaleIsFractional(SDL_Window *window)
+SDL_FORCE_INLINE SDL_bool SurfaceScaleIsFractional(SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     return !FloatEqual(SDL_roundf(data->scale_factor), data->scale_factor);
 }
 
-SDL_FORCE_INLINE SDL_bool
-FullscreenModeEmulation(SDL_Window *window)
+SDL_FORCE_INLINE SDL_bool FullscreenModeEmulation(SDL_Window *window)
 {
     return (window->flags & SDL_WINDOW_FULLSCREEN) &&
            ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP);

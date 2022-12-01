@@ -48,8 +48,7 @@ int Wayland_GLES_LoadLibrary(_THIS, const char *path)
     return ret;
 }
 
-SDL_GLContext
-Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window *window)
 {
     SDL_GLContext context;
     context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);

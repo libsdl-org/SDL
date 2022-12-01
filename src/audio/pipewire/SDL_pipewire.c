@@ -205,8 +205,7 @@ static int load_pipewire_syms()
     return 0;
 }
 
-SDL_FORCE_INLINE SDL_bool
-pipewire_version_at_least(int major, int minor, int patch)
+SDL_FORCE_INLINE SDL_bool pipewire_version_at_least(int major, int minor, int patch)
 {
     return (pipewire_version_major >= major) &&
            (pipewire_version_major > major || pipewire_version_minor >= minor) &&
@@ -376,8 +375,7 @@ static void io_list_clear()
     }
 }
 
-static struct io_node *
-io_list_get_by_id(Uint32 id)
+static struct io_node *io_list_get_by_id(Uint32 id)
 {
     struct io_node *n, *temp;
     spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {
@@ -388,8 +386,7 @@ io_list_get_by_id(Uint32 id)
     return NULL;
 }
 
-static struct io_node *
-io_list_get_by_path(char *path)
+static struct io_node *io_list_get_by_path(char *path)
 {
     struct io_node *n, *temp;
     spa_list_for_each_safe (n, temp, &hotplug_io_list, link) {

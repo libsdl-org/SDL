@@ -905,8 +905,7 @@ static SDL_bool should_use_libdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 }
 #endif
 
-SDL_bool
-Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
+SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg)
 {
 #ifdef HAVE_LIBDECOR_H
     if (data->shell.libdecor != NULL) {
@@ -1114,8 +1113,7 @@ static void Wayland_VideoCleanup(_THIS)
     }
 }
 
-SDL_bool
-Wayland_VideoReconnect(_THIS)
+SDL_bool Wayland_VideoReconnect(_THIS)
 {
 #if 0 /* TODO RECONNECT: Uncomment all when https://invent.kde.org/plasma/kwin/-/wikis/Restarting is completed */
     SDL_VideoData *data = _this->driverdata;
