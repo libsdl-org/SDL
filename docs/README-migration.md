@@ -169,26 +169,26 @@ SDL_CreateRGBSurfaceFrom() and SDL_CreateRGBSurfaceWithFormatFrom() have been co
 
 You can implement the old functions in your own code easily:
 ```c
+SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    return SDL_CreateSurface(width, height,
+            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+}
+
 SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
 {
     return SDL_CreateSurface(width, height, format);
 }
 
-SDL_Surface * SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
-{
-    return SDL_CreateSurfaceFrom(pixels, width, height, pitch, format);
-}
-
-SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
-{
-    return SDL_CreateRGBSurfaceWithFormat(flags, width, height, depth,
-            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
-}
-
 SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
-    return SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, depth, pitch,
+    return SDL_CreateSurfaceFrom(pixels, width, height, pitch,
             SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
+{
+    return SDL_CreateSurfaceFrom(pixels, width, height, pitch, format);
 }
 
 ```
