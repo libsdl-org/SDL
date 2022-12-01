@@ -20,7 +20,7 @@ int sdltest_generateRunSeed(void *arg)
     int j;
 
     for (i = 1; i <= 10; i += 3) {
-        result = SDLTest_GenerateRunSeed(i);
+        result = SDLTest_GenerateRunSeed((int)i);
         SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed()");
         SDLTest_AssertCheck(result != NULL, "Verify returned value is not NULL");
         if (result != NULL) {
