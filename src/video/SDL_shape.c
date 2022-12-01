@@ -50,17 +50,17 @@ SDL_CreateShapedWindow(const char *title, unsigned int x, unsigned int y, unsign
             SDL_DestroyWindow(result);
             return NULL;
         }
-    } else
-        return NULL;
+    }
+    return NULL;
 }
 
 SDL_bool
 SDL_IsShapedWindow(const SDL_Window *window)
 {
-    if (window == NULL)
+    if (window == NULL) {
         return SDL_FALSE;
-    else
-        return (SDL_bool)(window->shaper != NULL);
+    }
+    return (SDL_bool)(window->shaper != NULL);
 }
 
 /* REQUIRES that bitmap point to a w-by-h bitmap with ppb pixels-per-byte. */
@@ -71,7 +71,7 @@ void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint
     Uint8 r = 0, g = 0, b = 0, alpha = 0;
     Uint8 *pixel = NULL;
     Uint32 pixel_value = 0, mask_value = 0;
-    int bytes_per_scanline = (shape->w + (ppb - 1)) / ppb;
+    size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
     Uint8 *bitmap_scanline;
     SDL_Color key;
 
@@ -241,8 +241,9 @@ void SDL_TraverseShapeTree(SDL_ShapeTree *tree, SDL_TraversalFunction function, 
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.upright, function, closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.downleft, function, closure);
         SDL_TraverseShapeTree((SDL_ShapeTree *)tree->data.children.downright, function, closure);
-    } else
+    } else {
         function(tree, closure);
+    }
 }
 
 void SDL_FreeShapeTree(SDL_ShapeTree **shape_tree)
@@ -324,17 +325,15 @@ int SDL_GetShapedWindowMode(SDL_Window *window, SDL_WindowShapeMode *shape_mode)
 {
     if (window != NULL && SDL_IsShapedWindow(window)) {
         if (shape_mode == NULL) {
-            if (SDL_WindowHasAShape(window))
-                /* The window given has a shape. */
-                return 0;
-            else
-                /* The window given is shapeable but lacks a shape. */
-                return SDL_WINDOW_LACKS_SHAPE;
+            if (SDL_WindowHasAShape(window)) {
+                return 0; /* The window given has a shape. */
+            } else {
+                return SDL_WINDOW_LACKS_SHAPE; /* The window given is shapeable but lacks a shape. */
+            }
         } else {
             *shape_mode = window->shaper->mode;
             return 0;
         }
-    } else
-        /* The window given is not a valid shapeable window. */
-        return SDL_NONSHAPEABLE_WINDOW;
+    }
+    return SDL_NONSHAPEABLE_WINDOW; /* The window given is not a valid shapeable window. */
 }

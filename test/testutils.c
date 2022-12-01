@@ -33,7 +33,7 @@ GetNearbyFilename(const char *file)
             return NULL;
         }
 
-        SDL_snprintf(path, len, "%s%s", base, file);
+        (void)SDL_snprintf(path, len, "%s%s", base, file);
         SDL_free(base);
 
         rw = SDL_RWFromFile(path, "rb");

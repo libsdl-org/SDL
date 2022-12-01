@@ -705,10 +705,11 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
 
     switch (df->BytesPerPixel) {
     case 2:
-        if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0)
+        if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0) {
             RLEALPHACLIPBLIT(Uint16, Uint8, BLIT_TRANSL_565);
-        else
+        } else {
             RLEALPHACLIPBLIT(Uint16, Uint8, BLIT_TRANSL_555);
+        }
         break;
     case 4:
         RLEALPHACLIPBLIT(Uint32, Uint16, BLIT_TRANSL_888);
@@ -755,8 +756,9 @@ static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, SDL_Rect *srcrect,
                         if (run) {
                             srcbuf += 2 * run;
                             ofs += run;
-                        } else if (!ofs)
+                        } else if (ofs == 0) {
                             goto done;
+                        }
                     } while (ofs < w);
 
                     /* skip padding */
@@ -785,8 +787,9 @@ static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, SDL_Rect *srcrect,
                         if (run) {
                             srcbuf += 4 * run;
                             ofs += run;
-                        } else if (!ofs)
+                        } else if (ofs == 0) {
                             goto done;
+                        }
                     } while (ofs < w);
                 } while (--vskip);
             }
@@ -850,10 +853,11 @@ static int SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, SDL_Rect *srcrect,
 
         switch (df->BytesPerPixel) {
         case 2:
-            if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0)
+            if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0) {
                 RLEALPHABLIT(Uint16, Uint8, BLIT_TRANSL_565);
-            else
+            } else {
                 RLEALPHABLIT(Uint16, Uint8, BLIT_TRANSL_555);
+            }
             break;
         case 4:
             RLEALPHABLIT(Uint32, Uint16, BLIT_TRANSL_888);
@@ -1039,15 +1043,17 @@ static int RLEAlphaSurface(SDL_Surface *surface)
             if (df->Gmask == 0x07e0 || df->Rmask == 0x07e0 || df->Bmask == 0x07e0) {
                 copy_opaque = copy_opaque_16;
                 copy_transl = copy_transl_565;
-            } else
+            } else {
                 return -1;
+            }
             break;
         case 0x7fff:
             if (df->Gmask == 0x03e0 || df->Rmask == 0x03e0 || df->Bmask == 0x03e0) {
                 copy_opaque = copy_opaque_16;
                 copy_transl = copy_transl_555;
-            } else
+            } else {
                 return -1;
+            }
             break;
         default:
             return -1;
@@ -1059,8 +1065,9 @@ static int RLEAlphaSurface(SDL_Surface *surface)
         maxsize = surface->h * (2 + (4 + 2) * (surface->w + 1)) + 2;
         break;
     case 4:
-        if (masksum != 0x00ffffff)
+        if (masksum != 0x00ffffff) {
             return -1; /* requires unused high byte */
+        }
         copy_opaque = copy_32;
         copy_transl = copy_32;
         max_opaque_run = 255; /* runs stored as short ints */
@@ -1128,11 +1135,13 @@ static int RLEAlphaSurface(SDL_Surface *surface)
             do {
                 int run, skip, len;
                 skipstart = x;
-                while (x < w && !ISOPAQUE(src[x], sf))
+                while (x < w && !ISOPAQUE(src[x], sf)) {
                     x++;
+                }
                 runstart = x;
-                while (x < w && ISOPAQUE(src[x], sf))
+                while (x < w && ISOPAQUE(src[x], sf)) {
                     x++;
+                }
                 skip = runstart - skipstart;
                 if (skip == w) {
                     blankline = 1;
@@ -1164,11 +1173,13 @@ static int RLEAlphaSurface(SDL_Surface *surface)
             do {
                 int run, skip, len;
                 skipstart = x;
-                while (x < w && !ISTRANSL(src[x], sf))
+                while (x < w && !ISTRANSL(src[x], sf)) {
                     x++;
+                }
                 runstart = x;
-                while (x < w && ISTRANSL(src[x], sf))
+                while (x < w && ISTRANSL(src[x], sf)) {
                     x++;
+                }
                 skip = runstart - skipstart;
                 blankline &= (skip == w);
                 run = x - runstart;
@@ -1319,16 +1330,19 @@ static int RLEColorkeySurface(SDL_Surface *surface)
         int x = 0;
         int blankline = 0;
         do {
-            int run, skip, len;
+            int run, skip;
+            int len;
             int runstart;
             int skipstart = x;
 
             /* find run of transparent, then opaque pixels */
-            while (x < w && (getpix(srcbuf + x * bpp) & rgbmask) == ckey)
+            while (x < w && (getpix(srcbuf + x * bpp) & rgbmask) == ckey) {
                 x++;
+            }
             runstart = x;
-            while (x < w && (getpix(srcbuf + x * bpp) & rgbmask) != ckey)
+            while (x < w && (getpix(srcbuf + x * bpp) & rgbmask) != ckey) {
                 x++;
+            }
             skip = runstart - skipstart;
             if (skip == w) {
                 blankline = 1;
@@ -1342,14 +1356,14 @@ static int RLEColorkeySurface(SDL_Surface *surface)
             }
             len = SDL_min(run, maxn);
             ADD_COUNTS(skip, len);
-            SDL_memcpy(dst, srcbuf + runstart * bpp, len * bpp);
+            SDL_memcpy(dst, srcbuf + runstart * bpp, (size_t)len * bpp);
             dst += len * bpp;
             run -= len;
             runstart += len;
             while (run) {
                 len = SDL_min(run, maxn);
                 ADD_COUNTS(0, len);
-                SDL_memcpy(dst, srcbuf + runstart * bpp, len * bpp);
+                SDL_memcpy(dst, srcbuf + runstart * bpp, (size_t)len * bpp);
                 dst += len * bpp;
                 runstart += len;
                 run -= len;
@@ -1477,13 +1491,13 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
         uncopy_opaque = uncopy_transl = uncopy_32;
     }
 
-    surface->pixels = SDL_SIMDAlloc(surface->h * surface->pitch);
-    if (!surface->pixels) {
+    surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
+    if (surface->pixels == NULL) {
         return SDL_FALSE;
     }
     surface->flags |= SDL_SIMD_ALIGNED;
     /* fill background with transparent pixels */
-    SDL_memset(surface->pixels, 0, surface->h * surface->pitch);
+    SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
 
     dst = surface->pixels;
     srcbuf = (Uint8 *)(df + 1);
@@ -1543,8 +1557,8 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
                 SDL_Rect full;
 
                 /* re-create the original surface */
-                surface->pixels = SDL_SIMDAlloc(surface->h * surface->pitch);
-                if (!surface->pixels) {
+                surface->pixels = SDL_SIMDAlloc((size_t)surface->h * surface->pitch);
+                if (surface->pixels == NULL) {
                     /* Oh crap... */
                     surface->flags |= SDL_RLEACCEL;
                     return;

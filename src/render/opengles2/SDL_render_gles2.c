@@ -46,9 +46,6 @@
 #define RENDERER_CONTEXT_MAJOR 2
 #define RENDERER_CONTEXT_MINOR 0
 
-/* Used to re-create the window with OpenGL ES capability */
-extern int SDL_RecreateWindow(SDL_Window *window, Uint32 flags);
-
 /*************************************************************************************************
  * Context structures                                                                            *
  *************************************************************************************************/
@@ -1465,7 +1462,7 @@ static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         size_t size;
         data->pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
-        size = texture->h * data->pitch;
+        size = (size_t)texture->h * data->pitch;
 #if SDL_HAVE_YUV
         if (data->yuv) {
             /* Need to add size for the U and V planes */
@@ -1565,7 +1562,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
     Uint32 *blob2 = NULL;
 #endif
     Uint8 *src;
-    int src_pitch;
+    size_t src_pitch;
     int y;
 
     if ((width == 0) || (height == 0) || (bpp == 0)) {
@@ -1573,7 +1570,7 @@ static int GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xoff
     }
 
     /* Reformat the texture data into a tightly packed array */
-    src_pitch = width * bpp;
+    src_pitch = (size_t)width * bpp;
     src = (Uint8 *)pixels;
     if (pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
@@ -1915,7 +1912,7 @@ static int GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     int status;
 
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
-    buflen = rect->h * temp_pitch;
+    buflen = (size_t)rect->h * temp_pitch;
     if (buflen == 0) {
         return 0; /* nothing to do. */
     }

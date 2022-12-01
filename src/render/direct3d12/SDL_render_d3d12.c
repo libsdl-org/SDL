@@ -1104,9 +1104,9 @@ static int D3D12_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
     switch (rotation) {
     case DXGI_MODE_ROTATION_IDENTITY:
         outRect->left = sdlRect->x;
-        outRect->right = sdlRect->x + sdlRect->w;
+        outRect->right = (LONG)sdlRect->x + sdlRect->w;
         outRect->top = sdlRect->y;
-        outRect->bottom = sdlRect->y + sdlRect->h;
+        outRect->bottom = (LONG)sdlRect->y + sdlRect->h;
         if (includeViewportOffset) {
             outRect->left += viewport->x;
             outRect->right += viewport->x;
@@ -1116,7 +1116,7 @@ static int D3D12_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
         break;
     case DXGI_MODE_ROTATION_ROTATE270:
         outRect->left = sdlRect->y;
-        outRect->right = sdlRect->y + sdlRect->h;
+        outRect->right = (LONG)sdlRect->y + sdlRect->h;
         outRect->top = viewport->w - sdlRect->x - sdlRect->w;
         outRect->bottom = viewport->w - sdlRect->x;
         break;
@@ -1130,7 +1130,7 @@ static int D3D12_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
         outRect->left = viewport->h - sdlRect->y - sdlRect->h;
         outRect->right = viewport->h - sdlRect->y;
         outRect->top = sdlRect->x;
-        outRect->bottom = sdlRect->x + sdlRect->h;
+        outRect->bottom = (LONG)sdlRect->x + sdlRect->h;
         break;
     default:
         return SDL_SetError("The physical display is in an unknown or unsupported rotation");
@@ -1298,7 +1298,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
     /* Set the proper rotation for the swap chain. */
     if (WIN_IsWindows8OrGreater()) {
         if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL) {
-            result = D3D_CALL(data->swapChain, SetRotation, data->rotation);
+            result = D3D_CALL(data->swapChain, SetRotation, data->rotation); /* NOLINT(clang-analyzer-core.NullDereference) */
             if (FAILED(result)) {
                 WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain4::SetRotation"), result);
                 goto done;
@@ -1316,7 +1316,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
             goto done;
         }
 #else
-        result = D3D_CALL(data->swapChain, GetBuffer,
+        result = D3D_CALL(data->swapChain, GetBuffer, /* NOLINT(clang-analyzer-core.NullDereference) */
                           i,
                           D3D_GUID(SDL_IID_ID3D12Resource),
                           (void **)&data->renderTargets[i]);
@@ -1729,7 +1729,7 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
     dst = textureMemory;
     length = w * bpp;
     if (length == pitch && length == pitchedDesc.RowPitch) {
-        SDL_memcpy(dst, src, length * h);
+        SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)pitch) {
             length = pitch;
@@ -1902,7 +1902,7 @@ static int D3D12_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
         textureData->lockedRect = *rect;
         *pixels =
-            (void *)((Uint8 *)textureData->pixels + rect->y * textureData->pitch +
+            (void *)(textureData->pixels + rect->y * textureData->pitch +
                      rect->x * SDL_BYTESPERPIXEL(texture->format));
         *pitch = textureData->pitch;
         return 0;
@@ -2013,7 +2013,7 @@ static void D3D12_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (textureData->yuv || textureData->nv12) {
         const SDL_Rect *rect = &textureData->lockedRect;
         void *pixels =
-            (void *)((Uint8 *)textureData->pixels + rect->y * textureData->pitch +
+            (void *)(textureData->pixels + rect->y * textureData->pitch +
                      rect->x * SDL_BYTESPERPIXEL(texture->format));
         D3D12_UpdateTexture(renderer, texture, rect, pixels, textureData->pitch);
         return;

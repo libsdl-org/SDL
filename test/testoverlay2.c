@@ -319,6 +319,7 @@ int main(int argc, char **argv)
     filename = GetResourceFilename(NULL, "moose.dat");
     if (filename == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
+        SDL_free(RawMooseData);
         return -1;
     }
     handle = SDL_RWFromFile(filename, "rb");

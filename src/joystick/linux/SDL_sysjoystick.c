@@ -565,7 +565,7 @@ static void LINUX_InotifyJoystickDetect(void)
     while (remain > 0) {
         if (buf.event.len > 0) {
             if (IsJoystickDeviceNode(buf.event.name)) {
-                SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", buf.event.name);
+                (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", buf.event.name);
 
                 if (buf.event.mask & (IN_CREATE | IN_MOVED_TO | IN_ATTRIB)) {
                     MaybeAddDevice(path);
@@ -592,7 +592,7 @@ static int get_event_joystick_index(int event)
     struct dirent **entries = NULL;
     char path[PATH_MAX];
 
-    SDL_snprintf(path, SDL_arraysize(path), "/sys/class/input/event%d/device", event);
+    (void)SDL_snprintf(path, SDL_arraysize(path), "/sys/class/input/event%d/device", event);
     count = scandir(path, &entries, NULL, alphasort);
     for (i = 0; i < count; ++i) {
         if (SDL_strncmp(entries[i]->d_name, "js", 2) == 0) {
@@ -665,7 +665,7 @@ static void LINUX_FallbackJoystickDetect(void)
                 qsort(entries, count, sizeof(*entries), sort_entries);
             }
             for (i = 0; i < count; ++i) {
-                SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
+                (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
                 MaybeAddDevice(path);
 
                 free(entries[i]); /* This should NOT be SDL_free() */

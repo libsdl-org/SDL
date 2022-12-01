@@ -465,7 +465,7 @@ int SDL_ConvertPixels_YUV_to_RGB(int width, int height,
         void *tmp;
         int tmp_pitch = (width * sizeof(Uint32));
 
-        tmp = SDL_malloc(tmp_pitch * height);
+        tmp = SDL_malloc((size_t)tmp_pitch * height);
         if (tmp == NULL) {
             return SDL_OutOfMemory();
         }
@@ -846,7 +846,7 @@ int SDL_ConvertPixels_RGB_to_YUV(int width, int height,
         void *tmp;
         int tmp_pitch = (width * sizeof(Uint32));
 
-        tmp = SDL_malloc(tmp_pitch * height);
+        tmp = SDL_malloc((size_t)tmp_pitch * height);
         if (tmp == NULL) {
             return SDL_OutOfMemory();
         }
@@ -995,11 +995,11 @@ static int SDL_ConvertPixels_PackUVPlanes_to_NV(int width, int height, const voi
 
     if (src == dst) {
         /* Need to make a copy of the buffer so we don't clobber it while converting */
-        tmp = (Uint8 *)SDL_malloc(2 * UVheight * srcUVPitch);
+        tmp = (Uint8 *)SDL_malloc((size_t)2 * UVheight * srcUVPitch);
         if (tmp == NULL) {
             return SDL_OutOfMemory();
         }
-        SDL_memcpy(tmp, src, 2 * UVheight * srcUVPitch);
+        SDL_memcpy(tmp, src, (size_t)2 * UVheight * srcUVPitch);
         src = tmp;
     }
 
@@ -1068,11 +1068,11 @@ static int SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const vo
 
     if (src == dst) {
         /* Need to make a copy of the buffer so we don't clobber it while converting */
-        tmp = (Uint8 *)SDL_malloc(UVheight * srcUVPitch);
+        tmp = (Uint8 *)SDL_malloc((size_t)UVheight * srcUVPitch);
         if (tmp == NULL) {
             return SDL_OutOfMemory();
         }
-        SDL_memcpy(tmp, src, UVheight * srcUVPitch);
+        SDL_memcpy(tmp, src, (size_t)UVheight * srcUVPitch);
         src = tmp;
     }
 

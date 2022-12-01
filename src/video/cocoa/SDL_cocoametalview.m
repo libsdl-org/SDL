@@ -81,7 +81,8 @@ SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
                       highDPI:(BOOL)highDPI
                      windowID:(Uint32)windowID;
 {
-    if ((self = [super initWithFrame:frame])) {
+    self = [super initWithFrame:frame];
+    if (self != nil) {
         self.highDPI = highDPI;
         self.sdlWindowID = windowID;
         self.wantsLayer = YES;

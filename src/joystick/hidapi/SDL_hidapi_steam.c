@@ -244,7 +244,7 @@ static int WriteSegmentToSteamControllerPacketAssembler(SteamControllerPacketAss
         }
 
         if (nSegmentLength != MAX_REPORT_SEGMENT_SIZE) {
-            printf("Bad segment size! %d\n", (int)nSegmentLength);
+            printf("Bad segment size! %d\n", nSegmentLength);
             hexdump(pSegment, nSegmentLength);
             ResetSteamControllerPacketAssembler(pAssembler);
             return -1;
@@ -365,10 +365,11 @@ static int GetFeatureReport(SDL_hid_device *dev, unsigned char uBuffer[65])
             HEXDUMP(uSegmentBuffer, nRet);
 
             // Zero retry counter if we got data
-            if (nRet > 2 && (uSegmentBuffer[ucDataStartOffset + 1] & REPORT_SEGMENT_DATA_FLAG))
+            if (nRet > 2 && (uSegmentBuffer[ucDataStartOffset + 1] & REPORT_SEGMENT_DATA_FLAG)) {
                 nRetries = 0;
-            else
+            } else {
                 nRetries++;
+            }
 
             if (nRet > 0) {
                 int nPacketLength = WriteSegmentToSteamControllerPacketAssembler(&assembler,
@@ -752,19 +753,21 @@ static void FormatStatePacketUntilGyro(SteamControllerStateInternal_t *pState, V
     RotatePad(&nLeftPadX, &nLeftPadY, -flRotationAngle);
     RotatePad(&nRightPadX, &nRightPadY, flRotationAngle);
 
-    if (pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK)
+    if (pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) {
         nPadOffset = 1000;
-    else
+    } else {
         nPadOffset = 0;
+    }
 
     pState->sLeftPadX = clamp(nLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
     pState->sLeftPadY = clamp(nLeftPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
 
     nPadOffset = 0;
-    if (pState->ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK)
+    if (pState->ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK) {
         nPadOffset = 1000;
-    else
+    } else {
         nPadOffset = 0;
+    }
 
     pState->sRightPadX = clamp(nRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
     pState->sRightPadY = clamp(nRightPadY + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
@@ -811,10 +814,11 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
         int nLength = sizeof(pState->sLeftPadX) + sizeof(pState->sLeftPadY);
         int nPadOffset;
         SDL_memcpy(&pState->sLeftPadX, pData, nLength);
-        if (pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK)
+        if (pState->ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) {
             nPadOffset = 1000;
-        else
+        } else {
             nPadOffset = 0;
+        }
 
         RotatePadShort(&pState->sLeftPadX, &pState->sLeftPadY, -flRotationAngle);
         pState->sLeftPadX = clamp(pState->sLeftPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);
@@ -827,10 +831,11 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
 
         SDL_memcpy(&pState->sRightPadX, pData, nLength);
 
-        if (pState->ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK)
+        if (pState->ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK) {
             nPadOffset = 1000;
-        else
+        } else {
             nPadOffset = 0;
+        }
 
         RotatePadShort(&pState->sRightPadX, &pState->sRightPadY, flRotationAngle);
         pState->sRightPadX = clamp(pState->sRightPadX + nPadOffset, SDL_MIN_SINT16, SDL_MAX_SINT16);

@@ -208,7 +208,7 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
     const int paddinglen = ResamplerPadding(inrate, outrate);
     const int framelen = chans * (int)sizeof(float);
     const int inframes = inbuflen / framelen;
-    const int wantedoutframes = (int)((inbuflen / framelen) * ratio); /* outbuflen isn't total to write, it's total available. */
+    const int wantedoutframes = (int)(inframes * ratio); /* outbuflen isn't total to write, it's total available. */
     const int maxoutframes = outbuflen / framelen;
     const int outframes = SDL_min(wantedoutframes, maxoutframes);
     ResampleFloatType outtime = 0.0f;
@@ -233,7 +233,7 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
                 const int srcframe = srcindex - j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
                 const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
+                outsample += (insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
             }
 
             /* Do the right wing! */
@@ -242,7 +242,7 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
                 const int srcframe = srcindex + 1 + j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a post loop. */
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (float)(insample * (ResamplerFilter[filterindex2 + jsamples] + (interpolation2 * ResamplerFilterDifference[filterindex2 + jsamples])));
+                outsample += (insample * (ResamplerFilter[filterindex2 + jsamples] + (interpolation2 * ResamplerFilterDifference[filterindex2 + jsamples])));
             }
 
             *(dst++) = outsample;
@@ -316,7 +316,7 @@ static void SDLCALL SDL_Convert_Byteswap(SDL_AudioCVT *cvt, SDL_AudioFormat form
     }
 }
 
-static int SDL_AddAudioCVTFilter(SDL_AudioCVT *cvt, const SDL_AudioFilter filter)
+static int SDL_AddAudioCVTFilter(SDL_AudioCVT *cvt, SDL_AudioFilter filter)
 {
     if (cvt->filter_index >= SDL_AUDIOCVT_MAX_FILTERS) {
         return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS);
@@ -376,7 +376,8 @@ static int SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat
             cvt->len_mult *= mult;
             cvt->len_ratio *= mult;
         } else if (src_bitsize > dst_bitsize) {
-            cvt->len_ratio /= (src_bitsize / dst_bitsize);
+            const int div = (src_bitsize / dst_bitsize);
+            cvt->len_ratio /= div;
         }
 
         retval = 1; /* added a converter. */
@@ -674,8 +675,8 @@ static SDL_bool SDL_SupportedChannelCount(const int channels)
 */
 
 int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
-                      SDL_AudioFormat src_fmt, Uint8 src_channels, int src_rate,
-                      SDL_AudioFormat dst_fmt, Uint8 dst_channels, int dst_rate)
+                      SDL_AudioFormat src_format, Uint8 src_channels, int src_rate,
+                      SDL_AudioFormat dst_format, Uint8 dst_channels, int dst_rate)
 {
     SDL_AudioFilter channel_converter = NULL;
 
@@ -687,10 +688,10 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
     /* Make sure we zero out the audio conversion before error checking */
     SDL_zerop(cvt);
 
-    if (!SDL_SupportedAudioFormat(src_fmt)) {
+    if (!SDL_SupportedAudioFormat(src_format)) {
         return SDL_SetError("Invalid source format");
     }
-    if (!SDL_SupportedAudioFormat(dst_fmt)) {
+    if (!SDL_SupportedAudioFormat(dst_format)) {
         return SDL_SetError("Invalid destination format");
     }
     if (!SDL_SupportedChannelCount(src_channels)) {
@@ -714,12 +715,12 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
 
 #if DEBUG_CONVERT
     SDL_Log("SDL_AUDIO_CONVERT: Build format %04x->%04x, channels %u->%u, rate %d->%d\n",
-            src_fmt, dst_fmt, src_channels, dst_channels, src_rate, dst_rate);
+            src_format, dst_format, src_channels, dst_channels, src_rate, dst_rate);
 #endif
 
     /* Start off with no conversion necessary */
-    cvt->src_format = src_fmt;
-    cvt->dst_format = dst_fmt;
+    cvt->src_format = src_format;
+    cvt->dst_format = dst_format;
     cvt->needed = 0;
     cvt->filter_index = 0;
     SDL_zeroa(cvt->filters);
@@ -746,13 +747,13 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
 
     /* see if we can skip float conversion entirely. */
     if (src_rate == dst_rate && src_channels == dst_channels) {
-        if (src_fmt == dst_fmt) {
+        if (src_format == dst_format) {
             return 0;
         }
 
         /* just a byteswap needed? */
-        if ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN)) {
-            if (SDL_AUDIO_BITSIZE(dst_fmt) == 8) {
+        if ((src_format & ~SDL_AUDIO_MASK_ENDIAN) == (dst_format & ~SDL_AUDIO_MASK_ENDIAN)) {
+            if (SDL_AUDIO_BITSIZE(dst_format) == 8) {
                 return 0;
             }
             if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
@@ -764,7 +765,7 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
     }
 
     /* Convert data types, if necessary. Updates (cvt). */
-    if (SDL_BuildAudioTypeCVTToFloat(cvt, src_fmt) < 0) {
+    if (SDL_BuildAudioTypeCVTToFloat(cvt, src_format) < 0) {
         return -1; /* shouldn't happen, but just in case... */
     }
 
@@ -820,7 +821,7 @@ int SDL_BuildAudioCVT(SDL_AudioCVT *cvt,
     }
 
     /* Move to final data type. */
-    if (SDL_BuildAudioTypeCVTFromFloat(cvt, dst_fmt) < 0) {
+    if (SDL_BuildAudioTypeCVTFromFloat(cvt, dst_format) < 0) {
         return -1; /* shouldn't happen, but just in case... */
     }
 
@@ -862,7 +863,7 @@ struct _SDL_AudioStream
     SDL_CleanupAudioStreamResamplerFunc cleanup_resampler_func;
 };
 
-static Uint8 *EnsureStreamBufferSize(SDL_AudioStream *stream, const int newlen)
+static Uint8 *EnsureStreamBufferSize(SDL_AudioStream *stream, int newlen)
 {
     Uint8 *ptr;
     size_t offset;
@@ -870,7 +871,7 @@ static Uint8 *EnsureStreamBufferSize(SDL_AudioStream *stream, const int newlen)
     if (stream->work_buffer_len >= newlen) {
         ptr = stream->work_buffer_base;
     } else {
-        ptr = (Uint8 *)SDL_realloc(stream->work_buffer_base, newlen + 32);
+        ptr = (Uint8 *)SDL_realloc(stream->work_buffer_base, (size_t)newlen + 32);
         if (ptr == NULL) {
             SDL_OutOfMemory();
             return NULL;
@@ -1006,7 +1007,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
                    const Uint8 dst_channels,
                    const int dst_rate)
 {
-    const int packetlen = 4096; /* !!! FIXME: good enough for now. */
+    int packetlen = 4096; /* !!! FIXME: good enough for now. */
     Uint8 pre_resample_channels;
     SDL_AudioStream *retval;
 
@@ -1092,7 +1093,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
         }
     }
 
-    retval->queue = SDL_NewDataQueue(packetlen, packetlen * 2);
+    retval->queue = SDL_NewDataQueue(packetlen, (size_t)packetlen * 2);
     if (!retval->queue) {
         SDL_FreeAudioStream(retval);
         return NULL; /* SDL_NewDataQueue should have called SDL_SetError. */
@@ -1384,7 +1385,7 @@ void SDL_AudioStreamClear(SDL_AudioStream *stream)
     if (stream == NULL) {
         SDL_InvalidParamError("stream");
     } else {
-        SDL_ClearDataQueue(stream->queue, stream->packetlen * 2);
+        SDL_ClearDataQueue(stream->queue, (size_t)stream->packetlen * 2);
         if (stream->reset_resampler_func) {
             stream->reset_resampler_func(stream);
         }

@@ -152,7 +152,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
                         return SDL_SetError("Couldn't open pipe for reading: %s", strerror(errno));
                     }
                     tmp = fgets(output, output_len + 1, outputfp);
-                    fclose(outputfp);
+                    (void)fclose(outputfp);
 
                     if ((tmp == NULL) || (*tmp == '\0') || (*tmp == '\n')) {
                         SDL_free(output);

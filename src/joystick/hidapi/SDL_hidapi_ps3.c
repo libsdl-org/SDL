@@ -158,9 +158,9 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     /* Set the controller into report mode over USB */
     {
         Uint8 data[USB_PACKET_LENGTH];
-        int size;
 
-        if ((size = ReadFeatureReport(device->dev, 0xf2, data, 17)) < 0) {
+        int size = ReadFeatureReport(device->dev, 0xf2, data, 17);
+        if (size < 0) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf2");
             return SDL_FALSE;
@@ -168,7 +168,8 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 0xF2 packet: size = %d", data, size);
 #endif
-        if ((size = ReadFeatureReport(device->dev, 0xf5, data, 8)) < 0) {
+        size = ReadFeatureReport(device->dev, 0xf5, data, 8);
+        if (size < 0) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf5");
             return SDL_FALSE;
@@ -583,8 +584,8 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
 
     if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
         if (device && device->dev) {
-            if ((size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data))) == 8 &&
-                data[2] == 0x26) {
+            size = ReadFeatureReport(device->dev, 0x03, data, sizeof data);
+            if (size == 8 && data[2] == 0x26) {
                 /* Supported third party controller */
                 return SDL_TRUE;
             } else {

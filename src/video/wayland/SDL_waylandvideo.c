@@ -107,10 +107,9 @@ static char *get_classname()
     /* Next look at the application's executable name */
 #if defined(__LINUX__) || defined(__FREEBSD__)
 #if defined(__LINUX__)
-    SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
+    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
-    SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file",
-                 getpid());
+    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file", getpid());
 #else
 #error Where can we find the executable name?
 #endif
@@ -695,10 +694,10 @@ static void Wayland_add_display(SDL_VideoData *d, uint32_t id)
 
     /* Keep a list of outputs for deferred xdg-output initialization. */
     if (d->output_list != NULL) {
-        SDL_WaylandOutputData *node = (SDL_WaylandOutputData *)d->output_list;
+        SDL_WaylandOutputData *node = d->output_list;
 
         while (node->next != NULL) {
-            node = (SDL_WaylandOutputData *)node->next;
+            node = node->next;
         }
 
         node->next = (struct SDL_WaylandOutputData *)data;

@@ -519,7 +519,6 @@ static SDL_bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *device;
-    int device_index = 0;
     io_service_t ioservice;
 
     if (res != kIOReturnSuccess) {
@@ -570,12 +569,10 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
         recDevice *curdevice;
 
         curdevice = gpDeviceList;
-        while (curdevice->pNext) {
-            ++device_index;
+        while (curdevice->pNext != NULL) {
             curdevice = curdevice->pNext;
         }
         curdevice->pNext = device;
-        ++device_index; /* bump by one since we counted by pNext. */
     }
 
     SDL_PrivateJoystickAdded(device->instance_id);

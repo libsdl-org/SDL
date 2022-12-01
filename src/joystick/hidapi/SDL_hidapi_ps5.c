@@ -275,8 +275,8 @@ static SDL_bool HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
     if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
         if (device && device->dev) {
-            if ((size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
-                data[2] == 0x28) {
+            size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof data);
+            if (size == 48 && data[2] == 0x28) {
                 /* Supported third party controller */
                 return SDL_TRUE;
             } else {
@@ -400,8 +400,8 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
            This will also enable enhanced reports over Bluetooth
         */
         if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber, data, sizeof(data)) >= 7) {
-            SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                         data[6], data[5], data[4], data[3], data[2], data[1]);
+            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                               data[6], data[5], data[4], data[3], data[2], data[1]);
         }
 
         /* Read the firmware version
@@ -412,6 +412,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         }
     }
 
+    size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof data);
     /* Get the device capabilities */
     if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->sensors_supported = SDL_TRUE;
@@ -419,8 +420,7 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         ctx->vibration_supported = SDL_TRUE;
         ctx->playerled_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
-    } else if ((size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
-               data[2] == 0x28) {
+    } else if (size == 48 && data[2] == 0x28) {
         Uint8 capabilities = data[4];
         Uint8 capabilities2 = data[20];
         Uint8 device_type = data[5];

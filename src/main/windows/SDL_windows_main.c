@@ -64,7 +64,7 @@ static int main_getcmdline(void)
             return OutOfMemory();
         }
         len = (DWORD)SDL_strlen(arg);
-        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len + 1);
+        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (size_t)len + 1);
         if (!argv[i]) {
             return OutOfMemory();
         }
@@ -104,7 +104,7 @@ int console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 
 /* This is where execution begins [windowed apps] */
 int WINAPI
-WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
+WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw) /* NOLINT(readability-inconsistent-declaration-parameter-name) */
 {
     return main_getcmdline();
 }

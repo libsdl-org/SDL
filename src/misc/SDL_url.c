@@ -21,8 +21,6 @@
 
 #include "SDL_sysurl.h"
 
-extern int SDL_SYS_OpenURL(const char *url);
-
 int SDL_OpenURL(const char *url)
 {
     if (url == NULL) {

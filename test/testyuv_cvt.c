@@ -19,7 +19,7 @@ static float clip3(float x, float y, float z)
     return (z < x) ? x : ((z > y) ? y : z);
 }
 
-static void RGBtoYUV(Uint8 *rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+static void RGBtoYUV(const Uint8 *rgb, int *yuv, SDL_YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     if (mode == SDL_YUV_CONVERSION_JPEG) {
         /* Full range YUV */

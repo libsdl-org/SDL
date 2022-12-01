@@ -664,10 +664,10 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         dest->lpvTypeSpecificParams = constant;
 
         /* Generics */
-        dest->dwDuration = hap_constant->length * 1000; /* In microseconds. */
+        dest->dwDuration = hap_constant->length * 1000UL; /* In microseconds. */
         dest->dwTriggerButton = DIGetTriggerButton(hap_constant->button);
         dest->dwTriggerRepeatInterval = hap_constant->interval;
-        dest->dwStartDelay = hap_constant->delay * 1000; /* In microseconds. */
+        dest->dwStartDelay = hap_constant->delay * 1000UL; /* In microseconds. */
 
         /* Direction. */
         if (SDL_SYS_SetDirection(dest, &hap_constant->direction, dest->cAxes) < 0) {
@@ -680,9 +680,9 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
             dest->lpEnvelope = NULL;
         } else {
             envelope->dwAttackLevel = CCONVERT(hap_constant->attack_level);
-            envelope->dwAttackTime = hap_constant->attack_length * 1000;
+            envelope->dwAttackTime = hap_constant->attack_length * 1000UL;
             envelope->dwFadeLevel = CCONVERT(hap_constant->fade_level);
-            envelope->dwFadeTime = hap_constant->fade_length * 1000;
+            envelope->dwFadeTime = hap_constant->fade_length * 1000UL;
         }
 
         break;
@@ -710,10 +710,10 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         dest->lpvTypeSpecificParams = periodic;
 
         /* Generics */
-        dest->dwDuration = hap_periodic->length * 1000; /* In microseconds. */
+        dest->dwDuration = hap_periodic->length * 1000UL; /* In microseconds. */
         dest->dwTriggerButton = DIGetTriggerButton(hap_periodic->button);
         dest->dwTriggerRepeatInterval = hap_periodic->interval;
-        dest->dwStartDelay = hap_periodic->delay * 1000; /* In microseconds. */
+        dest->dwStartDelay = hap_periodic->delay * 1000UL; /* In microseconds. */
 
         /* Direction. */
         if (SDL_SYS_SetDirection(dest, &hap_periodic->direction, dest->cAxes) < 0) {
@@ -726,9 +726,9 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
             dest->lpEnvelope = NULL;
         } else {
             envelope->dwAttackLevel = CCONVERT(hap_periodic->attack_level);
-            envelope->dwAttackTime = hap_periodic->attack_length * 1000;
+            envelope->dwAttackTime = hap_periodic->attack_length * 1000UL;
             envelope->dwFadeLevel = CCONVERT(hap_periodic->fade_level);
-            envelope->dwFadeTime = hap_periodic->fade_length * 1000;
+            envelope->dwFadeTime = hap_periodic->fade_length * 1000UL;
         }
 
         break;
@@ -761,10 +761,10 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         dest->lpvTypeSpecificParams = condition;
 
         /* Generics */
-        dest->dwDuration = hap_condition->length * 1000; /* In microseconds. */
+        dest->dwDuration = hap_condition->length * 1000UL; /* In microseconds. */
         dest->dwTriggerButton = DIGetTriggerButton(hap_condition->button);
         dest->dwTriggerRepeatInterval = hap_condition->interval;
-        dest->dwStartDelay = hap_condition->delay * 1000; /* In microseconds. */
+        dest->dwStartDelay = hap_condition->delay * 1000UL; /* In microseconds. */
 
         /* Direction. */
         if (SDL_SYS_SetDirection(dest, &hap_condition->direction, dest->cAxes) < 0) {
@@ -792,10 +792,10 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         dest->lpvTypeSpecificParams = ramp;
 
         /* Generics */
-        dest->dwDuration = hap_ramp->length * 1000; /* In microseconds. */
+        dest->dwDuration = hap_ramp->length * 1000UL; /* In microseconds. */
         dest->dwTriggerButton = DIGetTriggerButton(hap_ramp->button);
         dest->dwTriggerRepeatInterval = hap_ramp->interval;
-        dest->dwStartDelay = hap_ramp->delay * 1000; /* In microseconds. */
+        dest->dwStartDelay = hap_ramp->delay * 1000UL; /* In microseconds. */
 
         /* Direction. */
         if (SDL_SYS_SetDirection(dest, &hap_ramp->direction, dest->cAxes) < 0) {
@@ -808,9 +808,9 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
             dest->lpEnvelope = NULL;
         } else {
             envelope->dwAttackLevel = CCONVERT(hap_ramp->attack_level);
-            envelope->dwAttackTime = hap_ramp->attack_length * 1000;
+            envelope->dwAttackTime = hap_ramp->attack_length * 1000UL;
             envelope->dwFadeLevel = CCONVERT(hap_ramp->fade_level);
-            envelope->dwFadeTime = hap_ramp->fade_length * 1000;
+            envelope->dwFadeTime = hap_ramp->fade_length * 1000UL;
         }
 
         break;
@@ -825,7 +825,7 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
 
         /* Specifics */
         custom->cChannels = hap_custom->channels;
-        custom->dwSamplePeriod = hap_custom->period * 1000;
+        custom->dwSamplePeriod = hap_custom->period * 1000UL;
         custom->cSamples = hap_custom->samples;
         custom->rglForceData =
             SDL_malloc(sizeof(LONG) * custom->cSamples * custom->cChannels);
@@ -836,10 +836,10 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
         dest->lpvTypeSpecificParams = custom;
 
         /* Generics */
-        dest->dwDuration = hap_custom->length * 1000; /* In microseconds. */
+        dest->dwDuration = hap_custom->length * 1000UL; /* In microseconds. */
         dest->dwTriggerButton = DIGetTriggerButton(hap_custom->button);
         dest->dwTriggerRepeatInterval = hap_custom->interval;
-        dest->dwStartDelay = hap_custom->delay * 1000; /* In microseconds. */
+        dest->dwStartDelay = hap_custom->delay * 1000UL; /* In microseconds. */
 
         /* Direction. */
         if (SDL_SYS_SetDirection(dest, &hap_custom->direction, dest->cAxes) < 0) {
@@ -852,9 +852,9 @@ static int SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
             dest->lpEnvelope = NULL;
         } else {
             envelope->dwAttackLevel = CCONVERT(hap_custom->attack_level);
-            envelope->dwAttackTime = hap_custom->attack_length * 1000;
+            envelope->dwAttackTime = hap_custom->attack_length * 1000UL;
             envelope->dwFadeLevel = CCONVERT(hap_custom->fade_level);
-            envelope->dwFadeTime = hap_custom->fade_length * 1000;
+            envelope->dwFadeTime = hap_custom->fade_length * 1000UL;
         }
 
         break;
@@ -893,6 +893,7 @@ static void SDL_SYS_HapticFreeDIEFFECT(DIEFFECT *effect, int type)
 /*
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
+/* NOLINTNEXTLINE(readability-const-return-type): Can't fix Windows' headers */
 static REFGUID SDL_SYS_HapticEffectType(SDL_HapticEffect *effect)
 {
     switch (effect->type) {
@@ -1088,7 +1089,7 @@ int SDL_DINPUT_HapticSetGain(SDL_Haptic *haptic, int gain)
     dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
     dipdw.diph.dwObj = 0;
     dipdw.diph.dwHow = DIPH_DEVICE;
-    dipdw.dwData = gain * 100; /* 0 to 10,000 */
+    dipdw.dwData = (DWORD)gain * 100; /* 0 to 10,000 */
 
     /* Try to set the autocenter. */
     ret = IDirectInputDevice8_SetProperty(haptic->hwdata->device,

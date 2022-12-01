@@ -67,10 +67,9 @@ static char *get_classname()
     /* Next look at the application's executable name */
 #if defined(__LINUX__) || defined(__FREEBSD__)
 #if defined(__LINUX__)
-    SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
+    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
 #elif defined(__FREEBSD__)
-    SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file",
-                 getpid());
+    (void)SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file", getpid());
 #else
 #error Where can we find the executable name?
 #endif

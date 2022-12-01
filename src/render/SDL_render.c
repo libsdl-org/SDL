@@ -1340,7 +1340,7 @@ SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access, int w, int 
         } else if (access == SDL_TEXTUREACCESS_STREAMING) {
             /* The pitch is 4 byte aligned */
             texture->pitch = (((w * SDL_BYTESPERPIXEL(format)) + 3) & ~3);
-            texture->pixels = SDL_calloc(1, texture->pitch * h);
+            texture->pixels = SDL_calloc(1, (size_t)texture->pitch * h);
             if (!texture->pixels) {
                 SDL_DestroyTexture(texture);
                 return NULL;
@@ -1687,7 +1687,7 @@ static int SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
     } else {
         /* Use a temporary buffer for updating */
         const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
-        const size_t alloclen = rect->h * temp_pitch;
+        const size_t alloclen = (size_t)rect->h * temp_pitch;
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (temp_pixels == NULL) {
@@ -1727,7 +1727,7 @@ static int SDL_UpdateTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
     } else {
         /* Use a temporary buffer for updating */
         const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
-        const size_t alloclen = rect->h * temp_pitch;
+        const size_t alloclen = (size_t)rect->h * temp_pitch;
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (temp_pixels == NULL) {
@@ -1821,7 +1821,7 @@ static int SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rect
     } else {
         /* Use a temporary buffer for updating */
         const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
-        const size_t alloclen = rect->h * temp_pitch;
+        const size_t alloclen = (size_t)rect->h * temp_pitch;
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (temp_pixels == NULL) {
@@ -1871,7 +1871,7 @@ static int SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
     } else {
         /* Use a temporary buffer for updating */
         const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
-        const size_t alloclen = rect->h * temp_pitch;
+        const size_t alloclen = (size_t)rect->h * temp_pitch;
         if (alloclen > 0) {
             void *temp_pixels = SDL_malloc(alloclen);
             if (temp_pixels == NULL) {
@@ -2313,9 +2313,9 @@ static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd
 
     if (renderer->integer_scale) {
         if (want_aspect > real_aspect) {
-            scale = (float)(w / renderer->logical_w);
+            scale = (float)(w) / renderer->logical_w;
         } else {
-            scale = (float)(h / renderer->logical_h);
+            scale = (float)(h) / renderer->logical_h;
         }
 
         if (scale < 1.0f) {
@@ -2452,10 +2452,12 @@ int SDL_RenderSetViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
         if (SDL_GetRendererOutputSize(renderer, &w, &h) < 0) {
             return -1;
         }
-        renderer->viewport.x = (double)0;
-        renderer->viewport.y = (double)0;
+        renderer->viewport.x = 0.0;
+        renderer->viewport.y = 0.0;
+        /* NOLINTBEGIN(clang-analyzer-core.uninitialized.Assign): SDL_GetRendererOutputSize cannot fail */
         renderer->viewport.w = (double)w;
         renderer->viewport.h = (double)h;
+        /* NOLINTEND(clang-analyzer-core.uninitialized.Assign) */
     }
     retval = QueueCmdSetViewport(renderer);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);

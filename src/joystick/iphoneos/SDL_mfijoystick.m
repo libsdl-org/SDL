@@ -1310,10 +1310,10 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 @end
 
 @interface SDL_RumbleContext : NSObject
-@property(nonatomic, strong) SDL_RumbleMotor *m_low_frequency_motor;
-@property(nonatomic, strong) SDL_RumbleMotor *m_high_frequency_motor;
-@property(nonatomic, strong) SDL_RumbleMotor *m_left_trigger_motor;
-@property(nonatomic, strong) SDL_RumbleMotor *m_right_trigger_motor;
+@property(nonatomic, strong) SDL_RumbleMotor *lowFrequencyMotor;
+@property(nonatomic, strong) SDL_RumbleMotor *highFrequencyMotor;
+@property(nonatomic, strong) SDL_RumbleMotor *leftTriggerMotor;
+@property(nonatomic, strong) SDL_RumbleMotor *rightTriggerMotor;
 @end
 
 @implementation SDL_RumbleContext
@@ -1326,10 +1326,10 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
               RightTriggerMotor:(SDL_RumbleMotor *)right_trigger_motor
 {
     self = [super init];
-    self.m_low_frequency_motor = low_frequency_motor;
-    self.m_high_frequency_motor = high_frequency_motor;
-    self.m_left_trigger_motor = left_trigger_motor;
-    self.m_right_trigger_motor = right_trigger_motor;
+    self.lowFrequencyMotor = low_frequency_motor;
+    self.highFrequencyMotor = high_frequency_motor;
+    self.leftTriggerMotor = left_trigger_motor;
+    self.rightTriggerMotor = right_trigger_motor;
     return self;
 }
 
@@ -1337,8 +1337,8 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
     int result = 0;
 
-    result += [self.m_low_frequency_motor setIntensity:((float)low_frequency_rumble / 65535.0f)];
-    result += [self.m_high_frequency_motor setIntensity:((float)high_frequency_rumble / 65535.0f)];
+    result += [self.lowFrequencyMotor setIntensity:((float)low_frequency_rumble / 65535.0f)];
+    result += [self.highFrequencyMotor setIntensity:((float)high_frequency_rumble / 65535.0f)];
     return ((result < 0) ? -1 : 0);
 }
 
@@ -1346,9 +1346,9 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 {
     int result = 0;
 
-    if (self.m_left_trigger_motor && self.m_right_trigger_motor) {
-        result += [self.m_left_trigger_motor setIntensity:((float)left_rumble / 65535.0f)];
-        result += [self.m_right_trigger_motor setIntensity:((float)right_rumble / 65535.0f)];
+    if (self.leftTriggerMotor && self.rightTriggerMotor) {
+        result += [self.leftTriggerMotor setIntensity:((float)left_rumble / 65535.0f)];
+        result += [self.rightTriggerMotor setIntensity:((float)right_rumble / 65535.0f)];
     } else {
         result = SDL_Unsupported();
     }
@@ -1357,8 +1357,8 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 - (void)cleanup
 {
-    [self.m_low_frequency_motor cleanup];
-    [self.m_high_frequency_motor cleanup];
+    [self.lowFrequencyMotor cleanup];
+    [self.highFrequencyMotor cleanup];
 }
 
 @end
@@ -1675,6 +1675,7 @@ SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 #endif
 
 #if defined(SDL_JOYSTICK_MFI) && defined(ENABLE_PHYSICAL_INPUT_PROFILE)
+/* NOLINTNEXTLINE(readability-non-const-parameter): getCString takes a non-const char* */
 static void GetAppleSFSymbolsNameForElement(GCControllerElement *element, char *name)
 {
     if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {

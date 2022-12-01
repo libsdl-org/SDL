@@ -48,7 +48,8 @@ void SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             // convert '-' to '_'...
             //  These are always full lang-COUNTRY, so we search from the back,
             //  so things like zh-Hant-CN find the right '-' to convert.
-            if ((ptr = SDL_strrchr(buf, '-')) != NULL) {
+            ptr = SDL_strrchr(buf, '-');
+            if (ptr != NULL) {
                 *ptr = '_';
             }
 

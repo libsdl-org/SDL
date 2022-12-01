@@ -321,9 +321,9 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     if (*org) {
-        SDL_snprintf(retval, len, "%s%s%s/%s/", envr, append, org, app);
+        (void)SDL_snprintf(retval, len, "%s%s%s/%s/", envr, append, org, app);
     } else {
-        SDL_snprintf(retval, len, "%s%s%s/", envr, append, app);
+        (void)SDL_snprintf(retval, len, "%s%s%s/", envr, append, app);
     }
 
     for (ptr = retval + 1; *ptr; ptr++) {

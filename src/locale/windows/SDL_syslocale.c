@@ -49,7 +49,7 @@ static void SDL_SYS_GetPreferredLocales_winxp(char *buf, size_t buflen)
     if (langrc == 0) {
         SDL_SetError("Couldn't obtain language info");
     } else {
-        SDL_snprintf(buf, buflen, "%s%s%s", lang, ctryrc ? "_" : "", ctryrc ? country : "");
+        (void)SDL_snprintf(buf, buflen, "%s%s%s", lang, ctryrc ? "_" : "", ctryrc ? country : "");
     }
 }
 

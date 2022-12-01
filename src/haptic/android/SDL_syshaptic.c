@@ -167,7 +167,6 @@ void SDL_SYS_HapticClose(SDL_Haptic *haptic)
 {
     ((SDL_hapticlist_item *)haptic->hwdata)->haptic = NULL;
     haptic->hwdata = NULL;
-    return;
 }
 
 void SDL_SYS_HapticQuit(void)
@@ -223,11 +222,9 @@ int SDL_SYS_HapticStopEffect(SDL_Haptic *haptic, struct haptic_effect *effect)
 
 void SDL_SYS_HapticDestroyEffect(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
-    return;
 }
 
-int SDL_SYS_HapticGetEffectStatus(SDL_Haptic *haptic,
-                                  struct haptic_effect *effect)
+int SDL_SYS_HapticGetEffectStatus(SDL_Haptic *haptic, struct haptic_effect *effect)
 {
     return 0;
 }

@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     }
 
     cvt.len = len;
-    cvt.buf = (Uint8 *)SDL_malloc(len * cvt.len_mult);
+    cvt.buf = (Uint8 *)SDL_malloc((size_t)len * cvt.len_mult);
     if (cvt.buf == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory.\n");
         SDL_FreeWAV(data);

@@ -36,7 +36,6 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
-static void IME_ClearComposition(SDL_VideoData *videodata);
 static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
@@ -259,9 +258,9 @@ void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
         cof.ptCurrentPos.x = videodata->ime_rect.x;
         cof.ptCurrentPos.y = videodata->ime_rect.y;
         cof.rcArea.left = videodata->ime_rect.x;
-        cof.rcArea.right = videodata->ime_rect.x + videodata->ime_rect.w;
+        cof.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
         cof.rcArea.top = videodata->ime_rect.y;
-        cof.rcArea.bottom = videodata->ime_rect.y + videodata->ime_rect.h;
+        cof.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
         ImmSetCompositionWindow(himc, &cof);
 
         caf.dwIndex = 0;
@@ -269,9 +268,9 @@ void WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
         caf.ptCurrentPos.x = videodata->ime_rect.x;
         caf.ptCurrentPos.y = videodata->ime_rect.y;
         caf.rcArea.left = videodata->ime_rect.x;
-        caf.rcArea.right = videodata->ime_rect.x + videodata->ime_rect.w;
+        caf.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
         caf.rcArea.top = videodata->ime_rect.y;
-        caf.rcArea.bottom = videodata->ime_rect.y + videodata->ime_rect.h;
+        caf.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
         ImmSetCandidateWindow(himc, &caf);
 
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
@@ -380,8 +379,9 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
 {
     HRESULT hResult = S_OK;
 
-    if (videodata->ime_initialized)
+    if (videodata->ime_initialized) {
         return;
+    }
 
     videodata->ime_hwnd_main = hwnd;
     if (SUCCEEDED(WIN_CoInitialize())) {
@@ -418,10 +418,11 @@ static void IME_Init(SDL_VideoData *videodata, HWND hwnd)
     videodata->ime_available = SDL_TRUE;
     IME_UpdateInputLocale(videodata);
     IME_SetupAPI(videodata);
-    if (WIN_ShouldShowNativeUI())
+    if (WIN_ShouldShowNativeUI()) {
         videodata->ime_uiless = SDL_FALSE;
-    else
+    } else {
         videodata->ime_uiless = UILess_SetupSinks(videodata);
+    }
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
 }
@@ -550,7 +551,7 @@ static void IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
                 break;
             }
 
-            p = *(LPBYTE *)((LPBYTE)p + 1 * 4 + 5 * 4);
+            p = *(LPBYTE *)(p + 1 * 4 + 5 * 4);
             if (!p) {
                 break;
             }
@@ -1014,8 +1015,9 @@ IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoD
         if (wParam == VK_PROCESSKEY) {
             videodata->ime_uicontext = 1;
             trap = SDL_TRUE;
-        } else
+        } else {
             videodata->ime_uicontext = 0;
+        }
         break;
     case WM_INPUTLANGCHANGE:
         IME_InputLangChanged(videodata);
@@ -1149,10 +1151,11 @@ static void UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUI
         if (idxlist) {
             pcandlist->lpVtbl->GetPageIndex(pcandlist, idxlist, pgcount, &pgcount);
             pgstart = idxlist[page];
-            if (page < pgcount - 1)
+            if (page < pgcount - 1) {
                 pgsize = SDL_min(count, idxlist[page + 1]) - pgstart;
-            else
+            } else {
                 pgsize = count - pgstart;
+            }
 
             SDL_free(idxlist);
         }
@@ -1444,7 +1447,7 @@ static void *StartDrawToBitmap(HDC hdc, HBITMAP *hhbm, int width, int height)
         SDL_zero(info);
         infoHeader->biSize = sizeof(BITMAPINFOHEADER);
         infoHeader->biWidth = width;
-        infoHeader->biHeight = -1 * SDL_abs(height);
+        infoHeader->biHeight = (LONG)-1 * SDL_abs(height);
         infoHeader->biPlanes = 1;
         infoHeader->biBitCount = 32;
         infoHeader->biCompression = BI_RGB;
@@ -1623,7 +1626,7 @@ static void IME_RenderCandidateList(SDL_VideoData *videodata, HDC hdc)
             (candcount * maxcandsize.cy);
     } else {
         size.cx =
-            (listborder * 2) +
+            (LONG)(listborder * 2) +
             (listpadding * 2) +
             ((candcount + 1) * candmargin) +
             (candcount * candborder * 2) +

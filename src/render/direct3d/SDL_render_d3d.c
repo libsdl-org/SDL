@@ -480,9 +480,9 @@ static int D3D_UpdateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *textur
     }
 
     d3drect.left = x;
-    d3drect.right = x + w;
+    d3drect.right = (LONG)x + w;
     d3drect.top = y;
-    d3drect.bottom = y + h;
+    d3drect.bottom = (LONG)y + h;
 
     result = IDirect3DTexture9_LockRect(texture->staging, 0, &locked, &d3drect, 0);
     if (FAILED(result)) {
@@ -493,7 +493,7 @@ static int D3D_UpdateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *textur
     dst = (Uint8 *)locked.pBits;
     length = w * SDL_BYTESPERPIXEL(texture->format);
     if (length == pitch && length == locked.Pitch) {
-        SDL_memcpy(dst, src, length * h);
+        SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > pitch) {
             length = pitch;
@@ -676,7 +676,7 @@ static int D3D_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             }
         }
         *pixels =
-            (void *)((Uint8 *)texturedata->pixels + rect->y * texturedata->pitch +
+            (void *)(texturedata->pixels + rect->y * texturedata->pitch +
                      rect->x * SDL_BYTESPERPIXEL(texture->format));
         *pitch = texturedata->pitch;
     } else
@@ -691,9 +691,9 @@ static int D3D_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
 
         d3drect.left = rect->x;
-        d3drect.right = rect->x + rect->w;
+        d3drect.right = (LONG)rect->x + rect->w;
         d3drect.top = rect->y;
-        d3drect.bottom = rect->y + rect->h;
+        d3drect.bottom = (LONG)rect->y + rect->h;
 
         result = IDirect3DTexture9_LockRect(texturedata->texture.staging, 0, &locked, &d3drect, 0);
         if (FAILED(result)) {
@@ -717,7 +717,7 @@ static void D3D_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (texturedata->yuv) {
         const SDL_Rect *rect = &texturedata->locked_rect;
         void *pixels =
-            (void *)((Uint8 *)texturedata->pixels + rect->y * texturedata->pitch +
+            (void *)(texturedata->pixels + rect->y * texturedata->pitch +
                      rect->x * SDL_BYTESPERPIXEL(texture->format));
         D3D_UpdateTexture(renderer, texture, rect, pixels, texturedata->pitch);
     } else
@@ -1086,10 +1086,10 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         const SDL_Rect *viewport = &data->drawstate.viewport;
         const SDL_Rect *rect = &data->drawstate.cliprect;
         RECT d3drect;
-        d3drect.left = viewport->x + rect->x;
-        d3drect.top = viewport->y + rect->y;
-        d3drect.right = viewport->x + rect->x + rect->w;
-        d3drect.bottom = viewport->y + rect->y + rect->h;
+        d3drect.left = (LONG)viewport->x + rect->x;
+        d3drect.top = (LONG)viewport->y + rect->y;
+        d3drect.right = (LONG)viewport->x + rect->x + rect->w;
+        d3drect.bottom = (LONG)viewport->y + rect->y + rect->h;
         IDirect3DDevice9_SetScissorRect(data->device, &d3drect);
         data->drawstate.cliprect_dirty = SDL_FALSE;
     }
@@ -1239,7 +1239,8 @@ static int D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             const Vertex *verts = (Vertex *)(((Uint8 *)vertices) + first);
 
             /* DirectX 9 has the same line rasterization semantics as GDI,
-               so we need to close the endpoint of the line with a second draw call. */
+               so we need to close the endpoint of the line with a second draw call.
+               NOLINTNEXTLINE(clang-analyzer-core.NullDereference): FIXME: Can verts truly not be NULL ? */
             const SDL_bool close_endpoint = ((count == 2) || (verts[0].x != verts[count - 1].x) || (verts[0].y != verts[count - 1].y));
 
             SetDrawState(data, cmd);
@@ -1326,9 +1327,9 @@ static int D3D_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
     }
 
     d3drect.left = rect->x;
-    d3drect.right = rect->x + rect->w;
+    d3drect.right = (LONG)rect->x + rect->w;
     d3drect.top = rect->y;
-    d3drect.bottom = rect->y + rect->h;
+    d3drect.bottom = (LONG)rect->y + rect->h;
 
     result = IDirect3DSurface9_LockRect(surface, &locked, &d3drect, D3DLOCK_READONLY);
     if (FAILED(result)) {

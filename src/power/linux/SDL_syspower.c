@@ -50,7 +50,7 @@ static int open_power_file(const char *base, const char *node, const char *key)
         return -1; /* oh well. */
     }
 
-    SDL_snprintf(path, pathlen, "%s/%s/%s", base, node, key);
+    (void)SDL_snprintf(path, pathlen, "%s/%s/%s", base, node, key);
     fd = open(path, O_RDONLY | O_CLOEXEC);
     SDL_stack_free(path);
     return fd;

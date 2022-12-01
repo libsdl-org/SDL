@@ -130,8 +130,8 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
     }
 
     /* Convert iteration number into a string */
-    SDL_memset(iterationString, 0, sizeof(iterationString));
-    SDL_snprintf(iterationString, sizeof(iterationString) - 1, "%d", iteration);
+    SDL_memset(iterationString, 0, sizeof iterationString);
+    (void)SDL_snprintf(iterationString, sizeof iterationString - 1, "%d", iteration);
 
     /* Combine the parameters into single string */
     runSeedLength = SDL_strlen(runSeed);
@@ -145,7 +145,7 @@ static Uint64 SDLTest_GenerateExecKey(const char *runSeed, const char *suiteName
         SDL_Error(SDL_ENOMEM);
         return 0;
     }
-    SDL_snprintf(buffer, entireStringLength, "%s%s%s%d", runSeed, suiteName, testName, iteration);
+    (void)SDL_snprintf(buffer, entireStringLength, "%s%s%s%d", runSeed, suiteName, testName, iteration);
 
     /* Hash string and use half of the digest as 64bit exec key */
     SDLTest_Md5Init(&md5Context);

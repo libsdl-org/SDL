@@ -228,7 +228,6 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
         joystick_hwdata *last;
 
         for (last = g_VJoys; last->next; last = last->next) {
-            continue;
         }
         last->next = hwdata;
     } else {

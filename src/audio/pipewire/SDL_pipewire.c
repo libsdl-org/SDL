@@ -144,11 +144,8 @@ static int pipewire_dlsym(const char *fn, void **addr)
 
 static int load_pipewire_library()
 {
-    if ((pipewire_handle = SDL_LoadObject(pipewire_library))) {
-        return 0;
-    }
-
-    return -1;
+    pipewire_handle = SDL_LoadObject(pipewire_library);
+    return pipewire_handle != NULL ? 0 : -1;
 }
 
 static void unload_pipewire_library()
@@ -966,7 +963,8 @@ static void output_callback(void *data)
     }
 
     /* See if a buffer is available */
-    if ((pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream)) == NULL) {
+    pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
+    if (pw_buf == NULL) {
         return;
     }
 
@@ -1035,8 +1033,8 @@ static void input_callback(void *data)
     }
 
     spa_buf = pw_buf->buffer;
-
-    if ((src = (Uint8 *)spa_buf->datas[0].data) == NULL) {
+    (src = (Uint8 *)spa_buf->datas[0].data);
+    if (src == NULL) {
         return;
     }
 
@@ -1179,7 +1177,9 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
         return SDL_SetError("Pipewire: Failed to set audio format parameters");
     }
 
-    if ((this->hidden = priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData))) == NULL) {
+    priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
+    this->hidden = priv;
+    if (priv == NULL) {
         return SDL_OutOfMemory();
     }
 
@@ -1191,7 +1191,7 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
         this->spec.size = this->spec.samples * priv->stride;
     }
 
-    SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)this->handle);
+    (void)SDL_snprintf(thread_name, sizeof(thread_name), "SDLAudio%c%ld", (iscapture) ? 'C' : 'P', (long)this->handle);
     priv->loop = PIPEWIRE_pw_thread_loop_new(thread_name, NULL);
     if (priv->loop == NULL) {
         return SDL_SetError("Pipewire: Failed to create stream loop (%i)", errno);
@@ -1234,7 +1234,8 @@ static int PIPEWIRE_OpenDevice(_THIS, const char *devname)
             const struct io_node *node;
 
             PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
-            if ((node = io_list_get_by_id(node_id))) {
+            node = io_list_get_by_id(node_id);
+            if (node != NULL) {
                 PIPEWIRE_pw_properties_set(props, PW_KEY_TARGET_OBJECT, node->path);
             }
             PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);

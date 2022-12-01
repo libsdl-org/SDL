@@ -102,17 +102,20 @@ static void build_device_list(int iscapture, addDevFn addfn, void *addfndata)
 
     result = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject,
                                             &devlist_address, 0, NULL, &size);
-    if (result != kAudioHardwareNoError)
+    if (result != kAudioHardwareNoError) {
         return;
+    }
 
     devs = (AudioDeviceID *)alloca(size);
-    if (devs == NULL)
+    if (devs == NULL) {
         return;
+    }
 
     result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
                                         &devlist_address, 0, NULL, &size, devs);
-    if (result != kAudioHardwareNoError)
+    if (result != kAudioHardwareNoError) {
         return;
+    }
 
     max = size / sizeof(AudioDeviceID);
     for (i = 0; i < max; i++) {
@@ -141,12 +144,14 @@ static void build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         };
 
         result = AudioObjectGetPropertyDataSize(dev, &addr, 0, NULL, &size);
-        if (result != noErr)
+        if (result != noErr) {
             continue;
+        }
 
         buflist = (AudioBufferList *)SDL_malloc(size);
-        if (buflist == NULL)
+        if (buflist == NULL) {
             continue;
+        }
 
         result = AudioObjectGetPropertyData(dev, &addr, 0, NULL,
                                             &size, buflist);
@@ -161,8 +166,9 @@ static void build_device_list(int iscapture, addDevFn addfn, void *addfndata)
 
         SDL_free(buflist);
 
-        if (spec.channels == 0)
+        if (spec.channels == 0) {
             continue;
+        }
 
         size = sizeof(sampleRate);
         result = AudioObjectGetPropertyData(dev, &freqaddr, 0, NULL, &size, &sampleRate);
@@ -172,8 +178,9 @@ static void build_device_list(int iscapture, addDevFn addfn, void *addfndata)
 
         size = sizeof(CFStringRef);
         result = AudioObjectGetPropertyData(dev, &nameaddr, 0, NULL, &size, &cfstr);
-        if (result != kAudioHardwareNoError)
+        if (result != kAudioHardwareNoError) {
             continue;
+        }
 
         len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
                                                 kCFStringEncodingUTF8);
@@ -540,8 +547,9 @@ static void outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBuffe
             if (SDL_AudioStreamAvailable(this->stream) > 0) {
                 int got;
                 UInt32 len = SDL_AudioStreamAvailable(this->stream);
-                if (len > remaining)
+                if (len > remaining) {
                     len = remaining;
+                }
                 got = SDL_AudioStreamGet(this->stream, ptr, len);
                 SDL_assert((got < 0) || (got == len));
                 if (got != len) {
@@ -985,7 +993,7 @@ static int audioqueue_thread(void *arg)
     }
 
     if (!this->iscapture) { /* Drain off any pending playback. */
-        const CFTimeInterval secs = (((this->spec.size / (SDL_AUDIO_BITSIZE(this->spec.format) / 8)) / this->spec.channels) / ((CFTimeInterval)this->spec.freq)) * 2.0;
+        const CFTimeInterval secs = (((this->spec.size / (SDL_AUDIO_BITSIZE(this->spec.format) / 8.0)) / this->spec.channels) / ((CFTimeInterval)this->spec.freq)) * 2.0;
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, secs, 0);
     }
 
@@ -1084,13 +1092,15 @@ static int COREAUDIO_OpenDevice(_THIS, const char *devname)
     }
     this->spec.format = test_format;
     strdesc->mBitsPerChannel = SDL_AUDIO_BITSIZE(test_format);
-    if (SDL_AUDIO_ISBIGENDIAN(test_format))
+    if (SDL_AUDIO_ISBIGENDIAN(test_format)) {
         strdesc->mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+    }
 
-    if (SDL_AUDIO_ISFLOAT(test_format))
+    if (SDL_AUDIO_ISFLOAT(test_format)) {
         strdesc->mFormatFlags |= kLinearPCMFormatFlagIsFloat;
-    else if (SDL_AUDIO_ISSIGNED(test_format))
+    } else if (SDL_AUDIO_ISSIGNED(test_format)) {
         strdesc->mFormatFlags |= kLinearPCMFormatFlagIsSignedInteger;
+    }
 
     strdesc->mBytesPerFrame = strdesc->mChannelsPerFrame * strdesc->mBitsPerChannel / 8;
     strdesc->mBytesPerPacket = strdesc->mBytesPerFrame * strdesc->mFramesPerPacket;
@@ -1230,12 +1240,14 @@ static int COREAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int i
     spec->freq = (int)sampleRate;
 
     result = AudioObjectGetPropertyDataSize(devid, &bufaddr, 0, NULL, &size);
-    if (result != noErr)
+    if (result != noErr) {
         return SDL_SetError("%s: Default Device Data Size not found", "coreaudio");
+    }
 
     buflist = (AudioBufferList *)SDL_malloc(size);
-    if (buflist == NULL)
+    if (buflist == NULL) {
         return SDL_SetError("%s: Default Device Buffer List not found", "coreaudio");
+    }
 
     result = AudioObjectGetPropertyData(devid, &bufaddr, 0, NULL,
                                         &size, buflist);

@@ -1457,18 +1457,22 @@ SDL_CalculateBlitA(SDL_Surface *surface)
                 if (surface->map->identity) {
                     if (df->Gmask == 0x7e0) {
 #ifdef __MMX__
-                        if (SDL_HasMMX())
+                        if (SDL_HasMMX()) {
                             return Blit565to565SurfaceAlphaMMX;
-                        else
+                        } else
 #endif
+                        {
                             return Blit565to565SurfaceAlpha;
+                        }
                     } else if (df->Gmask == 0x3e0) {
 #ifdef __MMX__
-                        if (SDL_HasMMX())
+                        if (SDL_HasMMX()) {
                             return Blit555to555SurfaceAlphaMMX;
-                        else
+                        } else
 #endif
+                        {
                             return Blit555to555SurfaceAlpha;
+                        }
                     }
                 }
                 return BlitNtoNSurfaceAlpha;

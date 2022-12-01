@@ -52,7 +52,7 @@ void SDLTest_Assert(int assertCondition, SDL_PRINTF_FORMAT_STRING const char *as
     /* Print assert description into a buffer */
     SDL_memset(logMessage, 0, SDLTEST_MAX_LOGMESSAGE_LENGTH);
     va_start(list, assertDescription);
-    SDL_vsnprintf(logMessage, SDLTEST_MAX_LOGMESSAGE_LENGTH - 1, assertDescription, list);
+    (void)SDL_vsnprintf(logMessage, SDLTEST_MAX_LOGMESSAGE_LENGTH - 1, assertDescription, list);
     va_end(list);
 
     /* Log, then assert and break on failure */
@@ -70,7 +70,7 @@ int SDLTest_AssertCheck(int assertCondition, SDL_PRINTF_FORMAT_STRING const char
     /* Print assert description into a buffer */
     SDL_memset(logMessage, 0, SDLTEST_MAX_LOGMESSAGE_LENGTH);
     va_start(list, assertDescription);
-    SDL_vsnprintf(logMessage, SDLTEST_MAX_LOGMESSAGE_LENGTH - 1, assertDescription, list);
+    (void)SDL_vsnprintf(logMessage, SDLTEST_MAX_LOGMESSAGE_LENGTH - 1, assertDescription, list);
     va_end(list);
 
     /* Log pass or fail message */
@@ -96,7 +96,7 @@ void SDLTest_AssertPass(SDL_PRINTF_FORMAT_STRING const char *assertDescription, 
     /* Print assert description into a buffer */
     SDL_memset(logMessage, 0, SDLTEST_MAX_LOGMESSAGE_LENGTH);
     va_start(list, assertDescription);
-    SDL_vsnprintf(logMessage, SDLTEST_MAX_LOGMESSAGE_LENGTH - 1, assertDescription, list);
+    (void)SDL_vsnprintf(logMessage, SDLTEST_MAX_LOGMESSAGE_LENGTH - 1, assertDescription, list);
     va_end(list);
 
     /* Log pass message */

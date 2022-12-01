@@ -240,7 +240,7 @@ static int X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
 
     /* Go over text and break linefeeds into separate lines. */
-    if (messageboxdata->message[0]) {
+    if (messageboxdata != NULL && messageboxdata->message[0]) {
         const char *text = messageboxdata->message;
         const int linecount = CountLinesOfText(text);
         TextLineData *plinedata = (TextLineData *)SDL_malloc(sizeof(TextLineData) * linecount);
@@ -588,6 +588,7 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx)
 #endif
 }
 
+/* NOLINTNEXTLINE(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 static Bool X11_MessageBoxEventTest(Display *display, XEvent *event, XPointer arg)
 {
     const SDL_MessageBoxDataX11 *data = (const SDL_MessageBoxDataX11 *)arg;
@@ -766,7 +767,7 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
         if (origlocale == NULL) {
             return SDL_OutOfMemory();
         }
-        setlocale(LC_ALL, "");
+        (void)setlocale(LC_ALL, "");
     }
 #endif
 
@@ -792,7 +793,7 @@ static int X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int 
 
 #if SDL_SET_LOCALE
     if (origlocale) {
-        setlocale(LC_ALL, origlocale);
+        (void)setlocale(LC_ALL, origlocale);
         SDL_free(origlocale);
     }
 #endif

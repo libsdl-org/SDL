@@ -39,9 +39,9 @@ void RWopsSetUp(void *arg)
     int result;
 
     /* Clean up from previous runs (if any); ignore errors */
-    remove(RWopsReadTestFilename);
-    remove(RWopsWriteTestFilename);
-    remove(RWopsAlphabetFilename);
+    (void)remove(RWopsReadTestFilename);
+    (void)remove(RWopsWriteTestFilename);
+    (void)remove(RWopsAlphabetFilename);
 
     /* Create a test file */
     handle = fopen(RWopsReadTestFilename, "w");
@@ -81,7 +81,7 @@ void RWopsTearDown(void *arg)
     /* Remove the created files to clean up; ignore errors for write filename */
     result = remove(RWopsReadTestFilename);
     SDLTest_AssertCheck(result == 0, "Verify result from remove(%s), expected 0, got %i", RWopsReadTestFilename, result);
-    remove(RWopsWriteTestFilename);
+    (void)remove(RWopsWriteTestFilename);
     result = remove(RWopsAlphabetFilename);
     SDLTest_AssertCheck(result == 0, "Verify result from remove(%s), expected 0, got %i", RWopsAlphabetFilename, result);
 
@@ -198,7 +198,7 @@ int rwops_testParamNegative(void)
     SDLTest_AssertPass("Call to SDL_RWFromFile(\"something\", NULL) succeeded");
     SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromFile(\"something\", NULL) returns NULL");
 
-    rwops = SDL_RWFromMem((void *)NULL, 10);
+    rwops = SDL_RWFromMem(NULL, 10);
     SDLTest_AssertPass("Call to SDL_RWFromMem(NULL, 10) succeeded");
     SDLTest_AssertCheck(rwops == NULL, "Verify SDL_RWFromMem(NULL, 10) returns NULL");
 

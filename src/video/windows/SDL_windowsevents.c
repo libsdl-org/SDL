@@ -882,8 +882,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     data->last_raw_mouse_position.x = x;
                     data->last_raw_mouse_position.y = y;
                 }
-                relX = (int)(x - data->last_raw_mouse_position.x);
-                relY = (int)(y - data->last_raw_mouse_position.y);
+                relX = x - data->last_raw_mouse_position.x;
+                relY = y - data->last_raw_mouse_position.y;
 
                 if (remote_desktop) {
                     if (!data->in_title_click && !data->focus_click_pending) {
@@ -938,10 +938,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         short amount = GET_WHEEL_DELTA_WPARAM(wParam);
         float fAmount = (float)amount / WHEEL_DELTA;
-        if (msg == WM_MOUSEWHEEL)
+        if (msg == WM_MOUSEWHEEL) {
             SDL_SendMouseWheel(data->window, 0, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
-        else
+        } else {
             SDL_SendMouseWheel(data->window, 0, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+        }
     } break;
 
     case WM_MOUSELEAVE:
@@ -1172,11 +1173,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 info->ptMaxPosition.x = SDL_min(0, ((screenW - w) / 2));
                 info->ptMaxPosition.y = SDL_min(0, ((screenH - h) / 2));
             }
-            info->ptMinTrackSize.x = w + min_w;
-            info->ptMinTrackSize.y = h + min_h;
+            info->ptMinTrackSize.x = (LONG)w + min_w;
+            info->ptMinTrackSize.y = (LONG)h + min_h;
             if (constrain_max_size) {
-                info->ptMaxTrackSize.x = w + max_w;
-                info->ptMaxTrackSize.y = h + max_h;
+                info->ptMaxTrackSize.x = (LONG)w + max_w;
+                info->ptMaxTrackSize.y = (LONG)h + max_h;
             }
         } else {
             info->ptMaxSize.x = w;

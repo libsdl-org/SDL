@@ -333,7 +333,7 @@ int SDL_FillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
             if (r->x == 0 && r->y == 0 && r->w == dst->w && r->h == dst->h) {
                 if (dst->format->BitsPerPixel == 4) {
                     Uint8 b = (((Uint8)color << 4) | (Uint8)color);
-                    SDL_memset(dst->pixels, b, dst->h * dst->pitch);
+                    SDL_memset(dst->pixels, b, (size_t)dst->h * dst->pitch);
                     return 1;
                 }
             }

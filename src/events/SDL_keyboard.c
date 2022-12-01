@@ -1154,10 +1154,11 @@ SDL_GetScancodeName(SDL_Scancode scancode)
     }
 
     name = SDL_scancode_names[scancode];
-    if (name)
+    if (name != NULL) {
         return name;
-    else
-        return "";
+    }
+
+    return "";
 }
 
 SDL_Scancode SDL_GetScancodeFromName(const char *name)

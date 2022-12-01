@@ -67,11 +67,9 @@ int main(int argc, char *argv[])
             SDL_Log("Found %s in %s at %p\n", symname, libname, fn);
             if (hello) {
                 SDL_Log("Calling function...\n");
-                fflush(stdout);
                 fn("     HELLO, WORLD!\n");
                 SDL_Log("...apparently, we survived.  :)\n");
                 SDL_Log("Unloading library...\n");
-                fflush(stdout);
             }
         }
         SDL_UnloadObject(lib);

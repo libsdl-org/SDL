@@ -730,8 +730,8 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
     /* Don't take devices handled by HIDAPI */
     CHECK(!HIDAPI_IsDevicePresent((Uint16)rdi.hid.dwVendorId, (Uint16)rdi.hid.dwProductId, (Uint16)rdi.hid.dwVersionNumber, ""));
 #endif
-
-    CHECK(device = (SDL_RAWINPUT_Device *)SDL_calloc(1, sizeof(SDL_RAWINPUT_Device)));
+    device = (SDL_RAWINPUT_Device *)SDL_calloc(1, sizeof(SDL_RAWINPUT_Device));
+    CHECK(device);
     device->hDevice = hDevice;
     device->vendor_id = (Uint16)rdi.hid.dwVendorId;
     device->product_id = (Uint16)rdi.hid.dwProductId;
@@ -742,7 +742,8 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
     /* Get HID Top-Level Collection Preparsed Data */
     size = 0;
     CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_PREPARSEDDATA, NULL, &size) != (UINT)-1);
-    CHECK(device->preparsed_data = (PHIDP_PREPARSED_DATA)SDL_calloc(size, sizeof(BYTE)));
+    device->preparsed_data = (PHIDP_PREPARSED_DATA)SDL_calloc(size, sizeof(BYTE));
+    CHECK(device->preparsed_data);
     CHECK(GetRawInputDeviceInfoA(hDevice, RIDI_PREPARSEDDATA, device->preparsed_data, &size) != (UINT)-1);
 
     hFile = CreateFileA(dev_name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
@@ -786,7 +787,6 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
     /* Add it to the list */
     RAWINPUT_AcquireDevice(device);
     for (curr = SDL_RAWINPUT_devices, last = NULL; curr; last = curr, curr = curr->next) {
-        continue;
     }
     if (last) {
         last->next = device;

@@ -126,13 +126,13 @@ int main(int argc, char *argv[])
     SDL_Log("Main thread data finally: %s\n", (const char *)SDL_TLSGet(tls));
 
     alive = 1;
-    signal(SIGTERM, killed);
+    (void)signal(SIGTERM, killed);
     thread = SDL_CreateThread(ThreadFunc, "Two", "#2");
     if (thread == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }
-    raise(SIGTERM);
+    (void)raise(SIGTERM);
 
     SDL_Quit(); /* Never reached */
     return 0;   /* Never reached */

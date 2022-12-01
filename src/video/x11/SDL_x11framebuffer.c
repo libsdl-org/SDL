@@ -30,13 +30,14 @@
 /* Shared memory error handler routine */
 static int shm_error;
 static int (*X_handler)(Display *, XErrorEvent *) = NULL;
-static int shm_errhandler(Display *d, XErrorEvent *e)
+static int
+shm_errhandler(Display *d, XErrorEvent *e)
 {
     if (e->error_code == BadAccess) {
         shm_error = True;
         return 0;
-    } else
-        return X_handler(d, e);
+    }
+    return X_handler(d, e);
 }
 
 static SDL_bool have_mitshm(Display *dpy)
@@ -83,7 +84,7 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     if (have_mitshm(display)) {
         XShmSegmentInfo *shminfo = &data->shminfo;
 
-        shminfo->shmid = shmget(IPC_PRIVATE, window->h * (*pitch), IPC_CREAT | 0777);
+        shminfo->shmid = shmget(IPC_PRIVATE, (size_t)window->h * (*pitch), IPC_CREAT | 0777);
         if (shminfo->shmid >= 0) {
             shminfo->shmaddr = (char *)shmat(shminfo->shmid, 0, 0);
             shminfo->readOnly = False;
@@ -123,7 +124,7 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
     }
 #endif /* not NO_SHARED_MEMORY */
 
-    *pixels = SDL_malloc(window->h * (*pitch));
+    *pixels = SDL_malloc((size_t)window->h * (*pitch));
     if (*pixels == NULL) {
         return SDL_OutOfMemory();
     }

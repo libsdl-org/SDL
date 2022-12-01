@@ -100,13 +100,13 @@ int main(int argc, char *argv[])
 #if HAVE_SIGNAL_H
     /* Set the signals */
 #ifdef SIGHUP
-    signal(SIGHUP, poked);
+    (void)signal(SIGHUP, poked);
 #endif
-    signal(SIGINT, poked);
+    (void)signal(SIGINT, poked);
 #ifdef SIGQUIT
-    signal(SIGQUIT, poked);
+    (void)signal(SIGQUIT, poked);
 #endif
-    signal(SIGTERM, poked);
+    (void)signal(SIGTERM, poked);
 #endif /* HAVE_SIGNAL_H */
 
     /* Initialize fillerup() variables */

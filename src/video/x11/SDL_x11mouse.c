@@ -98,7 +98,7 @@ static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y
 
     SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
     SDL_assert(surface->pitch == surface->w * 4);
-    SDL_memcpy(image->pixels, surface->pixels, surface->h * surface->pitch);
+    SDL_memcpy(image->pixels, surface->pixels, (size_t)surface->h * surface->pitch);
 
     cursor = X11_XcursorImageLoadCursor(display, image);
 
@@ -118,7 +118,7 @@ static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
     Pixmap data_pixmap, mask_pixmap;
     int x, y;
     unsigned int rfg, gfg, bfg, rbg, gbg, bbg, fgBits, bgBits;
-    unsigned int width_bytes = ((surface->w + 7) & ~7) / 8;
+    size_t width_bytes = ((surface->w + 7) & ~((size_t)7)) / 8;
 
     data_bits = SDL_calloc(1, surface->h * width_bytes);
     if (data_bits == NULL) {
@@ -168,15 +168,17 @@ static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
         fg.red = rfg * 257 / fgBits;
         fg.green = gfg * 257 / fgBits;
         fg.blue = bfg * 257 / fgBits;
-    } else
+    } else {
         fg.red = fg.green = fg.blue = 0;
+    }
 
     if (bgBits) {
         bg.red = rbg * 257 / bgBits;
         bg.green = gbg * 257 / bgBits;
         bg.blue = bbg * 257 / bgBits;
-    } else
+    } else {
         bg.red = bg.green = bg.blue = 0;
+    }
 
     data_pixmap = X11_XCreateBitmapFromData(display, DefaultRootWindow(display),
                                             (char *)data_bits,

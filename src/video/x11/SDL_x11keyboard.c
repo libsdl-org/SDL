@@ -85,7 +85,8 @@ X11_KeyCodeToSym(_THIS, KeyCode keycode, unsigned char group)
             int action = XkbOutOfRangeGroupAction(info);
 
             if (action == XkbRedirectIntoRange) {
-                if ((group = XkbOutOfRangeGroupNumber(info)) >= num_groups) {
+                group = XkbOutOfRangeGroupNumber(info);
+                if (group >= num_groups) {
                     group = 0;
                 }
             } else if (action == XkbClampIntoRange) {
@@ -176,14 +177,14 @@ int X11_InitKeyboard(_THIS)
             new_xmods = "@im=none";
         }
 
-        setlocale(LC_ALL, "");
+        (void)setlocale(LC_ALL, "");
         X11_XSetLocaleModifiers(new_xmods);
 
         data->im = X11_XOpenIM(data->display, NULL, data->classname, data->classname);
 
         /* Reset the locale + X locale modifiers back to how they were,
            locale first because the X locale modifiers depend on it. */
-        setlocale(LC_ALL, prev_locale);
+        (void)setlocale(LC_ALL, prev_locale);
         X11_XSetLocaleModifiers(prev_xmods);
 
         if (prev_locale) {
@@ -451,9 +452,9 @@ void X11_ShowScreenKeyboard(_THIS, SDL_Window *window)
          * https://partner.steamgames.com/doc/api/ISteamUtils#ShowFloatingGamepadTextInput
          */
         char deeplink[128];
-        SDL_snprintf(deeplink, sizeof(deeplink),
-                     "steam://open/keyboard?XPosition=0&YPosition=0&Width=0&Height=0&Mode=%d",
-                     SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
+        (void)SDL_snprintf(deeplink, sizeof deeplink,
+                           "steam://open/keyboard?XPosition=0&YPosition=0&Width=0&Height=0&Mode=%d",
+                           SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
         SDL_OpenURL(deeplink);
         videodata->steam_keyboard_open = SDL_TRUE;
     }

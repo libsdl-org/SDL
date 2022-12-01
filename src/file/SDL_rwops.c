@@ -722,7 +722,7 @@ void SDL_FreeRW(SDL_RWops *area)
 void *
 SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 {
-    const int FILE_CHUNK_SIZE = 1024;
+    static const Sint64 FILE_CHUNK_SIZE = 1024;
     Sint64 size;
     size_t size_read, size_total;
     void *data = NULL, *newdata;

@@ -81,7 +81,7 @@ int WIN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void 
     *pitch = (((window->w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
     info->bmiHeader.biWidth = window->w;
     info->bmiHeader.biHeight = -window->h; /* negative for topdown bitmap */
-    info->bmiHeader.biSizeImage = window->h * (*pitch);
+    info->bmiHeader.biSizeImage = (DWORD)window->h * (*pitch);
 
     data->mdc = CreateCompatibleDC(data->hdc);
     data->hbm = CreateDIBSection(data->hdc, info, DIB_RGB_COLORS, pixels, NULL, 0);

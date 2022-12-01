@@ -472,7 +472,7 @@ static SDL_bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_Shader
     ctx->glUseProgramObjectARB(data->program);
     for (i = 0; i < num_tmus_bound; ++i) {
         char tex_name[10];
-        SDL_snprintf(tex_name, SDL_arraysize(tex_name), "tex%d", i);
+        (void)SDL_snprintf(tex_name, SDL_arraysize(tex_name), "tex%d", i);
         location = ctx->glGetUniformLocationARB(data->program, tex_name);
         if (location >= 0) {
             ctx->glUniform1iARB(location, i);

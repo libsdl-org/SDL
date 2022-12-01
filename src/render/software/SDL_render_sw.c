@@ -142,7 +142,7 @@ static int SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     dst = (Uint8 *)surface->pixels +
           rect->y * surface->pitch +
           rect->x * surface->format->BytesPerPixel;
-    length = rect->w * surface->format->BytesPerPixel;
+    length = (size_t)rect->w * surface->format->BytesPerPixel;
     for (row = 0; row < rect->h; ++row) {
         SDL_memcpy(dst, src, length);
         src += pitch;
@@ -538,9 +538,9 @@ static int SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
     int i;
     int count = indices ? num_indices : num_vertices;
     void *verts;
-    int sz = texture ? sizeof(GeometryCopyData) : sizeof(GeometryFillData);
+    size_t sz = texture != NULL ? sizeof(GeometryCopyData) : sizeof(GeometryFillData);
 
-    verts = (void *)SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
+    verts = SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
     if (verts == NULL) {
         return -1;
     }
@@ -641,7 +641,7 @@ static void SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
     if (drawstate->surface_cliprect_dirty) {
         const SDL_Rect *viewport = drawstate->viewport;
         const SDL_Rect *cliprect = drawstate->cliprect;
-        SDL_assert(viewport != NULL); /* the higher level should have forced a SDL_RENDERCMD_SETVIEWPORT */
+        SDL_assert_release(viewport != NULL); /* the higher level should have forced a SDL_RENDERCMD_SETVIEWPORT */
 
         if (cliprect != NULL) {
             SDL_Rect clip_rect;

@@ -383,7 +383,7 @@ int stdlib_sscanf(void *arg)
     SIZED_TEST_CASE(long long, long_long, "%lld")
 
     size_output = 123;
-    expected_size_output = (size_t)~0;
+    expected_size_output = ~((size_t)0);
     expected_result = 1;
     result = SDL_snprintf(text, sizeof(text), "%zu", expected_size_output);
     result = SDL_sscanf(text, "%zu", &size_output);

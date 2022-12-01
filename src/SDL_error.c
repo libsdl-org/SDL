@@ -46,7 +46,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
                 error->str = str;
                 error->len = len;
                 va_start(ap, fmt);
-                SDL_vsnprintf(error->str, error->len, fmt, ap);
+                (void)SDL_vsnprintf(error->str, error->len, fmt, ap);
                 va_end(ap);
             }
         }

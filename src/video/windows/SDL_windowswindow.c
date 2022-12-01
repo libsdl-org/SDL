@@ -174,17 +174,19 @@ static void WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL 
 
             screen_rect.left = *x;
             screen_rect.top = *y;
-            screen_rect.right = *x + *width;
-            screen_rect.bottom = *y + *height;
+            screen_rect.right = (LONG)*x + *width;
+            screen_rect.bottom = (LONG)*y + *height;
 
             mon = MonitorFromRect(&screen_rect, MONITOR_DEFAULTTONEAREST);
 
-            /* GetDpiForMonitor docs promise to return the same hdpi / vdpi */
-            if (videodata->GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &frame_dpi, &unused) != S_OK) {
-                frame_dpi = 96;
-            }
+            if (videodata != NULL) {
+                /* GetDpiForMonitor docs promise to return the same hdpi / vdpi */
+                if (videodata->GetDpiForMonitor(mon, MDT_EFFECTIVE_DPI, &frame_dpi, &unused) != S_OK) {
+                    frame_dpi = 96;
+                }
 
-            videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, frame_dpi);
+                videodata->AdjustWindowRectExForDpi(&rect, style, menu, 0, frame_dpi);
+            }
         } else {
             AdjustWindowRectEx(&rect, style, menu, 0);
         }
@@ -600,7 +602,7 @@ int WIN_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
                the window to share a pixel format with
             */
             SDL_Window *otherWindow = NULL;
-            SDL_sscanf(hint, "%p", (void **)&otherWindow);
+            (void)SDL_sscanf(hint, "%p", (void **)&otherWindow);
 
             /* Do some error checking on the pointer */
             if (otherWindow != NULL && otherWindow->magic == &_this->window_magic) {
@@ -1373,7 +1375,7 @@ int WIN_SetWindowOpacity(_THIS, SDL_Window *window, float opacity)
     return -1;
 #else
     const SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    const HWND hwnd = data->hwnd;
+    HWND hwnd = data->hwnd;
     const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
     SDL_assert(style != 0);

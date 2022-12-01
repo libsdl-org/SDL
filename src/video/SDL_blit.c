@@ -137,7 +137,7 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int
 
         /* Allow an override for testing .. */
         if (override) {
-            SDL_sscanf(override, "%u", &features);
+            (void)SDL_sscanf(override, "%u", &features);
         } else {
             if (SDL_HasMMX()) {
                 features |= SDL_CPU_MMX;

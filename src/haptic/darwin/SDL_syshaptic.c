@@ -1204,8 +1204,9 @@ int SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
     /* Check if it's infinite. */
     if (iterations == SDL_HAPTIC_INFINITY) {
         iter = FF_INFINITE;
-    } else
+    } else {
         iter = iterations;
+    }
 
     /* Run the effect. */
     ret = FFEffectStart(effect->hweffect->ref, iter, 0);

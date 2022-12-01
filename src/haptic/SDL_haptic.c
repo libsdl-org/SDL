@@ -240,12 +240,13 @@ int SDL_JoystickIsHaptic(SDL_Joystick *joystick)
 
     ret = SDL_SYS_JoystickIsHaptic(joystick);
 
-    if (ret > 0)
+    if (ret > 0) {
         return SDL_TRUE;
-    else if (ret == 0)
+    } else if (ret == 0) {
         return SDL_FALSE;
-    else
-        return -1;
+    }
+
+    return -1;
 }
 
 /*

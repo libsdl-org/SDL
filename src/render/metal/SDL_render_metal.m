@@ -1286,7 +1286,7 @@ SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const size_t 
         [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
 #if SDL_HAVE_YUV
         if (texturedata.yuv || texturedata.nv12) {
-            [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture_uv atIndex:1];
+            [data.mtlcmdencoder setFragmentTexture:texturedata.mtltextureUv atIndex:1];
             [data.mtlcmdencoder setFragmentBuffer:data.mtlbufconstants offset:texturedata.conversionBufferOffset atIndex:1];
         }
 #endif

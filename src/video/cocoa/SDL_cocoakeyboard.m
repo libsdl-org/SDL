@@ -221,8 +221,9 @@ HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
         {
             if (modifierFlags & modifiers[i])
                 SDL_SendKeyboardKey(SDL_PRESSED, code);
-            else
+            } else {
                 SDL_SendKeyboardKey(SDL_RELEASED, code);
+            }
         }
     }
 }

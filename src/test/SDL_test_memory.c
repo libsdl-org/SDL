@@ -242,30 +242,30 @@ void SDLTest_LogAllocations()
     message = tmp;                                         \
     SDL_strlcat(message, line, message_size)
 
-    SDL_strlcpy(line, "Memory allocations:\n", sizeof(line));
+    SDL_strlcpy(line, "Memory allocations:\n", sizeof line);
     ADD_LINE();
-    SDL_strlcpy(line, "Expect 2 allocations from within SDL_GetErrBuf()\n", sizeof(line));
+    SDL_strlcpy(line, "Expect 2 allocations from within SDL_GetErrBuf()\n", sizeof line);
     ADD_LINE();
 
     count = 0;
     total_allocated = 0;
     for (index = 0; index < SDL_arraysize(s_tracked_allocations); ++index) {
         for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
-            SDL_snprintf(line, sizeof(line), "Allocation %d: %d bytes\n", count, (int)entry->size);
+            (void)SDL_snprintf(line, sizeof line, "Allocation %d: %d bytes\n", count, (int)entry->size);
             ADD_LINE();
             /* Start at stack index 1 to skip our tracking functions */
             for (stack_index = 1; stack_index < SDL_arraysize(entry->stack); ++stack_index) {
                 if (!entry->stack[stack_index]) {
                     break;
                 }
-                SDL_snprintf(line, sizeof(line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
+                (void)SDL_snprintf(line, sizeof line, "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
                 ADD_LINE();
             }
             total_allocated += entry->size;
             ++count;
         }
     }
-    SDL_snprintf(line, sizeof(line), "Total: %.2f Kb in %d allocations\n", (float)total_allocated / 1024, count);
+    (void)SDL_snprintf(line, sizeof line, "Total: %.2f Kb in %d allocations\n", total_allocated / 1024.0, count);
     ADD_LINE();
 #undef ADD_LINE
 

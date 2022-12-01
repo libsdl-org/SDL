@@ -218,7 +218,7 @@ static void kbd_cleanup(void)
 
 static void SDL_EVDEV_kbd_reraise_signal(int sig)
 {
-    raise(sig);
+    (void)raise(sig);
 }
 
 siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
@@ -303,7 +303,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
          * functions that are called when the shared library is unloaded.
          * -- man atexit(3)
          */
-        atexit(kbd_cleanup_atexit);
+        (void)atexit(kbd_cleanup_atexit);
         kbd_cleanup_atexit_installed = 1;
     }
 
@@ -407,33 +407,33 @@ SDL_EVDEV_kbd_init(void)
     return kbd;
 }
 
-void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
+void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
 {
-    if (kbd == NULL) {
+    if (state == NULL) {
         return;
     }
 
     kbd_unregister_emerg_cleanup();
 
-    if (kbd->console_fd >= 0) {
+    if (state->console_fd >= 0) {
         /* Restore the original keyboard mode */
-        ioctl(kbd->console_fd, KDSKBMODE, kbd->old_kbd_mode);
+        ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
 
-        close(kbd->console_fd);
-        kbd->console_fd = -1;
+        close(state->console_fd);
+        state->console_fd = -1;
     }
 
-    if (kbd->key_maps && kbd->key_maps != default_key_maps) {
+    if (state->key_maps && state->key_maps != default_key_maps) {
         int i;
         for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
-            if (kbd->key_maps[i]) {
-                SDL_free(kbd->key_maps[i]);
+            if (state->key_maps[i]) {
+                SDL_free(state->key_maps[i]);
             }
         }
-        SDL_free(kbd->key_maps);
+        SDL_free(state->key_maps);
     }
 
-    SDL_free(kbd);
+    SDL_free(state);
 }
 
 /*
@@ -449,10 +449,9 @@ static void put_queue(SDL_EVDEV_keyboard_state *kbd, uint c)
 
 static void put_utf8(SDL_EVDEV_keyboard_state *kbd, uint c)
 {
-    if (c < 0x80)
-        /*  0******* */
-        put_queue(kbd, c);
-    else if (c < 0x800) {
+    if (c < 0x80) {
+        put_queue(kbd, c); /*  0******* */
+    } else if (c < 0x800) {
         /* 110***** 10****** */
         put_queue(kbd, 0xc0 | (c >> 6));
         put_queue(kbd, 0x80 | (c & 0x3f));
@@ -626,8 +625,9 @@ static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_f
 
 static void k_deadunicode(SDL_EVDEV_keyboard_state *kbd, unsigned int value, char up_flag)
 {
-    if (up_flag)
+    if (up_flag) {
         return;
+    }
 
     kbd->diacr = (kbd->diacr ? handle_diacr(kbd, value) : value);
 }
@@ -660,8 +660,9 @@ static void k_pad(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_fl
 {
     static const char pad_chars[] = "0123456789+-*/\015,.?()#";
 
-    if (up_flag)
+    if (up_flag) {
         return; /* no action, if this is a key release */
+    }
 
     if (!vc_kbd_led(kbd, K_NUMLOCK)) {
         /* unprintable action */
@@ -675,8 +676,9 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
 {
     int old_state = kbd->shift_state;
 
-    if (kbd->rep)
+    if (kbd->rep) {
         return;
+    }
     /*
      * Mimic typewriter:
      * a CapsShift key acts like Shift but undoes CapsLock
@@ -696,13 +698,15 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
         if (kbd->shift_down[value]) {
             kbd->shift_down[value]--;
         }
-    } else
+    } else {
         kbd->shift_down[value]++;
+    }
 
-    if (kbd->shift_down[value])
+    if (kbd->shift_down[value]) {
         kbd->shift_state |= (1 << value);
-    else
+    } else {
         kbd->shift_state &= ~(1 << value);
+    }
 
     /* kludge */
     if (up_flag && kbd->shift_state != old_state && kbd->npadch != -1) {
@@ -719,8 +723,9 @@ static void k_ascii(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
 {
     int base;
 
-    if (up_flag)
+    if (up_flag) {
         return;
+    }
 
     if (value < 10) {
         /* decimal input of code, while Alt depressed */
@@ -731,16 +736,18 @@ static void k_ascii(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
         base = 16;
     }
 
-    if (kbd->npadch == -1)
+    if (kbd->npadch == -1) {
         kbd->npadch = value;
-    else
+    } else {
         kbd->npadch = kbd->npadch * base + value;
+    }
 }
 
 static void k_lock(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
-    if (up_flag || kbd->rep)
+    if (up_flag || kbd->rep) {
         return;
+    }
 
     chg_vc_kbd_lock(kbd, value);
 }
@@ -748,8 +755,9 @@ static void k_lock(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_f
 static void k_slock(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
     k_shift(kbd, value, up_flag);
-    if (up_flag || kbd->rep)
+    if (up_flag || kbd->rep) {
         return;
+    }
 
     chg_vc_kbd_slock(kbd, value);
     /* try to make Alt, oops, AltGr and such work */
@@ -763,26 +771,26 @@ static void k_brl(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_fl
 {
 }
 
-void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int down)
+void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode, int down)
 {
     unsigned char shift_final;
     unsigned char type;
     unsigned short *key_map;
     unsigned short keysym;
 
-    if (kbd == NULL) {
+    if (state == NULL) {
         return;
     }
 
-    kbd->rep = (down == 2);
+    state->rep = (down == 2);
 
-    shift_final = (kbd->shift_state | kbd->slockstate) ^ kbd->lockstate;
-    key_map = kbd->key_maps[shift_final];
+    shift_final = (state->shift_state | state->slockstate) ^ state->lockstate;
+    key_map = state->key_maps[shift_final];
     if (key_map == NULL) {
         /* Unsupported shift state (e.g. ctrl = 4, alt = 8), just reset to the default state */
-        kbd->shift_state = 0;
-        kbd->slockstate = 0;
-        kbd->lockstate = 0;
+        state->shift_state = 0;
+        state->slockstate = 0;
+        state->lockstate = 0;
         return;
     }
 
@@ -796,7 +804,7 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, 
 
     if (type < 0xf0) {
         if (down) {
-            put_utf8(kbd, keysym);
+            put_utf8(state, keysym);
         }
     } else {
         type -= 0xf0;
@@ -805,25 +813,25 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, 
         if (type == KT_LETTER) {
             type = KT_LATIN;
 
-            if (vc_kbd_led(kbd, K_CAPSLOCK)) {
-                key_map = kbd->key_maps[shift_final ^ (1 << KG_SHIFT)];
+            if (vc_kbd_led(state, K_CAPSLOCK)) {
+                key_map = state->key_maps[shift_final ^ (1 << KG_SHIFT)];
                 if (key_map) {
                     keysym = key_map[keycode];
                 }
             }
         }
 
-        (*k_handler[type])(kbd, keysym & 0xff, !down);
+        (*k_handler[type])(state, keysym & 0xff, !down);
 
         if (type != KT_SLOCK) {
-            kbd->slockstate = 0;
+            state->slockstate = 0;
         }
     }
 
-    if (kbd->text_len > 0) {
-        kbd->text[kbd->text_len] = '\0';
-        SDL_SendKeyboardText(kbd->text);
-        kbd->text_len = 0;
+    if (state->text_len > 0) {
+        state->text[state->text_len] = '\0';
+        SDL_SendKeyboardText(state->text);
+        state->text_len = 0;
     }
 }
 

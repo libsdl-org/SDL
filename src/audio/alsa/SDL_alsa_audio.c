@@ -379,8 +379,9 @@ static void ALSA_PlayDevice(_THIS)
             status = ALSA_snd_pcm_recover(this->hidden->pcm_handle, status, 0);
             if (status < 0) {
                 /* Hmm, not much we can do - abort */
-                fprintf(stderr, "ALSA write failed (unrecoverable): %s\n",
-                        ALSA_snd_strerror(status));
+                SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
+                             "ALSA write failed (unrecoverable): %s\n",
+                             ALSA_snd_strerror(status));
                 SDL_OpenedAudioDeviceDisconnected(this);
                 return;
             }
@@ -427,8 +428,9 @@ static int ALSA_CaptureFromDevice(_THIS, void *buffer, int buflen)
             status = ALSA_snd_pcm_recover(this->hidden->pcm_handle, status, 0);
             if (status < 0) {
                 /* Hmm, not much we can do - abort */
-                fprintf(stderr, "ALSA read failed (unrecoverable): %s\n",
-                        ALSA_snd_strerror(status));
+                SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
+                             "ALSA read failed (unrecoverable): %s\n",
+                             ALSA_snd_strerror(status));
                 return -1;
             }
             continue;
@@ -511,9 +513,9 @@ static int ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
 
         ALSA_snd_pcm_hw_params_get_buffer_size(hwparams, &bufsize);
 
-        fprintf(stderr,
-                "ALSA: period size = %ld, periods = %u, buffer size = %lu\n",
-                persize, periods, bufsize);
+        SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
+                     "ALSA: period size = %ld, periods = %u, buffer size = %lu\n",
+                     persize, periods, bufsize);
     }
 
     return 0;
@@ -739,7 +741,8 @@ static void add_device(const int iscapture, const char *name, void *hint, ALSA_D
     /* some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output".
        just chop the extra lines off, this seems to get a reasonable device
        name without extra details. */
-    if ((ptr = SDL_strchr(desc, '\n')) != NULL) {
+    ptr = SDL_strchr(desc, '\n');
+    if (ptr != NULL) {
         *ptr = '\0';
     }
 

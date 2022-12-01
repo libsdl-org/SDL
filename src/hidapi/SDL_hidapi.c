@@ -57,7 +57,6 @@
 #include "../core/linux/SDL_udev.h"
 #ifdef SDL_USE_LIBUDEV
 #include <poll.h>
-#include <unistd.h>
 #include "../core/linux/SDL_sandbox.h"
 #endif
 
@@ -67,6 +66,10 @@
 #include <fcntl.h>
 #include <limits.h> /* For the definition of NAME_MAX */
 #include <sys/inotify.h>
+#endif
+
+#if defined(SDL_USE_LIBUDEV) || defined(HAVE_INOTIFY)
+#include <unistd.h>
 #endif
 
 #if defined(SDL_USE_LIBUDEV)
@@ -316,15 +319,15 @@ HIDAPI_InitializeDiscovery()
         SDL_HIDAPI_discovery.m_nUdevFd = -1;
 
         usyms = SDL_UDEV_GetUdevSyms();
-        if (usyms) {
+        if (usyms != NULL) {
             SDL_HIDAPI_discovery.m_pUdev = usyms->udev_new();
-        }
-        if (SDL_HIDAPI_discovery.m_pUdev) {
-            SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
-            if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
-                usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
-                SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
-                SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+            if (SDL_HIDAPI_discovery.m_pUdev != NULL) {
+                SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
+                if (SDL_HIDAPI_discovery.m_pUdevMonitor != NULL) {
+                    usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                    SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
+                    SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
+                }
             }
         }
     } else
@@ -1378,22 +1381,27 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
     }
 
 #if HAVE_PLATFORM_BACKEND
-    if (udev_ctx &&
-        (pDevice = PLATFORM_hid_open(vendor_id, product_id, serial_number)) != NULL) {
-        return CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
+    if (udev_ctx) {
+        pDevice = PLATFORM_hid_open(vendor_id, product_id, serial_number);
+        if (pDevice != NULL) {
+            return CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
+        }
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
 #if HAVE_DRIVER_BACKEND
-    if ((pDevice = DRIVER_hid_open(vendor_id, product_id, serial_number)) != NULL) {
+    pDevice = DRIVER_hid_open(vendor_id, product_id, serial_number);
+    if (pDevice != NULL) {
         return CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
 #ifdef HAVE_LIBUSB
-    if (libusb_ctx.libhandle &&
-        (pDevice = LIBUSB_hid_open(vendor_id, product_id, serial_number)) != NULL) {
-        return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+    if (libusb_ctx.libhandle != NULL) {
+        pDevice = LIBUSB_hid_open(vendor_id, product_id, serial_number);
+        if (pDevice != NULL) {
+            return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+        }
     }
 #endif /* HAVE_LIBUSB */
 
@@ -1412,22 +1420,27 @@ SDL_hid_device *SDL_hid_open_path(const char *path, int bExclusive /* = false */
     }
 
 #if HAVE_PLATFORM_BACKEND
-    if (udev_ctx &&
-        (pDevice = PLATFORM_hid_open_path(path, bExclusive)) != NULL) {
-        return CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
+    if (udev_ctx) {
+        pDevice = PLATFORM_hid_open_path(path, bExclusive);
+        if (pDevice != NULL) {
+            return CreateHIDDeviceWrapper(pDevice, &PLATFORM_Backend);
+        }
     }
 #endif /* HAVE_PLATFORM_BACKEND */
 
 #if HAVE_DRIVER_BACKEND
-    if ((pDevice = DRIVER_hid_open_path(path, bExclusive)) != NULL) {
+    pDevice = DRIVER_hid_open_path(path, bExclusive);
+    if (pDevice != NULL) {
         return CreateHIDDeviceWrapper(pDevice, &DRIVER_Backend);
     }
 #endif /* HAVE_DRIVER_BACKEND */
 
 #ifdef HAVE_LIBUSB
-    if (libusb_ctx.libhandle &&
-        (pDevice = LIBUSB_hid_open_path(path, bExclusive)) != NULL) {
-        return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+    if (libusb_ctx.libhandle != NULL) {
+        pDevice = LIBUSB_hid_open_path(path, bExclusive);
+        if (pDevice != NULL) {
+            return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+        }
     }
 #endif /* HAVE_LIBUSB */
 

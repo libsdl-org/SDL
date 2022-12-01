@@ -288,8 +288,8 @@ static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data,
         /* this is a little hacky. */
         for (;;) {
             char buf[32];
-            fprintf(stderr, "Abort/Break/Retry/Ignore/AlwaysIgnore? [abriA] : ");
-            fflush(stderr);
+            (void)fprintf(stderr, "Abort/Break/Retry/Ignore/AlwaysIgnore? [abriA] : ");
+            (void)fflush(stderr);
             if (fgets(buf, sizeof(buf), stdin) == NULL) {
                 break;
             }

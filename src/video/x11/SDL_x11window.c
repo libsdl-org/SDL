@@ -45,11 +45,13 @@
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
 
-static Bool isMapNotify(Display *dpy, XEvent *ev, XPointer win)
+static Bool
+isMapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 {
     return ev->type == MapNotify && ev->xmap.window == *((Window *)win);
 }
-static Bool isUnmapNotify(Display *dpy, XEvent *ev, XPointer win)
+static Bool
+isUnmapNotify(Display *dpy, XEvent *ev, XPointer win) /* NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef */
 {
     return ev->type == UnmapNotify && ev->xunmap.window == *((Window *)win);
 }
@@ -586,14 +588,14 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
     X11_SetNetWMState(_this, w, window->flags);
 
     compositor = 2; /* don't disable compositing except for "normal" windows */
-
+    hint = SDL_GetHint(SDL_HINT_X11_WINDOW_TYPE);
     if (window->flags & SDL_WINDOW_UTILITY) {
         wintype_name = "_NET_WM_WINDOW_TYPE_UTILITY";
     } else if (window->flags & SDL_WINDOW_TOOLTIP) {
         wintype_name = "_NET_WM_WINDOW_TYPE_TOOLTIP";
     } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
         wintype_name = "_NET_WM_WINDOW_TYPE_POPUP_MENU";
-    } else if (((hint = SDL_GetHint(SDL_HINT_X11_WINDOW_TYPE)) != NULL) && *hint) {
+    } else if (hint != NULL && *hint) {
         wintype_name = hint;
     } else {
         wintype_name = "_NET_WM_WINDOW_TYPE_NORMAL";
@@ -1555,7 +1557,7 @@ X11_GetWindowICCProfile(_THIS, SDL_Window *window, size_t *size)
 
     X11_XGetWindowAttributes(display, data->xwindow, &attributes);
     if (X11_XScreenNumberOfScreen(attributes.screen) > 0) {
-        SDL_snprintf(icc_atom_string, sizeof("_ICC_PROFILE_") + 12, "%s%d", "_ICC_PROFILE_", X11_XScreenNumberOfScreen(attributes.screen));
+        (void)SDL_snprintf(icc_atom_string, sizeof("_ICC_PROFILE_") + 12, "%s%d", "_ICC_PROFILE_", X11_XScreenNumberOfScreen(attributes.screen));
     } else {
         SDL_strlcpy(icc_atom_string, "_ICC_PROFILE", sizeof("_ICC_PROFILE"));
     }
@@ -1818,7 +1820,7 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title)
 {
     Atom _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
     XTextProperty titleprop;
-    int conv = X11_XmbTextListToTextProperty(display, (char **)&title, 1, XTextStyle, &titleprop);
+    int conv = X11_XmbTextListToTextProperty(display, &title, 1, XTextStyle, &titleprop);
     Status status;
 
     if (X11_XSupportsLocale() != True) {
@@ -1837,7 +1839,7 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title)
     }
 
 #ifdef X_HAVE_UTF8_STRING
-    status = X11_Xutf8TextListToTextProperty(display, (char **)&title, 1, XUTF8StringStyle, &titleprop);
+    status = X11_Xutf8TextListToTextProperty(display, &title, 1, XUTF8StringStyle, &titleprop);
     if (status == Success) {
         X11_XSetTextProperty(display, xwindow, &titleprop, _NET_WM_NAME);
         X11_XFree(titleprop.value);

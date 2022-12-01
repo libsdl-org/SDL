@@ -549,20 +549,20 @@ static int MS_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
         cstate[c].coeff2 = ddata->coeff[coeffindex * 2 + 1];
 
         /* Initial delta value. */
-        o = channels + c * 2;
+        o = (size_t)channels + c * 2;
         cstate[c].delta = state->block.data[o] | ((Uint16)state->block.data[o + 1] << 8);
 
         /* Load the samples from the header. Interestingly, the sample later in
          * the output stream comes first.
          */
-        o = channels * 3 + c * 2;
+        o = (size_t)channels * 3 + c * 2;
         sample = state->block.data[o] | ((Sint32)state->block.data[o + 1] << 8);
         if (sample >= 0x8000) {
             sample -= 0x10000;
         }
         state->output.data[state->output.pos + channels] = (Sint16)sample;
 
-        o = channels * 5 + c * 2;
+        o = (size_t)channels * 5 + c * 2;
         sample = state->block.data[o] | ((Sint32)state->block.data[o + 1] << 8);
         if (sample >= 0x8000) {
             sample -= 0x10000;
@@ -965,7 +965,7 @@ static int IMA_ADPCM_DecodeBlockData(ADPCM_DecoderState *state)
     size_t i;
     int retval = 0;
     const Uint32 channels = state->channels;
-    const size_t subblockframesize = channels * 4;
+    const size_t subblockframesize = (size_t)channels * 4;
     Uint64 bytesrequired;
     Uint32 c;
 

@@ -744,7 +744,7 @@ void loop(void *arg)
                 Uint8 r, g, b;
 
                 if (x < 0) {
-                    r = (Uint8)(((int)(~x) * 255) / 32767);
+                    r = (Uint8)(((~x) * 255) / 32767);
                     b = 0;
                 } else {
                     r = 0;

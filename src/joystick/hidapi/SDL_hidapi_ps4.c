@@ -189,8 +189,8 @@ static SDL_bool HIDAPI_DriverPS4_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
     if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
         if (device && device->dev) {
-            if ((size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
-                data[2] == 0x27) {
+            size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof data);
+            if (size == 48 && data[2] == 0x27) {
                 /* Supported third party controller */
                 return SDL_TRUE;
             } else {
@@ -268,8 +268,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     if (ctx->is_dongle) {
         size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                         data[6], data[5], data[4], data[3], data[2], data[1]);
+            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                               data[6], data[5], data[4], data[3], data[2], data[1]);
         }
         device->is_bluetooth = SDL_FALSE;
         ctx->enhanced_mode = SDL_TRUE;
@@ -277,8 +277,8 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         /* This will fail if we're on Bluetooth */
         size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
         if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-            SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                         data[6], data[5], data[4], data[3], data[2], data[1]);
+            (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                               data[6], data[5], data[4], data[3], data[2], data[1]);
             device->is_bluetooth = SDL_FALSE;
             ctx->enhanced_mode = SDL_TRUE;
         } else {
@@ -308,6 +308,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     SDL_Log("PS4 dongle = %s, bluetooth = %s\n", ctx->is_dongle ? "TRUE" : "FALSE", device->is_bluetooth ? "TRUE" : "FALSE");
 #endif
 
+    size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof data);
     /* Get the device capabilities */
     if (device->vendor_id == USB_VENDOR_SONY) {
         ctx->official_controller = SDL_TRUE;
@@ -315,8 +316,7 @@ static SDL_bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         ctx->lightbar_supported = SDL_TRUE;
         ctx->vibration_supported = SDL_TRUE;
         ctx->touchpad_supported = SDL_TRUE;
-    } else if ((size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdCapabilities, data, sizeof(data))) == 48 &&
-               data[2] == 0x27) {
+    } else if (size == 48 && data[2] == 0x27) {
         Uint8 capabilities = data[4];
         Uint8 device_type = data[5];
 
@@ -1119,8 +1119,8 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
                 char serial[18];
                 size = ReadFeatureReport(device->dev, k_ePS4FeatureReportIdSerialNumber, data, sizeof(data));
                 if (size >= 7 && (data[1] || data[2] || data[3] || data[4] || data[5] || data[6])) {
-                    SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                                 data[6], data[5], data[4], data[3], data[2], data[1]);
+                    (void)SDL_snprintf(serial, sizeof serial, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                                       data[6], data[5], data[4], data[3], data[2], data[1]);
                     HIDAPI_SetDeviceSerial(device, serial);
                 }
                 HIDAPI_JoystickConnected(device, NULL);

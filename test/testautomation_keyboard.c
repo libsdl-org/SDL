@@ -616,14 +616,14 @@ int keyboard_getScancodeFromNameNegative(void *arg)
 
     /* Zero length string input */
     name = "";
-    scancode = SDL_GetScancodeFromName((const char *)name);
+    scancode = SDL_GetScancodeFromName(name);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromName(NULL)");
     SDLTest_AssertCheck(scancode == SDL_SCANCODE_UNKNOWN, "Validate return value from SDL_GetScancodeFromName, expected: %i, got: %i", SDL_SCANCODE_UNKNOWN, scancode);
     _checkInvalidNameError();
 
     /* NULL input */
     name = NULL;
-    scancode = SDL_GetScancodeFromName((const char *)name);
+    scancode = SDL_GetScancodeFromName(name);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromName(NULL)");
     SDLTest_AssertCheck(scancode == SDL_SCANCODE_UNKNOWN, "Validate return value from SDL_GetScancodeFromName, expected: %i, got: %i", SDL_SCANCODE_UNKNOWN, scancode);
     _checkInvalidNameError();

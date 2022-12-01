@@ -180,7 +180,8 @@ static int SNDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     /* Emulate a blocking read */
     r = SNDIO_sio_read(this->hidden->dev, buffer, buflen);
     while (r == 0 && !SNDIO_sio_eof(this->hidden->dev)) {
-        if ((nfds = SNDIO_sio_pollfd(this->hidden->dev, this->hidden->pfd, POLLIN)) <= 0 || poll(this->hidden->pfd, nfds, INFTIM) < 0) {
+        nfds = SNDIO_sio_pollfd(this->hidden->dev, this->hidden->pfd, POLLIN);
+        if (nfds <= 0 || poll(this->hidden->pfd, nfds, INFTIM) < 0) {
             return -1;
         }
         revents = SNDIO_sio_revents(this->hidden->dev, this->hidden->pfd);
@@ -237,16 +238,18 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
     this->hidden->mixlen = this->spec.size;
 
     /* Capture devices must be non-blocking for SNDIO_FlushCapture */
-    if ((this->hidden->dev =
-             SNDIO_sio_open(devname != NULL ? devname : SIO_DEVANY,
-                            iscapture ? SIO_REC : SIO_PLAY, iscapture)) == NULL) {
+    this->hidden->dev = SNDIO_sio_open(devname != NULL ? devname : SIO_DEVANY,
+                                       iscapture ? SIO_REC : SIO_PLAY, iscapture);
+    if (this->hidden->dev == NULL) {
         return SDL_SetError("sio_open() failed");
     }
 
     /* Allocate the pollfd array for capture devices */
-    if (iscapture && (this->hidden->pfd =
-                          SDL_malloc(sizeof(struct pollfd) * SNDIO_sio_nfds(this->hidden->dev))) == NULL) {
-        return SDL_OutOfMemory();
+    if (iscapture) {
+        this->hidden->pfd = SDL_malloc(sizeof(struct pollfd) * SNDIO_sio_nfds(this->hidden->dev));
+        if (this->hidden->pfd == NULL) {
+            return SDL_OutOfMemory();
+        }
     }
 
     SNDIO_sio_initpar(&par);
@@ -282,23 +285,23 @@ static int SNDIO_OpenDevice(_THIS, const char *devname)
         return SDL_SetError("%s: Unsupported audio format", "sndio");
     }
 
-    if ((par.bps == 4) && (par.sig) && (par.le))
+    if ((par.bps == 4) && (par.sig) && (par.le)) {
         this->spec.format = AUDIO_S32LSB;
-    else if ((par.bps == 4) && (par.sig) && (!par.le))
+    } else if ((par.bps == 4) && (par.sig) && (!par.le)) {
         this->spec.format = AUDIO_S32MSB;
-    else if ((par.bps == 2) && (par.sig) && (par.le))
+    } else if ((par.bps == 2) && (par.sig) && (par.le)) {
         this->spec.format = AUDIO_S16LSB;
-    else if ((par.bps == 2) && (par.sig) && (!par.le))
+    } else if ((par.bps == 2) && (par.sig) && (!par.le)) {
         this->spec.format = AUDIO_S16MSB;
-    else if ((par.bps == 2) && (!par.sig) && (par.le))
+    } else if ((par.bps == 2) && (!par.sig) && (par.le)) {
         this->spec.format = AUDIO_U16LSB;
-    else if ((par.bps == 2) && (!par.sig) && (!par.le))
+    } else if ((par.bps == 2) && (!par.sig) && (!par.le)) {
         this->spec.format = AUDIO_U16MSB;
-    else if ((par.bps == 1) && (par.sig))
+    } else if ((par.bps == 1) && (par.sig)) {
         this->spec.format = AUDIO_S8;
-    else if ((par.bps == 1) && (!par.sig))
+    } else if ((par.bps == 1) && (!par.sig)) {
         this->spec.format = AUDIO_U8;
-    else {
+    } else {
         return SDL_SetError("sndio: Got unsupported hardware audio format.");
     }
 

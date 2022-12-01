@@ -105,12 +105,13 @@ void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size)
     int start = 0, amount = size;
 
     buffer = (char *)SDL_malloc(length);
-    SDL_snprintf(buffer, length, prefix, size);
+    (void)SDL_snprintf(buffer, length, prefix, size);
     for (i = start; i < start + amount; ++i) {
+        size_t current_len = SDL_strlen(buffer);
         if ((i % 8) == 0) {
-            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
+            (void)SDL_snprintf(&buffer[current_len], length - current_len, "\n%.2d:      ", i);
         }
-        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
+        (void)SDL_snprintf(&buffer[current_len], length - current_len, " 0x%.2x", data[i]);
     }
     SDL_strlcat(buffer, "\n", length);
     SDL_Log("%s", buffer);
@@ -384,7 +385,6 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *remove
 
             /* Make sure the device didn't get removed while opening the HID path */
             for (curr = SDL_HIDAPI_devices; curr && curr != device; curr = curr->next) {
-                continue;
             }
             if (curr == NULL) {
                 *removed = SDL_TRUE;
@@ -718,7 +718,6 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     SDL_bool removed;
 
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
-        continue;
     }
 
     device = (SDL_HIDAPI_Device *)SDL_calloc(1, sizeof(*device));
@@ -985,7 +984,6 @@ check_removed:
 
     /* See if we can create any combined Joy-Con controllers */
     while (HIDAPI_CreateCombinedJoyCons()) {
-        continue;
     }
 
     SDL_UnlockJoysticks();

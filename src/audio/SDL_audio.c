@@ -394,7 +394,7 @@ static int add_audio_device(const char *name, SDL_AudioSpec *spec, void *handle,
             return SDL_OutOfMemory();
         }
 
-        SDL_snprintf(replacement, len, "%s (%d)", name, dupenum + 1);
+        (void)SDL_snprintf(replacement, len, "%s (%d)", name, dupenum + 1);
         item->dupenum = dupenum;
         item->name = replacement;
     }
@@ -658,6 +658,10 @@ void SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     current_audio.impl.UnlockDevice(device);
 }
 
+#if SDL_AUDIO_DRIVER_ANDROID
+extern void Android_JNI_AudioSetThreadPriority(int, int);
+#endif
+
 /* The general mixing thread function */
 static int SDLCALL SDL_RunAudio(void *devicep)
 {
@@ -672,7 +676,6 @@ static int SDLCALL SDL_RunAudio(void *devicep)
 #if SDL_AUDIO_DRIVER_ANDROID
     {
         /* Set thread priority to THREAD_PRIORITY_AUDIO */
-        extern void Android_JNI_AudioSetThreadPriority(int, int);
         Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
     }
 #else
@@ -773,7 +776,6 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
 #if SDL_AUDIO_DRIVER_ANDROID
     {
         /* Set thread priority to THREAD_PRIORITY_AUDIO */
-        extern void Android_JNI_AudioSetThreadPriority(int, int);
         Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
     }
 #else
@@ -1187,6 +1189,19 @@ static void close_audio_device(SDL_AudioDevice *device)
     SDL_free(device);
 }
 
+static Uint16
+GetDefaultSamplesFromFreq(int freq)
+{
+    /* Pick a default of ~46 ms at desired frequency */
+    /* !!! FIXME: remove this when the non-Po2 resampling is in. */
+    const Uint16 max_sample = (freq / 1000) * 46;
+    Uint16 current_sample = 1;
+    while (current_sample < max_sample) {
+        current_sample *= 2;
+    }
+    return current_sample;
+}
+
 /*
  * Sanity check desired AudioSpec for SDL_OpenAudio() in (orig).
  *  Fills in a sanitized copy in (prepared).
@@ -1197,23 +1212,33 @@ static int prepare_audiospec(const SDL_AudioSpec *orig, SDL_AudioSpec *prepared)
     SDL_copyp(prepared, orig);
 
     if (orig->freq == 0) {
+        static const int DEFAULT_FREQ = 22050;
         const char *env = SDL_getenv("SDL_AUDIO_FREQUENCY");
-        if ((!env) || ((prepared->freq = SDL_atoi(env)) == 0)) {
-            prepared->freq = 22050; /* a reasonable default */
+        if (env != NULL) {
+            int freq = SDL_atoi(env);
+            prepared->freq = freq != 0 ? freq : DEFAULT_FREQ;
+        } else {
+            prepared->freq = DEFAULT_FREQ;
         }
     }
 
     if (orig->format == 0) {
         const char *env = SDL_getenv("SDL_AUDIO_FORMAT");
-        if ((!env) || ((prepared->format = SDL_ParseAudioFormat(env)) == 0)) {
-            prepared->format = AUDIO_S16; /* a reasonable default */
+        if (env != NULL) {
+            const SDL_AudioFormat format = SDL_ParseAudioFormat(env);
+            prepared->format = format != 0 ? format : AUDIO_S16;
+        } else {
+            prepared->format = AUDIO_S16;
         }
     }
 
     if (orig->channels == 0) {
         const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
-        if ((!env) || ((prepared->channels = (Uint8)SDL_atoi(env)) == 0)) {
-            prepared->channels = 2; /* a reasonable default */
+        if (env != NULL) {
+            Uint8 channels = (Uint8)SDL_atoi(env);
+            prepared->channels = channels != 0 ? channels : 2;
+        } else {
+            prepared->channels = 2;
         }
     } else if (orig->channels > 8) {
         SDL_SetError("Unsupported number of audio channels.");
@@ -1222,15 +1247,11 @@ static int prepare_audiospec(const SDL_AudioSpec *orig, SDL_AudioSpec *prepared)
 
     if (orig->samples == 0) {
         const char *env = SDL_getenv("SDL_AUDIO_SAMPLES");
-        if ((!env) || ((prepared->samples = (Uint16)SDL_atoi(env)) == 0)) {
-            /* Pick a default of ~46 ms at desired frequency */
-            /* !!! FIXME: remove this when the non-Po2 resampling is in. */
-            const int samples = (prepared->freq / 1000) * 46;
-            int power2 = 1;
-            while (power2 < samples) {
-                power2 *= 2;
-            }
-            prepared->samples = power2;
+        if (env != NULL) {
+            Uint16 samples = (Uint16)SDL_atoi(env);
+            prepared->samples = samples != 0 ? samples : GetDefaultSamplesFromFreq(prepared->freq);
+        } else {
+            prepared->samples = GetDefaultSamplesFromFreq(prepared->freq);
         }
     }
 
@@ -1488,7 +1509,7 @@ static SDL_AudioDeviceID open_audio_device(const char *devname, int iscapture,
         const size_t stacksize = is_internal_thread ? 64 * 1024 : 0;
         char threadname[64];
 
-        SDL_snprintf(threadname, sizeof(threadname), "SDLAudio%c%d", (iscapture) ? 'C' : 'P', (int)device->id);
+        (void)SDL_snprintf(threadname, sizeof threadname, "SDLAudio%c%" SDL_PRIu32, (iscapture) ? 'C' : 'P', device->id);
         device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, stacksize, device);
 
         if (device->thread == NULL) {

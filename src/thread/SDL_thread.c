@@ -154,7 +154,7 @@ SDL_Generic_GetTLSData(void)
     return storage;
 }
 
-int SDL_Generic_SetTLSData(SDL_TLSData *storage)
+int SDL_Generic_SetTLSData(SDL_TLSData *data)
 {
     SDL_threadID thread = SDL_ThreadID();
     SDL_TLSEntry *prev, *entry;
@@ -164,10 +164,10 @@ int SDL_Generic_SetTLSData(SDL_TLSData *storage)
     prev = NULL;
     for (entry = SDL_generic_TLS; entry; entry = entry->next) {
         if (entry->thread == thread) {
-            if (storage) {
-                entry->storage = storage;
+            if (data != NULL) {
+                entry->storage = data;
             } else {
-                if (prev) {
+                if (prev != NULL) {
                     prev->next = entry->next;
                 } else {
                     SDL_generic_TLS = entry->next;
@@ -182,7 +182,7 @@ int SDL_Generic_SetTLSData(SDL_TLSData *storage)
         entry = (SDL_TLSEntry *)SDL_malloc(sizeof(*entry));
         if (entry) {
             entry->thread = thread;
-            entry->storage = storage;
+            entry->storage = data;
             entry->next = SDL_generic_TLS;
             SDL_generic_TLS = entry;
         }

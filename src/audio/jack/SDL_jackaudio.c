@@ -162,7 +162,7 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
     for (channelsi = 0; channelsi < total_channels; channelsi++) {
         float *dst = (float *)JACK_jack_port_get_buffer(ports[channelsi], nframes);
         if (dst) {
-            const float *src = ((float *)this->hidden->iobuffer) + channelsi;
+            const float *src = this->hidden->iobuffer + channelsi;
             int framesi;
             for (framesi = 0; framesi < total_frames; framesi++) {
                 *(dst++) = *src;
@@ -202,7 +202,7 @@ static int jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
         for (channelsi = 0; channelsi < total_channels; channelsi++) {
             const float *src = (const float *)JACK_jack_port_get_buffer(ports[channelsi], nframes);
             if (src) {
-                float *dst = ((float *)this->hidden->iobuffer) + channelsi;
+                float *dst = this->hidden->iobuffer + channelsi;
                 int framesi;
                 for (framesi = 0; framesi < total_frames; framesi++) {
                     *dst = *(src++);
@@ -312,6 +312,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
         }
     }
     if (channels == 0) {
+        SDL_free(audio_ports);
         return SDL_SetError("No physical JACK ports available");
     }
 
@@ -327,36 +328,42 @@ static int JACK_OpenDevice(_THIS, const char *devname)
 
     this->hidden->iosem = SDL_CreateSemaphore(0);
     if (!this->hidden->iosem) {
+        SDL_free(audio_ports);
         return -1; /* error was set by SDL_CreateSemaphore */
     }
 
     this->hidden->iobuffer = (float *)SDL_calloc(1, this->spec.size);
     if (!this->hidden->iobuffer) {
+        SDL_free(audio_ports);
         return SDL_OutOfMemory();
     }
 
     /* Build SDL's ports, which we will connect to the device ports. */
     this->hidden->sdlports = (jack_port_t **)SDL_calloc(channels, sizeof(jack_port_t *));
     if (this->hidden->sdlports == NULL) {
+        SDL_free(audio_ports);
         return SDL_OutOfMemory();
     }
 
     for (i = 0; i < channels; i++) {
         char portname[32];
-        SDL_snprintf(portname, sizeof(portname), "sdl_jack_%s_%d", sdlportstr, i);
+        (void)SDL_snprintf(portname, sizeof(portname), "sdl_jack_%s_%d", sdlportstr, i);
         this->hidden->sdlports[i] = JACK_jack_port_register(client, portname, JACK_DEFAULT_AUDIO_TYPE, sdlportflags, 0);
         if (this->hidden->sdlports[i] == NULL) {
+            SDL_free(audio_ports);
             return SDL_SetError("jack_port_register failed");
         }
     }
 
     if (JACK_jack_set_process_callback(client, callback, this) != 0) {
+        SDL_free(audio_ports);
         return SDL_SetError("JACK: Couldn't set process callback");
     }
 
     JACK_jack_on_shutdown(client, jackShutdownCallback, this);
 
     if (JACK_jack_activate(client) != 0) {
+        SDL_free(audio_ports);
         return SDL_SetError("Failed to activate JACK client");
     }
 
@@ -366,6 +373,7 @@ static int JACK_OpenDevice(_THIS, const char *devname)
         const char *srcport = iscapture ? devports[audio_ports[i]] : sdlport;
         const char *dstport = iscapture ? sdlport : devports[audio_ports[i]];
         if (JACK_jack_connect(client, srcport, dstport) != 0) {
+            SDL_free(audio_ports);
             return SDL_SetError("Couldn't connect JACK ports: %s => %s", srcport, dstport);
         }
     }

@@ -134,7 +134,7 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
     SDL_assert(surface->pitch == surface->w * 4);
-    SDL_memcpy(pixels, surface->pixels, surface->h * surface->pitch);
+    SDL_memcpy(pixels, surface->pixels, (size_t)surface->h * surface->pitch);
 
     hicon = CreateIconIndirect(&ii);
 
@@ -391,7 +391,7 @@ void WIN_QuitMouse(_THIS)
  * https://superuser.com/questions/278362/windows-mouse-acceleration-curve-smoothmousexcurve-and-smoothmouseycurve
  * http://www.esreality.com/?a=post&id=1846538/
  */
-static SDL_bool LoadFiveFixedPointFloats(BYTE *bytes, float *values)
+static SDL_bool LoadFiveFixedPointFloats(const BYTE *bytes, float *values)
 {
     int i;
 

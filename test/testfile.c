@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "1234567", 7)) {
+    if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->read(rwops, test_buf, 1, 1)) {
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     if (2 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "12345678901234567890", 20)) {
+    if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->write(rwops, test_buf, 1, 1)) {
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
     if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "1234567", 7)) {
+    if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->read(rwops, test_buf, 1, 1)) {
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
     if (2 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "12345678901234567890", 20)) {
+    if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     rwops->close(rwops);
@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
     if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "1234567", 7)) {
+    if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->read(rwops, test_buf, 1, 1)) {
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
     if (2 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "12345678901234567890", 20)) {
+    if (SDL_memcmp(test_buf, "12345678901234567890", 20) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     rwops->close(rwops);
@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
     if (7 != rwops->read(rwops, test_buf, 1, 7)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "1234567", 7)) {
+    if (SDL_memcmp(test_buf, "1234567", 7) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->read(rwops, test_buf, 1, 1)) {
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
     if (3 != rwops->read(rwops, test_buf, 10, 3)) {
         RWOP_ERR_QUIT(rwops);
     }
-    if (SDL_memcmp(test_buf, "123456789012345678901234567123", 30)) {
+    if (SDL_memcmp(test_buf, "123456789012345678901234567123", 30) != 0) {
         RWOP_ERR_QUIT(rwops);
     }
     rwops->close(rwops);

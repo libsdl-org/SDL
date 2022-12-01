@@ -32,7 +32,7 @@ void _audioSetUp(void *arg)
 void _audioTearDown(void *arg)
 {
     /* Remove a possibly created file from SDL disk writer audio driver; ignore errors */
-    remove("sdlaudio.raw");
+    (void)remove("sdlaudio.raw");
 
     SDLTest_AssertPass("Cleanup of test files completed");
 }
@@ -94,8 +94,8 @@ int audio_initQuitAudio()
     for (i = 0; i < iMax; i++) {
         audioDriver = SDL_GetAudioDriver(i);
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
-        SDLTest_AssertCheck(audioDriver != NULL, "Audio driver name is not NULL");
-        SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver);
+        SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
+        SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
 
         /* Call Init */
         result = SDL_AudioInit(audioDriver);
@@ -151,8 +151,8 @@ int audio_initOpenCloseQuitAudio()
     for (i = 0; i < iMax; i++) {
         audioDriver = SDL_GetAudioDriver(i);
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
-        SDLTest_AssertCheck(audioDriver != NULL, "Audio driver name is not NULL");
-        SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver);
+        SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
+        SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
 
         /* Change specs */
         for (j = 0; j < 2; j++) {
@@ -240,8 +240,8 @@ int audio_pauseUnpauseAudio()
     for (i = 0; i < iMax; i++) {
         audioDriver = SDL_GetAudioDriver(i);
         SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
-        SDLTest_AssertCheck(audioDriver != NULL, "Audio driver name is not NULL");
-        SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver);
+        SDLTest_Assert(audioDriver != NULL, "Audio driver name is not NULL");
+        SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver); /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
 
         /* Change specs */
         for (j = 0; j < 2; j++) {

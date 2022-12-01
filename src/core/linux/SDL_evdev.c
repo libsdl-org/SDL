@@ -128,8 +128,7 @@ static int SDL_EVDEV_device_removed(const char *dev_path);
 
 static int SDL_EVDEV_device_added(const char *dev_path, int udev_class);
 #if SDL_USE_LIBUDEV
-static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class,
-                                    const char *dev_path);
+static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class, const char *dev_path);
 #endif /* SDL_USE_LIBUDEV */
 
 static Uint8 EVDEV_MouseButtons[] = {
@@ -319,10 +318,11 @@ void SDL_EVDEV_Poll(void)
                        next finger after earlist is released) */
                     if (item->is_touchscreen && events[i].code == BTN_TOUCH) {
                         if (item->touchscreen_data->max_slots == 1) {
-                            if (events[i].value)
+                            if (events[i].value) {
                                 item->touchscreen_data->slots[0].delta = EVDEV_TOUCH_SLOTDELTA_DOWN;
-                            else
+                            } else {
                                 item->touchscreen_data->slots[0].delta = EVDEV_TOUCH_SLOTDELTA_UP;
+                            }
                         }
                         break;
                     }
@@ -820,8 +820,8 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     /* For now, we just treat a touchpad like a touchscreen */
     if (udev_class & (SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD)) {
         item->is_touchscreen = SDL_TRUE;
-
-        if ((ret = SDL_EVDEV_init_touchscreen(item, udev_class)) < 0) {
+        ret = SDL_EVDEV_init_touchscreen(item, udev_class);
+        if (ret < 0) {
             close(item->fd);
             SDL_free(item->path);
             SDL_free(item);

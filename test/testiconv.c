@@ -86,10 +86,10 @@ int main(int argc, char *argv[])
         }
         test[0] = SDL_iconv_string("UTF-8", "UCS-4", ucs4, len);
         SDL_free(ucs4);
-        fputs(test[0], stdout);
+        (void)fputs(test[0], stdout);
         SDL_free(test[0]);
     }
-    fclose(file);
+    (void)fclose(file);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
     return errors ? errors + 1 : 0;

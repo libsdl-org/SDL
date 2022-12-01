@@ -50,7 +50,7 @@ static SDL_bool send_foregrounding_pending = SDL_FALSE;
 static void SDL_HandleSIG(int sig)
 {
     /* Reset the signal handler */
-    signal(sig, SDL_HandleSIG);
+    (void)signal(sig, SDL_HandleSIG);
 
     /* Send a quit event next time the event loop pumps. */
     /* We can't send it in signal handler; SDL_malloc() might be interrupted! */

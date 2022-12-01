@@ -1198,7 +1198,7 @@ static void SDLCALL SDL_Convert_F32_to_S8_NEON(SDL_AudioCVT *cvt, SDL_AudioForma
 static void SDLCALL SDL_Convert_F32_to_U8_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const float *src = (const float *)cvt->buf;
-    Uint8 *dst = (Uint8 *)cvt->buf;
+    Uint8 *dst = cvt->buf;
     int i;
 
     LOG_DEBUG_CONVERT("AUDIO_F32", "AUDIO_U8 (using NEON)");

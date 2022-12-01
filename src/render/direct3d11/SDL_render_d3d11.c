@@ -702,9 +702,9 @@ static int D3D11_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
     switch (rotation) {
     case DXGI_MODE_ROTATION_IDENTITY:
         outRect->left = sdlRect->x;
-        outRect->right = sdlRect->x + sdlRect->w;
+        outRect->right = (LONG)sdlRect->x + sdlRect->w;
         outRect->top = sdlRect->y;
-        outRect->bottom = sdlRect->y + sdlRect->h;
+        outRect->bottom = (LONG)sdlRect->y + sdlRect->h;
         if (includeViewportOffset) {
             outRect->left += viewport->x;
             outRect->right += viewport->x;
@@ -714,7 +714,7 @@ static int D3D11_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
         break;
     case DXGI_MODE_ROTATION_ROTATE270:
         outRect->left = sdlRect->y;
-        outRect->right = sdlRect->y + sdlRect->h;
+        outRect->right = (LONG)sdlRect->y + sdlRect->h;
         outRect->top = viewport->w - sdlRect->x - sdlRect->w;
         outRect->bottom = viewport->w - sdlRect->x;
         break;
@@ -728,7 +728,7 @@ static int D3D11_GetViewportAlignedD3DRect(SDL_Renderer *renderer, const SDL_Rec
         outRect->left = viewport->h - sdlRect->y - sdlRect->h;
         outRect->right = viewport->h - sdlRect->y;
         outRect->top = sdlRect->x;
-        outRect->bottom = sdlRect->x + sdlRect->h;
+        outRect->bottom = (LONG)sdlRect->x + sdlRect->h;
         break;
     default:
         return SDL_SetError("The physical display is in an unknown or unsupported rotation");
@@ -930,7 +930,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 #endif
     } else {
         result = D3D11_CreateSwapChain(renderer, w, h);
-        if (FAILED(result)) {
+        if (FAILED(result) || data->swapChain == NULL) {
             goto done;
         }
     }
@@ -1297,7 +1297,7 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
     dst = textureMemory.pData;
     length = w * bpp;
     if (length == pitch && length == textureMemory.RowPitch) {
-        SDL_memcpy(dst, src, length * h);
+        SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)pitch) {
             length = pitch;
@@ -1448,7 +1448,7 @@ static int D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
         textureData->locked_rect = *rect;
         *pixels =
-            (void *)((Uint8 *)textureData->pixels + rect->y * textureData->pitch +
+            (void *)(textureData->pixels + rect->y * textureData->pitch +
                      rect->x * SDL_BYTESPERPIXEL(texture->format));
         *pitch = textureData->pitch;
         return 0;
@@ -1519,7 +1519,7 @@ static void D3D11_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (textureData->yuv || textureData->nv12) {
         const SDL_Rect *rect = &textureData->locked_rect;
         void *pixels =
-            (void *)((Uint8 *)textureData->pixels + rect->y * textureData->pitch +
+            (void *)(textureData->pixels + rect->y * textureData->pitch +
                      rect->x * SDL_BYTESPERPIXEL(texture->format));
         D3D11_UpdateTexture(renderer, texture, rect, pixels, textureData->pitch);
         return;

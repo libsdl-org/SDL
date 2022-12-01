@@ -231,8 +231,8 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_SetError(VK_KHR_DISPLAY_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
         goto error;
     }
-
-    if ((chosenDisplayId = SDL_getenv("SDL_VULKAN_DISPLAY")) != NULL) {
+    chosenDisplayId = SDL_getenv("SDL_VULKAN_DISPLAY");
+    if (chosenDisplayId != NULL) {
         displayId = SDL_atoi(chosenDisplayId);
     }
 

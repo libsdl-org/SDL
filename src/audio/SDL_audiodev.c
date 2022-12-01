@@ -86,8 +86,11 @@ static void SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int cla
     }
 
     /* Figure out what our audio device is */
-    if (((audiodev = SDL_getenv("SDL_PATH_DSP")) == NULL) &&
-        ((audiodev = SDL_getenv("AUDIODEV")) == NULL)) {
+    audiodev = SDL_getenv("SDL_PATH_DSP");
+    if (audiodev == NULL) {
+        audiodev = SDL_getenv("AUDIODEV");
+    }
+    if (audiodev == NULL) {
         if (classic) {
             audiodev = _PATH_DEV_AUDIO;
         } else {
@@ -106,8 +109,8 @@ static void SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int cla
     if (SDL_strlen(audiodev) < (sizeof(audiopath) - 3)) {
         int instance = 0;
         while (instance <= 64) {
-            SDL_snprintf(audiopath, SDL_arraysize(audiopath),
-                         "%s%d", audiodev, instance);
+            (void)SDL_snprintf(audiopath, SDL_arraysize(audiopath),
+                               "%s%d", audiodev, instance);
             instance++;
             test_device(iscapture, audiopath, flags, test);
         }

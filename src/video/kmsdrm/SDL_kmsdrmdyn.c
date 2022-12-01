@@ -38,9 +38,6 @@ typedef struct
     const char *libname;
 } kmsdrmdynlib;
 
-#ifndef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC
-#define SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC NULL
-#endif
 #ifndef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM
 #define SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM NULL
 #endif

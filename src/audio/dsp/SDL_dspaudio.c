@@ -199,8 +199,8 @@ static int DSP_OpenDevice(_THIS, const char *devname)
     SDL_CalculateAudioSpec(&this->spec);
 
     /* Determine the power of two of the fragment size */
-    for (frag_spec = 0; (0x01U << frag_spec) < this->spec.size; ++frag_spec)
-        ;
+    for (frag_spec = 0; (0x01U << frag_spec) < this->spec.size; ++frag_spec) {
+    }
     if ((0x01U << frag_spec) != this->spec.size) {
         return SDL_SetError("Fragment size must be a power of two");
     }

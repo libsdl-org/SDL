@@ -37,10 +37,10 @@
 #endif
 
 extern int
-SDL_EVDEV_GuessDeviceClass(unsigned long bitmask_ev[NBITS(EV_MAX)],
-                           unsigned long bitmask_abs[NBITS(ABS_MAX)],
-                           unsigned long bitmask_key[NBITS(KEY_MAX)],
-                           unsigned long bitmask_rel[NBITS(REL_MAX)])
+SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_ev[NBITS(EV_MAX)],
+                           const unsigned long bitmask_abs[NBITS(ABS_MAX)],
+                           const unsigned long bitmask_key[NBITS(KEY_MAX)],
+                           const unsigned long bitmask_rel[NBITS(REL_MAX)])
 {
     struct range
     {

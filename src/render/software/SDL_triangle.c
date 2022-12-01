@@ -659,7 +659,7 @@ int SDL_SW_BlitTriangle(
         tmp_info.src_pitch = src_pitch;
 
         /* dst */
-        tmp_info.dst = (Uint8 *)dst_ptr;
+        tmp_info.dst = dst_ptr;
         tmp_info.dst_pitch = dst_pitch;
 
         SDL_BlitTriangle_Slow(&tmp_info, s2_x_area, dstrect, area, bias_w0, bias_w1, bias_w2,
@@ -682,7 +682,7 @@ int SDL_SW_BlitTriangle(
         TRIANGLE_BEGIN_LOOP
         {
             TRIANGLE_GET_TEXTCOORD
-            Uint8 *sptr = (Uint8 *)((Uint8 *)src_ptr + srcy * src_pitch);
+            Uint8 *sptr = (Uint8 *)src_ptr + srcy * src_pitch;
             dptr[0] = sptr[3 * srcx];
             dptr[1] = sptr[3 * srcx + 1];
             dptr[2] = sptr[3 * srcx + 2];
@@ -700,7 +700,7 @@ int SDL_SW_BlitTriangle(
         TRIANGLE_BEGIN_LOOP
         {
             TRIANGLE_GET_TEXTCOORD
-            Uint8 *sptr = (Uint8 *)((Uint8 *)src_ptr + srcy * src_pitch);
+            Uint8 *sptr = (Uint8 *)src_ptr + srcy * src_pitch;
             *dptr = sptr[srcx];
         }
         TRIANGLE_END_LOOP
@@ -839,14 +839,17 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
             break;
         case SDL_COPY_ADD:
             dstR = srcR + dstR;
-            if (dstR > 255)
+            if (dstR > 255) {
                 dstR = 255;
+            }
             dstG = srcG + dstG;
-            if (dstG > 255)
+            if (dstG > 255) {
                 dstG = 255;
+            }
             dstB = srcB + dstB;
-            if (dstB > 255)
+            if (dstB > 255) {
                 dstB = 255;
+            }
             break;
         case SDL_COPY_MOD:
             dstR = (srcR * dstR) / 255;
@@ -855,17 +858,21 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
             break;
         case SDL_COPY_MUL:
             dstR = ((srcR * dstR) + (dstR * (255 - srcA))) / 255;
-            if (dstR > 255)
+            if (dstR > 255) {
                 dstR = 255;
+            }
             dstG = ((srcG * dstG) + (dstG * (255 - srcA))) / 255;
-            if (dstG > 255)
+            if (dstG > 255) {
                 dstG = 255;
+            }
             dstB = ((srcB * dstB) + (dstB * (255 - srcA))) / 255;
-            if (dstB > 255)
+            if (dstB > 255) {
                 dstB = 255;
+            }
             dstA = ((srcA * dstA) + (dstA * (255 - srcA))) / 255;
-            if (dstA > 255)
+            if (dstA > 255) {
                 dstA = 255;
+            }
             break;
         }
         if (FORMAT_HAS_ALPHA(dstfmt_val)) {

@@ -162,7 +162,7 @@ int SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, EGLint 
     char altErrorText[32];
     if (errorText[0] == '\0') {
         /* An unknown-to-SDL error code was reported.  Report its hexadecimal value, instead of its name. */
-        SDL_snprintf(altErrorText, SDL_arraysize(altErrorText), "0x%x", (unsigned int)eglErrorCode);
+        (void)SDL_snprintf(altErrorText, SDL_arraysize(altErrorText), "0x%x", (unsigned int)eglErrorCode);
         errorText = altErrorText;
     }
     return SDL_SetError("%s (call to %s failed, reporting an error of %s)", message, eglFunctionName, errorText);
