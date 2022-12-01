@@ -2338,6 +2338,7 @@ SDL_IsJoystickVirtual(SDL_JoystickGUID guid)
 static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
 {
     static Uint32 wheel_joysticks[] = {
+        MAKE_VIDPID(0x0079, 0x1864), /* PXN V900 (PS3) */
         MAKE_VIDPID(0x046d, 0xc294), /* Logitech generic wheel */
         MAKE_VIDPID(0x046d, 0xc295), /* Logitech Momo Force */
         MAKE_VIDPID(0x046d, 0xc298), /* Logitech Driving Force Pro */
@@ -2348,6 +2349,7 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x046d, 0xc260), /* Logitech G29 (PS4) */
         MAKE_VIDPID(0x046d, 0xc261), /* Logitech G920 (initial mode) */
         MAKE_VIDPID(0x046d, 0xc262), /* Logitech G920 (active mode) */
+        MAKE_VIDPID(0x046d, 0xc26d), /* Logitech G923 (Xbox) */
         MAKE_VIDPID(0x046d, 0xc26e), /* Logitech G923 */
         MAKE_VIDPID(0x046d, 0xca03), /* Logitech Momo Racing */
         MAKE_VIDPID(0x044f, 0xb65d), /* Thrustmaster Wheel FFB */
