@@ -46,7 +46,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     if (device && device->windows) {
         for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
             NSWindow *nswindow = ((__bridge SDL_WindowData *) sdlwindow->driverdata).nswindow;
-            if (win == nswindow)
+            if (win == nswindow) {
                 return sdlwindow;
             }
         }

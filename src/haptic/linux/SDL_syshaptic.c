@@ -676,7 +676,7 @@ static int SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection *src)
             *dest = (src->dir[0] >= 0 ? 0x4000 : 0xC000);
         } else if (!src->dir[0]) {
             *dest = (src->dir[1] >= 0 ? 0x8000 : 0);
-        else {
+        } else {
             float f = SDL_atan2(src->dir[1], src->dir[0]);    /* Ideally we'd use fixed point math instead of floats... */
                     /*
                       SDL_atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
