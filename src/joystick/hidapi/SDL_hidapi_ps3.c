@@ -566,13 +566,9 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 = {
 
 static SDL_bool HIDAPI_DriverPS3ThirdParty_IsEnabled(void)
 {
-#if 1 /* Not enabled by default, we don't know what the L3/R3 buttons are */
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
-#else
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
                               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
                                                  SDL_HIDAPI_DEFAULT));
-#endif
 }
 
 static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -581,7 +577,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
     int size;
 
     if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
-        if (device) {
+        if (device && device->dev) {
             if ((size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data))) == 8 &&
                 data[2] == 0x26) {
                 /* Supported third party controller */
@@ -685,6 +681,8 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket(SDL_Joystick *joystick,
     if (ctx->last_state[1] != data[1]) {
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[1] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[1] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[1] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
     }
 
