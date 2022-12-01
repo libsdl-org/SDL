@@ -92,9 +92,9 @@ typedef struct SDL_evdevlist_item
             } delta;
             int tracking_id;
             int x, y, pressure;
-        } * slots;
+        } *slots;
 
-    } * touchscreen_data;
+    } *touchscreen_data;
 
     /* Mouse state */
     SDL_bool high_res_wheel;

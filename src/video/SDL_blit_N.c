@@ -81,9 +81,15 @@ GetL3CacheSize(void)
     (vector unsigned short)(a, b, c, d, e, f, g, h)
 #else
 #define VECUINT8_LITERAL(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
-    (vector unsigned char) { a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
+    (vector unsigned char)                                               \
+    {                                                                    \
+        a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p                   \
+    }
 #define VECUINT16_LITERAL(a, b, c, d, e, f, g, h) \
-    (vector unsigned short) { a, b, c, d, e, f, g, h }
+    (vector unsigned short)                       \
+    {                                             \
+        a, b, c, d, e, f, g, h                    \
+    }
 #endif
 
 #define UNALIGNED_PTR(x)       (((size_t)x) & 0x0000000F)
