@@ -31,16 +31,16 @@ int platform_testTypes(void *arg)
     int ret;
 
     ret = _compareSizeOfType(sizeof(Uint8), 1);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint8) = %lu, expected  1", (unsigned long)sizeof(Uint8));
+    SDLTest_AssertCheck(ret == 0, "sizeof(Uint8) = %u, expected  1", (unsigned int)sizeof(Uint8));
 
     ret = _compareSizeOfType(sizeof(Uint16), 2);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint16) = %lu, expected 2", (unsigned long)sizeof(Uint16));
+    SDLTest_AssertCheck(ret == 0, "sizeof(Uint16) = %u, expected 2", (unsigned int)sizeof(Uint16));
 
     ret = _compareSizeOfType(sizeof(Uint32), 4);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint32) = %lu, expected 4", (unsigned long)sizeof(Uint32));
+    SDLTest_AssertCheck(ret == 0, "sizeof(Uint32) = %u, expected 4", (unsigned int)sizeof(Uint32));
 
     ret = _compareSizeOfType(sizeof(Uint64), 8);
-    SDLTest_AssertCheck(ret == 0, "sizeof(Uint64) = %lu, expected 8", (unsigned long)sizeof(Uint64));
+    SDLTest_AssertCheck(ret == 0, "sizeof(Uint64) = %u, expected 8", (unsigned int)sizeof(Uint64));
 
     return TEST_COMPLETED;
 }
