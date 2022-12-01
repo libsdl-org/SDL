@@ -164,33 +164,42 @@ M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D 
 
 Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat.
 
+SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceWithFormat() have been combined into a new function SDL_CreateSurface().
+SDL_CreateRGBSurfaceFrom() and SDL_CreateRGBSurfaceWithFormatFrom() have been combined into a new function SDL_CreateSurfaceFrom().
 
-Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which take a format.
-SDL_CreateRGBSurface(), SDL_CreateRGBSurfaceFrom(), SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom() are removed.
-
-This code:
-
+You can implement the old functions in your own code easily:
 ```c
-SDL_Surface *surface = SDL_CreateRGBSurface(0, width, height, 0, Rmask, Gmask, Bmask, Amask);
+SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
+{
+    return SDL_CreateSurface(width, height, format);
+}
+
+SDL_Surface * SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
+{
+    return SDL_CreateSurfaceFrom(pixels, width, height, pitch, format);
+}
+
+SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    return SDL_CreateRGBSurfaceWithFormat(flags, width, height, depth,
+            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    return SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, depth, pitch,
+            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+}
+
 ```
 
-can be replaced with this:
-
+But if you're migrating your code which uses masks, you probably have a format in mind, possibly one of these:
 ```c
-Uint32 format = SDL_MasksToPixelFormatEnum(0, Rmask, Gmask, Bmask, Amask);
-SDL_Surface *surface = SDL_CreateSurface(width, height, format);
-```
-
-but in general, you probably have a format that you know you're using, possibly one of these:
-
-
-```c
-// Various mask (R, G, B, A) in little endian and their corresponding format:
+// Various mask (R, G, B, A) and their corresponding format:
 0xFF000000 0x00FF0000 0x0000FF00 0x000000FF => SDL_PIXELFORMAT_RGBA8888
-0x000000FF 0x0000FF00 0x00FF0000 0xFF000000 => SDL_PIXELFORMAT_ABGR8888
 0x00FF0000 0x0000FF00 0x000000FF 0xFF000000 => SDL_PIXELFORMAT_ARGB8888
-0x00FF0000 0x0000FF00 0x000000FF 0x00000000 => SDL_PIXELFORMAT_BGR24
-0x000000FF 0x0000FF00 0x000000FF 0x00000000 => SDL_PIXELFORMAT_RGB24
+0x0000FF00 0x00FF0000 0xFF000000 0x000000FF => SDL_PIXELFORMAT_BGRA8888
+0x000000FF 0x0000FF00 0x00FF0000 0xFF000000 => SDL_PIXELFORMAT_ABGR8888
 0x00007C00 00000x03E0 00000x001F 0x00000000 => SDL_PIXELFORMAT_RGB555
 0x00007C00 00000x03E0 00000x001F 0x00008000 => SDL_PIXELFORMAT_ARGB1555
 ```
