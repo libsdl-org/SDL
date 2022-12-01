@@ -580,7 +580,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendAdd()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(
         (void *)SDLTest_imageBlitBlendAdd.pixel_data,
         SDLTest_imageBlitBlendAdd.width,
         SDLTest_imageBlitBlendAdd.height,
@@ -1169,7 +1169,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
  */
 SDL_Surface *SDLTest_ImageBlitBlend()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(
         (void *)SDLTest_imageBlitBlend.pixel_data,
         SDLTest_imageBlitBlend.width,
         SDLTest_imageBlitBlend.height,
@@ -1588,7 +1588,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendMod()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(
         (void *)SDLTest_imageBlitBlendMod.pixel_data,
         SDLTest_imageBlitBlendMod.width,
         SDLTest_imageBlitBlendMod.height,
@@ -2390,7 +2390,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendNone()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(
         (void *)SDLTest_imageBlitBlendNone.pixel_data,
         SDLTest_imageBlitBlendNone.width,
         SDLTest_imageBlitBlendNone.height,
@@ -2924,7 +2924,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
  */
 SDL_Surface *SDLTest_ImageBlitBlendAll()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(
         (void *)SDLTest_imageBlitBlendAll.pixel_data,
         SDLTest_imageBlitBlendAll.width,
         SDLTest_imageBlitBlendAll.height,

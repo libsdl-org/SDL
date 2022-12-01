@@ -383,13 +383,13 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
             swdata->display->pixels = pixels;
             swdata->display->pitch = pitch;
         } else {
-            swdata->display = SDL_CreateRGBSurfaceFrom(pixels, w, h, pitch, target_format);
+            swdata->display = SDL_CreateSurfaceFrom(pixels, w, h, pitch, target_format);
             if (!swdata->display) {
                 return -1;
             }
         }
         if (!swdata->stretch) {
-            swdata->stretch = SDL_CreateRGBSurface(swdata->w, swdata->h, target_format);
+            swdata->stretch = SDL_CreateSurface(swdata->w, swdata->h, target_format);
             if (!swdata->stretch) {
                 return -1;
             }

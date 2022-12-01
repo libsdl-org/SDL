@@ -1041,7 +1041,7 @@ _hasTexAlpha(void)
  *
  * \sa
  * http://wiki.libsdl.org/SDL_RenderReadPixels
- * http://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
+ * http://wiki.libsdl.org/SDL_CreateSurfaceFrom
  * http://wiki.libsdl.org/SDL_FreeSurface
  */
 static void
@@ -1068,8 +1068,8 @@ _compare(SDL_Surface *referenceSurface, int allowable_error)
    SDLTest_AssertCheck(result == 0, "Validate result from SDL_RenderReadPixels, expected: 0, got: %i", result);
 
    /* Create surface. */
-   testSurface = SDL_CreateRGBSurfaceFrom(pixels, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, TESTRENDER_SCREEN_W*4, RENDER_COMPARE_FORMAT);
-   SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateRGBSurfaceFrom is not NULL");
+   testSurface = SDL_CreateSurfaceFrom(pixels, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, TESTRENDER_SCREEN_W*4, RENDER_COMPARE_FORMAT);
+   SDLTest_AssertCheck(testSurface != NULL, "Verify result from SDL_CreateSurfaceFrom is not NULL");
 
    /* Compare surface. */
    result = SDLTest_CompareSurfaces( testSurface, referenceSurface, allowable_error );

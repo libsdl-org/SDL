@@ -19,7 +19,9 @@ General:
 	* SDL_RWFromFP()
 	* SDL_SetWindowBrightness()
 	* SDL_SetWindowGammaRamp()
+   * SDL_CreateRGBSurface()
    * SDL_CreateRGBSurfaceWithFormat()
+   * SDL_CreateRGBSurfaceFrom()
    * SDL_CreateRGBSurfaceWithFormatFrom()
 * Removed the following hints from the API, see docs/README-migration.md for details:
 	* SDL_HINT_IDLE_TIMER_DISABLED
@@ -28,7 +30,7 @@ General:
 	* SDL_HINT_VIDEO_X11_XVIDMODE
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
 * Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
-* SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceFrom() now take a format instead of masks, and SDL_CreateRGBSurface() no longer takes a flags parameter. SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom() are redundant and have been removed.
+* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which take a format. SDL_CreateRGBSurface*() are removed.
  
 
 

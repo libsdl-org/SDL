@@ -170,7 +170,7 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 static SDL_Cursor *WIN_CreateBlankCursor()
 {
     SDL_Cursor *cursor = NULL;
-    SDL_Surface *surface = SDL_CreateRGBSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
+    SDL_Surface *surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
     if (surface) {
         cursor = WIN_CreateCursor(surface, 0, 0);
         SDL_FreeSurface(surface);

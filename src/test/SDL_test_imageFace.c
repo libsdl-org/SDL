@@ -223,7 +223,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageFace = {
  */
 SDL_Surface *SDLTest_ImageFace()
 {
-    SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(
         (void *)SDLTest_imageFace.pixel_data,
         SDLTest_imageFace.width,
         SDLTest_imageFace.height,

@@ -38,7 +38,7 @@ int SDL_OFFSCREEN_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *for
 
     /* Create a new one */
     SDL_GetWindowSize(window, &w, &h);
-    surface = SDL_CreateRGBSurface(w, h, surface_format);
+    surface = SDL_CreateSurface(w, h, surface_format);
     if (surface == NULL) {
         return -1;
     }

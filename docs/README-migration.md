@@ -165,7 +165,8 @@ M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D 
 Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat.
 
 
-SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceFrom() now take a format instead of masks, and SDL_CreateRGBSurface() no longer takes a flags parameter. SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom() are redundant and have been removed.
+Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which take a format.
+SDL_CreateRGBSurface(), SDL_CreateRGBSurfaceFrom(), SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom() are removed.
 
 This code:
 
@@ -177,7 +178,7 @@ can be replaced with this:
 
 ```c
 Uint32 format = SDL_MasksToPixelFormatEnum(0, Rmask, Gmask, Bmask, Amask);
-SDL_Surface *surface = SDL_CreateRGBSurface(width, height, format);
+SDL_Surface *surface = SDL_CreateSurface(width, height, format);
 ```
 
 but in general, you probably have a format that you know you're using, possibly one of these:

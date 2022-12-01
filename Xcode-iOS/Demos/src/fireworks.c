@@ -337,7 +337,7 @@ initializeTexture()
     }
 
     /* Create surface that will hold pixels passed into OpenGL */
-    bmp_surface_rgba8888 = SDL_CreateRGBSurface(bmp_surface->w, bmp_surface->h, SDL_PIXELFORMAT_ABGR8888);
+    bmp_surface_rgba8888 = SDL_CreateSurface(bmp_surface->w, bmp_surface->h, SDL_PIXELFORMAT_ABGR8888);
     
     /* Blit to this surface, effectively converting the format */
     SDL_BlitSurface(bmp_surface, NULL, bmp_surface_rgba8888, NULL);

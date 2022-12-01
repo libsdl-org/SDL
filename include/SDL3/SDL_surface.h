@@ -124,10 +124,10 @@ typedef enum
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRGBSurfaceFrom
+ * \sa SDL_CreateSurfaceFrom
  * \sa SDL_FreeSurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface
     (int width, int height, Uint32 format);
 
 /**
@@ -147,10 +147,10 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRGBSurface
+ * \sa SDL_CreateSurface
  * \sa SDL_FreeSurface
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom
     (void *pixels, int width, int height, int pitch, Uint32 format);
 
 /**
@@ -162,8 +162,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRGBSurface
- * \sa SDL_CreateRGBSurfaceFrom
+ * \sa SDL_CreateSurface
+ * \sa SDL_CreateSurfaceFrom
  * \sa SDL_LoadBMP
  * \sa SDL_LoadBMP_RW
  */
@@ -564,7 +564,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface * surface)
  *
  * \sa SDL_AllocFormat
  * \sa SDL_ConvertSurfaceFormat
- * \sa SDL_CreateRGBSurface
+ * \sa SDL_CreateSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
     (SDL_Surface * src, const SDL_PixelFormat * fmt);
@@ -587,7 +587,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
  *
  * \sa SDL_AllocFormat
  * \sa SDL_ConvertSurface
- * \sa SDL_CreateRGBSurface
+ * \sa SDL_CreateSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat
     (SDL_Surface * src, Uint32 pixel_format);

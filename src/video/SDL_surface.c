@@ -72,7 +72,7 @@ SDL_CalculatePitch(Uint32 format, size_t width, SDL_bool minimal)
  * enum SDL_PIXELFORMAT_* format
  */
 SDL_Surface *
-SDL_CreateRGBSurface(int width, int height, Uint32 format)
+SDL_CreateSurface(int width, int height, Uint32 format)
 {
     size_t pitch;
     SDL_Surface *surface;
@@ -175,7 +175,7 @@ SDL_CreateRGBSurface(int width, int height, Uint32 format)
  * enum SDL_PIXELFORMAT_* format
  */
 SDL_Surface *
-SDL_CreateRGBSurfaceFrom(void *pixels,
+SDL_CreateSurfaceFrom(void *pixels,
                          int width, int height, int pitch,
                          Uint32 format)
 {
@@ -199,7 +199,7 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
         return NULL;
     }
 
-    surface = SDL_CreateRGBSurface(0, 0, format);
+    surface = SDL_CreateSurface(0, 0, format);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
@@ -959,7 +959,7 @@ int SDL_PrivateLowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect,
                 } else {
                     fmt = SDL_PIXELFORMAT_ARGB8888;
                 }
-                tmp1 = SDL_CreateRGBSurface(src->w, src->h, fmt);
+                tmp1 = SDL_CreateSurface(src->w, src->h, fmt);
                 SDL_LowerBlit(src, srcrect, tmp1, &tmprect);
 
                 srcrect2.x = 0;
@@ -974,7 +974,7 @@ int SDL_PrivateLowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect,
             /* Intermediate scaling */
             if (is_complex_copy_flags || src->format->format != dst->format->format) {
                 SDL_Rect tmprect;
-                SDL_Surface *tmp2 = SDL_CreateRGBSurface(dstrect->w, dstrect->h, src->format->format);
+                SDL_Surface *tmp2 = SDL_CreateSurface(dstrect->w, dstrect->h, src->format->format);
                 SDL_SoftStretchLinear(src, &srcrect2, tmp2, NULL);
 
                 SDL_SetSurfaceColorMod(tmp2, r, g, b);
@@ -1088,7 +1088,7 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
     }
 
     /* Create a new surface with the desired format */
-    convert = SDL_CreateRGBSurface(surface->w, surface->h, format->format);
+    convert = SDL_CreateSurface(surface->w, surface->h, format->format);
     if (convert == NULL) {
         return NULL;
     }
@@ -1229,7 +1229,7 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
             int converted_colorkey = 0;
 
             /* Create a dummy surface to get the colorkey converted */
-            tmp = SDL_CreateRGBSurface(1, 1, surface->format->format);
+            tmp = SDL_CreateSurface(1, 1, surface->format->format);
 
             /* Share the palette, if any */
             if (surface->format->palette) {

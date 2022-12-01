@@ -468,7 +468,7 @@ extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AllocPalette
- * \sa SDL_CreateRGBSurface
+ * \sa SDL_CreateSurface
  */
 extern DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
                                                  const SDL_Color * colors,

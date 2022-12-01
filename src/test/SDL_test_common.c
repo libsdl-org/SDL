@@ -1750,7 +1750,7 @@ static void SDLTest_ScreenShot(SDL_Renderer *renderer)
 
     SDL_RenderGetViewport(renderer, &viewport);
 
-    surface = SDL_CreateRGBSurface(viewport.w, viewport.h, SDL_PIXELFORMAT_BGR24);
+    surface = SDL_CreateSurface(viewport.w, viewport.h, SDL_PIXELFORMAT_BGR24);
 
     if (surface == NULL) {
         SDL_Log("Couldn't create surface: %s\n", SDL_GetError());

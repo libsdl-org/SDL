@@ -590,8 +590,8 @@
 #define SDL_RenderGetIntegerScale SDL_RenderGetIntegerScale_REAL
 #define SDL_DequeueAudio SDL_DequeueAudio_REAL
 #define SDL_SetWindowResizable SDL_SetWindowResizable_REAL
-#define SDL_CreateRGBSurface SDL_CreateRGBSurface_REAL
-#define SDL_CreateRGBSurfaceFrom SDL_CreateRGBSurfaceFrom_REAL
+#define SDL_CreateSurface SDL_CreateSurface_REAL
+#define SDL_CreateSurfaceFrom SDL_CreateSurfaceFrom_REAL
 #define SDL_GetHintBoolean SDL_GetHintBoolean_REAL
 #define SDL_JoystickGetDeviceVendor SDL_JoystickGetDeviceVendor_REAL
 #define SDL_JoystickGetDeviceProduct SDL_JoystickGetDeviceProduct_REAL

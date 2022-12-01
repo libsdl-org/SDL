@@ -70,7 +70,7 @@ CreateNewWindowFramebuffer(SDL_Window *window)
 {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
-    return SDL_CreateRGBSurface(w, h, FRAMEBUFFER_FORMAT);
+    return SDL_CreateSurface(w, h, FRAMEBUFFER_FORMAT);
 }
 
 int SDL_N3DS_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)

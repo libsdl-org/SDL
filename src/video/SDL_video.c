@@ -2629,7 +2629,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
         return window->surface;
     }
 
-    return SDL_CreateRGBSurfaceFrom(pixels, window->w, window->h, pitch, format);
+    return SDL_CreateSurfaceFrom(pixels, window->w, window->h, pitch, format);
 }
 
 SDL_Surface *

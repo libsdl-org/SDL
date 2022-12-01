@@ -174,7 +174,7 @@ loadFont(void)
         /* now we convert the surface to our desired pixel format */
         int format = SDL_PIXELFORMAT_ABGR8888;  /* desired texture format */
 
-        SDL_Surface *converted = SDL_CreateRGBSurface(surface->w, surface->h, format);
+        SDL_Surface *converted = SDL_CreateSurface(surface->w, surface->h, format);
 
         SDL_BlitSurface(surface, NULL, converted, NULL);
         /* create our texture */
