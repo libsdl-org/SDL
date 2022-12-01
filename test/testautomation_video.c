@@ -436,14 +436,16 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
             /* Make call */
             dResult = SDL_GetClosestDisplayMode(i, &target, &closest);
             SDLTest_AssertPass("Call to SDL_GetClosestDisplayMode(target=current/variation%d)", variation);
-            SDLTest_AssertCheck(dResult != NULL, "Verify returned value is not NULL");
+            SDLTest_Assert(dResult != NULL, "Verify returned value is not NULL");
 
             /* Check that one gets the current resolution back again */
             SDLTest_AssertCheck(closest.w == current.w, "Verify returned width matches current width; expected: %d, got: %d", current.w, closest.w);
             SDLTest_AssertCheck(closest.h == current.h, "Verify returned height matches current height; expected: %d, got: %d", current.h, closest.h);
+            /* NOLINTBEGIN(clang-analyzer-core.NullDereference): Checked earlier for NULL */
             SDLTest_AssertCheck(closest.w == dResult->w, "Verify return value matches assigned value; expected: %d, got: %d", closest.w, dResult->w);
             SDLTest_AssertCheck(closest.h == dResult->h, "Verify return value matches assigned value; expected: %d, got: %d", closest.h, dResult->h);
-        }
+            /* NOLINTEND(clang-analyzer-core.NullDereference) */
+    }
     }
 
     return TEST_COMPLETED;
@@ -1530,7 +1532,7 @@ int video_getSetWindowData(void *arg)
         returnValue = TEST_ABORTED;
         goto cleanup;
     }
-    userdata2 = (char *)SDL_strdup(referenceUserdata2);
+    userdata2 = SDL_strdup(referenceUserdata2);
     if (userdata2 == NULL) {
         returnValue = TEST_ABORTED;
         goto cleanup;
