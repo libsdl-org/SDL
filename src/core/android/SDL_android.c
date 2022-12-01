@@ -2472,7 +2472,6 @@ void Android_JNI_DestroyCustomCursor(int cursorID)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midDestroyCustomCursor, cursorID);
-    return;
 }
 
 SDL_bool Android_JNI_SetCustomCursor(int cursorID)

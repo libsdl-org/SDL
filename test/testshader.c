@@ -136,7 +136,7 @@ static SDL_bool CompileShader(GLhandleARB shader, const char *source)
         char *info;
 
         glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
-        info = (char *)SDL_malloc(length + 1);
+        info = (char *)SDL_malloc((size_t)length + 1);
         if (info == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         } else {
@@ -164,7 +164,7 @@ static SDL_bool LinkProgram(ShaderData *data)
         char *info;
 
         glGetObjectParameterivARB(data->program, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
-        info = (char *)SDL_malloc(length + 1);
+        info = (char *)SDL_malloc((size_t)length + 1);
         if (info == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         } else {
@@ -210,7 +210,7 @@ static SDL_bool CompileShaderProgram(ShaderData *data)
     glUseProgramObjectARB(data->program);
     for (i = 0; i < num_tmus_bound; ++i) {
         char tex_name[5];
-        SDL_snprintf(tex_name, SDL_arraysize(tex_name), "tex%d", i);
+        (void)SDL_snprintf(tex_name, SDL_arraysize(tex_name), "tex%d", i);
         location = glGetUniformLocationARB(data->program, tex_name);
         if (location >= 0) {
             glUniform1iARB(location, i);

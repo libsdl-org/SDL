@@ -255,9 +255,11 @@ Wayland_source_send(SDL_MimeDataList *mime_data, const char *mime_type, int fd)
         status = SDL_SetError("Invalid mime type");
         close(fd);
     } else {
-        while (write_pipe(fd, mime_data->data, mime_data->length,
-                          &written_bytes) > 0)
-            ;
+        while (write_pipe(fd,
+                          mime_data->data,
+                          mime_data->length,
+                          &written_bytes) > 0) {
+        }
         close(fd);
         status = written_bytes;
     }
@@ -421,10 +423,9 @@ void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource 
     }
 }
 
-void *
-Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
-                           size_t *length, const char *mime_type,
-                           SDL_bool null_terminate)
+void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
+                                 size_t *length, const char *mime_type,
+                                 SDL_bool null_terminate)
 {
     SDL_WaylandDataDevice *data_device = NULL;
 
@@ -434,7 +435,10 @@ Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 
     if (offer == NULL) {
         SDL_SetError("Invalid data offer");
-    } else if ((data_device = offer->data_device) == NULL) {
+        return NULL;
+    }
+    data_device = offer->data_device;
+    if (data_device == NULL) {
         SDL_SetError("Data device not initialized");
     } else if (pipe2(pipefd, O_CLOEXEC | O_NONBLOCK) == -1) {
         SDL_SetError("Could not read pipe");
@@ -446,8 +450,8 @@ Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 
         close(pipefd[1]);
 
-        while (read_pipe(pipefd[0], &buffer, length, null_terminate) > 0)
-            ;
+        while (read_pipe(pipefd[0], &buffer, length, null_terminate) > 0) {
+        }
         close(pipefd[0]);
     }
     return buffer;
@@ -466,7 +470,10 @@ Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
 
     if (offer == NULL) {
         SDL_SetError("Invalid data offer");
-    } else if ((primary_selection_device = offer->primary_selection_device) == NULL) {
+        return NULL;
+    }
+    primary_selection_device = offer->primary_selection_device;
+    if (primary_selection_device == NULL) {
         SDL_SetError("Primary selection device not initialized");
     } else if (pipe2(pipefd, O_CLOEXEC | O_NONBLOCK) == -1) {
         SDL_SetError("Could not read pipe");
@@ -478,8 +485,8 @@ Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
 
         close(pipefd[1]);
 
-        while (read_pipe(pipefd[0], &buffer, length, null_terminate) > 0)
-            ;
+        while (read_pipe(pipefd[0], &buffer, length, null_terminate) > 0) {
+        }
         close(pipefd[0]);
     }
     return buffer;

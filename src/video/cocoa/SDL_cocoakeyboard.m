@@ -219,10 +219,11 @@ static void HandleModifiers(_THIS, unsigned short scancode, unsigned int modifie
 
     for (int i = 0; i < 12; i++) {
         if (code == codes[i]) {
-            if (modifierFlags & modifiers[i])
+            if (modifierFlags & modifiers[i]) {
                 SDL_SendKeyboardKey(SDL_PRESSED, code);
-            else
+            } else {
                 SDL_SendKeyboardKey(SDL_RELEASED, code);
+            }
         }
     }
 }

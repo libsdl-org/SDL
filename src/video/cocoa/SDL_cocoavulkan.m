@@ -243,11 +243,11 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT =
         (PFN_vkCreateMetalSurfaceEXT)vkGetInstanceProcAddr(
-            (VkInstance)instance,
+            instance,
             "vkCreateMetalSurfaceEXT");
     PFN_vkCreateMacOSSurfaceMVK vkCreateMacOSSurfaceMVK =
         (PFN_vkCreateMacOSSurfaceMVK)vkGetInstanceProcAddr(
-            (VkInstance)instance,
+            instance,
             "vkCreateMacOSSurfaceMVK");
     VkResult result;
 

@@ -276,7 +276,7 @@ extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem * sem);
  * successful it will atomically decrement the semaphore value.
  *
  * \param sem the semaphore to wait on
- * \param ms the length of the timeout, in milliseconds
+ * \param timeout the length of the timeout, in milliseconds
  * \returns 0 if the wait succeeds, `SDL_MUTEX_TIMEDOUT` if the wait does not
  *          succeed in the allotted time, or a negative error code on failure;
  *          call SDL_GetError() for more information.
@@ -290,7 +290,7 @@ extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem * sem);
  * \sa SDL_SemValue
  * \sa SDL_SemWait
  */
-extern DECLSPEC int SDLCALL SDL_SemWaitTimeout(SDL_sem * sem, Uint32 ms);
+extern DECLSPEC int SDLCALL SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout);
 
 /**
  * Atomically increment a semaphore's value and wake waiting threads.

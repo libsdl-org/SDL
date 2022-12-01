@@ -804,13 +804,13 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     }
 
     /* Ensure the size is wide enough for all of the buttons. */
-    if (Size.cx < messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin) {
-        Size.cx = messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin;
+    if (Size.cx < (LONG)messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin) {
+        Size.cx = (LONG)messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin;
     }
 
     /* Reset the height to the icon size if it is actually bigger than the text. */
-    if (icon && Size.cy < IconMargin * 2 + IconHeight) {
-        Size.cy = IconMargin * 2 + IconHeight;
+    if (icon && Size.cy < (LONG)IconMargin * 2 + IconHeight) {
+        Size.cy = (LONG)IconMargin * 2 + IconHeight;
     }
 
     /* Add vertical space for the buttons and border. */

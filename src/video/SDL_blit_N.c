@@ -3415,11 +3415,11 @@ SDL_CalculateBlitN(SDL_Surface *surface)
            because RLE is the preferred fast way to deal with this.
            If a particular case turns out to be useful we'll add it. */
 
-        if (srcfmt->BytesPerPixel == 2 && surface->map->identity)
+        if (srcfmt->BytesPerPixel == 2 && surface->map->identity != 0) {
             return Blit2to2Key;
-        else if (dstfmt->BytesPerPixel == 1)
+        } else if (dstfmt->BytesPerPixel == 1) {
             return BlitNto1Key;
-        else {
+        } else {
 #if SDL_ALTIVEC_BLITTERS
             if ((srcfmt->BytesPerPixel == 4) && (dstfmt->BytesPerPixel == 4) && SDL_HasAltiVec()) {
                 return Blit32to32KeyAltivec;

@@ -103,8 +103,8 @@ extern int WIN_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *
 extern void WIN_OnWindowEnter(_THIS, SDL_Window *window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
 extern int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
-extern void WIN_ClientPointToSDL(const SDL_Window *window, int *w, int *h);
-extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *w, int *h);
+extern void WIN_ClientPointToSDL(const SDL_Window *window, int *x, int *y);
+extern void WIN_ClientPointFromSDL(const SDL_Window *window, int *x, int *y);
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int WIN_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation);
 

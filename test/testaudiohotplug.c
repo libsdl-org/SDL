@@ -93,9 +93,9 @@ iteration()
             int index = e.adevice.which;
             int iscapture = e.adevice.iscapture;
             const char *name = SDL_GetAudioDeviceName(index, iscapture);
-            if (name != NULL)
+            if (name != NULL) {
                 SDL_Log("New %s audio device at index %u: %s\n", devtypestr(iscapture), (unsigned int)index, name);
-            else {
+            } else {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Got new %s device at index %u, but failed to get the name: %s\n",
                              devtypestr(iscapture), (unsigned int)index, SDL_GetError());
                 continue;
@@ -163,13 +163,13 @@ int main(int argc, char *argv[])
 #if HAVE_SIGNAL_H
     /* Set the signals */
 #ifdef SIGHUP
-    signal(SIGHUP, poked);
+    (void)signal(SIGHUP, poked);
 #endif
-    signal(SIGINT, poked);
+    (void)signal(SIGINT, poked);
 #ifdef SIGQUIT
-    signal(SIGQUIT, poked);
+    (void)signal(SIGQUIT, poked);
 #endif
-    signal(SIGTERM, poked);
+    (void)signal(SIGTERM, poked);
 #endif /* HAVE_SIGNAL_H */
 
     /* Show the list of available drivers */

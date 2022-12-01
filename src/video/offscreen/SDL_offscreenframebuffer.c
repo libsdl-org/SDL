@@ -64,8 +64,8 @@ int SDL_OFFSCREEN_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_R
     /* Send the data to the display */
     if (SDL_getenv("SDL_VIDEO_OFFSCREEN_SAVE_FRAMES")) {
         char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-                     (int)SDL_GetWindowID(window), ++frame_number);
+        (void)SDL_snprintf(file, sizeof file, "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
+                           SDL_GetWindowID(window), ++frame_number);
         SDL_SaveBMP(surface, file);
     }
     return 0;

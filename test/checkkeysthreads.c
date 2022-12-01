@@ -145,7 +145,6 @@ PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
         print_string(&spot, &left, " (repeat)");
     }
     SDL_Log("%s\n", message);
-    fflush(stderr);
 }
 
 static void
@@ -157,7 +156,7 @@ PrintText(const char *eventtype, const char *text)
     expanded[0] = '\0';
     for (spot = text; *spot; ++spot) {
         size_t length = SDL_strlen(expanded);
-        SDL_snprintf(expanded + length, sizeof(expanded) - length, "\\x%.2x", (unsigned char)*spot);
+        (void)SDL_snprintf(expanded + length, sizeof expanded - length, "\\x%.2x", (unsigned char)*spot);
     }
     SDL_Log("%s Text (%s): \"%s%s\"\n", eventtype, expanded, *text == '"' ? "\\" : "", text);
 }
@@ -168,12 +167,11 @@ void loop()
     /* Check for events */
     /*SDL_WaitEvent(&event); emscripten does not like waiting*/
 
-    fprintf(stderr, "starting loop\n");
-    fflush(stderr);
+    (void)fprintf(stderr, "starting loop\n");
+    (void)fflush(stderr);
     // while (SDL_PollEvent(&event)) {
     while (!done && SDL_WaitEvent(&event)) {
-        fprintf(stderr, "got event type: %" SDL_PRIu32 "\n", event.type);
-        fflush(stderr);
+        SDL_Log("Got event type: %" SDL_PRIu32 "\n", event.type);
         switch (event.type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
@@ -187,8 +185,8 @@ void loop()
             break;
         case SDL_MOUSEBUTTONDOWN:
             /* Left button quits the app, other buttons toggles text input */
-            fprintf(stderr, "mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
-            fflush(stderr);
+            (void)fprintf(stderr, "mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
+            (void)fflush(stderr);
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
             } else {
@@ -207,11 +205,11 @@ void loop()
         default:
             break;
         }
-        fprintf(stderr, "waiting new event\n");
-        fflush(stderr);
+        (void)fprintf(stderr, "waiting new event\n");
+        (void)fflush(stderr);
     }
-    fprintf(stderr, "exiting event loop\n");
-    fflush(stderr);
+    (void)fprintf(stderr, "exiting event loop\n");
+    (void)fflush(stderr);
 #ifdef __EMSCRIPTEN__
     if (done) {
         emscripten_cancel_main_loop();
@@ -226,8 +224,8 @@ static int SDLCALL ping_thread(void *ptr)
     SDL_Event sdlevent;
     SDL_memset(&sdlevent, 0, sizeof(SDL_Event));
     for (cnt = 0; cnt < 10; ++cnt) {
-        fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10);
-        fflush(stderr);
+        (void)fprintf(stderr, "sending event (%d/%d) from thread.\n", cnt + 1, 10);
+        (void)fflush(stderr);
         sdlevent.type = SDL_KEYDOWN;
         sdlevent.key.keysym.sym = SDLK_1;
         SDL_PushEvent(&sdlevent);
@@ -281,7 +279,7 @@ int main(int argc, char *argv[])
     /* Watch keystrokes */
     done = 0;
 
-    thread = SDL_CreateThread(ping_thread, "PingThread", (void *)NULL);
+    thread = SDL_CreateThread(ping_thread, "PingThread", NULL);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
