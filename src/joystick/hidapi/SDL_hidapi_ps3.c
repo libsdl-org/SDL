@@ -806,7 +806,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *devic
             continue;
         }
 
-        if (size == 27) {
+        if (size >= 19) {
             HIDAPI_DriverPS3ThirdParty_HandleStatePacket(joystick, ctx, data, size);
         } else {
 #ifdef DEBUG_JOYSTICK
