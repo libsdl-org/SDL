@@ -445,7 +445,7 @@ int video_getClosestDisplayModeCurrentResolution(void *arg)
             SDLTest_AssertCheck(closest.w == dResult->w, "Verify return value matches assigned value; expected: %d, got: %d", closest.w, dResult->w);
             SDLTest_AssertCheck(closest.h == dResult->h, "Verify return value matches assigned value; expected: %d, got: %d", closest.h, dResult->h);
             /* NOLINTEND(clang-analyzer-core.NullDereference) */
-    }
+        }
     }
 
     return TEST_COMPLETED;
