@@ -90,7 +90,6 @@ test_multi_audio(int devcount)
     for (i = 0; i < devcount; i++) {
         const char *devname = SDL_GetAudioDeviceName(i, 0);
         SDL_Log("playing on device #%d: ('%s')...", i, devname);
-        fflush(stdout);
 
         SDL_memset(&cbd[0], '\0', sizeof(callback_data));
         spec.userdata = &cbd[0];

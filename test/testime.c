@@ -155,15 +155,15 @@ static int unifont_init(const char *fontname)
         }
 
         /* Looking for the colon that separates the codepoint and glyph data at position 2, 4, 6 and 8. */
-        if (hexBuffer[2] == ':')
+        if (hexBuffer[2] == ':') {
             codepointHexSize = 2;
-        else if (hexBuffer[4] == ':')
+        } else if (hexBuffer[4] == ':') {
             codepointHexSize = 4;
-        else if (hexBuffer[6] == ':')
+        } else if (hexBuffer[6] == ':') {
             codepointHexSize = 6;
-        else if (hexBuffer[8] == ':')
+        } else if (hexBuffer[8] == ':') {
             codepointHexSize = 8;
-        else {
+        } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Could not find codepoint and glyph data separator symbol in hex file on line %d.\n", lineNumber);
             return -1;
         }
@@ -186,9 +186,9 @@ static int unifont_init(const char *fontname)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
             return -1;
         }
-        if (hexBuffer[32] == '\n')
+        if (hexBuffer[32] == '\n') {
             glyphWidth = 8;
-        else {
+        } else {
             glyphWidth = 16;
             bytesRead = SDL_RWread(hexFile, hexBuffer + 33, 1, 32);
             if (bytesRead < 32) {
@@ -203,9 +203,9 @@ static int unifont_init(const char *fontname)
         }
 
         if (codepoint <= UNIFONT_MAX_CODEPOINT) {
-            if (unifontGlyph[codepoint].width > 0)
+            if (unifontGlyph[codepoint].width > 0) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Ignoring duplicate codepoint 0x%08" SDL_PRIx32 " in hex file on line %d.\n", codepoint, lineNumber);
-            else {
+            } else {
                 unifontGlyph[codepoint].width = glyphWidth;
                 /* Pack the hex data into a more compact form. */
                 for (i = 0; i < glyphWidth * 2; i++) {
@@ -223,7 +223,8 @@ static int unifont_init(const char *fontname)
     return 0;
 }
 
-static void unifont_make_rgba(Uint8 *src, Uint8 *dst, Uint8 width)
+static void
+unifont_make_rgba(const Uint8 *src, Uint8 *dst, Uint8 width)
 {
     int i, j;
     Uint8 *row = dst;
@@ -275,7 +276,7 @@ static int unifont_load_texture(Uint32 textureID)
         Uint32 codepoint = UNIFONT_GLYPHS_IN_TEXTURE * textureID + i;
         if (unifontGlyph[codepoint].width > 0) {
             const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
-            const size_t offset = (cInTex / UNIFONT_GLYPHS_IN_ROW) * UNIFONT_TEXTURE_PITCH * 16 + (cInTex % UNIFONT_GLYPHS_IN_ROW) * 16 * 4;
+            const size_t offset = ((size_t)cInTex / UNIFONT_GLYPHS_IN_ROW) * UNIFONT_TEXTURE_PITCH * 16 + (cInTex % UNIFONT_GLYPHS_IN_ROW) * 16 * 4;
             unifont_make_rgba(unifontGlyph[codepoint].data, textureRGBA + offset, unifontGlyph[codepoint].width);
         }
     }
@@ -358,16 +359,16 @@ static void unifont_cleanup()
 size_t utf8_length(unsigned char c)
 {
     c = (unsigned char)(0xff & c);
-    if (c < 0x80)
+    if (c < 0x80) {
         return 1;
-    else if ((c >> 5) == 0x6)
+    } else if ((c >> 5) == 0x6) {
         return 2;
-    else if ((c >> 4) == 0xe)
+    } else if ((c >> 4) == 0xe) {
         return 3;
-    else if ((c >> 3) == 0x1e)
+    } else if ((c >> 3) == 0x1e) {
         return 4;
-    else
-        return 0;
+    }
+    return 0;
 }
 
 char *utf8_next(char *p)
@@ -405,9 +406,9 @@ Uint32 utf8_decode(char *p, size_t len)
     }
 
     for (; i < len; ++i) {
-        if (i == 0)
+        if (i == 0) {
             codepoint = (0xff >> len) & *p;
-        else {
+        } else {
             codepoint <<= 6;
             codepoint |= 0x3f & *p;
         }
@@ -644,9 +645,9 @@ int main(int argc, char *argv[])
             argc--;
             argv++;
 
-            if (argc > 0)
+            if (argc > 0) {
                 fontname = argv[0];
-            else {
+            } else {
                 usage();
                 return 0;
             }

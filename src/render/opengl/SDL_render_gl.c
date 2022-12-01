@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 #if SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED
-#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult and SDL_RecreateWindow */
 #include <SDL3/SDL_opengl.h>
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
@@ -48,9 +48,6 @@
 /* Details on optimizing the texture path on macOS:
    http://developer.apple.com/library/mac/#documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_texturedata/opengl_texturedata.html
 */
-
-/* Used to re-create the window with OpenGL capability */
-extern int SDL_RecreateWindow(SDL_Window *window, Uint32 flags);
 
 static const float inv255f = 1.0f / 255.0f;
 
@@ -476,7 +473,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         size_t size;
         data->pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
-        size = texture->h * data->pitch;
+        size = (size_t)texture->h * data->pitch;
         if (texture->format == SDL_PIXELFORMAT_YV12 ||
             texture->format == SDL_PIXELFORMAT_IYUV) {
             /* Need to add size for the U and V planes */
@@ -694,7 +691,7 @@ static int GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     GL_TextureData *data = (GL_TextureData *)texture->driverdata;
     const int texturebpp = SDL_BYTESPERPIXEL(texture->format);
 
-    SDL_assert(texturebpp != 0); /* otherwise, division by zero later. */
+    SDL_assert_release(texturebpp != 0); /* otherwise, division by zero later. */
 
     GL_ActivateRenderer(renderer);
 
@@ -1429,12 +1426,12 @@ static int GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
                             SDL_GetPixelFormatName(temp_format));
     }
 
-    if (!rect->w || !rect->h) {
+    if (rect->w == 0 || rect->h == 0) {
         return 0; /* nothing to do. */
     }
 
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
-    temp_pixels = SDL_malloc(rect->h * temp_pitch);
+    temp_pixels = SDL_malloc((size_t)rect->h * temp_pitch);
     if (temp_pixels == NULL) {
         return SDL_OutOfMemory();
     }

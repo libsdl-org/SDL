@@ -216,7 +216,6 @@
 		A75FCD7C23E25AB700529352 /* vulkan_wayland.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */; };
 		A75FCD7E23E25AB700529352 /* SDL_cocoashape.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A67E23E2513E00DCD162 /* SDL_cocoashape.h */; };
 		A75FCD8023E25AB700529352 /* SDL_shaders_gles2.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90523E2514000DCD162 /* SDL_shaders_gles2.h */; };
-		A75FCD8223E25AB700529352 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
 		A75FCD8323E25AB700529352 /* SDL_blendpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8F823E2514000DCD162 /* SDL_blendpoint.h */; };
 		A75FCD8423E25AB700529352 /* SDL_offscreenvideo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5F123E2513D00DCD162 /* SDL_offscreenvideo.h */; };
 		A75FCD8523E25AB700529352 /* SDL_nullevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60B23E2513D00DCD162 /* SDL_nullevents_c.h */; };
@@ -309,7 +308,6 @@
 		A75FCE0323E25AB700529352 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A75FCE0423E25AB700529352 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
 		A75FCE0523E25AB700529352 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A75FCE0623E25AB700529352 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
 		A75FCE0723E25AB700529352 /* SDL_systhread.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A78623E2513E00DCD162 /* SDL_systhread.c */; };
 		A75FCE0823E25AB700529352 /* SDL_windowevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */; };
 		A75FCE0923E25AB700529352 /* s_scalbn.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A91A23E2514000DCD162 /* s_scalbn.c */; };
@@ -533,7 +531,6 @@
 		A75FCF3523E25AC700529352 /* vulkan_wayland.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */; };
 		A75FCF3723E25AC700529352 /* SDL_cocoashape.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A67E23E2513E00DCD162 /* SDL_cocoashape.h */; };
 		A75FCF3923E25AC700529352 /* SDL_shaders_gles2.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90523E2514000DCD162 /* SDL_shaders_gles2.h */; };
-		A75FCF3B23E25AC700529352 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
 		A75FCF3C23E25AC700529352 /* SDL_blendpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8F823E2514000DCD162 /* SDL_blendpoint.h */; };
 		A75FCF3D23E25AC700529352 /* SDL_offscreenvideo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5F123E2513D00DCD162 /* SDL_offscreenvideo.h */; };
 		A75FCF3E23E25AC700529352 /* SDL_nullevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60B23E2513D00DCD162 /* SDL_nullevents_c.h */; };
@@ -626,7 +623,6 @@
 		A75FCFBC23E25AC700529352 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A75FCFBD23E25AC700529352 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
 		A75FCFBE23E25AC700529352 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A75FCFBF23E25AC700529352 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
 		A75FCFC023E25AC700529352 /* SDL_systhread.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A78623E2513E00DCD162 /* SDL_systhread.c */; };
 		A75FCFC123E25AC700529352 /* SDL_windowevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */; };
 		A75FCFC223E25AC700529352 /* s_scalbn.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A91A23E2514000DCD162 /* s_scalbn.c */; };
@@ -888,7 +884,6 @@
 		A769B10323E259AE00872273 /* vulkan_wayland.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */; };
 		A769B10523E259AE00872273 /* SDL_cocoashape.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A67E23E2513E00DCD162 /* SDL_cocoashape.h */; };
 		A769B10723E259AE00872273 /* SDL_shaders_gles2.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90523E2514000DCD162 /* SDL_shaders_gles2.h */; };
-		A769B10923E259AE00872273 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
 		A769B10A23E259AE00872273 /* SDL_blendpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8F823E2514000DCD162 /* SDL_blendpoint.h */; };
 		A769B10B23E259AE00872273 /* SDL_offscreenvideo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5F123E2513D00DCD162 /* SDL_offscreenvideo.h */; };
 		A769B10C23E259AE00872273 /* SDL_nullevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60B23E2513D00DCD162 /* SDL_nullevents_c.h */; };
@@ -980,7 +975,6 @@
 		A769B18C23E259AE00872273 /* SDL_cocoaopengl.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A67F23E2513E00DCD162 /* SDL_cocoaopengl.m */; };
 		A769B18D23E259AE00872273 /* SDL_offscreenframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A5F223E2513D00DCD162 /* SDL_offscreenframebuffer.c */; };
 		A769B18E23E259AE00872273 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A76E23E2513E00DCD162 /* yuv_rgb.c */; };
-		A769B18F23E259AE00872273 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
 		A769B19023E259AE00872273 /* SDL_systhread.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A78623E2513E00DCD162 /* SDL_systhread.c */; };
 		A769B19123E259AE00872273 /* SDL_windowevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */; };
 		A769B19223E259AE00872273 /* s_scalbn.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A91A23E2514000DCD162 /* s_scalbn.c */; };
@@ -2575,18 +2569,6 @@
 		A7D8BA3A23E2514400DCD162 /* SDL_d3dmath.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */; };
 		A7D8BA3B23E2514400DCD162 /* SDL_d3dmath.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */; };
 		A7D8BA3C23E2514400DCD162 /* SDL_d3dmath.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */; };
-		A7D8BA3D23E2514400DCD162 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
-		A7D8BA3E23E2514400DCD162 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
-		A7D8BA3F23E2514400DCD162 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
-		A7D8BA4023E2514400DCD162 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
-		A7D8BA4123E2514400DCD162 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
-		A7D8BA4223E2514400DCD162 /* SDL_render_gles.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90123E2514000DCD162 /* SDL_render_gles.c */; };
-		A7D8BA4323E2514400DCD162 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
-		A7D8BA4423E2514400DCD162 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
-		A7D8BA4523E2514400DCD162 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
-		A7D8BA4623E2514400DCD162 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
-		A7D8BA4723E2514400DCD162 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
-		A7D8BA4823E2514400DCD162 /* SDL_glesfuncs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */; };
 		A7D8BA4923E2514400DCD162 /* SDL_render_gles2.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90423E2514000DCD162 /* SDL_render_gles2.c */; };
 		A7D8BA4A23E2514400DCD162 /* SDL_render_gles2.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90423E2514000DCD162 /* SDL_render_gles2.c */; };
 		A7D8BA4B23E2514400DCD162 /* SDL_render_gles2.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90423E2514000DCD162 /* SDL_render_gles2.c */; };
@@ -3838,8 +3820,6 @@
 		A7D8A8FD23E2514000DCD162 /* SDL_blendfillrect.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_blendfillrect.c; sourceTree = "<group>"; };
 		A7D8A8FE23E2514000DCD162 /* SDL_rotate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rotate.h; sourceTree = "<group>"; };
 		A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_d3dmath.c; sourceTree = "<group>"; };
-		A7D8A90123E2514000DCD162 /* SDL_render_gles.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_gles.c; sourceTree = "<group>"; };
-		A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_glesfuncs.h; sourceTree = "<group>"; };
 		A7D8A90423E2514000DCD162 /* SDL_render_gles2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_gles2.c; sourceTree = "<group>"; };
 		A7D8A90523E2514000DCD162 /* SDL_shaders_gles2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_gles2.h; sourceTree = "<group>"; };
 		A7D8A90623E2514000DCD162 /* SDL_gles2funcs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gles2funcs.h; sourceTree = "<group>"; };
@@ -5059,7 +5039,6 @@
 			children = (
 				A7D8A8DD23E2514000DCD162 /* metal */,
 				A7D8A90C23E2514000DCD162 /* opengl */,
-				A7D8A90023E2514000DCD162 /* opengles */,
 				A7D8A90323E2514000DCD162 /* opengles2 */,
 				A7D8A8EF23E2514000DCD162 /* software */,
 				A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */,
@@ -5106,15 +5085,6 @@
 				A7D8A8FE23E2514000DCD162 /* SDL_rotate.h */,
 			);
 			path = software;
-			sourceTree = "<group>";
-		};
-		A7D8A90023E2514000DCD162 /* opengles */ = {
-			isa = PBXGroup;
-			children = (
-				A7D8A90223E2514000DCD162 /* SDL_glesfuncs.h */,
-				A7D8A90123E2514000DCD162 /* SDL_render_gles.c */,
-			);
-			path = opengles;
 			sourceTree = "<group>";
 		};
 		A7D8A90323E2514000DCD162 /* opengles2 */ = {
@@ -5332,7 +5302,6 @@
 				A75FCD7C23E25AB700529352 /* vulkan_wayland.h in Headers */,
 				A75FCD7E23E25AB700529352 /* SDL_cocoashape.h in Headers */,
 				A75FCD8023E25AB700529352 /* SDL_shaders_gles2.h in Headers */,
-				A75FCD8223E25AB700529352 /* SDL_glesfuncs.h in Headers */,
 				A75FCD8323E25AB700529352 /* SDL_blendpoint.h in Headers */,
 				A75FCD8423E25AB700529352 /* SDL_offscreenvideo.h in Headers */,
 				A75FCD8523E25AB700529352 /* SDL_nullevents_c.h in Headers */,
@@ -5499,7 +5468,6 @@
 				A75FCF3523E25AC700529352 /* vulkan_wayland.h in Headers */,
 				A75FCF3723E25AC700529352 /* SDL_cocoashape.h in Headers */,
 				A75FCF3923E25AC700529352 /* SDL_shaders_gles2.h in Headers */,
-				A75FCF3B23E25AC700529352 /* SDL_glesfuncs.h in Headers */,
 				A75FCF3C23E25AC700529352 /* SDL_blendpoint.h in Headers */,
 				A75FCF3D23E25AC700529352 /* SDL_offscreenvideo.h in Headers */,
 				A75FCF3E23E25AC700529352 /* SDL_nullevents_c.h in Headers */,
@@ -5665,7 +5633,6 @@
 				A769B10323E259AE00872273 /* vulkan_wayland.h in Headers */,
 				A769B10523E259AE00872273 /* SDL_cocoashape.h in Headers */,
 				A769B10723E259AE00872273 /* SDL_shaders_gles2.h in Headers */,
-				A769B10923E259AE00872273 /* SDL_glesfuncs.h in Headers */,
 				A769B10A23E259AE00872273 /* SDL_blendpoint.h in Headers */,
 				A769B10B23E259AE00872273 /* SDL_offscreenvideo.h in Headers */,
 				A769B10C23E259AE00872273 /* SDL_nullevents_c.h in Headers */,
@@ -5814,7 +5781,6 @@
 				A7D8BB3A23E2514500DCD162 /* SDL_gesture_c.h in Headers */,
 				F3F7D9BA2933074E00816151 /* SDL_cpuinfo.h in Headers */,
 				A7D8BA5623E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
-				A7D8BA4423E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA7A23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AABD23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
 				A75FDBC623EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
@@ -6045,7 +6011,6 @@
 				A7D8BB3B23E2514500DCD162 /* SDL_gesture_c.h in Headers */,
 				F3F7D9BB2933074E00816151 /* SDL_cpuinfo.h in Headers */,
 				A7D8BA5723E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
-				A7D8BA4523E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA7B23E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AABE23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
 				A75FDBC723EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
@@ -6294,7 +6259,6 @@
 				A7D8B27C23E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8AE8623E2514100DCD162 /* SDL_cocoashape.h in Headers */,
 				A7D8BA5323E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
-				A7D8BA4723E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA1123E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8AB7123E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
 				A7D8AC0123E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
@@ -6443,7 +6407,6 @@
 				A7D8BB3923E2514500DCD162 /* SDL_gesture_c.h in Headers */,
 				F3F7D9B92933074E00816151 /* SDL_cpuinfo.h in Headers */,
 				A7D8BA5523E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
-				A7D8BA4323E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA7923E2514400DCD162 /* SDL_glfuncs.h in Headers */,
 				A7D8AABC23E2514100DCD162 /* SDL_haptic_c.h in Headers */,
 				A75FDBC523EA380300529352 /* SDL_hidapi_rumble.h in Headers */,
@@ -6686,7 +6649,6 @@
 				A7D8BBF523E2574800DCD162 /* SDL_uikitmetalview.h in Headers */,
 				A7D8AE8523E2514100DCD162 /* SDL_cocoashape.h in Headers */,
 				A7D8BA5223E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
-				A7D8BA4623E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA1023E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8BBEC23E2574800DCD162 /* keyinfotable.h in Headers */,
 				A7D8AB7023E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
@@ -6859,7 +6821,6 @@
 				A7D8B27D23E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8AE8723E2514100DCD162 /* SDL_cocoashape.h in Headers */,
 				A7D8BA5423E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
-				A7D8BA4823E2514400DCD162 /* SDL_glesfuncs.h in Headers */,
 				A7D8BA1223E2514400DCD162 /* SDL_blendpoint.h in Headers */,
 				A7D8AB7223E2514100DCD162 /* SDL_offscreenvideo.h in Headers */,
 				A7D8AC0223E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
@@ -7421,7 +7382,6 @@
 				A75FCE0423E25AB700529352 /* SDL_offscreenframebuffer.c in Sources */,
 				A75FCE0523E25AB700529352 /* yuv_rgb.c in Sources */,
 				F323060628939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
-				A75FCE0623E25AB700529352 /* SDL_render_gles.c in Sources */,
 				A75FCE0723E25AB700529352 /* SDL_systhread.c in Sources */,
 				A75FCE0823E25AB700529352 /* SDL_windowevents.c in Sources */,
 				A75FCE0923E25AB700529352 /* s_scalbn.c in Sources */,
@@ -7617,7 +7577,6 @@
 				A75FCFBD23E25AC700529352 /* SDL_offscreenframebuffer.c in Sources */,
 				A75FCFBE23E25AC700529352 /* yuv_rgb.c in Sources */,
 				F323060728939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
-				A75FCFBF23E25AC700529352 /* SDL_render_gles.c in Sources */,
 				A75FCFC023E25AC700529352 /* SDL_systhread.c in Sources */,
 				A75FCFC123E25AC700529352 /* SDL_windowevents.c in Sources */,
 				A75FCFC223E25AC700529352 /* s_scalbn.c in Sources */,
@@ -7807,7 +7766,6 @@
 				A769B18C23E259AE00872273 /* SDL_cocoaopengl.m in Sources */,
 				A769B18D23E259AE00872273 /* SDL_offscreenframebuffer.c in Sources */,
 				A769B18E23E259AE00872273 /* yuv_rgb.c in Sources */,
-				A769B18F23E259AE00872273 /* SDL_render_gles.c in Sources */,
 				A769B19023E259AE00872273 /* SDL_systhread.c in Sources */,
 				A769B19123E259AE00872273 /* SDL_windowevents.c in Sources */,
 				A769B19223E259AE00872273 /* s_scalbn.c in Sources */,
@@ -8007,7 +7965,6 @@
 				A7D8AE8923E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7423E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				A7D8B3C023E2514200DCD162 /* yuv_rgb.c in Sources */,
-				A7D8BA3E23E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43523E2514300DCD162 /* SDL_systhread.c in Sources */,
 				F323060028939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
 				A7D8BB3423E2514500DCD162 /* SDL_windowevents.c in Sources */,
@@ -8203,7 +8160,6 @@
 				A7D8AE8A23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7523E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				A7D8B3C123E2514200DCD162 /* yuv_rgb.c in Sources */,
-				A7D8BA3F23E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43623E2514300DCD162 /* SDL_systhread.c in Sources */,
 				F323060128939F6400E66D30 /* SDL_hidapi_combined.c in Sources */,
 				A7D8BB3523E2514500DCD162 /* SDL_windowevents.c in Sources */,
@@ -8396,7 +8352,6 @@
 				A7D8AE8C23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7723E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				A7D8B3C323E2514200DCD162 /* yuv_rgb.c in Sources */,
-				A7D8BA4123E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43823E2514300DCD162 /* SDL_systhread.c in Sources */,
 				A7D8BB3723E2514500DCD162 /* SDL_windowevents.c in Sources */,
 				A7D8BABF23E2514400DCD162 /* s_scalbn.c in Sources */,
@@ -8601,7 +8556,6 @@
 				A7D8AE8823E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7323E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				A7D8B3BF23E2514200DCD162 /* yuv_rgb.c in Sources */,
-				A7D8BA3D23E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43423E2514300DCD162 /* SDL_systhread.c in Sources */,
 				A7D8BB3323E2514500DCD162 /* SDL_windowevents.c in Sources */,
 				A7D8BABB23E2514400DCD162 /* s_scalbn.c in Sources */,
@@ -8798,7 +8752,6 @@
 				A7D8AB7623E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				5616CA58252BB35C005D5928 /* SDL_url.c in Sources */,
 				A7D8B3C223E2514200DCD162 /* yuv_rgb.c in Sources */,
-				A7D8BA4023E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				A7D8B43723E2514300DCD162 /* SDL_systhread.c in Sources */,
 				F3973FAE28A59BDD00B84553 /* SDL_crc16.c in Sources */,
 				A7D8BB3623E2514500DCD162 /* SDL_windowevents.c in Sources */,
@@ -8990,7 +8943,6 @@
 				A7D8AE8D23E2514100DCD162 /* SDL_cocoaopengl.m in Sources */,
 				A7D8AB7823E2514100DCD162 /* SDL_offscreenframebuffer.c in Sources */,
 				A7D8B3C423E2514200DCD162 /* yuv_rgb.c in Sources */,
-				A7D8BA4223E2514400DCD162 /* SDL_render_gles.c in Sources */,
 				5616CA61252BB35E005D5928 /* SDL_url.c in Sources */,
 				A7D8B43923E2514300DCD162 /* SDL_systhread.c in Sources */,
 				A7D8BB3823E2514500DCD162 /* SDL_windowevents.c in Sources */,

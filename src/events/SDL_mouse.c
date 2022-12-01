@@ -372,7 +372,7 @@ static int GetScaledMouseDelta(float scale, int value, float *accum)
     return value;
 }
 
-static float CalculateSystemScale(SDL_Mouse *mouse, int *x, int *y)
+static float CalculateSystemScale(SDL_Mouse *mouse, const int *x, const int *y)
 {
     int i;
     int n = mouse->num_system_scale_values;
@@ -1221,11 +1221,7 @@ SDL_CreateCursor(const Uint8 *data, const Uint8 *mask,
     w = ((w + 7) & ~7);
 
     /* Create the surface from a bitmap */
-    surface = SDL_CreateRGBSurface(w, h, 32,
-                                   0x00FF0000,
-                                   0x0000FF00,
-                                   0x000000FF,
-                                   0xFF000000);
+    surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ARGB8888);
     if (surface == NULL) {
         return NULL;
     }

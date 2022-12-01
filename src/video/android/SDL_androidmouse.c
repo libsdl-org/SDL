@@ -118,9 +118,9 @@ static void Android_FreeCursor(SDL_Cursor *cursor)
 static SDL_Cursor *Android_CreateEmptyCursor()
 {
     if (empty_cursor == NULL) {
-        SDL_Surface *empty_surface = SDL_CreateRGBSurfaceWithFormat(1, 1, SDL_PIXELFORMAT_ARGB8888);
+        SDL_Surface *empty_surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
         if (empty_surface) {
-            SDL_memset(empty_surface->pixels, 0, empty_surface->h * empty_surface->pitch);
+            SDL_memset(empty_surface->pixels, 0, (size_t)empty_surface->h * empty_surface->pitch);
             empty_cursor = Android_CreateCursor(empty_surface, 0, 0);
             SDL_FreeSurface(empty_surface);
         }

@@ -2394,11 +2394,13 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool state)
                     SDL_Delay(1);
                     SDL_PumpEvents();
                 }
-                if ([data.listener isInFullscreenSpace] == (state ? YES : NO))
+                if ([data.listener isInFullscreenSpace] == (state ? YES : NO)) {
                     break;
+                }
                 /* Try again, the last attempt was interrupted by user gestures */
-                if (![data.listener setFullscreenSpace:(state ? YES : NO)])
+                if (![data.listener setFullscreenSpace:(state ? YES : NO)]) {
                     break; /* ??? */
+                }
             }
             /* Return TRUE to prevent non-space fullscreen logic from running */
             succeeded = SDL_TRUE;

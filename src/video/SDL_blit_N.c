@@ -81,9 +81,15 @@ GetL3CacheSize(void)
     (vector unsigned short)(a, b, c, d, e, f, g, h)
 #else
 #define VECUINT8_LITERAL(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
-    (vector unsigned char) { a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p }
+    (vector unsigned char)                                               \
+    {                                                                    \
+        a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p                   \
+    }
 #define VECUINT16_LITERAL(a, b, c, d, e, f, g, h) \
-    (vector unsigned short) { a, b, c, d, e, f, g, h }
+    (vector unsigned short)                       \
+    {                                             \
+        a, b, c, d, e, f, g, h                    \
+    }
 #endif
 
 #define UNALIGNED_PTR(x)       (((size_t)x) & 0x0000000F)
@@ -3409,11 +3415,11 @@ SDL_CalculateBlitN(SDL_Surface *surface)
            because RLE is the preferred fast way to deal with this.
            If a particular case turns out to be useful we'll add it. */
 
-        if (srcfmt->BytesPerPixel == 2 && surface->map->identity)
+        if (srcfmt->BytesPerPixel == 2 && surface->map->identity != 0) {
             return Blit2to2Key;
-        else if (dstfmt->BytesPerPixel == 1)
+        } else if (dstfmt->BytesPerPixel == 1) {
             return BlitNto1Key;
-        else {
+        } else {
 #if SDL_ALTIVEC_BLITTERS
             if ((srcfmt->BytesPerPixel == 4) && (dstfmt->BytesPerPixel == 4) && SDL_HasAltiVec()) {
                 return Blit32to32KeyAltivec;

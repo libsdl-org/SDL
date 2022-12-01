@@ -32,8 +32,6 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format
     SDL_Surface *surface;
     const Uint32 surface_format = SDL_PIXELFORMAT_BGR888;
     int w, h;
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
 
     /* Free the old framebuffer surface */
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -41,10 +39,9 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format
     SDL_FreeSurface(surface);
 
     /* Create a new one */
-    SDL_PixelFormatEnumToMasks(surface_format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
     SDL_GetWindowSize(window, &w, &h);
 
-    surface = SDL_CreateRGBSurface(w, h, bpp, Rmask, Gmask, Bmask, Amask);
+    surface = SDL_CreateSurface(w, h, surface_format);
     if (surface == NULL) {
         return -1;
     }

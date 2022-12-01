@@ -287,7 +287,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
                                       window->w, window->h);
     if (!data->texture) {
         /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_WINDOWTEXTUREDATA and not leaked here. */
-        return -1;
+        return -1; /* NOLINT(clang-analyzer-unix.Malloc) */
     }
 
     /* Create framebuffer data */
@@ -296,7 +296,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 
     {
         /* Make static analysis happy about potential SDL_malloc(0) calls. */
-        const size_t allocsize = window->h * data->pitch;
+        const size_t allocsize = (size_t)window->h * data->pitch;
         data->pixels = SDL_malloc((allocsize > 0) ? allocsize : 1);
         if (!data->pixels) {
             return SDL_OutOfMemory();
@@ -1105,25 +1105,27 @@ static int GetRectDisplayIndex(int x, int y, int w, int h)
     center.x = x + w / 2;
     center.y = y + h / 2;
 
-    for (i = 0; i < _this->num_displays; ++i) {
-        SDL_Rect display_rect;
-        SDL_GetDisplayBounds(i, &display_rect);
+    if (_this) {
+        for (i = 0; i < _this->num_displays; ++i) {
+            SDL_Rect display_rect;
+            SDL_GetDisplayBounds(i, &display_rect);
 
-        /* Check if the window is fully enclosed */
-        if (SDL_EnclosePoints(&center, 1, &display_rect, NULL)) {
-            return i;
-        }
+            /* Check if the window is fully enclosed */
+            if (SDL_EnclosePoints(&center, 1, &display_rect, NULL)) {
+                return i;
+            }
 
-        /* Snap window center to the display rect */
-        closest_point_on_display = center;
-        SDL_GetClosestPointOnRect(&display_rect, &closest_point_on_display);
+            /* Snap window center to the display rect */
+            closest_point_on_display = center;
+            SDL_GetClosestPointOnRect(&display_rect, &closest_point_on_display);
 
-        delta.x = center.x - closest_point_on_display.x;
-        delta.y = center.y - closest_point_on_display.y;
-        dist = (delta.x * delta.x + delta.y * delta.y);
-        if (dist < closest_dist) {
-            closest = i;
-            closest_dist = dist;
+            delta.x = center.x - closest_point_on_display.x;
+            delta.y = center.y - closest_point_on_display.y;
+            dist = (delta.x * delta.x + delta.y * delta.y);
+            if (dist < closest_dist) {
+                closest = i;
+                closest_dist = dist;
+            }
         }
     }
 
@@ -1555,6 +1557,11 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     if (_this == NULL) {
         /* Initialize the video system if needed */
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+            return NULL;
+        }
+
+        /* Make clang-tidy happy */
+        if (_this == NULL) {
             return NULL;
         }
     }
@@ -2554,8 +2561,6 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
     Uint32 format = 0;
     void *pixels = NULL;
     int pitch = 0;
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_bool created_framebuffer = SDL_FALSE;
 
     /* This will switch the video backend from using a software surface to
@@ -2631,11 +2636,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
         return window->surface;
     }
 
-    if (!SDL_PixelFormatEnumToMasks(format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
-        return NULL;
-    }
-
-    return SDL_CreateRGBSurfaceFrom(pixels, window->w, window->h, bpp, pitch, Rmask, Gmask, Bmask, Amask);
+    return SDL_CreateSurfaceFrom(pixels, window->w, window->h, pitch, format);
 }
 
 SDL_Surface *
@@ -3910,7 +3911,7 @@ SDL_GL_CreateContext(SDL_Window *window)
     return ctx;
 }
 
-int SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLContext ctx)
+int SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLContext context)
 {
     int retval;
 
@@ -3919,12 +3920,12 @@ int SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLContext ctx)
     }
 
     if (window == SDL_GL_GetCurrentWindow() &&
-        ctx == SDL_GL_GetCurrentContext()) {
+        context == SDL_GL_GetCurrentContext()) {
         /* We're already current. */
         return 0;
     }
 
-    if (!ctx) {
+    if (!context) {
         window = NULL;
     } else if (window) {
         CHECK_WINDOW_MAGIC(window, -1);
@@ -3936,12 +3937,12 @@ int SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLContext ctx)
         return SDL_SetError("Use of OpenGL without a window is not supported on this platform");
     }
 
-    retval = _this->GL_MakeCurrent(_this, window, ctx);
+    retval = _this->GL_MakeCurrent(_this, window, context);
     if (retval == 0) {
         _this->current_glwin = window;
-        _this->current_glctx = ctx;
+        _this->current_glctx = context;
         SDL_TLSSet(_this->current_glwin_tls, window, NULL);
-        SDL_TLSSet(_this->current_glctx_tls, ctx, NULL);
+        SDL_TLSSet(_this->current_glctx_tls, context, NULL);
     }
     return retval;
 }
@@ -4537,7 +4538,7 @@ SDL_ShouldAllowTopmost(void)
     return SDL_GetHintBoolean(SDL_HINT_ALLOW_TOPMOST, SDL_TRUE);
 }
 
-int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *userdata)
+int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *callback_data)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
@@ -4548,7 +4549,7 @@ int SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *userdat
     }
 
     window->hit_test = callback;
-    window->hit_test_data = userdata;
+    window->hit_test_data = callback_data;
 
     return 0;
 }

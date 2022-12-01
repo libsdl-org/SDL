@@ -153,9 +153,9 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     /* Set the controller into report mode over USB */
     {
         Uint8 data[USB_PACKET_LENGTH];
-        int size;
 
-        if ((size = ReadFeatureReport(device->dev, 0xf2, data, 17)) < 0) {
+        int size = ReadFeatureReport(device->dev, 0xf2, data, 17);
+        if (size < 0) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf2");
             return SDL_FALSE;
@@ -163,7 +163,8 @@ static SDL_bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS3_PROTOCOL
         HIDAPI_DumpPacket("PS3 0xF2 packet: size = %d", data, size);
 #endif
-        if ((size = ReadFeatureReport(device->dev, 0xf5, data, 8)) < 0) {
+        size = ReadFeatureReport(device->dev, 0xf5, data, 8);
+        if (size < 0) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                          "HIDAPI_DriverPS3_InitDevice(): Couldn't read feature report 0xf5");
             return SDL_FALSE;
@@ -566,13 +567,9 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 = {
 
 static SDL_bool HIDAPI_DriverPS3ThirdParty_IsEnabled(void)
 {
-#if 1 /* Not enabled by default, we don't know what the L3/R3 buttons are */
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3, SDL_FALSE);
-#else
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3,
                               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI,
                                                  SDL_HIDAPI_DEFAULT));
-#endif
 }
 
 static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -581,9 +578,9 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
     int size;
 
     if (SONY_THIRDPARTY_VENDOR(vendor_id)) {
-        if (device) {
-            if ((size = ReadFeatureReport(device->dev, 0x03, data, sizeof(data))) == 8 &&
-                data[2] == 0x26) {
+        if (device && device->dev) {
+            size = ReadFeatureReport(device->dev, 0x03, data, sizeof data);
+            if (size == 8 && data[2] == 0x26) {
                 /* Supported third party controller */
                 return SDL_TRUE;
             } else {
@@ -685,6 +682,8 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket(SDL_Joystick *joystick,
     if (ctx->last_state[1] != data[1]) {
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[1] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[1] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[1] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
     }
 
@@ -803,7 +802,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *devic
             continue;
         }
 
-        if (size == 27) {
+        if (size >= 19) {
             HIDAPI_DriverPS3ThirdParty_HandleStatePacket(joystick, ctx, data, size);
         } else {
 #ifdef DEBUG_JOYSTICK

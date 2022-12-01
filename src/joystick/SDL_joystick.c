@@ -1874,7 +1874,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         len = (SDL_strlen(vendor_name) + 1 + SDL_strlen(product_name) + 1);
         name = (char *)SDL_malloc(len);
         if (name) {
-            SDL_snprintf(name, len, "%s %s", vendor_name, product_name);
+            (void)SDL_snprintf(name, len, "%s %s", vendor_name, product_name);
         }
     } else if (*product_name) {
         name = SDL_strdup(product_name);
@@ -1902,8 +1902,8 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         default:
             len = (6 + 1 + 6 + 1);
             name = (char *)SDL_malloc(len);
-            if (name) {
-                SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
+            if (name != NULL) {
+                (void)SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
             }
             break;
         }
@@ -2206,7 +2206,8 @@ SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_HORI) {
-        if (product_id == USB_PRODUCT_HORI_FIGHTING_COMMANDER_OCTA_SERIES_X) {
+        if (product_id == USB_PRODUCT_HORI_FIGHTING_COMMANDER_OCTA_SERIES_X ||
+            product_id == USB_PRODUCT_HORI_HORIPAD_PRO_SERIES_X) {
             return SDL_TRUE;
         }
     }

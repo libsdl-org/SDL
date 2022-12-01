@@ -165,11 +165,11 @@ int clipboard_testClipboardTextFunctions(void *arg)
     /* Empty clipboard  */
     charResult = SDL_GetClipboardText();
     SDLTest_AssertPass("Call to SDL_GetClipboardText succeeded");
-    SDLTest_AssertCheck(
+    SDLTest_Assert(
         charResult != NULL,
         "Verify SDL_GetClipboardText did not return NULL");
     SDLTest_AssertCheck(
-        charResult[0] == '\0',
+        charResult[0] == '\0', /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
         "Verify SDL_GetClipboardText returned string with length 0, got length %i",
         (int)SDL_strlen(charResult));
     intResult = SDL_SetClipboardText((const char *)text);
@@ -243,11 +243,11 @@ int clipboard_testPrimarySelectionTextFunctions(void *arg)
     /* Empty primary selection  */
     charResult = SDL_GetPrimarySelectionText();
     SDLTest_AssertPass("Call to SDL_GetPrimarySelectionText succeeded");
-    SDLTest_AssertCheck(
+    SDLTest_Assert(
         charResult != NULL,
         "Verify SDL_GetPrimarySelectionText did not return NULL");
     SDLTest_AssertCheck(
-        charResult[0] == '\0',
+        charResult[0] == '\0', /* NOLINT(clang-analyzer-core.NullDereference): Checked for NULL above */
         "Verify SDL_GetPrimarySelectionText returned string with length 0, got length %i",
         (int)SDL_strlen(charResult));
     intResult = SDL_SetPrimarySelectionText((const char *)text);

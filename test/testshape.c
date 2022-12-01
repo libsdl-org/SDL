@@ -162,7 +162,7 @@ int main(int argc, char **argv)
     texture_dimensions.x = 0;
     texture_dimensions.y = 0;
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture].name);
-    SDL_QueryTexture(pictures[current_picture].texture, (Uint32 *)&pixelFormat, (int *)&access, &texture_dimensions.w, &texture_dimensions.h);
+    SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &texture_dimensions.w, &texture_dimensions.h);
     SDL_SetWindowSize(window, texture_dimensions.w, texture_dimensions.h);
     SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
     while (should_exit == 0) {
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
                     current_picture = 0;
                 }
                 SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture].name);
-                SDL_QueryTexture(pictures[current_picture].texture, (Uint32 *)&pixelFormat, (int *)&access, &texture_dimensions.w, &texture_dimensions.h);
+                SDL_QueryTexture(pictures[current_picture].texture, &pixelFormat, &access, &texture_dimensions.w, &texture_dimensions.h);
                 SDL_SetWindowSize(window, texture_dimensions.w, texture_dimensions.h);
                 SDL_SetWindowShape(window, pictures[current_picture].surface, &pictures[current_picture].mode);
             }

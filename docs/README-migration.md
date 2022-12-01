@@ -176,9 +176,46 @@ M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D 
 
 ## SDL_surface.h
 
-Removed unused 'depth' parameter from SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom()
-Removed unused 'flags' parameter from SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceWithFormat()
-Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
+Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat.
+
+SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceWithFormat() have been combined into a new function SDL_CreateSurface().
+SDL_CreateRGBSurfaceFrom() and SDL_CreateRGBSurfaceWithFormatFrom() have been combined into a new function SDL_CreateSurfaceFrom().
+
+You can implement the old functions in your own code easily:
+```c
+SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    return SDL_CreateSurface(width, height,
+            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
+{
+    return SDL_CreateSurface(width, height, format);
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    return SDL_CreateSurfaceFrom(pixels, width, height, pitch,
+            SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask));
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
+{
+    return SDL_CreateSurfaceFrom(pixels, width, height, pitch, format);
+}
+
+```
+
+But if you're migrating your code which uses masks, you probably have a format in mind, possibly one of these:
+```c
+// Various mask (R, G, B, A) and their corresponding format:
+0xFF000000 0x00FF0000 0x0000FF00 0x000000FF => SDL_PIXELFORMAT_RGBA8888
+0x00FF0000 0x0000FF00 0x000000FF 0xFF000000 => SDL_PIXELFORMAT_ARGB8888
+0x0000FF00 0x00FF0000 0xFF000000 0x000000FF => SDL_PIXELFORMAT_BGRA8888
+0x000000FF 0x0000FF00 0x00FF0000 0xFF000000 => SDL_PIXELFORMAT_ABGR8888
+0x0000F800 0x000007E0 0x0000001F 0x00000000 => SDL_PIXELFORMAT_RGB565
+```
 
 
 ## SDL_syswm.h

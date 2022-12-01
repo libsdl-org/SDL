@@ -53,8 +53,7 @@ report_power(void)
     if (seconds == -1) {
         SDL_Log("Time left: unknown\n");
     } else {
-        SDL_Log("Time left: %d minutes, %d seconds\n", (int)(seconds / 60),
-                (int)(seconds % 60));
+        SDL_Log("Time left: %d minutes, %d seconds\n", seconds / 60, seconds % 60);
     }
 }
 

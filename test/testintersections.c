@@ -172,7 +172,7 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
 
     SDL_SetRenderDrawColor(renderer, 0, 255, 55, 255);
 
-    for (i = 0; i < num_rects; i++)
+    for (i = 0; i < num_rects; i++) {
         for (j = 0; j < num_lines; j++) {
             float x1, y1, x2, y2;
             SDL_FRect r;
@@ -187,6 +187,7 @@ DrawRectLineIntersections(SDL_Renderer *renderer)
                 SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
             }
         }
+    }
 }
 
 static void
@@ -196,13 +197,14 @@ DrawRectRectIntersections(SDL_Renderer *renderer)
 
     SDL_SetRenderDrawColor(renderer, 255, 200, 0, 255);
 
-    for (i = 0; i < num_rects; i++)
+    for (i = 0; i < num_rects; i++) {
         for (j = i + 1; j < num_rects; j++) {
             SDL_FRect r;
             if (SDL_IntersectFRect(&rects[i], &rects[j], &r)) {
                 SDL_RenderFillRect(renderer, &r);
             }
         }
+    }
 }
 
 void loop()
@@ -229,18 +231,20 @@ void loop()
         case SDL_KEYDOWN:
             switch (event.key.keysym.sym) {
             case 'l':
-                if (event.key.keysym.mod & KMOD_SHIFT)
+                if (event.key.keysym.mod & KMOD_SHIFT) {
                     num_lines = 0;
-                else
+                } else {
                     add_line(rand() % 640, rand() % 480, rand() % 640,
                              rand() % 480);
+                }
                 break;
             case 'r':
-                if (event.key.keysym.mod & KMOD_SHIFT)
+                if (event.key.keysym.mod & KMOD_SHIFT) {
                     num_rects = 0;
-                else
+                } else {
                     add_rect(rand() % 640, rand() % 480, rand() % 640,
                              rand() % 480);
+                }
                 break;
             }
             break;

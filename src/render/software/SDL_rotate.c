@@ -431,7 +431,7 @@ static void transformSurfaceY(SDL_Surface *src, SDL_Surface *dst, int isin, int 
     /*
      * Clear surface to colorkey
      */
-    SDL_memset(pc, (int)(get_colorkey(src) & 0xff), dst->pitch * dst->h);
+    SDL_memset(pc, (int)(get_colorkey(src) & 0xff), (size_t)dst->pitch * dst->h);
     /*
      * Iterate through destination surface
      */
@@ -523,7 +523,7 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
     rz_dst = NULL;
     if (is8bit) {
         /* Target surface is 8 bit */
-        rz_dst = SDL_CreateRGBSurfaceWithFormat(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format->format);
+        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format->format);
         if (rz_dst != NULL) {
             if (src->format->palette) {
                 for (i = 0; i < src->format->palette->ncolors; i++) {
@@ -534,9 +534,7 @@ SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int 
         }
     } else {
         /* Target surface is 32 bit with source RGBA ordering */
-        rz_dst = SDL_CreateRGBSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, 32,
-                                      src->format->Rmask, src->format->Gmask,
-                                      src->format->Bmask, src->format->Amask);
+        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format->format);
     }
 
     /* Check target */

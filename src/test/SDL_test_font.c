@@ -3185,8 +3185,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, int x, int y, Uint32 c)
         /*
          * Redraw character into surface
          */
-        character = SDL_CreateRGBSurface(charWidth, charHeight, 32,
-                                         0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+        character = SDL_CreateSurface(charWidth, charHeight, SDL_PIXELFORMAT_RGBA8888);
         if (character == NULL) {
             return -1;
         }
@@ -3390,7 +3389,7 @@ void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, const char *fmt, ...
     va_list ap;
 
     va_start(ap, fmt);
-    SDL_vsnprintf(text, sizeof(text), fmt, ap);
+    (void)SDL_vsnprintf(text, sizeof text, fmt, ap);
     va_end(ap);
 
     SDLTest_TextWindowAddTextWithLength(textwin, text, SDL_strlen(text));

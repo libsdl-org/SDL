@@ -86,9 +86,9 @@ enum _TASKDIALOG_FLAGS
     TDF_RTL_LAYOUT = 0x2000,
     TDF_NO_DEFAULT_RADIO_BUTTON = 0x4000,
     TDF_CAN_BE_MINIMIZED = 0x8000,
-    //#if (NTDDI_VERSION >= NTDDI_WIN8)
+    // #if (NTDDI_VERSION >= NTDDI_WIN8)
     TDF_NO_SET_FOREGROUND = 0x00010000, // Don't call SetForegroundWindow() when activating the dialog
-                                        //#endif // (NTDDI_VERSION >= NTDDI_WIN8)
+                                        // #endif // (NTDDI_VERSION >= NTDDI_WIN8)
     TDF_SIZE_TO_CONTENT = 0x01000000    // used by ShellMessageBox to emulate MessageBox sizing behavior
 };
 typedef int TASKDIALOG_FLAGS; // Note: _TASKDIALOG_FLAGS is an int
@@ -804,13 +804,13 @@ static int WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *
     }
 
     /* Ensure the size is wide enough for all of the buttons. */
-    if (Size.cx < messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin) {
-        Size.cx = messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin;
+    if (Size.cx < (LONG)messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin) {
+        Size.cx = (LONG)messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin;
     }
 
     /* Reset the height to the icon size if it is actually bigger than the text. */
-    if (icon && Size.cy < IconMargin * 2 + IconHeight) {
-        Size.cy = IconMargin * 2 + IconHeight;
+    if (icon && Size.cy < (LONG)IconMargin * 2 + IconHeight) {
+        Size.cy = (LONG)IconMargin * 2 + IconHeight;
     }
 
     /* Add vertical space for the buttons and border. */

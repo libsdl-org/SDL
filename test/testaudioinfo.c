@@ -20,18 +20,19 @@ print_devices(int iscapture)
 
     SDL_Log("Found %d %s device%s:\n", n, typestr, n != 1 ? "s" : "");
 
-    if (n == -1)
+    if (n == -1) {
         SDL_Log("  Driver can't detect specific %s devices.\n\n", typestr);
-    else if (n == 0)
+    } else if (n == 0) {
         SDL_Log("  No %s devices found.\n\n", typestr);
-    else {
+    } else {
         int i;
         for (i = 0; i < n; i++) {
             const char *name = SDL_GetAudioDeviceName(i, iscapture);
-            if (name != NULL)
+            if (name != NULL) {
                 SDL_Log("  %d: %s\n", i, name);
-            else
+            } else {
                 SDL_Log("  %d Error: %s\n", i, SDL_GetError());
+            }
 
             if (SDL_GetAudioDeviceSpec(i, iscapture, &spec) == 0) {
                 SDL_Log("     Sample Rate: %d\n", spec.freq);

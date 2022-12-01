@@ -427,8 +427,6 @@
 #define SDL_iconv_close SDL_iconv_close_REAL
 #define SDL_iconv SDL_iconv_REAL
 #define SDL_iconv_string SDL_iconv_string_REAL
-#define SDL_CreateRGBSurface SDL_CreateRGBSurface_REAL
-#define SDL_CreateRGBSurfaceFrom SDL_CreateRGBSurfaceFrom_REAL
 #define SDL_FreeSurface SDL_FreeSurface_REAL
 #define SDL_SetSurfacePalette SDL_SetSurfacePalette_REAL
 #define SDL_LockSurface SDL_LockSurface_REAL
@@ -582,8 +580,8 @@
 #define SDL_RenderGetIntegerScale SDL_RenderGetIntegerScale_REAL
 #define SDL_DequeueAudio SDL_DequeueAudio_REAL
 #define SDL_SetWindowResizable SDL_SetWindowResizable_REAL
-#define SDL_CreateRGBSurfaceWithFormat SDL_CreateRGBSurfaceWithFormat_REAL
-#define SDL_CreateRGBSurfaceWithFormatFrom SDL_CreateRGBSurfaceWithFormatFrom_REAL
+#define SDL_CreateSurface SDL_CreateSurface_REAL
+#define SDL_CreateSurfaceFrom SDL_CreateSurfaceFrom_REAL
 #define SDL_GetHintBoolean SDL_GetHintBoolean_REAL
 #define SDL_JoystickGetDeviceVendor SDL_JoystickGetDeviceVendor_REAL
 #define SDL_JoystickGetDeviceProduct SDL_JoystickGetDeviceProduct_REAL
