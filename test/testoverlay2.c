@@ -142,7 +142,8 @@ SDL_Color MooseColors[84] = {
 /* *INDENT-ON* */ /* clang-format on */
 
 static SDLTest_CommonState *state;
-static Uint32 next_fps_check, frames;
+static Uint64 next_fps_check;
+static Uint32 frames;
 static const Uint32 fps_check_delay = 5000;
 
 SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
@@ -216,7 +217,7 @@ void MoveSprites(SDL_Renderer *renderer)
 
 void loop()
 {
-    Uint32 now;
+    Uint64 now;
     int i;
     SDL_Event event;
         
@@ -273,9 +274,9 @@ void loop()
 
     frames++;
     now = SDL_GetTicks();
-    if (SDL_TICKS_PASSED(now, next_fps_check)) {
+    if (now >= next_fps_check) {
         /* Print out some timing information */
-        const Uint32 then = next_fps_check - fps_check_delay;
+        const Uint64 then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
         next_fps_check = now + fps_check_delay;
