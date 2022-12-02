@@ -966,8 +966,5 @@ SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),)
 #endif
 SDL_DYNAPI_PROC(int,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(void*,SDL_memset4,(void *a, Uint32 b, size_t c),(a,b,c),return)
-SDL_DYNAPI_PROC(int,SDL_WaitEventTimeoutNS,(SDL_Event *a, Sint64 b),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_SemWaitTimeoutNS,(SDL_sem *a, Sint64 b),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_CondWaitTimeoutNS,(SDL_cond *a, SDL_mutex *b, Sint64 c),(a,b,c),return)
 SDL_DYNAPI_PROC(Uint64,SDL_GetTicksNS,(void),(),return)
 SDL_DYNAPI_PROC(void,SDL_DelayNS,(Uint64 a),(a),)
