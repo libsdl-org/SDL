@@ -1338,7 +1338,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             }
             if (data->last_focus_event_time) {
                 const int X11_FOCUS_CLICK_TIMEOUT = 10;
-                if (!SDL_TICKS_PASSED(SDL_GetTicks(), data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
+                if (SDL_GetTicks() < (data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
                     ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
                 }
                 data->last_focus_event_time = 0;
@@ -1577,8 +1577,8 @@ static void X11_HandleFocusChanges(_THIS)
         for (i = 0; i < videodata->numwindows; ++i) {
             SDL_WindowData *data = videodata->windowlist[i];
             if (data && data->pending_focus != PENDING_FOCUS_NONE) {
-                Uint32 now = SDL_GetTicks();
-                if (SDL_TICKS_PASSED(now, data->pending_focus_time)) {
+                Uint64 now = SDL_GetTicks();
+                if (now >= data->pending_focus_time) {
                     if (data->pending_focus == PENDING_FOCUS_IN) {
                         X11_DispatchFocusIn(_this, data);
                     } else {
@@ -1625,7 +1625,7 @@ void X11_SendWakeupEvent(_THIS, SDL_Window *window)
     X11_XFlush(req_display);
 }
 
-int X11_WaitEventTimeout(_THIS, int timeout)
+int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display;
@@ -1638,11 +1638,11 @@ int X11_WaitEventTimeout(_THIS, int timeout)
     X11_XFlush(display);
     if (X11_PollEvent(display, &xevent)) {
         /* Fall through */
-    } else if (timeout == 0) {
+    } else if (timeoutNS == 0) {
         return 0;
     } else {
         /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
-        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeoutNS);
         if (err > 0) {
             if (!X11_PollEvent(display, &xevent)) {
                 /* Someone may have beat us to reading the fd. Return 1 here to
@@ -1682,16 +1682,15 @@ void X11_PumpEvents(_THIS)
     int i;
 
     if (data->last_mode_change_deadline) {
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), data->last_mode_change_deadline)) {
+        if (SDL_GetTicks() >= data->last_mode_change_deadline) {
             data->last_mode_change_deadline = 0; /* assume we're done. */
         }
     }
 
     /* Update activity every 30 seconds to prevent screensaver */
     if (_this->suspend_screensaver) {
-        const Uint32 now = SDL_GetTicks();
-        if (!data->screensaver_activity ||
-            SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
+        Uint64 now = SDL_GetTicks();
+        if (!data->screensaver_activity || now >= (data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
 #if SDL_USE_LIBDBUS
@@ -1722,7 +1721,7 @@ void X11_PumpEvents(_THIS)
     for (i = 0; i < data->numwindows; ++i) {
         if (data->windowlist[i] != NULL &&
             data->windowlist[i]->flash_cancel_time &&
-            SDL_TICKS_PASSED(SDL_GetTicks(), data->windowlist[i]->flash_cancel_time)) {
+            SDL_GetTicks() >= data->windowlist[i]->flash_cancel_time) {
             X11_FlashWindow(_this, data->windowlist[i]->window, SDL_FLASH_CANCEL);
         }
     }

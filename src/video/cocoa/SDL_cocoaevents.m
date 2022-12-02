@@ -523,13 +523,13 @@ int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
     return 1;
 }
 
-int Cocoa_WaitEventTimeout(_THIS, int timeout)
+int Cocoa_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 {
     @autoreleasepool {
-        if (timeout > 0) {
-            NSDate *limitDate = [NSDate dateWithTimeIntervalSinceNow:(double)timeout / 1000.0];
+        if (timeoutNS > 0) {
+            NSDate *limitDate = [NSDate dateWithTimeIntervalSinceNow:(double)timeoutNS / SDL_NS_PER_SECOND];
             return Cocoa_PumpEventsUntilDate(_this, limitDate, false);
-        } else if (timeout == 0) {
+        } else if (timeoutNS == 0) {
             return Cocoa_PumpEventsUntilDate(_this, [NSDate distantPast], false);
         } else {
             while (Cocoa_PumpEventsUntilDate(_this, [NSDate distantFuture], false) == 0) {

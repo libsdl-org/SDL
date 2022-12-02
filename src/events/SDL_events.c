@@ -42,7 +42,7 @@
 #define SDL_MAX_QUEUED_EVENTS 65535
 
 /* Determines how often we wake to call SDL_PumpEvents() in SDL_WaitEventTimeout_Device() */
-#define PERIODIC_POLL_INTERVAL_MS 3000
+#define PERIODIC_POLL_INTERVAL_NS (3 * SDL_NS_PER_SECOND)
 
 typedef struct SDL_EventWatcher
 {
@@ -963,7 +963,7 @@ void SDL_PumpEvents()
 
 int SDL_PollEvent(SDL_Event *event)
 {
-    return SDL_WaitEventTimeout(event, 0);
+    return SDL_WaitEventTimeoutNS(event, 0);
 }
 
 static SDL_bool SDL_events_need_periodic_poll()
@@ -983,9 +983,9 @@ static SDL_bool SDL_events_need_periodic_poll()
     return need_periodic_poll;
 }
 
-static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event *event, Uint32 start, int timeout)
+static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
 {
-    int loop_timeout = timeout;
+    Sint64 loop_timeoutNS = timeoutNS;
     SDL_bool need_periodic_poll = SDL_events_need_periodic_poll();
 
     for (;;) {
@@ -1021,26 +1021,26 @@ static int SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Eve
                 return 1;
             }
             /* No events found in the queue, call WaitEventTimeout to wait for an event. */
-            if (timeout > 0) {
-                Uint32 elapsed = SDL_GetTicks() - start;
-                if (elapsed >= (Uint32)timeout) {
+            if (timeoutNS > 0) {
+                Sint64 elapsed = SDL_GetTicksNS() - start;
+                if (elapsed >= timeoutNS) {
                     /* Set wakeup_window to NULL without holding the lock. */
                     _this->wakeup_window = NULL;
                     return 0;
                 }
-                loop_timeout = (int)((Uint32)timeout - elapsed);
+                loop_timeoutNS = (timeoutNS - elapsed);
             }
             if (need_periodic_poll) {
-                if (loop_timeout >= 0) {
-                    loop_timeout = SDL_min(loop_timeout, PERIODIC_POLL_INTERVAL_MS);
+                if (loop_timeoutNS >= 0) {
+                    loop_timeoutNS = SDL_min(loop_timeoutNS, PERIODIC_POLL_INTERVAL_NS);
                 } else {
-                    loop_timeout = PERIODIC_POLL_INTERVAL_MS;
+                    loop_timeoutNS = PERIODIC_POLL_INTERVAL_NS;
                 }
             }
-            status = _this->WaitEventTimeout(_this, loop_timeout);
+            status = _this->WaitEventTimeout(_this, loop_timeoutNS);
             /* Set wakeup_window to NULL without holding the lock. */
             _this->wakeup_window = NULL;
-            if (status == 0 && need_periodic_poll && loop_timeout == PERIODIC_POLL_INTERVAL_MS) {
+            if (status == 0 && need_periodic_poll && loop_timeoutNS == PERIODIC_POLL_INTERVAL_NS) {
                 /* We may have woken up to poll. Try again */
                 continue;
             } else if (status <= 0) {
@@ -1086,15 +1086,27 @@ static SDL_Window *SDL_find_active_window(SDL_VideoDevice *_this)
 
 int SDL_WaitEvent(SDL_Event *event)
 {
-    return SDL_WaitEventTimeout(event, -1);
+    return SDL_WaitEventTimeoutNS(event, -1);
 }
 
-int SDL_WaitEventTimeout(SDL_Event *event, int timeout)
+int SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
+{
+    Uint64 timeoutNS;
+
+    if (timeoutMS > 0) {
+        timeoutNS = SDL_MS_TO_NS(timeoutMS);
+    } else {
+        timeoutNS = timeoutMS;
+    }
+    return SDL_WaitEventTimeoutNS(event, timeoutNS);
+}
+
+int SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *wakeup_window;
-    Uint32 start, expiration;
-    SDL_bool include_sentinel = (timeout == 0) ? SDL_TRUE : SDL_FALSE;
+    Uint64 start, expiration;
+    SDL_bool include_sentinel = (timeoutNS == 0) ? SDL_TRUE : SDL_FALSE;
     int result;
 
     /* If there isn't a poll sentinel event pending, pump events and add one */
@@ -1126,7 +1138,7 @@ int SDL_WaitEventTimeout(SDL_Event *event, int timeout)
         }
     }
     if (result == 0) {
-        if (timeout == 0) {
+        if (timeoutNS == 0) {
             /* No events available, and not willing to wait */
             return 0;
         }
@@ -1134,12 +1146,12 @@ int SDL_WaitEventTimeout(SDL_Event *event, int timeout)
         /* Has existing events */
         return 1;
     }
-    /* We should have completely handled timeout == 0 above */
-    SDL_assert(timeout != 0);
+    /* We should have completely handled timeoutNS == 0 above */
+    SDL_assert(timeoutNS != 0);
 
-    if (timeout > 0) {
-        start = SDL_GetTicks();
-        expiration = start + timeout;
+    if (timeoutNS > 0) {
+        start = SDL_GetTicksNS();
+        expiration = start + timeoutNS;
     } else {
         start = 0;
         expiration = 0;
@@ -1149,7 +1161,7 @@ int SDL_WaitEventTimeout(SDL_Event *event, int timeout)
         /* Look if a shown window is available to send the wakeup event. */
         wakeup_window = SDL_find_active_window(_this);
         if (wakeup_window) {
-            int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, start, timeout);
+            int status = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, start, timeoutNS);
 
             /* There may be implementation-defined conditions where the backend cannot
                reliably wait for the next event. If that happens, fall back to polling. */
@@ -1165,7 +1177,7 @@ int SDL_WaitEventTimeout(SDL_Event *event, int timeout)
         case -1:
             return 0;
         case 0:
-            if (timeout > 0 && SDL_TICKS_PASSED(SDL_GetTicks(), expiration)) {
+            if (timeoutNS > 0 && SDL_GetTicks() >= expiration) {
                 /* Timeout expired and no events */
                 return 0;
             }
@@ -1180,7 +1192,7 @@ int SDL_WaitEventTimeout(SDL_Event *event, int timeout)
 
 int SDL_PushEvent(SDL_Event *event)
 {
-    event->common.timestamp = SDL_GetTicks();
+    event->common.timestamp = SDL_GetTicksNS();
 
     if (SDL_EventOK.callback || SDL_event_watchers_count > 0) {
         if (SDL_event_watchers_lock == NULL || SDL_LockMutex(SDL_event_watchers_lock) == 0) {

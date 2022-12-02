@@ -60,16 +60,16 @@ typedef struct
     int border_top;
     int border_bottom;
     SDL_bool mouse_grabbed;
-    Uint32 last_focus_event_time;
+    Uint64 last_focus_event_time;
     PendingFocusEnum pending_focus;
-    Uint32 pending_focus_time;
+    Uint64 pending_focus_time;
     XConfigureEvent last_xconfigure;
     struct SDL_VideoData *videodata;
     unsigned long user_time;
     Atom xdnd_req;
     Window xdnd_source;
     SDL_bool flashing_window;
-    Uint32 flash_cancel_time;
+    Uint64 flash_cancel_time;
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif

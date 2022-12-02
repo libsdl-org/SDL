@@ -500,7 +500,7 @@ int Cocoa_GL_SwapWindow(_THIS, SDL_Window *window)
             SDL_UnlockMutex(nscontext->swapIntervalMutex);
         }
 
-        /*{ static Uint64 prev = 0; const Uint64 now = SDL_GetTicks64(); const unsigned int diff = (unsigned int) (now - prev); prev = now; printf("GLSWAPBUFFERS TICKS %u\n", diff); }*/
+        /*{ static Uint64 prev = 0; const Uint64 now = SDL_GetTicks(); const unsigned int diff = (unsigned int) (now - prev); prev = now; printf("GLSWAPBUFFERS TICKS %u\n", diff); }*/
 
         /* on 10.14 ("Mojave") and later, this deadlocks if two contexts in two
            threads try to swap at the same time, so put a mutex around it. */

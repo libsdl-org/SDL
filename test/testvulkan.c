@@ -1081,7 +1081,8 @@ int main(int argc, char **argv)
     int done;
     SDL_DisplayMode mode;
     SDL_Event event;
-    Uint32 then, now, frames;
+    Uint64 then, now;
+    Uint32 frames;
     int dw, dh;
 
     /* Enable standard application logging */

@@ -1707,8 +1707,8 @@ static void WIN_UpdateClipCursorForWindows()
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
-    Uint32 now = SDL_GetTicks();
-    const Uint32 CLIPCURSOR_UPDATE_INTERVAL_MS = 3000;
+    Uint64 now = SDL_GetTicks();
+    const int CLIPCURSOR_UPDATE_INTERVAL_MS = 3000;
 
     if (_this) {
         for (window = _this->windows; window; window = window->next) {
@@ -1717,7 +1717,7 @@ static void WIN_UpdateClipCursorForWindows()
                 if (data->skip_update_clipcursor) {
                     data->skip_update_clipcursor = SDL_FALSE;
                     WIN_UpdateClipCursor(window);
-                } else if ((now - data->last_updated_clipcursor) >= CLIPCURSOR_UPDATE_INTERVAL_MS) {
+                } else if (now >= (data->last_updated_clipcursor + CLIPCURSOR_UPDATE_INTERVAL_MS)) {
                     WIN_UpdateClipCursor(window);
                 }
             }
@@ -1765,17 +1765,17 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
     g_WindowsMessageHookData = userdata;
 }
 
-int WIN_WaitEventTimeout(_THIS, int timeout)
+int WIN_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 {
     MSG msg;
     if (g_WindowsEnableMessageLoop) {
         BOOL message_result;
         UINT_PTR timer_id = 0;
-        if (timeout > 0) {
-            timer_id = SetTimer(NULL, 0, timeout, NULL);
+        if (timeoutNS > 0) {
+            timer_id = SetTimer(NULL, 0, (UINT)SDL_NS_TO_MS(timeoutNS), NULL);
             message_result = GetMessage(&msg, 0, 0, 0);
             KillTimer(NULL, timer_id);
-        } else if (timeout == 0) {
+        } else if (timeoutNS == 0) {
             message_result = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
         } else {
             message_result = GetMessage(&msg, 0, 0, 0);
@@ -1805,6 +1805,9 @@ void WIN_SendWakeupEvent(_THIS, SDL_Window *window)
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     PostMessage(data->hwnd, data->videodata->_SDL_WAKEUP, 0, 0);
 }
+
+/* Used to compare Windows message timestamps */
+#define SDL_TICKS_PASSED(A, B) ((Sint32)((B) - (A)) <= 0)
 
 void WIN_PumpEvents(_THIS)
 {

@@ -100,19 +100,27 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
+int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
-    if (timeout == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS == 0) {
+        if (sem->count > 0) {
+            --sem->count;
+            return 0;
+        }
+        return SDL_MUTEX_TIMEOUT;
+    }
+
+    if (timeoutNS == SDL_MUTEX_MAXWAIT) {
         WaitAll(sem);
-        return SDL_MUTEX_MAXWAIT;
+        return 0;
     }
 
     RThread thread;
-    TInfo *info = new (ELeave) TInfo(timeout, sem->handle);
+    TInfo *info = new (ELeave) TInfo((TInt)SDL_NS_TO_MS(timeoutNS), sem->handle);
     TInt status = CreateUnique(NewThread, &thread, info);
 
     if (status != KErrNone) {
@@ -128,23 +136,6 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 
     thread.Close();
     return info->iVal;
-}
-
-int SDL_SemTryWait(SDL_sem *sem)
-{
-    if (sem == NULL) {
-        return SDL_InvalidParamError("sem");
-    }
-
-    if (sem->count > 0) {
-        sem->count--;
-    }
-    return SDL_MUTEX_TIMEOUT;
-}
-
-int SDL_SemWait(SDL_sem *sem)
-{
-    return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
 }
 
 Uint32

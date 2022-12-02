@@ -966,9 +966,6 @@ int SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint
     } else {
         result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble);
         joystick->rumble_resend = SDL_GetTicks() + SDL_RUMBLE_RESEND_MS;
-        if (!joystick->rumble_resend) {
-            joystick->rumble_resend = 1;
-        }
     }
 
     if (result == 0) {
@@ -977,9 +974,6 @@ int SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint
 
         if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
             joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-            if (!joystick->rumble_expiration) {
-                joystick->rumble_expiration = 1;
-            }
         } else {
             joystick->rumble_expiration = 0;
             joystick->rumble_resend = 0;
@@ -1010,9 +1004,6 @@ int SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint1
 
         if ((left_rumble || right_rumble) && duration_ms) {
             joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-            if (!joystick->trigger_rumble_expiration) {
-                joystick->trigger_rumble_expiration = 1;
-            }
         } else {
             joystick->trigger_rumble_expiration = 0;
         }
@@ -1083,7 +1074,7 @@ int SDL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blu
                    green != joystick->led_green ||
                    blue != joystick->led_blue;
 
-    if (isfreshvalue || SDL_TICKS_PASSED(SDL_GetTicks(), joystick->led_expiration)) {
+    if (isfreshvalue || SDL_GetTicks() >= joystick->led_expiration) {
         result = joystick->driver->SetLED(joystick, red, green, blue);
         joystick->led_expiration = SDL_GetTicks() + SDL_LED_MIN_REPEAT_MS;
     } else {
@@ -1665,7 +1656,7 @@ int SDL_PrivateJoystickButton(SDL_Joystick *joystick, Uint8 button, Uint8 state)
 void SDL_JoystickUpdate(void)
 {
     int i;
-    Uint32 now;
+    Uint64 now;
     SDL_Joystick *joystick;
 
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
@@ -1689,14 +1680,12 @@ void SDL_JoystickUpdate(void)
         }
 
         now = SDL_GetTicks();
-        if (joystick->rumble_expiration &&
-            SDL_TICKS_PASSED(now, joystick->rumble_expiration)) {
+        if (joystick->rumble_expiration && now >= joystick->rumble_expiration) {
             SDL_JoystickRumble(joystick, 0, 0, 0);
             joystick->rumble_resend = 0;
         }
 
-        if (joystick->rumble_resend &&
-            SDL_TICKS_PASSED(now, joystick->rumble_resend)) {
+        if (joystick->rumble_resend && now >= joystick->rumble_resend) {
             joystick->driver->Rumble(joystick, joystick->low_frequency_rumble, joystick->high_frequency_rumble);
             joystick->rumble_resend = now + SDL_RUMBLE_RESEND_MS;
             if (joystick->rumble_resend == 0) {
@@ -1704,8 +1693,7 @@ void SDL_JoystickUpdate(void)
             }
         }
 
-        if (joystick->trigger_rumble_expiration &&
-            SDL_TICKS_PASSED(now, joystick->trigger_rumble_expiration)) {
+        if (joystick->trigger_rumble_expiration && now >= joystick->trigger_rumble_expiration) {
             SDL_JoystickRumbleTriggers(joystick, 0, 0, 0);
         }
     }

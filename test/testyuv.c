@@ -254,7 +254,8 @@ int main(int argc, char **argv)
     int current = 0;
     int pitch;
     Uint8 *raw_yuv;
-    Uint32 then, now, i, iterations = 100;
+    Uint64 then, now;
+    Uint32 i, iterations = 100;
     SDL_bool should_run_automated_tests = SDL_FALSE;
 
     while (argv[arg] && *argv[arg] == '-') {
@@ -345,7 +346,7 @@ int main(int argc, char **argv)
         SDL_ConvertPixels(original->w, original->h, yuv_format, raw_yuv, pitch, rgb_format, converted->pixels, converted->pitch);
     }
     now = SDL_GetTicks();
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%" SDL_PRIu32 " iterations in %" SDL_PRIu32 " ms, %.2fms each\n", iterations, (now - then), (float)(now - then) / iterations);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%" SDL_PRIu32 " iterations in %" SDL_PRIu64 " ms, %.2fms each\n", iterations, (now - then), (float)(now - then) / iterations);
 
     window = SDL_CreateWindow("YUV test",
                               SDL_WINDOWPOS_UNDEFINED,

@@ -909,8 +909,8 @@ static int SDLCALL ALSA_HotplugThread(void *arg)
 
     while (!SDL_AtomicGet(&ALSA_hotplug_shutdown)) {
         /* Block awhile before checking again, unless we're told to stop. */
-        const Uint32 ticks = SDL_GetTicks() + 5000;
-        while (!SDL_AtomicGet(&ALSA_hotplug_shutdown) && !SDL_TICKS_PASSED(SDL_GetTicks(), ticks)) {
+        const Uint64 ticks = SDL_GetTicks() + 5000;
+        while (!SDL_AtomicGet(&ALSA_hotplug_shutdown) && SDL_GetTicks() < ticks) {
             SDL_Delay(100);
         }
 

@@ -494,9 +494,10 @@ static void ANDROID_JoystickDetect(void)
      * so we poll every three seconds
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    static Uint32 timeout = 0;
-    if (!timeout || SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-        timeout = SDL_GetTicks() + 3000;
+    static Uint64 timeout = 0;
+    Uint64 now = SDL_GetTicks();
+    if (!timeout || now >= timeout) {
+        timeout = now + 3000;
         Android_JNI_PollInputDevices();
     }
 }

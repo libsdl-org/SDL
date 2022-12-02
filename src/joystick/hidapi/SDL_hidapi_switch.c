@@ -254,18 +254,18 @@ typedef struct
     SwitchCommonOutputPacket_t m_RumblePacket;
     Uint8 m_rgucReadBuffer[k_unSwitchMaxOutputPacketLength];
     SDL_bool m_bRumbleActive;
-    Uint32 m_unRumbleSent;
+    Uint64 m_ulRumbleSent;
     SDL_bool m_bRumblePending;
     SDL_bool m_bRumbleZeroPending;
     Uint32 m_unRumblePending;
     SDL_bool m_bReportSensors;
     SDL_bool m_bHasSensorData;
-    Uint32 m_unLastInput;
-    Uint32 m_unLastIMUReset;
-    Uint32 m_unIMUSampleTimestamp;
+    Uint64 m_ulLastInput;
+    Uint64 m_ulLastIMUReset;
+    Uint64 m_ulIMUSampleTimestampNS;
     Uint32 m_unIMUSamples;
-    Uint32 m_unIMUUpdateIntervalUS;
-    Uint64 m_ulTimestampUS;
+    Uint64 m_ulIMUUpdateIntervalNS;
+    Uint64 m_ulTimestampNS;
     SDL_bool m_bVerticalMode;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
@@ -329,8 +329,7 @@ static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int siz
 static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs expectedID)
 {
     /* Average response time for messages is ~30ms */
-    Uint32 TimeoutMs = 100;
-    Uint32 startTicks = SDL_GetTicks();
+    Uint64 endTicks = SDL_GetTicks() + 100;
 
     int nRead = 0;
     while ((nRead = ReadInput(ctx)) != -1) {
@@ -345,7 +344,7 @@ static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Conte
             SDL_Delay(1);
         }
 
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), startTicks + TimeoutMs)) {
+        if (SDL_GetTicks() >= endTicks) {
             break;
         }
     }
@@ -355,8 +354,7 @@ static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Conte
 static SDL_bool ReadProprietaryReply(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs expectedID)
 {
     /* Average response time for messages is ~30ms */
-    Uint32 TimeoutMs = 100;
-    Uint32 startTicks = SDL_GetTicks();
+    Uint64 endTicks = SDL_GetTicks() + 100;
 
     int nRead = 0;
     while ((nRead = ReadInput(ctx)) != -1) {
@@ -368,7 +366,7 @@ static SDL_bool ReadProprietaryReply(SDL_DriverSwitch_Context *ctx, ESwitchPropr
             SDL_Delay(1);
         }
 
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), startTicks + TimeoutMs)) {
+        if (SDL_GetTicks() >= endTicks) {
             break;
         }
     }
@@ -536,7 +534,7 @@ static SDL_bool WriteRumble(SDL_DriverSwitch_Context *ctx)
     ctx->m_nCommandNumber = (ctx->m_nCommandNumber + 1) & 0xF;
 
     /* Refresh the rumble state periodically */
-    ctx->m_unRumbleSent = SDL_GetTicks();
+    ctx->m_ulRumbleSent = SDL_GetTicks();
 
     return WritePacket(ctx, (Uint8 *)&ctx->m_RumblePacket, sizeof(ctx->m_RumblePacket));
 }
@@ -1370,8 +1368,8 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
 
     /* Set up for input */
     ctx->m_bSyncWrite = SDL_FALSE;
-    ctx->m_unLastIMUReset = ctx->m_unLastInput = SDL_GetTicks();
-    ctx->m_unIMUUpdateIntervalUS = 5 * 1000; /* Start off at 5 ms update rate */
+    ctx->m_ulLastIMUReset = ctx->m_ulLastInput = SDL_GetTicks();
+    ctx->m_ulIMUUpdateIntervalNS = SDL_MS_TO_NS(5); /* Start off at 5 ms update rate */
 
     /* Set up for vertical mode */
     ctx->m_bVerticalMode = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_FALSE);
@@ -1410,7 +1408,7 @@ static int HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context *
 
 static int HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
 {
-    if (!SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
+    if (SDL_GetTicks() < (ctx->m_ulRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
         return 0;
     }
 
@@ -1419,7 +1417,7 @@ static int HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
         Uint16 high_frequency_rumble = (Uint16)ctx->m_unRumblePending;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent pending rumble %d/%d, %d ms after previous rumble\n", low_frequency_rumble, high_frequency_rumble, SDL_GetTicks() - ctx->m_unRumbleSent);
+        SDL_Log("Sent pending rumble %d/%d, %d ms after previous rumble\n", low_frequency_rumble, high_frequency_rumble, SDL_GetTicks() - ctx->m_ulRumbleSent);
 #endif
         ctx->m_bRumblePending = SDL_FALSE;
         ctx->m_unRumblePending = 0;
@@ -1431,7 +1429,7 @@ static int HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
         ctx->m_bRumbleZeroPending = SDL_FALSE;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent pending zero rumble, %d ms after previous rumble\n", SDL_GetTicks() - ctx->m_unRumbleSent);
+        SDL_Log("Sent pending zero rumble, %d ms after previous rumble\n", SDL_GetTicks() - ctx->m_ulRumbleSent);
 #endif
         return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, 0, 0);
     }
@@ -1463,7 +1461,7 @@ static int HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         }
     }
 
-    if (!SDL_TICKS_PASSED(SDL_GetTicks(), ctx->m_unRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
+    if (SDL_GetTicks() < (ctx->m_ulRumbleSent + RUMBLE_WRITE_FREQUENCY_MS)) {
         if (low_frequency_rumble || high_frequency_rumble) {
             Uint32 unRumblePending = ((Uint32)low_frequency_rumble << 16) | high_frequency_rumble;
 
@@ -1522,7 +1520,7 @@ static int HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *devi
     SetIMUEnabled(ctx, enabled);
     ctx->m_bReportSensors = enabled;
     ctx->m_unIMUSamples = 0;
-    ctx->m_unIMUSampleTimestamp = SDL_GetTicks();
+    ctx->m_ulIMUSampleTimestampNS = SDL_GetTicksNS();
 
     return 0;
 }
@@ -1988,22 +1986,22 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
             /* We got three IMU samples, calculate the IMU update rate and timestamps */
             ctx->m_unIMUSamples += 3;
             if (ctx->m_unIMUSamples >= IMU_UPDATE_RATE_SAMPLE_FREQUENCY) {
-                Uint32 now = SDL_GetTicks();
-                Uint32 elapsed = (now - ctx->m_unIMUSampleTimestamp);
+                Uint64 now = SDL_GetTicksNS();
+                Uint64 elapsed = (now - ctx->m_ulIMUSampleTimestampNS);
 
                 if (elapsed > 0) {
-                    ctx->m_unIMUUpdateIntervalUS = (elapsed * 1000) / ctx->m_unIMUSamples;
+                    ctx->m_ulIMUUpdateIntervalNS = elapsed / ctx->m_unIMUSamples;
                 }
                 ctx->m_unIMUSamples = 0;
-                ctx->m_unIMUSampleTimestamp = now;
+                ctx->m_ulIMUSampleTimestampNS = now;
             }
 
-            ctx->m_ulTimestampUS += ctx->m_unIMUUpdateIntervalUS;
-            timestamp[0] = ctx->m_ulTimestampUS;
-            ctx->m_ulTimestampUS += ctx->m_unIMUUpdateIntervalUS;
-            timestamp[1] = ctx->m_ulTimestampUS;
-            ctx->m_ulTimestampUS += ctx->m_unIMUUpdateIntervalUS;
-            timestamp[2] = ctx->m_ulTimestampUS;
+            ctx->m_ulTimestampNS += ctx->m_ulIMUUpdateIntervalNS;
+            timestamp[0] = SDL_NS_TO_US(ctx->m_ulTimestampNS);
+            ctx->m_ulTimestampNS += ctx->m_ulIMUUpdateIntervalNS;
+            timestamp[1] = SDL_NS_TO_US(ctx->m_ulTimestampNS);
+            ctx->m_ulTimestampNS += ctx->m_ulIMUUpdateIntervalNS;
+            timestamp[2] = SDL_NS_TO_US(ctx->m_ulTimestampNS);
 
             if (!ctx->device->parent ||
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
@@ -2042,10 +2040,10 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
 
         } else if (ctx->m_bHasSensorData) {
             /* Uh oh, someone turned off the IMU? */
-            const Uint32 IMU_RESET_DELAY_MS = 3000;
-            Uint32 now = SDL_GetTicks();
+            const int IMU_RESET_DELAY_MS = 3000;
+            Uint64 now = SDL_GetTicks();
 
-            if (SDL_TICKS_PASSED(now, ctx->m_unLastIMUReset + IMU_RESET_DELAY_MS)) {
+            if (now >= (ctx->m_ulLastIMUReset + IMU_RESET_DELAY_MS)) {
                 SDL_HIDAPI_Device *device = ctx->device;
 
                 if (device->updating) {
@@ -2057,7 +2055,7 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
                 if (device->updating) {
                     SDL_LockMutex(device->dev_lock);
                 }
-                ctx->m_unLastIMUReset = now;
+                ctx->m_ulLastIMUReset = now;
             }
 
         } else {
@@ -2074,7 +2072,7 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick = NULL;
     int size;
     int packet_count = 0;
-    Uint32 now = SDL_GetTicks();
+    Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -2085,7 +2083,7 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("Nintendo Switch packet: size = %d", ctx->m_rgucReadBuffer, size);
 #endif
         ++packet_count;
-        ctx->m_unLastInput = now;
+        ctx->m_ulLastInput = now;
 
         if (joystick == NULL) {
             continue;
@@ -2111,14 +2109,14 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         if (packet_count == 0) {
             if (!ctx->m_bInputOnly && !device->is_bluetooth &&
                 ctx->device->product_id != USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
-                const Uint32 INPUT_WAIT_TIMEOUT_MS = 100;
-                if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+                const int INPUT_WAIT_TIMEOUT_MS = 100;
+                if (now >= (ctx->m_ulLastInput + INPUT_WAIT_TIMEOUT_MS)) {
                     /* Steam may have put the controller back into non-reporting mode */
                     WriteProprietary(ctx, k_eSwitchProprietaryCommandIDs_ForceUSB, NULL, 0, SDL_FALSE);
                 }
             } else if (device->is_bluetooth) {
-                const Uint32 INPUT_WAIT_TIMEOUT_MS = 3000;
-                if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+                const int INPUT_WAIT_TIMEOUT_MS = 3000;
+                if (now >= (ctx->m_ulLastInput + INPUT_WAIT_TIMEOUT_MS)) {
                     /* Bluetooth may have disconnected, try reopening the controller */
                     size = -1;
                 }
@@ -2128,9 +2126,9 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         if (ctx->m_bRumblePending || ctx->m_bRumbleZeroPending) {
             HIDAPI_DriverSwitch_SendPendingRumble(ctx);
         } else if (ctx->m_bRumbleActive &&
-                   SDL_TICKS_PASSED(now, ctx->m_unRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
+                   now >= (ctx->m_ulRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
 #ifdef DEBUG_RUMBLE
-            SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", now - ctx->m_unRumbleSent);
+            SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", now - ctx->m_ulRumbleSent);
 #endif
             WriteRumble(ctx);
         }

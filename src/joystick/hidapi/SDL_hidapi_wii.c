@@ -142,9 +142,9 @@ typedef struct
     Uint8 m_ucMotionPlusMode;
     SDL_bool m_bReportSensors;
     Uint8 m_rgucReadBuffer[k_unWiiPacketDataLength];
-    Uint32 m_unLastInput;
-    Uint32 m_unLastStatus;
-    Uint32 m_unNextMotionPlusCheck;
+    Uint64 m_ulLastInput;
+    Uint64 m_ulLastStatus;
+    Uint64 m_ulNextMotionPlusCheck;
     SDL_bool m_bDisconnected;
 
     struct StickCalibrationData
@@ -225,8 +225,7 @@ static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int s
 
 static SDL_bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs expectedID, SDL_bool (*isMine)(const Uint8 *))
 {
-    Uint32 TimeoutMs = 250; /* Seeing successful reads after about 200 ms */
-    Uint32 startTicks = SDL_GetTicks();
+    Uint64 endTicks = SDL_GetTicks() + 250; /* Seeing successful reads after about 200 ms */
 
     int nRead = 0;
     while ((nRead = ReadInput(ctx)) != -1) {
@@ -235,7 +234,7 @@ static SDL_bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs exp
                 return SDL_TRUE;
             }
         } else {
-            if (SDL_TICKS_PASSED(SDL_GetTicks(), startTicks + TimeoutMs)) {
+            if (SDL_GetTicks() >= endTicks) {
                 break;
             }
             SDL_Delay(1);
@@ -443,10 +442,7 @@ static SDL_bool NeedsPeriodicMotionPlusCheck(SDL_DriverWii_Context *ctx, SDL_boo
 
 static void SchedulePeriodicMotionPlusCheck(SDL_DriverWii_Context *ctx)
 {
-    ctx->m_unNextMotionPlusCheck = SDL_GetTicks() + MOTION_PLUS_UPDATE_TIME_MS;
-    if (!ctx->m_unNextMotionPlusCheck) {
-        ctx->m_unNextMotionPlusCheck = 1;
-    }
+    ctx->m_ulNextMotionPlusCheck = SDL_GetTicks() + MOTION_PLUS_UPDATE_TIME_MS;
 }
 
 static void CheckMotionPlusConnection(SDL_DriverWii_Context *ctx)
@@ -807,7 +803,7 @@ static SDL_bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
 
-    ctx->m_unLastInput = SDL_GetTicks();
+    ctx->m_ulLastInput = SDL_GetTicks();
 
     return SDL_TRUE;
 }
@@ -1433,7 +1429,7 @@ static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
          * Motion Plus packets.
          */
         if (NeedsPeriodicMotionPlusCheck(ctx, SDL_TRUE)) {
-            ctx->m_unNextMotionPlusCheck = SDL_GetTicks();
+            ctx->m_ulNextMotionPlusCheck = SDL_GetTicks();
         }
 
     } else if (hadExtension != hasExtension) {
@@ -1568,7 +1564,7 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
     SDL_Joystick *joystick = NULL;
     int size;
-    Uint32 now;
+    Uint64 now;
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -1582,7 +1578,7 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         if (joystick) {
             HandleInput(ctx, joystick);
         }
-        ctx->m_unLastInput = now;
+        ctx->m_ulLastInput = now;
     }
 
     /* Check to see if we've lost connection to the controller.
@@ -1591,7 +1587,7 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     {
         SDL_COMPILE_TIME_ASSERT(ENABLE_CONTINUOUS_REPORTING, ENABLE_CONTINUOUS_REPORTING);
     }
-    if (SDL_TICKS_PASSED(now, ctx->m_unLastInput + INPUT_WAIT_TIMEOUT_MS)) {
+    if (now >= (ctx->m_ulLastInput + INPUT_WAIT_TIMEOUT_MS)) {
         /* Bluetooth may have disconnected, try reopening the controller */
         size = -1;
     }
@@ -1601,26 +1597,24 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         if (ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_WiiUPro) {
 
             /* Check to see if the Motion Plus extension status has changed */
-            if (ctx->m_unNextMotionPlusCheck &&
-                SDL_TICKS_PASSED(now, ctx->m_unNextMotionPlusCheck)) {
+            if (ctx->m_ulNextMotionPlusCheck && now >= ctx->m_ulNextMotionPlusCheck) {
                 CheckMotionPlusConnection(ctx);
                 if (NeedsPeriodicMotionPlusCheck(ctx, SDL_FALSE)) {
                     SchedulePeriodicMotionPlusCheck(ctx);
                 } else {
-                    ctx->m_unNextMotionPlusCheck = 0;
+                    ctx->m_ulNextMotionPlusCheck = 0;
                 }
             }
 
             /* Request a status update periodically to make sure our battery value is up to date */
-            if (!ctx->m_unLastStatus ||
-                SDL_TICKS_PASSED(now, ctx->m_unLastStatus + STATUS_UPDATE_TIME_MS)) {
+            if (!ctx->m_ulLastStatus || now >= (ctx->m_ulLastStatus + STATUS_UPDATE_TIME_MS)) {
                 Uint8 data[2];
 
                 data[0] = k_eWiiOutputReportIDs_StatusRequest;
                 data[1] = ctx->m_bRumbleActive;
                 WriteOutput(ctx, data, sizeof(data), SDL_FALSE);
 
-                ctx->m_unLastStatus = now;
+                ctx->m_ulLastStatus = now;
             }
         }
     }
