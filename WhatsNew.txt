@@ -32,4 +32,4 @@ General:
 * Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*()
 * Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
 * Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
-
+* SDL_CreateSurface() and SDL_CreateSurfaceFrom() can use FOURCC formats, simply to ease format conversion and create texture. Other aspects are limited.
