@@ -35,6 +35,9 @@ The SDL3main and SDL3test libraries have been renamed SDL3_main and SDL3_test, r
 
 The `timestamp` member of the SDL_Event structure now represents nanoseconds, and is populated with `SDL_GetTicksNS()`
 
+You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
+
+
 ## SDL_platform.h
 
 The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ has been renamed __IOS__

@@ -220,9 +220,9 @@ static void HandleModifiers(_THIS, unsigned short scancode, unsigned int modifie
     for (int i = 0; i < 12; i++) {
         if (code == codes[i]) {
             if (modifierFlags & modifiers[i]) {
-                SDL_SendKeyboardKey(SDL_PRESSED, code);
+                SDL_SendKeyboardKey(0, SDL_PRESSED, code);
             } else {
-                SDL_SendKeyboardKey(SDL_RELEASED, code);
+                SDL_SendKeyboardKey(0, SDL_RELEASED, code);
             }
         }
     }
@@ -399,7 +399,7 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
             UpdateKeymap(data, SDL_TRUE);
         }
 
-        SDL_SendKeyboardKey(SDL_PRESSED, code);
+        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_PRESSED, code);
 #ifdef DEBUG_SCANCODES
         if (code == SDL_SCANCODE_UNKNOWN) {
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
@@ -418,7 +418,7 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         }
         break;
     case NSEventTypeKeyUp:
-        SDL_SendKeyboardKey(SDL_RELEASED, code);
+        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_RELEASED, code);
         break;
     case NSEventTypeFlagsChanged:
         HandleModifiers(_this, scancode, (unsigned int)[event modifierFlags]);

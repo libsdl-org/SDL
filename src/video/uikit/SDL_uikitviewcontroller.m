@@ -313,7 +313,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     }
 
     if (scancode != SDL_SCANCODE_UNKNOWN) {
-        SDL_SendKeyboardKeyAutoRelease(scancode);
+        SDL_SendKeyboardKeyAutoRelease(0, scancode);
     }
 }
 
@@ -409,8 +409,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
                 /* Send distinct down and up events for each backspace action */
-                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendKeyboardKey(0, SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendKeyboardKey(0, SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
                 --deleteLength;
             }
         }
@@ -422,7 +422,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                  * convert them to key presses */
                 NSUInteger i;
                 for (i = 0; i < pendingText.length; i++) {
-                    SDL_SendKeyboardUnicodeKey([pendingText characterAtIndex:i]);
+                    SDL_SendKeyboardUnicodeKey(0, [pendingText characterAtIndex:i]);
                 }
             }
             SDL_SendKeyboardText([pendingText UTF8String]);
@@ -480,7 +480,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 /* Terminates the editing session */
 - (BOOL)textFieldShouldReturn:(UITextField *)_textField
 {
-    SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RETURN);
+    SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_RETURN);
     if (keyboardVisible &&
         SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
         SDL_StopTextInput();

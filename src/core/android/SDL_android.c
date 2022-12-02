@@ -1257,7 +1257,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
     JNIEnv *env, jclass cls,
     jchar chUnicode)
 {
-    SDL_SendKeyboardUnicodeKey(chUnicode);
+    SDL_SendKeyboardUnicodeKey(0, chUnicode);
 }
 
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(

@@ -1520,6 +1520,7 @@ static int D3D_Reset(SDL_Renderer *renderer)
     {
         SDL_Event event;
         event.type = SDL_RENDER_TARGETS_RESET;
+        event.common.timestamp = 0;
         SDL_PushEvent(&event);
     }
 

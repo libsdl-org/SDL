@@ -74,13 +74,13 @@ void updateMouse(SDL_WSCONS_mouse_input_data *inputData)
             {
                 switch (events[i].value) {
                 case 0: /* Left Mouse Button. */
-                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_LEFT);
                     break;
                 case 1: /* Middle Mouse Button. */
-                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_MIDDLE);
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_MIDDLE);
                     break;
                 case 2: /* Right Mouse Button. */
-                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_RIGHT);
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_PRESSED, SDL_BUTTON_RIGHT);
                     break;
                 }
             } break;
@@ -88,34 +88,34 @@ void updateMouse(SDL_WSCONS_mouse_input_data *inputData)
             {
                 switch (events[i].value) {
                 case 0: /* Left Mouse Button. */
-                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_LEFT);
                     break;
                 case 1: /* Middle Mouse Button. */
-                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_MIDDLE);
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_MIDDLE);
                     break;
                 case 2: /* Right Mouse Button. */
-                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_RIGHT);
+                    SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, SDL_BUTTON_RIGHT);
                     break;
                 }
             } break;
             case WSCONS_EVENT_MOUSE_DELTA_X:
             {
-                SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, events[i].value, 0);
+                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, events[i].value, 0);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Y:
             {
-                SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, 0, -events[i].value);
+                SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, 0, -events[i].value);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_W:
             {
-                SDL_SendMouseWheel(mouse->focus, mouse->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(0, mouse->focus, mouse->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Z:
             {
-                SDL_SendMouseWheel(mouse->focus, mouse->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(0, mouse->focus, mouse->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
                 break;
             }
             }

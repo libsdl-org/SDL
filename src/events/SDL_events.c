@@ -948,8 +948,8 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     if (push_sentinel && SDL_GetEventState(SDL_POLLSENTINEL) == SDL_ENABLE) {
         SDL_Event sentinel;
 
-        SDL_zero(sentinel);
         sentinel.type = SDL_POLLSENTINEL;
+        sentinel.common.timestamp = 0;
         SDL_PushEvent(&sentinel);
     }
 }
@@ -1192,7 +1192,9 @@ int SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 
 int SDL_PushEvent(SDL_Event *event)
 {
-    event->common.timestamp = SDL_GetTicksNS();
+    if (!event->common.timestamp) {
+        event->common.timestamp = SDL_GetTicksNS();
+    }
 
     if (SDL_EventOK.callback || SDL_event_watchers_count > 0) {
         if (SDL_event_watchers_lock == NULL || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
@@ -1414,6 +1416,7 @@ int SDL_SendAppEvent(SDL_EventType eventType)
     if (SDL_GetEventState(eventType) == SDL_ENABLE) {
         SDL_Event event;
         event.type = eventType;
+        event.common.timestamp = 0;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
@@ -1428,6 +1431,7 @@ int SDL_SendSysWMEvent(SDL_SysWMmsg *message)
         SDL_Event event;
         SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_SYSWMEVENT;
+        event.common.timestamp = 0;
         event.syswm.msg = message;
         posted = (SDL_PushEvent(&event) > 0);
     }
