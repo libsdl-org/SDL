@@ -25,6 +25,7 @@
 #if SDL_HAVE_YUV
 
 #include "SDL_yuv_sw_c.h"
+#include "../video/SDL_yuv_c.h"
 
 SDL_SW_YUVTexture *
 SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
@@ -56,7 +57,7 @@ SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
     swdata->w = w;
     swdata->h = h;
     {
-        int dst_size;
+        size_t dst_size;
         SDL_CalculateYUVSize(format, w, h, &dst_size, NULL);
         swdata->pixels = (Uint8 *)SDL_SIMDAlloc(dst_size);
         if (!swdata->pixels) {
