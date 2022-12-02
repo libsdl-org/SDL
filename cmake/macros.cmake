@@ -29,7 +29,7 @@ ENDMACRO()
 
 # Message Output
 macro(MESSAGE_WARN _TEXT)
-  message(STATUS "*** WARNING: ${_TEXT}")
+  message(WARNING "${_TEXT}")
 endmacro()
 
 macro(MESSAGE_ERROR _TEXT)
