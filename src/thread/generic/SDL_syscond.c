@@ -37,8 +37,7 @@
 #define SDL_DestroyCond_generic     SDL_DestroyCond
 #define SDL_CondSignal_generic      SDL_CondSignal
 #define SDL_CondBroadcast_generic   SDL_CondBroadcast
-#define SDL_CondWait_generic        SDL_CondWait
-#define SDL_CondWaitTimeout_generic SDL_CondWaitTimeout
+#define SDL_CondWaitTimeoutNS_generic SDL_CondWaitTimeoutNS
 #endif
 
 typedef struct SDL_cond_generic
@@ -148,7 +147,7 @@ int SDL_CondBroadcast_generic(SDL_cond *_cond)
     return 0;
 }
 
-/* Wait on the condition variable for at most 'ms' milliseconds.
+/* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
    The mutex must be locked before entering this function!
    The mutex is unlocked during the wait, and locked again after the wait.
 
@@ -169,7 +168,7 @@ Thread B:
     SDL_CondSignal(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_CondWaitTimeout_generic(SDL_cond *_cond, SDL_mutex *mutex, Uint32 ms)
+int SDL_CondWaitTimeoutNS_generic(SDL_cond *_cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
     int retval;
@@ -190,11 +189,7 @@ int SDL_CondWaitTimeout_generic(SDL_cond *_cond, SDL_mutex *mutex, Uint32 ms)
     SDL_UnlockMutex(mutex);
 
     /* Wait for a signal */
-    if (ms == SDL_MUTEX_MAXWAIT) {
-        retval = SDL_SemWait(cond->wait_sem);
-    } else {
-        retval = SDL_SemWaitTimeout(cond->wait_sem, ms);
-    }
+    retval = SDL_SemWaitTimeoutNS(cond->wait_sem, timeoutNS);
 
     /* Let the signaler know we have completed the wait, otherwise
        the signaler can race ahead and get the condition semaphore
@@ -221,12 +216,6 @@ int SDL_CondWaitTimeout_generic(SDL_cond *_cond, SDL_mutex *mutex, Uint32 ms)
     SDL_LockMutex(mutex);
 
     return retval;
-}
-
-/* Wait on the condition variable forever */
-int SDL_CondWait_generic(SDL_cond *cond, SDL_mutex *mutex)
-{
-    return SDL_CondWaitTimeout_generic(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

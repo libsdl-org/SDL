@@ -42,15 +42,8 @@ static int numhaptics = 0;
 
 int SDL_SYS_HapticInit(void)
 {
-    /* Support for device connect/disconnect is API >= 16 only,
-     * so we poll every three seconds
-     * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
-     */
-    static Uint32 timeout = 0;
-    if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-        timeout = SDL_GetTicks() + 3000;
-        Android_JNI_PollHapticDevices();
-    }
+    Android_JNI_PollHapticDevices();
+
     return numhaptics;
 }
 

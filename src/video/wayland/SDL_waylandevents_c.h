@@ -76,7 +76,7 @@ typedef struct
     SDL_bool is_key_down;
     uint32_t key;
     uint32_t wl_press_time;  // Key press time as reported by the Wayland API
-    uint32_t sdl_press_time; // Key press time expressed in SDL ticks
+    Uint64 sdl_press_time;   // Key press time expressed in SDL ticks
     uint32_t next_repeat_ms;
     uint32_t scancode;
     char text[8];
@@ -148,7 +148,7 @@ struct SDL_WaylandInput
 
 extern void Wayland_PumpEvents(_THIS);
 extern void Wayland_SendWakeupEvent(_THIS, SDL_Window *window);
-extern int Wayland_WaitEventTimeout(_THIS, int timeout);
+extern int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS);
 
 extern void Wayland_add_data_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);
 extern void Wayland_add_primary_selection_device_manager(SDL_VideoData *d, uint32_t id, uint32_t version);

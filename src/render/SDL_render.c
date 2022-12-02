@@ -921,7 +921,7 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
         /* Pick a good default refresh rate */
         refresh_rate = 60;
     }
-    renderer->simulate_vsync_interval = (1000 / refresh_rate);
+    renderer->simulate_vsync_interval_ns = (SDL_NS_PER_SECOND / refresh_rate);
 }
 #endif /* !SDL_RENDER_DISABLED */
 
@@ -4188,24 +4188,24 @@ int SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
 
 static void SDL_RenderSimulateVSync(SDL_Renderer *renderer)
 {
-    Uint32 now, elapsed;
-    const Uint32 interval = renderer->simulate_vsync_interval;
+    Uint64 now, elapsed;
+    const Uint64 interval = renderer->simulate_vsync_interval_ns;
 
     if (!interval) {
-        /* We can't do sub-ms delay, so just return here */
+        /* We can't do sub-ns delay, so just return here */
         return;
     }
 
-    now = SDL_GetTicks();
+    now = SDL_GetTicksNS();
     elapsed = (now - renderer->last_present);
     if (elapsed < interval) {
-        Uint32 duration = (interval - elapsed);
-        SDL_Delay(duration);
-        now = SDL_GetTicks();
+        Uint64 duration = (interval - elapsed);
+        SDL_DelayNS(duration);
+        now = SDL_GetTicksNS();
     }
 
     elapsed = (now - renderer->last_present);
-    if (!renderer->last_present || elapsed > 1000) {
+    if (!renderer->last_present || elapsed > SDL_NS_TO_MS(1000)) {
         /* It's been too long, reset the presentation timeline */
         renderer->last_present = now;
     } else {

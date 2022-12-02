@@ -62,16 +62,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemTryWait(SDL_sem *sem)
-{
-    if (sem == NULL) {
-        return SDL_InvalidParamError("sem");
-    }
-
-    return SDL_SemWaitTimeout(sem, 0);
-}
-
-int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
+int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
     int retval;
 
@@ -79,12 +70,15 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
         return SDL_InvalidParamError("sem");
     }
 
-    if (timeout == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS == SDL_MUTEX_MAXWAIT) {
         LightSemaphore_Acquire(&sem->semaphore, 1);
         retval = 0;
     } else {
         int return_code = LightSemaphore_TryAcquire(&sem->semaphore, 1);
         if (return_code != 0) {
+            /* FIXME: Does this code guarantee a wall clock timeout here?
+             *        Can we handle sub-millisecond delays? */
+            u32 timeout = (u32)SDL_NS_TO_MS(timeoutNS);
             for (u32 i = 0; i < timeout; i++) {
                 svcSleepThread(1000000LL);
                 return_code = LightSemaphore_TryAcquire(&sem->semaphore, 1);
@@ -97,11 +91,6 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
     }
 
     return retval;
-}
-
-int SDL_SemWait(SDL_sem *sem)
-{
-    return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
 }
 
 Uint32

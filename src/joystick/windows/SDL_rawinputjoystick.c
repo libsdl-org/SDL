@@ -129,7 +129,7 @@ struct joystick_hwdata
 
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
     Uint64 match_state; /* Lowest 16 bits for button states, higher 24 for 6 4bit axes */
-    Uint32 last_state_packet;
+    Uint64 last_state_packet;
 #endif
 
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
@@ -167,7 +167,7 @@ static const Uint16 subscribed_devices[] = {
 
 static struct
 {
-    Uint32 last_state_packet;
+    Uint64 last_state_packet;
     SDL_Joystick *joystick;
     SDL_Joystick *last_joystick;
 } guide_button_candidate;
@@ -1808,7 +1808,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
     if (!correlated) {
         if (!guide_button_candidate.joystick ||
             (ctx->last_state_packet && (!guide_button_candidate.last_state_packet ||
-                                        SDL_TICKS_PASSED(ctx->last_state_packet, guide_button_candidate.last_state_packet)))) {
+                                        ctx->last_state_packet >= guide_button_candidate.last_state_packet))) {
             guide_button_candidate.joystick = joystick;
             guide_button_candidate.last_state_packet = ctx->last_state_packet;
         }

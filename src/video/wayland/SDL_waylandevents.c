@@ -270,7 +270,7 @@ static int dispatch_queued_events(SDL_VideoData *viddata)
     return ret >= 0 ? 1 : ret;
 }
 
-int Wayland_WaitEventTimeout(_THIS, int timeout)
+int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 {
     SDL_VideoData *d = _this->driverdata;
     struct SDL_WaylandInput *input = d->input;
@@ -286,16 +286,16 @@ int Wayland_WaitEventTimeout(_THIS, int timeout)
 
     /* If key repeat is active, we'll need to cap our maximum wait time to handle repeats */
     if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
-        uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+        uint32_t elapsed = (uint32_t)(SDL_GetTicks() - input->keyboard_repeat.sdl_press_time);
         if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
             /* A repeat key event was already due */
             return 1;
         } else {
             uint32_t next_repeat_wait_time = (input->keyboard_repeat.next_repeat_ms - elapsed) + 1;
-            if (timeout >= 0) {
-                timeout = SDL_min(timeout, next_repeat_wait_time);
+            if (timeoutNS >= 0) {
+                timeoutNS = SDL_min(timeoutNS, SDL_MS_TO_NS(next_repeat_wait_time));
             } else {
-                timeout = next_repeat_wait_time;
+                timeoutNS = SDL_MS_TO_NS(next_repeat_wait_time);
             }
             key_repeat_active = SDL_TRUE;
         }
@@ -305,7 +305,7 @@ int Wayland_WaitEventTimeout(_THIS, int timeout)
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
         /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
-        int err = SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        int err = SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeoutNS);
         if (err > 0) {
             /* There are new events available to read */
             WAYLAND_wl_display_read_events(d->display);
@@ -316,7 +316,7 @@ int Wayland_WaitEventTimeout(_THIS, int timeout)
 
             /* If key repeat is active, we might have woken up to generate a key event */
             if (key_repeat_active) {
-                uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+                uint32_t elapsed = (uint32_t)(SDL_GetTicks() - input->keyboard_repeat.sdl_press_time);
                 if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
                     return 1;
                 }
@@ -375,7 +375,7 @@ void Wayland_PumpEvents(_THIS)
     err = WAYLAND_wl_display_dispatch_pending(d->display);
 
     if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
-        uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+        uint32_t elapsed = (uint32_t)(SDL_GetTicks() - input->keyboard_repeat.sdl_press_time);
         keyboard_repeat_handle(&input->keyboard_repeat, elapsed);
     }
 

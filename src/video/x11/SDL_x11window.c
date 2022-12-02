@@ -62,10 +62,10 @@ static Bool isConfigureNotify(Display *dpy, XEvent *ev, XPointer win)
 }
 static Bool X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*predicate)(), XPointer arg, int timeoutMS)
 {
-    Uint32 start = SDL_GetTicks();
+    Uint64 start = SDL_GetTicks();
 
     while (!X11_XCheckIfEvent(display, event_return, predicate, arg)) {
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), start + timeoutMS)) {
+        if (SDL_GetTicks() >= (start + timeoutMS)) {
             return False;
         }
     }
@@ -797,7 +797,7 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
     Window *children;
     XWindowAttributes attrs;
     int orig_x, orig_y;
-    Uint32 timeout;
+    Uint64 timeout;
 
     X11_XSync(display, False);
     X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
@@ -833,7 +833,7 @@ void X11_SetWindowPosition(_THIS, SDL_Window *window)
             }
         }
 
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
+        if (SDL_GetTicks() >= timeout) {
             break;
         }
 
@@ -907,7 +907,7 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
     int (*prev_handler)(Display *, XErrorEvent *) = NULL;
     XWindowAttributes attrs;
     int orig_w, orig_h;
-    Uint32 timeout;
+    Uint64 timeout;
 
     X11_XSync(display, False);
     X11_XGetWindowAttributes(display, data->xwindow, &attrs);
@@ -977,7 +977,7 @@ void X11_SetWindowSize(_THIS, SDL_Window *window)
             }
         }
 
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
+        if (SDL_GetTicks() >= timeout) {
             break;
         }
 
@@ -1377,7 +1377,7 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
         X11_XSync(display, False);
         prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
 
-        timeout = SDL_GetTicks64() + 100;
+        timeout = SDL_GetTicks() + 100;
         while (SDL_TRUE) {
             int x, y;
 
@@ -1404,7 +1404,7 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
                 }
             }
 
-            if (SDL_GetTicks64() >= timeout) {
+            if (SDL_GetTicks() >= timeout) {
                 break;
             }
 
@@ -1720,9 +1720,6 @@ int X11_FlashWindow(_THIS, SDL_Window *window, SDL_FlashOperation operation)
             data->flashing_window = SDL_TRUE;
             /* On Ubuntu 21.04 this causes a dialog to pop up, so leave it up for a full second so users can see it */
             data->flash_cancel_time = SDL_GetTicks() + 1000;
-            if (!data->flash_cancel_time) {
-                data->flash_cancel_time = 1;
-            }
         }
         break;
     case SDL_FLASH_UNTIL_FOCUSED:

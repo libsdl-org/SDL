@@ -117,9 +117,9 @@ typedef struct
     SDL_bool bluetooth;
     SDL_XboxOneInitState init_state;
     int init_packet;
-    Uint32 start_time;
+    Uint64 start_time;
     Uint8 sequence;
-    Uint32 send_time;
+    Uint64 send_time;
     SDL_bool has_guide_packet;
     SDL_bool has_color_led;
     SDL_bool has_paddles;
@@ -132,7 +132,7 @@ typedef struct
     Uint8 left_trigger_rumble;
     Uint8 right_trigger_rumble;
     SDL_XboxOneRumbleState rumble_state;
-    Uint32 rumble_time;
+    Uint64 rumble_time;
     SDL_bool rumble_pending;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXboxOne_Context;
@@ -456,8 +456,8 @@ static int HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
     }
 
     if (ctx->rumble_state == XBOX_ONE_RUMBLE_STATE_BUSY) {
-        const Uint32 RUMBLE_BUSY_TIME_MS = ctx->bluetooth ? 50 : 10;
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->rumble_time + RUMBLE_BUSY_TIME_MS)) {
+        const int RUMBLE_BUSY_TIME_MS = ctx->bluetooth ? 50 : 10;
+        if (SDL_GetTicks() >= (ctx->rumble_time + RUMBLE_BUSY_TIME_MS)) {
             ctx->rumble_time = 0;
             ctx->rumble_state = XBOX_ONE_RUMBLE_STATE_IDLE;
         }
@@ -1087,7 +1087,7 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateInitState(SDL_HIDAPI_Device *device, 
 #endif
             break;
         case XBOX_ONE_INIT_STATE_NEGOTIATING:
-            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->send_time + CONTROLLER_NEGOTIATION_TIMEOUT_MS)) {
+            if (SDL_GetTicks() >= (ctx->send_time + CONTROLLER_NEGOTIATION_TIMEOUT_MS)) {
                 /* We haven't heard anything, let's move on */
 #ifdef DEBUG_JOYSTICK
                 SDL_Log("Init sequence %d timed out after %u ms\n", ctx->init_packet, (SDL_GetTicks() - ctx->send_time));
@@ -1099,7 +1099,7 @@ static SDL_bool HIDAPI_DriverXboxOne_UpdateInitState(SDL_HIDAPI_Device *device, 
             }
             break;
         case XBOX_ONE_INIT_STATE_PREPARE_INPUT:
-            if (SDL_TICKS_PASSED(SDL_GetTicks(), ctx->send_time + CONTROLLER_PREPARE_INPUT_TIMEOUT_MS)) {
+            if (SDL_GetTicks() >= (ctx->send_time + CONTROLLER_PREPARE_INPUT_TIMEOUT_MS)) {
 #ifdef DEBUG_JOYSTICK
                 SDL_Log("Prepare input complete after %u ms\n", (SDL_GetTicks() - ctx->send_time));
 #endif

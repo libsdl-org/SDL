@@ -127,10 +127,10 @@ static int SDLCALL adder(void *junk)
 
 static void runAdder(void)
 {
-    Uint32 start, end;
+    Uint64 start, end;
     int T = NThreads;
 
-    start = SDL_GetTicks();
+    start = SDL_GetTicksNS();
 
     threadDone = SDL_CreateSemaphore(0);
 
@@ -146,9 +146,9 @@ static void runAdder(void)
 
     SDL_DestroySemaphore(threadDone);
 
-    end = SDL_GetTicks();
+    end = SDL_GetTicksNS();
 
-    SDL_Log("Finished in %f sec\n", (end - start) / 1000.f);
+    SDL_Log("Finished in %f sec\n", (end - start) / 1000000000.0);
 }
 
 static void RunEpicTest()
@@ -585,7 +585,7 @@ static void RunFIFOTest(SDL_bool lock_free)
     SDL_Thread *fifo_thread = NULL;
     WriterData writerData[NUM_WRITERS];
     ReaderData readerData[NUM_READERS];
-    Uint32 start, end;
+    Uint64 start, end;
     int i, j;
     int grand_total;
     char textBuffer[1024];
@@ -601,7 +601,7 @@ static void RunFIFOTest(SDL_bool lock_free)
         queue.mutex = SDL_CreateMutex();
     }
 
-    start = SDL_GetTicks();
+    start = SDL_GetTicksNS();
 
 #ifdef TEST_SPINLOCK_FIFO
     /* Start a monitoring thread */
@@ -646,7 +646,7 @@ static void RunFIFOTest(SDL_bool lock_free)
         SDL_WaitThread(readerData[i].thread, NULL);
     }
 
-    end = SDL_GetTicks();
+    end = SDL_GetTicksNS();
 
     /* Wait for the FIFO thread */
     if (fifo_thread) {
@@ -657,7 +657,7 @@ static void RunFIFOTest(SDL_bool lock_free)
         SDL_DestroyMutex(queue.mutex);
     }
 
-    SDL_Log("Finished in %f sec\n", (end - start) / 1000.f);
+    SDL_Log("Finished in %f sec\n", (end - start) / 1000000000.0);
 
     SDL_Log("\n");
     for (i = 0; i < NUM_WRITERS; ++i) {

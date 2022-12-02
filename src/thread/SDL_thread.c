@@ -481,4 +481,43 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 }
 
+int SDL_SemWait(SDL_sem *sem)
+{
+    return SDL_SemWaitTimeoutNS(sem, SDL_MUTEX_MAXWAIT);
+}
+
+int SDL_SemTryWait(SDL_sem *sem)
+{
+    return SDL_SemWaitTimeoutNS(sem, 0);
+}
+
+int SDL_SemWaitTimeout(SDL_sem *sem, Sint32 timeoutMS)
+{
+    Sint64 timeoutNS;
+
+    if (timeoutMS >= 0) {
+        timeoutNS = SDL_MS_TO_NS(timeoutMS);
+    } else {
+        timeoutNS = -1;
+    }
+    return SDL_SemWaitTimeoutNS(sem, timeoutNS);
+}
+
+int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
+{
+    return SDL_CondWaitTimeoutNS(cond, mutex, SDL_MUTEX_MAXWAIT);
+}
+
+int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Sint32 timeoutMS)
+{
+    Sint64 timeoutNS;
+
+    if (timeoutMS >= 0) {
+        timeoutNS = SDL_MS_TO_NS(timeoutMS);
+    } else {
+        timeoutNS = -1;
+    }
+    return SDL_CondWaitTimeoutNS(cond, mutex, timeoutNS);
+}
+
 /* vi: set ts=4 sw=4 expandtab: */

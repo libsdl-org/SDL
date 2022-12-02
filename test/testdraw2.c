@@ -31,8 +31,9 @@ static int cycle_direction = 1;
 static int current_alpha = 255;
 static int current_color = 255;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
-static Uint32 next_fps_check, frames;
-static const Uint32 fps_check_delay = 5000;
+static Uint64 next_fps_check;
+static Uint32 frames;
+static const int fps_check_delay = 5000;
 
 int done;
 
@@ -175,7 +176,7 @@ void DrawRects(SDL_Renderer *renderer)
 
 void loop()
 {
-    Uint32 now;
+    Uint64 now;
     int i;
     SDL_Event event;
 
@@ -204,9 +205,9 @@ void loop()
 #endif
     frames++;
     now = SDL_GetTicks();
-    if (SDL_TICKS_PASSED(now, next_fps_check)) {
+    if (now >= next_fps_check) {
         /* Print out some timing information */
-        const Uint32 then = next_fps_check - fps_check_delay;
+        const Uint64 then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
         SDL_Log("%2.2f frames per second\n", fps);
         next_fps_check = now + fps_check_delay;

@@ -28,54 +28,24 @@
 #include <timer.h>
 #include <sys/time.h>
 
-static uint64_t start;
-static SDL_bool ticks_started = SDL_FALSE;
-
-void SDL_TicksInit(void)
-{
-    if (ticks_started) {
-        return;
-    }
-    ticks_started = SDL_TRUE;
-
-    start = GetTimerSystemTime();
-}
-
-void SDL_TicksQuit(void)
-{
-    ticks_started = SDL_FALSE;
-}
-
-Uint64
-SDL_GetTicks64(void)
-{
-    uint64_t now;
-
-    if (!ticks_started) {
-        SDL_TicksInit();
-    }
-
-    now = GetTimerSystemTime();
-    return (Uint64)((now - start) / (kBUSCLK / CLOCKS_PER_SEC));
-}
 
 Uint64
 SDL_GetPerformanceCounter(void)
 {
-    return SDL_GetTicks64();
+    return GetTimerSystemTime();
 }
 
 Uint64
 SDL_GetPerformanceFrequency(void)
 {
-    return 1000;
+    return kBUSCLK;
 }
 
-void SDL_Delay(Uint32 ms)
+void SDL_DelayNS(Uint64 ns)
 {
-    struct timespec tv = { 0 };
-    tv.tv_sec = ms / 1000;
-    tv.tv_nsec = (ms % 1000) * 1000000;
+    struct timespec tv;
+    tv.tv_sec = (ns / SDL_NS_PER_SECOND);
+    tv.tv_nsec = (ns % SDL_NS_PER_SECOND);
     nanosleep(&tv, NULL);
 }
 

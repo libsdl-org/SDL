@@ -146,7 +146,8 @@ void loop()
 int main(int argc, char *argv[])
 {
     int i;
-    Uint32 then, now, frames;
+    Uint64 then, now;
+    Uint32 frames;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

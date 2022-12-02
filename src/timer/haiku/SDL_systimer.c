@@ -24,34 +24,6 @@
 
 #include <kernel/OS.h>
 
-static bigtime_t start;
-static SDL_bool ticks_started = SDL_FALSE;
-
-void SDL_TicksInit(void)
-{
-    if (ticks_started) {
-        return;
-    }
-    ticks_started = SDL_TRUE;
-
-    /* Set first ticks value */
-    start = system_time();
-}
-
-void SDL_TicksQuit(void)
-{
-    ticks_started = SDL_FALSE;
-}
-
-Uint64
-SDL_GetTicks64(void)
-{
-    if (!ticks_started) {
-        SDL_TicksInit();
-    }
-
-    return (Uint64)((system_time() - start) / 1000);
-}
 
 Uint64
 SDL_GetPerformanceCounter(void)
@@ -62,12 +34,12 @@ SDL_GetPerformanceCounter(void)
 Uint64
 SDL_GetPerformanceFrequency(void)
 {
-    return 1000000;
+    return SDL_US_PER_SECOND;
 }
 
-void SDL_Delay(Uint32 ms)
+void SDL_DelayNS(Uint64 ns)
 {
-    snooze(ms * 1000);
+    snooze((bigtime_t)SDL_NS_TO_US(ns));
 }
 
 #endif /* SDL_TIMER_HAIKU */

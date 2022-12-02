@@ -79,7 +79,7 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     }
 }
 
-int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
+int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
     int ret;
     struct timer_alarm_t alarm;
@@ -89,15 +89,15 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
         return SDL_InvalidParamError("sem");
     }
 
-    if (timeout == 0) {
+    if (timeoutNS == 0) {
         if (PollSema(sem->semid) < 0) {
             return SDL_MUTEX_TIMEDOUT;
         }
         return 0;
     }
 
-    if (timeout != SDL_MUTEX_MAXWAIT) {
-        SetTimerAlarm(&alarm, MSec2TimerBusClock(timeout), &usercb, (void *)GetThreadId());
+    if (timeoutNS != SDL_MUTEX_MAXWAIT) {
+        SetTimerAlarm(&alarm, MSec2TimerBusClock(SDL_NS_TO_MS(timeoutNS)), &usercb, (void *)GetThreadId());
     }
 
     ret = WaitSema(sem->semid);
@@ -107,16 +107,6 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
         return SDL_MUTEX_TIMEDOUT;
     }
     return 0; // Wait condition satisfied.
-}
-
-int SDL_SemTryWait(SDL_sem *sem)
-{
-    return SDL_SemWaitTimeout(sem, 0);
-}
-
-int SDL_SemWait(SDL_sem *sem)
-{
-    return SDL_SemWaitTimeout(sem, SDL_MUTEX_MAXWAIT);
 }
 
 /* Returns the current count of the semaphore */

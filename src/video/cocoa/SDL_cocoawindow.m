@@ -252,7 +252,7 @@
 
 @end
 
-static Uint32 s_moveHack;
+static Uint64 s_moveHack;
 
 static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 {
@@ -1896,7 +1896,7 @@ void Cocoa_SetWindowPosition(_THIS, SDL_Window *window)
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
         NSWindow *nswindow = windata.nswindow;
         NSRect rect;
-        Uint32 moveHack;
+        Uint64 moveHack;
 
         rect.origin.x = window->x;
         rect.origin.y = window->y;
@@ -1919,7 +1919,7 @@ void Cocoa_SetWindowSize(_THIS, SDL_Window *window)
         SDL_WindowData *windata = (__bridge SDL_WindowData *)window->driverdata;
         NSWindow *nswindow = windata.nswindow;
         NSRect rect;
-        Uint32 moveHack;
+        Uint64 moveHack;
 
         /* Cocoa will resize the window from the bottom-left rather than the
          * top-left when -[nswindow setContentSize:] is used, so we must set the
