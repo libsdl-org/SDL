@@ -144,7 +144,12 @@ SDL_CreateSurface(int width, int height, Uint32 format)
         }
 
         if (SDL_ISPIXELFORMAT_FOURCC(surface->format->format)) {
-            size = SDL_SW_SizeYUV(surface->format->format, surface->w, surface->h, &surface->pitch);
+            /* Get correct size and pitch for YUV formats */
+            if (SDL_CalculateYUVSize(surface->format->format, surface->w, surface->h, &size, &surface->pitch) < 0) {
+                SDL_OutOfMemory();
+                SDL_FreeSurface(surface);
+                return NULL;
+            }
         }
 
         surface->pixels = SDL_SIMDAlloc(size);
@@ -181,8 +186,8 @@ SDL_CreateSurface(int width, int height, Uint32 format)
  */
 SDL_Surface *
 SDL_CreateSurfaceFrom(void *pixels,
-                         int width, int height, int pitch,
-                         Uint32 format)
+                      int width, int height, int pitch,
+                      Uint32 format)
 {
     SDL_Surface *surface;
     size_t minimalPitch;
@@ -206,7 +211,7 @@ SDL_CreateSurfaceFrom(void *pixels,
 
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         int expected_pitch = 0;
-        SDL_SW_SizeYUV(format, width, height, &expected_pitch);
+        SDL_CalculateYUVSize(format, width, height, NULL, &expected_pitch);
         if (expected_pitch != pitch) {
             SDL_SetError("Only accept exact pitch for YUV format");
             return NULL;
@@ -1110,9 +1115,8 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
     if (SDL_ISPIXELFORMAT_FOURCC(format->format) || SDL_ISPIXELFORMAT_FOURCC(surface->format->format)) {
 
         ret = SDL_ConvertPixels(surface->w, surface->h,
-                surface->format->format, surface->pixels, surface->pitch,
-                convert->format->format, convert->pixels, convert->pitch);
-
+                                surface->format->format, surface->pixels, surface->pitch,
+                                convert->format->format, convert->pixels, convert->pitch);
 
         if (ret < 0) {
             SDL_FreeSurface(convert);
