@@ -25,6 +25,7 @@
 #if SDL_HAVE_YUV
 
 #include "SDL_yuv_sw_c.h"
+#include "../video/SDL_yuv_c.h"
 
 SDL_SW_YUVTexture *
 SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
@@ -56,31 +57,8 @@ SDL_SW_CreateYUVTexture(Uint32 format, int w, int h)
     swdata->w = w;
     swdata->h = h;
     {
-        const int sz_plane = w * h;
-        const int sz_plane_chroma = ((w + 1) / 2) * ((h + 1) / 2);
-        const int sz_plane_packed = ((w + 1) / 2) * h;
-        int dst_size = 0;
-        switch (format) {
-        case SDL_PIXELFORMAT_YV12: /**< Planar mode: Y + V + U  (3 planes) */
-        case SDL_PIXELFORMAT_IYUV: /**< Planar mode: Y + U + V  (3 planes) */
-            dst_size = sz_plane + sz_plane_chroma + sz_plane_chroma;
-            break;
-
-        case SDL_PIXELFORMAT_YUY2: /**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
-        case SDL_PIXELFORMAT_UYVY: /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
-        case SDL_PIXELFORMAT_YVYU: /**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
-            dst_size = 4 * sz_plane_packed;
-            break;
-
-        case SDL_PIXELFORMAT_NV12: /**< Planar mode: Y + U/V interleaved  (2 planes) */
-        case SDL_PIXELFORMAT_NV21: /**< Planar mode: Y + V/U interleaved  (2 planes) */
-            dst_size = sz_plane + sz_plane_chroma + sz_plane_chroma;
-            break;
-
-        default:
-            SDL_assert(0 && "We should never get here (caught above)");
-            break;
-        }
+        size_t dst_size;
+        SDL_CalculateYUVSize(format, w, h, &dst_size, NULL);
         swdata->pixels = (Uint8 *)SDL_SIMDAlloc(dst_size);
         if (!swdata->pixels) {
             SDL_SW_DestroyYUVTexture(swdata);

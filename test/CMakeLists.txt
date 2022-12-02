@@ -175,7 +175,7 @@ elseif(HAVE_X11)
     target_link_libraries(testnative PRIVATE X11)
 endif()
 
-add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES TESTUTILS testoverlay2.c testyuv_cvt.c)
+add_sdl_test_executable(testoverlay2 NEEDS_RESOURCES TESTUTILS testoverlay2.c)
 add_sdl_test_executable(testplatform NONINTERACTIVE testplatform.c)
 add_sdl_test_executable(testpower NONINTERACTIVE testpower.c)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE testfilesystem.c)

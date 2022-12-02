@@ -29,7 +29,7 @@ General:
     * SDL_HINT_VIDEO_X11_XINERAMA
     * SDL_HINT_VIDEO_X11_XVIDMODE
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
-* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*()
+* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
 * Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat
 * Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
 * SDL_GetTicks() now returns a 64-bit value and the tick values should be directly compared instead of using the SDL_TICKS_PASSED macro
