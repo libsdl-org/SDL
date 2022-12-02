@@ -879,7 +879,6 @@ extern DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType);
  * \sa SDL_SetEventFilter
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout
- * \sa SDL_WaitEventTimeoutNS
  */
 extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
 
@@ -902,7 +901,6 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
  * \sa SDL_PollEvent
  * \sa SDL_PumpEvents
  * \sa SDL_WaitEventTimeout
- * \sa SDL_WaitEventTimeoutNS
  */
 extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event *event);
 
@@ -932,39 +930,8 @@ extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event *event);
  * \sa SDL_PollEvent
  * \sa SDL_PumpEvents
  * \sa SDL_WaitEvent
- * \sa SDL_WaitEventTimeoutNS
  */
 extern DECLSPEC int SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS);
-
-/**
- * Wait until the specified timeout (in nanoseconds) for the next available
- * event.
- *
- * If `event` is not NULL, the next event is removed from the queue and stored
- * in the SDL_Event structure pointed to by `event`.
- *
- * As this function may implicitly call SDL_PumpEvents(), you can only call
- * this function in the thread that initialized the video subsystem.
- *
- * The timeout is not guaranteed, the actual wait time could be longer
- * due to system scheduling.
- *
- * \param event the SDL_Event structure to be filled in with the next event
- *              from the queue, or NULL
- * \param timeoutNS the maximum number of nanoseconds to wait for the next
- *                  available event
- * \returns 1 on success or 0 if there was an error while waiting for events;
- *          call SDL_GetError() for more information. This also returns 0 if
- *          the timeout elapsed without an event arriving.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_PollEvent
- * \sa SDL_PumpEvents
- * \sa SDL_WaitEvent
- * \sa SDL_WaitEventTimeout
- */
-extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
 
 /**
  * Add an event to the event queue.

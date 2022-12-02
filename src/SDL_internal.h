@@ -182,6 +182,23 @@
 
 #include <SDL3/SDL.h>
 
+/* The internal implementations of these functions have up to nanosecond precision.
+   We can expose these functions as part of the API if we want to later.
+*/
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern DECLSPEC int SDLCALL SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS);
+extern DECLSPEC int SDLCALL SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS);
+extern DECLSPEC int SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* SDL_internal_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

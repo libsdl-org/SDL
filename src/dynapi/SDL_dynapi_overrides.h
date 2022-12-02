@@ -890,8 +890,5 @@
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
 #define SDL_memset4 SDL_memset4_REAL
-#define SDL_WaitEventTimeoutNS SDL_WaitEventTimeoutNS_REAL
-#define SDL_SemWaitTimeoutNS SDL_SemWaitTimeoutNS_REAL
-#define SDL_CondWaitTimeoutNS SDL_CondWaitTimeoutNS_REAL
 #define SDL_GetTicksNS SDL_GetTicksNS_REAL
 #define SDL_DelayNS SDL_DelayNS_REAL
