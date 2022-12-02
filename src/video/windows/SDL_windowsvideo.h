@@ -462,6 +462,7 @@ typedef struct SDL_VideoData
 } SDL_VideoData;
 
 extern SDL_bool g_WindowsEnableMessageLoop;
+extern SDL_bool g_WindowsEnableMenuMnemonics;
 extern SDL_bool g_WindowFrameUsableWhileCursorHidden;
 
 typedef struct IDirect3D9 IDirect3D9;

@@ -1316,8 +1316,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_SYSCOMMAND:
     {
-        if ((wParam & 0xFFF0) == SC_KEYMENU) {
-            return 0;
+        if (!g_WindowsEnableMenuMnemonics) {
+            if ((wParam & 0xFFF0) == SC_KEYMENU) {
+                return 0;
+            }
         }
 
 #if defined(SC_SCREENSAVE) || defined(SC_MONITORPOWER)

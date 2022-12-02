@@ -29,6 +29,7 @@
 #include "SDL_system.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
+#include "../../SDL_hints_c.h"
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
@@ -43,24 +44,22 @@ static void WIN_VideoQuit(_THIS);
 
 /* Hints */
 SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
+SDL_bool g_WindowsEnableMenuMnemonics = SDL_FALSE;
 SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
 
 static void SDLCALL UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    if (newValue && *newValue == '0') {
-        g_WindowsEnableMessageLoop = SDL_FALSE;
-    } else {
-        g_WindowsEnableMessageLoop = SDL_TRUE;
-    }
+    g_WindowsEnableMessageLoop = SDL_GetStringBoolean(newValue, SDL_TRUE);
+}
+
+static void SDLCALL UpdateWindowsEnableMenuMnemonics(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    g_WindowsEnableMenuMnemonics = SDL_GetStringBoolean(newValue, SDL_FALSE);
 }
 
 static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    if (newValue && *newValue == '0') {
-        g_WindowFrameUsableWhileCursorHidden = SDL_FALSE;
-    } else {
-        g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
-    }
+    g_WindowFrameUsableWhileCursorHidden = SDL_GetStringBoolean(newValue, SDL_TRUE);
 }
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
@@ -448,6 +447,7 @@ int WIN_VideoInit(_THIS)
 #endif
 
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
+    SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
