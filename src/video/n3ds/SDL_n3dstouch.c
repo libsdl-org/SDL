@@ -59,7 +59,7 @@ void N3DS_PollTouch(void)
 
     if (pressed != was_pressed) {
         was_pressed = pressed;
-        SDL_SendTouch(N3DS_TOUCH_ID,
+        SDL_SendTouch(0, N3DS_TOUCH_ID,
                       0,
                       NULL,
                       pressed,
@@ -67,7 +67,7 @@ void N3DS_PollTouch(void)
                       touch.py * TOUCHSCREEN_SCALE_Y,
                       pressed ? 1.0f : 0.0f);
     } else if (pressed) {
-        SDL_SendTouchMotion(N3DS_TOUCH_ID,
+        SDL_SendTouchMotion(0, N3DS_TOUCH_ID,
                             0,
                             NULL,
                             touch.px * TOUCHSCREEN_SCALE_X,

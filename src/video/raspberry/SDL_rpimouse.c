@@ -244,7 +244,7 @@ static int RPI_WarpMouseGlobal(int x, int y)
     }
 
     /* Update internal mouse position. */
-    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x, y);
+    SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 0, x, y);
 
     curdata = (RPI_CursorData *)mouse->cur_cursor->driverdata;
     if (curdata->element == DISPMANX_NO_HANDLE) {

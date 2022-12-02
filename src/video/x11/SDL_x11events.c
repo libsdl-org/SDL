@@ -436,13 +436,13 @@ void X11_ReconcileKeyboardState(_THIS)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
         }
     }
 }
@@ -793,9 +793,9 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
             } else {
-                SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+                SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
             }
 #endif
         }
@@ -932,7 +932,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
         if (!mouse->relative_mode) {
-            SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
         }
 
         /* We ungrab in LeaveNotify, so we may need to grab again here */
@@ -954,7 +954,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
-            SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
         }
 
         if (xevent->xcrossing.mode != NotifyGrab &&
@@ -1086,7 +1086,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             if (xevent->type == KeyPress) {
                 /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
                 if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+                    SDL_SendKeyboardKey(0, SDL_PRESSED, videodata->key_layout[keycode]);
                 }
                 if (*text) {
                     SDL_SendKeyboardText(text);
@@ -1096,7 +1096,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                     /* We're about to get a repeated key down, ignore the key up */
                     break;
                 }
-                SDL_SendKeyboardKey(SDL_RELEASED, videodata->key_layout[keycode]);
+                SDL_SendKeyboardKey(0, SDL_RELEASED, videodata->key_layout[keycode]);
             }
         }
 
@@ -1311,7 +1311,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: X11 motion: %d,%d\n", data, xevent->xmotion.x, xevent->xmotion.y);
 #endif
 
-            SDL_SendMouseMotion(data->window, 0, 0, xevent->xmotion.x, xevent->xmotion.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xmotion.x, xevent->xmotion.y);
         }
     } break;
 
@@ -1322,7 +1322,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
         if (X11_IsWheelEvent(display, xevent, &xticks, &yticks)) {
-            SDL_SendMouseWheel(data->window, 0, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
+            SDL_SendMouseWheel(0, data->window, 0, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
         } else {
             SDL_bool ignore_click = SDL_FALSE;
             int button = xevent->xbutton.button;
@@ -1344,7 +1344,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                 data->last_focus_event_time = 0;
             }
             if (!ignore_click) {
-                SDL_SendMouseButton(data->window, 0, SDL_PRESSED, button);
+                SDL_SendMouseButton(0, data->window, 0, SDL_PRESSED, button);
             }
         }
         X11_UpdateUserTime(data, xevent->xbutton.time);
@@ -1363,7 +1363,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                 /* see explanation at case ButtonPress */
                 button -= (8 - SDL_BUTTON_X1);
             }
-            SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
+            SDL_SendMouseButton(0, data->window, 0, SDL_RELEASED, button);
         }
     } break;
 

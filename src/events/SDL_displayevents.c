@@ -45,6 +45,7 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data
     if (SDL_GetEventState(SDL_DISPLAYEVENT) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_DISPLAYEVENT;
+        event.common.timestamp = 0;
         event.display.event = displayevent;
         event.display.display = SDL_GetIndexOfDisplay(display);
         event.display.data1 = data1;

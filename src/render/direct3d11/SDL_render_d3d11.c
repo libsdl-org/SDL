@@ -875,6 +875,7 @@ D3D11_HandleDeviceLost(SDL_Renderer *renderer)
     {
         SDL_Event event;
         event.type = SDL_RENDER_DEVICE_RESET;
+        event.common.timestamp = 0;
         SDL_PushEvent(&event);
     }
 

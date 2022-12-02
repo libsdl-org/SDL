@@ -302,9 +302,9 @@ void SDL_EVDEV_Poll(void)
                     if (events[i].code >= BTN_MOUSE && events[i].code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
                         mouse_button = events[i].code - BTN_MOUSE;
                         if (events[i].value == 0) {
-                            SDL_SendMouseButton(mouse->focus, (SDL_MouseID)item->fd, SDL_RELEASED, EVDEV_MouseButtons[mouse_button]);
+                            SDL_SendMouseButton(0, mouse->focus, (SDL_MouseID)item->fd, SDL_RELEASED, EVDEV_MouseButtons[mouse_button]);
                         } else if (events[i].value == 1) {
-                            SDL_SendMouseButton(mouse->focus, (SDL_MouseID)item->fd, SDL_PRESSED, EVDEV_MouseButtons[mouse_button]);
+                            SDL_SendMouseButton(0, mouse->focus, (SDL_MouseID)item->fd, SDL_PRESSED, EVDEV_MouseButtons[mouse_button]);
                         }
                         break;
                     }
@@ -328,9 +328,9 @@ void SDL_EVDEV_Poll(void)
                     scan_code = SDL_EVDEV_translate_keycode(events[i].code);
                     if (scan_code != SDL_SCANCODE_UNKNOWN) {
                         if (events[i].value == 0) {
-                            SDL_SendKeyboardKey(SDL_RELEASED, scan_code);
+                            SDL_SendKeyboardKey(0, SDL_RELEASED, scan_code);
                         } else if (events[i].value == 1 || events[i].value == 2 /* key repeated */) {
-                            SDL_SendKeyboardKey(SDL_PRESSED, scan_code);
+                            SDL_SendKeyboardKey(0, SDL_PRESSED, scan_code);
                         }
                     }
                     SDL_EVDEV_kbd_keycode(_this->kbd, events[i].code, events[i].value);
@@ -446,11 +446,11 @@ void SDL_EVDEV_Poll(void)
                     case SYN_REPORT:
                         /* Send mouse axis changes together to ensure consistency and reduce event processing overhead */
                         if (item->mouse_x != 0 || item->mouse_y != 0) {
-                            SDL_SendMouseMotion(mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
+                            SDL_SendMouseMotion(0, mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, item->mouse_x, item->mouse_y);
                             item->mouse_x = item->mouse_y = 0;
                         }
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
-                            SDL_SendMouseWheel(mouse->focus, (SDL_MouseID)item->fd,
+                            SDL_SendMouseWheel(0, mouse->focus, (SDL_MouseID)item->fd,
                                                item->mouse_hwheel / (item->high_res_hwheel ? 120.0f : 1.0f),
                                                item->mouse_wheel / (item->high_res_wheel ? 120.0f : 1.0f),
                                                SDL_MOUSEWHEEL_NORMAL);
@@ -480,16 +480,16 @@ void SDL_EVDEV_Poll(void)
                              * be window-relative in that case. */
                             switch (item->touchscreen_data->slots[j].delta) {
                             case EVDEV_TOUCH_SLOTDELTA_DOWN:
-                                SDL_SendTouch(item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_TRUE, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouch(0, item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_TRUE, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_UP:
-                                SDL_SendTouch(item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_FALSE, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouch(0, item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_FALSE, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].tracking_id = -1;
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_MOVE:
-                                SDL_SendTouchMotion(item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouchMotion(0, item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             default:

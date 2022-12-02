@@ -681,7 +681,7 @@ void SDL_ResetKeyboard(void)
 #endif
     for (scancode = (SDL_Scancode)0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         if (keyboard->keystate[scancode] == SDL_PRESSED) {
-            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
         }
     }
 }
@@ -789,7 +789,7 @@ void SDL_SetKeyboardFocus(SDL_Window *window)
     }
 }
 
-static int SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint8 source, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
@@ -903,7 +903,8 @@ static int SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode s
     posted = 0;
     if (SDL_GetEventState(type) == SDL_ENABLE) {
         SDL_Event event;
-        event.key.type = type;
+        event.type = type;
+        event.common.timestamp = timestamp;
         event.key.state = state;
         event.key.repeat = repeat;
         event.key.keysym.scancode = scancode;
@@ -931,7 +932,7 @@ static int SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode s
     return posted;
 }
 
-int SDL_SendKeyboardUnicodeKey(Uint32 ch)
+int SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
 {
     SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
     uint16_t mod = 0;
@@ -943,33 +944,33 @@ int SDL_SendKeyboardUnicodeKey(Uint32 ch)
 
     if (mod & KMOD_SHIFT) {
         /* If the character uses shift, press shift down */
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
+        SDL_SendKeyboardKey(timestamp, SDL_PRESSED, SDL_SCANCODE_LSHIFT);
     }
 
     /* Send a keydown and keyup for the character */
-    SDL_SendKeyboardKey(SDL_PRESSED, code);
-    SDL_SendKeyboardKey(SDL_RELEASED, code);
+    SDL_SendKeyboardKey(timestamp, SDL_PRESSED, code);
+    SDL_SendKeyboardKey(timestamp, SDL_RELEASED, code);
 
     if (mod & KMOD_SHIFT) {
         /* If the character uses shift, release shift */
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+        SDL_SendKeyboardKey(timestamp, SDL_RELEASED, SDL_SCANCODE_LSHIFT);
     }
     return 0;
 }
 
-int SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
+int SDL_SendKeyboardKey(Uint64 timestamp, Uint8 state, SDL_Scancode scancode)
 {
-    return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode, SDLK_UNKNOWN);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, state, scancode, SDLK_UNKNOWN);
 }
 
-int SDL_SendKeyboardKeyAndKeycode(Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+int SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
 {
-    return SDL_SendKeyboardKeyInternal(KEYBOARD_HARDWARE, state, scancode, keycode);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, state, scancode, keycode);
 }
 
-int SDL_SendKeyboardKeyAutoRelease(SDL_Scancode scancode)
+int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode)
 {
-    return SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_PRESSED, scancode, SDLK_UNKNOWN);
 }
 
 void SDL_ReleaseAutoReleaseKeys(void)
@@ -980,7 +981,7 @@ void SDL_ReleaseAutoReleaseKeys(void)
     if (keyboard->autorelease_pending) {
         for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
             if (keyboard->keysource[scancode] == KEYBOARD_AUTORELEASE) {
-                SDL_SendKeyboardKeyInternal(KEYBOARD_AUTORELEASE, SDL_RELEASED, scancode, SDLK_UNKNOWN);
+                SDL_SendKeyboardKeyInternal(0, KEYBOARD_AUTORELEASE, SDL_RELEASED, scancode, SDLK_UNKNOWN);
             }
         }
         keyboard->autorelease_pending = SDL_FALSE;
@@ -1017,7 +1018,8 @@ int SDL_SendKeyboardText(const char *text)
         SDL_Event event;
         size_t pos = 0, advance, length = SDL_strlen(text);
 
-        event.text.type = SDL_TEXTINPUT;
+        event.type = SDL_TEXTINPUT;
+        event.common.timestamp = 0;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
         while (pos < length) {
             advance = SDL_utf8strlcpy(event.text.text, text + pos, SDL_arraysize(event.text.text));
@@ -1043,13 +1045,15 @@ int SDL_SendEditingText(const char *text, int start, int length)
 
         if (SDL_GetHintBoolean(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, SDL_FALSE) &&
             SDL_strlen(text) >= SDL_arraysize(event.text.text)) {
-            event.editExt.type = SDL_TEXTEDITING_EXT;
+            event.type = SDL_TEXTEDITING_EXT;
+            event.common.timestamp = 0;
             event.editExt.windowID = keyboard->focus ? keyboard->focus->id : 0;
             event.editExt.text = text ? SDL_strdup(text) : NULL;
             event.editExt.start = start;
             event.editExt.length = length;
         } else {
-            event.edit.type = SDL_TEXTEDITING;
+            event.type = SDL_TEXTEDITING;
+            event.common.timestamp = 0;
             event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
             event.edit.start = start;
             event.edit.length = length;

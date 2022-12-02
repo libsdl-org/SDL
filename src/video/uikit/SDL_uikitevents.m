@@ -108,6 +108,24 @@ static BOOL UIKit_EventPumpEnabled = YES;
 
 @end
 
+Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp)
+{
+    static Uint64 timestamp_offset;
+    Uint64 timestamp = (Uint64)(nsTimestamp * SDL_NS_PER_SECOND);
+    Uint64 now = SDL_GetTicksNS();
+
+    if (!timestamp_offset) {
+        timestamp_offset = (now - timestamp);
+    }
+    timestamp += timestamp_offset;
+
+    if (timestamp > now) {
+        timestamp_offset -= (timestamp - now);
+        timestamp = now;
+    }
+    return timestamp;
+}
+
 void SDL_iPhoneSetEventPump(SDL_bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
@@ -161,7 +179,7 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
 {
     keyboard_connected = SDL_TRUE;
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
-      SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
+      SDL_SendKeyboardKey(0, pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
     };
 
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL);
@@ -275,7 +293,7 @@ static int SetGCMouseRelativeMode(SDL_bool enabled)
 
 static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)
 {
-    SDL_SendMouseButton(SDL_GetMouseFocus(), mouseID, pressed ? SDL_PRESSED : SDL_RELEASED, button);
+    SDL_SendMouseButton(0, SDL_GetMouseFocus(), mouseID, pressed ? SDL_PRESSED : SDL_RELEASED, button);
 }
 
 static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
@@ -302,12 +320,12 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
       if (SDL_GCMouseRelativeMode()) {
-          SDL_SendMouseMotion(SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
+          SDL_SendMouseMotion(0, SDL_GetMouseFocus(), mouseID, 1, (int)deltaX, -(int)deltaY);
       }
     };
 
     mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-      SDL_SendMouseWheel(SDL_GetMouseFocus(), 0, xValue, yValue, SDL_MOUSEWHEEL_NORMAL);
+      SDL_SendMouseWheel(0, SDL_GetMouseFocus(), 0, xValue, yValue, SDL_MOUSEWHEEL_NORMAL);
     };
 
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.mouse", DISPATCH_QUEUE_SERIAL);

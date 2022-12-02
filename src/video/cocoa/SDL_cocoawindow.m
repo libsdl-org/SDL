@@ -190,7 +190,7 @@
         x = (int)point.x;
         y = (int)(sdlwindow->h - point.y);
         if (x >= 0 && x < sdlwindow->w && y >= 0 && y < sdlwindow->h) {
-            SDL_SendMouseMotion(sdlwindow, mouse->mouseID, 0, x, y);
+            SDL_SendMouseMotion(0, sdlwindow, mouse->mouseID, 0, x, y);
         }
         /* Code addon to update the mouse location */
 
@@ -855,7 +855,7 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
         y = (int)(window->h - point.y);
 
         if (x >= 0 && x < window->w && y >= 0 && y < window->h) {
-            SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
+            SDL_SendMouseMotion(0, window, mouse->mouseID, 0, x, y);
         }
     }
 
@@ -1133,8 +1133,8 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
     const SDL_bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
     if (osenabled ^ sdlenabled) {
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+        SDL_SendKeyboardKey(0, SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+        SDL_SendKeyboardKey(0, SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
     }
 }
 - (void)keyDown:(NSEvent *)theEvent
@@ -1193,14 +1193,14 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     //  event for the background window, this just makes sure the button is reported at the
     //  correct position in its own event.
     if (focus && ([theEvent window] == ((__bridge SDL_WindowData *)focus->driverdata).nswindow)) {
-        rc = SDL_SendMouseButtonClicks(window, mouseID, state, button, clicks);
+        rc = SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
     } else {
         const int orig_x = mouse->x;
         const int orig_y = mouse->y;
         const NSPoint point = [theEvent locationInWindow];
         mouse->x = (int)point.x;
         mouse->y = (int)(window->h - point.y);
-        rc = SDL_SendMouseButtonClicks(window, mouseID, state, button, clicks);
+        rc = SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
         mouse->x = orig_x;
         mouse->y = orig_y;
     }
@@ -1352,7 +1352,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         }
     }
 
-    SDL_SendMouseMotion(window, mouseID, 0, x, y);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, 0, x, y);
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -1428,7 +1428,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
              * events from being generated from touch events.
              */
             SDL_Window *window = NULL;
-            SDL_SendTouch(touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
+            SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
         }
     }
 
@@ -1496,14 +1496,14 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
         switch (phase) {
         case NSTouchPhaseBegan:
-            SDL_SendTouch(touchId, fingerId, window, SDL_TRUE, x, y, 1.0f);
+            SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchId, fingerId, window, SDL_TRUE, x, y, 1.0f);
             break;
         case NSTouchPhaseEnded:
         case NSTouchPhaseCancelled:
-            SDL_SendTouch(touchId, fingerId, window, SDL_FALSE, x, y, 1.0f);
+            SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchId, fingerId, window, SDL_FALSE, x, y, 1.0f);
             break;
         case NSTouchPhaseMoved:
-            SDL_SendTouchMotion(touchId, fingerId, window, x, y, 1.0f);
+            SDL_SendTouchMotion(Cocoa_GetEventTimestamp([theEvent timestamp]), touchId, fingerId, window, x, y, 1.0f);
             break;
         default:
             break;

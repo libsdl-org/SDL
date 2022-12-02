@@ -502,6 +502,24 @@ void Cocoa_RegisterApp(void)
     }
 }
 
+Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp)
+{
+    static Uint64 timestamp_offset;
+    Uint64 timestamp = (Uint64)(nsTimestamp * SDL_NS_PER_SECOND);
+    Uint64 now = SDL_GetTicksNS();
+
+    if (!timestamp_offset) {
+        timestamp_offset = (now - timestamp);
+    }
+    timestamp += timestamp_offset;
+
+    if (timestamp > now) {
+        timestamp_offset -= (timestamp - now);
+        timestamp = now;
+    }
+    return timestamp;
+}
+
 int Cocoa_PumpEventsUntilDate(_THIS, NSDate *expiration, bool accumulate)
 {
     for (;;) {

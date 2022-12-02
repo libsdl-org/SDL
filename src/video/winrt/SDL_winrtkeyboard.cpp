@@ -351,7 +351,7 @@ void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^ args)
         SDL_GetKeyName(keycode));
     //args->Handled = true;
 #endif
-    SDL_SendKeyboardKey(SDL_PRESSED, sdlScancode);
+    SDL_SendKeyboardKey(0, SDL_PRESSED, sdlScancode);
 }
 
 void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^ args)
@@ -376,7 +376,7 @@ void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^ args)
         SDL_GetKeyName(keycode));
     //args->Handled = true;
 #endif
-    SDL_SendKeyboardKey(SDL_RELEASED, sdlScancode);
+    SDL_SendKeyboardKey(0, SDL_RELEASED, sdlScancode);
 }
 
 void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^ args)

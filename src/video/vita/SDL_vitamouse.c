@@ -54,27 +54,27 @@ void VITA_PollMouse(void)
 
                 if (changed_buttons & 0x1) {
                     if (prev_buttons & 0x1)
-                        SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
+                        SDL_SendMouseButton(0, Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
                     else
-                        SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_LEFT);
+                        SDL_SendMouseButton(0, Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_LEFT);
                 }
                 if (changed_buttons & 0x2) {
                     if (prev_buttons & 0x2)
-                        SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_RIGHT);
+                        SDL_SendMouseButton(0, Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_RIGHT);
                     else
-                        SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_RIGHT);
+                        SDL_SendMouseButton(0, Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_RIGHT);
                 }
                 if (changed_buttons & 0x4) {
                     if (prev_buttons & 0x4)
-                        SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_MIDDLE);
+                        SDL_SendMouseButton(0, Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_MIDDLE);
                     else
-                        SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_MIDDLE);
+                        SDL_SendMouseButton(0, Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_MIDDLE);
                 }
 
                 prev_buttons = m_reports[i].buttons;
 
                 if (m_reports[i].rel_x || m_reports[i].rel_y) {
-                    SDL_SendMouseMotion(Vita_Window, 0, 1, m_reports[i].rel_x, m_reports[i].rel_y);
+                    SDL_SendMouseMotion(0, Vita_Window, 0, 1, m_reports[i].rel_x, m_reports[i].rel_y);
                 }
             }
         }

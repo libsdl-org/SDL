@@ -294,7 +294,7 @@ static void WIN_WarpMouse(SDL_Window *window, int x, int y)
     WIN_SetCursorPos(pt.x, pt.y);
 
     /* Send the exact mouse motion associated with this warp */
-    SDL_SendMouseMotion(window, SDL_GetMouse()->mouseID, 0, x, y);
+    SDL_SendMouseMotion(0, window, SDL_GetMouse()->mouseID, 0, x, y);
 }
 
 static int WIN_WarpMouseGlobal(int x, int y)

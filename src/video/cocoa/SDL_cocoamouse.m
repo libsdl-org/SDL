@@ -278,7 +278,7 @@ static int Cocoa_WarpMouseGlobal(int x, int y)
         SDL_SetMouseFocus(win);
         if (win) {
             SDL_assert(win == mouse->focus);
-            SDL_SendMouseMotion(win, mouse->mouseID, 0, x - win->x, y - win->y);
+            SDL_SendMouseMotion(0, win, mouse->mouseID, 0, x - win->x, y - win->y);
         }
     }
 
@@ -495,7 +495,7 @@ void Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(mouse->focus, mouseID, 1, (int)deltaX, (int)deltaY);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, 1, (int)deltaX, (int)deltaY);
 }
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
@@ -532,7 +532,7 @@ void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
         }
     }
 
-    SDL_SendMouseWheel(window, mouseID, x, y, direction);
+    SDL_SendMouseWheel(Cocoa_GetEventTimestamp([event timestamp]), window, mouseID, x, y, direction);
 }
 
 void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)

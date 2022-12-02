@@ -492,6 +492,7 @@ int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data
     if (SDL_GetEventState(SDL_SENSORUPDATE) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_SENSORUPDATE;
+        event.common.timestamp = 0;
         event.sensor.which = sensor->instance_id;
         num_values = SDL_min(num_values, SDL_arraysize(event.sensor.data));
         SDL_memset(event.sensor.data, 0, sizeof(event.sensor.data));

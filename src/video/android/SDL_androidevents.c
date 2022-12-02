@@ -78,6 +78,7 @@ static void android_egl_context_restore(SDL_Window *window)
             data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
             SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context);
             event.type = SDL_RENDER_DEVICE_RESET;
+            event.common.timestamp = 0;
             SDL_PushEvent(&event);
         }
         data->backup_done = 0;
