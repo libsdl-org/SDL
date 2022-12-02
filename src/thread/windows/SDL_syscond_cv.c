@@ -27,8 +27,7 @@ typedef SDL_cond *(*pfnSDL_CreateCond)(void);
 typedef void (*pfnSDL_DestroyCond)(SDL_cond *);
 typedef int (*pfnSDL_CondSignal)(SDL_cond *);
 typedef int (*pfnSDL_CondBroadcast)(SDL_cond *);
-typedef int (*pfnSDL_CondWait)(SDL_cond *, SDL_mutex *);
-typedef int (*pfnSDL_CondWaitTimeout)(SDL_cond *, SDL_mutex *, Uint32);
+typedef int (*pfnSDL_CondWaitTimeoutNS)(SDL_cond *, SDL_mutex *, Sint64);
 
 typedef struct SDL_cond_impl_t
 {
@@ -36,8 +35,7 @@ typedef struct SDL_cond_impl_t
     pfnSDL_DestroyCond Destroy;
     pfnSDL_CondSignal Signal;
     pfnSDL_CondBroadcast Broadcast;
-    pfnSDL_CondWait Wait;
-    pfnSDL_CondWaitTimeout WaitTimeout;
+    pfnSDL_CondWaitTimeoutNS WaitTimeoutNS;
 } SDL_cond_impl_t;
 
 /* Implementation will be chosen at runtime based on available Kernel features */
@@ -125,7 +123,7 @@ static int SDL_CondBroadcast_cv(SDL_cond *_cond)
     return 0;
 }
 
-static int SDL_CondWaitTimeout_cv(SDL_cond *_cond, SDL_mutex *_mutex, Uint32 ms)
+static int SDL_CondWaitTimeoutNS_cv(SDL_cond *_cond, SDL_mutex *_mutex, Sint64 timeoutNS)
 {
     SDL_cond_cv *cond = (SDL_cond_cv *)_cond;
     DWORD timeout;
@@ -138,10 +136,10 @@ static int SDL_CondWaitTimeout_cv(SDL_cond *_cond, SDL_mutex *_mutex, Uint32 ms)
         return SDL_InvalidParamError("mutex");
     }
 
-    if (ms == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS < 0) {
         timeout = INFINITE;
     } else {
-        timeout = (DWORD)ms;
+        timeout = (DWORD)SDL_NS_TO_MS(timeoutNS);
     }
 
     if (SDL_mutex_impl_active.Type == SDL_MUTEX_SRW) {
@@ -188,18 +186,12 @@ static int SDL_CondWaitTimeout_cv(SDL_cond *_cond, SDL_mutex *_mutex, Uint32 ms)
     return ret;
 }
 
-static int SDL_CondWait_cv(SDL_cond *cond, SDL_mutex *mutex)
-{
-    return SDL_CondWaitTimeout_cv(cond, mutex, SDL_MUTEX_MAXWAIT);
-}
-
 static const SDL_cond_impl_t SDL_cond_impl_cv = {
     &SDL_CreateCond_cv,
     &SDL_DestroyCond_cv,
     &SDL_CondSignal_cv,
     &SDL_CondBroadcast_cv,
-    &SDL_CondWait_cv,
-    &SDL_CondWaitTimeout_cv,
+    &SDL_CondWaitTimeoutNS_cv,
 };
 
 /**
@@ -211,8 +203,7 @@ static const SDL_cond_impl_t SDL_cond_impl_generic = {
     &SDL_DestroyCond_generic,
     &SDL_CondSignal_generic,
     &SDL_CondBroadcast_generic,
-    &SDL_CondWait_generic,
-    &SDL_CondWaitTimeout_generic,
+    &SDL_CondWaitTimeoutNS_generic,
 };
 
 SDL_cond *
@@ -272,14 +263,9 @@ int SDL_CondBroadcast(SDL_cond *cond)
     return SDL_cond_impl_active.Broadcast(cond);
 }
 
-int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
+int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
-    return SDL_cond_impl_active.WaitTimeout(cond, mutex, ms);
-}
-
-int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
-{
-    return SDL_cond_impl_active.Wait(cond, mutex);
+    return SDL_cond_impl_active.WaitTimeoutNS(cond, mutex, timeoutNS);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

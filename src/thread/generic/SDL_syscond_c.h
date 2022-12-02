@@ -29,9 +29,7 @@ SDL_cond *SDL_CreateCond_generic(void);
 void SDL_DestroyCond_generic(SDL_cond *cond);
 int SDL_CondSignal_generic(SDL_cond *cond);
 int SDL_CondBroadcast_generic(SDL_cond *cond);
-int SDL_CondWait_generic(SDL_cond *cond, SDL_mutex *mutex);
-int SDL_CondWaitTimeout_generic(SDL_cond *cond,
-                                SDL_mutex *mutex, Uint32 ms);
+int SDL_CondWaitTimeoutNS_generic(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS);
 
 #endif /* SDL_THREAD_GENERIC_COND_SUFFIX */
 

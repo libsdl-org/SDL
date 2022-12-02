@@ -37,7 +37,7 @@ static SDL_Mouse SDL_mouse;
 /* for mapping mouse events to touch */
 static SDL_bool track_mouse_down = SDL_FALSE;
 
-static int SDL_PrivateSendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, int relative, int x, int y);
+static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, int x, int y);
 
 static void SDLCALL SDL_MouseDoubleClickTimeChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -261,7 +261,7 @@ SDL_ResetMouse(void)
 
     for (i = 1; i <= sizeof(buttonState)*8; ++i) {
         if (buttonState & SDL_BUTTON(i)) {
-            SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, i);
+            SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, i);
         }
     }
     SDL_assert(GetButtonState(mouse, SDL_FALSE) == 0);
@@ -324,7 +324,7 @@ static SDL_bool SDL_UpdateMouseFocus(SDL_Window *window, int x, int y, Uint32 bu
             SDL_Log("Mouse left window, synthesizing move & focus lost event\n");
 #endif
             if (send_mouse_motion) {
-                SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+                SDL_PrivateSendMouseMotion(0, window, mouse->mouseID, 0, x, y);
             }
             SDL_SetMouseFocus(NULL);
         }
@@ -337,13 +337,13 @@ static SDL_bool SDL_UpdateMouseFocus(SDL_Window *window, int x, int y, Uint32 bu
 #endif
         SDL_SetMouseFocus(window);
         if (send_mouse_motion) {
-            SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+            SDL_PrivateSendMouseMotion(0, window, mouse->mouseID, 0, x, y);
         }
     }
     return SDL_TRUE;
 }
 
-int SDL_SendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, int relative, int x, int y)
+int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, int x, int y)
 {
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
@@ -352,7 +352,7 @@ int SDL_SendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, int relative, i
         }
     }
 
-    return SDL_PrivateSendMouseMotion(window, mouseID, relative, x, y);
+    return SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
 static int GetScaledMouseDelta(float scale, int value, float *accum)
@@ -463,7 +463,7 @@ static void GetScaledMouseDeltas(SDL_Mouse *mouse, int *x, int *y)
     }
 }
 
-static int SDL_PrivateSendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, int relative, int x, int y)
+static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int posted;
@@ -476,7 +476,7 @@ static int SDL_PrivateSendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, i
             if (window) {
                 float fx = (float)x / (float)window->w;
                 float fy = (float)y / (float)window->h;
-                SDL_SendTouchMotion(SDL_MOUSE_TOUCHID, 0, window, fx, fy, 1.0f);
+                SDL_SendTouchMotion(timestamp, SDL_MOUSE_TOUCHID, 0, window, fx, fy, 1.0f);
             }
         }
     }
@@ -504,7 +504,7 @@ static int SDL_PrivateSendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, i
                 if (mouse->WarpMouse) {
                     mouse->WarpMouse(window, center_x, center_y);
                 } else {
-                    SDL_PrivateSendMouseMotion(window, mouseID, 0, center_x, center_y);
+                    SDL_PrivateSendMouseMotion(timestamp, window, mouseID, 0, center_x, center_y);
                 }
             }
         }
@@ -603,7 +603,8 @@ static int SDL_PrivateSendMouseMotion(SDL_Window *window, SDL_MouseID mouseID, i
     posted = 0;
     if (SDL_GetEventState(SDL_MOUSEMOTION) == SDL_ENABLE) {
         SDL_Event event;
-        event.motion.type = SDL_MOUSEMOTION;
+        event.type = SDL_MOUSEMOTION;
+        event.common.timestamp = timestamp;
         event.motion.windowID = mouse->focus ? mouse->focus->id : 0;
         event.motion.which = mouseID;
         /* Set us pending (or clear during a normal mouse movement event) as having triggered */
@@ -668,7 +669,7 @@ static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
     return &mouse->clickstate[button];
 }
 
-static int SDL_PrivateSendMouseButton(SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
+static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int posted;
@@ -693,7 +694,7 @@ static int SDL_PrivateSendMouseButton(SDL_Window *window, SDL_MouseID mouseID, U
             if (window) {
                 float fx = (float)mouse->x / (float)window->w;
                 float fy = (float)mouse->y / (float)window->h;
-                SDL_SendTouch(SDL_MOUSE_TOUCHID, 0, window, track_mouse_down, fx, fy, 1.0f);
+                SDL_SendTouch(timestamp, SDL_MOUSE_TOUCHID, 0, window, track_mouse_down, fx, fy, 1.0f);
             }
         }
     }
@@ -735,9 +736,9 @@ static int SDL_PrivateSendMouseButton(SDL_Window *window, SDL_MouseID mouseID, U
         SDL_MouseClickState *clickstate = GetMouseClickState(mouse, button);
         if (clickstate) {
             if (state == SDL_PRESSED) {
-                Uint32 now = SDL_GetTicks();
+                Uint64 now = SDL_GetTicks();
 
-                if (SDL_TICKS_PASSED(now, clickstate->last_timestamp + mouse->double_click_time) ||
+                if (now >= (clickstate->last_timestamp + mouse->double_click_time) ||
                     SDL_abs(mouse->x - clickstate->last_x) > mouse->double_click_radius ||
                     SDL_abs(mouse->y - clickstate->last_y) > mouse->double_click_radius) {
                     clickstate->click_count = 0;
@@ -760,6 +761,7 @@ static int SDL_PrivateSendMouseButton(SDL_Window *window, SDL_MouseID mouseID, U
     if (SDL_GetEventState(type) == SDL_ENABLE) {
         SDL_Event event;
         event.type = type;
+        event.common.timestamp = timestamp;
         event.button.windowID = mouse->focus ? mouse->focus->id : 0;
         event.button.which = mouseID;
         event.button.state = state;
@@ -783,18 +785,18 @@ static int SDL_PrivateSendMouseButton(SDL_Window *window, SDL_MouseID mouseID, U
     return posted;
 }
 
-int SDL_SendMouseButtonClicks(SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
+int SDL_SendMouseButtonClicks(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
 {
     clicks = SDL_max(clicks, 0);
-    return SDL_PrivateSendMouseButton(window, mouseID, state, button, clicks);
+    return SDL_PrivateSendMouseButton(timestamp, window, mouseID, state, button, clicks);
 }
 
-int SDL_SendMouseButton(SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button)
+int SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button)
 {
-    return SDL_PrivateSendMouseButton(window, mouseID, state, button, -1);
+    return SDL_PrivateSendMouseButton(timestamp, window, mouseID, state, button, -1);
 }
 
-int SDL_SendMouseWheel(SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
+int SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int posted;
@@ -851,6 +853,7 @@ int SDL_SendMouseWheel(SDL_Window *window, SDL_MouseID mouseID, float x, float y
     if (SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_MOUSEWHEEL;
+        event.common.timestamp = timestamp;
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
         event.wheel.x = integral_x;
@@ -1026,7 +1029,7 @@ void SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ign
         (!mouse->relative_mode || mouse->relative_mode_warp)) {
         mouse->WarpMouse(window, x, y);
     } else {
-        SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+        SDL_PrivateSendMouseMotion(0, window, mouse->mouseID, 0, x, y);
     }
 }
 

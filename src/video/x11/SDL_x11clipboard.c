@@ -151,8 +151,8 @@ static char *GetSlectionText(_THIS, Atom selection_type)
     unsigned long overflow;
     unsigned char *src;
     char *text;
-    Uint32 waitStart;
-    Uint32 waitElapsed;
+    Uint64 waitStart;
+    Uint64 waitElapsed;
 
     text = NULL;
 

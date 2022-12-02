@@ -28,56 +28,33 @@
 #include <sys/time.h>
 #include <pspthreadman.h>
 
-static struct timeval start;
-static SDL_bool ticks_started = SDL_FALSE;
-
-void SDL_TicksInit(void)
-{
-    if (ticks_started) {
-        return;
-    }
-    ticks_started = SDL_TRUE;
-
-    gettimeofday(&start, NULL);
-}
-
-void SDL_TicksQuit(void)
-{
-    ticks_started = SDL_FALSE;
-}
-
-Uint64
-SDL_GetTicks64(void)
-{
-    struct timeval now;
-
-    if (!ticks_started) {
-        SDL_TicksInit();
-    }
-
-    gettimeofday(&now, NULL);
-    return (Uint64)(((Sint64)(now.tv_sec - start.tv_sec) * 1000) + ((now.tv_usec - start.tv_usec) / 1000));
-}
 
 Uint64
 SDL_GetPerformanceCounter(void)
 {
-    return SDL_GetTicks64();
+    Uint64 ticks;
+	struct timeval now;
+
+	gettimeofday(&now, NULL);
+	ticks = now.tv_sec;
+	ticks *= SDL_US_PER_SECOND;
+	ticks += now.tv_usec;
+    return ticks;
 }
 
 Uint64
 SDL_GetPerformanceFrequency(void)
 {
-    return 1000;
+    return SDL_US_PER_SECOND;
 }
 
-void SDL_Delay(Uint32 ms)
+void SDL_DelayNS(Uint64 ns)
 {
-    const Uint32 max_delay = 0xffffffffUL / 1000;
-    if (ms > max_delay) {
-        ms = max_delay;
+    const Uint64 max_delay = 0xffffffff * SDL_NS_PER_US;
+    if (ns > max_delay) {
+        ns = max_delay;
     }
-    sceKernelDelayThreadCB(ms * 1000);
+    sceKernelDelayThreadCB((SceUInt)SDL_NS_TO_US(ns));
 }
 
 #endif /* SDL_TIMER_PSP */

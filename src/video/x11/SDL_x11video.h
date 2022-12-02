@@ -71,7 +71,7 @@ typedef struct SDL_VideoData
     char *classname;
     pid_t pid;
     XIM im;
-    Uint32 screensaver_activity;
+    Uint64 screensaver_activity;
     int numwindows;
     SDL_WindowData **windowlist;
     int windowlistlength;
@@ -126,7 +126,7 @@ typedef struct SDL_VideoData
 
     SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
 
-    Uint32 last_mode_change_deadline;
+    Uint64 last_mode_change_deadline;
 
     SDL_bool global_mouse_changed;
     SDL_Point global_mouse_position;

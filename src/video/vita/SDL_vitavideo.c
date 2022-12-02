@@ -418,12 +418,12 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
     switch (e->id) {
     case SCE_IME_EVENT_UPDATE_TEXT:
         if (e->param.text.caretIndex == 0) {
-            SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_BACKSPACE);
+            SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_BACKSPACE);
             sceImeSetText((SceWChar16 *)libime_initval, 4);
         } else {
             scancode = SDL_GetScancodeFromKey(*(SceWChar16 *)&libime_out[1]);
             if (scancode == SDL_SCANCODE_SPACE) {
-                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_SPACE);
+                SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_SPACE);
             } else {
                 utf16_to_utf8((SceWChar16 *)&libime_out[1], utf8_buffer);
                 SDL_SendKeyboardText((const char *)utf8_buffer);
@@ -436,7 +436,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
         }
         break;
     case SCE_IME_EVENT_PRESS_ENTER:
-        SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RETURN);
+        SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_RETURN);
     case SCE_IME_EVENT_PRESS_CLOSE:
         sceImeClose();
         videodata->ime_active = SDL_FALSE;
@@ -572,7 +572,7 @@ void VITA_PumpEvents(_THIS)
 
             // Send enter key only on enter
             if (result.button == SCE_IME_DIALOG_BUTTON_ENTER) {
-                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RETURN);
+                SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_RETURN);
             }
 
             sceImeDialogTerm();

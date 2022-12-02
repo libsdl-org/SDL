@@ -204,7 +204,7 @@ int Android_OnPadDown(int device_id, int keycode)
         if (item && item->joystick) {
             SDL_PrivateJoystickButton(item->joystick, button, SDL_PRESSED);
         } else {
-            SDL_SendKeyboardKey(SDL_PRESSED, button_to_scancode(button));
+            SDL_SendKeyboardKey(0, SDL_PRESSED, button_to_scancode(button));
         }
         SDL_UnlockJoysticks();
         return 0;
@@ -223,7 +223,7 @@ int Android_OnPadUp(int device_id, int keycode)
         if (item && item->joystick) {
             SDL_PrivateJoystickButton(item->joystick, button, SDL_RELEASED);
         } else {
-            SDL_SendKeyboardKey(SDL_RELEASED, button_to_scancode(button));
+            SDL_SendKeyboardKey(0, SDL_RELEASED, button_to_scancode(button));
         }
         SDL_UnlockJoysticks();
         return 0;
@@ -494,9 +494,10 @@ static void ANDROID_JoystickDetect(void)
      * so we poll every three seconds
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    static Uint32 timeout = 0;
-    if (!timeout || SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-        timeout = SDL_GetTicks() + 3000;
+    static Uint64 timeout = 0;
+    Uint64 now = SDL_GetTicks();
+    if (!timeout || now >= timeout) {
+        timeout = now + 3000;
         Android_JNI_PollInputDevices();
     }
 }

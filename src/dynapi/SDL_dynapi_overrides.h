@@ -809,7 +809,6 @@
 #define SDL_asprintf SDL_asprintf_REAL
 #define SDL_vasprintf SDL_vasprintf_REAL
 #define SDL_GetWindowICCProfile SDL_GetWindowICCProfile_REAL
-#define SDL_GetTicks64 SDL_GetTicks64_REAL
 #define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
 #define SDL_GameControllerGetAppleSFSymbolsNameForButton SDL_GameControllerGetAppleSFSymbolsNameForButton_REAL
 #define SDL_GameControllerGetAppleSFSymbolsNameForAxis SDL_GameControllerGetAppleSFSymbolsNameForAxis_REAL
@@ -891,3 +890,5 @@
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GetWindowWMInfo SDL_GetWindowWMInfo_REAL
 #define SDL_memset4 SDL_memset4_REAL
+#define SDL_GetTicksNS SDL_GetTicksNS_REAL
+#define SDL_DelayNS SDL_DelayNS_REAL

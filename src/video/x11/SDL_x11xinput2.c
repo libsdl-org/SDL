@@ -306,7 +306,7 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
             }
         }
 
-        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int)processed_coords[0], (int)processed_coords[1]);
+        SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, (int)processed_coords[0], (int)processed_coords[1]);
         devinfo->prev_coords[0] = coords[0];
         devinfo->prev_coords[1] = coords[1];
         devinfo->prev_time = rawev->time;
@@ -347,7 +347,7 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                 if (window) {
-                    SDL_SendMouseMotion(window, 0, 0, xev->event_x, xev->event_y);
+                    SDL_SendMouseMotion(0, window, 0, 0, xev->event_x, xev->event_y);
                 }
             }
         }
@@ -360,7 +360,7 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
         float x, y;
         SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
         xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
-        SDL_SendTouch(xev->sourceid, xev->detail, window, SDL_TRUE, x, y, 1.0);
+        SDL_SendTouch(0, xev->sourceid, xev->detail, window, SDL_TRUE, x, y, 1.0);
         return 1;
     } break;
     case XI_TouchEnd:
@@ -369,7 +369,7 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
         float x, y;
         SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
         xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
-        SDL_SendTouch(xev->sourceid, xev->detail, window, SDL_FALSE, x, y, 1.0);
+        SDL_SendTouch(0, xev->sourceid, xev->detail, window, SDL_FALSE, x, y, 1.0);
         return 1;
     } break;
     case XI_TouchUpdate:
@@ -378,7 +378,7 @@ int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie
         float x, y;
         SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
         xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
-        SDL_SendTouchMotion(xev->sourceid, xev->detail, window, x, y, 1.0);
+        SDL_SendTouchMotion(0, xev->sourceid, xev->detail, window, x, y, 1.0);
         return 1;
     } break;
 

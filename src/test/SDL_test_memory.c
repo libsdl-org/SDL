@@ -228,6 +228,12 @@ void SDLTest_LogAllocations()
         return;
     }
 
+    message = SDL_realloc_orig(NULL, 1);
+    if (!message) {
+        return;
+    }
+    *message = 0;
+
 #define ADD_LINE()                                         \
     message_size += (SDL_strlen(line) + 1);                \
     tmp = (char *)SDL_realloc_orig(message, message_size); \

@@ -164,7 +164,7 @@ static int s_nNumAxes;
 static AxisState *s_arrAxisState;
 
 static int s_iCurrentBinding;
-static Uint32 s_unPendingAdvanceTime;
+static Uint64 s_unPendingAdvanceTime;
 static SDL_bool s_bBindingComplete;
 
 static SDL_Window *window;
@@ -354,7 +354,7 @@ WatchJoystick(SDL_Joystick *joystick)
     SDL_Event event;
     SDL_Rect dst;
     Uint8 alpha = 200, alpha_step = -1;
-    Uint32 alpha_ticks = 0;
+    Uint64 alpha_ticks = 0;
     SDL_JoystickID nJoystickID;
 
     background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE, NULL, NULL);
@@ -409,7 +409,7 @@ WatchJoystick(SDL_Joystick *joystick)
         dst.y = s_arrBindingDisplay[iElement].y;
         SDL_QueryTexture(marker, NULL, NULL, &dst.w, &dst.h);
 
-        if (SDL_GetTicks() - alpha_ticks > 5) {
+        if (SDL_GetTicks() >= (alpha_ticks + 5)) {
             alpha_ticks = SDL_GetTicks();
             alpha += alpha_step;
             if (alpha == 255) {

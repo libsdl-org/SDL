@@ -46,7 +46,7 @@ extern "C" {
 /**
  *  This is the timeout value which corresponds to never time out.
  */
-#define SDL_MUTEX_MAXWAIT   (~(Uint32)0)
+#define SDL_MUTEX_MAXWAIT   -1
 
 
 /**
@@ -214,7 +214,7 @@ extern DECLSPEC SDL_sem *SDLCALL SDL_CreateSemaphore(Uint32 initial_value);
  * \sa SDL_SemWait
  * \sa SDL_SemWaitTimeout
  */
-extern DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_sem * sem);
+extern DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_sem *sem);
 
 /**
  * Wait until a semaphore has a positive value and then decrements it.
@@ -241,7 +241,7 @@ extern DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_sem * sem);
  * \sa SDL_SemWait
  * \sa SDL_SemWaitTimeout
  */
-extern DECLSPEC int SDLCALL SDL_SemWait(SDL_sem * sem);
+extern DECLSPEC int SDLCALL SDL_SemWait(SDL_sem *sem);
 
 /**
  * See if a semaphore has a positive value and decrement it if it does.
@@ -265,7 +265,7 @@ extern DECLSPEC int SDLCALL SDL_SemWait(SDL_sem * sem);
  * \sa SDL_SemWait
  * \sa SDL_SemWaitTimeout
  */
-extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem * sem);
+extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem *sem);
 
 /**
  * Wait until a semaphore has a positive value and then decrements it.
@@ -276,7 +276,7 @@ extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem * sem);
  * successful it will atomically decrement the semaphore value.
  *
  * \param sem the semaphore to wait on
- * \param timeout the length of the timeout, in milliseconds
+ * \param timeoutMS the length of the timeout, in milliseconds
  * \returns 0 if the wait succeeds, `SDL_MUTEX_TIMEDOUT` if the wait does not
  *          succeed in the allotted time, or a negative error code on failure;
  *          call SDL_GetError() for more information.
@@ -290,7 +290,7 @@ extern DECLSPEC int SDLCALL SDL_SemTryWait(SDL_sem * sem);
  * \sa SDL_SemValue
  * \sa SDL_SemWait
  */
-extern DECLSPEC int SDLCALL SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout);
+extern DECLSPEC int SDLCALL SDL_SemWaitTimeout(SDL_sem *sem, Sint32 timeoutMS);
 
 /**
  * Atomically increment a semaphore's value and wake waiting threads.
@@ -308,7 +308,7 @@ extern DECLSPEC int SDLCALL SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout);
  * \sa SDL_SemWait
  * \sa SDL_SemWaitTimeout
  */
-extern DECLSPEC int SDLCALL SDL_SemPost(SDL_sem * sem);
+extern DECLSPEC int SDLCALL SDL_SemPost(SDL_sem *sem);
 
 /**
  * Get the current value of a semaphore.
@@ -320,7 +320,7 @@ extern DECLSPEC int SDLCALL SDL_SemPost(SDL_sem * sem);
  *
  * \sa SDL_CreateSemaphore
  */
-extern DECLSPEC Uint32 SDLCALL SDL_SemValue(SDL_sem * sem);
+extern DECLSPEC Uint32 SDLCALL SDL_SemValue(SDL_sem *sem);
 
 /* @} *//* Semaphore functions */
 
@@ -363,7 +363,7 @@ extern DECLSPEC SDL_cond *SDLCALL SDL_CreateCond(void);
  * \sa SDL_CondWaitTimeout
  * \sa SDL_CreateCond
  */
-extern DECLSPEC void SDLCALL SDL_DestroyCond(SDL_cond * cond);
+extern DECLSPEC void SDLCALL SDL_DestroyCond(SDL_cond *cond);
 
 /**
  * Restart one of the threads that are waiting on the condition variable.
@@ -380,7 +380,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyCond(SDL_cond * cond);
  * \sa SDL_CreateCond
  * \sa SDL_DestroyCond
  */
-extern DECLSPEC int SDLCALL SDL_CondSignal(SDL_cond * cond);
+extern DECLSPEC int SDLCALL SDL_CondSignal(SDL_cond *cond);
 
 /**
  * Restart all threads that are waiting on the condition variable.
@@ -397,7 +397,7 @@ extern DECLSPEC int SDLCALL SDL_CondSignal(SDL_cond * cond);
  * \sa SDL_CreateCond
  * \sa SDL_DestroyCond
  */
-extern DECLSPEC int SDLCALL SDL_CondBroadcast(SDL_cond * cond);
+extern DECLSPEC int SDLCALL SDL_CondBroadcast(SDL_cond *cond);
 
 /**
  * Wait until a condition variable is signaled.
@@ -425,7 +425,7 @@ extern DECLSPEC int SDLCALL SDL_CondBroadcast(SDL_cond * cond);
  * \sa SDL_CreateCond
  * \sa SDL_DestroyCond
  */
-extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex);
+extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex);
 
 /**
  * Wait until a condition variable is signaled or a certain time has passed.
@@ -440,7 +440,7 @@ extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex);
  *
  * \param cond the condition variable to wait on
  * \param mutex the mutex used to coordinate thread access
- * \param ms the maximum time to wait, in milliseconds, or `SDL_MUTEX_MAXWAIT`
+ * \param timeoutMS the maximum time to wait, in milliseconds, or `SDL_MUTEX_MAXWAIT`
  *           to wait indefinitely
  * \returns 0 if the condition variable is signaled, `SDL_MUTEX_TIMEDOUT` if
  *          the condition is not signaled in the allotted time, or a negative
@@ -454,8 +454,8 @@ extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex);
  * \sa SDL_CreateCond
  * \sa SDL_DestroyCond
  */
-extern DECLSPEC int SDLCALL SDL_CondWaitTimeout(SDL_cond * cond,
-                                                SDL_mutex * mutex, Uint32 ms);
+extern DECLSPEC int SDLCALL SDL_CondWaitTimeout(SDL_cond *cond,
+                                                SDL_mutex *mutex, Sint32 timeoutMS);
 
 /* @} *//* Condition variable functions */
 

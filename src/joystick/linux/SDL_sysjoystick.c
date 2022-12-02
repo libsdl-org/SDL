@@ -119,7 +119,7 @@ static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 static int inotify_fd = -1;
 
-static Uint32 last_joy_detect_time;
+static Uint64 last_joy_detect_time;
 static time_t last_input_dir_mtime;
 
 static void FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
@@ -644,9 +644,9 @@ static int sort_entries(const void *_a, const void *_b)
 static void LINUX_FallbackJoystickDetect(void)
 {
     const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000; /* Update every 3 seconds */
-    Uint32 now = SDL_GetTicks();
+    Uint64 now = SDL_GetTicks();
 
-    if (!last_joy_detect_time || SDL_TICKS_PASSED(now, last_joy_detect_time + SDL_JOY_DETECT_INTERVAL_MS)) {
+    if (!last_joy_detect_time || now >= (last_joy_detect_time + SDL_JOY_DETECT_INTERVAL_MS)) {
         struct stat sb;
 
         /* Opening input devices can generate synchronous device I/O, so avoid it if we can */

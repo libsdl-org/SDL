@@ -525,7 +525,8 @@ static void SDL_SendGestureMulti(SDL_GestureTouch *touch, float dTheta, float dD
 {
     if (SDL_GetEventState(SDL_MULTIGESTURE) == SDL_ENABLE) {
         SDL_Event event;
-        event.mgesture.type = SDL_MULTIGESTURE;
+        event.type = SDL_MULTIGESTURE;
+        event.common.timestamp = 0;
         event.mgesture.touchId = touch->id;
         event.mgesture.x = touch->centroid.x;
         event.mgesture.y = touch->centroid.y;
@@ -542,7 +543,8 @@ static void SDL_SendGestureDollar(SDL_GestureTouch *touch,
 {
     if (SDL_GetEventState(SDL_DOLLARGESTURE) == SDL_ENABLE) {
         SDL_Event event;
-        event.dgesture.type = SDL_DOLLARGESTURE;
+        event.type = SDL_DOLLARGESTURE;
+        event.common.timestamp = 0;
         event.dgesture.touchId = touch->id;
         event.dgesture.x = touch->centroid.x;
         event.dgesture.y = touch->centroid.y;
@@ -558,7 +560,8 @@ static void SDL_SendDollarRecord(SDL_GestureTouch *touch, SDL_GestureID gestureI
 {
     if (SDL_GetEventState(SDL_DOLLARRECORD) == SDL_ENABLE) {
         SDL_Event event;
-        event.dgesture.type = SDL_DOLLARRECORD;
+        event.type = SDL_DOLLARRECORD;
+        event.common.timestamp = 0;
         event.dgesture.touchId = touch->id;
         event.dgesture.gestureId = gestureId;
         SDL_PushEvent(&event);

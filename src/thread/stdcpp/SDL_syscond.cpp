@@ -85,7 +85,7 @@ SDL_CondBroadcast(SDL_cond *cond)
     return 0;
 }
 
-/* Wait on the condition variable for at most 'ms' milliseconds.
+/* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
    The mutex must be locked before entering this function!
    The mutex is unlocked during the wait, and locked again after the wait.
 
@@ -107,7 +107,7 @@ Thread B:
     SDL_UnlockMutex(lock);
  */
 extern "C" int
-SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
+SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     if (cond == NULL) {
         return SDL_InvalidParamError("cond");
@@ -119,7 +119,7 @@ SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
 
     try {
         std::unique_lock<std::recursive_mutex> cpp_lock(mutex->cpp_mutex, std::adopt_lock_t());
-        if (ms == SDL_MUTEX_MAXWAIT) {
+        if (timeoutNS < 0) {
             cond->cpp_cond.wait(
                 cpp_lock);
             cpp_lock.release();
@@ -127,7 +127,7 @@ SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
         } else {
             auto wait_result = cond->cpp_cond.wait_for(
                 cpp_lock,
-                std::chrono::duration<Uint32, std::milli>(ms));
+                std::chrono::duration<Sint64, std::nano>(timeoutNS));
             cpp_lock.release();
             if (wait_result == std::cv_status::timeout) {
                 return SDL_MUTEX_TIMEDOUT;
@@ -136,15 +136,8 @@ SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
             }
         }
     } catch (std::system_error &ex) {
-        return SDL_SetError("unable to wait on a C++ condition variable: code=%d; %s", ex.code(), ex.what());
+        return SDL_SetError("Unable to wait on a C++ condition variable: code=%d; %s", ex.code(), ex.what());
     }
-}
-
-/* Wait on the condition variable forever */
-extern "C" int
-SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
-{
-    return SDL_CondWaitTimeout(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

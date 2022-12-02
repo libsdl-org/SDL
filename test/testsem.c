@@ -98,9 +98,9 @@ TestRealWorld(int init_sem)
 static void
 TestWaitTimeout(void)
 {
-    Uint32 start_ticks;
-    Uint32 end_ticks;
-    Uint32 duration;
+    Uint64 start_ticks;
+    Uint64 end_ticks;
+    Uint64 duration;
     int retval;
 
     sem = SDL_CreateSemaphore(0);
@@ -114,7 +114,7 @@ TestWaitTimeout(void)
 
     /* Accept a little offset in the effective wait */
     SDL_assert(duration > 1900 && duration < 2050);
-    SDL_Log("Wait took %" SDL_PRIu32 " milliseconds\n\n", duration);
+    SDL_Log("Wait took %" SDL_PRIu64 " milliseconds\n\n", duration);
 
     /* Check to make sure the return value indicates timed out */
     if (retval != SDL_MUTEX_TIMEDOUT) {
@@ -127,9 +127,9 @@ TestWaitTimeout(void)
 static void
 TestOverheadUncontended(void)
 {
-    Uint32 start_ticks;
-    Uint32 end_ticks;
-    Uint32 duration;
+    Uint64 start_ticks;
+    Uint64 end_ticks;
+    Uint64 duration;
     int i, j;
 
     sem = SDL_CreateSemaphore(0);
@@ -147,7 +147,7 @@ TestOverheadUncontended(void)
     end_ticks = SDL_GetTicks();
 
     duration = end_ticks - start_ticks;
-    SDL_Log("Took %" SDL_PRIu32 " milliseconds\n\n", duration);
+    SDL_Log("Took %" SDL_PRIu64 " milliseconds\n\n", duration);
 
     SDL_DestroySemaphore(sem);
 }
@@ -179,9 +179,9 @@ ThreadFuncOverheadContended(void *data)
 static void
 TestOverheadContended(SDL_bool try_wait)
 {
-    Uint32 start_ticks;
-    Uint32 end_ticks;
-    Uint32 duration;
+    Uint64 start_ticks;
+    Uint64 end_ticks;
+    Uint64 duration;
     Thread_State thread_states[NUM_THREADS] = { { 0 } };
     char textBuffer[1024];
     int loop_count;
@@ -223,7 +223,7 @@ TestOverheadContended(SDL_bool try_wait)
     SDL_assert_release((loop_count - content_count) == NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT);
 
     duration = end_ticks - start_ticks;
-    SDL_Log("Took %" SDL_PRIu32 " milliseconds, threads %s %d out of %d times in total (%.2f%%)\n",
+    SDL_Log("Took %" SDL_PRIu64 " milliseconds, threads %s %d out of %d times in total (%.2f%%)\n",
             duration, try_wait ? "where contended" : "timed out", content_count,
             loop_count, ((float)content_count * 100) / loop_count);
     /* Print how many semaphores where consumed per thread */

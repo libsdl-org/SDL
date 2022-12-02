@@ -37,9 +37,7 @@
 
 typedef SDL_sem *(*pfnSDL_CreateSemaphore)(Uint32);
 typedef void (*pfnSDL_DestroySemaphore)(SDL_sem *);
-typedef int (*pfnSDL_SemWaitTimeout)(SDL_sem *, Uint32);
-typedef int (*pfnSDL_SemTryWait)(SDL_sem *);
-typedef int (*pfnSDL_SemWait)(SDL_sem *);
+typedef int (*pfnSDL_SemWaitTimeoutNS)(SDL_sem *, Sint64);
 typedef Uint32 (*pfnSDL_SemValue)(SDL_sem *);
 typedef int (*pfnSDL_SemPost)(SDL_sem *);
 
@@ -47,9 +45,7 @@ typedef struct SDL_semaphore_impl_t
 {
     pfnSDL_CreateSemaphore Create;
     pfnSDL_DestroySemaphore Destroy;
-    pfnSDL_SemWaitTimeout WaitTimeout;
-    pfnSDL_SemTryWait TryWait;
-    pfnSDL_SemWait Wait;
+    pfnSDL_SemWaitTimeoutNS WaitTimeoutNS;
     pfnSDL_SemValue Value;
     pfnSDL_SemPost Post;
 } SDL_sem_impl_t;
@@ -108,81 +104,60 @@ static void SDL_DestroySemaphore_atom(SDL_sem *sem)
     }
 }
 
-static int SDL_SemTryWait_atom(SDL_sem *_sem)
+static int SDL_SemWaitTimeoutNS_atom(SDL_sem *_sem, Sint64 timeoutNS)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
     LONG count;
+    Uint64 now;
+    Uint64 deadline;
+    DWORD timeout_eff;
 
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
-    count = sem->count;
-    if (count == 0) {
-        return SDL_MUTEX_TIMEDOUT;
-    }
-
-    if (InterlockedCompareExchange(&sem->count, count - 1, count) == count) {
-        return 0;
-    }
-
-    return SDL_MUTEX_TIMEDOUT;
-}
-
-static int SDL_SemWait_atom(SDL_sem *_sem)
-{
-    SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
-    LONG count;
-
-    if (sem == NULL) {
-        return SDL_InvalidParamError("sem");
-    }
-
-    for (;;) {
+    if (timeoutNS == 0) {
         count = sem->count;
-        while (count == 0) {
-            if (pWaitOnAddress(&sem->count, &count, sizeof(sem->count), INFINITE) == FALSE) {
-                return SDL_SetError("WaitOnAddress() failed");
-            }
-            count = sem->count;
+        if (count == 0) {
+            return SDL_MUTEX_TIMEDOUT;
         }
 
         if (InterlockedCompareExchange(&sem->count, count - 1, count) == count) {
             return 0;
         }
+
+        return SDL_MUTEX_TIMEDOUT;
     }
-}
+    if (timeoutNS < 0) {
+        for (;;) {
+            count = sem->count;
+            while (count == 0) {
+                if (pWaitOnAddress(&sem->count, &count, sizeof(sem->count), INFINITE) == FALSE) {
+                    return SDL_SetError("WaitOnAddress() failed");
+                }
+                count = sem->count;
+            }
 
-static int SDL_SemWaitTimeout_atom(SDL_sem *_sem, Uint32 timeout)
-{
-    SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
-    LONG count;
-    Uint32 now;
-    Uint32 deadline;
-    DWORD timeout_eff;
-
-    if (timeout == SDL_MUTEX_MAXWAIT) {
-        return SDL_SemWait_atom(_sem);
-    }
-
-    if (sem == NULL) {
-        return SDL_InvalidParamError("sem");
+            if (InterlockedCompareExchange(&sem->count, count - 1, count) == count) {
+                return 0;
+            }
+        }
     }
 
     /**
      * WaitOnAddress is subject to spurious and stolen wakeups so we
      * need to recalculate the effective timeout before every wait
      */
-    now = SDL_GetTicks();
-    deadline = now + (DWORD)timeout;
+    now = SDL_GetTicksNS();
+    deadline = now + timeoutNS;
 
     for (;;) {
         count = sem->count;
         /* If no semaphore is available we need to wait */
         while (count == 0) {
-            now = SDL_GetTicks();
+            now = SDL_GetTicksNS();
             if (deadline > now) {
-                timeout_eff = deadline - now;
+                timeout_eff = (DWORD)SDL_NS_TO_MS(deadline - now);
             } else {
                 return SDL_MUTEX_TIMEDOUT;
             }
@@ -232,9 +207,7 @@ static int SDL_SemPost_atom(SDL_sem *_sem)
 static const SDL_sem_impl_t SDL_sem_impl_atom = {
     &SDL_CreateSemaphore_atom,
     &SDL_DestroySemaphore_atom,
-    &SDL_SemWaitTimeout_atom,
-    &SDL_SemTryWait_atom,
-    &SDL_SemWait_atom,
+    &SDL_SemWaitTimeoutNS_atom,
     &SDL_SemValue_atom,
     &SDL_SemPost_atom,
 };
@@ -289,7 +262,7 @@ static void SDL_DestroySemaphore_kern(SDL_sem *_sem)
     }
 }
 
-static int SDL_SemWaitTimeout_kern(SDL_sem *_sem, Uint32 timeout)
+static int SDL_SemWaitTimeoutNS_kern(SDL_sem *_sem, Sint64 timeoutNS)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     int retval;
@@ -299,10 +272,10 @@ static int SDL_SemWaitTimeout_kern(SDL_sem *_sem, Uint32 timeout)
         return SDL_InvalidParamError("sem");
     }
 
-    if (timeout == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS < 0) {
         dwMilliseconds = INFINITE;
     } else {
-        dwMilliseconds = (DWORD)timeout;
+        dwMilliseconds = (DWORD)SDL_NS_TO_MS(timeoutNS);
     }
     switch (WaitForSingleObjectEx(sem->id, dwMilliseconds, FALSE)) {
     case WAIT_OBJECT_0:
@@ -317,16 +290,6 @@ static int SDL_SemWaitTimeout_kern(SDL_sem *_sem, Uint32 timeout)
         break;
     }
     return retval;
-}
-
-static int SDL_SemTryWait_kern(SDL_sem *sem)
-{
-    return SDL_SemWaitTimeout_kern(sem, 0);
-}
-
-static int SDL_SemWait_kern(SDL_sem *sem)
-{
-    return SDL_SemWaitTimeout_kern(sem, SDL_MUTEX_MAXWAIT);
 }
 
 /* Returns the current count of the semaphore */
@@ -362,9 +325,7 @@ static int SDL_SemPost_kern(SDL_sem *_sem)
 static const SDL_sem_impl_t SDL_sem_impl_kern = {
     &SDL_CreateSemaphore_kern,
     &SDL_DestroySemaphore_kern,
-    &SDL_SemWaitTimeout_kern,
-    &SDL_SemTryWait_kern,
-    &SDL_SemWait_kern,
+    &SDL_SemWaitTimeoutNS_kern,
     &SDL_SemValue_kern,
     &SDL_SemPost_kern,
 };
@@ -417,19 +378,9 @@ void SDL_DestroySemaphore(SDL_sem *sem)
     SDL_sem_impl_active.Destroy(sem);
 }
 
-int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
+int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
-    return SDL_sem_impl_active.WaitTimeout(sem, timeout);
-}
-
-int SDL_SemTryWait(SDL_sem *sem)
-{
-    return SDL_sem_impl_active.TryWait(sem);
-}
-
-int SDL_SemWait(SDL_sem *sem)
-{
-    return SDL_sem_impl_active.Wait(sem);
+    return SDL_sem_impl_active.WaitTimeoutNS(sem, timeoutNS);
 }
 
 Uint32

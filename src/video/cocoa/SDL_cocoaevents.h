@@ -24,8 +24,9 @@
 #define SDL_cocoaevents_h_
 
 extern void Cocoa_RegisterApp(void);
+extern Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp);
 extern void Cocoa_PumpEvents(_THIS);
-extern int Cocoa_WaitEventTimeout(_THIS, int timeout);
+extern int Cocoa_WaitEventTimeout(_THIS, Sint64 timeoutNS);
 extern void Cocoa_SendWakeupEvent(_THIS, SDL_Window *window);
 extern void Cocoa_SuspendScreenSaver(_THIS);
 

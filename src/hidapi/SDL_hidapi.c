@@ -92,7 +92,7 @@ static struct
     SDL_bool m_bInitialized;
     Uint32 m_unDeviceChangeCounter;
     SDL_bool m_bCanGetNotifications;
-    Uint32 m_unLastDetect;
+    Uint64 m_unLastDetect;
 
 #if defined(__WIN32__) || defined(__WINGDK__)
     SDL_threadID m_nThreadID;
@@ -367,8 +367,8 @@ HIDAPI_UpdateDiscovery()
 
     if (!SDL_HIDAPI_discovery.m_bCanGetNotifications) {
         const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000; /* Update every 3 seconds */
-        Uint32 now = SDL_GetTicks();
-        if (!SDL_HIDAPI_discovery.m_unLastDetect || SDL_TICKS_PASSED(now, SDL_HIDAPI_discovery.m_unLastDetect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
+        Uint64 now = SDL_GetTicks();
+        if (!SDL_HIDAPI_discovery.m_unLastDetect || now >= (SDL_HIDAPI_discovery.m_unLastDetect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
             ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
             SDL_HIDAPI_discovery.m_unLastDetect = now;
         }

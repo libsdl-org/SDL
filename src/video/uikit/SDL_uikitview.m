@@ -158,7 +158,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         point.x -= origin.x;
         point.y -= origin.y;
 
-        SDL_SendMouseMotion(sdlwindow, 0, 0, (int)point.x, (int)point.y);
+        SDL_SendMouseMotion(0, sdlwindow, 0, 0, (int)point.x, (int)point.y);
     }
     return [UIPointerRegion regionWithRect:self.bounds identifier:nil];
 }
@@ -250,7 +250,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                                 button = (Uint8)i;
                                 break;
                             }
-                            SDL_SendMouseButton(sdlwindow, 0, SDL_PRESSED, button);
+                            SDL_SendMouseButton(UIKit_GetEventTimestamp([event timestamp]), sdlwindow, 0, SDL_PRESSED, button);
                         }
                     }
                 }
@@ -270,7 +270,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-            SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+            SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
+                          touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
                           SDL_TRUE, locationInView.x, locationInView.y, pressure);
         }
     }
@@ -305,7 +306,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                                 button = (Uint8)i;
                                 break;
                             }
-                            SDL_SendMouseButton(sdlwindow, 0, SDL_RELEASED, button);
+                            SDL_SendMouseButton(UIKit_GetEventTimestamp([event timestamp]), sdlwindow, 0, SDL_RELEASED, button);
                         }
                     }
                 }
@@ -325,7 +326,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-            SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+            SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
+                          touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
                           SDL_FALSE, locationInView.x, locationInView.y, pressure);
         }
     }
@@ -359,7 +361,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             }
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-            SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
+            SDL_SendTouchMotion(UIKit_GetEventTimestamp([event timestamp]),
+                                touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
                                 locationInView.x, locationInView.y, pressure);
         }
     }
@@ -411,7 +414,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     if (!SDL_HasGCKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_PRESSED, scancode);
         }
     }
     [super pressesBegan:presses withEvent:event];
@@ -422,7 +425,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     if (!SDL_HasGCKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_RELEASED, scancode);
         }
     }
     [super pressesEnded:presses withEvent:event];
@@ -433,7 +436,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     if (!SDL_HasGCKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_RELEASED, scancode);
         }
     }
     [super pressesCancelled:presses withEvent:event];
@@ -458,16 +461,16 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
              * which better maps to swipe gestures. */
             switch (gesture.direction) {
             case UISwipeGestureRecognizerDirectionUp:
-                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_UP);
+                SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_UP);
                 break;
             case UISwipeGestureRecognizerDirectionDown:
-                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_DOWN);
+                SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_DOWN);
                 break;
             case UISwipeGestureRecognizerDirectionLeft:
-                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_LEFT);
+                SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_LEFT);
                 break;
             case UISwipeGestureRecognizerDirectionRight:
-                SDL_SendKeyboardKeyAutoRelease(SDL_SCANCODE_RIGHT);
+                SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_RIGHT);
                 break;
             }
         }

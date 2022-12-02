@@ -436,13 +436,13 @@ void X11_ReconcileKeyboardState(_THIS)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
         }
     }
 }
@@ -793,9 +793,9 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
             } else {
-                SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+                SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
             }
 #endif
         }
@@ -932,7 +932,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #endif
 
         if (!mouse->relative_mode) {
-            SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
         }
 
         /* We ungrab in LeaveNotify, so we may need to grab again here */
@@ -954,7 +954,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
-            SDL_SendMouseMotion(data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xcrossing.x, xevent->xcrossing.y);
         }
 
         if (xevent->xcrossing.mode != NotifyGrab &&
@@ -1086,7 +1086,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             if (xevent->type == KeyPress) {
                 /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
                 if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+                    SDL_SendKeyboardKey(0, SDL_PRESSED, videodata->key_layout[keycode]);
                 }
                 if (*text) {
                     SDL_SendKeyboardText(text);
@@ -1096,7 +1096,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                     /* We're about to get a repeated key down, ignore the key up */
                     break;
                 }
-                SDL_SendKeyboardKey(SDL_RELEASED, videodata->key_layout[keycode]);
+                SDL_SendKeyboardKey(0, SDL_RELEASED, videodata->key_layout[keycode]);
             }
         }
 
@@ -1311,7 +1311,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             printf("window %p: X11 motion: %d,%d\n", data, xevent->xmotion.x, xevent->xmotion.y);
 #endif
 
-            SDL_SendMouseMotion(data->window, 0, 0, xevent->xmotion.x, xevent->xmotion.y);
+            SDL_SendMouseMotion(0, data->window, 0, 0, xevent->xmotion.x, xevent->xmotion.y);
         }
     } break;
 
@@ -1322,7 +1322,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent->xbutton.button);
 #endif
         if (X11_IsWheelEvent(display, xevent, &xticks, &yticks)) {
-            SDL_SendMouseWheel(data->window, 0, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
+            SDL_SendMouseWheel(0, data->window, 0, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
         } else {
             SDL_bool ignore_click = SDL_FALSE;
             int button = xevent->xbutton.button;
@@ -1338,13 +1338,13 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             }
             if (data->last_focus_event_time) {
                 const int X11_FOCUS_CLICK_TIMEOUT = 10;
-                if (!SDL_TICKS_PASSED(SDL_GetTicks(), data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
+                if (SDL_GetTicks() < (data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
                     ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
                 }
                 data->last_focus_event_time = 0;
             }
             if (!ignore_click) {
-                SDL_SendMouseButton(data->window, 0, SDL_PRESSED, button);
+                SDL_SendMouseButton(0, data->window, 0, SDL_PRESSED, button);
             }
         }
         X11_UpdateUserTime(data, xevent->xbutton.time);
@@ -1363,7 +1363,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                 /* see explanation at case ButtonPress */
                 button -= (8 - SDL_BUTTON_X1);
             }
-            SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
+            SDL_SendMouseButton(0, data->window, 0, SDL_RELEASED, button);
         }
     } break;
 
@@ -1577,8 +1577,8 @@ static void X11_HandleFocusChanges(_THIS)
         for (i = 0; i < videodata->numwindows; ++i) {
             SDL_WindowData *data = videodata->windowlist[i];
             if (data && data->pending_focus != PENDING_FOCUS_NONE) {
-                Uint32 now = SDL_GetTicks();
-                if (SDL_TICKS_PASSED(now, data->pending_focus_time)) {
+                Uint64 now = SDL_GetTicks();
+                if (now >= data->pending_focus_time) {
                     if (data->pending_focus == PENDING_FOCUS_IN) {
                         X11_DispatchFocusIn(_this, data);
                     } else {
@@ -1625,7 +1625,7 @@ void X11_SendWakeupEvent(_THIS, SDL_Window *window)
     X11_XFlush(req_display);
 }
 
-int X11_WaitEventTimeout(_THIS, int timeout)
+int X11_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     Display *display;
@@ -1638,11 +1638,11 @@ int X11_WaitEventTimeout(_THIS, int timeout)
     X11_XFlush(display);
     if (X11_PollEvent(display, &xevent)) {
         /* Fall through */
-    } else if (timeout == 0) {
+    } else if (timeoutNS == 0) {
         return 0;
     } else {
         /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
-        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        int err = SDL_IOReady(ConnectionNumber(display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeoutNS);
         if (err > 0) {
             if (!X11_PollEvent(display, &xevent)) {
                 /* Someone may have beat us to reading the fd. Return 1 here to
@@ -1682,16 +1682,15 @@ void X11_PumpEvents(_THIS)
     int i;
 
     if (data->last_mode_change_deadline) {
-        if (SDL_TICKS_PASSED(SDL_GetTicks(), data->last_mode_change_deadline)) {
+        if (SDL_GetTicks() >= data->last_mode_change_deadline) {
             data->last_mode_change_deadline = 0; /* assume we're done. */
         }
     }
 
     /* Update activity every 30 seconds to prevent screensaver */
     if (_this->suspend_screensaver) {
-        const Uint32 now = SDL_GetTicks();
-        if (!data->screensaver_activity ||
-            SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
+        Uint64 now = SDL_GetTicks();
+        if (!data->screensaver_activity || now >= (data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
 #if SDL_USE_LIBDBUS
@@ -1722,7 +1721,7 @@ void X11_PumpEvents(_THIS)
     for (i = 0; i < data->numwindows; ++i) {
         if (data->windowlist[i] != NULL &&
             data->windowlist[i]->flash_cancel_time &&
-            SDL_TICKS_PASSED(SDL_GetTicks(), data->windowlist[i]->flash_cancel_time)) {
+            SDL_GetTicks() >= data->windowlist[i]->flash_cancel_time) {
             X11_FlashWindow(_this, data->windowlist[i]->window, SDL_FLASH_CANCEL);
         }
     }

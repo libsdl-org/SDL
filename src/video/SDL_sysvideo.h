@@ -294,7 +294,7 @@ struct SDL_VideoDevice
     /*
      * Event manager functions
      */
-    int (*WaitEventTimeout)(_THIS, int timeout);
+    int (*WaitEventTimeout)(_THIS, Sint64 timeoutNS);
     void (*SendWakeupEvent)(_THIS, SDL_Window *window);
     void (*PumpEvents)(_THIS);
 

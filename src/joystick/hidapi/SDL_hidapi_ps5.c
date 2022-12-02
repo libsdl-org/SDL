@@ -215,7 +215,7 @@ typedef struct
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
     Uint16 firmware_version;
-    Uint32 last_packet;
+    Uint64 last_packet;
     int player_index;
     SDL_bool player_lights;
     Uint8 rumble_left;
@@ -703,7 +703,7 @@ static void HIDAPI_DriverPS5_CheckPendingLEDReset(SDL_HIDAPI_Device *device)
                                   packet->rgucSensorTimestamp[1],
                                   packet->rgucSensorTimestamp[2],
                                   packet->rgucSensorTimestamp[3]);
-        if (SDL_TICKS_PASSED(timestamp, connection_complete)) {
+        if ((Sint32)(connection_complete - timestamp) <= 0) {
             led_reset_complete = SDL_TRUE;
         }
     } else {
@@ -1305,7 +1305,7 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint8 data[USB_PACKET_LENGTH * 2];
     int size;
     int packet_count = 0;
-    Uint32 now = SDL_GetTicks();
+    Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -1365,7 +1365,7 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->is_bluetooth) {
         if (packet_count == 0) {
             /* Check to see if it looks like the device disconnected */
-            if (SDL_TICKS_PASSED(now, ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+            if (now >= (ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
                 /* Send an empty output report to tickle the Bluetooth stack */
                 HIDAPI_DriverPS5_TickleBluetooth(device);
             }

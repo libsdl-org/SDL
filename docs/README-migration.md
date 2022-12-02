@@ -31,6 +31,13 @@ LDFLAGS += $(shell pkg-config sdl3 --libs)
 The SDL3main and SDL3test libraries have been renamed SDL3_main and SDL3_test, respectively.
 
 
+## SDL_events.h
+
+The `timestamp` member of the SDL_Event structure now represents nanoseconds, and is populated with `SDL_GetTicksNS()`
+
+You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
+
+
 ## SDL_platform.h
 
 The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ has been renamed __IOS__
@@ -222,6 +229,30 @@ The structures in this file are versioned separately from the rest of SDL, allow
 
 This function now returns a standard int result instead of SDL_bool, returning 0 if the function succeeds or a negative error code if there was an error. You should also pass `SDL_SYSWM_CURRENT_VERSION` as the new third version parameter. The version member of the info structure will be filled in with the version of data that is returned, the minimum of the version you requested and the version supported by the runtime SDL library.
 
+
+## SDL_timer.h
+
+SDL_GetTicks() now returns a 64-bit value. Instead of using the `SDL_TICKS_PASSED` macro, you can directly compare tick values, e.g.
+```c
+Uint32 deadline = SDL_GetTicks() + 1000;
+...
+if (SDL_TICKS_PASSED(SDL_GetTicks(), deadline)) {
+    ...
+}
+```
+becomes:
+```c
+Uint64 deadline = SDL_GetTicks() + 1000
+...
+if (SDL_GetTicks() >= deadline) {
+    ...
+}
+```
+
+If you were using this macro for other things besides SDL ticks values, you can define it in your own code as:
+```c
+#define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
+```
 
 ## SDL_version.h
 

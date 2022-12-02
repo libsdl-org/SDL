@@ -179,7 +179,7 @@ static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, u
     SDL_bool ret = SDL_FALSE;
     while ((elapsed - repeat_info->next_repeat_ms) < 0x80000000U) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
-            SDL_SendKeyboardKey(SDL_PRESSED, repeat_info->scancode);
+            SDL_SendKeyboardKey(0, SDL_PRESSED, repeat_info->scancode);
         }
         if (repeat_info->text[0]) {
             SDL_SendKeyboardText(repeat_info->text);
@@ -270,7 +270,7 @@ static int dispatch_queued_events(SDL_VideoData *viddata)
     return ret >= 0 ? 1 : ret;
 }
 
-int Wayland_WaitEventTimeout(_THIS, int timeout)
+int Wayland_WaitEventTimeout(_THIS, Sint64 timeoutNS)
 {
     SDL_VideoData *d = _this->driverdata;
     struct SDL_WaylandInput *input = d->input;
@@ -286,16 +286,16 @@ int Wayland_WaitEventTimeout(_THIS, int timeout)
 
     /* If key repeat is active, we'll need to cap our maximum wait time to handle repeats */
     if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
-        uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+        uint32_t elapsed = (uint32_t)(SDL_GetTicks() - input->keyboard_repeat.sdl_press_time);
         if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
             /* A repeat key event was already due */
             return 1;
         } else {
             uint32_t next_repeat_wait_time = (input->keyboard_repeat.next_repeat_ms - elapsed) + 1;
-            if (timeout >= 0) {
-                timeout = SDL_min(timeout, next_repeat_wait_time);
+            if (timeoutNS >= 0) {
+                timeoutNS = SDL_min(timeoutNS, SDL_MS_TO_NS(next_repeat_wait_time));
             } else {
-                timeout = next_repeat_wait_time;
+                timeoutNS = SDL_MS_TO_NS(next_repeat_wait_time);
             }
             key_repeat_active = SDL_TRUE;
         }
@@ -305,7 +305,7 @@ int Wayland_WaitEventTimeout(_THIS, int timeout)
      * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
         /* Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait */
-        int err = SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeout);
+        int err = SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeoutNS);
         if (err > 0) {
             /* There are new events available to read */
             WAYLAND_wl_display_read_events(d->display);
@@ -316,7 +316,7 @@ int Wayland_WaitEventTimeout(_THIS, int timeout)
 
             /* If key repeat is active, we might have woken up to generate a key event */
             if (key_repeat_active) {
-                uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+                uint32_t elapsed = (uint32_t)(SDL_GetTicks() - input->keyboard_repeat.sdl_press_time);
                 if (keyboard_repeat_handle(&input->keyboard_repeat, elapsed)) {
                     return 1;
                 }
@@ -375,7 +375,7 @@ void Wayland_PumpEvents(_THIS)
     err = WAYLAND_wl_display_dispatch_pending(d->display);
 
     if (input && keyboard_repeat_is_set(&input->keyboard_repeat)) {
-        uint32_t elapsed = SDL_GetTicks() - input->keyboard_repeat.sdl_press_time;
+        uint32_t elapsed = (uint32_t)(SDL_GetTicks() - input->keyboard_repeat.sdl_press_time);
         keyboard_repeat_handle(&input->keyboard_repeat, elapsed);
     }
 
@@ -409,7 +409,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
         const float sy_f = (float)wl_fixed_to_double(sy_w);
         const int sx = (int)SDL_floorf(sx_f * window->pointer_scale_x);
         const int sy = (int)SDL_floorf(sy_f * window->pointer_scale_y);
-        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
+        SDL_SendMouseMotion(0, window->sdlwindow, 0, 0, sx, sy);
     }
 }
 
@@ -599,7 +599,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
         Wayland_data_device_set_serial(input->data_device, serial);
         Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
 
-        SDL_SendMouseButton(window->sdlwindow, 0,
+        SDL_SendMouseButton(0, window->sdlwindow, 0,
                             state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
     }
 }
@@ -636,7 +636,7 @@ static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
         x /= WAYLAND_WHEEL_AXIS_UNIT;
         y /= WAYLAND_WHEEL_AXIS_UNIT;
 
-        SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(0, window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 
@@ -765,7 +765,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
 
     if (x != 0.0f || y != 0.0f) {
-        SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(0, window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 
@@ -822,7 +822,7 @@ static void touch_handler_down(void *data, struct wl_touch *touch, unsigned int 
 
     touch_add(id, x, y, surface);
 
-    SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
+    SDL_SendTouch(0, (SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
 }
 
 static void touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
@@ -839,7 +839,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, unsigned int se
         window = window_data->sdlwindow;
     }
 
-    SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
+    SDL_SendTouch(0, (SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
 }
 
 static void touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
@@ -852,7 +852,7 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, unsigned in
     const float y = dbly / window_data->sdlwindow->h;
 
     touch_update(id, x, y);
-    SDL_SendTouchMotion((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
+    SDL_SendTouchMotion(0, (SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
 }
 
 static void touch_handler_frame(void *data, struct wl_touch *touch)
@@ -1100,7 +1100,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         if (scancode != SDL_SCANCODE_UNKNOWN) {
             for (uint32_t i = 0; i < sizeof mod_scancodes / sizeof *mod_scancodes; ++i) {
                 if (mod_scancodes[i] == scancode) {
-                    SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+                    SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
                     break;
                 }
             }
@@ -1215,7 +1215,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     if (!handled_by_ime) {
         scancode = Wayland_get_scancode_from_key(input, key + 8);
-        SDL_SendKeyboardKey(state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
+        SDL_SendKeyboardKey(0, state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
     }
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
@@ -2083,7 +2083,7 @@ static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool,
         return;
     }
 
-    SDL_SendMouseButton(window->sdlwindow, 0, SDL_PRESSED, tablet_tool_btn_to_sdl_button(input));
+    SDL_SendMouseButton(0, window->sdlwindow, 0, SDL_PRESSED, tablet_tool_btn_to_sdl_button(input));
 }
 
 static void tablet_tool_handle_up(void *data, struct zwp_tablet_tool_v2 *tool)
@@ -2101,7 +2101,7 @@ static void tablet_tool_handle_up(void *data, struct zwp_tablet_tool_v2 *tool)
         return;
     }
 
-    SDL_SendMouseButton(window->sdlwindow, 0, SDL_RELEASED, tablet_tool_btn_to_sdl_button(input));
+    SDL_SendMouseButton(0, window->sdlwindow, 0, SDL_RELEASED, tablet_tool_btn_to_sdl_button(input));
 }
 
 static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t sx_w, wl_fixed_t sy_w)
@@ -2116,7 +2116,7 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
         const float sy_f = (float)wl_fixed_to_double(sy_w);
         const int sx = (int)SDL_floorf(sx_f * window->pointer_scale_x);
         const int sy = (int)SDL_floorf(sy_f * window->pointer_scale_y);
-        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
+        SDL_SendMouseMotion(0, window->sdlwindow, 0, 0, sx, sy);
     }
 }
 
@@ -2473,7 +2473,7 @@ static void relative_pointer_handle_relative_motion(void *data,
     input->dy_frac = modf(dy_unaccel, &dy);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
-        SDL_SendMouseMotion(window->sdlwindow, 0, 1, (int)dx, (int)dy);
+        SDL_SendMouseMotion(0, window->sdlwindow, 0, 1, (int)dx, (int)dy);
     }
 }
 

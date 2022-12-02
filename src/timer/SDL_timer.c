@@ -32,8 +32,8 @@ typedef struct _SDL_Timer
     int timerID;
     SDL_TimerCallback callback;
     void *param;
-    Uint32 interval;
-    Uint32 scheduled;
+    Uint64 interval;
+    Uint64 scheduled;
     SDL_atomic_t canceled;
     struct _SDL_Timer *next;
 } SDL_Timer;
@@ -82,7 +82,7 @@ static void SDL_AddTimerInternal(SDL_TimerData *data, SDL_Timer *timer)
 
     prev = NULL;
     for (curr = data->timers; curr; prev = curr, curr = curr->next) {
-        if ((Sint32)(timer->scheduled - curr->scheduled) < 0) {
+        if (curr->scheduled > timer->scheduled) {
             break;
         }
     }
@@ -103,7 +103,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
     SDL_Timer *current;
     SDL_Timer *freelist_head = NULL;
     SDL_Timer *freelist_tail = NULL;
-    Uint32 tick, now, interval, delay;
+    Uint64 tick, now, interval, delay;
 
     /* Threaded timer loop:
      *  1. Queue timers added by other threads
@@ -143,13 +143,13 @@ static int SDLCALL SDL_TimerThread(void *_data)
         /* Initial delay if there are no timers */
         delay = SDL_MUTEX_MAXWAIT;
 
-        tick = SDL_GetTicks();
+        tick = SDL_GetTicksNS();
 
         /* Process all the pending timers for this tick */
         while (data->timers) {
             current = data->timers;
 
-            if ((Sint32)(tick - current->scheduled) < 0) {
+            if (tick < current->scheduled) {
                 /* Scheduled for the future, wait a bit */
                 delay = (current->scheduled - tick);
                 break;
@@ -161,7 +161,8 @@ static int SDLCALL SDL_TimerThread(void *_data)
             if (SDL_AtomicGet(&current->canceled)) {
                 interval = 0;
             } else {
-                interval = current->callback(current->interval, current->param);
+                /* FIXME: We could potentially support sub-millisecond timers now */
+                interval = SDL_MS_TO_NS(current->callback((Uint32)SDL_NS_TO_MS(current->interval), current->param));
             }
 
             if (interval > 0) {
@@ -183,7 +184,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
         }
 
         /* Adjust the delay based on processing time */
-        now = SDL_GetTicks();
+        now = SDL_GetTicksNS();
         interval = (now - tick);
         if (interval > delay) {
             delay = 0;
@@ -196,7 +197,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
            That's okay, it just means we run through the loop a few
            extra times.
          */
-        SDL_SemWaitTimeout(data->sem, delay);
+        SDL_SemWaitTimeoutNS(data->sem, delay);
     }
     return 0;
 }
@@ -271,8 +272,7 @@ void SDL_TimerQuit(void)
     }
 }
 
-SDL_TimerID
-SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_Timer *timer;
@@ -304,8 +304,8 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     timer->timerID = SDL_AtomicIncRef(&data->nextID);
     timer->callback = callback;
     timer->param = param;
-    timer->interval = interval;
-    timer->scheduled = SDL_GetTicks() + interval;
+    timer->interval = SDL_MS_TO_NS(interval);
+    timer->scheduled = SDL_GetTicksNS() + timer->interval;
     SDL_AtomicSet(&timer->canceled, 0);
 
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
@@ -334,8 +334,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     return entry->timerID;
 }
 
-SDL_bool
-SDL_RemoveTimer(SDL_TimerID id)
+SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
@@ -417,8 +416,7 @@ void SDL_TimerQuit(void)
     }
 }
 
-SDL_TimerID
-SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
@@ -443,8 +441,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     return entry->timerID;
 }
 
-SDL_bool
-SDL_RemoveTimer(SDL_TimerID id)
+SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
@@ -471,16 +468,94 @@ SDL_RemoveTimer(SDL_TimerID id)
     return SDL_FALSE;
 }
 
+#endif /* !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED */
+
+static Uint64 tick_start;
+static Uint64 tick_freq;
+
+#if defined(SDL_TIMER_WINDOWS) && \
+    !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#include <timeapi.h>
+#define HAVE_TIME_BEGIN_PERIOD
 #endif
 
-/* This is a legacy support function; SDL_GetTicks() returns a Uint32,
-   which wraps back to zero every ~49 days. The newer SDL_GetTicks64()
-   doesn't have this problem, so we just wrap that function and clamp to
-   the low 32-bits for binary compatibility. */
-Uint32
-SDL_GetTicks(void)
+static void SDL_SetSystemTimerResolutionMS(int period)
 {
-    return (Uint32)(SDL_GetTicks64() & 0xFFFFFFFF);
+#ifdef HAVE_TIME_BEGIN_PERIOD
+    static int timer_period = 0;
+
+    if (period != timer_period) {
+        if (timer_period) {
+            timeEndPeriod((UINT)timer_period);
+        }
+
+        timer_period = period;
+
+        if (timer_period) {
+            timeBeginPeriod((UINT)timer_period);
+        }
+    }
+#endif /* HAVE_TIME_BEGIN_PERIOD */
+}
+
+static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    int period;
+
+    /* Unless the hint says otherwise, let's have good sleep precision */
+    if (hint && *hint) {
+        period = SDL_atoi(hint);
+    } else {
+        period = 1;
+    }
+    if (period || oldValue != hint) {
+        SDL_SetSystemTimerResolutionMS(period);
+    }
+}
+
+void SDL_TicksInit(void)
+{
+    if (tick_start) {
+        return;
+    }
+
+    /* If we didn't set a precision, set it high. This affects lots of things
+       on Windows besides the SDL timers, like audio callbacks, etc. */
+    SDL_AddHintCallback(SDL_HINT_TIMER_RESOLUTION,
+                        SDL_TimerResolutionChanged, NULL);
+
+    tick_freq = SDL_GetPerformanceFrequency();
+    tick_start = SDL_GetPerformanceCounter();
+}
+
+void SDL_TicksQuit(void)
+{
+    SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
+                        SDL_TimerResolutionChanged, NULL);
+
+    SDL_SetSystemTimerResolutionMS(0); /* always release our timer resolution request. */
+
+    tick_start = 0;
+}
+
+Uint64
+SDL_GetTicksNS(void)
+{
+    if (!tick_start) {
+        SDL_TicksInit();
+    }
+
+    return ((SDL_GetPerformanceCounter() - tick_start) * SDL_NS_PER_SECOND) / tick_freq;
+}
+
+Uint64 SDL_GetTicks(void)
+{
+    return SDL_NS_TO_MS(SDL_GetTicksNS());
+}
+
+void SDL_Delay(Uint32 ms)
+{
+    SDL_DelayNS(SDL_MS_TO_NS(ms));
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

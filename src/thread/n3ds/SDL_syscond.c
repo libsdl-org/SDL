@@ -74,7 +74,7 @@ int SDL_CondBroadcast(SDL_cond *cond)
     return 0;
 }
 
-/* Wait on the condition variable for at most 'ms' milliseconds.
+/* Wait on the condition variable for at most 'timeoutNS' nanoseconds.
    The mutex must be locked before entering this function!
    The mutex is unlocked during the wait, and locked again after the wait.
 
@@ -95,7 +95,7 @@ Thread B:
     SDL_CondSignal(cond);
     SDL_UnlockMutex(lock);
  */
-int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
+int SDL_CondWaitTimeoutNS(SDL_cond *cond, SDL_mutex *mutex, Sint64 timeoutNS)
 {
     Result res;
 
@@ -107,20 +107,13 @@ int SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
     }
 
     res = 0;
-    if (ms == SDL_MUTEX_MAXWAIT) {
+    if (timeoutNS < 0) {
         CondVar_Wait(&cond->cond_variable, &mutex->lock.lock);
     } else {
-        res = CondVar_WaitTimeout(&cond->cond_variable, &mutex->lock.lock,
-                                  (s64)ms * 1000000LL);
+        res = CondVar_WaitTimeout(&cond->cond_variable, &mutex->lock.lock, timeoutNS);
     }
 
     return R_SUCCEEDED(res) ? 0 : SDL_MUTEX_TIMEDOUT;
-}
-
-/* Wait on the condition variable forever */
-int SDL_CondWait(SDL_cond *cond, SDL_mutex *mutex)
-{
-    return SDL_CondWaitTimeout(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
 
 #endif /* SDL_THREAD_N3DS */

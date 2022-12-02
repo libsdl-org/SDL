@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 {
     int i;
     int frames;
-    Uint32 then, now;
+    Uint64 then, now;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);

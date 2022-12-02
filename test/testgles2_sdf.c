@@ -434,7 +434,7 @@ int main(int argc, char *argv[])
     int value;
     int i;
     SDL_DisplayMode mode;
-    Uint32 then, now;
+    Uint64 then, now;
     int status;
     shader_data *data;
     char *path = NULL;

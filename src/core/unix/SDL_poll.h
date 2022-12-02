@@ -28,7 +28,7 @@
 #define SDL_IOR_WRITE    0x2
 #define SDL_IOR_NO_RETRY 0x4
 
-extern int SDL_IOReady(int fd, int flags, int timeoutMS);
+extern int SDL_IOReady(int fd, int flags, Sint64 timeoutNS);
 
 #endif /* SDL_poll_h_ */
 

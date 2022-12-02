@@ -78,13 +78,13 @@ typedef struct
 
     SDL_JoystickPowerLevel battery_level;
     SDL_bool charging;
-    Uint32 last_battery_query_time;
+    Uint64 last_battery_query_time;
 
     SDL_bool rumble_report_pending;
     SDL_bool rumble_update_pending;
     Uint8 left_motor_amplitude;
     Uint8 right_motor_amplitude;
-    Uint32 last_rumble_time;
+    Uint64 last_rumble_time;
 
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverShield_Context;
@@ -541,14 +541,14 @@ static SDL_bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     /* Ask for battery state again if we're due for an update */
-    if (joystick && SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_battery_query_time + BATTERY_POLL_INTERVAL_MS)) {
+    if (joystick && SDL_GetTicks() >= (ctx->last_battery_query_time + BATTERY_POLL_INTERVAL_MS)) {
         ctx->last_battery_query_time = SDL_GetTicks();
         HIDAPI_DriverShield_SendCommand(device, CMD_BATTERY_STATE, NULL, 0);
     }
 
     /* Retransmit rumble packets if they've lasted longer than the hardware supports */
     if ((ctx->left_motor_amplitude != 0 || ctx->right_motor_amplitude != 0) &&
-        SDL_TICKS_PASSED(SDL_GetTicks(), ctx->last_rumble_time + RUMBLE_REFRESH_INTERVAL_MS)) {
+        SDL_GetTicks() >= (ctx->last_rumble_time + RUMBLE_REFRESH_INTERVAL_MS)) {
         ctx->rumble_update_pending = SDL_TRUE;
         HIDAPI_DriverShield_SendNextRumble(device);
     }

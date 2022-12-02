@@ -137,7 +137,7 @@ typedef struct
     SDL_bool report_touchpad;
     SDL_bool hardware_calibration;
     IMUCalibrationData calibration[6];
-    Uint32 last_packet;
+    Uint64 last_packet;
     int player_index;
     Uint8 rumble_left;
     Uint8 rumble_right;
@@ -1037,7 +1037,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint8 data[USB_PACKET_LENGTH * 2];
     int size;
     int packet_count = 0;
-    Uint32 now = SDL_GetTicks();
+    Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
         joystick = SDL_JoystickFromInstanceID(device->joysticks[0]);
@@ -1089,7 +1089,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->is_bluetooth) {
         if (packet_count == 0) {
             /* Check to see if it looks like the device disconnected */
-            if (SDL_TICKS_PASSED(now, ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+            if (now >= (ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
                 /* Send an empty output report to tickle the Bluetooth stack */
                 HIDAPI_DriverPS4_TickleBluetooth(device);
             }
@@ -1106,7 +1106,7 @@ static SDL_bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         if (packet_count == 0) {
             if (device->num_joysticks > 0) {
                 /* Check to see if it looks like the device disconnected */
-                if (SDL_TICKS_PASSED(now, ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
+                if (now >= (ctx->last_packet + BLUETOOTH_DISCONNECT_TIMEOUT_MS)) {
                     HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
                 }
             }

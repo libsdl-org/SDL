@@ -128,7 +128,7 @@ struct _SDL_GameController
     SDL_ExtendedGameControllerBind *bindings;
     SDL_ExtendedGameControllerBind **last_match_axis;
     Uint8 *last_hat_mask;
-    Uint32 guide_button_down;
+    Uint64 guide_button_down;
 
     struct _SDL_GameController *next; /* pointer to next game controller we have allocated */
 };
@@ -405,7 +405,9 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event *eve
     {
         if (SDL_IsGameController(event->jdevice.which)) {
             SDL_Event deviceevent;
+
             deviceevent.type = SDL_CONTROLLERDEVICEADDED;
+            deviceevent.common.timestamp = 0;
             deviceevent.cdevice.which = event->jdevice.which;
             SDL_PushEvent(&deviceevent);
         }
@@ -426,6 +428,7 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event *eve
             SDL_Event deviceevent;
 
             deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
+            deviceevent.common.timestamp = 0;
             deviceevent.cdevice.which = event->jdevice.which;
             SDL_PushEvent(&deviceevent);
         }
@@ -1189,7 +1192,9 @@ static void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pContro
 
             {
                 SDL_Event event;
+
                 event.type = SDL_CONTROLLERDEVICEREMAPPED;
+                event.common.timestamp = 0;
                 event.cdevice.which = gamecontrollerlist->joystick->instance_id;
                 SDL_PushEvent(&event);
             }
@@ -1834,6 +1839,7 @@ int SDL_GameControllerInit(void)
         if (SDL_IsGameController(i)) {
             SDL_Event deviceevent;
             deviceevent.type = SDL_CONTROLLERDEVICEADDED;
+            deviceevent.common.timestamp = 0;
             deviceevent.cdevice.which = i;
             SDL_PushEvent(&deviceevent);
         }
@@ -2863,6 +2869,7 @@ static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL
     if (SDL_GetEventState(SDL_CONTROLLERAXISMOTION) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_CONTROLLERAXISMOTION;
+        event.common.timestamp = 0;
         event.caxis.which = gamecontroller->joystick->instance_id;
         event.caxis.axis = axis;
         event.caxis.value = value;
@@ -2898,10 +2905,11 @@ static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, S
         /* Invalid state -- bail */
         return 0;
     }
+    event.common.timestamp = 0;
 #endif /* !SDL_EVENTS_DISABLED */
 
     if (button == SDL_CONTROLLER_BUTTON_GUIDE) {
-        Uint32 now = SDL_GetTicks();
+        Uint64 now = SDL_GetTicks();
         if (state == SDL_PRESSED) {
             gamecontroller->guide_button_down = now;
 
@@ -2910,7 +2918,7 @@ static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, S
                 return 0;
             }
         } else {
-            if (!SDL_TICKS_PASSED(now, gamecontroller->guide_button_down + SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS)) {
+            if (now < (gamecontroller->guide_button_down + SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS)) {
                 gamecontroller->joystick->delayed_guide_button = SDL_TRUE;
                 return 0;
             }

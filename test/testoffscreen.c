@@ -93,7 +93,8 @@ void loop()
 int main(int argc, char *argv[])
 {
 #ifndef __EMSCRIPTEN__
-    Uint32 then, now, frames;
+    Uint64 then, now;
+    Uint32 frames;
 #endif
 
     /* Enable standard application logging */

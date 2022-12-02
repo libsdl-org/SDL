@@ -102,17 +102,17 @@ struct _SDL_Joystick
 
     Uint16 low_frequency_rumble;
     Uint16 high_frequency_rumble;
-    Uint32 rumble_expiration;
-    Uint32 rumble_resend;
+    Uint64 rumble_expiration;
+    Uint64 rumble_resend;
 
     Uint16 left_trigger_rumble;
     Uint16 right_trigger_rumble;
-    Uint32 trigger_rumble_expiration;
+    Uint64 trigger_rumble_expiration;
 
     Uint8 led_red;
     Uint8 led_green;
     Uint8 led_blue;
-    Uint32 led_expiration;
+    Uint64 led_expiration;
 
     SDL_bool attached;
     SDL_bool is_game_controller;

@@ -38,72 +38,37 @@ extern "C" {
 #endif
 
 /**
- * Get the number of milliseconds since SDL library initialization.
- *
- * This value wraps if the program runs for more than ~49 days.
- *
- * This function is not recommended as of SDL 2.0.18; use SDL_GetTicks64()
- * instead, where the value doesn't wrap every ~49 days. There are places in
- * SDL where we provide a 32-bit timestamp that can not change without
- * breaking binary compatibility, though, so this function isn't officially
- * deprecated.
- *
- * \returns an unsigned 32-bit value representing the number of milliseconds
- *          since the SDL library initialized.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_TICKS_PASSED
+ * SDL time constants
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetTicks(void);
+#define SDL_MS_PER_SECOND   1000
+#define SDL_US_PER_SECOND   1000000
+#define SDL_NS_PER_SECOND   1000000000LLU
+#define SDL_NS_PER_MS       1000000
+#define SDL_NS_PER_US       1000
+#define SDL_MS_TO_NS(MS)    (((Uint64)(MS)) * SDL_NS_PER_MS)
+#define SDL_NS_TO_MS(NS)    ((NS) / SDL_NS_PER_MS)
+#define SDL_US_TO_NS(US)    (((Uint64)(US)) * SDL_NS_PER_US)
+#define SDL_NS_TO_US(NS)    ((NS) / SDL_NS_PER_US)
 
 /**
  * Get the number of milliseconds since SDL library initialization.
- *
- * Note that you should not use the SDL_TICKS_PASSED macro with values
- * returned by this function, as that macro does clever math to compensate for
- * the 32-bit overflow every ~49 days that SDL_GetTicks() suffers from. 64-bit
- * values from this function can be safely compared directly.
- *
- * For example, if you want to wait 100 ms, you could do this:
- *
- * ```c
- * const Uint64 timeout = SDL_GetTicks64() + 100;
- * while (SDL_GetTicks64() < timeout) {
- *     // ... do work until timeout has elapsed
- * }
- * ```
  *
  * \returns an unsigned 64-bit value representing the number of milliseconds
  *          since the SDL library initialized.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
+extern DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);
 
 /**
- * Compare 32-bit SDL ticks values, and return true if `A` has passed `B`.
+ * Get the number of nanoseconds since SDL library initialization.
  *
- * This should be used with results from SDL_GetTicks(), as this macro
- * attempts to deal with the 32-bit counter wrapping back to zero every ~49
- * days, but should _not_ be used with SDL_GetTicks64(), which does not have
- * that problem.
+ * \returns an unsigned 64-bit value representing the number of nanoseconds
+ *          since the SDL library initialized.
  *
- * For example, with SDL_GetTicks(), if you want to wait 100 ms, you could
- * do this:
- *
- * ```c
- * const Uint32 timeout = SDL_GetTicks() + 100;
- * while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
- *     // ... do work until timeout has elapsed
- * }
- * ```
- *
- * Note that this does not handle tick differences greater
- * than 2^31 so take care when using the above kind of code
- * with large timeout delays (tens of days).
+ * \since This function is available since SDL 3.0.0.
  */
-#define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
+extern DECLSPEC Uint64 SDLCALL SDL_GetTicksNS(void);
 
 /**
  * Get the current value of the high resolution counter.
@@ -147,14 +112,27 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
 extern DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
 
 /**
+ * Wait a specified number of nanoseconds before returning.
+ *
+ * This function waits a specified number of nanoseconds before returning. It
+ * waits at least the specified time, but possibly longer due to OS
+ * scheduling.
+ *
+ * \param ns the number of nanoseconds to delay
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
+
+/**
  * Function prototype for the timer callback function.
  *
  * The callback function is passed the current timer interval and returns
- * the next timer interval. If the returned value is the same as the one
+ * the next timer interval, in milliseconds. If the returned value is the same as the one
  * passed in, the periodic alarm continues, otherwise a new alarm is
  * scheduled. If the callback returns 0, the periodic alarm is cancelled.
  */
-typedef Uint32 (SDLCALL * SDL_TimerCallback) (Uint32 interval, void *param);
+typedef Uint32 (SDLCALL *SDL_TimerCallback)(Uint32 interval, void *param);
 
 /**
  * Definition of the timer ID type.
@@ -179,7 +157,7 @@ typedef int SDL_TimerID;
  * iteration.
  *
  * Timing may be inexact due to OS scheduling. Be sure to note the current
- * time with SDL_GetTicks() or SDL_GetPerformanceCounter() in case your
+ * time with SDL_GetTicksNS() or SDL_GetPerformanceCounter() in case your
  * callback needs to adjust for variances.
  *
  * \param interval the timer delay, in milliseconds, passed to `callback`
