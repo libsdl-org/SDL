@@ -221,8 +221,9 @@ SDL_GetBasePath(void)
         }
 #endif
     }
-#if defined(__SOLARIS__)
-    else {
+
+#if defined(__SOLARIS__)  /* try this as a fallback if /proc didn't pan out */
+    if (!retval) {
         const char *path = getexecname();
         if ((path != NULL) && (path[0] == '/')) { /* must be absolute path... */
             retval = SDL_strdup(path);
