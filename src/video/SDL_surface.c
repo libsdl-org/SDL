@@ -209,15 +209,6 @@ SDL_CreateSurfaceFrom(void *pixels,
         return NULL;
     }
 
-    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        int expected_pitch = 0;
-        SDL_CalculateYUVSize(format, width, height, NULL, &expected_pitch);
-        if (expected_pitch != pitch) {
-            SDL_SetError("Only accept exact pitch for YUV format");
-            return NULL;
-        }
-    }
-
     surface = SDL_CreateSurface(0, 0, format);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
