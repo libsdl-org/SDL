@@ -22,8 +22,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL.h>
-
+#include <SDL3/SDL_test.h>
+#include <SDL3/SDL_test_common.h>
 #include "testutils.h"
 
 #define MOOSEPIC_W 64
@@ -141,85 +141,48 @@ SDL_Color MooseColors[84] = {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
+static SDLTest_CommonState *state;
+static Uint32 next_fps_check, frames;
+static const Uint32 fps_check_delay = 5000;
+
 SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
 SDL_Texture *MooseTexture = NULL;
 SDL_Rect displayrect;
 int window_w;
 int window_h;
-SDL_Renderer *renderer;
 int paused = 0;
-int i;
-SDL_bool done = SDL_FALSE;
+int done = 0;
 static int fpsdelay;
 SDL_bool streaming = SDL_TRUE;
+Uint8 *RawMooseData = NULL;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
 {
-    SDL_Quit();
-    exit(rc);
-}
+    int i;
 
-static void
-PrintUsage(char *argv0)
-{
-    SDL_Log("Usage: %s [arg] [arg] [arg] ...\n", argv0);
-    SDL_Log("\n");
-    SDL_Log("Where 'arg' is any of the following options:\n");
-    SDL_Log("\n");
-    SDL_Log("    -fps <frames per second>\n");
-    SDL_Log("    -nodelay\n");
-    SDL_Log("    -format <fmt> (one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)\n");
-    SDL_Log("    -scale <scale factor> (initial scale of the overlay)\n");
-    SDL_Log("    -nostreaming: path that use SDL_CreateTextureFromSurface() not STREAMING texture\n");
-    SDL_Log("    -help (shows this help)\n");
-    SDL_Log("\n");
-    SDL_Log("Press ESC to exit, or SPACE to freeze the movie while application running.\n");
-    SDL_Log("\n");
-}
+    /* If rc is 0, just let main return normally rather than calling exit.
+     * This allows testing of platforms where SDL_main is required and does meaningful cleanup.
+     */
+        
+    SDL_free(RawMooseData);
 
-void loop()
-{
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event)) {
-        switch (event.type) {
-        case SDL_WINDOWEVENT:
-            if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                SDL_RenderSetViewport(renderer, NULL);
-                displayrect.w = window_w = event.window.data1;
-                displayrect.h = window_h = event.window.data2;
-            }
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            displayrect.x = event.button.x - window_w / 2;
-            displayrect.y = event.button.y - window_h / 2;
-            break;
-        case SDL_MOUSEMOTION:
-            if (event.motion.state) {
-                displayrect.x = event.motion.x - window_w / 2;
-                displayrect.y = event.motion.y - window_h / 2;
-            }
-            break;
-        case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_SPACE) {
-                paused = !paused;
-                break;
-            }
-            if (event.key.keysym.sym != SDLK_ESCAPE) {
-                break;
-            }
-        case SDL_QUIT:
-            done = SDL_TRUE;
-            break;
-        }
+    for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
+         SDL_FreeSurface(MooseYUVSurfaces[i]);
     }
 
-#ifndef __EMSCRIPTEN__
-    SDL_Delay(fpsdelay);
-#endif
+    SDLTest_CommonQuit(state);
 
+
+    if (rc != 0) {
+        exit(rc);
+    }
+}
+
+void MoveSprites(SDL_Renderer *renderer)
+{
+    static int i = 0;
 
     if (streaming) {
         if (!paused) {
@@ -248,19 +211,83 @@ void loop()
         SDL_RenderPresent(renderer);
         SDL_DestroyTexture(tmp);
     }
+}
 
+
+void loop()
+{
+    Uint32 now;
+    int i;
+    SDL_Event event;
+        
+    SDL_Renderer *renderer = state->renderers[0]; /* only 1 window */
+
+    /* Check for events */
+    while (SDL_PollEvent(&event)) {
+        SDLTest_CommonEvent(state, &event, &done);
+
+        switch (event.type) {
+        case SDL_WINDOWEVENT:
+            if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                SDL_RenderSetViewport(renderer, NULL);
+                displayrect.w = window_w = event.window.data1;
+                displayrect.h = window_h = event.window.data2;
+            }
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            displayrect.x = event.button.x - window_w / 2;
+            displayrect.y = event.button.y - window_h / 2;
+            break;
+        case SDL_MOUSEMOTION:
+            if (event.motion.state) {
+                displayrect.x = event.motion.x - window_w / 2;
+                displayrect.y = event.motion.y - window_h / 2;
+            }
+            break;
+        case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_SPACE) {
+                paused = !paused;
+                break;
+            }
+            if (event.key.keysym.sym != SDLK_ESCAPE) {
+                break;
+            }
+        }
+    }
+
+#ifndef __EMSCRIPTEN__
+    SDL_Delay(fpsdelay);
+#endif
+
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i] == NULL) {
+            continue;
+        }
+        MoveSprites(state->renderers[i]);
+    }
 #ifdef __EMSCRIPTEN__
     if (done) {
         emscripten_cancel_main_loop();
     }
 #endif
+
+    frames++;
+    now = SDL_GetTicks();
+    if (SDL_TICKS_PASSED(now, next_fps_check)) {
+        /* Print out some timing information */
+        const Uint32 then = next_fps_check - fps_check_delay;
+        const double fps = ((double)frames * 1000) / (now - then);
+        SDL_Log("%2.2f frames per second\n", fps);
+        next_fps_check = now + fps_check_delay;
+        frames = 0;
+    }
 }
+
 
 int main(int argc, char **argv)
 {
-    Uint8 *RawMooseData;
     SDL_RWops *handle;
-    SDL_Window *window;
+    int i;
     int j;
     int fps = 12;
     int nodelay = 0;
@@ -268,102 +295,110 @@ int main(int argc, char **argv)
     char *filename = NULL;
     int yuv_format = SDL_PIXELFORMAT_YV12;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return 3;
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    if (state == NULL) {
+        return 1;
     }
-
-    while (argc > 1) {
-        if (SDL_strcmp(argv[1], "-fps") == 0) {
-            if (argv[2]) {
-                fps = SDL_atoi(argv[2]);
-                if (fps == 0) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                                 "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
-                    quit(10);
-                }
-                if ((fps < 0) || (fps > 1000)) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                                 "The -fps option must be in range from 1 to 1000, default is 12.\n");
-                    quit(10);
-                }
-                argv += 2;
-                argc -= 2;
-            } else {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                             "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
-                quit(10);
-            }
-        } else if (SDL_strcmp(argv[1], "-nodelay") == 0) {
-            nodelay = 1;
-            argv += 1;
-            argc -= 1;
-        } else if (SDL_strcmp(argv[1], "-nostreaming") == 0) {
-            streaming = SDL_FALSE;
-            argv += 1;
-            argc -= 1;
-        } else if (SDL_strcmp(argv[1], "-scale") == 0) {
-            if (argv[2]) {
-                scale = SDL_atoi(argv[2]);
-                if (scale == 0) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                                 "The -scale option requires an argument [from 1 to 50], default is 5.\n");
-                    quit(10);
-                }
-                if ((scale < 0) || (scale > 50)) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                                 "The -scale option must be in range from 1 to 50, default is 5.\n");
-                    quit(10);
-                }
-                argv += 2;
-                argc -= 2;
-            } else {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                             "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
-                quit(10);
-            }
-        } else if (SDL_strcmp(argv[1], "-format") == 0) {
-            if (argv[2]) {
-                char *fmt = argv[2];
-
-                if (SDL_strcmp(fmt, "YV12") == 0) {
-                    yuv_format = SDL_PIXELFORMAT_YV12;
-                } else if (SDL_strcmp(fmt, "IYUV") == 0) {
-                    yuv_format = SDL_PIXELFORMAT_IYUV;
-                } else if (SDL_strcmp(fmt, "YUY2") == 0) {
-                    yuv_format = SDL_PIXELFORMAT_YUY2;
-                } else if (SDL_strcmp(fmt, "UYVY") == 0) {
-                    yuv_format = SDL_PIXELFORMAT_UYVY;
-                } else if (SDL_strcmp(fmt, "YVYU") == 0) {
-                    yuv_format = SDL_PIXELFORMAT_YVYU;
-                } else if (SDL_strcmp(fmt, "NV12") == 0) {
-                    yuv_format = SDL_PIXELFORMAT_NV12;
-                } else if (SDL_strcmp(fmt, "NV21") == 0) {
-                    yuv_format = SDL_PIXELFORMAT_NV21;
-                } else {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The -format option requires one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)\n");
-                    quit(10);
-                }
-                argv += 2;
-                argc -= 2;
-            } else {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The -format option requires one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)\n");
-                quit(10);
-            }
-        } else if ((SDL_strcmp(argv[1], "-help") == 0) || (SDL_strcmp(argv[1], "-h") == 0)) {
-            PrintUsage(argv[0]);
-            quit(0);
-        } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unrecognized option: %s.\n", argv[1]);
-            quit(10);
-        }
-        break;
-    }
-
+    
     SDL_zeroa(MooseYUVSurfaces);
+
+    for (i = 1; i < argc;) {
+        int consumed;
+        
+        consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcmp(argv[i], "--fps") == 0) {
+                if (argv[i + 1]) {
+                    consumed = 2;
+                    fps = SDL_atoi(argv[i + 1]);
+                    if (fps == 0) {
+                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --fps option requires an argument [from 1 to 1000], default is 12.\n");
+                        quit(10);
+                    }
+                    if ((fps < 0) || (fps > 1000)) {
+                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --fps option must be in range from 1 to 1000, default is 12.\n");
+                        quit(10);
+                    }
+                } else {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --fps option requires an argument [from 1 to 1000], default is 12.\n");
+                    quit(10);
+                }
+            } else if (SDL_strcmp(argv[i], "--nodelay") == 0) {
+                consumed = 1;
+                nodelay = 1;
+            } else if (SDL_strcmp(argv[i], "--nostreaming") == 0) {
+                consumed = 1;
+                streaming = SDL_FALSE;
+            } else if (SDL_strcmp(argv[i], "--scale") == 0) {
+                consumed = 2;
+                if (argv[i + 1]) {
+                    scale = SDL_atoi(argv[i + 1]);
+                    if (scale == 0) {
+                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --scale option requires an argument [from 1 to 50], default is 5.\n");
+                        quit(10);
+                    }
+                    if ((scale < 0) || (scale > 50)) {
+                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --scale option must be in range from 1 to 50, default is 5.\n");
+                        quit(10);
+                    }
+                } else {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --fps option requires an argument [from 1 to 1000], default is 12.\n");
+                    quit(10);
+                }
+            } else if (SDL_strcmp(argv[i], "--yuvformat") == 0) {
+                consumed = 2;
+                if (argv[i + 1]) {
+                    char *fmt = argv[i + 1];
+
+                    if (SDL_strcmp(fmt, "YV12") == 0) {
+                        yuv_format = SDL_PIXELFORMAT_YV12;
+                    } else if (SDL_strcmp(fmt, "IYUV") == 0) {
+                        yuv_format = SDL_PIXELFORMAT_IYUV;
+                    } else if (SDL_strcmp(fmt, "YUY2") == 0) {
+                        yuv_format = SDL_PIXELFORMAT_YUY2;
+                    } else if (SDL_strcmp(fmt, "UYVY") == 0) {
+                        yuv_format = SDL_PIXELFORMAT_UYVY;
+                    } else if (SDL_strcmp(fmt, "YVYU") == 0) {
+                        yuv_format = SDL_PIXELFORMAT_YVYU;
+                    } else if (SDL_strcmp(fmt, "NV12") == 0) {
+                        yuv_format = SDL_PIXELFORMAT_NV12;
+                    } else if (SDL_strcmp(fmt, "NV21") == 0) {
+                        yuv_format = SDL_PIXELFORMAT_NV21;
+                    } else {
+                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --yuvformat option requires one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)\n");
+                        quit(10);
+                    }
+                } else {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --yuvformat option requires one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)\n");
+                    quit(10);
+                }
+            }
+
+        }
+        if (consumed < 0) {
+            static const char *options[] = {
+                "[--fps <frames per second>]",
+                "[--nodelay]",
+                "[--yuvformat <fmt>] (one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)", 
+                "[--scale <scale factor>] (initial scale of the overlay)",
+                "[--nostreaming] path that use SDL_CreateTextureFromSurface() not STREAMING texture",
+                NULL
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            quit(1);
+        }
+        i += consumed;
+    }
+
+    /* Force window size */
+    state->window_w = MOOSEPIC_W * scale;
+    state->window_h = MOOSEPIC_H * scale;
+
+    if (!SDLTest_CommonInit(state)) {
+        quit(2);
+    }
 
     RawMooseData = (Uint8 *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
     if (RawMooseData == NULL) {
@@ -375,14 +410,12 @@ int main(int argc, char **argv)
     filename = GetResourceFilename(NULL, "moose.dat");
     if (filename == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
-        SDL_free(RawMooseData);
-        return -1;
+        quit(2);
     }
     handle = SDL_RWFromFile(filename, "rb");
     SDL_free(filename);
     if (handle == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
-        SDL_free(RawMooseData);
         quit(2);
     }
 
@@ -393,33 +426,24 @@ int main(int argc, char **argv)
     /* Create the window and renderer */
     window_w = MOOSEPIC_W * scale;
     window_h = MOOSEPIC_H * scale;
-    window = SDL_CreateWindow("Happy Moose",
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED,
-                              window_w, window_h,
-                              SDL_WINDOW_RESIZABLE);
-    if (window == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
-        SDL_free(RawMooseData);
-        quit(4);
+
+    if (state->num_windows != 1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Only one window allowed\n");
+        quit(1);
     }
 
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    if (renderer == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s\n", SDL_GetError());
-        SDL_free(RawMooseData);
-        quit(4);
-    }
+    for (i = 0; i < state->num_windows; ++i) {
+        SDL_Renderer *renderer = state->renderers[i];
 
-
-    if (streaming) {
-        MooseTexture = SDL_CreateTexture(renderer, yuv_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
-        if (MooseTexture == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
-            SDL_free(RawMooseData);
-            quit(5);
+        if (streaming) {
+            MooseTexture = SDL_CreateTexture(renderer, yuv_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
+            if (MooseTexture == NULL) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
+                quit(5);
+            }
         }
     }
+
     /* Uncomment this to check vertex color with a YUV texture */
     /* SDL_SetTextureColorMod(MooseTexture, 0xff, 0x80, 0x80); */
 
@@ -427,7 +451,6 @@ int main(int argc, char **argv)
         /* Create RGB SDL_Surface */
         SDL_Surface *mooseRGBSurface = SDL_CreateSurface(MOOSEPIC_W, MOOSEPIC_H, SDL_PIXELFORMAT_RGB24);
         if (mooseRGBSurface == NULL) {
-            SDL_free(RawMooseData);
             quit(6);
         }
 
@@ -446,7 +469,6 @@ int main(int argc, char **argv)
         /* Convert to YUV SDL_Surface */
         MooseYUVSurfaces[i] = SDL_ConvertSurfaceFormat(mooseRGBSurface, yuv_format);
         if (MooseYUVSurfaces[i] == NULL) {
-            SDL_free(RawMooseData);
             quit(7);
         }
 
@@ -454,6 +476,7 @@ int main(int argc, char **argv)
     }
 
     SDL_free(RawMooseData);
+    RawMooseData = NULL;
 
     /* set the start frame */
     i = 0;
@@ -471,6 +494,11 @@ int main(int argc, char **argv)
     /* Ignore key up events, they don't even get filtered */
     SDL_EventState(SDL_KEYUP, SDL_IGNORE);
 
+    /* Main render loop */
+    frames = 0;
+    next_fps_check = SDL_GetTicks() + fps_check_delay;
+    done = 0;
+
     /* Loop, waiting for QUIT or RESIZE */
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, nodelay ? 0 : fps, 1);
@@ -480,11 +508,6 @@ int main(int argc, char **argv)
     }
 #endif
 
-    for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-         SDL_FreeSurface(MooseYUVSurfaces[i]);
-    }
-
-    SDL_DestroyRenderer(renderer);
     quit(0);
     return 0;
 }
