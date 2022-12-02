@@ -24,7 +24,6 @@
 
 #include <SDL3/SDL.h>
 
-#include "testyuv_cvt.h"
 #include "testutils.h"
 
 #define MOOSEPIC_W 64
@@ -142,7 +141,7 @@ SDL_Color MooseColors[84] = {
 };
 /* *INDENT-ON* */ /* clang-format on */
 
-Uint8 MooseFrame[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE * 2];
+SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
 SDL_Texture *MooseTexture;
 SDL_Rect displayrect;
 int window_w;
@@ -219,14 +218,35 @@ void loop()
     SDL_Delay(fpsdelay);
 #endif
 
+
+#if 1
     if (!paused) {
         i = (i + 1) % MOOSEFRAMES_COUNT;
-
-        SDL_UpdateTexture(MooseTexture, NULL, MooseFrame[i], MOOSEPIC_W);
+        SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
     }
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, MooseTexture, NULL, &displayrect);
     SDL_RenderPresent(renderer);
+#else
+    /* Test SDL_CreateTextureFromSurface */
+
+    if (!paused) {
+        i = (i + 1) % MOOSEFRAMES_COUNT;
+    }
+
+    {
+        SDL_Texture *tmp = SDL_CreateTextureFromSurface(renderer, MooseYUVSurfaces[i]);
+        if (tmp == NULL) {
+            SDL_Log("Error %s", SDL_GetError());
+            quit(7);
+        }
+
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, tmp, NULL, &displayrect);
+        SDL_RenderPresent(renderer);
+        SDL_DestroyTexture(tmp);
+    }
+#endif
 
 #ifdef __EMSCRIPTEN__
     if (done) {
@@ -245,6 +265,7 @@ int main(int argc, char **argv)
     int nodelay = 0;
     int scale = 5;
     char *filename = NULL;
+    int yuv_format;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -309,6 +330,8 @@ int main(int argc, char **argv)
         break;
     }
 
+    SDL_zeroa(MooseYUVSurfaces);
+
     RawMooseData = (Uint8 *)SDL_malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
     if (RawMooseData == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
@@ -355,7 +378,9 @@ int main(int argc, char **argv)
         quit(4);
     }
 
-    MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
+    yuv_format = SDL_PIXELFORMAT_YV12;
+
+    MooseTexture = SDL_CreateTexture(renderer, yuv_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
     if (MooseTexture == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
         SDL_free(RawMooseData);
@@ -365,21 +390,33 @@ int main(int argc, char **argv)
     /* SDL_SetTextureColorMod(MooseTexture, 0xff, 0x80, 0x80); */
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-        Uint8 MooseFrameRGB[MOOSEFRAME_SIZE * 3];
-        Uint8 *rgb;
-        Uint8 *frame;
-
-        rgb = MooseFrameRGB;
-        frame = RawMooseData + i * MOOSEFRAME_SIZE;
-        for (j = 0; j < MOOSEFRAME_SIZE; ++j) {
-            rgb[0] = MooseColors[frame[j]].r;
-            rgb[1] = MooseColors[frame[j]].g;
-            rgb[2] = MooseColors[frame[j]].b;
-            rgb += 3;
+        /* Create RGB SDL_Surface */
+        SDL_Surface *mooseRGBSurface = SDL_CreateSurface(MOOSEPIC_W, MOOSEPIC_H, SDL_PIXELFORMAT_RGB24);
+        if (mooseRGBSurface == NULL) {
+            SDL_free(RawMooseData);
+            quit(6);
         }
-        ConvertRGBtoYUV(SDL_PIXELFORMAT_YV12, MooseFrameRGB, MOOSEPIC_W * 3, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H,
-                        SDL_GetYUVConversionModeForResolution(MOOSEPIC_W, MOOSEPIC_H),
-                        0, 100);
+
+        /* Load Moose into a RGB SDL_Surface */
+        {
+            Uint8 *rgb = mooseRGBSurface->pixels;
+            Uint8 *frame = RawMooseData + i * MOOSEFRAME_SIZE;
+            for (j = 0; j < MOOSEFRAME_SIZE; ++j) {
+                rgb[0] = MooseColors[frame[j]].r;
+                rgb[1] = MooseColors[frame[j]].g;
+                rgb[2] = MooseColors[frame[j]].b;
+                rgb += 3;
+            }
+        }
+
+        /* Convert to YUV SDL_Surface */
+        MooseYUVSurfaces[i] = SDL_ConvertSurfaceFormat(mooseRGBSurface, yuv_format);
+        if (MooseYUVSurfaces[i] == NULL) {
+            SDL_free(RawMooseData);
+            quit(7);
+        }
+
+        SDL_FreeSurface(mooseRGBSurface);
     }
 
     SDL_free(RawMooseData);

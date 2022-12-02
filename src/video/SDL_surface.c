@@ -26,6 +26,7 @@
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
+#include "../render/SDL_yuv_sw_c.h"
 
 /* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
 SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
@@ -142,6 +143,10 @@ SDL_CreateSurface(int width, int height, Uint32 format)
             return NULL;
         }
 
+        if (SDL_ISPIXELFORMAT_FOURCC(surface->format->format)) {
+            size = SDL_SW_SizeYUV(surface->format->format, surface->w, surface->h, &surface->pitch);
+        }
+
         surface->pixels = SDL_SIMDAlloc(size);
         if (!surface->pixels) {
             SDL_FreeSurface(surface);
@@ -197,6 +202,15 @@ SDL_CreateSurfaceFrom(void *pixels,
     if (pitch < 0 || (pitch > 0 && ((size_t)pitch) < minimalPitch)) {
         SDL_InvalidParamError("pitch");
         return NULL;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        int expected_pitch = 0;
+        SDL_SW_SizeYUV(format, width, height, &expected_pitch);
+        if (expected_pitch != pitch) {
+            SDL_SetError("Only accept exact pitch for YUV format");
+            return NULL;
+        }
     }
 
     surface = SDL_CreateSurface(0, 0, format);
@@ -1093,6 +1107,24 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
         return NULL;
     }
 
+    if (SDL_ISPIXELFORMAT_FOURCC(format->format) || SDL_ISPIXELFORMAT_FOURCC(surface->format->format)) {
+
+        ret = SDL_ConvertPixels(surface->w, surface->h,
+                surface->format->format, surface->pixels, surface->pitch,
+                convert->format->format, convert->pixels, convert->pitch);
+
+
+        if (ret < 0) {
+            SDL_FreeSurface(convert);
+            return NULL;
+        }
+
+        /* Save the original copy flags */
+        copy_flags = surface->map->info.flags;
+
+        goto end;
+    }
+
     /* Copy the palette if any */
     if (format->palette && convert->format->palette) {
         SDL_memcpy(convert->format->palette->colors,
@@ -1258,6 +1290,9 @@ SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format)
             }
         }
     }
+
+end:
+
     SDL_SetClipRect(convert, &surface->clip_rect);
 
     /* Enable alpha blending by default if the new surface has an
