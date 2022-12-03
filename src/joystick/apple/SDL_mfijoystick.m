@@ -838,6 +838,7 @@ static void IOS_AccelerometerUpdate(SDL_Joystick *joystick)
     const float maxgforce = SDL_IPHONE_MAX_GFORCE;
     const SInt16 maxsint16 = 0x7FFF;
     CMAcceleration accel;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     @autoreleasepool {
         if (!motionManager.isAccelerometerActive) {
@@ -869,9 +870,9 @@ static void IOS_AccelerometerUpdate(SDL_Joystick *joystick)
     accel.z = SDL_clamp(accel.z, -maxgforce, maxgforce);
 
     /* pass in data mapped to range of SInt16 */
-    SDL_PrivateJoystickAxis(joystick, 0, (accel.x / maxgforce) * maxsint16);
-    SDL_PrivateJoystickAxis(joystick, 1, -(accel.y / maxgforce) * maxsint16);
-    SDL_PrivateJoystickAxis(joystick, 2, (accel.z / maxgforce) * maxsint16);
+    SDL_PrivateJoystickAxis(timestamp, joystick, 0, (accel.x / maxgforce) * maxsint16);
+    SDL_PrivateJoystickAxis(timestamp, joystick, 1, -(accel.y / maxgforce) * maxsint16);
+    SDL_PrivateJoystickAxis(timestamp, joystick, 2, (accel.z / maxgforce) * maxsint16);
 #endif /* SDL_JOYSTICK_iOS_ACCELEROMETER */
 }
 
@@ -908,6 +909,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         Uint8 hatstate = SDL_HAT_CENTERED;
         int i;
         int pause_button_index = 0;
+        Uint64 timestamp = SDL_GetTicksNS();
 
 #ifdef DEBUG_CONTROLLER_STATE
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
@@ -989,16 +991,16 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
                 dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadOne];
                 if (dpad.xAxis.value || dpad.yAxis.value) {
-                    SDL_PrivateJoystickTouchpad(joystick, 0, 0, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
+                    SDL_PrivateJoystickTouchpad(timestamp, joystick, 0, 0, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
                 } else {
-                    SDL_PrivateJoystickTouchpad(joystick, 0, 0, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
+                    SDL_PrivateJoystickTouchpad(timestamp, joystick, 0, 0, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
                 }
 
                 dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadTwo];
                 if (dpad.xAxis.value || dpad.yAxis.value) {
-                    SDL_PrivateJoystickTouchpad(joystick, 0, 1, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
+                    SDL_PrivateJoystickTouchpad(timestamp, joystick, 0, 1, SDL_PRESSED, (1.0f + dpad.xAxis.value) * 0.5f, 1.0f - (1.0f + dpad.yAxis.value) * 0.5f, 1.0f);
                 } else {
-                    SDL_PrivateJoystickTouchpad(joystick, 0, 1, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
+                    SDL_PrivateJoystickTouchpad(timestamp, joystick, 0, 1, SDL_RELEASED, 0.0f, 0.0f, 1.0f);
                 }
             }
 
@@ -1034,11 +1036,11 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             hatstate = IOS_MFIJoystickHatStateForDPad(gamepad.dpad);
 
             for (i = 0; i < SDL_arraysize(axes); i++) {
-                SDL_PrivateJoystickAxis(joystick, i, axes[i]);
+                SDL_PrivateJoystickAxis(timestamp, joystick, i, axes[i]);
             }
 
             for (i = 0; i < button_count; i++) {
-                SDL_PrivateJoystickButton(joystick, i, buttons[i]);
+                SDL_PrivateJoystickButton(timestamp, joystick, i, buttons[i]);
             }
 
 #ifdef ENABLE_MFI_SENSORS
@@ -1052,14 +1054,14 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                         data[0] = rate.x;
                         data[1] = rate.z;
                         data[2] = -rate.y;
-                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_GYRO, 0, data, 3);
+                        SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, 0, data, 3);
                     }
                     if (motion.hasGravityAndUserAcceleration) {
                         GCAcceleration accel = motion.acceleration;
                         data[0] = -accel.x * SDL_STANDARD_GRAVITY;
                         data[1] = -accel.y * SDL_STANDARD_GRAVITY;
                         data[2] = -accel.z * SDL_STANDARD_GRAVITY;
-                        SDL_PrivateJoystickSensor(joystick, SDL_SENSOR_ACCEL, 0, data, 3);
+                        SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, 0, data, 3);
                     }
                 }
             }
@@ -1091,7 +1093,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             hatstate = IOS_MFIJoystickHatStateForDPad(gamepad.dpad);
 
             for (i = 0; i < button_count; i++) {
-                SDL_PrivateJoystickButton(joystick, i, buttons[i]);
+                SDL_PrivateJoystickButton(timestamp, joystick, i, buttons[i]);
             }
 
             SDL_small_free(buttons, isstack);
@@ -1106,7 +1108,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             };
 
             for (i = 0; i < SDL_arraysize(axes); i++) {
-                SDL_PrivateJoystickAxis(joystick, i, axes[i]);
+                SDL_PrivateJoystickAxis(timestamp, joystick, i, axes[i]);
             }
 
             Uint8 buttons[joystick->nbuttons];
@@ -1127,19 +1129,19 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 #pragma clang diagnostic pop
 
             for (i = 0; i < button_count; i++) {
-                SDL_PrivateJoystickButton(joystick, i, buttons[i]);
+                SDL_PrivateJoystickButton(timestamp, joystick, i, buttons[i]);
             }
         }
 #endif /* TARGET_OS_TV */
 
         if (joystick->nhats > 0) {
-            SDL_PrivateJoystickHat(joystick, 0, hatstate);
+            SDL_PrivateJoystickHat(timestamp, joystick, 0, hatstate);
         }
 
         if (joystick->hwdata->uses_pause_handler) {
             for (i = 0; i < joystick->hwdata->num_pause_presses; i++) {
-                SDL_PrivateJoystickButton(joystick, pause_button_index, SDL_PRESSED);
-                SDL_PrivateJoystickButton(joystick, pause_button_index, SDL_RELEASED);
+                SDL_PrivateJoystickButton(timestamp, joystick, pause_button_index, SDL_PRESSED);
+                SDL_PrivateJoystickButton(timestamp, joystick, pause_button_index, SDL_RELEASED);
             }
             joystick->hwdata->num_pause_presses = 0;
         }

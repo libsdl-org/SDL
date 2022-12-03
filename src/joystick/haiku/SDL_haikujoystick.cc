@@ -189,6 +189,7 @@ extern "C"
         int16 *axes;
         uint8 *hats;
         uint32 buttons;
+        Uint64 timestamp = SDL_GetTicksNS();
 
         /* Set up data pointers */
         stick = joystick->hwdata->stick;
@@ -203,17 +204,17 @@ extern "C"
 
         /* Generate axis motion events */
         for (i = 0; i < joystick->naxes; ++i) {
-            SDL_PrivateJoystickAxis(joystick, i, axes[i]);
+            SDL_PrivateJoystickAxis(timestamp, joystick, i, axes[i]);
         }
 
         /* Generate hat change events */
         for (i = 0; i < joystick->nhats; ++i) {
-            SDL_PrivateJoystickHat(joystick, i, hat_map[hats[i]]);
+            SDL_PrivateJoystickHat(timestamp, joystick, i, hat_map[hats[i]]);
         }
 
         /* Generate button events */
         for (i = 0; i < joystick->nbuttons; ++i) {
-            SDL_PrivateJoystickButton(joystick, i, (buttons & 0x01));
+            SDL_PrivateJoystickButton(timestamp, joystick, i, (buttons & 0x01));
             buttons >>= 1;
         }
     }

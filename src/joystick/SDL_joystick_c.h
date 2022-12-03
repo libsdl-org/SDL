@@ -151,17 +151,17 @@ extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType 
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
-extern int SDL_PrivateJoystickAxis(SDL_Joystick *joystick,
+extern int SDL_PrivateJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
-extern int SDL_PrivateJoystickBall(SDL_Joystick *joystick,
+extern int SDL_PrivateJoystickBall(Uint64 timestamp, SDL_Joystick *joystick,
                                    Uint8 ball, Sint16 xrel, Sint16 yrel);
-extern int SDL_PrivateJoystickHat(SDL_Joystick *joystick,
+extern int SDL_PrivateJoystickHat(Uint64 timestamp, SDL_Joystick *joystick,
                                   Uint8 hat, Uint8 value);
-extern int SDL_PrivateJoystickButton(SDL_Joystick *joystick,
+extern int SDL_PrivateJoystickButton(Uint64 timestamp, SDL_Joystick *joystick,
                                      Uint8 button, Uint8 state);
-extern int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick,
+extern int SDL_PrivateJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick,
                                        int touchpad, int finger, Uint8 state, float x, float y, float pressure);
-extern int SDL_PrivateJoystickSensor(SDL_Joystick *joystick,
+extern int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick,
                                      SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values);
 extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);

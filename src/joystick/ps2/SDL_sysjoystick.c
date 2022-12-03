@@ -276,6 +276,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     int index = joystick->instance_id;
     struct JoyInfo *info = &joyInfo[index];
     int state = padGetState(info->port, info->slot);
+    Uint64 timestamp = SDL_GetTicksNS();
 
     if (state != PAD_STATE_DISCONN && state != PAD_STATE_EXECCMD && state != PAD_STATE_ERROR) {
         int ret = padRead(info->port, info->slot, &buttons); /* port, slot, buttons */
@@ -289,7 +290,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
                     previous = info->btns & mask;
                     current = pressed_buttons & mask;
                     if (previous != current) {
-                        SDL_PrivateJoystickButton(joystick, i, current ? SDL_PRESSED : SDL_RELEASED);
+                        SDL_PrivateJoystickButton(timestamp, joystick, i, current ? SDL_PRESSED : SDL_RELEASED);
                     }
                 }
             }
@@ -305,7 +306,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
                 previous_axis = info->analog_state[i];
                 current_axis = all_axis[i];
                 if (previous_axis != current_axis) {
-                    SDL_PrivateJoystickAxis(joystick, i, convert_u8_to_s16(current_axis));
+                    SDL_PrivateJoystickAxis(timestamp, joystick, i, convert_u8_to_s16(current_axis));
                 }
 
                 info->analog_state[i] = current_axis;

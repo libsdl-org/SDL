@@ -504,6 +504,7 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 {
     joystick_hwdata *hwdata;
     int i;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     if (joystick == NULL) {
         return;
@@ -519,13 +520,13 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
     }
 
     for (i = 0; i < hwdata->desc.naxes; ++i) {
-        SDL_PrivateJoystickAxis(joystick, i, hwdata->axes[i]);
+        SDL_PrivateJoystickAxis(timestamp, joystick, i, hwdata->axes[i]);
     }
     for (i = 0; i < hwdata->desc.nbuttons; ++i) {
-        SDL_PrivateJoystickButton(joystick, i, hwdata->buttons[i]);
+        SDL_PrivateJoystickButton(timestamp, joystick, i, hwdata->buttons[i]);
     }
     for (i = 0; i < hwdata->desc.nhats; ++i) {
-        SDL_PrivateJoystickHat(joystick, i, hwdata->hats[i]);
+        SDL_PrivateJoystickHat(timestamp, joystick, i, hwdata->hats[i]);
     }
 }
 

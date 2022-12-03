@@ -41,6 +41,7 @@
 #include <linux/joystick.h>
 
 #include "../../events/SDL_events_c.h"
+#include "../../core/linux/SDL_evdev.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../steam/SDL_steamcontroller.h"
@@ -1273,7 +1274,7 @@ static int LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enab
     return SDL_Unsupported();
 }
 
-static void HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
+static void HandleHat(Uint64 timestamp, SDL_Joystick *stick, int hatidx, int axis, int value)
 {
     const int hatnum = stick->hwdata->hats_indices[hatidx];
     struct hwdata_hat *the_hat;
@@ -1314,7 +1315,7 @@ static void HandleHat(SDL_Joystick *stick, int hatidx, int axis, int value)
     }
     if (value != the_hat->axis[axis]) {
         the_hat->axis[axis] = value;
-        SDL_PrivateJoystickHat(stick, hatnum,
+        SDL_PrivateJoystickHat(timestamp, stick, hatnum,
                                position_map[the_hat->axis[1]][the_hat->axis[0]]);
     }
 }
@@ -1357,7 +1358,7 @@ static int AxisCorrect(SDL_Joystick *joystick, int which, int value)
     return value;
 }
 
-static void PollAllValues(SDL_Joystick *joystick)
+static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
 {
     struct input_absinfo absinfo;
     unsigned long keyinfo[NBITS(KEY_MAX)];
@@ -1374,7 +1375,7 @@ static void PollAllValues(SDL_Joystick *joystick)
                 SDL_Log("Joystick : Re-read Axis %d (%d) val= %d\n",
                         joystick->hwdata->abs_map[i], i, absinfo.value);
 #endif
-                SDL_PrivateJoystickAxis(joystick,
+                SDL_PrivateJoystickAxis(timestamp, joystick,
                                         joystick->hwdata->abs_map[i],
                                         absinfo.value);
             }
@@ -1390,7 +1391,7 @@ static void PollAllValues(SDL_Joystick *joystick)
         if (joystick->hwdata->has_hat[hatidx]) {
             if (ioctl(joystick->hwdata->fd, EVIOCGABS(i), &absinfo) >= 0) {
                 const int hataxis = baseaxis % 2;
-                HandleHat(joystick, hatidx, hataxis, absinfo.value);
+                HandleHat(timestamp, joystick, hatidx, hataxis, absinfo.value);
             }
         }
     }
@@ -1405,7 +1406,7 @@ static void PollAllValues(SDL_Joystick *joystick)
                 SDL_Log("Joystick : Re-read Button %d (%d) val= %d\n",
                         joystick->hwdata->key_map[i], i, value);
 #endif
-                SDL_PrivateJoystickButton(joystick,
+                SDL_PrivateJoystickButton(timestamp, joystick,
                                           joystick->hwdata->key_map[i], value);
             }
         }
@@ -1420,27 +1421,29 @@ static void HandleInputEvents(SDL_Joystick *joystick)
     int i, len, code, hat_index;
 
     if (joystick->hwdata->fresh) {
-        PollAllValues(joystick);
+        PollAllValues(SDL_GetTicksNS(), joystick);
         joystick->hwdata->fresh = SDL_FALSE;
     }
 
     while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
         len /= sizeof(events[0]);
         for (i = 0; i < len; ++i) {
-            code = events[i].code;
+            struct input_event *event = &events[i];
+
+            code = event->code;
 
             /* If the kernel sent a SYN_DROPPED, we are supposed to ignore the
                rest of the packet (the end of it signified by a SYN_REPORT) */
             if (joystick->hwdata->recovering_from_dropped &&
-                ((events[i].type != EV_SYN) || (code != SYN_REPORT))) {
+                ((event->type != EV_SYN) || (code != SYN_REPORT))) {
                 continue;
             }
 
-            switch (events[i].type) {
+            switch (event->type) {
             case EV_KEY:
-                SDL_PrivateJoystickButton(joystick,
+                SDL_PrivateJoystickButton(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                           joystick->hwdata->key_map[code],
-                                          events[i].value);
+                                          event->value);
                 break;
             case EV_ABS:
                 switch (code) {
@@ -1454,14 +1457,14 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 case ABS_HAT3Y:
                     hat_index = (code - ABS_HAT0X) / 2;
                     if (joystick->hwdata->has_hat[hat_index]) {
-                        HandleHat(joystick, hat_index, code % 2, events[i].value);
+                        HandleHat(SDL_EVDEV_GetEventTimestamp(event), joystick, hat_index, code % 2, event->value);
                         break;
                     }
                 default:
-                    events[i].value = AxisCorrect(joystick, code, events[i].value);
-                    SDL_PrivateJoystickAxis(joystick,
+                    event->value = AxisCorrect(joystick, code, event->value);
+                    SDL_PrivateJoystickAxis(SDL_EVDEV_GetEventTimestamp(event), joystick,
                                             joystick->hwdata->abs_map[code],
-                                            events[i].value);
+                                            event->value);
                     break;
                 }
                 break;
@@ -1470,7 +1473,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 case REL_X:
                 case REL_Y:
                     code -= REL_X;
-                    HandleBall(joystick, code / 2, code % 2, events[i].value);
+                    HandleBall(joystick, code / 2, code % 2, event->value);
                     break;
                 default:
                     break;
@@ -1487,7 +1490,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 case SYN_REPORT:
                     if (joystick->hwdata->recovering_from_dropped) {
                         joystick->hwdata->recovering_from_dropped = SDL_FALSE;
-                        PollAllValues(joystick); /* try to sync up to current state now */
+                        PollAllValues(SDL_GetTicksNS(), joystick); /* try to sync up to current state now */
                     }
                     break;
                 default:
@@ -1509,6 +1512,7 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
 {
     struct js_event events[32];
     int i, len, code, hat_index;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     joystick->hwdata->fresh = SDL_FALSE;
     while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
@@ -1517,7 +1521,7 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
             switch (events[i].type) {
             case JS_EVENT_BUTTON:
                 code = joystick->hwdata->key_pam[events[i].number];
-                SDL_PrivateJoystickButton(joystick,
+                SDL_PrivateJoystickButton(timestamp, joystick,
                                           joystick->hwdata->key_map[code],
                                           events[i].value);
                 break;
@@ -1534,11 +1538,11 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
                 case ABS_HAT3Y:
                     hat_index = (code - ABS_HAT0X) / 2;
                     if (joystick->hwdata->has_hat[hat_index]) {
-                        HandleHat(joystick, hat_index, code % 2, events[i].value);
+                        HandleHat(timestamp, joystick, hat_index, code % 2, events[i].value);
                         break;
                     }
                 default:
-                    SDL_PrivateJoystickAxis(joystick,
+                    SDL_PrivateJoystickAxis(timestamp, joystick,
                                             joystick->hwdata->abs_map[code],
                                             events[i].value);
                     break;
@@ -1572,7 +1576,7 @@ static void LINUX_JoystickUpdate(SDL_Joystick *joystick)
         if (xrel || yrel) {
             joystick->hwdata->balls[i].axis[0] = 0;
             joystick->hwdata->balls[i].axis[1] = 0;
-            SDL_PrivateJoystickBall(joystick, (Uint8)i, xrel, yrel);
+            SDL_PrivateJoystickBall(0, joystick, (Uint8)i, xrel, yrel);
         }
     }
 }

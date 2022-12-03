@@ -165,21 +165,23 @@ static int HIDAPI_DriverLuna_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device
 
 static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_DriverLuna_Context *ctx, Uint8 *data, int size)
 {
+    Uint64 timestamp = SDL_GetTicksNS();
+
     if (ctx->last_state[1] != data[1]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_B, (data[1] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_X, (data[1] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_Y, (data[1] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[1] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[1] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[1] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_A, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_B, (data[1] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_X, (data[1] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_Y, (data[1] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data[1] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[1] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_BACK, (data[1] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_START, (data[1] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
     if (ctx->last_state[2] != data[2]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LUNA_MIC, (data[2] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[2] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[2] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[2] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_LUNA_MIC, (data[2] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[2] & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[2] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     if (ctx->last_state[3] != data[3]) {
@@ -220,23 +222,23 @@ static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_D
         default:
             break;
         }
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
     }
 
 #define READ_STICK_AXIS(offset) \
     (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         Sint16 axis = READ_STICK_AXIS(4);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
         axis = READ_STICK_AXIS(5);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
         axis = READ_STICK_AXIS(6);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
         axis = READ_STICK_AXIS(7);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
     }
 #undef READ_STICK_AXIS
 
@@ -244,9 +246,9 @@ static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_D
     (Sint16) HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16)
     {
         Sint16 axis = READ_TRIGGER_AXIS(8);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
         axis = READ_TRIGGER_AXIS(9);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
     }
 #undef READ_TRIGGER_AXIS
 
@@ -255,9 +257,11 @@ static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_D
 
 static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick, SDL_DriverLuna_Context *ctx, Uint8 *data, int size)
 {
+    Uint64 timestamp = SDL_GetTicksNS();
+
     if (size >= 2 && data[0] == 0x02) {
         /* Home button has dedicated report */
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x1) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[1] & 0x1) ? SDL_PRESSED : SDL_RELEASED);
         return;
     }
 
@@ -320,41 +324,41 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
         default:
             break;
         }
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, dpad_down);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, dpad_up);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, dpad_right);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
     }
 
     if (ctx->last_state[14] != data[14]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A, (data[14] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_B, (data[14] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_X, (data[14] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_Y, (data[14] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data[14] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[14] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_A, (data[14] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_B, (data[14] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_X, (data[14] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_Y, (data[14] & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, (data[14] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, (data[14] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
     if (ctx->last_state[15] != data[15]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_START, (data[15] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[15] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[15] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_START, (data[15] & 0x08) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_LEFTSTICK, (data[15] & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[15] & 0x40) ? SDL_PRESSED : SDL_RELEASED);
     }
     if (ctx->last_state[16] != data[16]) {
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_BACK, (data[16] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_LUNA_MIC, (data[16] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_BACK, (data[16] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_LUNA_MIC, (data[16] & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
 #define READ_STICK_AXIS(offset) \
     (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)data[offset], 0x00, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16))
     {
         Sint16 axis = READ_STICK_AXIS(2);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
         axis = READ_STICK_AXIS(4);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
         axis = READ_STICK_AXIS(6);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
         axis = READ_STICK_AXIS(8);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
     }
 #undef READ_STICK_AXIS
 
@@ -362,9 +366,9 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
     (Sint16) HIDAPI_RemapVal((float)((int)(((data[offset] | (data[offset + 1] << 8)) & 0x3ff) - 0x200)), 0x00 - 0x200, 0x3ff - 0x200, SDL_MIN_SINT16, SDL_MAX_SINT16)
     {
         Sint16 axis = READ_TRIGGER_AXIS(9);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
         axis = READ_TRIGGER_AXIS(11);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
+        SDL_PrivateJoystickAxis(timestamp, joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
     }
 #undef READ_TRIGGER_AXIS
 

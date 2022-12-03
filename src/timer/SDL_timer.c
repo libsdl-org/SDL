@@ -539,6 +539,16 @@ void SDL_TicksQuit(void)
 }
 
 Uint64
+SDL_GetTickStartNS(void)
+{
+    if (!tick_start) {
+        SDL_TicksInit();
+    }
+
+    return (tick_start * SDL_NS_PER_SECOND) / tick_freq;
+}
+
+Uint64
 SDL_GetTicksNS(void)
 {
     if (!tick_start) {

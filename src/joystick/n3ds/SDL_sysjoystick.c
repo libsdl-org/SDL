@@ -44,10 +44,10 @@
 */
 #define CORRECT_AXIS_Y(Y) CORRECT_AXIS_X(-Y)
 
-SDL_FORCE_INLINE void UpdateN3DSPressedButtons(SDL_Joystick *joystick);
-SDL_FORCE_INLINE void UpdateN3DSReleasedButtons(SDL_Joystick *joystick);
-SDL_FORCE_INLINE void UpdateN3DSCircle(SDL_Joystick *joystick);
-SDL_FORCE_INLINE void UpdateN3DSCStick(SDL_Joystick *joystick);
+static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 
 static int N3DS_JoystickInit(void)
 {
@@ -93,14 +93,15 @@ static int N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabl
 
 static void N3DS_JoystickUpdate(SDL_Joystick *joystick)
 {
-    UpdateN3DSPressedButtons(joystick);
-    UpdateN3DSReleasedButtons(joystick);
-    UpdateN3DSCircle(joystick);
-    UpdateN3DSCStick(joystick);
+    Uint64 timestamp = SDL_GetTicksNS();
+
+    UpdateN3DSPressedButtons(timestamp, joystick);
+    UpdateN3DSReleasedButtons(timestamp, joystick);
+    UpdateN3DSCircle(timestamp, joystick);
+    UpdateN3DSCStick(timestamp, joystick);
 }
 
-SDL_FORCE_INLINE void
-UpdateN3DSPressedButtons(SDL_Joystick *joystick)
+static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick)
 {
     static u32 previous_state = 0;
     u32 updated_down;
@@ -109,15 +110,14 @@ UpdateN3DSPressedButtons(SDL_Joystick *joystick)
     if (updated_down) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_down) {
-                SDL_PrivateJoystickButton(joystick, i, SDL_PRESSED);
+                SDL_PrivateJoystickButton(timestamp, joystick, i, SDL_PRESSED);
             }
         }
     }
     previous_state = current_state;
 }
 
-SDL_FORCE_INLINE void
-UpdateN3DSReleasedButtons(SDL_Joystick *joystick)
+static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick)
 {
     static u32 previous_state = 0;
     u32 updated_up;
@@ -126,45 +126,43 @@ UpdateN3DSReleasedButtons(SDL_Joystick *joystick)
     if (updated_up) {
         for (Uint8 i = 0; i < joystick->nbuttons; i++) {
             if (current_state & BIT(i) & updated_up) {
-                SDL_PrivateJoystickButton(joystick, i, SDL_RELEASED);
+                SDL_PrivateJoystickButton(timestamp, joystick, i, SDL_RELEASED);
             }
         }
     }
     previous_state = current_state;
 }
 
-SDL_FORCE_INLINE void
-UpdateN3DSCircle(SDL_Joystick *joystick)
+static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
 {
     static circlePosition previous_state = { 0, 0 };
     circlePosition current_state;
     hidCircleRead(&current_state);
     if (previous_state.dx != current_state.dx) {
-        SDL_PrivateJoystickAxis(joystick,
+        SDL_PrivateJoystickAxis(timestamp, joystick,
                                 0,
                                 CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
-        SDL_PrivateJoystickAxis(joystick,
+        SDL_PrivateJoystickAxis(timestamp, joystick,
                                 1,
                                 CORRECT_AXIS_Y(current_state.dy));
     }
     previous_state = current_state;
 }
 
-SDL_FORCE_INLINE void
-UpdateN3DSCStick(SDL_Joystick *joystick)
+static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick)
 {
     static circlePosition previous_state = { 0, 0 };
     circlePosition current_state;
     hidCstickRead(&current_state);
     if (previous_state.dx != current_state.dx) {
-        SDL_PrivateJoystickAxis(joystick,
+        SDL_PrivateJoystickAxis(timestamp, joystick,
                                 2,
                                 CORRECT_AXIS_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
-        SDL_PrivateJoystickAxis(joystick,
+        SDL_PrivateJoystickAxis(timestamp, joystick,
                                 3,
                                 CORRECT_AXIS_Y(current_state.dy));
     }
