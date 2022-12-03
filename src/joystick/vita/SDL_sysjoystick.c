@@ -224,6 +224,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     static unsigned char old_lt[] = { 0, 0, 0, 0 };
     static unsigned char old_rt[] = { 0, 0, 0, 0 };
     SceCtrlData *pad = NULL;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     int index = (int)SDL_JoystickInstanceID(joystick);
 
@@ -259,28 +260,28 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     // Axes
 
     if (old_lx[index] != lx) {
-        SDL_PrivateJoystickAxis(joystick, 0, analog_map[lx]);
+        SDL_PrivateJoystickAxis(timestamp, joystick, 0, analog_map[lx]);
         old_lx[index] = lx;
     }
     if (old_ly[index] != ly) {
-        SDL_PrivateJoystickAxis(joystick, 1, analog_map[ly]);
+        SDL_PrivateJoystickAxis(timestamp, joystick, 1, analog_map[ly]);
         old_ly[index] = ly;
     }
     if (old_rx[index] != rx) {
-        SDL_PrivateJoystickAxis(joystick, 2, analog_map[rx]);
+        SDL_PrivateJoystickAxis(timestamp, joystick, 2, analog_map[rx]);
         old_rx[index] = rx;
     }
     if (old_ry[index] != ry) {
-        SDL_PrivateJoystickAxis(joystick, 3, analog_map[ry]);
+        SDL_PrivateJoystickAxis(timestamp, joystick, 3, analog_map[ry]);
         old_ry[index] = ry;
     }
 
     if (old_lt[index] != lt) {
-        SDL_PrivateJoystickAxis(joystick, 4, analog_map[lt]);
+        SDL_PrivateJoystickAxis(timestamp, joystick, 4, analog_map[lt]);
         old_lt[index] = lt;
     }
     if (old_rt[index] != rt) {
-        SDL_PrivateJoystickAxis(joystick, 5, analog_map[rt]);
+        SDL_PrivateJoystickAxis(timestamp, joystick, 5, analog_map[rt]);
         old_rt[index] = rt;
     }
 
@@ -291,7 +292,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     if (changed) {
         for (i = 0; i < SDL_arraysize(ext_button_map); i++) {
             if (changed & ext_button_map[i]) {
-                SDL_PrivateJoystickButton(
+                SDL_PrivateJoystickButton(timestamp,
                     joystick, i,
                     (buttons & ext_button_map[i]) ? SDL_PRESSED : SDL_RELEASED);
             }

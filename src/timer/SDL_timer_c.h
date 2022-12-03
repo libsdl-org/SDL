@@ -33,6 +33,7 @@ extern void SDL_TicksInit(void);
 extern void SDL_TicksQuit(void);
 extern int SDL_TimerInit(void);
 extern void SDL_TimerQuit(void);
+extern Uint64 SDL_GetTickStartNS(void);
 
 #endif /* SDL_timer_c_h_ */
 

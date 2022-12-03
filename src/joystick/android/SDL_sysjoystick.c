@@ -202,7 +202,7 @@ int Android_OnPadDown(int device_id, int keycode)
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_PrivateJoystickButton(item->joystick, button, SDL_PRESSED);
+            SDL_PrivateJoystickButton(0, item->joystick, button, SDL_PRESSED);
         } else {
             SDL_SendKeyboardKey(0, SDL_PRESSED, button_to_scancode(button));
         }
@@ -221,7 +221,7 @@ int Android_OnPadUp(int device_id, int keycode)
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_PrivateJoystickButton(item->joystick, button, SDL_RELEASED);
+            SDL_PrivateJoystickButton(0, item->joystick, button, SDL_RELEASED);
         } else {
             SDL_SendKeyboardKey(0, SDL_RELEASED, button_to_scancode(button));
         }
@@ -240,7 +240,7 @@ int Android_OnJoy(int device_id, int axis, float value)
     SDL_LockJoysticks();
     item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
-        SDL_PrivateJoystickAxis(item->joystick, axis, (Sint16)(32767. * value));
+        SDL_PrivateJoystickAxis(0, item->joystick, axis, (Sint16)(32767. * value));
     }
     SDL_UnlockJoysticks();
 
@@ -276,16 +276,16 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
             dpad_delta = (dpad_state ^ item->dpad_state);
             if (dpad_delta) {
                 if (dpad_delta & DPAD_UP_MASK) {
-                    SDL_PrivateJoystickButton(item->joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_UP, (dpad_state & DPAD_UP_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_DOWN_MASK) {
-                    SDL_PrivateJoystickButton(item->joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_DOWN, (dpad_state & DPAD_DOWN_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_LEFT_MASK) {
-                    SDL_PrivateJoystickButton(item->joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, (dpad_state & DPAD_LEFT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 if (dpad_delta & DPAD_RIGHT_MASK) {
-                    SDL_PrivateJoystickButton(item->joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                    SDL_PrivateJoystickButton(0, item->joystick, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, (dpad_state & DPAD_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
                 }
                 item->dpad_state = dpad_state;
             }
@@ -637,6 +637,7 @@ static void ANDROID_JoystickUpdate(SDL_Joystick *joystick)
         int i;
         Sint16 value;
         float values[3];
+        Uint64 timestamp = SDL_GetTicksNS();
 
         if (Android_JNI_GetAccelerometerValues(values)) {
             for (i = 0; i < 3; i++) {
@@ -647,7 +648,7 @@ static void ANDROID_JoystickUpdate(SDL_Joystick *joystick)
                 }
 
                 value = (Sint16)(values[i] * 32767.0f);
-                SDL_PrivateJoystickAxis(item->joystick, i, value);
+                SDL_PrivateJoystickAxis(timestamp, item->joystick, i, value);
             }
         }
     }

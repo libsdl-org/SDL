@@ -835,6 +835,8 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
         UINT32 i;
         SDL_bool all_zero = SDL_TRUE;
 
+        hwdata->timestamp = timestamp;
+
         /* The axes are all zero when the application loses focus */
         for (i = 0; i < naxes; ++i) {
             if (axes[i] != 0.0f) {
@@ -845,17 +847,18 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
         if (all_zero) {
             SDL_PrivateJoystickForceRecentering(joystick);
         } else {
+            /* FIXME: What units are the timestamp we get from GetCurrentReading()? */
+            timestamp = SDL_GetTicksNS();
             for (i = 0; i < nbuttons; ++i) {
-                SDL_PrivateJoystickButton(joystick, (Uint8)i, buttons[i]);
+                SDL_PrivateJoystickButton(timestamp, joystick, (Uint8)i, buttons[i]);
             }
             for (i = 0; i < nhats; ++i) {
-                SDL_PrivateJoystickHat(joystick, (Uint8)i, ConvertHatValue(hats[i]));
+                SDL_PrivateJoystickHat(timestamp, joystick, (Uint8)i, ConvertHatValue(hats[i]));
             }
             for (i = 0; i < naxes; ++i) {
-                SDL_PrivateJoystickAxis(joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
+                SDL_PrivateJoystickAxis(timestamp, joystick, (Uint8)i, (Sint16)((int)(axes[i] * 65535) - 32768));
             }
         }
-        hwdata->timestamp = timestamp;
     }
 
     SDL_stack_free(buttons);

@@ -1380,29 +1380,30 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
 void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
 {
     int i, j;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     CHECK_JOYSTICK_MAGIC(joystick, );
 
     /* Tell the app that everything is centered/unpressed... */
     for (i = 0; i < joystick->naxes; i++) {
         if (joystick->axes[i].has_initial_value) {
-            SDL_PrivateJoystickAxis(joystick, i, joystick->axes[i].zero);
+            SDL_PrivateJoystickAxis(timestamp, joystick, i, joystick->axes[i].zero);
         }
     }
 
     for (i = 0; i < joystick->nbuttons; i++) {
-        SDL_PrivateJoystickButton(joystick, i, SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, i, SDL_RELEASED);
     }
 
     for (i = 0; i < joystick->nhats; i++) {
-        SDL_PrivateJoystickHat(joystick, i, SDL_HAT_CENTERED);
+        SDL_PrivateJoystickHat(timestamp, joystick, i, SDL_HAT_CENTERED);
     }
 
     for (i = 0; i < joystick->ntouchpads; i++) {
         SDL_JoystickTouchpadInfo *touchpad = &joystick->touchpads[i];
 
         for (j = 0; j < touchpad->nfingers; ++j) {
-            SDL_PrivateJoystickTouchpad(joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
+            SDL_PrivateJoystickTouchpad(timestamp, joystick, i, j, SDL_RELEASED, 0.0f, 0.0f, 0.0f);
         }
     }
 }
@@ -1449,7 +1450,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
     }
 }
 
-int SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
+int SDL_PrivateJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, Sint16 value)
 {
     int posted;
     SDL_JoystickAxisInfo *info;
@@ -1484,7 +1485,7 @@ int SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
         }
         info->sent_initial_value = SDL_TRUE;
         info->sending_initial_value = SDL_TRUE;
-        SDL_PrivateJoystickAxis(joystick, axis, info->initial_value);
+        SDL_PrivateJoystickAxis(timestamp, joystick, axis, info->initial_value);
         info->sending_initial_value = SDL_FALSE;
     }
 
@@ -1508,7 +1509,7 @@ int SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
     if (SDL_GetEventState(SDL_JOYAXISMOTION) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_JOYAXISMOTION;
-        event.common.timestamp = 0;
+        event.common.timestamp = timestamp;
         event.jaxis.which = joystick->instance_id;
         event.jaxis.axis = axis;
         event.jaxis.value = value;
@@ -1518,7 +1519,7 @@ int SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
     return posted;
 }
 
-int SDL_PrivateJoystickHat(SDL_Joystick *joystick, Uint8 hat, Uint8 value)
+int SDL_PrivateJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uint8 value)
 {
     int posted;
 
@@ -1552,7 +1553,7 @@ int SDL_PrivateJoystickHat(SDL_Joystick *joystick, Uint8 hat, Uint8 value)
     if (SDL_GetEventState(SDL_JOYHATMOTION) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_JOYHATMOTION;
-        event.common.timestamp = 0;
+        event.common.timestamp = timestamp;
         event.jhat.which = joystick->instance_id;
         event.jhat.hat = hat;
         event.jhat.value = value;
@@ -1562,7 +1563,7 @@ int SDL_PrivateJoystickHat(SDL_Joystick *joystick, Uint8 hat, Uint8 value)
     return posted;
 }
 
-int SDL_PrivateJoystickBall(SDL_Joystick *joystick, Uint8 ball,
+int SDL_PrivateJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball,
                             Sint16 xrel, Sint16 yrel)
 {
     int posted;
@@ -1591,7 +1592,7 @@ int SDL_PrivateJoystickBall(SDL_Joystick *joystick, Uint8 ball,
     if (SDL_GetEventState(SDL_JOYBALLMOTION) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_JOYBALLMOTION;
-        event.common.timestamp = 0;
+        event.common.timestamp = timestamp;
         event.jball.which = joystick->instance_id;
         event.jball.ball = ball;
         event.jball.xrel = xrel;
@@ -1602,7 +1603,7 @@ int SDL_PrivateJoystickBall(SDL_Joystick *joystick, Uint8 ball,
     return posted;
 }
 
-int SDL_PrivateJoystickButton(SDL_Joystick *joystick, Uint8 button, Uint8 state)
+int SDL_PrivateJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, Uint8 state)
 {
     int posted;
 #if !SDL_EVENTS_DISABLED
@@ -1621,7 +1622,6 @@ int SDL_PrivateJoystickButton(SDL_Joystick *joystick, Uint8 button, Uint8 state)
         /* Invalid state -- bail */
         return 0;
     }
-    event.common.timestamp = 0;
 #endif /* !SDL_EVENTS_DISABLED */
 
     SDL_AssertJoysticksLocked();
@@ -1649,6 +1649,7 @@ int SDL_PrivateJoystickButton(SDL_Joystick *joystick, Uint8 button, Uint8 state)
     posted = 0;
 #if !SDL_EVENTS_DISABLED
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+        event.common.timestamp = timestamp;
         event.jbutton.which = joystick->instance_id;
         event.jbutton.button = button;
         event.jbutton.state = state;
@@ -2868,7 +2869,7 @@ SDL_JoystickPowerLevel SDL_JoystickCurrentPowerLevel(SDL_Joystick *joystick)
     return joystick->epowerlevel;
 }
 
-int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure)
+int SDL_PrivateJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure)
 {
     SDL_JoystickTouchpadInfo *touchpad_info;
     SDL_JoystickTouchpadFingerInfo *finger_info;
@@ -2946,7 +2947,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     if (SDL_GetEventState(event_type) == SDL_ENABLE) {
         SDL_Event event;
         event.type = event_type;
-        event.common.timestamp = 0;
+        event.common.timestamp = timestamp;
         event.ctouchpad.which = joystick->instance_id;
         event.ctouchpad.touchpad = touchpad;
         event.ctouchpad.finger = finger;
@@ -2959,7 +2960,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     return posted;
 }
 
-int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values)
+int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values)
 {
     int i;
     int posted = 0;
@@ -2987,7 +2988,7 @@ int SDL_PrivateJoystickSensor(SDL_Joystick *joystick, SDL_SensorType type, Uint6
                 if (SDL_GetEventState(SDL_CONTROLLERSENSORUPDATE) == SDL_ENABLE) {
                     SDL_Event event;
                     event.type = SDL_CONTROLLERSENSORUPDATE;
-                    event.common.timestamp = 0;
+                    event.common.timestamp = timestamp;
                     event.csensor.which = joystick->instance_id;
                     event.csensor.sensor = type;
                     num_values = SDL_min(num_values, SDL_arraysize(event.csensor.data));

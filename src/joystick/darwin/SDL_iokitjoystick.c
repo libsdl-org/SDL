@@ -927,6 +927,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     recElement *element;
     SInt32 value, range;
     int i, goodRead = SDL_FALSE;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     if (device == NULL) {
         return;
@@ -945,7 +946,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     while (element) {
         goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
         if (goodRead) {
-            SDL_PrivateJoystickAxis(joystick, i, value);
+            SDL_PrivateJoystickAxis(timestamp, joystick, i, value);
         }
 
         element = element->pNext;
@@ -960,7 +961,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
             if (value > 1) { /* handle pressure-sensitive buttons */
                 value = 1;
             }
-            SDL_PrivateJoystickButton(joystick, i, value);
+            SDL_PrivateJoystickButton(timestamp, joystick, i, value);
         }
 
         element = element->pNext;
@@ -1016,7 +1017,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
                 break;
             }
 
-            SDL_PrivateJoystickHat(joystick, i, pos);
+            SDL_PrivateJoystickHat(timestamp, joystick, i, pos);
         }
 
         element = element->pNext;

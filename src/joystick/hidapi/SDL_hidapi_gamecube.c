@@ -233,6 +233,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     SDL_Joystick *joystick;
     Uint8 i, v;
     Sint16 axis_value;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     if (size != 10) {
         return; /* How do we handle this packet? */
@@ -249,10 +250,11 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         return;
     }
 
-#define READ_BUTTON(off, flag, button) \
-    SDL_PrivateJoystickButton(         \
-        joystick,                      \
-        RemapButton(ctx, button),      \
+#define READ_BUTTON(off, flag, button)  \
+    SDL_PrivateJoystickButton(          \
+        timestamp,                      \
+        joystick,                       \
+        RemapButton(ctx, button),       \
         (packet[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
     READ_BUTTON(1, 0x02, 0) /* A */
     READ_BUTTON(1, 0x04, 1) /* B */
@@ -272,15 +274,16 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     READ_BUTTON(1, 0x10, 11) /* TRIGGERLEFT */
 #undef READ_BUTTON
 
-#define READ_AXIS(off, axis, invert)                                                                                                                                               \
-    v = invert ? (0xff - packet[off]) : packet[off];                                                                                                                               \
-    if (v < ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                                                                                                                     \
-        ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = v;                                                                                                                     \
-    if (v > ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                                                                                                                     \
-        ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = v;                                                                                                                     \
+#define READ_AXIS(off, axis, invert)                                                \
+    v = invert ? (0xff - packet[off]) : packet[off];                                \
+    if (v < ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                      \
+        ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = v;                      \
+    if (v > ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                      \
+        ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = v;                      \
     axis_value = (Sint16)HIDAPI_RemapVal(v, ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis], ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
-    SDL_PrivateJoystickAxis(                                                                                                                                                       \
-        joystick,                                                                                                                                                                  \
+    SDL_PrivateJoystickAxis(                                                        \
+        timestamp,                                                                  \
+        joystick,                                                                   \
         axis, axis_value);
     READ_AXIS(3, SDL_CONTROLLER_AXIS_LEFTX, 0)
     READ_AXIS(4, SDL_CONTROLLER_AXIS_LEFTY, 0)
@@ -297,6 +300,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
     Uint8 *curSlot;
     Uint8 i;
     Sint16 axis_value;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     if (size < 37 || packet[0] != 0x21) {
         return; /* Nothing to do right now...? */
@@ -329,10 +333,11 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
             continue;
         }
 
-#define READ_BUTTON(off, flag, button) \
-    SDL_PrivateJoystickButton(         \
-        joystick,                      \
-        RemapButton(ctx, button),      \
+#define READ_BUTTON(off, flag, button)  \
+    SDL_PrivateJoystickButton(          \
+        timestamp,                      \
+        joystick,                       \
+        RemapButton(ctx, button),       \
         (curSlot[off] & flag) ? SDL_PRESSED : SDL_RELEASED);
         READ_BUTTON(1, 0x01, 0) /* A */
         READ_BUTTON(1, 0x04, 1) /* B */
@@ -352,14 +357,15 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
         READ_BUTTON(2, 0x08, 11) /* TRIGGERLEFT */
 #undef READ_BUTTON
 
-#define READ_AXIS(off, axis)                                                                                                                                                                  \
-    if (curSlot[off] < ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                                                                                                                     \
-        ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = curSlot[off];                                                                                                                     \
-    if (curSlot[off] > ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                                                                                                                     \
-        ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = curSlot[off];                                                                                                                     \
+#define READ_AXIS(off, axis)                                                                \
+    if (curSlot[off] < ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                   \
+        ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = curSlot[off];                   \
+    if (curSlot[off] > ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis])                   \
+        ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis] = curSlot[off];                   \
     axis_value = (Sint16)HIDAPI_RemapVal(curSlot[off], ctx->min_axis[i * SDL_CONTROLLER_AXIS_MAX + axis], ctx->max_axis[i * SDL_CONTROLLER_AXIS_MAX + axis], SDL_MIN_SINT16, SDL_MAX_SINT16); \
-    SDL_PrivateJoystickAxis(                                                                                                                                                                  \
-        joystick,                                                                                                                                                                             \
+    SDL_PrivateJoystickAxis(                                                                \
+        timestamp,                                                                          \
+        joystick,                                                                           \
         axis, axis_value);
         READ_AXIS(3, SDL_CONTROLLER_AXIS_LEFTX)
         READ_AXIS(4, SDL_CONTROLLER_AXIS_LEFTY)

@@ -206,8 +206,8 @@ static void SDLCALL SDL_GameControllerIgnoreDevicesExceptChanged(void *userdata,
 }
 
 static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing, SDL_ControllerMappingPriority priority);
-static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
-static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state);
+static int SDL_PrivateGameControllerAxis(Uint64 timestamp, SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
+static int SDL_PrivateGameControllerButton(Uint64 timestamp, SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state);
 
 static SDL_bool HasSameOutput(SDL_ExtendedGameControllerBind *a, SDL_ExtendedGameControllerBind *b)
 {
@@ -222,16 +222,16 @@ static SDL_bool HasSameOutput(SDL_ExtendedGameControllerBind *a, SDL_ExtendedGam
     }
 }
 
-static void ResetOutput(SDL_GameController *gamecontroller, SDL_ExtendedGameControllerBind *bind)
+static void ResetOutput(Uint64 timestamp, SDL_GameController *gamecontroller, SDL_ExtendedGameControllerBind *bind)
 {
     if (bind->outputType == SDL_CONTROLLER_BINDTYPE_AXIS) {
-        SDL_PrivateGameControllerAxis(gamecontroller, bind->output.axis.axis, 0);
+        SDL_PrivateGameControllerAxis(timestamp, gamecontroller, bind->output.axis.axis, 0);
     } else {
-        SDL_PrivateGameControllerButton(gamecontroller, bind->output.button, SDL_RELEASED);
+        SDL_PrivateGameControllerButton(timestamp, gamecontroller, bind->output.button, SDL_RELEASED);
     }
 }
 
-static void HandleJoystickAxis(SDL_GameController *gamecontroller, int axis, int value)
+static void HandleJoystickAxis(Uint64 timestamp, SDL_GameController *gamecontroller, int axis, int value)
 {
     int i;
     SDL_ExtendedGameControllerBind *last_match;
@@ -262,7 +262,7 @@ static void HandleJoystickAxis(SDL_GameController *gamecontroller, int axis, int
 
     if (last_match && (match == NULL || !HasSameOutput(last_match, match))) {
         /* Clear the last input that this axis generated */
-        ResetOutput(gamecontroller, last_match);
+        ResetOutput(timestamp, gamecontroller, last_match);
     }
 
     if (match) {
@@ -271,7 +271,7 @@ static void HandleJoystickAxis(SDL_GameController *gamecontroller, int axis, int
                 float normalized_value = (float)(value - match->input.axis.axis_min) / (match->input.axis.axis_max - match->input.axis.axis_min);
                 value = match->output.axis.axis_min + (int)(normalized_value * (match->output.axis.axis_max - match->output.axis.axis_min));
             }
-            SDL_PrivateGameControllerAxis(gamecontroller, match->output.axis.axis, (Sint16)value);
+            SDL_PrivateGameControllerAxis(timestamp, gamecontroller, match->output.axis.axis, (Sint16)value);
         } else {
             Uint8 state;
             int threshold = match->input.axis.axis_min + (match->input.axis.axis_max - match->input.axis.axis_min) / 2;
@@ -280,13 +280,13 @@ static void HandleJoystickAxis(SDL_GameController *gamecontroller, int axis, int
             } else {
                 state = (value >= threshold) ? SDL_PRESSED : SDL_RELEASED;
             }
-            SDL_PrivateGameControllerButton(gamecontroller, match->output.button, state);
+            SDL_PrivateGameControllerButton(timestamp, gamecontroller, match->output.button, state);
         }
     }
     gamecontroller->last_match_axis[axis] = match;
 }
 
-static void HandleJoystickButton(SDL_GameController *gamecontroller, int button, Uint8 state)
+static void HandleJoystickButton(Uint64 timestamp, SDL_GameController *gamecontroller, int button, Uint8 state)
 {
     int i;
 
@@ -298,16 +298,16 @@ static void HandleJoystickButton(SDL_GameController *gamecontroller, int button,
             button == binding->input.button) {
             if (binding->outputType == SDL_CONTROLLER_BINDTYPE_AXIS) {
                 int value = state ? binding->output.axis.axis_max : binding->output.axis.axis_min;
-                SDL_PrivateGameControllerAxis(gamecontroller, binding->output.axis.axis, (Sint16)value);
+                SDL_PrivateGameControllerAxis(timestamp, gamecontroller, binding->output.axis.axis, (Sint16)value);
             } else {
-                SDL_PrivateGameControllerButton(gamecontroller, binding->output.button, state);
+                SDL_PrivateGameControllerButton(timestamp, gamecontroller, binding->output.button, state);
             }
             break;
         }
     }
 }
 
-static void HandleJoystickHat(SDL_GameController *gamecontroller, int hat, Uint8 value)
+static void HandleJoystickHat(Uint64 timestamp, SDL_GameController *gamecontroller, int hat, Uint8 value)
 {
     int i;
     Uint8 last_mask, changed_mask;
@@ -322,12 +322,12 @@ static void HandleJoystickHat(SDL_GameController *gamecontroller, int hat, Uint8
             if ((changed_mask & binding->input.hat.hat_mask) != 0) {
                 if (value & binding->input.hat.hat_mask) {
                     if (binding->outputType == SDL_CONTROLLER_BINDTYPE_AXIS) {
-                        SDL_PrivateGameControllerAxis(gamecontroller, binding->output.axis.axis, (Sint16)binding->output.axis.axis_max);
+                        SDL_PrivateGameControllerAxis(timestamp, gamecontroller, binding->output.axis.axis, (Sint16)binding->output.axis.axis_max);
                     } else {
-                        SDL_PrivateGameControllerButton(gamecontroller, binding->output.button, SDL_PRESSED);
+                        SDL_PrivateGameControllerButton(timestamp, gamecontroller, binding->output.button, SDL_PRESSED);
                     }
                 } else {
-                    ResetOutput(gamecontroller, binding);
+                    ResetOutput(timestamp, gamecontroller, binding);
                 }
             }
         }
@@ -345,18 +345,19 @@ static void RecenterGameController(SDL_GameController *gamecontroller)
 {
     SDL_GameControllerButton button;
     SDL_GameControllerAxis axis;
+    Uint64 timestamp = SDL_GetTicksNS();
 
     CHECK_GAMECONTROLLER_MAGIC(gamecontroller, );
 
     for (button = (SDL_GameControllerButton)0; button < SDL_CONTROLLER_BUTTON_MAX; button++) {
         if (SDL_GameControllerGetButton(gamecontroller, button)) {
-            SDL_PrivateGameControllerButton(gamecontroller, button, SDL_RELEASED);
+            SDL_PrivateGameControllerButton(timestamp, gamecontroller, button, SDL_RELEASED);
         }
     }
 
     for (axis = (SDL_GameControllerAxis)0; axis < SDL_CONTROLLER_AXIS_MAX; axis++) {
         if (SDL_GameControllerGetAxis(gamecontroller, axis) != 0) {
-            SDL_PrivateGameControllerAxis(gamecontroller, axis, 0);
+            SDL_PrivateGameControllerAxis(timestamp, gamecontroller, axis, 0);
         }
     }
 }
@@ -372,7 +373,7 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event *eve
         SDL_GameController *controllerlist = SDL_gamecontrollers;
         while (controllerlist) {
             if (controllerlist->joystick->instance_id == event->jaxis.which) {
-                HandleJoystickAxis(controllerlist, event->jaxis.axis, event->jaxis.value);
+                HandleJoystickAxis(event->common.timestamp, controllerlist, event->jaxis.axis, event->jaxis.value);
                 break;
             }
             controllerlist = controllerlist->next;
@@ -384,7 +385,7 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event *eve
         SDL_GameController *controllerlist = SDL_gamecontrollers;
         while (controllerlist) {
             if (controllerlist->joystick->instance_id == event->jbutton.which) {
-                HandleJoystickButton(controllerlist, event->jbutton.button, event->jbutton.state);
+                HandleJoystickButton(event->common.timestamp, controllerlist, event->jbutton.button, event->jbutton.state);
                 break;
             }
             controllerlist = controllerlist->next;
@@ -395,7 +396,7 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event *eve
         SDL_GameController *controllerlist = SDL_gamecontrollers;
         while (controllerlist) {
             if (controllerlist->joystick->instance_id == event->jhat.which) {
-                HandleJoystickHat(controllerlist, event->jhat.hat, event->jhat.value);
+                HandleJoystickHat(event->common.timestamp, controllerlist, event->jhat.hat, event->jhat.value);
                 break;
             }
             controllerlist = controllerlist->next;
@@ -2857,7 +2858,7 @@ void SDL_GameControllerQuitMappings(void)
 /*
  * Event filter to transform joystick events into appropriate game controller ones
  */
-static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value)
+static int SDL_PrivateGameControllerAxis(Uint64 timestamp, SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value)
 {
     int posted;
 
@@ -2869,7 +2870,7 @@ static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL
     if (SDL_GetEventState(SDL_CONTROLLERAXISMOTION) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_CONTROLLERAXISMOTION;
-        event.common.timestamp = 0;
+        event.common.timestamp = timestamp;
         event.caxis.which = gamecontroller->joystick->instance_id;
         event.caxis.axis = axis;
         event.caxis.value = value;
@@ -2882,7 +2883,7 @@ static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL
 /*
  * Event filter to transform joystick events into appropriate game controller ones
  */
-static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state)
+static int SDL_PrivateGameControllerButton(Uint64 timestamp, SDL_GameController *gamecontroller, SDL_GameControllerButton button, Uint8 state)
 {
     int posted;
 #if !SDL_EVENTS_DISABLED
@@ -2905,7 +2906,6 @@ static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, S
         /* Invalid state -- bail */
         return 0;
     }
-    event.common.timestamp = 0;
 #endif /* !SDL_EVENTS_DISABLED */
 
     if (button == SDL_CONTROLLER_BUTTON_GUIDE) {
@@ -2930,6 +2930,7 @@ static int SDL_PrivateGameControllerButton(SDL_GameController *gamecontroller, S
     posted = 0;
 #if !SDL_EVENTS_DISABLED
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+        event.common.timestamp = timestamp;
         event.cbutton.which = gamecontroller->joystick->instance_id;
         event.cbutton.button = button;
         event.cbutton.state = state;
@@ -2986,7 +2987,7 @@ void SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick)
     SDL_GameController *controllerlist = SDL_gamecontrollers;
     while (controllerlist) {
         if (controllerlist->joystick == joystick) {
-            SDL_PrivateGameControllerButton(controllerlist, SDL_CONTROLLER_BUTTON_GUIDE, SDL_RELEASED);
+            SDL_PrivateGameControllerButton(0, controllerlist, SDL_CONTROLLER_BUTTON_GUIDE, SDL_RELEASED);
             break;
         }
         controllerlist = controllerlist->next;
