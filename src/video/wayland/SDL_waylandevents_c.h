@@ -133,6 +133,9 @@ struct SDL_WaylandInput
 
         enum SDL_WaylandAxisEvent y_axis_type;
         float y;
+
+        /* Event timestamp in milliseconds */
+        Uint32 timestamp;
     } pointer_curr_axis_info;
 
     SDL_WaylandKeyboardRepeat keyboard_repeat;
@@ -145,6 +148,8 @@ struct SDL_WaylandInput
     SDL_bool warp_emulation_prohibited;
     SDL_bool keyboard_is_virtual;
 };
+
+extern Uint64 Wayland_GetEventTimestamp(Uint32 wayland_timestamp);
 
 extern void Wayland_PumpEvents(_THIS);
 extern void Wayland_SendWakeupEvent(_THIS, SDL_Window *window);
