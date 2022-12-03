@@ -173,13 +173,44 @@ static struct wl_surface *touch_surface(SDL_TouchID id)
     return NULL;
 }
 
+Uint64 Wayland_GetEventTimestamp(Uint32 wayland_timestamp)
+{
+    static Uint32 last;
+    static Uint64 timestamp_offset;
+    Uint64 nsTimestamp = SDL_MS_TO_NS(wayland_timestamp);
+    const Uint64 now = SDL_GetTicksNS();
+
+    if (!nsTimestamp) {
+        return 0;
+    }
+
+    if (nsTimestamp < last) {
+        /* 32-bit timer rollover, bump the offset */
+        timestamp_offset += SDL_MS_TO_NS(0x100000000LLU);
+    }
+    last = nsTimestamp;
+
+    if (!timestamp_offset) {
+        timestamp_offset = (now - nsTimestamp);
+    }
+    nsTimestamp += timestamp_offset;
+
+    if (nsTimestamp > now) {
+        timestamp_offset -= (nsTimestamp - now);
+        nsTimestamp = now;
+    }
+
+    return nsTimestamp;
+}
+
 /* Returns SDL_TRUE if a key repeat event was due */
 static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, uint32_t elapsed)
 {
     SDL_bool ret = SDL_FALSE;
     while ((elapsed - repeat_info->next_repeat_ms) < 0x80000000U) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
-            SDL_SendKeyboardKey(0, SDL_PRESSED, repeat_info->scancode);
+            const Uint32 timestamp = repeat_info->wl_press_time + repeat_info->next_repeat_ms;
+            SDL_SendKeyboardKey(Wayland_GetEventTimestamp(timestamp), SDL_PRESSED, repeat_info->scancode);
         }
         if (repeat_info->text[0]) {
             SDL_SendKeyboardText(repeat_info->text);
@@ -409,7 +440,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
         const float sy_f = (float)wl_fixed_to_double(sy_w);
         const int sx = (int)SDL_floorf(sx_f * window->pointer_scale_x);
         const int sy = (int)SDL_floorf(sy_f * window->pointer_scale_y);
-        SDL_SendMouseMotion(0, window->sdlwindow, 0, 0, sx, sy);
+        SDL_SendMouseMotion(Wayland_GetEventTimestamp(time), window->sdlwindow, 0, 0, sx, sy);
     }
 }
 
@@ -444,8 +475,12 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
         SDL_SetMouseFocus(window->sdlwindow);
         /* In the case of e.g. a pointer confine warp, we may receive an enter
          * event with no following motion event, but with the new coordinates
-         * as part of the enter event. */
-        pointer_handle_motion(data, pointer, serial, sx_w, sy_w);
+         * as part of the enter event.
+         *
+         * FIXME: This causes a movement event with an anomalous timestamp when
+         *        the cursor enters the window.
+         */
+        pointer_handle_motion(data, pointer, 0, sx_w, sy_w);
         /* If the cursor was changed while our window didn't have pointer
          * focus, we might need to trigger another call to
          * wl_pointer_set_cursor() for the new cursor to be displayed. */
@@ -599,7 +634,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
         Wayland_data_device_set_serial(input->data_device, serial);
         Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
 
-        SDL_SendMouseButton(0, window->sdlwindow, 0,
+        SDL_SendMouseButton(Wayland_GetEventTimestamp(time), window->sdlwindow, 0,
                             state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
     }
 }
@@ -636,7 +671,7 @@ static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
         x /= WAYLAND_WHEEL_AXIS_UNIT;
         y /= WAYLAND_WHEEL_AXIS_UNIT;
 
-        SDL_SendMouseWheel(0, window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(Wayland_GetEventTimestamp(time), window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 
@@ -719,6 +754,7 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
     struct SDL_WaylandInput *input = data;
 
     if (wl_seat_get_version(input->seat) >= 5) {
+        input->pointer_curr_axis_info.timestamp = time;
         pointer_handle_axis_common(input, AXIS_EVENT_CONTINUOUS, axis, value);
     } else {
         pointer_handle_axis_common_v1(input, time, axis, value);
@@ -765,7 +801,8 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     SDL_memset(&input->pointer_curr_axis_info, 0, sizeof input->pointer_curr_axis_info);
 
     if (x != 0.0f || y != 0.0f) {
-        SDL_SendMouseWheel(0, window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(Wayland_GetEventTimestamp(input->pointer_curr_axis_info.timestamp),
+                           window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 
@@ -810,8 +847,8 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_axis_value120  /* Version 8 */
 };
 
-static void touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
-                               unsigned int timestamp, struct wl_surface *surface,
+static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t serial,
+                               uint32_t timestamp, struct wl_surface *surface,
                                int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
@@ -822,11 +859,12 @@ static void touch_handler_down(void *data, struct wl_touch *touch, unsigned int 
 
     touch_add(id, x, y, surface);
 
-    SDL_SendTouch(0, (SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
+    SDL_SendTouch(Wayland_GetEventTimestamp(timestamp), (SDL_TouchID)(intptr_t)touch,
+                  (SDL_FingerID)id, window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
 }
 
-static void touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
-                             unsigned int timestamp, int id)
+static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial,
+                             uint32_t timestamp, int id)
 {
     float x = 0, y = 0;
     struct wl_surface *surface = NULL;
@@ -839,10 +877,11 @@ static void touch_handler_up(void *data, struct wl_touch *touch, unsigned int se
         window = window_data->sdlwindow;
     }
 
-    SDL_SendTouch(0, (SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
+    SDL_SendTouch(Wayland_GetEventTimestamp(timestamp), (SDL_TouchID)(intptr_t)touch,
+                  (SDL_FingerID)id, window, SDL_FALSE, x, y, 0.0f);
 }
 
-static void touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
+static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t timestamp,
                                  int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(touch_surface(id));
@@ -852,7 +891,8 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, unsigned in
     const float y = dbly / window_data->sdlwindow->h;
 
     touch_update(id, x, y);
-    SDL_SendTouchMotion(0, (SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
+    SDL_SendTouchMotion(Wayland_GetEventTimestamp(timestamp), (SDL_TouchID)(intptr_t)touch,
+                        (SDL_FingerID)id, window_data->sdlwindow, x, y, 1.0f);
 }
 
 static void touch_handler_frame(void *data, struct wl_touch *touch)
@@ -1215,7 +1255,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     if (!handled_by_ime) {
         scancode = Wayland_get_scancode_from_key(input, key + 8);
-        SDL_SendKeyboardKey(0, state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
+        SDL_SendKeyboardKey(Wayland_GetEventTimestamp(time), state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
     }
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
