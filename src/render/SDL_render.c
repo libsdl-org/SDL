@@ -2313,9 +2313,9 @@ static int UpdateLogicalSize(SDL_Renderer *renderer, SDL_bool flush_viewport_cmd
 
     if (renderer->integer_scale) {
         if (want_aspect > real_aspect) {
-            scale = (float)(w) / renderer->logical_w;
+            scale = (float)(w / renderer->logical_w); /* This an integer division! */
         } else {
-            scale = (float)(h) / renderer->logical_h;
+            scale = (float)(h / renderer->logical_h); /* This an integer division! */
         }
 
         if (scale < 1.0f) {
