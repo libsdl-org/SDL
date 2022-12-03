@@ -29,6 +29,10 @@
 
 static SDL_YUV_CONVERSION_MODE SDL_YUV_ConversionMode = SDL_YUV_CONVERSION_BT601;
 
+#if SDL_HAVE_YUV
+static SDL_bool IsPlanar2x2Format(Uint32 format);
+#endif
+
 void SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mode)
 {
     SDL_YUV_ConversionMode = mode;
@@ -60,32 +64,36 @@ SDL_YUV_CONVERSION_MODE SDL_GetYUVConversionModeForResolution(int width, int hei
  */
 int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, int *pitch)
 {
-    int sz_plane, sz_plane_chroma, sz_plane_packed;
-    {
-        /* sz_plane == w * h; */
-        size_t s1;
-        if (SDL_size_mul_overflow(w, h, &s1) < 0) {
-            return -1;
+#if SDL_HAVE_YUV
+    int sz_plane = 0, sz_plane_chroma = 0, sz_plane_packed = 0;
+
+    if (IsPlanar2x2Format(format) == SDL_TRUE) {
+        {
+            /* sz_plane == w * h; */
+            size_t s1;
+            if (SDL_size_mul_overflow(w, h, &s1) < 0) {
+                return -1;
+            }
+            sz_plane = (int) s1;
         }
-        sz_plane = (int) s1;
-    }
-    {
-        /* sz_plane_chroma == ((w + 1) / 2) * ((h + 1) / 2); */
-        size_t s1, s2, s3;
-        if (SDL_size_add_overflow(w, 1, &s1) < 0) {
-            return -1;
+
+        {
+            /* sz_plane_chroma == ((w + 1) / 2) * ((h + 1) / 2); */
+            size_t s1, s2, s3;
+            if (SDL_size_add_overflow(w, 1, &s1) < 0) {
+                return -1;
+            }
+            s1 = s1 / 2;
+            if (SDL_size_add_overflow(h, 1, &s2) < 0) {
+                return -1;
+            }
+            s2 = s2 / 2;
+            if (SDL_size_mul_overflow(s1, s2, &s3) < 0) {
+                return -1;
+            }
+            sz_plane_chroma = (int) s3;
         }
-        s1 = s1 / 2;
-        if (SDL_size_add_overflow(h, 1, &s2) < 0) {
-            return -1;
-        }
-        s2 = s2 / 2;
-        if (SDL_size_mul_overflow(s1, s2, &s3) < 0) {
-            return -1;
-        }
-        sz_plane_chroma = (int) s3;
-    }
-    {
+    } else {
         /* sz_plane_packed == ((w + 1) / 2) * h; */
         size_t s1, s2;
         if (SDL_size_add_overflow(w, 1, &s1) < 0) {
@@ -170,6 +178,9 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, int *pitch)
     }
 
     return 0;
+#else
+    return -1;
+#endif
 }
 
 #if SDL_HAVE_YUV
