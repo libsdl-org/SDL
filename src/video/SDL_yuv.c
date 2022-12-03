@@ -147,7 +147,7 @@ int SDL_CalculateYUVSize(Uint32 format, int w, int h, size_t *size, int *pitch)
         if (size) {
             /* dst_size == 4 * sz_plane_packed; */
             size_t s1;
-            if (SDL_size_add_overflow(sz_plane_packed, 4, &s1) < 0) {
+            if (SDL_size_mul_overflow(sz_plane_packed, 4, &s1) < 0) {
                 return -1;
             }
             *size = (int) s1;
