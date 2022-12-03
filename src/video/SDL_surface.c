@@ -39,13 +39,15 @@ SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
 /*
  * Calculate the pad-aligned scanline width of a surface.
  * Return SDL_SIZE_MAX on overflow.
+ *
+ * for FOURCC, use SDL_CalculateYUVSize()
  */
 static size_t
 SDL_CalculatePitch(Uint32 format, size_t width, SDL_bool minimal)
 {
     size_t pitch;
 
-    if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_BITSPERPIXEL(format) >= 8) {
+    if (SDL_BITSPERPIXEL(format) >= 8) {
         if (SDL_size_mul_overflow(width, SDL_BYTESPERPIXEL(format), &pitch)) {
             return SDL_SIZE_MAX;
         }
@@ -88,11 +90,21 @@ SDL_CreateSurface(int width, int height, Uint32 format)
         return NULL;
     }
 
-    pitch = SDL_CalculatePitch(format, width, SDL_FALSE);
-    if (pitch > SDL_MAX_SINT32) {
-        /* Overflow... */
-        SDL_OutOfMemory();
-        return NULL;
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        int p;
+        if (SDL_CalculateYUVSize(format, width, height, NULL, &p) < 0) {
+            /* Overflow... */
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        pitch = p;
+    } else {
+        pitch = SDL_CalculatePitch(format, width, SDL_FALSE);
+        if (pitch > SDL_MAX_SINT32) {
+            /* Overflow... */
+            SDL_OutOfMemory();
+            return NULL;
+        }
     }
 
     /* Allocate the surface */
@@ -134,20 +146,21 @@ SDL_CreateSurface(int width, int height, Uint32 format)
 
     /* Get the pixels */
     if (surface->w && surface->h) {
-        /* Assumptions checked in surface_size_assumptions assert above */
         size_t size;
-        if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
-            /* Overflow... */
-            SDL_FreeSurface(surface);
-            SDL_OutOfMemory();
-            return NULL;
-        }
-
         if (SDL_ISPIXELFORMAT_FOURCC(surface->format->format)) {
             /* Get correct size and pitch for YUV formats */
             if (SDL_CalculateYUVSize(surface->format->format, surface->w, surface->h, &size, &surface->pitch) < 0) {
-                SDL_OutOfMemory();
+                /* Overflow... */
                 SDL_FreeSurface(surface);
+                SDL_OutOfMemory();
+                return NULL;
+            }
+        } else {
+            /* Assumptions checked in surface_size_assumptions assert above */
+            if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
+                /* Overflow... */
+                SDL_FreeSurface(surface);
+                SDL_OutOfMemory();
                 return NULL;
             }
         }
@@ -202,7 +215,16 @@ SDL_CreateSurfaceFrom(void *pixels,
         return NULL;
     }
 
-    minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        int p;
+        if (SDL_CalculateYUVSize(format, width, height, NULL, &p) < 0) {
+            SDL_InvalidParamError("pitch");
+            return NULL;
+        }
+        minimalPitch = p;
+    } else {
+        minimalPitch = SDL_CalculatePitch(format, width, SDL_TRUE);
+    }
 
     if (pitch < 0 || (pitch > 0 && ((size_t)pitch) < minimalPitch)) {
         SDL_InvalidParamError("pitch");
