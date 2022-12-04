@@ -175,7 +175,7 @@ static struct wl_surface *touch_surface(SDL_TouchID id)
 
 Uint64 Wayland_GetEventTimestamp(Uint32 wayland_timestamp)
 {
-    static Uint32 last;
+    static Uint64 last;
     static Uint64 timestamp_offset;
     Uint64 nsTimestamp = SDL_MS_TO_NS(wayland_timestamp);
     const Uint64 now = SDL_GetTicksNS();
