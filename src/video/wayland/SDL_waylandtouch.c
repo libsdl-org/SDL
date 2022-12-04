@@ -71,6 +71,8 @@ static void touch_handle_touch(void *data,
      * (src/compositor/wayland_wrapper/qwltouch.cpp)
      **/
 
+    SDL_VideoData *viddata = (SDL_VideoData *)data;
+
     float FIXED_TO_FLOAT = 1. / 10000.;
     float xf = FIXED_TO_FLOAT * normalized_x;
     float yf = FIXED_TO_FLOAT * normalized_y;
@@ -105,13 +107,12 @@ static void touch_handle_touch(void *data,
     switch (touchState) {
     case QtWaylandTouchPointPressed:
     case QtWaylandTouchPointReleased:
-        SDL_SendTouch(Wayland_GetEventTimestamp(time), deviceId, (SDL_FingerID)id, window,
-                      (touchState == QtWaylandTouchPointPressed) ? SDL_TRUE : SDL_FALSE,
-                      xf, yf, pressuref);
+        SDL_SendTouch(Wayland_GetTouchTimestamp(viddata->input, time), deviceId, (SDL_FingerID)id,
+                      window, (touchState == QtWaylandTouchPointPressed) ? SDL_TRUE : SDL_FALSE, xf, yf, pressuref);
         break;
     case QtWaylandTouchPointMoved:
-        SDL_SendTouchMotion(Wayland_GetEventTimestamp(time), deviceId, (SDL_FingerID)id, window,
-                            xf, yf, pressuref);
+        SDL_SendTouchMotion(Wayland_GetTouchTimestamp(viddata->input, time), deviceId, (SDL_FingerID)id,
+                            window, xf, yf, pressuref);
         break;
     default:
         /* Should not happen */
