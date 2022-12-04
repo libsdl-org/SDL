@@ -885,3 +885,4 @@
 #define SDL_DelayNS SDL_DelayNS_REAL
 #define SDL_GetEventState SDL_GetEventState_REAL
 #define SDL_GetRenderDriver SDL_GetRenderDriver_REAL
+#define SDL_Win32RunApp SDL_Win32RunApp_REAL

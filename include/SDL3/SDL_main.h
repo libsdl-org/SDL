@@ -207,6 +207,21 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* defined(__WIN32__) || defined(__GDK__) */
 
+#ifdef __WIN32__
+
+/**
+ * Initialize and launch an SDL/Win32 (classic WinAPI) application.
+ *
+ * \param mainFunction the SDL app's C-style main(), an SDL_main_func
+ * \param reserved reserved for future use; should be NULL
+ * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
+ *          more information on the failure.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_Win32RunApp(SDL_main_func mainFunction, void * reserved);
+
+#endif /* __WIN32__ */
 
 #ifdef __WINRT__
 
@@ -266,7 +281,15 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #ifdef __cplusplus
 }
 #endif
+
 #include <SDL3/close_code.h>
+
+#if !defined(SDL_MAIN_HANDLED) && !defined(_SDL_MAIN_NOIMPL)
+/* include header-only SDL_main implementations */
+#if defined(__WIN32__) || defined(__GDK__) /* TODO: other platforms */
+#include <SDL3/SDL_main_impl.h>
+#endif
+#endif /* SDL_MAIN_HANDLED */
 
 #endif /* SDL_main_h_ */
 

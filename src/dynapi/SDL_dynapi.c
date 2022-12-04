@@ -31,6 +31,9 @@
 #endif
 
 #include <SDL3/SDL.h>
+#define _SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
+#include <SDL3/SDL_main.h>
+
 
 /* These headers have system specific definitions, so aren't included above */
 #include <SDL3/SDL_syswm.h>
