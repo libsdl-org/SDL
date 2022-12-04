@@ -1754,6 +1754,9 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 
             if (ctx->guide_hack || ctx->trigger_hack) {
                 timestamp = SDL_GetTicksNS();
+            } else {
+                /* timestamp won't be used */
+                timestamp = 0;
             }
 
             if (ctx->guide_hack) {
@@ -1802,6 +1805,9 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
 
             if (ctx->guide_hack || ctx->trigger_hack) {
                 timestamp = SDL_GetTicksNS();
+            } else {
+                /* timestamp won't be used */
+                timestamp = 0;
             }
 
             if (ctx->guide_hack) {
