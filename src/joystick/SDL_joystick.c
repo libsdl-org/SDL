@@ -2981,7 +2981,6 @@ int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_Sens
 
                 /* Update internal sensor state */
                 SDL_memcpy(sensor->data, data, num_values * sizeof(*data));
-                sensor->sensor_timestamp = sensor_timestamp;
 
                 /* Post the event, if desired */
 #if !SDL_EVENTS_DISABLED

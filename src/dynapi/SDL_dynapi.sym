@@ -676,7 +676,6 @@ SDL3_0.0.0 {
     SDL_SensorGetNonPortableType;
     SDL_SensorGetInstanceID;
     SDL_SensorGetData;
-    SDL_SensorGetDataWithTimestamp;
     SDL_SensorClose;
     SDL_SensorUpdate;
     SDL_SetHintWithPriority;
@@ -816,7 +815,6 @@ SDL3_0.0.0 {
     SDL_GameControllerIsSensorEnabled;
     SDL_GameControllerGetSensorDataRate;
     SDL_GameControllerGetSensorData;
-    SDL_GameControllerGetSensorDataWithTimestamp;
     SDL_GameControllerRumble;
     SDL_GameControllerRumbleTriggers;
     SDL_GameControllerHasLED;
