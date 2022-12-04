@@ -961,3 +961,6 @@ SDL_DYNAPI_PROC(Uint64,SDL_GetTicksNS,(void),(),return)
 SDL_DYNAPI_PROC(void,SDL_DelayNS,(Uint64 a),(a),)
 SDL_DYNAPI_PROC(Uint8,SDL_GetEventState,(Uint32 a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetRenderDriver,(int a),(a),return)
+#if defined(__WIN32__)
+SDL_DYNAPI_PROC(int,SDL_Win32RunApp,(SDL_main_func a, void *b),(a,b),return)
+#endif
