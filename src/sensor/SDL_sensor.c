@@ -369,23 +369,12 @@ SDL_SensorGetInstanceID(SDL_Sensor *sensor)
  */
 int SDL_SensorGetData(SDL_Sensor *sensor, float *data, int num_values)
 {
-    return SDL_SensorGetDataWithTimestamp(sensor, NULL, data, num_values);
-}
-
-/*
- * Get the current state of this sensor
- */
-int SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float *data, int num_values)
-{
     if (!SDL_PrivateSensorValid(sensor)) {
         return -1;
     }
 
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
     SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
-    if (timestamp) {
-        *timestamp = sensor->sensor_timestamp;
-    }
     return 0;
 }
 
@@ -484,7 +473,6 @@ int SDL_PrivateSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_
     /* Update internal sensor state */
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
     SDL_memcpy(sensor->data, data, num_values * sizeof(*data));
-    sensor->sensor_timestamp = sensor_timestamp;
 
     /* Post the event, if desired */
     posted = 0;

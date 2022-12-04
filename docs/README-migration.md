@@ -40,6 +40,11 @@ The `timestamp_us` member of the sensor events has been renamed `sensor_timestam
 You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
 
 
+## SDL_gamecontroller.h
+
+Removed SDL_GameControllerGetSensorDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_CONTROLLERSENSORUPDATE events.
+
+
 ## SDL_platform.h
 
 The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ has been renamed __IOS__
@@ -161,6 +166,11 @@ SDL_RWFromFP(void *fp, SDL_bool autoclose)
     return rwops;
 }
 ```
+
+
+## SDL_sensor.h
+
+Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_SENSORUPDATE events.
 
 
 ## SDL_stdinc.h
