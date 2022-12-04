@@ -2,6 +2,7 @@
     SDL_dummy_main.c, placed in the public domain by Sam Lantinga  3/13/14
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h> /* until this SDL_main impl is converted to header-only.. */
 
 #ifdef main
 #undef main

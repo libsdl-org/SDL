@@ -2,6 +2,7 @@
     SDL_ps2_main.c, fjtrujy@gmail.com
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h> /* until this SDL_main impl is converted to header-only.. */
 
 #ifdef __PS2__
 

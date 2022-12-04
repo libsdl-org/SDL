@@ -2,6 +2,7 @@
     SDL_ngage_main.c, originally for SDL 1.2 by Hannu Viitala
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h> /* until this SDL_main impl is converted to header-only.. */
 
 #include <e32std.h>
 #include <e32def.h>
