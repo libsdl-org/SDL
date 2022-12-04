@@ -904,8 +904,8 @@ extern DECLSPEC int SDLCALL SDL_GameControllerGetSensorData(SDL_GameController *
  *
  * \param gamecontroller The controller to query
  * \param type The type of sensor to query
- * \param timestamp A pointer filled with the timestamp in microseconds of the
- *                  current sensor reading if available, or 0 if not
+ * \param timestamp A pointer filled with the timestamp in nanoseconds of the
+ *                  current sensor reading, which may not be synchronized with the system clock
  * \param data A pointer filled with the current sensor state
  * \param num_values The number of values to write to data
  * \return 0 or -1 if an error occurred.

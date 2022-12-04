@@ -35,6 +35,8 @@ The SDL3main and SDL3test libraries have been renamed SDL3_main and SDL3_test, r
 
 The `timestamp` member of the SDL_Event structure now represents nanoseconds, and is populated with `SDL_GetTicksNS()`
 
+The `timestamp_us` member of the sensor events has been renamed `sensor_timestamp` and now represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from SDL_GetTicksNS().
+
 You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
 
 

@@ -149,6 +149,7 @@ UpdateN3DSAccelerometer(SDL_Sensor *sensor)
     static accelVector previous_state = { 0, 0, 0 };
     accelVector current_state;
     float data[3];
+    Uint64 timestamp = SDL_GetTicksNS();
 
     hidAccelRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(accelVector)) != 0) {
@@ -156,7 +157,7 @@ UpdateN3DSAccelerometer(SDL_Sensor *sensor)
         data[0] = (float)current_state.x * SDL_STANDARD_GRAVITY;
         data[1] = (float)current_state.y * SDL_STANDARD_GRAVITY;
         data[2] = (float)current_state.z * SDL_STANDARD_GRAVITY;
-        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof data);
+        SDL_PrivateSensorUpdate(timestamp, sensor, timestamp, data, sizeof data);
     }
 }
 
@@ -166,6 +167,7 @@ UpdateN3DSGyroscope(SDL_Sensor *sensor)
     static angularRate previous_state = { 0, 0, 0 };
     angularRate current_state;
     float data[3];
+    Uint64 timestamp = SDL_GetTicksNS();
 
     hidGyroRead(&current_state);
     if (SDL_memcmp(&previous_state, &current_state, sizeof(angularRate)) != 0) {
@@ -173,7 +175,7 @@ UpdateN3DSGyroscope(SDL_Sensor *sensor)
         data[0] = (float)current_state.x;
         data[1] = (float)current_state.y;
         data[2] = (float)current_state.z;
-        SDL_PrivateSensorUpdate(sensor, 0, data, sizeof data);
+        SDL_PrivateSensorUpdate(timestamp, sensor, timestamp, data, sizeof data);
     }
 }
 

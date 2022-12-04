@@ -1714,7 +1714,7 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
 }
 
 static void
-SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SDL_SensorType type, Uint64 timestamp_us, const Sint16 *values)
+SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SDL_SensorType type, Uint64 sensor_timestamp, const Sint16 *values)
 {
     float data[3];
 
@@ -1754,7 +1754,7 @@ SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Cont
         data[0] = -tmp;
     }
 
-    SDL_PrivateJoystickSensor(timestamp, joystick, type, timestamp_us, data, 3);
+    SDL_PrivateJoystickSensor(timestamp, joystick, type, sensor_timestamp, data, 3);
 }
 
 static void HandleCombinedControllerStateL(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)
@@ -1983,7 +1983,7 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
                                    packet->imuState[0].sAccelX != 0);
         if (bHasSensorData) {
             const Uint32 IMU_UPDATE_RATE_SAMPLE_FREQUENCY = 1000;
-            Uint64 timestamp_us[3];
+            Uint64 sensor_timestamp[3];
 
             ctx->m_bHasSensorData = SDL_TRUE;
 
@@ -2001,45 +2001,45 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
             }
 
             ctx->m_ulTimestampNS += ctx->m_ulIMUUpdateIntervalNS;
-            timestamp_us[0] = SDL_NS_TO_US(ctx->m_ulTimestampNS);
+            sensor_timestamp[0] = ctx->m_ulTimestampNS;
             ctx->m_ulTimestampNS += ctx->m_ulIMUUpdateIntervalNS;
-            timestamp_us[1] = SDL_NS_TO_US(ctx->m_ulTimestampNS);
+            sensor_timestamp[1] = ctx->m_ulTimestampNS;
             ctx->m_ulTimestampNS += ctx->m_ulIMUUpdateIntervalNS;
-            timestamp_us[2] = SDL_NS_TO_US(ctx->m_ulTimestampNS);
+            sensor_timestamp[2] = ctx->m_ulTimestampNS;
 
             if (!ctx->device->parent ||
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO, timestamp_us[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL, timestamp_us[0], &packet->imuState[2].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO, sensor_timestamp[0], &packet->imuState[2].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL, sensor_timestamp[0], &packet->imuState[2].sAccelX);
 
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO, timestamp_us[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL, timestamp_us[1], &packet->imuState[1].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO, sensor_timestamp[1], &packet->imuState[1].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL, sensor_timestamp[1], &packet->imuState[1].sAccelX);
 
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO, timestamp_us[2], &packet->imuState[0].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL, timestamp_us[2], &packet->imuState[0].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO, sensor_timestamp[2], &packet->imuState[0].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL, sensor_timestamp[2], &packet->imuState[0].sAccelX);
             }
 
             if (ctx->device->parent &&
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO_L, timestamp_us[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp_us[0], &packet->imuState[2].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO_L, sensor_timestamp[0], &packet->imuState[2].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL_L, sensor_timestamp[0], &packet->imuState[2].sAccelX);
 
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO_L, timestamp_us[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp_us[1], &packet->imuState[1].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO_L, sensor_timestamp[1], &packet->imuState[1].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL_L, sensor_timestamp[1], &packet->imuState[1].sAccelX);
 
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO_L, timestamp_us[2], &packet->imuState[0].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp_us[2], &packet->imuState[0].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO_L, sensor_timestamp[2], &packet->imuState[0].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL_L, sensor_timestamp[2], &packet->imuState[0].sAccelX);
             }
             if (ctx->device->parent &&
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO_R, timestamp_us[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp_us[0], &packet->imuState[2].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO_R, sensor_timestamp[0], &packet->imuState[2].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL_R, sensor_timestamp[0], &packet->imuState[2].sAccelX);
 
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO_R, timestamp_us[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp_us[1], &packet->imuState[1].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO_R, sensor_timestamp[1], &packet->imuState[1].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL_R, sensor_timestamp[1], &packet->imuState[1].sAccelX);
 
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_GYRO_R, timestamp_us[2], &packet->imuState[0].sGyroX);
-                SendSensorUpdate(0, joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp_us[2], &packet->imuState[0].sAccelX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_GYRO_R, sensor_timestamp[2], &packet->imuState[0].sGyroX);
+                SendSensorUpdate(timestamp, joystick, ctx, SDL_SENSOR_ACCEL_R, sensor_timestamp[2], &packet->imuState[0].sAccelX);
             }
 
         } else if (ctx->m_bHasSensorData) {

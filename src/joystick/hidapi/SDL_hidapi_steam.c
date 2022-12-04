@@ -943,7 +943,7 @@ typedef struct
 {
     SDL_bool report_sensors;
     uint32_t update_rate_in_us;
-    Uint32 timestamp_us;
+    Uint64 sensor_timestamp;
 
     SteamControllerPacketAssembler m_assembler;
     SteamControllerStateInternal_t m_state;
@@ -1183,17 +1183,17 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             if (ctx->report_sensors) {
                 float values[3];
 
-                ctx->timestamp_us += ctx->update_rate_in_us;
+                ctx->sensor_timestamp += SDL_US_TO_NS(ctx->update_rate_in_us);
 
                 values[0] = (ctx->m_state.sGyroX / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
                 values[1] = (ctx->m_state.sGyroZ / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
                 values[2] = (ctx->m_state.sGyroY / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
-                SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->timestamp_us, values, 3);
+                SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->sensor_timestamp, values, 3);
 
                 values[0] = (ctx->m_state.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
                 values[1] = (ctx->m_state.sAccelZ / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
                 values[2] = (-ctx->m_state.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
-                SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->timestamp_us, values, 3);
+                SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->sensor_timestamp, values, 3);
             }
 
             ctx->m_last_state = ctx->m_state;

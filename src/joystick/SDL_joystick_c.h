@@ -162,7 +162,7 @@ extern int SDL_PrivateJoystickButton(Uint64 timestamp, SDL_Joystick *joystick,
 extern int SDL_PrivateJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick,
                                        int touchpad, int finger, Uint8 state, float x, float y, float pressure);
 extern int SDL_PrivateJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick,
-                                     SDL_SensorType type, Uint64 timestamp_us, const float *data, int num_values);
+                                     SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 

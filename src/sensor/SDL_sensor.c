@@ -384,7 +384,7 @@ int SDL_SensorGetDataWithTimestamp(SDL_Sensor *sensor, Uint64 *timestamp, float 
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
     SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
     if (timestamp) {
-        *timestamp = sensor->timestamp_us;
+        *timestamp = sensor->sensor_timestamp;
     }
     return 0;
 }
@@ -475,7 +475,7 @@ void SDL_SensorQuit(void)
 
 /* These are global for SDL_syssensor.c and SDL_events.c */
 
-int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data, int num_values)
+int SDL_PrivateSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
 {
     int posted;
 
@@ -484,7 +484,7 @@ int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data
     /* Update internal sensor state */
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
     SDL_memcpy(sensor->data, data, num_values * sizeof(*data));
-    sensor->timestamp_us = timestamp_us;
+    sensor->sensor_timestamp = sensor_timestamp;
 
     /* Post the event, if desired */
     posted = 0;
@@ -492,12 +492,12 @@ int SDL_PrivateSensorUpdate(SDL_Sensor *sensor, Uint64 timestamp_us, float *data
     if (SDL_GetEventState(SDL_SENSORUPDATE) == SDL_ENABLE) {
         SDL_Event event;
         event.type = SDL_SENSORUPDATE;
-        event.common.timestamp = 0;
+        event.common.timestamp = timestamp;
         event.sensor.which = sensor->instance_id;
         num_values = SDL_min(num_values, SDL_arraysize(event.sensor.data));
         SDL_memset(event.sensor.data, 0, sizeof(event.sensor.data));
         SDL_memcpy(event.sensor.data, data, num_values * sizeof(*data));
-        event.sensor.timestamp_us = timestamp_us;
+        event.sensor.sensor_timestamp = sensor_timestamp;
         posted = SDL_PushEvent(&event) == 1;
     }
 #endif /* !SDL_EVENTS_DISABLED */

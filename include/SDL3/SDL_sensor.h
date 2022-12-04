@@ -276,8 +276,8 @@ extern DECLSPEC int SDLCALL SDL_SensorGetData(SDL_Sensor *sensor, float *data, i
  * The number of values and interpretation of the data is sensor dependent.
  *
  * \param sensor The SDL_Sensor object to query
- * \param timestamp A pointer filled with the timestamp in microseconds of the
- *                  current sensor reading if available, or 0 if not
+ * \param timestamp A pointer filled with the timestamp in nanoseconds of the
+ *                  current sensor reading, which may not be synchronized with the system clock
  * \param data A pointer filled with the current sensor state
  * \param num_values The number of values to write to data
  * \returns 0 or -1 if an error occurred.
