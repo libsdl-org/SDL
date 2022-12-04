@@ -145,8 +145,8 @@ typedef struct
     Uint8 led_red;
     Uint8 led_green;
     Uint8 led_blue;
-    Uint16 last_timestamp;
-    Uint64 timestamp;
+    Uint64 sensor_ticks;
+    Uint16 last_tick;
     PS4StatePacket_t last_state;
 } SDL_DriverPS4_Context;
 
@@ -807,7 +807,6 @@ static int HIDAPI_DriverPS4_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device,
         HIDAPI_DriverPS4_LoadCalibrationData(device);
     }
     ctx->report_sensors = enabled;
-    ctx->timestamp = 0;
 
     return 0;
 }
@@ -947,37 +946,32 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     }
 
     if (ctx->report_sensors) {
-        Uint16 timestamp;
-        Uint64 timestamp_us;
+        Uint16 tick;
+        Uint16 delta;
+        Uint64 sensor_timestamp;
         float data[3];
 
-        timestamp = LOAD16(packet->rgucTimestamp[0], packet->rgucTimestamp[1]);
-        if (ctx->timestamp) {
-            Uint16 delta;
-
-            if (ctx->last_timestamp > timestamp) {
-                delta = (SDL_MAX_UINT16 - ctx->last_timestamp + timestamp + 1);
-            } else {
-                delta = (timestamp - ctx->last_timestamp);
-            }
-            ctx->timestamp += delta;
+        tick = LOAD16(packet->rgucTimestamp[0], packet->rgucTimestamp[1]);
+        if (ctx->last_tick < tick) {
+            delta = (tick - ctx->last_tick);
         } else {
-            ctx->timestamp = timestamp;
+            delta = (SDL_MAX_UINT16 - ctx->last_tick + tick + 1);
         }
-        ctx->last_timestamp = timestamp;
+        ctx->sensor_ticks += delta;
+        ctx->last_tick = tick;
 
         /* Sensor timestamp is in 5.33us units */
-        timestamp_us = (ctx->timestamp * 16) / 3;
+        sensor_timestamp = (ctx->sensor_ticks * SDL_NS_PER_US * 16) / 3;
 
         data[0] = HIDAPI_DriverPS4_ApplyCalibrationData(ctx, 0, LOAD16(packet->rgucGyroX[0], packet->rgucGyroX[1]));
         data[1] = HIDAPI_DriverPS4_ApplyCalibrationData(ctx, 1, LOAD16(packet->rgucGyroY[0], packet->rgucGyroY[1]));
         data[2] = HIDAPI_DriverPS4_ApplyCalibrationData(ctx, 2, LOAD16(packet->rgucGyroZ[0], packet->rgucGyroZ[1]));
-        SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp_us, data, 3);
+        SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, data, 3);
 
         data[0] = HIDAPI_DriverPS4_ApplyCalibrationData(ctx, 3, LOAD16(packet->rgucAccelX[0], packet->rgucAccelX[1]));
         data[1] = HIDAPI_DriverPS4_ApplyCalibrationData(ctx, 4, LOAD16(packet->rgucAccelY[0], packet->rgucAccelY[1]));
         data[2] = HIDAPI_DriverPS4_ApplyCalibrationData(ctx, 5, LOAD16(packet->rgucAccelZ[0], packet->rgucAccelZ[1]));
-        SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp_us, data, 3);
+        SDL_PrivateJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, data, 3);
     }
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));

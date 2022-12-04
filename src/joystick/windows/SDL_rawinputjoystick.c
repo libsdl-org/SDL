@@ -964,7 +964,7 @@ static void RAWINPUT_PostUpdate(void)
             if (ctx->guide_hack) {
                 int guide_button = joystick->nbuttons - 1;
 
-                SDL_PrivateJoystickButton(guide_button_candidate.joystick, guide_button, SDL_PRESSED);
+                SDL_PrivateJoystickButton(SDL_GetTicksNS(), guide_button_candidate.joystick, guide_button, SDL_PRESSED);
             }
             guide_button_candidate.last_joystick = guide_button_candidate.joystick;
         }
@@ -974,7 +974,7 @@ static void RAWINPUT_PostUpdate(void)
         if (ctx->guide_hack) {
             int guide_button = joystick->nbuttons - 1;
 
-            SDL_PrivateJoystickButton(joystick, guide_button, SDL_RELEASED);
+            SDL_PrivateJoystickButton(SDL_GetTicksNS(), joystick, guide_button, SDL_RELEASED);
         }
         guide_button_candidate.last_joystick = NULL;
     }

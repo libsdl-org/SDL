@@ -24,8 +24,8 @@
 struct sensor_hwdata
 {
     Uint32 counter;
-    unsigned int last_timestamp;
-    Uint64 timestamp_us;
+    unsigned int last_tick;
+    Uint64 sensor_timestamp;
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

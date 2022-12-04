@@ -156,11 +156,12 @@ static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
     int events;
     ASensorEvent event;
     struct android_poll_source *source;
+    Uint64 timestamp = SDL_GetTicks();
 
     if (ALooper_pollAll(0, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
         SDL_zero(event);
         while (ASensorEventQueue_getEvents(sensor->hwdata->eventqueue, &event, 1) > 0) {
-            SDL_PrivateSensorUpdate(sensor, 0, event.data, SDL_arraysize(event.data));
+            SDL_PrivateSensorUpdate(timestamp, sensor, timestamp, event.data, SDL_arraysize(event.data));
         }
     }
 }

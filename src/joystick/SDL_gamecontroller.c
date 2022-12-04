@@ -2454,7 +2454,7 @@ int SDL_GameControllerGetSensorDataWithTimestamp(SDL_GameController *gamecontrol
             num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
             SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
             if (timestamp) {
-                *timestamp = sensor->timestamp_us;
+                *timestamp = sensor->sensor_timestamp;
             }
             return 0;
         }

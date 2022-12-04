@@ -596,7 +596,7 @@ void loop(void *arg)
                     event.csensor.data[0],
                     event.csensor.data[1],
                     event.csensor.data[2],
-                    event.csensor.timestamp_us);
+                    event.csensor.sensor_timestamp);
             break;
 #endif /* VERBOSE_SENSORS */
 
