@@ -2,6 +2,10 @@ name: Build (Emscripten)
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   emscripten:
     runs-on: ubuntu-latest
