@@ -13,11 +13,12 @@
 /* sanity tests on SDL_rwops.c (usefull for alternative implementations of stdio rwops) */
 
 /* quiet windows compiler warnings */
+#if defined(_MSC_VER) && !defined(_CRT_NONSTDC_NO_WARNINGS)
 #define _CRT_NONSTDC_NO_WARNINGS
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
