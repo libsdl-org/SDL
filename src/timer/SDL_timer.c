@@ -475,7 +475,7 @@ static Uint64 tick_freq;
 
 #if defined(SDL_TIMER_WINDOWS) && \
     !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
-#include <timeapi.h>
+#include <mmsystem.h>
 #define HAVE_TIME_BEGIN_PERIOD
 #endif
 
