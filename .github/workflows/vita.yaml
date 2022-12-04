@@ -3,7 +3,7 @@ name: Build (Sony Playstation Vita)
 on: [push, pull_request]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 defaults:
