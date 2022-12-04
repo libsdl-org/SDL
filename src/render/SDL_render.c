@@ -4205,7 +4205,7 @@ static void SDL_RenderSimulateVSync(SDL_Renderer *renderer)
     }
 
     elapsed = (now - renderer->last_present);
-    if (!renderer->last_present || elapsed > SDL_NS_TO_MS(1000)) {
+    if (!renderer->last_present || elapsed > SDL_MS_TO_NS(1000)) {
         /* It's been too long, reset the presentation timeline */
         renderer->last_present = now;
     } else {
