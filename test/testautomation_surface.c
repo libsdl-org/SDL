@@ -4,8 +4,12 @@
  */
 
 /* Supress C4996 VS compiler warnings for unlink() */
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE
+#endif
+#if defined(_MSC_VER) && !defined(_CRT_NONSTDC_NO_DEPRECATE)
 #define _CRT_NONSTDC_NO_DEPRECATE
+#endif
 
 #include <stdio.h>
 #ifndef _MSC_VER
