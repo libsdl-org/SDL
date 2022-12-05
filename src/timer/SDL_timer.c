@@ -550,6 +550,9 @@ void SDL_TicksInit(void)
     tick_denominator_ms = (Uint32)(tick_freq / gcd);
 
     tick_start = SDL_GetPerformanceCounter();
+    if (!tick_start) {
+        --tick_start;
+    }
 }
 
 void SDL_TicksQuit(void)
