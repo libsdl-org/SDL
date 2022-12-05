@@ -82,13 +82,6 @@ struct _SDL_Joystick
     int nhats;   /* Number of hats on the joystick */
     Uint8 *hats; /* Current hat states */
 
-    int nballs; /* Number of trackballs on the joystick */
-    struct balldelta
-    {
-        int dx;
-        int dy;
-    } *balls; /* Current ball motion deltas */
-
     int nbuttons;   /* Number of buttons on the joystick */
     Uint8 *buttons; /* Current button states */
 

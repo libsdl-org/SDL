@@ -718,24 +718,6 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_JoystickInstanceID(SDL_Joystick *joys
 extern DECLSPEC int SDLCALL SDL_JoystickNumAxes(SDL_Joystick *joystick);
 
 /**
- * Get the number of trackballs on a joystick.
- *
- * Joystick trackballs have only relative motion events associated with them
- * and their state cannot be polled.
- *
- * Most joysticks do not have trackballs.
- *
- * \param joystick an SDL_Joystick structure containing joystick information
- * \returns the number of trackballs on success or a negative error code on
- *          failure; call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_JoystickGetBall
- */
-extern DECLSPEC int SDLCALL SDL_JoystickNumBalls(SDL_Joystick *joystick);
-
-/**
  * Get the number of POV hats on a joystick.
  *
  * \param joystick an SDL_Joystick structure containing joystick information
@@ -885,28 +867,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick *j
  */
 extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetHat(SDL_Joystick *joystick,
                                                  int hat);
-
-/**
- * Get the ball axis change since the last poll.
- *
- * Trackballs can only return relative motion since the last call to
- * SDL_JoystickGetBall(), these motion deltas are placed into `dx` and `dy`.
- *
- * Most joysticks do not have trackballs.
- *
- * \param joystick the SDL_Joystick to query
- * \param ball the ball index to query; ball indices start at index 0
- * \param dx stores the difference in the x axis position since the last poll
- * \param dy stores the difference in the y axis position since the last poll
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_JoystickNumBalls
- */
-extern DECLSPEC int SDLCALL SDL_JoystickGetBall(SDL_Joystick *joystick,
-                                                int ball, int *dx, int *dy);
 
 /**
  * Get the current state of a button on a joystick.

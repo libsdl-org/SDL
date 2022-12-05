@@ -1587,11 +1587,6 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 " removed",
                 event->jdevice.which);
         break;
-    case SDL_JOYBALLMOTION:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": ball %d moved by %d,%d",
-                event->jball.which, event->jball.ball, event->jball.xrel,
-                event->jball.yrel);
-        break;
     case SDL_JOYHATMOTION:
     {
         const char *position = "UNKNOWN";

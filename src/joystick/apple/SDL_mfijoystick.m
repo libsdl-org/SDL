@@ -767,7 +767,6 @@ static int IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = device->naxes;
     joystick->nhats = device->nhats;
     joystick->nbuttons = device->nbuttons;
-    joystick->nballs = 0;
 
     if (device->has_dualshock_touchpad) {
         SDL_PrivateJoystickAddTouchpad(joystick, 2);

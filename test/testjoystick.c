@@ -80,7 +80,6 @@ PrintJoystick(SDL_Joystick *joy)
     SDL_Log("        rumble: %s\n", SDL_JoystickHasRumble(joy) ? "yes" : "no");
     SDL_Log("trigger rumble: %s\n", SDL_JoystickHasRumbleTriggers(joy) ? "yes" : "no");
     SDL_Log("          axes: %d\n", SDL_JoystickNumAxes(joy));
-    SDL_Log("         balls: %d\n", SDL_JoystickNumBalls(joy));
     SDL_Log("          hats: %d\n", SDL_JoystickNumHats(joy));
     SDL_Log("       buttons: %d\n", SDL_JoystickNumButtons(joy));
     SDL_Log("   instance id: %" SDL_PRIs32 "\n", SDL_JoystickInstanceID(joy));
@@ -155,11 +154,6 @@ void loop(void *arg)
                 SDL_Log(" left");
             }
             SDL_Log("\n");
-            break;
-        case SDL_JOYBALLMOTION:
-            SDL_Log("Joystick %" SDL_PRIs32 " ball %d delta: (%d,%d)\n",
-                    event.jball.which,
-                    event.jball.ball, event.jball.xrel, event.jball.yrel);
             break;
         case SDL_JOYBUTTONDOWN:
             SDL_Log("Joystick %" SDL_PRIs32 " button %d down\n",
