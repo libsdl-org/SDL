@@ -129,25 +129,25 @@ static VideoBootStrap *bootstrap[] = {
     NULL
 };
 
-#define CHECK_WINDOW_MAGIC(window, retval)                  \
-    if (!_this) {                                           \
-        SDL_UninitializedVideo();                           \
-        return retval;                                      \
-    }                                                       \
-    if (!window || window->magic != &_this->window_magic) { \
-        SDL_SetError("Invalid window");                     \
-        return retval;                                      \
+#define CHECK_WINDOW_MAGIC(window, retval)                              \
+    if (!_this) {                                                       \
+        SDL_UninitializedVideo();                                       \
+        return retval;                                                  \
+    }                                                                   \
+    if (!(window) || (window)->magic != &_this->window_magic) {         \
+        SDL_SetError("Invalid window");                                 \
+        return retval;                                                  \
     }
 
-#define CHECK_DISPLAY_INDEX(displayIndex, retval)                  \
-    if (!_this) {                                                  \
-        SDL_UninitializedVideo();                                  \
-        return retval;                                             \
-    }                                                              \
-    if (displayIndex < 0 || displayIndex >= _this->num_displays) { \
-        SDL_SetError("displayIndex must be in the range 0 - %d",   \
-                     _this->num_displays - 1);                     \
-        return retval;                                             \
+#define CHECK_DISPLAY_INDEX(displayIndex, retval)                       \
+    if (!_this) {                                                       \
+        SDL_UninitializedVideo();                                       \
+        return retval;                                                  \
+    }                                                                   \
+    if ((displayIndex) < 0 || (displayIndex) >= _this->num_displays) {  \
+        SDL_SetError("displayIndex must be in the range 0 - %d",        \
+                     _this->num_displays - 1);                          \
+        return retval;                                                  \
     }
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)

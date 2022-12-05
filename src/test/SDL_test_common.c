@@ -112,14 +112,14 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     return state;
 }
 
-#define SEARCHARG(dim)            \
-    while (*dim && *dim != ',') { \
-        ++dim;                    \
-    }                             \
-    if (!*dim) {                  \
-        return -1;                \
-    }                             \
-    *dim++ = '\0';
+#define SEARCHARG(dim)                  \
+    while (*(dim) && *(dim) != ',') {   \
+        ++(dim);                        \
+    }                                   \
+    if (!*(dim)) {                      \
+        return -1;                      \
+    }                                   \
+    *(dim)++ = '\0';
 
 int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
 {

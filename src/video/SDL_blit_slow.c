@@ -24,7 +24,7 @@
 #include "SDL_blit_slow.h"
 
 #define FORMAT_ALPHA                0
-#define FORMAT_NO_ALPHA             -1
+#define FORMAT_NO_ALPHA             (-1)
 #define FORMAT_2101010              1
 #define FORMAT_HAS_ALPHA(format)    format == 0
 #define FORMAT_HAS_NO_ALPHA(format) format < 0
