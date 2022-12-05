@@ -140,7 +140,7 @@ static int SDL_UpperSoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
 #define FIXED_POINT(i) ((Uint32)(i) << 16)
 #define SRC_INDEX(fp)  ((Uint32)(fp) >> 16)
 #define INTEGER(fp)    ((Uint32)(fp) >> PRECISION)
-#define FRAC(fp)       ((Uint32)(fp >> (16 - PRECISION)) & ((1 << PRECISION) - 1))
+#define FRAC(fp)       ((Uint32)((fp) >> (16 - PRECISION)) & ((1 << PRECISION) - 1))
 #define FRAC_ZERO      0
 #define FRAC_ONE       (1 << PRECISION)
 #define FP_ONE         FIXED_POINT(1)

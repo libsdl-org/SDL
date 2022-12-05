@@ -44,27 +44,27 @@ this should probably be removed at some point in the future.  --ryan. */
 
 #define SDL_WINDOWRENDERDATA "_SDL_WindowRenderData"
 
-#define CHECK_RENDERER_MAGIC(renderer, retval)             \
-    if (!renderer || renderer->magic != &renderer_magic) { \
-        SDL_InvalidParamError("renderer");                 \
-        return retval;                                     \
+#define CHECK_RENDERER_MAGIC(renderer, retval)                  \
+    if (!(renderer) || (renderer)->magic != &renderer_magic) {  \
+        SDL_InvalidParamError("renderer");                      \
+        return retval;                                          \
     }
 
-#define CHECK_TEXTURE_MAGIC(texture, retval)            \
-    if (!texture || texture->magic != &texture_magic) { \
-        SDL_InvalidParamError("texture");               \
-        return retval;                                  \
+#define CHECK_TEXTURE_MAGIC(texture, retval)                    \
+    if (!(texture) || (texture)->magic != &texture_magic) {     \
+        SDL_InvalidParamError("texture");                       \
+        return retval;                                          \
     }
 
 /* Predefined blend modes */
 #define SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
                               srcAlphaFactor, dstAlphaFactor, alphaOperation) \
-    (SDL_BlendMode)(((Uint32)colorOperation << 0) |                           \
-                    ((Uint32)srcColorFactor << 4) |                           \
-                    ((Uint32)dstColorFactor << 8) |                           \
-                    ((Uint32)alphaOperation << 16) |                          \
-                    ((Uint32)srcAlphaFactor << 20) |                          \
-                    ((Uint32)dstAlphaFactor << 24))
+    (SDL_BlendMode)(((Uint32)(colorOperation) << 0) |                         \
+                    ((Uint32)(srcColorFactor) << 4) |                         \
+                    ((Uint32)(dstColorFactor) << 8) |                         \
+                    ((Uint32)(alphaOperation) << 16) |                        \
+                    ((Uint32)(srcAlphaFactor) << 20) |                        \
+                    ((Uint32)(dstAlphaFactor) << 24))
 
 #define SDL_BLENDMODE_NONE_FULL                                                              \
     SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD, \
@@ -3048,10 +3048,10 @@ int SDL_RenderDrawLinesF(SDL_Renderer *renderer,
                 *ptr_xy++ = q.x;
                 *ptr_xy++ = q.y + scale_y;
 
-#define ADD_TRIANGLE(i1, i2, i3)     \
-    *ptr_indices++ = cur_index + i1; \
-    *ptr_indices++ = cur_index + i2; \
-    *ptr_indices++ = cur_index + i3; \
+#define ADD_TRIANGLE(i1, i2, i3)        \
+    *ptr_indices++ = cur_index + (i1);  \
+    *ptr_indices++ = cur_index + (i2);  \
+    *ptr_indices++ = cur_index + (i3);  \
     num_indices += 3;
 
                 /* closed polyline, don´t draw twice the point */

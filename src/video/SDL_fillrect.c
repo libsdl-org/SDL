@@ -63,27 +63,27 @@ static void SDL_FillRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w
     SSE_BEGIN; \
  \
     while (h--) { \
-        n = w * bpp; \
+        n = (w) * (bpp); \
         p = pixels; \
  \
         if (n > 63) { \
             int adjust = 16 - ((uintptr_t)p & 15); \
             if (adjust < 16) { \
                 n -= adjust; \
-                adjust /= bpp; \
+                adjust /= (bpp); \
                 while (adjust--) { \
                     *((type *)p) = (type)color; \
-                    p += bpp; \
+                    p += (bpp); \
                 } \
             } \
             SSE_WORK; \
         } \
         if (n & 63) { \
             int remainder = (n & 63); \
-            remainder /= bpp; \
+            remainder /= (bpp); \
             while (remainder--) { \
                 *((type *)p) = (type)color; \
-                p += bpp; \
+                p += (bpp); \
             } \
         } \
         pixels += pitch; \

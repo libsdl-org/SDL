@@ -41,7 +41,7 @@
 #endif
 
 #define RETIFIOCTLERR(x) \
-    if (x == -1) {       \
+    if ((x) == -1) {     \
         free(input);     \
         input = NULL;    \
         return NULL;     \
