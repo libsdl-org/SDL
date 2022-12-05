@@ -38,7 +38,6 @@
 #include <sys/ioctl.h>
 #include <linux/input.h>
 
-#include "../../timer/SDL_timer_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_scancode_tables_c.h"
 #include "../../core/linux/SDL_evdev_capabilities.h"
@@ -876,7 +875,9 @@ static int SDL_EVDEV_device_removed(const char *dev_path)
 
 Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event)
 {
+    static Uint64 timestamp_offset;
     Uint64 timestamp;
+    Uint64 now = SDL_GetTicksNS();
 
     /* The kernel internally has nanosecond timestamps, but converts it
        to microseconds when delivering the events */
@@ -884,9 +885,15 @@ Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event)
     timestamp *= SDL_NS_PER_SECOND;
     timestamp += SDL_US_TO_NS(event->time.tv_usec);
 
-    /* Let's assume for now that we're using the same time base */
-    timestamp -= SDL_GetTickStartNS();
+    if (!timestamp_offset) {
+        timestamp_offset = (now - timestamp);
+    }
+    timestamp += timestamp_offset;
 
+    if (timestamp > now) {
+        timestamp_offset -= (timestamp - now);
+        timestamp = now;
+    }
     return timestamp;
 }
 

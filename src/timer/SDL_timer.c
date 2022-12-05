@@ -566,22 +566,6 @@ void SDL_TicksQuit(void)
 }
 
 Uint64
-SDL_GetTickStartNS(void)
-{
-    Uint64 starting_value, value;
-
-    if (!tick_start) {
-        SDL_TicksInit();
-    }
-
-    starting_value = tick_start;
-    value = (starting_value * tick_numerator_ns);
-    SDL_assert(value >= starting_value);
-    value /= tick_denominator_ns;
-    return value;
-}
-
-Uint64
 SDL_GetTicksNS(void)
 {
     Uint64 starting_value, value;
