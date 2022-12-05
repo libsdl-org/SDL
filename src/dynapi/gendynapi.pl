@@ -81,8 +81,6 @@ while (my $d = readdir(HEADERS)) {
 
             next if $existing{$fn};   # already slotted into the jump table.
 
-            $sdl_dynapi_sym_contents =~ s/# extra symbols go here/$fn;\n    # extra symbols go here/;
-
             my @params = split(',', $7);
 
             #print("rc == '$rc', fn == '$fn', params == '$params'\n");
@@ -140,6 +138,8 @@ while (my $d = readdir(HEADERS)) {
             print("NEW: $decl\n");
             print SDL_DYNAPI_PROCS_H "SDL_DYNAPI_PROC($rc,$fn,$paramstr,$argstr,$retstr)\n";
             print SDL_DYNAPI_OVERRIDES_H "#define $fn ${fn}_REAL\n";
+
+            $sdl_dynapi_sym_contents =~ s/# extra symbols go here/$fn;\n    # extra symbols go here/;
         } else {
             print("Failed to parse decl [$decl]!\n");
         }
