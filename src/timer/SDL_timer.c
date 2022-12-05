@@ -471,7 +471,8 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 #endif /* !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED */
 
 static Uint64 tick_start;
-static Uint64 tick_freq;
+static Uint32 tick_numerator;
+static Uint32 tick_denominator;
 
 #if defined(SDL_TIMER_WINDOWS) && \
     !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
@@ -513,8 +514,19 @@ static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name,
     }
 }
 
+static Uint32 CalculateGCD(Uint32 a, Uint32 b)
+{
+    if (b == 0) {
+        return a;
+    }
+    return CalculateGCD(b, (a % b));
+}
+
 void SDL_TicksInit(void)
 {
+    Uint64 tick_freq;
+    Uint32 gcd;
+
     if (tick_start) {
         return;
     }
@@ -525,6 +537,10 @@ void SDL_TicksInit(void)
                         SDL_TimerResolutionChanged, NULL);
 
     tick_freq = SDL_GetPerformanceFrequency();
+    SDL_assert(tick_freq > 0 && tick_freq <= SDL_MAX_UINT32);
+    gcd = CalculateGCD(SDL_NS_PER_SECOND, (Uint32)tick_freq);
+    tick_numerator = (SDL_NS_PER_SECOND / gcd);
+    tick_denominator = (Uint32)(tick_freq / gcd);
     tick_start = SDL_GetPerformanceCounter();
 }
 
@@ -541,21 +557,33 @@ void SDL_TicksQuit(void)
 Uint64
 SDL_GetTickStartNS(void)
 {
+    Uint64 starting_value, value;
+
     if (!tick_start) {
         SDL_TicksInit();
     }
 
-    return (tick_start * SDL_NS_PER_SECOND) / tick_freq;
+    starting_value = tick_start;
+    value = (starting_value * tick_numerator);
+    SDL_assert(value >= starting_value);
+    value /= tick_denominator;
+    return value;
 }
 
 Uint64
 SDL_GetTicksNS(void)
 {
+    Uint64 starting_value, value;
+
     if (!tick_start) {
         SDL_TicksInit();
     }
 
-    return ((SDL_GetPerformanceCounter() - tick_start) * SDL_NS_PER_SECOND) / tick_freq;
+    starting_value = (SDL_GetPerformanceCounter() - tick_start);
+    value = (starting_value * tick_numerator);
+    SDL_assert(value >= starting_value);
+    value /= tick_denominator;
+    return value;
 }
 
 Uint64 SDL_GetTicks(void)
