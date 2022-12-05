@@ -471,8 +471,10 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
 #endif /* !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED */
 
 static Uint64 tick_start;
-static Uint32 tick_numerator;
-static Uint32 tick_denominator;
+static Uint32 tick_numerator_ns;
+static Uint32 tick_denominator_ns;
+static Uint32 tick_numerator_ms;
+static Uint32 tick_denominator_ms;
 
 #if defined(SDL_TIMER_WINDOWS) && \
     !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
@@ -538,9 +540,15 @@ void SDL_TicksInit(void)
 
     tick_freq = SDL_GetPerformanceFrequency();
     SDL_assert(tick_freq > 0 && tick_freq <= SDL_MAX_UINT32);
+
     gcd = CalculateGCD(SDL_NS_PER_SECOND, (Uint32)tick_freq);
-    tick_numerator = (SDL_NS_PER_SECOND / gcd);
-    tick_denominator = (Uint32)(tick_freq / gcd);
+    tick_numerator_ns = (SDL_NS_PER_SECOND / gcd);
+    tick_denominator_ns = (Uint32)(tick_freq / gcd);
+
+    gcd = CalculateGCD(SDL_MS_PER_SECOND, (Uint32)tick_freq);
+    tick_numerator_ms = (SDL_MS_PER_SECOND / gcd);
+    tick_denominator_ms = (Uint32)(tick_freq / gcd);
+
     tick_start = SDL_GetPerformanceCounter();
 }
 
@@ -564,9 +572,9 @@ SDL_GetTickStartNS(void)
     }
 
     starting_value = tick_start;
-    value = (starting_value * tick_numerator);
+    value = (starting_value * tick_numerator_ns);
     SDL_assert(value >= starting_value);
-    value /= tick_denominator;
+    value /= tick_denominator_ns;
     return value;
 }
 
@@ -580,15 +588,25 @@ SDL_GetTicksNS(void)
     }
 
     starting_value = (SDL_GetPerformanceCounter() - tick_start);
-    value = (starting_value * tick_numerator);
+    value = (starting_value * tick_numerator_ns);
     SDL_assert(value >= starting_value);
-    value /= tick_denominator;
+    value /= tick_denominator_ns;
     return value;
 }
 
 Uint64 SDL_GetTicks(void)
 {
-    return SDL_NS_TO_MS(SDL_GetTicksNS());
+    Uint64 starting_value, value;
+
+    if (!tick_start) {
+        SDL_TicksInit();
+    }
+
+    starting_value = (SDL_GetPerformanceCounter() - tick_start);
+    value = (starting_value * tick_numerator_ms);
+    SDL_assert(value >= starting_value);
+    value /= tick_denominator_ms;
+    return value;
 }
 
 void SDL_Delay(Uint32 ms)
