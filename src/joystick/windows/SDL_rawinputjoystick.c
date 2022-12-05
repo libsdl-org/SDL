@@ -1451,6 +1451,7 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
     for (i = 0; i < nhats; ++i) {
         HIDP_DATA *item = GetData(ctx->hat_indices[i], ctx->data, data_length);
         if (item) {
+            Uint8 hat = SDL_HAT_CENTERED;
             const Uint8 hat_states[] = {
                 SDL_HAT_CENTERED,
                 SDL_HAT_UP,
@@ -1461,6 +1462,7 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
                 SDL_HAT_DOWN | SDL_HAT_LEFT,
                 SDL_HAT_LEFT,
                 SDL_HAT_UP | SDL_HAT_LEFT,
+                SDL_HAT_CENTERED,
             };
             ULONG state = item->RawValue;
 
@@ -1468,8 +1470,9 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCHING
                 match_state = (match_state & ~HAT_MASK) | hat_map[state];
 #endif
-                SDL_PrivateJoystickHat(timestamp, joystick, i, hat_states[state]);
+                hat = hat_states[state];
             }
+            SDL_PrivateJoystickHat(timestamp, joystick, i, hat);
         }
     }
 
