@@ -34,6 +34,7 @@ using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::Devices::Input;
 using namespace Windows::Graphics::Display;
+using namespace Windows::Graphics::Display::Core;
 using namespace Windows::Foundation;
 using namespace Windows::System;
 using namespace Windows::UI::Core;
@@ -120,7 +121,13 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
             int y = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Top);
             int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
-
+            if (SDL_WinRTGetDeviceFamily() == SDL_WINRT_DEVICEFAMILY_XBOX) {
+                HdmiDisplayInformation ^ hdi = HdmiDisplayInformation::GetForCurrentView();
+                if (hdi) {
+                    w = hdi->GetCurrentDisplayMode()->ResolutionWidthInRawPixels;
+                    h = hdi->GetCurrentDisplayMode()->ResolutionHeightInRawPixels;
+                }
+            }
 #if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION == NTDDI_WIN8)
             /* WinPhone 8.0 always keeps its native window size in portrait,
                regardless of orientation.  This changes in WinPhone 8.1,

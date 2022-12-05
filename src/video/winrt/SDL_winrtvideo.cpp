@@ -43,6 +43,7 @@ using namespace std;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
+using namespace Windows::Graphics::Display::Core;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::ViewManagement;
 
@@ -420,6 +421,14 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
 #if (NTDDI_VERSION >= NTDDI_WIN10) || (SDL_WINRT_USE_APPLICATIONVIEW && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
                 mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
                 mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
+                if (SDL_WinRTGetDeviceFamily() == SDL_WINRT_DEVICEFAMILY_XBOX) {
+                    HdmiDisplayInformation ^ hdi = HdmiDisplayInformation::GetForCurrentView();
+                    if (hdi) {
+                        mode.w = hdi->GetCurrentDisplayMode()->ResolutionWidthInRawPixels;
+                        mode.h = hdi->GetCurrentDisplayMode()->ResolutionHeightInRawPixels;
+                    }
+                }
+
 #else
                 /* On platform(s) that do not support VisibleBounds, such as Windows 8.1,
                    fall back to CoreWindow's Bounds property.
@@ -509,6 +518,13 @@ WINRT_DetectWindowFlags(SDL_Window *window)
             SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
             int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+            if (SDL_WinRTGetDeviceFamily() == SDL_WINRT_DEVICEFAMILY_XBOX) {
+                HdmiDisplayInformation ^ hdi = HdmiDisplayInformation::GetForCurrentView();
+                if (hdi) {
+                    w = hdi->GetCurrentDisplayMode()->ResolutionWidthInRawPixels;
+                    h = hdi->GetCurrentDisplayMode()->ResolutionHeightInRawPixels;
+                }
+            }
 
 #if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
             // On all WinRT platforms, except for WinPhone 8.0, rotate the
@@ -722,6 +738,13 @@ int WINRT_CreateWindow(_THIS, SDL_Window *window)
             */
             window->w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
             window->h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+            if (SDL_WinRTGetDeviceFamily() == SDL_WINRT_DEVICEFAMILY_XBOX) {
+                HdmiDisplayInformation ^ hdi = HdmiDisplayInformation::GetForCurrentView();
+                if (hdi) {
+                    window->w = hdi->GetCurrentDisplayMode()->ResolutionWidthInRawPixels;
+                    window->h = hdi->GetCurrentDisplayMode()->ResolutionHeightInRawPixels;
+                }
+            }
         }
 #endif
 
