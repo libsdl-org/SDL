@@ -180,10 +180,6 @@ Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
     static Uint64 timestamp_offset;
     const Uint64 now = SDL_GetTicksNS();
 
-    if (!nsTimestamp) {
-        return 0;
-    }
-
     if (nsTimestamp < last) {
         /* 32-bit timer rollover, bump the offset */
         timestamp_offset += SDL_MS_TO_NS(0x100000000LLU);
@@ -215,22 +211,38 @@ static const struct zwp_input_timestamps_v1_listener timestamp_listener = {
 
 static Uint64 Wayland_GetKeyboardTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return Wayland_GetEventTimestamp(input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    if (wl_timestamp_ms) {
+        return Wayland_GetEventTimestamp(input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    }
+
+    return 0;
 }
 
 static Uint64 Wayland_GetKeyboardTimestampRaw(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms);
+    if (wl_timestamp_ms) {
+        return input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms);
+    }
+
+    return 0;
 }
 
 static Uint64 Wayland_GetPointerTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return Wayland_GetEventTimestamp(input->pointer_timestamp_ns ? input->pointer_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    if (wl_timestamp_ms) {
+        return Wayland_GetEventTimestamp(input->pointer_timestamp_ns ? input->pointer_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    }
+
+    return 0;
 }
 
 Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return Wayland_GetEventTimestamp(input->touch_timestamp_ns ? input->touch_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    if (wl_timestamp_ms) {
+        return Wayland_GetEventTimestamp(input->touch_timestamp_ns ? input->touch_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    }
+
+    return 0;
 }
 
 void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input)
