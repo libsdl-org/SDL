@@ -750,7 +750,6 @@ static int DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     joystick->naxes = device->axes;
     joystick->nhats = device->hats;
-    joystick->nballs = 0;
     joystick->nbuttons = device->buttons;
     return 0;
 }

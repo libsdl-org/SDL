@@ -153,8 +153,6 @@ extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern int SDL_PrivateJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
-extern int SDL_PrivateJoystickBall(Uint64 timestamp, SDL_Joystick *joystick,
-                                   Uint8 ball, Sint16 xrel, Sint16 yrel);
 extern int SDL_PrivateJoystickHat(Uint64 timestamp, SDL_Joystick *joystick,
                                   Uint8 hat, Uint8 value);
 extern int SDL_PrivateJoystickButton(Uint64 timestamp, SDL_Joystick *joystick,

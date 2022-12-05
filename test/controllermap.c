@@ -370,9 +370,8 @@ WatchJoystick(SDL_Joystick *joystick)
     name = SDL_JoystickName(joystick);
     SDL_Log("Watching joystick %" SDL_PRIs32 ": (%s)\n", SDL_JoystickInstanceID(joystick),
             name ? name : "Unknown Joystick");
-    SDL_Log("Joystick has %d axes, %d hats, %d balls, and %d buttons\n",
-            SDL_JoystickNumAxes(joystick), SDL_JoystickNumHats(joystick),
-            SDL_JoystickNumBalls(joystick), SDL_JoystickNumButtons(joystick));
+    SDL_Log("Joystick has %d axes, %d hats, and %d buttons\n",
+            SDL_JoystickNumAxes(joystick), SDL_JoystickNumHats(joystick), SDL_JoystickNumButtons(joystick));
 
     SDL_Log("\n\n\
     ====================================================================================\n\
@@ -497,8 +496,6 @@ WatchJoystick(SDL_Joystick *joystick)
                         ConfigureBinding(&binding);
                     }
                 }
-                break;
-            case SDL_JOYBALLMOTION:
                 break;
             case SDL_JOYBUTTONDOWN:
                 if (event.jbutton.which == nJoystickID) {
@@ -773,7 +770,6 @@ int main(int argc, char *argv[])
             SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick),
                                       guid, sizeof(guid));
             SDL_Log("       axes: %d\n", SDL_JoystickNumAxes(joystick));
-            SDL_Log("      balls: %d\n", SDL_JoystickNumBalls(joystick));
             SDL_Log("       hats: %d\n", SDL_JoystickNumHats(joystick));
             SDL_Log("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
             SDL_Log("instance id: %" SDL_PRIu32 "\n", SDL_JoystickInstanceID(joystick));
