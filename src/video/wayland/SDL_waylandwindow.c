@@ -528,6 +528,7 @@ static void handle_configure_xdg_shell_surface(void *data, struct xdg_surface *x
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
 
+    xdg_surface_set_window_geometry(xdg, 0, 0, window->w, window->h);
     Wayland_HandleResize(window, window->w, window->h, wind->scale_factor);
     xdg_surface_ack_configure(xdg, serial);
 
