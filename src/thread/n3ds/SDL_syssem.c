@@ -26,13 +26,14 @@
 
 #include <3ds.h>
 
+int WaitOnSemaphoreFor(SDL_sem *sem, Sint64 timeout);
+
 struct SDL_semaphore
 {
     LightSemaphore semaphore;
 };
 
-SDL_sem *
-SDL_CreateSemaphore(Uint32 initial_value)
+SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_sem *sem;
 
@@ -57,44 +58,50 @@ SDL_CreateSemaphore(Uint32 initial_value)
 */
 void SDL_DestroySemaphore(SDL_sem *sem)
 {
-    if (sem) {
-        SDL_free(sem);
-    }
+    SDL_free(sem);
 }
 
 int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
 {
-    int retval;
-
     if (sem == NULL) {
         return SDL_InvalidParamError("sem");
     }
 
     if (timeoutNS == SDL_MUTEX_MAXWAIT) {
         LightSemaphore_Acquire(&sem->semaphore, 1);
-        retval = 0;
-    } else {
-        int return_code = LightSemaphore_TryAcquire(&sem->semaphore, 1);
-        if (return_code != 0) {
-            /* FIXME: Does this code guarantee a wall clock timeout here?
-             *        Can we handle sub-millisecond delays? */
-            u32 timeout = (u32)SDL_NS_TO_MS(timeoutNS);
-            for (u32 i = 0; i < timeout; i++) {
-                svcSleepThread(1000000LL);
-                return_code = LightSemaphore_TryAcquire(&sem->semaphore, 1);
-                if (return_code == 0) {
-                    break;
-                }
-            }
-        }
-        retval = return_code != 0 ? SDL_MUTEX_TIMEDOUT : 0;
+        return 0;
     }
 
-    return retval;
+    if (timeoutNS == 0) {
+        int result = LightSemaphore_TryAcquire(&sem->semaphore, 1);
+        /* TryWait will block unless we wait about 50 microseconds */
+        SDL_DelayNS(SDL_US_TO_NS(50));
+        return result == 0 ? 0 : SDL_MUTEX_TIMEDOUT;
+    }
+
+    if (LightSemaphore_TryAcquire(&sem->semaphore, 1) != 0) {
+        return WaitOnSemaphoreFor(sem, timeoutNS);
+    }
+
+    return 0;
 }
 
-Uint32
-SDL_SemValue(SDL_sem *sem)
+int WaitOnSemaphoreFor(SDL_sem *sem, Sint64 timeout)
+{
+    Uint64 stop_time = SDL_GetTicksNS() + timeout;
+    Uint64 current_time = SDL_GetTicksNS();
+    while (current_time < stop_time) {
+        if (LightSemaphore_TryAcquire(&sem->semaphore, 1) == 0) {
+            return 0;
+        }
+        /* 100 microseconds seems to be the sweet spot */
+        SDL_DelayNS(SDL_US_TO_NS(100));
+        current_time = SDL_GetTicksNS();
+    }
+    return SDL_MUTEX_TIMEDOUT;
+}
+
+Uint32 SDL_SemValue(SDL_sem *sem)
 {
     if (sem == NULL) {
         SDL_InvalidParamError("sem");
