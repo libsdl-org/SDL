@@ -2259,6 +2259,17 @@ SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id)
 }
 
 SDL_bool
+SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id == USB_VENDOR_SONY) {
+        if (product_id == USB_PRODUCT_SONY_DS5_EDGE) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+SDL_bool
 SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
