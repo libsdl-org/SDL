@@ -208,6 +208,8 @@ TestOverheadContended(SDL_bool try_wait)
         }
         /* Make sure threads consumed everything */
         while (SDL_SemValue(sem)) {
+            /* Friendlier with cooperative threading models */
+            SDL_DelayNS(1);
         }
     }
     end_ticks = SDL_GetTicks();

@@ -72,18 +72,17 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
         return 0;
     }
 
-    if (timeoutNS == 0) {
+    {
         int result = LightSemaphore_TryAcquire(&sem->semaphore, 1);
-        /* TryWait will block unless we wait about 50 microseconds */
-        SDL_DelayNS(SDL_US_TO_NS(50));
+        if (result != 0 && timeoutNS != 0) {
+            result = WaitOnSemaphoreFor(sem, timeoutNS);
+        }
+
+        /* Avoid starvation since this is a cooperative threading model */
+        SDL_DelayNS(1);
+
         return result == 0 ? 0 : SDL_MUTEX_TIMEDOUT;
     }
-
-    if (LightSemaphore_TryAcquire(&sem->semaphore, 1) != 0) {
-        return WaitOnSemaphoreFor(sem, timeoutNS);
-    }
-
-    return 0;
 }
 
 int WaitOnSemaphoreFor(SDL_sem *sem, Sint64 timeout)
