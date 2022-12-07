@@ -1809,7 +1809,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
             name = SDL_strdup("PS4 Controller");
             break;
         case SDL_CONTROLLER_TYPE_PS5:
-            name = SDL_strdup("PS5 Controller");
+            name = SDL_strdup("DualSense Wireless Controller");
             break;
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
             name = SDL_strdup("Nintendo Switch Pro Controller");

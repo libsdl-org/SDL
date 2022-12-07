@@ -480,7 +480,11 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     device->joystick_type = joystick_type;
     device->type = SDL_CONTROLLER_TYPE_PS5;
     if (device->vendor_id == USB_VENDOR_SONY) {
-        HIDAPI_SetDeviceName(device, "PS5 Controller");
+        if (SDL_IsJoystickDualSenseEdge(device->vendor_id, device->product_id)) {
+            HIDAPI_SetDeviceName(device, "DualSense Edge Wireless Controller");
+        } else {
+            HIDAPI_SetDeviceName(device, "DualSense Wireless Controller");
+        }
     }
     HIDAPI_SetDeviceSerial(device, serial);
 
