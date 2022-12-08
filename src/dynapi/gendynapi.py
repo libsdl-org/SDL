@@ -215,11 +215,19 @@ def main():
                     b = match.group(2).strip()
                     c = match.group(3).strip()
 
-                    # cut-off last word to get callback name
-                    d = b.rsplit('*', 1)[0]
+                    try:
+                        (param_type, param_name) = b.rsplit('*', 1)
+                    except:
+                        param_type = t;
+                        param_name = "param_name_not_specified"
+
+                    # bug rsplit ??
+                    if param_name == "":
+                        param_name = "param_name_not_specified"
 
                     # recontruct a callback name for future parsing
-                    func_param_type.append(a + " (" + d + "*REWRITE_NAME)" + c)
+                    func_param_type.append(a + " (" + param_type.strip() + " *REWRITE_NAME)" + c)
+                    func_param_name.append(param_name.strip())
 
                     continue
 
