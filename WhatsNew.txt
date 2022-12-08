@@ -2,6 +2,14 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.28.0:
+---------------------------------------------------------------------------
+
+General:
+* Added a display event SDL_DISPLAYEVENT_MOVED which is sent when the primary monitor changes or displays change position relative to each other
+
+
+---------------------------------------------------------------------------
 2.26.0:
 ---------------------------------------------------------------------------
 
