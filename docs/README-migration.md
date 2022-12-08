@@ -308,3 +308,7 @@ The following hints have been removed:
 * SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
 * SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
 * SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
+
+* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
+* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
+

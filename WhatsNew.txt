@@ -30,6 +30,8 @@ General:
     * SDL_HINT_VIDEO_X11_FORCE_EGL
     * SDL_HINT_VIDEO_X11_XINERAMA
     * SDL_HINT_VIDEO_X11_XVIDMODE
+* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
+* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
 * SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
 * Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace the SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
 * Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat

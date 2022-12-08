@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
         SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
     }
 
-    SDL_Log("Select a driver with the SDL_AUDIODRIVER environment variable.\n");
+    SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.\n");
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
 #ifdef __EMSCRIPTEN__
