@@ -69,7 +69,7 @@ int main(int argc, char **argv)
         for (i = 0; i < n; ++i) {
             SDL_Log("  %d: %s\n", i, SDL_GetAudioDriver(i));
         }
-        SDL_Log("Select a driver with the SDL_AUDIODRIVER environment variable.\n");
+        SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.\n");
     }
 
     SDL_Log("Using audio driver: %s\n\n", SDL_GetCurrentAudioDriver());
