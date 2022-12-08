@@ -1248,14 +1248,15 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                                   mods_locked, 0, 0, group);
 
+    SDL_ToggleModState(KMOD_NUM, modstate & input->xkb.idx_num);
+    SDL_ToggleModState(KMOD_CAPS, modstate & input->xkb.idx_caps);
+
     /* Toggle the modifier states for virtual keyboards, as they may not send key presses. */
     if (input->keyboard_is_virtual) {
         SDL_ToggleModState(KMOD_SHIFT, modstate & input->xkb.idx_shift);
         SDL_ToggleModState(KMOD_CTRL, modstate & input->xkb.idx_ctrl);
         SDL_ToggleModState(KMOD_ALT, modstate & input->xkb.idx_alt);
         SDL_ToggleModState(KMOD_GUI, modstate & input->xkb.idx_gui);
-        SDL_ToggleModState(KMOD_NUM, modstate & input->xkb.idx_num);
-        SDL_ToggleModState(KMOD_CAPS, modstate & input->xkb.idx_caps);
     }
 
     /* If a key is repeating, update the text to apply the modifier. */
