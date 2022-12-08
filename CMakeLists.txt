@@ -3076,6 +3076,7 @@ string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_STATIC_LIBS "$
 if(NOT SDL_SHARED)
   string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_LIBS "${SDL_LIBS}")
 endif()
+listtostr(PKGCONFIG_DEPENDS PKGCONFIG_DEPENDS)
 
 if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL2")
   message(STATUS "\"pkg-config --static --libs sdl2\" will return invalid information")
@@ -3167,6 +3168,8 @@ if(SDL_CCACHE AND NOT CMAKE_VERSION VERSION_LESS 3.4)
   else()
     set(HAVE_CCACHE OFF)
   endif()
+else()
+  set(HAVE_CCACHE OFF)
 endif()
 
 if(SDL_TESTS)
