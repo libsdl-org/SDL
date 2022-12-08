@@ -1388,8 +1388,12 @@ Uint8 SDL_EventState(Uint32 type, int state)
     return current_state;
 }
 
-Uint32
-SDL_RegisterEvents(int numevents)
+Uint8 SDL_GetEventState(Uint32 type)
+{
+    return SDL_EventState(type, SDL_QUERY);
+}
+
+Uint32 SDL_RegisterEvents(int numevents)
 {
     Uint32 event_base;
 

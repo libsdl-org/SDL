@@ -888,3 +888,4 @@
 #define SDL_memset4 SDL_memset4_REAL
 #define SDL_GetTicksNS SDL_GetTicksNS_REAL
 #define SDL_DelayNS SDL_DelayNS_REAL
+#define SDL_GetEventState SDL_GetEventState_REAL

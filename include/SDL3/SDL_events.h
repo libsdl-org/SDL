@@ -1097,7 +1097,7 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
 #define SDL_ENABLE   1
 
 /**
- * Set the state of processing events by type.
+ * Set or query the state of processing events by type.
  *
  * `state` may be any of the following:
  *
@@ -1116,8 +1116,26 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
  * \sa SDL_GetEventState
  */
 extern DECLSPEC Uint8 SDLCALL SDL_EventState(Uint32 type, int state);
+
+/**
+ * Query the state of processing events by type.
+ *
+ * This is equivalent to calling `SDL_EventState(type, SDL_QUERY)`.
+ *
+ * In SDL3, this is a proper function, but in SDL2, this was a macro.
+ *
+ * \param type the type of event; see SDL_EventType for details
+ * \returns `SDL_DISABLE` or `SDL_ENABLE`, representing the processing state
+ *          of the event before this function makes any changes to it.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_EventState
+ */
+extern DECLSPEC Uint8 SDLCALL SDL_GetEventState(Uint32 type);
+
 /* @} */
-#define SDL_GetEventState(type) SDL_EventState(type, SDL_QUERY)
+
 
 /**
  * Allocate a set of user-defined events, and return the beginning event

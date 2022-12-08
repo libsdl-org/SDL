@@ -56,6 +56,8 @@ The `timestamp_us` member of the sensor events has been renamed `sensor_timestam
 
 You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
 
+SDL_GetEventState used to be a macro, now it's a real function, but otherwise functions identically.
+
 
 ## SDL_gamecontroller.h
 

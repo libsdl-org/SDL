@@ -964,3 +964,4 @@ SDL_DYNAPI_PROC(int,SDL_GetWindowWMInfo,(SDL_Window *a, SDL_SysWMinfo *b, Uint32
 SDL_DYNAPI_PROC(void*,SDL_memset4,(void *a, Uint32 b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(Uint64,SDL_GetTicksNS,(void),(),return)
 SDL_DYNAPI_PROC(void,SDL_DelayNS,(Uint64 a),(a),)
+SDL_DYNAPI_PROC(Uint8,SDL_GetEventState,(Uint32 a),(a),return)
