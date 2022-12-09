@@ -1540,7 +1540,7 @@ static void SDLTest_PrintEvent(SDL_Event *event)
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " ICC profile changed", event->window.windowID);
             break;
         case SDL_WINDOWEVENT_DISPLAY_CHANGED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %d", event->window.windowID, event->window.data1);
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
             break;
         default:
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " got unknown event 0x%4.4x",
