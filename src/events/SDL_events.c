@@ -247,6 +247,7 @@ static void SDL_LogEvent(const SDL_Event *event)
                 SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_ORIENTATION);
                 SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_CONNECTED);
                 SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_DISCONNECTED);
+                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_MOVED);
 #undef SDL_DISPLAYEVENT_CASE
             default:
                 SDL_strlcpy(name2, "UNKNOWN (bug? fixme?)", sizeof(name2));
