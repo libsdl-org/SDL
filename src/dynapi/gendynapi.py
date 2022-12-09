@@ -23,6 +23,11 @@
 #  When you add a public API to SDL, please run this script, make sure the
 #  output looks sane (git diff, it adds to existing files), and commit it.
 #  It keeps the dynamic API jump table operating correctly.
+#
+#  OS-specific API:
+#   After running the script, you have to manually add #ifdef __WIN32__
+#   or similar around the function in 'SDL_dynapi_procs.h'
+#
 
 import re
 import os
