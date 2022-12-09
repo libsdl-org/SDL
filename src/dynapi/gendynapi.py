@@ -403,10 +403,6 @@ def add_dyn_api(proc):
         if argtype == "void":
             continue
 
-        # Special case, '...' has no parameter name
-        if argtype == "...":
-            continue
-
         # Var name: a, b, c, ...
         varname = chr(i)
         i += 1
