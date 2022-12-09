@@ -381,15 +381,16 @@ def add_dyn_api(proc):
             continue
 
         # Var name: a, b, c, ...
-        varname = " " + chr(i)
+        varname = chr(i)
         i += 1
 
         tmp = argtype.replace("REWRITE_NAME", varname)
-        dyn_proc += tmp + ","
+        dyn_proc += tmp + ", "
         remove_last = True
 
-    # remove last char ','
+    # remove last 2 char ', '
     if remove_last:
+        dyn_proc = dyn_proc[:-1]
         dyn_proc = dyn_proc[:-1]
 
     dyn_proc += "),("
