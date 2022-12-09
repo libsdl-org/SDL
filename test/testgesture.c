@@ -284,7 +284,7 @@ loop(void)
 #endif
 }
 
-const char *usage = "\n\
+static const char *usage = "\n\
     i: info about devices \n\
     r: record a Gesture.(press 'r' before each new record)\n\
     s: save gestures into 'gestureSave'file\n\
@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_Log(usage);
+    SDL_Log("%s", usage);
 
 
 #ifdef __EMSCRIPTEN__
