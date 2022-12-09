@@ -79,6 +79,8 @@ static SDL_GestureTouch *SDL_gestureTouch;
 static int SDL_numGestureTouches = 0;
 static SDL_bool recordAll;
 
+static int SDL_GestureProcessEvent(void *userdata, SDL_Event *event);
+
 #if 0
 static void PrintPath(SDL_FloatPoint *path)
 {
@@ -108,8 +110,15 @@ int SDL_RecordGesture(SDL_TouchID touchId)
     return touchId < 0;
 }
 
-void SDL_GestureQuit()
+
+void SDL_GestureInit(void)
 {
+    SDL_AddEventWatch(SDL_GestureProcessEvent, NULL);
+}
+
+void SDL_GestureQuit(void)
+{
+    SDL_DelEventWatch(SDL_GestureProcessEvent, NULL);
     SDL_free(SDL_gestureTouch);
     SDL_gestureTouch = NULL;
 }
@@ -569,7 +578,8 @@ static void SDL_SendDollarRecord(SDL_GestureTouch *touch, SDL_GestureID gestureI
 }
 #endif
 
-void SDL_GestureProcessEvent(SDL_Event *event)
+/* Returned value is ignored because this is a callback for event watching */
+static int SDL_GestureProcessEvent(void *userdata, SDL_Event *event)
 {
     float x, y;
 #if defined(ENABLE_DOLLAR)
@@ -591,7 +601,7 @@ void SDL_GestureProcessEvent(SDL_Event *event)
 
         /* Shouldn't be possible */
         if (inTouch == NULL) {
-            return;
+            return 0;
         }
 
         x = event->tfinger.x;
@@ -738,6 +748,8 @@ void SDL_GestureProcessEvent(SDL_Event *event)
 #endif
         }
     }
+
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

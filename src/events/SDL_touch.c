@@ -41,6 +41,7 @@ static SDL_TouchID track_touchid;
 /* Public functions */
 int SDL_TouchInit(void)
 {
+    SDL_GestureInit();
     return 0;
 }
 

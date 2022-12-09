@@ -197,7 +197,7 @@ loop(void)
                 break;
             }
 
-            case SDLK_SPACE:
+            case SDLK_r:
                 SDL_RecordGesture(-1);
                 break;
 
@@ -209,9 +209,23 @@ loop(void)
 
             case SDLK_l:
                 stream = SDL_RWFromFile("gestureSave", "r");
-                SDL_Log("Loaded: %i", SDL_LoadDollarTemplates(-1, stream));
-                SDL_RWclose(stream);
+                if (stream) {
+                    SDL_Log("Loaded: %i", SDL_LoadDollarTemplates(-1, stream));
+                    SDL_RWclose(stream);
+                } else {
+                    SDL_Log("Cannot load 'gestureSave' file");
+                }
                 break;
+
+            case SDLK_v:
+                /* Transform mouse event to touch events for testing without a touch screen */
+                SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "1");
+                SDL_Log("SDL_HINT_MOUSE_TOUCH_EVENTS enabled");
+                break;
+
+
+
+
             }
             break;
 
@@ -270,6 +284,14 @@ loop(void)
 #endif
 }
 
+const char *usage = "\n\
+    i: info about devices \n\
+    r: record a Gesture.(press 'r' before each new record)\n\
+    s: save gestures into 'gestureSave'file\n\
+    l: load 'gestureSave' file\n\
+    v: enable virtual touch. Touch events are synthetized when Mouse events occur\n\
+";
+
 int main(int argc, char *argv[])
 {
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -287,11 +309,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    SDL_Log(usage);
+
+
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!quitting) {
         loop();
+        SDL_Delay(10);
     }
 #endif
 
