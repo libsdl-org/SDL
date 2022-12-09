@@ -584,7 +584,7 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX,(void),(),return)
 SDL_DYNAPI_PROC(SDL_AssertionHandler,SDL_GetDefaultAssertionHandler,(void),(),return)
 SDL_DYNAPI_PROC(SDL_AssertionHandler,SDL_GetAssertionHandler,(void **a),(a),return)
 #if defined(__WIN32__) || defined(__WINGDK__)
-SDL_DYNAPI_PROC(SDL_bool,SDL_DXGIGetOutputInfo,(int a,int *b, int *c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_DXGIGetOutputInfo,(int a, int *b, int *c),(a,b,c),return)
 #endif
 SDL_DYNAPI_PROC(SDL_bool,SDL_RenderIsClipEnabled,(SDL_Renderer *a),(a),return)
 #ifdef __WINRT__
