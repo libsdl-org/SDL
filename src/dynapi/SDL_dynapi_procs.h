@@ -804,8 +804,8 @@ SDL_DYNAPI_PROC(void*,SDL_Metal_GetLayer,(SDL_MetalView a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_Metal_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)
 SDL_DYNAPI_PROC(double,SDL_trunc,(double a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_truncf,(float a),(a),return)
-SDL_DYNAPI_PROC(SDL_Locale *,SDL_GetPreferredLocales,(void),(),return)
-SDL_DYNAPI_PROC(void*,SDL_SIMDRealloc,(void *a, const size_t b),(a, b),return)
+SDL_DYNAPI_PROC(SDL_Locale*,SDL_GetPreferredLocales,(void),(),return)
+SDL_DYNAPI_PROC(void*,SDL_SIMDRealloc,(void *a, const size_t b),(a,b),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(SDL_bool,SDL_AndroidRequestPermission,(const char *a),(a),return)
 #endif
