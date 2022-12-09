@@ -1458,6 +1458,10 @@ static void SDLTest_PrintEvent(SDL_Event *event)
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
                     event->display.display);
             break;
+        case SDL_DISPLAYEVENT_MOVED:
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
+                    event->display.display);
+            break;
         case SDL_DISPLAYEVENT_ORIENTATION:
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
                     event->display.display, DisplayOrientationName(event->display.data1));
