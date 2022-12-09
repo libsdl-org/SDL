@@ -159,6 +159,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->VideoInit = WIN_VideoInit;
     device->VideoQuit = WIN_VideoQuit;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+    device->RefreshDisplays = WIN_RefreshDisplays;
     device->GetDisplayBounds = WIN_GetDisplayBounds;
     device->GetDisplayUsableBounds = WIN_GetDisplayUsableBounds;
     device->GetDisplayDPI = WIN_GetDisplayDPI;
