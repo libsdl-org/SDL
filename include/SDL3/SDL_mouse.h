@@ -391,6 +391,9 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetCursor(void);
 /**
  * Get the default cursor.
  *
+ * You do not have to call SDL_FreeCursor() on the return value,
+ * but it is safe to do so.
+ *
  * \returns the default cursor on success or NULL on failure.
  *
  * \since This function is available since SDL 3.0.0.
