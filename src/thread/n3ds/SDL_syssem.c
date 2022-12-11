@@ -73,7 +73,7 @@ int SDL_SemWaitTimeoutNS(SDL_sem *sem, Sint64 timeoutNS)
     }
 
     if (LightSemaphore_TryAcquire(&sem->semaphore, 1) != 0) {
-        return WaitOnSemaphore(sem, timeoutNS);
+        return WaitOnSemaphoreFor(sem, timeoutNS);
     }
 
     return 0;
