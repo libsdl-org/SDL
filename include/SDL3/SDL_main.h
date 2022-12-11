@@ -65,9 +65,8 @@
 /* On iOS SDL provides a main function that creates an application delegate
    and starts the iOS application run loop.
 
-   If you link with SDL dynamically on iOS, the main function can't be in a
-   shared library, so you need to link with libSDL_main.a, which includes a
-   stub main function that calls into the shared library to start execution.
+   To use it, just #include SDL_main.h in the source file that contains your
+   main() function.
 
    See src/video/uikit/SDL_uikitappdelegate.m for more details.
  */
@@ -287,9 +286,10 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(_SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
-#if defined(__WIN32__) || defined(__GDK__) /* TODO: other platforms */
+#if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) /* TODO: other platforms */
 #include <SDL3/SDL_main_impl.h>
 #endif
+
 #endif /* SDL_MAIN_HANDLED */
 
 #endif /* SDL_main_h_ */

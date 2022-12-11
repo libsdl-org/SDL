@@ -4,8 +4,9 @@
  *  use however you want
  */
 
-#include "SDL.h"
-#include "SDL_opengles.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_opengles.h>
 #include "common.h"
 #include <math.h>
 #include <time.h>
