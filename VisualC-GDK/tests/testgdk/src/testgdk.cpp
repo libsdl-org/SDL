@@ -18,9 +18,10 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "SDL_test.h"
-#include "SDL_test_common.h"
+#include <SDL3/SDL_test.h>
+#include <SDL3/SDL_test_common.h>
 #include "../src/core/windows/SDL_windows.h"
+#include <SDL3/SDL_main.h>
 
 extern "C" {
 #include "../test/testutils.h"

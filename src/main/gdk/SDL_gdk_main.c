@@ -17,22 +17,9 @@
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
+
+  Nothing to do here, the code moved into SDL_main_impl.h
+    TODO: remove this file
 */
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h> /* until this SDL_main impl is converted to header-only.. */
-
-/* Include this so we define UNICODE properly */
-#include "../../core/windows/SDL_windows.h"
-
-#ifdef main
-#undef main
-#endif /* main */
-
-/* This is where execution begins */
-int WINAPI
-WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
-{
-    return SDL_GDKRunApp(SDL_main, NULL);
-}
 
 /* vi: set ts=4 sw=4 expandtab: */
