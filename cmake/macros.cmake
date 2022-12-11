@@ -29,7 +29,7 @@ ENDMACRO()
 
 # Message Output
 macro(MESSAGE_WARN _TEXT)
-  message(STATUS "*** WARNING: ${_TEXT}")
+  message(WARNING "${_TEXT}")
 endmacro()
 
 macro(MESSAGE_ERROR _TEXT)
@@ -78,7 +78,7 @@ macro(LISTTOSTR _LIST _OUTPUT)
   endforeach()
 endmacro()
 
-macro(LISTTOSTRREV _LIST _OUTPUT)
+function(LISTTOSTRREV _LIST _OUTPUT)
   if(${ARGC} EQUAL 3)
     # prefix for each element
     set(_LPREFIX ${ARGV2})
@@ -87,10 +87,12 @@ macro(LISTTOSTRREV _LIST _OUTPUT)
   endif()
   # Do not use string(REPLACE ";" " ") here to avoid messing up list
   # entries
+  set(res)
   foreach(_ITEM ${${_LIST}})
-    set(${_OUTPUT} "${_LPREFIX}${_ITEM} ${${_OUTPUT}}")
+    set(res "${res} ${_LPREFIX}${_ITEM}")
   endforeach()
-endmacro()
+  set($_OUTPUT} "${res}" PARENT_SCOPE)
+endfunction()
 
 if(CMAKE_VERSION VERSION_LESS 3.16.0 OR SDL3_SUBPROJECT)
   # - CMake versions <3.16 do not support the OBJC language
