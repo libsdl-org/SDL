@@ -4,7 +4,8 @@
  *  use however you want
  */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include "common.h"
 
 #define NUM_HAPPY_FACES 100     /* number of faces to draw */

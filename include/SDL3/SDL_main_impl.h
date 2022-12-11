@@ -103,7 +103,35 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 #define main    SDL_main
 
 /* end of __WIN32__ and __GDK__ impls */
-#elif 1 /* TODO: next platform */
+#elif defined(__IOS__) || defined(__TVOS__)
+
+#ifdef main
+#  undef main
+#endif /* main */
+
+#include <SDL3/begin_code.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int main(int argc, char *argv[])
+{
+    return SDL_UIKitRunApp(argc, argv, SDL_main);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include <SDL3/close_code.h>
+
+/* rename users main() function to SDL_main() so it can be called from the wrapper above */
+#define main    SDL_main
+
+/* end of __IOS__ and __TVOS__ impls */
+
+/* TODO: remaining platforms */
 
 #endif /* __WIN32__ etc */
 

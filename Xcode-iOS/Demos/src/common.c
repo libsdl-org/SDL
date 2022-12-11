@@ -5,7 +5,7 @@
  */
 
 #include "common.h"
-#include "SDL.h"
+#include <SDL3/SDL.h>
 #include <stdlib.h>
 
 /*

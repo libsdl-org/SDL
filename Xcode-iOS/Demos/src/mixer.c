@@ -4,7 +4,8 @@
  *  use however you want
  */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include "common.h"
 
 #define NUM_CHANNELS 8          /* max number of sounds we can play at once */
