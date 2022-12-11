@@ -62,7 +62,7 @@ static void DUMMY_EVDEV_Poll(_THIS);
 
 static int DUMMY_Available(void)
 {
-    const char *envr = SDL_GetHint(SDL_HINT_VIDEODRIVER);
+    const char *envr = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
     if (envr) {
         if (SDL_strcmp(envr, DUMMYVID_DRIVER_NAME) == 0) {
             return 1;

@@ -956,7 +956,7 @@ static Uint32 SDL_GetCPUFeatures(void)
     return SDL_CPUFeatures;
 }
 
-#define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & f) ? SDL_TRUE : SDL_FALSE)
+#define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & (f)) ? SDL_TRUE : SDL_FALSE)
 
 SDL_bool SDL_HasRDTSC(void)
 {

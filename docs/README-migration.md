@@ -56,6 +56,8 @@ The `timestamp_us` member of the sensor events has been renamed `sensor_timestam
 
 You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
 
+SDL_GetEventState used to be a macro, now it's a real function, but otherwise functions identically.
+
 
 ## SDL_gamecontroller.h
 
@@ -306,3 +308,7 @@ The following hints have been removed:
 * SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
 * SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
 * SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
+
+* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
+* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
+

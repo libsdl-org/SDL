@@ -528,13 +528,10 @@ SDL_JoystickOpen(int device_index)
     if (joystick->nhats > 0) {
         joystick->hats = (Uint8 *)SDL_calloc(joystick->nhats, sizeof(Uint8));
     }
-    if (joystick->nballs > 0) {
-        joystick->balls = (struct balldelta *)SDL_calloc(joystick->nballs, sizeof(*joystick->balls));
-    }
     if (joystick->nbuttons > 0) {
         joystick->buttons = (Uint8 *)SDL_calloc(joystick->nbuttons, sizeof(Uint8));
     }
-    if (((joystick->naxes > 0) && !joystick->axes) || ((joystick->nhats > 0) && !joystick->hats) || ((joystick->nballs > 0) && !joystick->balls) || ((joystick->nbuttons > 0) && !joystick->buttons)) {
+    if (((joystick->naxes > 0) && !joystick->axes) || ((joystick->nhats > 0) && !joystick->hats) || ((joystick->nbuttons > 0) && !joystick->buttons)) {
         SDL_OutOfMemory();
         SDL_JoystickClose(joystick);
         SDL_UnlockJoysticks();
@@ -720,16 +717,6 @@ int SDL_JoystickNumHats(SDL_Joystick *joystick)
 }
 
 /*
- * Get the number of trackballs on a joystick
- */
-int SDL_JoystickNumBalls(SDL_Joystick *joystick)
-{
-    CHECK_JOYSTICK_MAGIC(joystick, -1);
-
-    return joystick->nballs;
-}
-
-/*
  * Get the number of buttons on a joystick
  */
 int SDL_JoystickNumButtons(SDL_Joystick *joystick)
@@ -792,31 +779,6 @@ Uint8 SDL_JoystickGetHat(SDL_Joystick *joystick, int hat)
         state = 0;
     }
     return state;
-}
-
-/*
- * Get the ball axis change since the last poll
- */
-int SDL_JoystickGetBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
-{
-    int retval;
-
-    CHECK_JOYSTICK_MAGIC(joystick, -1);
-
-    retval = 0;
-    if (ball < joystick->nballs) {
-        if (dx) {
-            *dx = joystick->balls[ball].dx;
-        }
-        if (dy) {
-            *dy = joystick->balls[ball].dy;
-        }
-        joystick->balls[ball].dx = 0;
-        joystick->balls[ball].dy = 0;
-    } else {
-        return SDL_SetError("Joystick only has %d balls", joystick->nballs);
-    }
-    return retval;
 }
 
 /*
@@ -1160,7 +1122,6 @@ void SDL_JoystickClose(SDL_Joystick *joystick)
     /* Free the data associated with this joystick */
     SDL_free(joystick->axes);
     SDL_free(joystick->hats);
-    SDL_free(joystick->balls);
     SDL_free(joystick->buttons);
     for (i = 0; i < joystick->ntouchpads; i++) {
         SDL_JoystickTouchpadInfo *touchpad = &joystick->touchpads[i];
@@ -1563,46 +1524,6 @@ int SDL_PrivateJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, 
     return posted;
 }
 
-int SDL_PrivateJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball,
-                            Sint16 xrel, Sint16 yrel)
-{
-    int posted;
-
-    SDL_AssertJoysticksLocked();
-
-    CHECK_JOYSTICK_MAGIC(joystick, 0);
-
-    /* Make sure we're not getting garbage events */
-    if (ball >= joystick->nballs) {
-        return 0;
-    }
-
-    /* We ignore events if we don't have keyboard focus. */
-    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        return 0;
-    }
-
-    /* Update internal mouse state */
-    joystick->balls[ball].dx += xrel;
-    joystick->balls[ball].dy += yrel;
-
-    /* Post the event, if desired */
-    posted = 0;
-#if !SDL_EVENTS_DISABLED
-    if (SDL_GetEventState(SDL_JOYBALLMOTION) == SDL_ENABLE) {
-        SDL_Event event;
-        event.type = SDL_JOYBALLMOTION;
-        event.common.timestamp = timestamp;
-        event.jball.which = joystick->instance_id;
-        event.jball.ball = ball;
-        event.jball.xrel = xrel;
-        event.jball.yrel = yrel;
-        posted = SDL_PushEvent(&event) == 1;
-    }
-#endif /* !SDL_EVENTS_DISABLED */
-    return posted;
-}
-
 int SDL_PrivateJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, Uint8 state)
 {
     int posted;
@@ -1720,7 +1641,7 @@ int SDL_JoystickEventState(int state)
     return SDL_DISABLE;
 #else
     const Uint32 event_list[] = {
-        SDL_JOYAXISMOTION, SDL_JOYBALLMOTION, SDL_JOYHATMOTION,
+        SDL_JOYAXISMOTION, SDL_JOYHATMOTION,
         SDL_JOYBUTTONDOWN, SDL_JOYBUTTONUP, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED,
         SDL_JOYBATTERYUPDATED
     };
@@ -1888,7 +1809,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
             name = SDL_strdup("PS4 Controller");
             break;
         case SDL_CONTROLLER_TYPE_PS5:
-            name = SDL_strdup("PS5 Controller");
+            name = SDL_strdup("DualSense Wireless Controller");
             break;
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
             name = SDL_strdup("Nintendo Switch Pro Controller");
@@ -2243,6 +2164,17 @@ SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return eType == k_eControllerType_PS5Controller;
+}
+
+SDL_bool
+SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id == USB_VENDOR_SONY) {
+        if (product_id == USB_PRODUCT_SONY_DS5_EDGE) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
 }
 
 SDL_bool

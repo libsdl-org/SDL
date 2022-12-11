@@ -244,6 +244,7 @@ static void SDL_LogEvent(const SDL_Event *event)
                 SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_ORIENTATION);
                 SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_CONNECTED);
                 SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_DISCONNECTED);
+                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_MOVED);
 #undef SDL_DISPLAYEVENT_CASE
             default:
                 SDL_strlcpy(name2, "UNKNOWN (bug? fixme?)", sizeof(name2));
@@ -358,12 +359,6 @@ static void SDL_LogEvent(const SDL_Event *event)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d axis=%u value=%d)",
                            (uint)event->jaxis.timestamp, (int)event->jaxis.which,
                            (uint)event->jaxis.axis, (int)event->jaxis.value);
-        break;
-
-        SDL_EVENT_CASE(SDL_JOYBALLMOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d ball=%u xrel=%d yrel=%d)",
-                           (uint)event->jball.timestamp, (int)event->jball.which,
-                           (uint)event->jball.ball, (int)event->jball.xrel, (int)event->jball.yrel);
         break;
 
         SDL_EVENT_CASE(SDL_JOYHATMOTION)
@@ -1394,8 +1389,12 @@ Uint8 SDL_EventState(Uint32 type, int state)
     return current_state;
 }
 
-Uint32
-SDL_RegisterEvents(int numevents)
+Uint8 SDL_GetEventState(Uint32 type)
+{
+    return SDL_EventState(type, SDL_QUERY);
+}
+
+Uint32 SDL_RegisterEvents(int numevents)
 {
     Uint32 event_base;
 

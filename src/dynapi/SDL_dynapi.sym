@@ -746,7 +746,6 @@ SDL3_0.0.0 {
     SDL_JoystickGetAttached;
     SDL_JoystickInstanceID;
     SDL_JoystickNumAxes;
-    SDL_JoystickNumBalls;
     SDL_JoystickNumHats;
     SDL_JoystickNumButtons;
     SDL_JoystickUpdate;
@@ -754,7 +753,6 @@ SDL3_0.0.0 {
     SDL_JoystickGetAxis;
     SDL_JoystickGetAxisInitialState;
     SDL_JoystickGetHat;
-    SDL_JoystickGetBall;
     SDL_JoystickGetButton;
     SDL_JoystickRumble;
     SDL_JoystickRumbleTriggers;
@@ -866,6 +864,7 @@ SDL3_0.0.0 {
     SDL_GetPowerInfo;
     SDL_GetTicksNS;
     SDL_DelayNS;
+    SDL_GetEventState;
     # extra symbols go here (don't modify this line)
   local: *;
 };

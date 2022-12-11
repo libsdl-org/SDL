@@ -309,12 +309,6 @@ extern DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
  */
 extern DECLSPEC void SDLCALL SDL_ResetAssertionReport(void);
 
-
-/* these had wrong naming conventions until 2.0.4. Please update your app! */
-#define SDL_assert_state SDL_AssertState
-#define SDL_assert_data SDL_AssertData
-
-
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

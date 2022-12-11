@@ -180,10 +180,6 @@ Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
     static Uint64 timestamp_offset;
     const Uint64 now = SDL_GetTicksNS();
 
-    if (!nsTimestamp) {
-        return 0;
-    }
-
     if (nsTimestamp < last) {
         /* 32-bit timer rollover, bump the offset */
         timestamp_offset += SDL_MS_TO_NS(0x100000000LLU);
@@ -215,22 +211,38 @@ static const struct zwp_input_timestamps_v1_listener timestamp_listener = {
 
 static Uint64 Wayland_GetKeyboardTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return Wayland_GetEventTimestamp(input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    if (wl_timestamp_ms) {
+        return Wayland_GetEventTimestamp(input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    }
+
+    return 0;
 }
 
 static Uint64 Wayland_GetKeyboardTimestampRaw(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms);
+    if (wl_timestamp_ms) {
+        return input->keyboard_timestamp_ns ? input->keyboard_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms);
+    }
+
+    return 0;
 }
 
 static Uint64 Wayland_GetPointerTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return Wayland_GetEventTimestamp(input->pointer_timestamp_ns ? input->pointer_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    if (wl_timestamp_ms) {
+        return Wayland_GetEventTimestamp(input->pointer_timestamp_ns ? input->pointer_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    }
+
+    return 0;
 }
 
 Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms)
 {
-    return Wayland_GetEventTimestamp(input->touch_timestamp_ns ? input->touch_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    if (wl_timestamp_ms) {
+        return Wayland_GetEventTimestamp(input->touch_timestamp_ns ? input->touch_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+    }
+
+    return 0;
 }
 
 void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input)
@@ -1340,14 +1352,15 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                                   mods_locked, 0, 0, group);
 
+    SDL_ToggleModState(KMOD_NUM, modstate & input->xkb.idx_num);
+    SDL_ToggleModState(KMOD_CAPS, modstate & input->xkb.idx_caps);
+
     /* Toggle the modifier states for virtual keyboards, as they may not send key presses. */
     if (input->keyboard_is_virtual) {
         SDL_ToggleModState(KMOD_SHIFT, modstate & input->xkb.idx_shift);
         SDL_ToggleModState(KMOD_CTRL, modstate & input->xkb.idx_ctrl);
         SDL_ToggleModState(KMOD_ALT, modstate & input->xkb.idx_alt);
         SDL_ToggleModState(KMOD_GUI, modstate & input->xkb.idx_gui);
-        SDL_ToggleModState(KMOD_NUM, modstate & input->xkb.idx_num);
-        SDL_ToggleModState(KMOD_CAPS, modstate & input->xkb.idx_caps);
     }
 
     /* If a key is repeating, update the text to apply the modifier. */

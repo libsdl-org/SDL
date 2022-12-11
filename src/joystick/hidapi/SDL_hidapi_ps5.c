@@ -45,6 +45,15 @@
                             (((Uint32)(C)) << 16) | \
                             (((Uint32)(D)) << 24))
 
+enum
+{
+    SDL_CONTROLLER_BUTTON_PS5_TOUCHPAD = SDL_CONTROLLER_BUTTON_MISC1 + 1,
+    SDL_CONTROLLER_BUTTON_PS5_LEFT_FUNCTION,
+    SDL_CONTROLLER_BUTTON_PS5_RIGHT_FUNCTION,
+    SDL_CONTROLLER_BUTTON_PS5_LEFT_PADDLE,
+    SDL_CONTROLLER_BUTTON_PS5_RIGHT_PADDLE
+};
+
 typedef enum
 {
     k_EPS5ReportIdState = 0x01,
@@ -471,7 +480,11 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     device->joystick_type = joystick_type;
     device->type = SDL_CONTROLLER_TYPE_PS5;
     if (device->vendor_id == USB_VENDOR_SONY) {
-        HIDAPI_SetDeviceName(device, "PS5 Controller");
+        if (SDL_IsJoystickDualSenseEdge(device->vendor_id, device->product_id)) {
+            HIDAPI_SetDeviceName(device, "DualSense Edge Wireless Controller");
+        } else {
+            HIDAPI_SetDeviceName(device, "DualSense Wireless Controller");
+        }
     }
     HIDAPI_SetDeviceSerial(device, serial);
 
@@ -820,7 +833,13 @@ static SDL_bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, SDL_TRUE);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = ctx->touchpad_supported ? 17 : 15;
+    if (SDL_IsJoystickDualSenseEdge(device->vendor_id, device->product_id)) {
+        joystick->nbuttons = 21;
+    } else if (ctx->touchpad_supported) {
+        joystick->nbuttons = 17;
+    } else {
+        joystick->nbuttons = 15;
+    }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = device->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
     joystick->firmware_version = ctx->firmware_version;
@@ -1054,7 +1073,7 @@ static void HIDAPI_DriverPS5_HandleSimpleStatePacket(SDL_Joystick *joystick, SDL
         Uint8 data = (packet->rgucButtonsHatAndCounter[2] & 0x03);
 
         SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(timestamp, joystick, 15, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_MISC1, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     axis = ((int)packet->ucTriggerLeft * 257) - 32768;
@@ -1148,8 +1167,12 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
         Uint8 data = packet->rgucButtonsAndHat[2];
 
         SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data & 0x01) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(timestamp, joystick, 15, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_PrivateJoystickButton(timestamp, joystick, 16, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_MISC1, (data & 0x02) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_TOUCHPAD, (data & 0x04) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_LEFT_FUNCTION, (data & 0x10) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_RIGHT_FUNCTION, (data & 0x20) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_LEFT_PADDLE, (data & 0x40) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_PrivateJoystickButton(timestamp, joystick, SDL_CONTROLLER_BUTTON_PS5_RIGHT_PADDLE, (data & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
     axis = ((int)packet->ucTriggerLeft * 257) - 32768;

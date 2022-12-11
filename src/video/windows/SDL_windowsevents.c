@@ -693,9 +693,9 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
 
     if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-        SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_PRESSED, scanCode);
+        SDL_SendKeyboardKey(0, SDL_PRESSED, scanCode);
     } else {
-        SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_RELEASED, scanCode);
+        SDL_SendKeyboardKey(0, SDL_RELEASED, scanCode);
 
         /* If the key was down prior to our hook being installed, allow the
            key up message to pass normally the first time. This ensures other

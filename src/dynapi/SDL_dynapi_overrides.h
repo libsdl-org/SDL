@@ -202,14 +202,12 @@
 #define SDL_JoystickGetAttached SDL_JoystickGetAttached_REAL
 #define SDL_JoystickInstanceID SDL_JoystickInstanceID_REAL
 #define SDL_JoystickNumAxes SDL_JoystickNumAxes_REAL
-#define SDL_JoystickNumBalls SDL_JoystickNumBalls_REAL
 #define SDL_JoystickNumHats SDL_JoystickNumHats_REAL
 #define SDL_JoystickNumButtons SDL_JoystickNumButtons_REAL
 #define SDL_JoystickUpdate SDL_JoystickUpdate_REAL
 #define SDL_JoystickEventState SDL_JoystickEventState_REAL
 #define SDL_JoystickGetAxis SDL_JoystickGetAxis_REAL
 #define SDL_JoystickGetHat SDL_JoystickGetHat_REAL
-#define SDL_JoystickGetBall SDL_JoystickGetBall_REAL
 #define SDL_JoystickGetButton SDL_JoystickGetButton_REAL
 #define SDL_JoystickClose SDL_JoystickClose_REAL
 #define SDL_GetKeyboardFocus SDL_GetKeyboardFocus_REAL
@@ -890,3 +888,4 @@
 #define SDL_memset4 SDL_memset4_REAL
 #define SDL_GetTicksNS SDL_GetTicksNS_REAL
 #define SDL_DelayNS SDL_DelayNS_REAL
+#define SDL_GetEventState SDL_GetEventState_REAL

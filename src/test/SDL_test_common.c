@@ -112,14 +112,14 @@ SDLTest_CommonCreateState(char **argv, Uint32 flags)
     return state;
 }
 
-#define SEARCHARG(dim)            \
-    while (*dim && *dim != ',') { \
-        ++dim;                    \
-    }                             \
-    if (!*dim) {                  \
-        return -1;                \
-    }                             \
-    *dim++ = '\0';
+#define SEARCHARG(dim)                  \
+    while (*(dim) && *(dim) != ',') {   \
+        ++(dim);                        \
+    }                                   \
+    if (!*(dim)) {                      \
+        return -1;                      \
+    }                                   \
+    *(dim)++ = '\0';
 
 int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
 {
@@ -1458,6 +1458,10 @@ static void SDLTest_PrintEvent(SDL_Event *event)
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
                     event->display.display);
             break;
+        case SDL_DISPLAYEVENT_MOVED:
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
+                    event->display.display);
+            break;
         case SDL_DISPLAYEVENT_ORIENTATION:
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
                     event->display.display, DisplayOrientationName(event->display.data1));
@@ -1528,6 +1532,12 @@ static void SDLTest_PrintEvent(SDL_Event *event)
         case SDL_WINDOWEVENT_HIT_TEST:
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hit test", event->window.windowID);
             break;
+        case SDL_WINDOWEVENT_ICCPROF_CHANGED:
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " ICC profile changed", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_DISPLAY_CHANGED:
+            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
+            break;
         default:
             SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " got unknown event 0x%4.4x",
                     event->window.windowID, event->window.event);
@@ -1586,11 +1596,6 @@ static void SDLTest_PrintEvent(SDL_Event *event)
     case SDL_JOYDEVICEREMOVED:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 " removed",
                 event->jdevice.which);
-        break;
-    case SDL_JOYBALLMOTION:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": ball %d moved by %d,%d",
-                event->jball.which, event->jball.ball, event->jball.xrel,
-                event->jball.yrel);
         break;
     case SDL_JOYHATMOTION:
     {

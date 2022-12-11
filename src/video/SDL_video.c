@@ -129,25 +129,25 @@ static VideoBootStrap *bootstrap[] = {
     NULL
 };
 
-#define CHECK_WINDOW_MAGIC(window, retval)                  \
-    if (!_this) {                                           \
-        SDL_UninitializedVideo();                           \
-        return retval;                                      \
-    }                                                       \
-    if (!window || window->magic != &_this->window_magic) { \
-        SDL_SetError("Invalid window");                     \
-        return retval;                                      \
+#define CHECK_WINDOW_MAGIC(window, retval)                              \
+    if (!_this) {                                                       \
+        SDL_UninitializedVideo();                                       \
+        return retval;                                                  \
+    }                                                                   \
+    if (!(window) || (window)->magic != &_this->window_magic) {         \
+        SDL_SetError("Invalid window");                                 \
+        return retval;                                                  \
     }
 
-#define CHECK_DISPLAY_INDEX(displayIndex, retval)                  \
-    if (!_this) {                                                  \
-        SDL_UninitializedVideo();                                  \
-        return retval;                                             \
-    }                                                              \
-    if (displayIndex < 0 || displayIndex >= _this->num_displays) { \
-        SDL_SetError("displayIndex must be in the range 0 - %d",   \
-                     _this->num_displays - 1);                     \
-        return retval;                                             \
+#define CHECK_DISPLAY_INDEX(displayIndex, retval)                       \
+    if (!_this) {                                                       \
+        SDL_UninitializedVideo();                                       \
+        return retval;                                                  \
+    }                                                                   \
+    if ((displayIndex) < 0 || (displayIndex) >= _this->num_displays) {  \
+        SDL_SetError("displayIndex must be in the range 0 - %d",        \
+                     _this->num_displays - 1);                          \
+        return retval;                                                  \
     }
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
@@ -443,7 +443,7 @@ int SDL_VideoInit(const char *driver_name)
     /* Select the proper video driver */
     video = NULL;
     if (driver_name == NULL) {
-        driver_name = SDL_GetHint(SDL_HINT_VIDEODRIVER);
+        driver_name = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
     }
     if (driver_name != NULL && *driver_name != 0) {
         const char *driver_attempt = driver_name;
@@ -623,6 +623,7 @@ void SDL_DelVideoDisplay(int index)
     SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
 
     if (index < (_this->num_displays - 1)) {
+        SDL_free(_this->displays[index].driverdata);
         SDL_memmove(&_this->displays[index], &_this->displays[index + 1], (_this->num_displays - index - 1) * sizeof(_this->displays[index]));
     }
     --_this->num_displays;
@@ -1564,6 +1565,11 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         if (_this == NULL) {
             return NULL;
         }
+    }
+
+    /* Make sure the display list is up to date for window placement */
+    if (_this->RefreshDisplays) {
+        _this->RefreshDisplays(_this);
     }
 
     /* ensure no more than one of these flags is set */

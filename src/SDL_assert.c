@@ -40,13 +40,13 @@
 /* The size of the stack buffer to use for rendering assert messages. */
 #define SDL_MAX_ASSERT_MESSAGE_STACK 256
 
-static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
+static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, void *userdata);
 
 /*
  * We keep all triggered assertions in a singly-linked list so we can
  *  generate a report later.
  */
-static SDL_assert_data *triggered_assertions = NULL;
+static SDL_AssertData *triggered_assertions = NULL;
 
 #ifndef SDL_THREADS_DISABLED
 static SDL_mutex *assertion_mutex = NULL;
@@ -67,7 +67,7 @@ static void debug_print(const char *fmt, ...)
     va_end(ap);
 }
 
-static void SDL_AddAssertionToReport(SDL_assert_data *data)
+static void SDL_AddAssertionToReport(SDL_AssertData *data)
 {
     /* (data) is always a static struct defined with the assert macros, so
        we don't have to worry about copying or allocating them. */
@@ -84,7 +84,7 @@ static void SDL_AddAssertionToReport(SDL_assert_data *data)
 #define ENDLINE "\n"
 #endif
 
-static int SDL_RenderAssertMessage(char *buf, size_t buf_len, const SDL_assert_data *data)
+static int SDL_RenderAssertMessage(char *buf, size_t buf_len, const SDL_AssertData *data)
 {
     return SDL_snprintf(buf, buf_len,
                         "Assertion failure at %s (%s:%d), triggered %u %s:" ENDLINE "  '%s'",
@@ -95,7 +95,7 @@ static int SDL_RenderAssertMessage(char *buf, size_t buf_len, const SDL_assert_d
 
 static void SDL_GenerateAssertionReport(void)
 {
-    const SDL_assert_data *item = triggered_assertions;
+    const SDL_AssertData *item = triggered_assertions;
 
     /* only do this if the app hasn't assigned an assertion handler. */
     if ((item != NULL) && (assertion_handler != SDL_PromptAssertion)) {
@@ -139,10 +139,10 @@ static SDL_NORETURN void SDL_AbortAssertion(void)
     SDL_ExitProcess(42);
 }
 
-static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
+static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, void *userdata)
 {
     const char *envr;
-    SDL_assert_state state = SDL_ASSERTION_ABORT;
+    SDL_AssertState state = SDL_ASSERTION_ABORT;
     SDL_Window *window;
     SDL_MessageBoxData messagebox;
     SDL_MessageBoxButtonData buttons[] = {
@@ -235,7 +235,7 @@ static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data,
         if (selected == -1) {
             state = SDL_ASSERTION_IGNORE;
         } else {
-            state = (SDL_assert_state)selected;
+            state = (SDL_AssertState)selected;
         }
     } else {
 #if defined(__EMSCRIPTEN__)
@@ -318,11 +318,11 @@ static SDL_assert_state SDLCALL SDL_PromptAssertion(const SDL_assert_data *data,
     return state;
 }
 
-SDL_assert_state
-SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
+SDL_AssertState
+SDL_ReportAssertion(SDL_AssertData *data, const char *func, const char *file,
                     int line)
 {
-    SDL_assert_state state = SDL_ASSERTION_IGNORE;
+    SDL_AssertState state = SDL_ASSERTION_IGNORE;
     static int assertion_running = 0;
 
 #ifndef SDL_THREADS_DISABLED
@@ -416,17 +416,17 @@ void SDL_SetAssertionHandler(SDL_AssertionHandler handler, void *userdata)
     }
 }
 
-const SDL_assert_data *SDL_GetAssertionReport(void)
+const SDL_AssertData *SDL_GetAssertionReport(void)
 {
     return triggered_assertions;
 }
 
 void SDL_ResetAssertionReport(void)
 {
-    SDL_assert_data *next = NULL;
-    SDL_assert_data *item;
+    SDL_AssertData *next = NULL;
+    SDL_AssertData *item;
     for (item = triggered_assertions; item != NULL; item = next) {
-        next = (SDL_assert_data *)item->next;
+        next = (SDL_AssertData *)item->next;
         item->always_ignore = SDL_FALSE;
         item->trigger_count = 0;
         item->next = NULL;

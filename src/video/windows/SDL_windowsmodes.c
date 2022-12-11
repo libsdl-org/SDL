@@ -294,9 +294,9 @@ WIN_GetDisplayNameVista_failed:
     return NULL;
 }
 
-static SDL_bool WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, SDL_bool send_event)
+static void WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index, SDL_bool send_event)
 {
-    int i;
+    int i, index = *display_index;
     SDL_VideoDisplay display;
     SDL_DisplayData *displaydata;
     SDL_DisplayMode mode;
@@ -307,7 +307,7 @@ static SDL_bool WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *i
 #endif
 
     if (!WIN_GetDisplayMode(_this, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &orientation)) {
-        return SDL_FALSE;
+        return;
     }
 
     // Prevent adding duplicate displays. Do this after we know the display is
@@ -316,22 +316,41 @@ static SDL_bool WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *i
     for (i = 0; i < _this->num_displays; ++i) {
         SDL_DisplayData *driverdata = (SDL_DisplayData *)_this->displays[i].driverdata;
         if (SDL_wcscmp(driverdata->DeviceName, info->szDevice) == 0) {
+            SDL_bool moved = (index != i);
+
+            if (moved) {
+                SDL_VideoDisplay tmp;
+
+                SDL_assert(index < _this->num_displays);
+                SDL_memcpy(&tmp, &_this->displays[index], sizeof(tmp));
+                SDL_memcpy(&_this->displays[index], &_this->displays[i], sizeof(tmp));
+                SDL_memcpy(&_this->displays[i], &tmp, sizeof(tmp));
+                i = index;
+            }
+
             driverdata->MonitorHandle = hMonitor;
             driverdata->IsValid = SDL_TRUE;
 
             if (!_this->setting_display_mode) {
+                SDL_Rect bounds;
+
                 SDL_ResetDisplayModes(i);
                 SDL_SetCurrentDisplayMode(&_this->displays[i], &mode);
                 SDL_SetDesktopDisplayMode(&_this->displays[i], &mode);
+                if (WIN_GetDisplayBounds(_this, &_this->displays[i], &bounds) == 0) {
+                    if (SDL_memcmp(&driverdata->bounds, &bounds, sizeof(bounds)) != 0 || moved) {
+                        SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_MOVED, 0);
+                    }
+                }
                 SDL_SendDisplayEvent(&_this->displays[i], SDL_DISPLAYEVENT_ORIENTATION, orientation);
             }
-            return SDL_FALSE;
+            goto done;
         }
     }
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
     if (displaydata == NULL) {
-        return SDL_FALSE;
+        return;
     }
     SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
     displaydata->MonitorHandle = hMonitor;
@@ -351,15 +370,21 @@ static SDL_bool WIN_AddDisplay(_THIS, HMONITOR hMonitor, const MONITORINFOEXW *i
     display.desktop_mode = mode;
     display.current_mode = mode;
     display.orientation = orientation;
+    display.device = _this;
     display.driverdata = displaydata;
-    SDL_AddVideoDisplay(&display, send_event);
+    WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
+    index = SDL_AddVideoDisplay(&display, send_event);
+    SDL_assert(index == *display_index);
     SDL_free(display.name);
-    return SDL_TRUE;
+
+done:
+    *display_index += 1;
 }
 
 typedef struct _WIN_AddDisplaysData
 {
     SDL_VideoDevice *video_device;
+    int display_index;
     SDL_bool send_event;
     SDL_bool want_primary;
 } WIN_AddDisplaysData;
@@ -379,7 +404,7 @@ static BOOL CALLBACK WIN_AddDisplaysCallback(HMONITOR hMonitor,
         const SDL_bool is_primary = ((info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY);
 
         if (is_primary == data->want_primary) {
-            WIN_AddDisplay(data->video_device, hMonitor, &info, data->send_event);
+            WIN_AddDisplay(data->video_device, hMonitor, &info, &data->display_index, data->send_event);
         }
     }
 
@@ -391,6 +416,7 @@ static void WIN_AddDisplays(_THIS, SDL_bool send_event)
 {
     WIN_AddDisplaysData callback_data;
     callback_data.video_device = _this;
+    callback_data.display_index = 0;
     callback_data.send_event = send_event;
 
     callback_data.want_primary = SDL_TRUE;

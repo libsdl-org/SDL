@@ -2313,7 +2313,7 @@ extern "C" {
  *  This hint is available since SDL 2.0.22. Before then, you could set
  *  the environment variable to get the same effect.
  */
-#define SDL_HINT_VIDEODRIVER "SDL_VIDEODRIVER"
+#define SDL_HINT_VIDEO_DRIVER "SDL_VIDEO_DRIVER"
 
 /**
  *  \brief  A variable that decides what audio backend to use.
@@ -2336,7 +2336,7 @@ extern "C" {
  *  This hint is available since SDL 2.0.22. Before then, you could set
  *  the environment variable to get the same effect.
  */
-#define SDL_HINT_AUDIODRIVER "SDL_AUDIODRIVER"
+#define SDL_HINT_AUDIO_DRIVER "SDL_AUDIO_DRIVER"
 
 /**
  *  \brief  A variable that decides what KMSDRM device to use.
