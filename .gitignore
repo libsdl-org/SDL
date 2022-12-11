@@ -62,6 +62,11 @@ cmake-build-*
 xcuserdata
 *.xcworkspace
 
+# for QtCreator
+CMakeLists.txt.user
+build*/
+*.pro.user*
+
 # for Visual C++
 .vs
 Debug
@@ -173,6 +178,7 @@ test/testyuv
 test/torturethread
 
 builddir/
+!build-scripts/
 debian/*.debhelper.log
 debian/*.substvars
 debian/*.tar.gz

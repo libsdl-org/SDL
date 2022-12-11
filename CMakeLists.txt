@@ -18,6 +18,9 @@ endif()
 set(EXTRA_LIBS)
 set(EXTRA_LDFLAGS)
 
+set(CMAKE_DEPENDS)
+set(PKGCONFIG_DEPENDS)
+
 # This is a virtual "library" that just exists to collect up compiler and
 #  linker options that used to be global to this CMake project. When you
 #  specify it as part of a real library's target_link_libraries(), that
@@ -27,7 +30,6 @@ set(EXTRA_LDFLAGS)
 add_library(sdl-build-options INTERFACE)
 
 if(WINDOWS_STORE)
-  cmake_minimum_required(VERSION 3.11.0)
   target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BUILDING_WINRT=1")
   target_compile_options(sdl-build-options INTERFACE "-ZW")
 endif()
@@ -3074,6 +3076,7 @@ string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_STATIC_LIBS "$
 if(NOT SDL_SHARED)
   string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_LIBS "${SDL_LIBS}")
 endif()
+listtostr(PKGCONFIG_DEPENDS PKGCONFIG_DEPENDS)
 
 if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL2")
   message(STATUS "\"pkg-config --static --libs sdl2\" will return invalid information")
@@ -3154,7 +3157,7 @@ if (SDL_ASAN)
   endif()
 endif()
 
-if(SDL_CCACHE)
+if(SDL_CCACHE AND NOT CMAKE_VERSION VERSION_LESS 3.4)
   cmake_minimum_required(VERSION 3.4)
   find_program(CCACHE_BINARY ccache)
   if(CCACHE_BINARY)
@@ -3165,6 +3168,8 @@ if(SDL_CCACHE)
   else()
     set(HAVE_CCACHE OFF)
   endif()
+else()
+  set(HAVE_CCACHE OFF)
 endif()
 
 if(SDL_TESTS)
@@ -3334,12 +3339,13 @@ if(SDL_SHARED)
     set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
   endif()
   # FIXME: if CMAKE_VERSION >= 3.13, use target_link_options for EXTRA_LDFLAGS
-  target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD})
+  target_link_libraries(SDL2 PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${EXTRA_LDFLAGS_BUILD} ${CMAKE_DEPENDS})
   target_include_directories(SDL2 PUBLIC
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>"
+  )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL2 PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(MINGW OR CYGWIN)
@@ -3366,12 +3372,13 @@ if(SDL_STATIC)
   target_compile_definitions(SDL2-static PRIVATE SDL_STATIC_LIB)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
-  target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_link_libraries(SDL2-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${CMAKE_DEPENDS})
   target_include_directories(SDL2-static PUBLIC
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include>"
       "$<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
+      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>"
+  )
   # This picks up all the compiler options and such we've accumulated up to here.
   target_link_libraries(SDL2-static PRIVATE $<BUILD_INTERFACE:sdl-build-options>)
   if(NOT ANDROID)
@@ -3505,6 +3512,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     FILES
       ${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/SDL2ConfigVersion.cmake
+      ${SDL2_SOURCE_DIR}/cmake/sdlfind.cmake
     DESTINATION "${SDL_INSTALL_CMAKEDIR}"
     COMPONENT Devel
   )
