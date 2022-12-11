@@ -32,15 +32,12 @@
    not definition of SDL_MAIN_AVAILABLE etc in SDL_main.h) */
 #if !defined(SDL_MAIN_HANDLED) && !defined(_SDL_MAIN_NOIMPL)
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__GDK__)
 
 /* these defines/typedefs are needed for the WinMain() definition */
 #ifndef WINAPI
 #define WINAPI __stdcall
 #endif
-
-typedef struct HINSTANCE__ * HINSTANCE;
-typedef char* LPSTR;
 
 #ifdef main
 #  undef main
@@ -52,6 +49,10 @@ typedef char* LPSTR;
 extern "C" {
 #endif
 
+typedef struct HINSTANCE__ * HINSTANCE;
+typedef char* LPSTR;
+
+#ifndef __GDK__ /* this is only needed for Win32 */
 
 #if defined(_MSC_VER)
 /* The VC++ compiler needs main/wmain defined */
@@ -79,11 +80,17 @@ console_ansi_main(int argc, char *argv[])
 }
 #endif /* UNICODE/ANSI */
 
-/* This is where execution begins [windowed apps] */
+#endif /* not __GDK__ */
+
+/* This is where execution begins [windowed apps and GDK] */
 int WINAPI
 WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 {
+#ifdef __GDK__
+    return SDL_GDKRunApp(SDL_main, NULL);
+#else
     return SDL_Win32RunApp(SDL_main, NULL);
+#endif
 }
 
 #ifdef __cplusplus
@@ -95,8 +102,8 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 /* rename users main() function to SDL_main() so it can be called from the wrapper above */
 #define main    SDL_main
 
-
-#elif 1 /* end of __WIN32__ impl - TODO: other platforms */
+/* end of __WIN32__ and __GDK__ impls */
+#elif 1 /* TODO: next platform */
 
 #endif /* __WIN32__ etc */
 
