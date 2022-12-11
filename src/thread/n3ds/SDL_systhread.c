@@ -49,8 +49,9 @@ static void ThreadEntry(void *arg)
 
 int SDL_SYS_CreateThread(SDL_Thread *thread)
 {
-    s32 priority = N3DS_THREAD_PRIORITY_MEDIUM;
+    s32 priority;
     size_t stack_size = GetStackSize(thread->stacksize);
+    svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
 
     thread->handle = threadCreate(ThreadEntry,
                                   thread,
