@@ -59,19 +59,10 @@ if(MYGAME_VENDORED)
 else()
     # 1. Look for a SDL3 package, 2. look for the SDL3 component and 3. fail if none can be found
     find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
-    
-    # 1. Look for a SDL3 package, 2. Look for the SDL3_maincomponent and 3. DO NOT fail when SDL3_main is not available 
-    find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3_main)
 endif()
 
 # Create your game executable target as usual 
 add_executable(mygame WIN32 mygame.c)
-
-# SDL3::SDL3_main may or may not be available. It is e.g. required by Windows GUI applications  
-if(TARGET SDL3::SDL3_main)
-    # It has an implicit dependency on SDL3 functions, so it MUST be added before SDL3::SDL3 (or SDL3::SDL3-static)
-    target_link_libraries(mygame PRIVATE SDL3::SDL3_main)
-endif()
 
 # Link to the actual SDL3 library. SDL3::SDL3 is the shared SDL library, SDL3::SDL3-static is the static SDL libarary.
 target_link_libraries(mygame PRIVATE SDL3::SDL3)
@@ -87,7 +78,6 @@ The following components are available, to be used as an argument of `find_packa
 |----------------|--------------------------------------------------------------------------------------------|
 | SDL3           | The SDL3 shared library, available through the `SDL3::SDL3` target [^SDL_TARGET_EXCEPTION] |
 | SDL3-static    | The SDL3 static library, available through the `SDL3::SDL3-static` target                  |
-| SDL3_main      | The SDL3_main static library, available through the `SDL3::SDL3_main` target               |
 | SDL3_test      | The SDL3_test static library, available through the `SDL3::SDL3_test` target               |
 
 

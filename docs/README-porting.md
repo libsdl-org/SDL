@@ -49,7 +49,6 @@ There are two basic ways of building SDL at the moment:
 	src/video/dummy/*.c
 	src/haptic/dummy/*.c
 	src/joystick/dummy/*.c
-	src/main/dummy/*.c
 	src/thread/generic/*.c
 	src/timer/dummy/*.c
 	src/loadso/dummy/*.c
