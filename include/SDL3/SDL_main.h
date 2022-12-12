@@ -280,9 +280,12 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
 #if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) \
-    || defined(__3DS__) || defined(__NGAGE__) /* TODO: other platforms */
+    || defined(__3DS__) || defined(__NGAGE__) || defined(__PS2__)
+
+/* platforms whichs main (-equivalent) can be implemented in plain C */
 #include <SDL3/SDL_main_impl.h>
-#elif defined(__WINRT__) /* TODO: other C++ platforms */
+
+#elif defined(__WINRT__) /* C++ platforms */
 
 #ifdef __cplusplus
 #include <SDL3/SDL_main_impl.h>
@@ -296,7 +299,8 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #warning "Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>"
 #endif /* __GNUC__ */
 #endif /* __cplusplus */
-#endif /* __WINRT__ etc */
+
+#endif /* C++ platforms like __WINRT__ etc */
 
 #endif /* SDL_MAIN_HANDLED */
 
