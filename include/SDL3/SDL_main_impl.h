@@ -35,16 +35,18 @@
    and main() is implemented in plain C */
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 
+/* the implementations below must be able to use the implement real main(), nothing renamed
+   (the user's main() will be renamed to SDL_main so it can be called from here) */
+#ifdef main
+#  undef main
+#endif /* main */
+
 #if defined(__WIN32__) || defined(__GDK__)
 
 /* these defines/typedefs are needed for the WinMain() definition */
 #ifndef WINAPI
 #define WINAPI __stdcall
 #endif
-
-#ifdef main
-#  undef main
-#endif /* main */
 
 #include <SDL3/begin_code.h>
 
@@ -101,9 +103,6 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 #endif
 
 #include <SDL3/close_code.h>
-
-/* rename users main() function to SDL_main() so it can be called from the wrapper above */
-#define main    SDL_main
 
 /* end of __WIN32__ and __GDK__ impls */
 #elif defined(__WINRT__)
@@ -163,10 +162,6 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 /* end of WinRT impl */
 #elif defined(__IOS__) || defined(__TVOS__)
 
-#ifdef main
-#  undef main
-#endif /* main */
-
 #include <SDL3/begin_code.h>
 
 #ifdef __cplusplus
@@ -184,14 +179,34 @@ int main(int argc, char *argv[])
 
 #include <SDL3/close_code.h>
 
-/* rename users main() function to SDL_main() so it can be called from the wrapper above */
-#define main    SDL_main
-
 /* end of __IOS__ and __TVOS__ impls */
+#elif defined(__3DS__)
+
+#include <SDL3/begin_code.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int main(int argc, char *argv[])
+{
+    return SDL_N3DSRunApp(argc, argv, SDL_main);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include <SDL3/close_code.h>
+
+/* end of __3DS__ impl */
 
 /* TODO: remaining platforms */
 
 #endif /* __WIN32__ etc */
+
+/* rename users main() function to SDL_main() so it can be called from the wrappers above */
+#define main    SDL_main
 
 #endif /* SDL_MAIN_HANDLED */
 

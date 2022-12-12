@@ -886,3 +886,4 @@
 #define SDL_GetEventState SDL_GetEventState_REAL
 #define SDL_GetRenderDriver SDL_GetRenderDriver_REAL
 #define SDL_Win32RunApp SDL_Win32RunApp_REAL
+#define SDL_N3DSRunApp SDL_N3DSRunApp_REAL
