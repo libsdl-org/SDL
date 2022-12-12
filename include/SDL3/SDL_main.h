@@ -110,6 +110,14 @@
 */
 #define SDL_MAIN_AVAILABLE
 
+#elif defined(__NGAGE__)
+
+/*
+   TODO: not sure if it should be SDL_MAIN_NEEDED, in SDL2 ngage had a
+        main implementation, but wasn't mentioned in SDL_main.h
+ */
+#define SDL_MAIN_AVAILABLE
+
 #endif
 #endif /* SDL_MAIN_HANDLED */
 
@@ -272,7 +280,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
 #if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) \
-    || defined(__3DS__) /* TODO: other platforms */
+    || defined(__3DS__) || defined(__NGAGE__) /* TODO: other platforms */
 #include <SDL3/SDL_main_impl.h>
 #elif defined(__WINRT__) /* TODO: other C++ platforms */
 
