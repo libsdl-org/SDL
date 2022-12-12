@@ -292,7 +292,7 @@ To include these files for C/C++ projects:
 app's project.  This is to make sure that Visual C++'s linker builds a 'Windows 
 Metadata' file (.winmd) for your app.  Not doing so can lead to build errors.**
 
-For non-C++ projects, you will need to call SDL_WinRTRunApp from your language's
+For non-C++ projects, you will need to call SDL_RunApp from your language's
 main function, and generate SDL3-WinRTResources.res manually by using `rc` via
 the Developer Command Prompt and including it as a <Win32Resource> within the
 first <PropertyGroup> block in your Visual Studio project file.

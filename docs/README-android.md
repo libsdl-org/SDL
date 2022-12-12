@@ -83,8 +83,8 @@ If you already have a project that uses CMake, the instructions change somewhat:
 2. Edit "<project>/app/build.gradle" to comment out or remove sections containing ndk-build
    and uncomment the cmake sections. Add arguments to the CMake invocation as needed.
 3. Edit "<project>/app/jni/CMakeLists.txt" to include your project (it defaults to
-   adding the "src" subdirectory). Note that you'll have SDL3, SDL3_main and SDL3-static
-   as targets in your project, so you should have "target_link_libraries(yourgame SDL3 SDL3_main)"
+   adding the "src" subdirectory). Note that you'll have SDL3 and SDL3-static
+   as targets in your project, so you should have "target_link_libraries(yourgame SDL3)"
    in your CMakeLists.txt file. Also be aware that you should use add_library() instead of
    add_executable() for the target containing your "main" function.
 
