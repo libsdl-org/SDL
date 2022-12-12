@@ -11,9 +11,6 @@
 #  NDK_LIBS_OUT=<dest>  - specify alternate destination for installable
 #                         modules.
 #
-# Note that SDL_main is not an installable module (.so) so libSDL_main.a
-# can be found in $obj/local/<abi> along with the unstripped libSDL.so.
-#
 
 
 # Android.mk is in srcdir
@@ -69,5 +66,5 @@ ndk-build \
     APP_BUILD_SCRIPT=Android.mk \
     APP_ABI="armeabi-v7a arm64-v8a x86 x86_64" \
     APP_PLATFORM=android-16 \
-    APP_MODULES="SDL3 SDL3_main" \
+    APP_MODULES="SDL3" \
     $ndk_args

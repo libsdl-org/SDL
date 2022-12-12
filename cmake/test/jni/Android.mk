@@ -7,5 +7,4 @@ LOCAL_SRC_FILES := ../main_gui.c
 LOCAL_SHARED_LIBRARIES += SDL3
 include $(BUILD_SHARED_LIBRARY)
 
-$(call import-module,SDL3_main)
 $(call import-module,SDL3)
