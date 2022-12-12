@@ -822,6 +822,9 @@
     <ClInclude Include="..\src\joystick\controller_type.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\SDL3\SDL_main_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\joystick\windows\SDL_windows_gaming_input.c">

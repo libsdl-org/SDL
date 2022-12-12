@@ -284,11 +284,25 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #include <SDL3/close_code.h>
 
-#if !defined(SDL_MAIN_HANDLED) && !defined(_SDL_MAIN_NOIMPL)
+#if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
 #if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) /* TODO: other platforms */
 #include <SDL3/SDL_main_impl.h>
-#endif
+#elif defined(__WINRT__) /* TODO: other C++ platforms */
+
+#ifdef __cplusplus
+#include <SDL3/SDL_main_impl.h>
+#else
+/* Note: to get rid of the following warning, you can #define SDL_MAIN_NOIMPL before including SDL_main.h
+ *  in your C sourcefile that contains the standard main. Do *not* use SDL_MAIN_HANDLED for that, then SDL_main won't find your main()!
+ */
+#ifdef _MSC_VER
+#pragma message("Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C (then continue including SDL_main.h there!) and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>")
+#elif defined(__GNUC__) /* gcc, clang, mingw and compatible are matched by this and have #warning */
+#warning "Note: Your platform needs the SDL_main implementation in a C++ source file. You can keep your main() in plain C and create a fresh .cpp file that only contains #include <SDL3/SDL_main.h>"
+#endif /* __GNUC__ */
+#endif /* __cplusplus */
+#endif /* __WINRT__ etc */
 
 #endif /* SDL_MAIN_HANDLED */
 
