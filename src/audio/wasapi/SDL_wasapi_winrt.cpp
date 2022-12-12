@@ -182,13 +182,13 @@ void SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher ^ sender
 
 void SDL_WasapiDeviceEventHandler::OnDefaultRenderDeviceChanged(Platform::Object ^ sender, DefaultAudioRenderDeviceChangedEventArgs ^ args)
 {
-    SDL_assert(this->iscapture);
+    SDL_assert(!this->iscapture);
     SDL_AtomicAdd(&SDL_IMMDevice_DefaultPlaybackGeneration, 1);
 }
 
 void SDL_WasapiDeviceEventHandler::OnDefaultCaptureDeviceChanged(Platform::Object ^ sender, DefaultAudioCaptureDeviceChangedEventArgs ^ args)
 {
-    SDL_assert(!this->iscapture);
+    SDL_assert(this->iscapture);
     SDL_AtomicAdd(&SDL_IMMDevice_DefaultCaptureGeneration, 1);
 }
 
