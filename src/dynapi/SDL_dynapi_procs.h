@@ -964,3 +964,6 @@ SDL_DYNAPI_PROC(const char*,SDL_GetRenderDriver,(int a),(a),return)
 #if defined(__WIN32__)
 SDL_DYNAPI_PROC(int,SDL_Win32RunApp,(SDL_main_func a, void *b),(a,b),return)
 #endif
+#if defined(__3DS__)
+SDL_DYNAPI_PROC(int,SDL_N3DSRunApp,(int a, char *b[], SDL_main_func c),(a,b,c),return)
+#endif

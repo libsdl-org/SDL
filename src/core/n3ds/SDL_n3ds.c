@@ -17,9 +17,33 @@
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
-
-   Nothing to do here, the code moved into SDL_main_impl.h
-    TODO: remove this file
 */
 
-/* vi: set sts=4 ts=4 sw=4 expandtab: */
+#include "SDL_internal.h"
+
+#ifdef __3DS__
+
+#include <3ds.h>
+
+DECLSPEC int
+SDL_N3DSRunApp(int argc, char *argv[], SDL_main_func mainFunction)
+{
+    int result;
+    /* init */
+    osSetSpeedupEnable(true);
+    romfsInit();
+
+    SDL_SetMainReady();
+    result = mainFunction(argc, argv);
+
+    /* quit */
+    romfsExit();
+
+    return result;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif

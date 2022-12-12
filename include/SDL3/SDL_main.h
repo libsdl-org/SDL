@@ -278,6 +278,22 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #endif /* __GDK__ */
 
+#ifdef __3DS__
+
+/**
+ * Initializes and launches an SDL application.
+ *
+ * \param argc The argc parameter from the application's main() function
+ * \param argv The argv parameter from the application's main() function
+ * \param mainFunction The SDL app's C-style main(), an SDL_main_func
+ * \return the return value from mainFunction
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_N3DSRunApp(int argc, char *argv[], SDL_main_func mainFunction);
+
+#endif /* __3DS__ */
+
 #ifdef __cplusplus
 }
 #endif
@@ -286,7 +302,8 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */
-#if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) /* TODO: other platforms */
+#if defined(__WIN32__) || defined(__GDK__) || defined(__IOS__) || defined(__TVOS__) \
+    || defined(__3DS__) /* TODO: other platforms */
 #include <SDL3/SDL_main_impl.h>
 #elif defined(__WINRT__) /* TODO: other C++ platforms */
 
