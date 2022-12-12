@@ -31,7 +31,7 @@
 #include "SDL_bopengl.h"
 #endif
 
-#include "../../main/haiku/SDL_BApp.h"
+#include "../../core/haiku/SDL_BApp.h"
 
 #ifdef __cplusplus
 extern "C" {

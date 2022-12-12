@@ -42,7 +42,7 @@ extern "C" {
 #if SDL_VIDEO_OPENGL
 #include <opengl/GLView.h>
 #endif
-#include "../../main/haiku/SDL_BApp.h"
+#include "../../core/haiku/SDL_BApp.h"
 
 enum WinCommands
 {

@@ -26,7 +26,7 @@
 
 
 /* For application signature. */
-#include "../../main/haiku/SDL_BeApp.h"
+#include "../../core/haiku/SDL_BeApp.h"
 
 #include <Alert.h>
 #include <Application.h>
