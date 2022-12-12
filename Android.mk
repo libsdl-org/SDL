@@ -109,21 +109,4 @@ LOCAL_EXPORT_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 
 include $(BUILD_STATIC_LIBRARY)
 
-
-###########################
-#
-# SDL main static library
-#
-###########################
-
-include $(CLEAR_VARS)
-
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
-
-LOCAL_MODULE := SDL3_main
-
-LOCAL_MODULE_FILENAME := libSDL3_main
-
-include $(BUILD_STATIC_LIBRARY)
-
 $(call import-module,android/cpufeatures)

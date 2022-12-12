@@ -31,7 +31,7 @@ else()
 endif()
 
 if(NOT TARGET SDL3::${sdl_name_component})
-    find_package(SDL3 3.0.0 REQUIRED COMPONENTS ${sdl_name_component} SDL3_main SDL3_test)
+    find_package(SDL3 3.0.0 REQUIRED COMPONENTS ${sdl_name_component} SDL3_test)
 endif()
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
@@ -61,7 +61,7 @@ macro(add_sdl_test_executable TARGET)
         list(APPEND SOURCES ${RESOURCE_FILES})
     endif()
     add_executable(${TARGET} ${SOURCES})
-    target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_main SDL3::SDL3_test SDL3::${sdl_name_component})
+    target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_test SDL3::${sdl_name_component})
 
     list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
     if(AST_NONINTERACTIVE)

@@ -382,7 +382,6 @@ foreach(_SUB ${SDL_SUBSYSTEMS})
 endforeach()
 
 # Allow some projects to be built conditionally.
-set_option(SDL3_DISABLE_SDL3MAIN   "Disable building/installation of SDL3_main" OFF)
 set_option(SDL3_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 set_option(SDL3_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
@@ -1218,9 +1217,6 @@ if(ANDROID)
   endif()
   cmake_pop_check_state()
 
-  file(GLOB ANDROID_MAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/android/*.c)
-  list(APPEND SDLMAIN_SOURCES ${ANDROID_MAIN_SOURCES})
-
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_ANDROID 1)
     file(GLOB ANDROID_AUDIO_SOURCES ${SDL3_SOURCE_DIR}/src/audio/android/*.c)
@@ -1990,12 +1986,7 @@ elseif(WINDOWS)
   endif()
 
   file(GLOB VERSION_SOURCES ${SDL3_SOURCE_DIR}/src/core/windows/*.rc)
-  file(GLOB SDLMAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/windows/*.c)
   if(MINGW OR CYGWIN)
-    if(NOT SDL3_DISABLE_SDL3MAIN)
-      list(APPEND SDL_CFLAGS "-Dmain=SDL_main")
-      list(INSERT SDL_LIBS 0 "-lSDL3_main")
-    endif(NOT SDL3_DISABLE_SDL3MAIN)
     list(INSERT SDL_LIBS 0 "-lmingw32" "-mwindows")
   endif()
 
@@ -2018,10 +2009,6 @@ elseif(APPLE)
     file(GLOB EXTRA_SOURCES ${SDL3_SOURCE_DIR}/src/file/cocoa/*.m)
     list(APPEND SOURCE_FILES ${EXTRA_SOURCES})
     set(HAVE_SDL_FILE TRUE)
-  endif()
-
-  if(IOS OR TVOS)
-    file(GLOB SDLMAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/uikit/*.c)
   endif()
 
   if(SDL_MISC)
@@ -2569,9 +2556,6 @@ elseif(VITA)
 #  CheckPTHREAD()
 
 elseif(PSP)
- file(GLOB PSP_MAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/psp/*.c)
- list(APPEND SDLMAIN_SOURCES ${PSP_MAIN_SOURCES})
-
   file(GLOB PSP_CORE_SOURCES ${SDL3_SOURCE_DIR}/src/core/psp/*.c)
   list(APPEND SOURCE_FILES ${PSP_CORE_SOURCES})
 
@@ -2632,15 +2616,9 @@ elseif(PSP)
       pspctrl
       psppower
   )
-  if(NOT SDL3_DISABLE_SDL3MAIN)
-    list(INSERT SDL_LIBS 0 "-lSDL3_main")
-  endif(NOT SDL3_DISABLE_SDL3MAIN)
 
 elseif(PS2)
   list(APPEND EXTRA_CFLAGS "-DPS2" "-D__PS2__" "-I$ENV{PS2SDK}/ports/include" "-I$ENV{PS2DEV}/gsKit/include")
-
-  file(GLOB PS2_MAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/ps2/*.c)
-  set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${PS2_MAIN_SOURCES})
 
   file(GLOB PS2_CORE_SOURCES ${SDL3_SOURCE_DIR}/src/core/ps2/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${PS2_CORE_SOURCES})
@@ -2692,9 +2670,6 @@ elseif(PS2)
   )
 
 elseif(N3DS)
-  file(GLOB N3DS_MAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/n3ds/*.c)
-  set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${N3DS_MAIN_SOURCES})
-
   file(GLOB N3DS_CORE_SOURCES ${SDL3_SOURCE_DIR}/src/core/n3ds/*.c)
   list(APPEND SOURCE_FILES ${N3DS_CORE_SOURCES})
 
@@ -2858,10 +2833,6 @@ if(NOT HAVE_SDL_TIMERS)
   set(SDL_TIMER_DUMMY 1)
   file(GLOB TIMER_SOURCES ${SDL3_SOURCE_DIR}/src/timer/dummy/*.c)
   list(APPEND SOURCE_FILES ${TIMER_SOURCES})
-endif()
-
-if(NOT SDLMAIN_SOURCES)
-  file(GLOB SDLMAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/dummy/*.c)
 endif()
 
 # Append the -MMD -MT flags
@@ -3150,31 +3121,6 @@ endif()
 # Ensure that the extra cflags are used at compile time
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} ${EXTRA_CFLAGS_BUILD}")
 
-if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
-  # Build SDL_main
-  add_library(SDL3_main STATIC ${SDLMAIN_SOURCES})
-  # alias target for in-tree builds
-  add_library(SDL3::SDL3_main ALIAS SDL3_main)
-  target_include_directories(SDL3_main
-    PRIVATE
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>"
-    PUBLIC
-      "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
-      "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-  )
-  if (WIN32)
-    target_link_libraries(SDL3_main PRIVATE shell32)
-  endif()
-  if(MINGW OR CYGWIN)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-      target_link_libraries(SDL3_main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=_WinMain@16>")
-    else()
-      target_link_libraries(SDL3_main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>")
-    endif()
-  endif()
-endif()
-
 if(ANDROID)
   target_include_directories(sdl-build-options INTERFACE "${ANDROID_NDK}/sources/android/cpufeatures")
 endif()
@@ -3322,13 +3268,6 @@ if(NOT SDL3_DISABLE_INSTALL)
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
   endif()
 
-  if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
-    install(TARGETS SDL3_main EXPORT SDL3mainTargets
-      LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-  endif()
-
   if(SDL_STATIC)
     install(TARGETS SDL3-static EXPORT SDL3staticTargets
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -3372,18 +3311,6 @@ if(NOT SDL3_DISABLE_INSTALL)
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL3Targets
         DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3")
-    endif()
-  endif()
-
-  if(NOT WINDOWS_STORE AND NOT SDL3_DISABLE_SDL3MAIN)
-    install(EXPORT SDL3mainTargets
-      FILE SDL3mainTargets.cmake
-      NAMESPACE SDL3::
-      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
-    )
-    if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
-      install(EXPORT_ANDROID_MK SDL3mainTargets
-        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ndk-modules/SDL3_main")
     endif()
   endif()
 
