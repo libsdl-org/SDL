@@ -62,6 +62,7 @@
     <ClInclude Include="..\include\SDL3\SDL_locale.h" />
     <ClInclude Include="..\include\SDL3\SDL_log.h" />
     <ClInclude Include="..\include\SDL3\SDL_main.h" />
+    <ClInclude Include="..\include\SDL3\SDL_main_impl.h" />
     <ClInclude Include="..\include\SDL3\SDL_misc.h" />
     <ClInclude Include="..\include\SDL3\SDL_mouse.h" />
     <ClInclude Include="..\include\SDL3\SDL_mutex.h" />

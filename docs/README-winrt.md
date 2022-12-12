@@ -71,10 +71,9 @@ Here is a rough list of what works, and what doesn't:
     well as many keys with documented hardware scancodes.  Converting
     SDL_Scancodes to or from SDL_Keycodes may not work, due to missing APIs
     (MapVirtualKey()) in Microsoft's Windows Store / UWP APIs.
-  * SDL_main.  WinRT uses a different signature for each app's main() function.
-    SDL-based apps that use this port must compile in SDL_winrt_main_NonXAML.cpp
-    (in `SDL\src\main\winrt\`) directly in order for their C-style main()
-    functions to be called.
+  * SDL_main.  WinRT uses a different signature for each app's main() function
+    and requires it to be implemented in C++, so SDL_main.h must be #include'd
+    in a C++ source file, that also must be compiled with /ZW.
 
 * What doesn't work:
   * compilation with anything other than Visual C++
@@ -240,7 +239,9 @@ To change these settings:
 2. choose "Properties"
 3. in the drop-down box next to "Configuration", choose, "All Configurations"
 4. in the drop-down box next to "Platform", choose, "All Platforms"
-5. in the left-hand list, expand the "C/C++" section
+5. in the left-hand list, expand the "C/C++" section  
+   **Note:** If you don't see this section, you may have to add a .c or .cpp
+   Source file to the Project first.
 6. select "General"
 7. edit the "Additional Include Directories" setting, and add a path to SDL's
    "include" directory
@@ -271,16 +272,21 @@ To include these files for C/C++ projects:
    navigate to "Add", then choose "Existing Item...".
 2. navigate to the directory containing SDL's source code, then into its
    subdirectory, 'src/main/winrt/'.  Select, then add, the following files:
-   - `SDL_winrt_main_NonXAML.cpp`
    - `SDL3-WinRTResources.rc`
    - `SDL3-WinRTResource_BlankCursor.cur`
-3. right-click on the file `SDL_winrt_main_NonXAML.cpp` (as listed in your
-   project), then click on "Properties...".
-4. in the drop-down box next to "Configuration", choose, "All Configurations"
-5. in the drop-down box next to "Platform", choose, "All Platforms"
-6. in the left-hand list, click on "C/C++"
-7. change the setting for "Consume Windows Runtime Extension" to "Yes (/ZW)".
-8. click the OK button.  This will close the dialog.
+3. For the next step you need a C++ source file.
+   - If your standard main() function is implemented in a **C++** source file,
+     use that file.
+   - If your standard main() function is implemented in a **plain C** source file,
+     create an empty .cpp source file (e.g. `main.cpp`) that only contains the line
+     `#include <SDL3/SDL_main.h>` and use that file instead.
+4. Right click on the C++ source file from step 3 (as listed in your project),
+   then click on "Properties...".
+5. in the drop-down box next to "Configuration", choose, "All Configurations"
+6. in the drop-down box next to "Platform", choose, "All Platforms"
+7. in the left-hand list, click on "C/C++"
+8. change the setting for "Consume Windows Runtime Extension" to "Yes (/ZW)".
+9. click the OK button.  This will close the dialog.
 
 **NOTE: C++/CX compilation is currently required in at least one file of your 
 app's project.  This is to make sure that Visual C++'s linker builds a 'Windows 
@@ -322,7 +328,8 @@ your project, and open the file in Visual C++'s text editor.
 7. Copy and paste the following code into the new file, then save it.
 
 ```c
-#include <SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
     
 int main(int argc, char **argv)
 {
