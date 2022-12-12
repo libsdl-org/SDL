@@ -100,6 +100,7 @@
 #define USB_PRODUCT_SONY_DS4                              0x05c4
 #define USB_PRODUCT_SONY_DS4_DONGLE                       0x0ba0
 #define USB_PRODUCT_SONY_DS4_SLIM                         0x09cc
+#define USB_PRODUCT_SONY_DS4_STRIKEPAD                    0x05c5
 #define USB_PRODUCT_SONY_DS5                              0x0ce6
 #define USB_PRODUCT_SONY_DS5_EDGE                         0x0df2
 #define USB_PRODUCT_VICTRIX_FS_PRO_V2                     0x0207
