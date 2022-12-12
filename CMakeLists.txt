@@ -2350,8 +2350,8 @@ elseif(HAIKU)
     set(HAVE_SDL_LOCALE TRUE)
   endif()
 
-  file(GLOB MAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/haiku/*.cc)
-  list(APPEND SOURCE_FILES ${MAIN_SOURCES})
+  file(GLOB HAIKU_CORE_SOURCES ${SDL3_SOURCE_DIR}/src/core/haiku/*.cc)
+  list(APPEND SOURCE_FILES ${HAIKU_CORE_SOURCES})
 
   CheckPTHREAD()
   list(APPEND EXTRA_LIBS root be media game device textencoding)

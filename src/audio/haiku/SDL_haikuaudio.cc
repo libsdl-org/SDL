@@ -27,7 +27,7 @@
 #include <SoundPlayer.h>
 #include <signal.h>
 
-#include "../../main/haiku/SDL_BeApp.h"
+#include "../../core/haiku/SDL_BeApp.h"
 
 extern "C"
 {

@@ -28,7 +28,7 @@
 #include <KernelKit.h>
 #include <OpenGLKit.h>
 #include "SDL_BWin.h"
-#include "../../main/haiku/SDL_BApp.h"
+#include "../../core/haiku/SDL_BApp.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -169,8 +169,6 @@ TInt E32Main()
 
 /* end of __NGAGE__ impl */
 
-/* TODO: remaining platforms */
-
 #else /* platforms that use a standard main() and just call SDL_RunApp(), like iOS and 3DS */
 
 #include <SDL3/begin_code.h>

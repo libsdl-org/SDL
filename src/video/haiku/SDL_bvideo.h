@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#include "../../main/haiku/SDL_BeApp.h"
+#include "../../core/haiku/SDL_BeApp.h"
 #include "../SDL_sysvideo.h"
 
 extern void HAIKU_VideoQuit(_THIS);
