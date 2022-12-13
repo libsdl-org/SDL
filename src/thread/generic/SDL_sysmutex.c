@@ -70,7 +70,7 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_mutex *mutex)
+int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -78,7 +78,7 @@ int SDL_LockMutex(SDL_mutex *mutex)
     SDL_threadID this_thread;
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     this_thread = SDL_ThreadID();
@@ -108,7 +108,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
     SDL_threadID this_thread;
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     this_thread = SDL_ThreadID();
@@ -131,13 +131,13 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 }
 
 /* Unlock the mutex */
-int SDL_mutexV(SDL_mutex *mutex)
+int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #if SDL_THREADS_DISABLED
     return 0;
 #else
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     /* If we don't own the mutex, we can't unlock it */

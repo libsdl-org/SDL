@@ -848,6 +848,8 @@ static int allocate_hatdata(SDL_Joystick *joystick)
 {
     int i;
 
+    SDL_AssertJoysticksLocked();
+
     joystick->hwdata->hats =
         (struct hwdata_hat *)SDL_malloc(joystick->nhats *
                                         sizeof(struct hwdata_hat));
@@ -903,6 +905,8 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
     Uint8 key_pam_size, abs_pam_size;
     SDL_bool use_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_JOYSTICK_DEADZONES, SDL_FALSE);
     SDL_bool use_hat_deadzones = SDL_GetHintBoolean(SDL_HINT_LINUX_HAT_DEADZONES, SDL_TRUE);
+
+    SDL_AssertJoysticksLocked();
 
     /* See if this device uses the new unified event API */
     if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
@@ -1103,6 +1107,8 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd)
    on error. Returns -1 on error, 0 on success. */
 static int PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item)
 {
+    SDL_AssertJoysticksLocked();
+
     joystick->hwdata->item = item;
     joystick->hwdata->guid = item->guid;
     joystick->hwdata->effect.id = -1;
@@ -1151,6 +1157,8 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
 
+    SDL_AssertJoysticksLocked();
+
     if (item == NULL) {
         return SDL_SetError("No such device");
     }
@@ -1180,6 +1188,8 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
 static int LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct input_event event;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata->ff_rumble) {
         struct ff_effect *effect = &joystick->hwdata->effect;
@@ -1227,6 +1237,8 @@ static Uint32 LINUX_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     Uint32 result = 0;
 
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata->ff_rumble || joystick->hwdata->ff_sine) {
         result |= SDL_JOYCAP_RUMBLE;
     }
@@ -1251,7 +1263,7 @@ static int LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enab
 
 static void HandleHat(Uint64 timestamp, SDL_Joystick *stick, int hatidx, int axis, int value)
 {
-    const int hatnum = stick->hwdata->hats_indices[hatidx];
+    int hatnum;
     struct hwdata_hat *the_hat;
     struct hat_axis_correct *correct;
     const Uint8 position_map[3][3] = {
@@ -1260,6 +1272,9 @@ static void HandleHat(Uint64 timestamp, SDL_Joystick *stick, int hatidx, int axi
         { SDL_HAT_LEFTDOWN, SDL_HAT_DOWN, SDL_HAT_RIGHTDOWN }
     };
 
+    SDL_AssertJoysticksLocked();
+
+    hatnum = stick->hwdata->hats_indices[hatidx];
     the_hat = &stick->hwdata->hats[hatnum];
     correct = &stick->hwdata->hat_correct[hatidx];
     /* Hopefully we detected any analog axes and left them as is rather than trying
@@ -1299,6 +1314,8 @@ static int AxisCorrect(SDL_Joystick *joystick, int which, int value)
 {
     struct axis_correct *correct;
 
+    SDL_AssertJoysticksLocked();
+
     correct = &joystick->hwdata->abs_correct[which];
     if (correct->minimum != correct->maximum) {
         if (correct->use_deadzones) {
@@ -1333,6 +1350,8 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
     struct input_absinfo absinfo;
     unsigned long keyinfo[NBITS(KEY_MAX)];
     int i;
+
+    SDL_AssertJoysticksLocked();
 
     /* Poll all axis */
     for (i = ABS_X; i < ABS_MAX; i++) {
@@ -1387,6 +1406,8 @@ static void HandleInputEvents(SDL_Joystick *joystick)
 {
     struct input_event events[32];
     int i, len, code, hat_index;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata->fresh) {
         PollAllValues(SDL_GetTicksNS(), joystick);
@@ -1471,6 +1492,8 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
     int i, len, code, hat_index;
     Uint64 timestamp = SDL_GetTicksNS();
 
+    SDL_AssertJoysticksLocked();
+
     joystick->hwdata->fresh = SDL_FALSE;
     while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
         len /= sizeof(events[0]);
@@ -1511,6 +1534,8 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
 
 static void LINUX_JoystickUpdate(SDL_Joystick *joystick)
 {
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata->m_bSteamController) {
         SDL_UpdateSteamController(joystick);
         return;
@@ -1526,6 +1551,8 @@ static void LINUX_JoystickUpdate(SDL_Joystick *joystick)
 /* Function to close a joystick after use */
 static void LINUX_JoystickClose(SDL_Joystick *joystick)
 {
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         if (joystick->hwdata->effect.id >= 0) {
             ioctl(joystick->hwdata->fd, EVIOCRMFF, joystick->hwdata->effect.id);
@@ -1584,6 +1611,8 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     SDL_Joystick *joystick;
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
     unsigned int mapped;
+
+    SDL_AssertJoysticksLocked();
 
     if (item->checked_mapping) {
         if (item->mapping) {
