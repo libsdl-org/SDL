@@ -49,7 +49,7 @@ extern SDL_bool SDL_JoysticksQuitting(void);
 extern SDL_bool SDL_JoysticksLocked(void);
 
 /* Make sure we currently have the joysticks locked */
-extern void SDL_AssertJoysticksLocked(void);
+extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
 
 /* Function to get the next available joystick instance ID */
 extern SDL_JoystickID SDL_GetNextJoystickInstanceID(void);

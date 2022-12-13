@@ -29,32 +29,36 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-static joystick_hwdata *g_VJoys = NULL;
+static joystick_hwdata *g_VJoys SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 
 static joystick_hwdata *VIRTUAL_HWDataForIndex(int device_index)
 {
-    joystick_hwdata *vjoy = g_VJoys;
-    while (vjoy) {
+    joystick_hwdata *vjoy;
+
+    SDL_AssertJoysticksLocked();
+
+    for (vjoy = g_VJoys; vjoy; vjoy = vjoy->next) {
         if (device_index == 0) {
             break;
         }
         --device_index;
-        vjoy = vjoy->next;
     }
     return vjoy;
 }
 
 static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
 {
-    joystick_hwdata *cur = g_VJoys;
+    joystick_hwdata *cur;
     joystick_hwdata *prev = NULL;
+
+    SDL_AssertJoysticksLocked();
 
     if (hwdata == NULL) {
         return;
     }
 
     /* Remove hwdata from SDL-global list */
-    while (cur) {
+    for (cur = g_VJoys; cur; prev = cur, cur = cur->next) {
         if (hwdata == cur) {
             if (prev) {
                 prev->next = cur->next;
@@ -63,8 +67,6 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
             }
             break;
         }
-        prev = cur;
-        cur = cur->next;
     }
 
     if (hwdata->joystick) {
@@ -97,6 +99,8 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
     const char *name = NULL;
     int axis_triggerleft = -1;
     int axis_triggerright = -1;
+
+    SDL_AssertJoysticksLocked();
 
     if (desc == NULL) {
         return SDL_InvalidParamError("desc");
@@ -329,11 +333,13 @@ static int VIRTUAL_JoystickInit(void)
 
 static int VIRTUAL_JoystickGetCount(void)
 {
+    joystick_hwdata *cur;
     int count = 0;
-    joystick_hwdata *cur = g_VJoys;
-    while (cur) {
+
+    SDL_AssertJoysticksLocked();
+
+    for (cur = g_VJoys; cur; cur = cur->next) {
         ++count;
-        cur = cur->next;
     }
     return count;
 }
@@ -392,7 +398,11 @@ static SDL_JoystickID VIRTUAL_JoystickGetDeviceInstanceID(int device_index)
 
 static int VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+    joystick_hwdata *hwdata;
+
+    SDL_AssertJoysticksLocked();
+
+    hwdata = VIRTUAL_HWDataForIndex(device_index);
     if (hwdata == NULL) {
         return SDL_SetError("No such device");
     }
@@ -408,6 +418,8 @@ static int VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
 static int VIRTUAL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     int result;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata) {
         joystick_hwdata *hwdata = joystick->hwdata;
@@ -427,6 +439,8 @@ static int VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_ru
 {
     int result;
 
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         joystick_hwdata *hwdata = joystick->hwdata;
         if (hwdata->desc.RumbleTriggers) {
@@ -443,9 +457,12 @@ static int VIRTUAL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_ru
 
 static Uint32 VIRTUAL_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
-    joystick_hwdata *hwdata = joystick->hwdata;
+    joystick_hwdata *hwdata;
     Uint32 caps = 0;
 
+    SDL_AssertJoysticksLocked();
+
+    hwdata = joystick->hwdata;
     if (hwdata) {
         if (hwdata->desc.Rumble) {
             caps |= SDL_JOYCAP_RUMBLE;
@@ -464,6 +481,8 @@ static int VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green
 {
     int result;
 
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         joystick_hwdata *hwdata = joystick->hwdata;
         if (hwdata->desc.SetLED) {
@@ -481,6 +500,8 @@ static int VIRTUAL_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green
 static int VIRTUAL_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     int result;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata) {
         joystick_hwdata *hwdata = joystick->hwdata;
@@ -505,6 +526,8 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 {
     joystick_hwdata *hwdata;
     int i;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick == NULL) {
         return;
@@ -532,6 +555,8 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 
 static void VIRTUAL_JoystickClose(SDL_Joystick *joystick)
 {
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         joystick_hwdata *hwdata = joystick->hwdata;
         hwdata->joystick = NULL;
@@ -541,6 +566,8 @@ static void VIRTUAL_JoystickClose(SDL_Joystick *joystick)
 
 static void VIRTUAL_JoystickQuit(void)
 {
+    SDL_AssertJoysticksLocked();
+
     while (g_VJoys) {
         VIRTUAL_FreeHWData(g_VJoys);
     }

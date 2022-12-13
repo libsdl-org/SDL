@@ -77,13 +77,13 @@ static void SDL_DestroyMutex_srw(SDL_mutex *mutex)
     }
 }
 
-static int SDL_LockMutex_srw(SDL_mutex *_mutex)
+static int SDL_LockMutex_srw(SDL_mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     DWORD this_thread;
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     this_thread = GetCurrentThreadId();
@@ -109,7 +109,7 @@ static int SDL_TryLockMutex_srw(SDL_mutex *_mutex)
     int retval = 0;
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     this_thread = GetCurrentThreadId();
@@ -127,12 +127,12 @@ static int SDL_TryLockMutex_srw(SDL_mutex *_mutex)
     return retval;
 }
 
-static int SDL_UnlockMutex_srw(SDL_mutex *_mutex)
+static int SDL_UnlockMutex_srw(SDL_mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     if (mutex->owner == GetCurrentThreadId()) {
@@ -192,11 +192,11 @@ static void SDL_DestroyMutex_cs(SDL_mutex *mutex_)
 }
 
 /* Lock the mutex */
-static int SDL_LockMutex_cs(SDL_mutex *mutex_)
+static int SDL_LockMutex_cs(SDL_mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     EnterCriticalSection(&mutex->cs);
@@ -209,7 +209,7 @@ static int SDL_TryLockMutex_cs(SDL_mutex *mutex_)
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     int retval = 0;
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     if (TryEnterCriticalSection(&mutex->cs) == 0) {
@@ -219,11 +219,11 @@ static int SDL_TryLockMutex_cs(SDL_mutex *mutex_)
 }
 
 /* Unlock the mutex */
-static int SDL_UnlockMutex_cs(SDL_mutex *mutex_)
+static int SDL_UnlockMutex_cs(SDL_mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     LeaveCriticalSection(&mutex->cs);

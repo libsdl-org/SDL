@@ -100,6 +100,8 @@ static SDL_bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 {
     SDL_DriverLuna_Context *ctx = (SDL_DriverLuna_Context *)device->context;
 
+    SDL_AssertJoysticksLocked();
+
     SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */

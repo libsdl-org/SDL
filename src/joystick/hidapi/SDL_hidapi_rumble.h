@@ -25,12 +25,15 @@
 /* Handle rumble on a separate thread so it doesn't block the application */
 
 /* Advanced API */
-int SDL_HIDAPI_LockRumble(void);
+#ifdef SDL_THREAD_SAFETY_ANALYSIS
+extern SDL_mutex *SDL_HIDAPI_rumble_lock;
+#endif
+int SDL_HIDAPI_LockRumble(void) SDL_TRY_ACQUIRE(0, SDL_HIDAPI_rumble_lock);
 SDL_bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size);
-int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size);
+int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size) SDL_RELEASE(SDL_HIDAPI_rumble_lock);
 typedef void (*SDL_HIDAPI_RumbleSentCallback)(void *userdata);
-int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size, SDL_HIDAPI_RumbleSentCallback callback, void *userdata);
-void SDL_HIDAPI_UnlockRumble(void);
+int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size, SDL_HIDAPI_RumbleSentCallback callback, void *userdata) SDL_RELEASE(SDL_HIDAPI_rumble_lock);
+void SDL_HIDAPI_UnlockRumble(void) SDL_RELEASE(SDL_HIDAPI_rumble_lock);
 
 /* Simple API, will replace any pending rumble with the new data */
 int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size);

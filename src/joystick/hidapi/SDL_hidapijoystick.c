@@ -91,7 +91,7 @@ static int SDL_HIDAPI_numdrivers = 0;
 static SDL_SpinLock SDL_HIDAPI_spinlock;
 static SDL_bool SDL_HIDAPI_hints_changed = SDL_FALSE;
 static Uint32 SDL_HIDAPI_change_count = 0;
-static SDL_HIDAPI_Device *SDL_HIDAPI_devices;
+static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_joystick_lock);
 static int SDL_HIDAPI_numjoysticks = 0;
 static SDL_bool SDL_HIDAPI_combine_joycons = SDL_TRUE;
 static SDL_bool initialized = SDL_FALSE;
@@ -264,6 +264,8 @@ static SDL_HIDAPI_Device *HIDAPI_GetDeviceByIndex(int device_index, SDL_Joystick
 {
     SDL_HIDAPI_Device *device;
 
+    SDL_AssertJoysticksLocked();
+
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
         if (device->parent) {
             continue;
@@ -284,6 +286,8 @@ static SDL_HIDAPI_Device *HIDAPI_GetDeviceByIndex(int device_index, SDL_Joystick
 static SDL_HIDAPI_Device *HIDAPI_GetJoystickByInfo(const char *path, Uint16 vendor_id, Uint16 product_id)
 {
     SDL_HIDAPI_Device *device;
+
+    SDL_AssertJoysticksLocked();
 
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
         if (device->vendor_id == vendor_id && device->product_id == product_id &&
@@ -323,7 +327,7 @@ static void HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
     SDL_UnlockMutex(device->dev_lock);
 }
 
-static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed)
+static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed) SDL_NO_THREAD_SAFETY_ANALYSIS /* We unlock the joystick lock to be able to open the HID device on Android */
 {
     *removed = SDL_FALSE;
 
@@ -425,6 +429,8 @@ static void SDL_HIDAPI_UpdateDrivers(void)
     int i;
     SDL_HIDAPI_Device *device;
     SDL_bool removed;
+
+    SDL_AssertJoysticksLocked();
 
     SDL_HIDAPI_numdrivers = 0;
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
@@ -571,6 +577,8 @@ HIDAPI_HasConnectedUSBDevice(const char *serial)
 {
     SDL_HIDAPI_Device *device;
 
+    SDL_AssertJoysticksLocked();
+
     if (serial == NULL) {
         return SDL_FALSE;
     }
@@ -594,6 +602,8 @@ HIDAPI_HasConnectedUSBDevice(const char *serial)
 void HIDAPI_DisconnectBluetoothDevice(const char *serial)
 {
     SDL_HIDAPI_Device *device;
+
+    SDL_AssertJoysticksLocked();
 
     if (serial == NULL) {
         return;
@@ -621,6 +631,8 @@ HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID)
 {
     int i, j;
     SDL_JoystickID joystickID;
+
+    SDL_AssertJoysticksLocked();
 
     for (i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
@@ -717,6 +729,8 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     SDL_HIDAPI_Device *curr, *last = NULL;
     SDL_bool removed;
 
+    SDL_AssertJoysticksLocked();
+
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
     }
 
@@ -810,6 +824,8 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
     SDL_HIDAPI_Device *curr, *last;
     int i;
 
+    SDL_AssertJoysticksLocked();
+
 #ifdef DEBUG_HIDAPI
     SDL_Log("Removing HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
 #endif
@@ -848,6 +864,8 @@ static SDL_bool HIDAPI_CreateCombinedJoyCons()
 {
     SDL_HIDAPI_Device *device, *combined;
     SDL_HIDAPI_Device *joycons[2] = { NULL, NULL };
+
+    SDL_AssertJoysticksLocked();
 
     if (!SDL_HIDAPI_combine_joycons) {
         return SDL_FALSE;
@@ -1160,6 +1178,8 @@ void HIDAPI_UpdateDevices(void)
 {
     SDL_HIDAPI_Device *device;
 
+    SDL_AssertJoysticksLocked();
+
     /* Update the devices, which may change connected joysticks and send events */
 
     /* Prepare the existing device list */
@@ -1262,6 +1282,8 @@ static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     SDL_HIDAPI_Device *device = HIDAPI_GetDeviceByIndex(device_index, &joystickID);
     struct joystick_hwdata *hwdata;
 
+    SDL_AssertJoysticksLocked();
+
     if (device == NULL || !device->driver) {
         /* This should never happen - validated before being called */
         return SDL_SetError("Couldn't find HIDAPI device at index %d\n", device_index);
@@ -1299,6 +1321,8 @@ static int HIDAPI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
 {
     int result;
 
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
 
@@ -1313,6 +1337,8 @@ static int HIDAPI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
 static int HIDAPI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     int result;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
@@ -1329,6 +1355,8 @@ static Uint32 HIDAPI_JoystickGetCapabilities(SDL_Joystick *joystick)
 {
     Uint32 result = 0;
 
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
 
@@ -1341,6 +1369,8 @@ static Uint32 HIDAPI_JoystickGetCapabilities(SDL_Joystick *joystick)
 static int HIDAPI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int result;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
@@ -1357,6 +1387,8 @@ static int HIDAPI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, i
 {
     int result;
 
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
 
@@ -1371,6 +1403,8 @@ static int HIDAPI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, i
 static int HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
 {
     int result;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
@@ -1388,8 +1422,10 @@ static void HIDAPI_JoystickUpdate(SDL_Joystick *joystick)
     /* This is handled in SDL_HIDAPI_UpdateDevices() */
 }
 
-static void HIDAPI_JoystickClose(SDL_Joystick *joystick)
+static void HIDAPI_JoystickClose(SDL_Joystick *joystick) SDL_NO_THREAD_SAFETY_ANALYSIS /* We unlock the device lock so rumble can complete */
 {
+    SDL_AssertJoysticksLocked();
+
     if (joystick->hwdata) {
         SDL_HIDAPI_Device *device = joystick->hwdata->device;
         int i;
@@ -1419,6 +1455,8 @@ static void HIDAPI_JoystickClose(SDL_Joystick *joystick)
 static void HIDAPI_JoystickQuit(void)
 {
     int i;
+
+    SDL_AssertJoysticksLocked();
 
     shutting_down = SDL_TRUE;
 

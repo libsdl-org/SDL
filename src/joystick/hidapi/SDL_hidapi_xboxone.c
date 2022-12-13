@@ -234,7 +234,7 @@ static void SendAckIfNeeded(SDL_HIDAPI_Device *device, const Uint8 *data, int si
 #ifdef DEBUG_XBOX_PROTOCOL
         HIDAPI_DumpPacket("Xbox One sending ACK packet: size = %d", ack_packet, sizeof(ack_packet));
 #endif
-        if (SDL_HIDAPI_LockRumble() < 0 ||
+        if (SDL_HIDAPI_LockRumble() != 0 ||
             SDL_HIDAPI_SendRumbleAndUnlock(device, ack_packet, sizeof(ack_packet)) != sizeof(ack_packet)) {
             SDL_SetError("Couldn't send ack packet");
         }
@@ -254,7 +254,7 @@ static SDL_bool SendSerialRequest(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_C
      * It will cancel the announce packet if sent before that, and will be
      * ignored if sent during the negotiation.
      */
-    if (SDL_HIDAPI_LockRumble() < 0 ||
+    if (SDL_HIDAPI_LockRumble() != 0 ||
         SDL_HIDAPI_SendRumbleAndUnlock(device, serial_packet, sizeof(serial_packet)) != sizeof(serial_packet)) {
         SDL_SetError("Couldn't send serial packet");
         return SDL_FALSE;
@@ -312,7 +312,7 @@ static SDL_bool SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_
 #endif
         ctx->send_time = SDL_GetTicks();
 
-        if (SDL_HIDAPI_LockRumble() < 0 ||
+        if (SDL_HIDAPI_LockRumble() != 0 ||
             SDL_HIDAPI_SendRumbleAndUnlock(device, init_packet, packet->size) != packet->size) {
             SDL_SetError("Couldn't write Xbox One initialization packet");
             return SDL_FALSE;
@@ -415,6 +415,8 @@ static SDL_bool HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
+    SDL_AssertJoysticksLocked();
+
     ctx->low_frequency_rumble = 0;
     ctx->high_frequency_rumble = 0;
     ctx->left_trigger_rumble = 0;
@@ -478,7 +480,7 @@ static int HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
     /* We're no longer pending, even if we fail to send the rumble below */
     ctx->rumble_pending = SDL_FALSE;
 
-    if (SDL_HIDAPI_LockRumble() < 0) {
+    if (SDL_HIDAPI_LockRumble() != 0) {
         return -1;
     }
 

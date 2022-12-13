@@ -408,6 +408,9 @@ static SDL_bool HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SD
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 i;
+
+    SDL_AssertJoysticksLocked();
+
     for (i = 0; i < MAX_CONTROLLERS; i += 1) {
         if (joystick->instance_id == ctx->joysticks[i]) {
             joystick->nbuttons = 12;
@@ -423,6 +426,8 @@ static int HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 i, val;
+
+    SDL_AssertJoysticksLocked();
 
     if (ctx->pc_mode) {
         return SDL_Unsupported();
@@ -468,6 +473,8 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint32 result = 0;
+
+    SDL_AssertJoysticksLocked();
 
     if (!ctx->pc_mode) {
         Uint8 i;

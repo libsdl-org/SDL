@@ -336,15 +336,9 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va
         }
     }
 
-    if (log_function_mutex) {
-        SDL_LockMutex(log_function_mutex);
-    }
-
+    SDL_LockMutex(log_function_mutex);
     SDL_log_function(SDL_log_userdata, category, priority, message);
-
-    if (log_function_mutex) {
-        SDL_UnlockMutex(log_function_mutex);
-    }
+    SDL_UnlockMutex(log_function_mutex);
 
     /* Free only if dynamically allocated */
     if (message != stack_buf) {

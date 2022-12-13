@@ -668,6 +668,8 @@ static SDL_bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
 
+    SDL_AssertJoysticksLocked();
+
     ctx->joystick = joystick;
     ctx->last_packet = SDL_GetTicks();
     ctx->report_sensors = SDL_FALSE;

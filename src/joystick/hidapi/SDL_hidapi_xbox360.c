@@ -176,6 +176,8 @@ static SDL_bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL
 {
     SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
 
+    SDL_AssertJoysticksLocked();
+
     ctx->joystick = joystick;
     SDL_zeroa(ctx->last_state);
 

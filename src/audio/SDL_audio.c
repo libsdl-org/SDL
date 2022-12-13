@@ -301,14 +301,14 @@ static SDL_INLINE SDL_bool is_in_audio_device_thread(SDL_AudioDevice *device)
     return SDL_FALSE;
 }
 
-static void SDL_AudioLockDevice_Default(SDL_AudioDevice *device)
+static void SDL_AudioLockDevice_Default(SDL_AudioDevice *device) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang assumes recursive locks */
 {
     if (!is_in_audio_device_thread(device)) {
         SDL_LockMutex(device->mixer_lock);
     }
 }
 
-static void SDL_AudioUnlockDevice_Default(SDL_AudioDevice *device)
+static void SDL_AudioUnlockDevice_Default(SDL_AudioDevice *device) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang assumes recursive locks */
 {
     if (!is_in_audio_device_thread(device)) {
         SDL_UnlockMutex(device->mixer_lock);

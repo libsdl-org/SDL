@@ -76,14 +76,14 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
 }
 
 /* Lock the mutex */
-int SDL_LockMutex(SDL_mutex *mutex)
+int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #if FAKE_RECURSIVE_MUTEX
     pthread_t this_thread;
 #endif
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
 #if FAKE_RECURSIVE_MUTEX
@@ -119,7 +119,7 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 #endif
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     retval = 0;
@@ -155,10 +155,10 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
     return retval;
 }
 
-int SDL_UnlockMutex(SDL_mutex *mutex)
+int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
 #if FAKE_RECURSIVE_MUTEX

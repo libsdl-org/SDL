@@ -67,6 +67,8 @@ static SDL_bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SD
     char *serial = NULL, *new_serial;
     size_t serial_length = 0, new_length;
 
+    SDL_AssertJoysticksLocked();
+
     for (i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
         if (!child->driver->OpenJoystick(child, joystick)) {

@@ -489,6 +489,8 @@ int SDL_SYS_HapticMouse(void)
 int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_LINUX
+    SDL_AssertJoysticksLocked();
+
     if (joystick->driver != &SDL_LINUX_JoystickDriver) {
         return SDL_FALSE;
     }
@@ -505,6 +507,8 @@ int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 int SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_LINUX
+    SDL_AssertJoysticksLocked();
+
     if (joystick->driver != &SDL_LINUX_JoystickDriver) {
         return 0;
     }
@@ -527,6 +531,8 @@ int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
     int fd;
     int ret;
     SDL_hapticlist_item *item;
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->driver != &SDL_LINUX_JoystickDriver) {
         return -1;

@@ -175,6 +175,8 @@ static SDL_bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SD
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
 
+    SDL_AssertJoysticksLocked();
+
     SDL_zeroa(ctx->last_state);
 
     /* Initialize player index (needed for setting LEDs) */
