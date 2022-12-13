@@ -1181,16 +1181,32 @@ int SDL_GetWindowDisplayIndex(SDL_Window *window)
             return displayIndex;
         }
 
+        displayIndex =  GetRectDisplayIndex(window->x, window->y, window->w, window->h);
+
         /* Find the display containing the window if fullscreen */
         for (i = 0; i < _this->num_displays; ++i) {
             SDL_VideoDisplay *display = &_this->displays[i];
 
             if (display->fullscreen_window == window) {
-                return i;
+                if (displayIndex != i) {
+                    if (displayIndex < 0) {
+                        displayIndex = i;
+                    } else {
+                        SDL_VideoDisplay *new_display = &_this->displays[displayIndex];
+
+                        /* The window was moved to a different display */
+                        if (new_display->fullscreen_window != NULL) {
+                            /* Uh oh, there's already a fullscreen window here */
+                        } else {
+                            new_display->fullscreen_window = window;
+                        }
+                        display->fullscreen_window = NULL;
+                    }
+                }
+                break;
             }
         }
-
-        return GetRectDisplayIndex(window->x, window->y, window->w, window->h);
+        return displayIndex;
     }
 }
 
