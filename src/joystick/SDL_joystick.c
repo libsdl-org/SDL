@@ -2685,14 +2685,15 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
         /* Additional entries                                            */
         /*****************************************************************/
 
-        MAKE_VIDPID(0x04d9, 0x8008),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
-        MAKE_VIDPID(0x04d9, 0x8009),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
-        MAKE_VIDPID(0x04d9, 0xa292),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
-        MAKE_VIDPID(0x04d9, 0xa293),  /* OBINLB USB-HID Keyboard (Anne Pro II) */
-        MAKE_VIDPID(0x1532, 0x0266),  /* Razer Huntman V2 Analog, non-functional DInput device */
-        MAKE_VIDPID(0x1532, 0x0282),  /* Razer Huntman Mini Analog, non-functional DInput device */
-        MAKE_VIDPID(0x26ce, 0x01a2),  /* ASRock LED Controller */
-        MAKE_VIDPID(0x20d6, 0x0002),  /* PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only) */
+        MAKE_VIDPID(0x04d9, 0x8008), /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0x8009), /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0xa292), /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x04d9, 0xa293), /* OBINLB USB-HID Keyboard (Anne Pro II) */
+        MAKE_VIDPID(0x1532, 0x0226), /* Razer Huntsman Elite */
+        MAKE_VIDPID(0x1532, 0x0266), /* Razer Huntsman V2 Analog, non-functional DInput device */
+        MAKE_VIDPID(0x1532, 0x0282), /* Razer Huntsman Mini Analog, non-functional DInput device */
+        MAKE_VIDPID(0x26ce, 0x01a2), /* ASRock LED Controller */
+        MAKE_VIDPID(0x20d6, 0x0002), /* PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only) */
     };
 
     static Uint32 rog_chakram_list[] = {
