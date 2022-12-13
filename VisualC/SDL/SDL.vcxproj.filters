@@ -222,9 +222,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_gamecontroller.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_gesture.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -451,9 +448,6 @@
       <Filter>events</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\events\SDL_events_c.h">
-      <Filter>events</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\events\SDL_gesture_c.h">
       <Filter>events</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h">
@@ -878,9 +872,6 @@
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_events.c">
-      <Filter>events</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\events\SDL_gesture.c">
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_keyboard.c">

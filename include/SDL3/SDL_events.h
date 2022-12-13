@@ -36,7 +36,6 @@
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_gamecontroller.h>
 #include <SDL3/SDL_quit.h>
-#include <SDL3/SDL_gesture.h>
 #include <SDL3/SDL_touch.h>
 
 #include <SDL3/begin_code.h>
@@ -136,10 +135,7 @@ typedef enum
     SDL_FINGERUP,
     SDL_FINGERMOTION,
 
-    /* Gesture events */
-    SDL_DOLLARGESTURE   = 0x800,
-    SDL_DOLLARRECORD,
-    SDL_MULTIGESTURE,
+    /* 0x800, 0x801, and 0x802 were the Gesture events from SDL2. Do not reuse these values! sdl2-compat needs them! */
 
     /* Clipboard events */
     SDL_CLIPBOARDUPDATE = 0x900, /**< The clipboard or primary selection changed */
@@ -496,39 +492,6 @@ typedef struct SDL_TouchFingerEvent
 
 
 /**
- *  \brief Multiple Finger Gesture Event (event.mgesture.*)
- */
-typedef struct SDL_MultiGestureEvent
-{
-    Uint32 type;        /**< ::SDL_MULTIGESTURE */
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_TouchID touchId; /**< The touch device id */
-    float dTheta;
-    float dDist;
-    float x;
-    float y;
-    Uint16 numFingers;
-    Uint16 padding;
-} SDL_MultiGestureEvent;
-
-
-/**
- * \brief Dollar Gesture Event (event.dgesture.*)
- */
-typedef struct SDL_DollarGestureEvent
-{
-    Uint32 type;        /**< ::SDL_DOLLARGESTURE or ::SDL_DOLLARRECORD */
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_TouchID touchId; /**< The touch device id */
-    SDL_GestureID gestureId;
-    Uint32 numFingers;
-    float error;
-    float x;            /**< Normalized center of gesture */
-    float y;            /**< Normalized center of gesture */
-} SDL_DollarGestureEvent;
-
-
-/**
  *  \brief An event used to request a file open by the system (event.drop.*)
  *         This event is enabled by default, you can disable it with SDL_EventState().
  *  \note If this event is enabled, you must free the filename in the event.
@@ -634,8 +597,6 @@ typedef union SDL_Event
     SDL_UserEvent user;                     /**< Custom event data */
     SDL_SysWMEvent syswm;                   /**< System dependent window event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
-    SDL_MultiGestureEvent mgesture;         /**< Gesture event data */
-    SDL_DollarGestureEvent dgesture;        /**< Gesture event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.

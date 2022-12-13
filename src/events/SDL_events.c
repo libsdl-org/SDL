@@ -456,26 +456,6 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_FINGER_EVENT
 
-#define PRINT_DOLLAR_EVENT(event)                                                                                                                      \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u touchid=%" SDL_PRIs64 " gestureid=%" SDL_PRIs64 " numfingers=%u error=%f x=%f y=%f)", \
-                       (uint)event->dgesture.timestamp, (long long)event->dgesture.touchId,                                                            \
-                       (long long)event->dgesture.gestureId, (uint)event->dgesture.numFingers,                                                         \
-                       event->dgesture.error, event->dgesture.x, event->dgesture.y)
-        SDL_EVENT_CASE(SDL_DOLLARGESTURE)
-        PRINT_DOLLAR_EVENT(event);
-        break;
-        SDL_EVENT_CASE(SDL_DOLLARRECORD)
-        PRINT_DOLLAR_EVENT(event);
-        break;
-#undef PRINT_DOLLAR_EVENT
-
-        SDL_EVENT_CASE(SDL_MULTIGESTURE)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u touchid=%" SDL_PRIs64 " dtheta=%f ddist=%f x=%f y=%f numfingers=%u)",
-                           (uint)event->mgesture.timestamp, (long long)event->mgesture.touchId,
-                           event->mgesture.dTheta, event->mgesture.dDist,
-                           event->mgesture.x, event->mgesture.y, (uint)event->mgesture.numFingers);
-        break;
-
 #define PRINT_DROP_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (file='%s' timestamp=%u windowid=%u)", event->drop.file, (uint)event->drop.timestamp, (uint)event->drop.windowID)
         SDL_EVENT_CASE(SDL_DROPFILE)
         PRINT_DROP_EVENT(event);
@@ -1234,8 +1214,6 @@ int SDL_PushEvent(SDL_Event *event)
     if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0, 0) <= 0) {
         return -1;
     }
-
-    SDL_GestureProcessEvent(event);
 
     return 1;
 }

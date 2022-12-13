@@ -31,10 +31,6 @@ SDL3_0.0.0 {
     SDL_WriteBE32;
     SDL_WriteLE64;
     SDL_WriteBE64;
-    SDL_RecordGesture;
-    SDL_SaveAllDollarTemplates;
-    SDL_SaveDollarTemplate;
-    SDL_LoadDollarTemplates;
     SDL_GetNumAudioDrivers;
     SDL_GetAudioDriver;
     SDL_AudioInit;

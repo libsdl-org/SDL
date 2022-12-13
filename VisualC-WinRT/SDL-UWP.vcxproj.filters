@@ -507,9 +507,6 @@
     <ClCompile Include="..\src\events\SDL_events.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\events\SDL_gesture.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\events\SDL_keyboard.c">
       <Filter>Source Files</Filter>
     </ClCompile>

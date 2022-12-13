@@ -305,7 +305,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_events.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_filesystem.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_gamecontroller.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_gesture.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_haptic.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_hints.h" />
@@ -390,7 +389,6 @@
     <ClInclude Include="..\..\src\events\SDL_displayevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_dropevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_events_c.h" />
-    <ClInclude Include="..\..\src\events\SDL_gesture_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
@@ -575,7 +573,6 @@
     <ClCompile Include="..\..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\..\src\events\SDL_dropevents.c" />
     <ClCompile Include="..\..\src\events\SDL_events.c" />
-    <ClCompile Include="..\..\src\events\SDL_gesture.c" />
     <ClCompile Include="..\..\src\events\SDL_keyboard.c" />
     <ClCompile Include="..\..\src\events\SDL_mouse.c" />
     <ClCompile Include="..\..\src\events\SDL_quit.c" />

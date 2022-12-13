@@ -76,11 +76,6 @@ A SDL_Finger has the following fields:
 	The pressure of the touch.
 
 
-===========================================================================
-Notes
-===========================================================================
-For a complete example see test/testgesture.c
-
 Please direct questions/comments to:
    jim.tla+sdl_touch@gmail.com
    (original author, API was changed since)

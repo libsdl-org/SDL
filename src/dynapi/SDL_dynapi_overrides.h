@@ -151,10 +151,6 @@
 #define SDL_GameControllerGetBindForButton SDL_GameControllerGetBindForButton_REAL
 #define SDL_GameControllerGetButton SDL_GameControllerGetButton_REAL
 #define SDL_GameControllerClose SDL_GameControllerClose_REAL
-#define SDL_RecordGesture SDL_RecordGesture_REAL
-#define SDL_SaveAllDollarTemplates SDL_SaveAllDollarTemplates_REAL
-#define SDL_SaveDollarTemplate SDL_SaveDollarTemplate_REAL
-#define SDL_LoadDollarTemplates SDL_LoadDollarTemplates_REAL
 #define SDL_NumHaptics SDL_NumHaptics_REAL
 #define SDL_HapticName SDL_HapticName_REAL
 #define SDL_HapticOpen SDL_HapticOpen_REAL

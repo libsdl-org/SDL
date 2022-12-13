@@ -124,7 +124,6 @@
 		DB166DAA16A1D27700A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		DB166DAB16A1D27C00A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		DB166DAC16A1D29000A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
-		DB166DC116A1D31E00A1396C /* testgesture.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBB16A1C74100A1396C /* testgesture.c */; };
 		DB166DD716A1D37800A1396C /* testmessage.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBD16A1C74100A1396C /* testmessage.c */; };
 		DB166DDB16A1D42F00A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		DB166DEA16A1D50C00A1396C /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
@@ -482,13 +481,6 @@
 			remoteGlobalIDString = 4537749112091504002F0F45;
 			remoteInfo = testshape;
 		};
-		DB166DC216A1D32C00A1396C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DB166DAD16A1D2F600A1396C;
-			remoteInfo = testgesture;
-		};
 		DB166DD816A1D38900A1396C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
@@ -808,7 +800,6 @@
 		DB0F48D817CA51D2008798C5 /* testfilesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testfilesystem.c; sourceTree = "<group>"; };
 		DB0F48EC17CA51E5008798C5 /* testdrawchessboard */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testdrawchessboard; path = testdrawchessboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB0F490117CA5212008798C5 /* testfilesystem */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testfilesystem; path = testfilesystem.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DB166CBB16A1C74100A1396C /* testgesture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testgesture.c; sourceTree = "<group>"; };
 		DB166CBC16A1C74100A1396C /* testgles.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testgles.c; sourceTree = "<group>"; };
 		DB166CBD16A1C74100A1396C /* testmessage.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testmessage.c; sourceTree = "<group>"; };
 		DB166CBF16A1C74100A1396C /* testrelative.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testrelative.c; sourceTree = "<group>"; };
@@ -835,7 +826,6 @@
 		DB166D9016A1D1A500A1396C /* SDL_test_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_log.c; sourceTree = "<group>"; };
 		DB166D9116A1D1A500A1396C /* SDL_test_md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_md5.c; sourceTree = "<group>"; };
 		DB166D9216A1D1A500A1396C /* SDL_test_random.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_random.c; sourceTree = "<group>"; };
-		DB166DBF16A1D2F600A1396C /* testgesture */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testgesture; path = testgesture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166DD516A1D36A00A1396C /* testmessage */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testmessage; path = testmessage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166DEE16A1D50C00A1396C /* testrelative */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testrelative; path = testrelative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166E0516A1D57C00A1396C /* testrendercopyex */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = testrendercopyex; path = testrendercopyex.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1288,7 +1278,6 @@
 				DB0F48D817CA51D2008798C5 /* testfilesystem.c */,
 				BBFC088E164C6820003E6A99 /* testgamecontroller.c */,
 				F3C17CD628E416AC00E1A26D /* testgeometry.c */,
-				DB166CBB16A1C74100A1396C /* testgesture.c */,
 				0017972710742FB900F5D044 /* testgl2.c */,
 				DB166CBC16A1C74100A1396C /* testgles.c */,
 				0017974E1074315700F5D044 /* testhaptic.c */,
@@ -1368,7 +1357,6 @@
 				4537749212091504002F0F45 /* testshape */,
 				BBFC08CD164C6862003E6A99 /* testgamecontroller */,
 				DB166D7F16A1D12400A1396C /* libSDL_test.a */,
-				DB166DBF16A1D2F600A1396C /* testgesture */,
 				DB166DD516A1D36A00A1396C /* testmessage */,
 				DB166DEE16A1D50C00A1396C /* testrelative */,
 				DB166E0516A1D57C00A1396C /* testrendercopyex */,
@@ -1978,22 +1966,6 @@
 			productReference = DB166D7F16A1D12400A1396C /* libSDL_test.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		DB166DAD16A1D2F600A1396C /* testgesture */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DB166DBC16A1D2F600A1396C /* Build configuration list for PBXNativeTarget "testgesture" */;
-			buildPhases = (
-				DB166DAE16A1D2F600A1396C /* Sources */,
-				DB166DB016A1D2F600A1396C /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = testgesture;
-			productName = testalpha;
-			productReference = DB166DBF16A1D2F600A1396C /* testgesture */;
-			productType = "com.apple.product-type.application";
-		};
 		DB166DC416A1D36A00A1396C /* testmessage */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DB166DD216A1D36A00A1396C /* Build configuration list for PBXNativeTarget "testmessage" */;
@@ -2259,7 +2231,6 @@
 				DB0F48EF17CA5212008798C5 /* testfilesystem */,
 				BBFC08B7164C6862003E6A99 /* testgamecontroller */,
 				F3C17CDB28E416CF00E1A26D /* testgeometry */,
-				DB166DAD16A1D2F600A1396C /* testgesture */,
 				0017970910742F3200F5D044 /* testgl2 */,
 				00179730107430D600F5D044 /* testhaptic */,
 				DB89956D18A19ABA0092407C /* testhotplug */,
@@ -2737,15 +2708,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DB166DAE16A1D2F600A1396C /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F3C17D0828E41EDB00E1A26D /* SDL_uikit_main.c in Sources */,
-				DB166DC116A1D31E00A1396C /* testgesture.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DB166DC516A1D36A00A1396C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3037,11 +2999,6 @@
 			isa = PBXTargetDependency;
 			target = 4537749112091504002F0F45 /* testshape */;
 			targetProxy = DB166D6F16A1CEAF00A1396C /* PBXContainerItemProxy */;
-		};
-		DB166DC316A1D32C00A1396C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DB166DAD16A1D2F600A1396C /* testgesture */;
-			targetProxy = DB166DC216A1D32C00A1396C /* PBXContainerItemProxy */;
 		};
 		DB166DD916A1D38900A1396C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3648,20 +3605,6 @@
 			};
 			name = Release;
 		};
-		DB166DBD16A1D2F600A1396C /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = testgesture;
-			};
-			name = Debug;
-		};
-		DB166DBE16A1D2F600A1396C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = testgesture;
-			};
-			name = Release;
-		};
 		DB166DD316A1D36A00A1396C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4169,15 +4112,6 @@
 			buildConfigurations = (
 				DB166D8116A1D12400A1396C /* Debug */,
 				DB166D8216A1D12400A1396C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		DB166DBC16A1D2F600A1396C /* Build configuration list for PBXNativeTarget "testgesture" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DB166DBD16A1D2F600A1396C /* Debug */,
-				DB166DBE16A1D2F600A1396C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

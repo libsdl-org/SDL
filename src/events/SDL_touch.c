@@ -188,10 +188,6 @@ int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name
     SDL_touchDevices[index]->fingers = NULL;
     SDL_touchDevices[index]->name = SDL_strdup(name ? name : "");
 
-    /* Record this touch device for gestures */
-    /* We could do this on the fly in the gesture code if we wanted */
-    SDL_GestureAddTouch(touchID);
-
     return index;
 }
 
@@ -483,9 +479,6 @@ void SDL_DelTouch(SDL_TouchID id)
 
     SDL_num_touch--;
     SDL_touchDevices[index] = SDL_touchDevices[SDL_num_touch];
-
-    /* Delete this touch device for gestures */
-    SDL_GestureDelTouch(id);
 }
 
 void SDL_TouchQuit(void)
@@ -499,7 +492,6 @@ void SDL_TouchQuit(void)
 
     SDL_free(SDL_touchDevices);
     SDL_touchDevices = NULL;
-    SDL_GestureQuit();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

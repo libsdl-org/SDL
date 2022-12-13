@@ -291,7 +291,6 @@
     <ClCompile Include="..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\src\events\SDL_dropevents.c" />
     <ClCompile Include="..\src\events\SDL_events.c" />
-    <ClCompile Include="..\src\events\SDL_gesture.c" />
     <ClCompile Include="..\src\events\SDL_keyboard.c" />
     <ClCompile Include="..\src\events\SDL_mouse.c" />
     <ClCompile Include="..\src\events\SDL_quit.c" />

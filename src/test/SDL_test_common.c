@@ -1685,15 +1685,6 @@ static void SDLTest_PrintEvent(SDL_Event *event)
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
-    case SDL_DOLLARGESTURE:
-        SDL_Log("SDL_EVENT: Dollar gesture detect: %ld", (long)event->dgesture.gestureId);
-        break;
-    case SDL_DOLLARRECORD:
-        SDL_Log("SDL_EVENT: Dollar gesture record: %ld", (long)event->dgesture.gestureId);
-        break;
-    case SDL_MULTIGESTURE:
-        SDL_Log("SDL_EVENT: Multi gesture fingers: %d", event->mgesture.numFingers);
-        break;
 
     case SDL_RENDER_DEVICE_RESET:
         SDL_Log("SDL EVENT: render device reset");
