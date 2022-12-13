@@ -6,11 +6,11 @@ config.status
 libtool
 Makefile
 Makefile.rules
-sdl2-config
-sdl2-config.cmake
-sdl2-config-version.cmake
-sdl2.pc
-SDL2.spec
+sdl3-config
+sdl3-config.cmake
+sdl3-config-version.cmake
+sdl3.pc
+SDL3.spec
 build
 gen
 Build
@@ -45,7 +45,7 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 cmake_uninstall.cmake
-SDL2ConfigVersion.cmake
+SDL3ConfigVersion.cmake
 .ninja_*
 *.ninja
 
