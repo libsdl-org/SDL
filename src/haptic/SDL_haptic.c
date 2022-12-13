@@ -233,12 +233,17 @@ int SDL_JoystickIsHaptic(SDL_Joystick *joystick)
 {
     int ret;
 
-    /* Must be a valid joystick */
-    if (!SDL_PrivateJoystickValid(joystick)) {
-        return -1;
-    }
+    SDL_LockJoysticks();
+    {
+        /* Must be a valid joystick */
+        if (!SDL_PrivateJoystickValid(joystick)) {
+            SDL_UnlockJoysticks();
+            return -1;
+        }
 
-    ret = SDL_SYS_JoystickIsHaptic(joystick);
+        ret = SDL_SYS_JoystickIsHaptic(joystick);
+    }
+    SDL_UnlockJoysticks();
 
     if (ret > 0) {
         return SDL_TRUE;
@@ -265,44 +270,53 @@ SDL_HapticOpenFromJoystick(SDL_Joystick *joystick)
         return NULL;
     }
 
-    /* Must be a valid joystick */
-    if (!SDL_PrivateJoystickValid(joystick)) {
-        SDL_SetError("Haptic: Joystick isn't valid.");
-        return NULL;
-    }
-
-    /* Joystick must be haptic */
-    if (SDL_SYS_JoystickIsHaptic(joystick) <= 0) {
-        SDL_SetError("Haptic: Joystick isn't a haptic device.");
-        return NULL;
-    }
-
-    hapticlist = SDL_haptics;
-    /* Check to see if joystick's haptic is already open */
-    while (hapticlist) {
-        if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick)) {
-            haptic = hapticlist;
-            ++haptic->ref_count;
-            return haptic;
+    SDL_LockJoysticks();
+    {
+        /* Must be a valid joystick */
+        if (!SDL_PrivateJoystickValid(joystick)) {
+            SDL_SetError("Haptic: Joystick isn't valid.");
+            SDL_UnlockJoysticks();
+            return NULL;
         }
-        hapticlist = hapticlist->next;
-    }
 
-    /* Create the haptic device */
-    haptic = (SDL_Haptic *)SDL_malloc((sizeof *haptic));
-    if (haptic == NULL) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
+        /* Joystick must be haptic */
+        if (SDL_SYS_JoystickIsHaptic(joystick) <= 0) {
+            SDL_SetError("Haptic: Joystick isn't a haptic device.");
+            SDL_UnlockJoysticks();
+            return NULL;
+        }
 
-    /* Initialize the haptic device */
-    SDL_memset(haptic, 0, sizeof(SDL_Haptic));
-    haptic->rumble_id = -1;
-    if (SDL_SYS_HapticOpenFromJoystick(haptic, joystick) < 0) {
-        SDL_SetError("Haptic: SDL_SYS_HapticOpenFromJoystick failed.");
-        SDL_free(haptic);
-        return NULL;
+        hapticlist = SDL_haptics;
+        /* Check to see if joystick's haptic is already open */
+        while (hapticlist) {
+            if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick)) {
+                haptic = hapticlist;
+                ++haptic->ref_count;
+                SDL_UnlockJoysticks();
+                return haptic;
+            }
+            hapticlist = hapticlist->next;
+        }
+
+        /* Create the haptic device */
+        haptic = (SDL_Haptic *)SDL_malloc((sizeof *haptic));
+        if (haptic == NULL) {
+            SDL_OutOfMemory();
+            SDL_UnlockJoysticks();
+            return NULL;
+        }
+
+        /* Initialize the haptic device */
+        SDL_memset(haptic, 0, sizeof(SDL_Haptic));
+        haptic->rumble_id = -1;
+        if (SDL_SYS_HapticOpenFromJoystick(haptic, joystick) < 0) {
+            SDL_SetError("Haptic: SDL_SYS_HapticOpenFromJoystick failed.");
+            SDL_free(haptic);
+            SDL_UnlockJoysticks();
+            return NULL;
+        }
     }
+    SDL_UnlockJoysticks();
 
     /* Add haptic to list */
     ++haptic->ref_count;

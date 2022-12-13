@@ -1012,6 +1012,8 @@ static SDL_bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     SDL_DriverSteam_Context *ctx = (SDL_DriverSteam_Context *)device->context;
     float update_rate_in_hz = 0.0f;
 
+    SDL_AssertJoysticksLocked();
+
     ctx->report_sensors = SDL_FALSE;
     SDL_zero(ctx->m_assembler);
     SDL_zero(ctx->m_state);

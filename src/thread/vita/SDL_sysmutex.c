@@ -69,6 +69,27 @@ void SDL_DestroyMutex(SDL_mutex *mutex)
     }
 }
 
+/* Lock the mutex */
+int SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
+{
+#if SDL_THREADS_DISABLED
+    return 0;
+#else
+    SceInt32 res = 0;
+
+    if (mutex == NULL) {
+        return 0;
+    }
+
+    res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
+    if (res != SCE_KERNEL_OK) {
+        return SDL_SetError("Error trying to lock mutex: %x", res);
+    }
+
+    return 0;
+#endif /* SDL_THREADS_DISABLED */
+}
+
 /* Try to lock the mutex */
 int SDL_TryLockMutex(SDL_mutex *mutex)
 {
@@ -76,8 +97,9 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
     return 0;
 #else
     SceInt32 res = 0;
+
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     res = sceKernelTryLockLwMutex(&mutex->lock, 1);
@@ -97,28 +119,8 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 #endif /* SDL_THREADS_DISABLED */
 }
 
-/* Lock the mutex */
-int SDL_mutexP(SDL_mutex *mutex)
-{
-#if SDL_THREADS_DISABLED
-    return 0;
-#else
-    SceInt32 res = 0;
-    if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
-    }
-
-    res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
-    if (res != SCE_KERNEL_OK) {
-        return SDL_SetError("Error trying to lock mutex: %x", res);
-    }
-
-    return 0;
-#endif /* SDL_THREADS_DISABLED */
-}
-
 /* Unlock the mutex */
-int SDL_mutexV(SDL_mutex *mutex)
+int SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -126,7 +128,7 @@ int SDL_mutexV(SDL_mutex *mutex)
     SceInt32 res = 0;
 
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     res = sceKernelUnlockLwMutex(&mutex->lock, 1);

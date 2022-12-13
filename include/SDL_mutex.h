@@ -31,6 +31,80 @@
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
 
+/******************************************************************************/
+/* Enable thread safety attributes only with clang.
+ * The attributes can be safely erased when compiling with other compilers.
+ */
+#if defined(SDL_THREAD_SAFETY_ANALYSIS) && \
+    defined(__clang__) && (!defined(SWIG))
+#define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
+#else
+#define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   // no-op
+#endif
+
+#define SDL_CAPABILITY(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(capability(x))
+
+#define SDL_SCOPED_CAPABILITY \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
+
+#define SDL_GUARDED_BY(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+
+#define SDL_PT_GUARDED_BY(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
+
+#define SDL_ACQUIRED_BEFORE(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(__VA_ARGS__))
+
+#define SDL_ACQUIRED_AFTER(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(__VA_ARGS__))
+
+#define SDL_REQUIRES(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
+
+#define SDL_REQUIRES_SHARED(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
+
+#define SDL_ACQUIRE(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_capability(__VA_ARGS__))
+
+#define SDL_ACQUIRE_SHARED(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_shared_capability(__VA_ARGS__))
+
+#define SDL_RELEASE(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_capability(__VA_ARGS__))
+
+#define SDL_RELEASE_SHARED(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(__VA_ARGS__))
+
+#define SDL_RELEASE_GENERIC(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_generic_capability(__VA_ARGS__))
+
+#define SDL_TRY_ACQUIRE(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(__VA_ARGS__))
+
+#define SDL_TRY_ACQUIRE_SHARED(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_shared_capability(__VA_ARGS__))
+
+#define SDL_EXCLUDES(...) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
+
+#define SDL_ASSERT_CAPABILITY(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(assert_capability(x))
+
+#define SDL_ASSERT_SHARED_CAPABILITY(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(assert_shared_capability(x))
+
+#define SDL_RETURN_CAPABILITY(x) \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
+
+#define SDL_NO_THREAD_SAFETY_ANALYSIS \
+  SDL_THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
+
+/******************************************************************************/
+
+
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -96,7 +170,7 @@ extern DECLSPEC SDL_mutex *SDLCALL SDL_CreateMutex(void);
  *
  * \since This function is available since SDL 2.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex);
+extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex) SDL_ACQUIRE(mutex);
 #define SDL_mutexP(m)   SDL_LockMutex(m)
 
 /**
@@ -119,7 +193,7 @@ extern DECLSPEC int SDLCALL SDL_LockMutex(SDL_mutex * mutex);
  * \sa SDL_LockMutex
  * \sa SDL_UnlockMutex
  */
-extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_mutex * mutex);
+extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_mutex * mutex) SDL_TRY_ACQUIRE(0, mutex);
 
 /**
  * Unlock the mutex.
@@ -138,7 +212,7 @@ extern DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_mutex * mutex);
  *
  * \since This function is available since SDL 2.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_UnlockMutex(SDL_mutex * mutex);
+extern DECLSPEC int SDLCALL SDL_UnlockMutex(SDL_mutex * mutex) SDL_RELEASE(mutex);
 #define SDL_mutexV(m)   SDL_UnlockMutex(m)
 
 /**

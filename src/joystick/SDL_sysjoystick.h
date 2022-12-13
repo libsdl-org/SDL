@@ -67,67 +67,71 @@ typedef struct _SDL_JoystickSensorInfo
     Uint64 timestamp_us;
 } SDL_JoystickSensorInfo;
 
+#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
+
 struct _SDL_Joystick
 {
-    const void *magic;
+    const void *magic _guarded;
 
-    SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
-    char *name;                 /* Joystick name - system dependent */
-    char *path;                 /* Joystick path - system dependent */
-    char *serial;               /* Joystick serial */
-    SDL_JoystickGUID guid;      /* Joystick guid */
-    Uint16 firmware_version;    /* Firmware version, if available */
+    SDL_JoystickID instance_id _guarded; /* Device instance, monotonically increasing from 0 */
+    char *name _guarded;                 /* Joystick name - system dependent */
+    char *path _guarded;                 /* Joystick path - system dependent */
+    char *serial _guarded;               /* Joystick serial */
+    SDL_JoystickGUID guid _guarded;      /* Joystick guid */
+    Uint16 firmware_version _guarded;    /* Firmware version, if available */
 
-    int naxes; /* Number of axis controls on the joystick */
-    SDL_JoystickAxisInfo *axes;
+    int naxes _guarded; /* Number of axis controls on the joystick */
+    SDL_JoystickAxisInfo *axes _guarded;
 
-    int nhats;   /* Number of hats on the joystick */
-    Uint8 *hats; /* Current hat states */
+    int nhats _guarded;   /* Number of hats on the joystick */
+    Uint8 *hats _guarded; /* Current hat states */
 
-    int nballs; /* Number of trackballs on the joystick */
+    int nballs _guarded; /* Number of trackballs on the joystick */
     struct balldelta
     {
         int dx;
         int dy;
-    } *balls; /* Current ball motion deltas */
+    } *balls _guarded; /* Current ball motion deltas */
 
-    int nbuttons;   /* Number of buttons on the joystick */
-    Uint8 *buttons; /* Current button states */
+    int nbuttons _guarded;   /* Number of buttons on the joystick */
+    Uint8 *buttons _guarded; /* Current button states */
 
-    int ntouchpads;                      /* Number of touchpads on the joystick */
-    SDL_JoystickTouchpadInfo *touchpads; /* Current touchpad states */
+    int ntouchpads _guarded;                      /* Number of touchpads on the joystick */
+    SDL_JoystickTouchpadInfo *touchpads _guarded; /* Current touchpad states */
 
-    int nsensors; /* Number of sensors on the joystick */
-    int nsensors_enabled;
-    SDL_JoystickSensorInfo *sensors;
+    int nsensors _guarded; /* Number of sensors on the joystick */
+    int nsensors_enabled _guarded;
+    SDL_JoystickSensorInfo *sensors _guarded;
 
-    Uint16 low_frequency_rumble;
-    Uint16 high_frequency_rumble;
-    Uint32 rumble_expiration;
-    Uint32 rumble_resend;
+    Uint16 low_frequency_rumble _guarded;
+    Uint16 high_frequency_rumble _guarded;
+    Uint32 rumble_expiration _guarded;
+    Uint32 rumble_resend _guarded;
 
-    Uint16 left_trigger_rumble;
-    Uint16 right_trigger_rumble;
-    Uint32 trigger_rumble_expiration;
+    Uint16 left_trigger_rumble _guarded;
+    Uint16 right_trigger_rumble _guarded;
+    Uint32 trigger_rumble_expiration _guarded;
 
-    Uint8 led_red;
-    Uint8 led_green;
-    Uint8 led_blue;
-    Uint32 led_expiration;
+    Uint8 led_red _guarded;
+    Uint8 led_green _guarded;
+    Uint8 led_blue _guarded;
+    Uint32 led_expiration _guarded;
 
-    SDL_bool attached;
-    SDL_bool is_game_controller;
-    SDL_bool delayed_guide_button;      /* SDL_TRUE if this device has the guide button event delayed */
-    SDL_JoystickPowerLevel epowerlevel; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
+    SDL_bool attached _guarded;
+    SDL_bool is_game_controller _guarded;
+    SDL_bool delayed_guide_button _guarded;      /* SDL_TRUE if this device has the guide button event delayed */
+    SDL_JoystickPowerLevel epowerlevel _guarded; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 
-    struct _SDL_JoystickDriver *driver;
+    struct _SDL_JoystickDriver *driver _guarded;
 
-    struct joystick_hwdata *hwdata; /* Driver dependent information */
+    struct joystick_hwdata *hwdata _guarded; /* Driver dependent information */
 
-    int ref_count; /* Reference count for multiple opens */
+    int ref_count _guarded; /* Reference count for multiple opens */
 
-    struct _SDL_Joystick *next; /* pointer to next joystick we have allocated */
+    struct _SDL_Joystick *next _guarded; /* pointer to next joystick we have allocated */
 };
+
+#undef _guarded
 
 /* Device bus definitions */
 #define SDL_HARDWARE_BUS_UNKNOWN   0x00

@@ -51,23 +51,19 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
     &SDL_DUMMY_SensorDriver
 #endif
 };
-static SDL_Sensor *SDL_sensors = NULL;
-static SDL_bool SDL_updating_sensor = SDL_FALSE;
 static SDL_mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
-static SDL_atomic_t SDL_next_sensor_instance_id;
+static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
+static SDL_atomic_t SDL_next_sensor_instance_id SDL_GUARDED_BY(SDL_sensor_lock);
+static SDL_bool SDL_updating_sensor SDL_GUARDED_BY(SDL_sensor_lock) = SDL_FALSE;
 
-void SDL_LockSensors(void)
+void SDL_LockSensors(void) SDL_ACQUIRE(SDL_sensor_lock)
 {
-    if (SDL_sensor_lock) {
-        SDL_LockMutex(SDL_sensor_lock);
-    }
+    SDL_LockMutex(SDL_sensor_lock);
 }
 
-void SDL_UnlockSensors(void)
+void SDL_UnlockSensors(void) SDL_RELEASE(SDL_sensor_lock)
 {
-    if (SDL_sensor_lock) {
-        SDL_UnlockMutex(SDL_sensor_lock);
-    }
+    SDL_UnlockMutex(SDL_sensor_lock);
 }
 
 int SDL_SensorInit(void)
@@ -145,8 +141,7 @@ static SDL_bool SDL_GetDriverAndSensorIndex(int device_index, SDL_SensorDriver *
 /*
  * Get the implementation dependent name of a sensor
  */
-const char *
-SDL_SensorGetDeviceName(int device_index)
+const char *SDL_SensorGetDeviceName(int device_index)
 {
     SDL_SensorDriver *driver;
     const char *name = NULL;
@@ -161,8 +156,7 @@ SDL_SensorGetDeviceName(int device_index)
     return name;
 }
 
-SDL_SensorType
-SDL_SensorGetDeviceType(int device_index)
+SDL_SensorType SDL_SensorGetDeviceType(int device_index)
 {
     SDL_SensorDriver *driver;
     SDL_SensorType type = SDL_SENSOR_INVALID;
@@ -190,8 +184,7 @@ int SDL_SensorGetDeviceNonPortableType(int device_index)
     return type;
 }
 
-SDL_SensorID
-SDL_SensorGetDeviceInstanceID(int device_index)
+SDL_SensorID SDL_SensorGetDeviceInstanceID(int device_index)
 {
     SDL_SensorDriver *driver;
     SDL_SensorID instance_id = -1;
@@ -212,8 +205,7 @@ SDL_SensorGetDeviceInstanceID(int device_index)
  *
  * This function returns a sensor identifier, or NULL if an error occurred.
  */
-SDL_Sensor *
-SDL_SensorOpen(int device_index)
+SDL_Sensor *SDL_SensorOpen(int device_index)
 {
     SDL_SensorDriver *driver;
     SDL_SensorID instance_id;
@@ -284,8 +276,7 @@ SDL_SensorOpen(int device_index)
 /*
  * Find the SDL_Sensor that owns this instance id
  */
-SDL_Sensor *
-SDL_SensorFromInstanceID(SDL_SensorID instance_id)
+SDL_Sensor *SDL_SensorFromInstanceID(SDL_SensorID instance_id)
 {
     SDL_Sensor *sensor;
 
@@ -319,8 +310,7 @@ static int SDL_PrivateSensorValid(SDL_Sensor *sensor)
 /*
  * Get the friendly name of this sensor
  */
-const char *
-SDL_SensorGetName(SDL_Sensor *sensor)
+const char *SDL_SensorGetName(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return NULL;
@@ -332,8 +322,7 @@ SDL_SensorGetName(SDL_Sensor *sensor)
 /*
  * Get the type of this sensor
  */
-SDL_SensorType
-SDL_SensorGetType(SDL_Sensor *sensor)
+SDL_SensorType SDL_SensorGetType(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return SDL_SENSOR_INVALID;
@@ -357,8 +346,7 @@ int SDL_SensorGetNonPortableType(SDL_Sensor *sensor)
 /*
  * Get the instance id for this opened sensor
  */
-SDL_SensorID
-SDL_SensorGetInstanceID(SDL_Sensor *sensor)
+SDL_SensorID SDL_SensorGetInstanceID(SDL_Sensor *sensor)
 {
     if (!SDL_PrivateSensorValid(sensor)) {
         return -1;
@@ -448,10 +436,10 @@ void SDL_SensorQuit(void)
 {
     int i;
 
+    SDL_LockSensors();
+
     /* Make sure we're not getting called in the middle of updating sensors */
     SDL_assert(!SDL_updating_sensor);
-
-    SDL_LockSensors();
 
     /* Stop the event polling */
     while (SDL_sensors) {
@@ -525,14 +513,9 @@ void SDL_SensorUpdate(void)
 
     SDL_updating_sensor = SDL_TRUE;
 
-    /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
-    SDL_UnlockSensors();
-
     for (sensor = SDL_sensors; sensor; sensor = sensor->next) {
         sensor->driver->Update(sensor);
     }
-
-    SDL_LockSensors();
 
     SDL_updating_sensor = SDL_FALSE;
 

@@ -345,10 +345,8 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
     }
     SDL_AtomicUnlock(&spinlock);
 
-    if (SDL_LockMutex(assertion_mutex) < 0) {
-        return SDL_ASSERTION_IGNORE; /* oh well, I guess. */
-    }
-#endif
+    SDL_LockMutex(assertion_mutex);
+#endif /* !SDL_THREADS_DISABLED */
 
     /* doing this because Visual C is upset over assigning in the macro. */
     if (data->trigger_count == 0) {

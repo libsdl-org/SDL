@@ -44,6 +44,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
 #include "SDL_guid.h"
+#include "SDL_mutex.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -66,6 +67,9 @@ extern "C" {
 /**
  * The joystick structure used to identify an SDL joystick
  */
+#ifdef SDL_THREAD_SAFETY_ANALYSIS
+extern SDL_mutex *SDL_joystick_lock;
+#endif
 struct _SDL_Joystick;
 typedef struct _SDL_Joystick SDL_Joystick;
 
@@ -131,7 +135,7 @@ typedef enum
  *
  * \since This function is available since SDL 2.0.7.
  */
-extern DECLSPEC void SDLCALL SDL_LockJoysticks(void);
+extern DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
 
 
 /**
@@ -146,7 +150,7 @@ extern DECLSPEC void SDLCALL SDL_LockJoysticks(void);
  *
  * \since This function is available since SDL 2.0.7.
  */
-extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void);
+extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
 
 /**
  * Count the number of joysticks attached to the system.

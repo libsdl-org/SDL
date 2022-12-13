@@ -96,6 +96,8 @@ static SDL_bool HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
 
+    SDL_AssertJoysticksLocked();
+
     SDL_zeroa(ctx->last_state);
 
     /* Initialize the joystick capabilities */

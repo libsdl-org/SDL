@@ -234,6 +234,8 @@ static SDL_bool HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
+    SDL_AssertJoysticksLocked();
+
     ctx->joystick = joystick;
     ctx->effects_updated = SDL_FALSE;
     ctx->rumble_left = 0;
@@ -629,6 +631,8 @@ static void HIDAPI_DriverPS3ThirdParty_SetDevicePlayerIndex(SDL_HIDAPI_Device *d
 static SDL_bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
+
+    SDL_AssertJoysticksLocked();
 
     ctx->joystick = joystick;
     SDL_zeroa(ctx->last_state);

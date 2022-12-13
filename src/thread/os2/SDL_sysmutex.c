@@ -67,13 +67,13 @@ SDL_DestroyMutex(SDL_mutex * mutex)
 
 /* Lock the mutex */
 int
-SDL_LockMutex(SDL_mutex * mutex)
+SDL_LockMutex(SDL_mutex * mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     ULONG ulRC;
     HMTX  hMtx = (HMTX)mutex;
 
     if (hMtx == NULLHANDLE)
-        return SDL_InvalidParamError("mutex");
+        return 0;
 
     ulRC = DosRequestMutexSem(hMtx, SEM_INDEFINITE_WAIT);
     if (ulRC != NO_ERROR) {
@@ -92,7 +92,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
     HMTX  hMtx = (HMTX)mutex;
 
     if (hMtx == NULLHANDLE)
-        return SDL_InvalidParamError("mutex");
+        return 0;
 
     ulRC = DosRequestMutexSem(hMtx, SEM_IMMEDIATE_RETURN);
 
@@ -109,13 +109,13 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 
 /* Unlock the mutex */
 int
-SDL_UnlockMutex(SDL_mutex * mutex)
+SDL_UnlockMutex(SDL_mutex * mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     ULONG ulRC;
     HMTX  hMtx = (HMTX)mutex;
 
     if (hMtx == NULLHANDLE)
-        return SDL_InvalidParamError("mutex");
+        return 0;
 
     ulRC = DosReleaseMutexSem(hMtx);
     if (ulRC != NO_ERROR)

@@ -56,12 +56,12 @@ SDL_DestroyMutex(SDL_mutex *mutex)
     }
 }
 
-/* Lock the semaphore */
+/* Lock the mutex */
 extern "C" int
-SDL_mutexP(SDL_mutex *mutex)
+SDL_LockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     try {
@@ -76,8 +76,9 @@ SDL_mutexP(SDL_mutex *mutex)
 int SDL_TryLockMutex(SDL_mutex *mutex)
 {
     int retval = 0;
+
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     if (mutex->cpp_mutex.try_lock() == false) {
@@ -88,10 +89,10 @@ int SDL_TryLockMutex(SDL_mutex *mutex)
 
 /* Unlock the mutex */
 extern "C" int
-SDL_mutexV(SDL_mutex *mutex)
+SDL_UnlockMutex(SDL_mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS /* clang doesn't know about NULL mutexes */
 {
     if (mutex == NULL) {
-        return SDL_InvalidParamError("mutex");
+        return 0;
     }
 
     mutex->cpp_mutex.unlock();
