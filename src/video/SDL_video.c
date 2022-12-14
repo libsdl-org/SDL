@@ -225,7 +225,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
             const int total = SDL_GetNumRenderDrivers();
             for (i = 0; i < total; ++i) {
                 const char *name = SDL_GetRenderDriver(i);
-                if (name && (SDL_strcmp(info.name, "software") != 0)) {
+                if (name && (SDL_strcmp(name, "software") != 0)) {
                     renderer = SDL_CreateRenderer(window, name, 0);
                     if (renderer && (SDL_GetRendererInfo(renderer, &info) == 0) && (info.flags & SDL_RENDERER_ACCELERATED)) {
                         break; /* this will work. */
