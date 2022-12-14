@@ -54,6 +54,7 @@ LoadDBUSSyms(void)
     SDL_DBUS_SYM(connection_send);
     SDL_DBUS_SYM(connection_send_with_reply_and_block);
     SDL_DBUS_SYM(connection_close);
+    SDL_DBUS_SYM(connection_ref);
     SDL_DBUS_SYM(connection_unref);
     SDL_DBUS_SYM(connection_flush);
     SDL_DBUS_SYM(connection_read_write);

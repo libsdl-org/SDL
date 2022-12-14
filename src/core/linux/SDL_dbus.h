@@ -46,6 +46,7 @@ typedef struct SDL_DBusContext {
     dbus_bool_t (*connection_send)(DBusConnection *, DBusMessage *, dbus_uint32_t *);
     DBusMessage *(*connection_send_with_reply_and_block)(DBusConnection *, DBusMessage *, int, DBusError *);
     void (*connection_close)(DBusConnection *);
+    void (*connection_ref)(DBusConnection *);
     void (*connection_unref)(DBusConnection *);
     void (*connection_flush)(DBusConnection *);
     dbus_bool_t (*connection_read_write)(DBusConnection *, int);

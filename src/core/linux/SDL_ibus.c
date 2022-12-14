@@ -477,6 +477,9 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
         result = SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, IBUS_PATH, ibus_interface, "CreateInputContext",
                                                  DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
                                                  DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
+    } else {
+        /* re-using dbus->session_conn */
+        dbus->connection_ref(ibus_conn);
     }
 
     if (result) {
