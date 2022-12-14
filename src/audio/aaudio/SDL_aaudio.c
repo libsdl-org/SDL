@@ -70,6 +70,45 @@ void aaudio_errorCallback(AAudioStream *stream, void *userData, aaudio_result_t 
 
 #define LIB_AAUDIO_SO "libaaudio.so"
 
+static void aaudio_DetectDevices(void)
+{
+    int *inputs;
+    inputs = SDL_malloc(sizeof(int) * 100);
+    SDL_zerop(inputs);
+    int inputs_length = 0;
+
+    Android_JNI_GetAudioInputDevices(inputs, &inputs_length);
+
+    for (int i = 0; i < inputs_length; ++i) {
+        int device_id = inputs[i];
+        int n = (int) (log10(device_id) + 1);
+        char device_name[n];
+        SDL_itoa(device_id, device_name, 10);
+        SDL_Log("Adding input device with name %s", device_name);
+        SDL_AddAudioDevice(SDL_FALSE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
+    }
+
+    SDL_free(inputs);
+
+    int *outputs;
+    outputs = SDL_malloc(sizeof(int) * 100);
+    SDL_zerop(outputs);
+    int outputs_length = 0;
+
+    Android_JNI_GetAudioOutputDevices(outputs, &outputs_length);
+
+    for (int i = 0; i < outputs_length; ++i) {
+        int device_id = outputs[i];
+        int n = (int) (log10(device_id) + 1);
+        char device_name[n];
+        SDL_itoa(device_id, device_name, 10);
+        SDL_Log("Adding output device with name %s", device_name);
+        SDL_AddAudioDevice(SDL_TRUE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
+    }
+
+    SDL_free(outputs);
+}
+
 static int aaudio_OpenDevice(_THIS, const char *devname)
 {
     struct SDL_PrivateAudioData *private;
@@ -101,6 +140,11 @@ static int aaudio_OpenDevice(_THIS, const char *devname)
 
     ctx.AAudioStreamBuilder_setSampleRate(ctx.builder, this->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(ctx.builder, this->spec.channels);
+    if(devname != NULL) {
+        int aaudio_device_id = SDL_atoi(devname);
+        LOGI("Opening device id %d", aaudio_device_id);
+        ctx.AAudioStreamBuilder_setDeviceId(ctx.builder, aaudio_device_id);
+    }
     {
         aaudio_direction_t direction = (iscapture ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
         ctx.AAudioStreamBuilder_setDirection(ctx.builder, direction);
@@ -300,17 +344,19 @@ static SDL_bool aaudio_Init(SDL_AudioDriverImpl *impl)
         goto failure;
     }
 
+    impl->DetectDevices = aaudio_DetectDevices;
     impl->Deinitialize = aaudio_Deinitialize;
     impl->OpenDevice = aaudio_OpenDevice;
     impl->CloseDevice = aaudio_CloseDevice;
     impl->PlayDevice = aaudio_PlayDevice;
     impl->GetDeviceBuf = aaudio_GetDeviceBuf;
     impl->CaptureFromDevice = aaudio_CaptureFromDevice;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    impl->OnlyHasDefaultOutputDevice = SDL_FALSE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_FALSE;
 
     /* this audio target is available. */
     LOGI("SDL aaudio_Init OK");

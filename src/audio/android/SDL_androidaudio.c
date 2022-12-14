@@ -35,6 +35,44 @@
 static SDL_AudioDevice *audioDevice = NULL;
 static SDL_AudioDevice *captureDevice = NULL;
 
+static void ANDROIDAUDIO_DetectDevices(void) {
+    int *inputs;
+    inputs = SDL_malloc(sizeof(int) * 100);
+    SDL_zerop(inputs);
+    int inputs_length = 0;
+
+    Android_JNI_GetAudioInputDevices(inputs, &inputs_length);
+
+    for (int i = 0; i < inputs_length; ++i) {
+        int device_id = inputs[i];
+        int n = (int) (log10(device_id) + 1);
+        char device_name[n];
+        SDL_itoa(device_id, device_name, 10);
+        SDL_Log("Adding input device with name %s", device_name);
+        SDL_AddAudioDevice(SDL_FALSE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
+    }
+
+    SDL_free(inputs);
+
+    int *outputs;
+    outputs = SDL_malloc(sizeof(int) * 100);
+    SDL_zerop(outputs);
+    int outputs_length = 0;
+
+    Android_JNI_GetAudioOutputDevices(outputs, &outputs_length);
+
+    for (int i = 0; i < outputs_length; ++i) {
+        int device_id = outputs[i];
+        int n = (int) (log10(device_id) + 1);
+        char device_name[n];
+        SDL_itoa(device_id, device_name, 10);
+        SDL_Log("Adding output device with name %s", device_name);
+        SDL_AddAudioDevice(SDL_TRUE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
+    }
+
+    SDL_free(outputs);
+}
+
 static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
 {
     SDL_AudioFormat test_format;
@@ -63,12 +101,18 @@ static int ANDROIDAUDIO_OpenDevice(_THIS, const char *devname)
         }
     }
 
+    int audio_device_id = 0;
+
+    if(devname != NULL) {
+        audio_device_id = SDL_atoi(devname);
+    }
+
     if (!test_format) {
         /* Didn't find a compatible format :( */
         return SDL_SetError("%s: Unsupported audio format", "android");
     }
 
-    if (Android_JNI_OpenAudioDevice(iscapture, &this->spec) < 0) {
+    if (Android_JNI_OpenAudioDevice(iscapture, audio_device_id, &this->spec) < 0) {
         return -1;
     }
 
@@ -116,17 +160,19 @@ static void ANDROIDAUDIO_CloseDevice(_THIS)
 static SDL_bool ANDROIDAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
+    impl->DetectDevices = ANDROIDAUDIO_DetectDevices;
     impl->OpenDevice = ANDROIDAUDIO_OpenDevice;
     impl->PlayDevice = ANDROIDAUDIO_PlayDevice;
     impl->GetDeviceBuf = ANDROIDAUDIO_GetDeviceBuf;
     impl->CloseDevice = ANDROIDAUDIO_CloseDevice;
     impl->CaptureFromDevice = ANDROIDAUDIO_CaptureFromDevice;
     impl->FlushCapture = ANDROIDAUDIO_FlushCapture;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    impl->OnlyHasDefaultOutputDevice = SDL_FALSE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_FALSE;
 
     return SDL_TRUE; /* this audio target is available. */
 }

@@ -24,7 +24,7 @@
 SDL_PROC(const char *, AAudio_convertResultToText, (aaudio_result_t returnCode))
 SDL_PROC(const char *, AAudio_convertStreamStateToText, (aaudio_stream_state_t state))
 SDL_PROC(aaudio_result_t, AAudio_createStreamBuilder, (AAudioStreamBuilder * *builder))
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setDeviceId, (AAudioStreamBuilder * builder, int32_t deviceId))
+SDL_PROC(void, AAudioStreamBuilder_setDeviceId, (AAudioStreamBuilder * builder, int32_t deviceId))
 SDL_PROC(void, AAudioStreamBuilder_setSampleRate, (AAudioStreamBuilder * builder, int32_t sampleRate))
 SDL_PROC(void, AAudioStreamBuilder_setChannelCount, (AAudioStreamBuilder * builder, int32_t channelCount))
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSamplesPerFrame, (AAudioStreamBuilder * builder, int32_t samplesPerFrame))
