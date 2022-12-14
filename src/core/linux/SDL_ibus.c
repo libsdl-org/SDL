@@ -485,6 +485,8 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
                                                  DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
     }
 
+    dbus->connection_ref(ibus_conn);
+
     if (result) {
         char matchstr[128];
         (void)SDL_snprintf(matchstr, sizeof matchstr, "type='signal',interface='%s'", ibus_input_interface);
