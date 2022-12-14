@@ -150,7 +150,7 @@ int main(int argc, char **argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         quit(2);
     }
-    SDL_RWread(handle, MooseFrames, MOOSEFRAME_SIZE, MOOSEFRAMES_COUNT);
+    SDL_RWread(handle, MooseFrames, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
     SDL_RWclose(handle);
 
     /* Create the window and renderer */

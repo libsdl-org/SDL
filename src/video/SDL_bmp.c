@@ -69,8 +69,9 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
     if (spot >= start && spot < end) \
     *spot = (x)
 
+    /* !!! FIXME: for all these reads, handle error vs eof? handle -2 if non-blocking? */
     for (;;) {
-        if (!SDL_RWread(src, &ch, 1, 1)) {
+        if (SDL_RWread(src, &ch, 1) <= 0) {
             return SDL_TRUE;
         }
         /*
@@ -79,7 +80,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
         */
         if (ch) {
             Uint8 pixel;
-            if (!SDL_RWread(src, &pixel, 1, 1)) {
+            if (SDL_RWread(src, &pixel, 1) <= 0) {
                 return SDL_TRUE;
             }
             if (isRle8) { /* 256-color bitmap, compressed */
@@ -106,7 +107,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
             | a cursor move, or some absolute data.
             | zero tag may be absolute mode or an escape
             */
-            if (!SDL_RWread(src, &ch, 1, 1)) {
+            if (SDL_RWread(src, &ch, 1) <= 0) {
                 return SDL_TRUE;
             }
             switch (ch) {
@@ -117,11 +118,11 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
             case 1:               /* end of bitmap */
                 return SDL_FALSE; /* success! */
             case 2:               /* delta */
-                if (!SDL_RWread(src, &ch, 1, 1)) {
+                if (SDL_RWread(src, &ch, 1) <= 0) {
                     return SDL_TRUE;
                 }
                 ofs += ch;
-                if (!SDL_RWread(src, &ch, 1, 1)) {
+                if (SDL_RWread(src, &ch, 1) <= 0) {
                     return SDL_TRUE;
                 }
                 bits -= (ch * pitch);
@@ -131,7 +132,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
                     needsPad = (ch & 1);
                     do {
                         Uint8 pixel;
-                        if (!SDL_RWread(src, &pixel, 1, 1)) {
+                        if (SDL_RWread(src, &pixel, 1) <= 0) {
                             return SDL_TRUE;
                         }
                         COPY_PIXEL(pixel);
@@ -140,7 +141,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
                     needsPad = (((ch + 1) >> 1) & 1); /* (ch+1)>>1: bytes size */
                     for (;;) {
                         Uint8 pixel;
-                        if (!SDL_RWread(src, &pixel, 1, 1)) {
+                        if (SDL_RWread(src, &pixel, 1) <= 0) {
                             return SDL_TRUE;
                         }
                         COPY_PIXEL(pixel >> 4);
@@ -154,7 +155,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_RWops *src, int isRle8)
                     }
                 }
                 /* pad at even boundary */
-                if (needsPad && !SDL_RWread(src, &ch, 1, 1)) {
+                if (needsPad && (SDL_RWread(src, &ch, 1) <= 0)) {
                     return SDL_TRUE;
                 }
                 break;
@@ -249,7 +250,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         goto done;
     }
     SDL_ClearError();
-    if (SDL_RWread(src, magic, 1, 2) != 2) {
+    if (SDL_RWread(src, magic, 2) != 2) {
         SDL_Error(SDL_EFREAD);
         was_error = SDL_TRUE;
         goto done;
@@ -466,17 +467,19 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
 
         if (biSize == 12) {
             for (i = 0; i < (int)biClrUsed; ++i) {
-                SDL_RWread(src, &palette->colors[i].b, 1, 1);
-                SDL_RWread(src, &palette->colors[i].g, 1, 1);
-                SDL_RWread(src, &palette->colors[i].r, 1, 1);
+                /* !!! FIXME: this should check for i/o errors! */
+                SDL_RWread(src, &palette->colors[i].b, 1);
+                SDL_RWread(src, &palette->colors[i].g, 1);
+                SDL_RWread(src, &palette->colors[i].r, 1);
                 palette->colors[i].a = SDL_ALPHA_OPAQUE;
             }
         } else {
             for (i = 0; i < (int)biClrUsed; ++i) {
-                SDL_RWread(src, &palette->colors[i].b, 1, 1);
-                SDL_RWread(src, &palette->colors[i].g, 1, 1);
-                SDL_RWread(src, &palette->colors[i].r, 1, 1);
-                SDL_RWread(src, &palette->colors[i].a, 1, 1);
+                /* !!! FIXME: this should check for i/o errors! */
+                SDL_RWread(src, &palette->colors[i].b, 1);
+                SDL_RWread(src, &palette->colors[i].g, 1);
+                SDL_RWread(src, &palette->colors[i].r, 1);
+                SDL_RWread(src, &palette->colors[i].a, 1);
 
                 /* According to Microsoft documentation, the fourth element
                    is reserved and must be zero, so we shouldn't treat it as
@@ -535,7 +538,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
             int shift = (8 - ExpandBMP);
             for (i = 0; i < surface->w; ++i) {
                 if (i % (8 / ExpandBMP) == 0) {
-                    if (!SDL_RWread(src, &pixel, 1, 1)) {
+                    if (SDL_RWread(src, &pixel, 1) != 1) {
                         SDL_Error(SDL_EFREAD);
                         was_error = SDL_TRUE;
                         goto done;
@@ -552,7 +555,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         } break;
 
         default:
-            if (SDL_RWread(src, bits, 1, surface->pitch) != surface->pitch) {
+            if (SDL_RWread(src, bits, surface->pitch) != surface->pitch) {
                 SDL_Error(SDL_EFREAD);
                 was_error = SDL_TRUE;
                 goto done;
@@ -596,7 +599,7 @@ SDL_LoadBMP_RW(SDL_RWops *src, int freesrc)
         if (pad) {
             Uint8 padbyte;
             for (i = 0; i < pad; ++i) {
-                SDL_RWread(src, &padbyte, 1, 1);
+                SDL_RWread(src, &padbyte, 1);
             }
         }
         if (topDown) {
@@ -624,6 +627,12 @@ done:
 
 int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
 {
+    /* !!! FIXME: this calls SDL_ClearError() and then checks if an error happened during this function to
+       !!! FIXME: decide if there was a problem, but there's risk of innocent things setting an error
+       !!! FIXME: string for innocent unrelated reasons, and also, an app supplying its own RWops
+       !!! FIXME: implementation may not set the error string on failure. We should check for i/o
+       !!! FIXME: failures as we go, and return early if one occurs. */
+
     Sint64 fp_offset;
     int i, pad;
     SDL_Surface *intermediate_surface;
@@ -731,7 +740,7 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         /* Write the BMP file header values */
         fp_offset = SDL_RWtell(dst);
         SDL_ClearError();
-        SDL_RWwrite(dst, magic, 2, 1);
+        SDL_RWwrite(dst, magic, 2);
         SDL_WriteLE32(dst, bfSize);
         SDL_WriteLE16(dst, bfReserved1);
         SDL_WriteLE16(dst, bfReserved2);
@@ -805,10 +814,10 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
             colors = intermediate_surface->format->palette->colors;
             ncolors = intermediate_surface->format->palette->ncolors;
             for (i = 0; i < ncolors; ++i) {
-                SDL_RWwrite(dst, &colors[i].b, 1, 1);
-                SDL_RWwrite(dst, &colors[i].g, 1, 1);
-                SDL_RWwrite(dst, &colors[i].r, 1, 1);
-                SDL_RWwrite(dst, &colors[i].a, 1, 1);
+                SDL_RWwrite(dst, &colors[i].b, 1);
+                SDL_RWwrite(dst, &colors[i].g, 1);
+                SDL_RWwrite(dst, &colors[i].r, 1);
+                SDL_RWwrite(dst, &colors[i].a, 1);
             }
         }
 
@@ -827,14 +836,14 @@ int SDL_SaveBMP_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
         pad = ((bw % 4) ? (4 - (bw % 4)) : 0);
         while (bits > (Uint8 *)intermediate_surface->pixels) {
             bits -= intermediate_surface->pitch;
-            if (SDL_RWwrite(dst, bits, 1, bw) != bw) {
+            if (SDL_RWwrite(dst, bits, bw) != bw) {
                 SDL_Error(SDL_EFWRITE);
                 break;
             }
             if (pad) {
                 const Uint8 padbyte = 0;
                 for (i = 0; i < pad; ++i) {
-                    SDL_RWwrite(dst, &padbyte, 1, 1);
+                    SDL_RWwrite(dst, &padbyte, 1);
                 }
             }
         }

@@ -1523,7 +1523,7 @@ static int WaveNextChunk(SDL_RWops *src, WaveChunk *chunk)
     if (SDL_RWseek(src, nextposition, RW_SEEK_SET) != nextposition) {
         /* Not sure how we ended up here. Just abort. */
         return -2;
-    } else if (SDL_RWread(src, chunkheader, 4, 2) != 2) {
+    } else if (SDL_RWread(src, chunkheader, sizeof(Uint32) * 2) != (sizeof(Uint32) * 2)) {
         return -1;
     }
 
@@ -1553,7 +1553,7 @@ static int WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t len
             return -2;
         }
 
-        chunk->size = SDL_RWread(src, chunk->data, 1, length);
+        chunk->size = SDL_RWread(src, chunk->data, length);
         if (chunk->size != length) {
             /* Expected to be handled by the caller. */
         }
@@ -1650,7 +1650,7 @@ static int WaveReadFormat(WaveFile *file)
         format->validsamplebits = SDL_ReadLE16(fmtsrc);
         format->samplesperblock = format->validsamplebits;
         format->channelmask = SDL_ReadLE32(fmtsrc);
-        SDL_RWread(fmtsrc, format->subformat, 1, 16);
+        SDL_RWread(fmtsrc, format->subformat, 16);
         format->encoding = WaveGetFormatGUIDEncoding(format);
     }
 
@@ -1806,7 +1806,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
     if (RIFFchunk.fourcc == RIFF) {
         Uint32 formtype;
         /* Read the form type. "WAVE" expected. */
-        if (SDL_RWread(src, &formtype, sizeof(Uint32), 1) != 1) {
+        if (SDL_RWread(src, &formtype, sizeof(Uint32)) != sizeof (Uint32)) {
             return SDL_SetError("Could not read RIFF form type");
         } else if (SDL_SwapLE32(formtype) != WAVE) {
             return SDL_SetError("RIFF form type is not WAVE (not a Waveform file)");
@@ -1896,7 +1896,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
                     /* Let's use src directly, it's just too convenient. */
                     Sint64 position = SDL_RWseek(src, chunk->position, RW_SEEK_SET);
                     Uint32 samplelength;
-                    if (position == chunk->position && SDL_RWread(src, &samplelength, sizeof(Uint32), 1) == 1) {
+                    if (position == chunk->position && SDL_RWread(src, &samplelength, sizeof(Uint32)) == sizeof(Uint32)) {
                         file->fact.status = 1;
                         file->fact.samplelength = SDL_SwapLE32(samplelength);
                     } else {
@@ -1941,7 +1941,7 @@ static int WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 *
             Uint64 position = (Uint64)chunk->position + chunk->length - 1;
             if (position > SDL_MAX_SINT64 || SDL_RWseek(src, (Sint64)position, RW_SEEK_SET) != (Sint64)position) {
                 return SDL_SetError("Could not seek to WAVE chunk data");
-            } else if (SDL_RWread(src, &tmp, 1, 1) != 1) {
+            } else if (SDL_RWread(src, &tmp, 1) != 1) {
                 return SDL_SetError("RIFF size truncates chunk");
             }
         }

@@ -47,16 +47,16 @@ static void DISKAUDIO_WaitDevice(_THIS)
 
 static void DISKAUDIO_PlayDevice(_THIS)
 {
-    const size_t written = SDL_RWwrite(_this->hidden->io,
+    const Sint64 written = SDL_RWwrite(_this->hidden->io,
                                        _this->hidden->mixbuf,
-                                       1, _this->spec.size);
+                                       _this->spec.size);
 
     /* If we couldn't write, assume fatal error for now */
     if (written != _this->spec.size) {
         SDL_OpenedAudioDeviceDisconnected(_this);
     }
 #ifdef DEBUG_AUDIO
-    fprintf(stderr, "Wrote %d bytes of audio data\n", written);
+    fprintf(stderr, "Wrote %d bytes of audio data\n", (int) written);
 #endif
 }
 
@@ -73,8 +73,8 @@ static int DISKAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     SDL_Delay(h->io_delay);
 
     if (h->io) {
-        const size_t br = SDL_RWread(h->io, buffer, 1, buflen);
-        buflen -= (int)br;
+        const int br = (int) SDL_RWread(h->io, buffer, (Sint64) buflen);
+        buflen -= br;
         buffer = ((Uint8 *)buffer) + br;
         if (buflen > 0) { /* EOF (or error, but whatever). */
             SDL_RWclose(h->io);

@@ -99,7 +99,7 @@ void _testGenericRWopsValidations(SDL_RWops *rw, int write)
 {
     char buf[sizeof(RWopsHelloWorldTestString)];
     Sint64 i;
-    size_t s;
+    Sint64 s;
     int seekPos = SDLTest_RandomIntegerInRange(4, 8);
 
     /* Clear buffer */
@@ -111,12 +111,12 @@ void _testGenericRWopsValidations(SDL_RWops *rw, int write)
     SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test write. */
-    s = SDL_RWwrite(rw, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString) - 1, 1);
+    s = SDL_RWwrite(rw, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString) - 1);
     SDLTest_AssertPass("Call to SDL_RWwrite succeeded");
     if (write) {
-        SDLTest_AssertCheck(s == (size_t)1, "Verify result of writing one byte with SDL_RWwrite, expected 1, got %i", (int)s);
+        SDLTest_AssertCheck(s == sizeof(RWopsHelloWorldTestString) - 1, "Verify result of writing one byte with SDL_RWwrite, expected 1, got %i", (int)s);
     } else {
-        SDLTest_AssertCheck(s == (size_t)0, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int)s);
+        SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int)s);
     }
 
     /* Test seek to random position */
@@ -130,7 +130,7 @@ void _testGenericRWopsValidations(SDL_RWops *rw, int write)
     SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (RW_SEEK_SET), expected 0, got %" SDL_PRIs64, i);
 
     /* Test read */
-    s = SDL_RWread(rw, buf, 1, sizeof(RWopsHelloWorldTestString) - 1);
+    s = SDL_RWread(rw, buf, sizeof(RWopsHelloWorldTestString) - 1);
     SDLTest_AssertPass("Call to SDL_RWread succeeded");
     SDLTest_AssertCheck(
         s == (size_t)(sizeof(RWopsHelloWorldTestString) - 1),
@@ -440,8 +440,8 @@ int rwops_testCompareRWFromMemWithRWFromFile(void)
         /* Read/seek from memory */
         rwops_mem = SDL_RWFromMem((void *)RWopsAlphabetString, slen);
         SDLTest_AssertPass("Call to SDL_RWFromMem()");
-        rv_mem = SDL_RWread(rwops_mem, buffer_mem, size, 6);
-        SDLTest_AssertPass("Call to SDL_RWread(mem, size=%d)", size);
+        rv_mem = SDL_RWread(rwops_mem, buffer_mem, size * 6);
+        SDLTest_AssertPass("Call to SDL_RWread(mem, size=%d)", size * 6);
         sv_mem = SDL_RWseek(rwops_mem, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(mem,SEEK_END)");
         result = SDL_RWclose(rwops_mem);
@@ -451,8 +451,8 @@ int rwops_testCompareRWFromMemWithRWFromFile(void)
         /* Read/see from file */
         rwops_file = SDL_RWFromFile(RWopsAlphabetFilename, "r");
         SDLTest_AssertPass("Call to SDL_RWFromFile()");
-        rv_file = SDL_RWread(rwops_file, buffer_file, size, 6);
-        SDLTest_AssertPass("Call to SDL_RWread(file, size=%d)", size);
+        rv_file = SDL_RWread(rwops_file, buffer_file, size * 6);
+        SDLTest_AssertPass("Call to SDL_RWread(file, size=%d)", size * 6);
         sv_file = SDL_RWseek(rwops_file, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(file,SEEK_END)");
         result = SDL_RWclose(rwops_file);
