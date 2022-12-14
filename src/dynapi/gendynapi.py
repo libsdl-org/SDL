@@ -147,6 +147,9 @@ def main():
             func = func.replace("SDL_MALLOC", "");
             func = func.replace("SDL_ALLOC_SIZE2(1, 2)", "");
             func = func.replace("SDL_ALLOC_SIZE(2)", "");
+            func = re.sub(" SDL_ACQUIRE\(.*\)", "", func);
+            func = re.sub(" SDL_TRY_ACQUIRE\(.*\)", "", func);
+            func = re.sub(" SDL_RELEASE\(.*\)", "", func);
 
             # Should be a valid function here
             match = reg_parsing_function.match(func)
