@@ -113,7 +113,7 @@ int main(int argc, char **argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create shaped window for SDL_Shape.");
         exit(-4);
     }
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, NULL, 0);
     if (renderer == NULL) {
         SDL_DestroyWindow(window);
         for (i = 0; i < num_pictures; i++) {

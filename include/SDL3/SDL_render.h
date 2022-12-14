@@ -164,26 +164,35 @@ typedef struct SDL_Texture SDL_Texture;
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRenderer
- * \sa SDL_GetRenderDriverInfo
+ * \sa SDL_GetRenderDriver
  */
 extern DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
 
 /**
- * Get info about a specific 2D rendering driver for the current display.
+ * Use this function to get the name of a built in 2D rendering driver.
  *
- * \param index the index of the driver to query information about
- * \param info an SDL_RendererInfo structure to be filled with information on
- *             the rendering driver
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * The list of rendering drivers is given in the order that they are normally
+ * initialized by default; the drivers that seem more reasonable to choose
+ * first (as far as the SDL developers believe) are earlier in the list.
+ *
+ * The names of drivers are all simple, low-ASCII identifiers, like "opengl",
+ * "direct3d12" or "metal". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * The returned value points to a static, read-only string; do not modify or
+ * free it!
+ *
+ * \param index the index of the rendering driver; the value ranges from 0 to
+ *              SDL_GetNumRenderDrivers() - 1
+ * \returns the name of the rendering driver at the requested index, or NULL
+ *          if an invalid index was specified.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRenderer
  * \sa SDL_GetNumRenderDrivers
  */
-extern DECLSPEC int SDLCALL SDL_GetRenderDriverInfo(int index,
-                                                    SDL_RendererInfo * info);
+extern DECLSPEC const char *SDLCALL SDL_GetRenderDriver(int index);
+
 
 /**
  * Create a window and default renderer.
@@ -210,9 +219,16 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(
 /**
  * Create a 2D rendering context for a window.
  *
+ * If you want a specific renderer, you can specify its name here. A list
+ * of available renderers can be obtained by calling SDL_GetRenderDriver
+ * multiple times, with indices from 0 to SDL_GetNumRenderDrivers()-1. If
+ * you don't need a specific renderer, specify NULL and SDL will attempt
+ * to chooes the best option for you, based on what is available on the
+ * user's system.
+ *
  * \param window the window where rendering is displayed
- * \param index the index of the rendering driver to initialize, or -1 to
- *              initialize the first one supporting the requested flags
+ * \param name the name of the rendering driver to initialize, or NULL to
+ *             initialize the first one supporting the requested flags
  * \param flags 0, or one or more SDL_RendererFlags OR'd together
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
@@ -222,10 +238,11 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(
  * \sa SDL_CreateSoftwareRenderer
  * \sa SDL_DestroyRenderer
  * \sa SDL_GetNumRenderDrivers
+ * \sa SDL_GetRenderDriver
  * \sa SDL_GetRendererInfo
  */
 extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window * window,
-                                               int index, Uint32 flags);
+                                               const char *name, Uint32 flags);
 
 /**
  * Create a 2D software rendering context for a surface.

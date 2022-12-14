@@ -170,7 +170,7 @@ main(int argc, char *argv[])
 
     /* create main window and renderer */
     window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_ALLOW_HIGHDPI);
-    renderer = SDL_CreateRenderer(window, 0, 0);
+    renderer = SDL_CreateRenderer(window, NULL, 0);
     
     SDL_GetWindowSize(window, &w, &h);
     SDL_RenderSetLogicalSize(renderer, w, h);

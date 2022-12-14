@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
     /* On wayland, no window will actually show until something has
        actually been displayed.
     */
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, NULL, 0);
     SDL_RenderPresent(renderer);
 
 #if __IOS__

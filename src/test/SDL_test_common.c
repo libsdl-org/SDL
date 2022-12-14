@@ -1196,16 +1196,13 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
         }
 
         if (state->verbose & VERBOSE_RENDER) {
-            SDL_RendererInfo info;
-
             n = SDL_GetNumRenderDrivers();
             if (n == 0) {
                 SDL_Log("No built-in render drivers\n");
             } else {
                 SDL_Log("Built-in render drivers:\n");
                 for (i = 0; i < n; ++i) {
-                    SDL_GetRenderDriverInfo(i, &info);
-                    SDLTest_PrintRenderer(&info);
+                    SDL_Log("  %s\n", SDL_GetRenderDriver(i));
                 }
             }
         }
@@ -1310,25 +1307,8 @@ SDLTest_CommonInit(SDLTest_CommonState *state)
             }
 
             if (!state->skip_renderer && (state->renderdriver || !(state->window_flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)))) {
-                m = -1;
-                if (state->renderdriver) {
-                    SDL_RendererInfo info;
-                    n = SDL_GetNumRenderDrivers();
-                    for (j = 0; j < n; ++j) {
-                        SDL_GetRenderDriverInfo(j, &info);
-                        if (SDL_strcasecmp(info.name, state->renderdriver) == 0) {
-                            m = j;
-                            break;
-                        }
-                    }
-                    if (m == -1) {
-                        SDL_Log("Couldn't find render driver named %s",
-                                state->renderdriver);
-                        return SDL_FALSE;
-                    }
-                }
                 state->renderers[i] = SDL_CreateRenderer(state->windows[i],
-                                                         m, state->render_flags);
+                                                         state->renderdriver, state->render_flags);
                 if (!state->renderers[i]) {
                     SDL_Log("Couldn't create renderer: %s\n",
                             SDL_GetError());

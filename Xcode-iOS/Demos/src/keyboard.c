@@ -223,7 +223,7 @@ main(int argc, char *argv[])
     /* create window */
     window = SDL_CreateWindow("iOS keyboard test", 0, 0, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     /* create renderer */
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_PRESENTVSYNC);
 
     SDL_GetWindowSize(window, &width, &height);
     SDL_RenderSetLogicalSize(renderer, width, height);

@@ -432,7 +432,6 @@ SDL3_0.0.0 {
     SDL_hid_ble_scan;
     SDL_GetWindowWMInfo;
     SDL_GetNumRenderDrivers;
-    SDL_GetRenderDriverInfo;
     SDL_CreateWindowAndRenderer;
     SDL_CreateRenderer;
     SDL_CreateSoftwareRenderer;
@@ -861,6 +860,7 @@ SDL3_0.0.0 {
     SDL_GetTicksNS;
     SDL_DelayNS;
     SDL_GetEventState;
+    SDL_GetRenderDriver;
     # extra symbols go here (don't modify this line)
   local: *;
 };

@@ -213,13 +213,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
 
         /* Check to see if there's a specific driver requested */
         if (specific_accelerated_renderer) {
-            for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
-                SDL_GetRenderDriverInfo(i, &info);
-                if (SDL_strcasecmp(info.name, hint) == 0) {
-                    renderer = SDL_CreateRenderer(window, i, 0);
-                    break;
-                }
-            }
+            renderer = SDL_CreateRenderer(window, hint, 0);
             if (renderer == NULL || (SDL_GetRendererInfo(renderer, &info) == -1)) {
                 if (renderer) {
                     SDL_DestroyRenderer(renderer);
@@ -228,10 +222,11 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, U
             }
             /* if it was specifically requested, even if SDL_RENDERER_ACCELERATED isn't set, we'll accept this renderer. */
         } else {
-            for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
-                SDL_GetRenderDriverInfo(i, &info);
-                if (SDL_strcmp(info.name, "software") != 0) {
-                    renderer = SDL_CreateRenderer(window, i, 0);
+            const int total = SDL_GetNumRenderDrivers();
+            for (i = 0; i < total; ++i) {
+                const char *name = SDL_GetRenderDriver(i);
+                if (name && (SDL_strcmp(info.name, "software") != 0)) {
+                    renderer = SDL_CreateRenderer(window, name, 0);
                     if (renderer && (SDL_GetRendererInfo(renderer, &info) == 0) && (info.flags & SDL_RENDERER_ACCELERATED)) {
                         break; /* this will work. */
                     }

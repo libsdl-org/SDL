@@ -45,7 +45,7 @@ void InitCreateRenderer(void *arg)
         return;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_ACCELERATED);
     SDLTest_AssertPass("SDL_CreateRenderer()");
     SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result");
     if (renderer == NULL) {

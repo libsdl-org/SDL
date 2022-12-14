@@ -317,3 +317,18 @@ The following hints have been removed:
 
 The gesture API has been removed. There is no replacement planned.
 
+
+## SDL_render.h
+
+SDL_GetRenderDriverInfo() has been removed, since most of the information it reported were
+estimates and could not be accurate before creating a renderer. Often times this function
+was used to figure out the index of a driver, so one would call it in a for-loop, looking
+for the driver named "opengl" or whatnot. SDL_GetRenderDriver() has been added for this
+functionality, which returns only the name of the driver.
+
+Additionally, SDL_CreateRenderer()'s second argument is no longer an integer index, but a
+`const char *` representing a renderer's name; if you were just using a for-loop to find
+which index is the "opengl" or whatnot driver, you can just pass that string directly
+here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
+to decide for you.
+

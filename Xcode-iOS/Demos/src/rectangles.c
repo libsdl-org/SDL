@@ -61,7 +61,7 @@ main(int argc, char *argv[])
     if (window == NULL) {
         fatalError("Could not initialize Window");
     }
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, NULL, 0);
     if (renderer == NULL) {
         fatalError("Could not create renderer");
     }

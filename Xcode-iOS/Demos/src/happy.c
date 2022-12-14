@@ -145,7 +145,7 @@ main(int argc, char *argv[])
      * (if SDL_WINDOW_RESIZABLE isn't specified). */
     window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_ALLOW_HIGHDPI);
 
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, NULL, 0);
 
     SDL_GetWindowSize(window, &width, &height);
     SDL_RenderSetLogicalSize(renderer, width, height);

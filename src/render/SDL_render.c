@@ -642,17 +642,18 @@ int SDL_GetNumRenderDrivers(void)
 #endif
 }
 
-int SDL_GetRenderDriverInfo(int index, SDL_RendererInfo *info)
+const char *SDL_GetRenderDriver(int index)
 {
 #if !SDL_RENDER_DISABLED
     if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
-        return SDL_SetError("index must be in the range of 0 - %d",
+        SDL_SetError("index must be in the range of 0 - %d",
                             SDL_GetNumRenderDrivers() - 1);
+        return NULL;
     }
-    *info = render_drivers[index]->info;
-    return 0;
+    return render_drivers[index]->info.name;
 #else
-    return SDL_SetError("SDL not built with rendering support");
+    SDL_SetError("SDL not built with rendering support");
+    return NULL;
 #endif
 }
 
@@ -862,7 +863,7 @@ int SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags,
         return -1;
     }
 
-    *renderer = SDL_CreateRenderer(*window, -1, 0);
+    *renderer = SDL_CreateRenderer(*window, NULL, 0);
     if (!*renderer) {
         return -1;
     }
@@ -926,13 +927,14 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 #endif /* !SDL_RENDER_DISABLED */
 
 SDL_Renderer *
-SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
+SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
 {
 #if !SDL_RENDER_DISABLED
     SDL_Renderer *renderer = NULL;
-    int n = SDL_GetNumRenderDrivers();
+    const int n = SDL_GetNumRenderDrivers();
     SDL_bool batching = SDL_TRUE;
     const char *hint;
+    int i;
 
 #if defined(__ANDROID__)
     Android_ActivityMutex_Lock_Running();
@@ -957,53 +959,39 @@ SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
         }
     }
 
-    if (index < 0) {
-        hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-        if (hint) {
-            for (index = 0; index < n; ++index) {
-                const SDL_RenderDriver *driver = render_drivers[index];
+    if (!name) {
+        name = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+    }
 
-                if (SDL_strcasecmp(hint, driver->info.name) == 0) {
-                    /* Create a new renderer instance */
-                    renderer = driver->CreateRenderer(window, flags);
-                    if (renderer) {
-                        batching = SDL_FALSE;
-                    }
+    if (name) {
+        for (i = 0; i < n; i++) {
+            const SDL_RenderDriver *driver = render_drivers[i];
+            if (SDL_strcasecmp(name, driver->info.name) == 0) {
+                /* Create a new renderer instance */
+                renderer = driver->CreateRenderer(window, flags);
+                if (renderer) {
+                    batching = SDL_FALSE;
+                }
+                break;
+            }
+        }
+    } else {
+        for (i = 0; i < n; i++) {
+            const SDL_RenderDriver *driver = render_drivers[i];
+            if ((driver->info.flags & flags) == flags) {
+                /* Create a new renderer instance */
+                renderer = driver->CreateRenderer(window, flags);
+                if (renderer) {
+                    /* Yay, we got one! */
                     break;
                 }
             }
         }
+    }
 
-        if (renderer == NULL) {
-            for (index = 0; index < n; ++index) {
-                const SDL_RenderDriver *driver = render_drivers[index];
-
-                if ((driver->info.flags & flags) == flags) {
-                    /* Create a new renderer instance */
-                    renderer = driver->CreateRenderer(window, flags);
-                    if (renderer) {
-                        /* Yay, we got one! */
-                        break;
-                    }
-                }
-            }
-        }
-        if (renderer == NULL) {
-            SDL_SetError("Couldn't find matching render driver");
-            goto error;
-        }
-    } else {
-        if (index >= n) {
-            SDL_SetError("index must be -1 or in the range of 0 - %d",
-                         n - 1);
-            goto error;
-        }
-        /* Create a new renderer instance */
-        renderer = render_drivers[index]->CreateRenderer(window, flags);
-        batching = SDL_FALSE;
-        if (renderer == NULL) {
-            goto error;
-        }
+    if (renderer == NULL) {
+        SDL_SetError("Couldn't find matching render driver");
+        goto error;
     }
 
     if ((flags & SDL_RENDERER_PRESENTVSYNC) != 0) {

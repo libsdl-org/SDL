@@ -288,7 +288,6 @@
 #define SDL_EnclosePoints SDL_EnclosePoints_REAL
 #define SDL_IntersectRectAndLine SDL_IntersectRectAndLine_REAL
 #define SDL_GetNumRenderDrivers SDL_GetNumRenderDrivers_REAL
-#define SDL_GetRenderDriverInfo SDL_GetRenderDriverInfo_REAL
 #define SDL_CreateWindowAndRenderer SDL_CreateWindowAndRenderer_REAL
 #define SDL_CreateRenderer SDL_CreateRenderer_REAL
 #define SDL_CreateSoftwareRenderer SDL_CreateSoftwareRenderer_REAL
@@ -885,3 +884,4 @@
 #define SDL_GetTicksNS SDL_GetTicksNS_REAL
 #define SDL_DelayNS SDL_DelayNS_REAL
 #define SDL_GetEventState SDL_GetEventState_REAL
+#define SDL_GetRenderDriver SDL_GetRenderDriver_REAL
