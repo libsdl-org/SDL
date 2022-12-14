@@ -1211,8 +1211,6 @@ static void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pContro
                 SDL_PushEvent(&event);
             }
         }
-
-        controller = controller->next;
     }
 }
 
