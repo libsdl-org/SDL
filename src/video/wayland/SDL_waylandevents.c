@@ -1160,21 +1160,6 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
                                   uint32_t serial, struct wl_surface *surface,
                                   struct wl_array *keys)
 {
-    /* Caps Lock not included because it only makes sense to consider modifiers
-     * that get held down, for the case where a user clicks on an unfocused
-     * window with a modifier key like Shift pressed, in a situation where the
-     * application handles Shift+click differently from a click
-     */
-    const SDL_Scancode mod_scancodes[] = {
-        SDL_SCANCODE_LSHIFT,
-        SDL_SCANCODE_RSHIFT,
-        SDL_SCANCODE_LCTRL,
-        SDL_SCANCODE_RCTRL,
-        SDL_SCANCODE_LALT,
-        SDL_SCANCODE_RALT,
-        SDL_SCANCODE_LGUI,
-        SDL_SCANCODE_RGUI,
-    };
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window;
     uint32_t *key;
@@ -1203,14 +1188,21 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 
     wl_array_for_each (key, keys) {
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
+        const SDL_KeyCode keycode = SDL_GetKeyFromScancode(scancode);
 
-        if (scancode != SDL_SCANCODE_UNKNOWN) {
-            for (uint32_t i = 0; i < sizeof mod_scancodes / sizeof *mod_scancodes; ++i) {
-                if (mod_scancodes[i] == scancode) {
-                    SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
-                    break;
-                }
-            }
+        switch (keycode) {
+        case SDLK_LSHIFT:
+        case SDLK_RSHIFT:
+        case SDLK_LCTRL:
+        case SDLK_RCTRL:
+        case SDLK_LALT:
+        case SDLK_RALT:
+        case SDLK_LGUI:
+        case SDLK_RGUI:
+            SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
+            break;
+        default:
+            break;
         }
     }
 }
