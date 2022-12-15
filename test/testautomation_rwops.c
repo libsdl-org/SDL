@@ -440,7 +440,7 @@ int rwops_testCompareRWFromMemWithRWFromFile(void)
         /* Read/seek from memory */
         rwops_mem = SDL_RWFromMem((void *)RWopsAlphabetString, slen);
         SDLTest_AssertPass("Call to SDL_RWFromMem()");
-        rv_mem = SDL_RWread(rwops_mem, buffer_mem, size * 6);
+        rv_mem = (size_t)SDL_RWread(rwops_mem, buffer_mem, size * 6);
         SDLTest_AssertPass("Call to SDL_RWread(mem, size=%d)", size * 6);
         sv_mem = SDL_RWseek(rwops_mem, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(mem,SEEK_END)");
@@ -451,7 +451,7 @@ int rwops_testCompareRWFromMemWithRWFromFile(void)
         /* Read/see from file */
         rwops_file = SDL_RWFromFile(RWopsAlphabetFilename, "r");
         SDLTest_AssertPass("Call to SDL_RWFromFile()");
-        rv_file = SDL_RWread(rwops_file, buffer_file, size * 6);
+        rv_file = (size_t)SDL_RWread(rwops_file, buffer_file, size * 6);
         SDLTest_AssertPass("Call to SDL_RWread(file, size=%d)", size * 6);
         sv_file = SDL_RWseek(rwops_file, 0, SEEK_END);
         SDLTest_AssertPass("Call to SDL_RWseek(file,SEEK_END)");
