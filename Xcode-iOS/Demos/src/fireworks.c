@@ -9,6 +9,7 @@
 #include <SDL3/SDL_opengles.h>
 #include "common.h"
 #include <math.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define ACCEL 0.0001f           /* acceleration due to gravity, units in pixels per millesecond squared */

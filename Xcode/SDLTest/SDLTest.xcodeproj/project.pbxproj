@@ -55,7 +55,6 @@
 				001799A21074403E00F5D044 /* PBXTargetDependency */,
 				DB166D7016A1CEAF00A1396C /* PBXTargetDependency */,
 				DB166D6E16A1CEAA00A1396C /* PBXTargetDependency */,
-				DB166DC316A1D32C00A1396C /* PBXTargetDependency */,
 			);
 			name = All;
 			productName = "Build All";
@@ -159,7 +158,6 @@
 		F3C17C7628E40BA200E1A26D /* controllermap_back.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */; };
 		F3C17C7728E40BC800E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7928E40C6E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
-		F3C17C7A28E40CA600E1A26D /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		F3C17C7B28E40D4E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7C28E40D7400E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7D28E40F9D00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
@@ -174,52 +172,6 @@
 		F3C17CEB28E4177600E1A26D /* testgeometry.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CD628E416AC00E1A26D /* testgeometry.c */; };
 		F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17CED28E417F400E1A26D /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
-		F3C17CEE28E4184700E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17CEF28E41D5800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17CFC28E41E9800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17CFD28E41EA100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17CFE28E41EAC00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17CFF28E41EB000E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0028E41EB400E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0128E41EB800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0228E41EBC00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0328E41EC500E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0428E41EC800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0528E41ECB00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0628E41ECF00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0728E41ED300E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0828E41EDB00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0928E41EE100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0A28E41EE700E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0B28E41EEB00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0C28E41EF000E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0D28E41EF400E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0E28E41EF900E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D0F28E41EFE00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1028E41F0200E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1128E41F0600E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1228E41F0A00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1328E41F0D00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1428E41F1100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1528E41F1F00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1628E41F2400E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1728E41F2800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1828E41F2C00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1928E41F3100E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1A28E41F3500E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1B28E41F3800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1C28E41F3C00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1D28E41F4000E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1E28E41F4500E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D1F28E41F4800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2028E41F4D00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2228E41F5F00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2328E41F6200E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2428E41F6600E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2528E41F6A00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2628E41F6E00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2728E41FD800E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
-		F3C17D2828E41FDC00E1A26D /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */; };
 		F3C17D3928E424B800E1A26D /* sample.wav in Resources */ = {isa = PBXBuildFile; fileRef = 00794E6209D20839003FC8A1 /* sample.wav */; };
 		F3C17D3B28E4252900E1A26D /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		F3C17D3C28E4277D00E1A26D /* axis.bmp in Resources */ = {isa = PBXBuildFile; fileRef = DBEC54D61A1A8145005B1EAB /* axis.bmp */; };
@@ -849,7 +801,6 @@
 		F3C17C6A28E3FD4400E1A26D /* config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = config.xcconfig; sourceTree = "<group>"; };
 		F3C17C7328E40ADE00E1A26D /* testutils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testutils.c; sourceTree = "<group>"; };
 		F3C17C7528E40B6B00E1A26D /* controllermap_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = controllermap_back.bmp; sourceTree = "<group>"; };
-		F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_uikit_main.c; path = ../src/main/uikit/SDL_uikit_main.c; sourceTree = "<group>"; };
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
 		F3C17CDC28E416CF00E1A26D /* testgeometry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgeometry.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -1101,14 +1052,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DB166DB016A1D2F600A1396C /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F3C17C7A28E40CA600E1A26D /* libSDL_test.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DB166DC716A1D36A00A1396C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1264,7 +1207,6 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				F3C17CAC28E414F100E1A26D /* SDL_uikit_main.c */,
 				092D6D10FFB30A2C7F000001 /* checkkeys.c */,
 				DBEC54D11A1A811D005B1EAB /* controllermap.c */,
 				083E4872006D84C97F000001 /* loopwave.c */,
@@ -2383,7 +2325,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17CFF28E41EB000E1A26D /* SDL_uikit_main.c in Sources */,
 				001795901074216E00F5D044 /* testatomic.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2392,7 +2333,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0028E41EB400E1A26D /* SDL_uikit_main.c in Sources */,
 				001795B11074222D00F5D044 /* testaudioinfo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2401,7 +2341,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0928E41EE100E1A26D /* SDL_uikit_main.c in Sources */,
 				0017972810742FB900F5D044 /* testgl2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2410,7 +2349,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0A28E41EE700E1A26D /* SDL_uikit_main.c in Sources */,
 				0017974F1074315700F5D044 /* testhaptic.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2419,7 +2357,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0128E41EB800E1A26D /* SDL_uikit_main.c in Sources */,
 				001797721074320D00F5D044 /* testdraw2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2428,7 +2365,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0D28E41EF400E1A26D /* SDL_uikit_main.c in Sources */,
 				00179792107432FA00F5D044 /* testime.c in Sources */,
 				F3C17C7C28E40D7400E1A26D /* testutils.c in Sources */,
 			);
@@ -2438,7 +2374,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0E28E41EF900E1A26D /* SDL_uikit_main.c in Sources */,
 				001797B41074339C00F5D044 /* testintersections.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2447,7 +2382,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1128E41F0600E1A26D /* SDL_uikit_main.c in Sources */,
 				001797D41074343E00F5D044 /* testloadso.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2456,7 +2390,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1428E41F1100E1A26D /* SDL_uikit_main.c in Sources */,
 				001798161074359B00F5D044 /* testmultiaudio.c in Sources */,
 				F3C17C7D28E40F9D00E1A26D /* testutils.c in Sources */,
 			);
@@ -2476,7 +2409,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1728E41F2800E1A26D /* SDL_uikit_main.c in Sources */,
 				001798BA10743A4900F5D044 /* testpower.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2485,7 +2417,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1B28E41F3800E1A26D /* SDL_uikit_main.c in Sources */,
 				001798FA10743E9200F5D044 /* testresample.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2494,7 +2425,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17CEF28E41D5800E1A26D /* SDL_uikit_main.c in Sources */,
 				0017991A10743F5300F5D044 /* testsprite2.c in Sources */,
 				F3C17C8328E4124400E1A26D /* testutils.c in Sources */,
 			);
@@ -2504,7 +2434,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2728E41FD800E1A26D /* SDL_uikit_main.c in Sources */,
 				0017993C10743FEF00F5D044 /* testwm2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2513,7 +2442,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0528E41ECB00E1A26D /* SDL_uikit_main.c in Sources */,
 				002F341809CA1C5B00EBEB88 /* testfile.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2522,7 +2450,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0C28E41EF000E1A26D /* SDL_uikit_main.c in Sources */,
 				002F343709CA1F6F00EBEB88 /* testiconv.c in Sources */,
 				F3C17C7B28E40D4E00E1A26D /* testutils.c in Sources */,
 			);
@@ -2532,7 +2459,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1528E41F1F00E1A26D /* SDL_uikit_main.c in Sources */,
 				002F345409CA202000EBEB88 /* testoverlay2.c in Sources */,
 				66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */,
 				F3C17C7F28E4101000E1A26D /* testutils.c in Sources */,
@@ -2543,7 +2469,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1628E41F2400E1A26D /* SDL_uikit_main.c in Sources */,
 				002F347009CA20A600EBEB88 /* testplatform.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2552,7 +2477,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2028E41F4D00E1A26D /* SDL_uikit_main.c in Sources */,
 				453774A5120915E3002F0F45 /* testshape.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2561,7 +2485,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0728E41ED300E1A26D /* SDL_uikit_main.c in Sources */,
 				BBFC08D0164C6876003E6A99 /* testgamecontroller.c in Sources */,
 				F3C17C7928E40C6E00E1A26D /* testutils.c in Sources */,
 			);
@@ -2571,7 +2494,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17CFC28E41E9800E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC566B10761D90300A33029 /* checkkeys.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2580,7 +2502,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17CFE28E41EAC00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC566CB0761D90300A33029 /* loopwave.c in Sources */,
 				F3C17C7728E40BC800E1A26D /* testutils.c in Sources */,
 			);
@@ -2590,7 +2511,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0428E41EC800E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567010761D90300A33029 /* testerror.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2599,7 +2519,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2428E41F6600E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567290761D90400A33029 /* testthread.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2608,7 +2527,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0F28E41EFE00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567360761D90400A33029 /* testjoystick.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2617,7 +2535,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1028E41F0200E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567430761D90400A33029 /* testkeys.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2626,7 +2543,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1228E41F0A00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567500761D90400A33029 /* testlock.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2635,7 +2551,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1E28E41F4500E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567780761D90500A33029 /* testsem.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2644,7 +2559,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2528E41F6A00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567930761D90500A33029 /* testtimer.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2653,7 +2567,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2628E41F6E00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567AD0761D90500A33029 /* testver.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2662,7 +2575,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2828E41FDC00E1A26D /* SDL_uikit_main.c in Sources */,
 				BEC567F00761D90600A33029 /* torturethread.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2671,7 +2583,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0228E41EBC00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB0F48EE17CA51F8008798C5 /* testdrawchessboard.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2680,7 +2591,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0628E41ECF00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB0F490317CA5225008798C5 /* testfilesystem.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2712,7 +2622,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1328E41F0D00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166DD716A1D37800A1396C /* testmessage.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2721,7 +2630,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1828E41F2C00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166DF016A1D52500A1396C /* testrelative.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2730,7 +2638,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1928E41F3100E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E0716A1D59400A1396C /* testrendercopyex.c in Sources */,
 				F3C17C8028E410A400E1A26D /* testutils.c in Sources */,
 			);
@@ -2740,7 +2647,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1A28E41F3500E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E1E16A1D5C300A1396C /* testrendertarget.c in Sources */,
 				F3C17C8128E410C900E1A26D /* testutils.c in Sources */,
 			);
@@ -2750,7 +2656,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1C28E41F3C00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E3C16A1D66500A1396C /* testrumble.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2759,7 +2664,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1D28E41F4000E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E5416A1D6A300A1396C /* testscale.c in Sources */,
 				F3C17C8228E4112900E1A26D /* testutils.c in Sources */,
 			);
@@ -2769,7 +2673,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D1F28E41F4800E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E6A16A1D70C00A1396C /* testshader.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2778,7 +2681,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2228E41F5F00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E9316A1D7BC00A1396C /* testspriteminimal.c in Sources */,
 				F3C17C8428E4126400E1A26D /* testutils.c in Sources */,
 			);
@@ -2788,7 +2690,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D2328E41F6200E1A26D /* SDL_uikit_main.c in Sources */,
 				DB166E9416A1D7C700A1396C /* teststreaming.c in Sources */,
 				F3C17C8528E4127D00E1A26D /* testutils.c in Sources */,
 			);
@@ -2798,7 +2699,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0328E41EC500E1A26D /* SDL_uikit_main.c in Sources */,
 				DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2807,7 +2707,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D0B28E41EEB00E1A26D /* SDL_uikit_main.c in Sources */,
 				DB89958418A19B130092407C /* testhotplug.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2816,7 +2715,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17CFD28E41EA100E1A26D /* SDL_uikit_main.c in Sources */,
 				DBEC54EB1A1A8205005B1EAB /* controllermap.c in Sources */,
 				F3C17C7428E40AF000E1A26D /* testutils.c in Sources */,
 			);
@@ -2826,7 +2724,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17CEE28E4184700E1A26D /* SDL_uikit_main.c in Sources */,
 				F3C17CEB28E4177600E1A26D /* testgeometry.c in Sources */,
 				F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */,
 			);

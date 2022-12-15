@@ -187,8 +187,6 @@ main(int argc, char *argv[])
            SDL_JoystickNumAxes(accelerometer));
     printf("joystick number of hats = %d\n",
            SDL_JoystickNumHats(accelerometer));
-    printf("joystick number of balls = %d\n",
-           SDL_JoystickNumBalls(accelerometer));
     printf("joystick number of buttons = %d\n",
            SDL_JoystickNumButtons(accelerometer));
 
