@@ -196,7 +196,8 @@ static int unifont_init(const char *fontname)
         }
 
 
-        if (bytesRead < (33 - bytesOverread)) {
+
+        if ((size_t)bytesRead < (33 - bytesOverread)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
             return -1;
         }
