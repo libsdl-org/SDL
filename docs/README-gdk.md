@@ -53,7 +53,7 @@ These steps assume you already have a game using SDL that runs on Windows x64 al
 
 In your game's existing Visual Studio Solution, go to Build > Configuration Manager. From the "Active solution platform" drop-down select "New...". From the drop-down list, select Gaming.Desktop.x64 and copy the settings from the x64 configuration.
 
-### 2. Build SDL3 and SDL3_main for GDK ###
+### 2. Build SDL3 for GDK ###
 
 Open `VisualC-GDK/SDL.sln` in Visual Studio, you need to build the SDL3 target for the Gaming.Desktop.x64 platform (Release is recommended). You will need to copy/keep track of the `SDL3.dll`, `XCurl.dll` (which is output by Gaming.Desktop.x64), and `SDL3.lib` output files for your game project.
 
