@@ -515,6 +515,7 @@ file(GLOB SOURCE_FILES
   ${SDL3_SOURCE_DIR}/src/*.c
   ${SDL3_SOURCE_DIR}/src/atomic/*.c
   ${SDL3_SOURCE_DIR}/src/audio/*.c
+  ${SDL3_SOURCE_DIR}/src/core/*.c
   ${SDL3_SOURCE_DIR}/src/cpuinfo/*.c
   ${SDL3_SOURCE_DIR}/src/dynapi/*.c
   ${SDL3_SOURCE_DIR}/src/events/*.c

@@ -331,7 +331,8 @@ void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
     winrect->bottom = sdlrect->y + sdlrect->h - 1;
 }
 
-/* SDL_Win32RunApp(), which does most of the SDL_main work for Win32 */
+/* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
+  based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
 #ifdef __WIN32__
 
 #include <shellapi.h> /* CommandLineToArgvW() */
@@ -345,7 +346,7 @@ OutOfMemory(void)
 }
 
 DECLSPEC int
-SDL_Win32RunApp(SDL_main_func mainFunction, void * xamlBackgroundPanel)
+SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
 {
 
     /* Gets the arguments with GetCommandLine, converts them to argc and argv
@@ -354,6 +355,8 @@ SDL_Win32RunApp(SDL_main_func mainFunction, void * xamlBackgroundPanel)
     LPWSTR *argvw;
     char **argv;
     int i, argc, result;
+
+    (void)_argc; (void)_argv; (void)reserved;
 
     argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
     if (argvw == NULL) {

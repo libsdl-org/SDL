@@ -47,7 +47,7 @@ static int forward_argc;
 static char **forward_argv;
 static int exit_status;
 
-int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
+int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
     int i;
 

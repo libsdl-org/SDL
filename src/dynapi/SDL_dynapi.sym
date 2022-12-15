@@ -521,9 +521,6 @@ SDL3_0.0.0 {
     SDL_SetMainReady;
     SDL_RegisterApp;
     SDL_UnregisterApp;
-    SDL_WinRTRunApp;
-    SDL_UIKitRunApp;
-    SDL_GDKRunApp;
     SDL_GDKSuspendComplete;
     SDL_GetBasePath;
     SDL_GetPrefPath;
@@ -861,7 +858,7 @@ SDL3_0.0.0 {
     SDL_DelayNS;
     SDL_GetEventState;
     SDL_GetRenderDriver;
-    SDL_Win32RunApp;
+    SDL_RunApp;
     # extra symbols go here (don't modify this line)
   local: *;
 };
