@@ -152,28 +152,28 @@ stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
     return SDL_Error(SDL_EFSEEK);
 }
 
-static size_t SDLCALL
-stdio_read(SDL_RWops * context, void *ptr, size_t size, size_t maxnum)
+static Sint64 SDLCALL
+stdio_read(SDL_RWops * context, void *ptr, Sint64 size)
 {
     size_t nread;
 
-    nread = fread(ptr, size, maxnum, (FILE *)context->hidden.stdio.fp);
+    nread = fread(ptr, 1, (size_t) size, (FILE *)context->hidden.stdio.fp);
     if (nread == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
-        SDL_Error(SDL_EFREAD);
+        return SDL_Error(SDL_EFREAD);
     }
-    return nread;
+    return (Sint64) nread;
 }
 
-static size_t SDLCALL
-stdio_write(SDL_RWops * context, const void *ptr, size_t size, size_t num)
+static Sint64 SDLCALL
+stdio_write(SDL_RWops * context, const void *ptr, Sint64 size)
 {
     size_t nwrote;
 
-    nwrote = fwrite(ptr, size, num, (FILE *)context->hidden.stdio.fp);
+    nwrote = fwrite(ptr, 1, (size_t) size, (FILE *)context->hidden.stdio.fp);
     if (nwrote == 0 && ferror((FILE *)context->hidden.stdio.fp)) {
-        SDL_Error(SDL_EFWRITE);
+        return SDL_Error(SDL_EFWRITE);
     }
-    return nwrote;
+    return (Sint64) nwrote;
 }
 
 static int SDLCALL
