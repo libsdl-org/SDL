@@ -583,7 +583,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_DXGIGetOutputInfo,(int a, int *b, int *c),(a,b,c),r
 #endif
 SDL_DYNAPI_PROC(SDL_bool,SDL_RenderIsClipEnabled,(SDL_Renderer *a),(a),return)
 #ifdef __WINRT__
-SDL_DYNAPI_PROC(int,SDL_WinRTRunApp,(SDL_main_func a, void *b),(a,b),return)
 SDL_DYNAPI_PROC(const wchar_t*,SDL_WinRTGetFSPathUNICODE,(SDL_WinRT_Path a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_WinRTGetFSPathUTF8,(SDL_WinRT_Path a),(a),return)
 #endif
@@ -744,9 +743,6 @@ SDL_DYNAPI_PROC(int,SDL_RenderFillRectsF,(SDL_Renderer *a, const SDL_FRect *b, i
 SDL_DYNAPI_PROC(int,SDL_RenderCopyF,(SDL_Renderer *a, SDL_Texture *b, const SDL_Rect *c, const SDL_FRect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_RenderCopyExF,(SDL_Renderer *a, SDL_Texture *b, const SDL_Rect *c, const SDL_FRect *d, const double e, const SDL_FPoint *f, const SDL_RendererFlip g),(a,b,c,d,e,f,g),return)
 SDL_DYNAPI_PROC(SDL_TouchDeviceType,SDL_GetTouchDeviceType,(SDL_TouchID a),(a),return)
-#ifdef __IOS__
-SDL_DYNAPI_PROC(int,SDL_UIKitRunApp,(int a, char *b[], SDL_main_func c),(a,b,c),return)
-#endif
 SDL_DYNAPI_PROC(size_t,SDL_SIMDGetAlignment,(void),(),return)
 SDL_DYNAPI_PROC(void*,SDL_SIMDAlloc,(const size_t a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_SIMDFree,(void *a),(a),)
@@ -931,7 +927,6 @@ SDL_DYNAPI_PROC(size_t,SDL_utf8strnlen,(const char *a, size_t b),(a,b),return)
 
 #if defined(__GDK__)
 SDL_DYNAPI_PROC(int,SDL_GDKGetTaskQueue,(XTaskQueueHandle *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_GDKRunApp,(SDL_main_func a, void *b),(a,b),return)
 #endif
 SDL_DYNAPI_PROC(void,SDL_GetOriginalMemoryFunctions,(SDL_malloc_func *a, SDL_calloc_func *b, SDL_realloc_func *c, SDL_free_func *d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_ResetKeyboard,(void),(),)
@@ -961,9 +956,4 @@ SDL_DYNAPI_PROC(Uint64,SDL_GetTicksNS,(void),(),return)
 SDL_DYNAPI_PROC(void,SDL_DelayNS,(Uint64 a),(a),)
 SDL_DYNAPI_PROC(Uint8,SDL_GetEventState,(Uint32 a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetRenderDriver,(int a),(a),return)
-#if defined(__WIN32__)
-SDL_DYNAPI_PROC(int,SDL_Win32RunApp,(SDL_main_func a, void *b),(a,b),return)
-#endif
-#if defined(__3DS__)
-SDL_DYNAPI_PROC(int,SDL_N3DSRunApp,(int a, char *b[], SDL_main_func c),(a,b,c),return)
-#endif
+SDL_DYNAPI_PROC(int,SDL_RunApp,(int a, char* b[], SDL_main_func c, void *d),(a,b,c,d),return)

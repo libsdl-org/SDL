@@ -92,7 +92,6 @@ foreach my $release (@releases) {
 #  until a later release, but are available in the older release.
 $funcs{'SDL_WinRTGetFSPathUNICODE'} = '2.0.3';
 $funcs{'SDL_WinRTGetFSPathUTF8'} = '2.0.3';
-$funcs{'SDL_WinRTRunApp'} = '2.0.3';
 
 if (not defined $wikipath) {
     foreach my $release (@releases) {

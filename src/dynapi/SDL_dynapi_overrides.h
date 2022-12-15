@@ -554,7 +554,6 @@
 #define SDL_GetAssertionHandler SDL_GetAssertionHandler_REAL
 #define SDL_DXGIGetOutputInfo SDL_DXGIGetOutputInfo_REAL
 #define SDL_RenderIsClipEnabled SDL_RenderIsClipEnabled_REAL
-#define SDL_WinRTRunApp SDL_WinRTRunApp_REAL
 #define SDL_WarpMouseGlobal SDL_WarpMouseGlobal_REAL
 #define SDL_WinRTGetFSPathUNICODE SDL_WinRTGetFSPathUNICODE_REAL
 #define SDL_WinRTGetFSPathUTF8 SDL_WinRTGetFSPathUTF8_REAL
@@ -693,7 +692,6 @@
 #define SDL_RenderCopyF SDL_RenderCopyF_REAL
 #define SDL_RenderCopyExF SDL_RenderCopyExF_REAL
 #define SDL_GetTouchDeviceType SDL_GetTouchDeviceType_REAL
-#define SDL_UIKitRunApp SDL_UIKitRunApp_REAL
 #define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_REAL
 #define SDL_SIMDAlloc SDL_SIMDAlloc_REAL
 #define SDL_SIMDFree SDL_SIMDFree_REAL
@@ -858,7 +856,6 @@
 #define SDL_RenderGetD3D12Device SDL_RenderGetD3D12Device_REAL
 #define SDL_utf8strnlen SDL_utf8strnlen_REAL
 #define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
-#define SDL_GDKRunApp SDL_GDKRunApp_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
 #define SDL_ResetKeyboard SDL_ResetKeyboard_REAL
 #define SDL_GetDefaultAudioInfo SDL_GetDefaultAudioInfo_REAL
@@ -885,5 +882,4 @@
 #define SDL_DelayNS SDL_DelayNS_REAL
 #define SDL_GetEventState SDL_GetEventState_REAL
 #define SDL_GetRenderDriver SDL_GetRenderDriver_REAL
-#define SDL_Win32RunApp SDL_Win32RunApp_REAL
-#define SDL_N3DSRunApp SDL_N3DSRunApp_REAL
+#define SDL_RunApp SDL_RunApp_REAL

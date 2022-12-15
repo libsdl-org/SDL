@@ -43,11 +43,13 @@
 /* On WinRT, SDL provides a main function that initializes CoreApplication,
    creating an instance of IFrameworkView in the process.
 
-   Please note that #include'ing SDL_main.h is not enough to get a main()
-   function working.  In non-XAML apps, the file,
-   src/main/winrt/SDL_WinRT_main_NonXAML.cpp, or a copy of it, must be compiled
-   into the app itself.  In XAML apps, the function, SDL_WinRTRunApp must be
-   called, with a pointer to the Direct3D-hosted XAML control passed in.
+   Ideally, #include'ing SDL_main.h is enough to get a main() function working.
+   However, that requires the source file your main() is in to be compiled
+   as C++ *and* with the /ZW compiler flag. If that's not feasible, add an
+   otherwise empty .cpp file that only contains `#include <SDL3/SDL_main.h>`
+   and build that with /ZW (still include SDL_main.h in your other file with main()!).
+   In XAML apps, instead the function SDL_RunApp() must be called with a pointer
+   to the Direct3D-hosted XAML control passed in as the "reserved" argument.
 */
 #define SDL_MAIN_NEEDED
 
@@ -57,7 +59,7 @@
    If you prefer to write your own WinMain-function instead of having SDL
    provide one that calls your main() function,
    #define SDL_MAIN_HANDLED before #include'ing SDL_main.h
-   and call the SDL_GDKRunApp function from your entry point.
+   and call the SDL_RunApp function from your entry point.
 */
 #define SDL_MAIN_NEEDED
 
@@ -161,6 +163,31 @@ extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
  */
 extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
+/**
+ * Initializes and launches an SDL application, by doing platform-specific
+ * initialization before calling your mainFunction and cleanups after it returns,
+ * if that is needed for a specific platform, otherwise it just calls mainFunction.
+ * You can use this if you want to use your own main() implementation
+ * without using SDL_main (like when using SDL_MAIN_HANDLED).
+ * When using this, you do *not* need SDL_SetMainReady().
+ *
+ * \param argc The argc parameter from the application's main() function,
+ *             or 0 if the platform's main-equivalent has no argc
+ * \param argv The argv parameter from the application's main() function,
+ *             or NULL  if the platform's main-equivalent has no argv
+ * \param mainFunction Your SDL app's C-style main(), an SDL_main_func.
+ *                     NOT the function you're calling this from!
+ *                     Its name doesn't matter, but its signature must be
+ *                     like int my_main(int argc, char* argv[])
+ * \param reserved should be NULL (reserved for future use, will probably
+ *                 be platform-specific then)
+ * \return the return value from mainFunction: 0 on success, -1 on failure;
+ *         SDL_GetError() might have more information on the failure
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved);
+
 #if defined(__WIN32__) || defined(__GDK__)
 
 /**
@@ -207,92 +234,34 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* defined(__WIN32__) || defined(__GDK__) */
 
-#ifdef __WIN32__
-
-/**
- * Initialize and launch an SDL/Win32 (classic WinAPI) application.
- *
- * \param mainFunction the SDL app's C-style main(), an SDL_main_func
- * \param reserved reserved for future use; should be NULL
- * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
- *          more information on the failure.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_Win32RunApp(SDL_main_func mainFunction, void * reserved);
-
-#endif /* __WIN32__ */
 
 #ifdef __WINRT__
 
-/**
- * Initialize and launch an SDL/WinRT application.
- *
- * \param mainFunction the SDL app's C-style main(), an SDL_main_func
- * \param reserved reserved for future use; should be NULL
- * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
- *          more information on the failure.
- *
- * \since This function is available since SDL 2.0.3.
- */
-extern DECLSPEC int SDLCALL SDL_WinRTRunApp(SDL_main_func mainFunction, void * reserved);
+/* for compatibility with SDL2's function of this name */
+#define SDL_WinRTRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 
 #endif /* __WINRT__ */
 
 #if defined(__IOS__)
 
-/**
- * Initializes and launches an SDL application.
- *
- * \param argc The argc parameter from the application's main() function
- * \param argv The argv parameter from the application's main() function
- * \param mainFunction The SDL app's C-style main(), an SDL_main_func
- * \return the return value from mainFunction
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
+/* for compatibility with SDL2's function of this name */
+#define SDL_UIKitRunApp(ARGC, ARGV, MAIN_FUNC)  SDL_RunApp(ARGC, ARGV, MAIN_FUNC, NULL)
 
 #endif /* __IOS__ */
 
 #ifdef __GDK__
 
-/**
- * Initialize and launch an SDL GDK application.
- *
- * \param mainFunction the SDL app's C-style main(), an SDL_main_func
- * \param reserved reserved for future use; should be NULL
- * \returns 0 on success or -1 on failure; call SDL_GetError() to retrieve
- *          more information on the failure.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved);
+/* for compatibility with SDL2's function of this name */
+#define SDL_GDKRunApp(MAIN_FUNC, RESERVED)  SDL_RunApp(0, NULL, MAIN_FUNC, RESERVED)
 
 /**
  * Callback from the application to let the suspend continue.
  *
- * \since This function is available since SDL 3.0.0.
+ * \since This function is available since SDL 2.28.0.
  */
 extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
 #endif /* __GDK__ */
-
-#ifdef __3DS__
-
-/**
- * Initializes and launches an SDL application.
- *
- * \param argc The argc parameter from the application's main() function
- * \param argv The argv parameter from the application's main() function
- * \param mainFunction The SDL app's C-style main(), an SDL_main_func
- * \return the return value from mainFunction
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC int SDLCALL SDL_N3DSRunApp(int argc, char *argv[], SDL_main_func mainFunction);
-
-#endif /* __3DS__ */
 
 #ifdef __cplusplus
 }

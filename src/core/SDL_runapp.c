@@ -18,32 +18,28 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "SDL_internal.h"
 
-#ifdef __3DS__
-
-#include <3ds.h>
+/* Most platforms that use/need SDL_main have their own SDL_RunApp() implementation.
+ * If not, you can special case it here by appending || defined(__YOUR_PLATFORM__) */
+#if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(__ANDROID__)
 
 DECLSPEC int
 SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
-    int result;
-    /* init */
-    osSetSpeedupEnable(true);
-    romfsInit();
+    char empty[1] = {0};
+    char* argvdummy[2] = { empty, NULL };
 
-    SDL_SetMainReady();
-    result = mainFunction(argc, argv);
+    (void)reserved;
 
-    /* quit */
-    romfsExit();
+    if(argv == NULL)
+    {
+        argc = 0;
+        /* make sure argv isn't NULL, in case some user code doesn't like that */
+        argv = argvdummy;
+    }
 
-    return result;
+    return mainFunction(argc, argv);
 }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif

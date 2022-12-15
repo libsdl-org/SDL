@@ -72,7 +72,7 @@ typedef char* LPSTR;
 int
 console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 {
-    return SDL_Win32RunApp(SDL_main, NULL);
+    return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 
 #else /* ANSI */
@@ -81,7 +81,7 @@ console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 int
 console_ansi_main(int argc, char *argv[])
 {
-    return SDL_Win32RunApp(SDL_main, NULL);
+    return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 #endif /* UNICODE/ANSI */
 
@@ -91,11 +91,7 @@ console_ansi_main(int argc, char *argv[])
 int WINAPI
 WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 {
-#ifdef __GDK__
-    return SDL_GDKRunApp(SDL_main, NULL);
-#else
-    return SDL_Win32RunApp(SDL_main, NULL);
-#endif
+    return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 
 #ifdef __cplusplus
@@ -156,11 +152,11 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-    return SDL_WinRTRunApp(SDL_main, NULL);
+    return SDL_RunApp(0, NULL, SDL_main, NULL);
 }
 
 /* end of WinRT impl */
-#elif defined(__IOS__) || defined(__TVOS__)
+#elif defined(__IOS__) || defined(__TVOS__) || defined(__3DS__)
 
 #include <SDL3/begin_code.h>
 
@@ -170,7 +166,7 @@ extern "C" {
 
 int main(int argc, char *argv[])
 {
-    return SDL_UIKitRunApp(argc, argv, SDL_main);
+    return SDL_RunApp(argc, argv, SDL_main, NULL);
 }
 
 #ifdef __cplusplus
@@ -179,27 +175,7 @@ int main(int argc, char *argv[])
 
 #include <SDL3/close_code.h>
 
-/* end of __IOS__ and __TVOS__ impls */
-#elif defined(__3DS__)
-
-#include <SDL3/begin_code.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int main(int argc, char *argv[])
-{
-    return SDL_N3DSRunApp(argc, argv, SDL_main);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include <SDL3/close_code.h>
-
-/* end of __3DS__ impl */
+/* end of __IOS__, __3DS__, __TVOS__ impls */
 
 /* TODO: remaining platforms */
 
