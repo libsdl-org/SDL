@@ -16,6 +16,7 @@
 #include <stdio.h>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 typedef int (*fntype)(const char *);
 

@@ -10,6 +10,7 @@
   freely.
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 /* !!! FIXME: rewrite this to be wired in to test framework. */
 

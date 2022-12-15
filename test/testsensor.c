@@ -13,6 +13,7 @@
 /* Simple test of the SDL sensor code */
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 static const char *GetSensorTypeString(SDL_SensorType type)
 {

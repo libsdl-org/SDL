@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #define SHAPED_WINDOW_X         150
 #define SHAPED_WINDOW_Y         150

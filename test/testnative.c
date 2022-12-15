@@ -17,6 +17,8 @@
 #include "testnative.h"
 #include "testutils.h"
 
+#include <SDL3/SDL_main.h>
+
 #define WINDOW_W    640
 #define WINDOW_H    480
 #define NUM_SPRITES 100

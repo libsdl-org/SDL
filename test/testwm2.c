@@ -18,6 +18,7 @@
 
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_test_font.h>
+#include <SDL3/SDL_main.h>
 
 static SDLTest_CommonState *state;
 int done;

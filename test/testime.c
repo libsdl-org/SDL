@@ -14,6 +14,7 @@
    Download at http://unifoundry.com/unifont.html */
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #ifdef HAVE_SDL_TTF
 #include "SDL_ttf.h"
 #endif

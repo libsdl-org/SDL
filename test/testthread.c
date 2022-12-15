@@ -16,6 +16,7 @@
 #include <signal.h>
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 static SDL_TLSID tls;
 static int alive = 0;
