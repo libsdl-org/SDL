@@ -19,6 +19,7 @@
 #endif
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #if HAVE_SIGNAL_H
 #include <signal.h>

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL_main.h>
 
 #if defined(__IOS__) || defined(__ANDROID__)
 #define HAVE_OPENGLES

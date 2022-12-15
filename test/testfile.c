@@ -24,6 +24,7 @@
 #endif
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 /* WARNING ! those 2 files will be destroyed by this test program */
 

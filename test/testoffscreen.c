@@ -20,6 +20,7 @@
 #endif
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_opengl.h>
 
 static SDL_Renderer *renderer = NULL;

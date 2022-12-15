@@ -18,6 +18,7 @@
 #endif
 
 #include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL_main.h>
 #include "testutils.h"
 
 static SDLTest_CommonState *state;

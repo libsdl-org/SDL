@@ -16,6 +16,7 @@
 #endif
 
 #include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL_main.h>
 #include "testutils.h"
 
 #if defined(__IOS__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__) || defined(__WINDOWS__) || defined(__LINUX__)

@@ -18,6 +18,7 @@
 #include <stdlib.h> /* for atexit() */
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 static SDL_mutex *mutex = NULL;
 static SDL_threadID mainthread;

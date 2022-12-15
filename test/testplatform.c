@@ -10,6 +10,7 @@
   freely.
 */
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 /*
  * Watcom C flags these as Warning 201: "Unreachable code" if you just
