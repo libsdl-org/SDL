@@ -185,7 +185,7 @@ static Sint64 SDLCALL windows_file_seek(SDL_RWops *context, Sint64 offset, int w
 static Sint64 SDLCALL
 windows_file_read(SDL_RWops *context, void *ptr, Sint64 size)
 {
-    const size_t total_need = (size_t) size;
+    size_t total_need = (size_t) size;
     size_t total_read = 0;
     size_t read_ahead;
     DWORD byte_read;
