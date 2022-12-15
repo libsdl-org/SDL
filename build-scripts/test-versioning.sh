@@ -47,7 +47,7 @@ else
     not_ok "android-project/app/src/main/java/org/libsdl/app/SDLActivity.java $version disagrees with SDL_version.h $ref_version"
 fi
 
-tuple=$(sed -ne 's/^ *FILEVERSION *//p' src/main/windows/version.rc | tr -d '\r')
+tuple=$(sed -ne 's/^ *FILEVERSION *//p' src/core/windows/version.rc | tr -d '\r')
 ref_tuple="${ref_major},${ref_minor},${ref_micro},0"
 
 if [ "$ref_tuple" = "$tuple" ]; then
@@ -56,7 +56,7 @@ else
     not_ok "version.rc FILEVERSION $tuple disagrees with SDL_version.h $ref_tuple"
 fi
 
-tuple=$(sed -ne 's/^ *PRODUCTVERSION *//p' src/main/windows/version.rc | tr -d '\r')
+tuple=$(sed -ne 's/^ *PRODUCTVERSION *//p' src/core/windows/version.rc | tr -d '\r')
 
 if [ "$ref_tuple" = "$tuple" ]; then
     ok "version.rc PRODUCTVERSION $tuple"
@@ -64,7 +64,7 @@ else
     not_ok "version.rc PRODUCTVERSION $tuple disagrees with SDL_version.h $ref_tuple"
 fi
 
-tuple=$(sed -Ene 's/^ *VALUE "FileVersion", "([0-9, ]*)\\0"\r?$/\1/p' src/main/windows/version.rc | tr -d '\r')
+tuple=$(sed -Ene 's/^ *VALUE "FileVersion", "([0-9, ]*)\\0"\r?$/\1/p' src/core/windows/version.rc | tr -d '\r')
 ref_tuple="${ref_major}, ${ref_minor}, ${ref_micro}, 0"
 
 if [ "$ref_tuple" = "$tuple" ]; then
@@ -73,7 +73,7 @@ else
     not_ok "version.rc FileVersion $tuple disagrees with SDL_version.h $ref_tuple"
 fi
 
-tuple=$(sed -Ene 's/^ *VALUE "ProductVersion", "([0-9, ]*)\\0"\r?$/\1/p' src/main/windows/version.rc | tr -d '\r')
+tuple=$(sed -Ene 's/^ *VALUE "ProductVersion", "([0-9, ]*)\\0"\r?$/\1/p' src/core/windows/version.rc | tr -d '\r')
 
 if [ "$ref_tuple" = "$tuple" ]; then
     ok "version.rc ProductVersion $tuple"

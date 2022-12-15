@@ -771,7 +771,7 @@
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\main\windows\version.rc" />
+    <ResourceCompile Include="..\..\src\core\windows\version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

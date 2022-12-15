@@ -66,10 +66,10 @@ perl -w -pi -e 's/(\#define SDL_MAJOR_VERSION\s+)\d+/${1}'$MAJOR'/;' include/SDL
 perl -w -pi -e 's/(\#define SDL_MINOR_VERSION\s+)\d+/${1}'$MINOR'/;' include/SDL3/SDL_version.h
 perl -w -pi -e 's/(\#define SDL_PATCHLEVEL\s+)\d+/${1}'$PATCH'/;' include/SDL3/SDL_version.h
 
-perl -w -pi -e 's/(FILEVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$PATCH'/;' src/main/windows/version.rc
-perl -w -pi -e 's/(PRODUCTVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$PATCH'/;' src/main/windows/version.rc
-perl -w -pi -e 's/(VALUE "FileVersion", ")\d+, \d+, \d+/${1}'$MAJOR', '$MINOR', '$PATCH'/;' src/main/windows/version.rc
-perl -w -pi -e 's/(VALUE "ProductVersion", ")\d+, \d+, \d+/${1}'$MAJOR', '$MINOR', '$PATCH'/;' src/main/windows/version.rc
+perl -w -pi -e 's/(FILEVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$PATCH'/;' src/core/windows/version.rc
+perl -w -pi -e 's/(PRODUCTVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$PATCH'/;' src/core/windows/version.rc
+perl -w -pi -e 's/(VALUE "FileVersion", ")\d+, \d+, \d+/${1}'$MAJOR', '$MINOR', '$PATCH'/;' src/core/windows/version.rc
+perl -w -pi -e 's/(VALUE "ProductVersion", ")\d+, \d+, \d+/${1}'$MAJOR', '$MINOR', '$PATCH'/;' src/core/windows/version.rc
 
 echo "Running build-scripts/test-versioning.sh to verify changes..."
 ./build-scripts/test-versioning.sh

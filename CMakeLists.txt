@@ -1988,7 +1988,7 @@ elseif(WINDOWS)
     endif()
   endif()
 
-  file(GLOB VERSION_SOURCES ${SDL3_SOURCE_DIR}/src/main/windows/*.rc)
+  file(GLOB VERSION_SOURCES ${SDL3_SOURCE_DIR}/src/core/windows/*.rc)
   file(GLOB SDLMAIN_SOURCES ${SDL3_SOURCE_DIR}/src/main/windows/*.c)
   if(MINGW OR CYGWIN)
     if(NOT SDL3_DISABLE_SDL3MAIN)
