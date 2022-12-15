@@ -689,7 +689,6 @@ int main(int argc, char *argv[])
             SDLTest_CommonEvent(state, &event, &done);
             switch (event.type) {
             case SDL_KEYDOWN:
-            {
                 switch (event.key.keysym.sym) {
                 case SDLK_RETURN:
                     text[0] = 0x00;
@@ -764,7 +763,6 @@ int main(int argc, char *argv[])
                 cursor = event.edit.start;
                 Redraw();
                 break;
-            } break;
             }
         }
     }
