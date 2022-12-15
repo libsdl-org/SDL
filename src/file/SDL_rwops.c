@@ -238,7 +238,6 @@ windows_file_write(SDL_RWops *context, const void *ptr, Sint64 size)
 {
     const size_t total_bytes = (size_t) size;
     DWORD byte_written;
-    size_t nwritten;
 
     if (context == NULL || context->hidden.windowsio.h == INVALID_HANDLE_VALUE) {
         return SDL_SetError("Invalid file handle");
