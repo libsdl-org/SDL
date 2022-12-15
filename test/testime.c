@@ -144,7 +144,7 @@ static int unifont_init(const char *fontname)
     /* Read all the glyph data into memory to make it accessible later when textures are created. */
     do {
         int i, codepointHexSize;
-        Sint64 bytesOverread;
+        size_t bytesOverread;
         Uint8 glyphWidth;
         Uint32 codepoint;
 
