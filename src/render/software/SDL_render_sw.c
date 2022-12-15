@@ -1132,6 +1132,7 @@ SW_CreateRendererForSurface(SDL_Surface *surface)
     renderer->DestroyTexture = SW_DestroyTexture;
     renderer->DestroyRenderer = SW_DestroyRenderer;
     renderer->info = SW_RenderDriver.info;
+    renderer->info.flags = (SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
 
     SW_SelectBestFormats(renderer, surface->format->format);
@@ -1143,28 +1144,7 @@ SW_CreateRendererForSurface(SDL_Surface *surface)
 
 static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
-    const char *hint;
-    SDL_Surface *surface;
-    SDL_bool no_hint_set;
-
-    /* Set the vsync hint based on our flags, if it's not already set */
-    hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
-    if (hint == NULL || !*hint) {
-        no_hint_set = SDL_TRUE;
-    } else {
-        no_hint_set = SDL_FALSE;
-    }
-
-    if (no_hint_set) {
-        SDL_SetHint(SDL_HINT_RENDER_VSYNC, (flags & SDL_RENDERER_PRESENTVSYNC) ? "1" : "0");
-    }
-
-    surface = SDL_GetWindowSurface(window);
-
-    /* Reset the vsync hint if we set it above */
-    if (no_hint_set) {
-        SDL_SetHint(SDL_HINT_RENDER_VSYNC, "");
-    }
+    SDL_Surface *surface = SDL_GetWindowSurface(window);
 
     if (surface == NULL) {
         return NULL;

@@ -994,16 +994,6 @@ SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
         goto error;
     }
 
-    if ((flags & SDL_RENDERER_PRESENTVSYNC) != 0) {
-        renderer->wanted_vsync = SDL_TRUE;
-
-        if ((renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) == 0) {
-            renderer->simulate_vsync = SDL_TRUE;
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        }
-    }
-    SDL_CalculateSimulatedVSyncInterval(renderer, window);
-
     VerifyDrawQueueFunctions(renderer);
 
     /* let app/user override batching decisions. */
@@ -1054,6 +1044,11 @@ SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
     } else {
         renderer->hidden = SDL_FALSE;
     }
+
+    if ((flags & SDL_RENDERER_PRESENTVSYNC) != 0) {
+        SDL_RenderSetVSync(renderer, SDL_TRUE);
+    }
+    SDL_CalculateSimulatedVSyncInterval(renderer, window);
 
     SDL_SetWindowData(window, SDL_WINDOWRENDERDATA, renderer);
 
