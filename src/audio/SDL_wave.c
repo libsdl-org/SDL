@@ -1553,7 +1553,7 @@ static int WaveReadPartialChunkData(SDL_RWops *src, WaveChunk *chunk, size_t len
             return -2;
         }
 
-        chunk->size = SDL_RWread(src, chunk->data, length);
+        chunk->size = (size_t) SDL_RWread(src, chunk->data, length);
         if (chunk->size != length) {
             /* Expected to be handled by the caller. */
         }
