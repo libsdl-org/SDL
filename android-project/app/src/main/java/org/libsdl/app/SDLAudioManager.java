@@ -300,6 +300,22 @@ public class SDLAudioManager
     /**
      * This method is called by SDL using JNI.
      */
+    public static int[] getAudioOutputDevices() {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int[] getAudioInputDevices() {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void audioWriteByteBuffer(byte[] buffer) {
         if (mAudioTrack == null) {
             Log.e(TAG, "Attempted to make audio call with uninitialized audio!");

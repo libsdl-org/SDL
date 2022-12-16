@@ -322,6 +322,8 @@ static jmethodID midSupportsRelativeMouse;
 static jclass mAudioManagerClass;
 
 /* method signatures */
+static jmethodID midGetAudioOutputDevices;
+static jmethodID midGetAudioInputDevices;
 static jmethodID midAudioOpen;
 static jmethodID midAudioWriteByteBuffer;
 static jmethodID midAudioWriteShortBuffer;
@@ -647,6 +649,12 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
 
     mAudioManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
+    midGetAudioOutputDevices = (*env)->GetStaticMethodID(env, mAudioManagerClass,
+                                                         "getAudioOutputDevices",
+                                                         "()[I");
+    midGetAudioInputDevices = (*env)->GetStaticMethodID(env, mAudioManagerClass,
+                                                        "getAudioInputDevices",
+                                                        "()[I");
     midAudioOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                              "audioOpen", "(IIII)[I");
     midAudioWriteByteBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
@@ -670,7 +678,8 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
     midAudioSetThreadPriority = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                           "audioSetThreadPriority", "(ZI)V");
 
-    if (!midAudioOpen || !midAudioWriteByteBuffer || !midAudioWriteShortBuffer || !midAudioWriteFloatBuffer || !midAudioClose ||
+    if (!midGetAudioOutputDevices || !midGetAudioInputDevices ||
+        !midAudioOpen || !midAudioWriteByteBuffer || !midAudioWriteShortBuffer || !midAudioWriteFloatBuffer || !midAudioClose ||
         !midCaptureOpen || !midCaptureReadByteBuffer || !midCaptureReadShortBuffer || !midCaptureReadFloatBuffer || !midCaptureClose || !midAudioSetThreadPriority) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
     }
@@ -1420,6 +1429,28 @@ static jobject audioBuffer = NULL;
 static void *audioBufferPinned = NULL;
 static int captureBufferFormat = 0;
 static jobject captureBuffer = NULL;
+
+void Android_JNI_GetAudioOutputDevices(int *devices, int *length) {
+    JNIEnv *env = Android_JNI_GetEnv();
+    jintArray result;
+
+    result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midGetAudioOutputDevices);
+
+    *length = (*env)->GetArrayLength(env, result);
+
+    (*env)->GetIntArrayRegion(env, result, 0, *length, devices);
+}
+
+void Android_JNI_GetAudioInputDevices(int * devices, int *length) {
+    JNIEnv *env = Android_JNI_GetEnv();
+    jintArray result;
+
+    result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midGetAudioInputDevices);
+
+    *length = (*env)->GetArrayLength(env, result);
+
+    (*env)->GetIntArrayRegion(env, result, 0, *length, devices);
+}
 
 int Android_JNI_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
 {
