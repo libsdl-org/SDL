@@ -46,14 +46,8 @@
 #define CONCAT1(prefix, class, function)              CONCAT2(prefix, class, function)
 #define CONCAT2(prefix, class, function)              Java_##prefix##_##class##_##function
 #define SDL_JAVA_INTERFACE(function)                  CONCAT1(SDL_JAVA_PREFIX, SDLActivity, function)
-#define SDL_JAVA_AUDIO_INTERFACE(function)            CONCAT1(SDL_JAVA_PREFIX, SDLAudioManager, function)
 #define SDL_JAVA_CONTROLLER_INTERFACE(function)       CONCAT1(SDL_JAVA_PREFIX, SDLControllerManager, function)
 #define SDL_JAVA_INTERFACE_INPUT_CONNECTION(function) CONCAT1(SDL_JAVA_PREFIX, SDLInputConnection, function)
-
-/* Audio encoding definitions */
-#define ENCODING_PCM_8BIT  3
-#define ENCODING_PCM_16BIT 2
-#define ENCODING_PCM_FLOAT 4
 
 /* Java class SDLActivity */
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(
@@ -209,14 +203,6 @@ static JNINativeMethod SDLInputConnection_tab[] = {
     { "nativeGenerateScancodeForUnichar", "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) }
 };
 
-/* Java class SDLAudioManager */
-JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(
-    JNIEnv *env, jclass jcls);
-
-static JNINativeMethod SDLAudioManager_tab[] = {
-    { "nativeSetupJNI", "()I", SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI) }
-};
-
 /* Java class SDLControllerManager */
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(
     JNIEnv *env, jclass jcls);
@@ -317,22 +303,6 @@ static jmethodID midSetWindowStyle;
 static jmethodID midShouldMinimizeOnFocusLoss;
 static jmethodID midShowTextInput;
 static jmethodID midSupportsRelativeMouse;
-
-/* audio manager */
-static jclass mAudioManagerClass;
-
-/* method signatures */
-static jmethodID midAudioOpen;
-static jmethodID midAudioWriteByteBuffer;
-static jmethodID midAudioWriteShortBuffer;
-static jmethodID midAudioWriteFloatBuffer;
-static jmethodID midAudioClose;
-static jmethodID midCaptureOpen;
-static jmethodID midCaptureReadByteBuffer;
-static jmethodID midCaptureReadShortBuffer;
-static jmethodID midCaptureReadFloatBuffer;
-static jmethodID midCaptureClose;
-static jmethodID midAudioSetThreadPriority;
 
 /* controller manager */
 static jclass mControllerManagerClass;
@@ -506,7 +476,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 
     register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab));
     register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, SDL_arraysize(SDLInputConnection_tab));
-    register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
 
     return JNI_VERSION_1_4;
@@ -514,7 +483,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 
 void checkJNIReady(void)
 {
-    if (!mActivityClass || !mAudioManagerClass || !mControllerManagerClass) {
+    if (!mActivityClass || !mControllerManagerClass) {
         /* We aren't fully initialized, let's just return. */
         return;
     }
@@ -635,44 +604,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midShowTextInput ||
         !midSupportsRelativeMouse) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
-    }
-
-    checkJNIReady();
-}
-
-/* Audio initialization -- called before SDL_main() to initialize JNI bindings */
-JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cls)
-{
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "AUDIO nativeSetupJNI()");
-
-    mAudioManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
-
-    midAudioOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                             "audioOpen", "(IIII)[I");
-    midAudioWriteByteBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                        "audioWriteByteBuffer", "([B)V");
-    midAudioWriteShortBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                         "audioWriteShortBuffer", "([S)V");
-    midAudioWriteFloatBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                         "audioWriteFloatBuffer", "([F)V");
-    midAudioClose = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                              "audioClose", "()V");
-    midCaptureOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                               "captureOpen", "(IIII)[I");
-    midCaptureReadByteBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                         "captureReadByteBuffer", "([BZ)I");
-    midCaptureReadShortBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                          "captureReadShortBuffer", "([SZ)I");
-    midCaptureReadFloatBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                          "captureReadFloatBuffer", "([FZ)I");
-    midCaptureClose = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                "captureClose", "()V");
-    midAudioSetThreadPriority = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                          "audioSetThreadPriority", "(ZI)V");
-
-    if (!midAudioOpen || !midAudioWriteByteBuffer || !midAudioWriteShortBuffer || !midAudioWriteFloatBuffer || !midAudioClose ||
-        !midCaptureOpen || !midCaptureReadByteBuffer || !midCaptureReadShortBuffer || !midCaptureReadFloatBuffer || !midCaptureClose || !midAudioSetThreadPriority) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
     }
 
     checkJNIReady();
@@ -1412,140 +1343,6 @@ SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
     return retval;
 }
 
-/*
- * Audio support
- */
-static int audioBufferFormat = 0;
-static jobject audioBuffer = NULL;
-static void *audioBufferPinned = NULL;
-static int captureBufferFormat = 0;
-static jobject captureBuffer = NULL;
-
-int Android_JNI_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
-{
-    int audioformat;
-    jobject jbufobj = NULL;
-    jobject result;
-    int *resultElements;
-    jboolean isCopy;
-
-    JNIEnv *env = Android_JNI_GetEnv();
-
-    switch (spec->format) {
-    case AUDIO_U8:
-        audioformat = ENCODING_PCM_8BIT;
-        break;
-    case AUDIO_S16:
-        audioformat = ENCODING_PCM_16BIT;
-        break;
-    case AUDIO_F32:
-        audioformat = ENCODING_PCM_FLOAT;
-        break;
-    default:
-        return SDL_SetError("Unsupported audio format: 0x%x", spec->format);
-    }
-
-    if (iscapture) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for capture");
-        result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midCaptureOpen, spec->freq, audioformat, spec->channels, spec->samples);
-    } else {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for output");
-        result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midAudioOpen, spec->freq, audioformat, spec->channels, spec->samples);
-    }
-    if (result == NULL) {
-        /* Error during audio initialization, error printed from Java */
-        return SDL_SetError("Java-side initialization failed");
-    }
-
-    if ((*env)->GetArrayLength(env, (jintArray)result) != 4) {
-        return SDL_SetError("Unexpected results from Java, expected 4, got %d", (*env)->GetArrayLength(env, (jintArray)result));
-    }
-    isCopy = JNI_FALSE;
-    resultElements = (*env)->GetIntArrayElements(env, (jintArray)result, &isCopy);
-    spec->freq = resultElements[0];
-    audioformat = resultElements[1];
-    switch (audioformat) {
-    case ENCODING_PCM_8BIT:
-        spec->format = AUDIO_U8;
-        break;
-    case ENCODING_PCM_16BIT:
-        spec->format = AUDIO_S16;
-        break;
-    case ENCODING_PCM_FLOAT:
-        spec->format = AUDIO_F32;
-        break;
-    default:
-        return SDL_SetError("Unexpected audio format from Java: %d\n", audioformat);
-    }
-    spec->channels = resultElements[2];
-    spec->samples = resultElements[3];
-    (*env)->ReleaseIntArrayElements(env, (jintArray)result, resultElements, JNI_ABORT);
-    (*env)->DeleteLocalRef(env, result);
-
-    /* Allocating the audio buffer from the Java side and passing it as the return value for audioInit no longer works on
-     * Android >= 4.2 due to a "stale global reference" error. So now we allocate this buffer directly from this side. */
-    switch (audioformat) {
-    case ENCODING_PCM_8BIT:
-    {
-        jbyteArray audioBufferLocal = (*env)->NewByteArray(env, spec->samples * spec->channels);
-        if (audioBufferLocal) {
-            jbufobj = (*env)->NewGlobalRef(env, audioBufferLocal);
-            (*env)->DeleteLocalRef(env, audioBufferLocal);
-        }
-    } break;
-    case ENCODING_PCM_16BIT:
-    {
-        jshortArray audioBufferLocal = (*env)->NewShortArray(env, spec->samples * spec->channels);
-        if (audioBufferLocal) {
-            jbufobj = (*env)->NewGlobalRef(env, audioBufferLocal);
-            (*env)->DeleteLocalRef(env, audioBufferLocal);
-        }
-    } break;
-    case ENCODING_PCM_FLOAT:
-    {
-        jfloatArray audioBufferLocal = (*env)->NewFloatArray(env, spec->samples * spec->channels);
-        if (audioBufferLocal) {
-            jbufobj = (*env)->NewGlobalRef(env, audioBufferLocal);
-            (*env)->DeleteLocalRef(env, audioBufferLocal);
-        }
-    } break;
-    default:
-        return SDL_SetError("Unexpected audio format from Java: %d\n", audioformat);
-    }
-
-    if (jbufobj == NULL) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: could not allocate an audio buffer");
-        return SDL_OutOfMemory();
-    }
-
-    if (iscapture) {
-        captureBufferFormat = audioformat;
-        captureBuffer = jbufobj;
-    } else {
-        audioBufferFormat = audioformat;
-        audioBuffer = jbufobj;
-    }
-
-    if (!iscapture) {
-        isCopy = JNI_FALSE;
-
-        switch (audioformat) {
-        case ENCODING_PCM_8BIT:
-            audioBufferPinned = (*env)->GetByteArrayElements(env, (jbyteArray)audioBuffer, &isCopy);
-            break;
-        case ENCODING_PCM_16BIT:
-            audioBufferPinned = (*env)->GetShortArrayElements(env, (jshortArray)audioBuffer, &isCopy);
-            break;
-        case ENCODING_PCM_FLOAT:
-            audioBufferPinned = (*env)->GetFloatArrayElements(env, (jfloatArray)audioBuffer, &isCopy);
-            break;
-        default:
-            return SDL_SetError("Unexpected audio format from Java: %d\n", audioformat);
-        }
-    }
-    return 0;
-}
-
 SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void)
 {
     return displayOrientation;
@@ -1580,150 +1377,6 @@ int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi)
     }
 
     return 0;
-}
-
-void *Android_JNI_GetAudioBuffer(void)
-{
-    return audioBufferPinned;
-}
-
-void Android_JNI_WriteAudioBuffer(void)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-
-    switch (audioBufferFormat) {
-    case ENCODING_PCM_8BIT:
-        (*env)->ReleaseByteArrayElements(env, (jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
-        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioWriteByteBuffer, (jbyteArray)audioBuffer);
-        break;
-    case ENCODING_PCM_16BIT:
-        (*env)->ReleaseShortArrayElements(env, (jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
-        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioWriteShortBuffer, (jshortArray)audioBuffer);
-        break;
-    case ENCODING_PCM_FLOAT:
-        (*env)->ReleaseFloatArrayElements(env, (jfloatArray)audioBuffer, (jfloat *)audioBufferPinned, JNI_COMMIT);
-        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioWriteFloatBuffer, (jfloatArray)audioBuffer);
-        break;
-    default:
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: unhandled audio buffer format");
-        break;
-    }
-
-    /* JNI_COMMIT means the changes are committed to the VM but the buffer remains pinned */
-}
-
-int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    jboolean isCopy = JNI_FALSE;
-    jint br = -1;
-
-    switch (captureBufferFormat) {
-    case ENCODING_PCM_8BIT:
-        SDL_assert((*env)->GetArrayLength(env, (jshortArray)captureBuffer) == buflen);
-        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadByteBuffer, (jbyteArray)captureBuffer, JNI_TRUE);
-        if (br > 0) {
-            jbyte *ptr = (*env)->GetByteArrayElements(env, (jbyteArray)captureBuffer, &isCopy);
-            SDL_memcpy(buffer, ptr, br);
-            (*env)->ReleaseByteArrayElements(env, (jbyteArray)captureBuffer, ptr, JNI_ABORT);
-        }
-        break;
-    case ENCODING_PCM_16BIT:
-        SDL_assert((*env)->GetArrayLength(env, (jshortArray)captureBuffer) == (buflen / sizeof(Sint16)));
-        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_TRUE);
-        if (br > 0) {
-            jshort *ptr = (*env)->GetShortArrayElements(env, (jshortArray)captureBuffer, &isCopy);
-            br *= sizeof(Sint16);
-            SDL_memcpy(buffer, ptr, br);
-            (*env)->ReleaseShortArrayElements(env, (jshortArray)captureBuffer, ptr, JNI_ABORT);
-        }
-        break;
-    case ENCODING_PCM_FLOAT:
-        SDL_assert((*env)->GetArrayLength(env, (jfloatArray)captureBuffer) == (buflen / sizeof(float)));
-        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadFloatBuffer, (jfloatArray)captureBuffer, JNI_TRUE);
-        if (br > 0) {
-            jfloat *ptr = (*env)->GetFloatArrayElements(env, (jfloatArray)captureBuffer, &isCopy);
-            br *= sizeof(float);
-            SDL_memcpy(buffer, ptr, br);
-            (*env)->ReleaseFloatArrayElements(env, (jfloatArray)captureBuffer, ptr, JNI_ABORT);
-        }
-        break;
-    default:
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: unhandled capture buffer format");
-        break;
-    }
-    return br;
-}
-
-void Android_JNI_FlushCapturedAudio(void)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-#if 0 /* !!! FIXME: this needs API 23, or it'll do blocking reads and never end. */
-    switch (captureBufferFormat) {
-    case ENCODING_PCM_8BIT:
-        {
-            const jint len = (*env)->GetArrayLength(env, (jbyteArray)captureBuffer);
-            while ((*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadByteBuffer, (jbyteArray)captureBuffer, JNI_FALSE) == len) { /* spin */ }
-        }
-        break;
-    case ENCODING_PCM_16BIT:
-        {
-            const jint len = (*env)->GetArrayLength(env, (jshortArray)captureBuffer);
-            while ((*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_FALSE) == len) { /* spin */ }
-        }
-        break;
-    case ENCODING_PCM_FLOAT:
-        {
-            const jint len = (*env)->GetArrayLength(env, (jfloatArray)captureBuffer);
-            while ((*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadFloatBuffer, (jfloatArray)captureBuffer, JNI_FALSE) == len) { /* spin */ }
-        }
-        break;
-    default:
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: flushing unhandled capture buffer format");
-        break;
-    }
-#else
-    switch (captureBufferFormat) {
-    case ENCODING_PCM_8BIT:
-        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadByteBuffer, (jbyteArray)captureBuffer, JNI_FALSE);
-        break;
-    case ENCODING_PCM_16BIT:
-        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_FALSE);
-        break;
-    case ENCODING_PCM_FLOAT:
-        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadFloatBuffer, (jfloatArray)captureBuffer, JNI_FALSE);
-        break;
-    default:
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: flushing unhandled capture buffer format");
-        break;
-    }
-#endif
-}
-
-void Android_JNI_CloseAudioDevice(const int iscapture)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-
-    if (iscapture) {
-        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midCaptureClose);
-        if (captureBuffer) {
-            (*env)->DeleteGlobalRef(env, captureBuffer);
-            captureBuffer = NULL;
-        }
-    } else {
-        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioClose);
-        if (audioBuffer) {
-            (*env)->DeleteGlobalRef(env, audioBuffer);
-            audioBuffer = NULL;
-            audioBufferPinned = NULL;
-        }
-    }
-}
-
-void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioSetThreadPriority, iscapture, device_id);
 }
 
 /* Test for an exception and call SDL_SetError with its detail if one occurs */

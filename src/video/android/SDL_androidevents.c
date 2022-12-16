@@ -31,14 +31,6 @@
 /* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
  * because of THIS redefinition */
 
-#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_ANDROID
-extern void ANDROIDAUDIO_ResumeDevices(void);
-extern void ANDROIDAUDIO_PauseDevices(void);
-#else
-static void ANDROIDAUDIO_ResumeDevices(void) {}
-static void ANDROIDAUDIO_PauseDevices(void) {}
-#endif
-
 #if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_OPENSLES
 extern void openslES_ResumeDevices(void);
 extern void openslES_PauseDevices(void);
@@ -121,7 +113,6 @@ void Android_PumpEvents_Blocking(_THIS)
         }
 #endif
 
-        ANDROIDAUDIO_PauseDevices();
         openslES_PauseDevices();
         aaudio_PauseDevices();
 
@@ -134,7 +125,6 @@ void Android_PumpEvents_Blocking(_THIS)
             SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
             SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
 
-            ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
             aaudio_ResumeDevices();
 
@@ -199,7 +189,6 @@ void Android_PumpEvents_NonBlocking(_THIS)
 #endif
 
             if (videodata->pauseAudio) {
-                ANDROIDAUDIO_PauseDevices();
                 openslES_PauseDevices();
                 aaudio_PauseDevices();
             }
@@ -217,7 +206,6 @@ void Android_PumpEvents_NonBlocking(_THIS)
             SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
 
             if (videodata->pauseAudio) {
-                ANDROIDAUDIO_ResumeDevices();
                 openslES_ResumeDevices();
                 aaudio_ResumeDevices();
             }

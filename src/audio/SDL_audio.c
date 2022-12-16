@@ -64,9 +64,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_OPENSLES
     &openslES_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_ANDROID
-    &ANDROIDAUDIO_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_PS2
     &PS2AUDIO_bootstrap,
 #endif
@@ -626,10 +623,6 @@ void SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     current_audio.impl.UnlockDevice(device);
 }
 
-#if SDL_AUDIO_DRIVER_ANDROID
-extern void Android_JNI_AudioSetThreadPriority(int, int);
-#endif
-
 /* The general mixing thread function */
 static int SDLCALL SDL_RunAudio(void *devicep)
 {
@@ -641,15 +634,8 @@ static int SDLCALL SDL_RunAudio(void *devicep)
 
     SDL_assert(!device->iscapture);
 
-#if SDL_AUDIO_DRIVER_ANDROID
-    {
-        /* Set thread priority to THREAD_PRIORITY_AUDIO */
-        Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
-    }
-#else
     /* The audio mixing is always a high priority thread */
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_TIME_CRITICAL);
-#endif
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
@@ -741,15 +727,8 @@ static int SDLCALL SDL_CaptureAudio(void *devicep)
 
     SDL_assert(device->iscapture);
 
-#if SDL_AUDIO_DRIVER_ANDROID
-    {
-        /* Set thread priority to THREAD_PRIORITY_AUDIO */
-        Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
-    }
-#else
     /* The audio mixing is always a high priority thread */
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
-#endif
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();

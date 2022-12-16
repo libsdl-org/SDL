@@ -14,7 +14,6 @@ public class SDL {
     // so it can call into the Java classes
     public static void setupJNI() {
         SDLActivity.nativeSetupJNI();
-        SDLAudioManager.nativeSetupJNI();
         SDLControllerManager.nativeSetupJNI();
     }
 
@@ -23,7 +22,6 @@ public class SDL {
         setContext(null);
 
         SDLActivity.initialize();
-        SDLAudioManager.initialize();
         SDLControllerManager.initialize();
     }
 
