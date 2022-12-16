@@ -26,6 +26,7 @@
 #include "SDL_pipewire.h"
 
 #include <pipewire/extensions/metadata.h>
+#include <pipewire/extensions/session-manager.h>
 #include <spa/param/audio/format-utils.h>
 #include <spa/utils/json.h>
 
@@ -57,6 +58,23 @@
  */
 #ifndef PW_KEY_TARGET_OBJECT
 #define PW_KEY_TARGET_OBJECT "target.object"
+#endif
+
+/*
+ * Introduced in 0.3.??
+ * Taken from src/pipewire/extensions/session-manager/interfaces.h
+ */
+#ifndef PW_KEY_SESSION_SERVICES
+#define PW_KEY_SESSION_SERVICES "session.services"
+#endif
+#ifndef PW_SESSION_SERVICE_NONE
+#define PW_SESSION_SERVICE_NONE ""
+#endif
+#ifndef PW_SESSION_SERVICE_AUDIO_IN
+#define PW_SESSION_SERVICE_AUDIO_IN "audio-in"
+#endif
+#ifndef PW_SESSION_SERVICE_AUDIO_OUT
+#define PW_SESSION_SERVICE_AUDIO_OUT "audio-out"
 #endif
 
 /*
@@ -287,6 +305,7 @@ static struct spa_list hotplug_io_list;
 static int hotplug_init_seq_val;
 static SDL_bool hotplug_init_complete;
 static SDL_bool hotplug_events_enabled;
+static SDL_bool session_has_audio_service;
 
 static char *pipewire_default_sink_id = NULL;
 static char *pipewire_default_source_id = NULL;
@@ -491,7 +510,7 @@ static void core_events_interface_callback(void *object, uint32_t id, int seq)
     }
 }
 
-static void core_events_metadata_callback(void *object, uint32_t id, int seq)
+static void core_events_generic_callback(void *object, uint32_t id, int seq)
 {
     struct node_object *node = object;
 
@@ -502,7 +521,7 @@ static void core_events_metadata_callback(void *object, uint32_t id, int seq)
 
 static const struct pw_core_events hotplug_init_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_hotplug_init_callback };
 static const struct pw_core_events interface_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_interface_callback };
-static const struct pw_core_events metadata_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_metadata_callback };
+static const struct pw_core_events generic_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_generic_callback };
 
 static void hotplug_core_sync(struct node_object *node)
 {
@@ -666,6 +685,21 @@ static int metadata_property(void *object, Uint32 subject, const char *key, cons
 
 static const struct pw_metadata_events metadata_node_events = { PW_VERSION_METADATA_EVENTS, .property = metadata_property };
 
+
+static void session_info(void *data, const struct pw_session_info *info)
+{
+    const char *services = spa_dict_lookup(info->props, PW_KEY_SESSION_SERVICES);
+
+    /* Check for some form of audio support. */
+    if (services && !session_has_audio_service &&
+        (SDL_strstr(services, PW_SESSION_SERVICE_AUDIO_OUT) ||
+         SDL_strstr(services, PW_SESSION_SERVICE_AUDIO_OUT))) {
+        session_has_audio_service = SDL_TRUE;
+    }
+}
+
+static const struct pw_session_events session_events = { PW_VERSION_SESSION_EVENTS, .info = session_info };
+
 /* Global registry callbacks */
 static void registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, const char *type, uint32_t version,
                                            const struct spa_dict *props)
@@ -727,9 +761,18 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
             }
         }
     } else if (!SDL_strcmp(type, PW_TYPE_INTERFACE_Metadata)) {
-        node = node_object_new(id, type, version, &metadata_node_events, &metadata_core_events);
+        node = node_object_new(id, type, version, &metadata_node_events, &generic_core_events);
         if (node == NULL) {
             SDL_SetError("Pipewire: Failed to allocate metadata node");
+            return;
+        }
+
+        /* Update sync points */
+        hotplug_core_sync(node);
+    } else if (!SDL_strcmp(type, PW_TYPE_INTERFACE_Session)) {
+        node = node_object_new(id, type, version, &session_events, &generic_core_events);
+        if (node == NULL) {
+            SDL_SetError("Pipewire: Failed to allocate session node");
             return;
         }
 
@@ -788,7 +831,20 @@ static int hotplug_loop_init()
         return SDL_SetError("Pipewire: Failed to start hotplug detection loop");
     }
 
-    return 0;
+    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
+
+    /* Wait until the initial registry enumeration is complete */
+    if (!hotplug_init_complete) {
+        PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
+    }
+
+    PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
+
+    if (session_has_audio_service) {
+        return 0;
+    }
+
+    return SDL_SetError("Pipewire audio session support not detected");
 }
 
 static void hotplug_loop_destroy()
@@ -802,6 +858,7 @@ static void hotplug_loop_destroy()
 
     hotplug_init_complete = SDL_FALSE;
     hotplug_events_enabled = SDL_FALSE;
+    session_has_audio_service = SDL_FALSE;
 
     if (pipewire_default_sink_id != NULL) {
         SDL_free(pipewire_default_sink_id);
@@ -838,11 +895,6 @@ static void PIPEWIRE_DetectDevices()
     struct io_node *io;
 
     PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
-
-    /* Wait until the initial registry enumeration is complete */
-    if (!hotplug_init_complete) {
-        PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
-    }
 
     /* Sort the I/O list so the default source/sink are listed first */
     io_list_sort();
