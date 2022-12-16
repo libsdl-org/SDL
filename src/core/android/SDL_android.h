@@ -52,7 +52,9 @@ extern SDL_DisplayOrientation Android_JNI_GetDisplayOrientation(void);
 extern int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi);
 
 /* Audio support */
-extern int Android_JNI_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec);
+extern void Android_JNI_GetAudioOutputDevices(int* devices, int *length);
+extern void Android_JNI_GetAudioInputDevices(int* devices, int *length);
+extern int Android_JNI_OpenAudioDevice(int iscapture, int device_id, SDL_AudioSpec *spec);
 extern void *Android_JNI_GetAudioBuffer(void);
 extern void Android_JNI_WriteAudioBuffer(void);
 extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);

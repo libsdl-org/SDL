@@ -1,5 +1,8 @@
 package org.libsdl.app;
 
+import android.content.Context;
+import android.media.AudioDeviceCallback;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -8,34 +11,59 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.util.Log;
 
-public class SDLAudioManager
-{
+import java.util.Arrays;
+
+public class SDLAudioManager {
     protected static final String TAG = "SDLAudio";
 
     protected static AudioTrack mAudioTrack;
     protected static AudioRecord mAudioRecord;
+    protected static Context mContext;
+
+    private static final AudioDeviceCallback mAudioDeviceCallback = new AudioDeviceCallback() {
+        @Override
+        public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
+            Arrays.stream(addedDevices).forEach(deviceInfo -> addAudioDevice(deviceInfo.isSink(), deviceInfo.getId()));
+        }
+
+        @Override
+        public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
+            Arrays.stream(removedDevices).forEach(deviceInfo -> removeAudioDevice(deviceInfo.isSink(), deviceInfo.getId()));
+        }
+    };
 
     public static void initialize() {
         mAudioTrack = null;
         mAudioRecord = null;
     }
 
+    public static void setContext(Context context) {
+        mContext = context;
+        if (context != null) {
+            registerAudioDeviceCallback();
+        }
+    }
+
+    public static void release(Context context) {
+        unregisterAudioDeviceCallback(context);
+    }
+
     // Audio
 
     protected static String getAudioFormatString(int audioFormat) {
         switch (audioFormat) {
-        case AudioFormat.ENCODING_PCM_8BIT:
-            return "8-bit";
-        case AudioFormat.ENCODING_PCM_16BIT:
-            return "16-bit";
-        case AudioFormat.ENCODING_PCM_FLOAT:
-            return "float";
-        default:
-            return Integer.toString(audioFormat);
+            case AudioFormat.ENCODING_PCM_8BIT:
+                return "8-bit";
+            case AudioFormat.ENCODING_PCM_16BIT:
+                return "16-bit";
+            case AudioFormat.ENCODING_PCM_FLOAT:
+                return "float";
+            default:
+                return Integer.toString(audioFormat);
         }
     }
 
-    protected static int[] open(boolean isCapture, int sampleRate, int audioFormat, int desiredChannels, int desiredFrames) {
+    protected static int[] open(boolean isCapture, int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
         int channelConfig;
         int sampleSize;
         int frameSize;
@@ -201,6 +229,10 @@ public class SDLAudioManager
                     return null;
                 }
 
+                if (deviceId != 0) {
+                    mAudioRecord.setPreferredDevice(getOutputAudioDeviceInfo(deviceId));
+                }
+
                 mAudioRecord.startRecording();
             }
 
@@ -224,6 +256,10 @@ public class SDLAudioManager
                     return null;
                 }
 
+                if (deviceId != 0) {
+                    mAudioTrack.setPreferredDevice(getInputAudioDeviceInfo(deviceId));
+                }
+
                 mAudioTrack.play();
             }
 
@@ -238,11 +274,53 @@ public class SDLAudioManager
         return results;
     }
 
+    private static AudioDeviceInfo getInputAudioDeviceInfo(int deviceId) {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
+                .filter(deviceInfo -> deviceInfo.getId() == deviceId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static AudioDeviceInfo getOutputAudioDeviceInfo(int deviceId) {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS))
+                .filter(deviceInfo -> deviceInfo.getId() == deviceId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static void registerAudioDeviceCallback() {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.registerAudioDeviceCallback(mAudioDeviceCallback, null);
+    }
+
+    private static void unregisterAudioDeviceCallback(Context context) {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.unregisterAudioDeviceCallback(mAudioDeviceCallback);
+    }
+
     /**
      * This method is called by SDL using JNI.
      */
-    public static int[] audioOpen(int sampleRate, int audioFormat, int desiredChannels, int desiredFrames) {
-        return open(false, sampleRate, audioFormat, desiredChannels, desiredFrames);
+    public static int[] getAudioOutputDevices() {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int[] getAudioInputDevices() {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int[] audioOpen(int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
+        return open(false, sampleRate, audioFormat, desiredChannels, desiredFrames, deviceId);
     }
 
     /**
@@ -326,8 +404,8 @@ public class SDLAudioManager
     /**
      * This method is called by SDL using JNI.
      */
-    public static int[] captureOpen(int sampleRate, int audioFormat, int desiredChannels, int desiredFrames) {
-        return open(true, sampleRate, audioFormat, desiredChannels, desiredFrames);
+    public static int[] captureOpen(int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
+        return open(true, sampleRate, audioFormat, desiredChannels, desiredFrames, deviceId);
     }
 
     /** This method is called by SDL using JNI. */
@@ -391,4 +469,9 @@ public class SDLAudioManager
     }
 
     public static native int nativeSetupJNI();
+
+    public static native void removeAudioDevice(boolean isCapture, int deviceId);
+
+    public static native void addAudioDevice(boolean isCapture, int deviceId);
+
 }
