@@ -393,7 +393,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mHIDDeviceManager = HIDDeviceManager.acquire(this);
 
         // Set up the surface
-        mSurface = createSDLSurface(getApplication());
+        mSurface = createSDLSurface(this);
 
         mLayout = new RelativeLayout(this);
         mLayout.addView(mSurface);
@@ -587,6 +587,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             HIDDeviceManager.release(mHIDDeviceManager);
             mHIDDeviceManager = null;
         }
+
+        SDLAudioManager.release(this);
 
         if (SDLActivity.mBrokenLibraries) {
            super.onDestroy();
