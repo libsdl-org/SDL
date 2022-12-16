@@ -3259,8 +3259,27 @@ if(SDL_TEST)
   target_link_libraries(SDL3_test PRIVATE ${EXTRA_TEST_LIBS})
 endif()
 
-##### Installation targets #####
 if(NOT SDL3_DISABLE_INSTALL)
+
+  ##### Configure installation folders #####
+
+  if(WINDOWS AND NOT MINGW)
+    set(SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT "cmake")
+  else()
+    set(SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT "${CMAKE_INSTALL_LIBDIR}/cmake")
+  endif()
+  set(SDL_INSTALL_CMAKEDIR_ROOT "${SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT}" CACHE STRING "Root folder where to install SDL3Config.cmake related files (SDL3 subfolder for MSVC projects)")
+
+  if(WINDOWS AND NOT MINGW)
+    set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}")
+    set(LICENSES_PREFIX "licenses/SDL3")
+  else()
+    set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}/SDL3")
+    set(LICENSES_PREFIX "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
+  endif ()
+
+  ##### Installation targets #####
+
   if(SDL_SHARED)
     install(TARGETS SDL3 EXPORT SDL3Targets
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -3283,14 +3302,6 @@ if(NOT SDL3_DISABLE_INSTALL)
   endif()
 
   ##### Export files #####
-  if (WINDOWS AND NOT MINGW)
-    set(SDL_INSTALL_CMAKEDIR_DEFAULT "cmake")
-    set(LICENSES_PREFIX "licenses/SDL3")
-  else ()
-    set(SDL_INSTALL_CMAKEDIR_DEFAULT "${CMAKE_INSTALL_LIBDIR}/cmake/SDL3")
-    set(LICENSES_PREFIX "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
-  endif ()
-  set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_DEFAULT}" CACHE STRING "Location where to install SDL3Config.cmake")
 
   include(CMakePackageConfigHelpers)
   configure_package_config_file(SDL3Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/SDL3Config.cmake"
