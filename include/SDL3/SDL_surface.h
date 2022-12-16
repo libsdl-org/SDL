@@ -577,7 +577,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface,
  * it might be easier to call but it doesn't have access to palette
  * information for the destination surface, in case that would be important.
  *
- * \param src the existing SDL_Surface structure to convert
+ * \param surface the existing SDL_Surface structure to convert
  * \param pixel_format the SDL_PixelFormatEnum that the new surface is
  *                     optimized for
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
