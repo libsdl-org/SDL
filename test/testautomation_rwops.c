@@ -116,7 +116,7 @@ void _testGenericRWopsValidations(SDL_RWops *rw, int write)
     if (write) {
         SDLTest_AssertCheck(s == sizeof(RWopsHelloWorldTestString) - 1, "Verify result of writing one byte with SDL_RWwrite, expected 1, got %i", (int)s);
     } else {
-        SDLTest_AssertCheck(s == 0, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int)s);
+        SDLTest_AssertCheck(s == -1, "Verify result of writing with SDL_RWwrite, expected: 0, got %i", (int)s);
     }
 
     /* Test seek to random position */
