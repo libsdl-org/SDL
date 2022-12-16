@@ -303,6 +303,22 @@ public class SDLAudioManager {
     /**
      * This method is called by SDL using JNI.
      */
+    public static int[] getAudioOutputDevices() {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int[] getAudioInputDevices() {
+        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).mapToInt(AudioDeviceInfo::getId).toArray();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static int[] audioOpen(int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
         return open(false, sampleRate, audioFormat, desiredChannels, desiredFrames, deviceId);
     }
