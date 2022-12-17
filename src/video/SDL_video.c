@@ -1876,6 +1876,13 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
         window->surface_valid = SDL_FALSE;
     }
 
+    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
+        if (_this->DestroyWindowFramebuffer) {
+            _this->DestroyWindowFramebuffer(_this, window);
+        }
+        _this->checked_texture_framebuffer = SDL_FALSE;
+    }
+
     if ((window->flags & SDL_WINDOW_OPENGL) != (flags & SDL_WINDOW_OPENGL)) {
         if (flags & SDL_WINDOW_OPENGL) {
             need_gl_load = SDL_TRUE;
@@ -1904,12 +1911,6 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
 
     if (need_vulkan_unload) {
         SDL_Vulkan_UnloadLibrary();
-    }
-
-    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
-        if (_this->DestroyWindowFramebuffer) {
-            _this->DestroyWindowFramebuffer(_this, window);
-        }
     }
 
     if (_this->DestroyWindow && !(flags & SDL_WINDOW_FOREIGN)) {
@@ -3084,18 +3085,24 @@ void SDL_DestroyWindow(SDL_Window *window)
         SDL_SetMouseFocus(NULL);
     }
 
-    /* make no context current if this is the current context window. */
-    if (window->flags & SDL_WINDOW_OPENGL) {
-        if (_this->current_glwin == window) {
-            SDL_GL_MakeCurrent(window, NULL);
-        }
-    }
-
     if (window->surface) {
         window->surface->flags &= ~SDL_DONTFREE;
         SDL_FreeSurface(window->surface);
         window->surface = NULL;
         window->surface_valid = SDL_FALSE;
+    }
+
+    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
+        if (_this->DestroyWindowFramebuffer) {
+            _this->DestroyWindowFramebuffer(_this, window);
+        }
+    }
+
+    /* make no context current if this is the current context window. */
+    if (window->flags & SDL_WINDOW_OPENGL) {
+        if (_this->current_glwin == window) {
+            SDL_GL_MakeCurrent(window, NULL);
+        }
     }
     if (window->flags & SDL_WINDOW_OPENGL) {
         SDL_GL_UnloadLibrary();
@@ -3103,11 +3110,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     if (window->flags & SDL_WINDOW_VULKAN) {
         SDL_Vulkan_UnloadLibrary();
     }
-    if (_this->checked_texture_framebuffer) { /* never checked? No framebuffer to destroy. Don't risk calling the wrong implementation. */
-        if (_this->DestroyWindowFramebuffer) {
-            _this->DestroyWindowFramebuffer(_this, window);
-        }
-    }
+
     if (_this->DestroyWindow) {
         _this->DestroyWindow(_this, window);
     }
