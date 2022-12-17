@@ -341,7 +341,11 @@ The following hints have been removed:
 
 ## SDL_gesture.h
 
-The gesture API has been removed. There is no replacement planned.
+The gesture API has been removed. There is no replacement planned in SDL3.
+However, the SDL2 code has been moved to a single-header library that can
+be dropped into an SDL3 or SDL2 program, to continue to provide this
+functionality to your app and aid migration. That is located
+[in the SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
 
 
 ## SDL_render.h
