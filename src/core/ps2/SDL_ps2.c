@@ -96,7 +96,9 @@ SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
     getcwd(cwd, sizeof(cwd));
     waitUntilDeviceIsReady(cwd);
 
-    res = SDL_main(argc, argv);
+    SDL_SetMainReady();
+
+    res = mainFunction(argc, argv);
 
     deinit_drivers();
 

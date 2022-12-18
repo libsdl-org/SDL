@@ -76,8 +76,7 @@ SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 
     SDL_SetMainReady();
 
-    (void)SDL_main(argc, argv);
-    return 0;
+    return mainFunction(argc, argv);
 }
 
 #endif /* __PSP__ */
