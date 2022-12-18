@@ -283,19 +283,14 @@ else()
   endif()
 endif()
 
-# Emscripten toolchain has a nonempty default value for this, and the checks
-# in this file need to change that, so remember the original value, and
-# restore back to that afterwards. For check_function_exists() to work in
-# Emscripten, this value must be at its default value.
-set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-
 if(CYGWIN)
   # We build SDL on cygwin without the UNIX emulation layer
   target_include_directories(sdl-build-options INTERFACE "/usr/include/mingw")
+  cmake_push_check_state()
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mno-cygwin")
   check_c_source_compiles("int main(int argc, char **argv) { return 0; }"
     HAVE_GCC_NO_CYGWIN)
-  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+  cmake_pop_check_state()
   if(HAVE_GCC_NO_CYGWIN)
     list(APPEND EXTRA_LDFLAGS_BUILD "-mno-cygwin")
     list(APPEND SDL_LIBS "-mno-cygwin")
@@ -473,22 +468,18 @@ set(HAVE_STATIC_PIC "${SDL_STATIC_PIC}")
 
 if(SDL_WERROR)
   if(MSVC)
-    cmake_push_check_state()
     check_c_compiler_flag(/WX HAVE_WX)
     if(HAVE_WX)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /WX")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
     endif()
-    cmake_pop_check_state()
   elseif(USE_GCC OR USE_CLANG)
-    cmake_push_check_state()
     check_c_compiler_flag(-Werror HAVE_WERROR)
     if(HAVE_WERROR)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
       set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} -Werror")
     endif()
-    cmake_pop_check_state()
   endif()
 endif()
 
@@ -616,21 +607,23 @@ if(USE_GCC OR USE_CLANG)
     endif()
   endif()
 
-  set(CMAKE_REQUIRED_FLAGS "-mpreferred-stack-boundary=2")
+  cmake_push_check_state()
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mpreferred-stack-boundary=2")
   check_c_source_compiles("int x = 0; int main(int argc, char **argv) { return 0; }"
     HAVE_GCC_PREFERRED_STACK_BOUNDARY)
-  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+  cmake_pop_check_state()
 
-  set(CMAKE_REQUIRED_FLAGS "-fvisibility=hidden -Werror")
+  cmake_push_check_state()
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -fvisibility=hidden -Werror")
   check_c_source_compiles("
       #if !defined(__GNUC__) || __GNUC__ < 4
       #error SDL only uses visibility attributes in GCC 4 or newer
       #endif
       int main(int argc, char **argv) { return 0; }" HAVE_GCC_FVISIBILITY)
+  cmake_pop_check_state()
   if(HAVE_GCC_FVISIBILITY)
     list(APPEND EXTRA_CFLAGS "-fvisibility=hidden")
   endif()
-  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
 
   check_c_compiler_flag(-Wshadow HAVE_GCC_WSHADOW)
   if(HAVE_GCC_WSHADOW)
@@ -650,9 +643,10 @@ if(USE_GCC OR USE_CLANG)
     list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-compatibility_version,${SDL_DYLIB_COMPAT_VERSION}")
     list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-current_version,${SDL_DYLIB_CURRENT_VERSION}")
   elseif(NOT OPENBSD)
-    set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
+    cmake_push_check_state()
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wl,--no-undefined")
     check_c_compiler_flag("" HAVE_NO_UNDEFINED)
-    set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+    cmake_pop_check_state()
     if(HAVE_NO_UNDEFINED AND NOT (USE_CLANG AND WINDOWS))
       list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,--no-undefined")
     endif()
@@ -702,7 +696,8 @@ if(SDL_ASSEMBLY)
     # reworked for better compiler support
     set(HAVE_ASSEMBLY TRUE)
     if(SDL_MMX)
-      set(CMAKE_REQUIRED_FLAGS "-mmmx")
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mmmx")
       check_c_source_compiles("
           #ifdef __MINGW32__
           #include <_mingw.h>
@@ -718,14 +713,15 @@ if(SDL_ASSEMBLY)
           #error Assembler CPP flag not enabled
           #endif
           int main(int argc, char **argv) { return 0; }" HAVE_MMX)
+      cmake_pop_check_state()
       if(HAVE_MMX)
         list(APPEND EXTRA_CFLAGS "-mmmx")
       endif()
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(SDL_3DNOW)
-      set(CMAKE_REQUIRED_FLAGS "-m3dnow")
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -m3dnow")
       check_c_source_compiles("
           #include <mm3dnow.h>
           #ifndef __3dNOW__
@@ -736,15 +732,16 @@ if(SDL_ASSEMBLY)
             _m_prefetch(p);
             return 0;
           }" CPU_SUPPORTS_3DNOW)
+      cmake_pop_check_state()
       if(CPU_SUPPORTS_3DNOW)
         set(HAVE_3DNOW TRUE)
         list(APPEND EXTRA_CFLAGS "-m3dnow")
       endif()
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(SDL_SSE)
-      set(CMAKE_REQUIRED_FLAGS "-msse")
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse")
       check_c_source_compiles("
           #ifdef __MINGW32__
           #include <_mingw.h>
@@ -760,15 +757,16 @@ if(SDL_ASSEMBLY)
           #error Assembler CPP flag not enabled
           #endif
           int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_SSE)
+      cmake_pop_check_state()
       if(CPU_SUPPORTS_SSE)
         set(HAVE_SSE ON)
         list(APPEND EXTRA_CFLAGS "-msse")
       endif()
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(SDL_SSE2)
-      set(CMAKE_REQUIRED_FLAGS "-msse2")
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse2")
       check_c_source_compiles("
           #ifdef __MINGW32__
           #include <_mingw.h>
@@ -784,15 +782,16 @@ if(SDL_ASSEMBLY)
           #error Assembler CPP flag not enabled
           #endif
           int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_SSE2)
+      cmake_pop_check_state()
       if(CPU_SUPPORTS_SSE2)
         set(HAVE_SSE2 TRUE)
         list(APPEND EXTRA_CFLAGS "-msse2")
       endif()
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(SDL_SSE3)
-      set(CMAKE_REQUIRED_FLAGS "-msse3")
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -msse3")
       check_c_source_compiles("
           #ifdef __MINGW32__
           #include <_mingw.h>
@@ -808,11 +807,11 @@ if(SDL_ASSEMBLY)
           #error Assembler CPP flag not enabled
           #endif
           int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_SSE3)
+      cmake_pop_check_state()
       if(CPU_SUPPORTS_SSE3)
         set(HAVE_SSE3 TRUE)
         list(APPEND EXTRA_CFLAGS "-msse3")
       endif()
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(NOT SDL_SSEMATH)
@@ -831,7 +830,8 @@ if(SDL_ASSEMBLY)
     check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
 
     if(SDL_ALTIVEC)
-      set(CMAKE_REQUIRED_FLAGS "-maltivec")
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -maltivec")
       check_c_source_compiles("
           #include <altivec.h>
           vector unsigned int vzero() {
@@ -843,7 +843,7 @@ if(SDL_ASSEMBLY)
               return vec_splat_u32(0);
           }
           int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_ALTIVEC)
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+      cmake_pop_check_state()
       if(CPU_SUPPORTS_ALTIVEC OR HAVE_ALTIVEC_H_HDR)
         set(HAVE_ALTIVEC TRUE) # if only HAVE_ALTIVEC_H_HDR is set
         list(APPEND EXTRA_CFLAGS "-maltivec")
@@ -856,7 +856,7 @@ if(SDL_ASSEMBLY)
 
     if(SDL_LSX)
       cmake_push_check_state()
-      list(APPEND CMAKE_REQUIRED_FLAGS "-mlsx")
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mlsx")
       check_c_source_compiles([[
           #ifndef __loongarch_sx
           #error Assembler CPP flag not enabled
@@ -873,7 +873,7 @@ if(SDL_ASSEMBLY)
 
     if(SDL_LASX)
       cmake_push_check_state()
-      list(APPEND CMAKE_REQUIRED_FLAGS "-mlasx")
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mlasx")
       check_c_source_compiles([[
           #ifndef __loongarch_asx
           #error Assembler CPP flag not enabled
@@ -888,7 +888,7 @@ if(SDL_ASSEMBLY)
     endif()
 
     if(SDL_ARMSIMD)
-      set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+      cmake_push_check_state()
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x assembler-with-cpp")
       check_c_source_compiles("
         .text
@@ -902,7 +902,7 @@ if(SDL_ASSEMBLY)
         pld [r0]
         uqadd8 r0, r0, r0
       " ARMSIMD_FOUND)
-      set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
+      cmake_pop_check_state()
 
       if(ARMSIMD_FOUND)
         set(HAVE_ARMSIMD TRUE)
@@ -1057,7 +1057,7 @@ if(SDL_LIBC)
 
     check_library_exists(m pow "" HAVE_LIBM)
     if(HAVE_LIBM)
-      set(CMAKE_REQUIRED_LIBRARIES m)
+      cmake_push_check_state()
       foreach(_FN
               atan atan2 atanf atan2f ceil ceilf copysign copysignf cos cosf
               exp expf fabs fabsf floor floorf fmod fmodf log logf log10 log10f
@@ -1068,7 +1068,7 @@ if(SDL_LIBC)
         check_symbol_exists("${_FN}" "math.h" ${LIBC_HASVAR})
         set(HAVE_${_UPPER} ${${LIBC_HASVAR}})
       endforeach()
-      set(CMAKE_REQUIRED_LIBRARIES)
+      cmake_pop_check_state()
       if(NOT VITA)
         list(APPEND EXTRA_LIBS m)
       endif()
@@ -1206,12 +1206,12 @@ if(ANDROID)
   # see: https://issuetracker.google.com/issues/62264618
   # Another option would be to set ARM mode to all compiled files
   cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "-Werror=unused-command-line-argument")
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Werror=unused-command-line-argument")
   check_c_compiler_flag(-marm HAVE_ARM_MODE)
+  cmake_pop_check_state()
   if(HAVE_ARM_MODE)
     set_property(SOURCE "${SDL3_SOURCE_DIR}/src/atomic/SDL_spinlock.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -marm")
   endif()
-  cmake_pop_check_state()
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_ANDROID 1)
@@ -1662,9 +1662,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   set(SDL_RLD_FLAGS "")
   if(SDL_RPATH AND SDL_SHARED)
     if(BSDI OR FREEBSD OR LINUX OR NETBSD)
-      set(CMAKE_REQUIRED_FLAGS "-Wl,--enable-new-dtags")
+      cmake_push_check_state()
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Wl,--enable-new-dtags")
       check_c_compiler_flag("" HAVE_ENABLE_NEW_DTAGS)
-      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+      cmake_pop_check_state()
       if(HAVE_ENABLE_NEW_DTAGS)
         set(SDL_RLD_FLAGS "-Wl,-rpath,\${libdir} -Wl,--enable-new-dtags")
       else()
@@ -1711,6 +1712,7 @@ elseif(WINDOWS)
 
   # Check for DirectX
   if(SDL_DIRECTX)
+    cmake_push_check_state()
     if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
         set(USE_WINSDK_DIRECTX TRUE)
     endif()
@@ -1718,7 +1720,7 @@ elseif(WINDOWS)
       if("$ENV{DXSDK_DIR}" STREQUAL "")
         message_error("DIRECTX requires the \$DXSDK_DIR environment variable to be set")
       endif()
-      set(CMAKE_REQUIRED_FLAGS "/I\"$ENV{DXSDK_DIR}\\Include\"")
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} /I\"$ENV{DXSDK_DIR}\\Include\"")
     endif()
 
     check_include_file(d3d9.h HAVE_D3D_H)
@@ -1738,6 +1740,7 @@ elseif(WINDOWS)
       set(HAVE_DINPUT_H 0)
     endif()
     check_include_file(dxgi.h HAVE_DXGI_H)
+    cmake_pop_check_state()
     if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_D3D12_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
       set(HAVE_DIRECTX TRUE)
       if(NOT MINGW AND NOT USE_WINSDK_DIRECTX)
@@ -1746,7 +1749,6 @@ elseif(WINDOWS)
         target_include_directories(sdl-build-options INTERFACE "$ENV{DXSDK_DIR}\\Include")
       endif()
     endif()
-    set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   endif()
 
   if(SDL_XINPUT)
@@ -2380,12 +2382,12 @@ elseif(RISCOS)
 elseif(VITA)
   # SDL_spinlock.c Needs to be compiled in ARM mode.
   cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "-Werror=unused-command-line-argument")
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Werror=unused-command-line-argument")
   check_c_compiler_flag(-marm HAVE_ARM_MODE)
+  cmake_pop_check_state()
   if(HAVE_ARM_MODE)
     set_property(SOURCE "${SDL3_SOURCE_DIR}/src/atomic/SDL_spinlock.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -marm")
   endif()
-  cmake_pop_check_state()
 
   if(SDL_MISC)
     file(GLOB MISC_SOURCES ${SDL3_SOURCE_DIR}/src/misc/vita/*.c)
@@ -2971,11 +2973,11 @@ macro(asan_check_add_debug_flag2 ASAN_FLAG)
 
     set(FLAG "-fsanitize=${ASAN_FLAG}")
 
-    set (STORED_REQLIBS ${CMAKE_REQUIRED_LIBRARIES})
-    set (CMAKE_REQUIRED_LIBRARIES "${FLAG};asan")
+    cmake_push_check_state()
+    list(APPEND CMAKE_REQUIRED_LIBRARIES ${FLAG} asan)
     check_c_compiler_flag (${FLAG} HAS_C_FLAG_${ASAN_FLAG})
     check_cxx_compiler_flag (${FLAG} HAS_CXX_FLAG_${ASAN_FLAG})
-    set (CMAKE_REQUIRED_LIBRARIES ${STORED_REQLIBS})
+    cmake_pop_check_state()
 
     if (HAS_C_FLAG_${ASAN_FLAG})
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${FLAG}")
