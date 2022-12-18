@@ -1506,7 +1506,7 @@ void Android_DetectDevices(void)
         char device_name[64];
         SDL_snprintf(device_name, sizeof (device_name), "%d", device_id);
         SDL_Log("Adding input device with name %s", device_name);
-        SDL_AddAudioDevice(SDL_FALSE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
+        SDL_AddAudioDevice(SDL_TRUE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
     }
 
     SDL_zeroa(outputs);
@@ -1518,7 +1518,7 @@ void Android_DetectDevices(void)
         char device_name[64];
         SDL_snprintf(device_name, sizeof (device_name), "%d", device_id);
         SDL_Log("Adding output device with name %s", device_name);
-        SDL_AddAudioDevice(SDL_TRUE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
+        SDL_AddAudioDevice(SDL_FALSE, SDL_strdup(device_name), NULL, (void *) ((size_t) device_id + 1));
     }
 }
 
