@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_main_windows_h_
-#define SDL_main_windows_h_
+#ifndef SDL_main_impl_h_
+#define SDL_main_impl_h_
 
 #if !defined(SDL_main_h_)
 #error "This header should not be included directly, but only via SDL_main.h!"
@@ -197,4 +197,4 @@ int main(int argc, char *argv[])
 
 #endif /* SDL_MAIN_HANDLED */
 
-#endif /* SDL_main_windows_h_ */
+#endif /* SDL_main_impl_h_ */
