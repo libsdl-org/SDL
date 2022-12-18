@@ -42,11 +42,12 @@ macro(FindLibraryAndSONAME _LIB)
 endmacro()
 
 macro(CheckDLOPEN)
-  cmake_push_check_state()
   check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBC)
   if(NOT HAVE_DLOPEN_IN_LIBC)
-    set(CMAKE_REQUIRED_LIBRARIES dl)
+    cmake_push_check_state()
+    list(APPEND CMAKE_REQUIRED_LIBRARIES dl)
     check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBDL)
+    cmake_pop_check_state()
     if(HAVE_DLOPEN_IN_LIBDL)
       list(APPEND EXTRA_LIBS dl)
     endif()
@@ -54,7 +55,6 @@ macro(CheckDLOPEN)
   if(HAVE_DLOPEN_IN_LIBC OR HAVE_DLOPEN_IN_LIBDL)
     set(HAVE_DLOPEN TRUE)
   endif()
-  cmake_pop_check_state()
 endmacro()
 
 macro(CheckO_CLOEXEC)
@@ -385,7 +385,7 @@ macro(CheckX11)
           list(APPEND EXTRA_LIBS ${X11_LIB} ${XEXT_LIB})
       endif()
 
-      set(CMAKE_REQUIRED_LIBRARIES ${X11_LIB} ${X11_LIB})
+      list(APPEND CMAKE_REQUIRED_LIBRARIES ${X11_LIB})
 
       check_c_source_compiles("
           #include <X11/Xlib.h>
@@ -487,8 +487,6 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_XSHAPE 1)
         set(HAVE_X11_XSHAPE TRUE)
       endif()
-
-      set(CMAKE_REQUIRED_LIBRARIES)
     endif()
   endif()
   if(NOT HAVE_X11)
@@ -749,6 +747,7 @@ endmacro()
 # PTHREAD_CFLAGS
 # PTHREAD_LIBS
 macro(CheckPTHREAD)
+  cmake_push_check_state()
   if(SDL_THREADS AND SDL_PTHREADS)
     if(ANDROID)
       # the android libc provides built-in support for pthreads, so no
@@ -797,7 +796,6 @@ macro(CheckPTHREAD)
     endif()
 
     # Run some tests
-    set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${PTHREAD_CFLAGS} ${PTHREAD_LDFLAGS}")
     check_c_source_compiles("
       #include <pthread.h>
@@ -881,8 +879,8 @@ macro(CheckPTHREAD)
       endif()
       set(HAVE_SDL_THREADS TRUE)
     endif()
-    set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
   endif()
+  cmake_pop_check_state()
 endmacro()
 
 # Requires
@@ -892,6 +890,7 @@ endmacro()
 # USB_LIBS
 # USB_CFLAGS
 macro(CheckUSBHID)
+  cmake_push_check_state()
   check_library_exists(usbhid hid_init "" LIBUSBHID)
   if(LIBUSBHID)
     check_include_file(usbhid.h HAVE_USBHID_H)
@@ -919,9 +918,8 @@ macro(CheckUSBHID)
     endif()
   endif()
 
-  set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${USB_CFLAGS}")
-  set(CMAKE_REQUIRED_LIBRARIES "${USB_LIBS}")
+  list(APPEND CMAKE_REQUIRED_LIBRARIES ${USB_LIBS})
   check_c_source_compiles("
        #include <sys/types.h>
         #if defined(HAVE_USB_H)
@@ -1020,9 +1018,8 @@ macro(CheckUSBHID)
     list(APPEND EXTRA_LIBS ${USB_LIBS})
     set(HAVE_SDL_JOYSTICK TRUE)
 
-    set(CMAKE_REQUIRED_LIBRARIES)
-    set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
   endif()
+  cmake_pop_check_state()
 endmacro()
 
 # Check for HIDAPI support
@@ -1093,9 +1090,9 @@ macro(CheckRPI)
     listtostr(VIDEO_RPI_INCLUDE_DIRS VIDEO_RPI_INCLUDE_FLAGS "-I")
     listtostr(VIDEO_RPI_LIBRARY_DIRS VIDEO_RPI_LIBRARY_FLAGS "-L")
 
-    set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+    cmake_push_check_state()
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
-    set(CMAKE_REQUIRED_LIBRARIES "${VIDEO_RPI_LIBRARIES}")
+    list(APPEND CMAKE_REQUIRED_LIBRARIES ${VIDEO_RPI_LIBRARIES})
     check_c_source_compiles("
         #include <bcm_host.h>
         #include <EGL/eglplatform.h>
@@ -1103,8 +1100,7 @@ macro(CheckRPI)
           EGL_DISPMANX_WINDOW_T window;
           bcm_host_init();
         }" HAVE_RPI)
-    set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
-    set(CMAKE_REQUIRED_LIBRARIES)
+    cmake_pop_check_state()
 
     if(SDL_VIDEO AND HAVE_RPI)
       set(HAVE_SDL_VIDEO TRUE)
