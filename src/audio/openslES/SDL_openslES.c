@@ -734,8 +734,9 @@ static SDL_bool openslES_Init(SDL_AudioDriverImpl *impl)
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    impl->OnlyHasDefaultOutputDevice = SDL_FALSE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_FALSE;
+    impl->AllowsArbitraryDeviceNames = SDL_TRUE;
 
     LOGI("openslES_Init() - success");
 
