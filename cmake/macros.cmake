@@ -68,19 +68,22 @@ macro(message_tested_option _NAME)
   message(STATUS "  ${_NAME}${_PAD}(Wanted: ${_REQVALUE}): ${HAVE_${_STRIPPEDNAME}}")
 endmacro()
 
-macro(listtostr _LIST _OUTPUT)
+function(listtostr LIST OUTPUT)
   if(${ARGC} EQUAL 3)
     # prefix for each element
-    set(_LPREFIX ${ARGV2})
+    set(LPREFIX ${ARGV2})
   else()
-    set(_LPREFIX "")
+    set(LPREFIX "")
   endif()
-  # Do not use string(REPLACE ";" " ") here to avoid messing up list
-  # entries
-  foreach(_ITEM ${${_LIST}})
-    set(${_OUTPUT} "${${_OUTPUT}} ${_LPREFIX}${_ITEM}")
+  # Do not use string(REPLACE ";" " ") here to avoid messing up list entries
+  set(res)
+  foreach(ITEM ${${LIST}})
+    if(ITEM)
+      set(res "${res} ${LPREFIX}${ITEM}")
+    endif()
   endforeach()
-endmacro()
+  set(${OUTPUT} "${res}" PARENT_SCOPE)
+endfunction()
 
 function(listtostrrev _LIST _OUTPUT)
   if(${ARGC} EQUAL 3)

@@ -2915,34 +2915,15 @@ else()
   set(sdl_static_libname "SDL3")
 endif()
 
-set(prefix ${CMAKE_INSTALL_PREFIX})
-file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
-
-set(exec_prefix "\${prefix}")
-set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
-set(bindir "\${exec_prefix}/${CMAKE_INSTALL_BINDIR}")
-set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
-if(SDL_STATIC)
-  set(ENABLE_STATIC_TRUE "")
-  set(ENABLE_STATIC_FALSE "#")
-else()
-  set(ENABLE_STATIC_TRUE "#")
-  set(ENABLE_STATIC_FALSE "")
-endif()
 if(SDL_SHARED)
-  set(PKGCONFIG_LIBS_PRIV "
-Libs.private:")
-  set(ENABLE_SHARED_TRUE "")
-  set(ENABLE_SHARED_FALSE "#")
+  set(PKGCONFIG_LIBS_PRIV "\nLibs.private:")
 else()
   set(PKGCONFIG_LIBS_PRIV "")
-  set(ENABLE_SHARED_TRUE "#")
-  set(ENABLE_SHARED_FALSE "")
 endif()
 
 # Clean up the different lists
 listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+set(SDL_STATIC_LIBS ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
 list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
 listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
 set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
@@ -2962,8 +2943,7 @@ endif()
 # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
 # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
 
-configure_file("${SDL3_SOURCE_DIR}/sdl3.pc.in"
-  "${SDL3_BINARY_DIR}/sdl3.pc" @ONLY)
+configure_file(cmake/sdl3.pc.in sdl3.pc @ONLY)
 
 macro(check_add_debug_flag FLAG SUFFIX)
     check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
@@ -3299,7 +3279,7 @@ if(NOT SDL3_DISABLE_INSTALL)
   ##### Export files #####
 
   include(CMakePackageConfigHelpers)
-  configure_package_config_file(SDL3Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/SDL3Config.cmake"
+  configure_package_config_file(cmake/SDL3Config.cmake.in SDL3Config.cmake
     PATH_VARS CMAKE_INSTALL_PREFIX CMAKE_INSTALL_FULL_BINDIR CMAKE_INSTALL_FULL_INCLUDEDIR CMAKE_INSTALL_FULL_LIBDIR
     INSTALL_DESTINATION "${SDL_INSTALL_CMAKEDIR}"
   )
@@ -3373,13 +3353,10 @@ endif()
 
 if(NOT SDL3_DISABLE_UNINSTALL)
   if(NOT TARGET uninstall)
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-        IMMEDIATE @ONLY)
+    configure_file(cmake/cmake_uninstall.cmake.in cmake_uninstall.cmake IMMEDIATE @ONLY)
 
     add_custom_target(uninstall
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+        COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
   endif()
 endif()
 
