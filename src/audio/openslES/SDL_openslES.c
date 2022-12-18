@@ -723,7 +723,7 @@ static SDL_bool openslES_Init(SDL_AudioDriverImpl *impl)
     LOGI("openslES_Init() - set pointers");
 
     /* Set the function pointers */
-    /* impl->DetectDevices = openslES_DetectDevices; */
+    impl->DetectDevices = Android_DetectDevices;
     impl->OpenDevice = openslES_OpenDevice;
     impl->WaitDevice = openslES_WaitDevice;
     impl->PlayDevice = openslES_PlayDevice;
