@@ -2864,8 +2864,9 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 file(GLOB SDL3_INCLUDE_FILES ${SDL3_SOURCE_DIR}/include/SDL3/*.h)
+file(GLOB SDL3_TEST_INCLUDE_FILES ${SDL3_SOURCE_DIR}/include/SDL3/SDL_test*.h)
 foreach(_hdr IN LISTS SDL3_INCLUDE_FILES)
-  if(_hdr MATCHES ".*SDL_revision.h")
+  if(_hdr MATCHES ".*SDL_revision\\.h" OR _hdr MATCHES ".*SDL_test.*\\.h")
     list(REMOVE_ITEM SDL3_INCLUDE_FILES "${_hdr}")
   endif()
 endforeach()
@@ -3337,7 +3338,14 @@ if(NOT SDL3_DISABLE_INSTALL)
     FILES
       ${SDL3_INCLUDE_FILES}
       "${SDL3_BINARY_DIR}/include/SDL3/SDL_revision.h"
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3)
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3
+  )
+  if(SDL_TEST)
+    install(
+      FILES ${SDL3_TEST_INCLUDE_FILES}
+      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL3
+    )
+  endif()
 
   install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
   if(FREEBSD)
