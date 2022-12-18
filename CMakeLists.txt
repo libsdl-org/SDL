@@ -3190,8 +3190,6 @@ if(SDL_STATIC)
     OUTPUT_NAME "${sdl_static_libname}"
     POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}")
   target_compile_definitions(SDL3-static PRIVATE SDL_STATIC_LIB)
-  # TODO: Win32 platforms keep the same suffix .lib for import and static
-  # libraries - do we need to consider this?
   target_link_libraries(SDL3-static PRIVATE ${EXTRA_LIBS} ${EXTRA_LDFLAGS} ${CMAKE_DEPENDS})
   target_include_directories(SDL3-static
     PRIVATE
