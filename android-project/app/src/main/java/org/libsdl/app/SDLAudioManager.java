@@ -23,12 +23,12 @@ public class SDLAudioManager {
     private static final AudioDeviceCallback mAudioDeviceCallback = new AudioDeviceCallback() {
         @Override
         public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
-            Arrays.stream(addedDevices).forEach(deviceInfo -> addAudioDevice(deviceInfo.isSink(), deviceInfo.getId()));
+            Arrays.stream(addedDevices).forEach(deviceInfo -> addAudioDevice(deviceInfo.isSource(), deviceInfo.getId()));
         }
 
         @Override
         public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
-            Arrays.stream(removedDevices).forEach(deviceInfo -> removeAudioDevice(deviceInfo.isSink(), deviceInfo.getId()));
+            Arrays.stream(removedDevices).forEach(deviceInfo -> removeAudioDevice(deviceInfo.isSource(), deviceInfo.getId()));
         }
     };
 
