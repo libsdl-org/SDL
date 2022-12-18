@@ -39,7 +39,7 @@
     defined(__clang__) && (!defined(SWIG))
 #define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
 #else
-#define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   // no-op
+#define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   /* no-op */
 #endif
 
 #define SDL_CAPABILITY(x) \
