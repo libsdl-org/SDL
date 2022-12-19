@@ -49,6 +49,11 @@
 #define USB_VENDOR_VALVE        0x28de
 #define USB_VENDOR_ZEROPLUS     0x0c12
 
+// Most Razer devices are not game controllers, and some of them lock up or reset
+// when we send them the Sony third-party query feature report, so don't include that
+// vendor here. Instead add devices as appropriate to controller_type.c
+// Reference: https://github.com/libsdl-org/SDL/issues/6733
+//            https://github.com/libsdl-org/SDL/issues/6799
 #define SONY_THIRDPARTY_VENDOR(X)    \
     (X == USB_VENDOR_DRAGONRISE ||   \
      X == USB_VENDOR_HORI ||         \
@@ -59,7 +64,6 @@
      X == USB_VENDOR_POWERA ||       \
      X == USB_VENDOR_POWERA_ALT ||   \
      X == USB_VENDOR_QANBA ||        \
-     X == USB_VENDOR_RAZER ||        \
      X == USB_VENDOR_SHANWAN ||      \
      X == USB_VENDOR_SHANWAN_ALT ||  \
      X == USB_VENDOR_THRUSTMASTER || \
