@@ -41,12 +41,12 @@
 
 #include "SDL_windowsclipboard.h"
 #include "SDL_windowsevents.h"
+#include "SDL_windowsopengl.h"
 
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 #include "SDL_windowskeyboard.h"
 #include "SDL_windowsmodes.h"
 #include "SDL_windowsmouse.h"
-#include "SDL_windowsopengl.h"
 #include "SDL_windowsopengles.h"
 #endif
 
