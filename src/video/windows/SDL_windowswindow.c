@@ -306,7 +306,9 @@ static int SetupWindowData(_THIS, SDL_Window *window, HWND hwnd, HWND parent, SD
     data->window = window;
     data->hwnd = hwnd;
     data->parent = parent;
-#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    data->hdc = (HDC) data->hwnd;
+#else
     data->hdc = GetDC(hwnd);
 #endif
     data->hinstance = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);

@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if SDL_VIDEO_DRIVER_WINDOWS
 
 #include "SDL_loadso.h"
 #include "SDL_windowsvideo.h"
@@ -97,6 +97,16 @@ typedef HGLRC(APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC,
                                                            const int
                                                                *attribList);
 
+#if __XBOXONE__ || __XBOXSERIES__
+#define GetDC(hwnd)          (HDC) hwnd
+#define ReleaseDC(hwnd, hdc) 1
+#define SwapBuffers          _this->gl_data->wglSwapBuffers
+#define DescribePixelFormat  _this->gl_data->wglDescribePixelFormat
+#define ChoosePixelFormat    _this->gl_data->wglChoosePixelFormat
+#define GetPixelFormat       _this->gl_data->wglGetPixelFormat
+#define SetPixelFormat       _this->gl_data->wglSetPixelFormat
+#endif
+
 int WIN_GL_LoadLibrary(_THIS, const char *path)
 {
     void *handle;
@@ -135,10 +145,31 @@ int WIN_GL_LoadLibrary(_THIS, const char *path)
         SDL_LoadFunction(handle, "wglShareLists");
     /* *INDENT-ON* */ /* clang-format on */
 
+#if __XBOXONE__ || __XBOXSERIES__
+    _this->gl_data->wglSwapBuffers = (BOOL(WINAPI *)(HDC))
+        SDL_LoadFunction(handle, "wglSwapBuffers");
+    _this->gl_data->wglDescribePixelFormat = (int(WINAPI *)(HDC, int, UINT, LPPIXELFORMATDESCRIPTOR))
+        SDL_LoadFunction(handle, "wglDescribePixelFormat");
+    _this->gl_data->wglChoosePixelFormat = (int(WINAPI *)(HDC, const PIXELFORMATDESCRIPTOR *))
+        SDL_LoadFunction(handle, "wglChoosePixelFormat");
+    _this->gl_data->wglSetPixelFormat = (BOOL(WINAPI *)(HDC, int, const PIXELFORMATDESCRIPTOR *))
+        SDL_LoadFunction(handle, "wglSetPixelFormat");
+    _this->gl_data->wglGetPixelFormat = (int(WINAPI *)(HDC hdc))
+        SDL_LoadFunction(handle, "wglGetPixelFormat");
+#endif
+
     if (!_this->gl_data->wglGetProcAddress ||
         !_this->gl_data->wglCreateContext ||
         !_this->gl_data->wglDeleteContext ||
-        !_this->gl_data->wglMakeCurrent) {
+        !_this->gl_data->wglMakeCurrent
+#if __XBOXONE__ || __XBOXSERIES__
+        || !_this->gl_data->wglSwapBuffers ||
+        !_this->gl_data->wglDescribePixelFormat ||
+        !_this->gl_data->wglChoosePixelFormat ||
+        !_this->gl_data->wglGetPixelFormat ||
+        !_this->gl_data->wglSetPixelFormat
+#endif
+    ) {
         return SDL_SetError("Could not retrieve OpenGL functions");
     }
 
