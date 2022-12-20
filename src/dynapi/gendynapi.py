@@ -328,10 +328,12 @@ def full_API_json():
 
 # Parse 'sdl_dynapi_procs_h' file to find existing functions
 def find_existing_procs():
-    reg = re.compile('SDL_DYNAPI_PROC\([^,]*,([^,]*),.*\)')
+
     ret = []
+
     input = open(sdl_dynapi_procs_h)
 
+    reg = re.compile('SDL_DYNAPI_PROC\([^,]*,([^,]*),.*\)')
     for line in input:
         match = reg.match(line)
         if not match:
@@ -339,6 +341,18 @@ def find_existing_procs():
         existing_func = match.group(1)
         ret.append(existing_func);
         # print(existing_func)
+
+    input.seek(0)
+
+    reg = re.compile('SDL_DYNAPI_PROC_NORET\([^,]*,([^,]*),.*\)')
+    for line in input:
+        match = reg.match(line)
+        if not match:
+            continue
+        existing_func = match.group(1)
+        ret.append(existing_func);
+        # print(existing_func)
+
     input.close()
 
     return ret
@@ -421,11 +435,13 @@ def add_dyn_api(proc):
     if remove_last:
         dyn_proc = dyn_proc[:-1]
 
-    dyn_proc += "),"
 
-    if func_ret != "void":
-        dyn_proc += "return"
-    dyn_proc += ")"
+    if func_ret == "void":
+        dyn_proc += "))"
+        dyn_proc = dyn_proc.replace("SDL_DYNAPI_PROC", "SDL_DYNAPI_PROC_NORET");
+    else:
+        dyn_proc += "),return)"
+
     f.write(dyn_proc + "\n")
     f.close()
 

@@ -153,6 +153,10 @@ static void SDL_InitDynamicAPI(void);
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Critical, CRITICAL)
 #endif
 
+
+#define SDL_DYNAPI_PROC_NORET(rc, fn, params, args) SDL_DYNAPI_PROC(rc, fn, params, args,)
+
+
 /* Typedefs for function pointers for jump table, and predeclare funcs */
 /* The DEFAULT funcs will init jump table and then call real function. */
 /* The REAL funcs are the actual functions, name-mangled to not clash. */
@@ -183,12 +187,15 @@ static SDL_DYNAPI_jump_table jump_table = {
 #undef SDL_DYNAPI_PROC
 };
 
+SDL_mutex *SDL_public_API_mutex = NULL;
+
 /* Default functions init the function table then call right thing. */
 #if DISABLE_JUMP_MAGIC
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
     static rc SDLCALL fn##_DEFAULT params          \
     {                                              \
         SDL_InitDynamicAPI();                      \
+        SDL_Log_REAL("??...%s", __func__);\
         ret jump_table.fn args;                    \
     }
 #define SDL_DYNAPI_PROC_NO_VARARGS 1
@@ -206,17 +213,35 @@ SDL_DYNAPI_VARARGS(static, _DEFAULT, SDL_InitDynamicAPI())
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
     rc SDLCALL fn params                           \
     {                                              \
-        ret jump_table.fn args;                    \
+        rc retval;                                 \
+        SDL_LockMutex_REAL(SDL_public_API_mutex);  \
+        retval = jump_table.fn args;               \
+        SDL_UnlockMutex_REAL(SDL_public_API_mutex);\
+        return retval;                             \
     }
+
+#undef SDL_DYNAPI_PROC_NORET
+#define SDL_DYNAPI_PROC_NORET(rc, fn, params, args) \
+    rc SDLCALL fn params                            \
+    {                                               \
+        SDL_LockMutex_REAL(SDL_public_API_mutex);   \
+        jump_table.fn args;                         \
+        SDL_UnlockMutex_REAL(SDL_public_API_mutex); \
+    }
+
 #define SDL_DYNAPI_PROC_NO_VARARGS 1
 #include "SDL_dynapi_procs.h"
 #undef SDL_DYNAPI_PROC
+#undef SDL_DYNAPI_PROC_NORET
 #undef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_VARARGS(, , )
 #else
 /* !!! FIXME: need the jump magic. */
 #error Write me.
 #endif
+
+
+#define SDL_DYNAPI_PROC_NORET(rc, fn, params, args) SDL_DYNAPI_PROC(rc, fn, params, args,)
 
 #define ENABLE_SDL_CALL_LOGGING 0
 #if ENABLE_SDL_CALL_LOGGING
@@ -449,6 +474,8 @@ static void SDL_InitDynamicAPILocked(void)
             SDL_ExitProcess(86);
         }
     }
+
+    SDL_public_API_mutex = SDL_CreateMutex();
 
     /* we intentionally never close the newly-loaded lib, of course. */
 }
