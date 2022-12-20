@@ -195,7 +195,6 @@ SDL_mutex *SDL_public_API_mutex = NULL;
     static rc SDLCALL fn##_DEFAULT params          \
     {                                              \
         SDL_InitDynamicAPI();                      \
-        SDL_Log_REAL("??...%s", __func__);\
         ret jump_table.fn args;                    \
     }
 #define SDL_DYNAPI_PROC_NO_VARARGS 1
