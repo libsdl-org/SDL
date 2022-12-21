@@ -40,9 +40,9 @@ android_api=19
 android_ndk=21
 android_stl="c++_shared"
 
-sdl_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' "${sdl_root}/include/SDL_version.h")
-sdl_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' "${sdl_root}/include/SDL_version.h")
-sdl_patch=$(sed -ne 's/^#define SDL_PATCHLEVEL  *//p' "${sdl_root}/include/SDL_version.h")
+sdl_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' "${sdl_root}/include/SDL3/SDL_version.h")
+sdl_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' "${sdl_root}/include/SDL3/SDL_version.h")
+sdl_patch=$(sed -ne 's/^#define SDL_PATCHLEVEL  *//p' "${sdl_root}/include/SDL3/SDL_version.h")
 sdl_version="${sdl_major}.${sdl_minor}.${sdl_patch}"
 echo "Building Android prefab package for SDL version $sdl_version"
 
@@ -201,8 +201,8 @@ create_shared_sdl_module() {
   "library_name": "libSDL${sdl_major}"
 }
 EOF
-        mkdir -p "${sdl_moduleworkdir}/include"
-        cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include/"
+        mkdir -p "${sdl_moduleworkdir}/include/SDL${sdl_major}"
+        cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include/SDL${sdl_major}"
 
         abi_sdllibdir="${sdl_moduleworkdir}/libs/android.${android_abi}"
         mkdir -p "${abi_sdllibdir}"
@@ -233,8 +233,8 @@ create_static_sdl_module() {
   "library_name": "libSDL${sdl_major}"
 }
 EOF
-        mkdir -p "${sdl_moduleworkdir}/include"
-        cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include"
+        mkdir -p "${sdl_moduleworkdir}/include/SDL${sdl_major}"
+        cp -r "${abi_build_prefix}/include/SDL${sdl_major}/"* "${sdl_moduleworkdir}/include/SDL${sdl_major}"
 
         abi_sdllibdir="${sdl_moduleworkdir}/libs/android.${android_abi}"
         mkdir -p "${abi_sdllibdir}"
