@@ -1211,6 +1211,7 @@ if(ANDROID)
   cmake_pop_check_state()
   if(HAVE_ARM_MODE)
     set_property(SOURCE "${SDL3_SOURCE_DIR}/src/atomic/SDL_spinlock.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -marm")
+    set_source_files_properties(src/atomic/SDL_spinlock.c PROPERTIES SKIP_PRECOMPILE_HEADERS 1)
   endif()
 
   if(SDL_AUDIO)
