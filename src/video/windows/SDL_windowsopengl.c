@@ -276,7 +276,7 @@ static void WIN_GL_SetupPixelFormat(_THIS, PIXELFORMATDESCRIPTOR *pfd)
 /* Choose the closest pixel format that meets or exceeds the target.
    FIXME: Should we weight any particular attribute over any other?
 */
-static int WIN_GL_ChoosePixelFormat(HDC hdc, PIXELFORMATDESCRIPTOR *target)
+static int WIN_GL_ChoosePixelFormat(_THIS, HDC hdc, PIXELFORMATDESCRIPTOR *target)
 {
     PIXELFORMATDESCRIPTOR pfd;
     int count, index, best = 0;
@@ -668,7 +668,7 @@ static int WIN_GL_SetupWindowInternal(_THIS, SDL_Window *window)
         *iAccelAttr = WGL_FULL_ACCELERATION_ARB; /* if we try again. */
     }
     if (!pixel_format) {
-        pixel_format = WIN_GL_ChoosePixelFormat(hdc, &pfd);
+        pixel_format = WIN_GL_ChoosePixelFormat(_this, hdc, &pfd);
     }
     if (!pixel_format) {
         return SDL_SetError("No matching GL pixel format available");
