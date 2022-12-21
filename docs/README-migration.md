@@ -101,6 +101,44 @@ SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been
 
 ## SDL_rwops.h
 
+SDL_RWread and SDL_RWwrite (and SDL_RWops::read, SDL_RWops::write) have a different function signature in SDL3.
+
+Previously they looked more like stdio:
+
+```c
+size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size, size_t maxnum);
+```
+
+But now they look more like POSIX:
+
+```c
+Sint64 SDL_RWread(SDL_RWops *context, void *ptr, Sint64 size);
+```
+
+Previously they tried to read/write `size` objects of `maxnum` bytes each. Now they try to read/write `size` bytes, which solves
+concerns about what should happen to the file pointer if only a fraction of an object could be read, etc. The return value is
+different, too. For reading:
+
+- SDL_RWread returns the number of bytes read, which will be less than requested on error or EOF.
+- If there was an error but some bytes were read, it will return the number of bytes read.
+- On error when no bytes were read, it returns -1.
+- For non-blocking RWops (new to SDL3!), if we are neither at an error or EOF but it would require blocking to read more data, it returns -2.
+
+For writing:
+
+- SDL_RWwrite returns the number of bytes written, which might be less on error or if the RWops is non-blocking.
+- If there was an error but some bytes were written, it will return the number of bytes written.
+- On error when no bytes were written, it returns -1.
+- For non-blocking RWops (new to SDL3!), if we are not at an error but it would require blocking to write more data, it returns -2.
+
+
+As you can see, RWops can now be non-blocking! There is no API in SDL to
+toggle a RWops to (non-)blocking mode, they must be created as such. The
+existing SDL_RWFrom* functions do not create non-blocking objects, so existing
+code (and much of the code you would care to write by default) does not have
+to contend with this behavior.
+
+
 SDL_RWFromFP has been removed from the API, due to issues when the SDL library uses a different C runtime from the application.
 
 You can implement this in your own code easily:
