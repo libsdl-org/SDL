@@ -29,18 +29,20 @@
 #   or similar around the function in 'SDL_dynapi_procs.h'
 #
 
-import re
-import os
 import argparse
-import pprint
 import json
+import os
+import pathlib
+import pprint
+import re
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
 
-sdl_include_dir = dir_path + "/../../include/SDL3/"
-sdl_dynapi_procs_h = dir_path + "/../../src/dynapi/SDL_dynapi_procs.h"
-sdl_dynapi_overrides_h = dir_path + "/../../src/dynapi/SDL_dynapi_overrides.h"
-sdl_dynapi_sym = dir_path + "/../../src/dynapi/SDL_dynapi.sym"
+SDL_ROOT = pathlib.Path(__file__).resolve().parents[2]
+
+SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
+SDL_DYNAPI_PROCS_H = SDL_ROOT / "src/dynapi/SDL_dynapi_procs.h"
+SDL_DYNAPI_OVERRIDES_H = SDL_ROOT / "src/dynapi/SDL_dynapi_overrides.h"
+SDL_DYNAPI_SYM = SDL_ROOT / "src/dynapi/SDL_dynapi.sym"
 
 full_API = []
 
@@ -330,7 +332,7 @@ def full_API_json():
 def find_existing_procs():
     reg = re.compile('SDL_DYNAPI_PROC\([^,]*,([^,]*),.*\)')
     ret = []
-    input = open(sdl_dynapi_procs_h)
+    input = open(SDL_DYNAPI_PROCS_H)
 
     for line in input:
         match = reg.match(line)
@@ -347,7 +349,7 @@ def find_existing_procs():
 def get_header_list():
     reg = re.compile('^.*\.h$')
     ret = []
-    tmp = os.listdir(sdl_include_dir)
+    tmp = os.listdir(SDL_INCLUDE_DIR)
 
     for f in tmp:
         # Only *.h files
@@ -356,7 +358,7 @@ def get_header_list():
             if args.debug:
                 print("Skip %s" % f)
             continue
-        ret.append(sdl_include_dir + f)
+        ret.append(SDL_INCLUDE_DIR / f)
 
     return ret
 
@@ -371,7 +373,7 @@ def add_dyn_api(proc):
     #
     # Add at last
     # SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
-    f = open(sdl_dynapi_procs_h, "a")
+    f = open(SDL_DYNAPI_PROCS_H, "a")
     dyn_proc = "SDL_DYNAPI_PROC(" + func_ret + "," + func_name + ",("
 
     i = ord('a')
@@ -433,21 +435,21 @@ def add_dyn_api(proc):
     #
     # Add at last
     # "#define SDL_DelayNS SDL_DelayNS_REAL
-    f = open(sdl_dynapi_overrides_h, "a")
+    f = open(SDL_DYNAPI_OVERRIDES_H, "a")
     f.write("#define " + func_name + " " + func_name + "_REAL\n")
     f.close()
 
     # File: SDL_dynapi.sym
     #
     # Add before "extra symbols go here" line
-    input = open(sdl_dynapi_sym)
+    input = open(SDL_DYNAPI_SYM)
     new_input = []
     for line in input:
         if "extra symbols go here" in line:
             new_input.append("    " + func_name + ";\n")
         new_input.append(line)
     input.close()
-    f = open(sdl_dynapi_sym, 'w')
+    f = open(SDL_DYNAPI_SYM, 'w')
     for line in new_input:
         f.write(line)
     f.close()
