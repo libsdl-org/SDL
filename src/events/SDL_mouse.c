@@ -290,14 +290,14 @@ void SDL_SetMouseFocus(SDL_Window *window)
 
     /* See if the current window has lost focus */
     if (mouse->focus) {
-        SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_LEAVE, 0, 0);
+        SDL_SendWindowEvent(mouse->focus, SDL_WINMOUSEFOCUSLOST, 0, 0);
     }
 
     mouse->focus = window;
     mouse->has_position = SDL_FALSE;
 
     if (mouse->focus) {
-        SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_ENTER, 0, 0);
+        SDL_SendWindowEvent(mouse->focus, SDL_WINMOUSEFOCUSGAINED, 0, 0);
     }
 
     /* Update cursor visibility */

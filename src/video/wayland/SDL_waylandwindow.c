@@ -618,9 +618,7 @@ static void handle_configure_xdg_toplevel(void *data,
          *
          * No, we do not get minimize events from xdg-shell.
          */
-        SDL_SendWindowEvent(window,
-                            maximized ? SDL_WINDOWEVENT_MAXIMIZED : SDL_WINDOWEVENT_RESTORED,
-                            0, 0);
+        SDL_SendWindowEvent(window, maximized ? SDL_WINMAXIMIZED : SDL_WINRESTORED, 0, 0);
 
         /* Store current floating dimensions for restoring */
         if (floating) {
@@ -669,7 +667,7 @@ static void handle_configure_xdg_toplevel(void *data,
 static void handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
-    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(window->sdlwindow, SDL_WINCLOSE, 0, 0);
 }
 
 static const struct xdg_toplevel_listener toplevel_listener_xdg = {
@@ -690,7 +688,7 @@ static void handle_configure_xdg_popup(void *data,
 static void handle_done_xdg_popup(void *data, struct xdg_popup *xdg_popup)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
-    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(window->sdlwindow, SDL_WINCLOSE, 0, 0);
 }
 
 static void handle_repositioned_xdg_popup(void *data,
@@ -806,15 +804,11 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
          *
          * No, we do not get minimize events from libdecor.
          */
-        SDL_SendWindowEvent(window,
-                            maximized ? SDL_WINDOWEVENT_MAXIMIZED : SDL_WINDOWEVENT_RESTORED,
-                            0, 0);
+        SDL_SendWindowEvent(window, maximized ? SDL_WINMAXIMIZED : SDL_WINRESTORED, 0, 0);
     }
 
     /* Similar to maximized/restore events above, send focus events too! */
-    SDL_SendWindowEvent(window,
-                        focused ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST,
-                        0, 0);
+    SDL_SendWindowEvent(window, focused ? SDL_WINKEYBOARDFOCUSGAINED : SDL_WINKEYBOARDFOCUSLOST, 0, 0);
 
     /* For fullscreen or fixed-size windows we know our size.
      * Always assume the configure is wrong.
@@ -905,14 +899,14 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 
 static void decoration_frame_close(struct libdecor_frame *frame, void *user_data)
 {
-    SDL_SendWindowEvent(((SDL_WindowData *)user_data)->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(((SDL_WindowData *)user_data)->sdlwindow, SDL_WINCLOSE, 0, 0);
 }
 
 static void decoration_frame_commit(struct libdecor_frame *frame, void *user_data)
 {
     SDL_WindowData *wind = user_data;
 
-    SDL_SendWindowEvent(wind->sdlwindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+    SDL_SendWindowEvent(wind->sdlwindow, SDL_WINEXPOSED, 0, 0);
 }
 
 static struct libdecor_frame_interface libdecor_frame_interface = {
@@ -937,7 +931,7 @@ static void handle_set_generic_property(void *data,
 static void handle_close(void *data, struct qt_extended_surface *qt_extended_surface)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
-    SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
+    SDL_SendWindowEvent(window->sdlwindow, SDL_WINCLOSE, 0, 0);
 }
 
 static const struct qt_extended_surface_listener extended_surface_listener = {
@@ -1037,7 +1031,7 @@ static void Wayland_move_window(SDL_Window *window,
              * -flibit
              */
             SDL_GetDisplayBounds(i, &bounds);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, bounds.x, bounds.y);
+            SDL_SendWindowEvent(window, SDL_WINMOVED, bounds.x, bounds.y);
 
             /*
              * If the fullscreen output was changed, and we have bad dimensions from
@@ -2028,7 +2022,7 @@ static void Wayland_HandleResize(SDL_Window *window, int width, int height, floa
          * so we must override the deduplication logic in the video core */
         window->w = 0;
         window->h = 0;
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
+        SDL_SendWindowEvent(window, SDL_WINRESIZED, width, height);
         window->w = width;
         window->h = height;
         data->needs_resize_event = SDL_FALSE;

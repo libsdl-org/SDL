@@ -69,7 +69,7 @@ static void SW_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
     SW_RenderData *data = (SW_RenderData *)renderer->driverdata;
 
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_WINSIZECHANGED) {
         data->surface = NULL;
         data->window = NULL;
     }

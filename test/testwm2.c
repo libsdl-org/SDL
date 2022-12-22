@@ -151,39 +151,33 @@ void loop()
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
 
-        if (event.type == SDL_WINDOWEVENT) {
-            if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
-                if (window) {
-                    SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
-                            event.window.windowID,
-                            event.window.data1,
-                            event.window.data2);
-                }
+        if (event.type == SDL_WINRESIZED) {
+            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            if (window) {
+                SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
+                        event.window.windowID,
+                        event.window.data1,
+                        event.window.data2);
             }
-            if (event.window.event == SDL_WINDOWEVENT_MOVED) {
-                SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
-                if (window) {
-                    SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
-                            event.window.windowID,
-                            event.window.data1,
-                            event.window.data2,
-                            SDL_GetDisplayName(SDL_GetWindowDisplayIndex(window)));
-                }
+        } else if (event.type == SDL_WINMOVED) {
+            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            if (window) {
+                SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
+                        event.window.windowID,
+                        event.window.data1,
+                        event.window.data2,
+                        SDL_GetDisplayName(SDL_GetWindowDisplayIndex(window)));
             }
-            if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
-                relative_mode = SDL_GetRelativeMouseMode();
-                if (relative_mode) {
-                    SDL_SetRelativeMouseMode(SDL_FALSE);
-                }
+        } else if (event.type == SDL_WINKEYBOARDFOCUSLOST) {
+            relative_mode = SDL_GetRelativeMouseMode();
+            if (relative_mode) {
+                SDL_SetRelativeMouseMode(SDL_FALSE);
             }
-            if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-                if (relative_mode) {
-                    SDL_SetRelativeMouseMode(SDL_TRUE);
-                }
+        } else if (event.type == SDL_WINKEYBOARDFOCUSGAINED) {
+            if (relative_mode) {
+                SDL_SetRelativeMouseMode(SDL_TRUE);
             }
-        }
-        if (event.type == SDL_KEYUP) {
+        } else if (event.type == SDL_KEYUP) {
             SDL_bool updateCursor = SDL_FALSE;
 
             if (event.key.keysym.sym == SDLK_LEFT) {
@@ -205,8 +199,7 @@ void loop()
                 cursor = SDL_CreateSystemCursor((SDL_SystemCursor)system_cursor);
                 SDL_SetCursor(cursor);
             }
-        }
-        if (event.type == SDL_MOUSEBUTTONUP) {
+        } else if (event.type == SDL_MOUSEBUTTONUP) {
             SDL_Window *window = SDL_GetMouseFocus();
             if (highlighted_mode != -1 && window != NULL) {
                 const int display_index = SDL_GetWindowDisplayIndex(window);

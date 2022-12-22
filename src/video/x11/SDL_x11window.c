@@ -1390,12 +1390,12 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
             if (!caught_x11_error) {
                 SDL_bool window_changed = SDL_FALSE;
                 if ((x != orig_x) || (y != orig_y)) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, x, y);
+                    SDL_SendWindowEvent(data->window, SDL_WINMOVED, x, y);
                     window_changed = SDL_TRUE;
                 }
 
                 if ((attrs.width != orig_w) || (attrs.height != orig_h)) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, attrs.width, attrs.height);
+                    SDL_SendWindowEvent(data->window, SDL_WINRESIZED, attrs.width, attrs.height);
                     window_changed = SDL_TRUE;
                 }
 

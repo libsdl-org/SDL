@@ -667,11 +667,39 @@ static void GetWindowViewportValues(SDL_Renderer *renderer, int *logical_w, int 
     SDL_UnlockMutex(renderer->target_mutex);
 }
 
+/* !!! FIXME: maybe add categories to events? */
+static SDL_bool IsWindowEvent(Uint32 evtype)
+{
+    switch (evtype) {
+        case SDL_WINSHOWN:
+        case SDL_WINHIDDEN:
+        case SDL_WINEXPOSED:
+        case SDL_WINMOVED:
+        case SDL_WINRESIZED:
+        case SDL_WINSIZECHANGED:
+        case SDL_WINMINIMIZED:
+        case SDL_WINMAXIMIZED:
+        case SDL_WINRESTORED:
+        case SDL_WINMOUSEFOCUSGAINED:
+        case SDL_WINMOUSEFOCUSLOST:
+        case SDL_WINKEYBOARDFOCUSGAINED:
+        case SDL_WINKEYBOARDFOCUSLOST:
+        case SDL_WINCLOSE:
+        case SDL_WINTAKEFOCUS:
+        case SDL_WINHITTEST:
+        case SDL_WINICCPROFCHANGED:
+        case SDL_WINDISPLAYCHANGED:
+            return SDL_TRUE;
+    }
+
+    return SDL_FALSE;
+}
+
 static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
     SDL_Renderer *renderer = (SDL_Renderer *)userdata;
 
-    if (event->type == SDL_WINDOWEVENT) {
+    if (IsWindowEvent(event->type)) {
         SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
         if (window == renderer->window) {
             if (renderer->WindowEvent) {
@@ -682,8 +710,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
              * window display changes as well! If the new display has a new DPI,
              * we need to update the viewport for the new window/drawable ratio.
              */
-            if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-                event->window.event == SDL_WINDOWEVENT_DISPLAY_CHANGED) {
+            if (event->type == SDL_WINSIZECHANGED ||
+                event->type == SDL_WINDISPLAYCHANGED) {
                 /* Make sure we're operating on the default render target */
                 SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
                 if (saved_target) {
@@ -736,16 +764,16 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 if (saved_target) {
                     SDL_SetRenderTarget(renderer, saved_target);
                 }
-            } else if (event->window.event == SDL_WINDOWEVENT_HIDDEN) {
+            } else if (event->type == SDL_WINHIDDEN) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->window.event == SDL_WINDOWEVENT_SHOWN) {
+            } else if (event->type == SDL_WINSHOWN) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)) {
                     renderer->hidden = SDL_FALSE;
                 }
-            } else if (event->window.event == SDL_WINDOWEVENT_MINIMIZED) {
+            } else if (event->type == SDL_WINMINIMIZED) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->window.event == SDL_WINDOWEVENT_RESTORED ||
-                       event->window.event == SDL_WINDOWEVENT_MAXIMIZED) {
+            } else if (event->type == SDL_WINRESTORED ||
+                       event->type == SDL_WINMAXIMIZED) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
                     renderer->hidden = SDL_FALSE;
                 }

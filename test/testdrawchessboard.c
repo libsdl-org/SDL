@@ -56,8 +56,7 @@ void loop()
     while (SDL_PollEvent(&e)) {
 
         /* Re-create when window has been resized */
-        if ((e.type == SDL_WINDOWEVENT) && (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)) {
-
+        if (e.type == SDL_WINSIZECHANGED) {
             SDL_DestroyRenderer(renderer);
 
             surface = SDL_GetWindowSurface(window);

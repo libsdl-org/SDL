@@ -601,7 +601,7 @@ int SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send_event)
         }
 
         if (send_event) {
-            SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_CONNECTED, 0);
+            SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYCONNECTED, 0);
         }
     } else {
         SDL_OutOfMemory();
@@ -615,7 +615,7 @@ void SDL_DelVideoDisplay(int index)
         return;
     }
 
-    SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
+    SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYDISCONNECTED, 0);
 
     if (index < (_this->num_displays - 1)) {
         SDL_free(_this->displays[index].driverdata);
@@ -1236,7 +1236,7 @@ int SDL_SetWindowDisplayMode(SDL_Window *window, const SDL_DisplayMode *mode)
                  * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
                  * Android's SetWindowFullscreen will generate the window event for us with the proper final size.
                  */
-                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, fullscreen_mode.w, fullscreen_mode.h);
+                SDL_SendWindowEvent(window, SDL_WINRESIZED, fullscreen_mode.w, fullscreen_mode.h);
 #endif
             }
         }
@@ -1452,8 +1452,7 @@ static int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen)
                      * WM_WINDOWPOSCHANGED will send SDL_WINDOWEVENT_RESIZED). Also, on Windows with DPI scaling enabled,
                      * we're keeping modes in pixels, but window sizes in dpi-scaled points, so this would be a unit mismatch.
                      */
-                    SDL_SendWindowEvent(other, SDL_WINDOWEVENT_RESIZED,
-                                        fullscreen_mode.w, fullscreen_mode.h);
+                    SDL_SendWindowEvent(other, SDL_WINRESIZED, fullscreen_mode.w, fullscreen_mode.h);
 #endif
                 } else {
                     SDL_OnWindowResized(other);
@@ -2459,7 +2458,7 @@ void SDL_ShowWindow(SDL_Window *window)
     if (_this->ShowWindow) {
         _this->ShowWindow(_this, window);
     }
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINSHOWN, 0, 0);
 }
 
 void SDL_HideWindow(SDL_Window *window)
@@ -2477,7 +2476,7 @@ void SDL_HideWindow(SDL_Window *window)
         _this->HideWindow(_this, window);
     }
     window->is_hiding = SDL_FALSE;
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINHIDDEN, 0, 0);
 }
 
 void SDL_RaiseWindow(SDL_Window *window)
@@ -2933,11 +2932,11 @@ void SDL_OnWindowResized(SDL_Window *window)
     window->surface_valid = SDL_FALSE;
 
     if (!window->is_destroying) {
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SIZE_CHANGED, window->w, window->h);
+        SDL_SendWindowEvent(window, SDL_WINSIZECHANGED, window->w, window->h);
 
         if (display_index != window->display_index && display_index != -1) {
             window->display_index = display_index;
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_DISPLAY_CHANGED, window->display_index, 0);
+            SDL_SendWindowEvent(window, SDL_WINDISPLAYCHANGED, window->display_index, 0);
         }
     }
 }
@@ -2948,7 +2947,7 @@ void SDL_OnWindowMoved(SDL_Window *window)
 
     if (!window->is_destroying && display_index != window->display_index && display_index != -1) {
         window->display_index = display_index;
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_DISPLAY_CHANGED, window->display_index, 0);
+        SDL_SendWindowEvent(window, SDL_WINDISPLAYCHANGED, window->display_index, 0);
     }
 }
 
@@ -4584,8 +4583,8 @@ void SDL_OnApplicationWillResignActive(void)
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINKEYBOARDFOCUSLOST, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINMINIMIZED, 0, 0);
         }
     }
     SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
@@ -4608,8 +4607,8 @@ void SDL_OnApplicationDidBecomeActive(void)
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINKEYBOARDFOCUSGAINED, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINRESTORED, 0, 0);
         }
     }
 }

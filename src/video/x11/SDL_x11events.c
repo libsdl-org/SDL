@@ -492,8 +492,8 @@ static void X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 static void X11_DispatchMapNotify(SDL_WindowData *data)
 {
     SDL_Window *window = data->window;
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINRESTORED, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINSHOWN, 0, 0);
     if (!(window->flags & SDL_WINDOW_HIDDEN) && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         SDL_UpdateWindowGrab(window);
     }
@@ -501,8 +501,8 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
 
 static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
-    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
-    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_WINHIDDEN, 0, 0);
+    SDL_SendWindowEvent(data->window, SDL_WINMINIMIZED, 0, 0);
 }
 
 static void InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
@@ -879,12 +879,12 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                         X11_XGetWindowAttributes(display, data->xwindow, &attrib);
                         screennum = X11_XScreenNumberOfScreen(attrib.screen);
                         if (screennum == 0 && SDL_strcmp(name_of_atom, "_ICC_PROFILE") == 0) {
-                            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                            SDL_SendWindowEvent(data->window, SDL_WINICCPROFCHANGED, 0, 0);
                         } else if (SDL_strncmp(name_of_atom, "_ICC_PROFILE_", sizeof("_ICC_PROFILE_") - 1) == 0 && SDL_strlen(name_of_atom) > sizeof("_ICC_PROFILE_") - 1) {
                             int iccscreennum = SDL_atoi(&name_of_atom[sizeof("_ICC_PROFILE_") - 1]);
 
                             if (screennum == iccscreennum) {
-                                SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_ICCPROF_CHANGED, 0, 0);
+                                SDL_SendWindowEvent(data->window, SDL_WINICCPROFCHANGED, 0, 0);
                             }
                         }
                     }
@@ -1168,7 +1168,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 
         if (xevent->xconfigure.x != data->last_xconfigure.x ||
             xevent->xconfigure.y != data->last_xconfigure.y) {
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
+            SDL_SendWindowEvent(data->window, SDL_WINMOVED,
                                 xevent->xconfigure.x, xevent->xconfigure.y);
 #ifdef SDL_USE_IME
             if (SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
@@ -1179,7 +1179,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
         }
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED,
+            SDL_SendWindowEvent(data->window, SDL_WINRESIZED,
                                 xevent->xconfigure.width,
                                 xevent->xconfigure.height);
         }
@@ -1280,7 +1280,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: WM_DELETE_WINDOW\n", data);
 #endif
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_WINCLOSE, 0, 0);
             break;
         } else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
                    (xevent->xclient.format == 32) &&
@@ -1289,7 +1289,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             printf("window %p: WM_TAKE_FOCUS\n", data);
 #endif
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_TAKE_FOCUS, 0, 0);
+            SDL_SendWindowEvent(data->window, SDL_WINTAKEFOCUS, 0, 0);
             break;
         }
     } break;
@@ -1300,7 +1300,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
         printf("window %p: Expose (count = %d)\n", data, xevent->xexpose.count);
 #endif
-        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+        SDL_SendWindowEvent(data->window, SDL_WINEXPOSED, 0, 0);
     } break;
 
     case MotionNotify:
@@ -1328,7 +1328,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             int button = xevent->xbutton.button;
             if (button == Button1) {
                 if (ProcessHitTest(_this, data, xevent)) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_WINHITTEST, 0, 0);
                     break; /* don't pass this event on to app. */
                 }
             } else if (button > 7) {
@@ -1475,9 +1475,9 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
 
             if (changed & SDL_WINDOW_MAXIMIZED) {
                 if (flags & SDL_WINDOW_MAXIMIZED) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_WINMAXIMIZED, 0, 0);
                 } else {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+                    SDL_SendWindowEvent(data->window, SDL_WINRESTORED, 0, 0);
                 }
             }
         } else if (xevent->xproperty.atom == videodata->XKLAVIER_STATE) {

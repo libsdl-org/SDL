@@ -303,7 +303,7 @@ static void GLES2_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
 
-    if (event->event == SDL_WINDOWEVENT_MINIMIZED) {
+    if (event->type == SDL_WINMINIMIZED) {
         /* According to Apple documentation, we need to finish drawing NOW! */
         data->glFinish();
     }
