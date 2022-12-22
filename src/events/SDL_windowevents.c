@@ -36,12 +36,11 @@ static int SDLCALL RemovePendingSizeChangedAndResizedEvents(void *_userdata, SDL
     RemovePendingSizeChangedAndResizedEvents_Data *userdata = (RemovePendingSizeChangedAndResizedEvents_Data *)_userdata;
     const SDL_Event *new_event = userdata->new_event;
 
-    if (event->type == SDL_WINDOWEVENT &&
-        (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-         event->window.event == SDL_WINDOWEVENT_RESIZED) &&
+    if ((event->type == SDL_WINDOWEVENT_SIZE_CHANGED ||
+         event->type == SDL_WINDOWEVENT_RESIZED) &&
         event->window.windowID == new_event->window.windowID) {
 
-        if (event->window.event == SDL_WINDOWEVENT_RESIZED) {
+        if (event->type == SDL_WINDOWEVENT_RESIZED) {
             userdata->saw_resized = SDL_TRUE;
         }
 
@@ -55,8 +54,7 @@ static int SDLCALL RemovePendingMoveEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
-    if (event->type == SDL_WINDOWEVENT &&
-        event->window.event == SDL_WINDOWEVENT_MOVED &&
+    if (event->type == SDL_WINDOWEVENT_MOVED &&
         event->window.windowID == new_event->window.windowID) {
         /* We're about to post a new move event, drop the old one */
         return 0;
@@ -68,8 +66,7 @@ static int SDLCALL RemovePendingExposedEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
-    if (event->type == SDL_WINDOWEVENT &&
-        event->window.event == SDL_WINDOWEVENT_EXPOSED &&
+    if (event->type == SDL_WINDOWEVENT_EXPOSED &&
         event->window.windowID == new_event->window.windowID) {
         /* We're about to post a new exposed event, drop the old one */
         return 0;
@@ -77,8 +74,8 @@ static int SDLCALL RemovePendingExposedEvents(void *userdata, SDL_Event *event)
     return 1;
 }
 
-int SDL_SendWindowEvent(SDL_Window *window, Uint8 windowevent, int data1,
-                        int data2)
+int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
+                        int data1, int data2)
 {
     int posted;
 
@@ -180,15 +177,16 @@ int SDL_SendWindowEvent(SDL_Window *window, Uint8 windowevent, int data1,
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         SDL_OnWindowFocusLost(window);
         break;
+    default:
+        break;
     }
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE) {
+    if (SDL_GetEventState(windowevent) == SDL_ENABLE) {
         SDL_Event event;
-        event.type = SDL_WINDOWEVENT;
+        event.type = windowevent;
         event.common.timestamp = 0;
-        event.window.event = windowevent;
         event.window.data1 = data1;
         event.window.data2 = data2;
         event.window.windowID = window->id;
@@ -201,11 +199,11 @@ int SDL_SendWindowEvent(SDL_Window *window, Uint8 windowevent, int data1,
             userdata.saw_resized = SDL_FALSE;
             SDL_FilterEvents(RemovePendingSizeChangedAndResizedEvents, &userdata);
             if (userdata.saw_resized) { /* if there was a pending resize, make sure one at the new dimensions remains. */
-                event.window.event = SDL_WINDOWEVENT_RESIZED;
+                event.type = SDL_WINDOWEVENT_RESIZED;
                 if (SDL_PushEvent(&event) <= 0) {
                     return 0; /* oh well. */
                 }
-                event.window.event = SDL_WINDOWEVENT_SIZE_CHANGED; /* then push the actual event next. */
+                event.type = SDL_WINDOWEVENT_SIZE_CHANGED; /* then push the actual event next. */
             }
         }
         if (windowevent == SDL_WINDOWEVENT_MOVED) {

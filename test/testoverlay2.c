@@ -229,12 +229,10 @@ void loop()
         SDLTest_CommonEvent(state, &event, &done);
 
         switch (event.type) {
-        case SDL_WINDOWEVENT:
-            if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                SDL_RenderSetViewport(renderer, NULL);
-                displayrect.w = window_w = event.window.data1;
-                displayrect.h = window_h = event.window.data2;
-            }
+        case SDL_WINDOWEVENT_RESIZED:
+            SDL_RenderSetViewport(renderer, NULL);
+            displayrect.w = window_w = event.window.data1;
+            displayrect.h = window_h = event.window.data2;
             break;
         case SDL_MOUSEBUTTONDOWN:
             displayrect.x = event.button.x - window_w / 2;

@@ -230,69 +230,43 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_RENDER_DEVICE_RESET)
         break;
 
-        SDL_EVENT_CASE(SDL_DISPLAYEVENT)
-        {
-            char name2[64];
-            switch (event->display.event) {
-            case SDL_DISPLAYEVENT_NONE:
-                SDL_strlcpy(name2, "SDL_DISPLAYEVENT_NONE (THIS IS PROBABLY A BUG!)", sizeof(name2));
-                break;
 #define SDL_DISPLAYEVENT_CASE(x)               \
     case x:                                    \
-        SDL_strlcpy(name2, #x, sizeof(name2)); \
+        SDL_strlcpy(name, #x, sizeof(name));   \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d)", \
+                           (uint)event->display.timestamp, (uint)event->display.display, name, (int)event->display.data1); \
         break
-                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_ORIENTATION);
-                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_CONNECTED);
-                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_DISCONNECTED);
-                SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_MOVED);
+        SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_ORIENTATION);
+        SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_CONNECTED);
+        SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_DISCONNECTED);
+        SDL_DISPLAYEVENT_CASE(SDL_DISPLAYEVENT_MOVED);
 #undef SDL_DISPLAYEVENT_CASE
-            default:
-                SDL_strlcpy(name2, "UNKNOWN (bug? fixme?)", sizeof(name2));
-                break;
-            }
-            (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d)",
-                               (uint)event->display.timestamp, (uint)event->display.display, name2, (int)event->display.data1);
-            break;
-        }
 
-        SDL_EVENT_CASE(SDL_WINDOWEVENT)
-        {
-            char name2[64];
-            switch (event->window.event) {
-            case SDL_WINDOWEVENT_NONE:
-                SDL_strlcpy(name2, "SDL_WINDOWEVENT_NONE (THIS IS PROBABLY A BUG!)", sizeof(name2));
-                break;
 #define SDL_WINDOWEVENT_CASE(x)                \
     case x:                                    \
-        SDL_strlcpy(name2, #x, sizeof(name2)); \
+        SDL_strlcpy(name, #x, sizeof(name)); \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u event=%s data1=%d data2=%d)", \
+                           (uint)event->window.timestamp, (uint)event->window.windowID, name, (int)event->window.data1, (int)event->window.data2); \
         break
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_SHOWN);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_HIDDEN);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_EXPOSED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_MOVED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_RESIZED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_SIZE_CHANGED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_MINIMIZED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_MAXIMIZED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_RESTORED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_ENTER);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_LEAVE);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_FOCUS_GAINED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_FOCUS_LOST);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_CLOSE);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_TAKE_FOCUS);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_HIT_TEST);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_ICCPROF_CHANGED);
-                SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_DISPLAY_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_SHOWN);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_HIDDEN);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_EXPOSED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_MOVED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_RESIZED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_SIZE_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_MINIMIZED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_MAXIMIZED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_RESTORED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_ENTER);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_LEAVE);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_FOCUS_GAINED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_FOCUS_LOST);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_CLOSE);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_TAKE_FOCUS);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_HIT_TEST);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_ICCPROF_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_WINDOWEVENT_DISPLAY_CHANGED);
 #undef SDL_WINDOWEVENT_CASE
-            default:
-                SDL_strlcpy(name2, "UNKNOWN (bug? fixme?)", sizeof(name2));
-                break;
-            }
-            (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u event=%s data1=%d data2=%d)",
-                               (uint)event->window.timestamp, (uint)event->window.windowID, name2, (int)event->window.data1, (int)event->window.data2);
-            break;
-        }
 
         SDL_EVENT_CASE(SDL_SYSWMEVENT)
         /* !!! FIXME: we don't delve further at the moment. */

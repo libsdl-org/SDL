@@ -87,11 +87,40 @@ typedef enum
     SDL_LOCALECHANGED,  /**< The user's locale preferences have changed. */
 
     /* Display events */
-    SDL_DISPLAYEVENT   = 0x150,  /**< Display state change */
+    SDL_DISPLAYEVENT_ORIENTATION = 0x150, /**< Display orientation has changed to data1 */
+    SDL_DISPLAYEVENT_CONNECTED,           /**< Display has been added to the system */
+    SDL_DISPLAYEVENT_DISCONNECTED,        /**< Display has been removed from the system */
+    SDL_DISPLAYEVENT_MOVED,               /**< Display has changed position */
+    SDL_DISPLAYEVENT_FIRST = SDL_DISPLAYEVENT_ORIENTATION,
+    SDL_DISPLAYEVENT_LAST = SDL_DISPLAYEVENT_DISCONNECTED,
 
     /* Window events */
-    SDL_WINDOWEVENT    = 0x200, /**< Window state change */
-    SDL_SYSWMEVENT,             /**< System specific event */
+    SDL_SYSWMEVENT     = 0x201,     /**< System specific event */
+    SDL_WINDOWEVENT_SHOWN,          /**< Window has been shown */
+    SDL_WINDOWEVENT_HIDDEN,         /**< Window has been hidden */
+    SDL_WINDOWEVENT_EXPOSED,        /**< Window has been exposed and should be
+                                         redrawn */
+    SDL_WINDOWEVENT_MOVED,          /**< Window has been moved to data1, data2
+                                     */
+    SDL_WINDOWEVENT_RESIZED,        /**< Window has been resized to data1xdata2 */
+    SDL_WINDOWEVENT_SIZE_CHANGED,   /**< The window size has changed, either as
+                                         a result of an API call or through the
+                                         system or user changing the window size. */
+    SDL_WINDOWEVENT_MINIMIZED,      /**< Window has been minimized */
+    SDL_WINDOWEVENT_MAXIMIZED,      /**< Window has been maximized */
+    SDL_WINDOWEVENT_RESTORED,       /**< Window has been restored to normal size
+                                         and position */
+    SDL_WINDOWEVENT_ENTER,          /**< Window has gained mouse focus */
+    SDL_WINDOWEVENT_LEAVE,          /**< Window has lost mouse focus */
+    SDL_WINDOWEVENT_FOCUS_GAINED,   /**< Window has gained keyboard focus */
+    SDL_WINDOWEVENT_FOCUS_LOST,     /**< Window has lost keyboard focus */
+    SDL_WINDOWEVENT_CLOSE,          /**< The window manager requests that the window be closed */
+    SDL_WINDOWEVENT_TAKE_FOCUS,     /**< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow, or ignore) */
+    SDL_WINDOWEVENT_HIT_TEST,       /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL. */
+    SDL_WINDOWEVENT_ICCPROF_CHANGED,/**< The ICC profile of the window's display has changed. */
+    SDL_WINDOWEVENT_DISPLAY_CHANGED,/**< Window has been moved to display data1. */
+    SDL_WINDOWEVENT_FIRST = SDL_WINDOWEVENT_SHOWN,
+    SDL_WINDOWEVENT_LAST = SDL_WINDOWEVENT_DISPLAY_CHANGED,
 
     /* Keyboard events */
     SDL_KEYDOWN        = 0x300, /**< Key pressed */
@@ -185,13 +214,9 @@ typedef struct SDL_CommonEvent
  */
 typedef struct SDL_DisplayEvent
 {
-    Uint32 type;        /**< ::SDL_DISPLAYEVENT */
+    Uint32 type;        /**< ::SDL_DISPLAYEVENT_* */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     Uint32 display;     /**< The associated display index */
-    Uint8 event;        /**< ::SDL_DisplayEventID */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
     Sint32 data1;       /**< event dependent data */
 } SDL_DisplayEvent;
 
@@ -200,13 +225,9 @@ typedef struct SDL_DisplayEvent
  */
 typedef struct SDL_WindowEvent
 {
-    Uint32 type;        /**< ::SDL_WINDOWEVENT */
+    Uint32 type;        /**< ::SDL_WINDOWEVENT_* */
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     Uint32 windowID;    /**< The associated window */
-    Uint8 event;        /**< ::SDL_WindowEventID */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
     Sint32 data1;       /**< event dependent data */
     Sint32 data2;       /**< event dependent data */
 } SDL_WindowEvent;

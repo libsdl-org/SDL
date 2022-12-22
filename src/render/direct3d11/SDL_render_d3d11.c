@@ -1029,7 +1029,7 @@ void D3D11_Trim(SDL_Renderer *renderer)
 
 static void D3D11_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+    if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED) {
         D3D11_UpdateForWindowSizeChange(renderer);
     }
 }

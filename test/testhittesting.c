@@ -107,10 +107,8 @@ int main(int argc, char **argv)
                 SDL_Log("button up!\n");
                 break;
 
-            case SDL_WINDOWEVENT:
-                if (e.window.event == SDL_WINDOWEVENT_MOVED) {
-                    SDL_Log("Window event moved to (%d, %d)!\n", (int)e.window.data1, (int)e.window.data2);
-                }
+            case SDL_WINDOWEVENT_MOVED:
+                SDL_Log("Window event moved to (%d, %d)!\n", (int)e.window.data1, (int)e.window.data2);
                 break;
 
             case SDL_KEYDOWN:

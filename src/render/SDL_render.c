@@ -671,7 +671,7 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
     SDL_Renderer *renderer = (SDL_Renderer *)userdata;
 
-    if (event->type == SDL_WINDOWEVENT) {
+    if (event->type >= SDL_WINDOWEVENT_FIRST && event->type <= SDL_WINDOWEVENT_LAST) {
         SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
         if (window == renderer->window) {
             if (renderer->WindowEvent) {
@@ -682,8 +682,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
              * window display changes as well! If the new display has a new DPI,
              * we need to update the viewport for the new window/drawable ratio.
              */
-            if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-                event->window.event == SDL_WINDOWEVENT_DISPLAY_CHANGED) {
+            if (event->type == SDL_WINDOWEVENT_SIZE_CHANGED ||
+                event->type == SDL_WINDOWEVENT_DISPLAY_CHANGED) {
                 /* Make sure we're operating on the default render target */
                 SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
                 if (saved_target) {
@@ -736,16 +736,16 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 if (saved_target) {
                     SDL_SetRenderTarget(renderer, saved_target);
                 }
-            } else if (event->window.event == SDL_WINDOWEVENT_HIDDEN) {
+            } else if (event->type == SDL_WINDOWEVENT_HIDDEN) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->window.event == SDL_WINDOWEVENT_SHOWN) {
+            } else if (event->type == SDL_WINDOWEVENT_SHOWN) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)) {
                     renderer->hidden = SDL_FALSE;
                 }
-            } else if (event->window.event == SDL_WINDOWEVENT_MINIMIZED) {
+            } else if (event->type == SDL_WINDOWEVENT_MINIMIZED) {
                 renderer->hidden = SDL_TRUE;
-            } else if (event->window.event == SDL_WINDOWEVENT_RESTORED ||
-                       event->window.event == SDL_WINDOWEVENT_MAXIMIZED) {
+            } else if (event->type == SDL_WINDOWEVENT_RESTORED ||
+                       event->type == SDL_WINDOWEVENT_MAXIMIZED) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
                     renderer->hidden = SDL_FALSE;
                 }
