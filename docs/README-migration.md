@@ -48,13 +48,17 @@ The following headers are no longer automatically included, and will need to be 
 
 ## SDL_events.h
 
-The `timestamp` member of the SDL_Event structure now represents nanoseconds, and is populated with `SDL_GetTicksNS()`
+The `timestamp` member of the `SDL_Event` structure now represents nanoseconds, and is populated with `SDL_GetTicksNS()`
 
-The `timestamp_us` member of the sensor events has been renamed `sensor_timestamp` and now represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from SDL_GetTicksNS().
+The `timestamp_us` member of the sensor events has been renamed `sensor_timestamp` and now represents nanoseconds. This value is filled in from the hardware, if available, and may not be synchronized with values returned from `SDL_GetTicksNS()`.
 
 You should set the `event.common.timestamp` field before passing an event to `SDL_PushEvent()`. If the timestamp is 0 it will be filled in with `SDL_GetTicksNS()`.
 
-SDL_GetEventState used to be a macro, now it's a real function, but otherwise functions identically.
+`SDL_GetEventState` used to be a macro, now it's a real function, but otherwise functions identically.
+
+The `SDL_DISPLAYEVENT_*` events have been moved to top level events, and `SDL_DISPLAYEVENT` has been removed. In general, handling this change just means checking for the individual events instead of first checking for `SDL_DISPLAYEVENT` and then checking for display events. You can compare the event >= `SDL_DISPLAYEVENT_FIRST` and <= `SDL_DISPLAYEVENT_LAST` if you need to see whether it's a display event.
+
+The `SDL_WINDOWEVENT_*` events have been moved to top level events, and `SDL_WINDOWEVENT` has been removed. In general, handling this change just means checking for the individual events instead of first checking for `SDL_WINDOWEVENT` and then checking for window events. You can compare the event >= `SDL_WINDOWEVENT_FIRST` and <= `SDL_WINDOWEVENT_LAST` if you need to see whether it's a window event.
 
 
 ## SDL_gamecontroller.h

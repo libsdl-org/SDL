@@ -221,7 +221,7 @@ class SDL_BApp : public BApplication
 
   private:
     /* Event management */
-    void _HandleBasicWindowEvent(BMessage *msg, int32 sdlEventType)
+    void _HandleBasicWindowEvent(BMessage *msg, SDL_EventType sdlEventType)
     {
         SDL_Window *win;
         int32 winID;

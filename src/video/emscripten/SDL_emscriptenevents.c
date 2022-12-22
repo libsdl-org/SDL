@@ -701,7 +701,7 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
     }
 
     SDL_SetMouseFocus(eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? window_data->window : NULL);
-    return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
+    return SDL_GetEventState(SDL_MOUSEMOTION) == SDL_ENABLE;
 }
 
 static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
@@ -729,14 +729,17 @@ static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent 
 static EM_BOOL Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
+    SDL_EventType sdl_event_type;
+
     /* If the user switches away while keys are pressed (such as
      * via Alt+Tab), key release events won't be received. */
     if (eventType == EMSCRIPTEN_EVENT_BLUR) {
         SDL_ResetKeyboard();
     }
 
-    SDL_SendWindowEvent(window_data->window, eventType == EMSCRIPTEN_EVENT_FOCUS ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
-    return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
+    sdl_event_type = (eventType == EMSCRIPTEN_EVENT_FOCUS) ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST;
+    SDL_SendWindowEvent(window_data->window, sdl_event_type, 0, 0);
+    return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
 static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)

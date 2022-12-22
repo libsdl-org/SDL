@@ -1432,97 +1432,81 @@ static const char *ControllerButtonName(const SDL_GameControllerButton button)
 static void SDLTest_PrintEvent(SDL_Event *event)
 {
     switch (event->type) {
-    case SDL_DISPLAYEVENT:
-        switch (event->display.event) {
-        case SDL_DISPLAYEVENT_CONNECTED:
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
-                    event->display.display);
-            break;
-        case SDL_DISPLAYEVENT_MOVED:
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
-                    event->display.display);
-            break;
-        case SDL_DISPLAYEVENT_ORIENTATION:
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
-                    event->display.display, DisplayOrientationName(event->display.data1));
-            break;
-        case SDL_DISPLAYEVENT_DISCONNECTED:
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " disconnected",
-                    event->display.display);
-            break;
-        default:
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " got unknown event 0x%4.4x",
-                    event->display.display, event->display.event);
-            break;
-        }
+    case SDL_DISPLAYEVENT_CONNECTED:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
+                event->display.display);
         break;
-    case SDL_WINDOWEVENT:
-        switch (event->window.event) {
-        case SDL_WINDOWEVENT_SHOWN:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " shown", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_HIDDEN:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hidden", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_EXPOSED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " exposed", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_MOVED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32,
-                    event->window.windowID, event->window.data1, event->window.data2);
-            break;
-        case SDL_WINDOWEVENT_RESIZED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32,
-                    event->window.windowID, event->window.data1, event->window.data2);
-            break;
-        case SDL_WINDOWEVENT_SIZE_CHANGED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed size to %" SDL_PRIs32 "x%" SDL_PRIs32,
-                    event->window.windowID, event->window.data1, event->window.data2);
-            break;
-        case SDL_WINDOWEVENT_MINIMIZED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " minimized", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_MAXIMIZED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " maximized", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_RESTORED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " restored", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_ENTER:
-            SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32 "",
-                    event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_LEAVE:
-            SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32 "", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_FOCUS_GAINED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " gained keyboard focus",
-                    event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_FOCUS_LOST:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " lost keyboard focus",
-                    event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_CLOSE:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " closed", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_TAKE_FOCUS:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " take focus", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_HIT_TEST:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hit test", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_ICCPROF_CHANGED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " ICC profile changed", event->window.windowID);
-            break;
-        case SDL_WINDOWEVENT_DISPLAY_CHANGED:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
-            break;
-        default:
-            SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " got unknown event 0x%4.4x",
-                    event->window.windowID, event->window.event);
-            break;
-        }
+    case SDL_DISPLAYEVENT_MOVED:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
+                event->display.display);
+        break;
+    case SDL_DISPLAYEVENT_ORIENTATION:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
+                event->display.display, DisplayOrientationName(event->display.data1));
+        break;
+    case SDL_DISPLAYEVENT_DISCONNECTED:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " disconnected",
+                event->display.display);
+        break;
+    case SDL_WINDOWEVENT_SHOWN:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " shown", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_HIDDEN:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hidden", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_EXPOSED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " exposed", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_MOVED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32,
+                event->window.windowID, event->window.data1, event->window.data2);
+        break;
+    case SDL_WINDOWEVENT_RESIZED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32,
+                event->window.windowID, event->window.data1, event->window.data2);
+        break;
+    case SDL_WINDOWEVENT_SIZE_CHANGED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed size to %" SDL_PRIs32 "x%" SDL_PRIs32,
+                event->window.windowID, event->window.data1, event->window.data2);
+        break;
+    case SDL_WINDOWEVENT_MINIMIZED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " minimized", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_MAXIMIZED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " maximized", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_RESTORED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " restored", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_ENTER:
+        SDL_Log("SDL EVENT: Mouse entered window %" SDL_PRIu32 "",
+                event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_LEAVE:
+        SDL_Log("SDL EVENT: Mouse left window %" SDL_PRIu32 "", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_FOCUS_GAINED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " gained keyboard focus",
+                event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_FOCUS_LOST:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " lost keyboard focus",
+                event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_CLOSE:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " closed", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_TAKE_FOCUS:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " take focus", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_HIT_TEST:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " hit test", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_ICCPROF_CHANGED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " ICC profile changed", event->window.windowID);
+        break;
+    case SDL_WINDOWEVENT_DISPLAY_CHANGED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " display changed to %" SDL_PRIs32 "", event->window.windowID, event->window.data1);
         break;
     case SDL_KEYDOWN:
         SDL_Log("SDL EVENT: Keyboard: key pressed  in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
@@ -1782,39 +1766,33 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
     }
 
     switch (event->type) {
-    case SDL_WINDOWEVENT:
-        switch (event->window.event) {
-        case SDL_WINDOWEVENT_CLOSE:
-        {
+    case SDL_WINDOWEVENT_CLOSE:
+    {
+        SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
+        if (window) {
+            for (i = 0; i < state->num_windows; ++i) {
+                if (window == state->windows[i]) {
+                    if (state->targets[i]) {
+                        SDL_DestroyTexture(state->targets[i]);
+                        state->targets[i] = NULL;
+                    }
+                    if (state->renderers[i]) {
+                        SDL_DestroyRenderer(state->renderers[i]);
+                        state->renderers[i] = NULL;
+                    }
+                    SDL_DestroyWindow(state->windows[i]);
+                    state->windows[i] = NULL;
+                    break;
+                }
+            }
+        }
+    } break;
+    case SDL_WINDOWEVENT_FOCUS_LOST:
+        if (state->flash_on_focus_loss) {
             SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
             if (window) {
-                for (i = 0; i < state->num_windows; ++i) {
-                    if (window == state->windows[i]) {
-                        if (state->targets[i]) {
-                            SDL_DestroyTexture(state->targets[i]);
-                            state->targets[i] = NULL;
-                        }
-                        if (state->renderers[i]) {
-                            SDL_DestroyRenderer(state->renderers[i]);
-                            state->renderers[i] = NULL;
-                        }
-                        SDL_DestroyWindow(state->windows[i]);
-                        state->windows[i] = NULL;
-                        break;
-                    }
-                }
+                SDL_FlashWindow(window, SDL_FLASH_UNTIL_FOCUSED);
             }
-        } break;
-        case SDL_WINDOWEVENT_FOCUS_LOST:
-            if (state->flash_on_focus_loss) {
-                SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
-                if (window) {
-                    SDL_FlashWindow(window, SDL_FLASH_UNTIL_FOCUSED);
-                }
-            }
-            break;
-        default:
-            break;
         }
         break;
     case SDL_KEYDOWN:

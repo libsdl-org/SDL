@@ -355,30 +355,30 @@ void loop()
             break;
         }
 
-        case SDL_WINDOWEVENT:
-            switch (event.window.event) {
-            case SDL_WINDOWEVENT_RESIZED:
-                for (i = 0; i < state->num_windows; ++i) {
-                    if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
-                        int w, h;
-                        status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-                        if (status) {
-                            SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
-                            break;
-                        }
-                        /* Change view port to the new window dimensions */
-                        SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
-                        ctx.glViewport(0, 0, w, h);
-                        state->window_w = event.window.data1;
-                        state->window_h = event.window.data2;
-                        /* Update window content */
-                        Render(event.window.data1, event.window.data2, &datas[i]);
-                        SDL_GL_SwapWindow(state->windows[i]);
+        case SDL_WINDOWEVENT_RESIZED:
+            for (i = 0; i < state->num_windows; ++i) {
+                if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
+                    int w, h;
+                    status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
+                    if (status) {
+                        SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
                         break;
                     }
+                    /* Change view port to the new window dimensions */
+                    SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+                    ctx.glViewport(0, 0, w, h);
+                    state->window_w = event.window.data1;
+                    state->window_h = event.window.data2;
+                    /* Update window content */
+                    Render(event.window.data1, event.window.data2, &datas[i]);
+                    SDL_GL_SwapWindow(state->windows[i]);
+                    break;
                 }
-                break;
             }
+            break;
+
+        default:
+            break;
         }
         SDLTest_CommonEvent(state, &event, &done);
     }
