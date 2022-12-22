@@ -121,7 +121,7 @@ typedef struct
 
 } SDLTest_CommonState;
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -229,7 +229,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, 
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_test_common_h_ */
 

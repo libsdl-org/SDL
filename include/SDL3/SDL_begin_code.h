@@ -20,7 +20,7 @@
 */
 
 /**
- *  \file begin_code.h
+ *  \file SDL_begin_code.h
  *
  *  This file sets things up for C dynamic library function definitions,
  *  static inlined functions, and structures aligned at 4-byte alignment.
@@ -28,10 +28,10 @@
  */
 
 /* This shouldn't be nested -- included it around code only. */
-#ifdef _begin_code_h
-#error Nested inclusion of begin_code.h
+#ifdef _SDL_begin_code_h
+#error Nested inclusion of SDL_begin_code.h
 #endif
-#define _begin_code_h
+#define _SDL_begin_code_h
 
 #ifndef SDL_DEPRECATED
 #  if defined(__GNUC__) && (__GNUC__ >= 4)  /* technically, this arrived in gcc 3.1, but oh well. */
@@ -78,7 +78,7 @@
 /* Force structure packing at 4 byte alignment.
    This is necessary if the header is included in code which has structure
    packing set to an alternate value, say for loading structures from disk.
-   The packing is reset to the previous value in close_code.h
+   The packing is reset to the previous value in SDL_close_code.h
  */
 #if defined(_MSC_VER) || defined(__MWERKS__) || defined(__BORLANDC__)
 #ifdef _MSC_VER

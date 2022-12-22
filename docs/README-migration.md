@@ -29,6 +29,9 @@ The SDL3test library has been renamed SDL3_test.
 There is no static SDLmain library anymore, it's now header-only, see below in the SDL_main.h section.
 
 
+begin_code.h and close_code.h in the public headers have been renamed to SDL_begin_code.h and SDL_close_code.h. These aren't meant to be included directly by applications, but if your application did, please update your `#include` lines.
+
+
 ## SDL_cpuinfo.h
 
 The following headers are no longer automatically included, and will need to be included manually:

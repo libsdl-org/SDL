@@ -32,7 +32,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */
@@ -298,7 +298,7 @@ extern DECLSPEC void SDLCALL SDL_SensorUpdate(void);
 }
 /* *INDENT-ON* */
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_sensor_h_ */
 

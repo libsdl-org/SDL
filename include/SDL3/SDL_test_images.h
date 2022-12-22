@@ -38,7 +38,7 @@
 
 #include <SDL3/SDL.h>
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -71,7 +71,7 @@ SDL_Surface *SDLTest_ImagePrimitivesBlend(void);
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_test_images_h_ */
 

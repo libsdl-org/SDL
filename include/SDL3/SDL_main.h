@@ -144,7 +144,7 @@
 #define main    SDL_main
 #endif
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -275,7 +275,7 @@ extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 }
 #endif
 
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #if !defined(SDL_MAIN_HANDLED) && !defined(SDL_MAIN_NOIMPL)
 /* include header-only SDL_main implementations */

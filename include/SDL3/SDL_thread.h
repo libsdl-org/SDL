@@ -39,7 +39,7 @@
 #include <process.h> /* _beginthreadex() and _endthreadex() */
 #endif
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -414,7 +414,7 @@ extern DECLSPEC void SDLCALL SDL_TLSCleanup(void);
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_thread_h_ */
 

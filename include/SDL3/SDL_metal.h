@@ -30,7 +30,7 @@
 
 #include <SDL3/SDL_video.h>
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -108,6 +108,6 @@ extern DECLSPEC void SDLCALL SDL_Metal_GetDrawableSize(SDL_Window* window, int *
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_metal_h_ */

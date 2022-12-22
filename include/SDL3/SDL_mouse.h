@@ -32,7 +32,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
-#include <SDL3/begin_code.h>
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -463,7 +463,7 @@ extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
 #ifdef __cplusplus
 }
 #endif
-#include <SDL3/close_code.h>
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_mouse_h_ */
 
