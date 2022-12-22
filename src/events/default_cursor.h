@@ -27,7 +27,7 @@
 #define DEFAULT_CHOTX   0
 #define DEFAULT_CHOTY   0
 
-/* Added a real MacOS cursor, at the request of Luc-Olivier de Charrière */
+/* Added a real MacOS cursor, at the request of Luc-Olivier de CharriÃ¨re */
 #define USE_MACOS_CURSOR
 
 #ifdef USE_MACOS_CURSOR
