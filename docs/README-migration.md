@@ -68,6 +68,25 @@ The `SDL_WINDOWEVENT_*` events have been moved to top level events, and `SDL_WIN
 
 Removed SDL_GameControllerGetSensorDataWithTimestamp(), if you want timestamps for the sensor data, you should use the sensor_timestamp member of SDL_CONTROLLERSENSORUPDATE events.
 
+## SDL_gesture.h
+
+The gesture API has been removed. There is no replacement planned in SDL3.
+However, the SDL2 code has been moved to a single-header library that can
+be dropped into an SDL3 or SDL2 program, to continue to provide this
+functionality to your app and aid migration. That is located in the
+[SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
+
+## SDL_hints.h
+
+The following hints have been removed:
+* SDL_HINT_IDLE_TIMER_DISABLED (use SDL_DisableScreenSaver instead)
+* SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
+* SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
+* SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
+
+* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
+* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
+
 ## SDL_main.h
 
 SDL3 doesn't have a static libSDLmain to link against anymore.  
@@ -105,6 +124,19 @@ The preprocessor symbol __MACOSX__ has been renamed __MACOS__, and __IPHONEOS__ 
 
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
 
+## SDL_render.h
+
+SDL_GetRenderDriverInfo() has been removed, since most of the information it reported were
+estimates and could not be accurate before creating a renderer. Often times this function
+was used to figure out the index of a driver, so one would call it in a for-loop, looking
+for the driver named "opengl" or whatnot. SDL_GetRenderDriver() has been added for this
+functionality, which returns only the name of the driver.
+
+Additionally, SDL_CreateRenderer()'s second argument is no longer an integer index, but a
+`const char *` representing a renderer's name; if you were just using a for-loop to find
+which index is the "opengl" or whatnot driver, you can just pass that string directly
+here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
+to decide for you.
 
 ## SDL_rwops.h
 
@@ -370,40 +402,4 @@ Programs which have access to shaders can implement more robust versions of thos
 
 Removed 'SDL_GL_CONTEXT_EGL' from OpenGL configuration attributes
 You can instead use 'SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);'
-
-
-## SDL_hints.h
-
-The following hints have been removed:
-* SDL_HINT_IDLE_TIMER_DISABLED (use SDL_DisableScreenSaver instead)
-* SDL_HINT_VIDEO_X11_FORCE_EGL (use SDL_HINT_VIDEO_FORCE_EGL instead)
-* SDL_HINT_VIDEO_X11_XINERAMA (Xinerama no longer supported by the X11 backend)
-* SDL_HINT_VIDEO_X11_XVIDMODE (Xvidmode no longer supported by the X11 backend)
-
-* Renamed hints 'SDL_HINT_VIDEODRIVER' and 'SDL_HINT_AUDIODRIVER' to 'SDL_HINT_VIDEO_DRIVER' and 'SDL_HINT_AUDIO_DRIVER'
-* Renamed environment variables 'SDL_VIDEODRIVER' and 'SDL_AUDIODRIVER' to 'SDL_VIDEO_DRIVER' and 'SDL_AUDIO_DRIVER'
-
-
-## SDL_gesture.h
-
-The gesture API has been removed. There is no replacement planned in SDL3.
-However, the SDL2 code has been moved to a single-header library that can
-be dropped into an SDL3 or SDL2 program, to continue to provide this
-functionality to your app and aid migration. That is located in the
-[SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
-
-
-## SDL_render.h
-
-SDL_GetRenderDriverInfo() has been removed, since most of the information it reported were
-estimates and could not be accurate before creating a renderer. Often times this function
-was used to figure out the index of a driver, so one would call it in a for-loop, looking
-for the driver named "opengl" or whatnot. SDL_GetRenderDriver() has been added for this
-functionality, which returns only the name of the driver.
-
-Additionally, SDL_CreateRenderer()'s second argument is no longer an integer index, but a
-`const char *` representing a renderer's name; if you were just using a for-loop to find
-which index is the "opengl" or whatnot driver, you can just pass that string directly
-here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
-to decide for you.
 
