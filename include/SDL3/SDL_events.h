@@ -87,7 +87,8 @@ typedef enum
     SDL_LOCALECHANGED,  /**< The user's locale preferences have changed. */
 
     /* Display events */
-    SDL_DISPLAYEVENT_ORIENTATION = 0x150, /**< Display orientation has changed to data1 */
+    /* 0x150 was SDL_DISPLAYEVENT, reserve the number for sdl2-compat */
+    SDL_DISPLAYEVENT_ORIENTATION = 0x151, /**< Display orientation has changed to data1 */
     SDL_DISPLAYEVENT_CONNECTED,           /**< Display has been added to the system */
     SDL_DISPLAYEVENT_DISCONNECTED,        /**< Display has been removed from the system */
     SDL_DISPLAYEVENT_MOVED,               /**< Display has changed position */
@@ -95,6 +96,7 @@ typedef enum
     SDL_DISPLAYEVENT_LAST = SDL_DISPLAYEVENT_DISCONNECTED,
 
     /* Window events */
+    /* 0x200 was SDL_WINDOWEVENT, reserve the number for sdl2-compat */
     SDL_SYSWMEVENT     = 0x201,     /**< System specific event */
     SDL_WINDOWEVENT_SHOWN,          /**< Window has been shown */
     SDL_WINDOWEVENT_HIDDEN,         /**< Window has been hidden */
