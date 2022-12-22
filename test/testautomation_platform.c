@@ -164,7 +164,6 @@ int platform_testGetFunctions(void *arg)
 /* !
  * \brief Tests SDL_HasXYZ() functions
  * \sa
- * http://wiki.libsdl.org/SDL_Has3DNow
  * http://wiki.libsdl.org/SDL_HasAltiVec
  * http://wiki.libsdl.org/SDL_HasMMX
  * http://wiki.libsdl.org/SDL_HasRDTSC
@@ -187,9 +186,6 @@ int platform_testHasFunctions(void *arg)
 
     SDL_HasMMX();
     SDLTest_AssertPass("SDL_HasMMX()");
-
-    SDL_Has3DNow();
-    SDLTest_AssertPass("SDL_Has3DNow()");
 
     SDL_HasSSE();
     SDLTest_AssertPass("SDL_HasSSE()");

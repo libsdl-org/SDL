@@ -631,7 +631,6 @@ SDL3_0.0.0 {
     SDL_HasRDTSC;
     SDL_HasAltiVec;
     SDL_HasMMX;
-    SDL_Has3DNow;
     SDL_HasSSE;
     SDL_HasSSE2;
     SDL_HasSSE3;

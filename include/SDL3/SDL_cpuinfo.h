@@ -75,7 +75,6 @@ extern DECLSPEC int SDLCALL SDL_GetCPUCacheLineSize(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -98,7 +97,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasRDTSC(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
  * \sa SDL_HasMMX
@@ -120,7 +118,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -134,28 +131,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasMMX(void);
 
 /**
- * Determine whether the CPU has 3DNow! features.
- *
- * This always returns false on CPUs that aren't using AMD instruction sets.
- *
- * \returns SDL_TRUE if the CPU has 3DNow! features or SDL_FALSE if not.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_HasAltiVec
- * \sa SDL_HasAVX
- * \sa SDL_HasAVX2
- * \sa SDL_HasMMX
- * \sa SDL_HasRDTSC
- * \sa SDL_HasSSE
- * \sa SDL_HasSSE2
- * \sa SDL_HasSSE3
- * \sa SDL_HasSSE41
- * \sa SDL_HasSSE42
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_Has3DNow(void);
-
-/**
  * Determine whether the CPU has SSE features.
  *
  * This always returns false on CPUs that aren't using Intel instruction sets.
@@ -164,7 +139,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Has3DNow(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -186,7 +160,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -208,7 +181,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE2(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -230,7 +202,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE3(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -252,7 +223,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE41(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
@@ -274,7 +244,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE42(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX2
  * \sa SDL_HasMMX
@@ -296,7 +265,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Has3DNow
  * \sa SDL_HasAltiVec
  * \sa SDL_HasAVX
  * \sa SDL_HasMMX

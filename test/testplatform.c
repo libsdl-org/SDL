@@ -393,7 +393,6 @@ int TestCPUInfo(SDL_bool verbose)
         SDL_Log("RDTSC %s\n", SDL_HasRDTSC() ? "detected" : "not detected");
         SDL_Log("AltiVec %s\n", SDL_HasAltiVec() ? "detected" : "not detected");
         SDL_Log("MMX %s\n", SDL_HasMMX() ? "detected" : "not detected");
-        SDL_Log("3DNow! %s\n", SDL_Has3DNow() ? "detected" : "not detected");
         SDL_Log("SSE %s\n", SDL_HasSSE() ? "detected" : "not detected");
         SDL_Log("SSE2 %s\n", SDL_HasSSE2() ? "detected" : "not detected");
         SDL_Log("SSE3 %s\n", SDL_HasSSE3() ? "detected" : "not detected");

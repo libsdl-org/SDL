@@ -31,6 +31,8 @@ There is no static SDLmain library anymore, it's now header-only, see below in t
 
 ## SDL_cpuinfo.h
 
+- SDL_Has3DNow() has been removed; there is no replacement.
+
 The following headers are no longer automatically included, and will need to be included manually:
 - immintrin.h
 - mm3dnow.h
