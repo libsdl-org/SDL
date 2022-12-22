@@ -78,7 +78,7 @@ static GUID IID_IGameBarStatics_ = { MAKELONG(0xA292, 0x1DB9), 0xCC78, 0x4173, {
 */
 static IGameBarStatics_ *WINRT_GetGameBar()
 {
-    wchar_t *wClassName = L"Windows.Gaming.UI.GameBar";
+    const wchar_t *wClassName = L"Windows.Gaming.UI.GameBar";
     HSTRING hClassName;
     IActivationFactory *pActivationFactory = NULL;
     IGameBarStatics_ *pGameBar = NULL;

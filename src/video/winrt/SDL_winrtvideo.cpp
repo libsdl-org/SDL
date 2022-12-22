@@ -30,16 +30,16 @@
 
 /* Standard C++11 includes */
 #include <functional>
-#include <string>
 #include <sstream>
+#include <string>
 using namespace std;
 
 /* Windows includes */
 #include <agile.h>
-#include <windows.graphics.display.h>
-#include <windows.system.display.h>
 #include <dxgi.h>
 #include <dxgi1_2.h>
+#include <windows.graphics.display.h>
+#include <windows.system.display.h>
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
@@ -52,20 +52,20 @@ static const GUID SDL_IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 
 
 /* SDL includes */
 extern "C" {
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
+#include "../../core/windows/SDL_windows.h"
 #include "../../events/SDL_events_c.h"
 #include "../../render/SDL_sysrender.h"
+#include "../SDL_pixels_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_winrtopengles.h"
-#include "../../core/windows/SDL_windows.h"
 }
 
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"
 #include "../../core/winrt/SDL_winrtapp_xaml.h"
-#include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtgamebar_cpp.h"
 #include "SDL_winrtmouse_c.h"
+#include "SDL_winrtvideo_cpp.h"
 
 #define SDL_ENABLE_SYSWM_WINRT
 #include <SDL3/SDL_syswm.h>
@@ -266,7 +266,6 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
     IDXGIOutput *dxgiOutput = NULL;
     DXGI_OUTPUT_DESC dxgiOutputDesc;
     SDL_VideoDisplay display;
-    char *displayName = NULL;
     UINT numModes;
     DXGI_MODE_DESC *dxgiModes = NULL;
     int functionResult = -1; /* -1 for failure, 0 for success */
@@ -304,7 +303,7 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         */
         SDL_DisplayMode mode;
         SDL_zero(mode);
-        display.name = "Windows Simulator / Terminal Services Display";
+        display.name = SDL_strdup("Windows Simulator / Terminal Services Display");
         mode.w = (dxgiOutputDesc.DesktopCoordinates.right - dxgiOutputDesc.DesktopCoordinates.left);
         mode.h = (dxgiOutputDesc.DesktopCoordinates.bottom - dxgiOutputDesc.DesktopCoordinates.top);
         mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -318,8 +317,7 @@ static int WINRT_AddDisplaysForOutput(_THIS, IDXGIAdapter1 *dxgiAdapter1, int ou
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIOutput::FindClosestMatchingMode failed", hr);
         goto done;
     } else {
-        displayName = WIN_StringToUTF8(dxgiOutputDesc.DeviceName);
-        display.name = displayName;
+        display.name = WIN_StringToUTF8(dxgiOutputDesc.DeviceName);
         WINRT_DXGIModeToSDLDisplayMode(&closestMatch, &display.desktop_mode);
         display.current_mode = display.desktop_mode;
 
@@ -363,8 +361,8 @@ done:
     if (dxgiOutput) {
         dxgiOutput->Release();
     }
-    if (displayName) {
-        SDL_free(displayName);
+    if (display.name) {
+        SDL_free(display.name);
     }
     return functionResult;
 }
@@ -408,7 +406,7 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                 CoreWindow ^ coreWin = CoreWindow::GetForCurrentThread();
                 SDL_zero(display);
                 SDL_zero(mode);
-                display.name = "DXGI Display-detection Workaround";
+                display.name = SDL_strdup("DXGI Display-detection Workaround");
 
                 /* HACK: ApplicationView's VisibleBounds property, appeared, via testing, to
                    give a better approximation of display-size, than did CoreWindow's
@@ -432,8 +430,12 @@ static int WINRT_AddDisplaysForAdapter(_THIS, IDXGIFactory2 *dxgiFactory2, int a
                 mode.refresh_rate = 0; /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
                 display.desktop_mode = mode;
                 display.current_mode = mode;
-                if ((SDL_AddDisplayMode(&display, &mode) < 0) ||
-                    (SDL_AddVideoDisplay(&display, SDL_FALSE) < 0)) {
+                bool error = SDL_AddDisplayMode(&display, &mode) < 0 ||
+                             SDL_AddVideoDisplay(&display, SDL_FALSE) < 0;
+                if (display.name) {
+                    SDL_free(display.name);
+                }
+                if (error) {
                     return SDL_SetError("Failed to apply DXGI Display-detection workaround");
                 }
             }
@@ -803,7 +805,7 @@ int WINRT_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 static ABI::Windows::System::Display::IDisplayRequest *WINRT_CreateDisplayRequest(_THIS)
 {
     /* Setup a WinRT DisplayRequest object, usable for enabling/disabling screensaver requests */
-    wchar_t *wClassName = L"Windows.System.Display.DisplayRequest";
+    const wchar_t *wClassName = L"Windows.System.Display.DisplayRequest";
     HSTRING hClassName;
     IActivationFactory *pActivationFactory = NULL;
     IInspectable *pDisplayRequestRaw = nullptr;
